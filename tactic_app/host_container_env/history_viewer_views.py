@@ -87,7 +87,6 @@ def update_from_left():
         mdata["updated"] = datetime.datetime.utcnow()
         db[current_user.tile_collection_name].update_one({"tile_module_name": module_name},
                                                          {'$set': {"tile_module": module_code, "metadata": mdata}})
-        tile_manager.refresh_selector_list()
         create_recent_checkpoint(module_name)
         return jsonify({"success": True, "message": "Module successfully saved; refresh any open viewers",
                         "alert_type": "alert-success"})

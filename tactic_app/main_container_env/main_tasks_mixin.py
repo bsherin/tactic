@@ -539,7 +539,6 @@ class LoadSaveTasksMixin:
             if data_dict["save_as_collection"]:
                 new_collection_name = data_dict["collection_name"]
                 self.create_complete_collection(new_collection_name, {"report": report_html}, "freeform")
-                self.mworker.ask_host("update_collection_selector_list", {"user_id": self.user_id})
                 _return_data = {"collection_name": new_collection_name,
                                 "success": True,
                                 "message": "Presentation Successfully Exported"}
@@ -635,7 +634,6 @@ class LoadSaveTasksMixin:
             if data_dict["save_as_collection"]:
                 new_collection_name = data_dict["collection_name"]
                 self.create_complete_collection(new_collection_name, {"report": report_html}, "freeform")
-                self.mworker.ask_host("update_collection_selector_list", {"user_id": self.user_id})
                 _return_data = {"collection_name": new_collection_name,
                                 "success": True,
                                 "message": "Report Successfully Exported"}
@@ -781,15 +779,12 @@ class TileCreationTasksMixin:
             if not instantiate_result["success"]:
                 debug_log("got an exception " + instantiate_result["message"])
                 self.mworker.submit_response(local_task_packet, instantiate_result)
-               #  raise Exception(instantiate_result["message"])
-
             exports = instantiate_result["exports"]
             self.update_pipe_dict(exports, tile_container_id, tile_name)
             self.tile_reload_dicts[tile_container_id] = instantiate_result["reload_dict"]
             form_data = instantiate_result["form_data"]
             self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task",
                                    {"tile_id": tile_container_id})
-            # self.tile_sort_list.append(tile_container_id)
             response_data = {"success": True, "form_data": form_data, "tile_id": tile_container_id}
             self.mworker.submit_response(local_task_packet, response_data)
 
@@ -1285,7 +1280,6 @@ class APISupportTasksMixin:
                                                      self.doc_type,
                                                      metadata_dict,
                                                      header_list_dict)
-            self.mworker.ask_host("update_collection_selector_list", {"user_id": self.user_id})
             return {"success": True}
         except Exception as ex:
             error_string = self.handle_exception(ex, print_to_console=True)
@@ -1302,8 +1296,6 @@ class APISupportTasksMixin:
                                                      data["header_list_dict"],
                                                      data["collection_metadata"],
                                                      temp_data=temp_data)
-            if result["success"] and temp_data is None:
-                self.mworker.ask_host("update_collection_selector_list", {"user_id": self.user_id})
             return result
         except Exception as ex:
             error_string = self.handle_exception(ex, print_to_console=True)
@@ -1316,13 +1308,6 @@ class APISupportTasksMixin:
             tile_ids.append(self.pseudo_tile_id)
         return {"success": True, "tile_ids": tile_ids}
 
-    # @task_worthy
-    # def set_property(self, data_dict):
-    #     prop_name = data_dict["property"]
-    #     val = data_dict["val"]
-    #     setattr(self, prop_name, val)
-    #     return
-
     @task_worthy
     def SearchTable(self, data):
         self.highlight_table_text(data["text_to_find"])
@@ -1332,7 +1317,6 @@ class APISupportTasksMixin:
     def FilterTable(self, data):
         txt = data["text_to_find"]
         self.display_matching_rows_applying_filter(lambda r: self.txt_in_dict(txt, r))
-        # self.highlight_table_text(txt)
         return None
 
     @task_worthy
@@ -1520,10 +1504,6 @@ class ExportsTasksMixin:
         ndata["tail"] = data["tail"]
         ndata["max_rows"] = int(data["max_rows"])
         ndata["console_id"] = "export_viewer"
-        #
-        # def got_evaluation(eval_result):
-        #     self.mworker.submit_response(local_task_packet, eval_result)
-        #     return
 
         self.mworker.post_task(self.pseudo_tile_id, "_evaluate_export", ndata)
         return
@@ -1812,7 +1792,6 @@ class DataSupportTasksMixin:
         try:
             doc_name = data["document_name"]
             del self.doc_dict[doc_name]
-            # self.mworker.post_and_wait(self.mworker.my_id, "rebuild_tile_forms_task", {"tile_id": None})
             doc_names = list(self.doc_dict.keys())
             doc_names.sort()
             if self.visible_doc_name == doc_name:
@@ -1930,7 +1909,6 @@ class DataSupportTasksMixin:
     def UpdateColumnWidths(self, data):
         doc = self.doc_dict[data["doc_to_update"]]
         doc.table_spec.column_widths = data["column_widths"]
-        # doc.table_spec.table_width = data["table_width"]
         return None
 
     @task_worthy

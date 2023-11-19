@@ -34,8 +34,6 @@ class CodeManager(LibraryResourceManager):
 
         app.add_url_rule('/get_code_code/<code_name>', "get_code_code",
                          login_required(self.get_code_code), methods=['get', "post"])
-        app.add_url_rule('/delete_code', "delete_code",
-                         login_required(self.delete_code), methods=['post'])
         app.add_url_rule('/create_code', "create_code",
                          login_required(self.create_code), methods=['get', 'post'])
         app.add_url_rule('/create_duplicate_code', "create_duplicate_code",
@@ -44,18 +42,8 @@ class CodeManager(LibraryResourceManager):
     def rename_me(self, old_name):
         try:
             new_name = request.json["new_name"]
-            update_selector = "update_selector" in request.json and request.json["update_selector"] == "True"
             self.db[current_user.code_collection_name].update_one({"code_name": old_name},
                                                                   {'$set': {"code_name": new_name}})
-            if update_selector:
-                doc = self.db[current_user.code_collection_name].find_one({"code_name": new_name})
-                if "metadata" in doc:
-                    mdata = doc["metadata"]
-                else:
-                    mdata = {}
-                res_dict = self.build_res_dict(old_name, mdata, res_type="code")
-                res_dict["new_name"] = new_name
-                self.update_selector_row(res_dict)
             return jsonify({"success": True, "message": "Code Successfully Saved", "alert_type": "alert-success"})
         except Exception as ex:
             return self.get_exception_for_ajax(ex, "Error renaming module")
@@ -161,8 +149,8 @@ class CodeManager(LibraryResourceManager):
         metadata["datetime"] = metadata["updated"]
         new_code_dict = {"code_name": new_code_name, "the_code": old_code_dict["the_code"], "metadata": metadata}
         self.db[user_obj.code_collection_name].insert_one(new_code_dict)
-        new_row = self.build_res_dict(new_code_name, metadata, user_obj)
-        return jsonify({"success": True, "new_row": new_row})
+        # new_row = self.build_res_dict(new_code_name, metadata, user_obj)
+        return jsonify({"success": True})
 
     def create_code(self):
         user_obj = current_user
@@ -179,20 +167,8 @@ class CodeManager(LibraryResourceManager):
         metadata["classes"] = []
         data_dict = {"code_name": new_code_name, "the_code": template, "metadata": metadata}
         self.db[current_user.code_collection_name].insert_one(data_dict)
-        new_row = self.build_res_dict(new_code_name, metadata, user_obj)
-        return jsonify({"success": True, "new_row": new_row})
+        return jsonify({"success": True})
 
-    def delete_code(self):
-        try:
-            user_obj = current_user
-            code_names = request.json["resource_names"]
-            for code_name in code_names:
-                self.db[user_obj.code_collection_name].delete_one({"code_name": code_name})
-            return jsonify({"success": True, "message": "Tiles(s) successfully deleted",
-                            "alert_type": "alert-success"})
-
-        except Exception as ex:
-            return self.get_exception_for_ajax(ex, "Error deleting tiles")
 
 class RepositoryCodeManager(CodeManager):
     rep_string = "repository-"

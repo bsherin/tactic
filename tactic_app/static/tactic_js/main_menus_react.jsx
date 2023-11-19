@@ -94,8 +94,6 @@ function ProjectMenu(props) {
                         statusFuncs.clearStatusMessage();
                         data_object.alert_type = "alert-success";
                         data_object.timeout = 2000;
-                        postWithCallback("host", "refresh_project_selector_list",
-                            {'user_id': window.user_id}, null, null, props.main_id);
                         props.updateLastSave();
                         statusFuncs.stopSpinner();
                     });

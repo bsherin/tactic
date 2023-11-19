@@ -169,7 +169,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
                                                                                 volume_dict=tile_volume_dict,
                                                                                 publish_all_ports=True,
                                                                                 special_unique_id=data["tile_id"])
-            tile_address = docker_functions.get_address(container_id, "bridge")
+            tile_address = docker_functions.get_address(container_id)
         except docker_functions.ContainerCreateError as ex:
             print("Error creating tile container")
             return self.get_short_exception_dict(ex, "Error creating empty tile container")

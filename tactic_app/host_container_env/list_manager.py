@@ -35,7 +35,6 @@ class ListManager(LibraryResourceManager):
         app.add_url_rule('/get_list/<list_name>', "get_list", login_required(self.get_list), methods=['get', 'post'])
         app.add_url_rule('/import_list/<library_id>', "import_list",
                          login_required(self.import_list), methods=['get', "post"])
-        app.add_url_rule('/delete_list', "delete_list", login_required(self.delete_list), methods=['post'])
         app.add_url_rule('/create_duplicate_list', "create_duplicate_list",
                          login_required(self.create_duplicate_list), methods=['get', 'post']),
         app.add_url_rule('/create_list', "create_list",
@@ -92,7 +91,6 @@ class ListManager(LibraryResourceManager):
             self.db[current_user.list_collection_name].update_one({"list_name": list_name},
                                                              {'$set': {"the_list": new_list, "metadata": mdata}})
 
-            self.update_selector_row(self.build_res_dict(list_name, mdata, res_type="list"))
             return jsonify({"success": True, "message": "List Successfully Saved", "alert_type": "alert-success"})
         except Exception as ex:
             return self.get_exception_for_ajax(ex, "Error saving list")
@@ -100,18 +98,8 @@ class ListManager(LibraryResourceManager):
     def rename_me(self, old_name):
         try:
             new_name = request.json["new_name"]
-            update_selector = "update_selector" in request.json and request.json["update_selector"] == "True"
             self.db[current_user.list_collection_name].update_one({"list_name": old_name},
                                                              {'$set': {"list_name": new_name}})
-            if update_selector:
-                doc = self.db[current_user.list_collection_name].find_one({"list_name": new_name})
-                if "metadata" in doc:
-                    mdata = doc["metadata"]
-                else:
-                    mdata = {}
-                res_dict = self.build_res_dict(old_name, mdata, res_type="list")
-                res_dict["new_name"] = new_name
-                self.update_selector_row(res_dict)
             return jsonify({"success": True, "message": "List name changed", "alert_type": "alert-success"})
         except Exception as ex:
             return self.get_exception_for_ajax(ex, "Error renaming list")
@@ -187,8 +175,6 @@ class ListManager(LibraryResourceManager):
         result = self.import_as_list_full(file_list)
         if result["success"] in ["false", "partial"]:
             self.send_import_report(result, library_id)
-        if result["success"] == "true":
-            self.refresh_selector_list()
         return {"success": True}
 
     def import_as_list_full(self, file_list):
@@ -240,18 +226,6 @@ class ListManager(LibraryResourceManager):
                 "successful_reads": successful_reads,
                 "failed_reads": failed_reads}
 
-    def delete_list(self):
-        try:
-            user_obj = current_user
-            list_names = request.json["resource_names"]
-            for list_name in list_names:
-                self.db[user_obj.list_collection_name].delete_one({"list_name": list_name})
-            return jsonify({"success": True, "message": "Lists(s) successfully deleted",
-                            "alert_type": "alert-success"})
-
-        except Exception as ex:
-            return self.get_exception_for_ajax(ex, "Error deleting lists")
-
     def create_duplicate_list(self):
         user_obj = current_user
         list_to_copy = request.json['res_to_copy']
@@ -265,8 +239,7 @@ class ListManager(LibraryResourceManager):
         metadata["datetime"] = metadata["updated"]
         new_list_dict = {"list_name": new_list_name, "the_list": old_list_dict["the_list"], "metadata": metadata}
         self.db[user_obj.list_collection_name].insert_one(new_list_dict)
-        new_row = self.build_res_dict(new_list_name, metadata, user_obj)
-        return jsonify({"success": True, "new_row": new_row})
+        return jsonify({"success": True})
 
     def create_list(self):
         user_obj = current_user
@@ -281,8 +254,7 @@ class ListManager(LibraryResourceManager):
         metadata["datetime"] = metadata["updated"]
         new_list_dict = {"list_name": new_list_name, "the_list": old_list_dict["the_list"], "metadata": metadata}
         self.db[user_obj.list_collection_name].insert_one(new_list_dict)
-        new_row = self.build_res_dict(new_list_name, metadata, user_obj)
-        return jsonify({"success": True, "new_row": new_row})
+        return jsonify({"success": True})
 
     def search_inside_lists(self):
         user_obj = current_user

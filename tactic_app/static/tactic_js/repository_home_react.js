@@ -76,9 +76,6 @@ function RepositoryHomeApp(props) {
       tsocket.attachListener('handle-callback', function (task_packet) {
         (0, _communication_react.handleCallback)(task_packet, window.library_id);
       });
-      tsocket.attachListener("doFlashUser", function (data) {
-        (0, _toaster.doFlash)(data);
-      });
       tsocket.attachListener('close-user-windows', function (data) {
         if (!(data["originator"] == window.library_id)) {
           window.close();
@@ -167,6 +164,7 @@ function RepositoryHomeApp(props) {
 exports.RepositoryHomeApp = RepositoryHomeApp = /*#__PURE__*/(0, _react.memo)(RepositoryHomeApp);
 function _repository_home_main() {
   tsocket = new _tactic_socket.TacticSocket("main", 5000, "repository", _library_home_react.library_id);
+  tsocket.socket.emit('join-repository', {});
   var RepositoryHomeAppPlus = (0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(RepositoryHomeApp))));
   var domContainer = document.querySelector('#library-home-root');
   ReactDOM.render( /*#__PURE__*/_react["default"].createElement(RepositoryHomeAppPlus, {

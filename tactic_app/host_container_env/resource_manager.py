@@ -51,13 +51,17 @@ class ResourceManager(ExceptionMixin):
     def update_selector_row(self, res_dict, user_obj=None):
         if user_obj is None:
             user_obj = current_user
-        socketio.emit("update-{}-selector-row".format(self.res_type), res_dict,
+        socketio.emit("update-selector-row", res_dict,
                       namespace='/main', room=user_obj.get_id())
+
+    def update_repository_selector_row(self, res_dict):
+        socketio.emit("update-repository-selector-row", res_dict,
+                      namespace='/main', room="repository-events")
 
     def refresh_selector_list(self, user_obj=None):
         if user_obj is None:
             user_obj = current_user
-        socketio.emit("refresh-{}-selector".format(self.res_type), {},
+        socketio.emit("refresh-selector", {},
                       namespace='/main', room=user_obj.get_id())
 
     def add_error_drawer_entry(self, title, content, library_id):
@@ -88,11 +92,6 @@ class ResourceManager(ExceptionMixin):
                 result += str(mdata["tags"].lower()).split()
         return sorted(list(set(result)))
 
-    def get_resource_data_list(self, user_obj=None):
-        res_list_with_metadata = self.get_resource_list_with_metadata(user_obj)
-        result = self.build_data_list(res_list_with_metadata)
-        return result
-
     def get_all_subtags(self, tag_string):
         full_tags = tag_string.split()
         complete_list = []
@@ -116,14 +115,15 @@ class ResourceManager(ExceptionMixin):
         if mdata is not None:
             if "icon" in mdata:
                 return mdata["icon"]
-            for tagstr, icon in tag_match_dict.items():
-                if tagstr in mdata["tags"]:
-                    return icon
+            if "tags" in mdata:
+                for tagstr, icon in tag_match_dict.items():
+                    if tagstr in mdata["tags"]:
+                        return icon
             if "type" in mdata and mdata["type"] in ["matplotlib", "d3"]:
                 return default_tile_icons[mdata["type"]]
         return default_tile_icons["standard"]
 
-    def build_res_dict(self, name, mdata, user_obj=None, file_id=None, res_type=None):
+    def build_res_dict(self, name, mdata, user_obj=None, file_id=None, res_type=None, doc_id=None):
         if user_obj is None:
             user_obj = current_user
         if mdata is None:
@@ -144,8 +144,14 @@ class ResourceManager(ExceptionMixin):
             else:
                 updatestring = datestring
                 updatestring_for_sort = datestring_for_sort
-            tagstring = str(mdata["tags"])
-            notes = mdata["notes"]
+            if "tags" in mdata:
+                tagstring = str(mdata["tags"])
+            else:
+                tagstring = ""
+            if "notes" in mdata:
+                notes = mdata["notes"]
+            else:
+                notes = ""
 
         return_data = {"name": name,
                        "created": datestring,
@@ -157,6 +163,8 @@ class ResourceManager(ExceptionMixin):
         skip_fields = ["name", "notes", "datetime", "tags", "updated", "_id"]
         if res_type is not None:
             return_data["res_type"] = res_type
+        if doc_id is not None:
+            return_data["_id"] = doc_id
         if mdata is not None:
             for field, val in mdata.items():
                 if field not in skip_fields:
@@ -172,15 +180,6 @@ class ResourceManager(ExceptionMixin):
                 return_data["size_for_sort"] = size
                 return_data["size"] = size_text
         return return_data
-
-    def build_data_list(self, res_list, user_obj=None):
-        if user_obj is None:
-            user_obj = current_user
-        larray = []
-        for res_item in res_list:
-            mdata = res_item[1]
-            larray.append(self.build_res_dict(res_item[0], mdata, user_obj))
-        return larray
 
     def show_um_message(self, message, library_id, timeout=3):
         data = {"message": message, "timeout": timeout, "main_id": library_id}
@@ -218,6 +217,7 @@ class ResourceManager(ExceptionMixin):
         return
 
 
+# noinspection PyUnusedLocal
 class LibraryResourceManager(ResourceManager):
 
     def __init__(self, res_type):
@@ -225,7 +225,11 @@ class LibraryResourceManager(ResourceManager):
 
     def get_fs_file_siz_info(self, file_id):
         db_to_use = self.repository_db if request.json["is_repository"] else self.db
-        fsize = db_to_use["fs.files"].find_one({"_id": file_id})["length"]
+        file = db_to_use["fs.files"].find_one({"_id": file_id})
+        if file is None:
+            fsize = 0
+        else:
+            fsize = db_to_use["fs.files"].find_one({"_id": file_id})["length"]
         if fsize < 100000:
             ltext = "{}kb".format(round(fsize / 1000, 1))
         else:
@@ -464,6 +468,7 @@ class LibraryResourceManager(ResourceManager):
                     try:
                         if "metadata" in doc and doc["metadata"] is not None:
                             mdata = doc["metadata"]
+                            doc_id = str(doc["_id"])
                             if self.has_hidden(mdata["tags"]) and not search_spec["show_hidden"]:
                                     continue
                             else:
@@ -472,9 +477,9 @@ class LibraryResourceManager(ResourceManager):
                             if search_spec["active_tag"] in all_subtags:
                                 if "file_id" in doc:
                                     rdict = self.build_res_dict(doc[name_field], mdata, None,
-                                                                doc["file_id"], res_type=rtype)
+                                                                doc["file_id"], res_type=rtype, doc_id=doc_id)
                                 else:
-                                    rdict = self.build_res_dict(doc[name_field], mdata, res_type=rtype)
+                                    rdict = self.build_res_dict(doc[name_field], mdata, res_type=rtype, doc_id=doc_id)
                                 rdict["hidden"] = self.has_hidden(mdata["tags"])
                                 filtered_res.append(rdict)
                     except Exception as ex:
@@ -491,11 +496,12 @@ class LibraryResourceManager(ResourceManager):
                                 all_tags += mdata["tags"].split()
                         else:
                             mdata = None
+                        doc_id = str(doc["_id"])
                         if "file_id" in doc:
                             rdict = self.build_res_dict(doc[name_field], mdata, None,
-                                                        doc["file_id"], res_type=rtype)
+                                                        doc["file_id"], res_type=rtype, doc_id=doc_id)
                         else:
-                            rdict = self.build_res_dict(doc[name_field], mdata, res_type=rtype)
+                            rdict = self.build_res_dict(doc[name_field], mdata, res_type=rtype, doc_id=doc_id)
                         rdict["hidden"] = self.has_hidden(mdata["tags"])
                         filtered_res.append(rdict)
                     except Exception as ex:

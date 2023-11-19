@@ -50,8 +50,8 @@ print("got use_arm64 is " + str(USE_ARM64))
 cli = docker.DockerClient(base_url='unix://var/run/docker.sock')
 
 
-# Note that get_address assumes that the network is named usernet
-def get_address(container_identifier, network_name):
+# Note that get_address assumes that the network is named tactic-net
+def get_address(container_identifier):
     new_network_name = "tactic-net"
     return cli.containers.get(container_identifier).attrs["NetworkSettings"]["Networks"][new_network_name]["IPAddress"]
 
@@ -157,7 +157,7 @@ def get_container_type(cont):
 
 # noinspection PyUnusedLocal
 def create_container(image_name, container_name=None, network_mode="bridge", host_name="none",
-                     wait_until_running=True, owner="host", parent="host",
+                     lwait_until_running=True, owner="host", parent="host",
                      env_vars=None, port_bindings=None, wait_retries=50,
                      other_name="none", volume_dict=None, username=None,
                      detach=True, register_container=True, publish_all_ports=False,
@@ -226,7 +226,6 @@ def create_container(image_name, container_name=None, network_mode="bridge", hos
     if restart_policy is not None:
         run_args["restart_policy"] = restart_policy
 
-    print("about to run with run args " + str(run_args))
     container = cli.containers.run(**run_args)
     print("did the run")
 
@@ -234,7 +233,7 @@ def create_container(image_name, container_name=None, network_mode="bridge", hos
     container = cli.containers.get(cont_id)
     print("got container")
     retries = 0
-    if wait_until_running:
+    if lwait_until_running:
         while not container.status == "running":
             retries += 1
             if retries > wait_retries:
@@ -390,7 +389,6 @@ def destroy_container(tactic_id, notify=True):
     try:
         cont = get_container(tactic_id)
         message = None
-        dest_id = None
         if cont is None:
             return -1
         else:
@@ -452,7 +450,7 @@ def connect_to_network(container, network):
 
 
 def delete_all_queues(use_localhost=False):
-    delete_list_of_queues(get_queues(use_localhost), use_localhost)
+    delete_list_of_queues(get_queues(), use_localhost)
     return
 
 

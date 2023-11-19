@@ -57,10 +57,6 @@ class ModuleViewerWorker(QWorker, ExceptionMixin):
         try:
             db, fs, repository_db, repository_fs, use_remote_repository, use_remote_database = get_dbs(get_repo=False)
             self.db = db
-            # client = pymongo.MongoClient(mongo_uri, serverSelectionTimeoutMS=30000)
-            # client.server_info()
-            # noinspection PyUnresolvedReferences
-            # self.db = client[db_name]
         except Exception as ex:
             error_string = self.extract_short_error_message(ex, "error getting pymongo client")
             print(error_string)
@@ -178,14 +174,6 @@ class ModuleViewerWorker(QWorker, ExceptionMixin):
                                                           {'$set': {"tile_module": module_code, "metadata": mdata,
                                                                     "last_saved": "creator"}})
             self.create_recent_checkpoint(module_name)
-            data = {'tile_type': self.module_name}
-            emit_direct("tile-source-change", data, namespace='/main', room=self.user_id)
-            row_dict = {
-                "res_type": "tile",
-                "name": module_name,
-                "user_id": self.user_id
-            }
-            self.ask_host("update_selector_row_task", row_dict)
             return {"success": True, "message": "Module Successfully Saved",
                     "alert_type": "alert-success", "render_content_line_number": render_content_line_number,
                     "draw_plot_line_number": draw_plot_line_number,
