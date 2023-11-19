@@ -8,4 +8,5 @@ sudo /usr/local/bin/docker-compose build tactic_main
 sudo /usr/local/bin/docker-compose build tactic_module_viewer
 sudo /usr/local/bin/docker-compose build tactic_tile
 sudo /usr/local/bin/docker-compose build tactic_pool_watcher
+sudo /user/local/bin/docker-compose build mongo_watcher
 sudo /srv/tactic/tactic_app/start_tactic.sh --root /srv/tactic --mdir /tacticdata4/mongo/data --pdir /tacticdata4/pool
