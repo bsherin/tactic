@@ -1604,7 +1604,7 @@ function LibraryPane(props) {
                                      rowChanged={rowChanged}
                                      columns={props.columns}
                                      num_rows={num_rows}
-                                     open_resources={props.open_resources}
+                                     open_resources_ref={props.open_resources_ref}
                                      sortColumn={_set_sort_state}
                                      selectedRegions={selectedRegionsRef.current}
                                      communicateColumnWidthSum={set_total_width}
@@ -1667,10 +1667,9 @@ LibraryPane = memo(LibraryPane);
 LibraryPane.propTypes = {
     columns: PropTypes.object,
     pane_type: PropTypes.string,
-    open_resources: PropTypes.array,
+    open_resources_ref: PropTypes.object,
     allow_search_inside: PropTypes.bool,
     allow_search_metadata: PropTypes.bool,
-    MenubarClass: PropTypes.func,
     updatePaneState: PropTypes.func,
     is_repository: PropTypes.bool,
     left_width_fraction: PropTypes.number,

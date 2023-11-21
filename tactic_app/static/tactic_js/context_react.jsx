@@ -41,7 +41,6 @@ import {getUsableDimensions, USUAL_TOOLBAR_HEIGHT} from "./sizing_tools";
 import {postAjaxPromise} from "./communication_react";
 import {KeyTrap} from "./key_trap";
 import {DragHandle} from "./resizing_layouts";
-import {res_types} from "./library_pane";
 import {useCallbackStack, useStateAndRef} from "./utilities_react";
 import {ThemeContext, withTheme} from "./theme"
 
@@ -129,7 +128,7 @@ function ContextApp(props) {
     const library_omni_function = useRef(null);
     const [tab_ids, set_tab_ids, tab_ids_ref] = useStateAndRef([]);
 
-    const [open_resources, set_open_resources] = useState({});
+    const [open_resources, set_open_resources, open_resources_ref] = useStateAndRef([]);
     const [dirty_methods, set_dirty_methods] = useState({});
 
     const [theme_setters, set_theme_setters] = useState([]);
@@ -635,20 +634,13 @@ function ContextApp(props) {
     }
 
     function _getOpenResources() {
-        let open_resources = {};
-        for (let res_type of res_types) {
-            open_resources[res_type] = [];
-        }
+        let open_resources = [];
         for (let the_id in tab_panel_dict_ref.current) {
             const entry = tab_panel_dict_ref.current[the_id];
             if (entry.panel != "spinner") {
-                open_resources[entry.res_type].push(entry.panel.resource_name);
+                open_resources.push(entry.panel.resource_name);
             }
 
-        }
-        open_resources["all"] = [];
-        for (let rtype in open_resources) {
-            open_resources["all"] = open_resources["all"].concat(open_resources[rtype])
         }
         return open_resources
     }
@@ -703,7 +695,7 @@ function ContextApp(props) {
                                 library_style={window.library_style}
                                 controlled={true}
                                 am_selected={selectedTabIdRef.current == "library"}
-                                open_resources={open_resources}
+                                open_resources_ref={open_resources_ref}
                                 registerOmniFunction={(register_func) => _registerOmniFunction("library", register_func)}
                                 handleCreateViewer={_handleCreateViewer}
                                 usable_width={usable_width}

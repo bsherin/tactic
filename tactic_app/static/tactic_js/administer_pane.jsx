@@ -420,7 +420,6 @@ AdminPane.propTypes = {
     allow_search_metadata: PropTypes.bool,
     search_inside_view: PropTypes.string,
     search_metadata_view: PropTypes.string,
-    MenubarClass: PropTypes.func,
     is_repository: PropTypes.bool,
     tsocket: PropTypes.object,
     colnames: PropTypes.array,

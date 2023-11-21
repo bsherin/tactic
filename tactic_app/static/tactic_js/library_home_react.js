@@ -163,7 +163,7 @@ function LibraryHomeApp(props) {
     },
     pane_type: "all",
     handleCreateViewer: props.handleCreateViewer,
-    open_resources: props.open_resources ? props.open_resources["all"] : null,
+    open_resources_ref: props.open_resources_ref,
     allow_search_inside: true,
     allow_search_metadata: true,
     MenubarClass: _library_menubars.AllMenubar,
@@ -211,10 +211,10 @@ function LibraryHomeApp(props) {
 }
 exports.LibraryHomeApp = LibraryHomeApp = /*#__PURE__*/(0, _react.memo)(LibraryHomeApp);
 LibraryHomeApp.propTypes = {
-  open_resources: _propTypes["default"].object
+  open_resources_ref: _propTypes["default"].object
 };
 LibraryHomeApp.defaultProps = {
-  open_resources: null
+  open_resources_ref: null
 };
 function _library_home_main() {
   var tsocket = new _tactic_socket.TacticSocket("main", 5000, "library", library_id);

@@ -458,7 +458,6 @@ AdminPane.propTypes = {
   allow_search_metadata: _propTypes["default"].bool,
   search_inside_view: _propTypes["default"].string,
   search_metadata_view: _propTypes["default"].string,
-  MenubarClass: _propTypes["default"].func,
   is_repository: _propTypes["default"].bool,
   tsocket: _propTypes["default"].object,
   colnames: _propTypes["default"].array,
