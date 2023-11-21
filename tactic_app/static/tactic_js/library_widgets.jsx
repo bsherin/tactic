@@ -271,8 +271,8 @@ function BpSelectorTable(props) {
                 the_body = ""
             }
             let tclass;
-            if (props.open_resources &&
-                props.open_resources.includes(props.data_dict[rowIndex][props.identifier_field])) {
+            if (props.open_resources_ref && props.open_resources_ref.current &&
+                props.open_resources_ref.current.includes(props.data_dict[rowIndex][props.identifier_field])) {
                 tclass = "open-selector-row";
             } else {
                 tclass = ""
@@ -345,7 +345,7 @@ function BpSelectorTable(props) {
         <HotkeysProvider>
             <Table2 numRows={props.num_rows}
                     ref={table_ref}
-                    cellRendererDependencies={[props.data_dict]}
+                    cellRendererDependencies={[props.data_dict, props.open_resources_ref.current]}
                     bodyContextMenuRenderer={props.renderBodyContextMenu}
                     enableColumnReordering={false}
                     enableColumnResizing={props.enableColumnResizing}
@@ -369,7 +369,7 @@ BpSelectorTable = memo(BpSelectorTable);
 
 BpSelectorTable.propTypes = {
     columns: PropTypes.object,
-    open_resources: PropTypes.array,
+    open_resources_ref: PropTypes.object,
     maxColumnWidth: PropTypes.number,
     enableColumnResizing: PropTypes.bool,
     selectedRegions: PropTypes.array,

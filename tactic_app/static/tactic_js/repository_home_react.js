@@ -127,7 +127,7 @@ function RepositoryHomeApp(props) {
     },
     pane_type: "all",
     handleCreateViewer: null,
-    open_resources: null,
+    open_resources_ref: null,
     allow_search_inside: true,
     allow_search_metadata: true,
     MenubarClass: _repository_menubars.RepositoryAllMenubar,

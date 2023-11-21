@@ -147,60 +147,61 @@ function ContextApp(props) {
     tab_ids = _useStateAndRef6[0],
     set_tab_ids = _useStateAndRef6[1],
     tab_ids_ref = _useStateAndRef6[2];
+  var _useStateAndRef7 = (0, _utilities_react.useStateAndRef)([]),
+    _useStateAndRef8 = _slicedToArray(_useStateAndRef7, 3),
+    open_resources = _useStateAndRef8[0],
+    set_open_resources = _useStateAndRef8[1],
+    open_resources_ref = _useStateAndRef8[2];
   var _useState3 = (0, _react.useState)({}),
     _useState4 = _slicedToArray(_useState3, 2),
-    open_resources = _useState4[0],
-    set_open_resources = _useState4[1];
-  var _useState5 = (0, _react.useState)({}),
+    dirty_methods = _useState4[0],
+    set_dirty_methods = _useState4[1];
+  var _useState5 = (0, _react.useState)([]),
     _useState6 = _slicedToArray(_useState5, 2),
-    dirty_methods = _useState6[0],
-    set_dirty_methods = _useState6[1];
-  var _useState7 = (0, _react.useState)([]),
+    theme_setters = _useState6[0],
+    set_theme_setters = _useState6[1];
+  var _useState7 = (0, _react.useState)(null),
     _useState8 = _slicedToArray(_useState7, 2),
-    theme_setters = _useState8[0],
-    set_theme_setters = _useState8[1];
-  var _useState9 = (0, _react.useState)(null),
-    _useState10 = _slicedToArray(_useState9, 2),
-    lastSelectedTabId = _useState10[0],
-    setLastSelectedTabId = _useState10[1];
-  var _useState11 = (0, _react.useState)(function () {
+    lastSelectedTabId = _useState8[0],
+    setLastSelectedTabId = _useState8[1];
+  var _useState9 = (0, _react.useState)(function () {
       return (0, _sizing_tools.getUsableDimensions)(true).usable_width - 170;
     }),
-    _useState12 = _slicedToArray(_useState11, 2),
-    usable_width = _useState12[0],
-    set_usable_width = _useState12[1];
-  var _useState13 = (0, _react.useState)(function () {
+    _useState10 = _slicedToArray(_useState9, 2),
+    usable_width = _useState10[0],
+    set_usable_width = _useState10[1];
+  var _useState11 = (0, _react.useState)(function () {
       return (0, _sizing_tools.getUsableDimensions)(true).usable_height_no_bottom;
     }),
+    _useState12 = _slicedToArray(_useState11, 2),
+    usable_height = _useState12[0],
+    set_usable_height = _useState12[1];
+  var _useState13 = (0, _react.useState)(150),
     _useState14 = _slicedToArray(_useState13, 2),
-    usable_height = _useState14[0],
-    set_usable_height = _useState14[1];
-  var _useState15 = (0, _react.useState)(150),
+    tabWidth = _useState14[0],
+    setTabWidth = _useState14[1];
+  var _useState15 = (0, _react.useState)(false),
     _useState16 = _slicedToArray(_useState15, 2),
-    tabWidth = _useState16[0],
-    setTabWidth = _useState16[1];
-  var _useState17 = (0, _react.useState)(false),
+    show_repository = _useState16[0],
+    set_show_repository = _useState16[1];
+  var _useState17 = (0, _react.useState)(null),
     _useState18 = _slicedToArray(_useState17, 2),
-    show_repository = _useState18[0],
-    set_show_repository = _useState18[1];
+    dragging_over = _useState18[0],
+    set_dragging_over = _useState18[1];
   var _useState19 = (0, _react.useState)(null),
     _useState20 = _slicedToArray(_useState19, 2),
-    dragging_over = _useState20[0],
-    set_dragging_over = _useState20[1];
-  var _useState21 = (0, _react.useState)(null),
+    currently_dragging = _useState20[0],
+    set_currently_dragging = _useState20[1];
+  var _useState21 = (0, _react.useState)(false),
     _useState22 = _slicedToArray(_useState21, 2),
-    currently_dragging = _useState22[0],
-    set_currently_dragging = _useState22[1];
-  var _useState23 = (0, _react.useState)(false),
-    _useState24 = _slicedToArray(_useState23, 2),
-    showOmnibar = _useState24[0],
-    setShowOmnibar = _useState24[1];
+    showOmnibar = _useState22[0],
+    setShowOmnibar = _useState22[1];
   var theme = (0, _react.useContext)(_theme.ThemeContext);
   var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
-  var _useState25 = (0, _react.useState)(0),
-    _useState26 = _slicedToArray(_useState25, 2),
-    tabSelectCounter = _useState26[0],
-    setTabSelectCounter = _useState26[1];
+  var _useState23 = (0, _react.useState)(0),
+    _useState24 = _slicedToArray(_useState23, 2),
+    tabSelectCounter = _useState24[0],
+    setTabSelectCounter = _useState24[1];
   var top_ref = (0, _react.useRef)(null);
   var key_bindings = [[["tab"], _goToNextPane], [["shift+tab"], _goToPreviousPane], [["ctrl+space"], _showOmnibar], [["ctrl+w"], function () {
     _closeTab(selectedTabIdRef.current);
@@ -689,28 +690,12 @@ function ContextApp(props) {
     event.preventDefault();
   }
   function _getOpenResources() {
-    var open_resources = {};
-    var _iterator2 = _createForOfIteratorHelper(_library_pane.res_types),
-      _step2;
-    try {
-      for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-        var res_type = _step2.value;
-        open_resources[res_type] = [];
-      }
-    } catch (err) {
-      _iterator2.e(err);
-    } finally {
-      _iterator2.f();
-    }
+    var open_resources = [];
     for (var the_id in tab_panel_dict_ref.current) {
       var entry = tab_panel_dict_ref.current[the_id];
       if (entry.panel != "spinner") {
-        open_resources[entry.res_type].push(entry.panel.resource_name);
+        open_resources.push(entry.panel.resource_name);
       }
-    }
-    open_resources["all"] = [];
-    for (var rtype in open_resources) {
-      open_resources["all"] = open_resources["all"].concat(open_resources[rtype]);
     }
     return open_resources;
   }
@@ -730,11 +715,11 @@ function ContextApp(props) {
       }, "reset"]]);
     }
     var omni_items = [];
-    var _iterator3 = _createForOfIteratorHelper(omni_funcs),
-      _step3;
+    var _iterator2 = _createForOfIteratorHelper(omni_funcs),
+      _step2;
     try {
-      for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-        var item = _step3.value;
+      for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+        var item = _step2.value;
         omni_items.push({
           category: item[1],
           display_text: item[0],
@@ -744,9 +729,9 @@ function ContextApp(props) {
         });
       }
     } catch (err) {
-      _iterator3.e(err);
+      _iterator2.e(err);
     } finally {
-      _iterator3.f();
+      _iterator2.f();
     }
     return omni_items;
   }
@@ -763,7 +748,7 @@ function ContextApp(props) {
     library_style: window.library_style,
     controlled: true,
     am_selected: selectedTabIdRef.current == "library",
-    open_resources: open_resources,
+    open_resources_ref: open_resources_ref,
     registerOmniFunction: function registerOmniFunction(register_func) {
       return _registerOmniFunction("library", register_func);
     },
@@ -865,11 +850,11 @@ function ContextApp(props) {
   function amSelected(ltab_id, lselectedTabIdRef) {
     return !window.in_context || ltab_id == lselectedTabIdRef.current;
   }
-  var _iterator4 = _createForOfIteratorHelper(tab_ids_ref.current),
-    _step4;
+  var _iterator3 = _createForOfIteratorHelper(tab_ids_ref.current),
+    _step3;
   try {
     var _loop2 = function _loop2() {
-      var tab_id = _step4.value;
+      var tab_id = _step3.value;
       var tab_entry = tab_panel_dict_ref.current[tab_id];
       var bclass = "context-tab-button-content";
       if (selectedTabIdRef.current == tab_id) {
@@ -1008,15 +993,15 @@ function ContextApp(props) {
       }))));
       all_tabs.push(new_tab);
     };
-    for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
+    for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
       _loop2();
     }
 
     // The purpose of the dummy tab is to make it possible to drag a tab to the bottom of the list
   } catch (err) {
-    _iterator4.e(err);
+    _iterator3.e(err);
   } finally {
-    _iterator4.f();
+    _iterator3.f();
   }
   bclass = "context-tab-button-content";
   if (dragging_over == "dummy") {

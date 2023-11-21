@@ -289,7 +289,7 @@ function BpSelectorTable(props) {
         the_body = "";
       }
       var tclass;
-      if (props.open_resources && props.open_resources.includes(props.data_dict[rowIndex][props.identifier_field])) {
+      if (props.open_resources_ref && props.open_resources_ref.current && props.open_resources_ref.current.includes(props.data_dict[rowIndex][props.identifier_field])) {
         tclass = "open-selector-row";
       } else {
         tclass = "";
@@ -371,7 +371,7 @@ function BpSelectorTable(props) {
   return /*#__PURE__*/_react["default"].createElement(_core.HotkeysProvider, null, /*#__PURE__*/_react["default"].createElement(_table.Table2, {
     numRows: props.num_rows,
     ref: table_ref,
-    cellRendererDependencies: [props.data_dict],
+    cellRendererDependencies: [props.data_dict, props.open_resources_ref.current],
     bodyContextMenuRenderer: props.renderBodyContextMenu,
     enableColumnReordering: false,
     enableColumnResizing: props.enableColumnResizing,
@@ -391,7 +391,7 @@ function BpSelectorTable(props) {
 exports.BpSelectorTable = BpSelectorTable = /*#__PURE__*/(0, _react.memo)(BpSelectorTable);
 BpSelectorTable.propTypes = {
   columns: _propTypes["default"].object,
-  open_resources: _propTypes["default"].array,
+  open_resources_ref: _propTypes["default"].object,
   maxColumnWidth: _propTypes["default"].number,
   enableColumnResizing: _propTypes["default"].bool,
   selectedRegions: _propTypes["default"].array,

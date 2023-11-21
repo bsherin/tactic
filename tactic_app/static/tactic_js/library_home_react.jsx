@@ -138,7 +138,7 @@ function LibraryHomeApp(props) {
                      }}
                      pane_type="all"
                      handleCreateViewer={props.handleCreateViewer}
-                     open_resources={props.open_resources ? props.open_resources["all"] : null}
+                     open_resources_ref={props.open_resources_ref}
                      allow_search_inside={true}
                      allow_search_metadata={true}
                      MenubarClass={AllMenubar}
@@ -195,11 +195,11 @@ function LibraryHomeApp(props) {
 LibraryHomeApp = memo(LibraryHomeApp);
 
 LibraryHomeApp.propTypes = {
-    open_resources: PropTypes.object
+    open_resources_ref: PropTypes.object
 };
 
 LibraryHomeApp.defaultProps = {
-    open_resources: null
+    open_resources_ref: null
 };
 
 function _library_home_main() {
