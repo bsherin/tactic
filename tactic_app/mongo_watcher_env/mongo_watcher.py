@@ -2,6 +2,7 @@ import traceback
 import pymongo
 from bson.objectid import ObjectId
 from mongo_db_fs import get_dbs
+import exception_mixin
 import json
 import pika
 import time

@@ -1,0 +1,202 @@
+version: '3.7'
+
+services:
+
+  tactic_base:
+    build:
+      context: .
+      dockerfile: Dockerfile-base
+    image: bsherin/tactic:base
+    platform: x86_64
+
+  tactic_nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile-nginx
+    image: bsherin/tactic:nginx
+    platform: x86_64
+
+  tactic_certbot:
+    build:
+      context: .
+      dockerfile: Dockerfile-certbot
+    image: bsherin/tactic:certbot
+    volumes:
+      - ./data/certbot/conf:/etc/letsencrypt
+      - ./data/certbot/www:/var/www/certbot
+    platform: x86_64
+
+  tactic_nginx_arm64:
+    build:
+      context: .
+      dockerfile: Dockerfile-nginx
+    image: bsherin/tactic:nginx-arm64
+    platform: arm64
+
+  tactic_base_arm64:
+      build:
+        context: .
+        dockerfile: Dockerfile-base-arm64
+      image: bsherin/tactic:base-arm64
+      platform: arm64
+
+  tactic_launch_arm64:
+    build:
+      context: .
+      dockerfile: Dockerfile-launch-arm64
+    platform: arm64
+    depends_on:
+      - tactic_base_arm64
+    image: bsherin/tactic:launch-arm64
+
+  tactic_host:
+    build:
+      context: .
+      dockerfile: Dockerfile-host
+    depends_on:
+      - tactic_base
+    image: bsherin/tactic:host
+    platform: x86_64
+    environment:
+      PYTHONUNBUFFERED: 1
+
+  tactic_host_arm64:
+    build:
+      context: .
+      dockerfile: Dockerfile-host-arm64
+    depends_on:
+      - tactic_base_arm64
+    image: bsherin/tactic:host-arm64
+    platform: arm64
+    environment:
+      PYTHONUNBUFFERED: 1
+
+  tactic_main:
+    build:
+      context: .
+      dockerfile: Dockerfile-main
+    platform: x86_64
+    depends_on:
+      - tactic_base
+    image: bsherin/tactic:main
+
+  tactic_main_arm64:
+    build:
+      context: .
+      dockerfile: Dockerfile-main-arm64
+    depends_on:
+      - tactic_base_arm64
+    image: bsherin/tactic:main-arm64
+    platform: arm64
+
+  tactic_module_viewer:
+    build:
+      context: .
+      dockerfile: Dockerfile-module-viewer
+    depends_on:
+      - tactic_base
+    platform: x86_64
+    image: bsherin/tactic:module_viewer
+
+  tactic_module_viewer_arm64:
+    build:
+      context: .
+      dockerfile: Dockerfile-module-viewer-arm64
+    depends_on:
+      - tactic_base_arm64
+    platform: arm64
+    image: bsherin/tactic:module_viewer-arm64
+
+  tactic_tile:
+    build:
+      context: .
+      dockerfile: Dockerfile-tile
+    depends_on:
+      - tactic_base
+    image: bsherin/tactic:tile
+    platform: x86_64
+    environment:
+      PYTHONUNBUFFERED: 0
+
+  tactic_tile_arm64:
+    build:
+      context: .
+      dockerfile: Dockerfile-tile-arm64
+    depends_on:
+      - tactic_base
+    image: bsherin/tactic:tile-arm64
+    platform: arm64
+    environment:
+      PYTHONUNBUFFERED: 0
+
+  tactic_pool_watcher:
+    build:
+      context: .
+      dockerfile: Dockerfile-pool-watcher
+    depends_on:
+      - tactic_base
+    image: bsherin/tactic:pool-watcher
+    platform: x86_64
+    environment:
+      PYTHONUNBUFFERED: 0
+
+  tactic_pool_watcher_arm64:
+    build:
+      context: .
+      dockerfile: Dockerfile-pool-watcher-arm64
+    depends_on:
+      - tactic_base
+    image: bsherin/tactic:pool-watcher-arm64
+    platform: arm64
+    environment:
+      PYTHONUNBUFFERED: 0
+
+  tactic_log_streamer:
+    build:
+      context: .
+      dockerfile: Dockerfile-log-streamer
+    depends_on:
+      - tactic_base
+    image: bsherin/tactic:log-streamer
+    platform: x86_64
+    environment:
+      PYTHONUNBUFFERED: 0
+
+  tactic_log_streamer_arm64:
+    build:
+      context: .
+      dockerfile: Dockerfile-log-streamer-arm64
+    depends_on:
+      - tactic_base
+    image: bsherin/tactic:log-streamer-arm64
+    platform: arm64
+    environment:
+      PYTHONUNBUFFERED: 0
+
+  tactic_mongo_watcher:
+    build:
+      context: .
+      dockerfile: Dockerfile-mongo-watcher
+    depends_on:
+      - tactic_base
+    image: bsherin/tactic:mongo-watcher
+    platform: x86_64
+    environment:
+      PYTHONUNBUFFERED: 0
+
+  tactic_mongo_watcher_arm64:
+    build:
+      context: .
+      dockerfile: Dockerfile-mongo-watcher-arm64
+    depends_on:
+      - tactic_base
+    image: bsherin/tactic:mongo-watcher-arm64
+    platform: arm64
+    environment:
+      PYTHONUNBUFFERED: 0
+
+  tactic_redis:
+    image: redis:alpine
+
+  tactic_rabbit:
+    image: rabbitmq:3-management

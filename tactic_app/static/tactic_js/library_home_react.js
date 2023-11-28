@@ -11,7 +11,6 @@ require("../tactic_css/tactic_table.scss");
 require("../tactic_css/library_home.scss");
 var _react = _interopRequireWildcard(require("react"));
 var ReactDOM = _interopRequireWildcard(require("react-dom"));
-var _propTypes = _interopRequireDefault(require("prop-types"));
 var _TacticOmnibar = require("./TacticOmnibar");
 var _tactic_socket = require("./tactic_socket");
 var _toaster = require("./toaster.js");
@@ -25,7 +24,6 @@ var _blueprint_navbar = require("./blueprint_navbar");
 var _library_menubars = require("./library_menubars");
 var _theme = require("./theme");
 var _modal_react = require("./modal_react");
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 function _extends() { _extends = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
@@ -210,12 +208,6 @@ function LibraryHomeApp(props) {
   })));
 }
 exports.LibraryHomeApp = LibraryHomeApp = /*#__PURE__*/(0, _react.memo)(LibraryHomeApp);
-LibraryHomeApp.propTypes = {
-  open_resources_ref: _propTypes["default"].object
-};
-LibraryHomeApp.defaultProps = {
-  open_resources_ref: null
-};
 function _library_home_main() {
   var tsocket = new _tactic_socket.TacticSocket("main", 5000, "library", library_id);
   var LibraryHomeAppPlus = (0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster2.withStatus)(LibraryHomeApp))));

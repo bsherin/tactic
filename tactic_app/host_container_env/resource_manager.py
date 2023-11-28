@@ -408,6 +408,7 @@ class LibraryResourceManager(ResourceManager):
 
     def grab_all_list_chunk(self):
         is_repo = request.json["is_repository"]
+        print(f"in grab_all_list_chunk with is_repo {str(is_repo)}")
         specs = {"collection": self.collection_spec(is_repo),
                  "project": self.project_spec(is_repo),
                  "tile": self.tile_spec(is_repo),
@@ -424,7 +425,9 @@ class LibraryResourceManager(ResourceManager):
         else:
             types_to_grab = [pane_type]
         db_to_use = self.repository_db if is_repo else self.db
-
+        print(f"db_to_use is {str(db_to_use)}")
+        print(f"self.db is {str(self.db)}")
+        print(f"self.repository_db is {str(self.repository_db)}")
         def sort_mdata_key(item):
             if sort_field not in item:
                 return ""

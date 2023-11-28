@@ -1,3 +1,4 @@
 pika
 pymongo
 ssh-pymongo
+flask

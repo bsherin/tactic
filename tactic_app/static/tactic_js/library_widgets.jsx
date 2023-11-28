@@ -340,12 +340,18 @@ function BpSelectorTable(props) {
     });
     let obj = {cwidths: columnWidths, nrows: props.num_rows};
     let hsh = hash(obj);
-
+    let dependencies;
+    if (props.open_resources_ref && props.open_resources_ref.current) {
+        dependencies = [props.data_dict, props.open_resources_ref.current]
+    }
+    else {
+        dependencies = [props.data_dict]
+    }
     return (
         <HotkeysProvider>
             <Table2 numRows={props.num_rows}
                     ref={table_ref}
-                    cellRendererDependencies={[props.data_dict, props.open_resources_ref.current]}
+                    cellRendererDependencies={dependencies}
                     bodyContextMenuRenderer={props.renderBodyContextMenu}
                     enableColumnReordering={false}
                     enableColumnResizing={props.enableColumnResizing}
