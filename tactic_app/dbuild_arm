@@ -2,7 +2,7 @@
 if [ "$1" == "all" ] ; then
 	docker compose --env-file develop.env --profile build_project build
 else
-  if [ "$1" == "host" ] ; then
+  if [ "$1" == "host" ]
     docker compose --env-file develop.env --profile build_project build "tactic_host1"
   else
     docker compose --env-file develop.env --profile build_project build "tactic_$1"
