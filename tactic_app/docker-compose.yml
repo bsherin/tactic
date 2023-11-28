@@ -153,7 +153,7 @@ services:
         source: "/var/run/docker.sock"
         target: "/var/run/docker.sock"
       - type: bind
-        source: "${ROOT_DIR}/PERSIST"
+        source: "${ROOT_DIR}/persist"
         target: "/code/persist"
       - type: bind
         source: "${POOL_DIR}"
