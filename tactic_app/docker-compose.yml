@@ -195,6 +195,15 @@ services:
     networks:
       - tactic-net
 
+  tactic_log_streamer:
+    build:
+      context: .
+      dockerfile: Dockerfile-log-streamer${IMG_SUFFIX}
+    image: bsherin/tactic:log-streamer${IMG_SUFFIX}
+    platform: ${PLATFORM}
+    environment:
+      PYTHONUNBUFFERED: 0
+
   tactic_mongo_watcher:
     image: bsherin/tactic:mongo-watcher${IMG_SUFFIX}
     build:
