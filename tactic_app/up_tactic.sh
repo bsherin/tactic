@@ -26,7 +26,7 @@ if [ $USE_ARM64 == False ] ; then
   echo "not using arm64"
   arm_string=""
 else
-  echo "using x86"
+  echo "using arm64"
   arm_string="-arm64"
 fi
 
