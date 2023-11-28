@@ -65,4 +65,4 @@ if [ $remove_all == "True" ] ; then
     sudo docker rm $mongo_uri
 fi
 
-docker compose -env-file $env_file --profile start_project up --detach
+docker compose --env-file $env_file --profile start_project up --detach
