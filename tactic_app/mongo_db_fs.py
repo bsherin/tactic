@@ -1,6 +1,7 @@
 import os
 from pymongo import MongoClient
 import gridfs
+import exception_mixin
 
 if "DB_NAME" in os.environ:
     db_name = os.environ.get("DB_NAME")
@@ -22,7 +23,6 @@ def get_dbs(get_repo=True):
         remote_username = os.environ.get("REMOTE_USERNAME")
         remote_key_file = os.environ.get("REMOTE_KEY_FILE")
 
-        from ssh_pymongo import MongoSession
         print("getting session")
         session = MongoSession(
             host='tactictext.net',
@@ -71,7 +71,7 @@ def get_dbs(get_repo=True):
                 print("*** created repository_db " + str(repository_db))
                 repository_type = "Northwestern"
             except Exception as ex:
-                ermsg = exception_mixin.generic_exception_handler.extract_short_error_message(ex,
+                errmsg = exception_mixin.generic_exception_handler.extract_short_error_message(ex,
                                                                                               "Error connecting to remote repository")
                 print(errmsg)
                 print("*** failed to connect to remote repository, using local ***")
@@ -100,7 +100,7 @@ def get_dbs(get_repo=True):
                 print("*** created repository_db " + str(repository_db))
                 repository_type = "AWS"
             except Exception as ex:
-                ermsg = exception_mixin.generic_exception_handler.extract_short_error_message(ex,
+                errmsg = exception_mixin.generic_exception_handler.extract_short_error_message(ex,
                                                                                               "Error connecting to remote repository")
                 print(errmsg)
                 print("*** failed to connect to remote repository, using local ***")

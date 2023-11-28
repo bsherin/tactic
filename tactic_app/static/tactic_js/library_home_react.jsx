@@ -6,7 +6,6 @@ import "../tactic_css/library_home.scss";
 
 import React from "react";
 import * as ReactDOM from 'react-dom'
-import PropTypes from 'prop-types';
 import {Fragment, useState, useEffect, useRef, memo, useContext} from "react";
 
 import {TacticOmnibar} from "./TacticOmnibar";
@@ -193,14 +192,6 @@ function LibraryHomeApp(props) {
 }
 
 LibraryHomeApp = memo(LibraryHomeApp);
-
-LibraryHomeApp.propTypes = {
-    open_resources_ref: PropTypes.object
-};
-
-LibraryHomeApp.defaultProps = {
-    open_resources_ref: null
-};
 
 function _library_home_main() {
     const tsocket = new TacticSocket("main", 5000, "library", library_id);

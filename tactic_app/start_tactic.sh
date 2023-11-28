@@ -79,7 +79,7 @@ fi
 
 echo "*** removing old containers ***"
 
-for image in "tile" "host" "module_viewer" "main" "nginx" "pool-watcher" "mongo-watcher"
+for image in "tile" "host" "module_viewer" "main" "nginx" "pool-watcher" "mongo-watcher" "log-streamer"
   do
     num=$(sudo docker ps --filter ancestor="bsherin/tactic:$image$arm_string" -aq | wc -l)
     echo "$num containers of type bsherin/tactic:$image$arm_string to remove"
@@ -165,6 +165,7 @@ sudo docker run -d \
   -e REMOTE_USERNAME=$remote_username \
   -e REMOTE_PASSWORD=$remote_password \
   -e REMOTE_KEY_FILE=$remote_key_file \
+  --mount type=bind,source=$remote_key_file,target=$remote_key_file \
   bsherin/tactic:mongo-watcher$arm_string
 
 echo "*** creating tile-test-container ***"

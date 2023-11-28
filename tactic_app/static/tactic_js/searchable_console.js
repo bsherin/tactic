@@ -64,6 +64,8 @@ function SearchableConsole(props, inner_ref) {
     set_log_content = _useStateAndRef4[1],
     log_content_ref = _useStateAndRef4[2];
   var cont_id = (0, _react.useRef)(props.container_id);
+  var my_room = (0, _react.useRef)(null);
+  var streamer_id = (0, _react.useRef)(null);
   var tsocket = (0, _react.useRef)(null);
   var past_commands = (0, _react.useRef)([]);
   var past_commands_index = (0, _react.useRef)(null);
@@ -73,7 +75,11 @@ function SearchableConsole(props, inner_ref) {
     }
   });
   (0, _react.useEffect)(function () {
+    my_room.current = (0, _utilities_react.guid)();
     tsocket.current = new _tactic_socket.TacticSocket("main", 5000, "searchable-console", props.main_id);
+    tsocket.current.socket.emit("join", {
+      "room": my_room.current
+    });
     function cleanup() {
       _stopLogStreaming();
       tsocket.current.disconnect();
@@ -88,7 +94,7 @@ function SearchableConsole(props, inner_ref) {
   }, []);
   (0, _utilities_react.useDidMount)(function () {
     _stopLogStreaming(_getLogAndStartStreaming);
-  }, [log_since, max_console_lines]);
+  }, [max_console_lines]);
   (0, _utilities_react.useDidMount)(function () {
     _stopLogStreaming(function () {
       cont_id.current = props.container_id;
@@ -101,17 +107,21 @@ function SearchableConsole(props, inner_ref) {
     tsocket.current.attachListener("searchable-console-message", _handleUpdateMessage);
   }
   function _handleUpdateMessage(data) {
-    if (data.container_id != cont_id.current || data.message != "updateLog") return;
+    if (data.message != "updateLog") return;
     _addToLog(data.new_line);
   }
   function _setLogSince() {
     var now = new Date().getTime();
     set_log_since(now);
+    set_log_content("");
   }
   function _setMaxConsoleLines(event) {
     set_max_console_lines(parseInt(event.target.value));
   }
   function _getLogAndStartStreaming() {
+    function gotStreamerId(data) {
+      streamer_id.current = data.streamer_id;
+    }
     (0, _communication_react.postWithCallback)("host", "get_container_log", {
       container_id: cont_id.current,
       since: log_since,
@@ -120,34 +130,30 @@ function SearchableConsole(props, inner_ref) {
       set_log_content(res.log_text);
       (0, _communication_react.postWithCallback)(props.streaming_host, "StartLogStreaming", {
         container_id: cont_id.current,
-        main_id: props.main_id
-      }, null, null, props.main_id);
+        room: my_room.current,
+        user_id: window.user_id
+      }, gotStreamerId, null, props.main_id);
     }, null, props.main_id);
   }
   function _stopLogStreaming() {
     var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-    (0, _communication_react.postWithCallback)(props.streaming_host, "StopLogStreaming", {
-      container_id: cont_id.current
-    }, callback, null, props.main_id);
+    if (streamer_id && streamer_id.current) {
+      (0, _communication_react.postWithCallback)(props.streaming_host, "StopLogStreaming", {
+        streamer_id: streamer_id.current
+      }, callback, null, props.main_id);
+    } else {
+      callback();
+    }
   }
   function _addToLog(new_line) {
-    var log_list = log_content_ref.current.split(/\r?\n/);
-    var mlines = max_console_lines_ref.current;
-    var new_log_content;
-    if (log_list.length >= mlines) {
-      log_list = log_list.slice(-1 * mlines + 1);
-      new_log_content = log_list.join("\n");
-    } else {
-      new_log_content = log_content_ref.current;
-    }
-    new_log_content = new_log_content + new_line;
-    set_log_content(new_log_content);
+    set_log_content(log_content_ref.current + new_line);
   }
   function _prepareText() {
     var the_text = "";
     if (log_content_ref.current) {
       // without this can get an error if project saved with tile log showing
       var tlist = log_content_ref.current.split(/\r?\n/);
+      tlist = tlist.slice(-1 * max_console_lines_ref.current);
       if (search_string) {
         if (filter) {
           var new_tlist = [];
@@ -274,7 +280,6 @@ function SearchableConsole(props, inner_ref) {
     the_style.height = the_style.height - 40;
   }
   var bottom_info = "575 lines";
-  var self = this;
   return /*#__PURE__*/_react["default"].createElement("div", {
     className: "searchable-console",
     style: {

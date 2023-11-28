@@ -4,7 +4,7 @@ import {useState, useEffect, useRef, memo, forwardRef} from "react";
 import {Button, ControlGroup, HTMLSelect, InputGroup, Switch} from "@blueprintjs/core";
 import {FilterSearchForm} from "./search_form";
 import {postWithCallback} from "./communication_react";
-import {useDidMount, useStateAndRef} from "./utilities_react";
+import {guid, useStateAndRef, useDidMount} from "./utilities_react";
 import {TacticSocket} from "./tactic_socket";
 
 export {SearchableConsole}
@@ -23,6 +23,8 @@ function SearchableConsole(props, inner_ref) {
     const [max_console_lines, set_max_console_lines, max_console_lines_ref] = useStateAndRef(100);
     const [log_content, set_log_content, log_content_ref] = useStateAndRef("");
     const cont_id = useRef(props.container_id);
+    const my_room = useRef(null);
+    const streamer_id = useRef(null);
 
     const tsocket = useRef(null);
 
@@ -36,7 +38,9 @@ function SearchableConsole(props, inner_ref) {
     });
 
     useEffect(() => {
+        my_room.current = guid();
         tsocket.current = new TacticSocket("main", 5000, "searchable-console", props.main_id);
+        tsocket.current.socket.emit("join", {"room": my_room.current});
         function cleanup() {
             _stopLogStreaming();
             tsocket.current.disconnect();
@@ -52,7 +56,7 @@ function SearchableConsole(props, inner_ref) {
 
     useDidMount(() => {
         _stopLogStreaming(_getLogAndStartStreaming)
-    }, [log_since, max_console_lines]);
+    }, [max_console_lines]);
 
     useDidMount(() => {
         _stopLogStreaming(()=>{
@@ -68,13 +72,14 @@ function SearchableConsole(props, inner_ref) {
     }
 
     function _handleUpdateMessage(data) {
-        if (data.container_id != cont_id.current|| data.message != "updateLog") return;
+        if (data.message != "updateLog") return;
         _addToLog(data.new_line);
     }
 
     function _setLogSince() {
         var now = new Date().getTime();
-        set_log_since(now)
+        set_log_since(now);
+        set_log_content("")
     }
 
     function _setMaxConsoleLines(event) {
@@ -82,39 +87,38 @@ function SearchableConsole(props, inner_ref) {
     }
 
     function _getLogAndStartStreaming() {
+        function gotStreamerId(data) {
+            streamer_id.current = data.streamer_id
+        }
         postWithCallback("host", "get_container_log",
             {container_id: cont_id.current, since: log_since, max_lines: max_console_lines_ref.current},
             function (res) {
                 set_log_content(res.log_text);
                 postWithCallback(props.streaming_host, "StartLogStreaming",
-                    {container_id: cont_id.current, main_id: props.main_id},
-                    null, null, props.main_id);
+                    {container_id: cont_id.current, room: my_room.current, user_id: window.user_id},
+                    gotStreamerId, null, props.main_id);
             }, null, props.main_id)
     }
 
     function _stopLogStreaming(callback = null) {
-        postWithCallback(props.streaming_host, "StopLogStreaming", {container_id: cont_id.current},
-            callback, null, props.main_id);
+        if (streamer_id && streamer_id.current) {
+            postWithCallback(props.streaming_host, "StopLogStreaming", {streamer_id: streamer_id.current},
+                callback, null, props.main_id);
+        }
+        else {
+            callback()
+        }
     }
 
     function _addToLog(new_line) {
-        let log_list = log_content_ref.current.split(/\r?\n/);
-        let mlines = max_console_lines_ref.current;
-        var new_log_content;
-        if (log_list.length >= mlines) {
-            log_list = log_list.slice(-1 * mlines + 1);
-            new_log_content = log_list.join("\n")
-        } else {
-            new_log_content = log_content_ref.current
-        }
-        new_log_content = new_log_content + new_line;
-        set_log_content(new_log_content)
+        set_log_content(log_content_ref.current + new_line)
     }
 
     function _prepareText() {
         let the_text = "";
         if (log_content_ref.current) { // without this can get an error if project saved with tile log showing
             var tlist = log_content_ref.current.split(/\r?\n/);
+            tlist = tlist.slice(-1 * max_console_lines_ref.current);
             if (search_string) {
                 if (filter) {
                     let new_tlist = [];
@@ -227,7 +231,6 @@ function SearchableConsole(props, inner_ref) {
         the_style.height = the_style.height - 40
     }
     let bottom_info = "575 lines";
-    let self = this;
     return (
         <div className="searchable-console" style={{width: "100%"}}>
             <div className="d-flex flex-row" style={{justifyContent: "space-between"}}>

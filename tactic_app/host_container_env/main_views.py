@@ -100,8 +100,11 @@ def delete_container_on_unload():
 @csrf.exempt
 def remove_mainwindow():
     print("in remove_mainwindow")
-    data = json.loads(request.data)
-    tactic_app.host_worker.remove_mainwindow_task(data)
+    try:
+        data = json.loads(request.data)
+        tactic_app.host_worker.remove_mainwindow_task(data)
+    except Exception as ex:
+        print(generic_exception_handler.get_traceback_exception_dict(ex))
     return jsonify({"success": True})
 
 

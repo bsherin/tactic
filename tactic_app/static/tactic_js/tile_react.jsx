@@ -830,7 +830,7 @@ function TileComponent(props) {
                                     <div className="tile-log" ref={log_ref}>
                                         <div className="tile-log-area">
                                             <SearchableConsole main_id={props.main_id}
-                                                               streaming_host={props.main_id}
+                                                               streaming_host="host"
                                                                container_id={props.tile_id}
                                                                ref={inner_log_ref}
                                                                outer_style={tile_log_style}

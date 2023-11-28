@@ -368,10 +368,16 @@ function BpSelectorTable(props) {
     nrows: props.num_rows
   };
   var hsh = (0, _objectHash["default"])(obj);
+  var dependencies;
+  if (props.open_resources_ref && props.open_resources_ref.current) {
+    dependencies = [props.data_dict, props.open_resources_ref.current];
+  } else {
+    dependencies = [props.data_dict];
+  }
   return /*#__PURE__*/_react["default"].createElement(_core.HotkeysProvider, null, /*#__PURE__*/_react["default"].createElement(_table.Table2, {
     numRows: props.num_rows,
     ref: table_ref,
-    cellRendererDependencies: [props.data_dict, props.open_resources_ref.current],
+    cellRendererDependencies: dependencies,
     bodyContextMenuRenderer: props.renderBodyContextMenu,
     enableColumnReordering: false,
     enableColumnResizing: props.enableColumnResizing,

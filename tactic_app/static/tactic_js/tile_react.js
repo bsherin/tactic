@@ -929,7 +929,7 @@ function TileComponent(props) {
     className: "tile-log-area"
   }, /*#__PURE__*/_react["default"].createElement(_searchable_console.SearchableConsole, {
     main_id: props.main_id,
-    streaming_host: props.main_id,
+    streaming_host: "host",
     container_id: props.tile_id,
     ref: inner_log_ref,
     outer_style: tile_log_style,

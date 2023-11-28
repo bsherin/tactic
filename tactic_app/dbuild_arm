@@ -1,12 +1,10 @@
 #!/bin/bash
 if [ "$1" == "all" ] ; then
-	DOCKER_BUILDKIT=0 docker-compose build "tactic_base_arm64"
-	DOCKER_BUILDKIT=0 docker-compose build "tactic_host_arm64"
-	DOCKER_BUILDKIT=0 docker-compose build "tactic_main_arm64"
-	DOCKER_BUILDKIT=0 docker-compose build "tactic_module_viewer_arm64"
-	DOCKER_BUILDKIT=0 docker-compose build "tactic_tile_arm64"
-	DOCKER_BUILDKIT=0 docker-compose build "tactic_pool_watcher_arm64"
-	DOCKER_BUILDKIT=0 docker-compose build "tactic_mongo_watcher_arm64"
+	docker compose --env-file develop.env --profile build_project build
 else
-	DOCKER_BUILDKIT=0 docker-compose build "tactic_$1_arm64"
+  if [ "$1" == "host" ] ; then
+    docker compose --env-file develop.env --profile build_project build "tactic_host1"
+  else
+    docker compose --env-file develop.env --profile build_project build "tactic_$1"
+  fi
 fi

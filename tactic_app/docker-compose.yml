@@ -2,179 +2,289 @@ version: '3.7'
 
 services:
 
+  tactic-mongo:
+    image: mongo:latest
+    hostname: ${MONGO_URI}
+    container_name: ${MONGO_URI}
+    command: --replSet "rs0"
+    restart: always
+    profiles:
+      - start_project
+    networks:
+      - tactic-net
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-volume:/data/db
+
+  tactic-redis:
+    image: redis:alpine
+    restart: always
+    hostname: tactic-redis
+    container_name: tactic-redis
+    profiles:
+      - start_project
+    networks:
+      - tactic-net
+    ports:
+      - "6379:6379"
+    environment:
+      - MY_ID=tactic-redis
+      - OWNER=host
+
+  megaplex:
+    image: rabbitmq:3-management
+    depends_on:
+      - tactic-redis
+    restart: always
+    profiles:
+      - start_project
+    hostname: megaplex
+    container_name: megaplex
+    networks:
+      - tactic-net
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - MY_ID=megaplex
+      - OWNER=host
+
   tactic_base:
     build:
       context: .
-      dockerfile: Dockerfile-base
-    image: bsherin/tactic:base
-    platform: x86_64
+      dockerfile: Dockerfile-base${IMG_SUFFIX}
+    profiles:
+      - build_project
+    image: bsherin/tactic:base${IMG_SUFFIX}
+    platform: ${PLATFORM}
 
-  tactic_nginx:
+  tactic_host1:
     build:
       context: .
-      dockerfile: Dockerfile-nginx
-    image: bsherin/tactic:nginx
-    platform: x86_64
-
-  tactic_certbot:
-    build:
-      context: .
-      dockerfile: Dockerfile-certbot
-    image: bsherin/tactic:certbot
+      dockerfile: Dockerfile-host${IMG_SUFFIX}
+    profiles:
+      - start_project
+      - build_project
+    image: bsherin/tactic:host${IMG_SUFFIX}
+    restart: on-failure
+    ports:
+      - "5000:5000"
+    hostname: none
+    container_name: tactic_host5000
+    platform: ${PLATFORM}
+    init: true
+    labels:
+      my_id: host5000
+      owner: host
+      parent: host
+      other_name: none
+    env_file:
+      - ${ROOT_DIR}/tactic_app/env.list
+    environment:
+      - MY_ID=host5000
+      - MONGO_URI=${MONGO_URI}
+      - MYPORT=5000
+      - TRUE_HOST_PERSIST_DIR=${ROOT_DIR}/persist
+      - TRUE_HOST_RESOURCES_DIR=${ROOT_DIR}/tactic_app/resources
+      - TRUE_HOST_POOL_DIR=${POOL_DIR}
+      - USE_ARM64=${USE_ARM64}
+      - DEVELOP=${DEVELOP}
+      - USE_REMOTE_DATABASE=${USE_REMOTE_DB}
+      - USE_REMOTE_REPOSITORY=${USE_REMOTE_REPO}
+      - USE_REMOTE_REPOSITORY_KEY=${USE_REMOTE_REPO_KEY}
+      - REMOTE_USERNAME=${REMOTE_USERNAME}
+      - REMOTE_PASSWORD=${REMOTE_PASSWORD}
+      - REMOTE_KEY_FILE=${REMOTE_KEY_FILE}
     volumes:
-      - ./data/certbot/conf:/etc/letsencrypt
-      - ./data/certbot/www:/var/www/certbot
-    platform: x86_64
+      - type: bind
+        source: "/var/run/docker.sock"
+        target: "/var/run/docker.sock"
+      - type: bind
+        source: "${ROOT_DIR}/persist"
+        target: "/code/persist"
+      - type: bind
+        source: "${POOL_DIR}"
+        target: "/pool"
+      - type: bind
+        source: "${ROOT_DIR}/tactic_app/static"
+        target: "/code/static"
+      - type: bind
+        source: "${REMOTE_KEY_FILE}"
+        target: "${REMOTE_KEY_FILE}"
+    networks:
+      - tactic-net
 
-  tactic_nginx_arm64:
-    build:
-      context: .
-      dockerfile: Dockerfile-nginx
-    image: bsherin/tactic:nginx-arm64
-    platform: arm64
-
-  tactic_base_arm64:
-      build:
-        context: .
-        dockerfile: Dockerfile-base-arm64
-      image: bsherin/tactic:base-arm64
-      platform: arm64
-
-  tactic_launch_arm64:
-    build:
-      context: .
-      dockerfile: Dockerfile-launch-arm64
-    platform: arm64
-    depends_on:
-      - tactic_base_arm64
-    image: bsherin/tactic:launch-arm64
-
-  tactic_host:
-    build:
-      context: .
-      dockerfile: Dockerfile-host
-    depends_on:
-      - tactic_base
-    image: bsherin/tactic:host
-    platform: x86_64
+  tactic_host2:
+    image: bsherin/tactic:host${IMG_SUFFIX}
+    profiles:
+      - start_project
+    restart: on-failure
+    ports:
+      - "5001:5000"
+    hostname: none
+    container_name: tactic_host5001
+    platform: ${PLATFORM}
+    init: true
+    labels:
+      my_id: host5001
+      owner: host
+      parent: host
+      other_name: none
+    env_file:
+      - "${ROOT_DIR}/tactic_app/env.list"
     environment:
-      PYTHONUNBUFFERED: 1
+      - MY_ID=host5001
+      - MONGO_URI=${MONGO_URI}
+      - MYPORT=5001
+      - TRUE_HOST_PERSIST_DIR=${ROOT_DIR}/persist
+      - TRUE_HOST_RESOURCES_DIR=${ROOT_DIR}/tactic_app/resources
+      - TRUE_HOST_POOL_DIR=${POOL_DIR}
+      - USE_ARM64=${USE_ARM64}
+      - DEVELOP=${DEVELOP}
+      - USE_REMOTE_DATABASE=${USE_REMOTE_DB}
+      - USE_REMOTE_REPOSITORY=${USE_REMOTE_REPO}
+      - USE_REMOTE_REPOSITORY_KEY="${USE_REMOTE_REPO_KEY}
+      - REMOTE_USERNAME=${REMOTE_USERNAME}
+      - REMOTE_PASSWORD=${REMOTE_PASSWORD}
+      - REMOTE_KEY_FILE=${REMOTE_KEY_FILE}
+    volumes:
+      - type: bind
+        source: "/var/run/docker.sock"
+        target: "/var/run/docker.sock"
+      - type: bind
+        source: "${ROOT_DIR}/PERSIST"
+        target: "/code/persist"
+      - type: bind
+        source: "${POOL_DIR}"
+        target: "/pool"
+      - type: bind
+        source: "${ROOT_DIR}/tactic_app/static"
+        target: "/code/static"
+      - type: bind
+        source: "${REMOTE_KEY_FILE}"
+        target: "${REMOTE_KEY_FILE}"
+    networks:
+      - tactic-net
 
-  tactic_host_arm64:
+  tile_test_container:
+    image: bsherin/tactic:tile${IMG_SUFFIX}
+    depends_on:
+      - tactic_host1
+    profiles:
+      - start_project
+    restart: always
+    init: true
+    container_name: tile_test_container
+    labels:
+      my_id: tile_test_container
+      owner: host
+      parent: host
+      other_name: tile_test_container
+    env_file:
+      - "${ROOT_DIR}/tactic_app/env.list"
+    environment:
+      - MY_ID=tile_test_container
+      - PPI=0
+      - MONGO_URI=${MONGO_URI}
+      - OWNER=host
+      - PARENT=host
+      - USERNAME=
+      - TRUE_HOST_PERSIST_DIR=${ROOT_DIR}/persist
+      - TRUE_HOST_RESOURCES_DIR=${ROOT_DIR}/tactic_app/resources
+    networks:
+      - tactic-net
+
+  tactic_mongo_watcher:
+    image: bsherin/tactic:mongo-watcher${IMG_SUFFIX}
     build:
       context: .
-      dockerfile: Dockerfile-host-arm64
-    depends_on:
-      - tactic_base_arm64
-    image: bsherin/tactic:host-arm64
-    platform: arm64
+      dockerfile: Dockerfile-mongo-watcher${IMG_SUFFIX}
+    profiles:
+      - start_project
+      - build_project
+    restart: always
+    container_name: mongo_watcher
+    init: true
+    platform: ${PLATFORM}
+    labels:
+      my_id: mongo_watcher
+      owner: host
+      parent: host
+      other_name: mongo_watcher
     environment:
-      PYTHONUNBUFFERED: 1
+      - MONGO_URI=${MONGO_URI}
+      - USE_REMOTE_DATABASE=${USE_REMOTE_DB}
+      - USE_REMOTE_REPOSITORY=${USE_REMOTE_REPO}
+      - USE_REMOTE_REPOSITORY_KEY=${USE_REMOTE_REPO_KEY}
+      - REMOTE_USERNAME=${REMOTE_USERNAME}
+      - REMOTE_PASSWORD=${REMOTE_PASSWORD}
+      - REMOTE_KEY_FILE=${REMOTE_KEY_FILE}
+    volumes:
+      - type: bind
+        source: "${REMOTE_KEY_FILE}"
+        target: "${REMOTE_KEY_FILE}"
+    networks:
+     - tactic-net
+
+  tactic_pool_watcher:
+    image: bsherin/tactic:pool-watcher${IMG_SUFFIX}
+    profiles:
+      - start_project
+      - build_project
+    build:
+      context: .
+      dockerfile: Dockerfile-pool-watcher${IMG_SUFFIX}
+    restart: always
+    container_name: pool_watcher
+    init: true
+    platform: ${PLATFORM}
+    labels:
+      my_id: pool_watcher
+      owner: host
+      parent: host
+      other_name: pool_watcher
+    volumes:
+      - type: bind
+        source: "${POOL_DIR}"
+        target: "/pool"
+    networks:
+      - tactic-net
 
   tactic_main:
     build:
       context: .
-      dockerfile: Dockerfile-main
-    platform: x86_64
-    depends_on:
-      - tactic_base
-    image: bsherin/tactic:main
-
-  tactic_main_arm64:
-    build:
-      context: .
-      dockerfile: Dockerfile-main-arm64
-    depends_on:
-      - tactic_base_arm64
+      dockerfile: Dockerfile-main${IMG_SUFFIX}
     image: bsherin/tactic:main-arm64
-    platform: arm64
+    platform: ${PLATFORM}
+    profiles:
+      - build_project
 
   tactic_module_viewer:
     build:
       context: .
-      dockerfile: Dockerfile-module-viewer
-    depends_on:
-      - tactic_base
-    platform: x86_64
-    image: bsherin/tactic:module_viewer
-
-  tactic_module_viewer_arm64:
-    build:
-      context: .
       dockerfile: Dockerfile-module-viewer-arm64
-    depends_on:
-      - tactic_base_arm64
-    platform: arm64
+    platform: ${PLATFORM}
     image: bsherin/tactic:module_viewer-arm64
+    profiles:
+      - build_project
 
   tactic_tile:
     build:
       context: .
-      dockerfile: Dockerfile-tile
-    depends_on:
-      - tactic_base
-    image: bsherin/tactic:tile
-    platform: x86_64
-    environment:
-      PYTHONUNBUFFERED: 0
-
-  tactic_tile_arm64:
-    build:
-      context: .
       dockerfile: Dockerfile-tile-arm64
-    depends_on:
-      - tactic_base
     image: bsherin/tactic:tile-arm64
-    platform: arm64
+    platform: ${PLATFORM}
     environment:
-      PYTHONUNBUFFERED: 0
+      - PYTHONUNBUFFERED=0
+    profiles:
+      - build_project
 
-  tactic_pool_watcher:
-    build:
-      context: .
-      dockerfile: Dockerfile-pool-watcher
-    depends_on:
-      - tactic_base
-    image: bsherin/tactic:pool-watcher
-    platform: x86_64
-    environment:
-      PYTHONUNBUFFERED: 0
+networks:
+  tactic-net:
+    driver: bridge
+    external: true
 
-  tactic_pool_watcher_arm64:
-    build:
-      context: .
-      dockerfile: Dockerfile-pool-watcher-arm64
-    depends_on:
-      - tactic_base
-    image: bsherin/tactic:pool-watcher-arm64
-    platform: arm64
-    environment:
-      PYTHONUNBUFFERED: 0
-
-  tactic_mongo_watcher:
-    build:
-      context: .
-      dockerfile: Dockerfile-mongo-watcher
-    depends_on:
-      - tactic_base
-    image: bsherin/tactic:mongo-watcher
-    platform: x86_64
-    environment:
-      PYTHONUNBUFFERED: 0
-
-  tactic_mongo_watcher_arm64:
-    build:
-      context: .
-      dockerfile: Dockerfile-mongo-watcher-arm64
-    depends_on:
-      - tactic_base
-    image: bsherin/tactic:mongo-watcher-arm64
-    platform: arm64
-    environment:
-      PYTHONUNBUFFERED: 0
-
-  tactic_redis:
-    image: redis:alpine
-
-  tactic_rabbit:
-    image: rabbitmq:3-management
+volumes:
+  mongo-volume:
+    external: true

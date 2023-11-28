@@ -1389,7 +1389,7 @@ function ConsoleComponent(props) {
             }
             {!props.mState.console_is_shrunk && show_main_log &&
                 <SearchableConsole main_id={props.main_id}
-                                   streaming_host={props.main_id}
+                                   streaming_host="host"
                                    container_id={props.main_id}
                                    ref={body_ref}
                                    outer_style={{
@@ -1404,7 +1404,7 @@ function ConsoleComponent(props) {
             }
             {!props.mState.console_is_shrunk && show_pseudo_log &&
                 <SearchableConsole main_id={props.main_id}
-                                   streaming_host={props.main_id}
+                                   streaming_host="host"
                                    container_id={pseudo_tile_id}
                                    ref={body_ref}
                                    outer_style={{

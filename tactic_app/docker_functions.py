@@ -9,6 +9,7 @@ import subprocess
 import re
 import pika
 import json
+import traceback
 forwarder_address = None
 forwarder_id = None
 sys.stdout = sys.stderr
@@ -20,7 +21,8 @@ mongo_uri = os.environ.get("MONGO_URI")
 _develop = ("DEVELOP" in os.environ) and (os.environ.get("DEVELOP") == "True")
 RETRIES = os.environ.get("RETRIES")
 tactic_image_names = ["bsherin/tactic:tile", "bsherin/tactic:main",
-                      "bsherin/tactic:module_viewer", "bsherin/tactic:host"
+                      "bsherin/tactic:module_viewer", "bsherin/tactic:host",
+                      "bsherin/tactic:log-streamer"
                       ]
 
 if "DEBUG_MAIN_CONTAINER" in os.environ:
@@ -80,7 +82,18 @@ def get_user_pool_dir(username):
     else:
         return f"{true_host_pool_dir}/{username}"
 
-streaming_workers = {}
+def create_log_streamer_container(room, cont_id, user_id, username):
+    streamer_volume_dict = {"/var/run/docker.sock": {"bind": "/var/run/docker.sock", "mode": "rw"}}
+    environ = {
+        "ROOM": room,
+        "CONT_ID": cont_id,
+    }
+    streamer_id, _container_id = create_container("bsherin/tactic:log-streamer", network_mode="bridge",
+                                                  env_vars=environ,
+                                                  owner=user_id, other_name=None, username=username,
+                                                  volume_dict=streamer_volume_dict,
+                                                  publish_all_ports=True, remove=True)
+    return streamer_id
 
 class MainContainerTracker(object):
 
@@ -123,22 +136,6 @@ main_container_info = MainContainerTracker()
 class ContainerCreateError(Exception):
     pass
 
-
-class LogStreamer(object):
-
-    def __init__(self, socketio):
-        self.socketio = socketio
-
-    def background_log_lines(self, cont_id, room, base_data, event_name):
-        cont = get_container(cont_id)
-        for line in cont.logs(stream=True, tail=0):
-            # Shouldn't do anything here that will cause something to be entered in the log of a
-            # container being streamed. That will give an infinite loop.
-            base_data["new_line"] = line.decode()
-            self.socketio.emit(event_name, base_data, namespace="/main", room=room)
-        return
-
-
 cont_type_dict = {"megaplex_main:app": "megaplex",
                   "main_main:app": "main",
                   "tile_main:app": "tile",
@@ -161,7 +158,7 @@ def create_container(image_name, container_name=None, network_mode="bridge", hos
                      env_vars=None, port_bindings=None, wait_retries=50,
                      other_name="none", volume_dict=None, username=None,
                      detach=True, register_container=True, publish_all_ports=False,
-                     restart_policy=None, special_unique_id=None):
+                     restart_policy=None, special_unique_id=None, remove=False):
 
     if special_unique_id is not None:
         unique_id = special_unique_id
@@ -213,7 +210,8 @@ def create_container(image_name, container_name=None, network_mode="bridge", hos
         "init": True,
         "volumes": volume_dict,
         "network": "tactic-net",
-        "publish_all_ports": publish_all_ports
+        "publish_all_ports": publish_all_ports,
+        "remove": remove
     }
 
     print("got run args")
@@ -225,6 +223,8 @@ def create_container(image_name, container_name=None, network_mode="bridge", hos
 
     if restart_policy is not None:
         run_args["restart_policy"] = restart_policy
+
+
 
     container = cli.containers.run(**run_args)
     print("did the run")
@@ -379,17 +379,28 @@ def get_id_from_name_and_parent(cont_name, parent_id):
 def get_log(tactic_id, since=None):
 
     cont = get_container(tactic_id)
+    if cont is None:
+        return ""
     if since is not None:
         return cont.logs(since=since)
     else:
         return cont.logs()
 
+def get_traceback_message(e, special_string=None):
+    if special_string is None:
+        template = "An exception of type {0} occured. Arguments:\n{1!r}\n"
+    else:
+        template = special_string + "\n" + "An exception of type {0} occurred. Arguments:\n{1!r}\n"
+    error_string = template.format(type(e).__name__, e.args)
+    error_string += traceback.format_exc()
+    return error_string
 
 def destroy_container(tactic_id, notify=True):
     try:
         cont = get_container(tactic_id)
         message = None
         if cont is None:
+            print("container not found")
             return -1
         else:
             cont_type = get_container_type(cont)
@@ -407,10 +418,6 @@ def destroy_container(tactic_id, notify=True):
             if cont_type == "tile":
                 cont_list.append("kill_" + tactic_id)
             delete_list_of_queues(cont_list)
-            if tactic_id in streaming_workers:
-                thread = streaming_workers[container_id]
-                thread.kill()
-                del streaming_workers[container_id]
             if notify and message is not None:
                 data = {"message": message,
                         "alert_type": "alert-warning",
@@ -418,7 +425,8 @@ def destroy_container(tactic_id, notify=True):
                         "user_id": container_owner(cont)}
                 post_task_noqworker("host", "host", "flash_to_user", data)
             return
-    except:
+    except Exception as ex:
+        print(get_traceback_message(ex, "got an exception in destroy_container"))
         return -1
 
 

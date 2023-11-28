@@ -10,7 +10,6 @@ from qworker import task_worthy_methods, task_worthy_manual_submit_methods
 from communication_utils import make_python_object_jsonizable, debinarize_python_object, store_temp_data
 from communication_utils import make_jsonizable_and_compress, read_project_dict, socketio
 import docker_functions
-from docker_functions import streaming_workers
 from mongo_accesser import bytes_to_string, NameExistsError
 from doc_info import docInfo, FreeformDocInfo
 from qworker import debug_log
@@ -49,30 +48,6 @@ class StateTasksMixin:
     @task_worthy
     def TextSelect(self, data):
         self.selected_text = data["selected_text"]
-        return None
-
-    @task_worthy
-    def StartLogStreaming(self, data):
-        global streaming_workers
-        container_id = data["container_id"]
-        if container_id is not None and container_id not in streaming_workers:
-            worker = docker_functions.LogStreamer(socketio)
-            thread = socketio.start_background_task(worker.background_log_lines,
-                                                    container_id,
-                                                    self.mworker.my_id,
-                                                    {"message": "updateLog", "container_id": container_id},
-                                                    "searchable-console-message")
-            streaming_workers[container_id] = thread
-        return None
-
-    @task_worthy
-    def StopLogStreaming(self, data):
-        global streaming_workers
-        container_id = data["container_id"]
-        if container_id in streaming_workers:
-            thread = streaming_workers[container_id]
-            thread.kill()
-            del streaming_workers[container_id]
         return None
 
 # noinspection PyUnusedLocal
@@ -933,10 +908,7 @@ class TileCreationTasksMixin:
 
     @task_worthy
     def RemoveTile(self, data):
-        global streaming_workers
         tile_id = data["tile_id"]
-        if tile_id in streaming_workers:
-            del streaming_workers[tile_id]
         self._delete_tile_instance(tile_id)
         return None
 

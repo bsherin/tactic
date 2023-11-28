@@ -9,8 +9,8 @@ from bson import ObjectId
 from communication_utils import make_python_object_jsonizable, store_temp_data, read_temp_data, delete_temp_data
 import docker_functions
 from docker_functions import create_container, destroy_container, destroy_child_containers, destroy_user_containers
-from docker_functions import get_log, restart_container
-from docker_functions import get_matching_user_containers, streaming_workers
+from docker_functions import get_log, restart_container, create_log_streamer_container
+from docker_functions import get_matching_user_containers, get_container
 from tactic_app import app, socketio, db
 from library_views import tile_manager, project_manager, collection_manager, list_manager, pool_manager, get_manager_for_type
 from library_views import code_manager
@@ -201,7 +201,9 @@ class HostWorker(QWorker):
     @task_worthy_manual_submit
     def load_tile_module_task(self, data, task_packet):
         def loaded_source(res_dict):
+            print("got loaded_source")
             if not res_dict["success"]:
+                print("load_source didn't return success")
                 if "show_failed_loads" in data and data["show_failed_loads"]:
                     loaded_tile_management.add_failed_load(tile_module_name, user_obj.username)
                     _id = user_obj.get_tile_dict(tile_module_name)["_id"]
@@ -209,12 +211,12 @@ class HostWorker(QWorker):
                                                       "icon:upload": "icon:error", "res_type": "tile"}, user_obj)
                 if "main_id" not in task_packet:
                     task_packet["room"] = user_id
+                print(res_dict["message"])
                 if not task_packet["callback_type"] == "no_callback":
                     self.submit_response(task_packet, {"success": False, "message": res_dict["message"],
                                                        "alert_type": "alert-warning"})
-                else:
-                    print(res_dict["message"])
                 return
+            print("load_source returned success")
             category = res_dict["category"]
 
             if "is_default" in data:
@@ -261,14 +263,14 @@ class HostWorker(QWorker):
                 pattern = re.compile(r'.*?(@user_tile.*)', re.DOTALL)
                 result = pattern.match(tile_module)
                 tile_module_no_globals = result.groups()[0]
+                print("just about to post load_source")
                 self.post_task("tile_test_container", "load_source",
                                {"tile_code": tile_module_no_globals}, loaded_source)
-
+                print("posted load_source")
         except Exception as ex:
+            print(self.extract_short_error_message(ex, "Error loading tile"))
             if not task_packet["callback_type"] == "no_callback":
                 self.submit_response(task_packet, self.get_short_exception_dict(ex, "Error loading tile"))
-            else:
-                print(self.extract_short_error_message(ex, "Error loading tile"))
             return
 
 
@@ -795,28 +797,23 @@ class HostWorker(QWorker):
     @task_worthy
     def StartLogStreaming(self, data):
         container_id = data["container_id"]
-        if container_id is not None and container_id not in streaming_workers:
-            worker = docker_functions.LogStreamer(socketio)
-            thread = socketio.start_background_task(worker.background_log_lines,
-                                                    container_id,
-                                                    data["main_id"],
-                                                    {"message": "updateLog", "container_id": container_id},
-                                                    "searchable-console-message")
-            streaming_workers[container_id] = thread
-        return None
+        room = data["room"]
+        user_id = data["user_id"]
+        username = load_user(user_id).username
+        if container_id is not None:
+            streamer_id = create_log_streamer_container(room, container_id, user_id, username)
+        return {"streamer_id": streamer_id}
 
     @task_worthy
     def StopLogStreaming(self, data):
-        container_id = data["container_id"]
-        print("stopping log streamer " + str(container_id))
-        print(f"streaming_workers.keys() is {str(streaming_workers.keys())}")
-        if container_id in streaming_workers:
-            print("killing the threader")
-            thread = streaming_workers[container_id]
-            thread.kill()
-            print("deleting the worker")
-            del streaming_workers[container_id]
-            print(f"streaming_workers.keys() is {str(streaming_workers.keys())}")
+        streamer_id = data["streamer_id"]
+        print("stopping log streamer " + str(streamer_id))
+        cont = get_container(streamer_id)
+        if cont is not None:
+            cont.kill(signal="SIGTERM")
+            return None
+        else:
+            print("no streamer to kill")
         return None
 
     def folder_dict(self, path, basename, user_obj, child_nodes=[]):
@@ -1006,10 +1003,6 @@ class HealthTracker:
                     return
             self.check_for_dead_containers()
             redis_ht.set("last_health_check", current_time)
-            if len(streaming_workers.keys()) == 0:
-                print("no streaming workers")
-            else:
-                print(f"***{str(len(streaming_workers.keys()))} streaming workers with ids {str(streaming_workers.keys())}***")
         return
 
     def deregister_container(self, container_id):
