@@ -255,7 +255,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile-main${IMG_SUFFIX}
-    image: bsherin/tactic:main-arm64
+    image: bsherin/tactic:main${IMG_SUFFIX}
     platform: ${PLATFORM}
     profiles:
       - build_project
@@ -263,17 +263,17 @@ services:
   tactic_module_viewer:
     build:
       context: .
-      dockerfile: Dockerfile-module-viewer-arm64
+      dockerfile: Dockerfile-module-viewer${IMG_SUFFIX}
     platform: ${PLATFORM}
-    image: bsherin/tactic:module_viewer-arm64
+    image: bsherin/tactic:module_viewer${IMG_SUFFIX}
     profiles:
       - build_project
 
   tactic_tile:
     build:
       context: .
-      dockerfile: Dockerfile-tile-arm64
-    image: bsherin/tactic:tile-arm64
+      dockerfile: Dockerfile-tile${IMG_SUFFIX}
+    image: bsherin/tactic:tile${IMG_SUFFIX}
     platform: ${PLATFORM}
     environment:
       - PYTHONUNBUFFERED=0
