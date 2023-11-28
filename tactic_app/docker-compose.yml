@@ -199,6 +199,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile-log-streamer${IMG_SUFFIX}
+    profiles:
+      - build_project
     image: bsherin/tactic:log-streamer${IMG_SUFFIX}
     platform: ${PLATFORM}
     environment:
