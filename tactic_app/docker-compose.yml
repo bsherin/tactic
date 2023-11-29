@@ -15,7 +15,7 @@ services:
     ports:
       - "27017:27017"
     volumes:
-      - mongo-volume:/data/db
+      - ${MONGO_DIR}:/data/db
 
   tactic-redis:
     image: redis:alpine
