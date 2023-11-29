@@ -34,20 +34,20 @@ echo "*** removing old containers ***"
 
 for image in "tile" "module_viewer" "main" "log-streamer"
   do
-    num=$(sudo docker ps --filter ancestor="bsherin/tactic:$image$arm_string" -aq | wc -l)
+    num=$(sudo docker ps --all --filter ancestor="bsherin/tactic:$image$arm_string" -aq | wc -l)
     echo "$num containers of type bsherin/tactic:$image$arm_string to remove"
     if [ $num != "0" ] ; then
-      sudo docker ps --filter ancestor="bsherin/tactic:$image$arm_string" -aq | xargs sudo docker stop | xargs sudo docker rm
+      sudo docker ps --all --filter ancestor="bsherin/tactic:$image$arm_string" -aq | xargs sudo docker stop | xargs sudo docker rm
     fi
   done
 
 if [ $remove_all == "True" ] ; then
   for image in "host" "pool-watcher" "mongo-watcher"
   do
-    num=$(sudo docker ps --filter ancestor="bsherin/tactic:$image$arm_string" -aq | wc -l)
+    num=$(sudo docker ps --all --filter ancestor="bsherin/tactic:$image$arm_string" -aq | wc -l)
     echo "$num containers of type bsherin/tactic:$image$arm_string to remove"
     if [ $num != "0" ] ; then
-      sudo docker ps --filter ancestor="bsherin/tactic:$image$arm_string" -aq | xargs sudo docker stop | xargs sudo docker rm
+      sudo docker ps --all --filter ancestor="bsherin/tactic:$image$arm_string" -aq | xargs sudo docker stop | xargs sudo docker rm
     fi
   done
 fi
@@ -56,13 +56,39 @@ if [ $remove_all == "True" ] ; then
   for image in "rabbitmq:3-management" "rabbitmq" "redis:alpine"
     do
       echo "removing $image"
-      num=$(sudo docker ps --filter ancestor=$image -aq | wc -l)
+      num=$(sudo docker ps --all --filter ancestor=$image -aq | wc -l)
       echo "$num containers of type $image to remove"
       if [ $num != "0" ] ; then
-        sudo docker ps --filter ancestor=$image -aq | xargs sudo docker stop | xargs sudo docker rm
+        sudo docker ps --all --filter ancestor=$image -aq | xargs sudo docker stop | xargs sudo docker rm
       fi
     done
     sudo docker rm $mongo_uri
 fi
+
+
+echo "*** remove remaining stopped containers ***"
+
+if [ $(sudo docker ps -aq -f status=exited -f name=$mongo_uri) ] ; then
+    echo "stopped container exists, removing"
+    sudo docker rm $mongo_uri
+fi
+
+for image in "host" "pool-watcher" "mongo-watcher"
+  do
+    num=$(sudo docker ps -aq -f status=exited -f ancestor="bsherin/tactic:$image$arm_string" -aq | wc -l)
+    if [ $num != "0" ] ; then
+      sudo docker ps -aq -f status=exited -f ancestor="bsherin/tactic:$image$arm_string" | xargs sudo docker rm
+    fi
+  done
+
+for image in "rabbitmq:3-management" "rabbitmq" "redis:alpine"
+    do
+      echo "removing $image"
+      num=$(sudo docker ps -aq -f status=exited -f ancestor=$image -aq | wc -l)
+      echo "$num containers of type $image to remove"
+      if [ $num != "0" ] ; then
+        sudo docker ps -aq -f status=exited -f ancestor=$image -aq | xargs sudo docker rm
+      fi
+    done
 
 sudo docker compose --env-file $env_file --profile start_project up --detach
