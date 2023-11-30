@@ -190,7 +190,7 @@ def create_container(image_name, container_name=None, network_mode="bridge", hos
         for key, val in env_vars.items():
             environ[key] = val
 
-    labels = {"my_id": unique_id, "owner": owner, "parent": parent, "other_name": other_name}
+    labels = {"my_id": unique_id, "owner": owner, "parent": parent, "other_name": other_name, "project": "tactic"}
 
     if image_name == "bsherin/tactic:tile":  # We don't want people to be able to see the mongo_uri
         del environ["MONGO_URI"]
@@ -202,7 +202,6 @@ def create_container(image_name, container_name=None, network_mode="bridge", hos
         print("changed image name to " + image_name)
 
     run_args = {
-        "project": "tactic",
         "image": image_name,
         "environment": environ,
         "ports": port_bindings,
