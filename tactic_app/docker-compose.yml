@@ -7,6 +7,8 @@ services:
     hostname: ${MONGO_URI}
     container_name: ${MONGO_URI}
     command: --replSet "rs0"
+    labels:
+      project: tactic_aux
     restart: always
     profiles:
       - start_project
@@ -20,6 +22,8 @@ services:
   tactic-redis:
     image: redis:alpine
     restart: always
+    labels:
+      project: tactic_aux
     hostname: tactic-redis
     container_name: tactic-redis
     profiles:
@@ -34,6 +38,8 @@ services:
 
   megaplex:
     image: rabbitmq:3-management
+    labels:
+      project: tactic_aux
     depends_on:
       - tactic-redis
     restart: always
@@ -75,6 +81,7 @@ services:
     platform: ${PLATFORM}
     init: true
     labels:
+      project: tactic
       my_id: host5000
       owner: host
       parent: host
@@ -127,6 +134,7 @@ services:
     platform: ${PLATFORM}
     init: true
     labels:
+      project: tactic
       my_id: host5001
       owner: host
       parent: host
@@ -177,6 +185,7 @@ services:
     init: true
     container_name: tile_test_container
     labels:
+      project: tactic
       my_id: tile_test_container
       owner: host
       parent: host
@@ -219,6 +228,7 @@ services:
     init: true
     platform: ${PLATFORM}
     labels:
+      project: tactic
       my_id: mongo_watcher
       owner: host
       parent: host
@@ -251,6 +261,7 @@ services:
     init: true
     platform: ${PLATFORM}
     labels:
+      project: tactic
       my_id: pool_watcher
       owner: host
       parent: host
