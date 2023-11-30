@@ -1,6 +1,6 @@
 #!/bin/bash
 env_file="server.env"
-remove_all="False"
+up_only="False"
 
 # process arguments
 while :; do
@@ -9,8 +9,8 @@ while :; do
       env_file="$2"
       shift
       ;;
-    --remove-all)
-      remove_all="True"
+    --up-only)
+      up_only="True"
       ;;
     *)
       break
@@ -19,58 +19,11 @@ while :; do
   shift
 done
 
-source $env_file
-
-if [ $USE_ARM64 == False ] ; then
-  echo $USE_ARM64
-  echo "not using arm64"
-  arm_string=""
-else
-  echo "using arm64"
-  arm_string="-arm64"
-fi
-
-echo "*** removing old containers ***"
-
-for image in "tile" "module_viewer" "main" "log-streamer"
-  do
-    num=$(sudo docker ps -f ancestor="bsherin/tactic:$image$arm_string" -aq | wc -l)
-    echo "$num containers of type bsherin/tactic:$image$arm_string to remove"
-    if [ $num != "0" ] ; then
-      sudo docker ps --filter ancestor="bsherin/tactic:$image$arm_string" -aq | xargs sudo docker stop | xargs sudo docker rm
-    fi
-  done
-
-if [ $remove_all == "True" ] ; then
-  for image in "host" "pool-watcher" "mongo-watcher"
-  do
-    num=$(sudo docker ps --all --filter ancestor="bsherin/tactic:$image$arm_string" -aq | wc -l)
-    echo "$num containers of type bsherin/tactic:$image$arm_string to remove"
-    if [ $num != "0" ] ; then
-      sudo docker ps --all --filter ancestor="bsherin/tactic:$image$arm_string" -aq | xargs sudo docker stop | xargs sudo docker rm
-    fi
-  done
-fi
-
-if [ $remove_all == "True" ] ; then
-  for image in "rabbitmq:3-management" "rabbitmq" "redis:alpine"
-    do
-      echo "removing $image"
-      num=$(sudo docker ps --all --filter ancestor=$image -aq | wc -l)
-      echo "$num containers of type $image to remove"
-      if [ $num != "0" ] ; then
-        sudo docker ps --all --filter ancestor=$image -aq | xargs sudo docker stop | xargs sudo docker rm
-      fi
-    done
-    sudo docker rm $mongo_uri
-fi
-
-
-echo "*** remove remaining exited containers ***"
-
-num=$(sudo docker ps -aq -f status=exited -aq | wc -l)
-if [ $num != "0" ] ; then
-    sudo docker ps -aq -f status=exited | xargs sudo docker rm
+if [ $up_only == "False" ] ; then
+  echo "*** removing tactic containers ***"
+  sudo docker ps --filter label="project=tactic" -aq | xargs sudo docker stop | xargs sudo docker rm
+  echo "*** removing aux containers ***"
+  sudo docker ps --filter label="project=tactic_aux" -aq | xargs sudo docker stop | xargs sudo docker rm
 fi
 
 sudo docker compose --env-file $env_file --profile start_project up --detach

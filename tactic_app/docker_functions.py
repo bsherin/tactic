@@ -202,6 +202,7 @@ def create_container(image_name, container_name=None, network_mode="bridge", hos
         print("changed image name to " + image_name)
 
     run_args = {
+        "project": "tactic",
         "image": image_name,
         "environment": environ,
         "ports": port_bindings,
