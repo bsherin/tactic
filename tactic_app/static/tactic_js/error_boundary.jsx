@@ -33,9 +33,6 @@ class ErrorBoundary extends React.Component {
 }
 
 ErrorBoundary.propTypes = {
-  children: PropTypes.oneOfType([
-        PropTypes.array,
-        PropTypes.object]),
   fallback: PropTypes.oneOfType([
         PropTypes.string,
         PropTypes.object]),

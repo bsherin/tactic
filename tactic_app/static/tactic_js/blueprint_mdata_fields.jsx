@@ -18,7 +18,6 @@ const mdi = markdownIt({html: true});
 mdi.use(markdownItLatex);
 import _ from 'lodash';
 
-import {postAjaxPromise} from "./communication_react"
 import {propsAreEqual, useDebounce} from "./utilities_react";
 import {tile_icon_dict} from "./icon_info";
 
@@ -248,20 +247,6 @@ const renderCreateNewTag = (query, active, handleClick) => {
 
 function NativeTags(props) {
     const [query, setQuery] = useState("");
-    const [suggestions, setSuggestions] = useState([]);
-
-    useEffect(() => {
-        let data_dict = {"pane_type": props.pane_type, "is_repository": false};
-        if (!props.pane_type) {
-            setSuggestions([]);
-            return
-        }
-        postAjaxPromise("get_tag_list", data_dict)
-            .then(data => {
-                let all_tags = data.tag_list;
-                setSuggestions(all_tags)
-            })
-    }, [props.pane_type]);
 
     function renderTag(item) {
         return item
@@ -305,7 +290,7 @@ function NativeTags(props) {
             itemRenderer={renderSuggestion}
             selectedItems={props.tags}
             allowNew={true}
-            items={suggestions}
+            items={props.all_tags}
             itemPredicate={_filterSuggestion}
             tagRenderer={renderTag}
             tagInputProps={{onRemove: _handleDelete}}
@@ -564,6 +549,7 @@ function CombinedMetadata(props) {
             {props.useTags &&
                 <FormGroup label="Tags">
                     <NativeTags tags={props.tags}
+                                all_tags={props.all_tags}
                                 readOnly={props.readOnly}
                                 handleChange={_handleTagsChange}
                                 pane_type={props.pane_type}/>

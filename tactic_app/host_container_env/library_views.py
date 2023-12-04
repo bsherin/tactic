@@ -390,15 +390,16 @@ def get_tag_list():
     try:
         pane_type = request.json["pane_type"]
         is_repository = request.json["is_repository"]
+        show_hidden = request.json["show_hidden"]
         if pane_type == "all":
             tag_list = []
             for rtype in res_types:
                 manager = get_manager_for_type(rtype, is_repository=is_repository)
-                tag_list += manager.get_tag_list()
+                tag_list += manager.get_tag_list(show_hidden)
             tag_list = list(set(tag_list))
         else:
             manager = get_manager_for_type(pane_type, is_repository=is_repository)
-            tag_list = manager.get_tag_list()
+            tag_list = manager.get_tag_list(show_hidden)
         return jsonify({"success": True, "tag_list": tag_list})
     except Exception as ex:
         return generic_exception_handler.get_exception_for_ajax(ex, "Error getting tag list")

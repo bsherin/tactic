@@ -122,28 +122,29 @@ function LibraryPane(props) {
     _useState2 = _slicedToArray(_useState, 2),
     num_rows = _useState2[0],
     set_num_rows = _useState2[1];
-  var _useState3 = (0, _react.useState)([]),
-    _useState4 = _slicedToArray(_useState3, 2),
-    tag_list = _useState4[0],
-    set_tag_list = _useState4[1];
-  var _useState5 = (0, _react.useState)(false),
-    _useState6 = _slicedToArray(_useState5, 2),
-    showOmnibar = _useState6[0],
-    setShowOmnibar = _useState6[1];
-  var _useState7 = (0, _react.useState)([]),
-    _useState8 = _slicedToArray(_useState7, 2),
-    contextMenuItems = _useState8[0],
-    setContextMenuItems = _useState8[1];
-  var _useState9 = (0, _react.useState)(500),
-    _useState10 = _slicedToArray(_useState9, 2),
-    total_width = _useState10[0],
-    set_total_width = _useState10[1];
-  var _useStateAndRef3 = (0, _utilities_react.useStateAndRef)(.65),
+  var _useStateAndRef3 = (0, _utilities_react.useStateAndRef)([]),
     _useStateAndRef4 = _slicedToArray(_useStateAndRef3, 3),
-    left_width_fraction = _useStateAndRef4[0],
-    set_left_width_fraction = _useStateAndRef4[1],
-    left_width_fraction_ref = _useStateAndRef4[2];
-  var _useStateAndRef5 = (0, _utilities_react.useStateAndRef)({
+    tag_list = _useStateAndRef4[0],
+    set_tag_list = _useStateAndRef4[1],
+    tag_list_ref = _useStateAndRef4[2];
+  var _useState3 = (0, _react.useState)(false),
+    _useState4 = _slicedToArray(_useState3, 2),
+    showOmnibar = _useState4[0],
+    setShowOmnibar = _useState4[1];
+  var _useState5 = (0, _react.useState)([]),
+    _useState6 = _slicedToArray(_useState5, 2),
+    contextMenuItems = _useState6[0],
+    setContextMenuItems = _useState6[1];
+  var _useState7 = (0, _react.useState)(500),
+    _useState8 = _slicedToArray(_useState7, 2),
+    total_width = _useState8[0],
+    set_total_width = _useState8[1];
+  var _useStateAndRef5 = (0, _utilities_react.useStateAndRef)(.65),
+    _useStateAndRef6 = _slicedToArray(_useStateAndRef5, 3),
+    left_width_fraction = _useStateAndRef6[0],
+    set_left_width_fraction = _useStateAndRef6[1],
+    left_width_fraction_ref = _useStateAndRef6[2];
+  var _useStateAndRef7 = (0, _utilities_react.useStateAndRef)({
       "name": "",
       "_id": "",
       "tags": "",
@@ -151,79 +152,79 @@ function LibraryPane(props) {
       "updated": "",
       "created": ""
     }),
-    _useStateAndRef6 = _slicedToArray(_useStateAndRef5, 3),
-    selected_resource = _useStateAndRef6[0],
-    set_selected_resource = _useStateAndRef6[1],
-    selected_resource_ref = _useStateAndRef6[2];
-  var _useStateAndRef7 = (0, _utilities_react.useStateAndRef)([]),
     _useStateAndRef8 = _slicedToArray(_useStateAndRef7, 3),
-    selected_rows = _useStateAndRef8[0],
-    set_selected_rows = _useStateAndRef8[1],
-    selected_rows_ref = _useStateAndRef8[2];
+    selected_resource = _useStateAndRef8[0],
+    set_selected_resource = _useStateAndRef8[1],
+    selected_resource_ref = _useStateAndRef8[2];
   var _useStateAndRef9 = (0, _utilities_react.useStateAndRef)([]),
     _useStateAndRef10 = _slicedToArray(_useStateAndRef9, 3),
-    expanded_tags = _useStateAndRef10[0],
-    set_expanded_tags = _useStateAndRef10[1],
-    expanded_tags_ref = _useStateAndRef10[2];
-  var _useStateAndRef11 = (0, _utilities_react.useStateAndRef)("all"),
+    selected_rows = _useStateAndRef10[0],
+    set_selected_rows = _useStateAndRef10[1],
+    selected_rows_ref = _useStateAndRef10[2];
+  var _useStateAndRef11 = (0, _utilities_react.useStateAndRef)([]),
     _useStateAndRef12 = _slicedToArray(_useStateAndRef11, 3),
-    active_tag = _useStateAndRef12[0],
-    set_active_tag = _useStateAndRef12[1],
-    active_tag_ref = _useStateAndRef12[2];
-  var _useStateAndRef13 = (0, _utilities_react.useStateAndRef)("updated"),
+    expanded_tags = _useStateAndRef12[0],
+    set_expanded_tags = _useStateAndRef12[1],
+    expanded_tags_ref = _useStateAndRef12[2];
+  var _useStateAndRef13 = (0, _utilities_react.useStateAndRef)("all"),
     _useStateAndRef14 = _slicedToArray(_useStateAndRef13, 3),
-    sort_field = _useStateAndRef14[0],
-    set_sort_field = _useStateAndRef14[1],
-    sort_field_ref = _useStateAndRef14[2];
-  var _useStateAndRef15 = (0, _utilities_react.useStateAndRef)("descending"),
+    active_tag = _useStateAndRef14[0],
+    set_active_tag = _useStateAndRef14[1],
+    active_tag_ref = _useStateAndRef14[2];
+  var _useStateAndRef15 = (0, _utilities_react.useStateAndRef)("updated"),
     _useStateAndRef16 = _slicedToArray(_useStateAndRef15, 3),
-    sort_direction = _useStateAndRef16[0],
-    set_sort_direction = _useStateAndRef16[1],
-    sort_direction_ref = _useStateAndRef16[2];
-  var _useStateAndRef17 = (0, _utilities_react.useStateAndRef)(props.pane_type),
+    sort_field = _useStateAndRef16[0],
+    set_sort_field = _useStateAndRef16[1],
+    sort_field_ref = _useStateAndRef16[2];
+  var _useStateAndRef17 = (0, _utilities_react.useStateAndRef)("descending"),
     _useStateAndRef18 = _slicedToArray(_useStateAndRef17, 3),
-    filterType = _useStateAndRef18[0],
-    setFilterType = _useStateAndRef18[1],
-    filterTypeRef = _useStateAndRef18[2];
-  var _useStateAndRef19 = (0, _utilities_react.useStateAndRef)(false),
+    sort_direction = _useStateAndRef18[0],
+    set_sort_direction = _useStateAndRef18[1],
+    sort_direction_ref = _useStateAndRef18[2];
+  var _useStateAndRef19 = (0, _utilities_react.useStateAndRef)(props.pane_type),
     _useStateAndRef20 = _slicedToArray(_useStateAndRef19, 3),
-    multi_select = _useStateAndRef20[0],
-    set_multi_select = _useStateAndRef20[1],
-    multi_select_ref = _useStateAndRef20[2];
-  var _useStateAndRef21 = (0, _utilities_react.useStateAndRef)([]),
+    filterType = _useStateAndRef20[0],
+    setFilterType = _useStateAndRef20[1],
+    filterTypeRef = _useStateAndRef20[2];
+  var _useStateAndRef21 = (0, _utilities_react.useStateAndRef)(false),
     _useStateAndRef22 = _slicedToArray(_useStateAndRef21, 3),
-    list_of_selected = _useStateAndRef22[0],
-    set_list_of_selected = _useStateAndRef22[1],
-    list_of_selected_ref = _useStateAndRef22[2];
-  var _useStateAndRef23 = (0, _utilities_react.useStateAndRef)(""),
+    multi_select = _useStateAndRef22[0],
+    set_multi_select = _useStateAndRef22[1],
+    multi_select_ref = _useStateAndRef22[2];
+  var _useStateAndRef23 = (0, _utilities_react.useStateAndRef)([]),
     _useStateAndRef24 = _slicedToArray(_useStateAndRef23, 3),
-    search_string = _useStateAndRef24[0],
-    set_search_string = _useStateAndRef24[1],
-    search_string_ref = _useStateAndRef24[2];
-  var _useStateAndRef25 = (0, _utilities_react.useStateAndRef)(false),
+    list_of_selected = _useStateAndRef24[0],
+    set_list_of_selected = _useStateAndRef24[1],
+    list_of_selected_ref = _useStateAndRef24[2];
+  var _useStateAndRef25 = (0, _utilities_react.useStateAndRef)(""),
     _useStateAndRef26 = _slicedToArray(_useStateAndRef25, 3),
-    search_inside = _useStateAndRef26[0],
-    set_search_inside = _useStateAndRef26[1],
-    search_inside_ref = _useStateAndRef26[2];
+    search_string = _useStateAndRef26[0],
+    set_search_string = _useStateAndRef26[1],
+    search_string_ref = _useStateAndRef26[2];
   var _useStateAndRef27 = (0, _utilities_react.useStateAndRef)(false),
     _useStateAndRef28 = _slicedToArray(_useStateAndRef27, 3),
-    search_metadata = _useStateAndRef28[0],
-    set_search_metadata = _useStateAndRef28[1],
-    search_metadata_ref = _useStateAndRef28[2];
+    search_inside = _useStateAndRef28[0],
+    set_search_inside = _useStateAndRef28[1],
+    search_inside_ref = _useStateAndRef28[2];
   var _useStateAndRef29 = (0, _utilities_react.useStateAndRef)(false),
     _useStateAndRef30 = _slicedToArray(_useStateAndRef29, 3),
-    show_hidden = _useStateAndRef30[0],
-    set_show_hidden = _useStateAndRef30[1],
-    show_hidden_ref = _useStateAndRef30[2];
-  var _useStateAndRef31 = (0, _utilities_react.useStateAndRef)([_table.Regions.row(0)]),
+    search_metadata = _useStateAndRef30[0],
+    set_search_metadata = _useStateAndRef30[1],
+    search_metadata_ref = _useStateAndRef30[2];
+  var _useStateAndRef31 = (0, _utilities_react.useStateAndRef)(false),
     _useStateAndRef32 = _slicedToArray(_useStateAndRef31, 3),
-    selectedRegions = _useStateAndRef32[0],
-    setSelectedRegions = _useStateAndRef32[1],
-    selectedRegionsRef = _useStateAndRef32[2];
-  var _useState11 = (0, _react.useState)(0),
-    _useState12 = _slicedToArray(_useState11, 2),
-    rowChanged = _useState12[0],
-    setRowChanged = _useState12[1];
+    show_hidden = _useStateAndRef32[0],
+    set_show_hidden = _useStateAndRef32[1],
+    show_hidden_ref = _useStateAndRef32[2];
+  var _useStateAndRef33 = (0, _utilities_react.useStateAndRef)([_table.Regions.row(0)]),
+    _useStateAndRef34 = _slicedToArray(_useStateAndRef33, 3),
+    selectedRegions = _useStateAndRef34[0],
+    setSelectedRegions = _useStateAndRef34[1],
+    selectedRegionsRef = _useStateAndRef34[2];
+  var _useState9 = (0, _react.useState)(0),
+    _useState10 = _slicedToArray(_useState9, 2),
+    rowChanged = _useState10[0],
+    setRowChanged = _useState10[1];
   var selectedTypeRef = (0, _react.useRef)(null);
   var theme = (0, _react.useContext)(_theme.ThemeContext);
   var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
@@ -431,10 +432,12 @@ function LibraryPane(props) {
       case "update":
         if ("_id" in res_dict) {
           _id = res_dict._id;
-          ind = get_data_dict_index_from_id(res_dict._id, res_dict.res_type);
+          ind = get_data_dict_index_from_id(res_dict._id);
         } else {
           ind = get_data_dict_index(res_name, res_dict.res_type);
-          _id = data_dict_ref.current[ind]._id;
+          if (ind) {
+            _id = data_dict_ref.current[ind]._id;
+          }
         }
         if (!ind) return;
         new_data_dict = _lodash["default"].cloneDeep(data_dict_ref.current);
@@ -447,27 +450,15 @@ function LibraryPane(props) {
           rowChanged: rowChanged + 1
         };
         if ("tags" in res_dict) {
-          var res_tags = res_dict.tags.split(" ");
-          var new_tag_list = _lodash["default"].cloneDeep(tag_list);
-          var new_tag_found = false;
-          var _iterator3 = _createForOfIteratorHelper(res_tags),
-            _step3;
-          try {
-            for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-              var tag = _step3.value;
-              if (!new_tag_list.includes(tag)) {
-                new_tag_list.push(tag);
-                new_tag_found = true;
-              }
-            }
-          } catch (err) {
-            _iterator3.e(err);
-          } finally {
-            _iterator3.f();
-          }
-          if (new_tag_found) {
-            new_state["tag_list"] = new_tag_list;
-          }
+          var _data_dict = {
+            pane_type: props.pane_type,
+            is_repository: props.is_repository,
+            show_hidden: show_hidden_ref.current
+          };
+          (0, _communication_react.postAjaxPromise)("get_tag_list", _data_dict).then(function (data) {
+            var all_tags = data.tag_list;
+            set_tag_list(all_tags);
+          });
         }
         if (_id == selected_resource_ref.current._id) {
           set_selected_resource(the_row);
@@ -483,17 +474,35 @@ function LibraryPane(props) {
         break;
       case "delete":
         if ("_id" in res_dict) {
-          ind = get_data_dict_index_from_id(res_dict._id, res_dict.res_type);
+          ind = parseInt(get_data_dict_index_from_id(res_dict._id));
         } else {
-          ind = get_data_dict_index(res_name, res_dict.res_type);
+          ind = parseInt(get_data_dict_index(res_name, res_dict.res_type));
         }
         new_data_dict = _lodash["default"].cloneDeep(data_dict_ref.current);
-        delete new_data_dict[ind];
+        var is_last = ind == new_data_dict.length - 1;
+        var selected_ind = null;
+        if ("_id" in selected_resource_ref.current) {
+          selected_ind = parseInt(get_data_dict_index_from_id(selected_resource_ref.current._id));
+        }
+        var is_selected_row = ind && ind == selected_ind;
+        var new_selected_ind = selected_ind;
+        if (selected_ind > ind) {
+          new_selected_ind = selected_ind - 1;
+        }
+        delete new_data_dict[String(ind)];
         new_state = {
           data_dict: new_data_dict,
           rowChanged: rowChanged + 1
         };
-        setState(new_state);
+        setState(new_state, function () {
+          _grabNewChunkWithRow(ind, false, null, false, null, function () {
+            if (new_selected_ind) {
+              _selectRow(new_selected_ind);
+            } else {
+              clearSelected();
+            }
+          });
+        });
         break;
       default:
         return;
@@ -512,22 +521,22 @@ function LibraryPane(props) {
     return row1.name == row2.name && row1.res_type == row2.res_type;
   }
   function _match_row_by_id(row1, row2) {
-    return row1._id == row2._id && row1.res_type == row2.res_type;
+    return row1._id == row2._id;
   }
   function _match_any_row(row1, row_list) {
-    var _iterator4 = _createForOfIteratorHelper(row_list),
-      _step4;
+    var _iterator3 = _createForOfIteratorHelper(row_list),
+      _step3;
     try {
-      for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
-        var row2 = _step4.value;
+      for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+        var row2 = _step3.value;
         if (_match_row(row1, row2)) {
           return true;
         }
       }
     } catch (err) {
-      _iterator4.e(err);
+      _iterator3.e(err);
     } finally {
-      _iterator4.f();
+      _iterator3.f();
     }
     return false;
   }
@@ -555,11 +564,10 @@ function LibraryPane(props) {
     }
     return null;
   }
-  function get_data_dict_index_from_id(_id, res_type) {
+  function get_data_dict_index_from_id(_id) {
     for (var index in data_dict_ref.current) {
       if (_match_row_by_id(data_dict_ref.current[index], {
-        _id: _id,
-        res_type: res_type
+        _id: _id
       })) {
         return index;
       }
@@ -569,19 +577,19 @@ function LibraryPane(props) {
   function _extractNewTags(tstring) {
     var tlist = tstring.split(" ");
     var new_tags = [];
-    var _iterator5 = _createForOfIteratorHelper(tlist),
-      _step5;
+    var _iterator4 = _createForOfIteratorHelper(tlist),
+      _step4;
     try {
-      for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
-        var tag = _step5.value;
+      for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
+        var tag = _step4.value;
         if (!(tag.length == 0) && !(tag in tag_list)) {
           new_tags.push(tag);
         }
       }
     } catch (err) {
-      _iterator5.e(err);
+      _iterator4.e(err);
     } finally {
-      _iterator5.f();
+      _iterator4.f();
     }
     return new_tags;
   }
@@ -599,16 +607,7 @@ function LibraryPane(props) {
     var saved_selected_resource = Object.assign({}, selected_resource_ref.current);
     var saved_selected_rows = _toConsumableArray(selected_rows_ref.current);
     var new_tags = _extractNewTags(selected_resource_ref.current.tags);
-    (0, _communication_react.postAjaxPromise)("save_metadata", result_dict).then(function (data) {
-      var new_data_dict = set_in_data_dict(saved_selected_rows, saved_selected_resource, data_dict_ref.current);
-      if (new_tags.length > 0) {
-        var new_tag_list = [].concat(_toConsumableArray(tag_list), _toConsumableArray(new_tags));
-        set_data_dict(new_data_dict);
-        set_tag_list(new_tag_list);
-      } else {
-        set_data_dict(new_data_dict);
-      }
-    })["catch"](_toaster.doFlash);
+    (0, _communication_react.postAjaxPromise)("save_metadata", result_dict).then(function (data) {})["catch"](_toaster.doFlash);
   }
   function _overwriteCommonTags() {
     var result_dict = {
@@ -616,31 +615,7 @@ function LibraryPane(props) {
       "tags": selected_resource_ref.current.tags
     };
     var new_tags = _extractNewTags(selected_resource_ref.current.tags);
-    (0, _communication_react.postAjaxPromise)("overwrite_common_tags", result_dict).then(function (data) {
-      var utags = data.updated_tags;
-      var new_data_dict = _lodash["default"].cloneDeep(data_dict_ref.current);
-      var _iterator6 = _createForOfIteratorHelper(utags),
-        _step6;
-      try {
-        for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
-          var urow = _step6.value;
-          new_data_dict = set_in_data_dict([urow], {
-            tags: urow.tags
-          }, new_data_dict);
-        }
-      } catch (err) {
-        _iterator6.e(err);
-      } finally {
-        _iterator6.f();
-      }
-      if (new_tags.length > 0) {
-        var new_tag_list = [].concat(_toConsumableArray(tag_list), _toConsumableArray(new_tags));
-        set_data_dict(new_data_dict);
-        set_tag_list(new_tag_list);
-      } else {
-        set_data_dict(new_data_dict);
-      }
-    })["catch"](_toaster.doFlash);
+    (0, _communication_react.postAjaxPromise)("overwrite_common_tags", result_dict).then(function (data) {})["catch"](_toaster.doFlash);
   }
   function _handleMetadataChange(changed_state_elements) {
     if (!multi_select_ref.current) {
@@ -732,40 +707,40 @@ function LibraryPane(props) {
   function _handleRowSelection(selected_rows) {
     if (!multi_select_ref.current) {
       var sres = selected_resource_ref.current;
-      if (sres.name != "" && sres.notes != get_data_dict_entry(sres.name, sres.res_type).notes) {
+      if (sres.name != "" && get_data_dict_entry(sres.name, sres.res_type) && sres.notes != get_data_dict_entry(sres.name, sres.res_type).notes) {
         _saveFromSelectedResource();
       }
     }
     if (selected_rows.length > 1) {
       var common_tags = selected_rows[0].tags.split(" ");
       var other_rows = selected_rows.slice(1, selected_rows.length);
-      var _iterator7 = _createForOfIteratorHelper(other_rows),
-        _step7;
+      var _iterator5 = _createForOfIteratorHelper(other_rows),
+        _step5;
       try {
-        for (_iterator7.s(); !(_step7 = _iterator7.n()).done;) {
-          var row_dict = _step7.value;
+        for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
+          var row_dict = _step5.value;
           var new_common_tags = [];
           var new_tag_list = row_dict.tags.split(" ");
-          var _iterator8 = _createForOfIteratorHelper(new_tag_list),
-            _step8;
+          var _iterator6 = _createForOfIteratorHelper(new_tag_list),
+            _step6;
           try {
-            for (_iterator8.s(); !(_step8 = _iterator8.n()).done;) {
-              var tag = _step8.value;
+            for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
+              var tag = _step6.value;
               if (common_tags.includes(tag)) {
                 new_common_tags.push(tag);
               }
             }
           } catch (err) {
-            _iterator8.e(err);
+            _iterator6.e(err);
           } finally {
-            _iterator8.f();
+            _iterator6.f();
           }
           common_tags = new_common_tags;
         }
       } catch (err) {
-        _iterator7.e(err);
+        _iterator5.e(err);
       } finally {
-        _iterator7.f();
+        _iterator5.f();
       }
       var multi_select_list = selected_rows.map(function (row_dict) {
         return row_dict.name;
@@ -909,7 +884,6 @@ function LibraryPane(props) {
     if (selected_resource.type == "freeform") {
       window.open($SCRIPT_ROOT + "/open_raw/" + selected_resource.name);
     } else {
-      // doFlash("Only Freeform documents can be raw opened")
       statusFuncs.statusMessage("Only Freeform documents can be raw opened", 5);
     }
   }
@@ -983,20 +957,20 @@ function LibraryPane(props) {
       confirm_text = "Are you sure that you want to delete multiple items?";
     }
     var first_index = 99999;
-    var _iterator9 = _createForOfIteratorHelper(selected_rows_ref.current),
-      _step9;
+    var _iterator7 = _createForOfIteratorHelper(selected_rows_ref.current),
+      _step7;
     try {
-      for (_iterator9.s(); !(_step9 = _iterator9.n()).done;) {
-        var row = _step9.value;
+      for (_iterator7.s(); !(_step7 = _iterator7.n()).done;) {
+        var row = _step7.value;
         var ind = parseInt(get_data_dict_index(row.name, row.res_type));
         if (ind < first_index) {
           first_index = ind;
         }
       }
     } catch (err) {
-      _iterator9.e(err);
+      _iterator7.e(err);
     } finally {
-      _iterator9.f();
+      _iterator7.f();
     }
     dialogFuncs.showModal("ConfirmDialog", {
       title: "Delete resources",
@@ -1007,11 +981,11 @@ function LibraryPane(props) {
         (0, _communication_react.postAjaxPromise)("delete_resource_list", {
           "resource_list": res_list
         }).then(function () {
-          var new_index = 0;
-          if (first_index > 0) {
-            new_index = first_index - 1;
-          }
-          _grabNewChunkWithRow(new_index, true, null, true);
+          // let new_index = 0;
+          // if (first_index > 0) {
+          //     new_index = first_index - 1;
+          // }
+          // _grabNewChunkWithRow(new_index, true, null, true)
         });
       },
       handleClose: dialogFuncs.hideModal,
@@ -1521,24 +1495,6 @@ function LibraryPane(props) {
     setCurrentUrl(new_url);
     myDropZone.processQueue();
   }
-
-  // function _showPoolImport() {
-  //     dialogFuncs.showModal("FileImportDialog", {
-  //         res_type: "pool",
-  //         allowed_file_types: null,
-  //         checkboxes: [],
-  //         process_handler: _add_to_pool,
-  //         tsocket: props.tsocket,
-  //         combine: false,
-  //         show_csv_options: false,
-  //         after_upload: null,
-  //         show_address_selector: true,
-  //         initial_address: "/mydisk",
-  //         handleClose: dialogFuncs.hideModal,
-  //         handleCancel: null
-  //     });
-  // }
-
   function _new_code(template_name) {
     $.getJSON("".concat($SCRIPT_ROOT, "/get_resource_names/code"), function (data) {
       dialogFuncs.showModal("ModalDialog", {
@@ -1645,6 +1601,7 @@ function LibraryPane(props) {
   };
   var right_pane = /*#__PURE__*/_react["default"].createElement(_blueprint_mdata_fields.CombinedMetadata, {
     tags: split_tags,
+    all_tags: tag_list,
     elevation: 2,
     name: selected_resource_ref.current.name,
     created: selected_resource_ref.current.created,
@@ -1682,11 +1639,11 @@ function LibraryPane(props) {
     return _handleArrowKeyPress("ArrowDown");
   }], [["esc"], _unsearch]];
   var filter_buttons = [];
-  var _iterator10 = _createForOfIteratorHelper(["all"].concat(res_types)),
-    _step10;
+  var _iterator8 = _createForOfIteratorHelper(["all"].concat(res_types)),
+    _step8;
   try {
     var _loop = function _loop() {
-      var rtype = _step10.value;
+      var rtype = _step8.value;
       filter_buttons.push( /*#__PURE__*/_react["default"].createElement(_popover.Tooltip2, {
         content: rtype,
         key: rtype,
@@ -1702,13 +1659,13 @@ function LibraryPane(props) {
         }
       })));
     };
-    for (_iterator10.s(); !(_step10 = _iterator10.n()).done;) {
+    for (_iterator8.s(); !(_step8 = _iterator8.n()).done;) {
       _loop();
     }
   } catch (err) {
-    _iterator10.e(err);
+    _iterator8.e(err);
   } finally {
-    _iterator10.f();
+    _iterator8.f();
   }
   var left_pane = /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
     className: "d-flex flex-row",

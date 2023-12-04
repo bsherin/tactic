@@ -67,7 +67,6 @@ var ErrorBoundary = /*#__PURE__*/function (_React$Component) {
 }(_react["default"].Component);
 exports.ErrorBoundary = ErrorBoundary;
 ErrorBoundary.propTypes = {
-  children: _propTypes["default"].oneOfType([_propTypes["default"].array, _propTypes["default"].object]),
   fallback: _propTypes["default"].oneOfType([_propTypes["default"].string, _propTypes["default"].object])
 };
 ErrorBoundary.defaultProps = {

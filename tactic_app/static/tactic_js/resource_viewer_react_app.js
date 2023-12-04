@@ -79,13 +79,17 @@ function ResourceViewerApp(props) {
   var savedNotes = (0, _react.useRef)(props.notes);
   var omniGetters = (0, _react.useRef)({});
   var key_bindings = (0, _react.useRef)([]);
+  var _useState = (0, _react.useState)([]),
+    _useState2 = _slicedToArray(_useState, 2),
+    all_tags = _useState2[0],
+    set_all_tags = _useState2[1];
   var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
 
   // Only used when not in context
-  var _useState = (0, _react.useState)(false),
-    _useState2 = _slicedToArray(_useState, 2),
-    showOmnibar = _useState2[0],
-    setShowOmnibar = _useState2[1];
+  var _useState3 = (0, _react.useState)(false),
+    _useState4 = _slicedToArray(_useState3, 2),
+    showOmnibar = _useState4[0],
+    setShowOmnibar = _useState4[1];
   var connection_status = (0, _utilities_react.useConnection)(props.tsocket, initSocket);
   (0, _utilities_react.useConstructor)(function () {
     if (!window.in_context) {
@@ -96,6 +100,18 @@ function ResourceViewerApp(props) {
     statusFuncs.stopSpinner();
     if (props.registerOmniFunction) {
       props.registerOmniFunction(_omniFunction);
+    }
+  }, []);
+  (0, _react.useEffect)(function () {
+    if (!props.readOnly) {
+      var data_dict = {
+        pane_type: props.res_type,
+        is_repository: false,
+        show_hidden: true
+      };
+      (0, _communication_react.postAjaxPromise)("get_tag_list", data_dict).then(function (data) {
+        set_all_tags(data.tag_list);
+      });
     }
   }, []);
   function initSocket() {
@@ -157,6 +173,7 @@ function ResourceViewerApp(props) {
       marginRight: 0,
       height: "100%"
     },
+    all_tags: all_tags,
     created: props.created,
     notes: props.notes,
     icon: props.mdata_icon,

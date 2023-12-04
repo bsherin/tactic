@@ -12,6 +12,7 @@ import {doFlash, doFlashAlways, StatusContext} from "./toaster.js";
 import {SIDE_MARGIN} from "./sizing_tools.js"
 import {SearchForm} from "./library_widgets";
 import {useConstructor, useConnection} from "./utilities_react";
+import {postAjaxPromise} from "./communication_react.js";
 
 export {ResourceViewerApp, copyToLibrary, sendToRepository}
 
@@ -73,6 +74,7 @@ function ResourceViewerApp(props) {
     const savedNotes = useRef(props.notes);
     const omniGetters = useRef({});
     const key_bindings = useRef([]);
+    const [all_tags, set_all_tags] = useState([]);
 
     const statusFuncs = useContext(StatusContext);
 
@@ -92,6 +94,20 @@ function ResourceViewerApp(props) {
         statusFuncs.stopSpinner();
         if (props.registerOmniFunction) {
             props.registerOmniFunction(_omniFunction);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (!props.readOnly) {
+            let data_dict = {
+                pane_type: props.res_type,
+                is_repository: false,
+                show_hidden: true
+            };
+            postAjaxPromise("get_tag_list", data_dict)
+                .then(data => {
+                    set_all_tags(data.tag_list)
+                })
         }
     }, []);
 
@@ -158,6 +174,7 @@ function ResourceViewerApp(props) {
                               marginTop: 0, marginLeft: 10, overflow: "auto", padding: 15,
                               marginRight: 0, height: "100%"
                           }}
+                          all_tags={all_tags}
                           created={props.created}
                           notes={props.notes}
                           icon={props.mdata_icon}
