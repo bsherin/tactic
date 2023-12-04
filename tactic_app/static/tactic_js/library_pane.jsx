@@ -102,7 +102,7 @@ function LibraryPane(props) {
 
     const [data_dict, set_data_dict, data_dict_ref] = useStateAndRef({});
     const [num_rows, set_num_rows] = useState(0);
-    const [tag_list, set_tag_list] = useState([]);
+    const [tag_list, set_tag_list, tag_list_ref] = useStateAndRef([]);
     const [showOmnibar, setShowOmnibar] = useState(false);
     const [contextMenuItems, setContextMenuItems] = useState([]);
     const [total_width, set_total_width] = useState(500);
@@ -322,11 +322,13 @@ function LibraryPane(props) {
             case "update":
                 if ("_id" in res_dict) {
                     _id = res_dict._id;
-                    ind = get_data_dict_index_from_id(res_dict._id, res_dict.res_type);
+                    ind = get_data_dict_index_from_id(res_dict._id);
                 }
                 else {
                     ind = get_data_dict_index(res_name, res_dict.res_type);
-                    _id = data_dict_ref.current[ind]._id
+                    if (ind) {
+                        _id = data_dict_ref.current[ind]._id
+                    }
                 }
                 if (!ind) return;
                 new_data_dict = _.cloneDeep(data_dict_ref.current);
@@ -336,18 +338,15 @@ function LibraryPane(props) {
                 }
                 new_state = {data_dict: new_data_dict, rowChanged: rowChanged + 1};
                 if ("tags" in res_dict) {
-                    let res_tags = res_dict.tags.split(" ");
-                    let new_tag_list = _.cloneDeep(tag_list);
-                    let new_tag_found = false;
-                    for (let tag of res_tags) {
-                        if (!new_tag_list.includes(tag)) {
-                            new_tag_list.push(tag);
-                            new_tag_found = true;
-                        }
-                    }
-                    if (new_tag_found) {
-                        new_state["tag_list"] = new_tag_list;
-                    }
+                    let data_dict = {pane_type: props.pane_type,
+                        is_repository: props.is_repository,
+                        show_hidden: show_hidden_ref.current
+                    };
+                    postAjaxPromise("get_tag_list", data_dict)
+                        .then(data => {
+                            let all_tags = data.tag_list;
+                            set_tag_list(all_tags)
+                        })
                 }
                 if (_id == selected_resource_ref.current._id) {
                     set_selected_resource(the_row);
@@ -361,19 +360,38 @@ function LibraryPane(props) {
                 break;
             case "delete":
                 if ("_id" in res_dict) {
-                    ind = get_data_dict_index_from_id(res_dict._id, res_dict.res_type);
+                    ind = parseInt(get_data_dict_index_from_id(res_dict._id));
                 }
                 else {
-                    ind = get_data_dict_index(res_name, res_dict.res_type);
+                    ind = parseInt(get_data_dict_index(res_name, res_dict.res_type));
                 }
                 new_data_dict = _.cloneDeep(data_dict_ref.current);
-                delete new_data_dict[ind];
+                let is_last = ind == new_data_dict.length - 1;
+
+                let selected_ind = null;
+                if ("_id" in selected_resource_ref.current) {
+                    selected_ind = parseInt(get_data_dict_index_from_id(selected_resource_ref.current._id));
+                }
+                let is_selected_row = ind && ind == selected_ind;
+                let new_selected_ind = selected_ind;
+                if (selected_ind > ind) {
+                    new_selected_ind = selected_ind - 1;
+                }
+                delete new_data_dict[String(ind)];
                 new_state = {data_dict: new_data_dict, rowChanged: rowChanged + 1};
-                setState(new_state);
+                setState(new_state, ()=>{
+                    _grabNewChunkWithRow(ind, false, null, false, null, ()=>{
+                        if (new_selected_ind) {
+                            _selectRow(new_selected_ind)
+                        }
+                        else {
+                            clearSelected()
+                        }
+                    })
+                });
                 break;
             default:
                 return;
-
         }
     }
 
@@ -392,7 +410,7 @@ function LibraryPane(props) {
     }
 
     function _match_row_by_id(row1, row2) {
-        return row1._id == row2._id && row1.res_type == row2.res_type
+        return row1._id == row2._id
     }
 
     function _match_any_row(row1, row_list) {
@@ -428,9 +446,9 @@ function LibraryPane(props) {
         return null
     }
 
-    function get_data_dict_index_from_id(_id, res_type) {
+    function get_data_dict_index_from_id(_id) {
         for (let index in data_dict_ref.current) {
-            if (_match_row_by_id(data_dict_ref.current[index], {_id: _id, res_type: res_type})) {
+            if (_match_row_by_id(data_dict_ref.current[index], {_id: _id})){
                 return index
             }
         }
@@ -464,16 +482,6 @@ function LibraryPane(props) {
         let new_tags = _extractNewTags(selected_resource_ref.current.tags);
         postAjaxPromise("save_metadata", result_dict)
             .then(function (data) {
-                let new_data_dict = set_in_data_dict(saved_selected_rows,
-                    saved_selected_resource,
-                    data_dict_ref.current);
-                if (new_tags.length > 0) {
-                    let new_tag_list = [...tag_list, ...new_tags];
-                    set_data_dict(new_data_dict);
-                    set_tag_list(new_tag_list)
-                } else {
-                    set_data_dict(new_data_dict);
-                }
             })
             .catch(doFlash)
     }
@@ -486,19 +494,6 @@ function LibraryPane(props) {
         let new_tags = _extractNewTags(selected_resource_ref.current.tags);
         postAjaxPromise("overwrite_common_tags", result_dict)
             .then(function (data) {
-                let utags = data.updated_tags;
-                let new_data_dict = _.cloneDeep(data_dict_ref.current);
-                for (let urow of utags) {
-                    new_data_dict = set_in_data_dict([urow],
-                        {tags: urow.tags}, new_data_dict);
-                }
-                if (new_tags.length > 0) {
-                    let new_tag_list = [...tag_list, ...new_tags];
-                    set_data_dict(new_data_dict);
-                    set_tag_list(new_tag_list)
-                } else {
-                    set_data_dict(new_data_dict);
-                }
             })
             .catch(doFlash)
     }
@@ -599,7 +594,8 @@ function LibraryPane(props) {
     function _handleRowSelection(selected_rows) {
         if (!multi_select_ref.current) {
             let sres = selected_resource_ref.current;
-            if (sres.name != "" && (sres.notes != get_data_dict_entry(sres.name, sres.res_type).notes)) {
+            if (sres.name != "" && get_data_dict_entry(sres.name, sres.res_type) &&
+                (sres.notes != get_data_dict_entry(sres.name, sres.res_type).notes)) {
                 _saveFromSelectedResource()
             }
         }
@@ -758,7 +754,6 @@ function LibraryPane(props) {
         if (selected_resource.type == "freeform") {
             window.open($SCRIPT_ROOT + "/open_raw/" + selected_resource.name)
         } else {
-            // doFlash("Only Freeform documents can be raw opened")
             statusFuncs.statusMessage("Only Freeform documents can be raw opened", 5);
         }
     }
@@ -847,11 +842,11 @@ function LibraryPane(props) {
             handleSubmit: ()=>{
             postAjaxPromise("delete_resource_list", {"resource_list": res_list})
                 .then(() => {
-                    let new_index = 0;
-                    if (first_index > 0) {
-                        new_index = first_index - 1;
-                    }
-                    _grabNewChunkWithRow(new_index, true, null, true)
+                    // let new_index = 0;
+                    // if (first_index > 0) {
+                    //     new_index = first_index - 1;
+                    // }
+                    // _grabNewChunkWithRow(new_index, true, null, true)
                 })
             },
             handleClose: dialogFuncs.hideModal,
@@ -1379,23 +1374,6 @@ function LibraryPane(props) {
         myDropZone.processQueue();
     }
 
-    // function _showPoolImport() {
-    //     dialogFuncs.showModal("FileImportDialog", {
-    //         res_type: "pool",
-    //         allowed_file_types: null,
-    //         checkboxes: [],
-    //         process_handler: _add_to_pool,
-    //         tsocket: props.tsocket,
-    //         combine: false,
-    //         show_csv_options: false,
-    //         after_upload: null,
-    //         show_address_selector: true,
-    //         initial_address: "/mydisk",
-    //         handleClose: dialogFuncs.hideModal,
-    //         handleCancel: null
-    //     });
-    // }
-
     function _new_code(template_name) {
         $.getJSON(`${$SCRIPT_ROOT}/get_resource_names/code`, function (data) {
                 dialogFuncs.showModal("ModalDialog", {
@@ -1498,6 +1476,7 @@ function LibraryPane(props) {
     let outer_style = {marginTop: 0, marginLeft: 5, overflow: "auto", padding: 15, marginRight: 0, height: "100%"};
     let right_pane = (
         <CombinedMetadata tags={split_tags}
+                          all_tags={tag_list}
                           elevation={2}
                           name={selected_resource_ref.current.name}
                           created={selected_resource_ref.current.created}

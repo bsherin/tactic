@@ -107,7 +107,7 @@ function CreatorApp(props) {
     const [usable_width, set_usable_width] = useState(() => {
         return getUsableDimensions(true).usable_width - 170
     });
-
+    const [all_tags, set_all_tags] = useState([]);
     const [showOmnibar, setShowOmnibar] = useState(false);
 
     const theme = useContext(ThemeContext);
@@ -129,6 +129,14 @@ function CreatorApp(props) {
             ];
         }
     });
+
+    useEffect(() => {
+        let data_dict = {pane_type: "tile", is_repository: false, show_hidden: true};
+        postAjaxPromise("get_tag_list", data_dict)
+            .then(data => {
+                set_all_tags(data.tag_list)
+            })
+    }, []);
 
     useEffect(() => {
         if (props.registerOmniFunction) {
@@ -1015,6 +1023,7 @@ function CreatorApp(props) {
     let default_module_height = get_height_minus_top_offset(null, 128, 128);
     let mdata_style = {marginLeft: 20, overflow: "auto", padding: 15, height: default_module_height};
     let mdata_panel = (<CombinedMetadata tags={tags_ref.current}
+                                         all_tags={all_tags}
                                          readOnly={props.readOnly}
                                          notes={notes_ref.current}
                                          icon={icon_ref.current}

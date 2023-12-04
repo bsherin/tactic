@@ -83,14 +83,17 @@ class ResourceManager(ExceptionMixin):
                 user_obj = current_user
         return getattr(user_obj, self.collection_list_with_metadata)
 
-    def get_tag_list(self, user_obj=None):
-        res_list = self.get_resource_list_with_metadata(user_obj)
+    def get_tag_list(self, show_hidden=True):
+        res_list = self.get_resource_list_with_metadata()
         result = []
         for res_item in res_list:
             mdata = res_item[1]
             if mdata and "tags" in mdata:
                 result += str(mdata["tags"].lower()).split()
-        return sorted(list(set(result)))
+        all_tags = sorted(list(set(result)))
+        if not show_hidden:
+            all_tags = list(filter(lambda tag: not re.search("(^|/| )hidden($|/| )", tag), all_tags))
+        return all_tags
 
     def get_all_subtags(self, tag_string):
         full_tags = tag_string.split()

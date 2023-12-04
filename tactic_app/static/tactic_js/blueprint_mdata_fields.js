@@ -17,7 +17,6 @@ var _markdownIt = _interopRequireDefault(require("markdown-it"));
 require("markdown-it-latex/dist/index.css");
 var _markdownItLatex = _interopRequireDefault(require("markdown-it-latex"));
 var _lodash = _interopRequireDefault(require("lodash"));
-var _communication_react = require("./communication_react");
 var _utilities_react = require("./utilities_react");
 var _icon_info = require("./icon_info");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
@@ -277,24 +276,6 @@ function NativeTags(props) {
     _useState2 = _slicedToArray(_useState, 2),
     query = _useState2[0],
     setQuery = _useState2[1];
-  var _useState3 = (0, _react.useState)([]),
-    _useState4 = _slicedToArray(_useState3, 2),
-    suggestions = _useState4[0],
-    setSuggestions = _useState4[1];
-  (0, _react.useEffect)(function () {
-    var data_dict = {
-      "pane_type": props.pane_type,
-      "is_repository": false
-    };
-    if (!props.pane_type) {
-      setSuggestions([]);
-      return;
-    }
-    (0, _communication_react.postAjaxPromise)("get_tag_list", data_dict).then(function (data) {
-      var all_tags = data.tag_list;
-      setSuggestions(all_tags);
-    });
-  }, [props.pane_type]);
   function renderTag(item) {
     return item;
   }
@@ -333,7 +314,7 @@ function NativeTags(props) {
     itemRenderer: renderSuggestion,
     selectedItems: props.tags,
     allowNew: true,
-    items: suggestions,
+    items: props.all_tags,
     itemPredicate: _filterSuggestion,
     tagRenderer: renderTag,
     tagInputProps: {
@@ -350,16 +331,16 @@ NativeTags.proptypes = {
   readOnly: _propTypes["default"].bool
 };
 function NotesField(props) {
-  var _useState5 = (0, _react.useState)(500),
-    _useState6 = _slicedToArray(_useState5, 2),
-    mdHeight = _useState6[0],
-    setMdHeight = _useState6[1];
-  var _useState7 = (0, _react.useState)(function () {
+  var _useState3 = (0, _react.useState)(500),
+    _useState4 = _slicedToArray(_useState3, 2),
+    mdHeight = _useState4[0],
+    setMdHeight = _useState4[1];
+  var _useState5 = (0, _react.useState)(function () {
       return hasOnlyWhitespace() ? false : props.show_markdown_initial;
     }),
-    _useState8 = _slicedToArray(_useState7, 2),
-    showMarkdown = _useState8[0],
-    setShowMarkdown = _useState8[1];
+    _useState6 = _slicedToArray(_useState5, 2),
+    showMarkdown = _useState6[0],
+    setShowMarkdown = _useState6[1];
   var awaitingFocus = (0, _react.useRef)(false);
   var mdRef = (0, _react.useRef)(null);
   var notesRef = (0, _react.useRef)(null);
@@ -510,14 +491,14 @@ IconSelector.propTypes = {
   icon_val: _propTypes["default"].string
 };
 function CombinedMetadata(props) {
-  var _useState9 = (0, _react.useState)(false),
+  var _useState7 = (0, _react.useState)(false),
+    _useState8 = _slicedToArray(_useState7, 2),
+    auxIsOpen = _useState8[0],
+    setAuxIsOpen = _useState8[1];
+  var _useState9 = (0, _react.useState)(null),
     _useState10 = _slicedToArray(_useState9, 2),
-    auxIsOpen = _useState10[0],
-    setAuxIsOpen = _useState10[1];
-  var _useState11 = (0, _react.useState)(null),
-    _useState12 = _slicedToArray(_useState11, 2),
-    tempNotes = _useState12[0],
-    setTempNotes = _useState12[1];
+    tempNotes = _useState10[0],
+    setTempNotes = _useState10[1];
   var _useDebounce = (0, _utilities_react.useDebounce)(function (newval) {
       props.handleChange({
         "notes": newval
@@ -596,6 +577,7 @@ function CombinedMetadata(props) {
     label: "Tags"
   }, /*#__PURE__*/_react["default"].createElement(NativeTags, {
     tags: props.tags,
+    all_tags: props.all_tags,
     readOnly: props.readOnly,
     handleChange: _handleTagsChange,
     pane_type: props.pane_type

@@ -215,25 +215,39 @@ function CreatorApp(props) {
     _useState24 = _slicedToArray(_useState23, 2),
     usable_width = _useState24[0],
     set_usable_width = _useState24[1];
-  var _useState25 = (0, _react.useState)(false),
+  var _useState25 = (0, _react.useState)([]),
     _useState26 = _slicedToArray(_useState25, 2),
-    showOmnibar = _useState26[0],
-    setShowOmnibar = _useState26[1];
+    all_tags = _useState26[0],
+    set_all_tags = _useState26[1];
+  var _useState27 = (0, _react.useState)(false),
+    _useState28 = _slicedToArray(_useState27, 2),
+    showOmnibar = _useState28[0],
+    setShowOmnibar = _useState28[1];
   var theme = (0, _react.useContext)(_theme.ThemeContext);
   var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
   var selectedPane = (0, _react.useContext)(_utilities_react.SelectedPaneContext);
   var pushCallback = (0, _utilities_react.useCallbackStack)();
-  var _useState27 = (0, _react.useState)(props.resource_name),
-    _useState28 = _slicedToArray(_useState27, 2),
-    resource_name = _useState28[0],
-    set_resource_name = _useState28[1];
+  var _useState29 = (0, _react.useState)(props.resource_name),
+    _useState30 = _slicedToArray(_useState29, 2),
+    resource_name = _useState30[0],
+    set_resource_name = _useState30[1];
   var connection_status = (0, _utilities_react.useConnection)(props.tsocket, initSocket);
   (0, _utilities_react.useConstructor)(function () {
     if (!window.in_context) {
       key_bindings.current = [[["ctrl+space"], _showOmnibar]];
     }
   });
+  (0, _react.useEffect)(function () {
+    var data_dict = {
+      pane_type: "tile",
+      is_repository: false,
+      show_hidden: true
+    };
+    (0, _communication_react.postAjaxPromise)("get_tag_list", data_dict).then(function (data) {
+      set_all_tags(data.tag_list);
+    });
+  }, []);
   (0, _react.useEffect)(function () {
     if (props.registerOmniFunction) {
       props.registerOmniFunction(_omniFunction);
@@ -1147,6 +1161,7 @@ function CreatorApp(props) {
   };
   var mdata_panel = /*#__PURE__*/_react["default"].createElement(_blueprint_mdata_fields.CombinedMetadata, {
     tags: tags_ref.current,
+    all_tags: all_tags,
     readOnly: props.readOnly,
     notes: notes_ref.current,
     icon: icon_ref.current,

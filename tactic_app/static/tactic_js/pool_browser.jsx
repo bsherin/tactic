@@ -18,7 +18,6 @@ import {ThemeContext} from "./theme";
 import {DialogContext} from "./modal_react";
 
 import {library_id} from "./library_home_react"
-import {res_types} from "./library_pane";
 
 export {PoolBrowser}
 
@@ -444,6 +443,7 @@ function PoolBrowser(props) {
     }
     let right_pane = (
         <CombinedMetadata useTags={false}
+                          all_tags={[]}
                           useNotes={false}
                           elevation={2}
                           name={selected_resource_ref.current.name}
