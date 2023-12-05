@@ -58,6 +58,10 @@ class CollectionManager(LibraryResourceManager):
                          login_required(self.main_collection), methods=['get'])
         app.add_url_rule('/main_collection_in_context', "main_in_context",
                          login_required(self.main_collection_in_context), methods=['get', 'post'])
+        app.add_url_rule('/new_project', "new_project",
+                         login_required(self.new_project), methods=['get'])
+        app.add_url_rule('/new_project_in_context', "new_project_in_context",
+                         login_required(self.new_project_in_context), methods=['get', 'post'])
         app.add_url_rule('/create_empty_collection', "create_empty_collection",
                          login_required(self.create_empty_collection), methods=['get', "post"])
         app.add_url_rule('/append_documents_to_collection/<collection_name>/<doc_type>/<library_id>',
@@ -170,6 +174,47 @@ class CollectionManager(LibraryResourceManager):
         return render_template("main_react.html",
                                collection_name=collection_name,
                                window_title=collection_name,
+                               project_name="",
+                               is_new_notebook="False",
+                               theme=current_user.get_theme(),
+                               develop=str(_develop),
+                               version_string=tstring,
+                               css_source=css_source("main_app"),
+                               module_source=js_source_dict["main_app"])
+
+    def new_project_in_context(self):
+        user_obj = current_user
+        main_id, rb_id = main_container_info.create_main_container("", user_obj.get_id(),
+                                                                   user_obj.username)
+        create_ready_block(rb_id, user_obj.username, [main_id, "client"], main_id)
+        doc_type = "none"
+        data = {
+            "success": True,
+            "kind": "main-viewer",
+            "res_type": "collection",
+            "short_collection_name": "",
+            "resource_name": "new project",
+            "collection_name": "",
+            "main_id": main_id,
+            "ready_block_id": rb_id,
+            "mdata": "",
+            "is_project": False,
+            "project_name": "",
+            "doc_names": [],
+            "base_figure_url": url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1],
+            "temp_data_id": "",
+            "console_html": "",
+            "doc_type": doc_type,
+            "is_table": False,
+            "is_freeform": False
+        }
+        return jsonify(data)
+
+    def new_project(self,):
+
+        return render_template("main_react.html",
+                               collection_name="",
+                               window_title="New Project",
                                project_name="",
                                is_new_notebook="False",
                                theme=current_user.get_theme(),

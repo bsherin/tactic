@@ -23,6 +23,7 @@ from other_api_mixin import OtherAPIMIxin
 from refreshing_mixin import RefreshingMixin
 from exception_mixin import ExceptionMixin, generic_exception_handler
 from document_object import ROWS_TO_PRINT, DetachedTacticCollection
+import document_object
 from qworker_alt import debug_log
 import copy
 from qworker_alt import task_worthy_methods
@@ -336,6 +337,12 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
 
         self.log_it(self.build_html_table_from_data_list(parray, title=self.tile_name, sidebyside=True),
                     summary=summary)
+        return None
+
+    @_task_worthy
+    def RebuildCollectionObject(self, data):
+        self.doc_type = data["doc_type"]
+        document_object.Collection.__fully_initialize__()
         return None
 
     @_task_worthy

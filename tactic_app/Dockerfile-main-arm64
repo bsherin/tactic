@@ -1,9 +1,10 @@
 FROM bsherin/tactic:base-arm64
 WORKDIR /code
-ADD ./main_container_env /code
+ADD ./main_container_env/requirements.txt /code/requirements.txt
 RUN pip install -r requirements.txt
 #RUN pip install pydevd-pycharm
 MAINTAINER "Bruce L Sherin"
+ADD ./main_container_env /code
 ADD  ./volume_manager.py ./exception_mixin.py ./redis_tools.py ./qworker.py ./communication_utils.py \
 ./docker_functions.py ./mongo_accesser.py ./loaded_tile_management.py  ./rabbit_manage.py ./mongo_db_fs.py /code/
 CMD ["python", "-u", "main_main.py"]

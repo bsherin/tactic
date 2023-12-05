@@ -266,7 +266,7 @@ class LoadSaveTasksMixin:
         if self.doc_type == "table":
             task_data.update(self.grab_chunk_by_row_index(
                 {"doc_name": self.doc_names[0], "row_index": 0, "set_visible_doc": True}))
-        else:
+        elif self.doc_type == "freeform":
             task_data.update(
                 self.grab_freeform_data({"doc_name": self.doc_names[0], "set_visible_doc": True}))
 
@@ -417,6 +417,7 @@ class LoadSaveTasksMixin:
                 if not self.doc_type == "notebook":
                     self.mdata["collection_name"] = self.collection_name
                     self.mdata["loaded_tiles"] = project_dict["used_tile_types"]
+                    self.mdata["type"] = self.doc_type
                     if self.purgetiles:
                         project_dict["loaded_modules"] = project_dict["used_modules"]
                 self.show_main_status_message("Pickle, convert, compress")
@@ -686,6 +687,17 @@ class LoadSaveTasksMixin:
         self.tile_reload_dicts[data_dict["tile_id"]] = data_dict["reload_dict"]
         return {"success": True}
 
+    @task_worthy
+    def remove_collection_from_project(self, data_dict):
+        self.doc_type = "none"
+        self.collection_name = ""
+        self.short_collection_name = ""
+        self.doc_dict = {}
+        self.visible_doc_name = ""
+        self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task", {"tile_id": None})
+        self.mworker.post_task(self.mworker.my_id, "update_tile_collection_objects_task", {"doc_type": self.doc_type})
+        return {"success": True}
+
     @task_worthy_manual_submit
     def change_collection(self, data_dict, task_packet):
         local_task_packet = task_packet
@@ -696,21 +708,26 @@ class LoadSaveTasksMixin:
             doc_type = "freeform"
         else:
             doc_type = "table"
-        if not doc_type == self.doc_type:
-            error_string = "Cannot replace a collection with a different type"
-            return_data = {"success": False, "message": error_string}
-            return return_data
+        self.doc_type = doc_type
+
         doc_names = list(new_collection_dict.keys())
         self.short_collection_name = short_collection_name
         self.collection_name = short_collection_name
         self.doc_dict = self._build_doc_dict()
         self.visible_doc_name = list(self.doc_dict)[0]
         self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task", {"tile_id": None})
+        self.mworker.post_task(self.mworker.my_id, "update_tile_collection_objects_task", {"doc_type": doc_type})
+
         return_data = {"success": True,
                        "collection_name": self.collection_name,
                        "short_collection_name": self.short_collection_name,
+                       "doc_type": self.doc_type,
                        "doc_names": doc_names}
         print("in revised main_tasks_mixin")
+        if self.doc_type == "table":
+            return_data.update(self.grab_chunk_by_row_index({"doc_name": self.doc_names[0], "row_index": 0, "set_visible_doc": True}))
+        elif self.doc_type == "freeform":
+            return_data.update(self.grab_freeform_data({"doc_name": self.doc_names[0], "set_visible_doc": True}))
         self.mworker.submit_response(local_task_packet, return_data)
         return
 
@@ -823,6 +840,21 @@ class TileCreationTasksMixin:
 
         self.mworker.post_task(new_id[0], "load_source_and_recreate", lsdata, recreate_done,
                                expiration=60, error_handler=handle_response_error)
+
+    @task_worthy
+    def update_tile_collection_objects_task(self, ddict):
+        debug_log('entering rebuild_tile_forms_task')
+        try:
+            if self.am_notebook_type:
+                return
+            for tid in self.tile_instances:
+                self.mworker.post_task(tid, "RebuildCollectionObject", ddict)
+            if self.pseudo_tile_id is not None:
+                self.mworker.post_task(self.pseudo_tile_id, "RebuildCollectionObject", ddict)
+        except Exception as ex:
+            error_string = self.handle_exception(ex, "Error updating collection objects")
+            print(error_string)
+            return
 
     @task_worthy
     def rebuild_tile_forms_task(self, ddict):

@@ -105,10 +105,34 @@ function main_props(data, registerDirtyMethod, finalCallback, registerOmniFuncti
         _iterator.f();
       }
     }
-    if (data.is_freeform) {
+    if (data.doc_type == "none") {
       finalCallback({
         is_project: data.is_project,
         main_id: main_id,
+        is_freeform: false,
+        doc_type: data.doc_type,
+        resource_name: data.is_project ? data.project_name : "",
+        is_notebook: false,
+        is_jupyter: false,
+        tsocket: tsocket,
+        short_collection_name: "",
+        initial_tile_types: initial_tile_types,
+        initial_tile_icon_dict: initial_tile_icon_dict,
+        interface_state: interface_state,
+        initial_data_text: fdata.data_text,
+        initial_table_spec: {
+          current_doc_name: ""
+        },
+        initial_theme: window.theme,
+        initial_doc_names: [],
+        registerDirtyMethod: registerDirtyMethod,
+        registerOmniFunction: registerOmniFunction
+      });
+    } else if (data.is_freeform) {
+      finalCallback({
+        is_project: data.is_project,
+        main_id: main_id,
+        doc_type: data.doc_type,
         is_freeform: true,
         resource_name: data.is_project ? data.project_name : data.short_collection_name,
         is_notebook: false,
@@ -131,6 +155,7 @@ function main_props(data, registerDirtyMethod, finalCallback, registerOmniFuncti
       finalCallback({
         is_project: data.is_project,
         main_id: main_id,
+        doc_type: data.doc_type,
         is_freeform: false,
         is_notebook: false,
         is_jupyter: false,

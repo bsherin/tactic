@@ -100,7 +100,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
             self.console_html = None
             self.console_cm_code = {}
             self.purgetiles = False
-            if self.doc_type == "notebook" or self.doc_type == "jupyter":
+            if self.doc_type in ["notebook", "jupyter", "none"]:
                 self.collection_name = ""
                 self.short_collection_name = ""
                 self.doc_dict = {}
@@ -339,8 +339,10 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
             for old_tile_id, tile_save_dict in project_dict["tile_instances"].items():
                 tile_info_dict[old_tile_id] = tile_save_dict["tile_type"]
             self.project_dict = project_dict
-            # self.doc_dict = self._build_doc_dict()
-            self.visible_doc_name = list(self.doc_dict)[0]  # This is necessary for recreating the tiles
+            if self.doc_type == "none":
+                self.visible_doc_name = ""
+            else:
+                self.visible_doc_name = list(self.doc_dict)[0]  # This is necessary for recreating the tiles
             if self.is_legacy_save(self.mdata):
                 print("got a legacy save")
                 interface_state = self.convert_legacy_save(project_dict)
@@ -426,7 +428,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
 
     @property
     def current_header_list(self):
-        if self.doc_type == "freeform":
+        if self.doc_type in ["freeform", "none"]:
             return []
         dinfo = self.doc_dict[self.visible_doc_name]
         return dinfo.table_spec.header_list

@@ -26,21 +26,21 @@ function ProjectMenu(props) {
     if (props.is_notebook)
          save_state = {
             console_items: props.console_items,
-            show_exports_pane: props.mState.show_exports_pane,
-            console_width_fraction: props.mState.console_width_fraction
+            show_exports_pane: props.mStateRef.current.show_exports_pane,
+            console_width_fraction: props.mStateRef.current.console_width_fraction
         };
     else {
         save_state = {
             console_items: props.console_items,
             tile_list: props.tile_list,
-            table_is_shrunk: props.mState.table_is_shrunk,
-            horizontal_fraction: props.mState.horizontal_fraction,
-            console_is_shrunk: props.mState.console_is_shrunk,
-            height_fraction: props.mState.height_fraction,
-            show_console_pane: props.mState.show_console_pane,
-            console_is_zoomed: props.mState.console_is_zoomed,
-            show_exports_pane: props.mState.show_exports_pane,
-            console_width_fraction: props.mState.console_width_fraction
+            table_is_shrunk: props.mStateRef.current.table_is_shrunk,
+            horizontal_fraction: props.mStateRef.current.horizontal_fraction,
+            console_is_shrunk: props.mStateRef.current.console_is_shrunk,
+            height_fraction: props.mStateRef.current.height_fraction,
+            show_console_pane: props.mStateRef.current.show_console_pane,
+            console_is_zoomed: props.mStateRef.current.console_is_zoomed,
+            show_exports_pane: props.mStateRef.current.show_exports_pane,
+            console_width_fraction: props.mStateRef.current.console_width_fraction
         };
     }
 
@@ -374,6 +374,16 @@ function ProjectMenu(props) {
     }
 
     function menu_items() {
+        let cc_name;
+        let cc_icon;
+        if (props.mStateRef.current.doc_type == "none" ) {
+            cc_name = "Add Collection";
+            cc_icon = "add"
+        }
+        else {
+            cc_name = "Change Collection";
+            cc_icon = "exchange"
+        }
         let items = [
             {name_text: "Save As...", icon_name: "floppy-disk", click_handler: _saveProjectAs},
             {name_text: "Save", icon_name: "saved", click_handler: ()=>{_saveProject(false)}},
@@ -385,7 +395,8 @@ function ProjectMenu(props) {
             {name_text: "Export Table as Collection", icon_name: "export", click_handler: _exportDataTable},
             {name_text: "Open Console as Notebook", icon_name: "console", click_handler: _consoleToNotebook},
             {name_text: "divider2", icon_name: null, click_handler: "divider"},
-            {name_text: "Change collection", icon_name: "exchange", click_handler: props.changeCollection},
+            {name_text: cc_name, icon_name: cc_icon, click_handler: props.changeCollection},
+            {name_text: "Remove Collection", icon_name: "cross-circle", click_handler: props.removeCollection},
         ];
         let reduced_items = [];
         for (let item of items) {
@@ -686,10 +697,12 @@ function ViewMenu(props) {
 
 
     function option_dict () {
-        let table_opt_name = props.table_is_shrunk ? "Maximize Table" : "Minimize Table";
         let result = {};
-        result[table_opt_name] = props.toggleTableShrink;
-        result["divider1"] = "divider";
+        if (props.toggleTableShrink) {
+            let table_opt_name = props.table_is_shrunk ? "Maximize Table" : "Minimize Table";
+            result[table_opt_name] = props.toggleTableShrink;
+            result["divider1"] = "divider";
+        }
         let console_opt_name = props.show_console_pane ? "Hide Log" : "Show Log";
         result[console_opt_name] = _toggleConsole;
         let exports_opt_name = props.show_exports_pane ? "Hide Exports" : "Show Exports";
@@ -700,9 +713,11 @@ function ViewMenu(props) {
     }
 
     function icon_dict () {
-        let opt_name = props.table_is_shrunk ? "Maximize Table" : "Minimize Table";
         let result = {};
-        result[opt_name] = props.table_is_shrunk ? "maximize" : "minimize";
+        if (props.toggleTableShrink) {
+            let opt_name = props.table_is_shrunk ? "Maximize Table" : "Minimize Table";
+            result[opt_name] = props.table_is_shrunk ? "maximize" : "minimize";
+        }
 
         let console_opt_name = props.show_console_pane ? "Hide Log" : "Show Log";
         let exports_opt_name = props.show_exports_pane ? "Hide Exports" : "Show Exports";

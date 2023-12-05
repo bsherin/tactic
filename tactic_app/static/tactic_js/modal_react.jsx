@@ -483,7 +483,7 @@ ReportDialog.defaultProps = {
 
 function SelectDialog(props) {
     const [show, set_show] = useState(false);
-    const [value, set_value] = useState(false);
+    const [value, set_value] = useState("");
 
     const theme = useContext(ThemeContext);
 

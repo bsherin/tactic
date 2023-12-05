@@ -156,7 +156,7 @@ class MainWorker(QWorker, ExceptionMixin):
                          "collection_name": self.mwindow.collection_name,
                          "doc_names": self.mwindow.doc_names,
                          "console_html": ""}
-            if data_dict["doc_type"] == "notebook":
+            if data_dict["doc_type"] in ["notebook", "none"]:
                 return task_data
             print("ready to grab chunk")
             if data_dict["doc_type"] == "table":

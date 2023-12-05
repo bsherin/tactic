@@ -30,12 +30,12 @@ function FreeformBody(props, passedRef) {
     }
 
     function _doSearch(){
-        if (props.mState.alt_search_text && (props.mState.alt_search_text != "") && cmobject.current) {
-            overlay.current = mySearchOverlay(props.mState.alt_search_text, true);
+        if (props.mStateRef.current.alt_search_text && (props.mStateRef.current.alt_search_text != "") && cmobject.current) {
+            overlay.current = mySearchOverlay(props.mStateRef.current.alt_search_text, true);
             cmobject.current.addOverlay(overlay.current)
         }
-        else if (props.mState.search_text && (props.mState.search_text != "") && cmobject) {
-            overlay.current = mySearchOverlay(props.mState.search_text, true);
+        else if (props.mStateRef.current.search_text && (props.mStateRef.current.search_text != "") && cmobject) {
+            overlay.current = mySearchOverlay(props.mStateRef.current.search_text, true);
             cmobject.current.addOverlay(overlay.current)
         }
     }
@@ -64,7 +64,7 @@ function FreeformBody(props, passedRef) {
 
     function _handleBlur(new_data_text) {
         postWithCallback(props.main_id, "add_freeform_document",
-            { document_name: props.mState.table_spec.document_name, doc_text: new_data_text }, null)
+            { document_name: props.mStateRef.current.table_spec.document_name, doc_text: new_data_text }, null)
     }
 
     function _handleChange(new_data_text) {
@@ -77,9 +77,9 @@ function FreeformBody(props, passedRef) {
         <div ref={passedRef}>
             <ReactCodemirror handleBlur={_handleBlur}
                              handleChange={null}
-                             code_content={props.mState.data_text}
+                             code_content={props.mStateRef.current.data_text}
                              sync_to_prop={true}
-                             soft_wrap={props.mState.soft_wrap}
+                             soft_wrap={props.mStateRef.current.soft_wrap}
                              mode="Plain Text"
                              code_container_height={props.code_container_height}
                              code_container_width={props.code_container_width - 30}
@@ -137,7 +137,7 @@ function MainTableCardHeader(props) {
     }
 
     function _handleFilter() {
-        const data_dict = {"text_to_find": props.mState.search_text};
+        const data_dict = {"text_to_find": props.mStateRef.current.search_text};
         postWithCallback(props.main_id, "UnfilterTable", data_dict, function () {
             if (props.search_text !== "") {
                 postWithCallback(props.main_id, "FilterTable", data_dict,
@@ -150,8 +150,8 @@ function MainTableCardHeader(props) {
 
     function _handleUnFilter() {
         props.handleSearchFieldChange(null);
-        if (props.mState.table_is_filtered) {
-            postWithCallback(props.main_id, "UnfilterTable", {selected_row: props.mState.selected_row}, null);
+        if (props.mStateRef.current.table_is_filtered) {
+            postWithCallback(props.main_id, "UnfilterTable", {selected_row: props.mStateRef.current.selected_row}, null);
             props.setMainStateValue({"table_is_filtered": false,
                 "selected_regions": null,
                 "selected_row": null})
@@ -168,7 +168,7 @@ function MainTableCardHeader(props) {
 
     let heading_right_opacity = hide_right_element ? 0 : 100;
     let select_style = {height: 30, maxWidth: 250};
-    let doc_button_text = <Text ellipsize={true}>{props.mState.table_spec.current_doc_name}</Text>;
+    let doc_button_text = <Text ellipsize={true}>{props.mStateRef.current.table_spec.current_doc_name}</Text>;
     let self = this;
     return (
         <div className="d-flex pl-2 pr-2 justify-content-between align-baseline main-heading" style={{height: 50}}>
@@ -177,16 +177,16 @@ function MainTableCardHeader(props) {
                     <GlyphButton handleClick={props.toggleShrink} icon="minimize"/>
                     <div className="d-flex flex-column justify-content-around">
                         <form className="d-flex flex-row">
-                            <FormGroup label={props.mState.short_collection_name}
+                            <FormGroup label={props.mStateRef.current.short_collection_name}
                                           inline={true}
                                           style={{marginBottom: 0, marginLeft: 5, marginRight: 10}}>
-                                <BpSelect options={props.mState.doc_names}
+                                <BpSelect options={props.mStateRef.current.doc_names}
                                           onChange={_onChangeDoc}
                                           buttonStyle={select_style}
                                           buttonTextObject={doc_button_text}
-                                          value={props.mState.table_spec.current_doc_name}/>
+                                          value={props.mStateRef.current.table_spec.current_doc_name}/>
                             </FormGroup>
-                            {props.mState.show_table_spinner &&
+                            {props.mStateRef.current.show_table_spinner &&
                                 <Spinner size={15} />}
                         </form>
                     </div>
@@ -199,20 +199,20 @@ function MainTableCardHeader(props) {
                         <Switch label="soft wrap"
                                  className="mr-2 mb-0"
                                 large={false}
-                                checked={props.mState.soft_wrap}
+                                checked={props.mStateRef.current.soft_wrap}
                                 onChange={props.handleSoftWrapChange}
                         />
                     }
                         <Switch label="edit"
                                  className="mr-4 mb-0"
                                 large={false}
-                                checked={props.mState.spreadsheet_mode}
+                                checked={props.mStateRef.current.spreadsheet_mode}
                                 onChange={props.handleSpreadsheetModeChange}
                         />
                         <InputGroup type="search"
                                        leftIcon="search"
                                        placeholder="Search"
-                                       value={!props.mState.search_text ? "" : props.mState.search_text}
+                                       value={!props.mStateRef.current.search_text ? "" : props.mStateRef.current.search_text}
                                        onChange={_handleSearchFieldChange}
                                        autoCapitalize="none"
                                        autoCorrect="off"

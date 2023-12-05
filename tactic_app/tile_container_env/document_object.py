@@ -854,23 +854,31 @@ class TacticCollection:
         self.__fully_initialize__(grab_all_docs=self._grab_all_docs)
 
     def __fully_initialize__(self, grab_all_docs=False):
-        print('entering fully initialize')
-        self._iter_value = -1
-        self._collection_info = _tworker.tile_instance.get_collection_info()
         self._doc_type = _tworker.tile_instance.doc_type
-        print('got doc type {}'.format(self._doc_type))
-        self._doc_names = list(self._collection_info.keys())
-        self._number_docs = len(self._doc_names)
-        self._grab_all_docs = grab_all_docs
-        if self._doc_type == "freeform":
-            self._doc_class = FreeformTacticDocument
-        else:
-            self._doc_class = TacticDocument
-
-        if grab_all_docs:
-            self._doc_dict = {dname: self._create_doc_object(dname) for dname in self._doc_names}
-        else:
+        self._iter_value = -1
+        if self._doc_type == "none":
+            self._doc_names = []
+            self._number_docs = 0
+            self._grab_all_docs = False
+            self._doc_class = None
             self._doc_dict = {}
+            self._metadata = None
+            return
+        else:
+            self._collection_info = _tworker.tile_instance.get_collection_info()
+            print('got doc type {}'.format(self._doc_type))
+            self._doc_names = list(self._collection_info.keys())
+            self._number_docs = len(self._doc_names)
+            self._grab_all_docs = grab_all_docs
+            if self._doc_type == "freeform":
+                self._doc_class = FreeformTacticDocument
+            else:
+                self._doc_class = TacticDocument
+
+            if grab_all_docs:
+                self._doc_dict = {dname: self._create_doc_object(dname) for dname in self._doc_names}
+            else:
+                self._doc_dict = {}
         return
 
     def _reinitializeDoc(self, docname, number_rows):

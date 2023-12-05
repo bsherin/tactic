@@ -1127,6 +1127,16 @@ function LibraryPane(props) {
       window.open("".concat($SCRIPT_ROOT, "/new_notebook"));
     }
   }
+  function _new_project() {
+    if (window.in_context) {
+      var the_view = "".concat($SCRIPT_ROOT, "/new_project_in_context");
+      (0, _communication_react.postAjaxPromise)(the_view, {
+        resource_name: ""
+      }).then(props.handleCreateViewer)["catch"](_toaster.doFlash);
+    } else {
+      window.open("".concat($SCRIPT_ROOT, "/new_project"));
+    }
+  }
   function _downloadJupyter() {
     var res_name = selected_resource_ref.current.name;
     dialogFuncs.showModal("ModalDialog", {
@@ -1549,6 +1559,7 @@ function LibraryPane(props) {
       delete_func: _delete_func,
       rename_func: _rename_func,
       new_notebook: _new_notebook,
+      new_project: _new_project,
       downloadJupyter: _downloadJupyter,
       showJupyterImport: _showJupyterImport,
       combineCollections: _combineCollections,
