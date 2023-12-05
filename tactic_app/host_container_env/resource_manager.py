@@ -344,11 +344,13 @@ class LibraryResourceManager(ResourceManager):
             icon_dict = {"table": "icon:projects",
                          "freeform": "icon:projects",
                          "notebook": "icon:projects",
+                         "none": "icon:projects",
                          "jupyter": "icon:projects"}
         else:
             icon_dict = {"table": "icon:projects",
                          "freeform": "icon:projects",
                          "notebook": "icon:console",
+                         "none": "icon:projects",
                          "jupyter": "icon:globe-network"}
         for val in filtered_list:
             if val["res_type"] == "project":

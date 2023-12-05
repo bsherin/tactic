@@ -141,6 +141,10 @@ function AllMenubar(props) {
                     name_text: "New Notebook", icon_name: "new-text-box",
                     click_handler: props.new_notebook
                 },
+                {
+                    name_text: "New Project", icon_name: "new-text-box",
+                    click_handler: props.new_project
+                },
                 {name_text: "divider1", icon_name: null, click_handler: "divider"},
                 {
                     name_text: "Standard Tile", icon_name: "code",

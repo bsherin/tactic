@@ -10,8 +10,8 @@ ADD ./tile_container_env/transformers_requirements.txt /code/transformers_requir
 RUN pip3 install --no-cache-dir -r transformers_requirements.txt
 ADD ./tile_container_env/newer_requirements.txt /code/newer_requirements.txt
 RUN pip3 install --no-cache-dir -r newer_requirements.txt
-ADD  ./tile_container_env ./volume_manager.py ./exception_mixin.py ./redis_tools.py ./rabbit_manage.py ./qworker.py ./communication_utils.py /code/
-ADD ./tactic_dark.mplstyle /usr/local/lib/python3.11/site-packages/matplotlib/mpl-data/stylelib/
 RUN pip3 install --no-cache-dir dask[complete]
-# RUN pip install pydevd-pycharm~=213.5605.23
+ADD ./tactic_dark.mplstyle /usr/local/lib/python3.11/site-packages/matplotlib/mpl-data/stylelib/
+ADD  ./tile_container_env ./volume_manager.py ./exception_mixin.py ./redis_tools.py ./rabbit_manage.py ./qworker.py ./communication_utils.py /code/
+
 CMD ["python", "-u", "tile_main.py"]

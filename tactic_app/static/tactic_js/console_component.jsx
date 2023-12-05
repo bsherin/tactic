@@ -441,13 +441,13 @@ function ConsoleComponent(props) {
 
     function _shrinkConsole() {
         props.setMainStateValue("console_is_shrunk", true);
-        if (props.mState.console_is_zoomed) {
+        if (props.mStateRef.current.console_is_zoomed) {
             _unzoomConsole();
         }
     }
 
     function _toggleExports() {
-        props.setMainStateValue("show_exports_pane", !props.mState.show_exports_pane)
+        props.setMainStateValue("show_exports_pane", !props.mStateRef.current.show_exports_pane)
     }
 
     const _setConsoleItemValue = useCallback((unique_id, field, new_value, callback = null) => {
@@ -1274,8 +1274,8 @@ function ConsoleComponent(props) {
     }, []);
 
     let gbstyle = {marginLeft: 1, marginTop: 2};
-    let console_class = props.mState.console_is_shrunk ? "am-shrunk" : "not-shrunk";
-    if (props.mState.console_is_zoomed) {
+    let console_class = props.mStateRef.current.console_is_shrunk ? "am-shrunk" : "not-shrunk";
+    if (props.mStateRef.current.console_is_zoomed) {
         console_class = "am-zoomed"
     }
     let outer_style = Object.assign({}, props.style);
@@ -1285,7 +1285,7 @@ function ConsoleComponent(props) {
     if (!props.shrinkable) {
         header_style["paddingLeft"] = 10
     }
-    if (!props.mState.console_is_shrunk) {
+    if (!props.mStateRef.current.console_is_shrunk) {
         header_style["paddingRight"] = 15
     }
     let key_bindings = [[["escape"], () => {
@@ -1332,12 +1332,12 @@ function ConsoleComponent(props) {
                      style={header_style}
                      className="d-flex flex-row justify-content-between">
                     <div id="console-header-left" className="d-flex flex-row">
-                        {props.mState.console_is_shrunk && props.shrinkable &&
+                        {props.mStateRef.current.console_is_shrunk && props.shrinkable &&
                             <GlyphButton handleClick={_expandConsole}
                                          style={{marginLeft: 2}}
                                          icon="chevron-right"/>
                         }
-                        {!props.mState.console_is_shrunk && props.shrinkable &&
+                        {!props.mStateRef.current.console_is_shrunk && props.shrinkable &&
                             <GlyphButton handleClick={_shrinkConsole}
                                          style={{marginLeft: 2}}
                                          icon="chevron-down"/>
@@ -1365,18 +1365,18 @@ function ConsoleComponent(props) {
                                      handleClick={_toggleExports}
                                      icon="variable"/>
 
-                        {!props.mState.console_is_zoomed && props.zoomable &&
+                        {!props.mStateRef.current.console_is_zoomed && props.zoomable &&
                             <GlyphButton handleClick={_zoomConsole}
                                          icon="maximize"/>
                         }
-                        {props.mState.console_is_zoomed && props.zoomable &&
+                        {props.mStateRef.current.console_is_zoomed && props.zoomable &&
                             <GlyphButton handleClick={_unzoomConsole}
                                          icon="minimize"/>
                         }
                     </div>
                 </div>
             </div>
-            {!props.mState.console_is_shrunk && !show_pseudo_log && !show_main_log &&
+            {!props.mStateRef.current.console_is_shrunk && !show_pseudo_log && !show_main_log &&
                 <FilterSearchForm
                     search_string={search_string_ref.current}
                     handleSearchFieldChange={_handleSearchFieldChange}
@@ -1387,7 +1387,7 @@ function ConsoleComponent(props) {
                     search_helper_text={search_helper_text}
                 />
             }
-            {!props.mState.console_is_shrunk && show_main_log &&
+            {!props.mStateRef.current.console_is_shrunk && show_main_log &&
                 <SearchableConsole main_id={props.main_id}
                                    streaming_host="host"
                                    container_id={props.main_id}
@@ -1402,7 +1402,7 @@ function ConsoleComponent(props) {
                                    showCommandField={false}
                 />
             }
-            {!props.mState.console_is_shrunk && show_pseudo_log &&
+            {!props.mStateRef.current.console_is_shrunk && show_pseudo_log &&
                 <SearchableConsole main_id={props.main_id}
                                    streaming_host="host"
                                    container_id={pseudo_tile_id}
@@ -1417,7 +1417,7 @@ function ConsoleComponent(props) {
                                    showCommandField={true}
                 />
             }
-            {!props.mState.console_is_shrunk && !show_pseudo_log && !show_main_log &&
+            {!props.mStateRef.current.console_is_shrunk && !show_pseudo_log && !show_main_log &&
                 <div id="console"
                      ref={body_ref}
                      className="contingent-scroll"

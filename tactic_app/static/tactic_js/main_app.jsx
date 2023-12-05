@@ -5,7 +5,7 @@ import "../tactic_css/tactic_console.scss";
 import "../tactic_css/tactic_select.scss"
 
 import React from "react";
-import {Fragment, useEffect, useRef, useReducer, memo, useContext} from "react";
+import {Fragment, useEffect, useRef, memo, useContext} from "react";
 import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
 
@@ -95,8 +95,8 @@ function MainApp(props) {
     const statusFuncs = useContext(StatusContext);
     const selectedPane = useContext(SelectedPaneContext);
 
-    const [mState, mDispatch] = useReducer(mainReducer, {
-        table_is_shrunk: iStateOrDefault("table_is_shrunk"),
+    const [mState, mDispatch, mStateRef] = useReducerAndRef(mainReducer, {
+        table_is_shrunk: props.doc_type == "none" || iStateOrDefault("table_is_shrunk"),
         console_width_fraction: iStateOrDefault("console_width_fraction"),
         horizontal_fraction: iStateOrDefault("console_width_fraction"),
         height_fraction: iStateOrDefault("height_fraction"),
@@ -106,9 +106,10 @@ function MainApp(props) {
         show_console_pane: iStateOrDefault("show_console_pane"),
 
         table_spec: props.initial_table_spec,
-        data_text: props.is_freeform ? props.initial_data_text : null,
-        data_row_dict: props.is_freeform ? null : props.initial_data_row_dict,
-        total_rows: props.is_freeform ? null : props.total_rows,
+        doc_type: props.doc_type,
+        data_text: props.doc_type == "freeform" ? props.initial_data_text : "",
+        data_row_dict: props.doc_type == "freeform" ? {} : props.initial_data_row_dict,
+        total_rows: props.doc_type == "freeform" ? 0 : props.total_rows,
         doc_names: props.initial_doc_names,
         short_collection_name: props.short_collection_name,
 
@@ -156,7 +157,7 @@ function MainApp(props) {
         _updateLastSave();
         statusFuncs.stopSpinner();
         if (!props.controlled) {
-            document.title = mState.resource_name;
+            document.title = mStateRef.current.resource_name;
             window.addEventListener("resize", _update_window_dimensions);
             _update_window_dimensions();
         }
@@ -168,14 +169,14 @@ function MainApp(props) {
 
     useEffect(()=>{
          const data = {
-            active_row_id: mState.selected_row,
-            doc_name: mState.table_spec.current_doc_name
+            active_row_id: mStateRef.current.selected_row,
+            doc_name: mStateRef.current.table_spec.current_doc_name
          };
          _broadcast_event_to_server("MainTableRowSelect", data)
-    }, [mState.selected_row]);
+    }, [mStateRef.current.selected_row]);
 
     function _cProp(pname) {
-        return props.controlled ? props[pname] : mState[pname]
+        return props.controlled ? props[pname] : mStateRef.current[pname]
     }
 
     function am_selected() {
@@ -185,14 +186,14 @@ function MainApp(props) {
     const save_state = {
         tile_list: tile_list,
         console_items: console_items,
-        table_is_shrunk: mState.table_is_shrunk,
-        console_width_fraction: mState.console_width_fraction,
-        horizontal_fraction: mState.horizontal_fraction,
-        console_is_shrunk: mState.console_is_shrunk,
-        height_fraction: mState.height_fraction,
-        show_exports_pane: mState.show_exports_pane,
-        show_console_pane: mState.show_console_pane,
-        console_is_zoomed: mState.console_is_zoomed
+        table_is_shrunk: mStateRef.current.table_is_shrunk,
+        console_width_fraction: mStateRef.current.console_width_fraction,
+        horizontal_fraction: mStateRef.current.horizontal_fraction,
+        console_is_shrunk: mStateRef.current.console_is_shrunk,
+        height_fraction: mStateRef.current.height_fraction,
+        show_exports_pane: mStateRef.current.show_exports_pane,
+        show_console_pane: mStateRef.current.show_console_pane,
+        console_is_zoomed: mStateRef.current.console_is_zoomed
     };
 
     // This will only be called if not controlled
@@ -250,7 +251,7 @@ function MainApp(props) {
             let row_id = data.hasOwnProperty("row_id") ? data.row_id : null;
             let scroll_to_row = data.hasOwnProperty("scroll_to_row") ? data.scroll_to_row : true;
             let select_row = data.hasOwnProperty("select_row") ? data.select_row : true;
-            if (mState.table_is_shrunk) {
+            if (mStateRef.current.table_is_shrunk) {
                 _setMainStateValue("table_is_shrunk", false)
             }
             _handleChangeDoc(data.doc_name, row_id, scroll_to_row, select_row)
@@ -290,6 +291,10 @@ function MainApp(props) {
         props.tsocket.attachListener('handle-callback', (task_packet) => {
             handleCallback(task_packet, props.main_id)
         });
+    }
+
+    function isFreeform() {
+       return mStateRef.current.doc_type == "freeform"
     }
 
     // Every item in tile_list is a list of this form
@@ -341,7 +346,7 @@ function MainApp(props) {
                 alt_search_text: null
             }
         });
-        if ((lsearch_text == null) && (!props.is_freeform)) {
+        if ((lsearch_text == null) && (!isFreeform())) {
             _setMainStateValue("cells_to_color_text", {})
         }
     }
@@ -360,7 +365,7 @@ function MainApp(props) {
 
     function _handleChangeDoc(new_doc_name, row_index = 0, scroll_to_row = true, select_row = true) {
         _setMainStateValue("show_table_spinner", true);
-        if (props.is_freeform) {
+        if (isFreeform()) {
             postWithCallback(props.main_id, "grab_freeform_data", {
                 "doc_name": new_doc_name,
                 "set_visible_doc": true
@@ -411,7 +416,7 @@ function MainApp(props) {
             spec_update: spec_update
         });
         if (broadcast) {
-            spec_update["doc_name"] = mState.table_spec.current_doc_name;
+            spec_update["doc_name"] = mStateRef.current.table_spec.current_doc_name;
             postWithCallback(props.main_id, "UpdateTableSpec", spec_update, null, null, props.main_id);
         }
     }
@@ -420,7 +425,7 @@ function MainApp(props) {
         data_dict.main_id = props.main_id;
         data_dict.event_name = event_name;
         if (!("doc_name" in data_dict)) {
-            data_dict.doc_name = mState.table_spec.current_doc_name;
+            data_dict.doc_name = mStateRef.current.table_spec.current_doc_name;
         }
         postWithCallback(props.main_id, "distribute_events_stub", data_dict, callback, null, props.main_id)
     }
@@ -494,17 +499,17 @@ function MainApp(props) {
 
     function _getTileOmniItems() {
         let omni_items = [];
-        let sorted_categories = [...Object.keys(mState.tile_types)];
+        let sorted_categories = [...Object.keys(mStateRef.current.tile_types)];
         sorted_categories.sort();
         for (let category of sorted_categories) {
-            let sorted_types = [...mState.tile_types[category]];
+            let sorted_types = [...mStateRef.current.tile_types[category]];
             sorted_types.sort();
             for (let ttype of sorted_types) {
                 omni_items.push({
                     category: category,
                     display_text: ttype,
                     search_text: ttype,
-                    icon_name: mState.tile_icon_dict[ttype],
+                    icon_name: mStateRef.current.tile_icon_dict[ttype],
                     the_function: () => _tile_command(ttype)
                 })
             }
@@ -514,16 +519,16 @@ function MainApp(props) {
 
     function create_tile_menus() {
         let menu_items = [];
-        let sorted_categories = [...Object.keys(mState.tile_types)];
+        let sorted_categories = [...Object.keys(mStateRef.current.tile_types)];
         sorted_categories.sort();
         for (let category of sorted_categories) {
             let option_dict = {};
             let icon_dict = {};
-            let sorted_types = [...mState.tile_types[category]];
+            let sorted_types = [...mStateRef.current.tile_types[category]];
             sorted_types.sort();
             for (let ttype of sorted_types) {
                 option_dict[ttype] = () => _tile_command(ttype);
-                icon_dict[ttype] = mState.tile_icon_dict[ttype]
+                icon_dict[ttype] = mStateRef.current.tile_icon_dict[ttype]
             }
             menu_items.push(<MenuComponent menu_name={category}
                                            option_dict={option_dict}
@@ -537,7 +542,7 @@ function MainApp(props) {
     }
 
     function _toggleTableShrink() {
-        _setMainStateValue("table_is_shrunk", !mState.table_is_shrunk)
+        _setMainStateValue("table_is_shrunk", !mStateRef.current.table_is_shrunk)
     }
 
     function _handleHorizontalFractionChange(left_width, right_width, new_fraction) {
@@ -563,13 +568,13 @@ function MainApp(props) {
             return table_available_height - 50;
         } else {
             let top_offset = tbody_ref.current.getBoundingClientRect().top - table_container_ref.current.getBoundingClientRect().top;
-            let madjust = mState.console_is_shrunk ? 2 * MARGIN_ADJUSTMENT : MARGIN_ADJUSTMENT;
+            let madjust = mStateRef.current.console_is_shrunk ? 2 * MARGIN_ADJUSTMENT : MARGIN_ADJUSTMENT;
             return table_available_height - top_offset - madjust
         }
     }
 
     function _setFreeformDoc(doc_name, new_content) {
-        if (doc_name == mState.table_spec.current_doc_name) {
+        if (doc_name == mStateRef.current.table_spec.current_doc_name) {
             _setMainStateValue("data_text", new_content)
         }
     }
@@ -627,7 +632,7 @@ function MainApp(props) {
     }
 
     function _moveColumn(tag_to_move, place_to_move) {
-        let colnames = [...mState.table_spec.column_names];
+        let colnames = [...mStateRef.current.table_spec.column_names];
         let start_index = colnames.indexOf(tag_to_move);
         colnames.splice(start_index, 1);
 
@@ -642,7 +647,7 @@ function MainApp(props) {
         start_index = fnames.indexOf(tag_to_move);
         fnames.splice(start_index, 1);
 
-        let cwidths = [...mState.table_spec.column_widths];
+        let cwidths = [...mStateRef.current.table_spec.column_widths];
         let width_to_move = cwidths[start_index];
         cwidths.splice(start_index, 1);
 
@@ -656,25 +661,25 @@ function MainApp(props) {
     }
 
     function _hideColumn() {
-        let hc_list = [...mState.table_spec.hidden_columns_list];
+        let hc_list = [...mStateRef.current.table_spec.hidden_columns_list];
         let fnames = _filteredColumnNames();
-        let cname = mState.selected_column;
+        let cname = mStateRef.current.selected_column;
         let col_index = fnames.indexOf(cname);
-        let cwidths = [...mState.table_spec.column_widths];
+        let cwidths = [...mStateRef.current.table_spec.column_widths];
         cwidths.splice(col_index, 1);
         hc_list.push(cname);
         _updateTableSpec({hidden_columns_list: hc_list, column_widths: cwidths}, true)
     }
 
     function _hideColumnInAll() {
-        let hc_list = [...mState.table_spec.hidden_columns_list];
+        let hc_list = [...mStateRef.current.table_spec.hidden_columns_list];
         let fnames = _filteredColumnNames();
-        let cname = mState.selected_column;
+        let cname = mStateRef.current.selected_column;
         let col_index = fnames.indexOf(cname);
-        let cwidths = [...mState.table_spec.column_widths];
+        let cwidths = [...mStateRef.current.table_spec.column_widths];
         cwidths.splice(col_index, 1);
         hc_list.push(cname);
-        const data_dict = {"column_name": mState.selected_column};
+        const data_dict = {"column_name": mStateRef.current.selected_column};
         _broadcast_event_to_server("HideColumnInAllDocs", data_dict, ()=>{
             _updateTableSpec({hidden_columns_list: hc_list, column_widths: cwidths}, false);
         })
@@ -690,14 +695,14 @@ function MainApp(props) {
 
     function _deleteRow() {
         postWithCallback(props.main_id, "delete_row", {
-            "document_name": mState.table_spec.current_doc_name,
-            "index": mState.selected_row
+            "document_name": mStateRef.current.table_spec.current_doc_name,
+            "index": mStateRef.current.selected_row
         }, null)
     }
 
     function _insertRow(index) {
         postWithCallback(props.main_id, "insert_row", {
-            "document_name": mState.table_spec.current_doc_name,
+            "document_name": mStateRef.current.table_spec.current_doc_name,
             "index": index,
             "row_dict": {}
         }, null, null, props.main_id)
@@ -705,20 +710,20 @@ function MainApp(props) {
 
     function _duplicateRow() {
         postWithCallback(props.main_id, "insert_row", {
-            "document_name": mState.table_spec.current_doc_name,
-            "index": mState.selected_row,
-            "row_dict": mState.data_text[mState.selected_row]
+            "document_name": mStateRef.current.table_spec.current_doc_name,
+            "index": mStateRef.current.selected_row,
+            "row_dict": mStateRef.current.data_text[mStateRef.current.selected_row]
         }, null, null, props.main_id)
     }
 
     function _deleteColumn(delete_in_all = false) {
         let fnames = _filteredColumnNames();
-        let cname = mState.selected_column;
+        let cname = mStateRef.current.selected_column;
         let col_index = fnames.indexOf(cname);
-        let cwidths = [...mState.table_spec.column_widths];
+        let cwidths = [...mStateRef.current.table_spec.column_widths];
         cwidths.splice(col_index, 1);
-        let hc_list = _.without(mState.table_spec.hidden_columns_list, cname);
-        let cnames = _.without(mState.table_spec.column_names, cname);
+        let hc_list = _.without(mStateRef.current.table_spec.hidden_columns_list, cname);
+        let cnames = _.without(mStateRef.current.table_spec.column_names, cname);
         _updateTableSpec({
             column_names: cnames,
             hidden_columns_list: hc_list,
@@ -726,7 +731,7 @@ function MainApp(props) {
         }, false);
         const data_dict = {
             "column_name": cname,
-            "doc_name": mState.table_spec.current_doc_name,
+            "doc_name": mStateRef.current.table_spec.current_doc_name,
             "all_docs": delete_in_all
         };
         postWithCallback(props.main_id, "DeleteColumn", data_dict, null, null, props.main_id);
@@ -740,19 +745,19 @@ function MainApp(props) {
                     handleSubmit: (new_name)=>{
                         let cwidth = compute_added_column_width(new_name);
                         _updateTableSpec({
-                            column_names: [...mState.table_spec.column_names, new_name],
-                            column_widths: [...mState.table_spec.column_widths, cwidth]
+                            column_names: [...mStateRef.current.table_spec.column_names, new_name],
+                            column_widths: [...mStateRef.current.table_spec.column_widths, cwidth]
                         }, false);
                         const data_dict = {
                             "column_name": new_name,
-                            "doc_name": mState.table_spec.current_doc_name,
+                            "doc_name": mStateRef.current.table_spec.current_doc_name,
                             "column_width": cwidth,
                             "all_docs": add_in_all
                         };
                         _broadcast_event_to_server("CreateColumn", data_dict);
                     },
                     default_value: "newcol",
-                    existing_names: mState.table_spec.column_names,
+                    existing_names: mStateRef.current.table_spec.column_names,
                     checkboxes: [],
                     handleCancel: null,
                     handleClose: dialogFuncs.hideModal,
@@ -784,12 +789,44 @@ function MainApp(props) {
 
     function _grabNewChunkWithRow(row_index) {
         postWithCallback(props.main_id, "grab_chunk_by_row_index",
-            {doc_name: mState.table_spec.current_doc_name, row_index: row_index}, function (data) {
+            {doc_name: mStateRef.current.table_spec.current_doc_name, row_index: row_index}, function (data) {
                 mDispatch({
                     type: "update_data_row_dict",
                     new_data_row_dict: data.data_row_dict
                 });
             }, null, props.main_id)
+    }
+
+    function _removeCollection() {
+        const result_dict = {
+                "new_collection_name": null,
+                "main_id": props.main_id
+            };
+
+        postWithCallback(props.main_id, "remove_collection_from_project", result_dict, removeCollectionDone, null, props.main_id);
+        function removeCollectionDone(data_object) {
+            if (data_object.success) {
+                let table_spec = {
+                    current_doc_name: ""
+                };
+                mDispatch({
+                    type: "change_multiple_fields",
+                    newPartialState: {
+                        doc_names: [],
+                        table_is_shrunk: true,
+                        short_collection_name: data_object.short_collection_name,
+                        doc_type: "none",
+                        table_spec: table_spec
+                    }
+                });
+                statusFuncs.stopSpinner();
+            }
+            else {
+                statusFuncs.clearStatusMessage();
+                statusFuncs.stopSpinner();
+                props.addErrorDrawerEntry({title: "Error removing collection", content: data_object.message})
+            }
+        }
     }
 
     function _changeCollection() {
@@ -818,11 +855,34 @@ function MainApp(props) {
                 if (data_object.success) {
                     if (!window.in_context && !_cProp("is_project")) document.title = new_collection_name;
                     window._collection_name = data_object.collection_name;
+                    let table_spec;
+                    if (data_object.doc_type == "table") {
+                        table_spec = {
+                            column_names: data_object.table_spec.header_list,
+                            column_widths: data_object.table_spec.column_widths,
+                            cell_backgrounds: data_object.table_spec.cell_backgrounds,
+                            hidden_columns_list: data_object.table_spec.hidden_columns_list,
+                            current_doc_name: data_object.doc_names[0]
+                        }
+                    }
+                    else if (data_object.doc_type == "freeform") {
+                        table_spec = {
+                            current_doc_name: data_object.doc_names[0]
+                        }
+                    }
+                    else {
+                        table_spec = {
+                            current_doc_name: ""
+                        }
+                    }
                     mDispatch({
                         type: "change_multiple_fields",
                         newPartialState: {
                             doc_names: data_object.doc_names,
-                            short_collection_name: data_object.short_collection_name
+                            table_is_shrunk: data_object.doc_type == "none",
+                            short_collection_name: data_object.short_collection_name,
+                            doc_type: data_object.doc_type,
+                            table_spec: table_spec
                         }
                     });
                     pushCallback(() => {
@@ -847,10 +907,10 @@ function MainApp(props) {
 
     function get_hp_height() {
         if (tile_div_ref.current) {
-            if (mState.console_is_shrunk) {
+            if (mStateRef.current.console_is_shrunk) {
                 return _cProp("usable_height") - CONSOLE_HEADER_HEIGHT - BOTTOM_MARGIN - height_adjustment.current;
             } else {
-                return (_cProp("usable_height") - BOTTOM_MARGIN - height_adjustment.current) * mState.height_fraction;
+                return (_cProp("usable_height") - BOTTOM_MARGIN - height_adjustment.current) * mStateRef.current.height_fraction;
             }
         } else {
             return _cProp("usable_height") - 100
@@ -874,8 +934,8 @@ function MainApp(props) {
     }
 
     function _filteredColumnNames() {
-        return mState.table_spec.column_names.filter((name) => {
-            return !(mState.table_spec.hidden_columns_list.includes(name) || (name == "__id__"));
+        return mStateRef.current.table_spec.column_names.filter((name) => {
+            return !(mStateRef.current.table_spec.hidden_columns_list.includes(name) || (name == "__id__"));
         })
     }
 
@@ -906,34 +966,42 @@ function MainApp(props) {
     let console_available_height;
     let my_props = {...props};
     if (!props.controlled) {
-        my_props.is_project = mState.is_project;
-        my_props.resource_name = mState.resource_name;
-        my_props.usable_width = mState.usable_width;
-        my_props.usable_height = mState.usable_height
+        my_props.is_project = mStateRef.current.is_project;
+        my_props.resource_name = mStateRef.current.resource_name;
+        my_props.usable_width = mStateRef.current.usable_width;
+        my_props.usable_height = mStateRef.current.usable_height
     }
     let true_usable_width = my_props.usable_width;
-    if (mState.console_is_zoomed) {
+    if (mStateRef.current.console_is_zoomed) {
         console_available_height = get_zoomed_console_height() - MARGIN_ADJUSTMENT;
     } else {
         vp_height = get_vp_height();
         hp_height = get_hp_height();
-        if (mState.console_is_shrunk) {
+        if (mStateRef.current.console_is_shrunk) {
             console_available_height = CONSOLE_HEADER_HEIGHT;
         } else {
             console_available_height = vp_height - hp_height - MARGIN_ADJUSTMENT - 3;
         }
     }
     let disabled_column_items = [];
-    if (mState.selected_column == null) {
+    if (mStateRef.current.selected_column == null) {
         disabled_column_items = [
             "Shift Left", "Shift Right", "Hide", "Hide in All Docs", "Delete Column", "Delete Column In All Docs"
         ]
     }
     let disabled_row_items = [];
-    if (mState.selected_row == null) {
+    if (mStateRef.current.selected_row == null) {
         disabled_row_items = ["Delete Row", "Insert Row Before", "Insert Row After", "Duplicate Row"]
     }
     let project_name = my_props.is_project ? props.resource_name : "";
+    let disabled_project_items = [];
+    if (!my_props.is_project) {
+        disabled_project_items.push("Save")
+    }
+    if (mStateRef.current.doc_type == "none") {
+        disabled_project_items.push("Export Table as Collection");
+        disabled_project_items.push("Remove Collection")
+    }
     let menus = (
         <Fragment>
             <ProjectMenu main_id={props.main_id}
@@ -944,29 +1012,32 @@ function MainApp(props) {
                          postAjaxFailure={props.postAjaxFailure}
                          console_items={console_items_ref.current}
                          tile_list={tile_list_ref.current}
-                         mState={mState}
+                         mStateRef={mStateRef}
                          setMainStateValue={_setMainStateValue}
                          updateLastSave={_updateLastSave}
                          changeCollection={_changeCollection}
-                         disabled_items={my_props.is_project ? [] : ["Save"]}
+                         removeCollection={_removeCollection}
+                         disabled_items={disabled_project_items}
                          registerOmniGetter={_registerOmniGetter}
                          hidden_items={["Export as Jupyter Notebook"]}
             />
-            <DocumentMenu main_id={props.main_id}
-                          documentNames={mState.doc_names}
-                          registerOmniGetter={_registerOmniGetter}
-                          currentDoc={mState.table_spec.current_doc_name}
+            {mStateRef.current.doc_type != "none" &&
+                <DocumentMenu main_id={props.main_id}
+                              documentNames={mStateRef.current.doc_names}
+                              registerOmniGetter={_registerOmniGetter}
+                              currentDoc={mStateRef.current.table_spec.current_doc_name}
 
-            />
-            {!props.is_freeform &&
+                />
+            }
+            {!isFreeform() && mStateRef.current.doc_type != "none" &&
                 <ColumnMenu main_id={props.main_id}
                             project_name={project_name}
                             is_notebook={props.is_notebook}
                             is_juptyer={props.is_jupyter}
                             moveColumn={_moveColumn}
-                            table_spec={mState.table_spec}
+                            table_spec={mStateRef.current.table_spec}
                             filtered_column_names={_filteredColumnNames()}
-                            selected_column={mState.selected_column}
+                            selected_column={mStateRef.current.selected_column}
                             disabled_items={disabled_column_items}
                             hideColumn={_hideColumn}
                             hideInAll={_hideColumnInAll}
@@ -976,20 +1047,20 @@ function MainApp(props) {
                             deleteColumn={_deleteColumn}
                 />
             }
-            {!props.is_freeform &&
+            {!isFreeform() && mStateRef.current.doc_type != "none" &&
                 <RowMenu main_id={props.main_id}
                          project_name={project_name}
                          is_notebook={props.is_notebook}
                          is_juptyer={props.is_jupyter}
                          deleteRow={_deleteRow}
                          insertRowBefore={() => {
-                             _insertRow(mState.selected_row)
+                             _insertRow(mStateRef.current.selected_row)
                          }}
                          insertRowAfter={() => {
-                             _insertRow(mState.selected_row + 1)
+                             _insertRow(mStateRef.current.selected_row + 1)
                          }}
                          duplicateRow={_duplicateRow}
-                         selected_row={mState.selected_row}
+                         selected_row={mStateRef.current.selected_row}
                          registerOmniGetter={_registerOmniGetter}
                          disabled_items={disabled_row_items}
                 />
@@ -998,11 +1069,11 @@ function MainApp(props) {
                       project_name={project_name}
                       is_notebook={props.is_notebook}
                       is_juptyer={props.is_jupyter}
-                      table_is_shrunk={mState.table_is_shrunk}
-                      toggleTableShrink={_toggleTableShrink}
+                      table_is_shrunk={mStateRef.current.table_is_shrunk}
+                      toggleTableShrink={mStateRef.current.doc_type == "none" ? null : _toggleTableShrink}
                       openErrorDrawer={props.openErrorDrawer}
-                      show_exports_pane={mState.show_exports_pane}
-                      show_console_pane={mState.show_console_pane}
+                      show_exports_pane={mStateRef.current.show_exports_pane}
+                      show_console_pane={mStateRef.current.show_console_pane}
                       registerOmniGetter={_registerOmniGetter}
                       setMainStateValue={_setMainStateValue}
             />
@@ -1011,58 +1082,61 @@ function MainApp(props) {
         </Fragment>
     );
     let table_available_height = hp_height;
-    let card_header = (
-        <MainTableCardHeader main_id={props.main_id}
-                             toggleShrink={_toggleTableShrink}
-                             mState={mState}
-                             setMainStateValue={_setMainStateValue}
-                             handleChangeDoc={_handleChangeDoc}
-                             handleSearchFieldChange={_handleSearchFieldChange}
-                             show_filter_button={!props.is_freeform}
-                             handleSpreadsheetModeChange={_handleSpreadsheetModeChange}
-                             handleSoftWrapChange={_handleSoftWrapChange}
-                             is_freeform={props.is_freeform}
-        />
-    );
-
     let card_body;
-    if (props.is_freeform) {
-        card_body = <FreeformBody main_id={props.main_id}
-                                  ref={tbody_ref}
-                                  code_container_width={mState.horizontal_fraction * true_usable_width}
-                                  code_container_height={_getTableBodyHeight(table_available_height)}
-                                  mState={mState}
-                                  setMainStateValue={_setMainStateValue}
-
-        />
-    } else {
-        card_body = (
-            <BlueprintTable main_id={props.main_id}
-                            ref={tbody_ref}
-                            clearScroll={_clearTableScroll}
-                            initiateDataGrab={_initiateDataGrab}
-                            height={_getTableBodyHeight(table_available_height)}
-                            setCellContent={_setCellContent}
-                            filtered_column_names={_filteredColumnNames()}
-                            moveColumn={_moveColumn}
-                            updateTableSpec={_updateTableSpec}
-                            setMainStateValue={_setMainStateValue}
-                            mState={mState}
-                            set_scroll={set_table_scroll}
+    let card_header;
+    if (mStateRef.current.doc_type != "none") {
+        card_header = (
+            <MainTableCardHeader main_id={props.main_id}
+                                 toggleShrink={mStateRef.current.doc_type == "none" ? null : _toggleTableShrink}
+                                 mStateRef={mStateRef}
+                                 setMainStateValue={_setMainStateValue}
+                                 handleChangeDoc={_handleChangeDoc}
+                                 handleSearchFieldChange={_handleSearchFieldChange}
+                                 show_filter_button={!isFreeform()}
+                                 handleSpreadsheetModeChange={_handleSpreadsheetModeChange}
+                                 handleSoftWrapChange={_handleSoftWrapChange}
+                                 is_freeform={isFreeform()}
             />
-        )
-    }
+        );
 
-    let tile_container_height = mState.console_is_shrunk ? table_available_height - MARGIN_ADJUSTMENT : table_available_height;
+
+        if (isFreeform()) {
+            card_body = <FreeformBody main_id={props.main_id}
+                                      ref={tbody_ref}
+                                      code_container_width={mStateRef.current.horizontal_fraction * true_usable_width}
+                                      code_container_height={_getTableBodyHeight(table_available_height)}
+                                      mStateRef={mStateRef}
+                                      setMainStateValue={_setMainStateValue}
+
+            />
+        } else {
+            card_body = (
+                <BlueprintTable main_id={props.main_id}
+                                ref={tbody_ref}
+                                clearScroll={_clearTableScroll}
+                                initiateDataGrab={_initiateDataGrab}
+                                height={_getTableBodyHeight(table_available_height)}
+                                setCellContent={_setCellContent}
+                                filtered_column_names={_filteredColumnNames()}
+                                moveColumn={_moveColumn}
+                                updateTableSpec={_updateTableSpec}
+                                setMainStateValue={_setMainStateValue}
+                                mStateRef={mStateRef}
+                                set_scroll={set_table_scroll}
+                />
+            )
+        }
+    }
+    let tile_container_height = mStateRef.current.console_is_shrunk ? table_available_height - MARGIN_ADJUSTMENT : table_available_height;
     let tile_pane = (
         <div ref={tile_div_ref}>
             <TileContainer main_id={props.main_id}
                            tsocket={props.tsocket}
                            height={tile_container_height}
                            tile_list={tile_list_ref}
-                           current_doc_name={mState.table_spec.current_doc_name}
-                           selected_row={mState.selected_row}
-                           table_is_shrunk={mState.table_is_shrunk}
+                           current_doc_name={mStateRef.current.table_spec.current_doc_name}
+                           selected_row={mStateRef.current.selected_row}
+                           table_is_shrunk={mStateRef.current.table_is_shrunk}
                            broadcast_event={_broadcast_event_to_server}
                            goToModule={props.goToModule}
                            tileDispatch={tileDispatch}
@@ -1072,7 +1146,7 @@ function MainApp(props) {
     );
 
     let exports_pane;
-    if (mState.show_exports_pane) {
+    if (mStateRef.current.show_exports_pane) {
         exports_pane = <ExportsViewer main_id={props.main_id}
                                       tsocket={props.tsocket}
                                       setUpdate={(ufunc) => {
@@ -1080,14 +1154,14 @@ function MainApp(props) {
                                       }}
                                       setMainStateValue={_setMainStateValue}
                                       available_height={console_available_height}
-                                      console_is_shrunk={mState.console_is_shrunk}
-                                      console_is_zoomed={mState.console_is_zoomed}
+                                      console_is_shrunk={mStateRef.current.console_is_shrunk}
+                                      console_is_zoomed={mStateRef.current.console_is_zoomed}
         />
     } else {
         exports_pane = <div></div>
     }
     let console_pane;
-    if (mState.show_console_pane) {
+    if (mStateRef.current.show_console_pane) {
         console_pane = (
             <ConsoleComponent main_id={props.main_id}
                               tsocket={props.tsocket}
@@ -1097,16 +1171,16 @@ function MainApp(props) {
                               console_selected_items_ref={console_selected_items_ref}
                               set_console_selected_items={set_console_selected_items}
                               dispatch={dispatch}
-                              mState={mState}
+                              mStateRef={mStateRef}
                               setMainStateValue={_setMainStateValue}
                               console_available_height={console_available_height}
-                              console_available_width={true_usable_width * mState.console_width_fraction - 16}
+                              console_available_width={true_usable_width * mStateRef.current.console_width_fraction - 16}
                               zoomable={true}
                               shrinkable={true}
             />
         );
     } else {
-        let console_available_width = true_usable_width * mState.console_width_fraction - 16;
+        let console_available_width = true_usable_width * mStateRef.current.console_width_fraction - 16;
         console_pane = <div style={{width: console_available_width}}></div>
     }
 
@@ -1114,32 +1188,35 @@ function MainApp(props) {
     let bottom_pane = (
         <HorizontalPanes left_pane={console_pane}
                          right_pane={exports_pane}
-                         show_handle={!mState.console_is_shrunk}
+                         show_handle={!mStateRef.current.console_is_shrunk}
                          available_height={console_available_height}
                          available_width={true_usable_width}
-                         initial_width_fraction={mState.console_width_fraction}
+                         initial_width_fraction={mStateRef.current.console_width_fraction}
                          dragIconSize={15}
                          handleSplitUpdate={_handleConsoleFractionChange}
         />
     );
-    let table_pane = (
-        <Fragment>
-            <div ref={table_container_ref}>
-                <MainTableCard
-                    card_body={card_body}
-                    card_header={card_header}
-                />
-            </div>
-        </Fragment>
-    );
+    let table_pane;
+    if (mStateRef.current.doc_type != "none") {
+        table_pane = (
+            <Fragment>
+                <div ref={table_container_ref}>
+                    <MainTableCard
+                        card_body={card_body}
+                        card_header={card_header}
+                    />
+                </div>
+            </Fragment>
+        )
+    }
     let top_pane;
-    if (mState.table_is_shrunk) {
+    if (mStateRef.current.table_is_shrunk) {
         top_pane = (
             <Fragment>
                 <div style={{paddingLeft: 10}}>
                     {tile_pane}
                 </div>
-                {mState.console_is_shrunk && bottom_pane}
+                {mStateRef.current.console_is_shrunk && bottom_pane}
             </Fragment>
         )
     } else {
@@ -1151,17 +1228,20 @@ function MainApp(props) {
                                  show_handle={true}
                                  scrollAdjustSelectors={[".bp5-table-quadrant-scroll-container", "#tile-div"]}
                                  available_width={true_usable_width}
-                                 initial_width_fraction={mState.horizontal_fraction}
+                                 initial_width_fraction={mStateRef.current.horizontal_fraction}
                                  dragIconSize={15}
                                  handleSplitUpdate={_handleHorizontalFractionChange}
                                  handleResizeStart={_handleResizeStart}
                                  handleResizeEnd={_handleResizeEnd}
                 />
-                {mState.console_is_shrunk && bottom_pane}
+                {mStateRef.current.console_is_shrunk && bottom_pane}
             </Fragment>
         );
     }
-
+    let extra_menubar_buttons = [];
+    if (mStateRef.current.doc_type != "none") {
+        extra_menubar_buttons = [{onClick: _toggleTableShrink, icon: mStateRef.current.table_is_shrunk ? "th" : "th-disconnect"}];
+    }
     return (
         <ErrorBoundary>
             {!window.in_context &&
@@ -1180,30 +1260,25 @@ function MainApp(props) {
                            resource_name={_cProp("resource_name")}
                            showErrorDrawerButton={true}
                            toggleErrorDrawer={props.toggleErrorDrawer}
-                           extraButtons={[
-                               {
-                                   onClick: _toggleTableShrink,
-                                   icon: mState.table_is_shrunk ? "th" : "th-disconnect"
-                               }
-                           ]}
+                           extraButtons={extra_menubar_buttons}
             />
             <ErrorBoundary>
                 <div className={`main-outer ${theme.dark_theme ? "bp5-dark" : "light-theme"}`}
                      ref={main_outer_ref}
                      style={{width: "100%", height: my_props.usable_height - height_adjustment.current}}>
-                    {mState.console_is_zoomed &&
+                    {mStateRef.current.console_is_zoomed &&
                         bottom_pane
                     }
-                    {!mState.console_is_zoomed && mState.console_is_shrunk &&
+                    {!mStateRef.current.console_is_zoomed && mStateRef.current.console_is_shrunk &&
                         top_pane
                     }
-                    {!mState.console_is_zoomed && !mState.console_is_shrunk &&
+                    {!mStateRef.current.console_is_zoomed && !mStateRef.current.console_is_shrunk &&
                         <VerticalPanes top_pane={top_pane}
                                        bottom_pane={bottom_pane}
                                        show_handle={true}
                                        available_width={true_usable_width}
                                        available_height={vp_height}
-                                       initial_height_fraction={mState.height_fraction}
+                                       initial_height_fraction={mStateRef.current.height_fraction}
                                        dragIconSize={15}
                                        scrollAdjustSelectors={[".bp5-table-quadrant-scroll-container", "#tile-div"]}
                                        handleSplitUpdate={_handleVerticalSplitUpdate}
@@ -1217,7 +1292,7 @@ function MainApp(props) {
                     <Fragment>
                         <TacticOmnibar omniGetters={[_omniFunction]}
                                        page_id={props.main_id}
-                                       showOmnibar={mState.showOmnibar}
+                                       showOmnibar={mStateRef.current.showOmnibar}
                                        closeOmnibar={_closeOmnibar}
                         />
                         <KeyTrap global={true} bindings={key_bindings}/>
@@ -1267,7 +1342,18 @@ function main_main() {
     }
 
     renderSpinnerMessage("Starting up ...");
-    const target = window.project_name == "" ? "main_collection_in_context" : "main_project_in_context";
+    let target;
+    if (window.project_name == "") {
+        if (window.collection_name == "") {
+            target = "new_project_in_context"
+        }
+        else {
+            target ="main_collection_in_context"
+        }
+    }
+    else {
+        target = "main_project_in_context"
+    }
     const resource_name = window.project_name == "" ? window.collection_name : window.project_name;
 
     postAjaxPromise(target, {"resource_name": resource_name})

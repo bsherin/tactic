@@ -1010,6 +1010,17 @@ function LibraryPane(props) {
         }
     }
 
+    function _new_project() {
+        if (window.in_context) {
+            const the_view = `${$SCRIPT_ROOT}/new_project_in_context`;
+            postAjaxPromise(the_view, {resource_name: ""})
+                .then(props.handleCreateViewer)
+                .catch(doFlash);
+        } else {
+            window.open(`${$SCRIPT_ROOT}/new_project`)
+        }
+    }
+
     function _downloadJupyter() {
         let res_name = selected_resource_ref.current.name;
         dialogFuncs.showModal("ModalDialog", {
@@ -1428,6 +1439,7 @@ function LibraryPane(props) {
             delete_func: _delete_func,
             rename_func: _rename_func,
             new_notebook: _new_notebook,
+            new_project: _new_project,
             downloadJupyter: _downloadJupyter,
             showJupyterImport: _showJupyterImport,
             combineCollections: _combineCollections,

@@ -297,7 +297,7 @@ class TileWorker(QWorker):
     @task_worthy
     def create_pseudo_tile_collection_object(self, data):
         am_notebook = data["am_notebook"]
-        if not am_notebook:
+        if not am_notebook and not self.tile_instance.doc_type == "none":
             document_object.Collection.__fully_initialize__()
             pseudo_tile_base.Collection = document_object.Collection
             pseudo_tile_base.Tiles = remote_tile_object.Tiles
@@ -334,7 +334,8 @@ class TileWorker(QWorker):
                 self.tile_instance.doc_type = "table"
             if not self.tile_instance.exports:
                 self.tile_instance.exports = []
-            document_object.Collection.__fully_initialize__()
+            if not self.tile_instance.doc_type == "none":
+                document_object.Collection.__fully_initialize__()
             data["exports"] = copy.deepcopy(self.tile_instance.exports)
             for exp in data["exports"]:
                 exp["type"] = "unknown"

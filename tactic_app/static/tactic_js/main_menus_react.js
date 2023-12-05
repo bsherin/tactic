@@ -40,20 +40,20 @@ function ProjectMenu(props) {
   var save_state;
   if (props.is_notebook) save_state = {
     console_items: props.console_items,
-    show_exports_pane: props.mState.show_exports_pane,
-    console_width_fraction: props.mState.console_width_fraction
+    show_exports_pane: props.mStateRef.current.show_exports_pane,
+    console_width_fraction: props.mStateRef.current.console_width_fraction
   };else {
     save_state = {
       console_items: props.console_items,
       tile_list: props.tile_list,
-      table_is_shrunk: props.mState.table_is_shrunk,
-      horizontal_fraction: props.mState.horizontal_fraction,
-      console_is_shrunk: props.mState.console_is_shrunk,
-      height_fraction: props.mState.height_fraction,
-      show_console_pane: props.mState.show_console_pane,
-      console_is_zoomed: props.mState.console_is_zoomed,
-      show_exports_pane: props.mState.show_exports_pane,
-      console_width_fraction: props.mState.console_width_fraction
+      table_is_shrunk: props.mStateRef.current.table_is_shrunk,
+      horizontal_fraction: props.mStateRef.current.horizontal_fraction,
+      console_is_shrunk: props.mStateRef.current.console_is_shrunk,
+      height_fraction: props.mStateRef.current.height_fraction,
+      show_console_pane: props.mStateRef.current.show_console_pane,
+      console_is_zoomed: props.mStateRef.current.console_is_zoomed,
+      show_exports_pane: props.mStateRef.current.show_exports_pane,
+      console_width_fraction: props.mStateRef.current.console_width_fraction
     };
   }
   function _saveProjectAs() {
@@ -393,6 +393,15 @@ function ProjectMenu(props) {
     (0, _communication_react.postWithCallback)(props.main_id, "console_to_notebook", result_dict, null, null, props.main_id);
   }
   function menu_items() {
+    var cc_name;
+    var cc_icon;
+    if (props.mStateRef.current.doc_type == "none") {
+      cc_name = "Add Collection";
+      cc_icon = "add";
+    } else {
+      cc_name = "Change Collection";
+      cc_icon = "exchange";
+    }
     var items = [{
       name_text: "Save As...",
       icon_name: "floppy-disk",
@@ -438,9 +447,13 @@ function ProjectMenu(props) {
       icon_name: null,
       click_handler: "divider"
     }, {
-      name_text: "Change collection",
-      icon_name: "exchange",
+      name_text: cc_name,
+      icon_name: cc_icon,
       click_handler: props.changeCollection
+    }, {
+      name_text: "Remove Collection",
+      icon_name: "cross-circle",
+      click_handler: props.removeCollection
     }];
     var reduced_items = [];
     for (var _i = 0, _items = items; _i < _items.length; _i++) {
@@ -708,10 +721,12 @@ function ViewMenu(props) {
     props.setMainStateValue("show_console_pane", !props.show_console_pane);
   }
   function option_dict() {
-    var table_opt_name = props.table_is_shrunk ? "Maximize Table" : "Minimize Table";
     var result = {};
-    result[table_opt_name] = props.toggleTableShrink;
-    result["divider1"] = "divider";
+    if (props.toggleTableShrink) {
+      var table_opt_name = props.table_is_shrunk ? "Maximize Table" : "Minimize Table";
+      result[table_opt_name] = props.toggleTableShrink;
+      result["divider1"] = "divider";
+    }
     var console_opt_name = props.show_console_pane ? "Hide Log" : "Show Log";
     result[console_opt_name] = _toggleConsole;
     var exports_opt_name = props.show_exports_pane ? "Hide Exports" : "Show Exports";
@@ -721,9 +736,11 @@ function ViewMenu(props) {
     return result;
   }
   function icon_dict() {
-    var opt_name = props.table_is_shrunk ? "Maximize Table" : "Minimize Table";
     var result = {};
-    result[opt_name] = props.table_is_shrunk ? "maximize" : "minimize";
+    if (props.toggleTableShrink) {
+      var opt_name = props.table_is_shrunk ? "Maximize Table" : "Minimize Table";
+      result[opt_name] = props.table_is_shrunk ? "maximize" : "minimize";
+    }
     var console_opt_name = props.show_console_pane ? "Hide Log" : "Show Log";
     var exports_opt_name = props.show_exports_pane ? "Hide Exports" : "Show Exports";
     result[console_opt_name] = "code";

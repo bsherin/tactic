@@ -504,7 +504,7 @@ function SelectDialog(props) {
     _useState26 = _slicedToArray(_useState25, 2),
     show = _useState26[0],
     set_show = _useState26[1];
-  var _useState27 = (0, _react.useState)(false),
+  var _useState27 = (0, _react.useState)(""),
     _useState28 = _slicedToArray(_useState27, 2),
     value = _useState28[0],
     set_value = _useState28[1];

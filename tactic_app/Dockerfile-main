@@ -1,8 +1,9 @@
 FROM bsherin/tactic:base
 WORKDIR /code
-ADD ./main_container_env /code
+ADD ./main_container_env/requirements.txt /code/requirements.txt
 RUN pip install -r requirements.txt
 MAINTAINER "Bruce L Sherin"
+ADD ./main_container_env /code
 ADD  ./volume_manager.py ./exception_mixin.py ./redis_tools.py ./qworker.py ./communication_utils.py \
 ./docker_functions.py ./mongo_accesser.py ./loaded_tile_management.py  ./rabbit_manage.py ./mongo_db_fs.py /code/
 # RUN pip install pydevd-pycharm~=201.6668.115
