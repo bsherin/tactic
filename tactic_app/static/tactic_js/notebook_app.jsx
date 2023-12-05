@@ -49,7 +49,7 @@ function NotebookApp(props) {
     const [console_selected_items, set_console_selected_items, console_selected_items_ref] = useStateAndRef([]);
 
     const [console_items, dispatch, console_items_ref] = useReducerAndRef(consoleItemsReducer, []);
-    const [mState, mDispatch] = useReducer(notebookReducer, {
+    const [mState, mDispatch, mStateRef] = useReducerAndRef(notebookReducer, {
         show_exports_pane: props.is_project && props.interface_state ? props.interface_state["show_exports_pane"] : true,
         console_width_fraction: props.is_project && props.interface_state ? props.interface_state["console_width_fraction"] : .5,
         console_is_zoomed: true,
@@ -258,7 +258,7 @@ function NotebookApp(props) {
                          postAjaxFailure={props.postAjaxFailure}
                          console_items={console_items_ref.current}
                          tile_list={[]}
-                         mState={mState}
+                         mStateRef={mStateRef}
                          setMainStateValue={_setMainStateValue}
                          updateLastSave={_updateLastSave}
                          changeCollection={null}
@@ -277,7 +277,7 @@ function NotebookApp(props) {
                           console_selected_items_ref={console_selected_items_ref}
                           set_console_selected_items={set_console_selected_items}
                           dispatch={dispatch}
-                          mState={mState}
+                          mStateRef={mStateRef}
                           setMainStateValue={_setMainStateValue}
                           console_available_height={console_available_height - MARGIN_SIZE}
                           console_available_width={true_usable_width * mState.console_width_fraction - 16}
