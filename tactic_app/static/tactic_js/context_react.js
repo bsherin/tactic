@@ -560,24 +560,21 @@ function ContextApp(props) {
     });
   }
   function _goToNextPane(e) {
+    var templist = ["library"];
+    if (window.has_pool) templist.push("pool");
+    templist = [].concat(_toConsumableArray(templist), _toConsumableArray(tab_ids_ref.current));
     var newId;
-    if (selectedTabIdRef.current == "library") {
-      newId = tab_ids_ref.current[0];
-    } else {
-      var tabIndex = tab_ids_ref.current.indexOf(selectedTabIdRef.current) + 1;
-      newId = tabIndex === tab_ids_ref.current.length ? "library" : tab_ids_ref.current[tabIndex];
-    }
+    var tabIndex = templist.indexOf(selectedTabIdRef.current) + 1;
+    newId = tabIndex === templist.length ? "library" : templist[tabIndex];
     _handleTabSelect(newId, selectedTabIdRef.current);
     e.preventDefault();
   }
   function _goToPreviousPane(e) {
-    var newId;
-    if (selectedTabIdRef.current == "library") {
-      newId = tab_ids_ref.current.at(-1);
-    } else {
-      var tabIndex = tab_ids_ref.current.indexOf(selectedTabIdRef.current) - 1;
-      newId = tabIndex == -1 ? "library" : tab_ids_ref.current[tabIndex];
-    }
+    var templist = ["library"];
+    if (window.has_pool) templist.push("pool");
+    templist = [].concat(_toConsumableArray(templist), _toConsumableArray(tab_ids_ref.current));
+    var tabIndex = templist.indexOf(selectedTabIdRef.current) - 1;
+    var newId = tabIndex == -1 ? templist.at(-1) : templist[tabIndex];
     _handleTabSelect(newId, selectedTabIdRef.current);
     e.preventDefault();
   }
@@ -741,7 +738,13 @@ function ContextApp(props) {
   if (selectedTabIdRef.current == "library") {
     bclass += " selected-tab-button";
   }
-  var library_panel = /*#__PURE__*/_react["default"].createElement("div", {
+  var library_panel = /*#__PURE__*/_react["default"].createElement(_utilities_react.SelectedPaneContext.Provider, {
+    value: {
+      tab_id: "library",
+      selectedTabIdRef: selectedTabIdRef,
+      amSelected: amSelected
+    }
+  }, /*#__PURE__*/_react["default"].createElement("div", {
     id: "library-home-root"
   }, /*#__PURE__*/_react["default"].createElement(LibraryHomeAppPlus, {
     tsocket: tsocket,
@@ -755,7 +758,7 @@ function ContextApp(props) {
     handleCreateViewer: _handleCreateViewer,
     usable_width: usable_width,
     usable_height: usable_height
-  }));
+  })));
   var ltab = /*#__PURE__*/_react["default"].createElement(_core.Tab, {
     id: "library",
     tabIndex: -1,
@@ -798,7 +801,13 @@ function ContextApp(props) {
     if (selectedTabIdRef.current == "pool") {
       pclass += " selected-tab-button";
     }
-    var pool_panel = /*#__PURE__*/_react["default"].createElement("div", {
+    var pool_panel = /*#__PURE__*/_react["default"].createElement(_utilities_react.SelectedPaneContext.Provider, {
+      value: {
+        tab_id: "pool",
+        selectedTabIdRef: selectedTabIdRef,
+        amSelected: amSelected
+      }
+    }, /*#__PURE__*/_react["default"].createElement("div", {
       id: "pool-browser-root"
     }, /*#__PURE__*/_react["default"].createElement(_pool_browser.PoolBrowser, {
       tsocket: tsocket,
@@ -808,7 +817,7 @@ function ContextApp(props) {
       },
       usable_width: usable_width,
       usable_height: usable_height
-    }));
+    })));
     var ptab = /*#__PURE__*/_react["default"].createElement(_core.Tab, {
       id: "pool",
       tabIndex: -1,

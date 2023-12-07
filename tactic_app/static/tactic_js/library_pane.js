@@ -19,6 +19,7 @@ var _library_widgets = require("./library_widgets");
 var _resizing_layouts = require("./resizing_layouts");
 var _communication_react = require("./communication_react");
 var _sizing_tools = require("./sizing_tools");
+var _TacticOmnibar = require("./TacticOmnibar");
 var _toaster = require("./toaster.js");
 var _key_trap = require("./key_trap.js");
 var _utilities_react = require("./utilities_react");
@@ -879,6 +880,29 @@ function LibraryPane(props) {
       window.open($SCRIPT_ROOT + the_view + selected_resource_ref.current.name);
     }
   }
+  var _omni_view_func = (0, _react.useCallback)(function (item) {
+    var the_view = view_views(false)[item.res_type];
+    statusFuncs.setStatus({
+      show_spinner: true,
+      status_message: "Opening ..."
+    });
+    if (window.in_context) {
+      var re = new RegExp("/$");
+      the_view = the_view.replace(re, "_in_context");
+      (0, _communication_react.postAjaxPromise)($SCRIPT_ROOT + the_view, {
+        context_id: context_id,
+        resource_name: item.name
+      }).then(function (data) {
+        props.handleCreateViewer(data, statusFuncs.clearStatus);
+      })["catch"](function (data) {
+        (0, _toaster.doFlash)(data);
+        statusFuncs.clearstatus();
+      });
+    } else {
+      statusFuncs.clearStatus();
+      window.open($SCRIPT_ROOT + the_view + item.name);
+    }
+  });
   function _open_raw(selected_resource) {
     statusFuncs.clearStatus();
     if (selected_resource.type == "freeform") {
@@ -1109,14 +1133,9 @@ function LibraryPane(props) {
   function _showOmnibar() {
     setShowOmnibar(true);
   }
-  function _omnibarSelect(item) {
-    var the_view = view_views(props.is_repository)[item.res_type];
-    window.open($SCRIPT_ROOT + the_view + item);
-    _closeOmnibar();
-  }
-  function _closeOmnibar() {
+  var _closeOmnibar = (0, _react.useCallback)(function () {
     setShowOmnibar(false);
-  }
+  });
   function _new_notebook() {
     if (window.in_context) {
       var the_view = "".concat($SCRIPT_ROOT, "/new_notebook_in_context");
@@ -1552,6 +1571,7 @@ function LibraryPane(props) {
   function _menu_funcs() {
     return {
       view_func: _view_func,
+      search_resources: _showOmnibar,
       send_repository_func: _send_repository_func,
       repository_copy_func: _repository_copy_func,
       duplicate_func: _duplicate_func,
@@ -1648,7 +1668,7 @@ function LibraryPane(props) {
     return _handleArrowKeyPress("ArrowUp");
   }], [["down"], function () {
     return _handleArrowKeyPress("ArrowDown");
-  }], [["esc"], _unsearch]];
+  }], [["esc"], _unsearch], [["ctrl+o"], _showOmnibar]];
   var filter_buttons = [];
   var _iterator8 = _createForOfIteratorHelper(["all"].concat(res_types)),
     _step8;
@@ -1786,6 +1806,10 @@ function LibraryPane(props) {
   })), /*#__PURE__*/_react["default"].createElement(_key_trap.KeyTrap, {
     global: true,
     bindings: key_bindings
+  }), /*#__PURE__*/_react["default"].createElement(_TacticOmnibar.OpenOmnibar, {
+    showOmnibar: showOmnibar,
+    openFunc: _omni_view_func,
+    closeOmnibar: _closeOmnibar
   })));
 }
 exports.LibraryPane = LibraryPane = /*#__PURE__*/(0, _react.memo)(LibraryPane);

@@ -54,15 +54,15 @@ function BlueprintTable(props, passedRef) {
     _updateRowHeights();
   }, []);
   (0, _react.useEffect)(function () {
-    if (props.mStateRef.current.table_spec.column_widths == null || mismatched_column_widths.current) {
+    if (props.mState.table_spec.column_widths == null || mismatched_column_widths.current) {
       computeColumnWidths();
     }
     _updateRowHeights();
   });
   function hash_value() {
     var obj = {
-      cwidths: props.mStateRef.current.table_spec.column_widths,
-      nrows: props.mStateRef.current.total_rows
+      cwidths: props.mState.table_spec.column_widths,
+      nrows: props.mState.total_rows
       // sscroll: set_scroll
     };
 
@@ -77,8 +77,8 @@ function BlueprintTable(props, passedRef) {
   // }
 
   function computeColumnWidths() {
-    if (props.mStateRef.current.data_row_dict) {
-      var _cwidths = compute_initial_column_widths(props.filtered_column_names, props.mStateRef.current.data_row_dict);
+    if (props.mState.data_row_dict) {
+      var _cwidths = compute_initial_column_widths(props.filtered_column_names, props.mState.data_row_dict);
       mismatched_column_widths.current = false;
       props.updateTableSpec({
         column_widths: _cwidths
@@ -86,7 +86,7 @@ function BlueprintTable(props, passedRef) {
     }
   }
   function haveRowData(rowIndex) {
-    return props.mStateRef.current.data_row_dict.hasOwnProperty(rowIndex);
+    return props.mState.data_row_dict.hasOwnProperty(rowIndex);
   }
   function _doScroll() {
     if (data_update_required.current != null) {
@@ -109,7 +109,7 @@ function BlueprintTable(props, passedRef) {
       if (!haveRowData(rowIndex)) {
         return "empty cell";
       }
-      return props.mStateRef.current.data_row_dict[rowIndex][fcnames[colIndex]];
+      return props.mState.data_row_dict[rowIndex][fcnames[colIndex]];
     }, {
       getNumBufferLines: 1
     });
@@ -118,7 +118,7 @@ function BlueprintTable(props, passedRef) {
     if (haveRowData(rowIndex)) {
       return /*#__PURE__*/_react["default"].createElement(_table.RowHeaderCell, {
         key: rowIndex,
-        name: props.mStateRef.current.data_row_dict[rowIndex].__id__
+        name: props.mState.data_row_dict[rowIndex].__id__
       });
     } else {
       return /*#__PURE__*/_react["default"].createElement(_table.RowHeaderCell, {
@@ -129,8 +129,8 @@ function BlueprintTable(props, passedRef) {
     }
   }
   function _text_color_dict(row_id, colname) {
-    if (props.mStateRef.current.cells_to_color_text.hasOwnProperty(row_id)) {
-      var text_color_dict = props.mStateRef.current.cells_to_color_text[row_id];
+    if (props.mState.cells_to_color_text.hasOwnProperty(row_id)) {
+      var text_color_dict = props.mState.cells_to_color_text[row_id];
       if (text_color_dict.hasOwnProperty(colname)) {
         return text_color_dict[colname];
       }
@@ -139,8 +139,8 @@ function BlueprintTable(props, passedRef) {
     return null;
   }
   function _cell_background_color(row_id, colname) {
-    if (props.mStateRef.current.table_spec.cell_backgrounds.hasOwnProperty(row_id)) {
-      var cell_background_dict = props.mStateRef.current.table_spec.cell_backgrounds[row_id];
+    if (props.mState.table_spec.cell_backgrounds.hasOwnProperty(row_id)) {
+      var cell_background_dict = props.mState.table_spec.cell_backgrounds[row_id];
       if (cell_background_dict.hasOwnProperty(colname)) {
         return cell_background_dict[colname];
       }
@@ -200,9 +200,9 @@ function BlueprintTable(props, passedRef) {
           }, revised_text);
         }
         cell_bg_color = _cell_background_color(rowIndex, column_name);
-        the_text = props.mStateRef.current.data_row_dict[rowIndex][column_name];
-        if (props.mStateRef.current.alt_search_text != null && props.mStateRef.current.alt_search_text != "") {
-          var regex = new RegExp(props.mStateRef.current.alt_search_text, "gi");
+        the_text = props.mState.data_row_dict[rowIndex][column_name];
+        if (props.mState.alt_search_text != null && props.mState.alt_search_text != "") {
+          var regex = new RegExp(props.mState.alt_search_text, "gi");
           the_text = String(the_text).replace(regex, function (matched) {
             return "<mark>" + matched + "</mark>";
           });
@@ -220,8 +220,8 @@ function BlueprintTable(props, passedRef) {
             dangerouslySetInnerHTML: _converted_dict
           }));
         }
-        if (props.mStateRef.current.search_text != null && props.mStateRef.current.search_text != "") {
-          var _regex = new RegExp(props.mStateRef.current.search_text, "gi");
+        if (props.mState.search_text != null && props.mState.search_text != "") {
+          var _regex = new RegExp(props.mState.search_text, "gi");
           the_text = String(the_text).replace(_regex, function (matched) {
             return "<mark>" + matched + "</mark>";
           });
@@ -239,7 +239,7 @@ function BlueprintTable(props, passedRef) {
             dangerouslySetInnerHTML: _converted_dict2
           }));
         }
-        if (!props.mStateRef.current.spreadsheet_mode) {
+        if (!props.mState.spreadsheet_mode) {
           return /*#__PURE__*/_react["default"].createElement(_table.Cell, {
             key: column_name,
             style: {
@@ -289,12 +289,12 @@ function BlueprintTable(props, passedRef) {
     var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
     console.log("Setting selected for " + String(rowIndex));
     props.setMainStateValue({
-      selected_row: props.mStateRef.current.data_row_dict[rowIndex].__id__,
+      selected_row: props.mState.data_row_dict[rowIndex].__id__,
       selected_column: null
     }, null, callback);
   }
   function _onColumnWidthChanged(index, size) {
-    var cwidths = props.mStateRef.current.table_spec.column_widths;
+    var cwidths = props.mState.table_spec.column_widths;
     cwidths[index] = size;
     props.updateTableSpec({
       column_widths: cwidths
@@ -320,10 +320,10 @@ function BlueprintTable(props, passedRef) {
     });
   });
   var cwidths;
-  if (props.mStateRef.current.table_spec.column_widths == null || props.mStateRef.current.table_spec.column_widths.length == 0) {
+  if (props.mState.table_spec.column_widths == null || props.mState.table_spec.column_widths.length == 0) {
     cwidths = null;
   } else {
-    cwidths = props.mStateRef.current.table_spec.column_widths;
+    cwidths = props.mState.table_spec.column_widths;
   }
   if (cwidths != null && cwidths.length != props.filtered_column_names.length) {
     cwidths = null;
@@ -343,17 +343,17 @@ function BlueprintTable(props, passedRef) {
     ref: table_ref,
     key: hash_value() // kludge: Having this prevents partial row rendering
     ,
-    numRows: props.mStateRef.current.total_rows,
+    numRows: props.mState.total_rows,
     enableColumnReordering: true,
     onColumnsReordered: _onColumnsReordered,
     onSelection: _onSelection,
-    selectedRegions: props.mStateRef.current.selected_regions,
+    selectedRegions: props.mState.selected_regions,
     onCompleteRender: _doScroll,
     onColumnWidthChanged: _onColumnWidthChanged,
     onFocusedCell: _onFocusedCell,
     focusedCell: focusedCell,
     enableMultipleSelection: false,
-    enableFocusedCell: props.mStateRef.current.spreadsheet_mode,
+    enableFocusedCell: props.mState.spreadsheet_mode,
     selectionModes: [_table.RegionCardinality.FULL_COLUMNS, _table.RegionCardinality.FULL_ROWS],
     minColumnWidth: 75,
     columnWidths: cwidths,

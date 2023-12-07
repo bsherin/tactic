@@ -506,26 +506,22 @@ function ContextApp(props) {
     }
 
     function _goToNextPane(e) {
+        let templist = ["library"];
+        if (window.has_pool) templist.push("pool");
+        templist = [...templist, ...tab_ids_ref.current];
         let newId;
-        if (selectedTabIdRef.current == "library") {
-            newId = tab_ids_ref.current[0]
-        } else {
-            let tabIndex = tab_ids_ref.current.indexOf(selectedTabIdRef.current) + 1;
-            newId = tabIndex === tab_ids_ref.current.length ? "library" : tab_ids_ref.current[tabIndex];
-        }
+        let tabIndex = templist.indexOf(selectedTabIdRef.current) + 1;
+        newId = tabIndex === templist.length ? "library" : templist[tabIndex];
         _handleTabSelect(newId, selectedTabIdRef.current);
         e.preventDefault()
     }
 
     function _goToPreviousPane(e) {
-        let newId;
-        if (selectedTabIdRef.current == "library") {
-            newId = tab_ids_ref.current.at(-1)
-        } else {
-            let tabIndex = tab_ids_ref.current.indexOf(selectedTabIdRef.current) - 1;
-            newId = tabIndex == -1 ? "library" : tab_ids_ref.current[tabIndex]
-        }
-
+        let templist = ["library"];
+        if (window.has_pool) templist.push("pool");
+        templist = [...templist, ...tab_ids_ref.current];
+        let tabIndex = templist.indexOf(selectedTabIdRef.current) - 1;
+        let newId = tabIndex == -1 ? templist.at(-1) : templist[tabIndex];
         _handleTabSelect(newId, selectedTabIdRef.current);
         e.preventDefault();
     }
@@ -690,18 +686,20 @@ function ContextApp(props) {
     }
 
     const library_panel = (
-        <div id="library-home-root">
-            <LibraryHomeAppPlus tsocket={tsocket}
-                                library_style={window.library_style}
-                                controlled={true}
-                                am_selected={selectedTabIdRef.current == "library"}
-                                open_resources_ref={open_resources_ref}
-                                registerOmniFunction={(register_func) => _registerOmniFunction("library", register_func)}
-                                handleCreateViewer={_handleCreateViewer}
-                                usable_width={usable_width}
-                                usable_height={usable_height}
-            />
-        </div>
+        <SelectedPaneContext.Provider value={{tab_id: "library", selectedTabIdRef, amSelected}}>
+            <div id="library-home-root">
+                <LibraryHomeAppPlus tsocket={tsocket}
+                                    library_style={window.library_style}
+                                    controlled={true}
+                                    am_selected={selectedTabIdRef.current == "library"}
+                                    open_resources_ref={open_resources_ref}
+                                    registerOmniFunction={(register_func) => _registerOmniFunction("library", register_func)}
+                                    handleCreateViewer={_handleCreateViewer}
+                                    usable_width={usable_width}
+                                    usable_height={usable_height}
+                />
+            </div>
+        </SelectedPaneContext.Provider>
     );
 
     const ltab = (
@@ -720,7 +718,6 @@ function ContextApp(props) {
                     </div>
                 </div>
             </Tab>
-
     );
     let all_tabs = [ltab];
     if (window.has_pool) {
@@ -730,14 +727,16 @@ function ContextApp(props) {
         }
 
         const pool_panel = (
-            <div id="pool-browser-root">
-                <PoolBrowser tsocket={tsocket}
-                             am_selected={selectedTabIdRef.current == "pool"}
-                             registerOmniFunction={(register_func) => _registerOmniFunction("pool", register_func)}
-                             usable_width={usable_width}
-                             usable_height={usable_height}/>
+            <SelectedPaneContext.Provider value={{tab_id: "pool", selectedTabIdRef, amSelected}}>
+                <div id="pool-browser-root">
+                    <PoolBrowser tsocket={tsocket}
+                                 am_selected={selectedTabIdRef.current == "pool"}
+                                 registerOmniFunction={(register_func) => _registerOmniFunction("pool", register_func)}
+                                 usable_width={usable_width}
+                                 usable_height={usable_height}/>
 
-            </div>
+                </div>
+            </SelectedPaneContext.Provider>
         );
 
         const ptab = (

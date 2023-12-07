@@ -116,7 +116,7 @@ function MainApp(props) {
   var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
   var selectedPane = (0, _react.useContext)(_utilities_react.SelectedPaneContext);
-  var _useReducerAndRef5 = (0, _utilities_react.useReducerAndRef)(_main_support.mainReducer, {
+  var _useReducer = (0, _react.useReducer)(_main_support.mainReducer, {
       table_is_shrunk: props.doc_type == "none" || iStateOrDefault("table_is_shrunk"),
       console_width_fraction: iStateOrDefault("console_width_fraction"),
       horizontal_fraction: iStateOrDefault("console_width_fraction"),
@@ -151,10 +151,9 @@ function MainApp(props) {
       usable_height: (0, _sizing_tools.getUsableDimensions)(true).usable_height_no_bottom,
       usable_width: (0, _sizing_tools.getUsableDimensions)(true).usable_width - 170
     }),
-    _useReducerAndRef6 = _slicedToArray(_useReducerAndRef5, 3),
-    mState = _useReducerAndRef6[0],
-    mDispatch = _useReducerAndRef6[1],
-    mStateRef = _useReducerAndRef6[2];
+    _useReducer2 = _slicedToArray(_useReducer, 2),
+    mState = _useReducer2[0],
+    mDispatch = _useReducer2[1];
   var connection_status = (0, _utilities_react.useConnection)(props.tsocket, initSocket);
   var pushCallback = (0, _utilities_react.useCallbackStack)();
   (0, _react.useEffect)(function () {
@@ -175,7 +174,7 @@ function MainApp(props) {
     _updateLastSave();
     statusFuncs.stopSpinner();
     if (!props.controlled) {
-      document.title = mStateRef.current.resource_name;
+      document.title = mState.resource_name;
       window.addEventListener("resize", _update_window_dimensions);
       _update_window_dimensions();
     }
@@ -185,13 +184,13 @@ function MainApp(props) {
   }, []);
   (0, _react.useEffect)(function () {
     var data = {
-      active_row_id: mStateRef.current.selected_row,
-      doc_name: mStateRef.current.table_spec.current_doc_name
+      active_row_id: mState.selected_row,
+      doc_name: mState.table_spec.current_doc_name
     };
     _broadcast_event_to_server("MainTableRowSelect", data);
-  }, [mStateRef.current.selected_row]);
+  }, [mState.selected_row]);
   function _cProp(pname) {
-    return props.controlled ? props[pname] : mStateRef.current[pname];
+    return props.controlled ? props[pname] : mState[pname];
   }
   function am_selected() {
     return selectedPane.amSelected(selectedPane.tab_id, selectedPane.selectedTabIdRef);
@@ -199,14 +198,14 @@ function MainApp(props) {
   var save_state = {
     tile_list: tile_list,
     console_items: console_items,
-    table_is_shrunk: mStateRef.current.table_is_shrunk,
-    console_width_fraction: mStateRef.current.console_width_fraction,
-    horizontal_fraction: mStateRef.current.horizontal_fraction,
-    console_is_shrunk: mStateRef.current.console_is_shrunk,
-    height_fraction: mStateRef.current.height_fraction,
-    show_exports_pane: mStateRef.current.show_exports_pane,
-    show_console_pane: mStateRef.current.show_console_pane,
-    console_is_zoomed: mStateRef.current.console_is_zoomed
+    table_is_shrunk: mState.table_is_shrunk,
+    console_width_fraction: mState.console_width_fraction,
+    horizontal_fraction: mState.horizontal_fraction,
+    console_is_shrunk: mState.console_is_shrunk,
+    height_fraction: mState.height_fraction,
+    show_exports_pane: mState.show_exports_pane,
+    show_console_pane: mState.show_console_pane,
+    console_is_zoomed: mState.console_is_zoomed
   };
 
   // This will only be called if not controlled
@@ -263,7 +262,7 @@ function MainApp(props) {
       var row_id = data.hasOwnProperty("row_id") ? data.row_id : null;
       var scroll_to_row = data.hasOwnProperty("scroll_to_row") ? data.scroll_to_row : true;
       var select_row = data.hasOwnProperty("select_row") ? data.select_row : true;
-      if (mStateRef.current.table_is_shrunk) {
+      if (mState.table_is_shrunk) {
         _setMainStateValue("table_is_shrunk", false);
       }
       _handleChangeDoc(data.doc_name, row_id, scroll_to_row, select_row);
@@ -305,7 +304,7 @@ function MainApp(props) {
     });
   }
   function isFreeform() {
-    return mStateRef.current.doc_type == "freeform";
+    return mState.doc_type == "freeform";
   }
 
   // Every item in tile_list is a list of this form
@@ -430,7 +429,7 @@ function MainApp(props) {
       spec_update: spec_update
     });
     if (broadcast) {
-      spec_update["doc_name"] = mStateRef.current.table_spec.current_doc_name;
+      spec_update["doc_name"] = mState.table_spec.current_doc_name;
       (0, _communication_react.postWithCallback)(props.main_id, "UpdateTableSpec", spec_update, null, null, props.main_id);
     }
   }
@@ -438,7 +437,7 @@ function MainApp(props) {
     data_dict.main_id = props.main_id;
     data_dict.event_name = event_name;
     if (!("doc_name" in data_dict)) {
-      data_dict.doc_name = mStateRef.current.table_spec.current_doc_name;
+      data_dict.doc_name = mState.table_spec.current_doc_name;
     }
     (0, _communication_react.postWithCallback)(props.main_id, "distribute_events_stub", data_dict, callback, null, props.main_id);
   }
@@ -514,14 +513,14 @@ function MainApp(props) {
   }
   function _getTileOmniItems() {
     var omni_items = [];
-    var sorted_categories = _toConsumableArray(Object.keys(mStateRef.current.tile_types));
+    var sorted_categories = _toConsumableArray(Object.keys(mState.tile_types));
     sorted_categories.sort();
     var _iterator2 = _createForOfIteratorHelper(sorted_categories),
       _step2;
     try {
       for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
         var category = _step2.value;
-        var sorted_types = _toConsumableArray(mStateRef.current.tile_types[category]);
+        var sorted_types = _toConsumableArray(mState.tile_types[category]);
         sorted_types.sort();
         var _iterator3 = _createForOfIteratorHelper(sorted_types),
           _step3;
@@ -532,7 +531,7 @@ function MainApp(props) {
               category: category,
               display_text: ttype,
               search_text: ttype,
-              icon_name: mStateRef.current.tile_icon_dict[ttype],
+              icon_name: mState.tile_icon_dict[ttype],
               the_function: function the_function() {
                 return _tile_command(ttype);
               }
@@ -556,7 +555,7 @@ function MainApp(props) {
   }
   function create_tile_menus() {
     var menu_items = [];
-    var sorted_categories = _toConsumableArray(Object.keys(mStateRef.current.tile_types));
+    var sorted_categories = _toConsumableArray(Object.keys(mState.tile_types));
     sorted_categories.sort();
     var _iterator4 = _createForOfIteratorHelper(sorted_categories),
       _step4;
@@ -565,7 +564,7 @@ function MainApp(props) {
         var category = _step4.value;
         var option_dict = {};
         var icon_dict = {};
-        var sorted_types = _toConsumableArray(mStateRef.current.tile_types[category]);
+        var sorted_types = _toConsumableArray(mState.tile_types[category]);
         sorted_types.sort();
         var _iterator5 = _createForOfIteratorHelper(sorted_types),
           _step5;
@@ -575,7 +574,7 @@ function MainApp(props) {
             option_dict[ttype] = function () {
               return _tile_command(ttype);
             };
-            icon_dict[ttype] = mStateRef.current.tile_icon_dict[ttype];
+            icon_dict[ttype] = mState.tile_icon_dict[ttype];
           };
           for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
             _loop2();
@@ -602,7 +601,7 @@ function MainApp(props) {
     return menu_items;
   }
   function _toggleTableShrink() {
-    _setMainStateValue("table_is_shrunk", !mStateRef.current.table_is_shrunk);
+    _setMainStateValue("table_is_shrunk", !mState.table_is_shrunk);
   }
   function _handleHorizontalFractionChange(left_width, right_width, new_fraction) {
     _setMainStateValue("horizontal_fraction", new_fraction);
@@ -624,12 +623,12 @@ function MainApp(props) {
       return table_available_height - 50;
     } else {
       var top_offset = tbody_ref.current.getBoundingClientRect().top - table_container_ref.current.getBoundingClientRect().top;
-      var madjust = mStateRef.current.console_is_shrunk ? 2 * MARGIN_ADJUSTMENT : MARGIN_ADJUSTMENT;
+      var madjust = mState.console_is_shrunk ? 2 * MARGIN_ADJUSTMENT : MARGIN_ADJUSTMENT;
       return table_available_height - top_offset - madjust;
     }
   }
   function _setFreeformDoc(doc_name, new_content) {
-    if (doc_name == mStateRef.current.table_spec.current_doc_name) {
+    if (doc_name == mState.table_spec.current_doc_name) {
       _setMainStateValue("data_text", new_content);
     }
   }
@@ -703,7 +702,7 @@ function MainApp(props) {
     _setStateFromDataObject(data_object, data_object.doc_name);
   }
   function _moveColumn(tag_to_move, place_to_move) {
-    var colnames = _toConsumableArray(mStateRef.current.table_spec.column_names);
+    var colnames = _toConsumableArray(mState.table_spec.column_names);
     var start_index = colnames.indexOf(tag_to_move);
     colnames.splice(start_index, 1);
     if (!place_to_move) {
@@ -715,7 +714,7 @@ function MainApp(props) {
     var fnames = _filteredColumnNames();
     start_index = fnames.indexOf(tag_to_move);
     fnames.splice(start_index, 1);
-    var cwidths = _toConsumableArray(mStateRef.current.table_spec.column_widths);
+    var cwidths = _toConsumableArray(mState.table_spec.column_widths);
     var width_to_move = cwidths[start_index];
     cwidths.splice(start_index, 1);
     if (!place_to_move) {
@@ -730,11 +729,11 @@ function MainApp(props) {
     }, true);
   }
   function _hideColumn() {
-    var hc_list = _toConsumableArray(mStateRef.current.table_spec.hidden_columns_list);
+    var hc_list = _toConsumableArray(mState.table_spec.hidden_columns_list);
     var fnames = _filteredColumnNames();
-    var cname = mStateRef.current.selected_column;
+    var cname = mState.selected_column;
     var col_index = fnames.indexOf(cname);
-    var cwidths = _toConsumableArray(mStateRef.current.table_spec.column_widths);
+    var cwidths = _toConsumableArray(mState.table_spec.column_widths);
     cwidths.splice(col_index, 1);
     hc_list.push(cname);
     _updateTableSpec({
@@ -743,15 +742,15 @@ function MainApp(props) {
     }, true);
   }
   function _hideColumnInAll() {
-    var hc_list = _toConsumableArray(mStateRef.current.table_spec.hidden_columns_list);
+    var hc_list = _toConsumableArray(mState.table_spec.hidden_columns_list);
     var fnames = _filteredColumnNames();
-    var cname = mStateRef.current.selected_column;
+    var cname = mState.selected_column;
     var col_index = fnames.indexOf(cname);
-    var cwidths = _toConsumableArray(mStateRef.current.table_spec.column_widths);
+    var cwidths = _toConsumableArray(mState.table_spec.column_widths);
     cwidths.splice(col_index, 1);
     hc_list.push(cname);
     var data_dict = {
-      "column_name": mStateRef.current.selected_column
+      "column_name": mState.selected_column
     };
     _broadcast_event_to_server("HideColumnInAllDocs", data_dict, function () {
       _updateTableSpec({
@@ -770,33 +769,33 @@ function MainApp(props) {
   }
   function _deleteRow() {
     (0, _communication_react.postWithCallback)(props.main_id, "delete_row", {
-      "document_name": mStateRef.current.table_spec.current_doc_name,
-      "index": mStateRef.current.selected_row
+      "document_name": mState.table_spec.current_doc_name,
+      "index": mState.selected_row
     }, null);
   }
   function _insertRow(index) {
     (0, _communication_react.postWithCallback)(props.main_id, "insert_row", {
-      "document_name": mStateRef.current.table_spec.current_doc_name,
+      "document_name": mState.table_spec.current_doc_name,
       "index": index,
       "row_dict": {}
     }, null, null, props.main_id);
   }
   function _duplicateRow() {
     (0, _communication_react.postWithCallback)(props.main_id, "insert_row", {
-      "document_name": mStateRef.current.table_spec.current_doc_name,
-      "index": mStateRef.current.selected_row,
-      "row_dict": mStateRef.current.data_text[mStateRef.current.selected_row]
+      "document_name": mState.table_spec.current_doc_name,
+      "index": mState.selected_row,
+      "row_dict": mState.data_text[mState.selected_row]
     }, null, null, props.main_id);
   }
   function _deleteColumn() {
     var delete_in_all = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
     var fnames = _filteredColumnNames();
-    var cname = mStateRef.current.selected_column;
+    var cname = mState.selected_column;
     var col_index = fnames.indexOf(cname);
-    var cwidths = _toConsumableArray(mStateRef.current.table_spec.column_widths);
+    var cwidths = _toConsumableArray(mState.table_spec.column_widths);
     cwidths.splice(col_index, 1);
-    var hc_list = _lodash["default"].without(mStateRef.current.table_spec.hidden_columns_list, cname);
-    var cnames = _lodash["default"].without(mStateRef.current.table_spec.column_names, cname);
+    var hc_list = _lodash["default"].without(mState.table_spec.hidden_columns_list, cname);
+    var cnames = _lodash["default"].without(mState.table_spec.column_names, cname);
     _updateTableSpec({
       column_names: cnames,
       hidden_columns_list: hc_list,
@@ -804,7 +803,7 @@ function MainApp(props) {
     }, false);
     var data_dict = {
       "column_name": cname,
-      "doc_name": mStateRef.current.table_spec.current_doc_name,
+      "doc_name": mState.table_spec.current_doc_name,
       "all_docs": delete_in_all
     };
     (0, _communication_react.postWithCallback)(props.main_id, "DeleteColumn", data_dict, null, null, props.main_id);
@@ -818,19 +817,19 @@ function MainApp(props) {
       handleSubmit: function handleSubmit(new_name) {
         var cwidth = (0, _blueprint_table.compute_added_column_width)(new_name);
         _updateTableSpec({
-          column_names: [].concat(_toConsumableArray(mStateRef.current.table_spec.column_names), [new_name]),
-          column_widths: [].concat(_toConsumableArray(mStateRef.current.table_spec.column_widths), [cwidth])
+          column_names: [].concat(_toConsumableArray(mState.table_spec.column_names), [new_name]),
+          column_widths: [].concat(_toConsumableArray(mState.table_spec.column_widths), [cwidth])
         }, false);
         var data_dict = {
           "column_name": new_name,
-          "doc_name": mStateRef.current.table_spec.current_doc_name,
+          "doc_name": mState.table_spec.current_doc_name,
           "column_width": cwidth,
           "all_docs": add_in_all
         };
         _broadcast_event_to_server("CreateColumn", data_dict);
       },
       default_value: "newcol",
-      existing_names: mStateRef.current.table_spec.column_names,
+      existing_names: mState.table_spec.column_names,
       checkboxes: [],
       handleCancel: null,
       handleClose: dialogFuncs.hideModal
@@ -859,7 +858,7 @@ function MainApp(props) {
   }
   function _grabNewChunkWithRow(row_index) {
     (0, _communication_react.postWithCallback)(props.main_id, "grab_chunk_by_row_index", {
-      doc_name: mStateRef.current.table_spec.current_doc_name,
+      doc_name: mState.table_spec.current_doc_name,
       row_index: row_index
     }, function (data) {
       mDispatch({
@@ -976,10 +975,10 @@ function MainApp(props) {
   }
   function get_hp_height() {
     if (tile_div_ref.current) {
-      if (mStateRef.current.console_is_shrunk) {
+      if (mState.console_is_shrunk) {
         return _cProp("usable_height") - CONSOLE_HEADER_HEIGHT - BOTTOM_MARGIN - height_adjustment.current;
       } else {
-        return (_cProp("usable_height") - BOTTOM_MARGIN - height_adjustment.current) * mStateRef.current.height_fraction;
+        return (_cProp("usable_height") - BOTTOM_MARGIN - height_adjustment.current) * mState.height_fraction;
       }
     } else {
       return _cProp("usable_height") - 100;
@@ -1000,8 +999,8 @@ function MainApp(props) {
     }
   }
   function _filteredColumnNames() {
-    return mStateRef.current.table_spec.column_names.filter(function (name) {
-      return !(mStateRef.current.table_spec.hidden_columns_list.includes(name) || name == "__id__");
+    return mState.table_spec.column_names.filter(function (name) {
+      return !(mState.table_spec.hidden_columns_list.includes(name) || name == "__id__");
     });
   }
   function _setProjectName(new_project_name) {
@@ -1034,29 +1033,29 @@ function MainApp(props) {
   var console_available_height;
   var my_props = _objectSpread({}, props);
   if (!props.controlled) {
-    my_props.is_project = mStateRef.current.is_project;
-    my_props.resource_name = mStateRef.current.resource_name;
-    my_props.usable_width = mStateRef.current.usable_width;
-    my_props.usable_height = mStateRef.current.usable_height;
+    my_props.is_project = mState.is_project;
+    my_props.resource_name = mState.resource_name;
+    my_props.usable_width = mState.usable_width;
+    my_props.usable_height = mState.usable_height;
   }
   var true_usable_width = my_props.usable_width;
-  if (mStateRef.current.console_is_zoomed) {
+  if (mState.console_is_zoomed) {
     console_available_height = get_zoomed_console_height() - MARGIN_ADJUSTMENT;
   } else {
     vp_height = get_vp_height();
     hp_height = get_hp_height();
-    if (mStateRef.current.console_is_shrunk) {
+    if (mState.console_is_shrunk) {
       console_available_height = CONSOLE_HEADER_HEIGHT;
     } else {
       console_available_height = vp_height - hp_height - MARGIN_ADJUSTMENT - 3;
     }
   }
   var disabled_column_items = [];
-  if (mStateRef.current.selected_column == null) {
+  if (mState.selected_column == null) {
     disabled_column_items = ["Shift Left", "Shift Right", "Hide", "Hide in All Docs", "Delete Column", "Delete Column In All Docs"];
   }
   var disabled_row_items = [];
-  if (mStateRef.current.selected_row == null) {
+  if (mState.selected_row == null) {
     disabled_row_items = ["Delete Row", "Insert Row Before", "Insert Row After", "Duplicate Row"];
   }
   var project_name = my_props.is_project ? props.resource_name : "";
@@ -1064,7 +1063,7 @@ function MainApp(props) {
   if (!my_props.is_project) {
     disabled_project_items.push("Save");
   }
-  if (mStateRef.current.doc_type == "none") {
+  if (mState.doc_type == "none") {
     disabled_project_items.push("Export Table as Collection");
     disabled_project_items.push("Remove Collection");
   }
@@ -1077,7 +1076,7 @@ function MainApp(props) {
     postAjaxFailure: props.postAjaxFailure,
     console_items: console_items_ref.current,
     tile_list: tile_list_ref.current,
-    mStateRef: mStateRef,
+    mState: mState,
     setMainStateValue: _setMainStateValue,
     updateLastSave: _updateLastSave,
     changeCollection: _changeCollection,
@@ -1085,20 +1084,20 @@ function MainApp(props) {
     disabled_items: disabled_project_items,
     registerOmniGetter: _registerOmniGetter,
     hidden_items: ["Export as Jupyter Notebook"]
-  }), mStateRef.current.doc_type != "none" && /*#__PURE__*/_react["default"].createElement(_main_menus_react.DocumentMenu, {
+  }), mState.doc_type != "none" && /*#__PURE__*/_react["default"].createElement(_main_menus_react.DocumentMenu, {
     main_id: props.main_id,
-    documentNames: mStateRef.current.doc_names,
+    documentNames: mState.doc_names,
     registerOmniGetter: _registerOmniGetter,
-    currentDoc: mStateRef.current.table_spec.current_doc_name
-  }), !isFreeform() && mStateRef.current.doc_type != "none" && /*#__PURE__*/_react["default"].createElement(_main_menus_react.ColumnMenu, {
+    currentDoc: mState.table_spec.current_doc_name
+  }), !isFreeform() && mState.doc_type != "none" && /*#__PURE__*/_react["default"].createElement(_main_menus_react.ColumnMenu, {
     main_id: props.main_id,
     project_name: project_name,
     is_notebook: props.is_notebook,
     is_juptyer: props.is_jupyter,
     moveColumn: _moveColumn,
-    table_spec: mStateRef.current.table_spec,
+    table_spec: mState.table_spec,
     filtered_column_names: _filteredColumnNames(),
-    selected_column: mStateRef.current.selected_column,
+    selected_column: mState.selected_column,
     disabled_items: disabled_column_items,
     hideColumn: _hideColumn,
     hideInAll: _hideColumnInAll,
@@ -1106,20 +1105,20 @@ function MainApp(props) {
     addColumn: _addColumn,
     registerOmniGetter: _registerOmniGetter,
     deleteColumn: _deleteColumn
-  }), !isFreeform() && mStateRef.current.doc_type != "none" && /*#__PURE__*/_react["default"].createElement(_main_menus_react.RowMenu, {
+  }), !isFreeform() && mState.doc_type != "none" && /*#__PURE__*/_react["default"].createElement(_main_menus_react.RowMenu, {
     main_id: props.main_id,
     project_name: project_name,
     is_notebook: props.is_notebook,
     is_juptyer: props.is_jupyter,
     deleteRow: _deleteRow,
     insertRowBefore: function insertRowBefore() {
-      _insertRow(mStateRef.current.selected_row);
+      _insertRow(mState.selected_row);
     },
     insertRowAfter: function insertRowAfter() {
-      _insertRow(mStateRef.current.selected_row + 1);
+      _insertRow(mState.selected_row + 1);
     },
     duplicateRow: _duplicateRow,
-    selected_row: mStateRef.current.selected_row,
+    selected_row: mState.selected_row,
     registerOmniGetter: _registerOmniGetter,
     disabled_items: disabled_row_items
   }), /*#__PURE__*/_react["default"].createElement(_main_menus_react.ViewMenu, {
@@ -1127,22 +1126,22 @@ function MainApp(props) {
     project_name: project_name,
     is_notebook: props.is_notebook,
     is_juptyer: props.is_jupyter,
-    table_is_shrunk: mStateRef.current.table_is_shrunk,
-    toggleTableShrink: mStateRef.current.doc_type == "none" ? null : _toggleTableShrink,
+    table_is_shrunk: mState.table_is_shrunk,
+    toggleTableShrink: mState.doc_type == "none" ? null : _toggleTableShrink,
     openErrorDrawer: props.openErrorDrawer,
-    show_exports_pane: mStateRef.current.show_exports_pane,
-    show_console_pane: mStateRef.current.show_console_pane,
+    show_exports_pane: mState.show_exports_pane,
+    show_console_pane: mState.show_console_pane,
     registerOmniGetter: _registerOmniGetter,
     setMainStateValue: _setMainStateValue
   }), /*#__PURE__*/_react["default"].createElement(_core.NavbarDivider, null), create_tile_menus());
   var table_available_height = hp_height;
   var card_body;
   var card_header;
-  if (mStateRef.current.doc_type != "none") {
+  if (mState.doc_type != "none") {
     card_header = /*#__PURE__*/_react["default"].createElement(_table_react.MainTableCardHeader, {
       main_id: props.main_id,
-      toggleShrink: mStateRef.current.doc_type == "none" ? null : _toggleTableShrink,
-      mStateRef: mStateRef,
+      toggleShrink: mState.doc_type == "none" ? null : _toggleTableShrink,
+      mState: mState,
       setMainStateValue: _setMainStateValue,
       handleChangeDoc: _handleChangeDoc,
       handleSearchFieldChange: _handleSearchFieldChange,
@@ -1155,9 +1154,9 @@ function MainApp(props) {
       card_body = /*#__PURE__*/_react["default"].createElement(_table_react.FreeformBody, {
         main_id: props.main_id,
         ref: tbody_ref,
-        code_container_width: mStateRef.current.horizontal_fraction * true_usable_width,
+        code_container_width: mState.horizontal_fraction * true_usable_width,
         code_container_height: _getTableBodyHeight(table_available_height),
-        mStateRef: mStateRef,
+        mState: mState,
         setMainStateValue: _setMainStateValue
       });
     } else {
@@ -1172,12 +1171,12 @@ function MainApp(props) {
         moveColumn: _moveColumn,
         updateTableSpec: _updateTableSpec,
         setMainStateValue: _setMainStateValue,
-        mStateRef: mStateRef,
+        mState: mState,
         set_scroll: set_table_scroll
       });
     }
   }
-  var tile_container_height = mStateRef.current.console_is_shrunk ? table_available_height - MARGIN_ADJUSTMENT : table_available_height;
+  var tile_container_height = mState.console_is_shrunk ? table_available_height - MARGIN_ADJUSTMENT : table_available_height;
   var tile_pane = /*#__PURE__*/_react["default"].createElement("div", {
     ref: tile_div_ref
   }, /*#__PURE__*/_react["default"].createElement(_tile_react.TileContainer, {
@@ -1185,16 +1184,16 @@ function MainApp(props) {
     tsocket: props.tsocket,
     height: tile_container_height,
     tile_list: tile_list_ref,
-    current_doc_name: mStateRef.current.table_spec.current_doc_name,
-    selected_row: mStateRef.current.selected_row,
-    table_is_shrunk: mStateRef.current.table_is_shrunk,
+    current_doc_name: mState.table_spec.current_doc_name,
+    selected_row: mState.selected_row,
+    table_is_shrunk: mState.table_is_shrunk,
     broadcast_event: _broadcast_event_to_server,
     goToModule: props.goToModule,
     tileDispatch: tileDispatch,
     setMainStateValue: _setMainStateValue
   }));
   var exports_pane;
-  if (mStateRef.current.show_exports_pane) {
+  if (mState.show_exports_pane) {
     exports_pane = /*#__PURE__*/_react["default"].createElement(_export_viewer_react.ExportsViewer, {
       main_id: props.main_id,
       tsocket: props.tsocket,
@@ -1203,14 +1202,14 @@ function MainApp(props) {
       },
       setMainStateValue: _setMainStateValue,
       available_height: console_available_height,
-      console_is_shrunk: mStateRef.current.console_is_shrunk,
-      console_is_zoomed: mStateRef.current.console_is_zoomed
+      console_is_shrunk: mState.console_is_shrunk,
+      console_is_zoomed: mState.console_is_zoomed
     });
   } else {
     exports_pane = /*#__PURE__*/_react["default"].createElement("div", null);
   }
   var console_pane;
-  if (mStateRef.current.show_console_pane) {
+  if (mState.show_console_pane) {
     console_pane = /*#__PURE__*/_react["default"].createElement(_console_component.ConsoleComponent, {
       main_id: props.main_id,
       tsocket: props.tsocket,
@@ -1220,15 +1219,15 @@ function MainApp(props) {
       console_selected_items_ref: console_selected_items_ref,
       set_console_selected_items: set_console_selected_items,
       dispatch: dispatch,
-      mStateRef: mStateRef,
+      mState: mState,
       setMainStateValue: _setMainStateValue,
       console_available_height: console_available_height,
-      console_available_width: true_usable_width * mStateRef.current.console_width_fraction - 16,
+      console_available_width: true_usable_width * mState.console_width_fraction - 16,
       zoomable: true,
       shrinkable: true
     });
   } else {
-    var console_available_width = true_usable_width * mStateRef.current.console_width_fraction - 16;
+    var console_available_width = true_usable_width * mState.console_width_fraction - 16;
     console_pane = /*#__PURE__*/_react["default"].createElement("div", {
       style: {
         width: console_available_width
@@ -1238,15 +1237,15 @@ function MainApp(props) {
   var bottom_pane = /*#__PURE__*/_react["default"].createElement(_resizing_layouts.HorizontalPanes, {
     left_pane: console_pane,
     right_pane: exports_pane,
-    show_handle: !mStateRef.current.console_is_shrunk,
+    show_handle: !mState.console_is_shrunk,
     available_height: console_available_height,
     available_width: true_usable_width,
-    initial_width_fraction: mStateRef.current.console_width_fraction,
+    initial_width_fraction: mState.console_width_fraction,
     dragIconSize: 15,
     handleSplitUpdate: _handleConsoleFractionChange
   });
   var table_pane;
-  if (mStateRef.current.doc_type != "none") {
+  if (mState.doc_type != "none") {
     table_pane = /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
       ref: table_container_ref
     }, /*#__PURE__*/_react["default"].createElement(_table_react.MainTableCard, {
@@ -1255,12 +1254,12 @@ function MainApp(props) {
     })));
   }
   var top_pane;
-  if (mStateRef.current.table_is_shrunk) {
+  if (mState.table_is_shrunk) {
     top_pane = /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
       style: {
         paddingLeft: 10
       }
-    }, tile_pane), mStateRef.current.console_is_shrunk && bottom_pane);
+    }, tile_pane), mState.console_is_shrunk && bottom_pane);
   } else {
     top_pane = /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_resizing_layouts.HorizontalPanes, {
       left_pane: table_pane,
@@ -1269,18 +1268,18 @@ function MainApp(props) {
       show_handle: true,
       scrollAdjustSelectors: [".bp5-table-quadrant-scroll-container", "#tile-div"],
       available_width: true_usable_width,
-      initial_width_fraction: mStateRef.current.horizontal_fraction,
+      initial_width_fraction: mState.horizontal_fraction,
       dragIconSize: 15,
       handleSplitUpdate: _handleHorizontalFractionChange,
       handleResizeStart: _handleResizeStart,
       handleResizeEnd: _handleResizeEnd
-    }), mStateRef.current.console_is_shrunk && bottom_pane);
+    }), mState.console_is_shrunk && bottom_pane);
   }
   var extra_menubar_buttons = [];
-  if (mStateRef.current.doc_type != "none") {
+  if (mState.doc_type != "none") {
     extra_menubar_buttons = [{
       onClick: _toggleTableShrink,
-      icon: mStateRef.current.table_is_shrunk ? "th" : "th-disconnect"
+      icon: mState.table_is_shrunk ? "th" : "th-disconnect"
     }];
   }
   return /*#__PURE__*/_react["default"].createElement(_error_boundary.ErrorBoundary, null, !window.in_context && /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
@@ -1306,13 +1305,13 @@ function MainApp(props) {
       width: "100%",
       height: my_props.usable_height - height_adjustment.current
     }
-  }, mStateRef.current.console_is_zoomed && bottom_pane, !mStateRef.current.console_is_zoomed && mStateRef.current.console_is_shrunk && top_pane, !mStateRef.current.console_is_zoomed && !mStateRef.current.console_is_shrunk && /*#__PURE__*/_react["default"].createElement(_resizing_layouts.VerticalPanes, {
+  }, mState.console_is_zoomed && bottom_pane, !mState.console_is_zoomed && mState.console_is_shrunk && top_pane, !mState.console_is_zoomed && !mState.console_is_shrunk && /*#__PURE__*/_react["default"].createElement(_resizing_layouts.VerticalPanes, {
     top_pane: top_pane,
     bottom_pane: bottom_pane,
     show_handle: true,
     available_width: true_usable_width,
     available_height: vp_height,
-    initial_height_fraction: mStateRef.current.height_fraction,
+    initial_height_fraction: mState.height_fraction,
     dragIconSize: 15,
     scrollAdjustSelectors: [".bp5-table-quadrant-scroll-container", "#tile-div"],
     handleSplitUpdate: _handleVerticalSplitUpdate,
@@ -1322,7 +1321,7 @@ function MainApp(props) {
   })), !window.in_context && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_TacticOmnibar.TacticOmnibar, {
     omniGetters: [_omniFunction],
     page_id: props.main_id,
-    showOmnibar: mStateRef.current.showOmnibar,
+    showOmnibar: mState.showOmnibar,
     closeOmnibar: _closeOmnibar
   }), /*#__PURE__*/_react["default"].createElement(_key_trap.KeyTrap, {
     global: true,

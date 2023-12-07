@@ -26,21 +26,21 @@ function ProjectMenu(props) {
     if (props.is_notebook)
          save_state = {
             console_items: props.console_items,
-            show_exports_pane: props.mStateRef.current.show_exports_pane,
-            console_width_fraction: props.mStateRef.current.console_width_fraction
+            show_exports_pane: props.mState.show_exports_pane,
+            console_width_fraction: props.mState.console_width_fraction
         };
     else {
         save_state = {
             console_items: props.console_items,
             tile_list: props.tile_list,
-            table_is_shrunk: props.mStateRef.current.table_is_shrunk,
-            horizontal_fraction: props.mStateRef.current.horizontal_fraction,
-            console_is_shrunk: props.mStateRef.current.console_is_shrunk,
-            height_fraction: props.mStateRef.current.height_fraction,
-            show_console_pane: props.mStateRef.current.show_console_pane,
-            console_is_zoomed: props.mStateRef.current.console_is_zoomed,
-            show_exports_pane: props.mStateRef.current.show_exports_pane,
-            console_width_fraction: props.mStateRef.current.console_width_fraction
+            table_is_shrunk: props.mState.table_is_shrunk,
+            horizontal_fraction: props.mState.horizontal_fraction,
+            console_is_shrunk: props.mState.console_is_shrunk,
+            height_fraction: props.mState.height_fraction,
+            show_console_pane: props.mState.show_console_pane,
+            console_is_zoomed: props.mState.console_is_zoomed,
+            show_exports_pane: props.mState.show_exports_pane,
+            console_width_fraction: props.mState.console_width_fraction
         };
     }
 
@@ -376,7 +376,7 @@ function ProjectMenu(props) {
     function menu_items() {
         let cc_name;
         let cc_icon;
-        if (props.mStateRef.current.doc_type == "none" ) {
+        if (props.mState.doc_type == "none" ) {
             cc_name = "Add Collection";
             cc_icon = "add"
         }
