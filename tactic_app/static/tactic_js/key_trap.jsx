@@ -11,7 +11,7 @@ function KeyTrap(props) {
     const mousetrap = useRef(null);
 
     useEffect(()=>{
-        _initializeMousetrap()
+        _initializeMousetrap();
         return (()=>{
             if (mousetrap.current) {
                 mousetrap.current.reset();

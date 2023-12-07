@@ -1,20 +1,150 @@
 import React from "react";
-import {memo, useContext} from "react";
+import {memo, useContext, useState, useCallback, useRef} from "react";
 import PropTypes from 'prop-types';
 
-import {Omnibar} from "@blueprintjs/select"
-import {MenuItem} from "@blueprintjs/core";
+import {Omnibar, QueryList, Classes} from "@blueprintjs/select"
+import {MenuItem, Overlay, InputGroup} from "@blueprintjs/core";
 
-import {postWithCallback} from "./communication_react";
+import {postAjax, postWithCallback} from "./communication_react";
 import {ThemeContext} from "./theme"
+import {useDebounce} from "./utilities_react";
 
-export {TacticOmnibar}
+export {TacticOmnibar, OpenOmnibar}
 
 const context_url = $SCRIPT_ROOT + '/context';
 const library_url = $SCRIPT_ROOT + '/library';
 const repository_url = $SCRIPT_ROOT + '/repository';
 const account_url = $SCRIPT_ROOT + '/account_info';
 const login_url = $SCRIPT_ROOT + "/login";
+
+let icon_dict = {
+    collection: "database",
+    project: "projects",
+    tile: "application",
+    list: "list",
+    code: "code",
+};
+
+function OpenOmnibarItem(props) {
+    function _handleClick() {
+        props.handleClick(props.item);
+        return null
+    }
+
+    return (
+        <MenuItem
+            icon={icon_dict[props.item.res_type]}
+            active={props.modifiers.active}
+            text={props.item.name}
+            label={props.item.res_type}
+            key={props.item.name}
+            onClick={_handleClick}
+            shouldDismissPopover={true}
+        />
+    );
+}
+
+function OpenOmnibar(props) {
+
+    const old_search_string = useRef("");
+
+    const grabChunk = useCallback((search_string)=> {
+            let search_spec = {
+                active_tag: null,
+                search_string: search_string,
+                search_inside: false,
+                search_metadata: false,
+                show_hidden: false,
+                sort_field: "updated_for_sort",
+                sort_direction: "descending"
+            };
+
+            let data = {
+                pane_type: "all",
+                search_spec: search_spec,
+                row_number: 0,
+                is_repository: false
+            };
+            postAjax("grab_all_list_chunk", data, function (data) {
+                    set_item_list(Object.values(data.chunk_dict))
+                }
+            )
+        }
+    );
+
+    const [item_list, set_item_list] = useState([]);
+    const [waiting, doUpdate] = useDebounce(grabChunk);
+    const theme = useContext(ThemeContext);
+
+    function openItemListPredicate(search_string, items) {
+        if (!props.showOmnibar) return [];
+        if (search_string == "" && !waiting.current) {
+            old_search_string.current = "";
+            return []
+        }
+        if (search_string == old_search_string.current) {
+            return items
+        }
+
+        old_search_string.current = search_string;
+
+        doUpdate(search_string);
+        return item_list
+    }
+
+    function openItemRenderer(item, {modifiers, handleClick}) {
+        return <OpenOmnibarItem modifiers={modifiers} item={item} handleClick={handleClick}/>
+    }
+
+    function _onItemSelect(item) {
+        props.openFunc(item);
+        props.closeOmnibar()
+    }
+
+    function _onActiveItemChange(item) {
+        console.log(String(item))
+    }
+
+    function renderQueryList (listProps)  {
+        const { handleKeyDown, handleKeyUp } = listProps;
+        const handlers = props.showOmnibar ? { onKeyDown: handleKeyDown, onKeyUp: handleKeyUp } : {};
+
+        return (
+            <Overlay
+                hasBackdrop={true}
+                isOpen={props.showOmnibar}
+                className={Classes.OMNIBAR_OVERLAY}
+                onClose={props.closeOmnibar}>
+                <div className={`${Classes.OMNIBAR} ${listProps.className}`} {...handlers}>
+                    <InputGroup
+                        autoFocus={true}
+                        large={true}
+                        leftIcon="cube"
+                        placeholder="Search resources..."
+                        onChange={listProps.handleQueryChange}
+                        value={listProps.query}
+                    />
+                    {listProps.itemList}
+                </div>
+            </Overlay>
+        );
+    }
+
+    return (
+        <QueryList items={item_list}
+                   className={theme.dark_theme ? "bp5-dark" : ""}
+                   isOpen={props.showOmnibar}
+                   onItemSelect={_onItemSelect}
+                   itemRenderer={openItemRenderer}
+                   itemListPredicate={openItemListPredicate}
+                   resetOnSelect={true}
+                   resetOnQuery={false}
+                   renderer={renderQueryList}
+                   onClose={props.closeOmnibar}/>
+    )
+}
+
+OpenOmnibar = memo(OpenOmnibar);
 
 function TacticOmnibarItem(props) {
     function _handleClick() {
@@ -55,6 +185,7 @@ function _itemPredicate(query, item) {
 
     return re.test(item.search_text.toLowerCase()) || re.test(item.category.toLowerCase())
 }
+
 
 function TacticOmnibar(props) {
 

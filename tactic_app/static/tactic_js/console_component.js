@@ -489,12 +489,12 @@ function ConsoleComponent(props) {
   }
   function _shrinkConsole() {
     props.setMainStateValue("console_is_shrunk", true);
-    if (props.mStateRef.current.console_is_zoomed) {
+    if (props.mState.console_is_zoomed) {
       _unzoomConsole();
     }
   }
   function _toggleExports() {
-    props.setMainStateValue("show_exports_pane", !props.mStateRef.current.show_exports_pane);
+    props.setMainStateValue("show_exports_pane", !props.mState.show_exports_pane);
   }
   var _setConsoleItemValue = (0, _react.useCallback)(function (unique_id, field, new_value) {
     var callback = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
@@ -1478,8 +1478,8 @@ function ConsoleComponent(props) {
     marginLeft: 1,
     marginTop: 2
   };
-  var console_class = props.mStateRef.current.console_is_shrunk ? "am-shrunk" : "not-shrunk";
-  if (props.mStateRef.current.console_is_zoomed) {
+  var console_class = props.mState.console_is_shrunk ? "am-shrunk" : "not-shrunk";
+  if (props.mState.console_is_zoomed) {
     console_class = "am-zoomed";
   }
   var outer_style = Object.assign({}, props.style);
@@ -1489,7 +1489,7 @@ function ConsoleComponent(props) {
   if (!props.shrinkable) {
     header_style["paddingLeft"] = 10;
   }
-  if (!props.mStateRef.current.console_is_shrunk) {
+  if (!props.mState.console_is_shrunk) {
     header_style["paddingRight"] = 15;
   }
   var key_bindings = [[["escape"], function () {
@@ -1545,13 +1545,13 @@ function ConsoleComponent(props) {
   }, /*#__PURE__*/_react["default"].createElement("div", {
     id: "console-header-left",
     className: "d-flex flex-row"
-  }, props.mStateRef.current.console_is_shrunk && props.shrinkable && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
+  }, props.mState.console_is_shrunk && props.shrinkable && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
     handleClick: _expandConsole,
     style: {
       marginLeft: 2
     },
     icon: "chevron-right"
-  }), !props.mStateRef.current.console_is_shrunk && props.shrinkable && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
+  }), !props.mState.console_is_shrunk && props.shrinkable && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
     handleClick: _shrinkConsole,
     style: {
       marginLeft: 2
@@ -1580,13 +1580,13 @@ function ConsoleComponent(props) {
     },
     handleClick: _toggleExports,
     icon: "variable"
-  }), !props.mStateRef.current.console_is_zoomed && props.zoomable && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
+  }), !props.mState.console_is_zoomed && props.zoomable && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
     handleClick: _zoomConsole,
     icon: "maximize"
-  }), props.mStateRef.current.console_is_zoomed && props.zoomable && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
+  }), props.mState.console_is_zoomed && props.zoomable && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
     handleClick: _unzoomConsole,
     icon: "minimize"
-  })))), !props.mStateRef.current.console_is_shrunk && !show_pseudo_log && !show_main_log && /*#__PURE__*/_react["default"].createElement(_search_form.FilterSearchForm, {
+  })))), !props.mState.console_is_shrunk && !show_pseudo_log && !show_main_log && /*#__PURE__*/_react["default"].createElement(_search_form.FilterSearchForm, {
     search_string: search_string_ref.current,
     handleSearchFieldChange: _handleSearchFieldChange,
     handleFilter: _handleFilter,
@@ -1594,7 +1594,7 @@ function ConsoleComponent(props) {
     searchNext: _searchNext,
     searchPrevious: _searchPrevious,
     search_helper_text: search_helper_text
-  }), !props.mStateRef.current.console_is_shrunk && show_main_log && /*#__PURE__*/_react["default"].createElement(_searchable_console.SearchableConsole, {
+  }), !props.mState.console_is_shrunk && show_main_log && /*#__PURE__*/_react["default"].createElement(_searchable_console.SearchableConsole, {
     main_id: props.main_id,
     streaming_host: "host",
     container_id: props.main_id,
@@ -1607,7 +1607,7 @@ function ConsoleComponent(props) {
       marginRight: 20
     },
     showCommandField: false
-  }), !props.mStateRef.current.console_is_shrunk && show_pseudo_log && /*#__PURE__*/_react["default"].createElement(_searchable_console.SearchableConsole, {
+  }), !props.mState.console_is_shrunk && show_pseudo_log && /*#__PURE__*/_react["default"].createElement(_searchable_console.SearchableConsole, {
     main_id: props.main_id,
     streaming_host: "host",
     container_id: pseudo_tile_id,
@@ -1620,7 +1620,7 @@ function ConsoleComponent(props) {
       marginRight: 20
     },
     showCommandField: true
-  }), !props.mStateRef.current.console_is_shrunk && !show_pseudo_log && !show_main_log && /*#__PURE__*/_react["default"].createElement("div", {
+  }), !props.mState.console_is_shrunk && !show_pseudo_log && !show_main_log && /*#__PURE__*/_react["default"].createElement("div", {
     id: "console",
     ref: body_ref,
     className: "contingent-scroll",

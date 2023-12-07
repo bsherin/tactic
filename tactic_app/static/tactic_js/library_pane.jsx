@@ -1,7 +1,7 @@
 // noinspection JSValidateTypes,JSDeprecatedSymbols
 
 import React from "react";
-import {Fragment, useState, useRef, useEffect, memo, useContext} from "react";
+import {Fragment, useState, useRef, useEffect, memo, useCallback, useContext} from "react";
 import PropTypes from 'prop-types';
 
 import {Menu, MenuItem, MenuDivider, FormGroup, Button} from "@blueprintjs/core";
@@ -15,6 +15,7 @@ import {SearchForm, BpSelectorTable} from "./library_widgets";
 import {HorizontalPanes} from "./resizing_layouts";
 import {postAjax, postAjaxPromise, postWithCallback} from "./communication_react"
 import {BOTTOM_MARGIN} from "./sizing_tools";
+import {OpenOmnibar} from "./TacticOmnibar";
 
 import {doFlash} from "./toaster.js"
 import {KeyTrap} from "./key_trap.js";
@@ -749,6 +750,30 @@ function LibraryPane(props) {
         }
     }
 
+    const _omni_view_func = useCallback((item) => {
+        let the_view = view_views(false)[item.res_type];
+        statusFuncs.setStatus({show_spinner: true, status_message: "Opening ..."});
+        if (window.in_context) {
+            const re = new RegExp("/$");
+            the_view = the_view.replace(re, "_in_context");
+            postAjaxPromise($SCRIPT_ROOT + the_view, {
+                context_id: context_id,
+                resource_name: item.name
+            })
+                .then((data) => {
+                    props.handleCreateViewer(data, statusFuncs.clearStatus);
+                })
+                .catch((data) => {
+                        doFlash(data);
+                        statusFuncs.clearstatus()
+                    }
+                );
+        } else {
+            statusFuncs.clearStatus();
+            window.open($SCRIPT_ROOT + the_view + item.name)
+        }
+    });
+
     function _open_raw(selected_resource) {
         statusFuncs.clearStatus();
         if (selected_resource.type == "freeform") {
@@ -989,15 +1014,9 @@ function LibraryPane(props) {
         setShowOmnibar(true)
     }
 
-    function _omnibarSelect(item) {
-        let the_view = view_views(props.is_repository)[item.res_type];
-        window.open($SCRIPT_ROOT + the_view + item);
-        _closeOmnibar()
-    }
-
-    function _closeOmnibar() {
+    const _closeOmnibar = useCallback(() => {
         setShowOmnibar(false)
-    }
+    });
 
     function _new_notebook() {
         if (window.in_context) {
@@ -1432,6 +1451,7 @@ function LibraryPane(props) {
     function _menu_funcs() {
         return {
             view_func: _view_func,
+            search_resources: _showOmnibar,
             send_repository_func: _send_repository_func,
             repository_copy_func: _repository_copy_func,
             duplicate_func: _duplicate_func,
@@ -1528,7 +1548,8 @@ function LibraryPane(props) {
     let key_bindings = [
         [["up"], () => _handleArrowKeyPress("ArrowUp")],
         [["down"], () => _handleArrowKeyPress("ArrowDown")],
-        [["esc"], _unsearch]
+        [["esc"], _unsearch],
+        [["ctrl+o"], _showOmnibar]
     ];
 
     let filter_buttons = [];
@@ -1648,6 +1669,9 @@ function LibraryPane(props) {
                     />
                 </div>
                 <KeyTrap global={true} bindings={key_bindings}/>
+                <OpenOmnibar showOmnibar={showOmnibar}
+                             openFunc={_omni_view_func}
+                             closeOmnibar={_closeOmnibar}/>
             </div>
         </Fragment>
     )

@@ -66,7 +66,7 @@ function NotebookApp(props) {
     console_items = _useReducerAndRef2[0],
     dispatch = _useReducerAndRef2[1],
     console_items_ref = _useReducerAndRef2[2];
-  var _useReducerAndRef3 = (0, _utilities_react.useReducerAndRef)(_notebook_support.notebookReducer, {
+  var _useReducer = (0, _react.useReducer)(_notebook_support.notebookReducer, {
       show_exports_pane: props.is_project && props.interface_state ? props.interface_state["show_exports_pane"] : true,
       console_width_fraction: props.is_project && props.interface_state ? props.interface_state["console_width_fraction"] : .5,
       console_is_zoomed: true,
@@ -77,10 +77,9 @@ function NotebookApp(props) {
       usable_height: (0, _sizing_tools.getUsableDimensions)(true).usable_height_no_bottom,
       usable_width: (0, _sizing_tools.getUsableDimensions)(true).usable_width - 170
     }),
-    _useReducerAndRef4 = _slicedToArray(_useReducerAndRef3, 3),
-    mState = _useReducerAndRef4[0],
-    mDispatch = _useReducerAndRef4[1],
-    mStateRef = _useReducerAndRef4[2];
+    _useReducer2 = _slicedToArray(_useReducer, 2),
+    mState = _useReducer2[0],
+    mDispatch = _useReducer2[1];
   var theme = (0, _react.useContext)(_theme.ThemeContext);
   var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
   var key_bindings = [[["ctrl+space"], _showOmnibar]];
@@ -259,7 +258,7 @@ function NotebookApp(props) {
     postAjaxFailure: props.postAjaxFailure,
     console_items: console_items_ref.current,
     tile_list: [],
-    mStateRef: mStateRef,
+    mState: mState,
     setMainStateValue: _setMainStateValue,
     updateLastSave: _updateLastSave,
     changeCollection: null,
@@ -276,7 +275,7 @@ function NotebookApp(props) {
     console_selected_items_ref: console_selected_items_ref,
     set_console_selected_items: set_console_selected_items,
     dispatch: dispatch,
-    mStateRef: mStateRef,
+    mState: mState,
     setMainStateValue: _setMainStateValue,
     console_available_height: console_available_height - MARGIN_SIZE,
     console_available_width: true_usable_width * mState.console_width_fraction - 16,
