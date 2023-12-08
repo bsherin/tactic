@@ -1,5 +1,5 @@
 import React from "react";
-import {memo, useContext, useState, useCallback, useRef} from "react";
+import {memo, useContext, useState, useCallback, useRef, useEffect} from "react";
 import PropTypes from 'prop-types';
 
 import {Omnibar, QueryList, Classes} from "@blueprintjs/select"
@@ -45,6 +45,24 @@ function OpenOmnibarItem(props) {
 }
 
 function OpenOmnibar(props) {
+    const [commandItems, setCommandItems] = useState([]);
+    const [item_list, set_item_list] = useState([]);
+
+    const theme = useContext(ThemeContext);
+
+    useEffect(()=>{
+        if (props.showOmnibar) {
+            let the_items = [];
+            for (let ogetter of props.omniGetters) {
+                the_items = the_items.concat(ogetter())
+            }
+            the_items = the_items.concat(_globalOmniItems());
+            for (let the_item of the_items) {
+                the_item.item_type = "command"
+            }
+            setCommandItems(the_items)
+        }
+    }, [props.showOmnibar]);
 
     const old_search_string = useRef("");
 
@@ -66,15 +84,30 @@ function OpenOmnibar(props) {
                 is_repository: false
             };
             postAjax("grab_all_list_chunk", data, function (data) {
-                    set_item_list(Object.values(data.chunk_dict))
+                    let fItems = commandItems.filter((item)=>{return commandItemPredicate(search_string, item)});
+                    let rItems = Object.values(data.chunk_dict);
+                    for (let the_item of rItems) {
+                        the_item.item_type = "resource"
+                    }
+                    fItems = fItems.concat(rItems);
+                    set_item_list(fItems)
                 }
             )
         }
     );
 
-    const [item_list, set_item_list] = useState([]);
     const [waiting, doUpdate] = useDebounce(grabChunk);
-    const theme = useContext(ThemeContext);
+
+
+    function commandItemPredicate(query, item) {
+        if (query.length == 0) {
+            return false
+        }
+        let lquery = query.toLowerCase();
+        let re = new RegExp(query);
+
+        return re.test(item.search_text.toLowerCase()) || re.test(item.category.toLowerCase())
+    }
 
     function openItemListPredicate(search_string, items) {
         if (!props.showOmnibar) return [];
@@ -93,16 +126,20 @@ function OpenOmnibar(props) {
     }
 
     function openItemRenderer(item, {modifiers, handleClick}) {
+        if (item.item_type == "command") {
+            return <TacticOmnibarItem modifiers={modifiers} item={item} handleClick={handleClick}/>
+        }
         return <OpenOmnibarItem modifiers={modifiers} item={item} handleClick={handleClick}/>
     }
 
     function _onItemSelect(item) {
-        props.openFunc(item);
+        if (item.item_type == "command") {
+            item.the_function();
+        }
+        else {
+            props.openFunc(item);
+        }
         props.closeOmnibar()
-    }
-
-    function _onActiveItemChange(item) {
-        console.log(String(item))
     }
 
     function renderQueryList (listProps)  {
@@ -128,6 +165,69 @@ function OpenOmnibar(props) {
                 </div>
             </Overlay>
         );
+    }
+
+   function _onGetterItemSelect(item) {
+        item.the_function();
+        props.closeOmnibar()
+    }
+
+    function _handle_signout() {
+        window.open($SCRIPT_ROOT + "/logout/" + props.page_id, "_self");
+        return false
+    }
+
+    function _globalOmniItems() {
+        function wopenfunc(the_url) {
+            return () => {
+                window.open(the_url)
+            }
+        }
+
+        let omni_funcs = [
+            ["Toggle Theme", "account", _toggleTheme, "contrast"],
+            ["Docs", "documentation", wopenfunc("https://tactic.readthedocs.io/en/latest/Object-Oriented-API.html"),
+                "log-out"],
+            ["Tile Commands", "documentation", wopenfunc("https://tactic.readthedocs.io/en/latest/Tile-Commands.html"),
+                "code-block"],
+            ["Object Api", "documentation", wopenfunc("https://tactic.readthedocs.io/en/latest/Object-Oriented-API.html"),
+                "code-block"],
+        ];
+        if (props.is_authenticated) {
+            let new_funcs = [
+                ["New Context Tab", "window", wopenfunc(context_url), "add"],
+                ["New Tabbed Window", "window", wopenfunc(library_url), "add"],
+                ["Show Repository", "window", wopenfunc(repository_url), "database"],
+                ["Show Account Info", "account", wopenfunc(account_url), "person"],
+                ["Logout", "account", _handle_signout, "log-out"]];
+            omni_funcs = omni_funcs.concat(new_funcs);
+
+        }
+
+        let omni_items = [];
+        for (let item of omni_funcs) {
+            omni_items.push(
+                {
+                    category: item[1],
+                    display_text: item[0],
+                    search_text: item[0],
+                    icon_name: item[3],
+                    the_function: item[2]
+                }
+            )
+
+        }
+        return omni_items
+    }
+
+    function _toggleTheme() {
+        const result_dict = {
+            "user_id": window.user_id,
+            "theme": !theme.dark_theme ? "dark" : "light",
+        };
+        postWithCallback("host", "set_user_theme", result_dict,
+            null, null);
+        theme.setTheme(!theme.dark_theme)
     }
 
     return (

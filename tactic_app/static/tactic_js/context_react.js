@@ -119,7 +119,7 @@ var classDict = {
   "notebook-viewer": NotebookAppPlus
 };
 function _context_main() {
-  var ContextAppPlus = (0, _theme.withTheme)((0, _modal_react.withDialogs)(ContextApp));
+  var ContextAppPlus = (0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _toaster.withStatus)(ContextApp)));
   var domContainer = document.querySelector('#context-root');
   ReactDOM.render( /*#__PURE__*/_react["default"].createElement(ContextAppPlus, {
     initial_theme: window.theme,
@@ -196,14 +196,19 @@ function ContextApp(props) {
     _useState22 = _slicedToArray(_useState21, 2),
     showOmnibar = _useState22[0],
     setShowOmnibar = _useState22[1];
+  var _useState23 = (0, _react.useState)(false),
+    _useState24 = _slicedToArray(_useState23, 2),
+    showOpenOmnibar = _useState24[0],
+    setShowOpenOmnibar = _useState24[1];
   var theme = (0, _react.useContext)(_theme.ThemeContext);
   var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
-  var _useState23 = (0, _react.useState)(0),
-    _useState24 = _slicedToArray(_useState23, 2),
-    tabSelectCounter = _useState24[0],
-    setTabSelectCounter = _useState24[1];
+  var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
+  var _useState25 = (0, _react.useState)(0),
+    _useState26 = _slicedToArray(_useState25, 2),
+    tabSelectCounter = _useState26[0],
+    setTabSelectCounter = _useState26[1];
   var top_ref = (0, _react.useRef)(null);
-  var key_bindings = [[["tab"], _goToNextPane], [["shift+tab"], _goToPreviousPane], [["ctrl+space"], _showOmnibar], [["ctrl+w"], function () {
+  var key_bindings = [[["tab"], _goToNextPane], [["shift+tab"], _goToPreviousPane], [["ctrl+space"], _showOmnibar], [["ctrl+o"], _showOpenOmnibar], [["ctrl+w"], function () {
     _closeTab(selectedTabIdRef.current);
   }]];
   var pushCallback = (0, _utilities_react.useCallbackStack)("context");
@@ -527,6 +532,12 @@ function ContextApp(props) {
   }
   function _closeOmnibar() {
     setShowOmnibar(false);
+  }
+  function _showOpenOmnibar() {
+    setShowOpenOmnibar(true);
+  }
+  function _closeOpenOmnibar() {
+    setShowOpenOmnibar(false);
   }
   function _registerOmniFunction(tab_id, the_function) {
     if (tab_id == "library") {
@@ -859,6 +870,29 @@ function ContextApp(props) {
   function amSelected(ltab_id, lselectedTabIdRef) {
     return !window.in_context || ltab_id == lselectedTabIdRef.current;
   }
+  var _omni_view_func = (0, _react.useCallback)(function (item) {
+    var the_view = (0, _library_pane.view_views)(false)[item.res_type];
+    statusFuncs.setStatus({
+      show_spinner: true,
+      status_message: "Opening ..."
+    });
+    if (window.in_context) {
+      var re = new RegExp("/$");
+      the_view = the_view.replace(re, "_in_context");
+      (0, _communication_react.postAjaxPromise)($SCRIPT_ROOT + the_view, {
+        context_id: context_id,
+        resource_name: item.name
+      }).then(function (data) {
+        _handleCreateViewer(data, statusFuncs.clearStatus);
+      })["catch"](function (data) {
+        (0, _toaster.doFlash)(data);
+        statusFuncs.clearstatus();
+      });
+    } else {
+      statusFuncs.clearStatus();
+      window.open($SCRIPT_ROOT + the_view + item.name);
+    }
+  });
   var _iterator3 = _createForOfIteratorHelper(tab_ids_ref.current),
     _step3;
   try {
@@ -1139,6 +1173,13 @@ function ContextApp(props) {
     showOmnibar: showOmnibar,
     closeOmnibar: _closeOmnibar,
     is_authenticated: window.is_authenticated
+  }), /*#__PURE__*/_react["default"].createElement(_TacticOmnibar.OpenOmnibar, {
+    omniGetters: [omniGetter, _contextOmniItems],
+    page_id: window.context_id,
+    showOmnibar: showOpenOmnibar,
+    openFunc: _omni_view_func,
+    is_authenticated: window.is_authenticated,
+    closeOmnibar: _closeOpenOmnibar
   })), /*#__PURE__*/_react["default"].createElement(_key_trap.KeyTrap, {
     global: true,
     bindings: key_bindings

@@ -1668,7 +1668,10 @@ function LibraryPane(props) {
     return _handleArrowKeyPress("ArrowUp");
   }], [["down"], function () {
     return _handleArrowKeyPress("ArrowDown");
-  }], [["esc"], _unsearch], [["ctrl+o"], _showOmnibar]];
+  }], [["esc"], _unsearch]
+  // [["ctrl+o"], _showOmnibar]
+  ];
+
   var filter_buttons = [];
   var _iterator8 = _createForOfIteratorHelper(["all"].concat(res_types)),
     _step8;
@@ -1806,10 +1809,6 @@ function LibraryPane(props) {
   })), /*#__PURE__*/_react["default"].createElement(_key_trap.KeyTrap, {
     global: true,
     bindings: key_bindings
-  }), /*#__PURE__*/_react["default"].createElement(_TacticOmnibar.OpenOmnibar, {
-    showOmnibar: showOmnibar,
-    openFunc: _omni_view_func,
-    closeOmnibar: _closeOmnibar
   })));
 }
 exports.LibraryPane = LibraryPane = /*#__PURE__*/(0, _react.memo)(LibraryPane);
