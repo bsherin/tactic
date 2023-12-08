@@ -150,13 +150,15 @@ function ContextApp(props) {
 
     const [tabSelectCounter, setTabSelectCounter] = useState(0);
 
+    const [omniItems, setOmniItems, omniItemsRef] = useStateAndRef({})
+
     const top_ref = useRef(null);
 
     const key_bindings = [
         [["tab"], _goToNextPane],
         [["shift+tab"], _goToPreviousPane],
-        [["ctrl+space"], _showOmnibar],
-        [["ctrl+o"], _showOpenOmnibar],
+        // [["ctrl+space"], _showOmnibar],
+        [["ctrl+space"], _showOpenOmnibar],
         [["ctrl+w"], () => {
             _closeTab(selectedTabIdRef.current)
         }]
@@ -166,6 +168,7 @@ function ContextApp(props) {
 
     useEffect(() => {
         initSocket();
+        _addContextOmniItems();
         return (() => {
             tsocket.disconnect()
         })
@@ -338,6 +341,12 @@ function ContextApp(props) {
         set_tab_ids(copied_tab_ids);
         set_dirty_methods(copied_dirty_methods);
         set_tab_panel_dict(copied_tab_panel_dict);
+        if (the_id in omniItemsRef.current) {
+            let newOmniItems = {...omniItemsRef.current};
+            delete newOmniItems[the_id]
+            setOmniItems(newOmniItems)
+        }
+
         pushCallback(() => {
             if (the_id == selectedTabIdRef.current) {
                 let newSelectedId;
@@ -655,22 +664,34 @@ function ContextApp(props) {
         pushCallback(callback);
     }
 
-    function _contextOmniItems() {
-        if (tab_ids_ref.current.length == 0) return [];
+    function _addOmniItems(tid, items)  {
+        let newOmniItems = Object.assign({}, omniItemsRef.current);
+        if (!(tid in newOmniItems)) {
+            newOmniItems[tid] = []
+        }
+        for (let item of items) {
+            item.item_type = "command"
+        }
+        newOmniItems[tid] = newOmniItems[tid].concat(items)
+        setOmniItems(newOmniItems)
+    }
+
+    function _addContextOmniItems() {
+        // if (tab_ids_ref.current.length == 0) return [];
         let omni_funcs = [
             ["Go To Next Panel", "context", _goToNextPane, "arrow-right"],
             ["Go To Previous Panel", "context", _goToPreviousPane, "arrow-left"],
         ];
-        if (selectedTabIdRef.current != "library") {
-            omni_funcs = omni_funcs.concat([
-                ["Close Current Panel", "context", () => {
-                    _closeTab(selectedTabIdRef.current)
-                }, "delete"],
-                ["Refresh Current Panel", "context", () => {
-                    _refreshTab(selectedTabIdRef.current)
-                }, "reset"]
-            ])
-        }
+        // if (selectedTabIdRef.current != "library") {
+        //     omni_funcs = omni_funcs.concat([
+        //         ["Close Current Panel", "context", () => {
+        //             _closeTab(selectedTabIdRef.current)
+        //         }, "delete"],
+        //         ["Refresh Current Panel", "context", () => {
+        //             _refreshTab(selectedTabIdRef.current)
+        //         }, "reset"]
+        //     ])
+        // }
 
         let omni_items = [];
         for (let item of omni_funcs) {
@@ -685,7 +706,7 @@ function ContextApp(props) {
             )
 
         }
-        return omni_items
+        _addOmniItems("global", omni_items)
     }
 
     // Create the library tab
@@ -695,7 +716,12 @@ function ContextApp(props) {
     }
 
     const library_panel = (
-        <SelectedPaneContext.Provider value={{tab_id: "library", selectedTabIdRef, amSelected}}>
+        <SelectedPaneContext.Provider value={{
+            tab_id: "library",
+            selectedTabIdRef,
+            amSelected,
+            addOmniItems: (items)=>{_addOmniItems("library", items)}
+        }}>
             <div id="library-home-root">
                 <LibraryHomeAppPlus tsocket={tsocket}
                                     library_style={window.library_style}
@@ -736,7 +762,11 @@ function ContextApp(props) {
         }
 
         const pool_panel = (
-            <SelectedPaneContext.Provider value={{tab_id: "pool", selectedTabIdRef, amSelected}}>
+            <SelectedPaneContext.Provider value={{
+                tab_id: "pool",
+                selectedTabIdRef, amSelected,
+                addOmniItems: (items)=>{_addOmniItems("pool", items)}
+            }}>
                 <div id="pool-browser-root">
                     <PoolBrowser tsocket={tsocket}
                                  am_selected={selectedTabIdRef.current == "pool"}
@@ -809,7 +839,12 @@ function ContextApp(props) {
         } else {
             let TheClass = classDict[tab_entry.kind];
             let the_panel =
-                <SelectedPaneContext.Provider value={{tab_id, selectedTabIdRef, amSelected}}>
+                <SelectedPaneContext.Provider value={{
+                    tab_id,
+                    selectedTabIdRef,
+                    amSelected,
+                    addOmniItems: (items)=>{_addOmniItems(tab_id, items)}
+                }}>
                     <TheClass {...tab_entry.panel}
                                           controlled={true}
                                           handleCreateViewer={_handleCreateViewer}
@@ -947,23 +982,28 @@ function ContextApp(props) {
         tlclass += " context-pane-closed"
     }
     let sid = selectedTabIdRef.current;
-    let omniGetter;
-    if (sid && sid in tab_panel_dict_ref.current) {
-        let the_dict = tab_panel_dict_ref.current[sid];
-        if ("omni_function" in the_dict) {
-            omniGetter = the_dict.omni_function;
-        } else {
-            omniGetter = () => {
-                return []
-            };
-        }
-    } else if (sid == "library") {
-        omniGetter = library_omni_function.current
-    } else {
-        omniGetter = () => {
-            return []
-        };  // Should never get here
+    // let omniGetter;
+    // if (sid && sid in tab_panel_dict_ref.current) {
+    //     let the_dict = tab_panel_dict_ref.current[sid];
+    //     if ("omni_function" in the_dict) {
+    //         omniGetter = the_dict.omni_function;
+    //     } else {
+    //         omniGetter = () => {
+    //             return []
+    //         };
+    //     }
+    // } else if (sid == "library") {
+    //     omniGetter = library_omni_function.current
+    // } else {
+    //     omniGetter = () => {
+    //         return []
+    //     };  // Should never get here
+    // }
+    let commandItems = omniItemsRef.current["global"]
+    if (sid in omniItemsRef.current) {
+        commandItems = commandItems.concat(omniItemsRef.current[sid])
     }
+
     return (
         <Fragment>
             <TacticNavbar is_authenticated={window.is_authenticated}
@@ -1003,13 +1043,13 @@ function ContextApp(props) {
                         {all_tabs}
                     </Tabs>
                 </div>
-                <TacticOmnibar omniGetters={[omniGetter, _contextOmniItems]}
-                               page_id={window.context_id}
-                               showOmnibar={showOmnibar}
-                               closeOmnibar={_closeOmnibar}
-                               is_authenticated={window.is_authenticated}
-                />
-                <OpenOmnibar omniGetters={[omniGetter, _contextOmniItems]}
+                {/*<TacticOmnibar omniGetters={[omniGetter, _contextOmniItems]}*/}
+                {/*               page_id={window.context_id}*/}
+                {/*               showOmnibar={showOmnibar}*/}
+                {/*               closeOmnibar={_closeOmnibar}*/}
+                {/*               is_authenticated={window.is_authenticated}*/}
+                {/*/>*/}
+                <OpenOmnibar commandItems={commandItems}
                              page_id={window.context_id}
                              showOmnibar={showOpenOmnibar}
                              openFunc={_omni_view_func}

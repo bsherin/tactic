@@ -1,5 +1,5 @@
 import React from "react";
-import {memo, useContext, useState, useCallback, useRef, useEffect} from "react";
+import {memo, useContext, useState, useCallback, useRef, useEffect, createContext} from "react";
 import PropTypes from 'prop-types';
 
 import {Omnibar, QueryList, Classes} from "@blueprintjs/select"
@@ -9,7 +9,7 @@ import {postAjax, postWithCallback} from "./communication_react";
 import {ThemeContext} from "./theme"
 import {useDebounce} from "./utilities_react";
 
-export {TacticOmnibar, OpenOmnibar}
+export {TacticOmnibar, OpenOmnibar, OmniContext}
 
 const context_url = $SCRIPT_ROOT + '/context';
 const library_url = $SCRIPT_ROOT + '/library';
@@ -24,6 +24,8 @@ let icon_dict = {
     list: "list",
     code: "code",
 };
+
+const OmniContext = createContext(null);
 
 function OpenOmnibarItem(props) {
     function _handleClick() {
@@ -45,24 +47,24 @@ function OpenOmnibarItem(props) {
 }
 
 function OpenOmnibar(props) {
-    const [commandItems, setCommandItems] = useState([]);
+    // const [commandItems, setCommandItems] = useState([]);
     const [item_list, set_item_list] = useState([]);
 
     const theme = useContext(ThemeContext);
 
-    useEffect(()=>{
-        if (props.showOmnibar) {
-            let the_items = [];
-            for (let ogetter of props.omniGetters) {
-                the_items = the_items.concat(ogetter())
-            }
-            the_items = the_items.concat(_globalOmniItems());
-            for (let the_item of the_items) {
-                the_item.item_type = "command"
-            }
-            setCommandItems(the_items)
-        }
-    }, [props.showOmnibar]);
+    // useEffect(()=>{
+    //     if (props.showOmnibar) {
+    //         let the_items = [];
+    //         for (let ogetter of props.omniGetters) {
+    //             the_items = the_items.concat(ogetter())
+    //         }
+    //         the_items = the_items.concat(_globalOmniItems());
+    //         for (let the_item of the_items) {
+    //             the_item.item_type = "command"
+    //         }
+    //         setCommandItems(the_items)
+    //     }
+    // }, [props.showOmnibar]);
 
     const old_search_string = useRef("");
 
@@ -84,7 +86,7 @@ function OpenOmnibar(props) {
                 is_repository: false
             };
             postAjax("grab_all_list_chunk", data, function (data) {
-                    let fItems = commandItems.filter((item)=>{return commandItemPredicate(search_string, item)});
+                    let fItems = props.commandItems.filter((item)=>{return commandItemPredicate(search_string, item)});
                     let rItems = Object.values(data.chunk_dict);
                     for (let the_item of rItems) {
                         the_item.item_type = "resource"
@@ -104,7 +106,7 @@ function OpenOmnibar(props) {
             return false
         }
         let lquery = query.toLowerCase();
-        let re = new RegExp(query);
+        let re = new RegExp(lquery);
 
         return re.test(item.search_text.toLowerCase()) || re.test(item.category.toLowerCase())
     }
@@ -281,7 +283,7 @@ function _itemPredicate(query, item) {
         return false
     }
     let lquery = query.toLowerCase();
-    let re = new RegExp(query);
+    let re = new RegExp(lquery);
 
     return re.test(item.search_text.toLowerCase()) || re.test(item.category.toLowerCase())
 }

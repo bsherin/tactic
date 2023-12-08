@@ -4,6 +4,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" =
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.OmniContext = void 0;
 exports.OpenOmnibar = OpenOmnibar;
 exports.TacticOmnibar = TacticOmnibar;
 var _react = _interopRequireWildcard(require("react"));
@@ -16,8 +17,8 @@ var _utilities_react = require("./utilities_react");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-function _extends() { _extends = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
 function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e2) { throw _e2; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e3) { didErr = true; err = _e3; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+function _extends() { _extends = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
@@ -36,6 +37,8 @@ var icon_dict = {
   list: "list",
   code: "code"
 };
+var OmniContext = /*#__PURE__*/(0, _react.createContext)(null);
+exports.OmniContext = OmniContext;
 function OpenOmnibarItem(props) {
   function _handleClick() {
     props.handleClick(props.item);
@@ -52,46 +55,27 @@ function OpenOmnibarItem(props) {
   });
 }
 function OpenOmnibar(props) {
+  // const [commandItems, setCommandItems] = useState([]);
   var _useState = (0, _react.useState)([]),
     _useState2 = _slicedToArray(_useState, 2),
-    commandItems = _useState2[0],
-    setCommandItems = _useState2[1];
-  var _useState3 = (0, _react.useState)([]),
-    _useState4 = _slicedToArray(_useState3, 2),
-    item_list = _useState4[0],
-    set_item_list = _useState4[1];
+    item_list = _useState2[0],
+    set_item_list = _useState2[1];
   var theme = (0, _react.useContext)(_theme.ThemeContext);
-  (0, _react.useEffect)(function () {
-    if (props.showOmnibar) {
-      var the_items = [];
-      var _iterator = _createForOfIteratorHelper(props.omniGetters),
-        _step;
-      try {
-        for (_iterator.s(); !(_step = _iterator.n()).done;) {
-          var ogetter = _step.value;
-          the_items = the_items.concat(ogetter());
-        }
-      } catch (err) {
-        _iterator.e(err);
-      } finally {
-        _iterator.f();
-      }
-      the_items = the_items.concat(_globalOmniItems());
-      var _iterator2 = _createForOfIteratorHelper(the_items),
-        _step2;
-      try {
-        for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-          var the_item = _step2.value;
-          the_item.item_type = "command";
-        }
-      } catch (err) {
-        _iterator2.e(err);
-      } finally {
-        _iterator2.f();
-      }
-      setCommandItems(the_items);
-    }
-  }, [props.showOmnibar]);
+
+  // useEffect(()=>{
+  //     if (props.showOmnibar) {
+  //         let the_items = [];
+  //         for (let ogetter of props.omniGetters) {
+  //             the_items = the_items.concat(ogetter())
+  //         }
+  //         the_items = the_items.concat(_globalOmniItems());
+  //         for (let the_item of the_items) {
+  //             the_item.item_type = "command"
+  //         }
+  //         setCommandItems(the_items)
+  //     }
+  // }, [props.showOmnibar]);
+
   var old_search_string = (0, _react.useRef)("");
   var grabChunk = (0, _react.useCallback)(function (search_string) {
     var search_spec = {
@@ -110,7 +94,7 @@ function OpenOmnibar(props) {
       is_repository: false
     };
     (0, _communication_react.postAjax)("grab_all_list_chunk", data, function (data) {
-      var fItems = commandItems.filter(function (item) {
+      var fItems = props.commandItems.filter(function (item) {
         return commandItemPredicate(search_string, item);
       });
       var rItems = Object.values(data.chunk_dict);
@@ -131,7 +115,7 @@ function OpenOmnibar(props) {
       return false;
     }
     var lquery = query.toLowerCase();
-    var re = new RegExp(query);
+    var re = new RegExp(lquery);
     return re.test(item.search_text.toLowerCase()) || re.test(item.category.toLowerCase());
   }
   function openItemListPredicate(search_string, items) {
@@ -214,11 +198,11 @@ function OpenOmnibar(props) {
       omni_funcs = omni_funcs.concat(new_funcs);
     }
     var omni_items = [];
-    var _iterator3 = _createForOfIteratorHelper(omni_funcs),
-      _step3;
+    var _iterator = _createForOfIteratorHelper(omni_funcs),
+      _step;
     try {
-      for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-        var item = _step3.value;
+      for (_iterator.s(); !(_step = _iterator.n()).done;) {
+        var item = _step.value;
         omni_items.push({
           category: item[1],
           display_text: item[0],
@@ -228,9 +212,9 @@ function OpenOmnibar(props) {
         });
       }
     } catch (err) {
-      _iterator3.e(err);
+      _iterator.e(err);
     } finally {
-      _iterator3.f();
+      _iterator.f();
     }
     return omni_items;
   }
@@ -290,7 +274,7 @@ function _itemPredicate(query, item) {
     return false;
   }
   var lquery = query.toLowerCase();
-  var re = new RegExp(query);
+  var re = new RegExp(lquery);
   return re.test(item.search_text.toLowerCase()) || re.test(item.category.toLowerCase());
 }
 function TacticOmnibar(props) {
@@ -315,11 +299,11 @@ function TacticOmnibar(props) {
       omni_funcs = omni_funcs.concat(new_funcs);
     }
     var omni_items = [];
-    var _iterator4 = _createForOfIteratorHelper(omni_funcs),
-      _step4;
+    var _iterator2 = _createForOfIteratorHelper(omni_funcs),
+      _step2;
     try {
-      for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
-        var item = _step4.value;
+      for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+        var item = _step2.value;
         omni_items.push({
           category: item[1],
           display_text: item[0],
@@ -329,9 +313,9 @@ function TacticOmnibar(props) {
         });
       }
     } catch (err) {
-      _iterator4.e(err);
+      _iterator2.e(err);
     } finally {
-      _iterator4.f();
+      _iterator2.f();
     }
     return omni_items;
   }
@@ -345,17 +329,17 @@ function TacticOmnibar(props) {
   }
   var the_items = [];
   if (props.showOmnibar) {
-    var _iterator5 = _createForOfIteratorHelper(props.omniGetters),
-      _step5;
+    var _iterator3 = _createForOfIteratorHelper(props.omniGetters),
+      _step3;
     try {
-      for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
-        var ogetter = _step5.value;
+      for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+        var ogetter = _step3.value;
         the_items = the_items.concat(ogetter());
       }
     } catch (err) {
-      _iterator5.e(err);
+      _iterator3.e(err);
     } finally {
-      _iterator5.f();
+      _iterator3.f();
     }
     the_items = the_items.concat(_globalOmniItems());
   }
