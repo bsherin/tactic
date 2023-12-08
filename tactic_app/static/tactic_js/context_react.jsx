@@ -7,7 +7,7 @@ import "../tactic_css/library_home.scss";
 import "../tactic_css/tile_creator.scss";
 
 import React from "react";
-import { useState, useEffect, useRef, useContext, Fragment } from "react";
+import { useState, useEffect, useRef, useContext, Fragment, useCallback } from "react";
 import * as ReactDOM from 'react-dom'
 
 import {Tab, Tabs, Button, Icon, Spinner} from "@blueprintjs/core";
@@ -17,9 +17,9 @@ FocusStyleManager.onlyShowFocusOnTabs();
 
 import {SelectedPaneContext} from "./utilities_react";
 import {TacticSocket} from "./tactic_socket";
-import {TacticOmnibar} from "./TacticOmnibar";
+import {OpenOmnibar, TacticOmnibar} from "./TacticOmnibar";
 import {handleCallback} from "./communication_react";
-import {doFlash, withStatus} from "./toaster";
+import {doFlash, StatusContext, withStatus} from "./toaster";
 import {TacticNavbar} from "./blueprint_navbar";
 import {ErrorBoundary} from "./error_boundary";
 import {icon_dict} from "./blueprint_mdata_fields";
@@ -45,8 +45,6 @@ import {useCallbackStack, useStateAndRef} from "./utilities_react";
 import {ThemeContext, withTheme} from "./theme"
 
 import {withDialogs, DialogContext} from "./modal_react";
-
-
 
 const spinner_panel = (
     <div style={{height: "100%", position: "absolute", top: "50%", left: "50%"}}>
@@ -115,7 +113,7 @@ const classDict = {
 };
 
 function _context_main() {
-    const ContextAppPlus = withTheme(withDialogs(ContextApp));
+    const ContextAppPlus = withTheme(withDialogs(withStatus(ContextApp)));
     const domContainer = document.querySelector('#context-root');
     ReactDOM.render(<ContextAppPlus initial_theme={window.theme} tsocket={tsocket}/>, domContainer)
 }
@@ -144,9 +142,11 @@ function ContextApp(props) {
     const [dragging_over, set_dragging_over] = useState(null);
     const [currently_dragging, set_currently_dragging] = useState(null);
     const [showOmnibar, setShowOmnibar] = useState(false);
+    const [showOpenOmnibar, setShowOpenOmnibar] = useState(false);
 
     const theme = useContext(ThemeContext);
     const dialogFuncs = useContext(DialogContext);
+    const statusFuncs = useContext(StatusContext);
 
     const [tabSelectCounter, setTabSelectCounter] = useState(0);
 
@@ -156,6 +156,7 @@ function ContextApp(props) {
         [["tab"], _goToNextPane],
         [["shift+tab"], _goToPreviousPane],
         [["ctrl+space"], _showOmnibar],
+        [["ctrl+o"], _showOpenOmnibar],
         [["ctrl+w"], () => {
             _closeTab(selectedTabIdRef.current)
         }]
@@ -478,6 +479,14 @@ function ContextApp(props) {
         setShowOmnibar(false)
     }
 
+    function _showOpenOmnibar() {
+        setShowOpenOmnibar(true)
+    }
+
+    function _closeOpenOmnibar() {
+        setShowOpenOmnibar(false)
+    }
+
     function _registerOmniFunction(tab_id, the_function) {
         if (tab_id == "library") {
             library_omni_function.current = the_function
@@ -763,6 +772,30 @@ function ContextApp(props) {
         return !window.in_context || ltab_id == lselectedTabIdRef.current
     }
 
+    const _omni_view_func = useCallback((item) => {
+        let the_view = view_views(false)[item.res_type];
+        statusFuncs.setStatus({show_spinner: true, status_message: "Opening ..."});
+        if (window.in_context) {
+            const re = new RegExp("/$");
+            the_view = the_view.replace(re, "_in_context");
+            postAjaxPromise($SCRIPT_ROOT + the_view, {
+                context_id: context_id,
+                resource_name: item.name
+            })
+                .then((data) => {
+                    _handleCreateViewer(data, statusFuncs.clearStatus);
+                })
+                .catch((data) => {
+                        doFlash(data);
+                        statusFuncs.clearstatus()
+                    }
+                );
+        } else {
+            statusFuncs.clearStatus();
+            window.open($SCRIPT_ROOT + the_view + item.name)
+        }
+    });
+
     for (let tab_id of tab_ids_ref.current) {
         let tab_entry = tab_panel_dict_ref.current[tab_id];
         let bclass = "context-tab-button-content";
@@ -976,6 +1009,12 @@ function ContextApp(props) {
                                closeOmnibar={_closeOmnibar}
                                is_authenticated={window.is_authenticated}
                 />
+                <OpenOmnibar omniGetters={[omniGetter, _contextOmniItems]}
+                             page_id={window.context_id}
+                             showOmnibar={showOpenOmnibar}
+                             openFunc={_omni_view_func}
+                             is_authenticated={window.is_authenticated}
+                             closeOmnibar={_closeOpenOmnibar}/>
             </div>
             <KeyTrap global={true} bindings={key_bindings}/>
         </Fragment>

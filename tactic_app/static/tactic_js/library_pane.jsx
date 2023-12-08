@@ -1549,7 +1549,7 @@ function LibraryPane(props) {
         [["up"], () => _handleArrowKeyPress("ArrowUp")],
         [["down"], () => _handleArrowKeyPress("ArrowDown")],
         [["esc"], _unsearch],
-        [["ctrl+o"], _showOmnibar]
+        // [["ctrl+o"], _showOmnibar]
     ];
 
     let filter_buttons = [];
@@ -1669,9 +1669,9 @@ function LibraryPane(props) {
                     />
                 </div>
                 <KeyTrap global={true} bindings={key_bindings}/>
-                <OpenOmnibar showOmnibar={showOmnibar}
-                             openFunc={_omni_view_func}
-                             closeOmnibar={_closeOmnibar}/>
+                {/*<OpenOmnibar showOmnibar={showOmnibar}*/}
+                {/*             openFunc={_omni_view_func}*/}
+                {/*             closeOmnibar={_closeOmnibar}/>*/}
             </div>
         </Fragment>
     )

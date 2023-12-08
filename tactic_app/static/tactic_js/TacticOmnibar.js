@@ -16,8 +16,8 @@ var _utilities_react = require("./utilities_react");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e2) { throw _e2; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e3) { didErr = true; err = _e3; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 function _extends() { _extends = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
+function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e2) { throw _e2; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e3) { didErr = true; err = _e3; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
@@ -52,6 +52,46 @@ function OpenOmnibarItem(props) {
   });
 }
 function OpenOmnibar(props) {
+  var _useState = (0, _react.useState)([]),
+    _useState2 = _slicedToArray(_useState, 2),
+    commandItems = _useState2[0],
+    setCommandItems = _useState2[1];
+  var _useState3 = (0, _react.useState)([]),
+    _useState4 = _slicedToArray(_useState3, 2),
+    item_list = _useState4[0],
+    set_item_list = _useState4[1];
+  var theme = (0, _react.useContext)(_theme.ThemeContext);
+  (0, _react.useEffect)(function () {
+    if (props.showOmnibar) {
+      var the_items = [];
+      var _iterator = _createForOfIteratorHelper(props.omniGetters),
+        _step;
+      try {
+        for (_iterator.s(); !(_step = _iterator.n()).done;) {
+          var ogetter = _step.value;
+          the_items = the_items.concat(ogetter());
+        }
+      } catch (err) {
+        _iterator.e(err);
+      } finally {
+        _iterator.f();
+      }
+      the_items = the_items.concat(_globalOmniItems());
+      var _iterator2 = _createForOfIteratorHelper(the_items),
+        _step2;
+      try {
+        for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+          var the_item = _step2.value;
+          the_item.item_type = "command";
+        }
+      } catch (err) {
+        _iterator2.e(err);
+      } finally {
+        _iterator2.f();
+      }
+      setCommandItems(the_items);
+    }
+  }, [props.showOmnibar]);
   var old_search_string = (0, _react.useRef)("");
   var grabChunk = (0, _react.useCallback)(function (search_string) {
     var search_spec = {
@@ -70,18 +110,30 @@ function OpenOmnibar(props) {
       is_repository: false
     };
     (0, _communication_react.postAjax)("grab_all_list_chunk", data, function (data) {
-      set_item_list(Object.values(data.chunk_dict));
+      var fItems = commandItems.filter(function (item) {
+        return commandItemPredicate(search_string, item);
+      });
+      var rItems = Object.values(data.chunk_dict);
+      for (var _i2 = 0, _rItems = rItems; _i2 < _rItems.length; _i2++) {
+        var the_item = _rItems[_i2];
+        the_item.item_type = "resource";
+      }
+      fItems = fItems.concat(rItems);
+      set_item_list(fItems);
     });
   });
-  var _useState = (0, _react.useState)([]),
-    _useState2 = _slicedToArray(_useState, 2),
-    item_list = _useState2[0],
-    set_item_list = _useState2[1];
   var _useDebounce = (0, _utilities_react.useDebounce)(grabChunk),
     _useDebounce2 = _slicedToArray(_useDebounce, 2),
     waiting = _useDebounce2[0],
     doUpdate = _useDebounce2[1];
-  var theme = (0, _react.useContext)(_theme.ThemeContext);
+  function commandItemPredicate(query, item) {
+    if (query.length == 0) {
+      return false;
+    }
+    var lquery = query.toLowerCase();
+    var re = new RegExp(query);
+    return re.test(item.search_text.toLowerCase()) || re.test(item.category.toLowerCase());
+  }
   function openItemListPredicate(search_string, items) {
     if (!props.showOmnibar) return [];
     if (search_string == "" && !waiting.current) {
@@ -98,6 +150,13 @@ function OpenOmnibar(props) {
   function openItemRenderer(item, _ref) {
     var modifiers = _ref.modifiers,
       handleClick = _ref.handleClick;
+    if (item.item_type == "command") {
+      return /*#__PURE__*/_react["default"].createElement(TacticOmnibarItem, {
+        modifiers: modifiers,
+        item: item,
+        handleClick: handleClick
+      });
+    }
     return /*#__PURE__*/_react["default"].createElement(OpenOmnibarItem, {
       modifiers: modifiers,
       item: item,
@@ -105,11 +164,12 @@ function OpenOmnibar(props) {
     });
   }
   function _onItemSelect(item) {
-    props.openFunc(item);
+    if (item.item_type == "command") {
+      item.the_function();
+    } else {
+      props.openFunc(item);
+    }
     props.closeOmnibar();
-  }
-  function _onActiveItemChange(item) {
-    console.log(String(item));
   }
   function renderQueryList(listProps) {
     var handleKeyDown = listProps.handleKeyDown,
@@ -133,6 +193,54 @@ function OpenOmnibar(props) {
       onChange: listProps.handleQueryChange,
       value: listProps.query
     }), listProps.itemList));
+  }
+  function _onGetterItemSelect(item) {
+    item.the_function();
+    props.closeOmnibar();
+  }
+  function _handle_signout() {
+    window.open($SCRIPT_ROOT + "/logout/" + props.page_id, "_self");
+    return false;
+  }
+  function _globalOmniItems() {
+    function wopenfunc(the_url) {
+      return function () {
+        window.open(the_url);
+      };
+    }
+    var omni_funcs = [["Toggle Theme", "account", _toggleTheme, "contrast"], ["Docs", "documentation", wopenfunc("https://tactic.readthedocs.io/en/latest/Object-Oriented-API.html"), "log-out"], ["Tile Commands", "documentation", wopenfunc("https://tactic.readthedocs.io/en/latest/Tile-Commands.html"), "code-block"], ["Object Api", "documentation", wopenfunc("https://tactic.readthedocs.io/en/latest/Object-Oriented-API.html"), "code-block"]];
+    if (props.is_authenticated) {
+      var new_funcs = [["New Context Tab", "window", wopenfunc(context_url), "add"], ["New Tabbed Window", "window", wopenfunc(library_url), "add"], ["Show Repository", "window", wopenfunc(repository_url), "database"], ["Show Account Info", "account", wopenfunc(account_url), "person"], ["Logout", "account", _handle_signout, "log-out"]];
+      omni_funcs = omni_funcs.concat(new_funcs);
+    }
+    var omni_items = [];
+    var _iterator3 = _createForOfIteratorHelper(omni_funcs),
+      _step3;
+    try {
+      for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+        var item = _step3.value;
+        omni_items.push({
+          category: item[1],
+          display_text: item[0],
+          search_text: item[0],
+          icon_name: item[3],
+          the_function: item[2]
+        });
+      }
+    } catch (err) {
+      _iterator3.e(err);
+    } finally {
+      _iterator3.f();
+    }
+    return omni_items;
+  }
+  function _toggleTheme() {
+    var result_dict = {
+      "user_id": window.user_id,
+      "theme": !theme.dark_theme ? "dark" : "light"
+    };
+    (0, _communication_react.postWithCallback)("host", "set_user_theme", result_dict, null, null);
+    theme.setTheme(!theme.dark_theme);
   }
   return /*#__PURE__*/_react["default"].createElement(_select.QueryList, {
     items: item_list,
@@ -207,11 +315,11 @@ function TacticOmnibar(props) {
       omni_funcs = omni_funcs.concat(new_funcs);
     }
     var omni_items = [];
-    var _iterator = _createForOfIteratorHelper(omni_funcs),
-      _step;
+    var _iterator4 = _createForOfIteratorHelper(omni_funcs),
+      _step4;
     try {
-      for (_iterator.s(); !(_step = _iterator.n()).done;) {
-        var item = _step.value;
+      for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
+        var item = _step4.value;
         omni_items.push({
           category: item[1],
           display_text: item[0],
@@ -221,9 +329,9 @@ function TacticOmnibar(props) {
         });
       }
     } catch (err) {
-      _iterator.e(err);
+      _iterator4.e(err);
     } finally {
-      _iterator.f();
+      _iterator4.f();
     }
     return omni_items;
   }
@@ -237,17 +345,17 @@ function TacticOmnibar(props) {
   }
   var the_items = [];
   if (props.showOmnibar) {
-    var _iterator2 = _createForOfIteratorHelper(props.omniGetters),
-      _step2;
+    var _iterator5 = _createForOfIteratorHelper(props.omniGetters),
+      _step5;
     try {
-      for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-        var ogetter = _step2.value;
+      for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
+        var ogetter = _step5.value;
         the_items = the_items.concat(ogetter());
       }
     } catch (err) {
-      _iterator2.e(err);
+      _iterator5.e(err);
     } finally {
-      _iterator2.f();
+      _iterator5.f();
     }
     the_items = the_items.concat(_globalOmniItems());
   }
