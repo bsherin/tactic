@@ -5,14 +5,14 @@ import {Fragment, useState, useEffect, useRef, memo, useContext} from 'react';
 import {TacticOmnibar} from "./TacticOmnibar";
 import {KeyTrap} from "./key_trap";
 import {CombinedMetadata} from "./blueprint_mdata_fields";
-import {HorizontalPanes} from "./resizing_layouts.js";
-import {handleCallback, postAjax} from "./communication_react.js"
-import {TacticMenubar} from "./menu_utilities.js"
-import {doFlash, doFlashAlways, StatusContext} from "./toaster.js";
-import {SIDE_MARGIN} from "./sizing_tools.js"
+import {HorizontalPanes} from "./resizing_layouts";
+import {handleCallback, postAjax} from "./communication_react"
+import {TacticMenubar} from "./menu_utilities"
+import {doFlash, doFlashAlways, StatusContext} from "./toaster";
+import {SIDE_MARGIN} from "./sizing_tools"
 import {SearchForm} from "./library_widgets";
 import {useConstructor, useConnection} from "./utilities_react";
-import {postAjaxPromise} from "./communication_react.js";
+import {postAjaxPromise} from "./communication_react";
 
 export {ResourceViewerApp, copyToLibrary, sendToRepository}
 

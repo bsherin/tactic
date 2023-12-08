@@ -262,10 +262,14 @@ TopLeftButtons.defaultProps = {
 };
 function MenuComponent(props) {
   var replacers = [["CTRL+", "^"], ["COMMAND+", "⌘"]];
+  var selectedPane = (0, _react.useContext)(_utilities_react.SelectedPaneContext);
   (0, _react.useEffect)(function () {
-    if (props.registerOmniGetter) {
-      props.registerOmniGetter(props.menu_name, _getOmniItems);
+    if (window.in_context && "addOmniItems" in selectedPane) {
+      selectedPane.addOmniItems(_getOmniItems());
     }
+    // if (props.registerOmniGetter) {
+    //     props.registerOmniGetter(props.menu_name, _getOmniItems)
+    // }
   }, []);
   function _filter_on_match_list(opt_name) {
     return !props.hidden_items.includes(opt_name);

@@ -12,11 +12,11 @@ var _propTypes = _interopRequireDefault(require("prop-types"));
 var _TacticOmnibar = require("./TacticOmnibar");
 var _key_trap = require("./key_trap");
 var _blueprint_mdata_fields = require("./blueprint_mdata_fields");
-var _resizing_layouts = require("./resizing_layouts.js");
-var _communication_react = require("./communication_react.js");
-var _menu_utilities = require("./menu_utilities.js");
-var _toaster = require("./toaster.js");
-var _sizing_tools = require("./sizing_tools.js");
+var _resizing_layouts = require("./resizing_layouts");
+var _communication_react = require("./communication_react");
+var _menu_utilities = require("./menu_utilities");
+var _toaster = require("./toaster");
+var _sizing_tools = require("./sizing_tools");
 var _library_widgets = require("./library_widgets");
 var _utilities_react = require("./utilities_react");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }

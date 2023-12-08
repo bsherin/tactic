@@ -238,10 +238,15 @@ function MenuComponent(props) {
         ["COMMAND+", "⌘"]
     ];
 
+    const selectedPane = useContext(SelectedPaneContext);
+
     useEffect(() => {
-        if (props.registerOmniGetter) {
-            props.registerOmniGetter(props.menu_name, _getOmniItems)
+        if (window.in_context && "addOmniItems" in selectedPane) {
+            selectedPane.addOmniItems(_getOmniItems())
         }
+        // if (props.registerOmniGetter) {
+        //     props.registerOmniGetter(props.menu_name, _getOmniItems)
+        // }
     }, []);
 
     function _filter_on_match_list(opt_name) {
