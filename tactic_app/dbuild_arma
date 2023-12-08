@@ -1,0 +1,10 @@
+#!/bin/bash
+if [ "$1" == "all" ] ; then
+	sudo docker compose --env-file developa.env --profile build_project build
+else
+  if [ "$1" == "host" ] ; then
+    sudo docker compose --env-file developa.env --profile build_project build "tactic_host1"
+  else
+    sudo docker compose --env-file developa.env --profile build_project build "tactic_$1"
+  fi
+fi
