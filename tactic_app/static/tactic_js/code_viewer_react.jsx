@@ -23,7 +23,7 @@ import {DialogContext, withDialogs} from "./modal_react";
 
 export {code_viewer_props, CodeViewerApp}
 
-function code_viewer_props(data, registerDirtyMethod, finalCallback, registerOmniFunction) {
+function code_viewer_props(data, registerDirtyMethod, finalCallback) {
 
     let resource_viewer_id = guid();
     var tsocket = new TacticSocket("main", 5000, "code_viewer", resource_viewer_id);
@@ -41,7 +41,6 @@ function code_viewer_props(data, registerDirtyMethod, finalCallback, registerOmn
         is_repository: data.is_repository,
         meta_outer: "#right-div",
         registerDirtyMethod: registerDirtyMethod,
-        registerOmniFunction: registerOmniFunction
     })
 }
 
@@ -363,7 +362,6 @@ function CodeViewerApp(props) {
                                    allow_regex_search={true}
                                    showErrorDrawerButton={true}
                                    toggleErrorDrawer={props.toggleErrorDrawer}
-                                   registerOmniFunction={props.registerOmniFunction}
                 >
                     <ReactCodemirror code_content={code_content}
                                      extraKeys={_extraKeys()}

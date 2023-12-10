@@ -174,9 +174,6 @@ function HistoryViewerApp(props) {
   });
   return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, !props.controlled, " ", /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
     is_authenticated: window.is_authenticated,
-    registerOmniFunction: function registerOmniFunction(register_func) {
-      return _registerOmniFunction("navbar", register_func);
-    },
     selected: null,
     show_api_links: true,
     page_id: props.resource_viewer_id,

@@ -54,6 +54,7 @@ function OpenOmnibarItem(props) {
     shouldDismissPopover: true
   });
 }
+var resources_to_grab = 20;
 function OpenOmnibar(props) {
   // const [commandItems, setCommandItems] = useState([]);
   var _useState = (0, _react.useState)([]),
@@ -61,22 +62,11 @@ function OpenOmnibar(props) {
     item_list = _useState2[0],
     set_item_list = _useState2[1];
   var theme = (0, _react.useContext)(_theme.ThemeContext);
-
-  // useEffect(()=>{
-  //     if (props.showOmnibar) {
-  //         let the_items = [];
-  //         for (let ogetter of props.omniGetters) {
-  //             the_items = the_items.concat(ogetter())
-  //         }
-  //         the_items = the_items.concat(_globalOmniItems());
-  //         for (let the_item of the_items) {
-  //             the_item.item_type = "command"
-  //         }
-  //         setCommandItems(the_items)
-  //     }
-  // }, [props.showOmnibar]);
-
   var old_search_string = (0, _react.useRef)("");
+  var selectedPane = (0, _react.useContext)(_utilities_react.SelectedPaneContext);
+  (0, _react.useEffect)(function () {
+    set_item_list([]);
+  }, [selectedPane.tab_id]);
   var grabChunk = (0, _react.useCallback)(function (search_string) {
     var search_spec = {
       active_tag: null,
@@ -91,12 +81,17 @@ function OpenOmnibar(props) {
       pane_type: "all",
       search_spec: search_spec,
       row_number: 0,
+      number_to_get: 20,
       is_repository: false
     };
     (0, _communication_react.postAjax)("grab_all_list_chunk", data, function (data) {
       var fItems = props.commandItems.filter(function (item) {
         return commandItemPredicate(search_string, item);
       });
+      var gItems = _globalOmniItems().filter(function (item) {
+        return commandItemPredicate(search_string, item);
+      });
+      fItems = fItems.concat(gItems);
       var rItems = Object.values(data.chunk_dict);
       for (var _i2 = 0, _rItems = rItems; _i2 < _rItems.length; _i2++) {
         var the_item = _rItems[_i2];
@@ -116,7 +111,7 @@ function OpenOmnibar(props) {
     }
     var lquery = query.toLowerCase();
     var re = new RegExp(lquery);
-    return re.test(item.search_text.toLowerCase()) || re.test(item.category.toLowerCase());
+    return re.test(item.search_text.toLowerCase());
   }
   function openItemListPredicate(search_string, items) {
     if (!props.showOmnibar) return [];
@@ -178,10 +173,6 @@ function OpenOmnibar(props) {
       value: listProps.query
     }), listProps.itemList));
   }
-  function _onGetterItemSelect(item) {
-    item.the_function();
-    props.closeOmnibar();
-  }
   function _handle_signout() {
     window.open($SCRIPT_ROOT + "/logout/" + props.page_id, "_self");
     return false;
@@ -204,11 +195,12 @@ function OpenOmnibar(props) {
       for (_iterator.s(); !(_step = _iterator.n()).done;) {
         var item = _step.value;
         omni_items.push({
-          category: item[1],
+          category: "Global",
           display_text: item[0],
           search_text: item[0],
           icon_name: item[3],
-          the_function: item[2]
+          the_function: item[2],
+          item_type: "command"
         });
       }
     } catch (err) {

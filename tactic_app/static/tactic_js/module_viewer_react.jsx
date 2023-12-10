@@ -27,7 +27,7 @@ import {SelectedPaneContext} from "./utilities_react";
 
 export {module_viewer_props, ModuleViewerApp}
 
-function module_viewer_props(data, registerDirtyMethod, finalCallback, registerOmniFunction) {
+function module_viewer_props(data, registerDirtyMethod, finalCallback) {
 
     let resource_viewer_id = guid();
     var tsocket = new TacticSocket("main", 5000, "module_viewer", resource_viewer_id);
@@ -46,7 +46,6 @@ function module_viewer_props(data, registerDirtyMethod, finalCallback, registerO
         is_repository: data.is_repository,
         meta_outer: "#right-div",
         registerDirtyMethod: registerDirtyMethod,
-        registerOmniFunction: registerOmniFunction
     })
 }
 
@@ -511,7 +510,6 @@ function ModuleViewerApp(props) {
                                    meta_outer={props.meta_outer}
                                    showErrorDrawerButton={true}
                                    toggleErrorDrawer={props.toggleErrorDrawer}
-                                   registerOmniFunction={props.registerOmniFunction}
                 >
                     <ReactCodemirror code_content={code_content}
                                      extraKeys={_extraKeys()}

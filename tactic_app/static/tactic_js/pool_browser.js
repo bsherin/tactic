@@ -541,7 +541,6 @@ function PoolBrowser(props) {
     download_file: _downloadFile,
     refreshFunc: treeRefreshFunc.current,
     showPoolImport: _showPoolImport,
-    registerOmniGetter: props.registerOmniGetter,
     multi_select: multi_select_ref.current,
     list_of_selected: list_of_selected_ref.current,
     sendContextMenuItems: setContextMenuItems
@@ -618,7 +617,6 @@ function PoolMenubar(props) {
   return /*#__PURE__*/_react["default"].createElement(_library_menubars.LibraryMenubar, {
     sendContextMenuItems: props.sendContextMenuItems,
     connection_status: props.connection_status,
-    registerOmniGetter: props.registerOmniGetter,
     context_menu_items: context_menu_items(),
     selected_rows: props.selected_rows,
     selected_type: props.selected_type,

@@ -141,7 +141,6 @@ function ContextApp(props) {
     tab_panel_dict = _useStateAndRef4[0],
     set_tab_panel_dict = _useStateAndRef4[1],
     tab_panel_dict_ref = _useStateAndRef4[2];
-  var library_omni_function = (0, _react.useRef)(null);
   var _useStateAndRef5 = (0, _utilities_react.useStateAndRef)([]),
     _useStateAndRef6 = _slicedToArray(_useStateAndRef5, 3),
     tab_ids = _useStateAndRef6[0],
@@ -194,28 +193,18 @@ function ContextApp(props) {
     set_currently_dragging = _useState20[1];
   var _useState21 = (0, _react.useState)(false),
     _useState22 = _slicedToArray(_useState21, 2),
-    showOmnibar = _useState22[0],
-    setShowOmnibar = _useState22[1];
-  var _useState23 = (0, _react.useState)(false),
-    _useState24 = _slicedToArray(_useState23, 2),
-    showOpenOmnibar = _useState24[0],
-    setShowOpenOmnibar = _useState24[1];
+    showOpenOmnibar = _useState22[0],
+    setShowOpenOmnibar = _useState22[1];
   var theme = (0, _react.useContext)(_theme.ThemeContext);
   var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
-  var _useState25 = (0, _react.useState)(0),
-    _useState26 = _slicedToArray(_useState25, 2),
-    tabSelectCounter = _useState26[0],
-    setTabSelectCounter = _useState26[1];
-  var _useStateAndRef9 = (0, _utilities_react.useStateAndRef)({}),
-    _useStateAndRef10 = _slicedToArray(_useStateAndRef9, 3),
-    omniItems = _useStateAndRef10[0],
-    setOmniItems = _useStateAndRef10[1],
-    omniItemsRef = _useStateAndRef10[2];
+  var _useState23 = (0, _react.useState)(0),
+    _useState24 = _slicedToArray(_useState23, 2),
+    tabSelectCounter = _useState24[0],
+    setTabSelectCounter = _useState24[1];
+  var omniItemsRef = (0, _react.useRef)({});
   var top_ref = (0, _react.useRef)(null);
-  var key_bindings = [[["tab"], _goToNextPane], [["shift+tab"], _goToPreviousPane],
-  // [["ctrl+space"], _showOmnibar],
-  [["ctrl+space"], _showOpenOmnibar], [["ctrl+w"], function () {
+  var key_bindings = [[["tab"], _goToNextPane], [["shift+tab"], _goToPreviousPane], [["ctrl+space"], _showOpenOmnibar], [["ctrl+w"], function () {
     _closeTab(selectedTabIdRef.current);
   }]];
   var pushCallback = (0, _utilities_react.useCallbackStack)("context");
@@ -390,9 +379,7 @@ function ContextApp(props) {
     set_dirty_methods(copied_dirty_methods);
     set_tab_panel_dict(copied_tab_panel_dict);
     if (the_id in omniItemsRef.current) {
-      var newOmniItems = _objectSpread({}, omniItemsRef.current);
-      delete newOmniItems[the_id];
-      setOmniItems(newOmniItems);
+      delete omniItemsRef.current[the_id];
     }
     pushCallback(function () {
       if (the_id == selectedTabIdRef.current) {
@@ -446,8 +433,7 @@ function ContextApp(props) {
       kind: viewer_kind,
       res_type: res_type,
       title: title,
-      panel: new_panel,
-      omni_function: null
+      panel: new_panel
     };
     set_tab_panel_dict(new_tab_panel_dict);
     var new_tab_ids = [].concat(_toConsumableArray(tab_ids_ref.current), [new_id]);
@@ -540,26 +526,11 @@ function ContextApp(props) {
     }
     return -1;
   }
-  function _showOmnibar() {
-    setShowOmnibar(true);
-  }
-  function _closeOmnibar() {
-    setShowOmnibar(false);
-  }
   function _showOpenOmnibar() {
     setShowOpenOmnibar(true);
   }
   function _closeOpenOmnibar() {
     setShowOpenOmnibar(false);
-  }
-  function _registerOmniFunction(tab_id, the_function) {
-    if (tab_id == "library") {
-      library_omni_function.current = the_function;
-    } else {
-      _updatePanel(tab_id, {
-        omni_function: the_function
-      });
-    }
   }
   function _handleCreateViewer(data) {
     var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
@@ -578,8 +549,6 @@ function ContextApp(props) {
         _updatePanel(new_id, {
           panel: new_panel
         }, callback);
-      }, function (register_func) {
-        return _registerOmniFunction(new_id, register_func);
       });
     });
   }
@@ -591,7 +560,9 @@ function ContextApp(props) {
     var tabIndex = templist.indexOf(selectedTabIdRef.current) + 1;
     newId = tabIndex === templist.length ? "library" : templist[tabIndex];
     _handleTabSelect(newId, selectedTabIdRef.current);
-    e.preventDefault();
+    if (e) {
+      e.preventDefault();
+    }
   }
   function _goToPreviousPane(e) {
     var templist = ["library"];
@@ -600,7 +571,9 @@ function ContextApp(props) {
     var tabIndex = templist.indexOf(selectedTabIdRef.current) - 1;
     var newId = tabIndex == -1 ? templist.at(-1) : templist[tabIndex];
     _handleTabSelect(newId, selectedTabIdRef.current);
-    e.preventDefault();
+    if (e) {
+      e.preventDefault();
+    }
   }
   function _handleTabSelect(newTabId, prevTabId) {
     var event = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
@@ -648,8 +621,6 @@ function ContextApp(props) {
           }, function () {
             var pdict = tab_panel_dict_ref.current[new_id];
           });
-        }, function (register_func) {
-          return _registerOmniFunction(new_id, register_func);
         });
       });
     })["catch"](_toaster.doFlash);
@@ -726,48 +697,24 @@ function ContextApp(props) {
     pushCallback(callback);
   }
   function _addOmniItems(tid, items) {
-    var newOmniItems = Object.assign({}, omniItemsRef.current);
-    if (!(tid in newOmniItems)) {
-      newOmniItems[tid] = [];
+    if (!(tid in omniItemsRef.current)) {
+      omniItemsRef.current[tid] = [];
     }
-    var _iterator2 = _createForOfIteratorHelper(items),
-      _step2;
-    try {
-      for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-        var item = _step2.value;
-        item.item_type = "command";
-      }
-    } catch (err) {
-      _iterator2.e(err);
-    } finally {
-      _iterator2.f();
-    }
-    newOmniItems[tid] = newOmniItems[tid].concat(items);
-    setOmniItems(newOmniItems);
+    omniItemsRef.current[tid] = omniItemsRef.current[tid].concat(items);
   }
   function _addContextOmniItems() {
     // if (tab_ids_ref.current.length == 0) return [];
     var omni_funcs = [["Go To Next Panel", "context", _goToNextPane, "arrow-right"], ["Go To Previous Panel", "context", _goToPreviousPane, "arrow-left"]];
-    // if (selectedTabIdRef.current != "library") {
-    //     omni_funcs = omni_funcs.concat([
-    //         ["Close Current Panel", "context", () => {
-    //             _closeTab(selectedTabIdRef.current)
-    //         }, "delete"],
-    //         ["Refresh Current Panel", "context", () => {
-    //             _refreshTab(selectedTabIdRef.current)
-    //         }, "reset"]
-    //     ])
-    // }
-
     var omni_items = [];
     for (var _i2 = 0, _omni_funcs = omni_funcs; _i2 < _omni_funcs.length; _i2++) {
       var item = _omni_funcs[_i2];
       omni_items.push({
-        category: item[1],
+        category: "Global",
         display_text: item[0],
         search_text: item[0],
         icon_name: item[3],
-        the_function: item[2]
+        the_function: item[2],
+        item_type: "command"
       });
     }
     _addOmniItems("global", omni_items);
@@ -795,9 +742,6 @@ function ContextApp(props) {
     controlled: true,
     am_selected: selectedTabIdRef.current == "library",
     open_resources_ref: open_resources_ref,
-    registerOmniFunction: function registerOmniFunction(register_func) {
-      return _registerOmniFunction("library", register_func);
-    },
     handleCreateViewer: _handleCreateViewer,
     usable_width: usable_width,
     usable_height: usable_height
@@ -858,9 +802,6 @@ function ContextApp(props) {
     }, /*#__PURE__*/_react["default"].createElement(_pool_browser.PoolBrowser, {
       tsocket: tsocket,
       am_selected: selectedTabIdRef.current == "pool",
-      registerOmniFunction: function registerOmniFunction(register_func) {
-        return _registerOmniFunction("pool", register_func);
-      },
       usable_width: usable_width,
       usable_height: usable_height
     })));
@@ -928,11 +869,11 @@ function ContextApp(props) {
       window.open($SCRIPT_ROOT + the_view + item.name);
     }
   });
-  var _iterator3 = _createForOfIteratorHelper(tab_ids_ref.current),
-    _step3;
+  var _iterator2 = _createForOfIteratorHelper(tab_ids_ref.current),
+    _step2;
   try {
     var _loop2 = function _loop2() {
-      var tab_id = _step3.value;
+      var tab_id = _step2.value;
       var tab_entry = tab_panel_dict_ref.current[tab_id];
       var bclass = "context-tab-button-content";
       if (selectedTabIdRef.current == tab_id) {
@@ -1074,15 +1015,15 @@ function ContextApp(props) {
       }))));
       all_tabs.push(new_tab);
     };
-    for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+    for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
       _loop2();
     }
 
     // The purpose of the dummy tab is to make it possible to drag a tab to the bottom of the list
   } catch (err) {
-    _iterator3.e(err);
+    _iterator2.e(err);
   } finally {
-    _iterator3.f();
+    _iterator2.f();
   }
   bclass = "context-tab-button-content";
   if (dragging_over == "dummy") {
@@ -1136,23 +1077,6 @@ function ContextApp(props) {
     tlclass += " context-pane-closed";
   }
   var sid = selectedTabIdRef.current;
-  // let omniGetter;
-  // if (sid && sid in tab_panel_dict_ref.current) {
-  //     let the_dict = tab_panel_dict_ref.current[sid];
-  //     if ("omni_function" in the_dict) {
-  //         omniGetter = the_dict.omni_function;
-  //     } else {
-  //         omniGetter = () => {
-  //             return []
-  //         };
-  //     }
-  // } else if (sid == "library") {
-  //     omniGetter = library_omni_function.current
-  // } else {
-  //     omniGetter = () => {
-  //         return []
-  //     };  // Should never get here
-  // }
   var commandItems = omniItemsRef.current["global"];
   if (sid in omniItemsRef.current) {
     commandItems = commandItems.concat(omniItemsRef.current[sid]);
@@ -1208,14 +1132,23 @@ function ContextApp(props) {
     className: tlclass,
     vertical: true,
     onChange: _handleTabSelect
-  }, all_tabs)), /*#__PURE__*/_react["default"].createElement(_TacticOmnibar.OpenOmnibar, {
+  }, all_tabs)), /*#__PURE__*/_react["default"].createElement(_utilities_react.SelectedPaneContext.Provider, {
+    value: {
+      tab_id: sid,
+      selectedTabIdRef: selectedTabIdRef,
+      amSelected: amSelected,
+      addOmniItems: function addOmniItems(items) {
+        _addOmniItems(sid, items);
+      }
+    }
+  }, /*#__PURE__*/_react["default"].createElement(_TacticOmnibar.OpenOmnibar, {
     commandItems: commandItems,
     page_id: window.context_id,
     showOmnibar: showOpenOmnibar,
     openFunc: _omni_view_func,
     is_authenticated: window.is_authenticated,
     closeOmnibar: _closeOpenOmnibar
-  })), /*#__PURE__*/_react["default"].createElement(_key_trap.KeyTrap, {
+  }))), /*#__PURE__*/_react["default"].createElement(_key_trap.KeyTrap, {
     global: true,
     bindings: key_bindings
   }));

@@ -8,7 +8,6 @@ import React from "react";
 import * as ReactDOM from 'react-dom'
 import {Fragment, useState, useEffect, useRef, memo, useContext} from "react";
 
-import {TacticOmnibar} from "./TacticOmnibar";
 import {TacticSocket} from "./tactic_socket";
 import {doFlash} from "./toaster.js";
 import {LibraryPane} from "./library_pane";
@@ -33,8 +32,6 @@ const controllable_props = ["usable_width", "usable_height"];
 
 function LibraryHomeApp(props) {
 
-    const omniGetters = useRef({});
-    const [showOmnibar, setShowOmnibar] = useState(false);
     const [usable_height, set_usable_height] = useState(null);
     const [usable_width, set_usable_width] = useState(null);
 
@@ -48,19 +45,15 @@ function LibraryHomeApp(props) {
     const top_ref = useRef(null);
 
     const key_bindings = [
-        [["ctrl+space"], _showOmnibar],
     ];
 
     useConstructor(() => {
-        if (props.registerOmniFunction) {
-            props.registerOmniFunction(_omniFunction);
-        }
         if (!window.in_context) {
-        const aheight = getUsableDimensions(true).usable_height_no_bottom;
-        const awidth = getUsableDimensions(true).usable_width - 170;
-        set_usable_height(aheight);
-        set_usable_width(awidth);
-        }
+            const aheight = getUsableDimensions(true).usable_height_no_bottom;
+            const awidth = getUsableDimensions(true).usable_width - 170;
+            set_usable_height(aheight);
+            set_usable_width(awidth);
+            }
     });
 
     useEffect(() => {
@@ -93,26 +86,6 @@ function LibraryHomeApp(props) {
         }
     }
 
-    function _showOmnibar() {
-        setShowOmnibar(true)
-    }
-
-    function _closeOmnibar() {
-        setShowOmnibar(false)
-    }
-
-    function _omniFunction() {
-        let omni_items = [];
-        for (let ogetter in omniGetters.current) {
-            omni_items = omni_items.concat(omniGetters.current[ogetter]())
-        }
-        return omni_items
-    }
-
-    function _registerOmniGetter(name, the_function) {
-        omniGetters.current[name] = the_function
-    }
-
     function _handleResize() {
         set_usable_width(window.innerWidth - top_ref.current.offsetLeft);
         set_usable_height(window.innerHeight - top_ref.current.offsetTop)
@@ -141,7 +114,6 @@ function LibraryHomeApp(props) {
                      allow_search_inside={true}
                      allow_search_metadata={true}
                      MenubarClass={AllMenubar}
-                     registerOmniGetter={_registerOmniGetter}
                      {...props.errorDrawerFuncs}
                      errorDrawerFuncs={props.errorDrawerFuncs}
                      library_id={library_id}
@@ -166,7 +138,6 @@ function LibraryHomeApp(props) {
         <Fragment>
             { !props.controlled &&
                 <TacticNavbar is_authenticated={window.is_authenticated}
-                              registerOmniFunction={(register_func) => _registerOmniFunction("navbar", register_func)}
                               selected={null}
                               show_api_links={false}
                               extra_text={window.database_type == "Local" ? "" : window.database_type}
@@ -179,11 +150,6 @@ function LibraryHomeApp(props) {
 
             { !window.in_context &&
                 <Fragment>
-                    <TacticOmnibar omniGetters={[_omniFunction]}
-                                   page_id={library_id}
-                                   showOmnibar={showOmnibar}
-                                   closeOmnibar={_closeOmnibar}
-                    />
                     <KeyTrap global={true} bindings={key_bindings}/>
                 </Fragment>
             }
@@ -198,7 +164,6 @@ function _library_home_main() {
     const LibraryHomeAppPlus = withTheme(withDialogs(withErrorDrawer(withStatus(LibraryHomeApp))));
     const domContainer = document.querySelector('#library-home-root');
     ReactDOM.render(<LibraryHomeAppPlus tsocket={tsocket}
-                                        registerOmniFunction={null}
                                         controlled={false}
                                         initial_theme={window.theme}/>, domContainer)
 }

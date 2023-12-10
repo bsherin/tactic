@@ -31,7 +31,6 @@ import {withErrorDrawer} from "./error_drawer";
 import {renderSpinnerMessage, useConnection, useStateAndRef} from "./utilities_react";
 import {getUsableDimensions} from "./sizing_tools";
 import {ErrorBoundary} from "./error_boundary";
-import {TacticOmnibar} from "./TacticOmnibar";
 import {KeyTrap} from "./key_trap";
 import {useCallbackStack, useReducerAndRef} from "./utilities_react";
 import {ThemeContext, withTheme} from "./theme";
@@ -73,12 +72,9 @@ function MainApp(props) {
         return iStateDefaults[pname]
     }
 
-    const key_bindings = [[["ctrl+space"], _showOmnibar]];
-
     const last_save = useRef({});
     const resizing = useRef(false);
     const updateExportsList = useRef(null);
-    const omniGetters = useRef({});
     const height_adjustment = useRef(0);
     const table_container_ref = useRef(null);
     const tile_div_ref = useRef(null);
@@ -130,7 +126,6 @@ function MainApp(props) {
 
         // These will maybe only be used if not controlled
         resource_name: props.resource_name,
-        showOmnibar: false,
         is_project: props.is_project,
         usable_height: getUsableDimensions(true).usable_height_no_bottom,
         usable_width: getUsableDimensions(true).usable_width - 170
@@ -150,9 +145,6 @@ function MainApp(props) {
                     e.returnValue = ''
                 }
             });
-        }
-        if (props.registerOmniFunction) {
-            props.registerOmniFunction(_omniFunction);
         }
         _updateLastSave();
         statusFuncs.stopSpinner();
@@ -474,47 +466,6 @@ function MainApp(props) {
                 }
             }, null, props.main_id)
         }
-    }
-
-    function _showOmnibar() {
-        _setMainStateValue("showOmnibar", true)
-    }
-
-    function _closeOmnibar() {
-        _setMainStateValue("showOmnibar", false)
-    }
-
-    function _omniFunction() {
-        let omni_items = [];
-        for (let ogetter in omniGetters.current) {
-            omni_items = omni_items.concat(omniGetters.current[ogetter]())
-        }
-        omni_items = omni_items.concat(_getTileOmniItems());
-        return omni_items
-    }
-
-    function _registerOmniGetter(name, the_function) {
-        omniGetters.current[name] = the_function;
-    }
-
-    function _getTileOmniItems() {
-        let omni_items = [];
-        let sorted_categories = [...Object.keys(mState.tile_types)];
-        sorted_categories.sort();
-        for (let category of sorted_categories) {
-            let sorted_types = [...mState.tile_types[category]];
-            sorted_types.sort();
-            for (let ttype of sorted_types) {
-                omni_items.push({
-                    category: category,
-                    display_text: ttype,
-                    search_text: ttype,
-                    icon_name: mState.tile_icon_dict[ttype],
-                    the_function: () => _tile_command(ttype)
-                })
-            }
-        }
-        return omni_items
     }
 
     function create_tile_menus() {
@@ -1018,13 +969,11 @@ function MainApp(props) {
                          changeCollection={_changeCollection}
                          removeCollection={_removeCollection}
                          disabled_items={disabled_project_items}
-                         registerOmniGetter={_registerOmniGetter}
                          hidden_items={["Export as Jupyter Notebook"]}
             />
             {mState.doc_type != "none" &&
                 <DocumentMenu main_id={props.main_id}
                               documentNames={mState.doc_names}
-                              registerOmniGetter={_registerOmniGetter}
                               currentDoc={mState.table_spec.current_doc_name}
 
                 />
@@ -1043,7 +992,6 @@ function MainApp(props) {
                             hideInAll={_hideColumnInAll}
                             unhideAllColumns={_unhideAllColumns}
                             addColumn={_addColumn}
-                            registerOmniGetter={_registerOmniGetter}
                             deleteColumn={_deleteColumn}
                 />
             }
@@ -1061,7 +1009,6 @@ function MainApp(props) {
                          }}
                          duplicateRow={_duplicateRow}
                          selected_row={mState.selected_row}
-                         registerOmniGetter={_registerOmniGetter}
                          disabled_items={disabled_row_items}
                 />
             }
@@ -1074,7 +1021,6 @@ function MainApp(props) {
                       openErrorDrawer={props.openErrorDrawer}
                       show_exports_pane={mState.show_exports_pane}
                       show_console_pane={mState.show_console_pane}
-                      registerOmniGetter={_registerOmniGetter}
                       setMainStateValue={_setMainStateValue}
             />
             <NavbarDivider/>
@@ -1290,11 +1236,6 @@ function MainApp(props) {
                 </div>
                 {!window.in_context &&
                     <Fragment>
-                        <TacticOmnibar omniGetters={[_omniFunction]}
-                                       page_id={props.main_id}
-                                       showOmnibar={mState.showOmnibar}
-                                       closeOmnibar={_closeOmnibar}
-                        />
                         <KeyTrap global={true} bindings={key_bindings}/>
                     </Fragment>
                 }

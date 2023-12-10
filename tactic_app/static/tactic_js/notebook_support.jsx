@@ -7,7 +7,7 @@ export {notebook_props, notebookReducer}
 var tsocket;
 var ppi;
 
-function notebook_props(data, registerDirtyMethod, finalCallback, registerOmniFunction) {
+function notebook_props(data, registerDirtyMethod, finalCallback) {
     ppi = get_ppi();
     let main_id = data.main_id;
     if (!window.in_context) {
@@ -87,7 +87,6 @@ function notebook_props(data, registerDirtyMethod, finalCallback, registerOmniFu
                 is_juptyer: data.is_jupyter,
                 initial_theme: window.theme,
                 registerDirtyMethod: registerDirtyMethod,
-                registerOmniFunction: registerOmniFunction
             })
         } else {
             finalCallback({
@@ -100,7 +99,6 @@ function notebook_props(data, registerDirtyMethod, finalCallback, registerOmniFu
                 is_juptyer: data.is_jupyter,
                 initial_theme: window.theme,
                 registerDirtyMethod: registerDirtyMethod,
-                registerOmniFunction: registerOmniFunction
             })
         }
     }

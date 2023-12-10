@@ -11,7 +11,6 @@ require("../tactic_css/tactic_table.scss");
 require("../tactic_css/library_home.scss");
 var _react = _interopRequireWildcard(require("react"));
 var ReactDOM = _interopRequireWildcard(require("react-dom"));
-var _TacticOmnibar = require("./TacticOmnibar");
 var _tactic_socket = require("./tactic_socket");
 var _toaster = require("./toaster.js");
 var _library_pane = require("./library_pane");
@@ -44,29 +43,21 @@ exports.library_id = library_id;
 var tab_panes = ["all-pane", "collections-pane", "projects-pane", "tiles-pane", "lists-pane", "code-pane"];
 var controllable_props = ["usable_width", "usable_height"];
 function LibraryHomeApp(props) {
-  var omniGetters = (0, _react.useRef)({});
-  var _useState = (0, _react.useState)(false),
+  var _useState = (0, _react.useState)(null),
     _useState2 = _slicedToArray(_useState, 2),
-    showOmnibar = _useState2[0],
-    setShowOmnibar = _useState2[1];
+    usable_height = _useState2[0],
+    set_usable_height = _useState2[1];
   var _useState3 = (0, _react.useState)(null),
     _useState4 = _slicedToArray(_useState3, 2),
-    usable_height = _useState4[0],
-    set_usable_height = _useState4[1];
-  var _useState5 = (0, _react.useState)(null),
-    _useState6 = _slicedToArray(_useState5, 2),
-    usable_width = _useState6[0],
-    set_usable_width = _useState6[1];
+    usable_width = _useState4[0],
+    set_usable_width = _useState4[1];
   var theme = (0, _react.useContext)(_theme.ThemeContext);
   var statusFuncs = (0, _react.useContext)(_toaster2.StatusContext);
   var connection_status = (0, _utilities_react.useConnection)(props.tsocket, initSocket);
   var pushCallback = (0, _utilities_react.useCallbackStack)("library_home");
   var top_ref = (0, _react.useRef)(null);
-  var key_bindings = [[["ctrl+space"], _showOmnibar]];
+  var key_bindings = [];
   (0, _utilities_react.useConstructor)(function () {
-    if (props.registerOmniFunction) {
-      props.registerOmniFunction(_omniFunction);
-    }
     if (!window.in_context) {
       var aheight = (0, _sizing_tools.getUsableDimensions)(true).usable_height_no_bottom;
       var awidth = (0, _sizing_tools.getUsableDimensions)(true).usable_width - 170;
@@ -101,22 +92,6 @@ function LibraryHomeApp(props) {
         }
       });
     }
-  }
-  function _showOmnibar() {
-    setShowOmnibar(true);
-  }
-  function _closeOmnibar() {
-    setShowOmnibar(false);
-  }
-  function _omniFunction() {
-    var omni_items = [];
-    for (var ogetter in omniGetters.current) {
-      omni_items = omni_items.concat(omniGetters.current[ogetter]());
-    }
-    return omni_items;
-  }
-  function _registerOmniGetter(name, the_function) {
-    omniGetters.current[name] = the_function;
   }
   function _handleResize() {
     set_usable_width(window.innerWidth - top_ref.current.offsetLeft);
@@ -164,8 +139,7 @@ function LibraryHomeApp(props) {
     open_resources_ref: props.open_resources_ref,
     allow_search_inside: true,
     allow_search_metadata: true,
-    MenubarClass: _library_menubars.AllMenubar,
-    registerOmniGetter: _registerOmniGetter
+    MenubarClass: _library_menubars.AllMenubar
   }, props.errorDrawerFuncs, {
     errorDrawerFuncs: props.errorDrawerFuncs,
     library_id: library_id
@@ -185,9 +159,6 @@ function LibraryHomeApp(props) {
   }
   return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, !props.controlled && /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
     is_authenticated: window.is_authenticated,
-    registerOmniFunction: function registerOmniFunction(register_func) {
-      return _registerOmniFunction("navbar", register_func);
-    },
     selected: null,
     show_api_links: false,
     extra_text: window.database_type == "Local" ? "" : window.database_type,
@@ -197,12 +168,7 @@ function LibraryHomeApp(props) {
     className: outer_class,
     ref: top_ref,
     style: outer_style
-  }, all_pane), !window.in_context && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_TacticOmnibar.TacticOmnibar, {
-    omniGetters: [_omniFunction],
-    page_id: library_id,
-    showOmnibar: showOmnibar,
-    closeOmnibar: _closeOmnibar
-  }), /*#__PURE__*/_react["default"].createElement(_key_trap.KeyTrap, {
+  }, all_pane), !window.in_context && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_key_trap.KeyTrap, {
     global: true,
     bindings: key_bindings
   })));
@@ -214,7 +180,6 @@ function _library_home_main() {
   var domContainer = document.querySelector('#library-home-root');
   ReactDOM.render( /*#__PURE__*/_react["default"].createElement(LibraryHomeAppPlus, {
     tsocket: tsocket,
-    registerOmniFunction: null,
     controlled: false,
     initial_theme: window.theme
   }), domContainer);

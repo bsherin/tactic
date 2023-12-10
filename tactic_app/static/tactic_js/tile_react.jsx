@@ -755,6 +755,7 @@ function TileComponent(props) {
             <MenuComponent
                 option_dict={tile_menu_options}
                 icon_dict={menu_icons}
+                createOmniItems={false}
                 item_class="tile-menu-item"
                 position={PopoverPosition.BOTTOM_RIGHT}
                 alt_button={() => (menu_button)}/>)

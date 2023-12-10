@@ -12,7 +12,6 @@ import PropTypes from 'prop-types';
 import {Tab, Tabs, Button, ButtonGroup, Icon} from "@blueprintjs/core";
 
 import {creator_props} from "./tile_creator_support";
-import {TacticOmnibar} from "./TacticOmnibar";
 import {KeyTrap} from "./key_trap";
 import {TacticMenubar} from "./menu_utilities"
 import {sendToRepository} from "./resource_viewer_react_app";
@@ -29,7 +28,7 @@ import {TacticNavbar} from "./blueprint_navbar";
 import {SearchForm} from "./library_widgets";
 import {ErrorBoundary} from "./error_boundary";
 import {renderAutoCompleteElement} from "./autocomplete";
-import {useCallbackStack, useConstructor, useStateAndRef, useConnection} from "./utilities_react";
+import {useCallbackStack, useStateAndRef, useConnection} from "./utilities_react";
 import {ThemeContext, withTheme} from "./theme";
 import {DialogContext, withDialogs} from "./modal_react";
 import {SelectedPaneContext} from "./utilities_react";
@@ -40,7 +39,6 @@ const BOTTOM_MARGIN = 50;
 const MARGIN_SIZE = 17;
 
 function CreatorApp(props) {
-    const omniGetters = useRef({});
     const top_ref = useRef(null);
     const rc_span_ref = useRef(null);
     const vp_ref = useRef(null);
@@ -108,7 +106,6 @@ function CreatorApp(props) {
         return getUsableDimensions(true).usable_width - 170
     });
     const [all_tags, set_all_tags] = useState([]);
-    const [showOmnibar, setShowOmnibar] = useState(false);
 
     const theme = useContext(ThemeContext);
     const dialogFuncs = useContext(DialogContext);
@@ -122,14 +119,6 @@ function CreatorApp(props) {
 
     const connection_status = useConnection(props.tsocket, initSocket);
 
-    useConstructor(() => {
-        if (!window.in_context) {
-            key_bindings.current = [
-                [["ctrl+space"], _showOmnibar],
-            ];
-        }
-    });
-
     useEffect(() => {
         let data_dict = {pane_type: "tile", is_repository: false, show_hidden: true};
         postAjaxPromise("get_tag_list", data_dict)
@@ -139,9 +128,6 @@ function CreatorApp(props) {
     }, []);
 
     useEffect(() => {
-        if (props.registerOmniFunction) {
-            props.registerOmniFunction(_omniFunction);
-        }
         if (props.controlled) {
             props.registerDirtyMethod(_dirty);
             props.registerLineSetter(_selectLineNumber);
@@ -200,26 +186,6 @@ function CreatorApp(props) {
 
     function _cProp(pname) {
         return props.controlled ? props[pname] : cPropGetters()[pname]
-    }
-
-    function _showOmnibar() {
-        setShowOmnibar(true)
-    }
-
-    function _closeOmnibar() {
-        setShowOmnibar(false)
-    }
-
-    function _omniFunction() {
-        let omni_items = [];
-        for (let ogetter in omniGetters.current) {
-            omni_items = omni_items.concat(omniGetters.current[ogetter]())
-        }
-        return omni_items
-    }
-
-    function _registerOmniGetter(name, the_function) {
-        omniGetters.current[name] = the_function
     }
 
     function menu_specs() {
@@ -1159,7 +1125,6 @@ function CreatorApp(props) {
                            showErrorDrawerButton={true}
                            toggleErrorDrawer={props.toggleErrorDrawer}
                            controlled={props.controlled}
-                           registerOmniGetter={_registerOmniGetter}
             />
             <ErrorBoundary>
                 <div className={outer_class} ref={top_ref} style={outer_style}>
@@ -1173,12 +1138,6 @@ function CreatorApp(props) {
                 </div>
                 {!window.in_context &&
                     <Fragment>
-                        <TacticOmnibar omniGetters={[_omniFunction]}
-                                       page_id={props.module_viewer_id}
-                                       showOmnibar={showOmnibar}
-                                       closeOmnibar={_closeOmnibar}
-                                       is_authenticated={window.is_authenticated}
-                        />
                         <KeyTrap global={true} bindings={key_bindings.current}/>
                     </Fragment>
                 }

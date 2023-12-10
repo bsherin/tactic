@@ -32,7 +32,6 @@ var _error_drawer = require("./error_drawer");
 var _utilities_react = require("./utilities_react");
 var _sizing_tools = require("./sizing_tools");
 var _error_boundary = require("./error_boundary");
-var _TacticOmnibar = require("./TacticOmnibar");
 var _key_trap = require("./key_trap");
 var _theme = require("./theme");
 var _modal_react = require("./modal_react");
@@ -86,11 +85,9 @@ function MainApp(props) {
     }
     return iStateDefaults[pname];
   }
-  var key_bindings = [[["ctrl+space"], _showOmnibar]];
   var last_save = (0, _react.useRef)({});
   var resizing = (0, _react.useRef)(false);
   var updateExportsList = (0, _react.useRef)(null);
-  var omniGetters = (0, _react.useRef)({});
   var height_adjustment = (0, _react.useRef)(0);
   var table_container_ref = (0, _react.useRef)(null);
   var tile_div_ref = (0, _react.useRef)(null);
@@ -146,7 +143,6 @@ function MainApp(props) {
       spreadsheet_mode: false,
       // These will maybe only be used if not controlled
       resource_name: props.resource_name,
-      showOmnibar: false,
       is_project: props.is_project,
       usable_height: (0, _sizing_tools.getUsableDimensions)(true).usable_height_no_bottom,
       usable_width: (0, _sizing_tools.getUsableDimensions)(true).usable_width - 170
@@ -167,9 +163,6 @@ function MainApp(props) {
           e.returnValue = '';
         }
       });
-    }
-    if (props.registerOmniFunction) {
-      props.registerOmniFunction(_omniFunction);
     }
     _updateLastSave();
     statusFuncs.stopSpinner();
@@ -494,25 +487,8 @@ function MainApp(props) {
       }, null, props.main_id);
     }
   }
-  function _showOmnibar() {
-    _setMainStateValue("showOmnibar", true);
-  }
-  function _closeOmnibar() {
-    _setMainStateValue("showOmnibar", false);
-  }
-  function _omniFunction() {
-    var omni_items = [];
-    for (var ogetter in omniGetters.current) {
-      omni_items = omni_items.concat(omniGetters.current[ogetter]());
-    }
-    omni_items = omni_items.concat(_getTileOmniItems());
-    return omni_items;
-  }
-  function _registerOmniGetter(name, the_function) {
-    omniGetters.current[name] = the_function;
-  }
-  function _getTileOmniItems() {
-    var omni_items = [];
+  function create_tile_menus() {
+    var menu_items = [];
     var sorted_categories = _toConsumableArray(Object.keys(mState.tile_types));
     sorted_categories.sort();
     var _iterator2 = _createForOfIteratorHelper(sorted_categories),
@@ -520,6 +496,8 @@ function MainApp(props) {
     try {
       for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
         var category = _step2.value;
+        var option_dict = {};
+        var icon_dict = {};
         var sorted_types = _toConsumableArray(mState.tile_types[category]);
         sorted_types.sort();
         var _iterator3 = _createForOfIteratorHelper(sorted_types),
@@ -527,15 +505,10 @@ function MainApp(props) {
         try {
           var _loop = function _loop() {
             var ttype = _step3.value;
-            omni_items.push({
-              category: category,
-              display_text: ttype,
-              search_text: ttype,
-              icon_name: mState.tile_icon_dict[ttype],
-              the_function: function the_function() {
-                return _tile_command(ttype);
-              }
-            });
+            option_dict[ttype] = function () {
+              return _tile_command(ttype);
+            };
+            icon_dict[ttype] = mState.tile_icon_dict[ttype];
           };
           for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
             _loop();
@@ -544,45 +517,6 @@ function MainApp(props) {
           _iterator3.e(err);
         } finally {
           _iterator3.f();
-        }
-      }
-    } catch (err) {
-      _iterator2.e(err);
-    } finally {
-      _iterator2.f();
-    }
-    return omni_items;
-  }
-  function create_tile_menus() {
-    var menu_items = [];
-    var sorted_categories = _toConsumableArray(Object.keys(mState.tile_types));
-    sorted_categories.sort();
-    var _iterator4 = _createForOfIteratorHelper(sorted_categories),
-      _step4;
-    try {
-      for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
-        var category = _step4.value;
-        var option_dict = {};
-        var icon_dict = {};
-        var sorted_types = _toConsumableArray(mState.tile_types[category]);
-        sorted_types.sort();
-        var _iterator5 = _createForOfIteratorHelper(sorted_types),
-          _step5;
-        try {
-          var _loop2 = function _loop2() {
-            var ttype = _step5.value;
-            option_dict[ttype] = function () {
-              return _tile_command(ttype);
-            };
-            icon_dict[ttype] = mState.tile_icon_dict[ttype];
-          };
-          for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
-            _loop2();
-          }
-        } catch (err) {
-          _iterator5.e(err);
-        } finally {
-          _iterator5.f();
         }
         menu_items.push( /*#__PURE__*/_react["default"].createElement(_main_menus_react.MenuComponent, {
           menu_name: category,
@@ -594,9 +528,9 @@ function MainApp(props) {
         }));
       }
     } catch (err) {
-      _iterator4.e(err);
+      _iterator2.e(err);
     } finally {
-      _iterator4.f();
+      _iterator2.f();
     }
     return menu_items;
   }
@@ -1082,12 +1016,10 @@ function MainApp(props) {
     changeCollection: _changeCollection,
     removeCollection: _removeCollection,
     disabled_items: disabled_project_items,
-    registerOmniGetter: _registerOmniGetter,
     hidden_items: ["Export as Jupyter Notebook"]
   }), mState.doc_type != "none" && /*#__PURE__*/_react["default"].createElement(_main_menus_react.DocumentMenu, {
     main_id: props.main_id,
     documentNames: mState.doc_names,
-    registerOmniGetter: _registerOmniGetter,
     currentDoc: mState.table_spec.current_doc_name
   }), !isFreeform() && mState.doc_type != "none" && /*#__PURE__*/_react["default"].createElement(_main_menus_react.ColumnMenu, {
     main_id: props.main_id,
@@ -1103,7 +1035,6 @@ function MainApp(props) {
     hideInAll: _hideColumnInAll,
     unhideAllColumns: _unhideAllColumns,
     addColumn: _addColumn,
-    registerOmniGetter: _registerOmniGetter,
     deleteColumn: _deleteColumn
   }), !isFreeform() && mState.doc_type != "none" && /*#__PURE__*/_react["default"].createElement(_main_menus_react.RowMenu, {
     main_id: props.main_id,
@@ -1119,7 +1050,6 @@ function MainApp(props) {
     },
     duplicateRow: _duplicateRow,
     selected_row: mState.selected_row,
-    registerOmniGetter: _registerOmniGetter,
     disabled_items: disabled_row_items
   }), /*#__PURE__*/_react["default"].createElement(_main_menus_react.ViewMenu, {
     main_id: props.main_id,
@@ -1131,7 +1061,6 @@ function MainApp(props) {
     openErrorDrawer: props.openErrorDrawer,
     show_exports_pane: mState.show_exports_pane,
     show_console_pane: mState.show_console_pane,
-    registerOmniGetter: _registerOmniGetter,
     setMainStateValue: _setMainStateValue
   }), /*#__PURE__*/_react["default"].createElement(_core.NavbarDivider, null), create_tile_menus());
   var table_available_height = hp_height;
@@ -1318,12 +1247,7 @@ function MainApp(props) {
     handleResizeStart: _handleResizeStart,
     handleResizeEnd: _handleResizeEnd,
     overflow: "hidden"
-  })), !window.in_context && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_TacticOmnibar.TacticOmnibar, {
-    omniGetters: [_omniFunction],
-    page_id: props.main_id,
-    showOmnibar: mState.showOmnibar,
-    closeOmnibar: _closeOmnibar
-  }), /*#__PURE__*/_react["default"].createElement(_key_trap.KeyTrap, {
+  })), !window.in_context && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_key_trap.KeyTrap, {
     global: true,
     bindings: key_bindings
   }))));

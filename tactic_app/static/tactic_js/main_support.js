@@ -19,7 +19,7 @@ function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o =
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
 var ppi;
 var tsocket;
-function main_props(data, registerDirtyMethod, finalCallback, registerOmniFunction) {
+function main_props(data, registerDirtyMethod, finalCallback) {
   ppi = (0, _utilities_react.get_ppi)();
   var main_id = data.main_id;
   if (!window.in_context) {
@@ -125,8 +125,7 @@ function main_props(data, registerDirtyMethod, finalCallback, registerOmniFuncti
         },
         initial_theme: window.theme,
         initial_doc_names: [],
-        registerDirtyMethod: registerDirtyMethod,
-        registerOmniFunction: registerOmniFunction
+        registerDirtyMethod: registerDirtyMethod
       });
     } else if (data.is_freeform) {
       finalCallback({
@@ -148,8 +147,7 @@ function main_props(data, registerDirtyMethod, finalCallback, registerOmniFuncti
         },
         initial_theme: window.theme,
         initial_doc_names: fdata.doc_names,
-        registerDirtyMethod: registerDirtyMethod,
-        registerOmniFunction: registerOmniFunction
+        registerDirtyMethod: registerDirtyMethod
       });
     } else {
       finalCallback({
@@ -176,8 +174,7 @@ function main_props(data, registerDirtyMethod, finalCallback, registerOmniFuncti
         initial_theme: window.theme,
         initial_data_row_dict: fdata.data_row_dict,
         initial_doc_names: fdata.doc_names,
-        registerDirtyMethod: registerDirtyMethod,
-        registerOmniFunction: registerOmniFunction
+        registerDirtyMethod: registerDirtyMethod
       });
     }
   }

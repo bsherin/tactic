@@ -19,7 +19,6 @@ var _library_widgets = require("./library_widgets");
 var _resizing_layouts = require("./resizing_layouts");
 var _communication_react = require("./communication_react");
 var _sizing_tools = require("./sizing_tools");
-var _TacticOmnibar = require("./TacticOmnibar");
 var _toaster = require("./toaster.js");
 var _key_trap = require("./key_trap.js");
 var _utilities_react = require("./utilities_react");
@@ -128,18 +127,14 @@ function LibraryPane(props) {
     tag_list = _useStateAndRef4[0],
     set_tag_list = _useStateAndRef4[1],
     tag_list_ref = _useStateAndRef4[2];
-  var _useState3 = (0, _react.useState)(false),
+  var _useState3 = (0, _react.useState)([]),
     _useState4 = _slicedToArray(_useState3, 2),
-    showOmnibar = _useState4[0],
-    setShowOmnibar = _useState4[1];
-  var _useState5 = (0, _react.useState)([]),
+    contextMenuItems = _useState4[0],
+    setContextMenuItems = _useState4[1];
+  var _useState5 = (0, _react.useState)(500),
     _useState6 = _slicedToArray(_useState5, 2),
-    contextMenuItems = _useState6[0],
-    setContextMenuItems = _useState6[1];
-  var _useState7 = (0, _react.useState)(500),
-    _useState8 = _slicedToArray(_useState7, 2),
-    total_width = _useState8[0],
-    set_total_width = _useState8[1];
+    total_width = _useState6[0],
+    set_total_width = _useState6[1];
   var _useStateAndRef5 = (0, _utilities_react.useStateAndRef)(.65),
     _useStateAndRef6 = _slicedToArray(_useStateAndRef5, 3),
     left_width_fraction = _useStateAndRef6[0],
@@ -222,10 +217,10 @@ function LibraryPane(props) {
     selectedRegions = _useStateAndRef34[0],
     setSelectedRegions = _useStateAndRef34[1],
     selectedRegionsRef = _useStateAndRef34[2];
-  var _useState9 = (0, _react.useState)(0),
-    _useState10 = _slicedToArray(_useState9, 2),
-    rowChanged = _useState10[0],
-    setRowChanged = _useState10[1];
+  var _useState7 = (0, _react.useState)(0),
+    _useState8 = _slicedToArray(_useState7, 2),
+    rowChanged = _useState8[0],
+    setRowChanged = _useState8[1];
   var selectedTypeRef = (0, _react.useRef)(null);
   var theme = (0, _react.useContext)(_theme.ThemeContext);
   var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
@@ -234,7 +229,6 @@ function LibraryPane(props) {
     data_dict: set_data_dict,
     num_rows: set_num_rows,
     tag_list: set_tag_list,
-    showOmnibar: setShowOmnibar,
     contextMenuItems: setContextMenuItems,
     total_width: set_total_width,
     left_width_fraction: set_left_width_fraction,
@@ -880,29 +874,6 @@ function LibraryPane(props) {
       window.open($SCRIPT_ROOT + the_view + selected_resource_ref.current.name);
     }
   }
-  var _omni_view_func = (0, _react.useCallback)(function (item) {
-    var the_view = view_views(false)[item.res_type];
-    statusFuncs.setStatus({
-      show_spinner: true,
-      status_message: "Opening ..."
-    });
-    if (window.in_context) {
-      var re = new RegExp("/$");
-      the_view = the_view.replace(re, "_in_context");
-      (0, _communication_react.postAjaxPromise)($SCRIPT_ROOT + the_view, {
-        context_id: context_id,
-        resource_name: item.name
-      }).then(function (data) {
-        props.handleCreateViewer(data, statusFuncs.clearStatus);
-      })["catch"](function (data) {
-        (0, _toaster.doFlash)(data);
-        statusFuncs.clearstatus();
-      });
-    } else {
-      statusFuncs.clearStatus();
-      window.open($SCRIPT_ROOT + the_view + item.name);
-    }
-  });
   function _open_raw(selected_resource) {
     statusFuncs.clearStatus();
     if (selected_resource.type == "freeform") {
@@ -1130,12 +1101,6 @@ function LibraryPane(props) {
     var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
     _grabNewChunkWithRow(0, true, null, true, callback);
   }
-  function _showOmnibar() {
-    setShowOmnibar(true);
-  }
-  var _closeOmnibar = (0, _react.useCallback)(function () {
-    setShowOmnibar(false);
-  });
   function _new_notebook() {
     if (window.in_context) {
       var the_view = "".concat($SCRIPT_ROOT, "/new_notebook_in_context");
@@ -1571,7 +1536,6 @@ function LibraryPane(props) {
   function _menu_funcs() {
     return {
       view_func: _view_func,
-      search_resources: _showOmnibar,
       send_repository_func: _send_repository_func,
       repository_copy_func: _repository_copy_func,
       duplicate_func: _duplicate_func,
@@ -1668,10 +1632,7 @@ function LibraryPane(props) {
     return _handleArrowKeyPress("ArrowUp");
   }], [["down"], function () {
     return _handleArrowKeyPress("ArrowDown");
-  }], [["esc"], _unsearch]
-  // [["ctrl+o"], _showOmnibar]
-  ];
-
+  }], [["esc"], _unsearch]];
   var filter_buttons = [];
   var _iterator8 = _createForOfIteratorHelper(["all"].concat(res_types)),
     _step8;
@@ -1772,7 +1733,6 @@ function LibraryPane(props) {
   return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(MenubarClass, _extends({
     selected_resource: selected_resource_ref.current,
     connection_status: props.connection_status,
-    registerOmniGetter: props.registerOmniGetter,
     multi_select: multi_select_ref.current,
     list_of_selected: list_of_selected_ref.current,
     selected_rows: selected_rows_ref.current,

@@ -839,6 +839,7 @@ function TileComponent(props) {
     return /*#__PURE__*/_react["default"].createElement(_menu_utilities.MenuComponent, {
       option_dict: tile_menu_options,
       icon_dict: menu_icons,
+      createOmniItems: false,
       item_class: "tile-menu-item",
       position: _core.PopoverPosition.BOTTOM_RIGHT,
       alt_button: function alt_button() {

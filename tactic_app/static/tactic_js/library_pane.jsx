@@ -15,7 +15,6 @@ import {SearchForm, BpSelectorTable} from "./library_widgets";
 import {HorizontalPanes} from "./resizing_layouts";
 import {postAjax, postAjaxPromise, postWithCallback} from "./communication_react"
 import {BOTTOM_MARGIN} from "./sizing_tools";
-import {OpenOmnibar} from "./TacticOmnibar";
 
 import {doFlash} from "./toaster.js"
 import {KeyTrap} from "./key_trap.js";
@@ -104,7 +103,6 @@ function LibraryPane(props) {
     const [data_dict, set_data_dict, data_dict_ref] = useStateAndRef({});
     const [num_rows, set_num_rows] = useState(0);
     const [tag_list, set_tag_list, tag_list_ref] = useStateAndRef([]);
-    const [showOmnibar, setShowOmnibar] = useState(false);
     const [contextMenuItems, setContextMenuItems] = useState([]);
     const [total_width, set_total_width] = useState(500);
     const [left_width_fraction, set_left_width_fraction, left_width_fraction_ref] = useStateAndRef(.65);
@@ -142,7 +140,6 @@ function LibraryPane(props) {
         data_dict: set_data_dict,
         num_rows: set_num_rows,
         tag_list: set_tag_list,
-        showOmnibar: setShowOmnibar,
         contextMenuItems: setContextMenuItems,
         total_width: set_total_width,
         left_width_fraction: set_left_width_fraction,
@@ -750,30 +747,6 @@ function LibraryPane(props) {
         }
     }
 
-    const _omni_view_func = useCallback((item) => {
-        let the_view = view_views(false)[item.res_type];
-        statusFuncs.setStatus({show_spinner: true, status_message: "Opening ..."});
-        if (window.in_context) {
-            const re = new RegExp("/$");
-            the_view = the_view.replace(re, "_in_context");
-            postAjaxPromise($SCRIPT_ROOT + the_view, {
-                context_id: context_id,
-                resource_name: item.name
-            })
-                .then((data) => {
-                    props.handleCreateViewer(data, statusFuncs.clearStatus);
-                })
-                .catch((data) => {
-                        doFlash(data);
-                        statusFuncs.clearstatus()
-                    }
-                );
-        } else {
-            statusFuncs.clearStatus();
-            window.open($SCRIPT_ROOT + the_view + item.name)
-        }
-    });
-
     function _open_raw(selected_resource) {
         statusFuncs.clearStatus();
         if (selected_resource.type == "freeform") {
@@ -1009,14 +982,6 @@ function LibraryPane(props) {
     function _refresh_func(callback = null) {
         _grabNewChunkWithRow(0, true, null, true, callback)
     }
-
-    function _showOmnibar() {
-        setShowOmnibar(true)
-    }
-
-    const _closeOmnibar = useCallback(() => {
-        setShowOmnibar(false)
-    });
 
     function _new_notebook() {
         if (window.in_context) {
@@ -1451,7 +1416,6 @@ function LibraryPane(props) {
     function _menu_funcs() {
         return {
             view_func: _view_func,
-            search_resources: _showOmnibar,
             send_repository_func: _send_repository_func,
             repository_copy_func: _repository_copy_func,
             duplicate_func: _duplicate_func,
@@ -1549,7 +1513,6 @@ function LibraryPane(props) {
         [["up"], () => _handleArrowKeyPress("ArrowUp")],
         [["down"], () => _handleArrowKeyPress("ArrowDown")],
         [["esc"], _unsearch],
-        // [["ctrl+o"], _showOmnibar]
     ];
 
     let filter_buttons = [];
@@ -1636,7 +1599,6 @@ function LibraryPane(props) {
         <Fragment>
             <MenubarClass selected_resource={selected_resource_ref.current}
                           connection_status={props.connection_status}
-                          registerOmniGetter={props.registerOmniGetter}
                           multi_select={multi_select_ref.current}
                           list_of_selected={list_of_selected_ref.current}
                           selected_rows={selected_rows_ref.current}
@@ -1669,9 +1631,6 @@ function LibraryPane(props) {
                     />
                 </div>
                 <KeyTrap global={true} bindings={key_bindings}/>
-                {/*<OpenOmnibar showOmnibar={showOmnibar}*/}
-                {/*             openFunc={_omni_view_func}*/}
-                {/*             closeOmnibar={_closeOmnibar}/>*/}
             </div>
         </Fragment>
     )

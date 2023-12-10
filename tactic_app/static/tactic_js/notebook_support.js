@@ -16,7 +16,7 @@ function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return _ty
 function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
 var tsocket;
 var ppi;
-function notebook_props(data, registerDirtyMethod, finalCallback, registerOmniFunction) {
+function notebook_props(data, registerDirtyMethod, finalCallback) {
   ppi = (0, _utilities_react.get_ppi)();
   var main_id = data.main_id;
   if (!window.in_context) {
@@ -93,8 +93,7 @@ function notebook_props(data, registerDirtyMethod, finalCallback, registerOmniFu
         is_notebook: true,
         is_juptyer: data.is_jupyter,
         initial_theme: window.theme,
-        registerDirtyMethod: registerDirtyMethod,
-        registerOmniFunction: registerOmniFunction
+        registerDirtyMethod: registerDirtyMethod
       });
     } else {
       finalCallback({
@@ -106,8 +105,7 @@ function notebook_props(data, registerDirtyMethod, finalCallback, registerOmniFu
         is_notebook: true,
         is_juptyer: data.is_jupyter,
         initial_theme: window.theme,
-        registerDirtyMethod: registerDirtyMethod,
-        registerOmniFunction: registerOmniFunction
+        registerDirtyMethod: registerDirtyMethod
       });
     }
   }

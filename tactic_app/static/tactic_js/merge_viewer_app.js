@@ -11,7 +11,6 @@ var _core = require("@blueprintjs/core");
 var _reactCodemirrorMergeview = require("./react-codemirror-mergeview");
 var _blueprint_mdata_fields = require("./blueprint_mdata_fields");
 var _menu_utilities = require("./menu_utilities");
-var _TacticOmnibar = require("./TacticOmnibar");
 var _key_trap = require("./key_trap");
 var _theme = require("./theme");
 var _toaster = require("./toaster");
@@ -28,7 +27,6 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 function MergeViewerApp(props) {
   var left_div_ref = (0, _react.useRef)(null);
   var above_main_ref = (0, _react.useRef)(null);
-  var omniGetters = (0, _react.useRef)({});
   var _useState = (0, _react.useState)(window.innerHeight),
     _useState2 = _slicedToArray(_useState, 2),
     inner_height = _useState2[0],
@@ -37,11 +35,7 @@ function MergeViewerApp(props) {
   var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
 
   // These only matter if not controlled
-  var _useState3 = (0, _react.useState)(false),
-    _useState4 = _slicedToArray(_useState3, 2),
-    showOmnibar = _useState4[0],
-    setShowOmnibar = _useState4[1];
-  var key_bindings = [[["ctrl+space"], _showOmnibar]];
+  var key_bindings = [[]];
   var button_groups = [[{
     "name_text": "Save",
     "icon_name": "saved",
@@ -81,22 +75,6 @@ function MergeViewerApp(props) {
       }
     }
     return ms;
-  }
-  function _showOmnibar() {
-    setShowOmnibar(true);
-  }
-  function _closeOmnibar() {
-    setShowOmnibar(false);
-  }
-  function _omniFunction() {
-    var omni_items = [];
-    for (var ogetter in omniGetters.current) {
-      omni_items = omni_items.concat(mniGetters.current[ogetter]());
-    }
-    return omni_items;
-  }
-  function _registerOmniGetter(name, the_function) {
-    omniGetters.current[name] = the_function;
   }
   function resize_to_window() {
     set_inner_height(window.innerHeight);
@@ -148,8 +126,7 @@ function MergeViewerApp(props) {
     closeTab: null,
     resource_name: props.resource_name,
     toggleErrorDrawer: props.toggleErrorDrawer,
-    controlled: false,
-    registerOmniGetter: _registerOmniGetter
+    controlled: false
   }), /*#__PURE__*/_react["default"].createElement("div", {
     className: outer_class
   }, /*#__PURE__*/_react["default"].createElement("div", {
@@ -174,13 +151,7 @@ function MergeViewerApp(props) {
     right_content: props.right_content,
     saveMe: props.saveHandler,
     max_height: max_merge_height
-  }))), /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_TacticOmnibar.TacticOmnibar, {
-    omniGetters: [_omniFunction],
-    page_id: props.page_id,
-    showOmnibar: showOmnibar,
-    closeOmnibar: _closeOmnibar,
-    is_authenticated: window.is_authenticated
-  }), /*#__PURE__*/_react["default"].createElement(_key_trap.KeyTrap, {
+  }))), /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_key_trap.KeyTrap, {
     global: true,
     bindings: key_bindings
   })));

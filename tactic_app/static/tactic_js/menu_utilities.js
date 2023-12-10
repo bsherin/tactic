@@ -35,7 +35,6 @@ function TacticMenubar(props) {
       menus.push( /*#__PURE__*/_react["default"].createElement(ToolMenu, {
         menu_name: menu_name,
         key: menu_name + String(mcounter),
-        registerOmniGetter: props.registerOmniGetter,
         disabled_items: props.disabled_items,
         menu_items: props.menu_specs[menu_name],
         controlled: props.controlled
@@ -264,12 +263,9 @@ function MenuComponent(props) {
   var replacers = [["CTRL+", "^"], ["COMMAND+", "⌘"]];
   var selectedPane = (0, _react.useContext)(_utilities_react.SelectedPaneContext);
   (0, _react.useEffect)(function () {
-    if (window.in_context && "addOmniItems" in selectedPane) {
+    if (props.createOmniItems && window.in_context && "addOmniItems" in selectedPane) {
       selectedPane.addOmniItems(_getOmniItems());
     }
-    // if (props.registerOmniGetter) {
-    //     props.registerOmniGetter(props.menu_name, _getOmniItems)
-    // }
   }, []);
   function _filter_on_match_list(opt_name) {
     return !props.hidden_items.includes(opt_name);
@@ -305,10 +301,11 @@ function MenuComponent(props) {
         if (choice.startsWith("divider")) continue;
         var icon_name = props.icon_dict.hasOwnProperty(choice) ? props.icon_dict[choice] : null;
         omni_items.push({
-          category: props.menu_name,
+          category: "Menu Option",
           display_text: choice,
           search_text: choice,
           icon_name: icon_name,
+          item_type: "command",
           the_function: props.option_dict[choice]
         });
       }
@@ -383,7 +380,7 @@ MenuComponent.propTypes = {
   hidden_items: _propTypes["default"].array,
   alt_button: _propTypes["default"].func,
   position: _propTypes["default"].string,
-  registerOmniGetter: _propTypes["default"].func
+  createOmniItems: _propTypes["default"].bool
 };
 MenuComponent.defaultProps = {
   menu_name: null,
@@ -395,7 +392,7 @@ MenuComponent.defaultProps = {
   icon_dict: {},
   alt_button: null,
   position: _core.PopoverPosition.BOTTOM_LEFT,
-  registerOmniGetter: null
+  createOmniItems: true
 };
 function ToolMenu(props) {
   var selectedPane = (0, _react.useContext)(_utilities_react.SelectedPaneContext);
@@ -475,7 +472,6 @@ function ToolMenu(props) {
     icon_dict: icon_dict(),
     binding_dict: binding_dict(),
     disabled_items: props.disabled_items,
-    registerOmniGetter: props.registerOmniGetter,
     hidden_items: []
   }), /*#__PURE__*/_react["default"].createElement(_key_trap.KeyTrap, {
     global: true,
@@ -488,10 +484,8 @@ ToolMenu.propTypes = {
   menu_name: _propTypes["default"].string,
   menu_items: _propTypes["default"].array,
   disabled_items: _propTypes["default"].array,
-  controlled: _propTypes["default"].bool,
-  registerOmniGetter: _propTypes["default"].func
+  controlled: _propTypes["default"].bool
 };
 ToolMenu.defaultProps = {
-  disabled_items: [],
-  registerOmniGetter: null
+  disabled_items: []
 };

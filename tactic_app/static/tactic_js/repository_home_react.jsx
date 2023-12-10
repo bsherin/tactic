@@ -106,7 +106,6 @@ function RepositoryHomeApp(props) {
                      allow_search_inside={true}
                      allow_search_metadata={true}
                      MenubarClass={RepositoryAllMenubar}
-                     registerOmniGetter={null}
                      {...props.errorDrawerFuncs}
                      errorDrawerFuncs={props.errorDrawerFuncs}
                      library_id={library_id}

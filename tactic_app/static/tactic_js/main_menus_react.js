@@ -469,8 +469,7 @@ function ProjectMenu(props) {
     menu_items: menu_items(),
     binding_dict: {},
     disabled_items: props.disabled_items,
-    disable_all: false,
-    registerOmniGetter: props.registerOmniGetter
+    disable_all: false
   });
 }
 ProjectMenu.propTypes = {
@@ -577,7 +576,6 @@ function DocumentMenu(props) {
     icon_dict: icon_dict,
     binding_dict: {},
     disabled_items: props.disabled_items,
-    registerOmniGetter: props.registerOmniGetter,
     hidden_items: []
   });
 }
@@ -652,7 +650,6 @@ function ColumnMenu(props) {
     icon_dict: icon_dict,
     binding_dict: {},
     disabled_items: props.disabled_items,
-    registerOmniGetter: props.registerOmniGetter,
     hidden_items: []
   });
 }
@@ -688,7 +685,6 @@ function RowMenu(props) {
     icon_dict: icon_dict,
     binding_dict: {},
     disabled_items: props.disabled_items,
-    registerOmniGetter: props.registerOmniGetter,
     hidden_items: []
   });
 }
@@ -755,7 +751,6 @@ function ViewMenu(props) {
     disabled_items: [],
     binding_dict: {},
     disable_all: props.disable_all,
-    registerOmniGetter: props.registerOmniGetter,
     hidden_items: []
   });
 }

@@ -15,7 +15,6 @@ import {consoleItemsReducer} from "./console_support";
 import {doFlash, StatusContext} from "./toaster"
 import {withStatus} from "./toaster";
 import {renderSpinnerMessage, SelectedPaneContext, useConnection, useStateAndRef} from "./utilities_react";
-import {TacticOmnibar} from "./TacticOmnibar";
 import {KeyTrap} from "./key_trap";
 
 import {postAjaxPromise, postAjax} from "./communication_react"
@@ -42,7 +41,6 @@ function NotebookApp(props) {
 
     const last_save = useRef({});
     const main_outer_ref = useRef(null);
-    const omniGetters = useRef({});
     const updateExportsList = useRef(null);
     const height_adjustment = useRef(props.controlled ? MENU_BAR_HEIGHT : 0);
     const connection_status = useConnection(props.tsocket, initSocket);
@@ -55,7 +53,6 @@ function NotebookApp(props) {
         console_is_zoomed: true,
         console_is_shrunk: false,
         resource_name: props.resource_name,
-        showOmnibar: false,
         is_project: props.is_project,
         usable_height: getUsableDimensions(true).usable_height_no_bottom,
         usable_width: getUsableDimensions(true).usable_width - 170
@@ -63,7 +60,7 @@ function NotebookApp(props) {
     const theme = useContext(ThemeContext);
     const statusFuncs = useContext(StatusContext);
 
-    const key_bindings = [[["ctrl+space"], _showOmnibar]];
+    const key_bindings = [];
 
     const pushCallback = useCallbackStack();
     const selectedPane = useContext(SelectedPaneContext);
@@ -85,9 +82,6 @@ function NotebookApp(props) {
                     e.returnValue = ''
                 }
             });
-        }
-        if (props.registerOmniFunction) {
-            props.registerOmniFunction(_omniFunction);
         }
         _updateLastSave();
         statusFuncs.stopSpinner();
@@ -218,26 +212,6 @@ function NotebookApp(props) {
         }
     }
 
-    function _showOmnibar() {
-        _setMainStateValue("show_omnibar", true)
-    }
-
-    function _closeOmnibar() {
-        _setMainStateValue("show_omnibar", false)
-    }
-
-    function _omniFunction() {
-        let omni_items = [];
-        for (let ogetter in omniGetters.current) {
-            omni_items = omni_items.concat(omniGetters.current[ogetter]())
-        }
-        return omni_items
-    }
-
-    function _registerOmniGetter(name, the_function) {
-        omniGetters.current[name] = the_function;
-    }
-
     let my_props = {...props};
     if (!props.controlled) {
         my_props.resource_name = mState.resource_name;
@@ -263,7 +237,6 @@ function NotebookApp(props) {
                          updateLastSave={_updateLastSave}
                          changeCollection={null}
                          disabled_items={my_props.is_project ? [] : ["Save"]}
-                         registerOmniGetter={_registerOmniGetter}
                          hidden_items={["Open Console as Notebook", "Export Table as Collection", "divider2", "Change collection"]}
             />
         </Fragment>
@@ -339,11 +312,6 @@ function NotebookApp(props) {
             </div>
             {!window.in_context &&
                 <Fragment>
-                    <TacticOmnibar omniGetters={[_omniFunction]}
-                                   page_id={props.main_id}
-                                   showOmnibar={mState.showOmnibar}
-                                   closeOmnibar={_closeOmnibar}
-                    />
                     <KeyTrap global={true} bindings={key_bindings}/>
                 </Fragment>
             }

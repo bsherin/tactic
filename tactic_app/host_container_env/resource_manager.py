@@ -412,6 +412,136 @@ class LibraryResourceManager(ResourceManager):
         return filtered_list
 
     def grab_all_list_chunk(self):
+        data = request.json
+        is_repo = data["is_repository"]
+        print(f"in grab_all_list_chunk with is_repo {str(is_repo)}")
+        specs = {"collection": self.collection_spec(is_repo),
+                 "project": self.project_spec(is_repo),
+                 "tile": self.tile_spec(is_repo),
+                 "list": self.list_spec(is_repo),
+                 "code": self.code_spec(is_repo)}
+        preppers = {"collection": self.prep_collection_results,
+                    "project": self.prep_project_results,
+                    "tile": self.prep_tile_results,
+                    "list": self.prep_list_results,
+                    "code": self.prep_code_results}
+
+        pane_type = data["pane_type"]
+        if pane_type == "all":
+            types_to_grab = res_types
+        else:
+            types_to_grab = [pane_type]
+
+        if "number_to_get" in data:
+            number_to_get = data["number_to_get"]
+        else:
+            number_to_get = CHUNK_SIZE
+        db_to_use = self.repository_db if is_repo else self.db
+        def sort_mdata_key(item):
+            if sort_field not in item:
+                return ""
+            return item[sort_field]
+
+        def sort_created_key(item):
+            return item["created_for_sort"]
+
+        def sort_updated_key(item):
+            return item["updated_for_sort"]
+
+        def sort_size_key(item):
+            return item["size_for_sort"]
+
+        search_spec = data["search_spec"]
+        row_number = data["row_number"]
+        search_text = search_spec['search_string']
+
+        filtered_res = []
+        all_tags = []
+        sort_field = search_spec["sort_field"]
+        for rtype in types_to_grab:
+            spec = specs[rtype]
+            collection_name = spec["collection_name"]
+            name_field = spec["name_field"]
+            content_field = spec["content_field"]
+            additional_mdata_fields = spec["additional_mdata_fields"]
+            if search_spec["search_inside"] and content_field is None:
+                continue
+            reg = re.compile(".*" + search_text + ".*", re.IGNORECASE)
+            or_list = [{name_field: reg}]
+            and_list = []
+            if search_spec["search_metadata"]:
+                or_list += [{"metadata.notes": reg}, {"metadata.tags": reg}, {"metadata.type": reg}]
+                if additional_mdata_fields:
+                    for fld in additional_mdata_fields:
+                        or_list.append({"metadata." + fld: reg})
+            if content_field and search_spec["search_inside"]:
+                or_list += [{content_field: reg}]
+            and_list.append({"$or": or_list})
+            if not search_spec["show_hidden"]:
+                hidden_reg = "(^|/| )hidden($|/| )"
+                and_list.append({"metadata.tags": {"$not": {"$regex": hidden_reg}}})
+            if search_spec["active_tag"]:
+                atag = search_spec['active_tag']
+                if atag[0] == "/":
+                    atag = atag[1:]
+                tag_reg = f"(^|/| ){atag}($|/| )"
+                and_list.append({"metadata.tags": {"$regex": tag_reg}})
+            res = db_to_use[collection_name].find({"$and": and_list},
+                                                  projection=[name_field, "metadata", "file_id"])
+            for doc in res:
+                try:
+                    if "metadata" in doc and doc["metadata"] is not None:
+                        mdata = doc["metadata"]
+                        doc_id = str(doc["_id"])
+                        all_subtags = self.get_all_subtags(mdata["tags"])
+                        all_tags += mdata["tags"].split()
+                        if "file_id" in doc:
+                            rdict = self.build_res_dict(doc[name_field], mdata, None,
+                                                        doc["file_id"], res_type=rtype, doc_id=doc_id)
+                        else:
+                            rdict = self.build_res_dict(doc[name_field], mdata, res_type=rtype, doc_id=doc_id)
+                        if mdata and "tags" in mdata:
+                            rdict["hidden"] = self.has_hidden(mdata["tags"])
+                        else:
+                            rdict["hidden"] = False
+                        filtered_res.append(rdict)
+                except Exception as ex:
+                    msg = self.get_traceback_message(ex, f"Got problem with doc {str(doc[name_field])}")
+                    print(msg)
+
+        is_all = pane_type == "all"
+        for rtype in types_to_grab:
+            prepper = preppers[rtype]
+            filtered_res = prepper(filtered_res, is_all)
+
+        if search_spec["sort_direction"] == "ascending":
+            reverse = False
+        else:
+            reverse = True
+
+        all_tags = sorted(list(set(all_tags)))
+
+        if sort_field == "created":
+            sort_key_func = sort_created_key
+        elif sort_field == "updated":
+            sort_key_func = sort_updated_key
+        elif sort_field == "size":
+            sort_key_func = sort_size_key
+        else:
+            sort_key_func = sort_mdata_key
+
+        sorted_results = sorted(filtered_res, key=sort_key_func, reverse=reverse)
+
+        chunk_start = int(row_number / number_to_get) * number_to_get
+        chunk_list = sorted_results[chunk_start: chunk_start + number_to_get]
+        chunk_dict = {}
+        for n, r in enumerate(chunk_list):
+            chunk_dict[n + chunk_start] = r
+
+        result = {"success": True, "chunk_dict": chunk_dict, "all_tags": all_tags, "num_rows": len(sorted_results)}
+        return jsonify(result)
+
+    def grab_all_list_chunkold(self):
         is_repo = request.json["is_repository"]
         print(f"in grab_all_list_chunk with is_repo {str(is_repo)}")
         specs = {"collection": self.collection_spec(is_repo),

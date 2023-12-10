@@ -18,7 +18,6 @@ var _console_component = require("./console_component");
 var _console_support = require("./console_support");
 var _toaster = require("./toaster");
 var _utilities_react = require("./utilities_react");
-var _TacticOmnibar = require("./TacticOmnibar");
 var _key_trap = require("./key_trap");
 var _communication_react = require("./communication_react");
 var _export_viewer_react = require("./export_viewer_react");
@@ -52,7 +51,6 @@ var MENU_BAR_HEIGHT = 30; // will only appear when in context
 function NotebookApp(props) {
   var last_save = (0, _react.useRef)({});
   var main_outer_ref = (0, _react.useRef)(null);
-  var omniGetters = (0, _react.useRef)({});
   var updateExportsList = (0, _react.useRef)(null);
   var height_adjustment = (0, _react.useRef)(props.controlled ? MENU_BAR_HEIGHT : 0);
   var connection_status = (0, _utilities_react.useConnection)(props.tsocket, initSocket);
@@ -72,7 +70,6 @@ function NotebookApp(props) {
       console_is_zoomed: true,
       console_is_shrunk: false,
       resource_name: props.resource_name,
-      showOmnibar: false,
       is_project: props.is_project,
       usable_height: (0, _sizing_tools.getUsableDimensions)(true).usable_height_no_bottom,
       usable_width: (0, _sizing_tools.getUsableDimensions)(true).usable_width - 170
@@ -82,7 +79,7 @@ function NotebookApp(props) {
     mDispatch = _useReducer2[1];
   var theme = (0, _react.useContext)(_theme.ThemeContext);
   var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
-  var key_bindings = [[["ctrl+space"], _showOmnibar]];
+  var key_bindings = [];
   var pushCallback = (0, _utilities_react.useCallbackStack)();
   var selectedPane = (0, _react.useContext)(_utilities_react.SelectedPaneContext);
   (0, _utilities_react.useConstructor)(function () {
@@ -101,9 +98,6 @@ function NotebookApp(props) {
           e.returnValue = '';
         }
       });
-    }
-    if (props.registerOmniFunction) {
-      props.registerOmniFunction(_omniFunction);
     }
     _updateLastSave();
     statusFuncs.stopSpinner();
@@ -223,22 +217,6 @@ function NotebookApp(props) {
       return _cProp("usable_height") - height_adjustment.current - 50;
     }
   }
-  function _showOmnibar() {
-    _setMainStateValue("show_omnibar", true);
-  }
-  function _closeOmnibar() {
-    _setMainStateValue("show_omnibar", false);
-  }
-  function _omniFunction() {
-    var omni_items = [];
-    for (var ogetter in omniGetters.current) {
-      omni_items = omni_items.concat(omniGetters.current[ogetter]());
-    }
-    return omni_items;
-  }
-  function _registerOmniGetter(name, the_function) {
-    omniGetters.current[name] = the_function;
-  }
   var my_props = _objectSpread({}, props);
   if (!props.controlled) {
     my_props.resource_name = mState.resource_name;
@@ -263,7 +241,6 @@ function NotebookApp(props) {
     updateLastSave: _updateLastSave,
     changeCollection: null,
     disabled_items: my_props.is_project ? [] : ["Save"],
-    registerOmniGetter: _registerOmniGetter,
     hidden_items: ["Open Console as Notebook", "Export Table as Collection", "divider2", "Change collection"]
   }));
   var console_pane = /*#__PURE__*/_react["default"].createElement(_console_component.ConsoleComponent, {
@@ -336,12 +313,7 @@ function NotebookApp(props) {
     controlled: true,
     dragIconSize: 15,
     handleSplitUpdate: _handleConsoleFractionChange
-  })), !window.in_context && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_TacticOmnibar.TacticOmnibar, {
-    omniGetters: [_omniFunction],
-    page_id: props.main_id,
-    showOmnibar: mState.showOmnibar,
-    closeOmnibar: _closeOmnibar
-  }), /*#__PURE__*/_react["default"].createElement(_key_trap.KeyTrap, {
+  })), !window.in_context && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_key_trap.KeyTrap, {
     global: true,
     bindings: key_bindings
   })));

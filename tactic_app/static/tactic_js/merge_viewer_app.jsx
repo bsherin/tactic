@@ -8,7 +8,6 @@ import {PopoverPosition} from "@blueprintjs/core";
 import {ReactCodemirrorMergeView} from "./react-codemirror-mergeview";
 import {BpSelect} from "./blueprint_mdata_fields";
 import {TacticMenubar} from "./menu_utilities";
-import {TacticOmnibar} from "./TacticOmnibar";
 import {KeyTrap} from "./key_trap";
 import {ThemeContext} from "./theme"
 import {StatusContext} from "./toaster";
@@ -19,16 +18,14 @@ function MergeViewerApp(props) {
 
     const left_div_ref = useRef(null);
     const above_main_ref = useRef(null);
-    const omniGetters = useRef({});
 
     const [inner_height, set_inner_height] = useState(window.innerHeight);
     const theme = useContext(ThemeContext);
     const statusFuncs = useContext(StatusContext);
 
     // These only matter if not controlled
-    const [showOmnibar, setShowOmnibar] = useState(false);
     const key_bindings = [
-          [["ctrl+space"], _showOmnibar],
+          [],
       ];
 
     const button_groups = [
@@ -58,26 +55,6 @@ function MergeViewerApp(props) {
             }
         }
         return ms
-    }
-
-    function _showOmnibar() {
-        setShowOmnibar(true)
-    }
-
-    function _closeOmnibar() {
-        setShowOmnibar(false)
-    }
-
-    function _omniFunction() {
-        let omni_items = [];
-        for (let ogetter in omniGetters.current) {
-            omni_items = omni_items.concat(mniGetters.current[ogetter]())
-        }
-        return omni_items
-    }
-
-    function _registerOmniGetter(name, the_function) {
-        omniGetters.current[name] = the_function
     }
 
     function resize_to_window() {
@@ -129,7 +106,6 @@ function MergeViewerApp(props) {
                                resource_name={props.resource_name}
                                toggleErrorDrawer={props.toggleErrorDrawer}
                                controlled={false}
-                               registerOmniGetter={_registerOmniGetter}
                     />
                 <div className={outer_class}>
                     <div id="left-div" ref={left_div_ref} style={left_div_style}>
@@ -151,12 +127,6 @@ function MergeViewerApp(props) {
                     </div>
                 </div>
                   <Fragment>
-                      <TacticOmnibar omniGetters={[_omniFunction]}
-                                     page_id={props.page_id}
-                                     showOmnibar={showOmnibar}
-                                     closeOmnibar={_closeOmnibar}
-                                     is_authenticated={window.is_authenticated}
-                      />
                       <KeyTrap global={true} bindings={key_bindings}/>
                   </Fragment>
             </Fragment>
