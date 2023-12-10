@@ -6,7 +6,7 @@ import {correctOptionListTypes} from "./creator_modules_react";
 
 export {creator_props}
 
-function creator_props(data, registerDirtyMethod, finalCallback, registerOmniFunction) {
+function creator_props(data, registerDirtyMethod, finalCallback) {
 
     let mdata = data.mdata;
     let split_tags = mdata.tags == "" ? [] : mdata.tags.split(" ");
@@ -91,7 +91,6 @@ function creator_props(data, registerDirtyMethod, finalCallback, registerOmniFun
                     couple_save_attrs_and_exports: couple_save_attrs_and_exports,
                     created: mdata.datestring,
                     registerDirtyMethod: registerDirtyMethod,
-                    registerOmniFunction: registerOmniFunction
                 }
             );
         }

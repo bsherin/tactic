@@ -25,7 +25,6 @@ function TacticMenubar(props) {
             mcounter += 1;
             menus.push(<ToolMenu menu_name={menu_name}
                                  key={menu_name + String(mcounter)}
-                                 registerOmniGetter={props.registerOmniGetter}
                                  disabled_items={props.disabled_items}
                                  menu_items={props.menu_specs[menu_name]}
                                  controlled={props.controlled}
@@ -241,12 +240,9 @@ function MenuComponent(props) {
     const selectedPane = useContext(SelectedPaneContext);
 
     useEffect(() => {
-        if (window.in_context && "addOmniItems" in selectedPane) {
+        if (props.createOmniItems && window.in_context && "addOmniItems" in selectedPane) {
             selectedPane.addOmniItems(_getOmniItems())
         }
-        // if (props.registerOmniGetter) {
-        //     props.registerOmniGetter(props.menu_name, _getOmniItems)
-        // }
     }, []);
 
     function _filter_on_match_list(opt_name) {
@@ -281,10 +277,11 @@ function MenuComponent(props) {
             let icon_name = props.icon_dict.hasOwnProperty(choice) ? props.icon_dict[choice] : null;
             omni_items.push(
                 {
-                    category: props.menu_name,
+                    category: "Menu Option",
                     display_text: choice,
                     search_text: choice,
                     icon_name: icon_name,
+                    item_type: "command",
                     the_function: props.option_dict[choice]
                 }
             )
@@ -356,7 +353,7 @@ MenuComponent.propTypes = {
     hidden_items: PropTypes.array,
     alt_button: PropTypes.func,
     position: PropTypes.string,
-    registerOmniGetter: PropTypes.func,
+    createOmniItems: PropTypes.bool
 };
 
 MenuComponent.defaultProps = {
@@ -369,7 +366,7 @@ MenuComponent.defaultProps = {
     icon_dict: {},
     alt_button: null,
     position: PopoverPosition.BOTTOM_LEFT,
-    registerOmniGetter: null
+    createOmniItems: true
 };
 
 function ToolMenu(props) {
@@ -414,7 +411,6 @@ function ToolMenu(props) {
                            icon_dict={icon_dict()}
                            binding_dict={binding_dict()}
                            disabled_items={props.disabled_items}
-                           registerOmniGetter={props.registerOmniGetter}
                            hidden_items={[]}
             />
             <KeyTrap global={true}
@@ -430,11 +426,9 @@ ToolMenu.propTypes = {
     menu_items: PropTypes.array,
     disabled_items: PropTypes.array,
     controlled: PropTypes.bool,
-    registerOmniGetter: PropTypes.func
 };
 
 ToolMenu.defaultProps = {
     disabled_items: [],
-    registerOmniGetter: null
 
 };

@@ -14,7 +14,6 @@ var ReactDOM = _interopRequireWildcard(require("react-dom"));
 var _propTypes = _interopRequireDefault(require("prop-types"));
 var _core = require("@blueprintjs/core");
 var _tile_creator_support = require("./tile_creator_support");
-var _TacticOmnibar = require("./TacticOmnibar");
 var _key_trap = require("./key_trap");
 var _menu_utilities = require("./menu_utilities");
 var _resource_viewer_react_app = require("./resource_viewer_react_app");
@@ -56,7 +55,6 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 var BOTTOM_MARGIN = 50;
 var MARGIN_SIZE = 17;
 function CreatorApp(props) {
-  var omniGetters = (0, _react.useRef)({});
   var top_ref = (0, _react.useRef)(null);
   var rc_span_ref = (0, _react.useRef)(null);
   var vp_ref = (0, _react.useRef)(null);
@@ -219,25 +217,16 @@ function CreatorApp(props) {
     _useState26 = _slicedToArray(_useState25, 2),
     all_tags = _useState26[0],
     set_all_tags = _useState26[1];
-  var _useState27 = (0, _react.useState)(false),
-    _useState28 = _slicedToArray(_useState27, 2),
-    showOmnibar = _useState28[0],
-    setShowOmnibar = _useState28[1];
   var theme = (0, _react.useContext)(_theme.ThemeContext);
   var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
   var selectedPane = (0, _react.useContext)(_utilities_react.SelectedPaneContext);
   var pushCallback = (0, _utilities_react.useCallbackStack)();
-  var _useState29 = (0, _react.useState)(props.resource_name),
-    _useState30 = _slicedToArray(_useState29, 2),
-    resource_name = _useState30[0],
-    set_resource_name = _useState30[1];
+  var _useState27 = (0, _react.useState)(props.resource_name),
+    _useState28 = _slicedToArray(_useState27, 2),
+    resource_name = _useState28[0],
+    set_resource_name = _useState28[1];
   var connection_status = (0, _utilities_react.useConnection)(props.tsocket, initSocket);
-  (0, _utilities_react.useConstructor)(function () {
-    if (!window.in_context) {
-      key_bindings.current = [[["ctrl+space"], _showOmnibar]];
-    }
-  });
   (0, _react.useEffect)(function () {
     var data_dict = {
       pane_type: "tile",
@@ -249,9 +238,6 @@ function CreatorApp(props) {
     });
   }, []);
   (0, _react.useEffect)(function () {
-    if (props.registerOmniFunction) {
-      props.registerOmniFunction(_omniFunction);
-    }
     if (props.controlled) {
       props.registerDirtyMethod(_dirty);
       props.registerLineSetter(_selectLineNumber);
@@ -305,22 +291,6 @@ function CreatorApp(props) {
   }
   function _cProp(pname) {
     return props.controlled ? props[pname] : cPropGetters()[pname];
-  }
-  function _showOmnibar() {
-    setShowOmnibar(true);
-  }
-  function _closeOmnibar() {
-    setShowOmnibar(false);
-  }
-  function _omniFunction() {
-    var omni_items = [];
-    for (var ogetter in omniGetters.current) {
-      omni_items = omni_items.concat(omniGetters.current[ogetter]());
-    }
-    return omni_items;
-  }
-  function _registerOmniGetter(name, the_function) {
-    omniGetters.current[name] = the_function;
   }
   function menu_specs() {
     var ms = {
@@ -1326,8 +1296,7 @@ function CreatorApp(props) {
     resource_name: _cProp("resource_name"),
     showErrorDrawerButton: true,
     toggleErrorDrawer: props.toggleErrorDrawer,
-    controlled: props.controlled,
-    registerOmniGetter: _registerOmniGetter
+    controlled: props.controlled
   }), /*#__PURE__*/_react["default"].createElement(_error_boundary.ErrorBoundary, null, /*#__PURE__*/_react["default"].createElement("div", {
     className: outer_class,
     ref: top_ref,
@@ -1339,13 +1308,7 @@ function CreatorApp(props) {
     available_height: uheight,
     available_width: uwidth,
     handleSplitUpdate: handleLeftPaneResize
-  })), !window.in_context && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_TacticOmnibar.TacticOmnibar, {
-    omniGetters: [_omniFunction],
-    page_id: props.module_viewer_id,
-    showOmnibar: showOmnibar,
-    closeOmnibar: _closeOmnibar,
-    is_authenticated: window.is_authenticated
-  }), /*#__PURE__*/_react["default"].createElement(_key_trap.KeyTrap, {
+  })), !window.in_context && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_key_trap.KeyTrap, {
     global: true,
     bindings: key_bindings.current
   }))));

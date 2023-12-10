@@ -200,7 +200,6 @@ function AdministerHomeApp(props) {
     return (
         <Fragment>
             <TacticNavbar is_authenticated={window.is_authenticated}
-                          registerOmniFunction={null}
                           selected={null}
                           show_api_links={false}
                           extra_text=""

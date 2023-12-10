@@ -64,7 +64,6 @@ function LibraryMenubar(props) {
     }
     return <TacticMenubar menu_specs={props.menu_specs}
                           connection_status={props.connection_status}
-                          registerOmniGetter={props.registerOmniGetter}
                           showRefresh={true}
                           showClose={false}
                           refreshTab={props.refreshTab}
@@ -302,7 +301,6 @@ function AllMenubar(props) {
 
     return <LibraryMenubar sendContextMenuItems={props.sendContextMenuItems}
                            connection_status={props.connection_status}
-                           registerOmniGetter={props.registerOmniGetter}
                            context_menu_items={context_menu_items()}
                            selected_rows={props.selected_rows}
                            selectedTypeRef={props.selectedTypeRef}

@@ -8,7 +8,7 @@ var _tactic_socket = require("./tactic_socket");
 var _utilities_react = require("./utilities_react");
 var _communication_react = require("./communication_react");
 var _creator_modules_react = require("./creator_modules_react");
-function creator_props(data, registerDirtyMethod, finalCallback, registerOmniFunction) {
+function creator_props(data, registerDirtyMethod, finalCallback) {
   var mdata = data.mdata;
   var split_tags = mdata.tags == "" ? [] : mdata.tags.split(" ");
   var module_name = data.resource_name;
@@ -92,8 +92,7 @@ function creator_props(data, registerDirtyMethod, finalCallback, registerOmniFun
         additional_save_attrs: parsed_data.additional_save_attrs,
         couple_save_attrs_and_exports: couple_save_attrs_and_exports,
         created: mdata.datestring,
-        registerDirtyMethod: registerDirtyMethod,
-        registerOmniFunction: registerOmniFunction
+        registerDirtyMethod: registerDirtyMethod
       });
     }
   }

@@ -9,7 +9,6 @@ exports.copyToLibrary = copyToLibrary;
 exports.sendToRepository = sendToRepository;
 var _react = _interopRequireWildcard(require("react"));
 var _propTypes = _interopRequireDefault(require("prop-types"));
-var _TacticOmnibar = require("./TacticOmnibar");
 var _key_trap = require("./key_trap");
 var _blueprint_mdata_fields = require("./blueprint_mdata_fields");
 var _resizing_layouts = require("./resizing_layouts");
@@ -77,7 +76,6 @@ function ResourceViewerApp(props) {
   var savedContent = (0, _react.useRef)(props.the_content);
   var savedTags = (0, _react.useRef)(props.split_tags);
   var savedNotes = (0, _react.useRef)(props.notes);
-  var omniGetters = (0, _react.useRef)({});
   var key_bindings = (0, _react.useRef)([]);
   var _useState = (0, _react.useState)([]),
     _useState2 = _slicedToArray(_useState, 2),
@@ -86,21 +84,9 @@ function ResourceViewerApp(props) {
   var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
 
   // Only used when not in context
-  var _useState3 = (0, _react.useState)(false),
-    _useState4 = _slicedToArray(_useState3, 2),
-    showOmnibar = _useState4[0],
-    setShowOmnibar = _useState4[1];
   var connection_status = (0, _utilities_react.useConnection)(props.tsocket, initSocket);
-  (0, _utilities_react.useConstructor)(function () {
-    if (!window.in_context) {
-      key_bindings.current = [[["ctrl+space"], _showOmnibar]];
-    }
-  });
   (0, _react.useEffect)(function () {
     statusFuncs.stopSpinner();
-    if (props.registerOmniFunction) {
-      props.registerOmniFunction(_omniFunction);
-    }
   }, []);
   (0, _react.useEffect)(function () {
     if (!props.readOnly) {
@@ -131,22 +117,6 @@ function ResourceViewerApp(props) {
         (0, _toaster.doFlash)(data);
       });
     }
-  }
-  function _showOmnibar() {
-    setShowOmnibar(true);
-  }
-  function _closeOmnibar() {
-    setShowOmnibar(false);
-  }
-  function _omniFunction() {
-    var omni_items = [];
-    for (var ogetter in omniGetters.current) {
-      omni_items = omni_items.concat(omniGetters.current[ogetter]());
-    }
-    return omni_items;
-  }
-  function _registerOmniGetter(name, the_function) {
-    omniGetters.current[name] = the_function;
   }
   var left_pane = /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, props.show_search && /*#__PURE__*/_react["default"].createElement("div", {
     style: {
@@ -190,8 +160,7 @@ function ResourceViewerApp(props) {
     closeTab: props.closeTab,
     resource_name: props.resource_name,
     showErrorDrawerButton: props.showErrorDrawerButton,
-    toggleErrorDrawer: props.toggleErrorDrawer,
-    registerOmniGetter: _registerOmniGetter
+    toggleErrorDrawer: props.toggleErrorDrawer
   }), /*#__PURE__*/_react["default"].createElement("div", {
     ref: top_ref,
     style: {
@@ -208,14 +177,7 @@ function ResourceViewerApp(props) {
     right_pane: right_pane,
     initial_width_fraction: .65,
     am_outer: true
-  })), !window.in_context && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_TacticOmnibar.TacticOmnibar, {
-    omniGetters: [_omniFunction],
-    showOmnibar: showOmnibar,
-    closeOmnibar: _closeOmnibar,
-    is_authenticated: window.is_authenticated,
-    setTheme: props.setTheme,
-    page_id: props.resource_viewer_id
-  }), /*#__PURE__*/_react["default"].createElement(_key_trap.KeyTrap, {
+  })), !window.in_context && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_key_trap.KeyTrap, {
     global: true,
     bindings: key_bindings.current
   })));

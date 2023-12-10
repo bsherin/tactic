@@ -26,7 +26,7 @@ import {SelectedPaneContext} from "./utilities_react";
 export {list_viewer_props, ListViewerApp}
 
 
-function list_viewer_props(data, registerDirtyMethod, finalCallback, registerOmniFunction) {
+function list_viewer_props(data, registerDirtyMethod, finalCallback) {
 
     let resource_viewer_id = guid();
     var tsocket = new TacticSocket("main", 5000, "list_viewer", resource_viewer_id);
@@ -45,7 +45,6 @@ function list_viewer_props(data, registerDirtyMethod, finalCallback, registerOmn
         is_repository: data.is_repository,
         meta_outer: "#right-div",
         registerDirtyMethod: registerDirtyMethod,
-        registerOmniFunction: registerOmniFunction
     })
 }
 
@@ -365,7 +364,6 @@ function ListViewerApp(props) {
                                    notes={notes}
                                    tags={tags}
                                    showErrorDrawerButton={false}
-                                   registerOmniFunction={props.registerOmniFunction}
                                    saveMe={_saveMe}>
                     <ListEditor the_content={list_content}
                                 readOnly={props.readOnly}

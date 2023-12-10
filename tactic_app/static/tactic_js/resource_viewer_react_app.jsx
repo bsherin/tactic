@@ -2,7 +2,6 @@ import React from "react";
 import PropTypes from 'prop-types';
 import {Fragment, useState, useEffect, useRef, memo, useContext} from 'react';
 
-import {TacticOmnibar} from "./TacticOmnibar";
 import {KeyTrap} from "./key_trap";
 import {CombinedMetadata} from "./blueprint_mdata_fields";
 import {HorizontalPanes} from "./resizing_layouts";
@@ -72,29 +71,16 @@ function ResourceViewerApp(props) {
     const savedContent = useRef(props.the_content);
     const savedTags = useRef(props.split_tags);
     const savedNotes = useRef(props.notes);
-    const omniGetters = useRef({});
     const key_bindings = useRef([]);
     const [all_tags, set_all_tags] = useState([]);
 
     const statusFuncs = useContext(StatusContext);
 
     // Only used when not in context
-    const [showOmnibar, setShowOmnibar] = useState(false);
     const connection_status = useConnection(props.tsocket, initSocket);
-
-    useConstructor(() => {
-        if (!window.in_context) {
-            key_bindings.current = [
-                [["ctrl+space"], _showOmnibar],
-            ];
-        }
-    });
 
     useEffect(() => {
         statusFuncs.stopSpinner();
-        if (props.registerOmniFunction) {
-            props.registerOmniFunction(_omniFunction);
-        }
     }, []);
 
     useEffect(() => {
@@ -128,26 +114,6 @@ function ResourceViewerApp(props) {
                 doFlash(data)
             });
         }
-    }
-
-    function _showOmnibar() {
-        setShowOmnibar(true)
-    }
-
-    function _closeOmnibar() {
-        setShowOmnibar(false)
-    }
-
-    function _omniFunction() {
-        let omni_items = [];
-        for (let ogetter in omniGetters.current) {
-            omni_items = omni_items.concat(omniGetters.current[ogetter]())
-        }
-        return omni_items
-    }
-
-    function _registerOmniGetter(name, the_function) {
-        omniGetters.current[name] = the_function
     }
 
     let left_pane = (
@@ -194,7 +160,6 @@ function ResourceViewerApp(props) {
                            resource_name={props.resource_name}
                            showErrorDrawerButton={props.showErrorDrawerButton}
                            toggleErrorDrawer={props.toggleErrorDrawer}
-                           registerOmniGetter={_registerOmniGetter}
             />
             <div ref={top_ref}
                  style={{width: props.usable_width, height: props.usable_height, marginLeft: 15, marginTop: 0}}>
@@ -209,13 +174,6 @@ function ResourceViewerApp(props) {
             </div>
             {!window.in_context &&
                 <Fragment>
-                    <TacticOmnibar omniGetters={[_omniFunction]}
-                                   showOmnibar={showOmnibar}
-                                   closeOmnibar={_closeOmnibar}
-                                   is_authenticated={window.is_authenticated}
-                                   setTheme={props.setTheme}
-                                   page_id={props.resource_viewer_id}
-                    />
                     <KeyTrap global={true} bindings={key_bindings.current}/>
                 </Fragment>
             }

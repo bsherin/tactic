@@ -7,7 +7,7 @@ var tsocket;
 
 export {main_props, mainReducer}
 
-function main_props(data, registerDirtyMethod, finalCallback, registerOmniFunction) {
+function main_props(data, registerDirtyMethod, finalCallback) {
 
     ppi = get_ppi();
     let main_id = data.main_id;
@@ -108,7 +108,6 @@ function main_props(data, registerDirtyMethod, finalCallback, registerOmniFuncti
                 initial_theme: window.theme,
                 initial_doc_names: [],
                 registerDirtyMethod: registerDirtyMethod,
-                registerOmniFunction: registerOmniFunction
             })
         }
         else if (data.is_freeform) {
@@ -132,7 +131,6 @@ function main_props(data, registerDirtyMethod, finalCallback, registerOmniFuncti
                 initial_theme: window.theme,
                 initial_doc_names: fdata.doc_names,
                 registerDirtyMethod: registerDirtyMethod,
-                registerOmniFunction: registerOmniFunction
             })
         } else {
             finalCallback({
@@ -160,7 +158,6 @@ function main_props(data, registerDirtyMethod, finalCallback, registerOmniFuncti
                 initial_data_row_dict: fdata.data_row_dict,
                 initial_doc_names: fdata.doc_names,
                 registerDirtyMethod: registerDirtyMethod,
-                registerOmniFunction: registerOmniFunction
             });
         }
 

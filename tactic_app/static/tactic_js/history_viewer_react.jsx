@@ -164,7 +164,6 @@ function HistoryViewerApp(props) {
             <Fragment>
                 {!props.controlled} {
                     <TacticNavbar is_authenticated={window.is_authenticated}
-                                  registerOmniFunction={(register_func) => _registerOmniFunction("navbar", register_func)}
                                   selected={null}
                                   show_api_links={true}
                                   page_id={props.resource_viewer_id}

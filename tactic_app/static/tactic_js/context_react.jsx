@@ -17,7 +17,7 @@ FocusStyleManager.onlyShowFocusOnTabs();
 
 import {SelectedPaneContext} from "./utilities_react";
 import {TacticSocket} from "./tactic_socket";
-import {OpenOmnibar, TacticOmnibar} from "./TacticOmnibar";
+import {OpenOmnibar} from "./TacticOmnibar";
 import {handleCallback} from "./communication_react";
 import {doFlash, StatusContext, withStatus} from "./toaster";
 import {TacticNavbar} from "./blueprint_navbar";
@@ -123,7 +123,6 @@ function ContextApp(props) {
     const [saved_width, set_saved_width] = useState(150);
 
     const [tab_panel_dict, set_tab_panel_dict, tab_panel_dict_ref] = useStateAndRef({});
-    const library_omni_function = useRef(null);
     const [tab_ids, set_tab_ids, tab_ids_ref] = useStateAndRef([]);
 
     const [open_resources, set_open_resources, open_resources_ref] = useStateAndRef([]);
@@ -141,7 +140,6 @@ function ContextApp(props) {
     const [show_repository, set_show_repository] = useState(false);
     const [dragging_over, set_dragging_over] = useState(null);
     const [currently_dragging, set_currently_dragging] = useState(null);
-    const [showOmnibar, setShowOmnibar] = useState(false);
     const [showOpenOmnibar, setShowOpenOmnibar] = useState(false);
 
     const theme = useContext(ThemeContext);
@@ -150,14 +148,13 @@ function ContextApp(props) {
 
     const [tabSelectCounter, setTabSelectCounter] = useState(0);
 
-    const [omniItems, setOmniItems, omniItemsRef] = useStateAndRef({})
+    const omniItemsRef = useRef({});
 
     const top_ref = useRef(null);
 
     const key_bindings = [
         [["tab"], _goToNextPane],
         [["shift+tab"], _goToPreviousPane],
-        // [["ctrl+space"], _showOmnibar],
         [["ctrl+space"], _showOpenOmnibar],
         [["ctrl+w"], () => {
             _closeTab(selectedTabIdRef.current)
@@ -342,9 +339,7 @@ function ContextApp(props) {
         set_dirty_methods(copied_dirty_methods);
         set_tab_panel_dict(copied_tab_panel_dict);
         if (the_id in omniItemsRef.current) {
-            let newOmniItems = {...omniItemsRef.current};
-            delete newOmniItems[the_id]
-            setOmniItems(newOmniItems)
+            delete omniItemsRef.current[the_id];
         }
 
         pushCallback(() => {
@@ -399,7 +394,6 @@ function ContextApp(props) {
         new_tab_panel_dict[new_id] = {
             kind: viewer_kind, res_type: res_type, title: title,
             panel: new_panel,
-            omni_function: null
         };
         set_tab_panel_dict(new_tab_panel_dict);
         const new_tab_ids = [...tab_ids_ref.current, new_id];
@@ -480,28 +474,12 @@ function ContextApp(props) {
         return -1
     }
 
-    function _showOmnibar() {
-        setShowOmnibar(true)
-    }
-
-    function _closeOmnibar() {
-        setShowOmnibar(false)
-    }
-
     function _showOpenOmnibar() {
         setShowOpenOmnibar(true)
     }
 
     function _closeOpenOmnibar() {
         setShowOpenOmnibar(false)
-    }
-
-    function _registerOmniFunction(tab_id, the_function) {
-        if (tab_id == "library") {
-            library_omni_function.current = the_function
-        } else {
-            _updatePanel(tab_id, {omni_function: the_function})
-        }
     }
 
     function _handleCreateViewer(data, callback = null) {
@@ -518,7 +496,7 @@ function ContextApp(props) {
         _addPanel(new_id, data.kind, data.res_type, data.resource_name, "spinner", () => {
             let new_panel = propDict[data.kind](data, drmethod, (new_panel) => {
                 _updatePanel(new_id, {panel: new_panel}, callback);
-            }, (register_func) => _registerOmniFunction(new_id, register_func))
+            })
         })
 
     }
@@ -531,7 +509,9 @@ function ContextApp(props) {
         let tabIndex = templist.indexOf(selectedTabIdRef.current) + 1;
         newId = tabIndex === templist.length ? "library" : templist[tabIndex];
         _handleTabSelect(newId, selectedTabIdRef.current);
-        e.preventDefault()
+        if (e) {
+            e.preventDefault()
+        }
     }
 
     function _goToPreviousPane(e) {
@@ -541,7 +521,9 @@ function ContextApp(props) {
         let tabIndex = templist.indexOf(selectedTabIdRef.current) - 1;
         let newId = tabIndex == -1 ? templist.at(-1) : templist[tabIndex];
         _handleTabSelect(newId, selectedTabIdRef.current);
-        e.preventDefault();
+        if (e) {
+            e.preventDefault();
+        }
     }
 
     function _handleTabSelect(newTabId, prevTabId, event = null, callback = null) {
@@ -579,7 +561,7 @@ function ContextApp(props) {
                         _updatePanel(new_id, {panel: new_panel}, () => {
                             let pdict = tab_panel_dict_ref.current[new_id];
                         });
-                    }, (register_func) => _registerOmniFunction(new_id, register_func));
+                    });
                 })
             })
             .catch(doFlash);
@@ -665,15 +647,10 @@ function ContextApp(props) {
     }
 
     function _addOmniItems(tid, items)  {
-        let newOmniItems = Object.assign({}, omniItemsRef.current);
-        if (!(tid in newOmniItems)) {
-            newOmniItems[tid] = []
+        if (!(tid in omniItemsRef.current)) {
+            omniItemsRef.current[tid] = []
         }
-        for (let item of items) {
-            item.item_type = "command"
-        }
-        newOmniItems[tid] = newOmniItems[tid].concat(items)
-        setOmniItems(newOmniItems)
+        omniItemsRef.current[tid] = omniItemsRef.current[tid].concat(items);
     }
 
     function _addContextOmniItems() {
@@ -682,26 +659,17 @@ function ContextApp(props) {
             ["Go To Next Panel", "context", _goToNextPane, "arrow-right"],
             ["Go To Previous Panel", "context", _goToPreviousPane, "arrow-left"],
         ];
-        // if (selectedTabIdRef.current != "library") {
-        //     omni_funcs = omni_funcs.concat([
-        //         ["Close Current Panel", "context", () => {
-        //             _closeTab(selectedTabIdRef.current)
-        //         }, "delete"],
-        //         ["Refresh Current Panel", "context", () => {
-        //             _refreshTab(selectedTabIdRef.current)
-        //         }, "reset"]
-        //     ])
-        // }
 
         let omni_items = [];
         for (let item of omni_funcs) {
             omni_items.push(
                 {
-                    category: item[1],
+                    category: "Global",
                     display_text: item[0],
                     search_text: item[0],
                     icon_name: item[3],
-                    the_function: item[2]
+                    the_function: item[2],
+                    item_type: "command"
                 }
             )
 
@@ -728,7 +696,6 @@ function ContextApp(props) {
                                     controlled={true}
                                     am_selected={selectedTabIdRef.current == "library"}
                                     open_resources_ref={open_resources_ref}
-                                    registerOmniFunction={(register_func) => _registerOmniFunction("library", register_func)}
                                     handleCreateViewer={_handleCreateViewer}
                                     usable_width={usable_width}
                                     usable_height={usable_height}
@@ -770,7 +737,6 @@ function ContextApp(props) {
                 <div id="pool-browser-root">
                     <PoolBrowser tsocket={tsocket}
                                  am_selected={selectedTabIdRef.current == "pool"}
-                                 registerOmniFunction={(register_func) => _registerOmniFunction("pool", register_func)}
                                  usable_width={usable_width}
                                  usable_height={usable_height}/>
 
@@ -982,24 +948,7 @@ function ContextApp(props) {
         tlclass += " context-pane-closed"
     }
     let sid = selectedTabIdRef.current;
-    // let omniGetter;
-    // if (sid && sid in tab_panel_dict_ref.current) {
-    //     let the_dict = tab_panel_dict_ref.current[sid];
-    //     if ("omni_function" in the_dict) {
-    //         omniGetter = the_dict.omni_function;
-    //     } else {
-    //         omniGetter = () => {
-    //             return []
-    //         };
-    //     }
-    // } else if (sid == "library") {
-    //     omniGetter = library_omni_function.current
-    // } else {
-    //     omniGetter = () => {
-    //         return []
-    //     };  // Should never get here
-    // }
-    let commandItems = omniItemsRef.current["global"]
+    let commandItems = omniItemsRef.current["global"];
     if (sid in omniItemsRef.current) {
         commandItems = commandItems.concat(omniItemsRef.current[sid])
     }
@@ -1043,18 +992,19 @@ function ContextApp(props) {
                         {all_tabs}
                     </Tabs>
                 </div>
-                {/*<TacticOmnibar omniGetters={[omniGetter, _contextOmniItems]}*/}
-                {/*               page_id={window.context_id}*/}
-                {/*               showOmnibar={showOmnibar}*/}
-                {/*               closeOmnibar={_closeOmnibar}*/}
-                {/*               is_authenticated={window.is_authenticated}*/}
-                {/*/>*/}
-                <OpenOmnibar commandItems={commandItems}
-                             page_id={window.context_id}
-                             showOmnibar={showOpenOmnibar}
-                             openFunc={_omni_view_func}
-                             is_authenticated={window.is_authenticated}
-                             closeOmnibar={_closeOpenOmnibar}/>
+                <SelectedPaneContext.Provider value={{
+                    tab_id: sid,
+                    selectedTabIdRef,
+                    amSelected,
+                    addOmniItems: (items)=>{_addOmniItems(sid, items)}
+                }}>
+                    <OpenOmnibar commandItems={commandItems}
+                                 page_id={window.context_id}
+                                 showOmnibar={showOpenOmnibar}
+                                 openFunc={_omni_view_func}
+                                 is_authenticated={window.is_authenticated}
+                                 closeOmnibar={_closeOpenOmnibar}/>
+                </SelectedPaneContext.Provider>
             </div>
             <KeyTrap global={true} bindings={key_bindings}/>
         </Fragment>

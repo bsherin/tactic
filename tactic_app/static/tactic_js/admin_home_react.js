@@ -191,7 +191,6 @@ function AdministerHomeApp(props) {
   }
   return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
     is_authenticated: window.is_authenticated,
-    registerOmniFunction: null,
     selected: null,
     show_api_links: false,
     extra_text: "",

@@ -96,7 +96,6 @@ function LibraryMenubar(props) {
   return /*#__PURE__*/_react["default"].createElement(_menu_utilities.TacticMenubar, {
     menu_specs: props.menu_specs,
     connection_status: props.connection_status,
-    registerOmniGetter: props.registerOmniGetter,
     showRefresh: true,
     showClose: false,
     refreshTab: props.refreshTab,
@@ -396,7 +395,6 @@ function AllMenubar(props) {
   return /*#__PURE__*/_react["default"].createElement(LibraryMenubar, {
     sendContextMenuItems: props.sendContextMenuItems,
     connection_status: props.connection_status,
-    registerOmniGetter: props.registerOmniGetter,
     context_menu_items: context_menu_items(),
     selected_rows: props.selected_rows,
     selectedTypeRef: props.selectedTypeRef,

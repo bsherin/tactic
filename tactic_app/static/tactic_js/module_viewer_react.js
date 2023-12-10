@@ -39,7 +39,7 @@ function _iterableToArrayLimit(arr, i) { var _i = null == arr ? null : "undefine
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; } /**
                                                                        * Created by bls910
                                                                        */
-function module_viewer_props(data, registerDirtyMethod, finalCallback, registerOmniFunction) {
+function module_viewer_props(data, registerDirtyMethod, finalCallback) {
   var resource_viewer_id = (0, _utilities_react.guid)();
   var tsocket = new _tactic_socket.TacticSocket("main", 5000, "module_viewer", resource_viewer_id);
   finalCallback({
@@ -55,8 +55,7 @@ function module_viewer_props(data, registerDirtyMethod, finalCallback, registerO
     readOnly: data.read_only,
     is_repository: data.is_repository,
     meta_outer: "#right-div",
-    registerDirtyMethod: registerDirtyMethod,
-    registerOmniFunction: registerOmniFunction
+    registerDirtyMethod: registerDirtyMethod
   });
 }
 function ModuleViewerApp(props) {
@@ -516,8 +515,7 @@ function ModuleViewerApp(props) {
     search_ref: search_ref,
     meta_outer: props.meta_outer,
     showErrorDrawerButton: true,
-    toggleErrorDrawer: props.toggleErrorDrawer,
-    registerOmniFunction: props.registerOmniFunction
+    toggleErrorDrawer: props.toggleErrorDrawer
   }), /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror, {
     code_content: code_content,
     extraKeys: _extraKeys(),

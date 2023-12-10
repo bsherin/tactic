@@ -130,8 +130,7 @@ function RepositoryHomeApp(props) {
     open_resources_ref: null,
     allow_search_inside: true,
     allow_search_metadata: true,
-    MenubarClass: _repository_menubars.RepositoryAllMenubar,
-    registerOmniGetter: null
+    MenubarClass: _repository_menubars.RepositoryAllMenubar
   }, props.errorDrawerFuncs, {
     errorDrawerFuncs: props.errorDrawerFuncs,
     library_id: _library_home_react.library_id,

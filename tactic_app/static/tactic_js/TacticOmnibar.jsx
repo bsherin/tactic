@@ -7,6 +7,7 @@ import {MenuItem, Overlay, InputGroup} from "@blueprintjs/core";
 
 import {postAjax, postWithCallback} from "./communication_react";
 import {ThemeContext} from "./theme"
+import {SelectedPaneContext} from "./utilities_react";
 import {useDebounce} from "./utilities_react";
 
 export {TacticOmnibar, OpenOmnibar, OmniContext}
@@ -46,27 +47,20 @@ function OpenOmnibarItem(props) {
     );
 }
 
+const resources_to_grab = 20;
+
 function OpenOmnibar(props) {
     // const [commandItems, setCommandItems] = useState([]);
     const [item_list, set_item_list] = useState([]);
 
     const theme = useContext(ThemeContext);
-
-    // useEffect(()=>{
-    //     if (props.showOmnibar) {
-    //         let the_items = [];
-    //         for (let ogetter of props.omniGetters) {
-    //             the_items = the_items.concat(ogetter())
-    //         }
-    //         the_items = the_items.concat(_globalOmniItems());
-    //         for (let the_item of the_items) {
-    //             the_item.item_type = "command"
-    //         }
-    //         setCommandItems(the_items)
-    //     }
-    // }, [props.showOmnibar]);
-
     const old_search_string = useRef("");
+
+    const selectedPane = useContext(SelectedPaneContext);
+
+    useEffect(()=>{
+        set_item_list([])
+    }, [selectedPane.tab_id]);
 
     const grabChunk = useCallback((search_string)=> {
             let search_spec = {
@@ -83,10 +77,13 @@ function OpenOmnibar(props) {
                 pane_type: "all",
                 search_spec: search_spec,
                 row_number: 0,
+                number_to_get: 20,
                 is_repository: false
             };
             postAjax("grab_all_list_chunk", data, function (data) {
                     let fItems = props.commandItems.filter((item)=>{return commandItemPredicate(search_string, item)});
+                    let gItems = _globalOmniItems().filter((item)=>{return commandItemPredicate(search_string, item)});
+                    fItems = fItems.concat(gItems);
                     let rItems = Object.values(data.chunk_dict);
                     for (let the_item of rItems) {
                         the_item.item_type = "resource"
@@ -108,7 +105,7 @@ function OpenOmnibar(props) {
         let lquery = query.toLowerCase();
         let re = new RegExp(lquery);
 
-        return re.test(item.search_text.toLowerCase()) || re.test(item.category.toLowerCase())
+        return re.test(item.search_text.toLowerCase())
     }
 
     function openItemListPredicate(search_string, items) {
@@ -169,11 +166,6 @@ function OpenOmnibar(props) {
         );
     }
 
-   function _onGetterItemSelect(item) {
-        item.the_function();
-        props.closeOmnibar()
-    }
-
     function _handle_signout() {
         window.open($SCRIPT_ROOT + "/logout/" + props.page_id, "_self");
         return false
@@ -210,11 +202,12 @@ function OpenOmnibar(props) {
         for (let item of omni_funcs) {
             omni_items.push(
                 {
-                    category: item[1],
+                    category: "Global",
                     display_text: item[0],
                     search_text: item[0],
                     icon_name: item[3],
-                    the_function: item[2]
+                    the_function: item[2],
+                    item_type: "command"
                 }
             )
 
