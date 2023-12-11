@@ -179,12 +179,6 @@ function AllMenubar(props) {
             ],
             Open: [
                 {
-                    name_text: "Search", icon_name: "search",
-                    click_handler: () => {
-                        props.search_resources()
-                    }, key_bindings: ["ctrl+o"]
-                },
-                {
                     name_text: "Open", icon_name: "document-open",
                     click_handler: () => {
                         props.view_func()

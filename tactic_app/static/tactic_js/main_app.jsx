@@ -31,7 +31,6 @@ import {withErrorDrawer} from "./error_drawer";
 import {renderSpinnerMessage, useConnection, useStateAndRef} from "./utilities_react";
 import {getUsableDimensions} from "./sizing_tools";
 import {ErrorBoundary} from "./error_boundary";
-import {KeyTrap} from "./key_trap";
 import {useCallbackStack, useReducerAndRef} from "./utilities_react";
 import {ThemeContext, withTheme} from "./theme";
 import {DialogContext, withDialogs} from "./modal_react";
@@ -1234,11 +1233,6 @@ function MainApp(props) {
                         />
                     }
                 </div>
-                {!window.in_context &&
-                    <Fragment>
-                        <KeyTrap global={true} bindings={key_bindings}/>
-                    </Fragment>
-                }
             </ErrorBoundary>
         </ErrorBoundary>
     )

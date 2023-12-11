@@ -97,31 +97,24 @@ function RepositoryHomeApp(props) {
     connection_status: connection_status,
     columns: {
       "icon:th": {
-        "sort_field": "type",
         "first_sort": "ascending"
       },
       "name": {
-        "sort_field": "name",
         "first_sort": "ascending"
       },
       "icon:upload": {
-        "sort_field": null,
         "first_sort": "ascending"
       },
       "created": {
-        "sort_field": "created_for_sort",
         "first_sort": "descending"
       },
       "updated": {
-        "sort_field": "updated_for_sort",
         "first_sort": "ascending"
       },
       "tags": {
-        "sort_field": "tags",
         "first_sort": "ascending"
       },
       "size": {
-        "sort_field": "size_for_sort",
         "first_sort": "descending"
       }
     },

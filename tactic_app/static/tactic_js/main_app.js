@@ -32,7 +32,6 @@ var _error_drawer = require("./error_drawer");
 var _utilities_react = require("./utilities_react");
 var _sizing_tools = require("./sizing_tools");
 var _error_boundary = require("./error_boundary");
-var _key_trap = require("./key_trap");
 var _theme = require("./theme");
 var _modal_react = require("./modal_react");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
@@ -1247,9 +1246,6 @@ function MainApp(props) {
     handleResizeStart: _handleResizeStart,
     handleResizeEnd: _handleResizeEnd,
     overflow: "hidden"
-  })), !window.in_context && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_key_trap.KeyTrap, {
-    global: true,
-    bindings: key_bindings
   }))));
 }
 exports.MainApp = MainApp = /*#__PURE__*/(0, _react.memo)(MainApp);

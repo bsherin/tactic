@@ -64,7 +64,6 @@ function RepositoryHomeApp(props) {
             doFlash(data)
         });
         if (!window.in_context) {
-
             tsocket.attachListener('handle-callback', (task_packet) => {
                 handleCallback(task_packet, window.library_id)
             });
@@ -92,13 +91,13 @@ function RepositoryHomeApp(props) {
         <LibraryPane {...lib_props}
                      connection_status={connection_status}
                      columns={{
-                         "icon:th": {"sort_field": "type", "first_sort": "ascending"},
-                         "name": {"sort_field": "name", "first_sort": "ascending"},
-                         "icon:upload": {"sort_field": null, "first_sort": "ascending"},
-                         "created": {"sort_field": "created_for_sort", "first_sort": "descending"},
-                         "updated": {"sort_field": "updated_for_sort", "first_sort": "ascending"},
-                         "tags": {"sort_field": "tags", "first_sort": "ascending"},
-                         "size": {"sort_field": "size_for_sort", "first_sort": "descending"}
+                         "icon:th": {"first_sort": "ascending"},
+                         "name": {"first_sort": "ascending"},
+                         "icon:upload": {"first_sort": "ascending"},
+                         "created": {"first_sort": "descending"},
+                         "updated": {"first_sort": "ascending"},
+                         "tags": {"first_sort": "ascending"},
+                         "size": {"first_sort": "descending"}
                      }}
                      pane_type="all"
                      handleCreateViewer={null}

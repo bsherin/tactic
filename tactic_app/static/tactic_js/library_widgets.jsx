@@ -296,12 +296,11 @@ function BpSelectorTable(props) {
     }
 
     function _renderMenu(sortColumn) {
-        if (!props.columns[sortColumn].sort_field) return null;
         let sortAsc = () => {
-            props.sortColumn(sortColumn, props.columns[sortColumn].sort_field, "ascending")
+            props.sortColumn(sortColumn, "ascending")
         };
         let sortDesc = () => {
-            props.sortColumn(sortColumn, props.columns[sortColumn].sort_field, "descending")
+            props.sortColumn(sortColumn, "descending")
         };
         return (
             <Menu>

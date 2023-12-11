@@ -284,7 +284,7 @@ function MenuComponent(props) {
                     item_type: "command",
                     the_function: props.option_dict[choice]
                 }
-            )
+            );
         }
         return omni_items
     }
