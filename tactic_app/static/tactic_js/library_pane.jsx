@@ -1,7 +1,7 @@
 // noinspection JSValidateTypes,JSDeprecatedSymbols
 
 import React from "react";
-import {Fragment, useState, useRef, useEffect, memo, useCallback, useContext} from "react";
+import {Fragment, useState, useRef, useEffect, memo, useContext} from "react";
 import PropTypes from 'prop-types';
 
 import {Menu, MenuItem, MenuDivider, FormGroup, Button} from "@blueprintjs/core";
@@ -669,7 +669,7 @@ function LibraryPane(props) {
         return false
     }
 
-    function _set_sort_state(column_name, sort_field, direction) {
+    function _set_sort_state(column_name, direction) {
         let spec_update = {sort_field: column_name, sort_direction: direction};
         set_sort_field(column_name);
         set_sort_direction(direction);
@@ -1449,9 +1449,9 @@ function LibraryPane(props) {
     let new_button_groups;
     let uwidth = props.usable_width;
     let left_width = (uwidth) * left_width_fraction_ref.current;
-    const primary_mdata_fields = ["name", "created", "created_for_sort",
-        "updated", "updated_for_sort", "tags", "notes"];
-    const ignore_fields = ["doc_type", "size_for_sort", "res_type"];
+    const primary_mdata_fields = ["name", "created",
+        "updated", "tags", "notes"];
+    const ignore_fields = ["doc_type", "res_type"];
     let additional_metadata = {};
     let selected_resource_icon = null;
     for (let field in selected_resource_ref.current) {
@@ -1668,10 +1668,10 @@ LibraryPane.propTypes = {
 
 LibraryPane.defaultProps = {
     columns: {
-        "name": {"sort_field": "name", "first_sort": "ascending"},
-        "created": {"sort_field": "created_for_sort", "first_sort": "descending"},
-        "updated": {"sort_field": "updated_for_sort", "first_sort": "ascending"},
-        "tags": {"sort_field": "tags", "first_sort": "ascending"}
+        "name": {"first_sort": "ascending"},
+        "created": {"first_sort": "descending"},
+        "updated": {"first_sort": "ascending"},
+        "tags": {"first_sort": "ascending"}
     },
     is_repository: false,
     tsocket: null,

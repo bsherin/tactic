@@ -14,7 +14,6 @@ import {LibraryPane} from "./library_pane";
 import {getUsableDimensions} from "./sizing_tools";
 import {withStatus} from "./toaster";
 import {withErrorDrawer} from "./error_drawer";
-import {KeyTrap} from "./key_trap";
 import { guid, useCallbackStack, useConstructor, useConnection } from "./utilities_react";
 import {TacticNavbar} from "./blueprint_navbar";
 import {AllMenubar} from "./library_menubars"
@@ -44,9 +43,6 @@ function LibraryHomeApp(props) {
 
     const top_ref = useRef(null);
 
-    const key_bindings = [
-    ];
-
     useConstructor(() => {
         if (!window.in_context) {
             const aheight = getUsableDimensions(true).usable_height_no_bottom;
@@ -65,16 +61,11 @@ function LibraryHomeApp(props) {
     }, []);
 
     function initSocket() {
-
-        // props.tsocket.attachListener('handle-callback', (task_packet) => {
-        //     handleCallback(task_packet, library_id)
-        // });
         props.tsocket.attachListener("window-open", data => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
         props.tsocket.attachListener("doFlash", function (data) {
             doFlash(data)
         });
         if (!window.in_context) {
-
             props.tsocket.attachListener("doFlashUser", function (data) {
                 doFlash(data)
             });
@@ -100,13 +91,13 @@ function LibraryHomeApp(props) {
         <LibraryPane {...lib_props}
                      connection_status={connection_status}
                      columns={{
-                         "icon:th": {"sort_field": "type", "first_sort": "ascending"},
-                         "name": {"sort_field": "name", "first_sort": "ascending"},
-                         "icon:upload": {"sort_field": null, "first_sort": "ascending"},
-                         "created": {"sort_field": "created_for_sort", "first_sort": "descending"},
-                         "updated": {"sort_field": "updated_for_sort", "first_sort": "ascending"},
-                         "tags": {"sort_field": "tags", "first_sort": "ascending"},
-                         "size": {"sort_field": "size_for_sort", "first_sort": "descending"}
+                         "icon:th": {first_sort: "ascending"},
+                         "name": {first_sort: "ascending"},
+                         "icon:upload": {first_sort: "ascending"},
+                         "created": {first_sort: "descending"},
+                         "updated": {first_sort: "ascending"},
+                         "tags": {first_sort: "ascending"},
+                         "size": {first_sort: "descending"}
                      }}
                      pane_type="all"
                      handleCreateViewer={props.handleCreateViewer}
@@ -148,11 +139,6 @@ function LibraryHomeApp(props) {
                 { all_pane }
             </div>
 
-            { !window.in_context &&
-                <Fragment>
-                    <KeyTrap global={true} bindings={key_bindings}/>
-                </Fragment>
-            }
         </Fragment>
     )
 }

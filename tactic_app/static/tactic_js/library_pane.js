@@ -798,7 +798,7 @@ function LibraryPane(props) {
     }
     return false;
   }
-  function _set_sort_state(column_name, sort_field, direction) {
+  function _set_sort_state(column_name, direction) {
     var spec_update = {
       sort_field: column_name,
       sort_direction: direction
@@ -1568,8 +1568,8 @@ function LibraryPane(props) {
   var new_button_groups;
   var uwidth = props.usable_width;
   var left_width = uwidth * left_width_fraction_ref.current;
-  var primary_mdata_fields = ["name", "created", "created_for_sort", "updated", "updated_for_sort", "tags", "notes"];
-  var ignore_fields = ["doc_type", "size_for_sort", "res_type"];
+  var primary_mdata_fields = ["name", "created", "updated", "tags", "notes"];
+  var ignore_fields = ["doc_type", "res_type"];
   var additional_metadata = {};
   var selected_resource_icon = null;
   for (var field in selected_resource_ref.current) {
@@ -1801,19 +1801,15 @@ LibraryPane.propTypes = {
 LibraryPane.defaultProps = {
   columns: {
     "name": {
-      "sort_field": "name",
       "first_sort": "ascending"
     },
     "created": {
-      "sort_field": "created_for_sort",
       "first_sort": "descending"
     },
     "updated": {
-      "sort_field": "updated_for_sort",
       "first_sort": "ascending"
     },
     "tags": {
-      "sort_field": "tags",
       "first_sort": "ascending"
     }
   },

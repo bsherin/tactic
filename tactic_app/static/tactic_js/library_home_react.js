@@ -17,7 +17,6 @@ var _library_pane = require("./library_pane");
 var _sizing_tools = require("./sizing_tools");
 var _toaster2 = require("./toaster");
 var _error_drawer = require("./error_drawer");
-var _key_trap = require("./key_trap");
 var _utilities_react = require("./utilities_react");
 var _blueprint_navbar = require("./blueprint_navbar");
 var _library_menubars = require("./library_menubars");
@@ -56,7 +55,6 @@ function LibraryHomeApp(props) {
   var connection_status = (0, _utilities_react.useConnection)(props.tsocket, initSocket);
   var pushCallback = (0, _utilities_react.useCallbackStack)("library_home");
   var top_ref = (0, _react.useRef)(null);
-  var key_bindings = [];
   (0, _utilities_react.useConstructor)(function () {
     if (!window.in_context) {
       var aheight = (0, _sizing_tools.getUsableDimensions)(true).usable_height_no_bottom;
@@ -73,9 +71,6 @@ function LibraryHomeApp(props) {
     }
   }, []);
   function initSocket() {
-    // props.tsocket.attachListener('handle-callback', (task_packet) => {
-    //     handleCallback(task_packet, library_id)
-    // });
     props.tsocket.attachListener("window-open", function (data) {
       return window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data["the_id"]));
     });
@@ -106,32 +101,25 @@ function LibraryHomeApp(props) {
     connection_status: connection_status,
     columns: {
       "icon:th": {
-        "sort_field": "type",
-        "first_sort": "ascending"
+        first_sort: "ascending"
       },
       "name": {
-        "sort_field": "name",
-        "first_sort": "ascending"
+        first_sort: "ascending"
       },
       "icon:upload": {
-        "sort_field": null,
-        "first_sort": "ascending"
+        first_sort: "ascending"
       },
       "created": {
-        "sort_field": "created_for_sort",
-        "first_sort": "descending"
+        first_sort: "descending"
       },
       "updated": {
-        "sort_field": "updated_for_sort",
-        "first_sort": "ascending"
+        first_sort: "ascending"
       },
       "tags": {
-        "sort_field": "tags",
-        "first_sort": "ascending"
+        first_sort: "ascending"
       },
       "size": {
-        "sort_field": "size_for_sort",
-        "first_sort": "descending"
+        first_sort: "descending"
       }
     },
     pane_type: "all",
@@ -168,10 +156,7 @@ function LibraryHomeApp(props) {
     className: outer_class,
     ref: top_ref,
     style: outer_style
-  }, all_pane), !window.in_context && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_key_trap.KeyTrap, {
-    global: true,
-    bindings: key_bindings
-  })));
+  }, all_pane));
 }
 exports.LibraryHomeApp = LibraryHomeApp = /*#__PURE__*/(0, _react.memo)(LibraryHomeApp);
 function _library_home_main() {

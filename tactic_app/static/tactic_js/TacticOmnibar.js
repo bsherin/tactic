@@ -74,7 +74,7 @@ function OpenOmnibar(props) {
       search_inside: false,
       search_metadata: false,
       show_hidden: false,
-      sort_field: "updated_for_sort",
+      sort_field: "updated",
       sort_direction: "descending"
     };
     var data = {

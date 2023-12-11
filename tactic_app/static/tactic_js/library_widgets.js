@@ -310,12 +310,11 @@ function BpSelectorTable(props) {
     };
   }
   function _renderMenu(sortColumn) {
-    if (!props.columns[sortColumn].sort_field) return null;
     var sortAsc = function sortAsc() {
-      props.sortColumn(sortColumn, props.columns[sortColumn].sort_field, "ascending");
+      props.sortColumn(sortColumn, "ascending");
     };
     var sortDesc = function sortDesc() {
-      props.sortColumn(sortColumn, props.columns[sortColumn].sort_field, "descending");
+      props.sortColumn(sortColumn, "descending");
     };
     return /*#__PURE__*/_react["default"].createElement(_core.Menu, null, /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
       icon: "sort-asc",

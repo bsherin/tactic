@@ -126,15 +126,14 @@ class ResourceManager(ExceptionMixin):
                 return default_tile_icons[mdata["type"]]
         return default_tile_icons["standard"]
 
-    def build_res_dict(self, name, mdata, user_obj=None, file_id=None, res_type=None, doc_id=None):
+    def build_res_dict(self, name, mdata, user_obj=None, file_id=None, res_type=None, doc_id=None, sort_field=None):
+
         if user_obj is None:
             user_obj = current_user
         if mdata is None:
             datestring = ""
             tagstring = ""
             updatestring = ""
-            datestring_for_sort = ""
-            updatestring_for_sort = ""
             notes = ""
         else:
             if "datetime" in mdata:
@@ -158,9 +157,7 @@ class ResourceManager(ExceptionMixin):
 
         return_data = {"name": name,
                        "created": datestring,
-                       "created_for_sort": datestring_for_sort,
                        "updated": updatestring,
-                       "updated_for_sort": updatestring_for_sort,
                        "tags": tagstring,
                        "notes": notes}
         skip_fields = ["name", "notes", "datetime", "tags", "updated", "_id"]
@@ -176,12 +173,27 @@ class ResourceManager(ExceptionMixin):
             return_data["icon"] = self.get_tile_icon_from_mdata(mdata)
         if file_id is not None:
             if use_remote_database:
-                return_data["size_for_sort"] = ""
                 return_data["size"] = ""
             else:
                 size_text, size = self.get_fs_file_siz_info(file_id)
-                return_data["size_for_sort"] = size
                 return_data["size"] = size_text
+        if sort_field is not None:
+            match sort_field:
+                case "created":
+                    sf_value = datestring_for_sort
+                case "updated":
+                    sf_value = updatestring_for_sort
+                case "size":
+                    sf_value = size
+                case "icon:th":
+                    sf_value = res_type
+                case _:
+                    if sort_field in return_data:
+                        sf_value = return_data[sort_field]
+                    else:
+                        sf_value = None
+
+            return_data["sort_field"] = sf_value
         return return_data
 
     def show_um_message(self, message, library_id, timeout=3):
@@ -367,7 +379,6 @@ class LibraryResourceManager(ResourceManager):
                 val["icon:th"] = "icon:list"
                 val["icon:upload"] = ""
                 val["size"] = ""
-                val["size_for_sort"] = 0
         return filtered_list
 
     def prep_code_results(self, filtered_list, is_all=False):
@@ -376,7 +387,6 @@ class LibraryResourceManager(ResourceManager):
                 val["icon:th"] = "icon:code"
                 val["icon:upload"] = ""
                 val["size"] = ""
-                val["size_for_sort"] = 0
         return filtered_list
 
     def prep_tile_results(self, filtered_list, is_all=False):
@@ -408,13 +418,11 @@ class LibraryResourceManager(ResourceManager):
                 else:
                     val["icon:th"] = type_dict["standard"]
                 val["size"] = ""
-                val["size_for_sort"] = 0
         return filtered_list
 
     def grab_all_list_chunk(self):
         data = request.json
         is_repo = data["is_repository"]
-        print(f"in grab_all_list_chunk with is_repo {str(is_repo)}")
         specs = {"collection": self.collection_spec(is_repo),
                  "project": self.project_spec(is_repo),
                  "tile": self.tile_spec(is_repo),
@@ -437,19 +445,6 @@ class LibraryResourceManager(ResourceManager):
         else:
             number_to_get = CHUNK_SIZE
         db_to_use = self.repository_db if is_repo else self.db
-        def sort_mdata_key(item):
-            if sort_field not in item:
-                return ""
-            return item[sort_field]
-
-        def sort_created_key(item):
-            return item["created_for_sort"]
-
-        def sort_updated_key(item):
-            return item["updated_for_sort"]
-
-        def sort_size_key(item):
-            return item["size_for_sort"]
 
         search_spec = data["search_spec"]
         row_number = data["row_number"]
@@ -497,9 +492,11 @@ class LibraryResourceManager(ResourceManager):
                         all_tags += mdata["tags"].split()
                         if "file_id" in doc:
                             rdict = self.build_res_dict(doc[name_field], mdata, None,
-                                                        doc["file_id"], res_type=rtype, doc_id=doc_id)
+                                                        doc["file_id"], res_type=rtype,
+                                                        doc_id=doc_id, sort_field=sort_field)
                         else:
-                            rdict = self.build_res_dict(doc[name_field], mdata, res_type=rtype, doc_id=doc_id)
+                            rdict = self.build_res_dict(doc[name_field], mdata, res_type=rtype,
+                                                        doc_id=doc_id, sort_field=sort_field)
                         if mdata and "tags" in mdata:
                             rdict["hidden"] = self.has_hidden(mdata["tags"])
                         else:
@@ -514,168 +511,18 @@ class LibraryResourceManager(ResourceManager):
             prepper = preppers[rtype]
             filtered_res = prepper(filtered_res, is_all)
 
-        if search_spec["sort_direction"] == "ascending":
-            reverse = False
-        else:
-            reverse = True
+        reverse =  search_spec["sort_direction"] == "descending"
 
-        all_tags = sorted(list(set(all_tags)))
-
-        if sort_field == "created":
-            sort_key_func = sort_created_key
-        elif sort_field == "updated":
-            sort_key_func = sort_updated_key
-        elif sort_field == "size":
-            sort_key_func = sort_size_key
-        else:
-            sort_key_func = sort_mdata_key
+        def sort_key_func(item):
+            return item["sort_field"]
 
         sorted_results = sorted(filtered_res, key=sort_key_func, reverse=reverse)
-
         chunk_start = int(row_number / number_to_get) * number_to_get
         chunk_list = sorted_results[chunk_start: chunk_start + number_to_get]
         chunk_dict = {}
         for n, r in enumerate(chunk_list):
+            del r["sort_field"]
             chunk_dict[n + chunk_start] = r
-
-        result = {"success": True, "chunk_dict": chunk_dict, "all_tags": all_tags, "num_rows": len(sorted_results)}
-        return jsonify(result)
-
-    def grab_all_list_chunkold(self):
-        is_repo = request.json["is_repository"]
-        print(f"in grab_all_list_chunk with is_repo {str(is_repo)}")
-        specs = {"collection": self.collection_spec(is_repo),
-                 "project": self.project_spec(is_repo),
-                 "tile": self.tile_spec(is_repo),
-                 "list": self.list_spec(is_repo),
-                 "code": self.code_spec(is_repo)}
-        preppers = {"collection": self.prep_collection_results,
-                    "project": self.prep_project_results,
-                    "tile": self.prep_tile_results,
-                    "list": self.prep_list_results,
-                    "code": self.prep_code_results}
-        pane_type = request.json["pane_type"]
-        if pane_type == "all":
-            types_to_grab = res_types
-        else:
-            types_to_grab = [pane_type]
-        db_to_use = self.repository_db if is_repo else self.db
-        print(f"db_to_use is {str(db_to_use)}")
-        print(f"self.db is {str(self.db)}")
-        print(f"self.repository_db is {str(self.repository_db)}")
-        def sort_mdata_key(item):
-            if sort_field not in item:
-                return ""
-            return item[sort_field]
-
-        def sort_created_key(item):
-            return item["created_for_sort"]
-
-        def sort_updated_key(item):
-            return item["updated_for_sort"]
-
-        def sort_size_key(item):
-            return item["size_for_sort"]
-
-        search_spec = request.json["search_spec"]
-        row_number = request.json["row_number"]
-        search_text = search_spec['search_string']
-
-        filtered_res = []
-        all_tags = []
-        for rtype in types_to_grab:
-            spec = specs[rtype]
-            collection_name = spec["collection_name"]
-            name_field = spec["name_field"]
-            content_field = spec["content_field"]
-            additional_mdata_fields = spec["additional_mdata_fields"]
-            if search_spec["search_inside"] and content_field is None:
-                continue
-            reg = re.compile(".*" + search_text + ".*", re.IGNORECASE)
-            or_list = [{name_field: reg}]
-            if search_spec["search_metadata"]:
-                or_list += [{"metadata.notes": reg}, {"metadata.tags": reg}, {"metadata.type": reg}]
-                if additional_mdata_fields:
-                    for fld in additional_mdata_fields:
-                        or_list.append({"metadata." + fld: reg})
-            if content_field and search_spec["search_inside"]:
-                or_list += [{content_field: reg}]
-            res = db_to_use[collection_name].find({"$or": or_list}, projection=[name_field, "metadata", "file_id"])
-            if search_spec["active_tag"]:
-                for doc in res:
-                    try:
-                        if "metadata" in doc and doc["metadata"] is not None:
-                            mdata = doc["metadata"]
-                            doc_id = str(doc["_id"])
-                            if self.has_hidden(mdata["tags"]) and not search_spec["show_hidden"]:
-                                    continue
-                            else:
-                                all_subtags = self.get_all_subtags(mdata["tags"])
-                                all_tags += mdata["tags"].split()
-                            if search_spec["active_tag"] in all_subtags:
-                                if "file_id" in doc:
-                                    rdict = self.build_res_dict(doc[name_field], mdata, None,
-                                                                doc["file_id"], res_type=rtype, doc_id=doc_id)
-                                else:
-                                    rdict = self.build_res_dict(doc[name_field], mdata, res_type=rtype, doc_id=doc_id)
-                                rdict["hidden"] = self.has_hidden(mdata["tags"])
-                                filtered_res.append(rdict)
-                    except Exception as ex:
-                        msg = self.get_traceback_message(ex, f"Got problem with doc {str(doc[name_field])}")
-                        print(msg)
-            else:
-                for doc in res:
-                    try:
-                        if "metadata" in doc and doc["metadata"] is not None:
-                            mdata = doc["metadata"]
-                            if self.has_hidden(mdata["tags"]) and not search_spec["show_hidden"]:
-                                continue
-                            else:
-                                all_tags += mdata["tags"].split()
-                        else:
-                            mdata = None
-                        doc_id = str(doc["_id"])
-                        if "file_id" in doc:
-                            rdict = self.build_res_dict(doc[name_field], mdata, None,
-                                                        doc["file_id"], res_type=rtype, doc_id=doc_id)
-                        else:
-                            rdict = self.build_res_dict(doc[name_field], mdata, res_type=rtype, doc_id=doc_id)
-                        rdict["hidden"] = self.has_hidden(mdata["tags"])
-                        filtered_res.append(rdict)
-                    except Exception as ex:
-                        msg = self.get_traceback_message(ex, f"Got problem with doc {str(doc[name_field])}")
-                        print(msg)
-
-        is_all = pane_type == "all"
-        for rtype in types_to_grab:
-            prepper = preppers[rtype]
-            filtered_res = prepper(filtered_res, is_all)
-
-        if search_spec["sort_direction"] == "ascending":
-            reverse = False
-        else:
-            reverse = True
-
         all_tags = sorted(list(set(all_tags)))
-        sort_field = search_spec["sort_field"]
-
-        if sort_field == "created":
-            sort_key_func = sort_created_key
-        elif sort_field == "updated":
-            sort_key_func = sort_updated_key
-        elif sort_field == "size":
-            sort_key_func = sort_size_key
-        else:
-            sort_key_func = sort_mdata_key
-
-        sorted_results = sorted(filtered_res, key=sort_key_func, reverse=reverse)
-
-        chunk_start = int(row_number / CHUNK_SIZE) * CHUNK_SIZE
-        chunk_list = sorted_results[chunk_start: chunk_start + CHUNK_SIZE]
-        chunk_dict = {}
-        for n, r in enumerate(chunk_list):
-            chunk_dict[n + chunk_start] = r
-
         result = {"success": True, "chunk_dict": chunk_dict, "all_tags": all_tags, "num_rows": len(sorted_results)}
         return jsonify(result)
-
