@@ -103,23 +103,16 @@ var panelRootDict = {
 window.context_id = (0, _utilities_react.guid)();
 window.main_id = window.context_id;
 var tsocket = new _tactic_socket.TacticSocket("main", 5000, "context", window.context_id);
-var LibraryHomeAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(_library_home_react.LibraryHomeApp));
-var ListViewerAppPlus = (0, _toaster.withStatus)(_list_viewer_react.ListViewerApp);
-var CodeViewerAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(_code_viewer_react.CodeViewerApp));
-var ModuleViewerAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(_module_viewer_react.ModuleViewerApp));
-var CreatorAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(_tile_creator_react.CreatorApp));
-var MainAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(_main_app.MainApp));
-var NotebookAppPlus = (0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(_notebook_app.NotebookApp));
 var classDict = {
-  "module-viewer": ModuleViewerAppPlus,
-  "code-viewer": CodeViewerAppPlus,
-  "list-viewer": ListViewerAppPlus,
-  "creator-viewer": CreatorAppPlus,
-  "main-viewer": MainAppPlus,
-  "notebook-viewer": NotebookAppPlus
+  "module-viewer": _module_viewer_react.ModuleViewerApp,
+  "code-viewer": _code_viewer_react.CodeViewerApp,
+  "list-viewer": _list_viewer_react.ListViewerApp,
+  "creator-viewer": _tile_creator_react.CreatorApp,
+  "main-viewer": _main_app.MainApp,
+  "notebook-viewer": _notebook_app.NotebookApp
 };
 function _context_main() {
-  var ContextAppPlus = (0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _toaster.withStatus)(ContextApp)));
+  var ContextAppPlus = (0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(ContextApp))));
   var domContainer = document.querySelector('#context-root');
   ReactDOM.render( /*#__PURE__*/_react["default"].createElement(ContextAppPlus, {
     initial_theme: window.theme,
@@ -198,6 +191,7 @@ function ContextApp(props) {
   var theme = (0, _react.useContext)(_theme.ThemeContext);
   var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
+  var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
   var _useState23 = (0, _react.useState)(0),
     _useState24 = _slicedToArray(_useState23, 2),
     tabSelectCounter = _useState24[0],
@@ -283,6 +277,7 @@ function ContextApp(props) {
     set_usable_height(uheight);
     set_usable_width(uwidth);
     setTabWidth(tabWidth);
+    statusFuncs.setLeftEdge(tabWidth);
     pushCallback(callback);
   }
   function _registerThemeSetter(setter) {
@@ -301,9 +296,6 @@ function ContextApp(props) {
       if (!(data["originator"] === window.context_id)) {
         window.close();
       }
-    });
-    props.tsocket.attachListener("doFlash", function (data) {
-      (0, _toaster.doFlash)(data);
     });
     props.tsocket.attachListener("doFlashUser", function (data) {
       (0, _toaster.doFlash)(data);
@@ -360,7 +352,12 @@ function ContextApp(props) {
               kind: data.kind
             });
           });
-        })["catch"](_toaster.doFlash);
+        })["catch"](function (data) {
+          errorDrawerFuncs.addErrorDrawerEntry({
+            title: "Error refreshing",
+            content: "message" in data ? data.message : ""
+          });
+        });
       });
     }
   }
@@ -623,7 +620,12 @@ function ContextApp(props) {
           });
         });
       });
-    })["catch"](_toaster.doFlash);
+    })["catch"](function (data) {
+      errorDrawerFuncs.addErrorDrawerEntry({
+        title: "Error going to module ".concat(module_name),
+        content: "message" in data ? data.message : ""
+      });
+    });
     return;
   }
   function _registerLineSetter(tab_id, rfunc) {
@@ -736,7 +738,7 @@ function ContextApp(props) {
     }
   }, /*#__PURE__*/_react["default"].createElement("div", {
     id: "library-home-root"
-  }, /*#__PURE__*/_react["default"].createElement(LibraryHomeAppPlus, {
+  }, /*#__PURE__*/_react["default"].createElement(_library_home_react.LibraryHomeApp, {
     tsocket: tsocket,
     library_style: window.library_style,
     controlled: true,
@@ -861,7 +863,10 @@ function ContextApp(props) {
       }).then(function (data) {
         _handleCreateViewer(data, statusFuncs.clearStatus);
       })["catch"](function (data) {
-        (0, _toaster.doFlash)(data);
+        errorDrawerFuncs.addErrorDrawerEntry({
+          title: "Error following ".concat(the_view),
+          content: "message" in data ? data.message : ""
+        });
         statusFuncs.clearstatus();
       });
     } else {

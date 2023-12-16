@@ -15,12 +15,11 @@ import {consoleItemsReducer} from "./console_support";
 import {doFlash, StatusContext} from "./toaster"
 import {withStatus} from "./toaster";
 import {renderSpinnerMessage, SelectedPaneContext, useConnection, useStateAndRef} from "./utilities_react";
-import {KeyTrap} from "./key_trap";
 
 import {postAjaxPromise, postAjax} from "./communication_react"
 import {ExportsViewer} from "./export_viewer_react";
 import {HorizontalPanes} from "./resizing_layouts";
-import {withErrorDrawer} from "./error_drawer";
+import {ErrorDrawerContext, withErrorDrawer} from "./error_drawer";
 import {getUsableDimensions} from "./sizing_tools";
 import {useCallbackStack, useConstructor, useReducerAndRef} from "./utilities_react";
 import {notebook_props, notebookReducer} from "./notebook_support";
@@ -59,8 +58,7 @@ function NotebookApp(props) {
     });
     const theme = useContext(ThemeContext);
     const statusFuncs = useContext(StatusContext);
-
-    const key_bindings = [];
+    const errorDrawerFuncs = useContext(ErrorDrawerContext);
 
     const pushCallback = useCallbackStack();
     const selectedPane = useContext(SelectedPaneContext);
@@ -162,9 +160,6 @@ function NotebookApp(props) {
         props.tsocket.attachListener("window-open", data => {
             window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`)
         });
-        props.tsocket.attachListener("doFlash", function (data) {
-            doFlash(data)
-        });
 
         if (!window.in_context) {
             props.tsocket.attachListener("doFlashUser", function (data) {
@@ -229,7 +224,6 @@ function NotebookApp(props) {
                          is_notebook={true}
                          is_juptyer={props.is_jupyter}
                          setProjectName={_setProjectName}
-                         postAjaxFailure={props.postAjaxFailure}
                          console_items={console_items_ref.current}
                          tile_list={[]}
                          mState={mState}
@@ -294,7 +288,6 @@ function NotebookApp(props) {
                            closeTab={props.closeTab}
                            resource_name={_cProp("resource_name")}
                            showErrorDrawerButton={true}
-                           toggleErrorDrawer={props.toggleErrorDrawer}
             />
             <div className={`main-outer ${theme.dark_theme ? "bp5-dark" : "light-theme"}`}
                  ref={main_outer_ref}
@@ -310,11 +303,6 @@ function NotebookApp(props) {
                                  handleSplitUpdate={_handleConsoleFractionChange}
                 />
             </div>
-            {!window.in_context &&
-                <Fragment>
-                    <KeyTrap global={true} bindings={key_bindings}/>
-                </Fragment>
-            }
         </Fragment>
     )
 

@@ -60,8 +60,6 @@ function RepositoryAllMenubar(props) {
     tsocket: props.tsocket,
     refreshTab: props.refresh_func,
     closeTab: null,
-    resource_icon: resource_icon,
-    showErrorDrawerButton: false,
-    toggleErrorDrawer: null
+    resource_icon: resource_icon
   });
 }

@@ -18,7 +18,6 @@ var _console_component = require("./console_component");
 var _console_support = require("./console_support");
 var _toaster = require("./toaster");
 var _utilities_react = require("./utilities_react");
-var _key_trap = require("./key_trap");
 var _communication_react = require("./communication_react");
 var _export_viewer_react = require("./export_viewer_react");
 var _resizing_layouts = require("./resizing_layouts");
@@ -79,7 +78,7 @@ function NotebookApp(props) {
     mDispatch = _useReducer2[1];
   var theme = (0, _react.useContext)(_theme.ThemeContext);
   var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
-  var key_bindings = [];
+  var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
   var pushCallback = (0, _utilities_react.useCallbackStack)();
   var selectedPane = (0, _react.useContext)(_utilities_react.SelectedPaneContext);
   (0, _utilities_react.useConstructor)(function () {
@@ -169,9 +168,6 @@ function NotebookApp(props) {
     props.tsocket.attachListener("window-open", function (data) {
       window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data["the_id"]));
     });
-    props.tsocket.attachListener("doFlash", function (data) {
-      (0, _toaster.doFlash)(data);
-    });
     if (!window.in_context) {
       props.tsocket.attachListener("doFlashUser", function (data) {
         (0, _toaster.doFlash)(data);
@@ -233,7 +229,6 @@ function NotebookApp(props) {
     is_notebook: true,
     is_juptyer: props.is_jupyter,
     setProjectName: _setProjectName,
-    postAjaxFailure: props.postAjaxFailure,
     console_items: console_items_ref.current,
     tile_list: [],
     mState: mState,
@@ -294,8 +289,7 @@ function NotebookApp(props) {
     refreshTab: props.refreshTab,
     closeTab: props.closeTab,
     resource_name: _cProp("resource_name"),
-    showErrorDrawerButton: true,
-    toggleErrorDrawer: props.toggleErrorDrawer
+    showErrorDrawerButton: true
   }), /*#__PURE__*/_react["default"].createElement("div", {
     className: "main-outer ".concat(theme.dark_theme ? "bp5-dark" : "light-theme"),
     ref: main_outer_ref,
@@ -313,9 +307,6 @@ function NotebookApp(props) {
     controlled: true,
     dragIconSize: 15,
     handleSplitUpdate: _handleConsoleFractionChange
-  })), !window.in_context && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_key_trap.KeyTrap, {
-    global: true,
-    bindings: key_bindings
   })));
 }
 exports.NotebookApp = NotebookApp = /*#__PURE__*/(0, _react.memo)(NotebookApp);

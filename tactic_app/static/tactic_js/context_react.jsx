@@ -36,7 +36,7 @@ import {NotebookApp} from "./notebook_app";
 import {notebook_props} from "./notebook_support"
 import {code_viewer_props, CodeViewerApp} from "./code_viewer_react";
 import {list_viewer_props, ListViewerApp} from "./list_viewer_react";
-import {withErrorDrawer} from "./error_drawer";
+import {ErrorDrawerContext, withErrorDrawer} from "./error_drawer";
 import {getUsableDimensions, USUAL_TOOLBAR_HEIGHT} from "./sizing_tools";
 import {postAjaxPromise} from "./communication_react";
 import {KeyTrap} from "./key_trap";
@@ -95,25 +95,17 @@ window.main_id = window.context_id;
 
 let tsocket = new TacticSocket("main", 5000, "context", window.context_id);
 
-const LibraryHomeAppPlus = withErrorDrawer(withStatus(LibraryHomeApp));
-const ListViewerAppPlus = withStatus(ListViewerApp);
-const CodeViewerAppPlus = withErrorDrawer(withStatus(CodeViewerApp));
-const ModuleViewerAppPlus = withErrorDrawer(withStatus(ModuleViewerApp));
-const CreatorAppPlus = withErrorDrawer(withStatus(CreatorApp));
-const MainAppPlus = withErrorDrawer(withStatus(MainApp));
-const NotebookAppPlus = withErrorDrawer(withStatus(NotebookApp));
-
 const classDict = {
-    "module-viewer": ModuleViewerAppPlus,
-    "code-viewer": CodeViewerAppPlus,
-    "list-viewer": ListViewerAppPlus,
-    "creator-viewer": CreatorAppPlus,
-    "main-viewer": MainAppPlus,
-    "notebook-viewer": NotebookAppPlus
+    "module-viewer": ModuleViewerApp,
+    "code-viewer": CodeViewerApp,
+    "list-viewer": ListViewerApp,
+    "creator-viewer": CreatorApp,
+    "main-viewer": MainApp,
+    "notebook-viewer": NotebookApp
 };
 
 function _context_main() {
-    const ContextAppPlus = withTheme(withDialogs(withStatus(ContextApp)));
+    const ContextAppPlus = withTheme(withDialogs(withErrorDrawer(withStatus(ContextApp))));
     const domContainer = document.querySelector('#context-root');
     ReactDOM.render(<ContextAppPlus initial_theme={window.theme} tsocket={tsocket}/>, domContainer)
 }
@@ -145,6 +137,7 @@ function ContextApp(props) {
     const theme = useContext(ThemeContext);
     const dialogFuncs = useContext(DialogContext);
     const statusFuncs = useContext(StatusContext);
+    const errorDrawerFuncs = useContext(ErrorDrawerContext);
 
     const [tabSelectCounter, setTabSelectCounter] = useState(0);
 
@@ -243,6 +236,7 @@ function ContextApp(props) {
         set_usable_height(uheight);
         set_usable_width(uwidth);
         setTabWidth(tabWidth);
+        statusFuncs.setLeftEdge(tabWidth);
         pushCallback(callback);
     }
 
@@ -265,9 +259,6 @@ function ContextApp(props) {
             if (!(data["originator"] === window.context_id)) {
                 window.close()
             }
-        });
-        props.tsocket.attachListener("doFlash", function (data) {
-            doFlash(data)
         });
         props.tsocket.attachListener("doFlashUser", function (data) {
             doFlash(data)
@@ -320,7 +311,12 @@ function ContextApp(props) {
                             _updatePanel(the_id, {panel: new_panel, kind: data.kind});
                         });
                     })
-                    .catch(doFlash);
+                    .catch((data)=>{
+                        errorDrawerFuncs.addErrorDrawerEntry({
+                            title: "Error refreshing",
+                            content: "message" in data ? data.message : ""
+                        })
+                    });
             })
         }
     }
@@ -564,7 +560,12 @@ function ContextApp(props) {
                     });
                 })
             })
-            .catch(doFlash);
+            .catch((data)=>{
+                errorDrawerFuncs.addErrorDrawerEntry({
+                        title: `Error going to module ${module_name}`,
+                        content: "message" in data ? data.message : ""
+                    })
+            });
         return
     }
 
@@ -691,14 +692,14 @@ function ContextApp(props) {
             addOmniItems: (items)=>{_addOmniItems("library", items)}
         }}>
             <div id="library-home-root">
-                <LibraryHomeAppPlus tsocket={tsocket}
-                                    library_style={window.library_style}
-                                    controlled={true}
-                                    am_selected={selectedTabIdRef.current == "library"}
-                                    open_resources_ref={open_resources_ref}
-                                    handleCreateViewer={_handleCreateViewer}
-                                    usable_width={usable_width}
-                                    usable_height={usable_height}
+                <LibraryHomeApp tsocket={tsocket}
+                                library_style={window.library_style}
+                                controlled={true}
+                                am_selected={selectedTabIdRef.current == "library"}
+                                open_resources_ref={open_resources_ref}
+                                handleCreateViewer={_handleCreateViewer}
+                                usable_width={usable_width}
+                                usable_height={usable_height}
                 />
             </div>
         </SelectedPaneContext.Provider>
@@ -782,10 +783,13 @@ function ContextApp(props) {
                     _handleCreateViewer(data, statusFuncs.clearStatus);
                 })
                 .catch((data) => {
-                        doFlash(data);
-                        statusFuncs.clearstatus()
-                    }
-                );
+                        errorDrawerFuncs.addErrorDrawerEntry({
+                        title: `Error following ${the_view}`,
+                        content: "message" in data ? data.message : ""
+                    });
+                    statusFuncs.clearstatus()
+                }
+            );
         } else {
             statusFuncs.clearStatus();
             window.open($SCRIPT_ROOT + the_view + item.name)

@@ -11,10 +11,10 @@ import {TextArea} from "@blueprintjs/core";
 import {ResourceViewerApp, copyToLibrary, sendToRepository} from "./resource_viewer_react_app";
 import {TacticSocket} from "./tactic_socket";
 import {postAjax, postAjaxPromise, postWithCallback} from "./communication_react"
-import {doFlash, withStatus} from "./toaster"
+import {withStatus} from "./toaster"
 
 import {getUsableDimensions, BOTTOM_MARGIN} from "./sizing_tools";
-import {withErrorDrawer} from "./error_drawer";
+import {ErrorDrawerContext, withErrorDrawer} from "./error_drawer";
 import {guid} from "./utilities_react";
 import {TacticNavbar} from "./blueprint_navbar";
 import {useCallbackStack, useConstructor, useStateAndRef} from "./utilities_react";
@@ -110,6 +110,7 @@ function ListViewerApp(props) {
     const dialogFuncs = useContext(DialogContext);
     const statusFuncs = useContext(StatusContext);
     const selectedPane = useContext(SelectedPaneContext);
+    const errorDrawerFuncs = useContext(ErrorDrawerContext);
 
 
     useEffect(() => {
@@ -157,7 +158,7 @@ function ListViewerApp(props) {
                 Transfer: [{
                     "name_text": "Copy to library", "icon_name": "import",
                     "click_handler": () => {
-                        copyToLibrary("list", _cProp("resource_name"), dialogFuncs)
+                        copyToLibrary("list", _cProp("resource_name"), dialogFuncs, statusFuncs, errorDrawerFuncs)
                     }, tooltip: "Copy to library"
                 }]
             }
@@ -183,7 +184,7 @@ function ListViewerApp(props) {
                         name_text: "Share",
                         icon_name: "share",
                         click_handler: () => {
-                            sendToRepository("list", _cProp("resource_name"), dialogFuncs)
+                            sendToRepository("list", _cProp("resource_name"), dialogFuncs, statusFuncs, errorDrawerFuncs)
                         },
                         tooltip: "Share to repository"
                     },
@@ -267,10 +268,13 @@ function ListViewerApp(props) {
                 savedContent.current = new_list_as_string;
                 savedTags.current = local_tags;
                 savedNotes.current = local_notes;
-                data.timeout = 2000;
+                statusFuncs.statusMessage(`Saved list ${result_dict.list_name}`)
+            } else {
+                errorDrawerFuncs.addErrorDrawerEntry({
+                    title: `Error creating new notebook`,
+                    content: "message" in data ? data.message : ""
+                });
             }
-            doFlash(data);
-            return false
         }
     }
 
@@ -311,7 +315,12 @@ function ListViewerApp(props) {
                         })
                     }
                 )
-                .catch(doFlash)
+                .catch((data)=>{
+                    errorDrawerFuncs.addErrorDrawerEntry({
+                        title: `Error saving list`,
+                        content: "message" in data ? data.message : ""
+                    });
+                })
         }
     }
 

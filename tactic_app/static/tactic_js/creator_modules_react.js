@@ -1032,6 +1032,7 @@ function CommandEntry(props) {
     _useState24 = _slicedToArray(_useState23, 2),
     isOpen = _useState24[0],
     setIsOpen = _useState24[1];
+  var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
   function _handleClick() {
     setIsOpen(!isOpen);
   }
@@ -1042,11 +1043,7 @@ function CommandEntry(props) {
       } else {
         void navigator.clipboard.writeText(props.signature);
       }
-      (0, _toaster.doFlash)({
-        message: "command copied",
-        "timeout": 2000,
-        "alert_type": "alert-success"
-      });
+      statusFuncs.statusMessage("command copied");
     }
   }
   var md_style = {

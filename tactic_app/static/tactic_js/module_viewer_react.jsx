@@ -13,8 +13,7 @@ import {ResourceViewerApp, copyToLibrary, sendToRepository} from "./resource_vie
 import {TacticSocket} from "./tactic_socket";
 import {ReactCodemirror} from "./react-codemirror";
 import {postAjax, postAjaxPromise, postWithCallback} from "./communication_react"
-import {doFlash} from "./toaster"
-import {withErrorDrawer} from "./error_drawer";
+import {ErrorDrawerContext, withErrorDrawer} from "./error_drawer";
 import {withStatus, StatusContext} from "./toaster";
 
 import {getUsableDimensions, BOTTOM_MARGIN} from "./sizing_tools";
@@ -71,6 +70,7 @@ function ModuleViewerApp(props) {
     const theme = useContext(ThemeContext);
     const dialogFuncs = useContext(DialogContext);
     const statusFuncs = useContext(StatusContext);
+    const errorDrawerFuncs = useContext(ErrorDrawerContext);
 
     // The following only are used if not in context
     const [usable_width, set_usable_width] = useState(() => {
@@ -147,7 +147,7 @@ function ModuleViewerApp(props) {
                 Transfer: [{
                     "name_text": "Copy to library", "icon_name": "import",
                     "click_handler": () => {
-                        copyToLibrary("tile", _cProp("resource_name"), dialogFuncs)
+                        copyToLibrary("tile", _cProp("resource_name"), dialogFuncs, statusFuncs, errorDrawerFuncs)
                     }, tooltip: "Copy to library"
                 }]
             }
@@ -197,7 +197,7 @@ function ModuleViewerApp(props) {
                     name_text: "Share",
                     icon_name: "share",
                     click_handler: () => {
-                        sendToRepository("list", _cProp("resource_name"), dialogFuncs)
+                        sendToRepository("list", _cProp("resource_name"), dialogFuncs, statusFuncs, errorDrawerFuncs)
                     },
                     tooltip: "Share to repository"
                 },]
@@ -232,10 +232,18 @@ function ModuleViewerApp(props) {
         }
     }
 
-    function _doFlashStopSpinner(data) {
+    function handleResult(data, success_message, failure_tiltle) {
+        if (!data.success) {
+            errorDrawerFuncs.addErrorDrawerEntry({
+                title: failur_title,
+                content: "message" in data ? data.message : ""
+            });
+        }
+        else {
+            statusFuncs.statusMessage(success_message)
+        }
         statusFuncs.stopSpinner();
         statusFuncs.clearStatusMessage();
-        doFlash(data)
     }
 
     function get_new_cc_height() {
@@ -280,10 +288,19 @@ function ModuleViewerApp(props) {
             return false
         }
         statusFuncs.startSpinner();
-        statusFuncs.statusMessage("Saving Module");
+        statusFuncs.statusMessage("Saving nodule");
         doSavePromise()
-            .then(_doFlashStopSpinner)
-            .catch(_doFlashStopSpinner);
+            .then((data)=>{
+                statusFuncs.statusMessage("Saved module");
+                statusFuncs.stopSpinner()
+            })
+            .catch((data)=>{
+                errorDrawerFuncs.addErrorDrawerEntry({
+                    title: "Error saving module",
+                    content: "message" in data ? data.message : ""
+                });
+                statusFuncs.stopSpinner()
+            });
         return false
     }
 
@@ -348,12 +365,20 @@ function ModuleViewerApp(props) {
             };
             postAjaxPromise('/create_duplicate_tile', result_dict)
                 .then((data) => {
-                        _setResourceNameState(new_name, () => {
-                            _saveMe()
-                        })
+                    _setResourceNameState(new_name, () => {
+                        _saveMe()
+                    })
+                }
+                )
+                .catch((data) => {
+                        statusFuncs.stopSpinner();
+                        statusFuncs.clearstatus();
+                        errorDrawerFuncs.addErrorDrawerEntry({
+                            title: "Error saving module",
+                            content: "message" in data ? data.message : ""
+                        });
                     }
                 )
-                .catch(doFlash)
         }
 
     }
@@ -374,13 +399,15 @@ function ModuleViewerApp(props) {
                     null,
                     props.resource_viewer_id)
             })
-            .catch(_doFlashStopSpinner);
+            .catch((data)=>{
+                errorDrawerFuncs.addErrorDrawerEntry({
+                    title: "Error saving and loading odule",
+                    content: "message" in data ? data.message : ""
+                });
+            });
 
         function load_success(data) {
-            if (data.success) {
-                data.timeout = 2000;
-            }
-            _doFlashStopSpinner(data);
+            handleResult(data, "Saved and loaded module", "Failed to load module");
             return false
         }
     }
@@ -401,10 +428,7 @@ function ModuleViewerApp(props) {
         );
 
         function load_success(data) {
-            if (data.success) {
-                data.timeout = 2000;
-            }
-            _doFlashStopSpinner(data);
+            handleResult(data, "Loaded module", "Failure loading modules");
             return false
         }
     }
@@ -414,14 +438,29 @@ function ModuleViewerApp(props) {
             return false
         }
         statusFuncs.startSpinner();
+        statusFuncs.statusmessage("Saving...");
         doSavePromise()
             .then(function () {
-                statusFuncs.statusMessage("Checkpointing");
+                statusFuncs.statusMessage("Checkpointing...");
                 doCheckpointPromise()
-                    .then(_doFlashStopSpinner)
-                    .catch(_doFlashStopSpinner)
+                    .then((data)=>{
+                        statusFuncs.stopSpinner();
+                        statusFuncs.statusMessage("Saved and checkpointed")
+                    })
+                    .catch((data)=>{
+                        statusFuncs.clearStatusMessage();
+                        errorDrawerFuncs.addErrorDrawerEntry({
+                            title: "Error checkpointing",
+                            content: "message" in data ? data.message : ""
+                        });
+                    })
             })
-            .catch(_doFlashStopSpinner);
+            .catch((data)=>{
+                errorDrawerFuncs.addErrorDrawerEntry({
+                    title: "Error saving and checkpointing",
+                    content: "message" in data ? data.message : ""
+                });
+            });
         return false
 
     }
@@ -509,7 +548,6 @@ function ModuleViewerApp(props) {
                                    search_ref={search_ref}
                                    meta_outer={props.meta_outer}
                                    showErrorDrawerButton={true}
-                                   toggleErrorDrawer={props.toggleErrorDrawer}
                 >
                     <ReactCodemirror code_content={code_content}
                                      extraKeys={_extraKeys()}

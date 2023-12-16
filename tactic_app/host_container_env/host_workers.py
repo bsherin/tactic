@@ -80,19 +80,9 @@ class HostWorker(QWorker):
                 new_retries = retries + 1
                 self.start_background_thread(retries=new_retries)
 
-    def show_um_status_message(self, msg, library_id, timeout=3):
-        if timeout is None:
-            data = {"message": msg, "main_id": library_id}
-        else:
-            data = {"message": msg, "timeout": timeout, "main_id": library_id}
-        socketio.emit('show-status-msg', data, namespace='/main', room=library_id)
-
-    def clear_um_status_message(self, library_id):
-        socketio.emit('clear-status-msg', {"main_id": library_id}, namespace='/main', room=library_id)
-
-    def add_error_drawer_entry(self, title, content, library_id):
-        data = {"title": title, "content": content, "main_id": library_id}
-        socketio.emit("add-error-drawer-entry", data, namespace='/main', room=library_id)
+    @task_worthy
+    def add_error_drawer_entry_task(self, data):
+        socketio.emit("add-error-drawer-entry", data, namespace='/main', room=data["user_id"])
 
     @task_worthy
     def participant_ready(self, data):
@@ -272,32 +262,6 @@ class HostWorker(QWorker):
             if not task_packet["callback_type"] == "no_callback":
                 self.submit_response(task_packet, self.get_short_exception_dict(ex, "Error loading tile"))
             return
-
-
-    @task_worthy
-    def show_main_status_message(self, data):
-        socketio.emit('show-status-msg', data, namespace='/main', room=data["main_id"])
-
-    @task_worthy
-    def clear_main_status_message(self, data):
-        socketio.emit('clear-status-msg', data, namespace='/main', room=data["main_id"])
-
-    @task_worthy
-    def stop_main_status_spinner(self, data):
-        socketio.emit('stop-spinner', data, namespace='/main', room=data["main_id"])
-
-    @task_worthy
-    def show_um_status_message_task(self, data):
-        data["main_id"] = data["library_id"]
-        socketio.emit('show-status-msg', data, namespace='/main', room=data["library_id"])
-
-    @task_worthy
-    def show_main_status_message_task(self, data):
-        socketio.emit('show-status-msg', data, namespace='/main', room=data["main_id"])
-
-    @task_worthy
-    def clear_um_status_message_task(self, data):
-        socketio.emit('clear-status-msg', {"main_id": data["library_id"]}, namespace='/main', room=data["library_id"])
 
     @task_worthy
     def destroy_a_users_containers(self, data):

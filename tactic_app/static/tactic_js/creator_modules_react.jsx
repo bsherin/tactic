@@ -1,7 +1,7 @@
 // noinspection JSConstructorReturnsPrimitive
 
 import React from "react";
-import {Fragment, useState, useEffect, memo} from "react";
+import {Fragment, useState, useEffect, memo, useContext} from "react";
 import PropTypes from 'prop-types';
 
 import {Button, Card, Collapse, Divider, Menu, MenuItem, MenuDivider, Switch, FormGroup} from "@blueprintjs/core";
@@ -16,7 +16,7 @@ import {
     BpOrderableTable,
     GlyphButton
 } from "./blueprint_react_widgets";
-import {doFlash} from "./toaster";
+import {StatusContext} from "./toaster";
 import _ from 'lodash';
 import {isInt} from "./utilities_react";
 import {BpSelect} from "./blueprint_mdata_fields";
@@ -842,6 +842,8 @@ CategoryEntry.propTypes = {
 function CommandEntry(props) {
     const [isOpen, setIsOpen] = useState(false);
 
+    const statusFuncs = useContext(StatusContext);
+
     function _handleClick() {
         setIsOpen(!isOpen);
     }
@@ -854,7 +856,7 @@ function CommandEntry(props) {
                 void navigator.clipboard.writeText(props.signature)
             }
 
-            doFlash({message: "command copied", "timeout": 2000, "alert_type": "alert-success"});
+            statusFuncs.statusMessage("command copied");
         }
     }
 

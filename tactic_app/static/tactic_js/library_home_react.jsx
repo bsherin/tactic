@@ -62,9 +62,6 @@ function LibraryHomeApp(props) {
 
     function initSocket() {
         props.tsocket.attachListener("window-open", data => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
-        props.tsocket.attachListener("doFlash", function (data) {
-            doFlash(data)
-        });
         if (!window.in_context) {
             props.tsocket.attachListener("doFlashUser", function (data) {
                 doFlash(data)

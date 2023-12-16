@@ -8,7 +8,6 @@ import {PopoverPosition} from "@blueprintjs/core";
 import {ReactCodemirrorMergeView} from "./react-codemirror-mergeview";
 import {BpSelect} from "./blueprint_mdata_fields";
 import {TacticMenubar} from "./menu_utilities";
-import {KeyTrap} from "./key_trap";
 import {ThemeContext} from "./theme"
 import {StatusContext} from "./toaster";
 
@@ -22,11 +21,6 @@ function MergeViewerApp(props) {
     const [inner_height, set_inner_height] = useState(window.innerHeight);
     const theme = useContext(ThemeContext);
     const statusFuncs = useContext(StatusContext);
-
-    // These only matter if not controlled
-    const key_bindings = [
-          [],
-      ];
 
     const button_groups = [
         [{"name_text": "Save", "icon_name": "saved", "click_handler": props.saveHandler}]
@@ -104,7 +98,6 @@ function MergeViewerApp(props) {
                                refreshTab={null}
                                closeTab={null}
                                resource_name={props.resource_name}
-                               toggleErrorDrawer={props.toggleErrorDrawer}
                                controlled={false}
                     />
                 <div className={outer_class}>
@@ -126,9 +119,6 @@ function MergeViewerApp(props) {
                         />
                     </div>
                 </div>
-                  <Fragment>
-                      <KeyTrap global={true} bindings={key_bindings}/>
-                  </Fragment>
             </Fragment>
         )
 }

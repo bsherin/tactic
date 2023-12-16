@@ -18,7 +18,6 @@ var _reactCodemirror = require("./react-codemirror");
 var _sortable_container = require("./sortable_container");
 var _key_trap = require("./key_trap");
 var _communication_react = require("./communication_react");
-var _toaster = require("./toaster");
 var _blueprint_mdata_fields = require("./blueprint_mdata_fields");
 var _library_pane = require("./library_pane");
 var _menu_utilities = require("./menu_utilities");
@@ -26,6 +25,7 @@ var _search_form = require("./search_form");
 var _searchable_console = require("./searchable_console");
 var _theme = require("./theme");
 var _modal_react = require("./modal_react");
+var _error_drawer = require("./error_drawer");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
@@ -94,6 +94,7 @@ function ConsoleComponent(props) {
   var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   var pushCallback = (0, _utilities_react.useCallbackStack)();
   var selectedPane = (0, _react.useContext)(_utilities_react.SelectedPaneContext);
+  var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
   (0, _react.useEffect)(function () {
     initSocket();
     _requestPseudoTileId();
@@ -217,7 +218,10 @@ function ConsoleComponent(props) {
       "main_id": props.main_id
     }, function (data) {
       if (!data.success) {
-        (0, _toaster.doFlash)(data);
+        errorDrawerFuncs.addErrorDrawerEntry({
+          title: "Error creating text area",
+          content: "message" in data ? data.message : ""
+        });
       } else if (callback != null) {
         callback();
       }
@@ -240,7 +244,10 @@ function ConsoleComponent(props) {
       "main_id": props.main_id
     }, function (data) {
       if (!data.success) {
-        (0, _toaster.doFlash)(data);
+        errorDrawerFuncs.addErrorDrawerEntry({
+          title: "Error creating divider",
+          content: "message" in data ? data.message : ""
+        });
       } else if (callback) {
         callback();
       }
@@ -363,7 +370,10 @@ function ConsoleComponent(props) {
       user_id: window.user_id
     }, function (data) {
       if (!data.success) {
-        (0, _toaster.doFlash)(data);
+        errorDrawerFuncs.addErrorDrawerEntry({
+          title: "Error getting copied cells",
+          content: "message" in data ? data.message : ""
+        });
       } else {
         _addConsoleEntries(data.console_items, true, false, unique_id);
       }
@@ -376,7 +386,10 @@ function ConsoleComponent(props) {
       "main_id": props.main_id
     }, function (data) {
       if (!data.success) {
-        (0, _toaster.doFlash)(data);
+        errorDrawerFuncs.addErrorDrawerEntry({
+          title: "Error creatinng link",
+          content: "message" in data ? data.message : ""
+        });
       } else if (callback) {
         callback();
       }
@@ -432,7 +445,10 @@ function ConsoleComponent(props) {
       force_open: force_open
     }, function (data) {
       if (!data.success) {
-        (0, _toaster.doFlash)(data);
+        errorDrawerFuncs.addErrorDrawerEntry({
+          title: "Error creating code area",
+          content: "message" in data ? data.message : ""
+        });
       }
     }, null, props.main_id);
   }
@@ -2694,7 +2710,12 @@ function ResourceLinkButton(props) {
       (0, _communication_react.postAjaxPromise)($SCRIPT_ROOT + my_view.current, {
         context_id: window.context_id,
         resource_name: props.res_name
-      }).then(props.handleCreateViewer)["catch"](_toaster.doFlash);
+      }).then(props.handleCreateViewer)["catch"](function () {
+        errorDrawerFuncs.addErrorDrawerEntry({
+          title: "Error following link",
+          content: "message" in data ? data.message : ""
+        });
+      });
     } else {
       window.open($SCRIPT_ROOT + my_view.current + props.res_name);
     }

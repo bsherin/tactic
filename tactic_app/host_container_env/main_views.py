@@ -13,7 +13,6 @@ from flask_login import current_user, login_required
 from flask_socketio import join_room, disconnect
 from tactic_app import app, db, fs, socketio, csrf
 from library_views import collection_manager
-from docker_functions import destroy_container, destroy_child_containers
 from users import load_user
 from communication_utils import debinarize_python_object, make_python_object_jsonizable
 from communication_utils import read_temp_data, delete_temp_data
@@ -183,9 +182,9 @@ def print_blob_area_to_console():
 def export_data():
     def export_success(result):
         if result["success"]:
-            socketio.emit("doFlash", {"alert_type": "alert-success", "message": "Data successfully exported"},
-                          namespace='/main', room=data_dict["main_id"])
-        # collection_manager.update_selector_list(user_obj=user_obj)
+            socketio.emit('show-status-msg', result, namespace='/main', room=result["user_id"])
+        else:
+            tactic_app.host_worker.add_error_drawer_entry_task(result)
         return
     data_dict = request.json
     export_name = data_dict['export_name']

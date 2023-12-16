@@ -21,9 +21,10 @@ var _markdownIt = _interopRequireDefault(require("markdown-it"));
 require("markdown-it-latex/dist/index.css");
 var _markdownItLatex = _interopRequireDefault(require("markdown-it-latex"));
 var _communication_react = require("./communication_react");
-var _toaster = require("./toaster");
 var _menu_utilities = require("./menu_utilities");
 var _modal_react = require("./modal_react");
+var _toaster = require("./toaster");
+var _error_drawer = require("./error_drawer");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
@@ -37,6 +38,7 @@ mdi.use(_markdownItLatex["default"]);
 function ProjectMenu(props) {
   var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
+  var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
   var save_state;
   if (props.is_notebook) save_state = {
     console_items: props.console_items,
@@ -90,10 +92,10 @@ function ProjectMenu(props) {
       };
       result_dict.interface_state = save_state;
       if (props.is_notebook) {
-        (0, _communication_react.postWithCallback)(props.main_id, "save_new_notebook_project", result_dict, save_as_success, props.postAjaxFailur, props.main_id);
+        (0, _communication_react.postWithCallback)(props.main_id, "save_new_notebook_project", result_dict, save_as_success, errorDrawerFuncs.postAjaxFailure, props.main_id);
       } else {
         result_dict["purgetiles"] = true;
-        (0, _communication_react.postWithCallback)(props.main_id, "save_new_project", result_dict, save_as_success, props.postAjaxFailure, props.main_id);
+        (0, _communication_react.postWithCallback)(props.main_id, "save_new_project", result_dict, save_as_success, errorDrawerFuncs.postAjaxFailure, props.main_id);
       }
       function save_as_success(data_object) {
         if (data_object["success"]) {
@@ -102,17 +104,17 @@ function ProjectMenu(props) {
               document.title = new_name;
             }
             statusFuncs.clearStatusMessage();
-            data_object.alert_type = "alert-success";
-            data_object.timeout = 2000;
             props.updateLastSave();
             statusFuncs.stopSpinner();
+            statusFuncs.statusMessage("Saved project ".concat(new_name));
           });
         } else {
           statusFuncs.clearStatusMessage();
-          data_object["message"] = data_object["message"];
-          data_object["alert-type"] = "alert-warning";
           statusFuncs.stopSpinner();
-          (0, _toaster.doFlash)(data_object);
+          errorDrawerFuncs.addErrorDrawerEntry({
+            title: "Error saving project",
+            content: "message" in data_object ? data_object.message : ""
+          });
         }
       }
     }
@@ -126,19 +128,19 @@ function ProjectMenu(props) {
     };
     result_dict.interface_state = save_state;
     statusFuncs.startSpinner();
-    (0, _communication_react.postWithCallback)(props.main_id, "update_project", result_dict, updateSuccess, props.postAjaxFailure, props.main_id);
+    (0, _communication_react.postWithCallback)(props.main_id, "update_project", result_dict, updateSuccess, errorDrawerFuncs.postAjaxFailure, props.main_id);
     function updateSuccess(data) {
-      statusFuncs.startSpinner();
       if (data.success) {
-        data["alert_type"] = "alert-success";
-        data.timeout = 2000;
         props.updateLastSave();
+        statusFuncs.statusMessage("Saved project ".concat(props.project_name));
       } else {
-        data["alert_type"] = "alert-warning";
+        errorDrawerFuncs.addErrorDrawerEntry({
+          title: "Error saving project",
+          content: "message" in data ? data.message : ""
+        });
+        statusFuncs.clearStatusMessage();
       }
-      statusFuncs.clearStatusMessage();
       statusFuncs.stopSpinner();
-      (0, _toaster.doFlash)(data);
     }
   }
   function _exportAsPresentation() {
@@ -202,19 +204,20 @@ function ProjectMenu(props) {
         "main_id": props.main_id,
         "cell_list": cell_list
       };
-      (0, _communication_react.postWithCallback)(props.main_id, "export_as_presentation", result_dict, save_as_success, props.postAjaxFailure, props.main_id);
+      (0, _communication_react.postWithCallback)(props.main_id, "export_as_presentation", result_dict, save_as_success, errorDrawerFuncs.postAjaxFailure, props.main_id);
       function save_as_success(data_object) {
         statusFuncs.clearStatusMessage();
         if (data_object.success) {
           if (save_as_collection) {
-            data_object.alert_type = "alert-success";
-            data_object.timeout = 2000;
-            (0, _toaster.doFlash)(data_object);
+            statusFuncs.statusMessage("Exported presentation");
           } else {
             window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data_object["temp_id"]));
           }
         } else {
-          data_object["alert-type"] = "alert-warning";
+          errorDrawerFuncs.addErrorDrawerEntry({
+            title: "Error exporting presentation",
+            content: "message" in data_object ? data_object.message : ""
+          });
         }
       }
     }
@@ -280,19 +283,22 @@ function ProjectMenu(props) {
         "main_id": props.main_id,
         "cell_list": cell_list
       };
-      (0, _communication_react.postWithCallback)(props.main_id, "export_as_report", result_dict, save_as_success, props.postAjaxFailure, props.main_id);
+      (0, _communication_react.postWithCallback)(props.main_id, "export_as_report", result_dict, save_as_success, errorDrawerFuncs.postAjaxFailure, props.main_id);
       function save_as_success(data_object) {
         statusFuncs.clearStatusMessage();
         if (data_object.success) {
           if (save_as_collection) {
             data_object.alert_type = "alert-success";
             data_object.timeout = 2000;
-            (0, _toaster.doFlash)(data_object);
+            statusFuncs.statusMessage("Exported report");
           } else {
             window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data_object["temp_id"]));
           }
         } else {
-          data_object["alert-type"] = "alert-warning";
+          errorDrawerFuncs.addErrorDrawerEntry({
+            title: "Error exporting report",
+            content: "message" in data_object ? data_object.message : ""
+          });
         }
       }
     }
@@ -340,17 +346,18 @@ function ProjectMenu(props) {
         "main_id": props.main_id,
         "cell_list": cell_list
       };
-      (0, _communication_react.postWithCallback)(props.main_id, "export_to_jupyter_notebook", result_dict, save_as_success, props.postAjaxFailure, props.main_id);
+      (0, _communication_react.postWithCallback)(props.main_id, "export_to_jupyter_notebook", result_dict, save_as_success, errorDrawerFuncs.postAjaxFailure, props.main_id);
       function save_as_success(data_object) {
         statusFuncs.clearStatusMessage();
         if (data_object.success) {
-          data_object.alert_type = "alert-success";
-          data_object.timeout = 2000;
+          statusFuncs.statusMessage("Exported jupyter notebook");
         } else {
-          data_object["alert-type"] = "alert-warning";
+          errorDrawerFuncs.addErrorDrawerEntry({
+            title: "Error exporting jupyter notebook",
+            content: "message" in data_object ? data_object.message : ""
+          });
         }
         statusFuncs.stopSpinner();
-        (0, _toaster.doFlash)(data_object);
       }
     }
   }
@@ -698,6 +705,7 @@ RowMenu.propTypes = {
 };
 exports.RowMenu = RowMenu = /*#__PURE__*/(0, _react.memo)(RowMenu);
 function ViewMenu(props) {
+  var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
   function _shift_column_left() {
     var cnum = props.table_spec.column_names.indexOf(props.selected_column);
     if (cnum == 0) return;
@@ -728,7 +736,7 @@ function ViewMenu(props) {
     var exports_opt_name = props.show_exports_pane ? "Hide Exports" : "Show Exports";
     result[exports_opt_name] = _toggleExports;
     result["divider2"] = "divider";
-    result["Show Error Drawer"] = props.openErrorDrawer;
+    result["Show Error Drawer"] = errorDrawerFuncs.openErrorDrawer;
     return result;
   }
   function icon_dict() {

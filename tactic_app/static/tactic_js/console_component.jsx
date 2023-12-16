@@ -23,7 +23,6 @@ import {ReactCodemirror} from "./react-codemirror";
 import {SortableComponent} from "./sortable_container";
 import {KeyTrap} from "./key_trap";
 import {postAjaxPromise, postWithCallback} from "./communication_react"
-import {doFlash} from "./toaster"
 import {icon_dict} from "./blueprint_mdata_fields";
 import {view_views} from "./library_pane";
 import {TacticMenubar} from "./menu_utilities";
@@ -33,6 +32,7 @@ import {ThemeContext} from "./theme";
 import {DialogContext} from "./modal_react"
 
 import {useCallbackStack, useStateAndRef, useConstructor} from "./utilities_react";
+import {ErrorDrawerContext} from "./error_drawer";
 
 export {ConsoleComponent}
 
@@ -65,6 +65,7 @@ function ConsoleComponent(props) {
     const pushCallback = useCallbackStack();
 
     const selectedPane = useContext(SelectedPaneContext);
+    const errorDrawerFuncs = useContext(ErrorDrawerContext);
 
     useEffect(() => {
         initSocket();
@@ -175,7 +176,10 @@ function ConsoleComponent(props) {
         postWithCallback("host", "print_text_area_to_console",
             {"console_text": the_text, "user_id": window.user_id, "main_id": props.main_id}, function (data) {
                 if (!data.success) {
-                    doFlash(data)
+                    errorDrawerFuncs.addErrorDrawerEntry({
+                        title: "Error creating text area",
+                        content: "message" in data ? data.message : ""
+                    });
                 } else if (callback != null) {
                     callback();
                 }
@@ -197,7 +201,10 @@ function ConsoleComponent(props) {
         postWithCallback("host", "print_divider_area_to_console",
             {"header_text": header_text, "user_id": window.user_id, "main_id": props.main_id}, function (data) {
                 if (!data.success) {
-                    doFlash(data)
+                    errorDrawerFuncs.addErrorDrawerEntry({
+                        title: "Error creating divider",
+                        content: "message" in data ? data.message : ""
+                    });
                 } else if (callback) {
                     callback()
                 }
@@ -314,7 +321,10 @@ function ConsoleComponent(props) {
     const _pasteCell = useCallback((unique_id = null) => {
         postWithCallback("host", "get_copied_console_cells", {user_id: window.user_id}, (data) => {
             if (!data.success) {
-                doFlash(data)
+                errorDrawerFuncs.addErrorDrawerEntry({
+                    title: "Error getting copied cells",
+                    content: "message" in data ? data.message : ""
+                });
             } else {
                 _addConsoleEntries(data.console_items, true, false, unique_id)
             }
@@ -325,7 +335,10 @@ function ConsoleComponent(props) {
         postWithCallback("host", "print_link_area_to_console",
             {"user_id": window.user_id, "main_id": props.main_id}, function (data) {
                 if (!data.success) {
-                    doFlash(data)
+                    errorDrawerFuncs.addErrorDrawerEntry({
+                        title: "Error creatinng link",
+                        content: "message" in data ? data.message : ""
+                    });
                 } else if (callback) {
                     callback()
                 }
@@ -379,7 +392,10 @@ function ConsoleComponent(props) {
             {console_text: the_text, user_id: window.user_id, main_id: props.main_id, force_open: force_open},
             function (data) {
                 if (!data.success) {
-                    doFlash(data)
+                    errorDrawerFuncs.addErrorDrawerEntry({
+                        title: "Error creating code area",
+                        content: "message" in data ? data.message : ""
+                    });
                 }
             }, null, props.main_id);
     }
@@ -2483,7 +2499,12 @@ function ResourceLinkButton(props) {
                 resource_name: props.res_name
             })
                 .then(props.handleCreateViewer)
-                .catch(doFlash);
+                .catch(()=>{
+                    errorDrawerFuncs.addErrorDrawerEntry({
+                        title: "Error following link",
+                        content: "message" in data ? data.message : ""
+                    });
+                });
         } else {
             window.open($SCRIPT_ROOT + my_view.current + props.res_name)
         }

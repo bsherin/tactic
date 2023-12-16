@@ -9,6 +9,7 @@ import {KeyTrap} from "./key_trap";
 import {ThemeContext} from "./theme"
 import {GlyphButton} from "./blueprint_react_widgets";
 import {SelectedPaneContext} from "./utilities_react";
+import {ErrorDrawerContext} from "./error_drawer";
 
 export {MenuComponent, ToolMenu, TacticMenubar, TopLeftButtons}
 
@@ -69,7 +70,7 @@ function TacticMenubar(props) {
                 </Fragment>
             </div>
             {props.showErrorDrawerButton &&
-                <ErrorDrawerButton toggleErrorDrawer={props.toggleErrorDrawer}/>
+                <ErrorDrawerButton/>
             }
             {props.connection_status &&
                 <ConnectionIndicator connection_status={props.connection_status} />
@@ -87,7 +88,6 @@ TacticMenubar.propTypes = {
     showClose: PropTypes.bool,
     showRefresh: PropTypes.bool,
     showErrorDrawerButton: PropTypes.bool,
-    toggleErrorDrawer: PropTypes.func,
     menu_specs: PropTypes.object,
     resource_name: PropTypes.string,
     resource_icon: PropTypes.string,
@@ -106,7 +106,6 @@ TacticMenubar.defaultProps = {
     menu_specs: null,
     menus: null,
     showErrorDrawerButton: false,
-    toggleErrorDrawer: null,
     resource_name: null,
     resource_icon: null,
     disabled_items: [],
@@ -134,6 +133,7 @@ function ConnectionIndicator(props) {
 }
 
 function ErrorDrawerButton(props) {
+    const errorDrawerFuncs = useContext(ErrorDrawerContext);
     let top_icon_style = {
         display: "flex",
         justifyContent: "flex-end",
@@ -151,7 +151,7 @@ function ErrorDrawerButton(props) {
                 small={true}
                 tabIndex={-1}
                 onClick={() => {
-                    props.toggleErrorDrawer()
+                    errorDrawerFuncs.toggleErrorDrawer()
                 }}
         />
     </div>)

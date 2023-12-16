@@ -25,6 +25,7 @@ var _utilities_react = require("./utilities_react");
 var _theme = require("./theme");
 var _modal_react = require("./modal_react");
 var _toaster2 = require("./toaster");
+var _error_drawer = require("./error_drawer");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
@@ -225,6 +226,7 @@ function LibraryPane(props) {
   var theme = (0, _react.useContext)(_theme.ThemeContext);
   var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   var statusFuncs = (0, _react.useContext)(_toaster2.StatusContext);
+  var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
   var stateSetters = {
     data_dict: set_data_dict,
     num_rows: set_num_rows,
@@ -602,7 +604,12 @@ function LibraryPane(props) {
     var saved_selected_resource = Object.assign({}, selected_resource_ref.current);
     var saved_selected_rows = _toConsumableArray(selected_rows_ref.current);
     var new_tags = _extractNewTags(selected_resource_ref.current.tags);
-    (0, _communication_react.postAjaxPromise)("save_metadata", result_dict).then(function (data) {})["catch"](_toaster.doFlash);
+    (0, _communication_react.postAjaxPromise)("save_metadata", result_dict).then(function (data) {})["catch"](function (data) {
+      errorDrawerFuncs.addErrorDrawerEntry({
+        title: "Error updating resource ".concat(result_dict.res_name),
+        content: "message" in data ? data.message : ""
+      });
+    });
   }
   function _overwriteCommonTags() {
     var result_dict = {
@@ -610,7 +617,12 @@ function LibraryPane(props) {
       "tags": selected_resource_ref.current.tags
     };
     var new_tags = _extractNewTags(selected_resource_ref.current.tags);
-    (0, _communication_react.postAjaxPromise)("overwrite_common_tags", result_dict).then(function (data) {})["catch"](_toaster.doFlash);
+    (0, _communication_react.postAjaxPromise)("overwrite_common_tags", result_dict).then(function (data) {})["catch"](function (data) {
+      errorDrawerFuncs.addErrorDrawerEntry({
+        title: "Error overwriting tags",
+        content: "message" in data ? data.message : ""
+      });
+    });
   }
   function _handleMetadataChange(changed_state_elements) {
     if (!multi_select_ref.current) {
@@ -651,7 +663,12 @@ function LibraryPane(props) {
     };
     (0, _communication_react.postAjaxPromise)("delete_tag", result_dict).then(function (data) {
       _refresh_func();
-    })["catch"](_toaster.doFlash);
+    })["catch"](function (data) {
+      errorDrawerFuncs.addErrorDrawerEntry({
+        title: "Error deleting tag",
+        content: "message" in data ? data.message : ""
+      });
+    });
   }
   function _doTagRename(tag_changes) {
     var result_dict = {
@@ -660,7 +677,12 @@ function LibraryPane(props) {
     };
     (0, _communication_react.postAjaxPromise)("rename_tag", result_dict).then(function (data) {
       _refresh_func();
-    })["catch"](_toaster.doFlash);
+    })["catch"](function (data) {
+      errorDrawerFuncs.addErrorDrawerEntry({
+        title: "Error renaming tag",
+        content: "message" in data ? data.message : ""
+      });
+    });
   }
   function _handleRowDoubleClick(row_dict) {
     var view_view = view_views(props.is_repository)[row_dict.res_type];
@@ -683,7 +705,10 @@ function LibraryPane(props) {
         }).then(function (data) {
           props.handleCreateViewer(data, statusFuncs.clearStatus);
         })["catch"](function (data) {
-          (0, _toaster.doFlash)(data);
+          errorDrawerFuncs.addErrorDrawerEntry({
+            title: "Error handling double click with view ".concat(view_view),
+            content: "message" in data ? data.message : ""
+          });
           statusFuncs.clearStatus();
         });
       } else {
@@ -866,7 +891,10 @@ function LibraryPane(props) {
       }).then(function (data) {
         props.handleCreateViewer(data, statusFuncs.clearStatus);
       })["catch"](function (data) {
-        (0, _toaster.doFlash)(data);
+        errorDrawerFuncs.addErrorDrawerEntry({
+          title: "Error viewing with view ".concat(the_view),
+          content: "message" in data ? data.message : ""
+        });
         statusFuncs.clearstatus();
       });
     } else {
@@ -902,7 +930,10 @@ function LibraryPane(props) {
       }).then(function (data) {
         props.handleCreateViewer(data, statusFuncs.clearStatus);
       })["catch"](function (data) {
-        (0, _toaster.doFlash)(data);
+        errorDrawerFuncs.addErrorDrawerEntry({
+          title: "Error viewing resource ".concat(resource_name),
+          content: "message" in data ? data.message : ""
+        });
         statusFuncs.clearstatus();
       });
     } else {
@@ -937,17 +968,20 @@ function LibraryPane(props) {
       };
       (0, _communication_react.postAjaxPromise)(duplicate_view, result_dict).then(function (data) {
         // _grabNewChunkWithRow(0, true, null, false, new_name)
+      })["catch"](function (data) {
+        errorDrawerFuncs.addErrorDrawerEntry({
+          title: "Error duplicating resource",
+          content: "message" in data ? data.message : ""
+        });
       });
-      // .catch(doFlash)
     }
   }
-
   function _delete_func(resource) {
     var res_list = resource ? [resource] : selected_rows_ref.current;
     var confirm_text;
     if (res_list.length == 1) {
-      var res_name = res_list[0].name;
-      confirm_text = "Are you sure that you want to delete ".concat(res_name, "?");
+      var _res_name = res_list[0].name;
+      confirm_text = "Are you sure that you want to delete ".concat(_res_name, "?");
     } else {
       confirm_text = "Are you sure that you want to delete multiple items?";
     }
@@ -1022,7 +1056,10 @@ function LibraryPane(props) {
       (0, _communication_react.postAjax)("rename_resource/".concat(res_type, "/").concat(res_name), the_data, renameSuccess);
       function renameSuccess(data) {
         if (!data.success) {
-          (0, _toaster.doFlash)(data);
+          errorDrawerFuncs.addErrorDrawerEntry({
+            title: "Error renaming resource",
+            content: "message" in data ? data.message : ""
+          });
           return false;
         }
       }
@@ -1033,31 +1070,45 @@ function LibraryPane(props) {
       var ImportResource = function ImportResource(new_name) {
         var result_dict = {
           "res_type": res_type,
-          "res_name": res_name,
+          "res_name": _res_name2,
           "new_res_name": new_name
         };
-        (0, _communication_react.postAjaxPromise)("/copy_from_repository", result_dict).then(_toaster.doFlash)["catch"](_toaster.doFlash);
+        (0, _communication_react.postAjaxPromise)("/copy_from_repository", result_dict).then(function (data) {
+          statusFuncs.statusMessage("Imported Resource ".concat(_res_name2));
+        })["catch"](function (data) {
+          errorDrawerFuncs.addErrorDrawerEntry({
+            title: "Error importing resource ".concat(_res_name2),
+            content: "message" in data ? data.message : ""
+          });
+        });
       };
       var res_type = selected_resource_ref.current.res_type;
-      var res_name = selected_resource_ref.current.name;
+      var _res_name2 = selected_resource_ref.current.name;
       $.getJSON($SCRIPT_ROOT + "get_resource_names/" + res_type, function (data) {
         dialogFuncs.showModal("ModalDialog", {
           title: "Import ".concat(res_type),
           field_title: "New Name",
           handleSubmit: ImportResource,
-          default_value: res_name,
+          default_value: _res_name2,
           existing_names: data.resource_names,
           checkboxes: [],
           handleCancel: null,
           handleClose: dialogFuncs.hideModal
         });
       });
-      return res_name;
+      return _res_name2;
     } else {
       var result_dict = {
         "selected_rows": selected_rows_ref.current
       };
-      (0, _communication_react.postAjaxPromise)("/copy_from_repository", result_dict).then(_toaster.doFlash)["catch"](_toaster.doFlash);
+      (0, _communication_react.postAjaxPromise)("/copy_from_repository", result_dict).then(function (data) {
+        statusFuncs.statusMessage("Imported Resource ".concat(res_name));
+      })["catch"](function (data) {
+        errorDrawerFuncs.addErrorDrawerEntry({
+          title: "Error importing resource ".concat(res_name),
+          content: "message" in data ? data.message : ""
+        });
+      });
       return "";
     }
   }
@@ -1068,32 +1119,46 @@ function LibraryPane(props) {
         var result_dict = {
           "pane_type": pane_type,
           "res_type": res_type,
-          "res_name": res_name,
+          "res_name": _res_name3,
           "new_res_name": new_name
         };
-        (0, _communication_react.postAjaxPromise)('/send_to_repository', result_dict).then(_toaster.doFlash)["catch"](_toaster.doFlash);
+        (0, _communication_react.postAjaxPromise)('/send_to_repository', result_dict).then(function (data) {
+          statusFuncs.statusMessage("Shared resource ".concat(_res_name3));
+        })["catch"](function (data) {
+          errorDrawerFuncs.addErrorDrawerEntry({
+            title: "Error sharing resource ".concat(_res_name3),
+            content: "message" in data ? data.message : ""
+          });
+        });
       };
       var res_type = selected_resource_ref.current.res_type;
-      var res_name = selected_resource_ref.current.name;
+      var _res_name3 = selected_resource_ref.current.name;
       $.getJSON($SCRIPT_ROOT + "get_repository_resource_names/" + res_type, function (data) {
         dialogFuncs.showModal("ModalDialog", {
           title: "Share ".concat(res_type),
           field_title: "New ".concat(res_type, " Name"),
           handleSubmit: ShareResource,
-          default_value: res_name,
+          default_value: _res_name3,
           existing_names: data.resource_names,
           checkboxes: [],
           handleCancel: null,
           handleClose: dialogFuncs.hideModal
         });
       });
-      return res_name;
+      return _res_name3;
     } else {
       var result_dict = {
         "pane_type": pane_type,
         "selected_rows": selected_rows_ref.current
       };
-      (0, _communication_react.postAjaxPromise)('/send_to_repository', result_dict).then(_toaster.doFlash)["catch"](_toaster.doFlash);
+      (0, _communication_react.postAjaxPromise)('/send_to_repository', result_dict).then(function (data) {
+        statusFuncs.statusMessage("Shared resource ".concat(res_name));
+      })["catch"](function (data) {
+        errorDrawerFuncs.addErrorDrawerEntry({
+          title: "Error sharing resource ".concat(res_name),
+          content: "message" in data ? data.message : ""
+        });
+      });
       return "";
     }
   }
@@ -1106,7 +1171,12 @@ function LibraryPane(props) {
       var the_view = "".concat($SCRIPT_ROOT, "/new_notebook_in_context");
       (0, _communication_react.postAjaxPromise)(the_view, {
         resource_name: ""
-      }).then(props.handleCreateViewer)["catch"](_toaster.doFlash);
+      }).then(props.handleCreateViewer)["catch"](function (data) {
+        errorDrawerFuncs.addErrorDrawerEntry({
+          title: "Error creating new notebook",
+          content: "message" in data ? data.message : ""
+        });
+      });
     } else {
       window.open("".concat($SCRIPT_ROOT, "/new_notebook"));
     }
@@ -1116,7 +1186,12 @@ function LibraryPane(props) {
       var the_view = "".concat($SCRIPT_ROOT, "/new_project_in_context");
       (0, _communication_react.postAjaxPromise)(the_view, {
         resource_name: ""
-      }).then(props.handleCreateViewer)["catch"](_toaster.doFlash);
+      }).then(props.handleCreateViewer)["catch"](function (data) {
+        errorDrawerFuncs.addErrorDrawerEntry({
+          title: "Error creating new notebook",
+          content: "message" in data ? data.message : ""
+        });
+      });
     } else {
       window.open("".concat($SCRIPT_ROOT, "/new_project"));
     }
@@ -1170,12 +1245,12 @@ function LibraryPane(props) {
         $.post(target, function (data) {
           statusFuncs.stopSpinner();
           if (!data.success) {
-            props.addErrorDrawerEntry({
+            errorDrawerFuncs.addErrorDrawerEntry({
               title: "Error combining collections",
               content: data.message
             });
           } else {
-            (0, _toaster.doFlash)(data);
+            statusFuncs.statusMessage("Combined Collections");
           }
         });
       };
@@ -1212,7 +1287,7 @@ function LibraryPane(props) {
         _refresh_func();
         data.new_row;
       })["catch"](function (data) {
-        props.addErrorDrawerEntry({
+        errorDrawerFuncs.addErrorDrawerEntry({
           title: "Error combining collections",
           content: data.message
         });
@@ -1240,16 +1315,14 @@ function LibraryPane(props) {
     var message = "";
     var number_of_errors;
     if (data.file_decoding_errors == null) {
-      data.message = "No decoding errors were encounters";
-      data.alert_type = "Success";
-      (0, _toaster.doFlash)(data);
+      statusFuncs.statusMessage("No import errors");
     } else {
       message = "<b>Decoding errors were enountered</b>";
       for (var filename in data.file_decoding_errors) {
         number_of_errors = String(data.file_decoding_errors[filename].length);
         message = message + "<br>".concat(filename, ": ").concat(number_of_errors, " errors");
       }
-      props.addErrorDrawerEntry({
+      errorDrawerFuncs.addErrorDrawerEntry({
         title: title,
         content: message
       });
@@ -1343,22 +1416,40 @@ function LibraryPane(props) {
     }, load_tile_response, null, props.library_id);
     function load_tile_response(data) {
       if (!data.success) {
-        props.addErrorDrawerEntry({
+        errorDrawerFuncs.addErrorDrawerEntry({
           title: "Error loading tile",
           content: data.message
         });
       } else {
-        (0, _toaster.doFlash)(data);
+        statusFuncs.statusMessage("Loaded tile ".concat(res_name));
       }
     }
   }
   function _unload_module() {
     var resource = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
     var res_name = resource ? resource.name : selected_resource_ref.current.name;
-    $.getJSON("".concat($SCRIPT_ROOT, "/unload_one_module/").concat(res_name), _toaster.doFlash);
+    $.getJSON("".concat($SCRIPT_ROOT, "/unload_one_module/").concat(res_name), function (data) {
+      if (data.success) {
+        statusFuncs.statusMessage("Tile unloaded");
+      } else {
+        errorDrawerFuncs.addErrorDrawerEntry({
+          title: "Error unloading tile",
+          content: "message" in data ? data.message : ""
+        });
+      }
+    });
   }
   function _unload_all_tiles() {
-    $.getJSON("".concat($SCRIPT_ROOT, "/unload_all_tiles"), _toaster.doFlash);
+    $.getJSON("".concat($SCRIPT_ROOT, "/unload_all_tiles"), function (data) {
+      if (data.success) {
+        statusFuncs.statusMessage("Unloaded all tiles");
+      } else {
+        errorDrawerFuncs.addErrorDrawerEntry({
+          title: "Error unloading tiles",
+          content: "message" in data ? data.message : ""
+        });
+      }
+    });
   }
   function _new_tile(template_name) {
     $.getJSON($SCRIPT_ROOT + "get_resource_names/tile", function (data) {
@@ -1386,7 +1477,7 @@ function LibraryPane(props) {
           res_type: "tile"
         }, "/view_module/");
       })["catch"](function (data) {
-        props.addErrorDrawerEntry({
+        errorDrawerFuncs.addErrorDrawerEntry({
           title: "Error creating new tile",
           content: data.message
         });
@@ -1419,7 +1510,7 @@ function LibraryPane(props) {
           res_type: "tile"
         }, "/view_in_creator/");
       })["catch"](function (data) {
-        props.addErrorDrawerEntry({
+        errorDrawerFuncs.addErrorDrawerEntry({
           title: "Error creating new tile",
           content: data.message
         });
@@ -1451,7 +1542,7 @@ function LibraryPane(props) {
           res_type: "list"
         }, "/view_list/");
       })["catch"](function (data) {
-        props.addErrorDrawerEntry({
+        errorDrawerFuncs.addErrorDrawerEntry({
           title: "Error creating new list resource",
           content: data.message
         });
@@ -1514,7 +1605,7 @@ function LibraryPane(props) {
           res_type: "code"
         }, "/view_code/");
       })["catch"](function (data) {
-        props.addErrorDrawerEntry({
+        errorDrawerFuncs.addErrorDrawerEntry({
           title: "Error creating new code resource",
           content: data.message
         });

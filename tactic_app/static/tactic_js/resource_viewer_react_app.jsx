@@ -7,15 +7,15 @@ import {CombinedMetadata} from "./blueprint_mdata_fields";
 import {HorizontalPanes} from "./resizing_layouts";
 import {handleCallback, postAjax} from "./communication_react"
 import {TacticMenubar} from "./menu_utilities"
-import {doFlash, doFlashAlways, StatusContext} from "./toaster";
+import {doFlash, StatusContext, messageOrError} from "./toaster";
 import {SIDE_MARGIN} from "./sizing_tools"
 import {SearchForm} from "./library_widgets";
-import {useConstructor, useConnection} from "./utilities_react";
+import {useConnection} from "./utilities_react";
 import {postAjaxPromise} from "./communication_react";
 
 export {ResourceViewerApp, copyToLibrary, sendToRepository}
 
-function copyToLibrary(res_type, resource_name, dialogFuncs) {
+function copyToLibrary(res_type, resource_name, dialogFuncs, statusFuncs, errorDrawerFuncs) {
     $.getJSON($SCRIPT_ROOT + `get_resource_names/${res_type}`, function (data) {
             dialogFuncs.showModal("ModalDialog", {
                         title: `Import ${res_type}`,
@@ -36,11 +36,13 @@ function copyToLibrary(res_type, resource_name, dialogFuncs) {
             "res_name": resource_name,
             "new_res_name": new_name
         };
-        postAjax("copy_from_repository", result_dict, doFlashAlways);
+        postAjax("copy_from_repository", result_dict, (data)=>{
+            messageOrError(data, statusFuncs, errorDrawerFuncs)
+        });
     }
 }
 
-function sendToRepository(res_type, resource_name, dialogFuncs) {
+function sendToRepository(res_type, resource_name, dialogFuncs, statusFuncs, errorDrawerFuncs) {
     $.getJSON($SCRIPT_ROOT + `get_repository_resource_names/${res_type}`, function (data) {
             dialogFuncs.showModal("ModalDialog", {
                         title: `Share ${res_type}`,
@@ -61,7 +63,9 @@ function sendToRepository(res_type, resource_name, dialogFuncs) {
             "res_name": resource_name,
             "new_res_name": new_name
         };
-        postAjax("send_to_repository", result_dict, doFlashAlways)
+        postAjax("send_to_repository", result_dict, (data)=>{
+            messageOrError(data, statusFuncs, errorDrawerFuncs)
+        })
     }
 }
 
@@ -101,9 +105,7 @@ function ResourceViewerApp(props) {
         props.tsocket.attachListener('handle-callback', (task_packet) => {
             handleCallback(task_packet, props.resource_viewer_id)
         });
-        props.tsocket.attachListener("doFlash", function (data) {
-            doFlash(data)
-        });
+
         if (!props.controlled) {
             props.tsocket.attachListener('close-user-windows', (data) => {
                 if (!(data["originator"] == props.resource_viewer_id)) {
@@ -159,7 +161,6 @@ function ResourceViewerApp(props) {
                            closeTab={props.closeTab}
                            resource_name={props.resource_name}
                            showErrorDrawerButton={props.showErrorDrawerButton}
-                           toggleErrorDrawer={props.toggleErrorDrawer}
             />
             <div ref={top_ref}
                  style={{width: props.usable_width, height: props.usable_height, marginLeft: 15, marginTop: 0}}>
@@ -206,7 +207,6 @@ ResourceViewerApp.propTypes = {
     update_search_state: PropTypes.func,
     search_ref: PropTypes.object,
     showErrorDrawerButton: PropTypes.bool,
-    toggleErrorDrawer: PropTypes.func,
     allow_regex_search: PropTypes.bool,
     regex: PropTypes.bool
 };
@@ -215,7 +215,6 @@ ResourceViewerApp.defaultProps = {
     search_string: "",
     search_matches: null,
     showErrorDrawerButton: false,
-    toggleErrorDrawer: null,
     dark_theme: false,
     am_selected: true,
     controlled: false,

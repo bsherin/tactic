@@ -10,7 +10,7 @@ import {ReactCodemirror} from "./react-codemirror";
 import {ResourceViewerApp, copyToLibrary, sendToRepository} from "./resource_viewer_react_app";
 import {TacticSocket} from "./tactic_socket";
 import {postAjaxPromise, postWithCallback} from "./communication_react.js"
-import {doFlash, withStatus, StatusContext} from "./toaster.js"
+import {withStatus, StatusContext} from "./toaster.js"
 
 import {getUsableDimensions, BOTTOM_MARGIN} from "./sizing_tools.js";
 import {withErrorDrawer} from "./error_drawer.js";
@@ -20,6 +20,7 @@ import {useCallbackStack, useConstructor, useStateAndRef} from "./utilities_reac
 
 import {ThemeContext, withTheme} from "./theme"
 import {DialogContext, withDialogs} from "./modal_react";
+import {ErrorDrawerContext} from "./error_drawer";
 
 export {code_viewer_props, CodeViewerApp}
 
@@ -75,6 +76,7 @@ function CodeViewerApp(props) {
     const theme = useContext(ThemeContext);
     const dialogFuncs = useContext(DialogContext);
     const statusFuncs = useContext(StatusContext);
+    const errorDrawerFuncs = useContext(ErrorDrawerContext);
 
     useEffect(() => {
         statusFuncs.stopSpinner();
@@ -136,7 +138,7 @@ function CodeViewerApp(props) {
                 Transfer: [{
                     "name_text": "Copy to library", "icon_name": "import",
                     "click_handler": () => {
-                        copyToLibrary("list", _cProp("resource_name"), dialogFuncs)
+                        copyToLibrary("list", _cProp("resource_name"), dialogFuncs, statusFuncs, errorDrawerFuncs)
                     }, tooltip: "Copy to library"
                 }]
             }
@@ -163,7 +165,7 @@ function CodeViewerApp(props) {
                         name_text: "Share",
                         icon_name: "share",
                         click_handler: () => {
-                            sendToRepository("list", _cProp("resource_name"), dialogFuncs)
+                            sendToRepository("list", _cProp("resource_name"), dialogFuncs, statusFuncs, errorDrawerFuncs)
                         },
                         tooltip: "Share to repository"
                     },
@@ -258,9 +260,14 @@ function CodeViewerApp(props) {
                 savedContent.current = new_code;
                 savedTags.current = local_tags;
                 savedNotes.current = local_notes;
-                data.timeout = 2000;
+                statusFuncs.statusMessage(`Updated code resource ${_cProp("resource_name")}`, 7)
             }
-            doFlash(data);
+            else {
+                errorDrawerFuncs.addErrorDrawerEntry({
+                    title: "Error saving code",
+                    content: "message" in data ? data.message : ""
+                })
+            }
             return false
         }
     }
@@ -300,7 +307,12 @@ function CodeViewerApp(props) {
                         })
                     }
                 )
-                .catch(doFlash)
+                .catch((data)=>{
+                    errorDrawerFuncs.addErrorDrawerEntry({
+                        title: "Error saving code",
+                        content: "message" in data ? data.message : ""
+                    })
+                })
         }
     }
 
@@ -361,7 +373,6 @@ function CodeViewerApp(props) {
                                    regex={regex}
                                    allow_regex_search={true}
                                    showErrorDrawerButton={true}
-                                   toggleErrorDrawer={props.toggleErrorDrawer}
                 >
                     <ReactCodemirror code_content={code_content}
                                      extraKeys={_extraKeys()}

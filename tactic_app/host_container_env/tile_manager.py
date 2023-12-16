@@ -288,7 +288,7 @@ class TileManager(LibraryResourceManager):
             loaded_tile_management.unload_user_tiles(current_user.username)
             self.refresh_selector_list(current_user)
             socketio.emit('update-menus', {}, namespace='/main', room=current_user.get_id())
-            return jsonify({"message": "Tiles successfully unloaded", "alert_type": "alert-success"})
+            return jsonify({"message": "Tiles successfully unloaded", "success": True})
         except Exception as ex:
             return self.get_exception_for_ajax(ex, "Error unloading tiles")
 

@@ -1,5 +1,5 @@
 import React from "react";
-import {Fragment, useState, useEffect, useRef, memo, useContext} from "react";
+import {Fragment, useState, useEffect, useRef, memo, useContext, createContext} from "react";
 import PropTypes from 'prop-types';
 
 import {Card, Elevation, Drawer, Classes, Button} from "@blueprintjs/core";
@@ -8,10 +8,11 @@ import {postWithCallback} from "./communication_react";
 import {GlyphButton} from "./blueprint_react_widgets";
 
 import {useStateAndRef} from "./utilities_react";
-
 import {ThemeContext} from "./theme";
 
-export {withErrorDrawer, ErrorItem}
+const ErrorDrawerContext = createContext(null);
+export {withErrorDrawer, ErrorItem, ErrorDrawerContext}
+
 
 function withErrorDrawer(WrappedComponent, lposition = "right", error_drawer_size = "30%") {
     function WithErrorComponent(props) {
@@ -27,10 +28,7 @@ function withErrorDrawer(WrappedComponent, lposition = "right", error_drawer_siz
         }, []);
 
         function initSocket() {
-            props.tsocket.attachListener('close-error-drawer', _close);
-            props.tsocket.attachListener('open-error-drawer', _open);
             props.tsocket.attachListener('add-error-drawer-entry', _addEntry);
-            props.tsocket.attachListener("clear-error-drawer", _clearAll);
         }
 
         function _close(data) {
@@ -52,13 +50,11 @@ function withErrorDrawer(WrappedComponent, lposition = "right", error_drawer_siz
         }
 
         function _addEntry(data, open = true) {
-            if (data == null || !("main_id" in data) || (data.main_id == local_id.current)) {
-                ucounter.current = ucounter.current + 1;
-                const newcontents = {...contents_ref.current};
-                newcontents[String(ucounter.current)] = data;
-                set_contents(newcontents);
-                set_show_drawer(open);
-            }
+            ucounter.current = ucounter.current + 1;
+            const newcontents = {...contents_ref.current};
+            newcontents[String(ucounter.current)] = data;
+            set_contents(newcontents);
+            set_show_drawer(open);
         }
 
         function _closeEntry(ukey) {
@@ -101,10 +97,11 @@ function withErrorDrawer(WrappedComponent, lposition = "right", error_drawer_siz
         };
         return (
             <Fragment>
-                <WrappedComponent {...props}
-                                  {...errorDrawerFuncs}
-                                  errorDrawerFuncs={errorDrawerFuncs}
-                />
+                <ErrorDrawerContext.Provider value={errorDrawerFuncs}>
+                    <WrappedComponent {...props}
+                                      errorDrawerFuncs={errorDrawerFuncs}
+                    />
+                </ErrorDrawerContext.Provider>
                 <ErrorDrawer show_drawer={show_drawer}
                              contents={contents_ref}
                              position={lposition}
@@ -146,7 +143,7 @@ function ErrorItem(props) {
                         }
                     }, null, props.local_id)
             } else {
-                props.closeErrorDrawer();
+                errorDrawerFuncs.closeErrorDrawer();
                 props.goToModule(props.tile_type, props.line_number)
             }
         }
@@ -213,7 +210,6 @@ function ErrorDrawer(props) {
                        local_id={props.local_id}
                        handleCloseItem={props.handleCloseItem}
                        goToLineNumberFunc={props.goToLineNumberFunc}
-                       closeErrorDrawer={props.closeErrorDrawer}
                        goToModule={props.goToModule}
                        line_number={entry.line_number} tile_type={entry.tile_type}/>
         )

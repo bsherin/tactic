@@ -12,7 +12,7 @@ import {ThemeContext} from "./theme"
 
 const StatusContext = createContext(null);
 
-export {doFlash, doFlashAlways, withStatus, StatusContext}
+export {doFlash, withStatus, StatusContext, messageOrError}
 
 const DEFAULT_TIMEOUT = 20000;
 
@@ -84,8 +84,18 @@ function doFlash(data) {
     }
 }
 
-function doFlashAlways(data) {
-    doFlash(data)
+function messageOrError(data, success_message, failure_tiltle, statusFuncs, errorDrawerFuncs) {
+    if (!data.success) {
+        errorDrawerFuncs.addErrorDrawerEntry({
+            title: failur_title,
+            content: "message" in data ? data.message : ""
+        });
+    }
+    else {
+        statusFuncs.statusMessage(success_message)
+    }
+    statusFuncs.stopSpinner();
+    statusFuncs.clearStatusMessage();
 }
 
 function withStatus(WrappedComponent) {
@@ -93,6 +103,7 @@ function withStatus(WrappedComponent) {
         const [show_spinner, set_show_spinner] = useState(false);
         const [status_message, set_status_message] = useState(null);
         const [spinner_size, set_spinner_size] = useState(props.spinner_size ? props.spinner_size : 25);
+        const [leftEdge, setLeftEdge] = useState(0);
 
         const pushCallback = useCallbackStack();
 
@@ -104,7 +115,6 @@ function withStatus(WrappedComponent) {
 
         function initSocket() {
             props.tsocket.attachListener('stop-spinner', _stopSpinner);
-            props.tsocket.attachListener('start-spinner', _startSpinner);
             props.tsocket.attachListener('show-status-msg', _statusMessageFromData);
             props.tsocket.attachListener("clear-status-msg", _clearStatusMessage);
         }
@@ -146,6 +156,9 @@ function withStatus(WrappedComponent) {
         function _statusMessage(message, timeout = null) {
             let self = this;
             set_status_message(message);
+            if (!timeout) {
+                timeout = 7
+            }
             pushCallback(() => {
                 if (timeout) {
                     setTimeout(_clearStatusMessage, timeout * 1000);
@@ -154,14 +167,13 @@ function withStatus(WrappedComponent) {
         }
 
         function _statusMessageFromData(data) {
-            if (data.main_id == props.main_id) {
-                set_status_message(data.message);
-                pushCallback(() => {
-                    if (data.hasOwnProperty("timeout") && data.timeout != null) {
-                        setTimeout(_clearStatusMessage, data.timeout * 1000);
-                    }
-                });
-            }
+            set_status_message(data.message);
+            pushCallback(() => {
+                if (data.hasOwnProperty("timeout") && data.timeout != null) {
+                    setTimeout(_clearStatusMessage, data.timeout * 1000);
+                }
+            });
+
         }
 
         function _setStatus(sstate, callback = null) {
@@ -183,6 +195,7 @@ function withStatus(WrappedComponent) {
             clearStatusMessage: _clearStatusMessage,
             statusMessage: _statusMessage,
             setStatus: _setStatus,
+            setLeftEdge: setLeftEdge
         };
 
         return (
@@ -194,6 +207,7 @@ function withStatus(WrappedComponent) {
                 <Status show_spinner={show_spinner}
                         status_message={status_message}
                         spinner_size={spinner_size}
+                        leftEdge={leftEdge}
                         show_close={true}
                         handleClose={() => {
                             _clearStatus(null)
@@ -216,15 +230,16 @@ function Status(props) {
         <div ref={elRef}
              style={{height: 35, width: "100%", position: "absolute", "left": left, "bottom": 0}}
              className={outer_cname}>
-            <div className={cname} style={{position: "absolute", bottom: 7, marginLeft: 15}}>
+            <div className={cname} style={{position: "absolute", bottom: 5, left: props.leftEdge, marginLeft: 15}}>
                 {props.show_spinner &&
                     <Spinner size={20}/>}
                 {props.show_close && (props.show_spiner || props.status_message) &&
                     <GlyphButton handleClick={props.handleClose}
+                                 small={true}
                                  icon="cross"/>}
                 {props.status_message &&
                     <div className="d-flex flex-column justify-content-around" style={{marginLeft: 8}}>
-                        <div id="status-msg-area" className="bp5-ui-text">{props.status_message}</div>
+                        <div id="status-msg-area" className="bp5-ui-text" style={{fontSize: 12}}>{props.status_message}</div>
                     </div>
                 }
             </div>

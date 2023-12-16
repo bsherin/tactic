@@ -111,6 +111,7 @@ function MainApp(props) {
   var theme = (0, _react.useContext)(_theme.ThemeContext);
   var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
+  var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
   var selectedPane = (0, _react.useContext)(_utilities_react.SelectedPaneContext);
   var _useReducer = (0, _react.useReducer)(_main_support.mainReducer, {
       table_is_shrunk: props.doc_type == "none" || iStateOrDefault("table_is_shrunk"),
@@ -264,9 +265,6 @@ function MainApp(props) {
     props.tsocket.attachListener("window-open", function (data) {
       window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data["the_id"]));
     });
-    props.tsocket.attachListener("doFlash", function (data) {
-      (0, _toaster.doFlash)(data);
-    });
     if (!window.in_context) {
       props.tsocket.attachListener('close-user-windows', function (data) {
         if (!(data["originator"] == main_id)) {
@@ -285,7 +283,12 @@ function MainApp(props) {
         (0, _communication_react.postAjaxPromise)(the_view, {
           temp_data_id: data.temp_data_id,
           resource_name: ""
-        }).then(props.handleCreateViewer)["catch"](_toaster.doFlash);
+        }).then(props.handleCreateViewer)["catch"](function (data) {
+          errorDrawerFuncs.addErrorDrawerEntry({
+            title: "Error saving list",
+            content: "message" in data ? data.message : ""
+          });
+        });
       });
     }
     props.tsocket.attachListener('table-message', _handleTableMessage);
@@ -478,7 +481,7 @@ function MainApp(props) {
           statusFuncs.clearStatusMessage();
           statusFuncs.stopSpinner();
         } else {
-          props.addErrorDrawerEntry({
+          errorDrawerFuncs.addErrorDrawerEntry({
             title: "Error creating tile",
             content: create_data.message
           });
@@ -825,7 +828,7 @@ function MainApp(props) {
       } else {
         statusFuncs.clearStatusMessage();
         statusFuncs.stopSpinner();
-        props.addErrorDrawerEntry({
+        errorDrawerFuncs.addErrorDrawerEntry({
           title: "Error removing collection",
           content: data_object.message
         });
@@ -892,7 +895,7 @@ function MainApp(props) {
         } else {
           statusFuncs.clearStatusMessage();
           statusFuncs.stopSpinner();
-          props.addErrorDrawerEntry({
+          errorDrawerFuncs.addErrorDrawerEntry({
             title: "Error changing collection",
             content: data_object.message
           });
@@ -1006,7 +1009,6 @@ function MainApp(props) {
     is_notebook: props.is_notebook,
     is_juptyer: props.is_jupyter,
     setProjectName: _setProjectName,
-    postAjaxFailure: props.postAjaxFailure,
     console_items: console_items_ref.current,
     tile_list: tile_list_ref.current,
     mState: mState,
@@ -1057,7 +1059,6 @@ function MainApp(props) {
     is_juptyer: props.is_jupyter,
     table_is_shrunk: mState.table_is_shrunk,
     toggleTableShrink: mState.doc_type == "none" ? null : _toggleTableShrink,
-    openErrorDrawer: props.openErrorDrawer,
     show_exports_pane: mState.show_exports_pane,
     show_console_pane: mState.show_console_pane,
     setMainStateValue: _setMainStateValue
@@ -1224,7 +1225,6 @@ function MainApp(props) {
     closeTab: props.closeTab,
     resource_name: _cProp("resource_name"),
     showErrorDrawerButton: true,
-    toggleErrorDrawer: props.toggleErrorDrawer,
     extraButtons: extra_menubar_buttons
   }), /*#__PURE__*/_react["default"].createElement(_error_boundary.ErrorBoundary, null, /*#__PURE__*/_react["default"].createElement("div", {
     className: "main-outer ".concat(theme.dark_theme ? "bp5-dark" : "light-theme"),

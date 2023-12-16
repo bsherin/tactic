@@ -38,6 +38,15 @@ function history_viewer_main() {
     var domContainer = document.querySelector('#root');
     ReactDOM.render(the_element, domContainer);
   }
+  function failedToLoad(data) {
+    var fallback = "History viewer failed to load";
+    if ("message" in data) {
+      fallback = fallback + " " + data.message;
+    }
+    var domContainer = document.querySelector('#root');
+    var the_element = /*#__PURE__*/_react["default"].createElement("pre", null, fallback);
+    return ReactDOM.render(the_element, domContainer);
+  }
   var get_url = "get_module_code";
   (0, _communication_react.postAjaxPromise)("".concat(get_url, "/").concat(window.resource_name), {}).then(function (data) {
     var edit_content = data.the_content;
@@ -46,8 +55,12 @@ function history_viewer_main() {
     }).then(function (data2) {
       data.history_list = data2.checkpoints;
       data.resource_name = window.resource_name, history_viewer_props(data, null, gotProps);
-    })["catch"](_toaster.doFlash);
-  })["catch"](_toaster.doFlash);
+    })["catch"](function (data2) {
+      failedToLoad(data2);
+    });
+  })["catch"](function (data2) {
+    failedToLoad(data2);
+  });
 }
 function history_viewer_props(data, registerDirtyMethod, finalCallback) {
   var resource_viewer_id = (0, _utilities_react.guid)();
@@ -86,6 +99,7 @@ function HistoryViewerApp(props) {
   var connection_status = (0, _utilities_react2.useConnection)(props.tsocket, initSocket);
   var savedContent = (0, _react.useRef)(props.edit_content);
   var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
+  var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
   var pushCallback = (0, _utilities_react2.useCallbackStack)();
   (0, _react.useEffect)(function () {
     window.addEventListener("beforeunload", function (e) {
@@ -104,7 +118,6 @@ function HistoryViewerApp(props) {
         window.close();
       }
     });
-    props.tsocket.attachListener('doflash', _toaster.doFlash);
     props.tsocket.attachListener('doflashUser', _toaster.doFlash);
   }
   function handleSelectChange(new_value) {
@@ -121,7 +134,12 @@ function HistoryViewerApp(props) {
             "updatestring_for_sort": updatestring_for_sort
           }).then(function (data) {
             set_right_content(data.module_code);
-          })["catch"](_toaster.doFlash);
+          })["catch"](function (data) {
+            errorDrawerFuncs.addErrorDrawerEntry({
+              title: "Error getting checkpoint code",
+              content: "message" in data ? data.message : ""
+            });
+          });
           return;
         }
       }
@@ -155,16 +173,33 @@ function HistoryViewerApp(props) {
         "module_name": resource_name
       }).then(function (data) {
         set_history_list(data.checkpoints);
-      })["catch"](_toaster.doFlash);
+      })["catch"](function (data) {
+        errorDrawerFuncs.addErrorDrawerEntry({
+          title: "Error getting checkpoint dates",
+          content: "message" in data ? data.message : ""
+        });
+      });
       saveFromLeft();
-    })["catch"](_toaster.doFlash);
+    })["catch"](function (data) {
+      errorDrawerFuncs.addErrorDrawerEntry({
+        title: "Error checkpointing module",
+        content: "message" in data ? data.message : ""
+      });
+    });
   }
   function saveFromLeft() {
     var data_dict = {
       "module_name": props.resource_name,
       "module_code": edit_content
     };
-    (0, _communication_react.postAjaxPromise)("update_from_left", data_dict).then(_toaster.doFlash)["catch"](_toaster.doFlash);
+    (0, _communication_react.postAjaxPromise)("update_from_left", data_dict).then(function (data) {
+      statusFuncs.statusMessage("Updated from left");
+    })["catch"](function (data) {
+      errorDrawerFuncs.addErrorDrawerEntry({
+        title: "Error updating from left",
+        content: "message" in data ? data.message : ""
+      });
+    });
   }
   function dirty() {
     return edit_content != savedContent.current;

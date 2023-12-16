@@ -4,6 +4,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" =
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.ErrorDrawerContext = void 0;
 exports.ErrorItem = ErrorItem;
 exports.withErrorDrawer = withErrorDrawer;
 var _react = _interopRequireWildcard(require("react"));
@@ -32,6 +33,8 @@ function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o =
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
 function _iterableToArrayLimit(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+var ErrorDrawerContext = /*#__PURE__*/(0, _react.createContext)(null);
+exports.ErrorDrawerContext = ErrorDrawerContext;
 function withErrorDrawer(WrappedComponent) {
   var lposition = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "right";
   var error_drawer_size = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : "30%";
@@ -53,10 +56,7 @@ function withErrorDrawer(WrappedComponent) {
       initSocket();
     }, []);
     function initSocket() {
-      props.tsocket.attachListener('close-error-drawer', _close);
-      props.tsocket.attachListener('open-error-drawer', _open);
       props.tsocket.attachListener('add-error-drawer-entry', _addEntry);
-      props.tsocket.attachListener("clear-error-drawer", _clearAll);
     }
     function _close(data) {
       if (data == null || !("main_id" in data) || data.main_id == local_id.current) {
@@ -75,13 +75,11 @@ function withErrorDrawer(WrappedComponent) {
     }
     function _addEntry(data) {
       var open = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
-      if (data == null || !("main_id" in data) || data.main_id == local_id.current) {
-        ucounter.current = ucounter.current + 1;
-        var newcontents = _objectSpread({}, contents_ref.current);
-        newcontents[String(ucounter.current)] = data;
-        set_contents(newcontents);
-        set_show_drawer(open);
-      }
+      ucounter.current = ucounter.current + 1;
+      var newcontents = _objectSpread({}, contents_ref.current);
+      newcontents[String(ucounter.current)] = data;
+      set_contents(newcontents);
+      set_show_drawer(open);
     }
     function _closeEntry(ukey) {
       var newcontents = _objectSpread({}, contents_ref.current);
@@ -116,9 +114,11 @@ function withErrorDrawer(WrappedComponent) {
       toggleErrorDrawer: _toggle,
       setGoToLineNumber: _setGoToLineNumber
     };
-    return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(WrappedComponent, _extends({}, props, errorDrawerFuncs, {
+    return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(ErrorDrawerContext.Provider, {
+      value: errorDrawerFuncs
+    }, /*#__PURE__*/_react["default"].createElement(WrappedComponent, _extends({}, props, {
       errorDrawerFuncs: errorDrawerFuncs
-    })), /*#__PURE__*/_react["default"].createElement(ErrorDrawer, {
+    }))), /*#__PURE__*/_react["default"].createElement(ErrorDrawer, {
       show_drawer: show_drawer,
       contents: contents_ref,
       position: lposition,
@@ -156,7 +156,7 @@ function ErrorItem(props) {
           }
         }, null, props.local_id);
       } else {
-        props.closeErrorDrawer();
+        errorDrawerFuncs.closeErrorDrawer();
         props.goToModule(props.tile_type, props.line_number);
       }
     }
@@ -242,7 +242,6 @@ function ErrorDrawer(props) {
       local_id: props.local_id,
       handleCloseItem: props.handleCloseItem,
       goToLineNumberFunc: props.goToLineNumberFunc,
-      closeErrorDrawer: props.closeErrorDrawer,
       goToModule: props.goToModule,
       line_number: entry.line_number,
       tile_type: entry.tile_type

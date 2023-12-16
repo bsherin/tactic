@@ -21,6 +21,7 @@ var _utilities_react = require("./utilities_react");
 var _blueprint_navbar = require("./blueprint_navbar");
 var _theme = require("./theme");
 var _modal_react = require("./modal_react");
+var _error_drawer2 = require("./error_drawer");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
@@ -110,6 +111,7 @@ function CodeViewerApp(props) {
   var theme = (0, _react.useContext)(_theme.ThemeContext);
   var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
+  var errorDrawerFuncs = (0, _react.useContext)(_error_drawer2.ErrorDrawerContext);
   (0, _react.useEffect)(function () {
     statusFuncs.stopSpinner();
     if (cc_ref && cc_ref.current) {
@@ -165,7 +167,7 @@ function CodeViewerApp(props) {
           "name_text": "Copy to library",
           "icon_name": "import",
           "click_handler": function click_handler() {
-            (0, _resource_viewer_react_app.copyToLibrary)("list", _cProp("resource_name"), dialogFuncs);
+            (0, _resource_viewer_react_app.copyToLibrary)("list", _cProp("resource_name"), dialogFuncs, statusFuncs, errorDrawerFuncs);
           },
           tooltip: "Copy to library"
         }]
@@ -188,7 +190,7 @@ function CodeViewerApp(props) {
           name_text: "Share",
           icon_name: "share",
           click_handler: function click_handler() {
-            (0, _resource_viewer_react_app.sendToRepository)("list", _cProp("resource_name"), dialogFuncs);
+            (0, _resource_viewer_react_app.sendToRepository)("list", _cProp("resource_name"), dialogFuncs, statusFuncs, errorDrawerFuncs);
           },
           tooltip: "Share to repository"
         }]
@@ -272,9 +274,13 @@ function CodeViewerApp(props) {
         savedContent.current = new_code;
         savedTags.current = local_tags;
         savedNotes.current = local_notes;
-        data.timeout = 2000;
+        statusFuncs.statusMessage("Updated code resource ".concat(_cProp("resource_name")), 7);
+      } else {
+        errorDrawerFuncs.addErrorDrawerEntry({
+          title: "Error saving code",
+          content: "message" in data ? data.message : ""
+        });
       }
-      (0, _toaster.doFlash)(data);
       return false;
     }
   }
@@ -310,7 +316,12 @@ function CodeViewerApp(props) {
         _setResourceNameState(new_name, function () {
           _saveMe();
         });
-      })["catch"](_toaster.doFlash);
+      })["catch"](function (data) {
+        errorDrawerFuncs.addErrorDrawerEntry({
+          title: "Error saving code",
+          content: "message" in data ? data.message : ""
+        });
+      });
     }
   }
   function _dirty() {
@@ -367,8 +378,7 @@ function CodeViewerApp(props) {
     search_matches: search_matches,
     regex: regex,
     allow_regex_search: true,
-    showErrorDrawerButton: true,
-    toggleErrorDrawer: props.toggleErrorDrawer
+    showErrorDrawerButton: true
   }), /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror, {
     code_content: code_content,
     extraKeys: _extraKeys(),

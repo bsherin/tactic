@@ -16,6 +16,7 @@ var _key_trap = require("./key_trap");
 var _theme = require("./theme");
 var _blueprint_react_widgets = require("./blueprint_react_widgets");
 var _utilities_react = require("./utilities_react");
+var _error_drawer = require("./error_drawer");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
@@ -94,9 +95,7 @@ function TacticMenubar(props) {
       height: 30
     },
     className: "bp5-navbar-group bp5-align-left"
-  }, /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, menus, sug_glyphs)), props.showErrorDrawerButton && /*#__PURE__*/_react["default"].createElement(ErrorDrawerButton, {
-    toggleErrorDrawer: props.toggleErrorDrawer
-  }), props.connection_status && /*#__PURE__*/_react["default"].createElement(ConnectionIndicator, {
+  }, /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, menus, sug_glyphs)), props.showErrorDrawerButton && /*#__PURE__*/_react["default"].createElement(ErrorDrawerButton, null), props.connection_status && /*#__PURE__*/_react["default"].createElement(ConnectionIndicator, {
     connection_status: props.connection_status
   }));
 }
@@ -107,7 +106,6 @@ TacticMenubar.propTypes = {
   showClose: _propTypes["default"].bool,
   showRefresh: _propTypes["default"].bool,
   showErrorDrawerButton: _propTypes["default"].bool,
-  toggleErrorDrawer: _propTypes["default"].func,
   menu_specs: _propTypes["default"].object,
   resource_name: _propTypes["default"].string,
   resource_icon: _propTypes["default"].string,
@@ -125,7 +123,6 @@ TacticMenubar.defaultProps = {
   menu_specs: null,
   menus: null,
   showErrorDrawerButton: false,
-  toggleErrorDrawer: null,
   resource_name: null,
   resource_icon: null,
   disabled_items: [],
@@ -151,6 +148,7 @@ function ConnectionIndicator(props) {
   }));
 }
 function ErrorDrawerButton(props) {
+  var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
   var top_icon_style = {
     display: "flex",
     justifyContent: "flex-end",
@@ -176,7 +174,7 @@ function ErrorDrawerButton(props) {
     small: true,
     tabIndex: -1,
     onClick: function onClick() {
-      props.toggleErrorDrawer();
+      errorDrawerFuncs.toggleErrorDrawer();
     }
   }));
 }

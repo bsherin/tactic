@@ -9,11 +9,11 @@ const mdi = markdownIt({html: true});
 mdi.use(markdownItLatex);
 
 import {postWithCallback} from "./communication_react"
-import {doFlash} from "./toaster"
 import {MenuComponent, ToolMenu} from "./menu_utilities";
 
 import {DialogContext} from "./modal_react";
 import {StatusContext} from "./toaster"
+import {ErrorDrawerContext} from "./error_drawer";
 
 export {ProjectMenu, DocumentMenu, ColumnMenu, RowMenu, ViewMenu, MenuComponent}
 
@@ -21,6 +21,7 @@ function ProjectMenu(props) {
 
     const dialogFuncs = useContext(DialogContext);
     const statusFuncs = useContext(StatusContext);
+    const errorDrawerFuncs = useContext(ErrorDrawerContext);
 
     var save_state;
     if (props.is_notebook)
@@ -77,12 +78,12 @@ function ProjectMenu(props) {
             result_dict.interface_state = save_state;
             if (props.is_notebook) {
                 postWithCallback(props.main_id, "save_new_notebook_project", result_dict,
-                    save_as_success, props.postAjaxFailur, props.main_id);
+                    save_as_success, errorDrawerFuncs.postAjaxFailure, props.main_id);
             }
             else {
                 result_dict["purgetiles"] = true;
                 postWithCallback(props.main_id, "save_new_project", result_dict,
-                    save_as_success, props.postAjaxFailure, props.main_id);
+                    save_as_success, errorDrawerFuncs.postAjaxFailure, props.main_id);
             }
 
             function save_as_success(data_object) {
@@ -92,19 +93,19 @@ function ProjectMenu(props) {
                             document.title = new_name;
                         }
                         statusFuncs.clearStatusMessage();
-                        data_object.alert_type = "alert-success";
-                        data_object.timeout = 2000;
                         props.updateLastSave();
                         statusFuncs.stopSpinner();
+                        statusFuncs.statusMessage(`Saved project ${new_name}`)
                     });
 
                 }
                 else {
                     statusFuncs.clearStatusMessage();
-                    data_object["message"] = data_object["message"];
-                    data_object["alert-type"] = "alert-warning";
                     statusFuncs.stopSpinner();
-                    doFlash(data_object)
+                    errorDrawerFuncs.addErrorDrawerEntry({
+                        title: `Error saving project`,
+                        content: "message" in data_object ? data_object.message : ""
+                    });
                 }
             }
         }
@@ -121,20 +122,20 @@ function ProjectMenu(props) {
         result_dict.interface_state = save_state;
 
         statusFuncs.startSpinner();
-        postWithCallback(props.main_id, "update_project", result_dict, updateSuccess, props.postAjaxFailure, props.main_id);
+        postWithCallback(props.main_id, "update_project", result_dict, updateSuccess, errorDrawerFuncs.postAjaxFailure, props.main_id);
         function updateSuccess(data) {
-            statusFuncs.startSpinner();
             if (data.success) {
-                data["alert_type"] = "alert-success";
-                data.timeout = 2000;
                 props.updateLastSave();
+                statusFuncs.statusMessage(`Saved project ${props.project_name}`)
             }
             else {
-                data["alert_type"] = "alert-warning";
+                errorDrawerFuncs.addErrorDrawerEntry({
+                    title: `Error saving project`,
+                    content: "message" in data ? data.message : ""
+                });
+                statusFuncs.clearStatusMessage();
             }
-            statusFuncs.clearStatusMessage();
             statusFuncs.stopSpinner();
-            doFlash(data)
         }
     }
 
@@ -189,22 +190,23 @@ function ProjectMenu(props) {
                 "cell_list": cell_list,
             };
             postWithCallback(props.main_id, "export_as_presentation",
-                result_dict, save_as_success, props.postAjaxFailure, props.main_id);
+                result_dict, save_as_success, errorDrawerFuncs.postAjaxFailure, props.main_id);
 
             function save_as_success(data_object) {
                statusFuncs.clearStatusMessage();
                if (data_object.success) {
                    if (save_as_collection) {
-                       data_object.alert_type = "alert-success";
-                       data_object.timeout = 2000;
-                       doFlash(data_object)
+                       statusFuncs.statusMessage("Exported presentation")
                    }
                    else {
                        window.open(`${$SCRIPT_ROOT}/load_temp_page/${data_object["temp_id"]}`)
                    }
                }
                else {
-                       data_object["alert-type"] = "alert-warning";
+                   errorDrawerFuncs.addErrorDrawerEntry({
+                        title: `Error exporting presentation`,
+                        content: "message" in data_object ? data_object.message : ""
+                    });
                }
            }
 
@@ -263,7 +265,7 @@ function ProjectMenu(props) {
                 "cell_list": cell_list,
             };
             postWithCallback(props.main_id, "export_as_report",
-                result_dict, save_as_success, props.postAjaxFailure, props.main_id);
+                result_dict, save_as_success, errorDrawerFuncs.postAjaxFailure, props.main_id);
 
             function save_as_success(data_object) {
                statusFuncs.clearStatusMessage();
@@ -271,14 +273,17 @@ function ProjectMenu(props) {
                    if (save_as_collection) {
                        data_object.alert_type = "alert-success";
                        data_object.timeout = 2000;
-                       doFlash(data_object)
+                       statusFuncs.statusMessage("Exported report")
                    }
                    else {
                        window.open(`${$SCRIPT_ROOT}/load_temp_page/${data_object["temp_id"]}`)
                    }
                }
                else {
-                       data_object["alert-type"] = "alert-warning";
+                   errorDrawerFuncs.addErrorDrawerEntry({
+                    title: `Error exporting report`,
+                    content: "message" in data_object ? data_object.message : ""
+                });
                }
            }
 
@@ -318,19 +323,21 @@ function ProjectMenu(props) {
                 "cell_list": cell_list
             };
             postWithCallback(props.main_id, "export_to_jupyter_notebook",
-                result_dict, save_as_success, props.postAjaxFailure, props.main_id);
+                result_dict, save_as_success, errorDrawerFuncs.postAjaxFailure, props.main_id);
 
             function save_as_success(data_object) {
                statusFuncs.clearStatusMessage();
                 if (data_object.success) {
-                    data_object.alert_type = "alert-success";
-                    data_object.timeout = 2000;
+                    statusFuncs.statusMessage("Exported jupyter notebook")
                 }
                 else {
-                    data_object["alert-type"] = "alert-warning";
+                    errorDrawerFuncs.addErrorDrawerEntry({
+                        title: `Error exporting jupyter notebook`,
+                        content: "message" in data_object ? data_object.message : ""
+                    });
+
                 }
                 statusFuncs.stopSpinner();
-                doFlash(data_object)
             }
         }
     }
@@ -669,6 +676,8 @@ RowMenu.propTypes = {
 RowMenu = memo(RowMenu);
 
 function ViewMenu(props) {
+    const errorDrawerFuncs = useContext(ErrorDrawerContext);
+
     function _shift_column_left() {
         let cnum = props.table_spec.column_names.indexOf(props.selected_column);
         if (cnum == 0) return;
@@ -704,7 +713,7 @@ function ViewMenu(props) {
         let exports_opt_name = props.show_exports_pane ? "Hide Exports" : "Show Exports";
         result[exports_opt_name] = _toggleExports;
         result["divider2"] = "divider";
-        result["Show Error Drawer"] = props.openErrorDrawer;
+        result["Show Error Drawer"] = errorDrawerFuncs.openErrorDrawer;
         return result
     }
 
