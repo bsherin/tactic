@@ -34,10 +34,10 @@ require("codemirror/theme/elegant.css");
 require("codemirror/theme/neat.css");
 require("codemirror/theme/solarized.css");
 require("codemirror/theme/juejin.css");
-var _toaster = require("./toaster");
 var _utilities_react = require("./utilities_react");
 var _theme = require("./theme");
 require("./autocomplete");
+var _error_drawer = require("./error_drawer");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
@@ -87,6 +87,7 @@ function ReactCodemirror(props, passedRef) {
   var first_render = (0, _react.useRef)(true);
   var prevSoftWrap = (0, _react.useRef)(null);
   var theme = (0, _react.useContext)(_theme.ThemeContext);
+  var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
   (0, _react.useEffect)(function () {
     prevSoftWrap.current = props.soft_wrap;
     if (props.registerSetFocusFunc) {
@@ -104,7 +105,10 @@ function ReactCodemirror(props, passedRef) {
       saved_theme.current = theme.dark_theme;
       _doHighlight();
     })["catch"](function (data) {
-      (0, _toaster.doFlash)(data);
+      errorDrawerFuncs.addErrorDrawerEntry({
+        title: "Error getting preferred codemirror theme",
+        content: "message" in data ? data.message : ""
+      });
     });
   }, []);
   (0, _react.useEffect)(function () {

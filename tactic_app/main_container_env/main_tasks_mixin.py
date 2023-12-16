@@ -165,7 +165,7 @@ class LoadSaveTasksMixin:
         tile_containers = {}
         try:
             debug_log("Entering do_full_jupyter_recreation")
-            self.show_main_status_message("Entering do_full_jupyter_recreation")
+            self.emit_status_message("Entering do_full_jupyter_recreation")
             project_name = data_dict["project_name"]
             save_dict = self.db[self.project_collection_name].find_one({"project_name": project_name})
             self.mdata = save_dict["metadata"]
@@ -174,7 +174,7 @@ class LoadSaveTasksMixin:
             jupyter_dict = json.loads(jupyter_text)
             converted_cells = self.convert_jupyter_cells(jupyter_dict["cells"])
             interface_state = {"console_items": converted_cells}
-            self.clear_main_status_message()
+            self.emit_stop_status()
             self.mworker.emit_to_main_client("finish-post-load", {"message": "finish-post-load",
                                                                   "collection_name": "",
                                                                   "short_collection_name": "",
@@ -204,8 +204,8 @@ class LoadSaveTasksMixin:
                 if not tiles_to_recreate:
                     debug_log("done recreating tiles")
                     self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task", {"tile_id_map": tile_id_map})
-                    self.clear_main_status_message()
-                    self.stop_main_status_spinner()
+                    self.emit_clear_status()
+                    self.emit_stop_status_spinner()
                 return
 
             if tlmdata is not None:
@@ -213,7 +213,7 @@ class LoadSaveTasksMixin:
                     modules_to_load.remove(tlmdata["module_name"])
             if not modules_to_load:
                 debug_log("finished loading modules, ready to recreate tiles")
-                self.show_main_status_message("Recreating tiles")
+                self.emit_status_message("Recreating tiles")
                 self.tile_save_results = {}
 
                 new_tile_instances = {}
@@ -227,8 +227,8 @@ class LoadSaveTasksMixin:
                 if not tiles_to_recreate:
                     print("no tiles to recreate")
                     self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task", {})
-                    self.clear_main_status_message()
-                    self.stop_main_status_spinner()
+                    self.emit_clear_status()
+                    self.emit_stop_status_spinner()
                     return
                 debug_log("about to recreate tiles one at a time")
 
@@ -251,11 +251,11 @@ class LoadSaveTasksMixin:
         debug_log("loaded modules is {}".format(str(loaded_modules)))
 
         if not success:
-            self.show_main_status_message("Error trying to recreate the project from save")
+            self.emit_status_message("Error trying to recreate the project from save")
             self.show_error_window(tile_info_dict)
             return
 
-        self.show_main_status_message("Recreating the console")
+        self.emit_status_message("Recreating the console")
 
         task_data = {"message": "finish-post-load",
                      "collection_name": self.collection_name,
@@ -272,7 +272,7 @@ class LoadSaveTasksMixin:
 
         self.mworker.emit_to_main_client("finish-post-load", task_data)
 
-        self.show_main_status_message("Making modules available")
+        self.emit_status_message("Making modules available")
         modules_to_load = copy.copy(loaded_modules)
         if not modules_to_load:
             track_loaded_modules(None)
@@ -288,21 +288,21 @@ class LoadSaveTasksMixin:
         tile_containers = {}
         try:
             print("Entering do_full_notebook_recreation")
-            self.show_main_status_message("Entering do_full_notebook_recreation")
+            self.emit_status_message("Entering do_full_notebook_recreation")
             if "unique_id" in data_dict:
                 interface_state, success = self.recreate_from_save("", data_dict["unique_id"])
             else:
                 interface_state, success = self.recreate_from_save(data_dict["project_name"])
             print("returned from recreate_from_save")
             if not success:
-                self.show_main_status_message("Error trying to recreate the project from save")
+                self.emit_status_message("Error trying to recreate the project from save")
                 self.show_error_window(tile_info_dict)
                 return
 
             if self.pseudo_tile_id is None:
                 self.create_pseudo_tile()
 
-            self.clear_main_status_message()
+            self.emit_clear_status()
             self.mworker.emit_to_main_client("finish-post-load",
                                              {"message": "finish-post-load",
                                               "collection_name": "",
@@ -331,12 +331,12 @@ class LoadSaveTasksMixin:
                 project_dict["loaded_modules"] = project_dict["used_modules"]
             save_dict = {"metadata": self.mdata,
                          "project_name": project_dict["project_name"]}
-            self.show_main_status_message("Pickle, convert, compress")
+            self.emit_status_message("Pickle, convert, compress")
             pdict = make_jsonizable_and_compress(project_dict)
-            self.show_main_status_message("Writing the data")
+            self.emit_status_message("Writing the data")
             save_dict["file_id"] = self.fs.put(pdict)
             self.db[self.project_collection_name].insert_one(save_dict)
-            self.clear_main_status_message()
+            self.emit_clear_status()
 
             return_data = {"project_name": data_dict["project_name"],
                            "success": True,
@@ -347,9 +347,9 @@ class LoadSaveTasksMixin:
             console_items = data_dict["interface_state"]["console_items"]
             self.project_name = data_dict["project_name"]
             self.purgetiles = data_dict["purgetiles"]
-            self.show_main_status_message("Getting loaded modules")
+            self.emit_status_message("Getting loaded modules")
             self.loaded_modules = self.get_loaded_user_modules()
-            self.show_main_status_message("compiling save dictionary")
+            self.emit_status_message("compiling save dictionary")
             self.mworker.post_task(self.mworker.my_id, "compile_save_dict", data_dict, got_save_dict)
 
         except Exception as ex:
@@ -371,13 +371,13 @@ class LoadSaveTasksMixin:
             project_dict["interface_state"] = data_dict["interface_state"]
             save_dict = {"metadata": self.mdata,
                          "project_name": project_dict["project_name"]}
-            self.show_main_status_message("Pickle, convert, compress")
+            self.emit_status_message("Pickle, convert, compress")
             pdict = make_jsonizable_and_compress(project_dict)
-            self.show_main_status_message("Writing the data")
+            self.emit_status_message("Writing the data")
             save_dict["file_id"] = self.fs.put(pdict)
             self.db[self.project_collection_name].insert_one(save_dict)
 
-            self.clear_main_status_message()
+            self.emit_clear_status()
 
             return_data = {"project_name": data_dict["project_name"],
                            "success": True,
@@ -389,7 +389,7 @@ class LoadSaveTasksMixin:
             self.project_name = data_dict["project_name"]
             self.purgetiles = True
 
-            self.show_main_status_message("compiling save dictionary")
+            self.emit_status_message("compiling save dictionary")
             self.doc_type = "notebook"  # This is necessary in case we're saving a juypyter notebook
             self.mworker.post_task(self.mworker.my_id, "compile_save_dict", data_dict, got_save_dict)
 
@@ -420,9 +420,9 @@ class LoadSaveTasksMixin:
                     self.mdata["type"] = self.doc_type
                     if self.purgetiles:
                         project_dict["loaded_modules"] = project_dict["used_modules"]
-                self.show_main_status_message("Pickle, convert, compress")
+                self.emit_status_message("Pickle, convert, compress")
                 pdict = make_jsonizable_and_compress(project_dict)
-                self.show_main_status_message("Writing the data")
+                self.emit_status_message("Writing the data")
                 new_file_id = self.fs.put(pdict)
                 print("using pname {}, project_collection_name {}".format(pname, self.project_collection_name))
                 save_dict = self.db[self.project_collection_name].find_one({"project_name": pname})
@@ -432,7 +432,7 @@ class LoadSaveTasksMixin:
                 save_dict["file_id"] = new_file_id
                 self.db[self.project_collection_name].update_one({"project_name": pname},
                                                                  {'$set': save_dict})
-                self.clear_main_status_message()
+                self.emit_clear_status()
                 return_data = {"project_name": pname,
                                "success": True,
                                "message": "Project Successfully Saved"}
@@ -446,9 +446,9 @@ class LoadSaveTasksMixin:
 
         try:
             console_items = data_dict["interface_state"]["console_items"]
-            self.show_main_status_message("Getting loaded modules")
+            self.emit_status_message("Getting loaded modules")
             self.loaded_modules = self.get_loaded_user_modules()
-            self.show_main_status_message("compiling save dictionary")
+            self.emit_status_message("compiling save dictionary")
             self.mworker.post_task(self.mworker.my_id, "compile_save_dict", data_dict, got_save_dict)
 
         except Exception as ex:
@@ -668,7 +668,7 @@ class LoadSaveTasksMixin:
 
     @task_worthy
     def console_to_notebook(self, data_dict):
-        self.show_main_status_message("compiling save dictionary")
+        self.emit_status_message("compiling save dictionary")
 
         def got_save_dict(console_dict):
             console_dict["doc_type"] = "notebook"
@@ -816,7 +816,7 @@ class TileCreationTasksMixin:
         gtc_response = self.create_tile_container({"user_id": self.user_id, "parent": self.mworker.my_id,
                                                    "other_name": tile_name, "ppi": self.ppi, "tile_id": old_tile_id})
         if not gtc_response["success"]:
-            self.mworker.send_error_entry("Project recreation tphrc", gtc_response["message"],)
+            self.mworker.send_error_entry("Project recreation tphrc", gtc_response["message"])
             self.mworker.submit_response(task_packet, {"old_tile_id": old_tile_id})
             return
 
@@ -1284,10 +1284,10 @@ class APISupportTasksMixin:
                                                      self.doc_type,
                                                      metadata_dict,
                                                      header_list_dict)
-            return {"success": True}
+            return {"success": True, "user_id": self.user_id}
         except Exception as ex:
             error_string = self.handle_exception(ex, print_to_console=True)
-            return {"success": False, "message": error_string}
+            return {"success": False, "title": "Error exporting", "content": error_string, "user_id": self.user_id}
 
     @task_worthy
     def create_collection(self, data):
@@ -1619,7 +1619,7 @@ class ConsoleTasksMixin:
 
     @task_worthy
     def clear_console_namespace(self, data):
-        self.show_main_message("Resetting notebook ...")
+        self.emit_status_message("Resetting notebook ...")
         if self.pseudo_tile_id is not None:
             self.mworker.post_task(self.pseudo_tile_id, "kill_me", {})
             docker_functions.restart_container(self.pseudo_tile_id)
@@ -1627,19 +1627,19 @@ class ConsoleTasksMixin:
             def instantiate_done(instantiate_result):
                 if not instantiate_result["success"]:
                     debug_log("got an exception " + instantiate_result["message"])
-                    self.show_main_message("Error resetting notebook", 7)
+                    self.emit_status_message("Error resetting notebook", 7)
                     raise Exception(instantiate_result["message"])
                 else:
                     instantiate_result["globals_changed"] = True
                     self.updated_globals(instantiate_result)
-                self.show_main_message("Notebook reset", 21)
+                self.emit_status_message("Notebook reset", 21)
 
             data_dict = {"base_figure_url": self.base_figure_url,
                          "doc_type": self.doc_type, "globals_dict": {}, "img_dict": {},
                          "tile_address": self.pseudo_tile_address}
             self.mworker.post_task(self.pseudo_tile_id, "instantiate_as_pseudo_tile", data_dict, instantiate_done)
 
-        self.show_main_message("Notebook reset", 21)
+        self.emit_status_message("Notebook reset", 21)
         return {"success": True}
 
 

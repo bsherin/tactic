@@ -35,6 +35,7 @@ import {useCallbackStack, useReducerAndRef} from "./utilities_react";
 import {ThemeContext, withTheme} from "./theme";
 import {DialogContext, withDialogs} from "./modal_react";
 import {StatusContext} from "./toaster";
+import {ErrorDrawerContext} from "./error_drawer";
 import {SelectedPaneContext} from "./utilities_react";
 
 export {MainApp}
@@ -88,6 +89,7 @@ function MainApp(props) {
     const theme = useContext(ThemeContext);
     const dialogFuncs = useContext(DialogContext);
     const statusFuncs = useContext(StatusContext);
+    const errorDrawerFuncs = useContext(ErrorDrawerContext);
     const selectedPane = useContext(SelectedPaneContext);
 
     const [mState, mDispatch] = useReducer(mainReducer, {
@@ -253,9 +255,6 @@ function MainApp(props) {
         props.tsocket.attachListener("window-open", data => {
             window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`)
         });
-        props.tsocket.attachListener("doFlash", function (data) {
-            doFlash(data)
-        });
         if (!window.in_context) {
             props.tsocket.attachListener('close-user-windows', function (data) {
                 if (!(data["originator"] == main_id)) {
@@ -273,7 +272,12 @@ function MainApp(props) {
                 const the_view = `${$SCRIPT_ROOT}/new_notebook_in_context`;
                 postAjaxPromise(the_view, {temp_data_id: data.temp_data_id, resource_name: ""})
                     .then(props.handleCreateViewer)
-                    .catch(doFlash);
+                    .catch((data)=>{
+                        errorDrawerFuncs.addErrorDrawerEntry({
+                            title: `Error saving list`,
+                            content: "message" in data ? data.message : ""
+                        });
+                    })
             })
         }
         props.tsocket.attachListener('table-message', _handleTableMessage);
@@ -461,7 +465,7 @@ function MainApp(props) {
                     statusFuncs.clearStatusMessage();
                     statusFuncs.stopSpinner()
                 } else {
-                    props.addErrorDrawerEntry({title: "Error creating tile", content: create_data.message})
+                    errorDrawerFuncs.addErrorDrawerEntry({title: "Error creating tile", content: create_data.message})
                 }
             }, null, props.main_id)
         }
@@ -774,7 +778,7 @@ function MainApp(props) {
             else {
                 statusFuncs.clearStatusMessage();
                 statusFuncs.stopSpinner();
-                props.addErrorDrawerEntry({title: "Error removing collection", content: data_object.message})
+                errorDrawerFuncs.addErrorDrawerEntry({title: "Error removing collection", content: data_object.message})
             }
         }
     }
@@ -842,7 +846,7 @@ function MainApp(props) {
                 } else {
                     statusFuncs.clearStatusMessage();
                     statusFuncs.stopSpinner();
-                    props.addErrorDrawerEntry({title: "Error changing collection", content: data_object.message})
+                    errorDrawerFuncs.addErrorDrawerEntry({title: "Error changing collection", content: data_object.message})
                 }
             }
         }
@@ -959,7 +963,6 @@ function MainApp(props) {
                          is_notebook={props.is_notebook}
                          is_juptyer={props.is_jupyter}
                          setProjectName={_setProjectName}
-                         postAjaxFailure={props.postAjaxFailure}
                          console_items={console_items_ref.current}
                          tile_list={tile_list_ref.current}
                          mState={mState}
@@ -1017,7 +1020,6 @@ function MainApp(props) {
                       is_juptyer={props.is_jupyter}
                       table_is_shrunk={mState.table_is_shrunk}
                       toggleTableShrink={mState.doc_type == "none" ? null : _toggleTableShrink}
-                      openErrorDrawer={props.openErrorDrawer}
                       show_exports_pane={mState.show_exports_pane}
                       show_console_pane={mState.show_console_pane}
                       setMainStateValue={_setMainStateValue}
@@ -1204,7 +1206,6 @@ function MainApp(props) {
                            closeTab={props.closeTab}
                            resource_name={_cProp("resource_name")}
                            showErrorDrawerButton={true}
-                           toggleErrorDrawer={props.toggleErrorDrawer}
                            extraButtons={extra_menubar_buttons}
             />
             <ErrorBoundary>

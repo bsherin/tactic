@@ -14,8 +14,8 @@ var _resource_viewer_react_app = require("./resource_viewer_react_app");
 var _tactic_socket = require("./tactic_socket");
 var _reactCodemirror = require("./react-codemirror");
 var _communication_react = require("./communication_react");
-var _toaster = require("./toaster");
 var _error_drawer = require("./error_drawer");
+var _toaster = require("./toaster");
 var _sizing_tools = require("./sizing_tools");
 var _utilities_react = require("./utilities_react");
 var _blueprint_navbar = require("./blueprint_navbar");
@@ -102,6 +102,7 @@ function ModuleViewerApp(props) {
   var theme = (0, _react.useContext)(_theme.ThemeContext);
   var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
+  var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
 
   // The following only are used if not in context
   var _useState7 = (0, _react.useState)(function () {
@@ -179,7 +180,7 @@ function ModuleViewerApp(props) {
           "name_text": "Copy to library",
           "icon_name": "import",
           "click_handler": function click_handler() {
-            (0, _resource_viewer_react_app.copyToLibrary)("tile", _cProp("resource_name"), dialogFuncs);
+            (0, _resource_viewer_react_app.copyToLibrary)("tile", _cProp("resource_name"), dialogFuncs, statusFuncs, errorDrawerFuncs);
           },
           tooltip: "Copy to library"
         }]
@@ -231,7 +232,7 @@ function ModuleViewerApp(props) {
           name_text: "Share",
           icon_name: "share",
           click_handler: function click_handler() {
-            (0, _resource_viewer_react_app.sendToRepository)("list", _cProp("resource_name"), dialogFuncs);
+            (0, _resource_viewer_react_app.sendToRepository)("list", _cProp("resource_name"), dialogFuncs, statusFuncs, errorDrawerFuncs);
           },
           tooltip: "Share to repository"
         }]
@@ -274,10 +275,17 @@ function ModuleViewerApp(props) {
       }
     }
   }
-  function _doFlashStopSpinner(data) {
+  function handleResult(data, success_message, failure_tiltle) {
+    if (!data.success) {
+      errorDrawerFuncs.addErrorDrawerEntry({
+        title: failur_title,
+        content: "message" in data ? data.message : ""
+      });
+    } else {
+      statusFuncs.statusMessage(success_message);
+    }
     statusFuncs.stopSpinner();
     statusFuncs.clearStatusMessage();
-    (0, _toaster.doFlash)(data);
   }
   function get_new_cc_height() {
     if (cc_bounding_top.current) {
@@ -318,8 +326,17 @@ function ModuleViewerApp(props) {
       return false;
     }
     statusFuncs.startSpinner();
-    statusFuncs.statusMessage("Saving Module");
-    doSavePromise().then(_doFlashStopSpinner)["catch"](_doFlashStopSpinner);
+    statusFuncs.statusMessage("Saving nodule");
+    doSavePromise().then(function (data) {
+      statusFuncs.statusMessage("Saved module");
+      statusFuncs.stopSpinner();
+    })["catch"](function (data) {
+      errorDrawerFuncs.addErrorDrawerEntry({
+        title: "Error saving module",
+        content: "message" in data ? data.message : ""
+      });
+      statusFuncs.stopSpinner();
+    });
     return false;
   }
   function doSavePromise() {
@@ -384,7 +401,14 @@ function ModuleViewerApp(props) {
         _setResourceNameState(new_name, function () {
           _saveMe();
         });
-      })["catch"](_toaster.doFlash);
+      })["catch"](function (data) {
+        statusFuncs.stopSpinner();
+        statusFuncs.clearstatus();
+        errorDrawerFuncs.addErrorDrawerEntry({
+          title: "Error saving module",
+          content: "message" in data ? data.message : ""
+        });
+      });
     }
   }
   function _saveAndLoadModule() {
@@ -398,12 +422,14 @@ function ModuleViewerApp(props) {
         "tile_module_name": _cProp("resource_name"),
         "user_id": window.user_id
       }, load_success, null, props.resource_viewer_id);
-    })["catch"](_doFlashStopSpinner);
+    })["catch"](function (data) {
+      errorDrawerFuncs.addErrorDrawerEntry({
+        title: "Error saving and loading odule",
+        content: "message" in data ? data.message : ""
+      });
+    });
     function load_success(data) {
-      if (data.success) {
-        data.timeout = 2000;
-      }
-      _doFlashStopSpinner(data);
+      handleResult(data, "Saved and loaded module", "Failed to load module");
       return false;
     }
   }
@@ -418,10 +444,7 @@ function ModuleViewerApp(props) {
       "user_id": window.user_id
     }, load_success, null, props.resource_viewer_id);
     function load_success(data) {
-      if (data.success) {
-        data.timeout = 2000;
-      }
-      _doFlashStopSpinner(data);
+      handleResult(data, "Loaded module", "Failure loading modules");
       return false;
     }
   }
@@ -430,10 +453,25 @@ function ModuleViewerApp(props) {
       return false;
     }
     statusFuncs.startSpinner();
+    statusFuncs.statusmessage("Saving...");
     doSavePromise().then(function () {
-      statusFuncs.statusMessage("Checkpointing");
-      doCheckpointPromise().then(_doFlashStopSpinner)["catch"](_doFlashStopSpinner);
-    })["catch"](_doFlashStopSpinner);
+      statusFuncs.statusMessage("Checkpointing...");
+      doCheckpointPromise().then(function (data) {
+        statusFuncs.stopSpinner();
+        statusFuncs.statusMessage("Saved and checkpointed");
+      })["catch"](function (data) {
+        statusFuncs.clearStatusMessage();
+        errorDrawerFuncs.addErrorDrawerEntry({
+          title: "Error checkpointing",
+          content: "message" in data ? data.message : ""
+        });
+      });
+    })["catch"](function (data) {
+      errorDrawerFuncs.addErrorDrawerEntry({
+        title: "Error saving and checkpointing",
+        content: "message" in data ? data.message : ""
+      });
+    });
     return false;
   }
   function doCheckpointPromise() {
@@ -514,8 +552,7 @@ function ModuleViewerApp(props) {
     allow_regex_search: true,
     search_ref: search_ref,
     meta_outer: props.meta_outer,
-    showErrorDrawerButton: true,
-    toggleErrorDrawer: props.toggleErrorDrawer
+    showErrorDrawerButton: true
   }), /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror, {
     code_content: code_content,
     extraKeys: _extraKeys(),

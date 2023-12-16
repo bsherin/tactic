@@ -31,6 +31,7 @@ import {renderAutoCompleteElement} from "./autocomplete";
 import {useCallbackStack, useStateAndRef, useConnection} from "./utilities_react";
 import {ThemeContext, withTheme} from "./theme";
 import {DialogContext, withDialogs} from "./modal_react";
+import {ErrorDrawerContext} from "./error_drawer";
 import {SelectedPaneContext} from "./utilities_react";
 
 export {CreatorApp}
@@ -110,6 +111,7 @@ function CreatorApp(props) {
     const theme = useContext(ThemeContext);
     const dialogFuncs = useContext(DialogContext);
     const statusFuncs = useContext(StatusContext);
+    const errorDrawerFuncs = useContext(ErrorDrawerContext);
 
     const selectedPane = useContext(SelectedPaneContext);
 
@@ -144,7 +146,7 @@ function CreatorApp(props) {
         }
         _goToLineNumber();
         _update_saved_state();
-        props.setGoToLineNumber(_selectLineNumber);
+        errorDrawerFuncs.setGoToLineNumber(_selectLineNumber);
         statusFuncs.stopSpinner();
         return (() => {
             delete_my_container()
@@ -161,9 +163,7 @@ function CreatorApp(props) {
             window.focus();
             _selectLineNumber(data.line_number)
         });
-        props.tsocket.attachListener("doFlash", function (data) {
-            doFlash(data)
-        });
+
         if (!window.in_context) {
             props.tsocket.attachListener("doFlashUser", function (data) {
                 doFlash(data)
@@ -211,7 +211,7 @@ function CreatorApp(props) {
                 {
                     name_text: "Share", icon_name: "share",
                     click_handler: () => {
-                        sendToRepository("tile", _cProp("resource_name"), dialogFuncs)
+                        sendToRepository("tile", _cProp("resource_name"), dialogFuncs, statusFuncs, errorDrawerFuncs)
                     }
                 }
             ]
@@ -339,24 +339,19 @@ function CreatorApp(props) {
         window.open(`${$SCRIPT_ROOT}/show_tile_differ/${_cProp("resource_name")}`)
     }
 
-    function _doFlashStopSpinner(data) {
-        statusFuncs.clearStatus();
-        doFlash(data)
-    }
-
     function _selectLineNumber(lnumber) {
         rline_number.current = lnumber;
         _goToLineNumber()
     }
 
-    function _logErrorStopSpinner(title, data = {}) {
+    function _logErrorStopSpinner(title, data) {
         statusFuncs.stopSpinner();
         let entry = {title: title, content: data.message};
         if ("line_number" in data) {
             entry.line_number = data.line_number
         }
-        props.addErrorDrawerEntry(entry, true);
-        props.openErrorDrawer();
+        errorDrawerFuncs.addErrorDrawerEntry(entry, true);
+        errorDrawerFuncs.openErrorDrawer();
     }
 
     function _dirty() {
@@ -387,14 +382,17 @@ function CreatorApp(props) {
                 )
             })
             .catch((data) => {
-                _logErrorStopSpinner("Error loading module", data)
+                _logErrorStopSpinner("Error saving and loading module", data)
             });
 
         function load_success(data) {
             if (data.success) {
-                data.timeout = 2000;
+                statusFuncs.statusMessage("Loaded successfully");
+                statusFuncs.stopSpinner()
             }
-            _doFlashStopSpinner(data);
+            else {
+                _logErrorStopSpinner("Error loading module", data)
+            }
             return false
         }
     }
@@ -404,7 +402,7 @@ function CreatorApp(props) {
             return false
         }
         statusFuncs.startSpinner();
-        statusFuncs.statusMessage("Loading Module");
+        statusFuncs.statusMessage("Loading module...");
         postWithCallback(
             "host",
             "load_tile_module_task",
@@ -416,9 +414,12 @@ function CreatorApp(props) {
 
         function load_success(data) {
             if (data.success) {
-                data.timeout = 2000;
+                statusFuncs.statusMessage("Loaded module");
+                statusFuncs.stopSpinner();
             }
-            _doFlashStopSpinner(data);
+            else {
+                _logErrorStopSpinner("Error loading module", data)
+            }
             return false
         }
     }
@@ -455,7 +456,9 @@ function CreatorApp(props) {
                         })
                     }
                 )
-                .catch(doFlash)
+                .catch((data)=>{
+                    _logErrorStopSpinner("Error saving module", data)
+                })
         }
 
     }
@@ -469,9 +472,12 @@ function CreatorApp(props) {
             return false
         }
         statusFuncs.startSpinner();
-        statusFuncs.statusMessage("Saving Module");
+        statusFuncs.statusMessage("Saving module...");
         doSavePromise()
-            .then(_doFlashStopSpinner)
+            .then((data)=>{
+                statusFuncs.statusMessage("Saved module");
+                statusFuncs.stopSpinner()
+            })
             .catch((data) => {
                 _logErrorStopSpinner("Error saving module", data)
             });
@@ -488,7 +494,10 @@ function CreatorApp(props) {
             .then(function () {
                 statusFuncs.statusMessage("Checkpointing");
                 doCheckpointPromise()
-                    .then(_doFlashStopSpinner)
+                    .then((data)=>{
+                        statusFuncs.statusMessage("Saved and checkpointed");
+                        statusFuncs.stopSpinner()
+                    })
                     .catch((data) => {
                         _logErrorStopSpinner("Error checkpointing module", data)
                     })
@@ -587,7 +596,7 @@ function CreatorApp(props) {
 
     function _goToLineNumber() {
         if (rline_number.current) {
-            props.closeErrorDrawer();
+            errorDrawerFuncs.closeErrorDrawer();
             if (props.is_mpl || props.is_d3) {
                 if (rline_number.current < draw_plot_line_number_ref.current) {
                     if (emObject.current) {
@@ -1123,7 +1132,6 @@ function CreatorApp(props) {
                            closeTab={props.closeTab}
                            resource_name={_cProp("resource_name")}
                            showErrorDrawerButton={true}
-                           toggleErrorDrawer={props.toggleErrorDrawer}
                            controlled={props.controlled}
             />
             <ErrorBoundary>

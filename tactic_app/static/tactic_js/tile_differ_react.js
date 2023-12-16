@@ -34,6 +34,15 @@ function tile_differ_main() {
     var domContainer = document.querySelector('#root');
     ReactDOM.render(the_element, domContainer);
   }
+  function failedToLoad(data) {
+    var fallback = "Tile differ failed to load";
+    if ("message" in data) {
+      fallback = fallback + " " + data.message;
+    }
+    var domContainer = document.querySelector('#root');
+    var the_element = /*#__PURE__*/_react["default"].createElement("pre", null, fallback);
+    return ReactDOM.render(the_element, domContainer);
+  }
   var get_url = "get_module_code";
   (0, _communication_react.postAjaxPromise)("".concat(get_url, "/").concat(window.resource_name), {}).then(function (data) {
     var edit_content = data.the_content;
@@ -41,8 +50,12 @@ function tile_differ_main() {
       data.tile_list = data2.tile_names;
       data.resource_name = window.resource_name, data.second_resource_name = window.second_resource_name;
       tile_differ_props(data, null, gotProps);
-    })["catch"](_toaster.doFlash);
-  })["catch"](_toaster.doFlash);
+    })["catch"](function (data) {
+      failedToLoad(data);
+    });
+  })["catch"](function (data) {
+    failedToLoad(data);
+  });
 }
 function tile_differ_props(data, registerDirtyMethod, finalCallback) {
   var resource_viewer_id = (0, _utilities_react.guid)();
@@ -82,6 +95,8 @@ function TileDifferApp(props) {
   var connection_status = (0, _utilities_react.useConnection)(props.tsocket, initSocket);
   var savedContent = (0, _react.useRef)(props.edit_content);
   var pushCallback = (0, _utilities_react.useCallbackStack)();
+  var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
+  var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
   (0, _react.useEffect)(function () {
     window.addEventListener("beforeunload", function (e) {
       if (_dirty()) {
@@ -99,7 +114,6 @@ function TileDifferApp(props) {
         window.close();
       }
     });
-    props.tsocket.attachListener('doflash', _toaster.doFlash);
     props.tsocket.attachListener('doflashUser', _toaster.doFlash);
   }
   function handleSelectChange(new_value) {
@@ -107,7 +121,12 @@ function TileDifferApp(props) {
     var self = this;
     (0, _communication_react.postAjaxPromise)("get_module_code/" + new_value, {}).then(function (data) {
       set_right_content(data.the_content);
-    })["catch"](_toaster.doFlash);
+    })["catch"](function (data) {
+      errorDrawerFuncs.addErrorDrawerEntry({
+        title: "Error getting module code",
+        content: "message" in data ? data.message : ""
+      });
+    });
   }
   function handleEditChange(new_code) {
     set_edit_content(new_code);
@@ -117,7 +136,14 @@ function TileDifferApp(props) {
       "module_name": props.resource_name,
       "module_code": edit_content
     };
-    (0, _communication_react.postAjaxPromise)("update_from_left", data_dict).then(_toaster.doFlash)["catch"](_toaster.doFlash);
+    (0, _communication_react.postAjaxPromise)("update_from_left", data_dict).then(function (data) {
+      statusFuncs.statusMessage("Updated from left");
+    })["catch"](function (data) {
+      errorDrawerFuncs.addErrorDrawerEntry({
+        title: "Error updating from left",
+        content: "message" in data ? data.message : ""
+      });
+    });
   }
   function dirty() {
     return edit_content != savedContent.current;

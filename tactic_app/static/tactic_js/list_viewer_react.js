@@ -130,6 +130,7 @@ function ListViewerApp(props) {
   var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
   var selectedPane = (0, _react.useContext)(_utilities_react.SelectedPaneContext);
+  var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
   (0, _react.useEffect)(function () {
     statusFuncs.stopSpinner();
     if (cc_ref && cc_ref.current) {
@@ -171,7 +172,7 @@ function ListViewerApp(props) {
           "name_text": "Copy to library",
           "icon_name": "import",
           "click_handler": function click_handler() {
-            (0, _resource_viewer_react_app.copyToLibrary)("list", _cProp("resource_name"), dialogFuncs);
+            (0, _resource_viewer_react_app.copyToLibrary)("list", _cProp("resource_name"), dialogFuncs, statusFuncs, errorDrawerFuncs);
           },
           tooltip: "Copy to library"
         }]
@@ -194,7 +195,7 @@ function ListViewerApp(props) {
           name_text: "Share",
           icon_name: "share",
           click_handler: function click_handler() {
-            (0, _resource_viewer_react_app.sendToRepository)("list", _cProp("resource_name"), dialogFuncs);
+            (0, _resource_viewer_react_app.sendToRepository)("list", _cProp("resource_name"), dialogFuncs, statusFuncs, errorDrawerFuncs);
           },
           tooltip: "Share to repository"
         }]
@@ -282,10 +283,13 @@ function ListViewerApp(props) {
         savedContent.current = new_list_as_string;
         savedTags.current = local_tags;
         savedNotes.current = local_notes;
-        data.timeout = 2000;
+        statusFuncs.statusMessage("Saved list ".concat(result_dict.list_name));
+      } else {
+        errorDrawerFuncs.addErrorDrawerEntry({
+          title: "Error creating new notebook",
+          content: "message" in data ? data.message : ""
+        });
       }
-      (0, _toaster.doFlash)(data);
-      return false;
     }
   }
   function _saveMeAs(e) {
@@ -322,7 +326,12 @@ function ListViewerApp(props) {
         _setResourceNameState(new_name, function () {
           _saveMe();
         });
-      })["catch"](_toaster.doFlash);
+      })["catch"](function (data) {
+        errorDrawerFuncs.addErrorDrawerEntry({
+          title: "Error saving list",
+          content: "message" in data ? data.message : ""
+        });
+      });
     }
   }
   function _dirty() {

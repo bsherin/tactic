@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.StatusContext = void 0;
 exports.doFlash = doFlash;
-exports.doFlashAlways = doFlashAlways;
+exports.messageOrError = messageOrError;
 exports.withStatus = withStatus;
 var _react = _interopRequireWildcard(require("react"));
 var _propTypes = _interopRequireDefault(require("prop-types"));
@@ -89,8 +89,17 @@ function doFlash(data) {
     });
   }
 }
-function doFlashAlways(data) {
-  doFlash(data);
+function messageOrError(data, success_message, failure_tiltle, statusFuncs, errorDrawerFuncs) {
+  if (!data.success) {
+    errorDrawerFuncs.addErrorDrawerEntry({
+      title: failur_title,
+      content: "message" in data ? data.message : ""
+    });
+  } else {
+    statusFuncs.statusMessage(success_message);
+  }
+  statusFuncs.stopSpinner();
+  statusFuncs.clearStatusMessage();
 }
 function withStatus(WrappedComponent) {
   function newFunc(props) {
@@ -106,6 +115,10 @@ function withStatus(WrappedComponent) {
       _useState6 = _slicedToArray(_useState5, 2),
       spinner_size = _useState6[0],
       set_spinner_size = _useState6[1];
+    var _useState7 = (0, _react.useState)(0),
+      _useState8 = _slicedToArray(_useState7, 2),
+      leftEdge = _useState8[0],
+      setLeftEdge = _useState8[1];
     var pushCallback = (0, _utilities_react.useCallbackStack)();
     (0, _react.useEffect)(function () {
       if (props.tsocket) {
@@ -114,7 +127,6 @@ function withStatus(WrappedComponent) {
     }, []);
     function initSocket() {
       props.tsocket.attachListener('stop-spinner', _stopSpinner);
-      props.tsocket.attachListener('start-spinner', _startSpinner);
       props.tsocket.attachListener('show-status-msg', _statusMessageFromData);
       props.tsocket.attachListener("clear-status-msg", _clearStatusMessage);
     }
@@ -150,6 +162,9 @@ function withStatus(WrappedComponent) {
       var timeout = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
       var self = this;
       set_status_message(message);
+      if (!timeout) {
+        timeout = 7;
+      }
       pushCallback(function () {
         if (timeout) {
           setTimeout(_clearStatusMessage, timeout * 1000);
@@ -157,14 +172,12 @@ function withStatus(WrappedComponent) {
       });
     }
     function _statusMessageFromData(data) {
-      if (data.main_id == props.main_id) {
-        set_status_message(data.message);
-        pushCallback(function () {
-          if (data.hasOwnProperty("timeout") && data.timeout != null) {
-            setTimeout(_clearStatusMessage, data.timeout * 1000);
-          }
-        });
-      }
+      set_status_message(data.message);
+      pushCallback(function () {
+        if (data.hasOwnProperty("timeout") && data.timeout != null) {
+          setTimeout(_clearStatusMessage, data.timeout * 1000);
+        }
+      });
     }
     function _setStatus(sstate) {
       var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
@@ -184,7 +197,8 @@ function withStatus(WrappedComponent) {
       clearStatus: _clearStatus,
       clearStatusMessage: _clearStatusMessage,
       statusMessage: _statusMessage,
-      setStatus: _setStatus
+      setStatus: _setStatus,
+      setLeftEdge: setLeftEdge
     };
     return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(StatusContext.Provider, {
       value: _statusFuncs
@@ -192,6 +206,7 @@ function withStatus(WrappedComponent) {
       show_spinner: show_spinner,
       status_message: status_message,
       spinner_size: spinner_size,
+      leftEdge: leftEdge,
       show_close: true,
       handleClose: function handleClose() {
         _clearStatus(null);
@@ -220,13 +235,15 @@ function Status(props) {
     className: cname,
     style: {
       position: "absolute",
-      bottom: 7,
+      bottom: 5,
+      left: props.leftEdge,
       marginLeft: 15
     }
   }, props.show_spinner && /*#__PURE__*/_react["default"].createElement(_core.Spinner, {
     size: 20
   }), props.show_close && (props.show_spiner || props.status_message) && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
     handleClick: props.handleClose,
+    small: true,
     icon: "cross"
   }), props.status_message && /*#__PURE__*/_react["default"].createElement("div", {
     className: "d-flex flex-column justify-content-around",
@@ -235,7 +252,10 @@ function Status(props) {
     }
   }, /*#__PURE__*/_react["default"].createElement("div", {
     id: "status-msg-area",
-    className: "bp5-ui-text"
+    className: "bp5-ui-text",
+    style: {
+      fontSize: 12
+    }
   }, props.status_message))));
 }
 Status = /*#__PURE__*/(0, _react.memo)(Status);

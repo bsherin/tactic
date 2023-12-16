@@ -1,14 +1,14 @@
 import "../tactic_css/tactic.scss";
 
 import React from "react";
-import {Fragment, useState, useEffect, memo, useRef} from "react";
+import {Fragment, useState, useEffect, memo, useRef, useContext} from "react";
 import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
 
 import {MergeViewerApp} from "./merge_viewer_app";
-import {doFlash} from "./toaster"
+import {doFlash, StatusContext} from "./toaster"
 import {postAjaxPromise} from "./communication_react"
-import {withErrorDrawer} from "./error_drawer";
+import {ErrorDrawerContext, withErrorDrawer} from "./error_drawer";
 import {withStatus} from "./toaster";
 import {guid, useConnection} from "./utilities_react";
 import {TacticNavbar} from "./blueprint_navbar";
@@ -29,6 +29,16 @@ function tile_differ_main() {
 
     }
 
+    function failedToLoad(data) {
+        let fallback = "Tile differ failed to load";
+        if ("message" in data) {
+            fallback = fallback + " " + data.message
+        }
+        let domContainer = document.querySelector('#root');
+        let the_element = <pre>{fallback}</pre>;
+        return ReactDOM.render(the_element, domContainer);
+    }
+
     let get_url = "get_module_code";
 
     postAjaxPromise(`${get_url}/${window.resource_name}`, {})
@@ -41,11 +51,15 @@ function tile_differ_main() {
                             data.second_resource_name = window.second_resource_name;
                         tile_differ_props(data, null, gotProps)
                     })
-                    .catch(doFlash)
+                    .catch((data)=>{
+                        failedToLoad(data)
+                    })
 
             }
         )
-        .catch(doFlash);
+        .catch((data)=>{
+            failedToLoad(data)
+        });
 }
 
 function tile_differ_props(data, registerDirtyMethod, finalCallback) {
@@ -78,6 +92,9 @@ function TileDifferApp(props) {
 
     const pushCallback = useCallbackStack();
 
+    const statusFuncs = useContext(StatusContext);
+    const errorDrawerFuncs = useContext(ErrorDrawerContext);
+
     useEffect(() => {
         window.addEventListener("beforeunload", function (e) {
             if (_dirty()) {
@@ -94,7 +111,6 @@ function TileDifferApp(props) {
                 window.close()
             }
         });
-        props.tsocket.attachListener('doflash', doFlash);
         props.tsocket.attachListener('doflashUser', doFlash);
     }
 
@@ -105,7 +121,12 @@ function TileDifferApp(props) {
             .then((data) => {
                 set_right_content(data.the_content);
             })
-            .catch(doFlash);
+            .catch((data)=>{
+                errorDrawerFuncs.addErrorDrawerEntry({
+                    title: "Error getting module code",
+                    content: "message" in data ? data.message : ""
+                });
+            });
     }
 
     function handleEditChange(new_code) {
@@ -118,8 +139,15 @@ function TileDifferApp(props) {
             "module_code": edit_content
         };
         postAjaxPromise("update_from_left", data_dict)
-            .then(doFlash)
-            .catch(doFlash)
+            .then((data)=>{
+                statusFuncs.statusMessage("Updated from left")
+            })
+            .catch((data)=>{
+                errorDrawerFuncs.addErrorDrawerEntry({
+                    title: "Error updating from left",
+                    content: "message" in data ? data.message : ""
+                });
+            })
     }
 
     function dirty() {

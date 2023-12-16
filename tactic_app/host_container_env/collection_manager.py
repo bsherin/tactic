@@ -677,7 +677,7 @@ class CollectionManager(LibraryResourceManager):
         try:
             user_obj = current_user
             new_res_name = request.json["new_res_name"]
-            self.show_um_message("Duplicating collection ...", request.json["library_id"])
+            self.emit_status_message("Duplicating collection ...")
             coll_dict, dm_dict, hl_dict, coll_mdata = user_obj.get_all_collection_info(request.json['res_to_copy'])
             if "size" in coll_mdata and coll_mdata["size"] == 0:
                 del coll_mdata["size"]
@@ -698,7 +698,7 @@ class CollectionManager(LibraryResourceManager):
             return jsonify({"success": True})
         except Exception as ex:
             msg = self.get_traceback_message(ex)
-            self.add_error_drawer_entry("Error duplicating collection", msg, request.json["library_id"])
+            self.add_error_drawer_entry("Error duplicating collection", msg)
             return jsonify({"success": False})
 
     ### Stuff below here is needed if I mount a Mongo database that hasn't yet

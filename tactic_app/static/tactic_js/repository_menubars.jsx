@@ -49,7 +49,5 @@ function RepositoryAllMenubar(props) {
                             refreshTab={props.refresh_func}
                             closeTab={null}
                             resource_icon={resource_icon}
-                            showErrorDrawerButton={false}
-                            toggleErrorDrawer={null}
     />
 }

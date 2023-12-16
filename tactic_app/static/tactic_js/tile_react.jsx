@@ -14,7 +14,6 @@ import {DragHandle} from "./resizing_layouts"
 
 import {SortableComponent} from "./sortable_container";
 import {postWithCallback} from "./communication_react"
-import {doFlash} from "./toaster"
 import {arrayMove, useCallbackStack} from "./utilities_react";
 import {ErrorBoundary} from "./error_boundary";
 import {MenuComponent} from "./menu_utilities"
@@ -22,6 +21,7 @@ import {SearchableConsole} from "./searchable_console";
 
 import {ThemeContext} from "./theme";
 import {DialogContext} from "./modal_react";
+import {ErrorDrawerContext} from "./error_drawer";
 
 export {TileContainer, tilesReducer}
 
@@ -317,6 +317,7 @@ function TileComponent(props) {
 
     const pushCallback = useCallbackStack();
     const dialogFuncs = useContext(DialogContext);
+    const errorDrawerFuncs = useContext(ErrorDrawerContext);
 
     useEffect(() => {
         _broadcastTileSize(props.tile_width, props.tile_height);
@@ -402,7 +403,10 @@ function TileComponent(props) {
             let selector = "[id='" + props.tile_id + "'] .jscript-target";
             eval(props.javascript_code)(selector, tdaWidth(), tdaHeight(), props.javascript_arg_dict, resizing)
         } catch (err) {
-            doFlash({"alert-type": "alert-warning", "message": "Error evaluating javascript: " + err.message})
+            errorDrawerFuncs.addErrorDrawerEntry({
+                title: "Error evaluating javascript",
+                content: err.message
+            });
         }
     }
 

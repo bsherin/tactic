@@ -1,15 +1,17 @@
 // noinspection JSCheckFunctionSignatures
 
 import React from "react";
-import {useEffect, memo} from "react";
+import {useEffect, memo, useContext} from "react";
 import PropTypes from 'prop-types';
 
 import {TacticMenubar} from "./menu_utilities";
 import {icon_dict} from "./blueprint_mdata_fields";
+import {ErrorDrawerContext} from "./error_drawer";
 
 export {AllMenubar, LibraryMenubar}
 
 function LibraryMenubar(props) {
+    const errorDrawerFuncs = useContext(ErrorDrawerContext);
     useEffect(() => {
         if (props.context_menu_items) {
             props.sendContextMenuItems(props.context_menu_items)
@@ -72,7 +74,6 @@ function LibraryMenubar(props) {
                           resource_name=""
                           resource_icon={props.resource_icon}
                           showErrorDrawerButton={props.showErrorDrawerButton}
-                          toggleErrorDrawer={props.toggleErrorDrawer}
     />
 }
 
@@ -85,12 +86,10 @@ LibraryMenubar.propTypes = {
     selectedTypeRef: PropTypes.object,
     refreshTab: PropTypes.func,
     showErrorDrawerButton: PropTypes.bool,
-    toggleErrorDrawer: PropTypes.func,
     resource_icon: PropTypes.string
 };
 
 LibraryMenubar.defaultProps = {
-    toggleErrorDrawer: null,
     resource_icon: null
 };
 
@@ -308,7 +307,6 @@ function AllMenubar(props) {
                            closeTab={null}
                            resource_name=""
                            showErrorDrawerButton={true}
-                           toggleErrorDrawer={props.toggleErrorDrawer}
     />
 }
 

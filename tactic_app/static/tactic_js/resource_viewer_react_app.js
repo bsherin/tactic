@@ -27,7 +27,7 @@ function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o =
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
 function _iterableToArrayLimit(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
-function copyToLibrary(res_type, resource_name, dialogFuncs) {
+function copyToLibrary(res_type, resource_name, dialogFuncs, statusFuncs, errorDrawerFuncs) {
   $.getJSON($SCRIPT_ROOT + "get_resource_names/".concat(res_type), function (data) {
     dialogFuncs.showModal("ModalDialog", {
       title: "Import ".concat(res_type),
@@ -46,10 +46,12 @@ function copyToLibrary(res_type, resource_name, dialogFuncs) {
       "res_name": resource_name,
       "new_res_name": new_name
     };
-    (0, _communication_react.postAjax)("copy_from_repository", result_dict, _toaster.doFlashAlways);
+    (0, _communication_react.postAjax)("copy_from_repository", result_dict, function (data) {
+      (0, _toaster.messageOrError)(data, statusFuncs, errorDrawerFuncs);
+    });
   }
 }
-function sendToRepository(res_type, resource_name, dialogFuncs) {
+function sendToRepository(res_type, resource_name, dialogFuncs, statusFuncs, errorDrawerFuncs) {
   $.getJSON($SCRIPT_ROOT + "get_repository_resource_names/".concat(res_type), function (data) {
     dialogFuncs.showModal("ModalDialog", {
       title: "Share ".concat(res_type),
@@ -68,7 +70,9 @@ function sendToRepository(res_type, resource_name, dialogFuncs) {
       "res_name": resource_name,
       "new_res_name": new_name
     };
-    (0, _communication_react.postAjax)("send_to_repository", result_dict, _toaster.doFlashAlways);
+    (0, _communication_react.postAjax)("send_to_repository", result_dict, function (data) {
+      (0, _toaster.messageOrError)(data, statusFuncs, errorDrawerFuncs);
+    });
   }
 }
 function ResourceViewerApp(props) {
@@ -103,9 +107,6 @@ function ResourceViewerApp(props) {
   function initSocket() {
     props.tsocket.attachListener('handle-callback', function (task_packet) {
       (0, _communication_react.handleCallback)(task_packet, props.resource_viewer_id);
-    });
-    props.tsocket.attachListener("doFlash", function (data) {
-      (0, _toaster.doFlash)(data);
     });
     if (!props.controlled) {
       props.tsocket.attachListener('close-user-windows', function (data) {
@@ -159,8 +160,7 @@ function ResourceViewerApp(props) {
     refreshTab: props.refreshTab,
     closeTab: props.closeTab,
     resource_name: props.resource_name,
-    showErrorDrawerButton: props.showErrorDrawerButton,
-    toggleErrorDrawer: props.toggleErrorDrawer
+    showErrorDrawerButton: props.showErrorDrawerButton
   }), /*#__PURE__*/_react["default"].createElement("div", {
     ref: top_ref,
     style: {
@@ -206,7 +206,6 @@ ResourceViewerApp.propTypes = {
   update_search_state: _propTypes["default"].func,
   search_ref: _propTypes["default"].object,
   showErrorDrawerButton: _propTypes["default"].bool,
-  toggleErrorDrawer: _propTypes["default"].func,
   allow_regex_search: _propTypes["default"].bool,
   regex: _propTypes["default"].bool
 };
@@ -214,7 +213,6 @@ ResourceViewerApp.defaultProps = {
   search_string: "",
   search_matches: null,
   showErrorDrawerButton: false,
-  toggleErrorDrawer: null,
   dark_theme: false,
   am_selected: true,
   controlled: false,

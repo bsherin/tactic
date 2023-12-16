@@ -10,9 +10,8 @@ import {CombinedMetadata, icon_dict} from "./blueprint_mdata_fields";
 import {PoolTree, getBasename, splitFilePath, getFileParentPath} from "./pool_tree";
 import {HorizontalPanes} from "./resizing_layouts";
 import {postAjax, postAjaxPromise} from "./communication_react";
-import {withErrorDrawer} from "./error_drawer";
-import {withStatus} from "./toaster";
-import {doFlash} from "./toaster";
+import {ErrorDrawerContext} from "./error_drawer";
+import {doFlash, StatusContext} from "./toaster";
 import {ThemeContext} from "./theme";
 
 import {DialogContext} from "./modal_react";
@@ -32,8 +31,8 @@ function PoolBrowser(props) {
         created: "",
         size: ""
     });
-    const [value, setValue] = useState(null);
-    const [selectedNode, setSelectedNode] = useState(null);
+    const [value, setValue, valueRef] = useStateAndRef(null);
+    const [selectedNode, setSelectedNode, selectedNodeRef] = useStateAndRef(null);
     const [multi_select, set_multi_select, multi_select_ref] = useStateAndRef(false);
     const [list_of_selected, set_list_of_selected, list_of_selected_ref] = useStateAndRef([]);
     const [contextMenuItems, setContextMenuItems] = useState([]);
@@ -42,6 +41,8 @@ function PoolBrowser(props) {
 
     const theme = useContext(ThemeContext);
     const dialogFuncs = useContext(DialogContext);
+    const errorDrawerFuncs = useContext(ErrorDrawerContext);
+    const statudFuncs = useContext(StatusContext);
 
     const treeRefreshFunc = useRef(null);
     // Important note: The first mounting of the pool tree must happen after the pool pane
@@ -58,14 +59,14 @@ function PoolBrowser(props) {
     }, [props.am_selected]);
 
     useEffect(() => {
-        if (selectedNode) {
+        if (selectedNodeRef.current) {
             set_selected_resource({
                 name: getBasename(value),
                 tags: "",
                 notes: "",
-                updated: selectedNode.updated,
-                created: selectedNode.created,
-                size: String(selectedNode.size)
+                updated: selectedNodeRef.current.updated,
+                created: selectedNodeRef.current.created,
+                size: String(selectedNodeRef.current.size)
             })
 
         } else {
@@ -78,9 +79,9 @@ function PoolBrowser(props) {
     }
 
     function _rename_func(node = null) {
-        if (!value && !node) return;
+        if (!valueRef.current && !node) return;
 
-        const path = "isDirectory" in node ? node.fullpath : value;
+        const path = node && "isDirectory" in node ? node.fullpath : valueRef.current;
         dialogFuncs.showModal("ModalDialog", {
             title: "Rename Pool Resource",
             field_title: "New Name",
@@ -98,7 +99,7 @@ function PoolBrowser(props) {
 
             function renameSuccess(data) {
                 if (!data.success) {
-                    props.addErrorDrawerEntry({title: "Error renaming resource", content: data.message});
+                    errorDrawerFuncs.addErrorDrawerEntry({title: "Error renaming resource", content: data.message});
                     return false
                 } else {
                     return true
@@ -108,9 +109,9 @@ function PoolBrowser(props) {
     }
 
     function _add_directory(node = null) {
-        if (!value && !node) return;
+        if (!valueRef.current && !node) return;
 
-        const sNode = "isDirectory" in node ? node : selectedNode;
+        const sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
         let initial_address;
         if (sNode.isDirectory) {
             initial_address = sNode.fullpath
@@ -133,7 +134,7 @@ function PoolBrowser(props) {
 
             function addSuccess(data) {
                 if (!data.success) {
-                    props.addErrorDrawerEntry({title: "Error Adding Directory", content: data.message});
+                    errorDrawerFuncs.addErrorDrawerEntry({title: "Error Adding Directory", content: data.message});
                     return false
                 } else {
                     return true
@@ -143,9 +144,9 @@ function PoolBrowser(props) {
     }
 
     function _duplicate_file(node = null) {
-        if (!value && !node) return;
+        if (!valueRef.current && !node) return;
 
-        const sNode = "isDirectory" in node ? node : selectedNode;
+        const sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
         if (sNode.isDirectory) {
             doFlash("You can't duplicate a directory");
             return
@@ -169,7 +170,7 @@ function PoolBrowser(props) {
 
             function addSuccess(data) {
                 if (!data.success) {
-                    props.addErrorDrawerEntry({title: "Error Adding Directory", content: data.message});
+                    errorDrawerFuncs.addErrorDrawerEntry({title: "Error Duplicating", content: data.message});
                     return false
                 } else {
                     return true
@@ -179,9 +180,9 @@ function PoolBrowser(props) {
     }
 
     function _downloadFile(node = null) {
-        if (!value && !node) return;
+        if (!valueRef.current && !node) return;
 
-        const sNode = "isDirectory" in node ? node : selectedNode;
+        const sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
         if (sNode.isDirectory) {
             doFlash("You can't download a directory");
             return
@@ -224,7 +225,7 @@ function PoolBrowser(props) {
                     }
                 },
                 error: function (xhr, status, error) {
-                    props.addErrorDrawerEntry({title: "Error Downloading From Pool", content: String(error)});
+                    errorDrawerFuncs.addErrorDrawerEntry({title: "Error Downloading From Pool", content: String(error)});
                 }
             });
         }
@@ -237,7 +238,7 @@ function PoolBrowser(props) {
 
         function addSuccess(data) {
             if (!data.success) {
-                props.addErrorDrawerEntry({title: "Error Moving Resource", content: data.message});
+                errorDrawerFuncs.addErrorDrawerEntry({title: "Error Moving Resource", content: data.message});
                 return false
             } else {
                 return true
@@ -246,9 +247,9 @@ function PoolBrowser(props) {
     }
 
     function _move_resource(node = null) {
-        if (!value && !node) return;
+        if (!valueRef.current && !node) return;
 
-        const sNode = "isDirectory" in node ? node : selectedNode;
+        const sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
         const src = sNode.fullpath;
         let initial_address;
         if (sNode.isDirectory) {
@@ -270,9 +271,9 @@ function PoolBrowser(props) {
     }
 
     function _delete_func(node = null) {
-        if (!value && !node) return;
-        const path = "isDirectory" in node ? node.fullpath : value;
-        const sNode = "isDirectory" in node ? node : selectedNode;
+        if (!valueRef.current && !node) return;
+        const path = node && "isDirectory" in node ? node.fullpath : valueRef.current;
+        const sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
         if (sNode.isDirectory && sNode.childNodes.length > 0) {
             doFlash("You can't delete a non-empty directory");
             return
@@ -291,7 +292,7 @@ function PoolBrowser(props) {
                         return true
                     })
                     .catch((data) => {
-                        props.addErrorDrawerEntry({title: "Error deleting resource", content: data.message})
+                        errorDrawerFuncs.addErrorDrawerEntry({title: "Error deleting resource", content: data.message})
                     })
             },
             handleClose: dialogFuncs.hideModal,
@@ -308,7 +309,7 @@ function PoolBrowser(props) {
 
     function _showPoolImport(node = null) {
         var initial_directory;
-        const sNode = "isDirectory" in node ? node : selectedNode;
+        const sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
         if (sNode && sNode.isDirectory) {
             initial_directory = sNode.fullpath
         } else {
@@ -438,8 +439,8 @@ function PoolBrowser(props) {
 
     let outer_style = {marginTop: 0, marginLeft: 0, overflow: "auto", marginRight: 0, height: "100%"};
     let res_type = null;
-    if (selectedNode) {
-        res_type = selectedNode.isDirectory ? "poolDir" : "poolFile"
+    if (selectedNodeRef.current) {
+        res_type = selectedNodeRef.current.isDirectory ? "poolDir" : "poolFile"
     }
     let right_pane = (
         <CombinedMetadata useTags={false}
@@ -458,7 +459,7 @@ function PoolBrowser(props) {
                           handleNotesBlur={null}
                           additional_metadata={{
                               size: selected_resource_ref.current.size,
-                              path: value
+                              path: valueRef.current
                           }}
                           readOnly={true}
         />
@@ -470,7 +471,7 @@ function PoolBrowser(props) {
                 <div className="d-flex flex-column"
                      style={{maxHeight: "100%", position: "relative", overflow: "scroll", padding: 15}}>
                     {(props.am_selected || have_activated) &&
-                        <PoolTree value={value}
+                        <PoolTree value={valueRef.current}
                                   renderContextMenu={renderContextMenu}
                                   select_type="both"
                                   registerTreeRefreshFunc={registerTreeRefreshFunc}
@@ -526,7 +527,7 @@ function PoolBrowser(props) {
 }
 
 PoolBrowser = memo(PoolBrowser);
-PoolBrowser = withErrorDrawer(withStatus(PoolBrowser));
+// PoolBrowser = withErrorDrawer(withStatus(PoolBrowser));
 
 function PoolMenubar(props) {
 
@@ -567,7 +568,6 @@ function PoolMenubar(props) {
                            closeTab={null}
                            resource_name=""
                            showErrorDrawerButton={true}
-                           toggleErrorDrawer={props.toggleErrorDrawer}
     />
 }
 

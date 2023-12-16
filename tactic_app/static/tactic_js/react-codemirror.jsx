@@ -37,7 +37,6 @@ import 'codemirror/theme/elegant.css'
 import 'codemirror/theme/neat.css'
 import 'codemirror/theme/solarized.css'
 import 'codemirror/theme/juejin.css'
-import {doFlash} from "./toaster";
 
 import {propsAreEqual} from "./utilities_react";
 import {ThemeContext} from "./theme"
@@ -45,6 +44,7 @@ import {SelectedPaneContext} from "./utilities_react";
 
 export {ReactCodemirror}
 import './autocomplete'
+import {ErrorDrawerContext} from "./error_drawer";
 
 const REGEXTYPE = Object.getPrototypeOf(new RegExp("that"));
 
@@ -80,6 +80,7 @@ function ReactCodemirror(props, passedRef) {
     const prevSoftWrap = useRef(null);
 
     const theme = useContext(ThemeContext);
+    const errorDrawerFuncs = useContext(ErrorDrawerContext);
 
     useEffect(()=>{
         prevSoftWrap.current = props.soft_wrap;
@@ -100,7 +101,12 @@ function ReactCodemirror(props, passedRef) {
                     _doHighlight()
                 }
             )
-            .catch((data) => {doFlash(data)});
+            .catch((data) => {
+                errorDrawerFuncs.addErrorDrawerEntry({
+                    title: `Error getting preferred codemirror theme`,
+                    content: "message" in data ? data.message : ""
+                });
+            });
     }, []);
 
     useEffect(()=>{

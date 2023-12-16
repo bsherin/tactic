@@ -117,18 +117,9 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
     def am_notebook_type(self):
         return self.doc_type in ["notebook", "jupyter"]
 
-    def show_main_message(self, message, timeout=None):
-        data = {"message": message, "timeout": timeout, "main_id": self.mworker.my_id}
-        self.mworker.emit_to_main_client("show-status-msg", data)
-        # self.mworker.post_task("host", "show_main_status_message_task", data)
-
-    def clear_um_message(self, library_id):
-        self.emit("clear-status", {}, namespace='/library', room=library_id)
-
-    def show_main_status_message(self, message, timeout=None):
-        data = {"message": message, "timeout": timeout, "main_id": self.mworker.my_id}
-        self.mworker.emit_to_main_client("show-status-msg", data)
-        # self.mworker.post_task("host", "show_main_status_message", data)
+    def emit_status_message(self, message, timeout=None):
+        data = {"message": message, "timeout": timeout}
+        self.mworker.emit_to_user("show-status-msg", data)
 
     def show_error_window(self, error_string):
         data_dict = {"error_string": str(error_string),
@@ -137,13 +128,11 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
         self.mworker.emit_to_main_client("window-open", {"the_id": unique_id})
         return
 
-    def clear_main_status_message(self):
-        data = {"main_id": self.mworker.my_id}
-        self.mworker.emit_to_main_client("clear-status-msg", data)
+    def emit_clear_status(self):
+        self.mworker.emit_to_user("clear-status-msg", {})
 
-    def stop_main_status_spinner(self):
-        data = {"main_id": self.mworker.my_id}
-        self.mworker.emit_to_main_client('stop-spinner', data)
+    def emit_stop_status_spinner(self):
+        self.mworker.emit_to_user('stop-spinner', {})
 
     def dmsg(self, tname, msg):
         print("rot: {} {}".format(tname, msg))

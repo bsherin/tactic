@@ -220,6 +220,7 @@ function CreatorApp(props) {
   var theme = (0, _react.useContext)(_theme.ThemeContext);
   var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
+  var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
   var selectedPane = (0, _react.useContext)(_utilities_react.SelectedPaneContext);
   var pushCallback = (0, _utilities_react.useCallbackStack)();
   var _useState27 = (0, _react.useState)(props.resource_name),
@@ -254,7 +255,7 @@ function CreatorApp(props) {
     }
     _goToLineNumber();
     _update_saved_state();
-    props.setGoToLineNumber(_selectLineNumber);
+    errorDrawerFuncs.setGoToLineNumber(_selectLineNumber);
     statusFuncs.stopSpinner();
     return function () {
       delete_my_container();
@@ -267,9 +268,6 @@ function CreatorApp(props) {
     props.tsocket.attachListener('focus-me', function (data) {
       window.focus();
       _selectLineNumber(data.line_number);
-    });
-    props.tsocket.attachListener("doFlash", function (data) {
-      (0, _toaster.doFlash)(data);
     });
     if (!window.in_context) {
       props.tsocket.attachListener("doFlashUser", function (data) {
@@ -332,7 +330,7 @@ function CreatorApp(props) {
         name_text: "Share",
         icon_name: "share",
         click_handler: function click_handler() {
-          (0, _resource_viewer_react_app.sendToRepository)("tile", _cProp("resource_name"), dialogFuncs);
+          (0, _resource_viewer_react_app.sendToRepository)("tile", _cProp("resource_name"), dialogFuncs, statusFuncs, errorDrawerFuncs);
         }
       }]
     };
@@ -467,16 +465,11 @@ function CreatorApp(props) {
   function _showTileDiffer() {
     window.open("".concat($SCRIPT_ROOT, "/show_tile_differ/").concat(_cProp("resource_name")));
   }
-  function _doFlashStopSpinner(data) {
-    statusFuncs.clearStatus();
-    (0, _toaster.doFlash)(data);
-  }
   function _selectLineNumber(lnumber) {
     rline_number.current = lnumber;
     _goToLineNumber();
   }
-  function _logErrorStopSpinner(title) {
-    var data = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+  function _logErrorStopSpinner(title, data) {
     statusFuncs.stopSpinner();
     var entry = {
       title: title,
@@ -485,8 +478,8 @@ function CreatorApp(props) {
     if ("line_number" in data) {
       entry.line_number = data.line_number;
     }
-    props.addErrorDrawerEntry(entry, true);
-    props.openErrorDrawer();
+    errorDrawerFuncs.addErrorDrawerEntry(entry, true);
+    errorDrawerFuncs.openErrorDrawer();
   }
   function _dirty() {
     var current_state = _getSaveDict();
@@ -509,13 +502,15 @@ function CreatorApp(props) {
         "user_id": window.user_id
       }, load_success, null, props.module_viewer_id);
     })["catch"](function (data) {
-      _logErrorStopSpinner("Error loading module", data);
+      _logErrorStopSpinner("Error saving and loading module", data);
     });
     function load_success(data) {
       if (data.success) {
-        data.timeout = 2000;
+        statusFuncs.statusMessage("Loaded successfully");
+        statusFuncs.stopSpinner();
+      } else {
+        _logErrorStopSpinner("Error loading module", data);
       }
-      _doFlashStopSpinner(data);
       return false;
     }
   }
@@ -524,16 +519,18 @@ function CreatorApp(props) {
       return false;
     }
     statusFuncs.startSpinner();
-    statusFuncs.statusMessage("Loading Module");
+    statusFuncs.statusMessage("Loading module...");
     (0, _communication_react.postWithCallback)("host", "load_tile_module_task", {
       "tile_module_name": _cProp("resource_name"),
       "user_id": window.user_id
     }, load_success, null, props.module_viewer_id);
     function load_success(data) {
       if (data.success) {
-        data.timeout = 2000;
+        statusFuncs.statusMessage("Loaded module");
+        statusFuncs.stopSpinner();
+      } else {
+        _logErrorStopSpinner("Error loading module", data);
       }
-      _doFlashStopSpinner(data);
       return false;
     }
   }
@@ -566,7 +563,9 @@ function CreatorApp(props) {
         _setResourceNameState(new_name, function () {
           _saveMe();
         });
-      })["catch"](_toaster.doFlash);
+      })["catch"](function (data) {
+        _logErrorStopSpinner("Error saving module", data);
+      });
     }
   }
   function am_selected() {
@@ -577,8 +576,11 @@ function CreatorApp(props) {
       return false;
     }
     statusFuncs.startSpinner();
-    statusFuncs.statusMessage("Saving Module");
-    doSavePromise().then(_doFlashStopSpinner)["catch"](function (data) {
+    statusFuncs.statusMessage("Saving module...");
+    doSavePromise().then(function (data) {
+      statusFuncs.statusMessage("Saved module");
+      statusFuncs.stopSpinner();
+    })["catch"](function (data) {
       _logErrorStopSpinner("Error saving module", data);
     });
     return false;
@@ -590,7 +592,10 @@ function CreatorApp(props) {
     statusFuncs.startSpinner();
     doSavePromise().then(function () {
       statusFuncs.statusMessage("Checkpointing");
-      doCheckpointPromise().then(_doFlashStopSpinner)["catch"](function (data) {
+      doCheckpointPromise().then(function (data) {
+        statusFuncs.statusMessage("Saved and checkpointed");
+        statusFuncs.stopSpinner();
+      })["catch"](function (data) {
         _logErrorStopSpinner("Error checkpointing module", data);
       });
     })["catch"](function (data) {
@@ -691,7 +696,7 @@ function CreatorApp(props) {
   }
   function _goToLineNumber() {
     if (rline_number.current) {
-      props.closeErrorDrawer();
+      errorDrawerFuncs.closeErrorDrawer();
       if (props.is_mpl || props.is_d3) {
         if (rline_number.current < draw_plot_line_number_ref.current) {
           if (emObject.current) {
@@ -1295,7 +1300,6 @@ function CreatorApp(props) {
     closeTab: props.closeTab,
     resource_name: _cProp("resource_name"),
     showErrorDrawerButton: true,
-    toggleErrorDrawer: props.toggleErrorDrawer,
     controlled: props.controlled
   }), /*#__PURE__*/_react["default"].createElement(_error_boundary.ErrorBoundary, null, /*#__PURE__*/_react["default"].createElement("div", {
     className: outer_class,

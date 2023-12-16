@@ -11,7 +11,6 @@ var _core = require("@blueprintjs/core");
 var _reactCodemirrorMergeview = require("./react-codemirror-mergeview");
 var _blueprint_mdata_fields = require("./blueprint_mdata_fields");
 var _menu_utilities = require("./menu_utilities");
-var _key_trap = require("./key_trap");
 var _theme = require("./theme");
 var _toaster = require("./toaster");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
@@ -33,9 +32,6 @@ function MergeViewerApp(props) {
     set_inner_height = _useState2[1];
   var theme = (0, _react.useContext)(_theme.ThemeContext);
   var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
-
-  // These only matter if not controlled
-  var key_bindings = [[]];
   var button_groups = [[{
     "name_text": "Save",
     "icon_name": "saved",
@@ -125,7 +121,6 @@ function MergeViewerApp(props) {
     refreshTab: null,
     closeTab: null,
     resource_name: props.resource_name,
-    toggleErrorDrawer: props.toggleErrorDrawer,
     controlled: false
   }), /*#__PURE__*/_react["default"].createElement("div", {
     className: outer_class
@@ -151,10 +146,7 @@ function MergeViewerApp(props) {
     right_content: props.right_content,
     saveMe: props.saveHandler,
     max_height: max_merge_height
-  }))), /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_key_trap.KeyTrap, {
-    global: true,
-    bindings: key_bindings
-  })));
+  }))));
 }
 MergeViewerApp.propTypes = {
   resource_name: _propTypes["default"].string,

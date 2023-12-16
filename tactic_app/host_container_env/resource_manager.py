@@ -64,9 +64,9 @@ class ResourceManager(ExceptionMixin):
         socketio.emit("refresh-selector", {},
                       namespace='/main', room=user_obj.get_id())
 
-    def add_error_drawer_entry(self, title, content, library_id):
-        data = {"title": title, "content": content, "main_id": library_id}
-        socketio.emit("add-error-drawer-entry", data, namespace='/main', room=library_id)
+    def add_error_drawer_entry(self, title, content):
+        data = {"title": title, "content": content}
+        socketio.emit("add-error-drawer-entry", data, namespace='/main', room=current_user.get_id())
 
     def get_resource_list(self):
         if self.is_repository:
@@ -196,12 +196,12 @@ class ResourceManager(ExceptionMixin):
             return_data["sort_field"] = sf_value
         return return_data
 
-    def show_um_message(self, message, library_id, timeout=3):
-        data = {"message": message, "timeout": timeout, "main_id": library_id}
-        socketio.emit('show-status-msg', data, namespace='/main', room=library_id)
+    def emit_status_message(self, message, timeout=4):
+        data = {"message": message, "timeout": timeout}
+        socketio.emit('show-status-msg', data, namespace='/main', room=current_user.get_id())
 
-    def clear_um_message(self, library_id):
-        socketio.emit('clear-status-msg', {"main_id": library_id}, namespace='/main', room=library_id)
+    def emit_clear_status(self):
+        socketio.emit('clear-status-msg', {}, namespace='/main', room=current_user.get_id())
 
     def send_import_report(self, result, library_id):
         if "content" in result:

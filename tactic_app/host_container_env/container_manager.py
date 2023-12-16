@@ -24,7 +24,7 @@ class ContainerManager(ResourceManager):
     def add_rules(self):
         app.add_url_rule('/reset_server/<library_id>', "reset_server", login_required(self.reset_server),
                          methods=['get'])
-        app.add_url_rule('/clear_user_containers/<library_id>', "clear_user_containers",
+        app.add_url_rule('/clear_user_containers', "clear_user_containers",
                          login_required(self.clear_user_containers), methods=['get'])
         app.add_url_rule('/kill_container/<cont_id>', "kill_container",
                          login_required(self.kill_container), methods=['get'])
@@ -33,7 +33,7 @@ class ContainerManager(ResourceManager):
         app.add_url_rule('/grab_container_list_chunk', "grab_container_list_chunk",
                          login_required(self.grab_container_list_chunk), methods=['get', 'post'])
 
-    def clear_user_containers(self, library_id):
+    def clear_user_containers(self):
         tactic_user_image_names = ["bsherin/tactic:tile", "bsherin/tactic:main", "bsherin/tactic:module_viewer",
                                    "bsherin/tactic:tile-arm64", "bsherin/tactic:main-arm46",
                                    "bsherin/tactic:module_viewer-arm64"
@@ -44,34 +44,29 @@ class ContainerManager(ResourceManager):
         if not (current_user.get_id() == admin_user.get_id()):
             return jsonify({"success": False, "message": "not authorized", "alert_type": "alert-warning"})
         try:
-            self.show_um_message("removing user containers", library_id, timeout=None)
+            self.emit_status_message("removing user containers")
             all_containers = cli.containers.list(all=True)
             for cont in all_containers:
                 if cont.attrs["Image"] == tactic_image_ids["bsherin/tactic:main"]:
-                    self.show_um_message("removing main container " + cont.attrs["Name"], library_id, timeout=None)
+                    self.emit_status_message("removing main container " + cont.attrs["Name"])
                     cont.remove(force=True)
                     continue
                 if cont.attrs["Image"] == tactic_image_ids["bsherin/tactic:tile"]:
                     the_id = container_id(cont)
                     if not the_id == "tile_test_container":
-                        self.show_um_message("removing tile container " + cont.attrs["Name"],
-                                             library_id, timeout=None)
+                        self.emit_status_message("removing tile container " + cont.attrs["Name"])
                         cont.remove(force=True)
                     continue
                 if cont.attrs["Image"] == tactic_image_ids["bsherin/tactic:module_viewer"]:
                     the_id = container_id(cont)
                     if not the_id == "tile_test_container":
-                        self.show_um_message("removing module viewer container " + cont.attrs["Name"],
-                                             library_id, timeout=None)
+                        self.emit_status_message("removing module viewer container " + cont.attrs["Name"])
                         cont.remove(force=True)
                     continue
-                # if cont.attrs["Image"] == cont.attrs["ImageID"]:
-                #     self.show_um_message("removing image container " + cont["Id"], library_id)
-                #     cli.remove_container(cont["Id"], force=True)
         except Exception as ex:
             return generic_exception_handler.get_traceback_exception_for_ajax(ex, "Error clearing user containers")
 
-        self.clear_um_message(library_id)
+        self.emit_clear_status()
         self.refresh_selector_list()
         return jsonify({"success": True, "message": "User Containers Cleared", "alert_type": "alert-success"})
 
@@ -81,18 +76,10 @@ class ContainerManager(ResourceManager):
         try:
             self.show_um_message("Restarting the host container", library_id)
             restart_container("host")
-            # self.show_um_message("removing all containers", library_id)
-            # do_docker_cleanup()
-            # self.show_um_message("recreating the megaplex", library_id)
-            # create_megaplex()
-            # self.show_um_message("initializing the global tile manager", library_id)
-            # loaded_tile_management.initialize()
-            # self.show_um_message("getting default tiles", library_id)
-            # global_tile_manager.get_all_default_tiles()
         except Exception as ex:
             return generic_exception_handler.get_traceback_exception_for_ajax(ex, "Error resetting server")
 
-        self.clear_um_message(library_id)
+        self.emit_clear_status()
         self.refresh_selector_list()
         return jsonify({"success": True, "message": "Server successefully reset", "alert_type": "alert-success"})
 

@@ -12,7 +12,7 @@ import PropTypes from 'prop-types';
 import {MergeViewerApp} from "./merge_viewer_app";
 import {doFlash, StatusContext} from "./toaster.js"
 import {postAjax, postAjaxPromise} from "./communication_react.js"
-import {withErrorDrawer} from "./error_drawer.js";
+import {withErrorDrawer, ErrorDrawerContext} from "./error_drawer.js";
 import {withStatus} from "./toaster.js";
 
 import {guid} from "./utilities_react.js";
@@ -31,6 +31,16 @@ function history_viewer_main ()  {
         let domContainer = document.querySelector('#root');
         ReactDOM.render(the_element, domContainer)
     }
+    function failedToLoad(data) {
+        let fallback = "History viewer failed to load";
+        if ("message" in data) {
+            fallback = fallback + " " + data.message
+        }
+        let domContainer = document.querySelector('#root');
+        let the_element = <pre>{fallback}</pre>;
+        return ReactDOM.render(the_element, domContainer);
+    }
+
     let get_url = "get_module_code";
 
     postAjaxPromise(`${get_url}/${window.resource_name}`, {})
@@ -42,11 +52,15 @@ function history_viewer_main ()  {
                     data.resource_name = window.resource_name,
                     history_viewer_props(data, null, gotProps)
                 })
-                .catch(doFlash)
+                .catch((data2)=>{
+                    failedToLoad(data2)
+                })
 
             }
         )
-        .catch(doFlash);
+        .catch((data2)=>{
+            failedToLoad(data2)
+        });
 }
 
 function history_viewer_props(data, registerDirtyMethod, finalCallback) {
@@ -76,6 +90,7 @@ function HistoryViewerApp(props) {
     const savedContent = useRef(props.edit_content);
 
     const statusFuncs = useContext(StatusContext);
+    const errorDrawerFuncs = useContext(ErrorDrawerContext);
     const pushCallback = useCallbackStack();
 
     useEffect(()=>{
@@ -94,7 +109,6 @@ function HistoryViewerApp(props) {
                 window.close()
             }
         });
-        props.tsocket.attachListener('doflash', doFlash);
         props.tsocket.attachListener('doflashUser', doFlash);
     }
 
@@ -107,7 +121,12 @@ function HistoryViewerApp(props) {
                     .then((data) => {
                             set_right_content(data.module_code);
                         })
-                    .catch(doFlash);
+                    .catch((data)=>{
+                        errorDrawerFuncs.addErrorDrawerEntry({
+                            title: "Error getting checkpoint code",
+                            content: "message" in data ? data.message : ""
+                        });
+                    });
                 return
             }
         }
@@ -139,10 +158,20 @@ function HistoryViewerApp(props) {
                     .then((data) => {
                         set_history_list(data.checkpoints)
                     })
-                    .catch(doFlash);
+                    .catch((data)=>{
+                        errorDrawerFuncs.addErrorDrawerEntry({
+                            title: "Error getting checkpoint dates",
+                            content: "message" in data ? data.message : ""
+                        });
+                    });
                 saveFromLeft()
             })
-            .catch(doFlash)
+            .catch((data)=>{
+                errorDrawerFuncs.addErrorDrawerEntry({
+                    title: "Error checkpointing module",
+                    content: "message" in data ? data.message : ""
+                });
+            })
     }
 
     function saveFromLeft() {
@@ -151,8 +180,15 @@ function HistoryViewerApp(props) {
             "module_code": edit_content
         };
         postAjaxPromise("update_from_left", data_dict)
-            .then(doFlash)
-            .catch(doFlash)
+            .then((data)=>{
+                statusFuncs.statusMessage("Updated from left")
+            })
+            .catch((data)=>{
+                errorDrawerFuncs.addErrorDrawerEntry({
+                    title: "Error updating from left",
+                    content: "message" in data ? data.message : ""
+                });
+            })
     }
 
     function dirty() {

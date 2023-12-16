@@ -10,7 +10,6 @@ var _propTypes = _interopRequireDefault(require("prop-types"));
 var _core = require("@blueprintjs/core");
 var _blueprint_react_widgets = require("./blueprint_react_widgets.js");
 var _communication_react = require("./communication_react.js");
-var _toaster = require("./toaster.js");
 var _utilities_react = require("./utilities_react");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
@@ -390,7 +389,10 @@ function ExportsViewer(props) {
       "main_id": props.main_id
     }, function (data) {
       if (!data.success) {
-        (0, _toaster.doFlash)(data);
+        errorDrawerFuncs.addErrorDrawerEntry({
+          title: "Error creating code area",
+          content: "message" in data ? data.message : ""
+        });
       }
     }, null, props.main_id);
   }

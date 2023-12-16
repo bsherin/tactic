@@ -60,9 +60,6 @@ function RepositoryHomeApp(props) {
     function initSocket() {
         let tsocket = props.tsocket;
         tsocket.attachListener("window-open", data => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
-        tsocket.attachListener("doFlash", function (data) {
-            doFlash(data)
-        });
         if (!window.in_context) {
             tsocket.attachListener('handle-callback', (task_packet) => {
                 handleCallback(task_packet, window.library_id)

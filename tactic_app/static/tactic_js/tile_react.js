@@ -15,13 +15,13 @@ var _blueprint_react_widgets = require("./blueprint_react_widgets");
 var _resizing_layouts = require("./resizing_layouts");
 var _sortable_container = require("./sortable_container");
 var _communication_react = require("./communication_react");
-var _toaster = require("./toaster");
 var _utilities_react = require("./utilities_react");
 var _error_boundary = require("./error_boundary");
 var _menu_utilities = require("./menu_utilities");
 var _searchable_console = require("./searchable_console");
 var _theme = require("./theme");
 var _modal_react = require("./modal_react");
+var _error_drawer = require("./error_drawer");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
@@ -357,6 +357,7 @@ function TileComponent(props) {
     set_dheight = _useState12[1];
   var pushCallback = (0, _utilities_react.useCallbackStack)();
   var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
+  var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
   (0, _react.useEffect)(function () {
     _broadcastTileSize(props.tile_width, props.tile_height);
     executeEmbeddedScripts();
@@ -450,9 +451,9 @@ function TileComponent(props) {
       var selector = "[id='" + props.tile_id + "'] .jscript-target";
       eval(props.javascript_code)(selector, tdaWidth(), tdaHeight(), props.javascript_arg_dict, resizing);
     } catch (err) {
-      (0, _toaster.doFlash)({
-        "alert-type": "alert-warning",
-        "message": "Error evaluating javascript: " + err.message
+      errorDrawerFuncs.addErrorDrawerEntry({
+        title: "Error evaluating javascript",
+        content: err.message
       });
     }
   }

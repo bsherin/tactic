@@ -69,9 +69,6 @@ function RepositoryHomeApp(props) {
     tsocket.attachListener("window-open", function (data) {
       return window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data["the_id"]));
     });
-    tsocket.attachListener("doFlash", function (data) {
-      (0, _toaster.doFlash)(data);
-    });
     if (!window.in_context) {
       tsocket.attachListener('handle-callback', function (task_packet) {
         (0, _communication_react.handleCallback)(task_packet, window.library_id);

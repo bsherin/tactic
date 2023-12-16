@@ -106,8 +106,7 @@ class TileWorker(QWorker):
                 "content": content,
                 "line_number": line_number,
                 "tile_type": self.tile_instance.tile_type,
-                "main_id": self.tile_instance._main_id
-                }
+                "room": self.tile_instance.user_id}
         self.emit_to_client("add-error-drawer-entry", data)
         return {"success": True}
 

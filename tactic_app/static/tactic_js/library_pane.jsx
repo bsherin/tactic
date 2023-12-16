@@ -23,6 +23,7 @@ import {ThemeContext} from "./theme"
 
 import {DialogContext} from "./modal_react";
 import {StatusContext} from "./toaster"
+import {ErrorDrawerContext} from "./error_drawer";
 
 export {LibraryPane, view_views, res_types}
 
@@ -135,6 +136,7 @@ function LibraryPane(props) {
     const theme = useContext(ThemeContext);
     const dialogFuncs = useContext(DialogContext);
     const statusFuncs = useContext(StatusContext);
+    const errorDrawerFuncs = useContext(ErrorDrawerContext);
 
     const stateSetters = {
         data_dict: set_data_dict,
@@ -481,7 +483,12 @@ function LibraryPane(props) {
         postAjaxPromise("save_metadata", result_dict)
             .then(function (data) {
             })
-            .catch(doFlash)
+            .catch((data)=>{
+                errorDrawerFuncs.addErrorDrawerEntry({
+                    title: `Error updating resource ${result_dict.res_name}`,
+                    content: "message" in data ? data.message : ""
+                });
+            })
     }
 
     function _overwriteCommonTags() {
@@ -493,7 +500,12 @@ function LibraryPane(props) {
         postAjaxPromise("overwrite_common_tags", result_dict)
             .then(function (data) {
             })
-            .catch(doFlash)
+            .catch((data)=>{
+                errorDrawerFuncs.addErrorDrawerEntry({
+                    title: "Error overwriting tags",
+                    content: "message" in data ? data.message : ""
+                });
+            })
     }
 
     function _handleMetadataChange(changed_state_elements) {
@@ -538,7 +550,12 @@ function LibraryPane(props) {
             .then(function (data) {
                 _refresh_func()
             })
-            .catch(doFlash)
+            .catch((data)=>{
+                errorDrawerFuncs.addErrorDrawerEntry({
+                    title: "Error deleting tag",
+                    content: "message" in data ? data.message : ""
+                });
+            })
     }
 
     function _doTagRename(tag_changes) {
@@ -547,7 +564,12 @@ function LibraryPane(props) {
             .then(function (data) {
                 _refresh_func()
             })
-            .catch(doFlash)
+            .catch((data)=>{
+                errorDrawerFuncs.addErrorDrawerEntry({
+                    title: "Error renaming tag",
+                    content: "message" in data ? data.message : ""
+                });
+            })
     }
 
     function _handleRowDoubleClick(row_dict) {
@@ -570,7 +592,10 @@ function LibraryPane(props) {
                         props.handleCreateViewer(data, statusFuncs.clearStatus);
                     })
                     .catch((data) => {
-                            doFlash(data);
+                            errorDrawerFuncs.addErrorDrawerEntry({
+                                title: `Error handling double click with view ${view_view}`,
+                                content: "message" in data ? data.message : ""
+                            });
                             statusFuncs.clearStatus()
                         }
                     );
@@ -737,7 +762,10 @@ function LibraryPane(props) {
                     props.handleCreateViewer(data, statusFuncs.clearStatus);
                 })
                 .catch((data) => {
-                        doFlash(data);
+                        errorDrawerFuncs.addErrorDrawerEntry({
+                            title: `Error viewing with view ${the_view}`,
+                            content: "message" in data ? data.message : ""
+                        });
                         statusFuncs.clearstatus()
                     }
                 );
@@ -770,7 +798,10 @@ function LibraryPane(props) {
                     props.handleCreateViewer(data, statusFuncs.clearStatus);
                 })
                 .catch((data) => {
-                        doFlash(data);
+                        errorDrawerFuncs.addErrorDrawerEntry({
+                            title: `Error viewing resource ${resource_name}`,
+                            content: "message" in data ? data.message : ""
+                        });
                         statusFuncs.clearstatus()
                     }
                 );
@@ -812,7 +843,12 @@ function LibraryPane(props) {
                         // _grabNewChunkWithRow(0, true, null, false, new_name)
                     }
                 )
-            // .catch(doFlash)
+                .catch((data)=>{
+                    errorDrawerFuncs.addErrorDrawerEntry({
+                        title: "Error duplicating resource",
+                        content: "message" in data ? data.message : ""
+                    });
+                })
         }
     }
 
@@ -887,7 +923,10 @@ function LibraryPane(props) {
 
             function renameSuccess(data) {
                 if (!data.success) {
-                    doFlash(data);
+                    errorDrawerFuncs.addErrorDrawerEntry({
+                        title: "Error renaming resource",
+                        content: "message" in data ? data.message : ""
+                    });
                     return false
                 }
             }
@@ -919,8 +958,15 @@ function LibraryPane(props) {
                     "new_res_name": new_name
                 };
                 postAjaxPromise("/copy_from_repository", result_dict)
-                    .then(doFlash)
-                    .catch(doFlash);
+                    .then((data)=>{
+                        statusFuncs.statusMessage(`Imported Resource ${res_name}`)
+                    })
+                    .catch((data)=>{
+                        errorDrawerFuncs.addErrorDrawerEntry({
+                            title: `Error importing resource ${res_name}`,
+                            content: "message" in data ? data.message : ""
+                        });
+                    });
             }
 
             return res_name
@@ -929,8 +975,15 @@ function LibraryPane(props) {
                 "selected_rows": selected_rows_ref.current
             };
             postAjaxPromise("/copy_from_repository", result_dict)
-                .then(doFlash)
-                .catch(doFlash);
+                    .then((data)=>{
+                        statusFuncs.statusMessage(`Imported Resource ${res_name}`)
+                    })
+                    .catch((data)=>{
+                        errorDrawerFuncs.addErrorDrawerEntry({
+                            title: `Error importing resource ${res_name}`,
+                            content: "message" in data ? data.message : ""
+                        });
+                    });
             return ""
         }
     }
@@ -962,8 +1015,15 @@ function LibraryPane(props) {
                     "new_res_name": new_name
                 };
                 postAjaxPromise('/send_to_repository', result_dict)
-                    .then(doFlash)
-                    .catch(doFlash);
+                    .then((data)=>{
+                        statusFuncs.statusMessage(`Shared resource ${res_name}`)
+                    })
+                    .catch((data)=>{
+                        errorDrawerFuncs.addErrorDrawerEntry({
+                            title: `Error sharing resource ${res_name}`,
+                            content: "message" in data ? data.message : ""
+                        });
+                    })
             }
 
             return res_name
@@ -973,8 +1033,15 @@ function LibraryPane(props) {
                 "selected_rows": selected_rows_ref.current,
             };
             postAjaxPromise('/send_to_repository', result_dict)
-                .then(doFlash)
-                .catch(doFlash);
+                .then((data)=>{
+                        statusFuncs.statusMessage(`Shared resource ${res_name}`)
+                    })
+                .catch((data)=>{
+                    errorDrawerFuncs.addErrorDrawerEntry({
+                        title: `Error sharing resource ${res_name}`,
+                        content: "message" in data ? data.message : ""
+                    });
+                });
             return ""
         }
     }
@@ -988,7 +1055,12 @@ function LibraryPane(props) {
             const the_view = `${$SCRIPT_ROOT}/new_notebook_in_context`;
             postAjaxPromise(the_view, {resource_name: ""})
                 .then(props.handleCreateViewer)
-                .catch(doFlash);
+                .catch((data)=>{
+                    errorDrawerFuncs.addErrorDrawerEntry({
+                        title: `Error creating new notebook`,
+                        content: "message" in data ? data.message : ""
+                    });
+                })
         } else {
             window.open(`${$SCRIPT_ROOT}/new_notebook`)
         }
@@ -999,7 +1071,12 @@ function LibraryPane(props) {
             const the_view = `${$SCRIPT_ROOT}/new_project_in_context`;
             postAjaxPromise(the_view, {resource_name: ""})
                 .then(props.handleCreateViewer)
-                .catch(doFlash);
+                .catch((data)=>{
+                    errorDrawerFuncs.addErrorDrawerEntry({
+                        title: `Error creating new notebook`,
+                        content: "message" in data ? data.message : ""
+                    });
+                })
         } else {
             window.open(`${$SCRIPT_ROOT}/new_project`)
         }
@@ -1069,9 +1146,9 @@ function LibraryPane(props) {
                 $.post(target, (data) => {
                     statusFuncs.stopSpinner();
                     if (!data.success) {
-                        props.addErrorDrawerEntry({title: "Error combining collections", content: data.message})
+                        errorDrawerFuncs.addErrorDrawerEntry({title: "Error combining collections", content: data.message})
                     } else {
-                        doFlash(data);
+                        statusFuncs.statusMessage("Combined Collections");
                     }
                 });
             }
@@ -1098,7 +1175,7 @@ function LibraryPane(props) {
                     data.new_row
                 })
                 .catch((data) => {
-                    props.addErrorDrawerEntry({title: "Error combining collections", content: data.message})
+                    errorDrawerFuncs.addErrorDrawerEntry({title: "Error combining collections", content: data.message})
                 })
         }
     }
@@ -1124,16 +1201,14 @@ function LibraryPane(props) {
         let message = "";
         let number_of_errors;
         if (data.file_decoding_errors == null) {
-            data.message = "No decoding errors were encounters";
-            data.alert_type = "Success";
-            doFlash(data);
+            statusFuncs.statusMessage("No import errors");
         } else {
             message = "<b>Decoding errors were enountered</b>";
             for (let filename in data.file_decoding_errors) {
                 number_of_errors = String(data.file_decoding_errors[filename].length);
                 message = message + `<br>${filename}: ${number_of_errors} errors`;
             }
-            props.addErrorDrawerEntry({title: title, content: message});
+            errorDrawerFuncs.addErrorDrawerEntry({title: title, content: message});
         }
     }
 
@@ -1224,20 +1299,40 @@ function LibraryPane(props) {
 
         function load_tile_response(data) {
             if (!data.success) {
-                props.addErrorDrawerEntry({title: "Error loading tile", content: data.message})
+                errorDrawerFuncs.addErrorDrawerEntry({title: "Error loading tile", content: data.message})
             } else {
-                doFlash(data)
+                statusFuncs.statusMessage(`Loaded tile ${res_name}`)
             }
         }
     }
 
     function _unload_module(resource = null) {
         let res_name = resource ? resource.name : selected_resource_ref.current.name;
-        $.getJSON(`${$SCRIPT_ROOT}/unload_one_module/${res_name}`, doFlash)
+        $.getJSON(`${$SCRIPT_ROOT}/unload_one_module/${res_name}`, (data)=>{
+            if (data.success) {
+                statusFuncs.statusMessage("Tile unloaded")
+            }
+            else {
+                errorDrawerFuncs.addErrorDrawerEntry({
+                    title: `Error unloading tile`,
+                    content: "message" in data ? data.message : ""
+                });
+            }
+        })
     }
 
     function _unload_all_tiles() {
-        $.getJSON(`${$SCRIPT_ROOT}/unload_all_tiles`, doFlash)
+        $.getJSON(`${$SCRIPT_ROOT}/unload_all_tiles`, (data)=>{
+            if (data.success) {
+                statusFuncs.statusMessage("Unloaded all tiles")
+            }
+            else {
+                errorDrawerFuncs.addErrorDrawerEntry({
+                    title: `Error unloading tiles`,
+                    content: "message" in data ? data.message : ""
+                });
+            }
+        })
     }
 
     function _new_tile(template_name) {
@@ -1267,7 +1362,7 @@ function LibraryPane(props) {
                     _.view_resource({name: new_name, res_type: "tile"}, "/view_module/");
                 })
                 .catch((data) => {
-                    props.addErrorDrawerEntry({title: "Error creating new tile", content: data.message})
+                    errorDrawerFuncs.addErrorDrawerEntry({title: "Error creating new tile", content: data.message})
                 })
         }
     }
@@ -1299,7 +1394,7 @@ function LibraryPane(props) {
                     _view_resource({name: String(new_name), res_type: "tile"}, "/view_in_creator/");
                 })
                 .catch((data) => {
-                    props.addErrorDrawerEntry({title: "Error creating new tile", content: data.message})
+                    errorDrawerFuncs.addErrorDrawerEntry({title: "Error creating new tile", content: data.message})
                 })
         }
     }
@@ -1330,7 +1425,7 @@ function LibraryPane(props) {
                     _view_resource({name: String(new_name), res_type: "list"}, "/view_list/")
                 })
                 .catch((data) => {
-                    props.addErrorDrawerEntry({title: "Error creating new list resource", content: data.message})
+                    errorDrawerFuncs.addErrorDrawerEntry({title: "Error creating new list resource", content: data.message})
                 })
         }
     }
@@ -1395,7 +1490,7 @@ function LibraryPane(props) {
                     _view_resource({name: String(new_name), res_type: "code"}, "/view_code/")
                 })
                 .catch((data) => {
-                    props.addErrorDrawerEntry({title: "Error creating new code resource", content: data.message})
+                    errorDrawerFuncs.addErrorDrawerEntry({title: "Error creating new code resource", content: data.message})
                 })
         }
     }

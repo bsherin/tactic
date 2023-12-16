@@ -419,11 +419,11 @@ def destroy_container(tactic_id, notify=True):
                 cont_list.append("kill_" + tactic_id)
             delete_list_of_queues(cont_list)
             if notify and message is not None:
-                data = {"message": message,
-                        "alert_type": "alert-warning",
-                        "timeout": -1,
+                print("about to send kill message")
+                data = {"content": message,
+                        "title": "Killed Container",
                         "user_id": container_owner(cont)}
-                post_task_noqworker("host", "host", "flash_to_user", data)
+                post_task_noqworker("host", "host", "add_error_drawer_entry_task", data)
             return
     except Exception as ex:
         print(get_traceback_message(ex, "got an exception in destroy_container"))

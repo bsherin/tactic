@@ -121,7 +121,6 @@ function AdministerHomeApp(props) {
         window.close();
       }
     });
-    props.tsocket.attachListener('doflash', _toaster.doFlash);
     props.tsocket.attachListener('doflashUser', _toaster.doFlash);
   }
   function _updatePaneState(res_type, state_update) {
@@ -253,7 +252,7 @@ function ContainerMenubar(props) {
   }
   function _clear_user_func(event) {
     statusFuncs.startSpinner();
-    $.getJSON($SCRIPT_ROOT + '/clear_user_containers/' + window.library_id, _doFlashStopSpinner);
+    $.getJSON($SCRIPT_ROOT + '/clear_user_containers', _doFlashStopSpinner);
   }
   function _reset_server_func(event) {
     statusFuncs.startSpinner();
@@ -296,8 +295,7 @@ function ContainerMenubar(props) {
     refreshTab: props.refresh_func,
     closeTab: null,
     resource_name: "",
-    showErrorDrawerButton: false,
-    toggleErrorDrawer: null
+    showErrorDrawerButton: false
   });
 }
 ContainerMenubar.propTypes = {
@@ -441,8 +439,7 @@ function UserMenubar(props) {
     refreshTab: props.refresh_func,
     closeTab: null,
     resource_name: "",
-    showErrorDrawerButton: false,
-    toggleErrorDrawer: null
+    showErrorDrawerButton: false
   });
 }
 UserMenubar.propTypes = {

@@ -6,7 +6,6 @@ import { Card, Button, InputGroup, Spinner, ButtonGroup, FormGroup, Divider} fro
 
 import {GlyphButton, SelectList} from "./blueprint_react_widgets.js";
 import {postWithCallback} from "./communication_react.js"
-import {doFlash} from "./toaster.js"
 import {useCallbackStack, useStateAndRef} from "./utilities_react";
 
 export {ExportsViewer}
@@ -327,7 +326,10 @@ function ExportsViewer(props) {
         postWithCallback("host", "print_code_area_to_console",
             {"console_text": the_text, "user_id": window.user_id, "main_id": props.main_id}, function (data) {
             if (!data.success) {
-                doFlash(data)
+                errorDrawerFuncs.addErrorDrawerEntry({
+                    title: "Error creating code area",
+                    content: "message" in data ? data.message : ""
+                });
             }
         }, null, props.main_id);
     }
