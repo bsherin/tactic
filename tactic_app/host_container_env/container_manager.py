@@ -25,11 +25,11 @@ class ContainerManager(ResourceManager):
         app.add_url_rule('/reset_server/<library_id>', "reset_server", login_required(self.reset_server),
                          methods=['get'])
         app.add_url_rule('/clear_user_containers', "clear_user_containers",
-                         login_required(self.clear_user_containers), methods=['get'])
+                         login_required(self.clear_user_containers), methods=['get', 'post'])
         app.add_url_rule('/kill_container/<cont_id>', "kill_container",
-                         login_required(self.kill_container), methods=['get'])
+                         login_required(self.kill_container), methods=['get', 'post'])
         app.add_url_rule('/container_logs/<cont_id>', "container_logs",
-                         login_required(self.container_logs), methods=['get'])
+                         login_required(self.container_logs), methods=['get', 'post'])
         app.add_url_rule('/grab_container_list_chunk', "grab_container_list_chunk",
                          login_required(self.grab_container_list_chunk), methods=['get', 'post'])
 

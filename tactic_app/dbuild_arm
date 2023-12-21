@@ -1,4 +1,5 @@
 #!/bin/bash
+cd /Users/brucesherin/PycharmProjects/tactic/tactic_app
 if [ "$1" == "all" ] ; then
 	sudo docker compose --env-file develop.env --profile build_project build
 else

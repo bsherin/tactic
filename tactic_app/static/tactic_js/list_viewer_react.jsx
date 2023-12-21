@@ -157,8 +157,8 @@ function ListViewerApp(props) {
             ms = {
                 Transfer: [{
                     "name_text": "Copy to library", "icon_name": "import",
-                    "click_handler": () => {
-                        copyToLibrary("list", _cProp("resource_name"), dialogFuncs, statusFuncs, errorDrawerFuncs)
+                    "click_handler": async () => {
+                        await copyToLibrary("list", _cProp("resource_name"), dialogFuncs, statusFuncs, errorDrawerFuncs)
                     }, tooltip: "Copy to library"
                 }]
             }
@@ -183,8 +183,8 @@ function ListViewerApp(props) {
                     {
                         name_text: "Share",
                         icon_name: "share",
-                        click_handler: () => {
-                            sendToRepository("list", _cProp("resource_name"), dialogFuncs, statusFuncs, errorDrawerFuncs)
+                        click_handler: async () => {
+                            await sendToRepository("list", _cProp("resource_name"), dialogFuncs, statusFuncs, errorDrawerFuncs)
                         },
                         tooltip: "Share to repository"
                     },
@@ -391,8 +391,6 @@ ListViewerApp = memo(ListViewerApp);
 ListViewerApp.propTypes = {
     controlled: PropTypes.bool,
     changeResourceName: PropTypes.func,
-    changeResourceTitle: PropTypes.func,
-    changeResourceProps: PropTypes.func,
     updatePanel: PropTypes.func,
     refreshTab: PropTypes.func,
     closeTab: PropTypes.func,
@@ -411,8 +409,6 @@ ListViewerApp.propTypes = {
 ListViewerApp.defaultProps = {
     controlled: false,
     changeResourceName: null,
-    changeResourceTitle: null,
-    changeResourceProps: null,
     updatePanel: null,
     refreshTab: null,
     closeTab: null,

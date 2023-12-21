@@ -1,10 +1,14 @@
 "use strict";
 
-function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
+var _typeof = require("@babel/runtime/helpers/typeof");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.NotebookApp = NotebookApp;
+var _extends2 = _interopRequireDefault(require("@babel/runtime/helpers/extends"));
+var _defineProperty2 = _interopRequireDefault(require("@babel/runtime/helpers/defineProperty"));
+var _slicedToArray2 = _interopRequireDefault(require("@babel/runtime/helpers/slicedToArray"));
 require("../tactic_css/tactic.scss");
 require("../tactic_css/tactic_console.scss");
 require("../tactic_css/tactic_main.scss");
@@ -26,21 +30,10 @@ var _sizing_tools = require("./sizing_tools");
 var _notebook_support = require("./notebook_support");
 var _theme = require("./theme");
 var _modal_react = require("./modal_react");
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
-function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-function _extends() { _extends = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
-function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys(Object(source), !0).forEach(function (key) { _defineProperty(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
-function _defineProperty(obj, key, value) { key = _toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return _typeof(key) === "symbol" ? key : String(key); }
-function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
-function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
-function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
-function _iterableToArrayLimit(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
-function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(e) { return e ? t : r; })(e); }
+function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != _typeof(e) && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
+function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
+function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { (0, _defineProperty2.default)(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
 var MARGIN_SIZE = 10;
 var BOTTOM_MARGIN = 20;
 var MARGIN_ADJUSTMENT = 8; // This is the amount at the top of both the table and the conso
@@ -54,12 +47,12 @@ function NotebookApp(props) {
   var height_adjustment = (0, _react.useRef)(props.controlled ? MENU_BAR_HEIGHT : 0);
   var connection_status = (0, _utilities_react.useConnection)(props.tsocket, initSocket);
   var _useStateAndRef = (0, _utilities_react.useStateAndRef)([]),
-    _useStateAndRef2 = _slicedToArray(_useStateAndRef, 3),
+    _useStateAndRef2 = (0, _slicedToArray2.default)(_useStateAndRef, 3),
     console_selected_items = _useStateAndRef2[0],
     set_console_selected_items = _useStateAndRef2[1],
     console_selected_items_ref = _useStateAndRef2[2];
   var _useReducerAndRef = (0, _utilities_react.useReducerAndRef)(_console_support.consoleItemsReducer, []),
-    _useReducerAndRef2 = _slicedToArray(_useReducerAndRef, 3),
+    _useReducerAndRef2 = (0, _slicedToArray2.default)(_useReducerAndRef, 3),
     console_items = _useReducerAndRef2[0],
     dispatch = _useReducerAndRef2[1],
     console_items_ref = _useReducerAndRef2[2];
@@ -73,7 +66,7 @@ function NotebookApp(props) {
       usable_height: (0, _sizing_tools.getUsableDimensions)(true).usable_height_no_bottom,
       usable_width: (0, _sizing_tools.getUsableDimensions)(true).usable_width - 170
     }),
-    _useReducer2 = _slicedToArray(_useReducer, 2),
+    _useReducer2 = (0, _slicedToArray2.default)(_useReducer, 2),
     mState = _useReducer2[0],
     mDispatch = _useReducer2[1];
   var theme = (0, _react.useContext)(_theme.ThemeContext);
@@ -223,7 +216,7 @@ function NotebookApp(props) {
   var true_usable_width = my_props.usable_width;
   var console_available_height = get_zoomed_console_height() - MARGIN_ADJUSTMENT;
   var project_name = my_props.is_project ? props.resource_name : "";
-  var menus = /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_main_menus_react.ProjectMenu, {
+  var menus = /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement(_main_menus_react.ProjectMenu, {
     main_id: props.main_id,
     project_name: project_name,
     is_notebook: true,
@@ -238,7 +231,7 @@ function NotebookApp(props) {
     disabled_items: my_props.is_project ? [] : ["Save"],
     hidden_items: ["Open Console as Notebook", "Export Table as Collection", "divider2", "Change collection"]
   }));
-  var console_pane = /*#__PURE__*/_react["default"].createElement(_console_component.ConsoleComponent, {
+  var console_pane = /*#__PURE__*/_react.default.createElement(_console_component.ConsoleComponent, {
     main_id: props.main_id,
     tsocket: props.tsocket,
     handleCreateViewer: props.handleCreateViewer,
@@ -259,7 +252,7 @@ function NotebookApp(props) {
   });
   var exports_pane;
   if (mState.show_exports_pane) {
-    exports_pane = /*#__PURE__*/_react["default"].createElement(_export_viewer_react.ExportsViewer, {
+    exports_pane = /*#__PURE__*/_react.default.createElement(_export_viewer_react.ExportsViewer, {
       main_id: props.main_id,
       tsocket: props.tsocket,
       setUpdate: function setUpdate(ufunc) {
@@ -273,14 +266,14 @@ function NotebookApp(props) {
       }
     });
   } else {
-    exports_pane = /*#__PURE__*/_react["default"].createElement("div", null);
+    exports_pane = /*#__PURE__*/_react.default.createElement("div", null);
   }
-  return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, !window.in_context && /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
+  return /*#__PURE__*/_react.default.createElement(_react.Fragment, null, !window.in_context && /*#__PURE__*/_react.default.createElement(_blueprint_navbar.TacticNavbar, {
     is_authenticated: window.is_authenticated,
     user_name: window.username,
     menus: null,
     page_id: props.main_id
-  }), /*#__PURE__*/_react["default"].createElement(_menu_utilities.TacticMenubar, {
+  }), /*#__PURE__*/_react.default.createElement(_menu_utilities.TacticMenubar, {
     connection_status: connection_status,
     menus: menus,
     showRefresh: true,
@@ -290,14 +283,14 @@ function NotebookApp(props) {
     closeTab: props.closeTab,
     resource_name: _cProp("resource_name"),
     showErrorDrawerButton: true
-  }), /*#__PURE__*/_react["default"].createElement("div", {
+  }), /*#__PURE__*/_react.default.createElement("div", {
     className: "main-outer ".concat(theme.dark_theme ? "bp5-dark" : "light-theme"),
     ref: main_outer_ref,
     style: {
       width: "100%",
       height: my_props.usable_height - height_adjustment.current
     }
-  }, /*#__PURE__*/_react["default"].createElement(_resizing_layouts.HorizontalPanes, {
+  }, /*#__PURE__*/_react.default.createElement(_resizing_layouts.HorizontalPanes, {
     left_pane: console_pane,
     right_pane: exports_pane,
     show_handle: true,
@@ -311,12 +304,12 @@ function NotebookApp(props) {
 }
 exports.NotebookApp = NotebookApp = /*#__PURE__*/(0, _react.memo)(NotebookApp);
 NotebookApp.propTypes = {
-  console_items: _propTypes["default"].array,
-  console_component: _propTypes["default"].object,
-  is_project: _propTypes["default"].bool,
-  interface_state: _propTypes["default"].object,
-  refreshTab: _propTypes["default"].func,
-  closeTab: _propTypes["default"].func
+  console_items: _propTypes.default.array,
+  console_component: _propTypes.default.object,
+  is_project: _propTypes.default.bool,
+  interface_state: _propTypes.default.object,
+  refreshTab: _propTypes.default.func,
+  closeTab: _propTypes.default.func
 };
 NotebookApp.defaultProps = {
   refreshTab: null,
@@ -325,7 +318,7 @@ NotebookApp.defaultProps = {
 function main_main() {
   function gotProps(the_props) {
     var NotebookAppPlus = (0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(NotebookApp))));
-    var the_element = /*#__PURE__*/_react["default"].createElement(NotebookAppPlus, _extends({}, the_props, {
+    var the_element = /*#__PURE__*/_react.default.createElement(NotebookAppPlus, (0, _extends2.default)({}, the_props, {
       controlled: false,
       initial_theme: window.theme,
       changeName: null

@@ -13,7 +13,7 @@ import {TagButtonList} from "./tag_buttons_react";
 import {CombinedMetadata, icon_dict} from "./blueprint_mdata_fields";
 import {SearchForm, BpSelectorTable} from "./library_widgets";
 import {HorizontalPanes} from "./resizing_layouts";
-import {postAjax, postAjaxPromise, postWithCallback} from "./communication_react"
+import {postAjaxPromise, postPromise} from "./communication_react"
 import {BOTTOM_MARGIN} from "./sizing_tools";
 
 import {doFlash} from "./toaster.js"
@@ -169,15 +169,15 @@ function LibraryPane(props) {
         }
     });
 
-    useEffect(() => {
+    useEffect(async () => {
         tr_bounding_top.current = table_ref.current.getBoundingClientRect().top;
         initSocket();
-        _grabNewChunkWithRow(0)
+        await _grabNewChunkWithRow(0)
     }, []);
 
     const pushCallback = useCallbackStack("library_home");
 
-    function setState(new_state, callback=null) {
+    function setState(new_state, callback = null) {
         for (let attr in new_state) {
             stateSetters[attr](new_state[attr])
         }
@@ -186,10 +186,9 @@ function LibraryPane(props) {
 
     function initSocket() {
         if ((props.tsocket != null) && (!props.is_repository)) {
-                props.tsocket.attachListener(`update-selector-row`, _handleRowUpdate);
-                props.tsocket.attachListener(`refresh-selector`, _refresh_func);
-        }
-        else if ((props.tsocket != null) && (props.is_repository)) {
+            props.tsocket.attachListener(`update-selector-row`, _handleRowUpdate);
+            props.tsocket.attachListener(`refresh-selector`, _refresh_func);
+        } else if ((props.tsocket != null) && (props.is_repository)) {
             props.tsocket.attachListener(`update-repository-selector-row`, _handleRowUpdate);
             props.tsocket.attachListener(`refresh-repository-selector`, _refresh_func);
         }
@@ -230,18 +229,18 @@ function LibraryPane(props) {
         )
     }
 
-    function _setFilterType(rtype) {
+    async function _setFilterType(rtype) {
         if (rtype == filterTypeRef.current) return;
         if (!multi_select_ref.current) {
             let sres = selected_resource_ref.current;
             if (sres.name != "" && (sres.notes != get_data_dict_entry(sres.name, sres.res_type).notes)) {
-                _saveFromSelectedResource()
+                await _saveFromSelectedResource()
             }
         }
         setFilterType(rtype);
         clearSelected();
-        pushCallback(() => {
-            _grabNewChunkWithRow(0, true, null, true)
+        pushCallback(async () => {
+            await _grabNewChunkWithRow(0, true, null, true)
         });
     }
 
@@ -251,7 +250,7 @@ function LibraryPane(props) {
         set_selected_rows([]);
     }
 
-    function _onTableSelection(regions) {
+    async function _onTableSelection(regions) {
         if (regions.length == 0) return;  // Without this get an error when clicking on a body cell
         let selected_rows = [];
         let selected_row_indices = [];
@@ -270,11 +269,11 @@ function LibraryPane(props) {
                 }
             }
         }
-        _handleRowSelection(selected_rows);
+        await _handleRowSelection(selected_rows);
         setSelectedRegions(revised_regions);
     }
 
-    function _grabNewChunkWithRow(row_index, flush = false, spec_update = null, select = false, select_by_name = null, callback = null) {
+    async function _grabNewChunkWithRow(row_index, flush = false, spec_update = null, select = false, select_by_name = null, callback = null) {
         let search_spec = _getSearchSpec();
         if (spec_update) {
             search_spec = Object.assign(search_spec, spec_update)
@@ -282,13 +281,15 @@ function LibraryPane(props) {
         if (search_spec.active_tag && search_spec.active_tag[0] != "/") {
             search_spec.active_tag = "/" + search_spec.active_tag
         }
-        let data = {
+        let args = {
             pane_type: filterTypeRef.current,
             search_spec: search_spec,
             row_number: row_index,
             is_repository: props.is_repository
         };
-        postAjax("grab_all_list_chunk", data, function (data) {
+        let data;
+        try {
+            data = await postAjaxPromise("grab_all_list_chunk", args);
             let new_data_dict;
             if (flush) {
                 new_data_dict = data.chunk_dict
@@ -307,10 +308,12 @@ function LibraryPane(props) {
                     _selectRow(row_index)
                 })
             }
-        })
+        } catch (e) {
+            errorDrawerFuncs.addFromError("Error grabbing resource chunk", e);
+        }
     }
 
-    function _handleRowUpdate(res_dict) {
+    async function _handleRowUpdate(res_dict) {
         let res_name = res_dict.name;
         let ind;
         let new_data_dict;
@@ -323,8 +326,7 @@ function LibraryPane(props) {
                 if ("_id" in res_dict) {
                     _id = res_dict._id;
                     ind = get_data_dict_index_from_id(res_dict._id);
-                }
-                else {
+                } else {
                     ind = get_data_dict_index(res_name, res_dict.res_type);
                     if (ind) {
                         _id = data_dict_ref.current[ind]._id
@@ -338,15 +340,14 @@ function LibraryPane(props) {
                 }
                 new_state = {data_dict: new_data_dict, rowChanged: rowChanged + 1};
                 if ("tags" in res_dict) {
-                    let data_dict = {pane_type: props.pane_type,
+                    let data_dict = {
+                        pane_type: props.pane_type,
                         is_repository: props.is_repository,
                         show_hidden: show_hidden_ref.current
                     };
-                    postAjaxPromise("get_tag_list", data_dict)
-                        .then(data => {
-                            let all_tags = data.tag_list;
-                            set_tag_list(all_tags)
-                        })
+                    let data = await postAjaxPromise("get_tag_list", data_dict);
+                    let all_tags = data.tag_list;
+                    set_tag_list(all_tags);
                 }
                 if (_id == selected_resource_ref.current._id) {
                     set_selected_resource(the_row);
@@ -356,13 +357,12 @@ function LibraryPane(props) {
                 }
                 break;
             case "insert":
-                _grabNewChunkWithRow(0, true, null, false, res_name);
+                await _grabNewChunkWithRow(0, true, null, false, res_name);
                 break;
             case "delete":
                 if ("_id" in res_dict) {
                     ind = parseInt(get_data_dict_index_from_id(res_dict._id));
-                }
-                else {
+                } else {
                     ind = parseInt(get_data_dict_index(res_name, res_dict.res_type));
                 }
                 new_data_dict = _.cloneDeep(data_dict_ref.current);
@@ -379,12 +379,11 @@ function LibraryPane(props) {
                 }
                 delete new_data_dict[String(ind)];
                 new_state = {data_dict: new_data_dict, rowChanged: rowChanged + 1};
-                setState(new_state, ()=>{
-                    _grabNewChunkWithRow(ind, false, null, false, null, ()=>{
+                setState(new_state, async () => {
+                    await _grabNewChunkWithRow(ind, false, null, false, null, () => {
                         if (new_selected_ind) {
                             _selectRow(new_selected_ind)
-                        }
-                        else {
+                        } else {
                             clearSelected()
                         }
                     })
@@ -448,7 +447,7 @@ function LibraryPane(props) {
 
     function get_data_dict_index_from_id(_id) {
         for (let index in data_dict_ref.current) {
-            if (_match_row_by_id(data_dict_ref.current[index], {_id: _id})){
+            if (_match_row_by_id(data_dict_ref.current[index], {_id: _id})) {
                 return index
             }
         }
@@ -466,7 +465,7 @@ function LibraryPane(props) {
         return new_tags
     }
 
-    function _saveFromSelectedResource() {
+    async function _saveFromSelectedResource() {
         // This will only be called when there is a single row selected
         const result_dict = {
             "res_type": selected_rows_ref.current[0].res_type,
@@ -480,32 +479,24 @@ function LibraryPane(props) {
         let saved_selected_resource = Object.assign({}, selected_resource_ref.current);
         let saved_selected_rows = [...selected_rows_ref.current];
         let new_tags = _extractNewTags(selected_resource_ref.current.tags);
-        postAjaxPromise("save_metadata", result_dict)
-            .then(function (data) {
-            })
-            .catch((data)=>{
-                errorDrawerFuncs.addErrorDrawerEntry({
-                    title: `Error updating resource ${result_dict.res_name}`,
-                    content: "message" in data ? data.message : ""
-                });
-            })
+        try {
+            await postAjaxPromise("save_metadata", result_dict)
+        } catch (e) {
+            errorDrawerFuncs.addFromError(`Error updating resource ${result_dict.res_name}`, e)
+        }
     }
 
-    function _overwriteCommonTags() {
+    async function _overwriteCommonTags() {
         const result_dict = {
             "selected_rows": selected_rows_ref.current,
             "tags": selected_resource_ref.current.tags,
         };
         let new_tags = _extractNewTags(selected_resource_ref.current.tags);
-        postAjaxPromise("overwrite_common_tags", result_dict)
-            .then(function (data) {
-            })
-            .catch((data)=>{
-                errorDrawerFuncs.addErrorDrawerEntry({
-                    title: "Error overwriting tags",
-                    content: "message" in data ? data.message : ""
-                });
-            })
+        try {
+            await postAjaxPromise("overwrite_common_tags", result_dict)
+        } catch (e) {
+            errorDrawerFuncs.addFromError("Error overwriting tags", e)
+        }
     }
 
     function _handleMetadataChange(changed_state_elements) {
@@ -544,32 +535,25 @@ function LibraryPane(props) {
         set_left_width_fraction(width_fraction);
     }
 
-    function _doTagDelete(tag) {
+    async function _doTagDelete(tag) {
         const result_dict = {"pane_type": props.pane_type, "tag": tag};
-        postAjaxPromise("delete_tag", result_dict)
-            .then(function (data) {
-                _refresh_func()
-            })
-            .catch((data)=>{
-                errorDrawerFuncs.addErrorDrawerEntry({
-                    title: "Error deleting tag",
-                    content: "message" in data ? data.message : ""
-                });
-            })
+        let data;
+        try {
+            await postAjaxPromise("delete_tag", result_dict);
+            await _refresh_func()
+        } catch (e) {
+            errorDrawerFuncs.addFromError("Error deleting tag", e)
+        }
     }
 
-    function _doTagRename(tag_changes) {
+    async function _doTagRename(tag_changes) {
         const result_dict = {"pane_type": props.pane_type, "tag_changes": tag_changes};
-        postAjaxPromise("rename_tag", result_dict)
-            .then(function (data) {
-                _refresh_func()
-            })
-            .catch((data)=>{
-                errorDrawerFuncs.addErrorDrawerEntry({
-                    title: "Error renaming tag",
-                    content: "message" in data ? data.message : ""
-                });
-            })
+        try {
+            await postAjaxPromise("rename_tag", result_dict);
+            await _refresh_func()
+        } catch (e) {
+            errorDrawerFuncs.addFromError("Error renaming tag", e)
+        }
     }
 
     function _handleRowDoubleClick(row_dict) {
@@ -580,25 +564,19 @@ function LibraryPane(props) {
         set_multi_select(false);
         set_list_of_selected([row_dict.name]);
         set_selected_rows([row_dict]);
-        pushCallback(() => {
+        pushCallback(async () => {
             if (window.in_context) {
                 const re = new RegExp("/$");
                 view_view = view_view.replace(re, "_in_context");
-                postAjaxPromise($SCRIPT_ROOT + view_view, {
-                    context_id: context_id,
-                    resource_name: row_dict.name
-                })
-                    .then((data) => {
-                        props.handleCreateViewer(data, statusFuncs.clearStatus);
-                    })
-                    .catch((data) => {
-                            errorDrawerFuncs.addErrorDrawerEntry({
-                                title: `Error handling double click with view ${view_view}`,
-                                content: "message" in data ? data.message : ""
-                            });
-                            statusFuncs.clearStatus()
-                        }
-                    );
+                let data;
+                try {
+                    data = await postAjaxPromise(view_view,
+                        {context_id: context_id, resource_name: row_dict.name});
+                    props.handleCreateViewer(data, statusFuncs.clearStatus);
+                } catch (e) {
+                    statusFuncs.clearStatus();
+                    errorDrawerFuncs.addFromError(`Error handling double click with view ${view_view}`, e)
+                }
             } else {
                 statusFuncs.clearStatus();
                 window.open($SCRIPT_ROOT + view_view + row_dict.name)
@@ -614,12 +592,12 @@ function LibraryPane(props) {
         return the_types
     }
 
-    function _handleRowSelection(selected_rows) {
+    async function _handleRowSelection(selected_rows) {
         if (!multi_select_ref.current) {
             let sres = selected_resource_ref.current;
             if (sres.name != "" && get_data_dict_entry(sres.name, sres.res_type) &&
                 (sres.notes != get_data_dict_entry(sres.name, sres.res_type).notes)) {
-                _saveFromSelectedResource()
+                await _saveFromSelectedResource()
             }
         }
         if (selected_rows.length > 1) {
@@ -659,22 +637,22 @@ function LibraryPane(props) {
         }
     }
 
-    function _unsearch() {
+    async function _unsearch() {
         if (search_string_ref.current != "") {
             set_search_string("")
         } else if (active_tag_ref.current != "all") {
             _update_search_state({"active_tag": "all"})
         } else if (props.pane_type == "all" && filterTypeRef.current != "all") {
-            _setFilterType("all")
+            await _setFilterType("all")
         }
     }
 
     function _update_search_state(new_state) {
         setState(new_state);
-        pushCallback(() => {
+        pushCallback(async () => {
             if (search_spec_changed(new_state)) {
                 clearSelected();
-                _grabNewChunkWithRow(0, true, new_state, true)
+                await _grabNewChunkWithRow(0, true, new_state, true)
             }
         })
     }
@@ -698,14 +676,14 @@ function LibraryPane(props) {
         let spec_update = {sort_field: column_name, sort_direction: direction};
         set_sort_field(column_name);
         set_sort_direction(direction);
-        pushCallback(() => {
+        pushCallback(async () => {
             if (search_spec_changed(spec_update)) {
-                _grabNewChunkWithRow(0, true, spec_update, true)
+                await _grabNewChunkWithRow(0, true, spec_update, true)
             }
         })
     }
 
-    function _handleArrowKeyPress(key) {
+    async function _handleArrowKeyPress(key) {
         if (multi_select_ref.current) return;
         let the_res = selected_resource_ref.current;
         let current_index = parseInt(get_data_dict_index(the_res.name, the_res.res_type));
@@ -717,20 +695,20 @@ function LibraryPane(props) {
             new_index = current_index - 1;
             if (new_index < 0) return
         }
-        _selectRow(new_index)
+        await _selectRow(new_index)
     }
 
-    function _handleTableKeyPress(key) {
+    async function _handleTableKeyPress(key) {
         if (key.code == "ArrowUp") {
-            _handleArrowKeyPress("ArrowUp")
+            await _handleArrowKeyPress("ArrowUp")
         } else if (key.code == "ArrowDown") {
-            _handleArrowKeyPress("ArrowDown")
+            await _handleArrowKeyPress("ArrowDown")
         }
     }
 
-    function _selectRow(new_index) {
+    async function _selectRow(new_index) {
         if (!Object.keys(data_dict_ref.current).includes(String(new_index))) {
-            _grabNewChunkWithRow(new_index, false, null, false, null, () => {
+            await _grabNewChunkWithRow(new_index, false, null, false, null, () => {
                 _selectRow(new_index)
             })
         } else {
@@ -746,7 +724,7 @@ function LibraryPane(props) {
 
     }
 
-    function _view_func(the_view = null) {
+    async function _view_func(the_view = null) {
         if (the_view == null) {
             the_view = view_views(props.is_repository)[selected_resource_ref.current.res_type]
         }
@@ -754,21 +732,17 @@ function LibraryPane(props) {
         if (window.in_context) {
             const re = new RegExp("/$");
             the_view = the_view.replace(re, "_in_context");
-            postAjaxPromise($SCRIPT_ROOT + the_view, {
-                context_id: context_id,
-                resource_name: selected_resource_ref.current.name
-            })
-                .then((data) => {
-                    props.handleCreateViewer(data, statusFuncs.clearStatus);
-                })
-                .catch((data) => {
-                        errorDrawerFuncs.addErrorDrawerEntry({
-                            title: `Error viewing with view ${the_view}`,
-                            content: "message" in data ? data.message : ""
-                        });
-                        statusFuncs.clearstatus()
-                    }
-                );
+            let data;
+            try {
+                data = await postAjaxPromise(the_view, {
+                    context_id: context_id,
+                    resource_name: selected_resource_ref.current.name
+                });
+                props.handleCreateViewer(data, statusFuncs.clearStatus)
+            } catch (e) {
+                statusFuncs.clearstatus();
+                errorDrawerFuncs.addFromError(`Error viewing with view ${the_view}`, e)
+            }
         } else {
             statusFuncs.clearStatus();
             window.open($SCRIPT_ROOT + the_view + selected_resource_ref.current.name)
@@ -784,7 +758,7 @@ function LibraryPane(props) {
         }
     }
 
-    function _view_resource(selected_resource, the_view = null, force_new_tab = false) {
+    async function _view_resource(selected_resource, the_view = null, force_new_tab = false) {
         let resource_name = selected_resource.name;
         if (the_view == null) {
             the_view = view_views(props.is_repository)[selected_resource.res_type]
@@ -793,18 +767,14 @@ function LibraryPane(props) {
         if (window.in_context && !force_new_tab) {
             const re = new RegExp("/$");
             the_view = the_view.replace(re, "_in_context");
-            postAjaxPromise($SCRIPT_ROOT + the_view, {context_id: context_id, resource_name: resource_name})
-                .then((data) => {
-                    props.handleCreateViewer(data, statusFuncs.clearStatus);
-                })
-                .catch((data) => {
-                        errorDrawerFuncs.addErrorDrawerEntry({
-                            title: `Error viewing resource ${resource_name}`,
-                            content: "message" in data ? data.message : ""
-                        });
-                        statusFuncs.clearstatus()
-                    }
-                );
+            try {
+                let data = await postAjaxPromise(the_view, {context_id: context_id, resource_name: resource_name});
+                props.handleCreateViewer(data, statusFuncs.clearStatus);
+            } catch (e) {
+                statusFuncs.clearstatus();
+                errorDrawerFuncs.addFromError(`Error viewing resource ${resource_name}`, e)
+
+            }
         } else {
             statusFuncs.clearStatus();
             window.open($SCRIPT_ROOT + the_view + resource_name)
@@ -812,47 +782,38 @@ function LibraryPane(props) {
 
     }
 
-    function _duplicate_func(row = null) {
+    async function _duplicate_func(row = null) {
         let the_row = row ? row : selected_resource_ref.current;
         let res_name = the_row.name;
         let res_type = the_row.res_type;
-        $.getJSON($SCRIPT_ROOT + "get_resource_names/" + res_type, function (data) {
-                dialogFuncs.showModal("ModalDialog", {
-                    title: `Duplicate ${res_type}`,
-                    field_title: "New Name",
-                    handleSubmit: DuplicateResource,
-                    default_value: res_name,
-                    existing_names: data.resource_names,
-                    checkboxes: [],
-                    handleCancel: null,
-                    handleClose: dialogFuncs.hideModal,
-                })
-            }
-        );
-        let duplicate_view = duplicate_views()[res_type];
+        try {
+            let data = await postAjaxPromise("get_resource_names/" + res_type, {});
+            let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
+                title: `Duplicate ${res_type}`,
+                field_title: "New Name",
+                default_value: res_name,
+                existing_names: data.resource_names,
+                checkboxes: [],
+                handleClose: dialogFuncs.hideModal,
+            });
 
-        function DuplicateResource(new_name) {
+            let duplicate_view = duplicate_views()[res_type];
             const result_dict = {
                 "new_res_name": new_name,
                 "res_to_copy": res_name,
                 "library_id": props.library_id,
                 "is_repository": false
             };
-            postAjaxPromise(duplicate_view, result_dict)
-                .then((data) => {
-                        // _grabNewChunkWithRow(0, true, null, false, new_name)
-                    }
-                )
-                .catch((data)=>{
-                    errorDrawerFuncs.addErrorDrawerEntry({
-                        title: "Error duplicating resource",
-                        content: "message" in data ? data.message : ""
-                    });
-                })
+            await postAjaxPromise(duplicate_view, result_dict)
+        } catch (e) {
+            if (e != "canceled") {
+                errorDrawerFuncs.addFromError(`Error duplicating resource ${res_name}`, e)
+            }
+            return
         }
     }
 
-    function _delete_func(resource) {
+    async function _delete_func(resource) {
         let res_list = resource ? [resource] : selected_rows_ref.current;
         var confirm_text;
         if (res_list.length == 1) {
@@ -868,27 +829,24 @@ function LibraryPane(props) {
                 first_index = ind
             }
         }
-        dialogFuncs.showModal("ConfirmDialog", {
-            title: "Delete resources",
-            text_body: confirm_text,
-            cancel_text: "do nothing",
-            submit_text: "delete",
-            handleSubmit: ()=>{
-            postAjaxPromise("delete_resource_list", {"resource_list": res_list})
-                .then(() => {
-                    // let new_index = 0;
-                    // if (first_index > 0) {
-                    //     new_index = first_index - 1;
-                    // }
-                    // _grabNewChunkWithRow(new_index, true, null, true)
-                })
-            },
-            handleClose: dialogFuncs.hideModal,
-            handleCancel: null
-        });
+        try {
+            await dialogFuncs.showModalPromise("ConfirmDialog", {
+                title: "Delete resources",
+                text_body: confirm_text,
+                cancel_text: "do nothing",
+                submit_text: "delete",
+                handleClose: dialogFuncs.hideModal,
+            });
+            await postAjaxPromise("delete_resource_list", {"resource_list": res_list})
+        } catch (e) {
+            if (e != "canceled") {
+                errorDrawerFuncs.addFromError(`Error duplicating resource ${res_name}`, e)
+            }
+            return
+        }
     }
 
-    function _rename_func(row = null) {
+    async function _rename_func(row = null) {
         let res_type;
         let res_name;
         if (!row) {
@@ -898,204 +856,164 @@ function LibraryPane(props) {
             res_type = row.res_type;
             res_name = row.name;
         }
-        $.getJSON($SCRIPT_ROOT + "get_resource_names/" + res_type, function (data) {
-                const res_names = data["resource_names"];
-                const index = res_names.indexOf(res_name);
-                if (index >= 0) {
-                    res_names.splice(index, 1);
-                }
-                dialogFuncs.showModal("ModalDialog", {
-                    title: `Rename ${res_type}`,
-                    field_title: "New Name",
-                    handleSubmit: RenameResource,
-                    handleCancel: null,
-                    handleClose: dialogFuncs.hideModal,
-                    default_value: res_name,
-                    existing_names: res_names,
-                    checkboxes: []
-                })
+        try {
+            let data = await postAjaxPromise("get_resource_names/" + res_type, {});
+            const res_names = data["resource_names"];
+            const index = res_names.indexOf(res_name);
+            if (index >= 0) {
+                res_names.splice(index, 1);
             }
-        );
-
-        function RenameResource(new_name) {
+            let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
+                title: `Rename ${res_type}`,
+                field_title: "New Name",
+                handleClose: dialogFuncs.hideModal,
+                default_value: res_name,
+                existing_names: res_names,
+                checkboxes: []
+            });
             const the_data = {"new_name": new_name};
-            postAjax(`rename_resource/${res_type}/${res_name}`, the_data, renameSuccess);
-
-            function renameSuccess(data) {
-                if (!data.success) {
-                    errorDrawerFuncs.addErrorDrawerEntry({
-                        title: "Error renaming resource",
-                        content: "message" in data ? data.message : ""
-                    });
-                    return false
-                }
+            await postAjaxPromise(`rename_resource/${res_type}/${res_name}`, the_data);
+        } catch (e) {
+            if (e != "canceled") {
+                errorDrawerFuncs.addFromError(`Error renaming resource ${res_name}`, e)
             }
+            return
         }
     }
 
-    function _repository_copy_func() {
+    async function _repository_copy_func() {
         if (!multi_select_ref.current) {
             let res_type = selected_resource_ref.current.res_type;
             let res_name = selected_resource_ref.current.name;
-            $.getJSON($SCRIPT_ROOT + "get_resource_names/" + res_type, function (data) {
-                    dialogFuncs.showModal("ModalDialog", {
-                        title: `Import ${res_type}`,
-                        field_title: "New Name",
-                        handleSubmit: ImportResource,
-                        default_value: res_name,
-                        existing_names: data.resource_names,
-                        checkboxes: [],
-                        handleCancel: null,
-                        handleClose: dialogFuncs.hideModal,
-                    })
-                }
-            );
-
-            function ImportResource(new_name) {
+            try {
+                let data = await postAjaxPromise("get_resource_names/" + res_type, {});
+                let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
+                    title: `Import ${res_type}`,
+                    field_title: "New Name",
+                    default_value: res_name,
+                    existing_names: data.resource_names,
+                    checkboxes: [],
+                    handleClose: dialogFuncs.hideModal,
+                });
                 const result_dict = {
                     "res_type": res_type,
                     "res_name": res_name,
                     "new_res_name": new_name
                 };
-                postAjaxPromise("/copy_from_repository", result_dict)
-                    .then((data)=>{
-                        statusFuncs.statusMessage(`Imported Resource ${res_name}`)
-                    })
-                    .catch((data)=>{
-                        errorDrawerFuncs.addErrorDrawerEntry({
-                            title: `Error importing resource ${res_name}`,
-                            content: "message" in data ? data.message : ""
-                        });
-                    });
+                await postAjaxPromise("/copy_from_repository", result_dict);
+                statusFuncs.statusMessage(`Imported Resource ${res_name}`);
+                return res_name
+            } catch (e) {
+                if (e != "canceled") {
+                    errorDrawerFuncs.addFromError("Error getting resources names", e)
+                }
+                return
             }
-
-            return res_name
         } else {
             const result_dict = {
                 "selected_rows": selected_rows_ref.current
             };
-            postAjaxPromise("/copy_from_repository", result_dict)
-                    .then((data)=>{
-                        statusFuncs.statusMessage(`Imported Resource ${res_name}`)
-                    })
-                    .catch((data)=>{
-                        errorDrawerFuncs.addErrorDrawerEntry({
-                            title: `Error importing resource ${res_name}`,
-                            content: "message" in data ? data.message : ""
-                        });
-                    });
+            try {
+                await postAjaxPromise("/copy_from_repository", result_dict);
+                statusFuncs.statusMessage(`Imported Resources`)
+            } catch (e) {
+                errorDrawerFuncs.addFromError("Error importing resources", e)
+            }
             return ""
         }
     }
 
-    function _send_repository_func() {
+    async function _send_repository_func() {
         let pane_type = props.pane_type;
         if (!multi_select_ref.current) {
             let res_type = selected_resource_ref.current.res_type;
             let res_name = selected_resource_ref.current.name;
-            $.getJSON($SCRIPT_ROOT + "get_repository_resource_names/" + res_type, function (data) {
-                    dialogFuncs.showModal("ModalDialog", {
-                        title: `Share ${res_type}`,
-                        field_title: `New ${res_type} Name`,
-                        handleSubmit: ShareResource,
-                        default_value: res_name,
-                        existing_names: data.resource_names,
-                        checkboxes: [],
-                        handleCancel: null,
-                        handleClose: dialogFuncs.hideModal,
-                    })
-                }
-            );
-
-            function ShareResource(new_name) {
+            try {
+                let data = await postAjaxPromise("get_repository_resource_names/" + res_type, {});
+                let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
+                    title: `Share ${res_type}`,
+                    field_title: `New ${res_type} Name`,
+                    default_value: res_name,
+                    existing_names: data.resource_names,
+                    checkboxes: [],
+                    handleClose: dialogFuncs.hideModal,
+                });
                 const result_dict = {
                     "pane_type": pane_type,
                     "res_type": res_type,
                     "res_name": res_name,
                     "new_res_name": new_name
                 };
-                postAjaxPromise('/send_to_repository', result_dict)
-                    .then((data)=>{
-                        statusFuncs.statusMessage(`Shared resource ${res_name}`)
-                    })
-                    .catch((data)=>{
-                        errorDrawerFuncs.addErrorDrawerEntry({
-                            title: `Error sharing resource ${res_name}`,
-                            content: "message" in data ? data.message : ""
-                        });
-                    })
+                await postAjaxPromise('/send_to_repository', result_dict);
+                statusFuncs.statusMessage(`Shared resource ${res_name}`)
+            } catch (e) {
+                if (e != "canceled") {
+                    errorDrawerFuncs.addFromError(`Error sharing resource ${res_name}`, e)
+                }
+                return
             }
-
-            return res_name
         } else {
             const result_dict = {
                 "pane_type": pane_type,
                 "selected_rows": selected_rows_ref.current,
             };
-            postAjaxPromise('/send_to_repository', result_dict)
-                .then((data)=>{
-                        statusFuncs.statusMessage(`Shared resource ${res_name}`)
-                    })
-                .catch((data)=>{
-                    errorDrawerFuncs.addErrorDrawerEntry({
-                        title: `Error sharing resource ${res_name}`,
-                        content: "message" in data ? data.message : ""
-                    });
-                });
+            try {
+                await postAjaxPromise('/send_to_repository', result_dict);
+                statusFuncs.statusMessage("Shared resources")
+            } catch (e) {
+                errorDrawerFuncs.addFromError("Error sharing resources", e)
+            }
             return ""
         }
     }
 
-    function _refresh_func(callback = null) {
-        _grabNewChunkWithRow(0, true, null, true, callback)
+    async function _refresh_func(callback = null) {
+        await _grabNewChunkWithRow(0, true, null, true, callback)
     }
 
-    function _new_notebook() {
+    async function _new_notebook() {
         if (window.in_context) {
-            const the_view = `${$SCRIPT_ROOT}/new_notebook_in_context`;
-            postAjaxPromise(the_view, {resource_name: ""})
-                .then(props.handleCreateViewer)
-                .catch((data)=>{
-                    errorDrawerFuncs.addErrorDrawerEntry({
-                        title: `Error creating new notebook`,
-                        content: "message" in data ? data.message : ""
-                    });
-                })
+            try {
+                const the_view = "new_notebook_in_context";
+                let data = await postAjaxPromise(the_view, {resource_name: ""});
+                props.handleCreateViewer(data)
+            } catch (e) {
+                errorDrawerFuncs.addFromError("Error creating new notebook", e)
+            }
         } else {
             window.open(`${$SCRIPT_ROOT}/new_notebook`)
         }
     }
 
-    function _new_project() {
+    async function _new_project() {
         if (window.in_context) {
-            const the_view = `${$SCRIPT_ROOT}/new_project_in_context`;
-            postAjaxPromise(the_view, {resource_name: ""})
-                .then(props.handleCreateViewer)
-                .catch((data)=>{
-                    errorDrawerFuncs.addErrorDrawerEntry({
-                        title: `Error creating new notebook`,
-                        content: "message" in data ? data.message : ""
-                    });
-                })
+            try {
+                const the_view = "new_project_in_context";
+                let data = await postAjaxPromise(the_view, {resource_name: ""});
+                props.handleCreateViewer(data)
+            } catch (e) {
+                errorDrawerFuncs.addFromError("Error creating new project", e)
+            }
         } else {
             window.open(`${$SCRIPT_ROOT}/new_project`)
         }
     }
 
-    function _downloadJupyter() {
+    async function _downloadJupyter() {
         let res_name = selected_resource_ref.current.name;
-        dialogFuncs.showModal("ModalDialog", {
-            title: `Download Notebook as Jupyter Notebook`,
-            field_title: "New File Name",
-            handleSubmit: (new_name) => {
-                window.open(`${$SCRIPT_ROOT}/download_jupyter/` + res_name + "/" + new_name)
-            },
-            default_value: res_name + ".ipynb",
-            existing_names: [],
-            checkboxes: [],
-            handleCancel: null,
-            handleClose: dialogFuncs.hideModal,
-        })
+        try {
+            let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
+                title: `Download Notebook as Jupyter Notebook`,
+                field_title: "New File Name",
+                default_value: res_name + ".ipynb",
+                existing_names: [],
+                checkboxes: [],
+                handleClose: dialogFuncs.hideModal,
+            });
+            window.open(`${$SCRIPT_ROOT}/download_jupyter/` + res_name + "/" + new_name)
+        } catch (e) {
+            errorDrawerFuncs.addFromError("Error downloading jupyter notebook", e)
+        }
     }
 
     function _showJupyterImport() {
@@ -1125,75 +1043,73 @@ function LibraryPane(props) {
         myDropZone.processQueue();
     }
 
-    function _combineCollections() {
+    async function _combineCollections() {
         var res_name = selected_resource_ref.current.name;
         if (!multi_select_ref.current) {
-            $.getJSON(`${$SCRIPT_ROOT}get_resource_names/collection`, function (data) {
-                dialogFuncs.showModal("SelectDialog", {
+            try {
+                let data = await postAjaxPromise("get_resource_names/collection", {});
+                let other_name = await dialogFuncs.showModalPromise("SelectDialog", {
                     title: "Select a new collection to combine with " + res_name,
                     select_label: "Collection to Combine",
                     cancel_text: "Cancel",
                     submit_text: "Combine",
-                    handleSubmit: doTheCombine,
                     option_list: data.resource_names,
                     handleClose: dialogFuncs.hideModal,
-                })
-            });
-
-            function doTheCombine(other_name) {
-                statusFuncs.startSpinner(true);
-                const target = `${$SCRIPT_ROOT}/combine_collections/${res_name}/${other_name}`;
-                $.post(target, (data) => {
-                    statusFuncs.stopSpinner();
-                    if (!data.success) {
-                        errorDrawerFuncs.addErrorDrawerEntry({title: "Error combining collections", content: data.message})
-                    } else {
-                        statusFuncs.statusMessage("Combined Collections");
-                    }
                 });
+                statusFuncs.startSpinner(true);
+                const target = `combine_collections/${res_name}/${other_name}`;
+                await postAjaxPromise(target, {});
+                statusFuncs.stopSpinner();
+                statusFuncs.statusMessage("Combined Collections");
+
+            } catch (e) {
+                if (e != "canceled") {
+                    errorDrawerFuncs.addFromError(`Error combining collections`, e)
+                }
+                statusFuncs.stopSpinner();
+                return
             }
         } else {
-            $.getJSON(`${$SCRIPT_ROOT}get_resource_names/collection`, function (data) {
-                dialogFuncs.showModal("ModalDialog", {
+            try {
+                let data = await postAjaxPromise("get_resource_names/collection", {});
+                let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
                     title: "Combine Collections",
                     field_title: "Name for combined collection",
-                    handleSubmit: CreateCombinedCollection,
                     default_value: "NewCollection",
                     existing_names: data.resource_names,
                     checkboxes: [],
-                    handleCancel: null,
                     handleClose: dialogFuncs.hideModal,
-                })
-            });
-        }
-
-        function CreateCombinedCollection(new_name) {
-            postAjaxPromise("combine_to_new_collection",
-                {"original_collections": list_of_selected_ref.current, "new_name": new_name})
-                .then((data) => {
-                    _refresh_func();
-                    data.new_row
-                })
-                .catch((data) => {
-                    errorDrawerFuncs.addErrorDrawerEntry({title: "Error combining collections", content: data.message})
-                })
+                });
+                await postAjaxPromise("combine_to_new_collection",
+                    {"original_collections": list_of_selected_ref.current, "new_name": new_name});
+            } catch (e) {
+                if (e != "canceled") {
+                    errorDrawerFuncs.addFromError(`Error combining collections`, e)
+                }
+                statusFuncs.stopSpinner();
+                return
+            }
         }
     }
 
-    function _downloadCollection(resource_name = null) {
+    async function _downloadCollection(resource_name = null) {
         let res_name = resource_name ? resource_name : selected_resource_ref.current.name;
-        dialogFuncs.showModal("ModalDialog", {
-            title: "Download Collection",
-            field_title: "New File Name",
-            handleSubmit: (new_name) => {
-                window.open(`${$SCRIPT_ROOT}/download_collection/` + res_name + "/" + new_name)
-            },
-            default_value: res_name,
-            existing_names: [],
-            checkboxes: [],
-            handleCancel: null,
-            handleClose: dialogFuncs.hideModal,
-        })
+        try {
+            let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
+                title: "Download Collection",
+                field_title: "New File Name",
+                default_value: res_name,
+                existing_names: [],
+                checkboxes: [],
+                handleClose: dialogFuncs.hideModal,
+            });
+            window.open(`${$SCRIPT_ROOT}/download_collection/` + res_name + "/" + new_name)
+        } catch (e) {
+            if (e != "canceled") {
+                errorDrawerFuncs.addFromError(`Error combing collections`, e)
+            }
+            return
+        }
     }
 
     function _displayImportResults(data) {
@@ -1232,44 +1148,39 @@ function LibraryPane(props) {
         });
     }
 
-    function _import_collection(myDropZone, setCurrentUrl, new_name, check_results, csv_options = null) {
-        let doc_type;
-        if (check_results["import_as_freeform"]) {
-            doc_type = "freeform"
-        } else {
-            doc_type = "table"
-        }
-        postAjaxPromise("create_empty_collection",
-            {
+    async function _import_collection(myDropZone, setCurrentUrl, new_name, check_results, csv_options = null) {
+        let doc_type = check_results["import_as_freeform"] ? "freeform" : "table";
+        try {
+            await postAjaxPromise("create_empty_collection", {
                 "collection_name": new_name,
                 "doc_type": doc_type,
                 "library_id": props.library_id,
                 "csv_options": csv_options
-            })
-            .then((data) => {
-                let new_url = `append_documents_to_collection/${new_name}/${doc_type}/${props.library_id}`;
-                myDropZone.options.url = new_url;
-                setCurrentUrl(new_url);
-                myDropZone.processQueue();
-            })
-            .catch((data) => {
-            })
+            });
+            let new_url = `append_documents_to_collection/${new_name}/${doc_type}/${props.library_id}`;
+            myDropZone.options.url = new_url;
+            setCurrentUrl(new_url);
+            myDropZone.processQueue();
+
+        } catch (e) {
+            errorDrawerFuncs.addFromError("Error importing document", e);
+        }
     }
 
-    function _tile_view() {
-        _view_func("/view_module/")
+    async function _tile_view() {
+        await _view_func("/view_module/")
     }
 
-    function _view_named_tile(res, in_new_tab = false) {
-        _view_resource({name: res.name, res_type: "tile"}, "/view_module/", in_new_tab)
+    async function _view_named_tile(res, in_new_tab = false) {
+        await _view_resource({name: res.name, res_type: "tile"}, "/view_module/", in_new_tab)
     }
 
-    function _creator_view_named_tile(res, in_new_tab = false) {
-        _view_resource({name: res.tile, res_type: "tile"}, "/view_in_creator/", in_new_tab)
+    async function _creator_view_named_tile(res, in_new_tab = false) {
+        await _view_resource({name: res.tile, res_type: "tile"}, "/view_in_creator/", in_new_tab)
     }
 
-    function _creator_view() {
-        _view_func("/view_in_creator/")
+    async function _creator_view() {
+        await _view_func("/view_in_creator/")
     }
 
     function _showHistoryViewer() {
@@ -1291,142 +1202,108 @@ function LibraryPane(props) {
         }
     }
 
-    function _load_tile(resource = null) {
+    async function _load_tile(resource = null) {
         let res_name = resource ? resource.name : selected_resource_ref.current.name;
-        postWithCallback("host", "load_tile_module_task",
-            {"tile_module_name": res_name, "user_id": window.user_id},
-            load_tile_response, null, props.library_id);
-
-        function load_tile_response(data) {
-            if (!data.success) {
-                errorDrawerFuncs.addErrorDrawerEntry({title: "Error loading tile", content: data.message})
-            } else {
-                statusFuncs.statusMessage(`Loaded tile ${res_name}`)
-            }
+        try {
+            await postPromise("host", "load_tile_module_task",
+                {"tile_module_name": res_name, "user_id": window.user_id});
+            statusFuncs.statusMessage(`Loaded tile ${res_name}`)
+        } catch (e) {
+            errorDrawerFuncs.addFromError("Error loading tile", e);
         }
     }
 
-    function _unload_module(resource = null) {
+    async function _unload_module(resource = null) {
         let res_name = resource ? resource.name : selected_resource_ref.current.name;
-        $.getJSON(`${$SCRIPT_ROOT}/unload_one_module/${res_name}`, (data)=>{
-            if (data.success) {
-                statusFuncs.statusMessage("Tile unloaded")
-            }
-            else {
-                errorDrawerFuncs.addErrorDrawerEntry({
-                    title: `Error unloading tile`,
-                    content: "message" in data ? data.message : ""
-                });
-            }
-        })
+        try {
+            await postAjaxPromise(`unload_one_module/${res_name}`, {});
+            statusFuncs.statusMessage("Tile unloaded")
+        } catch (e) {
+            errorDrawerFuncs.addFromError("Error unloading tile", e);
+        }
     }
 
-    function _unload_all_tiles() {
-        $.getJSON(`${$SCRIPT_ROOT}/unload_all_tiles`, (data)=>{
-            if (data.success) {
-                statusFuncs.statusMessage("Unloaded all tiles")
-            }
-            else {
-                errorDrawerFuncs.addErrorDrawerEntry({
-                    title: `Error unloading tiles`,
-                    content: "message" in data ? data.message : ""
-                });
-            }
-        })
+    async function _unload_all_tiles() {
+        try {
+            await postAjaxPromise(`unload_all_tiles`, {});
+            statusFuncs.statusMessage("Unloaded all tiles")
+        } catch (e) {
+            errorDrawerFuncs.addFromError("Error unloading tiles", e);
+        }
     }
 
-    function _new_tile(template_name) {
-        $.getJSON($SCRIPT_ROOT + "get_resource_names/tile", function (data) {
-                dialogFuncs.showModal("ModalDialog", {
-                    title: "New Tile",
-                    field_title: "New Tile Name",
-                    handleSubmit: CreateNewTileModule,
-                    default_value: "NewTileModule",
-                    existing_names: data.resource_names,
-                    checkboxes: [],
-                    handleCancel: null,
-                    handleClose: dialogFuncs.hideModal,
-                })
-            }
-        );
-
-        function CreateNewTileModule(new_name) {
+    async function _new_tile(template_name) {
+        try {
+            let data = await postAjaxPromise(`get_resource_names/tile`, {});
+            let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
+                title: "New Tile",
+                field_title: "New Tile Name",
+                default_value: "NewTileModule",
+                existing_names: data.resource_names,
+                checkboxes: [],
+                handleClose: dialogFuncs.hideModal
+            });
             const result_dict = {
                 "template_name": template_name,
                 "new_res_name": new_name,
                 "last_saved": "viewer"
             };
-            postAjaxPromise("/create_tile_module", result_dict)
-                .then((data) => {
-                    _refresh_func();
-                    _.view_resource({name: new_name, res_type: "tile"}, "/view_module/");
-                })
-                .catch((data) => {
-                    errorDrawerFuncs.addErrorDrawerEntry({title: "Error creating new tile", content: data.message})
-                })
+            await postAjaxPromise("/create_tile_module", result_dict);
+            await _view_resource({name: new_name, res_type: "tile"}, "/view_module/");
+        } catch (e) {
+            if (e != "canceled") {
+                errorDrawerFuncs.addFromError("Error creating tile module", e)
+            }
+            return
         }
     }
 
-    function _new_in_creator(template_name) {
-        $.getJSON(`${$SCRIPT_ROOT}/get_resource_names/tile`, function (data) {
-                dialogFuncs.showModal("ModalDialog", {
-                    title: "New Tile",
-                    field_title: "New Tile Name",
-                    handleSubmit: CreateNewTileModule,
-                    default_value: "NewTileModule",
-                    existing_names: data.resource_names,
-                    checkboxes: [],
-                    handleCancel: null,
-                    handleClose: dialogFuncs.hideModal,
-                })
-            }
-        );
-
-        function CreateNewTileModule(new_name) {
+    async function _new_in_creator(template_name) {
+        try {
+            let data = await postAjaxPromise(`get_resource_names/tile`, {});
+            let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
+                title: "New Tile",
+                field_title: "New Tile Name",
+                default_value: "NewTileModule",
+                existing_names: data.resource_names,
+                checkboxes: [],
+                handleClose: dialogFuncs.hideModal,
+            });
             const result_dict = {
                 "template_name": template_name,
                 "new_res_name": new_name,
                 "last_saved": "creator"
             };
-            postAjaxPromise("/create_tile_module", result_dict)
-                .then((data) => {
-                    _refresh_func();
-                    _view_resource({name: String(new_name), res_type: "tile"}, "/view_in_creator/");
-                })
-                .catch((data) => {
-                    errorDrawerFuncs.addErrorDrawerEntry({title: "Error creating new tile", content: data.message})
-                })
+            await postAjaxPromise("/create_tile_module", result_dict);
+            await _view_resource({name: String(new_name), res_type: "tile"}, "/view_in_creator/");
+        } catch (e) {
+            if (e != "canceled") {
+                errorDrawerFuncs.addFromError("Error creating tile module", e)
+            }
         }
     }
 
-    function _new_list(template_name) {
-        $.getJSON(`${$SCRIPT_ROOT}/get_resource_names/list`, function (data) {
-                dialogFuncs.showModal("ModalDialog", {
-                    title: "New List Resource",
-                    field_title: "New List Name",
-                    handleSubmit: CreateNewListResource,
-                    default_value: "NewListResource",
-                    existing_names: data.resource_names,
-                    checkboxes: [],
-                    handleCancel: null,
-                    handleClose: dialogFuncs.hideModal,
-                })
-            }
-        );
-
-        function CreateNewListResource(new_name) {
+    async function _new_list(template_name) {
+        try {
+            let data = await postAjaxPromise(`get_resource_names/list`, {});
+            let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
+                title: "New List Resource",
+                field_title: "New List Name",
+                default_value: "NewListResource",
+                existing_names: data.resource_names,
+                checkboxes: [],
+                handleClose: dialogFuncs.hideModal,
+            });
             const result_dict = {
                 "template_name": template_name,
                 "new_res_name": new_name
             };
-            postAjaxPromise("/create_list", result_dict)
-                .then((data) => {
-                    _refresh_func();
-                    _view_resource({name: String(new_name), res_type: "list"}, "/view_list/")
-                })
-                .catch((data) => {
-                    errorDrawerFuncs.addErrorDrawerEntry({title: "Error creating new list resource", content: data.message})
-                })
+            await postAjaxPromise("/create_list", result_dict);
+            await _view_resource({name: String(new_name), res_type: "list"}, "/view_list/")
+        } catch (e) {
+            if (e != "canceled") {
+                errorDrawerFuncs.addFromError("Error creating list resource", e)
+            }
         }
     }
 
@@ -1464,34 +1341,27 @@ function LibraryPane(props) {
         myDropZone.processQueue();
     }
 
-    function _new_code(template_name) {
-        $.getJSON(`${$SCRIPT_ROOT}/get_resource_names/code`, function (data) {
-                dialogFuncs.showModal("ModalDialog", {
-                    title: "New Code Resource",
-                    field_title: "New Code Resource Name",
-                    handleSubmit: CreateNewCodeResource,
-                    default_value: "NewCodeResource",
-                    existing_names: data.resource_names,
-                    checkboxes: [],
-                    handleCancel: null,
-                    handleClose: dialogFuncs.hideModal,
-                })
-            }
-        );
-
-        function CreateNewCodeResource(new_name) {
+    async function _new_code(template_name) {
+        try {
+            let data = await postAjaxPromise(`get_resource_names/code`, {});
+            let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
+                title: "New code Resource",
+                field_title: "New Code Resource Name",
+                default_value: "NewCodeResource",
+                existing_names: data.resource_names,
+                checkboxes: [],
+                handleClose: dialogFuncs.hideModal,
+            });
             const result_dict = {
                 "template_name": template_name,
                 "new_res_name": new_name
             };
-            postAjaxPromise("/create_code", result_dict)
-                .then((data) => {
-                    _refresh_func();
-                    _view_resource({name: String(new_name), res_type: "code"}, "/view_code/")
-                })
-                .catch((data) => {
-                    errorDrawerFuncs.addErrorDrawerEntry({title: "Error creating new code resource", content: data.message})
-                })
+            await postAjaxPromise("/create_code", result_dict);
+            await _view_resource({name: String(new_name), res_type: "code"}, "/view_code/")
+        } catch (e) {
+            if (e != "canceled") {
+                errorDrawerFuncs.addFromError("Error creating code resource", e)
+            }
         }
     }
 
@@ -1562,7 +1432,6 @@ function LibraryPane(props) {
         additional_metadata = null
     }
 
-// let right_pane;
     let split_tags = selected_resource_ref.current.tags == "" ? [] : selected_resource_ref.current.tags.split(" ");
     let outer_style = {marginTop: 0, marginLeft: 5, overflow: "auto", padding: 15, marginRight: 0, height: "100%"};
     let right_pane = (
@@ -1621,8 +1490,8 @@ function LibraryPane(props) {
                 <Button icon={icon_dict[rtype]}
                         minimal={true}
                         active={rtype == filterTypeRef.current}
-                        onClick={() => {
-                            _setFilterType(rtype)
+                        onClick={async () => {
+                            await _setFilterType(rtype)
                         }}/>
             </Tooltip2>
         )
@@ -1739,7 +1608,6 @@ LibraryPane.propTypes = {
     open_resources_ref: PropTypes.object,
     allow_search_inside: PropTypes.bool,
     allow_search_metadata: PropTypes.bool,
-    updatePaneState: PropTypes.func,
     is_repository: PropTypes.bool,
     left_width_fraction: PropTypes.number,
     selected_resource: PropTypes.object,

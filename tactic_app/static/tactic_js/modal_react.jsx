@@ -47,6 +47,14 @@ function withDialogs(WrappedComponent) {
                 keyCounter: state.keyCounter + 1
             })
         }
+        
+        function showModalPromise(modalType, newDialogProps) {
+            return new Promise(function(resolve, reject) {
+                newDialogProps.handleSubmit = resolve;
+                newDialogProps.handleCancel = ()=>{reject("canceled")};
+                showModal(modalType, newDialogProps)
+            })
+        }
 
         function hideModal() {
             setState({
@@ -62,7 +70,7 @@ function withDialogs(WrappedComponent) {
         }
         return (
             <Fragment>
-                <DialogContext.Provider value={{showModal, hideModal}}>
+                <DialogContext.Provider value={{showModal, hideModal, showModalPromise}}>
                     <WrappedComponent {...props}/>
                 </DialogContext.Provider>
                 <div>

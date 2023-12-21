@@ -5,9 +5,9 @@ import {Fragment, useState, useEffect, useRef, memo, useContext} from 'react';
 import {KeyTrap} from "./key_trap";
 import {CombinedMetadata} from "./blueprint_mdata_fields";
 import {HorizontalPanes} from "./resizing_layouts";
-import {handleCallback, postAjax} from "./communication_react"
+import {handleCallback} from "./communication_react"
 import {TacticMenubar} from "./menu_utilities"
-import {doFlash, StatusContext, messageOrError} from "./toaster";
+import {doFlash, StatusContext} from "./toaster";
 import {SIDE_MARGIN} from "./sizing_tools"
 import {SearchForm} from "./library_widgets";
 import {useConnection} from "./utilities_react";
@@ -15,57 +15,55 @@ import {postAjaxPromise} from "./communication_react";
 
 export {ResourceViewerApp, copyToLibrary, sendToRepository}
 
-function copyToLibrary(res_type, resource_name, dialogFuncs, statusFuncs, errorDrawerFuncs) {
-    $.getJSON($SCRIPT_ROOT + `get_resource_names/${res_type}`, function (data) {
-            dialogFuncs.showModal("ModalDialog", {
-                        title: `Import ${res_type}`,
-                        field_title: `New ${res_type} Name`,
-                        handleSubmit: ImportResource,
-                        default_value: resource_name,
-                        existing_names: data.resource_names,
-                        checkboxes: [],
-                        handleCancel: null,
-                        handleClose: dialogFuncs.hideModal,
-                    })
-        }
-    );
-
-    function ImportResource(new_name) {
+async function copyToLibrary(res_type, resource_name, dialogFuncs, statusFuncs, errorDrawerFuncs) {
+    try {
+        let data = await postAjaxPromise(`get_resource_names/${res_type}`);
+        let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
+            title: `Import ${res_type}`,
+            field_title: `New ${res_type} Name`,
+            default_value: resource_name,
+            existing_names: data.resource_names,
+            checkboxes: [],
+            handleClose: dialogFuncs.hideModal,
+        });
         const result_dict = {
             "res_type": res_type,
             "res_name": resource_name,
             "new_res_name": new_name
         };
-        postAjax("copy_from_repository", result_dict, (data)=>{
-            messageOrError(data, statusFuncs, errorDrawerFuncs)
-        });
+        await postAjaxPromise("copy_from_repository", result_dict);
+        statusFuncs.statusMessage(`Copied resource from repository`)
+    }
+    catch (e) {
+        if (e != "canceled") {
+            errorDrawerFuncs.addFromError(`Error copying from repository`, e)
+        }
     }
 }
 
-function sendToRepository(res_type, resource_name, dialogFuncs, statusFuncs, errorDrawerFuncs) {
-    $.getJSON($SCRIPT_ROOT + `get_repository_resource_names/${res_type}`, function (data) {
-            dialogFuncs.showModal("ModalDialog", {
-                        title: `Share ${res_type}`,
-                        field_title: `New ${res_type} Name`,
-                        handleSubmit: ShareResource,
-                        default_value: resource_name,
-                        existing_names: data.resource_names,
-                        checkboxes: [],
-                        handleCancel: null,
-                        handleClose: dialogFuncs.hideModal,
-                    })
-        }
-    );
-
-    function ShareResource(new_name) {
+async function sendToRepository(res_type, resource_name, dialogFuncs, statusFuncs, errorDrawerFuncs) {
+    try {
+        let data = await postAjaxPromise(`get_repository_resource_names/${res_type}`, {});
+        let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
+            title: `Share ${res_type}`,
+            field_title: `New ${res_type} Name`,
+            default_value: resource_name,
+            existing_names: data.resource_names,
+            checkboxes: [],
+            handleClose: dialogFuncs.hideModal,
+        });
         const result_dict = {
             "res_type": res_type,
             "res_name": resource_name,
             "new_res_name": new_name
         };
-        postAjax("send_to_repository", result_dict, (data)=>{
-            messageOrError(data, statusFuncs, errorDrawerFuncs)
-        })
+        await postAjaxPromise("send_to_repository", result_dict);
+        statusFuncs.statusMessage(`Sent resource to repository`)
+    }
+    catch (e) {
+        if (e != "canceled") {
+            errorDrawerFuncs.addFromError(`Error sending to repository`, e)
+        }
     }
 }
 
@@ -188,7 +186,6 @@ ResourceViewerApp.propTypes = {
     resource_name: PropTypes.string,
     search_string: PropTypes.string,
     search_matches: PropTypes.number,
-    setResourceNameState: PropTypes.func,
     refreshTab: PropTypes.func,
     closeTab: PropTypes.func,
     res_type: PropTypes.string,

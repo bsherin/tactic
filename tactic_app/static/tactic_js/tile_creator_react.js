@@ -1,10 +1,11 @@
 "use strict";
 
-function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.CreatorApp = CreatorApp;
+var _extends2 = _interopRequireDefault(require("@babel/runtime/helpers/extends"));
 require("../tactic_css/tactic.scss");
 require("../tactic_css/tactic_table.scss");
 require("../tactic_css/tile_creator.scss");
@@ -32,213 +33,93 @@ var _error_boundary = require("./error_boundary");
 var _autocomplete = require("./autocomplete");
 var _theme = require("./theme");
 var _modal_react = require("./modal_react");
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
-function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-function _extends() { _extends = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
-function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys(Object(source), !0).forEach(function (key) { _defineProperty(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
-function _defineProperty(obj, key, value) { key = _toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return _typeof(key) === "symbol" ? key : String(key); }
-function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
-function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
-function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
-function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
-function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e2) { throw _e2; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e3) { didErr = true; err = _e3; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
-function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
-function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
-function _iterableToArrayLimit(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
-function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
-var BOTTOM_MARGIN = 50;
-var MARGIN_SIZE = 17;
+function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
+function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
+const BOTTOM_MARGIN = 50;
+const MARGIN_SIZE = 17;
 function CreatorApp(props) {
-  var top_ref = (0, _react.useRef)(null);
-  var rc_span_ref = (0, _react.useRef)(null);
-  var vp_ref = (0, _react.useRef)(null);
-  var methods_ref = (0, _react.useRef)(null);
-  var commands_ref = (0, _react.useRef)(null);
-  var search_ref = (0, _react.useRef)(null);
-  var globals_ref = (0, _react.useRef)(null);
-  var last_save = (0, _react.useRef)({});
-  var dpObject = (0, _react.useRef)(null);
-  var rcObject = (0, _react.useRef)(null);
-  var emObject = (0, _react.useRef)(null);
-  var globalObject = (0, _react.useRef)(null);
-  var rline_number = (0, _react.useRef)(props.initial_line_number);
-  var cm_list = (0, _react.useRef)(props.is_mpl || props.is_d3 ? ["tc", "rc", "em", "gp"] : ["rc", "em", "gp"]);
-  var search_match_numbers = (0, _react.useRef)({
+  const top_ref = (0, _react.useRef)(null);
+  const rc_span_ref = (0, _react.useRef)(null);
+  const vp_ref = (0, _react.useRef)(null);
+  const methods_ref = (0, _react.useRef)(null);
+  const commands_ref = (0, _react.useRef)(null);
+  const search_ref = (0, _react.useRef)(null);
+  const globals_ref = (0, _react.useRef)(null);
+  const last_save = (0, _react.useRef)({});
+  const dpObject = (0, _react.useRef)(null);
+  const rcObject = (0, _react.useRef)(null);
+  const emObject = (0, _react.useRef)(null);
+  const globalObject = (0, _react.useRef)(null);
+  const rline_number = (0, _react.useRef)(props.initial_line_number);
+  const cm_list = (0, _react.useRef)(props.is_mpl || props.is_d3 ? ["tc", "rc", "em", "gp"] : ["rc", "em", "gp"]);
+  const search_match_numbers = (0, _react.useRef)({
     tc: 0,
     rc: 0,
     em: 0
   });
-  var key_bindings = (0, _react.useRef)([]);
-  var _useState = (0, _react.useState)(0),
-    _useState2 = _slicedToArray(_useState, 2),
-    tabSelectCounter = _useState2[0],
-    setTabSelectCounter = _useState2[1];
-  var _useState3 = (0, _react.useState)({
-      "metadata": true,
-      "options": false,
-      "exports": false,
-      "methods": false,
-      "commands": false
-    }),
-    _useState4 = _slicedToArray(_useState3, 2),
-    foregrounded_panes = _useState4[0],
-    set_foregrounded_panes = _useState4[1];
-  var _useState5 = (0, _react.useState)(""),
-    _useState6 = _slicedToArray(_useState5, 2),
-    search_string = _useState6[0],
-    set_search_string = _useState6[1];
-  var _useState7 = (0, _react.useState)(null),
-    _useState8 = _slicedToArray(_useState7, 2),
-    current_search_number = _useState8[0],
-    set_current_search_number = _useState8[1];
-  var _useState9 = (0, _react.useState)(cm_list.current[0]),
-    _useState10 = _slicedToArray(_useState9, 2),
-    current_search_cm = _useState10[0],
-    set_current_search_cm = _useState10[1];
-  var _useState11 = (0, _react.useState)(false),
-    _useState12 = _slicedToArray(_useState11, 2),
-    regex = _useState12[0],
-    set_regex = _useState12[1];
-  var _useState13 = (0, _react.useState)(0),
-    _useState14 = _slicedToArray(_useState13, 2),
-    search_matches = _useState14[0],
-    set_search_matches = _useState14[1];
-  var _useStateAndRef = (0, _utilities_react.useStateAndRef)(props.render_content_code),
-    _useStateAndRef2 = _slicedToArray(_useStateAndRef, 3),
-    render_content_code = _useStateAndRef2[0],
-    set_render_content_code = _useStateAndRef2[1],
-    render_content_code_ref = _useStateAndRef2[2];
-  var _useStateAndRef3 = (0, _utilities_react.useStateAndRef)(props.draw_plot_code),
-    _useStateAndRef4 = _slicedToArray(_useStateAndRef3, 3),
-    draw_plot_code = _useStateAndRef4[0],
-    set_draw_plot_code = _useStateAndRef4[1],
-    draw_plot_code_ref = _useStateAndRef4[2];
-  var _useStateAndRef5 = (0, _utilities_react.useStateAndRef)(props.jscript_code),
-    _useStateAndRef6 = _slicedToArray(_useStateAndRef5, 3),
-    jscript_code = _useStateAndRef6[0],
-    set_jscript_code = _useStateAndRef6[1],
-    jscript_code_ref = _useStateAndRef6[2];
-  var _useStateAndRef7 = (0, _utilities_react.useStateAndRef)(props.extra_functions),
-    _useStateAndRef8 = _slicedToArray(_useStateAndRef7, 3),
-    extra_functions = _useStateAndRef8[0],
-    set_extra_functions = _useStateAndRef8[1],
-    extra_functions_ref = _useStateAndRef8[2];
-  var _useStateAndRef9 = (0, _utilities_react.useStateAndRef)(props.globals_code),
-    _useStateAndRef10 = _slicedToArray(_useStateAndRef9, 3),
-    globals_code = _useStateAndRef10[0],
-    set_globals_code = _useStateAndRef10[1],
-    globals_code_ref = _useStateAndRef10[2];
-  var _useStateAndRef11 = (0, _utilities_react.useStateAndRef)(props.option_list),
-    _useStateAndRef12 = _slicedToArray(_useStateAndRef11, 3),
-    option_list = _useStateAndRef12[0],
-    set_option_list = _useStateAndRef12[1],
-    option_list_ref = _useStateAndRef12[2];
-  var _useStateAndRef13 = (0, _utilities_react.useStateAndRef)(props.export_list),
-    _useStateAndRef14 = _slicedToArray(_useStateAndRef13, 3),
-    export_list = _useStateAndRef14[0],
-    set_export_list = _useStateAndRef14[1],
-    export_list_ref = _useStateAndRef14[2];
-  var _useStateAndRef15 = (0, _utilities_react.useStateAndRef)(props.render_content_line_number),
-    _useStateAndRef16 = _slicedToArray(_useStateAndRef15, 3),
-    render_content_line_number = _useStateAndRef16[0],
-    set_render_content_line_number = _useStateAndRef16[1],
-    render_content_line_number_ref = _useStateAndRef16[2];
-  var _useStateAndRef17 = (0, _utilities_react.useStateAndRef)(props.draw_plot_line_number),
-    _useStateAndRef18 = _slicedToArray(_useStateAndRef17, 3),
-    draw_plot_line_number = _useStateAndRef18[0],
-    set_draw_plot_line_number = _useStateAndRef18[1],
-    draw_plot_line_number_ref = _useStateAndRef18[2];
-  var _useStateAndRef19 = (0, _utilities_react.useStateAndRef)(props.extra_methods_line_number),
-    _useStateAndRef20 = _slicedToArray(_useStateAndRef19, 3),
-    extra_methods_line_number = _useStateAndRef20[0],
-    set_extra_methods_line_number = _useStateAndRef20[1],
-    extra_methods_line_number_ref = _useStateAndRef20[2];
-  var _useStateAndRef21 = (0, _utilities_react.useStateAndRef)(props.notes),
-    _useStateAndRef22 = _slicedToArray(_useStateAndRef21, 3),
-    notes = _useStateAndRef22[0],
-    set_notes = _useStateAndRef22[1],
-    notes_ref = _useStateAndRef22[2];
-  var _useStateAndRef23 = (0, _utilities_react.useStateAndRef)(props.tags),
-    _useStateAndRef24 = _slicedToArray(_useStateAndRef23, 3),
-    tags = _useStateAndRef24[0],
-    set_tags = _useStateAndRef24[1],
-    tags_ref = _useStateAndRef24[2];
-  var _useStateAndRef25 = (0, _utilities_react.useStateAndRef)(props.icon),
-    _useStateAndRef26 = _slicedToArray(_useStateAndRef25, 3),
-    icon = _useStateAndRef26[0],
-    set_icon = _useStateAndRef26[1],
-    icon_ref = _useStateAndRef26[2];
-  var _useStateAndRef27 = (0, _utilities_react.useStateAndRef)(props.category),
-    _useStateAndRef28 = _slicedToArray(_useStateAndRef27, 3),
-    category = _useStateAndRef28[0],
-    set_category = _useStateAndRef28[1],
-    category_ref = _useStateAndRef28[2];
-  var _useStateAndRef29 = (0, _utilities_react.useStateAndRef)(props.additional_save_attrs || []),
-    _useStateAndRef30 = _slicedToArray(_useStateAndRef29, 3),
-    additional_save_attrs = _useStateAndRef30[0],
-    set_additional_save_attrs = _useStateAndRef30[1],
-    additional_save_attrs_ref = _useStateAndRef30[2];
-  var _useStateAndRef31 = (0, _utilities_react.useStateAndRef)(props.couple_save_attrs_and_exports),
-    _useStateAndRef32 = _slicedToArray(_useStateAndRef31, 3),
-    couple_save_attrs_and_exports = _useStateAndRef32[0],
-    set_couple_save_attrs_and_exports = _useStateAndRef32[1],
-    couple_save_attrs_and_exports_ref = _useStateAndRef32[2];
-  var _useState15 = (0, _react.useState)("metadata"),
-    _useState16 = _slicedToArray(_useState15, 2),
-    selectedTabId = _useState16[0],
-    setSelectedTabId = _useState16[1];
-  var _useState17 = (0, _react.useState)(props.is_mpl || props.is_d3 ? .5 : 1),
-    _useState18 = _slicedToArray(_useState17, 2),
-    top_pane_fraction = _useState18[0],
-    set_top_pane_fraction = _useState18[1];
-  var _useState19 = (0, _react.useState)(.5),
-    _useState20 = _slicedToArray(_useState19, 2),
-    left_pane_fraction = _useState20[0],
-    set_left_pane_fraction = _useState20[1];
-  var _useState21 = (0, _react.useState)(function () {
-      return (0, _sizing_tools.getUsableDimensions)(true).usable_height_no_bottom;
-    }),
-    _useState22 = _slicedToArray(_useState21, 2),
-    usable_height = _useState22[0],
-    set_usable_height = _useState22[1];
-  var _useState23 = (0, _react.useState)(function () {
-      return (0, _sizing_tools.getUsableDimensions)(true).usable_width - 170;
-    }),
-    _useState24 = _slicedToArray(_useState23, 2),
-    usable_width = _useState24[0],
-    set_usable_width = _useState24[1];
-  var _useState25 = (0, _react.useState)([]),
-    _useState26 = _slicedToArray(_useState25, 2),
-    all_tags = _useState26[0],
-    set_all_tags = _useState26[1];
-  var theme = (0, _react.useContext)(_theme.ThemeContext);
-  var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
-  var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
-  var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
-  var selectedPane = (0, _react.useContext)(_utilities_react.SelectedPaneContext);
-  var pushCallback = (0, _utilities_react.useCallbackStack)();
-  var _useState27 = (0, _react.useState)(props.resource_name),
-    _useState28 = _slicedToArray(_useState27, 2),
-    resource_name = _useState28[0],
-    set_resource_name = _useState28[1];
-  var connection_status = (0, _utilities_react.useConnection)(props.tsocket, initSocket);
-  (0, _react.useEffect)(function () {
-    var data_dict = {
+  const key_bindings = (0, _react.useRef)([]);
+  const [tabSelectCounter, setTabSelectCounter] = (0, _react.useState)(0);
+  const [foregrounded_panes, set_foregrounded_panes] = (0, _react.useState)({
+    "metadata": true,
+    "options": false,
+    "exports": false,
+    "methods": false,
+    "commands": false
+  });
+  const [search_string, set_search_string] = (0, _react.useState)("");
+  const [current_search_number, set_current_search_number] = (0, _react.useState)(null);
+  const [current_search_cm, set_current_search_cm] = (0, _react.useState)(cm_list.current[0]);
+  const [regex, set_regex] = (0, _react.useState)(false);
+  const [search_matches, set_search_matches] = (0, _react.useState)(0);
+  const [render_content_code, set_render_content_code, render_content_code_ref] = (0, _utilities_react.useStateAndRef)(props.render_content_code);
+  const [draw_plot_code, set_draw_plot_code, draw_plot_code_ref] = (0, _utilities_react.useStateAndRef)(props.draw_plot_code);
+  const [jscript_code, set_jscript_code, jscript_code_ref] = (0, _utilities_react.useStateAndRef)(props.jscript_code);
+  const [extra_functions, set_extra_functions, extra_functions_ref] = (0, _utilities_react.useStateAndRef)(props.extra_functions);
+  const [globals_code, set_globals_code, globals_code_ref] = (0, _utilities_react.useStateAndRef)(props.globals_code);
+  const [option_list, set_option_list, option_list_ref] = (0, _utilities_react.useStateAndRef)(props.option_list);
+  const [export_list, set_export_list, export_list_ref] = (0, _utilities_react.useStateAndRef)(props.export_list);
+  const [render_content_line_number, set_render_content_line_number, render_content_line_number_ref] = (0, _utilities_react.useStateAndRef)(props.render_content_line_number);
+  const [draw_plot_line_number, set_draw_plot_line_number, draw_plot_line_number_ref] = (0, _utilities_react.useStateAndRef)(props.draw_plot_line_number);
+  const [extra_methods_line_number, set_extra_methods_line_number, extra_methods_line_number_ref] = (0, _utilities_react.useStateAndRef)(props.extra_methods_line_number);
+  const [notes, set_notes, notes_ref] = (0, _utilities_react.useStateAndRef)(props.notes);
+  const [tags, set_tags, tags_ref] = (0, _utilities_react.useStateAndRef)(props.tags);
+  const [icon, set_icon, icon_ref] = (0, _utilities_react.useStateAndRef)(props.icon);
+  const [category, set_category, category_ref] = (0, _utilities_react.useStateAndRef)(props.category);
+  const [additional_save_attrs, set_additional_save_attrs, additional_save_attrs_ref] = (0, _utilities_react.useStateAndRef)(props.additional_save_attrs || []);
+  const [couple_save_attrs_and_exports, set_couple_save_attrs_and_exports, couple_save_attrs_and_exports_ref] = (0, _utilities_react.useStateAndRef)(props.couple_save_attrs_and_exports);
+  const [selectedTabId, setSelectedTabId] = (0, _react.useState)("metadata");
+  const [top_pane_fraction, set_top_pane_fraction] = (0, _react.useState)(props.is_mpl || props.is_d3 ? .5 : 1);
+  const [left_pane_fraction, set_left_pane_fraction] = (0, _react.useState)(.5);
+  const [usable_height, set_usable_height] = (0, _react.useState)(() => {
+    return (0, _sizing_tools.getUsableDimensions)(true).usable_height_no_bottom;
+  });
+  const [usable_width, set_usable_width] = (0, _react.useState)(() => {
+    return (0, _sizing_tools.getUsableDimensions)(true).usable_width - 170;
+  });
+  const [all_tags, set_all_tags] = (0, _react.useState)([]);
+  const theme = (0, _react.useContext)(_theme.ThemeContext);
+  const dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
+  const statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
+  const errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
+  const selectedPane = (0, _react.useContext)(_utilities_react.SelectedPaneContext);
+  const pushCallback = (0, _utilities_react.useCallbackStack)();
+  const [resource_name, set_resource_name] = (0, _react.useState)(props.resource_name);
+  const connection_status = (0, _utilities_react.useConnection)(props.tsocket, initSocket);
+  (0, _react.useEffect)(async () => {
+    let data_dict = {
       pane_type: "tile",
       is_repository: false,
       show_hidden: true
     };
-    (0, _communication_react.postAjaxPromise)("get_tag_list", data_dict).then(function (data) {
+    let data;
+    try {
+      data = await (0, _communication_react.postAjaxPromise)("get_tag_list", data_dict);
       set_all_tags(data.tag_list);
-    });
+    } catch (e) {
+      errorDrawerFuncs.addFromError("Error getting tag list", e);
+    }
   }, []);
-  (0, _react.useEffect)(function () {
+  (0, _react.useEffect)(() => {
     if (props.controlled) {
       props.registerDirtyMethod(_dirty);
       props.registerLineSetter(_selectLineNumber);
@@ -257,15 +138,15 @@ function CreatorApp(props) {
     _update_saved_state();
     errorDrawerFuncs.setGoToLineNumber(_selectLineNumber);
     statusFuncs.stopSpinner();
-    return function () {
+    return () => {
       delete_my_container();
     };
   }, []);
-  (0, _react.useEffect)(function () {
+  (0, _react.useEffect)(() => {
     _goToLineNumber();
   });
   function initSocket() {
-    props.tsocket.attachListener('focus-me', function (data) {
+    props.tsocket.attachListener('focus-me', data => {
       window.focus();
       _selectLineNumber(data.line_number);
     });
@@ -273,7 +154,7 @@ function CreatorApp(props) {
       props.tsocket.attachListener("doFlashUser", function (data) {
         (0, _toaster.doFlash)(data);
       });
-      props.tsocket.attachListener('close-user-windows', function (data) {
+      props.tsocket.attachListener('close-user-windows', data => {
         if (!(data["originator"] == props.resource_viewer_id)) {
           window.close();
         }
@@ -291,7 +172,7 @@ function CreatorApp(props) {
     return props.controlled ? props[pname] : cPropGetters()[pname];
   }
   function menu_specs() {
-    var ms = {
+    let ms = {
       Save: [{
         name_text: "Save",
         icon_name: "saved",
@@ -329,23 +210,14 @@ function CreatorApp(props) {
       Transfer: [{
         name_text: "Share",
         icon_name: "share",
-        click_handler: function click_handler() {
-          (0, _resource_viewer_react_app.sendToRepository)("tile", _cProp("resource_name"), dialogFuncs, statusFuncs, errorDrawerFuncs);
+        click_handler: async () => {
+          await (0, _resource_viewer_react_app.sendToRepository)("tile", _cProp("resource_name"), dialogFuncs, statusFuncs, errorDrawerFuncs);
         }
       }]
     };
-    for (var menu in ms) {
-      var _iterator = _createForOfIteratorHelper(ms[menu]),
-        _step;
-      try {
-        for (_iterator.s(); !(_step = _iterator.n()).done;) {
-          var but = _step.value;
-          but.click_handler = but.click_handler.bind(this);
-        }
-      } catch (err) {
-        _iterator.e(err);
-      } finally {
-        _iterator.f();
+    for (let menu in ms) {
+      for (let but of ms[menu]) {
+        but.click_handler = but.click_handler.bind(this);
       }
     }
     return ms;
@@ -355,17 +227,17 @@ function CreatorApp(props) {
       'Ctrl-S': _saveMe,
       'Ctrl-L': _saveAndLoadModule,
       'Ctrl-M': _saveAndCheckpoint,
-      'Ctrl-F': function CtrlF() {
+      'Ctrl-F': () => {
         search_ref.current.focus();
       },
-      'Cmd-F': function CmdF() {
+      'Cmd-F': () => {
         search_ref.current.focus();
       }
     };
   }
   function _searchNext() {
     if (current_search_number >= search_match_numbers.current[current_search_cm] - 1) {
-      var next_cm;
+      let next_cm;
       switch (current_search_cm) {
         case "rc":
           next_cm = "em";
@@ -396,8 +268,8 @@ function CreatorApp(props) {
     }
   }
   function _searchPrev() {
-    var next_cm;
-    var next_search_number;
+    let next_cm;
+    let next_search_number;
     if (current_search_number <= 0) {
       if (current_search_cm == "em") {
         next_cm = "rc";
@@ -424,10 +296,10 @@ function CreatorApp(props) {
     }
   }
   function _updateSearchState(new_state) {
-    var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+    let callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
     set_current_search_cm(cm_list.current[0]);
     set_current_search_number(0);
-    for (var field in new_state) {
+    for (let field in new_state) {
       switch (field) {
         case "regex":
           set_regex(new_state[field]);
@@ -442,28 +314,19 @@ function CreatorApp(props) {
     if (search_string == "" || search_string == null) {
       return true;
     } else {
-      var _iterator2 = _createForOfIteratorHelper(cm_list.current),
-        _step2;
-      try {
-        for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-          var cm = _step2.value;
-          if (search_match_numbers.current[cm]) {
-            return false;
-          }
+      for (let cm of cm_list.current) {
+        if (search_match_numbers.current[cm]) {
+          return false;
         }
-      } catch (err) {
-        _iterator2.e(err);
-      } finally {
-        _iterator2.f();
       }
       return true;
     }
   }
   function _showHistoryViewer() {
-    window.open("".concat($SCRIPT_ROOT, "/show_history_viewer/").concat(_cProp("resource_name")));
+    window.open(`${$SCRIPT_ROOT}/show_history_viewer/${_cProp("resource_name")}`);
   }
   function _showTileDiffer() {
-    window.open("".concat($SCRIPT_ROOT, "/show_tile_differ/").concat(_cProp("resource_name")));
+    window.open(`${$SCRIPT_ROOT}/show_tile_differ/${_cProp("resource_name")}`);
   }
   function _selectLineNumber(lnumber) {
     rline_number.current = lnumber;
@@ -471,7 +334,7 @@ function CreatorApp(props) {
   }
   function _logErrorStopSpinner(title, data) {
     statusFuncs.stopSpinner();
-    var entry = {
+    let entry = {
       title: title,
       content: data.message
     };
@@ -482,64 +345,57 @@ function CreatorApp(props) {
     errorDrawerFuncs.openErrorDrawer();
   }
   function _dirty() {
-    var current_state = _getSaveDict();
-    for (var k in current_state) {
+    let current_state = _getSaveDict();
+    for (let k in current_state) {
       if (current_state[k] != last_save.current[k]) {
         return true;
       }
     }
     return false;
   }
-  function _saveAndLoadModule() {
+  async function _saveAndLoadModule() {
     if (!am_selected()) {
       return false;
     }
     statusFuncs.startSpinner();
-    doSavePromise().then(function () {
+    let data;
+    try {
+      await doSavePromise();
       statusFuncs.statusMessage("Loading Module");
-      (0, _communication_react.postWithCallback)("host", "load_tile_module_task", {
+      await (0, _communication_react.postPromise)("host", "load_tile_module_task", {
         "tile_module_name": _cProp("resource_name"),
         "user_id": window.user_id
-      }, load_success, null, props.module_viewer_id);
-    })["catch"](function (data) {
-      _logErrorStopSpinner("Error saving and loading module", data);
-    });
-    function load_success(data) {
-      if (data.success) {
-        statusFuncs.statusMessage("Loaded successfully");
-        statusFuncs.stopSpinner();
-      } else {
-        _logErrorStopSpinner("Error loading module", data);
-      }
-      return false;
+      }, props.module_viewer_id);
+      statusFuncs.statusMessage("Loaded successfully");
+      statusFuncs.stopSpinner();
+    } catch (e) {
+      _logErrorStopSpinner("Error saving and loading module", e);
     }
   }
-  function _loadModule() {
+  async function _loadModule() {
     if (!am_selected()) {
       return false;
     }
     statusFuncs.startSpinner();
     statusFuncs.statusMessage("Loading module...");
-    (0, _communication_react.postWithCallback)("host", "load_tile_module_task", {
-      "tile_module_name": _cProp("resource_name"),
-      "user_id": window.user_id
-    }, load_success, null, props.module_viewer_id);
-    function load_success(data) {
-      if (data.success) {
-        statusFuncs.statusMessage("Loaded module");
-        statusFuncs.stopSpinner();
-      } else {
-        _logErrorStopSpinner("Error loading module", data);
-      }
-      return false;
+    try {
+      await (0, _communication_react.postPromise)("host", "load_tile_module_task", {
+        "tile_module_name": _cProp("resource_name"),
+        "user_id": window.user_id
+      }, props.module_viewer_id);
+      statusFuncs.statusMessage("Loaded successfully");
+      statusFuncs.stopSpinner();
+    } catch (e) {
+      _logErrorStopSpinner("Error saving and loading module", e);
     }
   }
-  function _saveModuleAs() {
+  async function _saveModuleAs() {
     statusFuncs.startSpinner();
-    (0, _communication_react.postWithCallback)("host", "get_tile_names", {
-      "user_id": window.user_id
-    }, function (data) {
-      var checkboxes;
+    let data;
+    try {
+      data = await (0, _communication_react.postPromise)("host", "get_tile_names", {
+        "user_id": window.user_id
+      }, props.main_id);
       dialogFuncs.showModal("ModalDialog", {
         title: "Save Module As",
         field_title: "New Module Name",
@@ -550,73 +406,67 @@ function CreatorApp(props) {
         handleCancel: doCancel,
         handleClose: dialogFuncs.hideModal
       });
-    }, null, props.main_id);
+    } catch (e) {
+      _logErrorStopSpinner("Error saving module", e);
+    }
     function doCancel() {
       statusFuncs.stopSpinner();
     }
-    function CreateNewModule(new_name) {
-      var result_dict = {
+    async function CreateNewModule(new_name) {
+      const result_dict = {
         "new_res_name": new_name,
         "res_to_copy": _cProp("resource_name")
       };
-      (0, _communication_react.postAjaxPromise)('/create_duplicate_tile', result_dict).then(function (data) {
-        _setResourceNameState(new_name, function () {
+      try {
+        data = await (0, _communication_react.postAjaxPromise)('/create_duplicate_tile', result_dict);
+        _setResourceNameState(new_name, () => {
           _saveMe();
         });
-      })["catch"](function (data) {
-        _logErrorStopSpinner("Error saving module", data);
-      });
+      } catch (e) {
+        _logErrorStopSpinner("Error saving module", e);
+      }
     }
   }
   function am_selected() {
     return selectedPane.amSelected(selectedPane.tab_id, selectedPane.selectedTabIdRef);
   }
-  function _saveMe() {
+  async function _saveMe() {
     if (!am_selected()) {
       return false;
     }
     statusFuncs.startSpinner();
     statusFuncs.statusMessage("Saving module...");
-    doSavePromise().then(function (data) {
+    try {
+      await doSavePromise();
       statusFuncs.statusMessage("Saved module");
       statusFuncs.stopSpinner();
-    })["catch"](function (data) {
-      _logErrorStopSpinner("Error saving module", data);
-    });
+    } catch (e) {
+      _logErrorStopSpinner("Error saving module", e);
+    }
     return false;
   }
-  function _saveAndCheckpoint() {
+  async function _saveAndCheckpoint() {
     if (!am_selected()) {
       return false;
     }
     statusFuncs.startSpinner();
-    doSavePromise().then(function () {
-      statusFuncs.statusMessage("Checkpointing");
-      doCheckpointPromise().then(function (data) {
-        statusFuncs.statusMessage("Saved and checkpointed");
-        statusFuncs.stopSpinner();
-      })["catch"](function (data) {
-        _logErrorStopSpinner("Error checkpointing module", data);
-      });
-    })["catch"](function (data) {
-      _logErrorStopSpinner("Error saving module", data);
-    });
+    statusFuncs.statusMessage("Checkpointing");
+    let data;
+    try {
+      await doSavePromise();
+      await doCheckpointPromise();
+      statusFuncs.statusMessage("Saved and checkpointed");
+      statusFuncs.stopSpinner();
+    } catch (e) {
+      _logErrorStopSpinner("Error in save and checkpoint", e);
+    }
     return false;
   }
   function get_tags_string() {
-    var taglist = tags_ref.current;
-    var local_tags = "";
-    var _iterator3 = _createForOfIteratorHelper(taglist),
-      _step3;
-    try {
-      for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-        var tag = _step3.value;
-        local_tags = local_tags + tag + " ";
-      }
-    } catch (err) {
-      _iterator3.e(err);
-    } finally {
-      _iterator3.f();
+    let taglist = tags_ref.current;
+    let local_tags = "";
+    for (let tag of taglist) {
+      local_tags = local_tags + tag + " ";
     }
     return local_tags.trim();
   }
@@ -642,29 +492,21 @@ function CreatorApp(props) {
     };
   }
   function doSavePromise() {
-    return new Promise(function (resolve, reject) {
-      var result_dict = _getSaveDict();
-      (0, _communication_react.postWithCallback)(props.module_viewer_id, "update_module", result_dict, function (data) {
-        if (data.success) {
-          save_success(data);
-          resolve(data);
-        } else {
-          reject(data);
-        }
-      }, null, props.module_viewer_id);
+    return new Promise(async (resolve, reject) => {
+      let result_dict = _getSaveDict();
+      let data;
+      try {
+        data = await (0, _communication_react.postPromise)(props.module_viewer_id, "update_module", result_dict, props.module_viewer_id);
+        save_success(data);
+        resolve(data);
+      } catch (e) {
+        reject(e);
+      }
     });
   }
   function doCheckpointPromise() {
-    return new Promise(function (resolve, reject) {
-      (0, _communication_react.postAjax)("checkpoint_module", {
-        "module_name": _cProp("resource_name")
-      }, function (data) {
-        if (data.success) {
-          resolve(data);
-        } else {
-          reject(data);
-        }
-      });
+    return (0, _communication_react.postAjaxPromise)("checkpoint_module", {
+      "module_name": _cProp("resource_name")
     });
   }
   function save_success(data) {
@@ -681,7 +523,7 @@ function CreatorApp(props) {
     last_save.current = _getSaveDict();
   }
   function _selectLine(cm, lnumber) {
-    var doc = cm.getDoc();
+    let doc = cm.getDoc();
     if (doc.getLine(lnumber)) {
       doc.setSelection({
         line: lnumber,
@@ -742,11 +584,11 @@ function CreatorApp(props) {
     });
   }
   function _handleTabSelect(newTabId, prevTabid, event) {
-    var new_fg = Object.assign({}, foregrounded_panes);
+    let new_fg = Object.assign({}, foregrounded_panes);
     new_fg[newTabId] = true;
     setSelectedTabId(newTabId);
     set_foregrounded_panes(new_fg);
-    pushCallback(function () {
+    pushCallback(() => {
       if (newTabId == "methods") {
         emObject.current.refresh();
       } else if (newTabId == "globals") {
@@ -763,39 +605,21 @@ function CreatorApp(props) {
     set_notes(notes_ref.current + new_text);
   }
   function _appendOptionText() {
-    var res_string = "\n\noptions: \n\n";
-    var _iterator4 = _createForOfIteratorHelper(option_list_ref.current),
-      _step4;
-    try {
-      for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
-        var opt = _step4.value;
-        res_string += " * `".concat(opt.name, "` (").concat(opt.type, "): \n");
-      }
-    } catch (err) {
-      _iterator4.e(err);
-    } finally {
-      _iterator4.f();
+    let res_string = "\n\noptions: \n\n";
+    for (let opt of option_list_ref.current) {
+      res_string += ` * \`${opt.name}\` (${opt.type}): \n`;
     }
     _handleNotesAppend(res_string);
   }
   function _appendExportText() {
-    var res_string = "\n\nexports: \n\n";
-    var _iterator5 = _createForOfIteratorHelper(export_list_ref.current),
-      _step5;
-    try {
-      for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
-        var exp = _step5.value;
-        res_string += " * `".concat(exp.name, "` : \n");
-      }
-    } catch (err) {
-      _iterator5.e(err);
-    } finally {
-      _iterator5.f();
+    let res_string = "\n\nexports: \n\n";
+    for (let exp of export_list_ref.current) {
+      res_string += ` * \`${exp.name}\` : \n`;
     }
     _handleNotesAppend(res_string);
   }
   function _metadataNotesButtons() {
-    return /*#__PURE__*/_react["default"].createElement(_core.ButtonGroup, null, /*#__PURE__*/_react["default"].createElement(_core.Button, {
+    return /*#__PURE__*/_react.default.createElement(_core.ButtonGroup, null, /*#__PURE__*/_react.default.createElement(_core.Button, {
       style: {
         height: "fit-content",
         alignSelf: "start",
@@ -807,11 +631,11 @@ function CreatorApp(props) {
       minimal: true,
       intent: "primary",
       icon: "select",
-      onClick: function onClick(e) {
+      onClick: e => {
         e.preventDefault();
         _appendOptionText();
       }
-    }), /*#__PURE__*/_react["default"].createElement(_core.Button, {
+    }), /*#__PURE__*/_react.default.createElement(_core.Button, {
       style: {
         height: "fit-content",
         alignSelf: "start",
@@ -823,14 +647,14 @@ function CreatorApp(props) {
       minimal: true,
       intent: "primary",
       icon: "export",
-      onClick: function onClick(e) {
+      onClick: e => {
         e.preventDefault();
         _appendExportText();
       }
     }));
   }
   function _handleMetadataChange(state_stuff) {
-    for (var field in state_stuff) {
+    for (let field in state_stuff) {
       switch (field) {
         case "tags":
           set_tags(state_stuff[field]);
@@ -848,13 +672,13 @@ function CreatorApp(props) {
     }
   }
   function handleExportsStateChange(state_stuff) {
-    for (var field in state_stuff) {
+    for (let field in state_stuff) {
       switch (field) {
         case "export_list":
-          set_export_list(_toConsumableArray(state_stuff[field]));
+          set_export_list([...state_stuff[field]]);
           break;
         case "additional_save_attrs":
-          set_additional_save_attrs(_toConsumableArray(state_stuff[field]));
+          set_additional_save_attrs([...state_stuff[field]]);
           break;
         case "couple_save_attrs_and_exports":
           set_couple_save_attrs_and_exports(state_stuff[field]);
@@ -863,8 +687,8 @@ function CreatorApp(props) {
     }
   }
   function handleOptionsListChange(new_option_list) {
-    var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-    set_option_list(_toConsumableArray(new_option_list));
+    let callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+    set_option_list([...new_option_list]);
     pushCallback(callback);
   }
   function handleMethodsChange(new_methods) {
@@ -874,10 +698,10 @@ function CreatorApp(props) {
     set_globals_code(new_globals);
   }
   function get_height_minus_top_offset(element_ref) {
-    var min_offset = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
-    var default_offset = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 100;
+    let min_offset = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
+    let default_offset = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 100;
     if (element_ref && element_ref.current) {
-      var offset = element_ref.current.offsetTop;
+      let offset = element_ref.current.offsetTop;
       if (offset < min_offset) {
         offset = min_offset;
       }
@@ -913,7 +737,7 @@ function CreatorApp(props) {
     set_render_content_code(new_code);
   }
   function _setResourceNameState(new_name) {
-    var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+    let callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
     if (props.controlled) {
       props.changeResourceName(new_name, callback);
     } else {
@@ -922,10 +746,9 @@ function CreatorApp(props) {
     }
   }
   function _clearAllSelections() {
-    for (var _i2 = 0, _arr2 = [rcObject.current, dpObject.current, emObject.current]; _i2 < _arr2.length; _i2++) {
-      var cm = _arr2[_i2];
+    for (let cm of [rcObject.current, dpObject.current, emObject.current]) {
       if (cm) {
-        var to = cm.getCursor("to");
+        let to = cm.getCursor("to");
         cm.setCursor(to);
       }
     }
@@ -944,84 +767,68 @@ function CreatorApp(props) {
   }
   function _setSearchMatches(rc_name, num) {
     search_match_numbers.current[rc_name] = num;
-    var current_matches = 0;
-    for (var cname in search_match_numbers.current) {
+    let current_matches = 0;
+    for (let cname in search_match_numbers.current) {
       current_matches += search_match_numbers.current[cname];
     }
     set_search_matches(current_matches);
   }
   function _getOptionNames() {
-    var onames = [];
-    var _iterator6 = _createForOfIteratorHelper(option_list_ref.current),
-      _step6;
-    try {
-      for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
-        var entry = _step6.value;
-        onames.push(entry.name);
-      }
-    } catch (err) {
-      _iterator6.e(err);
-    } finally {
-      _iterator6.f();
+    let onames = [];
+    for (let entry of option_list_ref.current) {
+      onames.push(entry.name);
     }
     return onames;
   }
-  var onames_for_autocomplete = [];
-  var _iterator7 = _createForOfIteratorHelper(_getOptionNames()),
-    _step7;
-  try {
-    for (_iterator7.s(); !(_step7 = _iterator7.n()).done;) {
-      var oname = _step7.value;
-      var the_text = "" + oname;
-      onames_for_autocomplete.push({
-        text: the_text,
-        icon: "select",
-        render: _autocomplete.renderAutoCompleteElement
-      });
-    }
-  } catch (err) {
-    _iterator7.e(err);
-  } finally {
-    _iterator7.f();
+  let onames_for_autocomplete = [];
+  for (let oname of _getOptionNames()) {
+    let the_text = "" + oname;
+    onames_for_autocomplete.push({
+      text: the_text,
+      icon: "select",
+      render: _autocomplete.renderAutoCompleteElement
+    });
   }
-  var my_props = _objectSpread({}, props);
+  let my_props = {
+    ...props
+  };
   if (!props.controlled) {
     my_props.resource_name = resource_name;
     my_props.usable_height = usable_height;
     my_props.usable_width = usable_width;
   }
-  var vp_height = get_height_minus_top_offset(vp_ref);
-  var uwidth = my_props.usable_width - 2 * _sizing_tools.SIDE_MARGIN;
-  var uheight = my_props.usable_height;
-  var code_width = uwidth * left_pane_fraction - 35;
-  var ch_style = {
+  let vp_height = get_height_minus_top_offset(vp_ref);
+  let uwidth = my_props.usable_width - 2 * _sizing_tools.SIDE_MARGIN;
+  let uheight = my_props.usable_height;
+  let code_width = uwidth * left_pane_fraction - 35;
+  let ch_style = {
     "width": "100%"
   };
-  var tc_item;
+  let tc_item;
   if (my_props.is_mpl || my_props.is_d3) {
-    var tc_height = get_new_tc_height();
-    var mode = my_props.is_mpl ? "python" : "javascript";
-    var code_content = my_props.is_mpl ? draw_plot_code_ref.current : jscript_code_ref.current;
-    var first_line_number = my_props.is_mpl ? draw_plot_line_number_ref.current + 1 : 1;
-    var title_label = my_props.is_mpl ? "draw_plot" : "(selector, w, h, arg_dict, resizing) =>";
-    tc_item = /*#__PURE__*/_react["default"].createElement("div", {
+    let tc_height = get_new_tc_height();
+    let mode = my_props.is_mpl ? "python" : "javascript";
+    let code_content = my_props.is_mpl ? draw_plot_code_ref.current : jscript_code_ref.current;
+    let first_line_number = my_props.is_mpl ? draw_plot_line_number_ref.current + 1 : 1;
+    let title_label = my_props.is_mpl ? "draw_plot" : "(selector, w, h, arg_dict, resizing) =>";
+    tc_item = /*#__PURE__*/_react.default.createElement("div", {
       key: "dpcode",
       style: ch_style,
       className: "d-flex flex-column align-items-baseline code-holder"
-    }, /*#__PURE__*/_react["default"].createElement("div", {
+    }, /*#__PURE__*/_react.default.createElement("div", {
       style: {
         display: "flex",
         flexDirection: "row",
         justifyContent: "space-between",
         width: "100%"
       }
-    }, /*#__PURE__*/_react["default"].createElement("span", {
+    }, /*#__PURE__*/_react.default.createElement("span", {
       className: "bp5-ui-text",
       style: {
         display: "flex",
         alignItems: "self-end"
       }
-    }, title_label), /*#__PURE__*/_react["default"].createElement(_library_widgets.SearchForm, {
+    }, title_label), /*#__PURE__*/_react.default.createElement(_library_widgets.SearchForm, {
       update_search_state: _updateSearchState,
       search_string: search_string,
       regex: regex,
@@ -1032,7 +839,7 @@ function CreatorApp(props) {
       searchNext: _searchNext,
       search_ref: search_ref,
       number_matches: search_matches
-    })), /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror, {
+    })), /*#__PURE__*/_react.default.createElement(_reactCodemirror.ReactCodemirror, {
       code_content: code_content,
       mode: mode,
       extraKeys: _extraKeys(),
@@ -1047,39 +854,37 @@ function CreatorApp(props) {
       code_container_height: tc_height,
       readOnly: props.read_only,
       regex_search: regex,
-      setSearchMatches: function setSearchMatches(num) {
-        return _setSearchMatches("tc", num);
-      },
+      setSearchMatches: num => _setSearchMatches("tc", num),
       extra_autocomplete_list: mode == "python" ? onames_for_autocomplete : []
     }));
   }
-  var rc_height;
+  let rc_height;
   if (my_props.is_mpl || my_props.is_d3) {
-    var bheight = (1 - top_pane_fraction) * uheight - 35;
+    let bheight = (1 - top_pane_fraction) * uheight - 35;
     rc_height = get_new_rc_height(bheight);
   } else {
     rc_height = get_new_rc_height(vp_height);
   }
-  var bc_item = /*#__PURE__*/_react["default"].createElement("div", {
+  let bc_item = /*#__PURE__*/_react.default.createElement("div", {
     key: "rccode",
     id: "rccode",
     style: ch_style,
     className: "d-flex flex-column align-items-baseline code-holder"
-  }, /*#__PURE__*/_react["default"].createElement("div", {
+  }, /*#__PURE__*/_react.default.createElement("div", {
     style: {
       display: "flex",
       flexDirection: "row",
       justifyContent: "space-between",
       width: "100%"
     }
-  }, /*#__PURE__*/_react["default"].createElement("span", {
+  }, /*#__PURE__*/_react.default.createElement("span", {
     className: "bp5-ui-text",
     style: {
       display: "flex",
       alignItems: "self-end"
     },
     ref: rc_span_ref
-  }, "render_content"), !my_props.is_mpl && !my_props.is_d3 && /*#__PURE__*/_react["default"].createElement(_library_widgets.SearchForm, {
+  }, "render_content"), !my_props.is_mpl && !my_props.is_d3 && /*#__PURE__*/_react.default.createElement(_library_widgets.SearchForm, {
     update_search_state: _updateSearchState,
     search_string: search_string,
     regex: regex,
@@ -1090,7 +895,7 @@ function CreatorApp(props) {
     searchNext: _searchNext,
     search_ref: search_ref,
     number_matches: search_matches
-  })), /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror, {
+  })), /*#__PURE__*/_react.default.createElement(_reactCodemirror.ReactCodemirror, {
     code_content: render_content_code_ref.current,
     current_search_number: current_search_cm == "rc" ? current_search_number : null,
     handleChange: handleRenderContentChange,
@@ -1104,16 +909,14 @@ function CreatorApp(props) {
     code_container_height: rc_height,
     readOnly: props.read_only,
     regex_search: regex,
-    setSearchMatches: function setSearchMatches(num) {
-      return _setSearchMatches("rc", num);
-    },
+    setSearchMatches: num => _setSearchMatches("rc", num),
     extra_autocomplete_list: onames_for_autocomplete
   }));
-  var left_pane;
+  let left_pane;
   if (my_props.is_mpl || my_props.is_d3) {
-    left_pane = /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
+    left_pane = /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement("div", {
       ref: vp_ref
-    }), /*#__PURE__*/_react["default"].createElement(_resizing_layouts.VerticalPanes, {
+    }), /*#__PURE__*/_react.default.createElement(_resizing_layouts.VerticalPanes, {
       top_pane: tc_item,
       bottom_pane: bc_item,
       show_handle: true,
@@ -1123,18 +926,18 @@ function CreatorApp(props) {
       id: "creator-left"
     }));
   } else {
-    left_pane = /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
+    left_pane = /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement("div", {
       ref: vp_ref
     }, bc_item));
   }
-  var default_module_height = get_height_minus_top_offset(null, 128, 128);
-  var mdata_style = {
+  let default_module_height = get_height_minus_top_offset(null, 128, 128);
+  let mdata_style = {
     marginLeft: 20,
     overflow: "auto",
     padding: 15,
     height: default_module_height
   };
-  var mdata_panel = /*#__PURE__*/_react["default"].createElement(_blueprint_mdata_fields.CombinedMetadata, {
+  let mdata_panel = /*#__PURE__*/_react.default.createElement(_blueprint_mdata_fields.CombinedMetadata, {
     tags: tags_ref.current,
     all_tags: all_tags,
     readOnly: props.readOnly,
@@ -1146,14 +949,14 @@ function CreatorApp(props) {
     notes_buttons: _metadataNotesButtons,
     handleChange: _handleMetadataChange
   });
-  var option_panel = /*#__PURE__*/_react["default"].createElement(_creator_modules_react.OptionModule, {
+  let option_panel = /*#__PURE__*/_react.default.createElement(_creator_modules_react.OptionModule, {
     data_list_ref: option_list_ref,
     foregrounded: foregrounded_panes["options"],
     handleChange: handleOptionsListChange,
     handleNotesAppend: _handleNotesAppend,
     available_height: default_module_height
   });
-  var export_panel = /*#__PURE__*/_react["default"].createElement(_creator_modules_react.ExportModule, {
+  let export_panel = /*#__PURE__*/_react.default.createElement(_creator_modules_react.ExportModule, {
     export_list: export_list_ref.current,
     save_list: additional_save_attrs_ref.current,
     couple_save_attrs_and_exports: couple_save_attrs_and_exports_ref.current,
@@ -1162,12 +965,12 @@ function CreatorApp(props) {
     handleNotesAppend: _handleNotesAppend,
     available_height: default_module_height
   });
-  var methods_height = get_height_minus_top_offset(methods_ref, 128, 128);
-  var methods_panel = /*#__PURE__*/_react["default"].createElement("div", {
+  let methods_height = get_height_minus_top_offset(methods_ref, 128, 128);
+  let methods_panel = /*#__PURE__*/_react.default.createElement("div", {
     style: {
       marginLeft: 5
     }
-  }, /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror, {
+  }, /*#__PURE__*/_react.default.createElement(_reactCodemirror.ReactCodemirror, {
     handleChange: handleMethodsChange,
     show_fold_button: true,
     current_search_number: current_search_cm == "em" ? current_search_number : null,
@@ -1183,17 +986,15 @@ function CreatorApp(props) {
     alt_clear_selections: _clearAllSelections,
     regex_search: regex,
     first_line_number: extra_methods_line_number_ref.current,
-    setSearchMatches: function setSearchMatches(num) {
-      return _setSearchMatches("em", num);
-    },
+    setSearchMatches: num => _setSearchMatches("em", num),
     extra_autocomplete_list: onames_for_autocomplete
   }));
-  var globals_height = get_height_minus_top_offset(globals_ref, 128, 128);
-  var globals_panel = /*#__PURE__*/_react["default"].createElement("div", {
+  let globals_height = get_height_minus_top_offset(globals_ref, 128, 128);
+  let globals_panel = /*#__PURE__*/_react.default.createElement("div", {
     style: {
       marginLeft: 5
     }
-  }, /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror, {
+  }, /*#__PURE__*/_react.default.createElement(_reactCodemirror.ReactCodemirror, {
     handleChange: handleGlobalsChange,
     show_fold_button: true,
     current_search_number: current_search_cm == "gp" ? current_search_number : null,
@@ -1209,75 +1010,73 @@ function CreatorApp(props) {
     alt_clear_selections: _clearAllSelections,
     regex_search: regex,
     first_line_number: 1,
-    setSearchMatches: function setSearchMatches(num) {
-      return _setSearchMatches("gp", num);
-    },
+    setSearchMatches: num => _setSearchMatches("gp", num),
     extra_autocomplete_list: onames_for_autocomplete
   }));
-  var commands_height = get_height_minus_top_offset(commands_ref, 128, 128);
-  var commands_panel = /*#__PURE__*/_react["default"].createElement(_creator_modules_react.CommandsModule, {
+  let commands_height = get_height_minus_top_offset(commands_ref, 128, 128);
+  let commands_panel = /*#__PURE__*/_react.default.createElement(_creator_modules_react.CommandsModule, {
     foregrounded: foregrounded_panes["commands"],
     available_height: commands_height,
     commands_ref: commands_ref
   });
-  var right_pane = /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
+  let right_pane = /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement("div", {
     id: "creator-resources",
     className: "d-block"
-  }, /*#__PURE__*/_react["default"].createElement(_core.Tabs, {
+  }, /*#__PURE__*/_react.default.createElement(_core.Tabs, {
     id: "resource_tabs",
     selectedTabId: selectedTabId,
     large: false,
     onChange: _handleTabSelect
-  }, /*#__PURE__*/_react["default"].createElement(_core.Tab, {
+  }, /*#__PURE__*/_react.default.createElement(_core.Tab, {
     id: "metadata",
-    title: /*#__PURE__*/_react["default"].createElement("span", null, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
+    title: /*#__PURE__*/_react.default.createElement("span", null, /*#__PURE__*/_react.default.createElement(_core.Icon, {
       size: 12,
       icon: "manually-entered-data"
     }), " metadata"),
     panel: mdata_panel
-  }), /*#__PURE__*/_react["default"].createElement(_core.Tab, {
+  }), /*#__PURE__*/_react.default.createElement(_core.Tab, {
     id: "options",
-    title: /*#__PURE__*/_react["default"].createElement("span", null, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
+    title: /*#__PURE__*/_react.default.createElement("span", null, /*#__PURE__*/_react.default.createElement(_core.Icon, {
       size: 12,
       icon: "select"
     }), " options"),
     panel: option_panel
-  }), /*#__PURE__*/_react["default"].createElement(_core.Tab, {
+  }), /*#__PURE__*/_react.default.createElement(_core.Tab, {
     id: "exports",
-    title: /*#__PURE__*/_react["default"].createElement("span", null, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
+    title: /*#__PURE__*/_react.default.createElement("span", null, /*#__PURE__*/_react.default.createElement(_core.Icon, {
       size: 12,
       icon: "export"
     }), " exports"),
     panel: export_panel
-  }), /*#__PURE__*/_react["default"].createElement(_core.Tab, {
+  }), /*#__PURE__*/_react.default.createElement(_core.Tab, {
     id: "methods",
-    title: /*#__PURE__*/_react["default"].createElement("span", null, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
+    title: /*#__PURE__*/_react.default.createElement("span", null, /*#__PURE__*/_react.default.createElement(_core.Icon, {
       size: 12,
       icon: "code"
     }), " methods"),
     panel: methods_panel
-  }), /*#__PURE__*/_react["default"].createElement(_core.Tab, {
+  }), /*#__PURE__*/_react.default.createElement(_core.Tab, {
     id: "globals",
-    title: /*#__PURE__*/_react["default"].createElement("span", null, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
+    title: /*#__PURE__*/_react.default.createElement("span", null, /*#__PURE__*/_react.default.createElement(_core.Icon, {
       size: 12,
       icon: "code"
     }), " globals"),
     panel: globals_panel
-  }), /*#__PURE__*/_react["default"].createElement(_core.Tab, {
+  }), /*#__PURE__*/_react.default.createElement(_core.Tab, {
     id: "commands",
-    title: /*#__PURE__*/_react["default"].createElement("span", null, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
+    title: /*#__PURE__*/_react.default.createElement("span", null, /*#__PURE__*/_react.default.createElement(_core.Icon, {
       size: 12,
       icon: "manual"
     }), " documentation"),
     panel: commands_panel
   }))));
-  var outer_style = {
+  let outer_style = {
     width: "100%",
     height: uheight,
     paddingLeft: props.controlled ? 5 : _sizing_tools.SIDE_MARGIN,
     paddingTop: 15
   };
-  var outer_class = "resource-viewer-holder pane-holder";
+  let outer_class = "resource-viewer-holder pane-holder";
   if (!window.in_context) {
     if (theme.dark_theme) {
       outer_class = outer_class + " bp5-dark";
@@ -1285,13 +1084,13 @@ function CreatorApp(props) {
       outer_class = outer_class + " light-theme";
     }
   }
-  return /*#__PURE__*/_react["default"].createElement(_error_boundary.ErrorBoundary, null, !window.in_context && /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
+  return /*#__PURE__*/_react.default.createElement(_error_boundary.ErrorBoundary, null, !window.in_context && /*#__PURE__*/_react.default.createElement(_blueprint_navbar.TacticNavbar, {
     is_authenticated: window.is_authenticated,
     selected: null,
     show_api_links: true,
     page_id: props.module_viewer_id,
     user_name: window.username
-  }), /*#__PURE__*/_react["default"].createElement(_menu_utilities.TacticMenubar, {
+  }), /*#__PURE__*/_react.default.createElement(_menu_utilities.TacticMenubar, {
     menu_specs: menu_specs(),
     connection_status: connection_status,
     showRefresh: window.in_context,
@@ -1301,49 +1100,47 @@ function CreatorApp(props) {
     resource_name: _cProp("resource_name"),
     showErrorDrawerButton: true,
     controlled: props.controlled
-  }), /*#__PURE__*/_react["default"].createElement(_error_boundary.ErrorBoundary, null, /*#__PURE__*/_react["default"].createElement("div", {
+  }), /*#__PURE__*/_react.default.createElement(_error_boundary.ErrorBoundary, null, /*#__PURE__*/_react.default.createElement("div", {
     className: outer_class,
     ref: top_ref,
     style: outer_style
-  }, /*#__PURE__*/_react["default"].createElement(_resizing_layouts.HorizontalPanes, {
+  }, /*#__PURE__*/_react.default.createElement(_resizing_layouts.HorizontalPanes, {
     left_pane: left_pane,
     right_pane: right_pane,
     show_handle: true,
     available_height: uheight,
     available_width: uwidth,
     handleSplitUpdate: handleLeftPaneResize
-  })), !window.in_context && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_key_trap.KeyTrap, {
+  })), !window.in_context && /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement(_key_trap.KeyTrap, {
     global: true,
     bindings: key_bindings.current
   }))));
 }
 exports.CreatorApp = CreatorApp = /*#__PURE__*/(0, _react.memo)(CreatorApp);
 CreatorApp.propTypes = {
-  controlled: _propTypes["default"].bool,
-  changeResourceName: _propTypes["default"].func,
-  changeResourceTitle: _propTypes["default"].func,
-  changeResourceProps: _propTypes["default"].func,
-  refreshTab: _propTypes["default"].func,
-  closeTab: _propTypes["default"].func,
-  registerLineSetter: _propTypes["default"].func,
-  updatePanel: _propTypes["default"].func,
-  is_mpl: _propTypes["default"].bool,
-  render_content_code: _propTypes["default"].string,
-  render_content_line_number: _propTypes["default"].number,
-  extra_methods_line_number: _propTypes["default"].number,
-  category: _propTypes["default"].string,
-  extra_functions: _propTypes["default"].string,
-  draw_plot_code: _propTypes["default"].string,
-  jscript_code: _propTypes["default"].string,
-  tags: _propTypes["default"].array,
-  notes: _propTypes["default"].string,
-  icon: _propTypes["default"].string,
-  option_list: _propTypes["default"].array,
-  export_list: _propTypes["default"].array,
-  created: _propTypes["default"].string,
-  tsocket: _propTypes["default"].object,
-  usable_height: _propTypes["default"].number,
-  usable_width: _propTypes["default"].number
+  controlled: _propTypes.default.bool,
+  changeResourceName: _propTypes.default.func,
+  refreshTab: _propTypes.default.func,
+  closeTab: _propTypes.default.func,
+  registerLineSetter: _propTypes.default.func,
+  updatePanel: _propTypes.default.func,
+  is_mpl: _propTypes.default.bool,
+  render_content_code: _propTypes.default.string,
+  render_content_line_number: _propTypes.default.number,
+  extra_methods_line_number: _propTypes.default.number,
+  category: _propTypes.default.string,
+  extra_functions: _propTypes.default.string,
+  draw_plot_code: _propTypes.default.string,
+  jscript_code: _propTypes.default.string,
+  tags: _propTypes.default.array,
+  notes: _propTypes.default.string,
+  icon: _propTypes.default.string,
+  option_list: _propTypes.default.array,
+  export_list: _propTypes.default.array,
+  created: _propTypes.default.string,
+  tsocket: _propTypes.default.object,
+  usable_height: _propTypes.default.number,
+  usable_width: _propTypes.default.number
 };
 CreatorApp.defaultProps = {
   controlled: false,
@@ -1357,19 +1154,19 @@ CreatorApp.defaultProps = {
 };
 function tile_creator_main() {
   function gotProps(the_props) {
-    var CreatorAppPlus = (0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(CreatorApp))));
-    var the_element = /*#__PURE__*/_react["default"].createElement(CreatorAppPlus, _extends({}, the_props, {
+    let CreatorAppPlus = (0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(CreatorApp))));
+    let the_element = /*#__PURE__*/_react.default.createElement(CreatorAppPlus, (0, _extends2.default)({}, the_props, {
       controlled: false,
       initial_theme: window.theme,
       changeName: null
     }));
-    var domContainer = document.querySelector('#creator-root');
+    const domContainer = document.querySelector('#creator-root');
     ReactDOM.render(the_element, domContainer);
   }
   (0, _utilities_react.renderSpinnerMessage)("Starting up ...", '#creator-root');
   (0, _communication_react.postAjaxPromise)("view_in_creator_in_context", {
     "resource_name": window.module_name
-  }).then(function (data) {
+  }).then(data => {
     (0, _tile_creator_support.creator_props)(data, null, gotProps, null);
   });
 }

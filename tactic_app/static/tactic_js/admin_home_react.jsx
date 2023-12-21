@@ -14,7 +14,7 @@ import {Regions} from "@blueprintjs/table";
 import {TacticSocket} from "./tactic_socket"
 import {doFlash} from "./toaster"
 import {TacticNavbar} from "./blueprint_navbar";
-import {handleCallback}  from "./communication_react"
+import {handleCallback, postAjaxPromise} from "./communication_react"
 import {withStatus} from "./toaster";
 import {withDialogs} from "./modal_react";
 
@@ -22,7 +22,7 @@ import {withDialogs} from "./modal_react";
 import {AdminPane} from "./administer_pane"
 import {SIDE_MARGIN, USUAL_TOOLBAR_HEIGHT, getUsableDimensions} from "./sizing_tools";
 import {ViewerContext} from "./resource_viewer_context";
-import {withErrorDrawer} from "./error_drawer";
+import {ErrorDrawerContext, withErrorDrawer} from "./error_drawer";
 import {guid} from "./utilities_react";
 import {LibraryMenubar} from "./library_menubars";
 import {useCallbackStack, useStateAndRef} from "./utilities_react";
@@ -127,6 +127,12 @@ function AdministerHomeApp(props) {
         pushCallback(callback)
     }
 
+    function _updatePaneStatePromise(res_type, state_update) {
+        return new Promise((resolve, reject)=>{
+            _updatePaneState (res_type, state_update, resolve);
+        })
+    }
+
     function _update_window_dimensions() {
         let uwidth = window.innerWidth - 2 * SIDE_MARGIN;
         let uheight = window.innerHeight;
@@ -158,9 +164,8 @@ function AdministerHomeApp(props) {
                    allow_search_metadata={false}
                    MenubarClass={ContainerMenubar}
                    updatePaneState={_updatePaneState}
+                   updatePaneStatePromise={_updatePaneStatePromise}
                    {...pane_states_ref.current["container"]}
-                   {...props.errorDrawerFuncs}
-                   errorDrawerFuncs={props.errorDrawerFuncs}
                    tsocket={tsocket}
                    colnames={col_names.container}
                    id_field="Id"
@@ -176,9 +181,8 @@ function AdministerHomeApp(props) {
                    allow_search_metadata={false}
                    MenubarClass={UserMenubar}
                    updatePaneState={_updatePaneState}
+                   updatePaneStatePromise={_updatePaneStatePromise}
                    {...pane_states_ref.current["user"]}
-                   {...props.errorDrawerFuncs}
-                   errorDrawerFuncs={props.errorDrawerFuncs}
                    tsocket={tsocket}
                    colnames={col_names.user}
                    id_field="_id"
@@ -232,41 +236,43 @@ AdministerHomeApp = memo(AdministerHomeApp);
 function ContainerMenubar(props) {
 
     const statusFuncs = useContext(StatusContext);
+    const errorDrawerFuncs = useContext(ErrorDrawerContext);
 
     function _doFlashStopSpinner(data) {
         statusFuncs.stopSpinner();
         doFlash(data)
     }
 
-    function _container_logs () {
+    async function _container_logs () {
         let cont_id = props.selected_resource.Id;
-        $.getJSON($SCRIPT_ROOT + '/container_logs/' + cont_id, function (data) {
-            props.setConsoleText(data.log_text)
-        });
+        let data = await postAjaxPromise('container_logs/' + cont_id);
+        props.setConsoleText(data.log_text);
     }
 
-    function _clear_user_func (event) {
+    async function _clear_user_func (event) {
         statusFuncs.startSpinner();
-        $.getJSON($SCRIPT_ROOT + '/clear_user_containers', _doFlashStopSpinner);
+        let data = await postAjaxPromise('clear_user_containers');
+        _doFlashStopSpinner(data)
     }
 
-    function _reset_server_func (event) {
+    async function _reset_server_func (event) {
         statusFuncs.startSpinner();
-        $.getJSON($SCRIPT_ROOT + '/reset_server/' + library_id, _doFlashStopSpinner);
+        let data = await postAjaxPromise("reset_server/" + library_id);
+         _doFlashStopSpinner(data)
     }
 
-   function  _destroy_container () {
+   async function  _destroy_container () {
         statusFuncs.startSpinner();
         let cont_id = props.selected_resource.Id;
-        $.getJSON($SCRIPT_ROOT + '/kill_container/' + cont_id, (data) => {
-                _doFlashStopSpinner(data);
-                if (data.success) {
-                    props.delete_row(cont_id);
-                }
-            }
-        );
-        statusFuncs.stopSpinner();
-
+        try {
+            let data = await postAjaxPromise('kill_container/' + cont_id, {});
+            _doFlashStopSpinner(data);
+            props.delete_row(cont_id);
+        }
+        catch (e) {
+            errorDrawerFuncs.addFromError("Error destroying container", e);
+            statusFuncs.stopSpinner();
+        }
     }
 
      function menu_specs() {

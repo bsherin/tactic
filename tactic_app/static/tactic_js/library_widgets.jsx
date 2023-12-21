@@ -223,9 +223,9 @@ function BpSelectorTable(props) {
         })
     }
 
-    function _onCompleteRender() {
+    async function _onCompleteRender() {
         if (data_update_required.current != null) {
-            props.initiateDataGrab(data_update_required.current);
+            await props.initiateDataGrab(data_update_required.current);
             data_update_required.current = null
         }
         const lastColumnRegion = Regions.column(Object.keys(props.columns).length - 1);

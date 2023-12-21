@@ -1,10 +1,11 @@
 "use strict";
 
-function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.PoolBrowser = PoolBrowser;
+var _extends2 = _interopRequireDefault(require("@babel/runtime/helpers/extends"));
 var _react = _interopRequireWildcard(require("react"));
 var _core = require("@blueprintjs/core");
 var _utilities_react = require("./utilities_react");
@@ -18,79 +19,42 @@ var _toaster = require("./toaster");
 var _theme = require("./theme");
 var _modal_react = require("./modal_react");
 var _library_home_react = require("./library_home_react");
-function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
-function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-function _extends() { _extends = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
-function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
-function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
-function _iterableToArrayLimit(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
-function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
-var pool_browser_id = (0, _utilities_react.guid)();
+function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
+function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
+const pool_browser_id = (0, _utilities_react.guid)();
 function PoolBrowser(props) {
-  var _useStateAndRef = (0, _utilities_react.useStateAndRef)({
-      name: "",
-      tags: "",
-      notes: "",
-      updated: "",
-      created: "",
-      size: ""
-    }),
-    _useStateAndRef2 = _slicedToArray(_useStateAndRef, 3),
-    selected_resource = _useStateAndRef2[0],
-    set_selected_resource = _useStateAndRef2[1],
-    selected_resource_ref = _useStateAndRef2[2];
-  var _useStateAndRef3 = (0, _utilities_react.useStateAndRef)(null),
-    _useStateAndRef4 = _slicedToArray(_useStateAndRef3, 3),
-    value = _useStateAndRef4[0],
-    setValue = _useStateAndRef4[1],
-    valueRef = _useStateAndRef4[2];
-  var _useStateAndRef5 = (0, _utilities_react.useStateAndRef)(null),
-    _useStateAndRef6 = _slicedToArray(_useStateAndRef5, 3),
-    selectedNode = _useStateAndRef6[0],
-    setSelectedNode = _useStateAndRef6[1],
-    selectedNodeRef = _useStateAndRef6[2];
-  var _useStateAndRef7 = (0, _utilities_react.useStateAndRef)(false),
-    _useStateAndRef8 = _slicedToArray(_useStateAndRef7, 3),
-    multi_select = _useStateAndRef8[0],
-    set_multi_select = _useStateAndRef8[1],
-    multi_select_ref = _useStateAndRef8[2];
-  var _useStateAndRef9 = (0, _utilities_react.useStateAndRef)([]),
-    _useStateAndRef10 = _slicedToArray(_useStateAndRef9, 3),
-    list_of_selected = _useStateAndRef10[0],
-    set_list_of_selected = _useStateAndRef10[1],
-    list_of_selected_ref = _useStateAndRef10[2];
-  var _useState = (0, _react.useState)([]),
-    _useState2 = _slicedToArray(_useState, 2),
-    contextMenuItems = _useState2[0],
-    setContextMenuItems = _useState2[1];
-  var _useStateAndRef11 = (0, _utilities_react.useStateAndRef)(.65),
-    _useStateAndRef12 = _slicedToArray(_useStateAndRef11, 3),
-    left_width_fraction = _useStateAndRef12[0],
-    set_left_width_fraction = _useStateAndRef12[1],
-    left_width_fraction_ref = _useStateAndRef12[2];
-  var _useState3 = (0, _react.useState)(false),
-    _useState4 = _slicedToArray(_useState3, 2),
-    have_activated = _useState4[0],
-    set_have_activated = _useState4[1];
-  var theme = (0, _react.useContext)(_theme.ThemeContext);
-  var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
-  var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
-  var statudFuncs = (0, _react.useContext)(_toaster.StatusContext);
-  var treeRefreshFunc = (0, _react.useRef)(null);
+  const [selected_resource, set_selected_resource, selected_resource_ref] = (0, _utilities_react.useStateAndRef)({
+    name: "",
+    tags: "",
+    notes: "",
+    updated: "",
+    created: "",
+    size: ""
+  });
+  const [value, setValue, valueRef] = (0, _utilities_react.useStateAndRef)(null);
+  const [selectedNode, setSelectedNode, selectedNodeRef] = (0, _utilities_react.useStateAndRef)(null);
+  const [multi_select, set_multi_select, multi_select_ref] = (0, _utilities_react.useStateAndRef)(false);
+  const [list_of_selected, set_list_of_selected, list_of_selected_ref] = (0, _utilities_react.useStateAndRef)([]);
+  const [contextMenuItems, setContextMenuItems] = (0, _react.useState)([]);
+  const [left_width_fraction, set_left_width_fraction, left_width_fraction_ref] = (0, _utilities_react.useStateAndRef)(.65);
+  const [have_activated, set_have_activated] = (0, _react.useState)(false);
+  const theme = (0, _react.useContext)(_theme.ThemeContext);
+  const dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
+  const errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
+  const statudFuncs = (0, _react.useContext)(_toaster.StatusContext);
+  const treeRefreshFunc = (0, _react.useRef)(null);
   // Important note: The first mounting of the pool tree must happen after the pool pane
   // is first activated. Otherwise, I do GetPoolTree before everything is ready and I don't
   // get the callback for the post.
 
-  var top_ref = (0, _react.useRef)(null);
-  var resizing = (0, _react.useRef)(false);
-  (0, _react.useEffect)(function () {
+  const top_ref = (0, _react.useRef)(null);
+  const resizing = (0, _react.useRef)(false);
+  (0, _react.useEffect)(() => {
     if (props.am_selected && !have_activated) {
       set_have_activated(true);
     }
   }, [props.am_selected]);
-  (0, _react.useEffect)(function () {
+  (0, _react.useEffect)(() => {
     if (selectedNodeRef.current) {
       set_selected_resource({
         name: (0, _pool_tree.getBasename)(value),
@@ -112,9 +76,9 @@ function PoolBrowser(props) {
   }, [value]);
   function handlePoolEvent() {}
   function _rename_func() {
-    var node = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+    let node = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
     if (!valueRef.current && !node) return;
-    var path = node && "isDirectory" in node ? node.fullpath : valueRef.current;
+    const path = node && "isDirectory" in node ? node.fullpath : valueRef.current;
     dialogFuncs.showModal("ModalDialog", {
       title: "Rename Pool Resource",
       field_title: "New Name",
@@ -126,11 +90,11 @@ function PoolBrowser(props) {
       handleClose: dialogFuncs.hideModal
     });
     function RenameResource(new_name) {
-      var the_data = {
+      const the_data = {
         new_name: new_name,
         old_path: path
       };
-      (0, _communication_react.postAjax)("rename_pool_resource", the_data, renameSuccess);
+      (0, _communication_react.postAjax)(`rename_pool_resource`, the_data, renameSuccess);
       function renameSuccess(data) {
         if (!data.success) {
           errorDrawerFuncs.addErrorDrawerEntry({
@@ -145,10 +109,10 @@ function PoolBrowser(props) {
     }
   }
   function _add_directory() {
-    var node = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+    let node = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
     if (!valueRef.current && !node) return;
-    var sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
-    var initial_address;
+    const sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
+    let initial_address;
     if (sNode.isDirectory) {
       initial_address = sNode.fullpath;
     } else {
@@ -164,10 +128,10 @@ function PoolBrowser(props) {
       handleClose: dialogFuncs.hideModal
     });
     function AddDirectory(full_path) {
-      var the_data = {
+      const the_data = {
         full_path: full_path
       };
-      (0, _communication_react.postAjax)("create_pool_directory", the_data, addSuccess);
+      (0, _communication_react.postAjax)(`create_pool_directory`, the_data, addSuccess);
       function addSuccess(data) {
         if (!data.success) {
           errorDrawerFuncs.addErrorDrawerEntry({
@@ -182,18 +146,15 @@ function PoolBrowser(props) {
     }
   }
   function _duplicate_file() {
-    var node = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+    let node = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
     if (!valueRef.current && !node) return;
-    var sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
+    const sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
     if (sNode.isDirectory) {
       (0, _toaster.doFlash)("You can't duplicate a directory");
       return;
     }
-    var src = sNode.fullpath;
-    var _splitFilePath = (0, _pool_tree.splitFilePath)(sNode.fullpath),
-      _splitFilePath2 = _slicedToArray(_splitFilePath, 2),
-      initial_address = _splitFilePath2[0],
-      initial_name = _splitFilePath2[1];
+    const src = sNode.fullpath;
+    const [initial_address, initial_name] = (0, _pool_tree.splitFilePath)(sNode.fullpath);
     dialogFuncs.showModal("SelectAddressDialog", {
       title: "Duplicate a file",
       handleSubmit: DupFile,
@@ -204,11 +165,11 @@ function PoolBrowser(props) {
       handleClose: dialogFuncs.hideModal
     });
     function DupFile(dst) {
-      var the_data = {
-        dst: dst,
-        src: src
+      const the_data = {
+        dst,
+        src
       };
-      (0, _communication_react.postAjax)("duplicate_pool_file", the_data, addSuccess);
+      (0, _communication_react.postAjax)(`duplicate_pool_file`, the_data, addSuccess);
       function addSuccess(data) {
         if (!data.success) {
           errorDrawerFuncs.addErrorDrawerEntry({
@@ -223,14 +184,14 @@ function PoolBrowser(props) {
     }
   }
   function _downloadFile() {
-    var node = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+    let node = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
     if (!valueRef.current && !node) return;
-    var sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
+    const sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
     if (sNode.isDirectory) {
       (0, _toaster.doFlash)("You can't download a directory");
       return;
     }
-    var src = sNode.fullpath;
+    const src = sNode.fullpath;
     console.log("Got source " + String(src));
     dialogFuncs.showModal("ModalDialog", {
       title: "Download File",
@@ -243,8 +204,8 @@ function PoolBrowser(props) {
       handleClose: dialogFuncs.hideModal
     });
     function downloadFile(new_name) {
-      var the_data = {
-        src: src
+      const the_data = {
+        src
       };
       $.ajax({
         url: $SCRIPT_ROOT + '/download_pool_file',
@@ -255,8 +216,7 @@ function PoolBrowser(props) {
         xhrFields: {
           responseType: 'blob' // Response type as blob
         },
-
-        success: function success(data, status, xhr) {
+        success: function (data, status, xhr) {
           if (xhr.status === 200) {
             // Create a download link and trigger the download
             var blob = new Blob([data], {
@@ -272,10 +232,10 @@ function PoolBrowser(props) {
             window.URL.revokeObjectURL(url);
           }
         },
-        error: function error(xhr, status, _error) {
+        error: function (xhr, status, error) {
           errorDrawerFuncs.addErrorDrawerEntry({
             title: "Error Downloading From Pool",
-            content: String(_error)
+            content: String(error)
           });
         }
       });
@@ -283,11 +243,11 @@ function PoolBrowser(props) {
   }
   function MoveResource(src, dst) {
     if (src == dst) return;
-    var the_data = {
+    const the_data = {
       dst: dst,
       src: src
     };
-    (0, _communication_react.postAjax)("move_pool_resource", the_data, addSuccess);
+    (0, _communication_react.postAjax)(`move_pool_resource`, the_data, addSuccess);
     function addSuccess(data) {
       if (!data.success) {
         errorDrawerFuncs.addErrorDrawerEntry({
@@ -301,19 +261,19 @@ function PoolBrowser(props) {
     }
   }
   function _move_resource() {
-    var node = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+    let node = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
     if (!valueRef.current && !node) return;
-    var sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
-    var src = sNode.fullpath;
-    var initial_address;
+    const sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
+    const src = sNode.fullpath;
+    let initial_address;
     if (sNode.isDirectory) {
       initial_address = sNode.fullpath;
     } else {
       initial_address = (0, _pool_tree.getFileParentPath)(sNode.fullpath);
     }
     dialogFuncs.showModal("SelectAddressDialog", {
-      title: "Select a destination for ".concat((0, _pool_tree.getBasename)(src)),
-      handleSubmit: function handleSubmit(dst) {
+      title: `Select a destination for ${(0, _pool_tree.getBasename)(src)}`,
+      handleSubmit: dst => {
         MoveResource(src, dst);
       },
       selectType: "folder",
@@ -324,28 +284,28 @@ function PoolBrowser(props) {
     });
   }
   function _delete_func() {
-    var node = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+    let node = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
     if (!valueRef.current && !node) return;
-    var path = node && "isDirectory" in node ? node.fullpath : valueRef.current;
-    var sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
+    const path = node && "isDirectory" in node ? node.fullpath : valueRef.current;
+    const sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
     if (sNode.isDirectory && sNode.childNodes.length > 0) {
       (0, _toaster.doFlash)("You can't delete a non-empty directory");
       return;
     }
-    var basename = (0, _pool_tree.getBasename)(path);
-    var confirm_text = "Are you sure that you want to delete ".concat(basename, "?");
+    const basename = (0, _pool_tree.getBasename)(path);
+    const confirm_text = `Are you sure that you want to delete ${basename}?`;
     dialogFuncs.showModal("ConfirmDialog", {
       title: "Delete resource",
       text_body: confirm_text,
       cancel_text: "do nothing",
       submit_text: "delete",
-      handleSubmit: function handleSubmit() {
+      handleSubmit: () => {
         (0, _communication_react.postAjaxPromise)("delete_pool_resource", {
           full_path: path,
           is_directory: sNode.isDirectory
-        }).then(function () {
+        }).then(() => {
           return true;
-        })["catch"](function (data) {
+        }).catch(data => {
           errorDrawerFuncs.addErrorDrawerEntry({
             title: "Error deleting resource",
             content: data.message
@@ -357,15 +317,15 @@ function PoolBrowser(props) {
     });
   }
   function _add_to_pool(myDropZone, setCurrentUrl, current_value) {
-    var new_url = "import_pool/".concat(_library_home_react.library_id);
+    let new_url = `import_pool/${_library_home_react.library_id}`;
     myDropZone.options.url = new_url;
     setCurrentUrl(new_url);
     myDropZone.processQueue();
   }
   function _showPoolImport() {
-    var node = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+    let node = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
     var initial_directory;
-    var sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
+    const sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
     if (sNode && sNode.isDirectory) {
       initial_directory = sNode.fullpath;
     } else {
@@ -390,7 +350,7 @@ function PoolBrowser(props) {
     });
   }
   function handleDrop(e, dst) {
-    var files = e.dataTransfer.files;
+    const files = e.dataTransfer.files;
     if (files.length != 0) {
       dialogFuncs.showModal("FileImportDialog", {
         res_type: "pool",
@@ -411,7 +371,7 @@ function PoolBrowser(props) {
         initialFiles: files
       });
     } else {
-      var src = e.dataTransfer.getData("fullpath");
+      let src = e.dataTransfer.getData("fullpath");
       if (src) {
         MoveResource(src, dst);
       }
@@ -435,46 +395,46 @@ function PoolBrowser(props) {
     return true;
   }
   function renderContextMenu(props) {
-    return /*#__PURE__*/_react["default"].createElement(_core.Menu, null, /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+    return /*#__PURE__*/_react.default.createElement(_core.Menu, null, /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
       icon: "edit",
-      onClick: function onClick() {
+      onClick: () => {
         _rename_func(props.node);
       },
       text: "Rename Resource"
-    }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+    }), /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
       icon: "inheritance",
-      onClick: function onClick() {
+      onClick: () => {
         _move_resource(props.node);
       },
       text: "Move Resource"
-    }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+    }), /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
       icon: "duplicate",
-      onClick: function onClick() {
+      onClick: () => {
         _duplicate_file(props.node);
       },
       text: "Duplicate File"
-    }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+    }), /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
       icon: "folder-close",
-      onClick: function onClick() {
+      onClick: () => {
         _add_directory(props.node);
       },
       text: "Create Directory"
-    }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+    }), /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
       icon: "trash",
-      onClick: function onClick() {
+      onClick: () => {
         _delete_func(props.node);
       },
       intent: "danger",
       text: "Delete Resource"
-    }), /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+    }), /*#__PURE__*/_react.default.createElement(_core.MenuDivider, null), /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
       icon: "cloud-upload",
-      onClick: function onClick() {
+      onClick: () => {
         _showPoolImport(props.node);
       },
       text: "Import To Pool"
-    }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+    }), /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
       icon: "download",
-      onClick: function onClick() {
+      onClick: () => {
         _downloadFile(props.node);
       },
       text: "Download from Pool"
@@ -483,18 +443,18 @@ function PoolBrowser(props) {
   function registerTreeRefreshFunc(func) {
     treeRefreshFunc.current = func;
   }
-  var outer_style = {
+  let outer_style = {
     marginTop: 0,
     marginLeft: 0,
     overflow: "auto",
     marginRight: 0,
     height: "100%"
   };
-  var res_type = null;
+  let res_type = null;
   if (selectedNodeRef.current) {
     res_type = selectedNodeRef.current.isDirectory ? "poolDir" : "poolFile";
   }
-  var right_pane = /*#__PURE__*/_react["default"].createElement(_blueprint_mdata_fields.CombinedMetadata, {
+  let right_pane = /*#__PURE__*/_react.default.createElement(_blueprint_mdata_fields.CombinedMetadata, {
     useTags: false,
     all_tags: [],
     useNotes: false,
@@ -515,7 +475,7 @@ function PoolBrowser(props) {
     },
     readOnly: true
   });
-  var left_pane = /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
+  let left_pane = /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement("div", {
     className: "d-flex flex-column",
     style: {
       maxHeight: "100%",
@@ -523,7 +483,7 @@ function PoolBrowser(props) {
       overflow: "scroll",
       padding: 15
     }
-  }, (props.am_selected || have_activated) && /*#__PURE__*/_react["default"].createElement(_pool_tree.PoolTree, {
+  }, (props.am_selected || have_activated) && /*#__PURE__*/_react.default.createElement(_pool_tree.PoolTree, {
     value: valueRef.current,
     renderContextMenu: renderContextMenu,
     select_type: "both",
@@ -534,7 +494,7 @@ function PoolBrowser(props) {
     showSecondaryLabel: true,
     handleNodeClick: handleNodeClick
   })));
-  return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(PoolMenubar, _extends({
+  return /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement(PoolMenubar, (0, _extends2.default)({
     selected_resource: selected_resource_ref.current,
     connection_status: null,
     rename_func: _rename_func,
@@ -552,16 +512,16 @@ function PoolBrowser(props) {
     library_id: props.library_id,
     controlled: props.controlled,
     tsocket: props.tsocket
-  })), /*#__PURE__*/_react["default"].createElement("div", {
+  })), /*#__PURE__*/_react.default.createElement("div", {
     ref: top_ref,
     style: outer_style,
     className: "pool-browser"
-  }, /*#__PURE__*/_react["default"].createElement("div", {
+  }, /*#__PURE__*/_react.default.createElement("div", {
     style: {
       width: props.usable_width,
       height: props.usable_height
     }
-  }, /*#__PURE__*/_react["default"].createElement(_resizing_layouts.HorizontalPanes, {
+  }, /*#__PURE__*/_react.default.createElement(_resizing_layouts.HorizontalPanes, {
     available_width: props.usable_width,
     available_height: props.usable_height,
     outer_hp_style: {
@@ -619,7 +579,7 @@ function PoolMenubar(props) {
       }]
     };
   }
-  return /*#__PURE__*/_react["default"].createElement(_library_menubars.LibraryMenubar, {
+  return /*#__PURE__*/_react.default.createElement(_library_menubars.LibraryMenubar, {
     sendContextMenuItems: props.sendContextMenuItems,
     connection_status: props.connection_status,
     context_menu_items: context_menu_items(),
@@ -641,30 +601,27 @@ function PoolMenubar(props) {
 }
 PoolMenubar = /*#__PURE__*/(0, _react.memo)(PoolMenubar);
 function FileDropWrapper(props) {
-  var _useState5 = (0, _react.useState)(false),
-    _useState6 = _slicedToArray(_useState5, 2),
-    isDragging = _useState6[0],
-    setIsDragging = _useState6[1];
-  var handleDragOver = function handleDragOver(e) {
+  const [isDragging, setIsDragging] = (0, _react.useState)(false);
+  const handleDragOver = e => {
     e.preventDefault();
     setIsDragging(true);
   };
-  var handleDragLeave = function handleDragLeave() {
+  const handleDragLeave = () => {
     setIsDragging(false);
   };
-  var handleDrop = function handleDrop(e) {
+  const handleDrop = e => {
     e.preventDefault();
     setIsDragging(false);
-    var files = e.dataTransfer.files;
+    const files = e.dataTransfer.files;
     if (files) {
       if (props.processFiles) {
         props.processFiles(files);
       }
     }
   };
-  return /*#__PURE__*/_react["default"].createElement("div", {
+  return /*#__PURE__*/_react.default.createElement("div", {
     id: "pool-drop-zone",
-    className: "drop-zone ".concat(isDragging ? 'drag-over' : ''),
+    className: `drop-zone ${isDragging ? 'drag-over' : ''}`,
     onDragOver: handleDragOver,
     onDragLeave: handleDragLeave,
     onDrop: handleDrop

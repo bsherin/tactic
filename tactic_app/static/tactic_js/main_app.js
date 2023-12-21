@@ -1,9 +1,11 @@
 "use strict";
 
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.MainApp = MainApp;
+var _extends2 = _interopRequireDefault(require("@babel/runtime/helpers/extends"));
 require("../tactic_css/tactic.scss");
 require("../tactic_css/tactic_main.scss");
 require("../tactic_css/tactic_table.scss");
@@ -34,36 +36,17 @@ var _sizing_tools = require("./sizing_tools");
 var _error_boundary = require("./error_boundary");
 var _theme = require("./theme");
 var _modal_react = require("./modal_react");
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
-function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-function _extends() { _extends = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
-function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys(Object(source), !0).forEach(function (key) { _defineProperty(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
-function _defineProperty(obj, key, value) { key = _toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return _typeof(key) === "symbol" ? key : String(key); }
-function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
-function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
-function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
-function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
-function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e2) { throw _e2; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e3) { didErr = true; err = _e3; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
-function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
-function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
-function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
-function _iterableToArrayLimit(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
-function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
-var MARGIN_SIZE = 0;
-var BOTTOM_MARGIN = 30; // includes space for status messages at bottom
-var MARGIN_ADJUSTMENT = 8; // This is the amount at the top of both the table and the console
-var CONSOLE_HEADER_HEIGHT = 35;
-var EXTRA_TABLE_AREA_SPACE = 500;
-var USUAL_TOOLBAR_HEIGHT = 50;
-var MENU_BAR_HEIGHT = 30; // will only appear when in context
+function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
+function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
+const MARGIN_SIZE = 0;
+const BOTTOM_MARGIN = 30; // includes space for status messages at bottom
+const MARGIN_ADJUSTMENT = 8; // This is the amount at the top of both the table and the console
+const CONSOLE_HEADER_HEIGHT = 35;
+const EXTRA_TABLE_AREA_SPACE = 500;
+const USUAL_TOOLBAR_HEIGHT = 50;
+const MENU_BAR_HEIGHT = 30; // will only appear when in context
 
-var iStateDefaults = {
+const iStateDefaults = {
   table_is_shrunk: false,
   tile_list: [],
   console_items: [],
@@ -84,75 +67,60 @@ function MainApp(props) {
     }
     return iStateDefaults[pname];
   }
-  var last_save = (0, _react.useRef)({});
-  var resizing = (0, _react.useRef)(false);
-  var updateExportsList = (0, _react.useRef)(null);
-  var height_adjustment = (0, _react.useRef)(0);
-  var table_container_ref = (0, _react.useRef)(null);
-  var tile_div_ref = (0, _react.useRef)(null);
-  var tbody_ref = (0, _react.useRef)(null);
-  var main_outer_ref = (0, _react.useRef)(null);
-  var set_table_scroll = (0, _react.useRef)(null);
-  var _useStateAndRef = (0, _utilities_react.useStateAndRef)([]),
-    _useStateAndRef2 = _slicedToArray(_useStateAndRef, 3),
-    console_selected_items = _useStateAndRef2[0],
-    set_console_selected_items = _useStateAndRef2[1],
-    console_selected_items_ref = _useStateAndRef2[2];
-  var _useReducerAndRef = (0, _utilities_react.useReducerAndRef)(_console_support.consoleItemsReducer, iStateOrDefault("console_items")),
-    _useReducerAndRef2 = _slicedToArray(_useReducerAndRef, 3),
-    console_items = _useReducerAndRef2[0],
-    dispatch = _useReducerAndRef2[1],
-    console_items_ref = _useReducerAndRef2[2];
-  var _useReducerAndRef3 = (0, _utilities_react.useReducerAndRef)(_tile_react.tilesReducer, iStateOrDefault("tile_list")),
-    _useReducerAndRef4 = _slicedToArray(_useReducerAndRef3, 3),
-    tile_list = _useReducerAndRef4[0],
-    tileDispatch = _useReducerAndRef4[1],
-    tile_list_ref = _useReducerAndRef4[2];
-  var theme = (0, _react.useContext)(_theme.ThemeContext);
-  var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
-  var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
-  var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
-  var selectedPane = (0, _react.useContext)(_utilities_react.SelectedPaneContext);
-  var _useReducer = (0, _react.useReducer)(_main_support.mainReducer, {
-      table_is_shrunk: props.doc_type == "none" || iStateOrDefault("table_is_shrunk"),
-      console_width_fraction: iStateOrDefault("console_width_fraction"),
-      horizontal_fraction: iStateOrDefault("console_width_fraction"),
-      height_fraction: iStateOrDefault("height_fraction"),
-      console_is_shrunk: iStateOrDefault("console_is_shrunk"),
-      console_is_zoomed: iStateOrDefault("console_is_zoomed"),
-      show_exports_pane: iStateOrDefault("show_exports_pane"),
-      show_console_pane: iStateOrDefault("show_console_pane"),
-      table_spec: props.initial_table_spec,
-      doc_type: props.doc_type,
-      data_text: props.doc_type == "freeform" ? props.initial_data_text : "",
-      data_row_dict: props.doc_type == "freeform" ? {} : props.initial_data_row_dict,
-      total_rows: props.doc_type == "freeform" ? 0 : props.total_rows,
-      doc_names: props.initial_doc_names,
-      short_collection_name: props.short_collection_name,
-      tile_types: props.initial_tile_types,
-      tile_icon_dict: props.initial_tile_icon_dict,
-      alt_search_text: null,
-      selected_column: null,
-      selected_row: null,
-      selected_regions: [],
-      table_is_filtered: false,
-      search_text: "",
-      soft_wrap: false,
-      show_table_spinner: false,
-      cells_to_color_text: {},
-      spreadsheet_mode: false,
-      // These will maybe only be used if not controlled
-      resource_name: props.resource_name,
-      is_project: props.is_project,
-      usable_height: (0, _sizing_tools.getUsableDimensions)(true).usable_height_no_bottom,
-      usable_width: (0, _sizing_tools.getUsableDimensions)(true).usable_width - 170
-    }),
-    _useReducer2 = _slicedToArray(_useReducer, 2),
-    mState = _useReducer2[0],
-    mDispatch = _useReducer2[1];
-  var connection_status = (0, _utilities_react.useConnection)(props.tsocket, initSocket);
-  var pushCallback = (0, _utilities_react.useCallbackStack)();
-  (0, _react.useEffect)(function () {
+  const last_save = (0, _react.useRef)({});
+  const resizing = (0, _react.useRef)(false);
+  const updateExportsList = (0, _react.useRef)(null);
+  const height_adjustment = (0, _react.useRef)(0);
+  const table_container_ref = (0, _react.useRef)(null);
+  const tile_div_ref = (0, _react.useRef)(null);
+  const tbody_ref = (0, _react.useRef)(null);
+  const main_outer_ref = (0, _react.useRef)(null);
+  const set_table_scroll = (0, _react.useRef)(null);
+  const [console_selected_items, set_console_selected_items, console_selected_items_ref] = (0, _utilities_react.useStateAndRef)([]);
+  const [console_items, dispatch, console_items_ref] = (0, _utilities_react.useReducerAndRef)(_console_support.consoleItemsReducer, iStateOrDefault("console_items"));
+  const [tile_list, tileDispatch, tile_list_ref] = (0, _utilities_react.useReducerAndRef)(_tile_react.tilesReducer, iStateOrDefault("tile_list"));
+  const theme = (0, _react.useContext)(_theme.ThemeContext);
+  const dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
+  const statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
+  const errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
+  const selectedPane = (0, _react.useContext)(_utilities_react.SelectedPaneContext);
+  const [mState, mDispatch] = (0, _react.useReducer)(_main_support.mainReducer, {
+    table_is_shrunk: props.doc_type == "none" || iStateOrDefault("table_is_shrunk"),
+    console_width_fraction: iStateOrDefault("console_width_fraction"),
+    horizontal_fraction: iStateOrDefault("console_width_fraction"),
+    height_fraction: iStateOrDefault("height_fraction"),
+    console_is_shrunk: iStateOrDefault("console_is_shrunk"),
+    console_is_zoomed: iStateOrDefault("console_is_zoomed"),
+    show_exports_pane: iStateOrDefault("show_exports_pane"),
+    show_console_pane: iStateOrDefault("show_console_pane"),
+    table_spec: props.initial_table_spec,
+    doc_type: props.doc_type,
+    data_text: props.doc_type == "freeform" ? props.initial_data_text : "",
+    data_row_dict: props.doc_type == "freeform" ? {} : props.initial_data_row_dict,
+    total_rows: props.doc_type == "freeform" ? 0 : props.total_rows,
+    doc_names: props.initial_doc_names,
+    short_collection_name: props.short_collection_name,
+    tile_types: props.initial_tile_types,
+    tile_icon_dict: props.initial_tile_icon_dict,
+    alt_search_text: null,
+    selected_column: null,
+    selected_row: null,
+    selected_regions: [],
+    table_is_filtered: false,
+    search_text: "",
+    soft_wrap: false,
+    show_table_spinner: false,
+    cells_to_color_text: {},
+    spreadsheet_mode: false,
+    // These will maybe only be used if not controlled
+    resource_name: props.resource_name,
+    is_project: props.is_project,
+    usable_height: (0, _sizing_tools.getUsableDimensions)(true).usable_height_no_bottom,
+    usable_width: (0, _sizing_tools.getUsableDimensions)(true).usable_width - 170
+  });
+  const connection_status = (0, _utilities_react.useConnection)(props.tsocket, initSocket);
+  const pushCallback = (0, _utilities_react.useCallbackStack)();
+  (0, _react.useEffect)(() => {
     if (props.controlled) {
       props.registerDirtyMethod(_dirty);
       height_adjustment.current = MENU_BAR_HEIGHT;
@@ -171,12 +139,12 @@ function MainApp(props) {
       window.addEventListener("resize", _update_window_dimensions);
       _update_window_dimensions();
     }
-    return function () {
+    return () => {
       delete_my_containers();
     };
   }, []);
-  (0, _react.useEffect)(function () {
-    var data = {
+  (0, _react.useEffect)(() => {
+    const data = {
       active_row_id: mState.selected_row,
       doc_name: mState.table_spec.current_doc_name
     };
@@ -188,7 +156,7 @@ function MainApp(props) {
   function am_selected() {
     return selectedPane.amSelected(selectedPane.tab_id, selectedPane.selectedTabIdRef);
   }
-  var save_state = {
+  const save_state = {
     tile_list: tile_list,
     console_items: console_items,
     table_is_shrunk: mState.table_is_shrunk,
@@ -203,8 +171,8 @@ function MainApp(props) {
 
   // This will only be called if not controlled
   function _update_window_dimensions() {
-    var uwidth;
-    var uheight;
+    let uwidth;
+    let uheight;
     if (main_outer_ref && main_outer_ref.current) {
       uheight = window.innerHeight - main_outer_ref.current.offsetTop;
       uwidth = window.innerWidth - main_outer_ref.current.offsetLeft;
@@ -224,8 +192,8 @@ function MainApp(props) {
     last_save.current = save_state;
   }
   function _dirty() {
-    var current_state = save_state;
-    for (var k in current_state) {
+    let current_state = save_state;
+    for (let k in current_state) {
       if (current_state[k] != last_save.current[k]) {
         return true;
       }
@@ -252,9 +220,9 @@ function MainApp(props) {
   }
   function _change_doc_listener(data) {
     if (data.main_id == props.main_id) {
-      var row_id = data.hasOwnProperty("row_id") ? data.row_id : null;
-      var scroll_to_row = data.hasOwnProperty("scroll_to_row") ? data.scroll_to_row : true;
-      var select_row = data.hasOwnProperty("select_row") ? data.select_row : true;
+      let row_id = data.hasOwnProperty("row_id") ? data.row_id : null;
+      let scroll_to_row = data.hasOwnProperty("scroll_to_row") ? data.scroll_to_row : true;
+      let select_row = data.hasOwnProperty("select_row") ? data.select_row : true;
       if (mState.table_is_shrunk) {
         _setMainStateValue("table_is_shrunk", false);
       }
@@ -262,8 +230,8 @@ function MainApp(props) {
     }
   }
   function initSocket() {
-    props.tsocket.attachListener("window-open", function (data) {
-      window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data["the_id"]));
+    props.tsocket.attachListener("window-open", data => {
+      window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`);
     });
     if (!window.in_context) {
       props.tsocket.attachListener('close-user-windows', function (data) {
@@ -279,13 +247,13 @@ function MainApp(props) {
       });
     } else {
       props.tsocket.attachListener("notebook-open", function (data) {
-        var the_view = "".concat($SCRIPT_ROOT, "/new_notebook_in_context");
+        const the_view = `${$SCRIPT_ROOT}/new_notebook_in_context`;
         (0, _communication_react.postAjaxPromise)(the_view, {
           temp_data_id: data.temp_data_id,
           resource_name: ""
-        }).then(props.handleCreateViewer)["catch"](function (data) {
+        }).then(props.handleCreateViewer).catch(data => {
           errorDrawerFuncs.addErrorDrawerEntry({
-            title: "Error saving list",
+            title: `Error saving list`,
             content: "message" in data ? data.message : ""
           });
         });
@@ -294,7 +262,7 @@ function MainApp(props) {
     props.tsocket.attachListener('table-message', _handleTableMessage);
     props.tsocket.attachListener("update-menus", _update_menus_listener);
     props.tsocket.attachListener('change-doc', _change_doc_listener);
-    props.tsocket.attachListener('handle-callback', function (task_packet) {
+    props.tsocket.attachListener('handle-callback', task_packet => {
       (0, _communication_react.handleCallback)(task_packet, props.main_id);
     });
   }
@@ -326,9 +294,9 @@ function MainApp(props) {
     };
   }
   function _setMainStateValue(field_name) {
-    var new_value = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-    var callback = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
-    if (_typeof(field_name) == "object") {
+    let new_value = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+    let callback = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
+    if (typeof field_name == "object") {
       mDispatch({
         type: "change_multiple_fields",
         newPartialState: field_name
@@ -365,9 +333,9 @@ function MainApp(props) {
     _setMainStateValue("alt_search_text", the_text);
   }
   function _handleChangeDoc(new_doc_name) {
-    var row_index = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
-    var scroll_to_row = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
-    var select_row = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : true;
+    let row_index = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
+    let scroll_to_row = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
+    let select_row = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : true;
     _setMainStateValue("show_table_spinner", true);
     if (isFreeform()) {
       (0, _communication_react.postWithCallback)(props.main_id, "grab_freeform_data", {
@@ -376,7 +344,7 @@ function MainApp(props) {
       }, function (data) {
         statusFuncs.stopSpinner();
         statusFuncs.clearStatusMessage();
-        var new_table_spec = {
+        let new_table_spec = {
           "current_doc_name": new_doc_name
         };
         mDispatch({
@@ -387,18 +355,18 @@ function MainApp(props) {
             visible_doc: new_doc_name
           }
         });
-        pushCallback(function () {
+        pushCallback(() => {
           _setMainStateValue("show_table_spinner", false);
         });
       }, null, props.main_id);
     } else {
-      var data_dict = {
+      const data_dict = {
         "doc_name": new_doc_name,
         "row_index": row_index,
         "set_visible_doc": true
       };
       (0, _communication_react.postWithCallback)(props.main_id, "grab_chunk_by_row_index", data_dict, function (data) {
-        _setStateFromDataObject(data, new_doc_name, function () {
+        _setStateFromDataObject(data, new_doc_name, () => {
           _setMainStateValue("show_table_spinner", false);
           if (select_row) {
             _setMainStateValue({
@@ -418,7 +386,7 @@ function MainApp(props) {
     _setMainStateValue("height_fraction", top_fraction);
   }
   function _updateTableSpec(spec_update) {
-    var broadcast = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+    let broadcast = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
     mDispatch({
       type: "update_table_spec",
       spec_update: spec_update
@@ -438,17 +406,8 @@ function MainApp(props) {
   }
   function _tile_command(menu_id) {
     var existing_tile_names = [];
-    var _iterator = _createForOfIteratorHelper(tile_list),
-      _step;
-    try {
-      for (_iterator.s(); !(_step = _iterator.n()).done;) {
-        var tile_entry = _step.value;
-        existing_tile_names.push(tile_entry.tile_name);
-      }
-    } catch (err) {
-      _iterator.e(err);
-    } finally {
-      _iterator.f();
+    for (let tile_entry of tile_list) {
+      existing_tile_names.push(tile_entry.tile_name);
     }
     dialogFuncs.showModal("ModalDialog", {
       title: "Create " + menu_id,
@@ -463,7 +422,7 @@ function MainApp(props) {
     function createNewTile(tile_name) {
       statusFuncs.startSpinner();
       statusFuncs.statusMessage("Creating Tile " + tile_name);
-      var data_dict = {
+      const data_dict = {
         tile_name: tile_name,
         tile_type: menu_id,
         user_id: window.user_id,
@@ -471,7 +430,7 @@ function MainApp(props) {
       };
       (0, _communication_react.postWithCallback)(props.main_id, "create_tile", data_dict, function (create_data) {
         if (create_data.success) {
-          var new_tile_entry = _createTileEntry(tile_name, menu_id, create_data.tile_id, create_data.form_data);
+          let new_tile_entry = _createTileEntry(tile_name, menu_id, create_data.tile_id, create_data.form_data);
           tileDispatch({
             type: "add_at_index",
             insert_index: tile_list.length,
@@ -490,49 +449,26 @@ function MainApp(props) {
     }
   }
   function create_tile_menus() {
-    var menu_items = [];
-    var sorted_categories = _toConsumableArray(Object.keys(mState.tile_types));
+    let menu_items = [];
+    let sorted_categories = [...Object.keys(mState.tile_types)];
     sorted_categories.sort();
-    var _iterator2 = _createForOfIteratorHelper(sorted_categories),
-      _step2;
-    try {
-      for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-        var category = _step2.value;
-        var option_dict = {};
-        var icon_dict = {};
-        var sorted_types = _toConsumableArray(mState.tile_types[category]);
-        sorted_types.sort();
-        var _iterator3 = _createForOfIteratorHelper(sorted_types),
-          _step3;
-        try {
-          var _loop = function _loop() {
-            var ttype = _step3.value;
-            option_dict[ttype] = function () {
-              return _tile_command(ttype);
-            };
-            icon_dict[ttype] = mState.tile_icon_dict[ttype];
-          };
-          for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-            _loop();
-          }
-        } catch (err) {
-          _iterator3.e(err);
-        } finally {
-          _iterator3.f();
-        }
-        menu_items.push( /*#__PURE__*/_react["default"].createElement(_main_menus_react.MenuComponent, {
-          menu_name: category,
-          option_dict: option_dict,
-          binding_dict: {},
-          icon_dict: icon_dict,
-          disabled_items: [],
-          key: category
-        }));
+    for (let category of sorted_categories) {
+      let option_dict = {};
+      let icon_dict = {};
+      let sorted_types = [...mState.tile_types[category]];
+      sorted_types.sort();
+      for (let ttype of sorted_types) {
+        option_dict[ttype] = () => _tile_command(ttype);
+        icon_dict[ttype] = mState.tile_icon_dict[ttype];
       }
-    } catch (err) {
-      _iterator2.e(err);
-    } finally {
-      _iterator2.f();
+      menu_items.push( /*#__PURE__*/_react.default.createElement(_main_menus_react.MenuComponent, {
+        menu_name: category,
+        option_dict: option_dict,
+        binding_dict: {},
+        icon_dict: icon_dict,
+        disabled_items: [],
+        key: category
+      }));
     }
     return menu_items;
   }
@@ -558,8 +494,8 @@ function MainApp(props) {
     if (!tbody_ref.current) {
       return table_available_height - 50;
     } else {
-      var top_offset = tbody_ref.current.getBoundingClientRect().top - table_container_ref.current.getBoundingClientRect().top;
-      var madjust = mState.console_is_shrunk ? 2 * MARGIN_ADJUSTMENT : MARGIN_ADJUSTMENT;
+      let top_offset = tbody_ref.current.getBoundingClientRect().top - table_container_ref.current.getBoundingClientRect().top;
+      let madjust = mState.console_is_shrunk ? 2 * MARGIN_ADJUSTMENT : MARGIN_ADJUSTMENT;
       return table_available_height - top_offset - madjust;
     }
   }
@@ -570,45 +506,29 @@ function MainApp(props) {
   }
   function _handleTableMessage(data) {
     if (data.main_id == props.main_id) {
-      var handlerDict = {
+      let handlerDict = {
         refill_table: _refill_table,
-        dehighlightAllText: function dehighlightAllText(data) {
-          return _handleSearchFieldChange(null);
-        },
-        highlightTxtInDocument: function highlightTxtInDocument(data) {
-          return _setAltSearchText(data.text_to_find);
-        },
-        updateNumberRows: function updateNumberRows(data) {
-          return _updateNumberRows(data.doc_name, data.number_rows);
-        },
-        setCellContent: function setCellContent(data) {
-          return _setCellContent(data.row, data.column_header, data.new_content);
-        },
-        colorTxtInCell: function colorTxtInCell(data) {
-          return _colorTextInCell(data.row_id, data.column_header, data.token_text, data.color_dict);
-        },
-        setFreeformContent: function setFreeformContent(data) {
-          return _setFreeformDoc(data.doc_name, data.new_content);
-        },
-        updateDocList: function updateDocList(data) {
-          return _updateDocList(data.doc_names, data.visible_doc);
-        },
-        setCellBackground: function setCellBackground(data) {
-          return _setCellBackgroundColor(data.row, data.column_header, data.color);
-        }
+        dehighlightAllText: data => _handleSearchFieldChange(null),
+        highlightTxtInDocument: data => _setAltSearchText(data.text_to_find),
+        updateNumberRows: data => _updateNumberRows(data.doc_name, data.number_rows),
+        setCellContent: data => _setCellContent(data.row, data.column_header, data.new_content),
+        colorTxtInCell: data => _colorTextInCell(data.row_id, data.column_header, data.token_text, data.color_dict),
+        setFreeformContent: data => _setFreeformDoc(data.doc_name, data.new_content),
+        updateDocList: data => _updateDocList(data.doc_names, data.visible_doc),
+        setCellBackground: data => _setCellBackgroundColor(data.row, data.column_header, data.color)
       };
       handlerDict[data.table_message](data);
     }
   }
   function _setCellContent(row_id, column_header, new_content) {
-    var broadcast = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
+    let broadcast = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
     mDispatch({
       type: "set_cell_content",
       row_id: row_id,
       column_header: column_header,
       new_content: new_content
     });
-    var data = {
+    let data = {
       id: row_id,
       column_header: column_header,
       new_content: new_content,
@@ -638,26 +558,26 @@ function MainApp(props) {
     _setStateFromDataObject(data_object, data_object.doc_name);
   }
   function _moveColumn(tag_to_move, place_to_move) {
-    var colnames = _toConsumableArray(mState.table_spec.column_names);
-    var start_index = colnames.indexOf(tag_to_move);
+    let colnames = [...mState.table_spec.column_names];
+    let start_index = colnames.indexOf(tag_to_move);
     colnames.splice(start_index, 1);
     if (!place_to_move) {
       colnames.push(tag_to_move);
     } else {
-      var end_index = colnames.indexOf(place_to_move);
+      let end_index = colnames.indexOf(place_to_move);
       colnames.splice(end_index, 0, tag_to_move);
     }
-    var fnames = _filteredColumnNames();
+    let fnames = _filteredColumnNames();
     start_index = fnames.indexOf(tag_to_move);
     fnames.splice(start_index, 1);
-    var cwidths = _toConsumableArray(mState.table_spec.column_widths);
-    var width_to_move = cwidths[start_index];
+    let cwidths = [...mState.table_spec.column_widths];
+    let width_to_move = cwidths[start_index];
     cwidths.splice(start_index, 1);
     if (!place_to_move) {
       cwidths.push(width_to_move);
     } else {
-      var _end_index = fnames.indexOf(place_to_move);
-      cwidths.splice(_end_index, 0, width_to_move);
+      let end_index = fnames.indexOf(place_to_move);
+      cwidths.splice(end_index, 0, width_to_move);
     }
     _updateTableSpec({
       column_names: colnames,
@@ -665,11 +585,11 @@ function MainApp(props) {
     }, true);
   }
   function _hideColumn() {
-    var hc_list = _toConsumableArray(mState.table_spec.hidden_columns_list);
-    var fnames = _filteredColumnNames();
-    var cname = mState.selected_column;
-    var col_index = fnames.indexOf(cname);
-    var cwidths = _toConsumableArray(mState.table_spec.column_widths);
+    let hc_list = [...mState.table_spec.hidden_columns_list];
+    let fnames = _filteredColumnNames();
+    let cname = mState.selected_column;
+    let col_index = fnames.indexOf(cname);
+    let cwidths = [...mState.table_spec.column_widths];
     cwidths.splice(col_index, 1);
     hc_list.push(cname);
     _updateTableSpec({
@@ -678,17 +598,17 @@ function MainApp(props) {
     }, true);
   }
   function _hideColumnInAll() {
-    var hc_list = _toConsumableArray(mState.table_spec.hidden_columns_list);
-    var fnames = _filteredColumnNames();
-    var cname = mState.selected_column;
-    var col_index = fnames.indexOf(cname);
-    var cwidths = _toConsumableArray(mState.table_spec.column_widths);
+    let hc_list = [...mState.table_spec.hidden_columns_list];
+    let fnames = _filteredColumnNames();
+    let cname = mState.selected_column;
+    let col_index = fnames.indexOf(cname);
+    let cwidths = [...mState.table_spec.column_widths];
     cwidths.splice(col_index, 1);
     hc_list.push(cname);
-    var data_dict = {
+    const data_dict = {
       "column_name": mState.selected_column
     };
-    _broadcast_event_to_server("HideColumnInAllDocs", data_dict, function () {
+    _broadcast_event_to_server("HideColumnInAllDocs", data_dict, () => {
       _updateTableSpec({
         hidden_columns_list: hc_list,
         column_widths: cwidths
@@ -724,20 +644,20 @@ function MainApp(props) {
     }, null, null, props.main_id);
   }
   function _deleteColumn() {
-    var delete_in_all = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
-    var fnames = _filteredColumnNames();
-    var cname = mState.selected_column;
-    var col_index = fnames.indexOf(cname);
-    var cwidths = _toConsumableArray(mState.table_spec.column_widths);
+    let delete_in_all = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+    let fnames = _filteredColumnNames();
+    let cname = mState.selected_column;
+    let col_index = fnames.indexOf(cname);
+    let cwidths = [...mState.table_spec.column_widths];
     cwidths.splice(col_index, 1);
-    var hc_list = _lodash["default"].without(mState.table_spec.hidden_columns_list, cname);
-    var cnames = _lodash["default"].without(mState.table_spec.column_names, cname);
+    let hc_list = _lodash.default.without(mState.table_spec.hidden_columns_list, cname);
+    let cnames = _lodash.default.without(mState.table_spec.column_names, cname);
     _updateTableSpec({
       column_names: cnames,
       hidden_columns_list: hc_list,
       column_widths: cwidths
     }, false);
-    var data_dict = {
+    const data_dict = {
       "column_name": cname,
       "doc_name": mState.table_spec.current_doc_name,
       "all_docs": delete_in_all
@@ -745,18 +665,18 @@ function MainApp(props) {
     (0, _communication_react.postWithCallback)(props.main_id, "DeleteColumn", data_dict, null, null, props.main_id);
   }
   function _addColumn() {
-    var add_in_all = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
-    var title = add_in_all ? "Create Column All Documents" : "Create Column This Document";
+    let add_in_all = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+    let title = add_in_all ? "Create Column All Documents" : "Create Column This Document";
     dialogFuncs.showModal("ModalDialog", {
       title: title,
       field_title: "New Column Name",
-      handleSubmit: function handleSubmit(new_name) {
-        var cwidth = (0, _blueprint_table.compute_added_column_width)(new_name);
+      handleSubmit: new_name => {
+        let cwidth = (0, _blueprint_table.compute_added_column_width)(new_name);
         _updateTableSpec({
-          column_names: [].concat(_toConsumableArray(mState.table_spec.column_names), [new_name]),
-          column_widths: [].concat(_toConsumableArray(mState.table_spec.column_widths), [cwidth])
+          column_names: [...mState.table_spec.column_names, new_name],
+          column_widths: [...mState.table_spec.column_widths, cwidth]
         }, false);
-        var data_dict = {
+        const data_dict = {
           "column_name": new_name,
           "doc_name": mState.table_spec.current_doc_name,
           "column_width": cwidth,
@@ -772,7 +692,7 @@ function MainApp(props) {
     });
   }
   function _setStateFromDataObject(data, doc_name) {
-    var func = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
+    let func = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
     mDispatch({
       type: "change_multiple_fields",
       newPartialState: {
@@ -804,14 +724,14 @@ function MainApp(props) {
     }, null, props.main_id);
   }
   function _removeCollection() {
-    var result_dict = {
+    const result_dict = {
       "new_collection_name": null,
       "main_id": props.main_id
     };
     (0, _communication_react.postWithCallback)(props.main_id, "remove_collection_from_project", result_dict, removeCollectionDone, null, props.main_id);
     function removeCollectionDone(data_object) {
       if (data_object.success) {
-        var table_spec = {
+        let table_spec = {
           current_doc_name: ""
         };
         mDispatch({
@@ -851,7 +771,7 @@ function MainApp(props) {
       });
     }, null, props.main_id);
     function changeTheCollection(new_collection_name) {
-      var result_dict = {
+      const result_dict = {
         "new_collection_name": new_collection_name,
         "main_id": props.main_id
       };
@@ -860,7 +780,7 @@ function MainApp(props) {
         if (data_object.success) {
           if (!window.in_context && !_cProp("is_project")) document.title = new_collection_name;
           window._collection_name = data_object.collection_name;
-          var table_spec;
+          let table_spec;
           if (data_object.doc_type == "table") {
             table_spec = {
               column_names: data_object.table_spec.header_list,
@@ -888,7 +808,7 @@ function MainApp(props) {
               table_spec: table_spec
             }
           });
-          pushCallback(function () {
+          pushCallback(() => {
             _handleChangeDoc(data_object.doc_names[0]);
           });
           statusFuncs.stopSpinner();
@@ -905,7 +825,7 @@ function MainApp(props) {
   }
   function _updateDocList(doc_names, visible_doc) {
     _setMainStateValue("doc_names", doc_names);
-    pushCallback(function () {
+    pushCallback(() => {
       _handleChangeDoc(visible_doc);
     });
   }
@@ -935,12 +855,12 @@ function MainApp(props) {
     }
   }
   function _filteredColumnNames() {
-    return mState.table_spec.column_names.filter(function (name) {
+    return mState.table_spec.column_names.filter(name => {
       return !(mState.table_spec.hidden_columns_list.includes(name) || name == "__id__");
     });
   }
   function _setProjectName(new_project_name) {
-    var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+    let callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
     if (props.controlled) {
       props.updatePanel({
         res_type: "project",
@@ -950,7 +870,7 @@ function MainApp(props) {
           is_project: true
         }
       });
-      pushCallback(function () {
+      pushCallback(() => {
         pushCallback(callback);
       });
     } else {
@@ -964,17 +884,19 @@ function MainApp(props) {
       pushCallback(callback);
     }
   }
-  var vp_height;
-  var hp_height;
-  var console_available_height;
-  var my_props = _objectSpread({}, props);
+  let vp_height;
+  let hp_height;
+  let console_available_height;
+  let my_props = {
+    ...props
+  };
   if (!props.controlled) {
     my_props.is_project = mState.is_project;
     my_props.resource_name = mState.resource_name;
     my_props.usable_width = mState.usable_width;
     my_props.usable_height = mState.usable_height;
   }
-  var true_usable_width = my_props.usable_width;
+  let true_usable_width = my_props.usable_width;
   if (mState.console_is_zoomed) {
     console_available_height = get_zoomed_console_height() - MARGIN_ADJUSTMENT;
   } else {
@@ -986,16 +908,16 @@ function MainApp(props) {
       console_available_height = vp_height - hp_height - MARGIN_ADJUSTMENT - 3;
     }
   }
-  var disabled_column_items = [];
+  let disabled_column_items = [];
   if (mState.selected_column == null) {
     disabled_column_items = ["Shift Left", "Shift Right", "Hide", "Hide in All Docs", "Delete Column", "Delete Column In All Docs"];
   }
-  var disabled_row_items = [];
+  let disabled_row_items = [];
   if (mState.selected_row == null) {
     disabled_row_items = ["Delete Row", "Insert Row Before", "Insert Row After", "Duplicate Row"];
   }
-  var project_name = my_props.is_project ? props.resource_name : "";
-  var disabled_project_items = [];
+  let project_name = my_props.is_project ? props.resource_name : "";
+  let disabled_project_items = [];
   if (!my_props.is_project) {
     disabled_project_items.push("Save");
   }
@@ -1003,7 +925,7 @@ function MainApp(props) {
     disabled_project_items.push("Export Table as Collection");
     disabled_project_items.push("Remove Collection");
   }
-  var menus = /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_main_menus_react.ProjectMenu, {
+  let menus = /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement(_main_menus_react.ProjectMenu, {
     main_id: props.main_id,
     project_name: project_name,
     is_notebook: props.is_notebook,
@@ -1018,11 +940,11 @@ function MainApp(props) {
     removeCollection: _removeCollection,
     disabled_items: disabled_project_items,
     hidden_items: ["Export as Jupyter Notebook"]
-  }), mState.doc_type != "none" && /*#__PURE__*/_react["default"].createElement(_main_menus_react.DocumentMenu, {
+  }), mState.doc_type != "none" && /*#__PURE__*/_react.default.createElement(_main_menus_react.DocumentMenu, {
     main_id: props.main_id,
     documentNames: mState.doc_names,
     currentDoc: mState.table_spec.current_doc_name
-  }), !isFreeform() && mState.doc_type != "none" && /*#__PURE__*/_react["default"].createElement(_main_menus_react.ColumnMenu, {
+  }), !isFreeform() && mState.doc_type != "none" && /*#__PURE__*/_react.default.createElement(_main_menus_react.ColumnMenu, {
     main_id: props.main_id,
     project_name: project_name,
     is_notebook: props.is_notebook,
@@ -1037,22 +959,22 @@ function MainApp(props) {
     unhideAllColumns: _unhideAllColumns,
     addColumn: _addColumn,
     deleteColumn: _deleteColumn
-  }), !isFreeform() && mState.doc_type != "none" && /*#__PURE__*/_react["default"].createElement(_main_menus_react.RowMenu, {
+  }), !isFreeform() && mState.doc_type != "none" && /*#__PURE__*/_react.default.createElement(_main_menus_react.RowMenu, {
     main_id: props.main_id,
     project_name: project_name,
     is_notebook: props.is_notebook,
     is_juptyer: props.is_jupyter,
     deleteRow: _deleteRow,
-    insertRowBefore: function insertRowBefore() {
+    insertRowBefore: () => {
       _insertRow(mState.selected_row);
     },
-    insertRowAfter: function insertRowAfter() {
+    insertRowAfter: () => {
       _insertRow(mState.selected_row + 1);
     },
     duplicateRow: _duplicateRow,
     selected_row: mState.selected_row,
     disabled_items: disabled_row_items
-  }), /*#__PURE__*/_react["default"].createElement(_main_menus_react.ViewMenu, {
+  }), /*#__PURE__*/_react.default.createElement(_main_menus_react.ViewMenu, {
     main_id: props.main_id,
     project_name: project_name,
     is_notebook: props.is_notebook,
@@ -1062,12 +984,12 @@ function MainApp(props) {
     show_exports_pane: mState.show_exports_pane,
     show_console_pane: mState.show_console_pane,
     setMainStateValue: _setMainStateValue
-  }), /*#__PURE__*/_react["default"].createElement(_core.NavbarDivider, null), create_tile_menus());
-  var table_available_height = hp_height;
-  var card_body;
-  var card_header;
+  }), /*#__PURE__*/_react.default.createElement(_core.NavbarDivider, null), create_tile_menus());
+  let table_available_height = hp_height;
+  let card_body;
+  let card_header;
   if (mState.doc_type != "none") {
-    card_header = /*#__PURE__*/_react["default"].createElement(_table_react.MainTableCardHeader, {
+    card_header = /*#__PURE__*/_react.default.createElement(_table_react.MainTableCardHeader, {
       main_id: props.main_id,
       toggleShrink: mState.doc_type == "none" ? null : _toggleTableShrink,
       mState: mState,
@@ -1080,7 +1002,7 @@ function MainApp(props) {
       is_freeform: isFreeform()
     });
     if (isFreeform()) {
-      card_body = /*#__PURE__*/_react["default"].createElement(_table_react.FreeformBody, {
+      card_body = /*#__PURE__*/_react.default.createElement(_table_react.FreeformBody, {
         main_id: props.main_id,
         ref: tbody_ref,
         code_container_width: mState.horizontal_fraction * true_usable_width,
@@ -1089,7 +1011,7 @@ function MainApp(props) {
         setMainStateValue: _setMainStateValue
       });
     } else {
-      card_body = /*#__PURE__*/_react["default"].createElement(_blueprint_table.BlueprintTable, {
+      card_body = /*#__PURE__*/_react.default.createElement(_blueprint_table.BlueprintTable, {
         main_id: props.main_id,
         ref: tbody_ref,
         clearScroll: _clearTableScroll,
@@ -1105,10 +1027,10 @@ function MainApp(props) {
       });
     }
   }
-  var tile_container_height = mState.console_is_shrunk ? table_available_height - MARGIN_ADJUSTMENT : table_available_height;
-  var tile_pane = /*#__PURE__*/_react["default"].createElement("div", {
+  let tile_container_height = mState.console_is_shrunk ? table_available_height - MARGIN_ADJUSTMENT : table_available_height;
+  let tile_pane = /*#__PURE__*/_react.default.createElement("div", {
     ref: tile_div_ref
-  }, /*#__PURE__*/_react["default"].createElement(_tile_react.TileContainer, {
+  }, /*#__PURE__*/_react.default.createElement(_tile_react.TileContainer, {
     main_id: props.main_id,
     tsocket: props.tsocket,
     height: tile_container_height,
@@ -1121,12 +1043,12 @@ function MainApp(props) {
     tileDispatch: tileDispatch,
     setMainStateValue: _setMainStateValue
   }));
-  var exports_pane;
+  let exports_pane;
   if (mState.show_exports_pane) {
-    exports_pane = /*#__PURE__*/_react["default"].createElement(_export_viewer_react.ExportsViewer, {
+    exports_pane = /*#__PURE__*/_react.default.createElement(_export_viewer_react.ExportsViewer, {
       main_id: props.main_id,
       tsocket: props.tsocket,
-      setUpdate: function setUpdate(ufunc) {
+      setUpdate: ufunc => {
         updateExportsList.current = ufunc;
       },
       setMainStateValue: _setMainStateValue,
@@ -1135,11 +1057,11 @@ function MainApp(props) {
       console_is_zoomed: mState.console_is_zoomed
     });
   } else {
-    exports_pane = /*#__PURE__*/_react["default"].createElement("div", null);
+    exports_pane = /*#__PURE__*/_react.default.createElement("div", null);
   }
-  var console_pane;
+  let console_pane;
   if (mState.show_console_pane) {
-    console_pane = /*#__PURE__*/_react["default"].createElement(_console_component.ConsoleComponent, {
+    console_pane = /*#__PURE__*/_react.default.createElement(_console_component.ConsoleComponent, {
       main_id: props.main_id,
       tsocket: props.tsocket,
       handleCreateViewer: props.handleCreateViewer,
@@ -1156,14 +1078,14 @@ function MainApp(props) {
       shrinkable: true
     });
   } else {
-    var console_available_width = true_usable_width * mState.console_width_fraction - 16;
-    console_pane = /*#__PURE__*/_react["default"].createElement("div", {
+    let console_available_width = true_usable_width * mState.console_width_fraction - 16;
+    console_pane = /*#__PURE__*/_react.default.createElement("div", {
       style: {
         width: console_available_width
       }
     });
   }
-  var bottom_pane = /*#__PURE__*/_react["default"].createElement(_resizing_layouts.HorizontalPanes, {
+  let bottom_pane = /*#__PURE__*/_react.default.createElement(_resizing_layouts.HorizontalPanes, {
     left_pane: console_pane,
     right_pane: exports_pane,
     show_handle: !mState.console_is_shrunk,
@@ -1173,24 +1095,24 @@ function MainApp(props) {
     dragIconSize: 15,
     handleSplitUpdate: _handleConsoleFractionChange
   });
-  var table_pane;
+  let table_pane;
   if (mState.doc_type != "none") {
-    table_pane = /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
+    table_pane = /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement("div", {
       ref: table_container_ref
-    }, /*#__PURE__*/_react["default"].createElement(_table_react.MainTableCard, {
+    }, /*#__PURE__*/_react.default.createElement(_table_react.MainTableCard, {
       card_body: card_body,
       card_header: card_header
     })));
   }
-  var top_pane;
+  let top_pane;
   if (mState.table_is_shrunk) {
-    top_pane = /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
+    top_pane = /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement("div", {
       style: {
         paddingLeft: 10
       }
     }, tile_pane), mState.console_is_shrunk && bottom_pane);
   } else {
-    top_pane = /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_resizing_layouts.HorizontalPanes, {
+    top_pane = /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement(_resizing_layouts.HorizontalPanes, {
       left_pane: table_pane,
       right_pane: tile_pane,
       available_height: hp_height,
@@ -1204,19 +1126,19 @@ function MainApp(props) {
       handleResizeEnd: _handleResizeEnd
     }), mState.console_is_shrunk && bottom_pane);
   }
-  var extra_menubar_buttons = [];
+  let extra_menubar_buttons = [];
   if (mState.doc_type != "none") {
     extra_menubar_buttons = [{
       onClick: _toggleTableShrink,
       icon: mState.table_is_shrunk ? "th" : "th-disconnect"
     }];
   }
-  return /*#__PURE__*/_react["default"].createElement(_error_boundary.ErrorBoundary, null, !window.in_context && /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
+  return /*#__PURE__*/_react.default.createElement(_error_boundary.ErrorBoundary, null, !window.in_context && /*#__PURE__*/_react.default.createElement(_blueprint_navbar.TacticNavbar, {
     is_authenticated: window.is_authenticated,
     user_name: window.username,
     menus: null,
     page_id: props.main_id
-  }), /*#__PURE__*/_react["default"].createElement(_menu_utilities.TacticMenubar, {
+  }), /*#__PURE__*/_react.default.createElement(_menu_utilities.TacticMenubar, {
     connection_status: connection_status,
     menus: menus,
     showRefresh: true,
@@ -1226,14 +1148,14 @@ function MainApp(props) {
     resource_name: _cProp("resource_name"),
     showErrorDrawerButton: true,
     extraButtons: extra_menubar_buttons
-  }), /*#__PURE__*/_react["default"].createElement(_error_boundary.ErrorBoundary, null, /*#__PURE__*/_react["default"].createElement("div", {
-    className: "main-outer ".concat(theme.dark_theme ? "bp5-dark" : "light-theme"),
+  }), /*#__PURE__*/_react.default.createElement(_error_boundary.ErrorBoundary, null, /*#__PURE__*/_react.default.createElement("div", {
+    className: `main-outer ${theme.dark_theme ? "bp5-dark" : "light-theme"}`,
     ref: main_outer_ref,
     style: {
       width: "100%",
       height: my_props.usable_height - height_adjustment.current
     }
-  }, mState.console_is_zoomed && bottom_pane, !mState.console_is_zoomed && mState.console_is_shrunk && top_pane, !mState.console_is_zoomed && !mState.console_is_shrunk && /*#__PURE__*/_react["default"].createElement(_resizing_layouts.VerticalPanes, {
+  }, mState.console_is_zoomed && bottom_pane, !mState.console_is_zoomed && mState.console_is_shrunk && top_pane, !mState.console_is_zoomed && !mState.console_is_shrunk && /*#__PURE__*/_react.default.createElement(_resizing_layouts.VerticalPanes, {
     top_pane: top_pane,
     bottom_pane: bottom_pane,
     show_handle: true,
@@ -1250,40 +1172,36 @@ function MainApp(props) {
 }
 exports.MainApp = MainApp = /*#__PURE__*/(0, _react.memo)(MainApp);
 MainApp.propTypes = {
-  controlled: _propTypes["default"].bool,
-  changeResourceName: _propTypes["default"].func,
-  changeResourceTitle: _propTypes["default"].func,
-  changeResourceProps: _propTypes["default"].func,
-  updatePanel: _propTypes["default"].func,
-  refreshTab: _propTypes["default"].func,
-  closeTab: _propTypes["default"].func,
-  interface_state: _propTypes["default"].object,
-  initial_doc_names: _propTypes["default"].array,
-  initial_data_row_dict: _propTypes["default"].object,
-  doc_names: _propTypes["default"].array
+  controlled: _propTypes.default.bool,
+  changeResourceName: _propTypes.default.func,
+  updatePanel: _propTypes.default.func,
+  refreshTab: _propTypes.default.func,
+  closeTab: _propTypes.default.func,
+  interface_state: _propTypes.default.object,
+  initial_doc_names: _propTypes.default.array,
+  initial_data_row_dict: _propTypes.default.object,
+  doc_names: _propTypes.default.array
 };
 MainApp.defaultProps = {
   controlled: false,
   changeResourceName: null,
-  changeResourceTitle: null,
-  changeResourceProps: null,
   refreshTab: null,
   closeTab: null,
   updatePanel: null
 };
 function main_main() {
   function gotProps(the_props) {
-    var MainAppPlus = (0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(MainApp))));
-    var the_element = /*#__PURE__*/_react["default"].createElement(MainAppPlus, _extends({}, the_props, {
+    let MainAppPlus = (0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(MainApp))));
+    let the_element = /*#__PURE__*/_react.default.createElement(MainAppPlus, (0, _extends2.default)({}, the_props, {
       controlled: false,
       initial_theme: window.theme,
       changeName: null
     }));
-    var domContainer = document.querySelector('#main-root');
+    const domContainer = document.querySelector('#main-root');
     ReactDOM.render(the_element, domContainer);
   }
   (0, _utilities_react.renderSpinnerMessage)("Starting up ...");
-  var target;
+  let target;
   if (window.project_name == "") {
     if (window.collection_name == "") {
       target = "new_project_in_context";
@@ -1293,10 +1211,10 @@ function main_main() {
   } else {
     target = "main_project_in_context";
   }
-  var resource_name = window.project_name == "" ? window.collection_name : window.project_name;
+  const resource_name = window.project_name == "" ? window.collection_name : window.project_name;
   (0, _communication_react.postAjaxPromise)(target, {
     "resource_name": resource_name
-  }).then(function (data) {
+  }).then(data => {
     (0, _main_support.main_props)(data, null, gotProps, null);
   });
 }

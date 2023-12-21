@@ -9,10 +9,10 @@ var _utilities_react = require("./utilities_react");
 var _communication_react = require("./communication_react");
 var _creator_modules_react = require("./creator_modules_react");
 function creator_props(data, registerDirtyMethod, finalCallback) {
-  var mdata = data.mdata;
-  var split_tags = mdata.tags == "" ? [] : mdata.tags.split(" ");
-  var module_name = data.resource_name;
-  var module_viewer_id = data.module_viewer_id;
+  let mdata = data.mdata;
+  let split_tags = mdata.tags == "" ? [] : mdata.tags.split(" ");
+  let module_name = data.resource_name;
+  let module_viewer_id = data.module_viewer_id;
   window.name = module_viewer_id;
   function readyListener() {
     _everyone_ready_in_context(finalCallback);
@@ -27,12 +27,12 @@ function creator_props(data, registerDirtyMethod, finalCallback) {
       "main_id": data.module_viewer_id
     });
   });
-  var tile_collection_name = data.tile_collection_name;
+  let tile_collection_name = data.tile_collection_name;
   function _everyone_ready_in_context(finalCallback) {
     if (!window.in_context) {
       (0, _utilities_react.renderSpinnerMessage)("Everyone is ready, initializing...", '#creator-root');
     }
-    var the_content = {
+    let the_content = {
       "module_name": module_name,
       "module_viewer_id": module_viewer_id,
       "tile_collection_name": tile_collection_name,
@@ -45,27 +45,25 @@ function creator_props(data, registerDirtyMethod, finalCallback) {
         "notify": false
       }));
     });
-    tsocket.attachListener('handle-callback', function (task_packet) {
+    tsocket.attachListener('handle-callback', task_packet => {
       (0, _communication_react.handleCallback)(task_packet, module_viewer_id);
     });
-    (0, _communication_react.postWithCallback)(module_viewer_id, "initialize_parser", the_content, function (pdata) {
-      return got_parsed_data_in_context(pdata);
-    }, null, module_viewer_id);
+    (0, _communication_react.postWithCallback)(module_viewer_id, "initialize_parser", the_content, pdata => got_parsed_data_in_context(pdata), null, module_viewer_id);
     function got_parsed_data_in_context(data_object) {
       if (!window.in_context) {
         (0, _utilities_react.renderSpinnerMessage)("Creating the page...", '#creator-root');
       }
       tsocket.socket.off("remove-ready-block", readyListener);
-      var parsed_data = data_object.the_content;
-      var category = parsed_data.category ? parsed_data.category : "basic";
-      var result_dict = {
+      let parsed_data = data_object.the_content;
+      let category = parsed_data.category ? parsed_data.category : "basic";
+      let result_dict = {
         "res_type": "tile",
         "res_name": module_name,
         "is_repository": false
       };
-      var odict = parsed_data.option_dict;
-      var initial_line_number = !window.in_context && window.line_number ? window.line_number : null;
-      var couple_save_attrs_and_exports = !("couple_save_attrs_and_exports" in mdata.additional_mdata) || mdata.additional_mdata.couple_save_attrs_and_exports;
+      let odict = parsed_data.option_dict;
+      let initial_line_number = !window.in_context && window.line_number ? window.line_number : null;
+      let couple_save_attrs_and_exports = !("couple_save_attrs_and_exports" in mdata.additional_mdata) || mdata.additional_mdata.couple_save_attrs_and_exports;
       finalCallback({
         resource_name: module_name,
         tsocket: tsocket,
