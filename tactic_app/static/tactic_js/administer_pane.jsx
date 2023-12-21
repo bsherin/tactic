@@ -1,6 +1,6 @@
 
 import React from "react";
-import {Fragment, useState, useRef, useEffect, memo} from "react";
+import {Fragment, useState, useRef, useEffect, memo, useContext} from "react";
 import PropTypes from 'prop-types';
 
 import {Regions} from "@blueprintjs/table";
@@ -8,12 +8,13 @@ import {Regions} from "@blueprintjs/table";
 import {SearchForm, BpSelectorTable} from "./library_widgets";
 import {HorizontalPanes} from "./resizing_layouts";
 
-import {postAjax} from "./communication_react";
 import {getUsableDimensions} from "./sizing_tools";
 import {useCallbackStack, useStateAndRef} from "./utilities_react";
+import {postAjaxPromise} from "./communication_react"
 
 import _ from 'lodash';
 import {SearchableConsole} from "./searchable_console";
+import {ErrorDrawerContext} from "./error_drawer";
 
 export {AdminPane}
 
@@ -38,9 +39,11 @@ function AdminPane(props) {
 
     const pushCallback = useCallbackStack();
 
-    useEffect(() => {
+    const errorDrawerFuncs = useContext(ErrorDrawerContext);
+
+    useEffect(async () => {
         initSocket();
-        _grabNewChunkWithRow(0, true, null, true, null);
+        await _grabNewChunkWithRow(0, true, null, true);
     }, []);
 
     function initSocket() {
@@ -86,50 +89,50 @@ function AdminPane(props) {
         }
     }
 
-    function _grabNewChunkWithRow(row_index, flush=false, spec_update=null, select=false, select_by_name=null, callback=null) {
-        let search_spec = _getSearchSpec();
-        if (spec_update) {
-            search_spec = Object.assign(search_spec, spec_update)
-        }
-        let data = {search_spec: search_spec, row_number: row_index};
-        postAjax(get_url, data, (data) => {
+    async function _grabNewChunkWithRow(row_index, flush=false, spec_update=null, select=false, callback=null) {
+        try {
+            let search_spec = _getSearchSpec();
+            if (spec_update) {
+                search_spec = Object.assign(search_spec, spec_update)
+            }
+            let query = {search_spec: search_spec, row_number: row_index};
+            let data = await postAjaxPromise(get_url, query);
             let new_data_dict;
             if (flush) {
                 new_data_dict = data.chunk_dict
-            }
-            else {
+            } else {
                 new_data_dict = _.cloneDeep(data_dict_ref.current);
                 new_data_dict = Object.assign(new_data_dict, data.chunk_dict)
             }
             previous_search_spec.current = search_spec;
             set_data_dict(new_data_dict);
             set_num_rows(data.num_rows);
-            pushCallback(()=>{
+            pushCallback(() => {
                 if (callback) {
                     callback()
-                }
-                else if (select) {
+                } else if (select) {
                     _selectRow(row_index)
                 }
-                else if (select_by_name) {
-                    let ind = get_data_dict_index(select_by_name);
-                    if (!ind) {
-                        ind = 0
-                    }
-                    _selectRow(ind)
-                }
             });
+        }
+        catch (e) {
+            errorDrawerFuncs.addFromError("Error grabbing row chunk", e)
+        }
+    }
+    function _grabNewChunkWithRowPromise(row_index, flush=false, spec_update=null, select=false,) {
+        return new Promise(async (resolve, reject)=>{
+            await _grabNewChunkWithRow(row_index, flush, spec_update, select, resolve)
         })
     }
 
     function _initiateDataGrab(row_index) {
         set_awaiting_data(true);
-        pushCallback(() => {_grabNewChunkWithRow(row_index)});
+        pushCallback(async () => { await _grabNewChunkWithRow(row_index)});
     }
 
     function _handleRowUpdate(res_dict) {
-        let res_name = res_dict.name;
-        let ind = get_data_dict_index(res_name);
+        let res_idval = res_dict.Id;
+        let ind = get_data_dict_index(res_idval);
         let new_data_dict = _.cloneDeep(data_dict_ref.current);
         let the_row = new_data_dict[ind];
         for (let field in res_dict) {
@@ -145,9 +148,13 @@ function AdminPane(props) {
         props.updatePaneState(props.res_type, new_state, callback)
     }
 
-    function get_data_dict_index(name) {
+    function _updatePaneStatePromise(new_state) {
+        props.updatePaneStatePromise(props.res_type, new_state)
+    }
+
+    function get_data_dict_index(idval) {
         for (let index in data_dict_ref.current) {
-            if (data_dict_ref.current[index].name == name) {
+            if (data_dict_ref.current[index].Id == idval) {
                 return index
             }
         }
@@ -155,10 +162,10 @@ function AdminPane(props) {
     }
 
     function _delete_row(idval) {
-        let ind = get_data_list_index(idval);
-        let new_data_list = [...data_list];
-        new_data_list.splice(ind, 1);
-        set_ata_list(new_data_list);
+        let ind = get_data_dict_index(idval);
+        let new_data_dict = {...data_dict_ref.current};
+        delete new_data_dict[ind];
+        set_data_dict(new_data_dict);
     }
 
     function get_data_dict_entry(name) {
@@ -202,12 +209,11 @@ function AdminPane(props) {
         return resource_dict[props.id_field].toLowerCase().search(search_string) != -1
     }
 
-    function _update_search_state(new_state) {
-        _updatePaneState(new_state, ()=> {
-            if (search_spec_changed(new_state)) {
-                _grabNewChunkWithRow(0, true, new_state, true)
-            }
-        })
+    async function _update_search_state(new_state) {
+        await _updatePaneStatePromise(new_state);
+        if (search_spec_changed(new_state)) {
+            await _grabNewChunkWithRow(0, true, new_state, true)
+        }
     }
 
     function search_spec_changed(new_spec) {
@@ -225,17 +231,16 @@ function AdminPane(props) {
         return false
     }
 
-    function _set_sort_state(column_name, sort_field, direction) {
+    async function _set_sort_state(column_name, sort_field, direction) {
         let spec_update = {sort_field: column_name, sort_direction: direction};
-        _updatePaneState(spec_update, ()=>{
-            if (search_spec_changed(spec_update)) {
-                _grabNewChunkWithRow(0, true, spec_update, true)
-            }
-        })
+        await _updatePaneState(spec_update);
+        if (search_spec_changed(spec_update)) {
+            await _grabNewChunkWithRow(0, true, spec_update, true)
+        }
     }
 
-    function _handleArrowKeyPress(key) {
-        let current_index = parseInt(get_data_dict_index(props.selected_resource.name));
+    async function _handleArrowKeyPress(key) {
+        let current_index = parseInt(get_data_dict_index(props.selected_resource.Id));
         let new_index;
         let new_selected_res;
         if (key == "ArrowDown") {
@@ -245,14 +250,13 @@ function AdminPane(props) {
             new_index = current_index - 1;
             if (new_index < 0) return
         }
-        _selectRow(new_index)
+        await _selectRow(new_index)
     }
 
-    function _selectRow(new_index) {
+    async function _selectRow(new_index) {
         if (!Object.keys(data_dict_ref.current).includes(String(new_index))) {
-            _grabNewChunkWithRow(new_index, false, null, false, null, ()=>{
-                _selectRow(new_index)
-            })
+            await _grabNewChunkWithRowPromise(new_index, false, null, false);
+            await _selectRow(new_index)
         }
         else {
             let new_regions = [Regions.row(new_index)];
@@ -264,17 +268,15 @@ function AdminPane(props) {
 
     }
 
-    function _refresh_func(callback=null) {
-        _grabNewChunkWithRow(0, true, null, true, null, callback)
+    async function _refresh_func(callback=null) {
+        await _grabNewChunkWithRow(0, true, null, true, callback)
     }
 
-    function _setConsoleText(the_text) {
-        let self = this;
-        _updatePaneState({"console_text": the_text}, ()=>{
-            if (console_text_ref && console_text_ref.current) {
-                console_text_ref.current.scrollTop = console_text_ref.current.scrollHeight;
-            }
-        })
+    async function _setConsoleText(the_text) {
+        await _updatePaneStatePromise({"console_text": the_text});
+        if (console_text_ref && console_text_ref.current) {
+            console_text_ref.current.scrollTop = console_text_ref.current.scrollHeight;
+        }
     }
 
     function _communicateColumnWidthSum(total_width) {
@@ -392,7 +394,6 @@ function AdminPane(props) {
                           setConsoleText={_setConsoleText}
                           delete_row={_delete_row}
                           refresh_func={_refresh_func}
-                          {...props.errorDrawerFuncs}
                           />
             <div ref={top_ref} className="d-flex flex-column mt-3" >
                   <div style={{width: props.usable_width, height: props.usable_height}}>

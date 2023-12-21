@@ -119,6 +119,7 @@ def attempt_login():
             # result_dict["tile_loading_errors"] = error_list
     else:
         result_dict["logged_in"] = False
+    result_dict["success"] = True  # Needed so that postAjaxPromise doesn't get confused
     return jsonify(result_dict)
 
 

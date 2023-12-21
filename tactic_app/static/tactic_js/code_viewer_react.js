@@ -1,11 +1,12 @@
 "use strict";
 
-function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.CodeViewerApp = CodeViewerApp;
 exports.code_viewer_props = code_viewer_props;
+var _extends2 = _interopRequireDefault(require("@babel/runtime/helpers/extends"));
 require("../tactic_css/tactic.scss");
 var _react = _interopRequireWildcard(require("react"));
 var ReactDOM = _interopRequireWildcard(require("react-dom"));
@@ -22,23 +23,10 @@ var _blueprint_navbar = require("./blueprint_navbar");
 var _theme = require("./theme");
 var _modal_react = require("./modal_react");
 var _error_drawer2 = require("./error_drawer");
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
-function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-function _extends() { _extends = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
-function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys(Object(source), !0).forEach(function (key) { _defineProperty(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
-function _defineProperty(obj, key, value) { key = _toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return _typeof(key) === "symbol" ? key : String(key); }
-function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
-function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
-function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
-function _iterableToArrayLimit(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
-function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
+function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 function code_viewer_props(data, registerDirtyMethod, finalCallback) {
-  var resource_viewer_id = (0, _utilities_react.guid)();
+  let resource_viewer_id = (0, _utilities_react.guid)();
   var tsocket = new _tactic_socket.TacticSocket("main", 5000, "code_viewer", resource_viewer_id);
   finalCallback({
     resource_viewer_id: resource_viewer_id,
@@ -56,63 +44,33 @@ function code_viewer_props(data, registerDirtyMethod, finalCallback) {
   });
 }
 function CodeViewerApp(props) {
-  var top_ref = (0, _react.useRef)(null);
-  var cc_ref = (0, _react.useRef)(null);
-  var search_ref = (0, _react.useRef)(null);
-  var cc_bounding_top = (0, _react.useRef)(null);
-  var savedContent = (0, _react.useRef)(props.the_content);
-  var savedTags = (0, _react.useRef)(props.split_tags);
-  var savedNotes = (0, _react.useRef)(props.notes);
-  var _useStateAndRef = (0, _utilities_react.useStateAndRef)(props.the_content),
-    _useStateAndRef2 = _slicedToArray(_useStateAndRef, 3),
-    code_content = _useStateAndRef2[0],
-    set_code_content = _useStateAndRef2[1],
-    code_content_ref = _useStateAndRef2[2];
-  var _useStateAndRef3 = (0, _utilities_react.useStateAndRef)(props.notes),
-    _useStateAndRef4 = _slicedToArray(_useStateAndRef3, 3),
-    notes = _useStateAndRef4[0],
-    set_notes = _useStateAndRef4[1],
-    notes_ref = _useStateAndRef4[2];
-  var _useStateAndRef5 = (0, _utilities_react.useStateAndRef)(props.split_tags),
-    _useStateAndRef6 = _slicedToArray(_useStateAndRef5, 3),
-    tags = _useStateAndRef6[0],
-    set_tags = _useStateAndRef6[1],
-    tags_ref = _useStateAndRef6[2];
-  var _useState = (0, _react.useState)(""),
-    _useState2 = _slicedToArray(_useState, 2),
-    search_string = _useState2[0],
-    set_search_string = _useState2[1];
-  var _useState3 = (0, _react.useState)(false),
-    _useState4 = _slicedToArray(_useState3, 2),
-    regex = _useState4[0],
-    set_regex = _useState4[1];
-  var _useState5 = (0, _react.useState)(props["null"]),
-    _useState6 = _slicedToArray(_useState5, 2),
-    search_matches = _useState6[0],
-    set_search_matches = _useState6[1];
+  const top_ref = (0, _react.useRef)(null);
+  const cc_ref = (0, _react.useRef)(null);
+  const search_ref = (0, _react.useRef)(null);
+  const cc_bounding_top = (0, _react.useRef)(null);
+  const savedContent = (0, _react.useRef)(props.the_content);
+  const savedTags = (0, _react.useRef)(props.split_tags);
+  const savedNotes = (0, _react.useRef)(props.notes);
+  const [code_content, set_code_content, code_content_ref] = (0, _utilities_react.useStateAndRef)(props.the_content);
+  const [notes, set_notes, notes_ref] = (0, _utilities_react.useStateAndRef)(props.notes);
+  const [tags, set_tags, tags_ref] = (0, _utilities_react.useStateAndRef)(props.split_tags);
+  const [search_string, set_search_string] = (0, _react.useState)("");
+  const [regex, set_regex] = (0, _react.useState)(false);
+  const [search_matches, set_search_matches] = (0, _react.useState)(props.null);
 
   // The following only are used if not in context
-  var _useState7 = (0, _react.useState)(function () {
-      return (0, _sizing_tools.getUsableDimensions)(true).usable_width - 170;
-    }),
-    _useState8 = _slicedToArray(_useState7, 2),
-    usable_width = _useState8[0],
-    set_usable_width = _useState8[1];
-  var _useState9 = (0, _react.useState)(function () {
-      return (0, _sizing_tools.getUsableDimensions)(true).usable_height_no_bottom;
-    }),
-    _useState10 = _slicedToArray(_useState9, 2),
-    usable_height = _useState10[0],
-    set_usable_height = _useState10[1];
-  var _useState11 = (0, _react.useState)(props.resource_name),
-    _useState12 = _slicedToArray(_useState11, 2),
-    resource_name = _useState12[0],
-    set_resource_name = _useState12[1];
-  var theme = (0, _react.useContext)(_theme.ThemeContext);
-  var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
-  var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
-  var errorDrawerFuncs = (0, _react.useContext)(_error_drawer2.ErrorDrawerContext);
-  (0, _react.useEffect)(function () {
+  const [usable_width, set_usable_width] = (0, _react.useState)(() => {
+    return (0, _sizing_tools.getUsableDimensions)(true).usable_width - 170;
+  });
+  const [usable_height, set_usable_height] = (0, _react.useState)(() => {
+    return (0, _sizing_tools.getUsableDimensions)(true).usable_height_no_bottom;
+  });
+  const [resource_name, set_resource_name] = (0, _react.useState)(props.resource_name);
+  const theme = (0, _react.useContext)(_theme.ThemeContext);
+  const dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
+  const statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
+  const errorDrawerFuncs = (0, _react.useContext)(_error_drawer2.ErrorDrawerContext);
+  (0, _react.useEffect)(() => {
     statusFuncs.stopSpinner();
     if (cc_ref && cc_ref.current) {
       cc_bounding_top.current = cc_ref.current.getBoundingClientRect().top;
@@ -124,8 +82,8 @@ function CodeViewerApp(props) {
       props.registerDirtyMethod(_dirty);
     }
   }, []);
-  var pushCallback = (0, _utilities_react.useCallbackStack)("code_viewer");
-  (0, _utilities_react.useConstructor)(function () {
+  const pushCallback = (0, _utilities_react.useCallbackStack)("code_viewer");
+  (0, _utilities_react.useConstructor)(() => {
     if (!props.controlled) {
       window.addEventListener("beforeunload", function (e) {
         if (_dirty()) {
@@ -135,10 +93,10 @@ function CodeViewerApp(props) {
       });
     }
   });
-  var selectedPane = (0, _react.useContext)(_utilities_react.SelectedPaneContext);
+  const selectedPane = (0, _react.useContext)(_utilities_react.SelectedPaneContext);
   function _update_search_state(nstate) {
-    var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-    for (var field in nstate) {
+    let callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+    for (let field in nstate) {
       switch (field) {
         case "regex":
           set_regex(nstate[field]);
@@ -159,15 +117,15 @@ function CodeViewerApp(props) {
   function _cProp(pname) {
     return props.controlled ? props[pname] : cPropGetters()[pname];
   }
-  var menu_specs = (0, _react.useMemo)(function () {
+  const menu_specs = (0, _react.useMemo)(() => {
     var ms;
     if (props.is_repository) {
       ms = {
         Transfer: [{
           "name_text": "Copy to library",
           "icon_name": "import",
-          "click_handler": function click_handler() {
-            (0, _resource_viewer_react_app.copyToLibrary)("list", _cProp("resource_name"), dialogFuncs, statusFuncs, errorDrawerFuncs);
+          "click_handler": async () => {
+            await (0, _resource_viewer_react_app.copyToLibrary)("list", _cProp("resource_name"), dialogFuncs, statusFuncs, errorDrawerFuncs);
           },
           tooltip: "Copy to library"
         }]
@@ -189,8 +147,8 @@ function CodeViewerApp(props) {
         Transfer: [{
           name_text: "Share",
           icon_name: "share",
-          click_handler: function click_handler() {
-            (0, _resource_viewer_react_app.sendToRepository)("list", _cProp("resource_name"), dialogFuncs, statusFuncs, errorDrawerFuncs);
+          click_handler: async () => {
+            await (0, _resource_viewer_react_app.sendToRepository)("list", _cProp("resource_name"), dialogFuncs, statusFuncs, errorDrawerFuncs);
           },
           tooltip: "Share to repository"
         }]
@@ -199,7 +157,7 @@ function CodeViewerApp(props) {
     return ms;
   });
   function _setResourceNameState(new_name) {
-    var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+    let callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
     if (props.controlled) {
       props.changeResourceName(new_name, callback);
     } else {
@@ -207,8 +165,13 @@ function CodeViewerApp(props) {
       pushCallback(callback);
     }
   }
+  async function _setResourceNameStatePromise(new_name) {
+    return new Promise((resolve, reject) => {
+      _setResourceNameState(new_name, resolve);
+    });
+  }
   function _handleMetadataChange(state_stuff) {
-    for (var field in state_stuff) {
+    for (let field in state_stuff) {
       switch (field) {
         case "tags":
           set_tags(state_stuff[field]);
@@ -242,10 +205,10 @@ function CodeViewerApp(props) {
   function _extraKeys() {
     return {
       'Ctrl-S': _saveMe,
-      'Ctrl-F': function CtrlF() {
+      'Ctrl-F': () => {
         search_ref.current.focus();
       },
-      'Cmd-F': function CmdF() {
+      'Cmd-F': () => {
         search_ref.current.focus();
       }
     };
@@ -253,93 +216,81 @@ function CodeViewerApp(props) {
   function am_selected() {
     return selectedPane.amSelected(selectedPane.tab_id, selectedPane.selectedTabIdRef);
   }
-  function _saveMe() {
+  async function _saveMe() {
     if (!am_selected()) {
       return false;
     }
-    var new_code = code_content;
-    var tagstring = tags.join(" ");
-    var local_notes = notes;
-    var local_tags = tags; // In case it's modified wile saving
-    var result_dict = {
+    const new_code = code_content;
+    const tagstring = tags.join(" ");
+    const local_notes = notes;
+    const local_tags = tags; // In case it's modified wile saving
+    const result_dict = {
       "code_name": _cProp("resource_name"),
       "new_code": new_code,
       "tags": tagstring,
       "notes": local_notes,
       "user_id": window.user_id
     };
-    (0, _communication_react.postWithCallback)("host", "update_code_task", result_dict, update_success, null, props.resource_viewer_id);
-    function update_success(data) {
-      if (data.success) {
-        savedContent.current = new_code;
-        savedTags.current = local_tags;
-        savedNotes.current = local_notes;
-        statusFuncs.statusMessage("Updated code resource ".concat(_cProp("resource_name")), 7);
-      } else {
-        errorDrawerFuncs.addErrorDrawerEntry({
-          title: "Error saving code",
-          content: "message" in data ? data.message : ""
-        });
-      }
-      return false;
+    try {
+      await (0, _communication_react.postPromise)("host", "update_code_task", result_dict, props.resource_viewer_id);
+      savedContent.current = new_code;
+      savedTags.current = local_tags;
+      savedNotes.current = local_notes;
+      statusFuncs.statusMessage(`Updated code resource ${_cProp("resource_name")}`, 7);
+    } catch (e) {
+      errorDrawerFuncs.addFromError("Error saving code", e);
     }
+    return false;
   }
-  function _saveMeAs(e) {
+  async function _saveMeAs(e) {
     if (!am_selected()) {
       return false;
     }
     statusFuncs.startSpinner();
-    (0, _communication_react.postWithCallback)("host", "get_code_names", {
-      "user_id": window.user_id
-    }, function (data) {
-      var checkboxes;
-      dialogFuncs.showModal("ModalDialog", {
+    try {
+      let data = await (0, _communication_react.postPromise)("host", "get_code_names", {
+        "user_id": window.user_id
+      }, props.main_id);
+      let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
         title: "Save Code As",
         field_title: "New Code Name",
-        handleSubmit: CreateNewList,
         default_value: "NewCode",
         existing_names: data.code_names,
         checkboxes: [],
-        handleCancel: doCancel,
         handleClose: dialogFuncs.hideModal
       });
-    }, null, props.main_id);
-    function doCancel() {
-      statusFuncs.stopSpinner();
-    }
-    function CreateNewList(new_name) {
-      var result_dict = {
+      const result_dict = {
         "new_res_name": new_name,
         "res_to_copy": _cProp("resource_name")
       };
-      (0, _communication_react.postAjaxPromise)('/create_duplicate_code', result_dict).then(function (data) {
-        _setResourceNameState(new_name, function () {
-          _saveMe();
-        });
-      })["catch"](function (data) {
-        errorDrawerFuncs.addErrorDrawerEntry({
-          title: "Error saving code",
-          content: "message" in data ? data.message : ""
-        });
-      });
+      await (0, _communication_react.postAjaxPromise)('/create_duplicate_code', result_dict);
+      await _setResourceNameStatePromise(new_name);
+      await _saveMe();
+    } catch (e) {
+      if (e != "canceled") {
+        errorDrawerFuncs.addFromError(`Error saving code`, e);
+      }
     }
+    statusFuncs.stopSpinner();
   }
   function _dirty() {
     return !(code_content_ref.current == savedContent.current && tags_ref.current == savedTags.current && notes_ref.current == savedNotes.current);
   }
-  var my_props = _objectSpread({}, props);
+  let my_props = {
+    ...props
+  };
   if (!props.controlled) {
     my_props.resource_name = resource_name;
     my_props.usable_height = usable_height;
     my_props.usable_width = usable_width;
   }
-  var outer_style = {
+  let outer_style = {
     width: "100%",
     height: my_props.usable_height,
     paddingLeft: 0,
     position: "relative"
   };
-  var outer_class = "resource-viewer-holder";
+  let outer_class = "resource-viewer-holder";
   if (!props.controlled) {
     if (theme.dark_theme) {
       outer_class = outer_class + " bp5-dark";
@@ -347,19 +298,18 @@ function CodeViewerApp(props) {
       outer_class = outer_class + " light-theme";
     }
   }
-  return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, !props.controlled && /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
+  return /*#__PURE__*/_react.default.createElement(_react.Fragment, null, !props.controlled && /*#__PURE__*/_react.default.createElement(_blueprint_navbar.TacticNavbar, {
     is_authenticated: window.is_authenticated,
     selected: null,
     show_api_links: true,
     page_id: props.resource_viewer_id,
     user_name: window.username
-  }), /*#__PURE__*/_react["default"].createElement("div", {
+  }), /*#__PURE__*/_react.default.createElement("div", {
     className: outer_class,
     ref: top_ref,
     style: outer_style
-  }, /*#__PURE__*/_react["default"].createElement(_resource_viewer_react_app.ResourceViewerApp, _extends({}, my_props, {
+  }, /*#__PURE__*/_react.default.createElement(_resource_viewer_react_app.ResourceViewerApp, (0, _extends2.default)({}, my_props, {
     resource_viewer_id: props.resource_viewer_id,
-    setResourceNameState: _setResourceNameState,
     refreshTab: props.refreshTab,
     closeTab: props.closeTab,
     res_type: "code",
@@ -379,7 +329,7 @@ function CodeViewerApp(props) {
     regex: regex,
     allow_regex_search: true,
     showErrorDrawerButton: true
-  }), /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror, {
+  }), /*#__PURE__*/_react.default.createElement(_reactCodemirror.ReactCodemirror, {
     code_content: code_content,
     extraKeys: _extraKeys(),
     readOnly: props.readOnly,
@@ -395,48 +345,44 @@ function CodeViewerApp(props) {
 }
 exports.CodeViewerApp = CodeViewerApp = /*#__PURE__*/(0, _react.memo)(CodeViewerApp);
 CodeViewerApp.propTypes = {
-  controlled: _propTypes["default"].bool,
-  changeResourceName: _propTypes["default"].func,
-  changeResourceTitle: _propTypes["default"].func,
-  changeResourceProps: _propTypes["default"].func,
-  updatePanel: _propTypes["default"].func,
-  refreshTab: _propTypes["default"].func,
-  closeTab: _propTypes["default"].func,
-  the_content: _propTypes["default"].string,
-  created: _propTypes["default"].string,
-  tags: _propTypes["default"].array,
-  notes: _propTypes["default"].string,
-  readOnly: _propTypes["default"].bool,
-  is_repository: _propTypes["default"].bool,
-  meta_outer: _propTypes["default"].string,
-  tsocket: _propTypes["default"].object,
-  usable_height: _propTypes["default"].number,
-  usable_width: _propTypes["default"].number
+  controlled: _propTypes.default.bool,
+  changeResourceName: _propTypes.default.func,
+  updatePanel: _propTypes.default.func,
+  refreshTab: _propTypes.default.func,
+  closeTab: _propTypes.default.func,
+  the_content: _propTypes.default.string,
+  created: _propTypes.default.string,
+  tags: _propTypes.default.array,
+  notes: _propTypes.default.string,
+  readOnly: _propTypes.default.bool,
+  is_repository: _propTypes.default.bool,
+  meta_outer: _propTypes.default.string,
+  tsocket: _propTypes.default.object,
+  usable_height: _propTypes.default.number,
+  usable_width: _propTypes.default.number
 };
 CodeViewerApp.defaultProps = {
   controlled: false,
   changeResourceName: null,
-  changeResourceTitle: null,
-  changeResourceProps: null,
   updatePanel: null,
   refreshTab: null,
   closeTab: null
 };
 function code_viewer_main() {
   function gotProps(the_props) {
-    var CodeViewerAppPlus = (0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(CodeViewerApp))));
-    var the_element = /*#__PURE__*/_react["default"].createElement(CodeViewerAppPlus, _extends({}, the_props, {
+    let CodeViewerAppPlus = (0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(CodeViewerApp))));
+    let the_element = /*#__PURE__*/_react.default.createElement(CodeViewerAppPlus, (0, _extends2.default)({}, the_props, {
       controlled: false,
       initial_theme: window.theme,
       changeName: null
     }));
-    var domContainer = document.querySelector('#root');
+    let domContainer = document.querySelector('#root');
     ReactDOM.render(the_element, domContainer);
   }
-  var target = window.is_repository ? "repository_view_code_in_context" : "view_code_in_context";
+  let target = window.is_repository ? "repository_view_code_in_context" : "view_code_in_context";
   (0, _communication_react.postAjaxPromise)(target, {
     "resource_name": window.resource_name
-  }).then(function (data) {
+  }).then(data => {
     code_viewer_props(data, null, gotProps, null);
   });
 }

@@ -1,6 +1,5 @@
 "use strict";
 
-function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -11,70 +10,32 @@ var _search_form = require("./search_form");
 var _communication_react = require("./communication_react");
 var _utilities_react = require("./utilities_react");
 var _tactic_socket = require("./tactic_socket");
-function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
-function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys(Object(source), !0).forEach(function (key) { _defineProperty(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
-function _defineProperty(obj, key, value) { key = _toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return _typeof(key) === "symbol" ? key : String(key); }
-function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
-function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e2) { throw _e2; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e3) { didErr = true; err = _e3; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
-function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
-function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
-function _iterableToArrayLimit(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
-function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
+function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 function SearchableConsole(props, inner_ref) {
-  var _useState = (0, _react.useState)(null),
-    _useState2 = _slicedToArray(_useState, 2),
-    search_string = _useState2[0],
-    set_search_string = _useState2[1];
-  var _useState3 = (0, _react.useState)(null),
-    _useState4 = _slicedToArray(_useState3, 2),
-    search_helper_text = _useState4[0],
-    set_search_helper_text = _useState4[1];
-  var _useState5 = (0, _react.useState)(false),
-    _useState6 = _slicedToArray(_useState5, 2),
-    filter = _useState6[0],
-    set_filter = _useState6[1];
-  var _useState7 = (0, _react.useState)(""),
-    _useState8 = _slicedToArray(_useState7, 2),
-    console_command_value = _useState8[0],
-    set_console_command_value = _useState8[1];
-  var _useState9 = (0, _react.useState)(true),
-    _useState10 = _slicedToArray(_useState9, 2),
-    livescroll = _useState10[0],
-    set_livescroll = _useState10[1];
-  var _useState11 = (0, _react.useState)(null),
-    _useState12 = _slicedToArray(_useState11, 2),
-    log_since = _useState12[0],
-    set_log_since = _useState12[1];
+  const [search_string, set_search_string] = (0, _react.useState)(null);
+  const [search_helper_text, set_search_helper_text] = (0, _react.useState)(null);
+  const [filter, set_filter] = (0, _react.useState)(false);
+  const [console_command_value, set_console_command_value] = (0, _react.useState)("");
+  const [livescroll, set_livescroll] = (0, _react.useState)(true);
+  const [log_since, set_log_since] = (0, _react.useState)(null);
 
   // I need to have these as refs because the are accessed within the _handleUpdateMessage
   // callback. So they would have the old value.
-  var _useStateAndRef = (0, _utilities_react.useStateAndRef)(100),
-    _useStateAndRef2 = _slicedToArray(_useStateAndRef, 3),
-    max_console_lines = _useStateAndRef2[0],
-    set_max_console_lines = _useStateAndRef2[1],
-    max_console_lines_ref = _useStateAndRef2[2];
-  var _useStateAndRef3 = (0, _utilities_react.useStateAndRef)(""),
-    _useStateAndRef4 = _slicedToArray(_useStateAndRef3, 3),
-    log_content = _useStateAndRef4[0],
-    set_log_content = _useStateAndRef4[1],
-    log_content_ref = _useStateAndRef4[2];
-  var cont_id = (0, _react.useRef)(props.container_id);
-  var my_room = (0, _react.useRef)(null);
-  var streamer_id = (0, _react.useRef)(null);
-  var tsocket = (0, _react.useRef)(null);
-  var past_commands = (0, _react.useRef)([]);
-  var past_commands_index = (0, _react.useRef)(null);
-  (0, _react.useEffect)(function () {
+  const [max_console_lines, set_max_console_lines, max_console_lines_ref] = (0, _utilities_react.useStateAndRef)(100);
+  const [log_content, set_log_content, log_content_ref] = (0, _utilities_react.useStateAndRef)("");
+  const cont_id = (0, _react.useRef)(props.container_id);
+  const my_room = (0, _react.useRef)(null);
+  const streamer_id = (0, _react.useRef)(null);
+  const tsocket = (0, _react.useRef)(null);
+  const past_commands = (0, _react.useRef)([]);
+  const past_commands_index = (0, _react.useRef)(null);
+  (0, _react.useEffect)(() => {
     if (livescroll && inner_ref && inner_ref.current) {
       inner_ref.current.scrollTo(0, inner_ref.current.scrollHeight);
     }
   });
-  (0, _react.useEffect)(function () {
+  (0, _react.useEffect)(() => {
     my_room.current = (0, _utilities_react.guid)();
     tsocket.current = new _tactic_socket.TacticSocket("main", 5000, "searchable-console", props.main_id);
     tsocket.current.socket.emit("join", {
@@ -87,16 +48,16 @@ function SearchableConsole(props, inner_ref) {
     initSocket();
     _getLogAndStartStreaming();
     window.addEventListener('beforeunload', cleanup);
-    return function () {
+    return () => {
       cleanup();
       window.removeEventListener('beforeunload', cleanup);
     };
   }, []);
-  (0, _utilities_react.useDidMount)(function () {
+  (0, _utilities_react.useDidMount)(() => {
     _stopLogStreaming(_getLogAndStartStreaming);
   }, [max_console_lines]);
-  (0, _utilities_react.useDidMount)(function () {
-    _stopLogStreaming(function () {
+  (0, _utilities_react.useDidMount)(() => {
+    _stopLogStreaming(() => {
       cont_id.current = props.container_id;
       set_log_since(null);
       set_max_console_lines(100);
@@ -136,7 +97,7 @@ function SearchableConsole(props, inner_ref) {
     }, null, props.main_id);
   }
   function _stopLogStreaming() {
-    var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+    let callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
     if (streamer_id && streamer_id.current) {
       (0, _communication_react.postWithCallback)(props.streaming_host, "StopLogStreaming", {
         streamer_id: streamer_id.current
@@ -149,62 +110,35 @@ function SearchableConsole(props, inner_ref) {
     set_log_content(log_content_ref.current + new_line);
   }
   function _prepareText() {
-    var the_text = "";
+    let the_text = "";
     if (log_content_ref.current) {
       // without this can get an error if project saved with tile log showing
       var tlist = log_content_ref.current.split(/\r?\n/);
       tlist = tlist.slice(-1 * max_console_lines_ref.current);
       if (search_string) {
         if (filter) {
-          var new_tlist = [];
-          var _iterator = _createForOfIteratorHelper(tlist),
-            _step;
-          try {
-            for (_iterator.s(); !(_step = _iterator.n()).done;) {
-              var t = _step.value;
-              if (t.includes(search_string)) {
-                new_tlist.push(t);
-              }
+          let new_tlist = [];
+          for (let t of tlist) {
+            if (t.includes(search_string)) {
+              new_tlist.push(t);
             }
-          } catch (err) {
-            _iterator.e(err);
-          } finally {
-            _iterator.f();
           }
           tlist = new_tlist;
         }
-        var _iterator2 = _createForOfIteratorHelper(tlist),
-          _step2;
-        try {
-          for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-            var _t = _step2.value;
-            the_text = the_text + _t + "<br>";
-          }
-        } catch (err) {
-          _iterator2.e(err);
-        } finally {
-          _iterator2.f();
+        for (let t of tlist) {
+          the_text = the_text + t + "<br>";
         }
-        var regex = new RegExp(search_string, "gi");
+        const regex = new RegExp(search_string, "gi");
         the_text = String(the_text).replace(regex, function (matched) {
           return "<mark>" + matched + "</mark>";
         });
       } else {
-        var _iterator3 = _createForOfIteratorHelper(tlist),
-          _step3;
-        try {
-          for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-            var _t2 = _step3.value;
-            the_text = the_text + _t2 + "<br>";
-          }
-        } catch (err) {
-          _iterator3.e(err);
-        } finally {
-          _iterator3.f();
+        for (let t of tlist) {
+          the_text = the_text + t + "<br>";
         }
       }
     }
-    return "<div style=\"white-space:pre\">".concat(the_text, "</div>");
+    return `<div style="white-space:pre">${the_text}</div>`;
   }
   function _handleSearchFieldChange(event) {
     set_search_helper_text(null);
@@ -222,7 +156,7 @@ function SearchableConsole(props, inner_ref) {
   function _structureText() {}
   function _searchPrevious() {}
   function _logExec(command) {
-    var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+    let callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
     (0, _communication_react.postWithCallback)(cont_id.current, "os_command_exec", {
       "the_code": command
     }, callback, null, props.main_id);
@@ -231,7 +165,7 @@ function SearchableConsole(props, inner_ref) {
     e.preventDefault();
     past_commands.current.push(console_command_value);
     past_commands_index.current = null;
-    _logExec(console_command_value, function () {
+    _logExec(console_command_value, () => {
       set_console_command_value("");
     });
   }
@@ -242,8 +176,8 @@ function SearchableConsole(props, inner_ref) {
     set_console_command_value(event.target.value);
   }
   function _handleKeyDown(event) {
-    var charCode = event.keyCode;
-    var new_val;
+    let charCode = event.keyCode;
+    let new_val;
     if (charCode == 38) {
       // down arraw
       if (past_commands.current.length == 0) {
@@ -268,35 +202,36 @@ function SearchableConsole(props, inner_ref) {
     }
     set_console_command_value(new_val);
   }
-  var the_text = {
+  let the_text = {
     __html: _prepareText()
   };
-  var the_style = _objectSpread({
+  let the_style = {
     whiteSpace: "nowrap",
     fontSize: 12,
-    fontFamily: "monospace"
-  }, props.outer_style);
+    fontFamily: "monospace",
+    ...props.outer_style
+  };
   if (props.showCommandField) {
     the_style.height = the_style.height - 40;
   }
-  var bottom_info = "575 lines";
-  return /*#__PURE__*/_react["default"].createElement("div", {
+  let bottom_info = "575 lines";
+  return /*#__PURE__*/_react.default.createElement("div", {
     className: "searchable-console",
     style: {
       width: "100%"
     }
-  }, /*#__PURE__*/_react["default"].createElement("div", {
+  }, /*#__PURE__*/_react.default.createElement("div", {
     className: "d-flex flex-row",
     style: {
       justifyContent: "space-between"
     }
-  }, /*#__PURE__*/_react["default"].createElement(_core.ControlGroup, {
+  }, /*#__PURE__*/_react.default.createElement(_core.ControlGroup, {
     vertical: false,
     style: {
       marginLeft: 15,
       marginTop: 10
     }
-  }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
+  }, /*#__PURE__*/_react.default.createElement(_core.Button, {
     onClick: _setLogSince,
     style: {
       height: 30
@@ -304,13 +239,13 @@ function SearchableConsole(props, inner_ref) {
     minimal: true,
     small: true,
     icon: "trash"
-  }), /*#__PURE__*/_react["default"].createElement(_core.HTMLSelect, {
+  }), /*#__PURE__*/_react.default.createElement(_core.HTMLSelect, {
     onChange: _setMaxConsoleLines,
     large: false,
     minimal: true,
     value: max_console_lines_ref.current,
     options: [100, 250, 500, 1000, 2000]
-  }), /*#__PURE__*/_react["default"].createElement(_core.Switch, {
+  }), /*#__PURE__*/_react.default.createElement(_core.Switch, {
     label: "livescroll",
     large: false,
     checked: livescroll,
@@ -321,7 +256,7 @@ function SearchableConsole(props, inner_ref) {
       alignSelf: "center",
       height: 30
     }
-  })), /*#__PURE__*/_react["default"].createElement(_search_form.FilterSearchForm, {
+  })), /*#__PURE__*/_react.default.createElement(_search_form.FilterSearchForm, {
     search_string: search_string,
     handleSearchFieldChange: _handleSearchFieldChange,
     handleFilter: _handleFilter,
@@ -330,18 +265,18 @@ function SearchableConsole(props, inner_ref) {
     searchPrevious: null,
     search_helper_text: search_helper_text,
     margin_right: 25
-  })), /*#__PURE__*/_react["default"].createElement("div", {
+  })), /*#__PURE__*/_react.default.createElement("div", {
     ref: inner_ref,
     style: the_style,
     dangerouslySetInnerHTML: the_text
-  }), props.showCommandField && /*#__PURE__*/_react["default"].createElement("form", {
+  }), props.showCommandField && /*#__PURE__*/_react.default.createElement("form", {
     onSubmit: _commandSubmit,
     style: {
       position: "relative",
       bottom: 8,
       margin: 10
     }
-  }, /*#__PURE__*/_react["default"].createElement(_core.InputGroup, {
+  }, /*#__PURE__*/_react.default.createElement(_core.InputGroup, {
     type: "text",
     className: "bp5-monospace-text",
     onChange: _onInputChange,
@@ -349,9 +284,7 @@ function SearchableConsole(props, inner_ref) {
     large: false,
     leftIcon: "chevron-right",
     fill: true,
-    onKeyDown: function onKeyDown(e) {
-      return _handleKeyDown(e);
-    },
+    onKeyDown: e => _handleKeyDown(e),
     value: console_command_value
   })));
 }

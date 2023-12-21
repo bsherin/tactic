@@ -1244,8 +1244,6 @@ MainApp = memo(MainApp);
 MainApp.propTypes = {
     controlled: PropTypes.bool,
     changeResourceName: PropTypes.func,
-    changeResourceTitle: PropTypes.func,
-    changeResourceProps: PropTypes.func,
     updatePanel: PropTypes.func,
     refreshTab: PropTypes.func,
     closeTab: PropTypes.func,
@@ -1258,8 +1256,6 @@ MainApp.propTypes = {
 MainApp.defaultProps = {
     controlled: false,
     changeResourceName: null,
-    changeResourceTitle: null,
-    changeResourceProps: null,
     refreshTab: null,
     closeTab: null,
     updatePanel: null

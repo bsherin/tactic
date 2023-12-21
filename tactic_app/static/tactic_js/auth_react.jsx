@@ -8,10 +8,10 @@ import * as ReactDOM from 'react-dom'
 import { FormGroup, InputGroup, Button } from "@blueprintjs/core";
 
 import {doFlash, withStatus, StatusContext} from "./toaster"
-import {postAjax} from "./communication_react";
+import {postAjaxPromise} from "./communication_react";
 import {guid} from "./utilities_react";
 import {TacticNavbar, get_theme_cookie} from "./blueprint_navbar";
-import { useCallbackStack, useStateAndRef } from "./utilities_react";
+import { useCallbackStack } from "./utilities_react";
 import {withTheme, ThemeContext} from "./theme";
 
 window.page_id = guid();
@@ -48,7 +48,7 @@ function LoginApp(props) {
         setPassword(event.target.value)
     }
 
-    function _submit_login_info() {
+    async function _submit_login_info() {
         statusFuncs.setStatus({show_spinner: true, status_message: "Attempting login ..."});
         const data = {};
         if (username == "") {
@@ -64,13 +64,16 @@ function LoginApp(props) {
         data.remember_me = true;
         var x = new Date();
         data.tzOffset = x.getTimezoneOffset() / 60;
-        postAjax("attempt_login", data, _return_from_submit_login)
-    }
-
-    function _return_from_submit_login(data) {
-        console.log("returned from attempt login with data.login " + String(data.logged_in));
+        let result;
+        try {
+            result = await postAjaxPromise("attempt_login", data);
+            console.log("returned from attempt login with data.login " + String(result.logged_in));
+        }
+        catch (e) {
+            console.log("Server returned success=False. That shouldn't be possible.")
+        }
         statusFuncs.clearStatus();
-        if (data.logged_in) {
+        if (result.logged_in) {
              window.open($SCRIPT_ROOT + window._next_view, "_self")
         }
         else {
@@ -106,9 +109,9 @@ function LoginApp(props) {
                      <div className="d-flex flex-row justify-content-around">
                         <h4>Please sign in</h4>
                     </div>
-                    <form onSubmit={e => {
+                    <form onSubmit={async e => {
                               e.preventDefault();
-                              _submit_login_info();
+                              await _submit_login_info();
                             }}>
                         <FormGroup className="d-flex flex-row justify-content-around"
                                       helperText={username_warning_text}

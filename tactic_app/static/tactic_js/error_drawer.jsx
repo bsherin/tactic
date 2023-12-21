@@ -2,7 +2,7 @@ import React from "react";
 import {Fragment, useState, useEffect, useRef, memo, useContext, createContext} from "react";
 import PropTypes from 'prop-types';
 
-import {Card, Elevation, Drawer, Classes, Button} from "@blueprintjs/core";
+import {Card, Elevation, Drawer, Classes, Button, Icon} from "@blueprintjs/core";
 
 import {postWithCallback} from "./communication_react";
 import {GlyphButton} from "./blueprint_react_widgets";
@@ -23,12 +23,18 @@ function withErrorDrawer(WrappedComponent, lposition = "right", error_drawer_siz
         const ucounter = useRef(0);
         const local_id = useRef(props.main_id ? props.main_id : props.library_id);
 
+        const goToModule = useRef(null);
+
         useEffect(() => {
             initSocket()
         }, []);
 
         function initSocket() {
             props.tsocket.attachListener('add-error-drawer-entry', _addEntry);
+        }
+
+        function _registerGoToModule(the_func) {
+            goToModule.current = the_func
         }
 
         function _close(data) {
@@ -55,6 +61,13 @@ function withErrorDrawer(WrappedComponent, lposition = "right", error_drawer_siz
             newcontents[String(ucounter.current)] = data;
             set_contents(newcontents);
             set_show_drawer(open);
+        }
+
+        function _addFromError(title, data, open = true) {
+            _addEntry({
+                title: title,
+                content: "message" in data ? data.message : ""
+            }, open);
         }
 
         function _closeEntry(ukey) {
@@ -91,9 +104,11 @@ function withErrorDrawer(WrappedComponent, lposition = "right", error_drawer_siz
             closeErrorDrawer: _close,
             clearErrorDrawer: _clearAll,
             addErrorDrawerEntry: _addEntry,
+            addFromError: _addFromError,
             postAjaxFailure: _postAjaxFailure,
             toggleErrorDrawer: _toggle,
-            setGoToLineNumber: _setGoToLineNumber
+            setGoToLineNumber: _setGoToLineNumber,
+            registerGoToModule:_registerGoToModule
         };
         return (
             <Fragment>
@@ -109,7 +124,7 @@ function withErrorDrawer(WrappedComponent, lposition = "right", error_drawer_siz
                              local_id={local_id.current}
                              handleCloseItem={_closeEntry}
                              goToLineNumberFunc={goToLineNumber.current}
-                             goToModule={props.goToModule}
+                             goToModule={goToModule}
                              closeErrorDrawer={_close}
                              title="Error Drawer"
                              size={error_drawer_size}
@@ -124,28 +139,23 @@ function withErrorDrawer(WrappedComponent, lposition = "right", error_drawer_siz
 function ErrorItem(props) {
 
     function _openError() {
-        // This first condition will be true if this error drawer is in the tile creator
-        if (props.goToLineNumberFunc) {
-            props.goToLineNumberFunc(props.line_number)
+        if (!window.in_context) {
+            window.blur();
+            postWithCallback("host", "go_to_module_viewer_if_exists",
+                {
+                    user_id: window.user_id,
+                    tile_type: props.tile_type,
+                    line_number: props.line_number
+                }, (data) => {
+                    if (!data.success) {
+                        window.open($SCRIPT_ROOT + "/view_location_in_creator/" + props.tile_type + "/" + props.line_number);
+                    } else {
+                        window.open("", data.window_name)
+                    }
+                }, null, props.local_id)
         } else {
-            if (!window.in_context) {
-                window.blur();
-                postWithCallback("host", "go_to_module_viewer_if_exists",
-                    {
-                        user_id: window.user_id,
-                        tile_type: props.tile_type,
-                        line_number: props.line_number
-                    }, (data) => {
-                        if (!data.success) {
-                            window.open($SCRIPT_ROOT + "/view_location_in_creator/" + props.tile_type + "/" + props.line_number);
-                        } else {
-                            window.open("", data.window_name)
-                        }
-                    }, null, props.local_id)
-            } else {
-                errorDrawerFuncs.closeErrorDrawer();
-                props.goToModule(props.tile_type, props.line_number)
-            }
+            props.closeErrorDrawer();
+            props.goToModule.current(props.tile_type, props.line_number)
         }
     }
 
@@ -153,7 +163,12 @@ function ErrorItem(props) {
     return (
         <Card interactive={true} elevation={Elevation.TWO} style={{marginBottom: 5, position: "relative"}}>
             {props.title &&
-                <h6 style={{overflow: "auto"}}><a href="#">{props.title}</a></h6>
+                <h6 style={{overflow: "auto"}}>
+                    <span>
+                        <Icon icon="issue" size={16}/>
+                        <a href="#" style={{marginLeft: 10}}>{props.title}</a>
+                    </span>
+                </h6>
             }
             <GlyphButton handleClick={() => {
                 props.handleCloseItem(props.ukey)
@@ -209,6 +224,8 @@ function ErrorDrawer(props) {
                        key={ukey}
                        local_id={props.local_id}
                        handleCloseItem={props.handleCloseItem}
+                       openErrorDrawer={props.openErrorDrawer}
+                       closeErrorDrawer={props.closeErrorDrawer}
                        goToLineNumberFunc={props.goToLineNumberFunc}
                        goToModule={props.goToModule}
                        line_number={entry.line_number} tile_type={entry.tile_type}/>

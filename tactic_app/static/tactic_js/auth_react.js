@@ -1,6 +1,5 @@
 "use strict";
 
-function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
 require("../tactic_css/tactic.scss");
 var _react = _interopRequireWildcard(require("react"));
 var ReactDOM = _interopRequireWildcard(require("react-dom"));
@@ -10,49 +9,31 @@ var _communication_react = require("./communication_react");
 var _utilities_react = require("./utilities_react");
 var _blueprint_navbar = require("./blueprint_navbar");
 var _theme = require("./theme");
-function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
-function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
-function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
-function _iterableToArrayLimit(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
-function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
+function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 window.page_id = (0, _utilities_react.guid)();
 var tsocket;
 function _login_main() {
   if (window._show_message) (0, _toaster.doFlash)(window._message);
-  var domContainer = document.querySelector('#root');
-  var useDark = (0, _blueprint_navbar.get_theme_cookie)() == "dark";
-  var LoginAppPlus = (0, _theme.withTheme)((0, _toaster.withStatus)(LoginApp));
-  ReactDOM.render( /*#__PURE__*/_react["default"].createElement(LoginAppPlus, {
+  let domContainer = document.querySelector('#root');
+  let useDark = (0, _blueprint_navbar.get_theme_cookie)() == "dark";
+  let LoginAppPlus = (0, _theme.withTheme)((0, _toaster.withStatus)(LoginApp));
+  ReactDOM.render( /*#__PURE__*/_react.default.createElement(LoginAppPlus, {
     tsocket: null,
     controlled: false,
     initial_dark: useDark
   }), domContainer);
 }
 function LoginApp(props) {
-  var _useState = (0, _react.useState)(null),
-    _useState2 = _slicedToArray(_useState, 2),
-    username = _useState2[0],
-    setUsername = _useState2[1];
-  var _useState3 = (0, _react.useState)(null),
-    _useState4 = _slicedToArray(_useState3, 2),
-    password = _useState4[0],
-    setPassword = _useState4[1];
-  var _useState5 = (0, _react.useState)(""),
-    _useState6 = _slicedToArray(_useState5, 2),
-    username_warning_text = _useState6[0],
-    set_username_warning_text = _useState6[1];
-  var _useState7 = (0, _react.useState)(""),
-    _useState8 = _slicedToArray(_useState7, 2),
-    password_warning_text = _useState8[0],
-    set_password_warning_text = _useState8[1];
-  var theme = (0, _react.useContext)(_theme.ThemeContext);
-  var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
-  var pushCallback = (0, _utilities_react.useCallbackStack)();
-  var inputRef = (0, _react.useRef)(null);
-  (0, _react.useEffect)(function () {
+  const [username, setUsername] = (0, _react.useState)(null);
+  const [password, setPassword] = (0, _react.useState)(null);
+  const [username_warning_text, set_username_warning_text] = (0, _react.useState)("");
+  const [password_warning_text, set_password_warning_text] = (0, _react.useState)("");
+  const theme = (0, _react.useContext)(_theme.ThemeContext);
+  const statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
+  const pushCallback = (0, _utilities_react.useCallbackStack)();
+  const inputRef = (0, _react.useRef)(null);
+  (0, _react.useEffect)(() => {
     inputRef.current.focus();
   }, []);
   function _onUsernameChange(event) {
@@ -61,12 +42,12 @@ function LoginApp(props) {
   function _onPasswordChange(event) {
     setPassword(event.target.value);
   }
-  function _submit_login_info() {
+  async function _submit_login_info() {
     statusFuncs.setStatus({
       show_spinner: true,
       status_message: "Attempting login ..."
     });
-    var data = {};
+    const data = {};
     if (username == "") {
       set_username_warning_text("Username cannot be empty");
       return;
@@ -80,12 +61,15 @@ function LoginApp(props) {
     data.remember_me = true;
     var x = new Date();
     data.tzOffset = x.getTimezoneOffset() / 60;
-    (0, _communication_react.postAjax)("attempt_login", data, _return_from_submit_login);
-  }
-  function _return_from_submit_login(data) {
-    console.log("returned from attempt login with data.login " + String(data.logged_in));
+    let result;
+    try {
+      result = await (0, _communication_react.postAjaxPromise)("attempt_login", data);
+      console.log("returned from attempt login with data.login " + String(result.logged_in));
+    } catch (e) {
+      console.log("Server returned success=False. That shouldn't be possible.");
+    }
     statusFuncs.clearStatus();
-    if (data.logged_in) {
+    if (result.logged_in) {
       window.open($SCRIPT_ROOT + window._next_view, "_self");
     } else {
       set_password_warning_text("Login failed");
@@ -94,45 +78,45 @@ function LoginApp(props) {
   function _refHandler(the_ref) {
     inputRef.current = the_ref;
   }
-  var outer_class = "login-body d-flex flex-column justify-content-center";
+  let outer_class = "login-body d-flex flex-column justify-content-center";
   if (theme.dark_theme) {
     outer_class = outer_class + " bp5-dark";
   } else {
     outer_class = outer_class + " light-theme";
   }
-  return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
+  return /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement(_blueprint_navbar.TacticNavbar, {
     is_authenticated: window.is_authenticated,
     selected: null,
     show_api_links: false,
     page_id: window.page_id,
     user_name: window.username
-  }), /*#__PURE__*/_react["default"].createElement("div", {
+  }), /*#__PURE__*/_react.default.createElement("div", {
     className: outer_class,
     style: {
       textAlign: "center",
       height: "100%"
     }
-  }, /*#__PURE__*/_react["default"].createElement("div", {
+  }, /*#__PURE__*/_react.default.createElement("div", {
     id: "status-area"
-  }), /*#__PURE__*/_react["default"].createElement("div", {
+  }), /*#__PURE__*/_react.default.createElement("div", {
     className: "d-flex flex-row justify-content-around"
-  }, /*#__PURE__*/_react["default"].createElement("img", {
+  }, /*#__PURE__*/_react.default.createElement("img", {
     className: "mb-4",
     src: window.tactic_img_url,
     alt: "",
     width: "72",
     height: "72"
-  })), /*#__PURE__*/_react["default"].createElement("div", {
+  })), /*#__PURE__*/_react.default.createElement("div", {
     className: "d-flex flex-row justify-content-around"
-  }, /*#__PURE__*/_react["default"].createElement("h4", null, "Please sign in")), /*#__PURE__*/_react["default"].createElement("form", {
-    onSubmit: function onSubmit(e) {
+  }, /*#__PURE__*/_react.default.createElement("h4", null, "Please sign in")), /*#__PURE__*/_react.default.createElement("form", {
+    onSubmit: async e => {
       e.preventDefault();
-      _submit_login_info();
+      await _submit_login_info();
     }
-  }, /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
+  }, /*#__PURE__*/_react.default.createElement(_core.FormGroup, {
     className: "d-flex flex-row justify-content-around",
     helperText: username_warning_text
-  }, /*#__PURE__*/_react["default"].createElement(_core.InputGroup, {
+  }, /*#__PURE__*/_react.default.createElement(_core.InputGroup, {
     type: "text",
     onChange: _onUsernameChange,
     large: true,
@@ -141,10 +125,10 @@ function LoginApp(props) {
     autoCapitalize: "none",
     autoCorrect: "off",
     inputRef: _refHandler
-  })), /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
+  })), /*#__PURE__*/_react.default.createElement(_core.FormGroup, {
     className: "d-flex flex-row justify-content-around",
     helperText: password_warning_text
-  }, /*#__PURE__*/_react["default"].createElement(_core.InputGroup, {
+  }, /*#__PURE__*/_react.default.createElement(_core.InputGroup, {
     type: "password",
     onChange: _onPasswordChange,
     large: true,
@@ -152,9 +136,9 @@ function LoginApp(props) {
     placeholder: "Password",
     autoCapitalize: "none",
     autoCorrect: "off"
-  })), /*#__PURE__*/_react["default"].createElement("div", {
+  })), /*#__PURE__*/_react.default.createElement("div", {
     className: "d-flex flex-row justify-content-around"
-  }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
+  }, /*#__PURE__*/_react.default.createElement(_core.Button, {
     icon: "log-in",
     large: true,
     type: "submit",

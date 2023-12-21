@@ -174,10 +174,10 @@ function ExportsViewer(props) {
 
     const pushCallback = useCallbackStack();
 
-    useEffect(() => {
+    useEffect(async () => {
         initSocket();
         props.setUpdate(_updateExportsList);
-        _updateExportsList();
+        await _updateExportsList();
     }, []);
 
     function initSocket() {
@@ -204,10 +204,14 @@ function ExportsViewer(props) {
         pushCallback(_eval)
     }
 
-    function _updateExportsList() {
-        postWithCallback(props.main_id, "get_full_pipe_dict", {}, function (data) {
-            set_pipe_dict(data.pipe_dict);
-        }, null, props.main_id)
+    async function _updateExportsList() {
+        try {
+            let data = await postPromise(props.main_id, "get_full_pipe_dict", {}, props.main_id);
+            set_pipe_dict(data.pipe_dict)
+        }
+        catch (e) {
+            errorDrawerFuncs.addFromError("Error geting pipe didct", e)
+        }
     }
 
     function _refresh() {
@@ -304,7 +308,7 @@ function ExportsViewer(props) {
         }
     }
 
-    function _sendToConsole() {
+    async function _sendToConsole() {
         const tail = tail_value;
         let tilename = selected_export_tilename;
         let shortname = selected_export_short_name;
@@ -321,17 +325,15 @@ function ExportsViewer(props) {
         else {
             the_text = `Tiles["${tilename}"]["${shortname}"]`+ key_string + tail;
         }
-
-        let self = this;
-        postWithCallback("host", "print_code_area_to_console",
-            {"console_text": the_text, "user_id": window.user_id, "main_id": props.main_id}, function (data) {
-            if (!data.success) {
-                errorDrawerFuncs.addErrorDrawerEntry({
-                    title: "Error creating code area",
-                    content: "message" in data ? data.message : ""
-                });
-            }
-        }, null, props.main_id);
+        try {
+            await postPromise("host",
+                "print_code_area_to_console",
+                {"console_text": the_text, "user_id": window.user_id, "main_id": props.main_id},
+                props.main_id);
+        }
+        catch (e) {
+            errorDrawerFuncs.addFromError("Error creating code area", e)
+        }
     }
 
     let exports_body_dict = {__html: exports_body_value};

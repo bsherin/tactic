@@ -120,7 +120,6 @@ function ContextApp(props) {
     const [open_resources, set_open_resources, open_resources_ref] = useStateAndRef([]);
     const [dirty_methods, set_dirty_methods] = useState({});
 
-    const [theme_setters, set_theme_setters] = useState([]);
     const [lastSelectedTabId, setLastSelectedTabId] = useState(null);
     const [usable_width, set_usable_width] = useState(() => {
         return getUsableDimensions(true).usable_width - 170
@@ -149,8 +148,8 @@ function ContextApp(props) {
         [["tab"], _goToNextPane],
         [["shift+tab"], _goToPreviousPane],
         [["ctrl+space"], _showOpenOmnibar],
-        [["ctrl+w"], () => {
-            _closeTab(selectedTabIdRef.current)
+        [["ctrl+w"], async () => {
+            await _closeTab(selectedTabIdRef.current)
         }]
     ];
 
@@ -159,6 +158,7 @@ function ContextApp(props) {
     useEffect(() => {
         initSocket();
         _addContextOmniItems();
+        errorDrawerFuncs.registerGoToModule(_goToModule);
         return (() => {
             tsocket.disconnect()
         })
@@ -240,10 +240,6 @@ function ContextApp(props) {
         pushCallback(callback);
     }
 
-    function _registerThemeSetter(setter) {
-        set_theme_setters([...theme_setters, setter])
-    }
-
     function _registerDirtyMethod(tab_id, dirty_method) {
         let new_dirty_methods = {...dirty_methods};
         new_dirty_methods[tab_id] = dirty_method;
@@ -269,27 +265,22 @@ function ContextApp(props) {
         props.tsocket.attachListener("create-viewer", _handleCreateViewer);
     }
 
-    function _refreshTab(the_id) {
+    async function _refreshTab(the_id) {
         if (the_id == "library") {
             return
         }
-        if (!(the_id in dirty_methods) || dirty_methods[the_id]()) {
-            const title = tab_panel_dict_ref.current[the_id].title;
-            const confirm_text = `Are you sure that you want to reload the tab ${title}? Changes will be lost`;
-            dialogFuncs.showModal("ConfirmDialog", {
-                title: `Reload the tab ${title}`,
-                text_body: confirm_text,
-                cancel_text: "do nothing",
-                submit_text: "reload",
-                handleSubmit: do_the_refresh,
-                handleClose: dialogFuncs.hideModal,
-                handleCancel: null
-            });
-        } else {
-            do_the_refresh()
-        }
-
-        function do_the_refresh() {
+        try {
+            if (!(the_id in dirty_methods) || dirty_methods[the_id]()) {
+                const title = tab_panel_dict_ref.current[the_id].title;
+                const confirm_text = `Are you sure that you want to reload the tab ${title}? Changes will be lost`;
+                await dialogFuncs.showModalPromise("ConfirmDialog", {
+                    title: `Reload the tab ${title}`,
+                    text_body: confirm_text,
+                    cancel_text: "do nothing",
+                    submit_text: "reload",
+                    handleClose: dialogFuncs.hideModal,
+                    });
+            }
             let old_tab_panel = {...tab_panel_dict_ref.current[the_id]};
             let resource_name = old_tab_panel.panel.resource_name;
             let res_type = old_tab_panel.res_type;
@@ -304,85 +295,77 @@ function ContextApp(props) {
             const drmethod = (dmethod) => {
                 _registerDirtyMethod(the_id, dmethod)
             };
-            _updatePanel(the_id, {panel: "spinner"}, () => {
-                postAjaxPromise($SCRIPT_ROOT + the_view, {context_id: window.context_id, resource_name: resource_name})
-                    .then((data) => {
-                        let new_panel = propDict[data.kind](data, drmethod, (new_panel) => {
-                            _updatePanel(the_id, {panel: new_panel, kind: data.kind});
-                        });
-                    })
-                    .catch((data)=>{
-                        errorDrawerFuncs.addErrorDrawerEntry({
-                            title: "Error refreshing",
-                            content: "message" in data ? data.message : ""
-                        })
-                    });
-            })
+            await _updatePanelPromise(the_id, {panel: "spinner"});
+            let data = await postAjaxPromise($SCRIPT_ROOT + the_view, {context_id: window.context_id, resource_name: resource_name});
+            let new_panel = propDict[data.kind](data, drmethod, (new_panel) => {
+                _updatePanel(the_id, {panel: new_panel, kind: data.kind});
+            });
         }
-    }
-
-    function _closeATab(the_id, callback = null) {
-        let idx = tab_ids_ref.current.indexOf(the_id);
-        let copied_tab_panel_dict = {...tab_panel_dict_ref.current};
-        let copied_tab_ids = [...tab_ids_ref.current];
-        let copied_dirty_methods = {...dirty_methods};
-        if (idx > -1) {
-            copied_tab_ids.splice(idx, 1);
-            delete copied_tab_panel_dict[the_id];
-            delete copied_dirty_methods[the_id];
-        }
-        set_tab_ids(copied_tab_ids);
-        set_dirty_methods(copied_dirty_methods);
-        set_tab_panel_dict(copied_tab_panel_dict);
-        if (the_id in omniItemsRef.current) {
-            delete omniItemsRef.current[the_id];
-        }
-
-        pushCallback(() => {
-            if (the_id == selectedTabIdRef.current) {
-                let newSelectedId;
-                if (lastSelectedTabId && copied_tab_ids.includes(lastSelectedTabId)) {
-                    newSelectedId = lastSelectedTabId;
-                } else {
-                    newSelectedId = "library"
-                }
-                setSelectedTabId(newSelectedId);
-                setLastSelectedTabId("library");
-            } else {
-                setSelectedTabId(selectedTabId);
-                if (lastSelectedTabId == the_id) {
-                    setLastSelectedTabId("library")
-                }
+        catch (e) {
+            if (e != "canceled") {
+                errorDrawerFuncs.addFromError(`Error refreshing pane`, e)
             }
-            pushCallback(() => {
-                _updateOpenResources(() => _update_window_dimensions(callback))
-            })
-        });
-
+        }
     }
 
-    function _closeTab(the_id) {
+    async function _closeTab(the_id) {
         if (the_id == "library") {
             return
         }
-        if (!(the_id in dirty_methods) || dirty_methods[the_id]()) {
-            const title = tab_panel_dict_ref.current[the_id].title;
-            const confirm_text = `Are you sure that you want to close the tab ${title}? Changes will be lost`;
-            dialogFuncs.showModal("ConfirmDialog", {
-                title: `Close the tab ${title}"`,
-                text_body: confirm_text,
-                cancel_text: "do nothing",
-                submit_text: "close",
-                handleSubmit: ()=>{
-                     _closeATab(the_id)
-                },
-                handleClose: dialogFuncs.hideModal,
-                handleCancel: null
-            });
-        } else {
-            _closeATab(the_id)
-        }
+        try {
+            if (!(the_id in dirty_methods) || dirty_methods[the_id]()) {
+                const title = tab_panel_dict_ref.current[the_id].title;
+                const confirm_text = `Are you sure that you want to close the tab ${title}? Changes will be lost`;
+                await dialogFuncs.showModalPromise("ConfirmDialog", {
+                    title: `Close the tab ${title}"`,
+                    text_body: confirm_text,
+                    cancel_text: "do nothing",
+                    submit_text: "close",
+                    handleClose: dialogFuncs.hideModal,
+                });
+            }
+            let idx = tab_ids_ref.current.indexOf(the_id);
+            let copied_tab_panel_dict = {...tab_panel_dict_ref.current};
+            let copied_tab_ids = [...tab_ids_ref.current];
+            let copied_dirty_methods = {...dirty_methods};
+            if (idx > -1) {
+                copied_tab_ids.splice(idx, 1);
+                delete copied_tab_panel_dict[the_id];
+                delete copied_dirty_methods[the_id];
+            }
+            set_tab_ids(copied_tab_ids);
+            set_dirty_methods(copied_dirty_methods);
+            set_tab_panel_dict(copied_tab_panel_dict);
+            if (the_id in omniItemsRef.current) {
+                delete omniItemsRef.current[the_id];
+            }
 
+            pushCallback(() => {
+                if (the_id == selectedTabIdRef.current) {
+                    let newSelectedId;
+                    if (lastSelectedTabId && copied_tab_ids.includes(lastSelectedTabId)) {
+                        newSelectedId = lastSelectedTabId;
+                    } else {
+                        newSelectedId = "library"
+                    }
+                    setSelectedTabId(newSelectedId);
+                    setLastSelectedTabId("library");
+                } else {
+                    setSelectedTabId(selectedTabId);
+                    if (lastSelectedTabId == the_id) {
+                        setLastSelectedTabId("library")
+                    }
+                }
+                pushCallback(() => {
+                    _updateOpenResources(() => _update_window_dimensions())
+                })
+            });
+        }
+        catch (e) {
+            if (e != "canceled") {
+                errorDrawerFuncs.addFromError(`Error closing tab`, e)
+            }
+        }
     }
 
     function _addPanel(new_id, viewer_kind, res_type, title, new_panel, callback = null) {
@@ -399,6 +382,11 @@ function ContextApp(props) {
         pushCallback(() => {
             _updateOpenResources(callback);
         });
+    }
+    function _addPanelPromise(new_id, viewer_kind, res_type, title, new_panel) {
+        return new Promise (function (resolve, reject) {
+            _addPanel(new_id, viewer_kind, res_type, title, new_panel, resolve)
+        })
     }
 
     function _updatePanel(the_id, new_panel, callback = null) {
@@ -426,6 +414,12 @@ function ContextApp(props) {
         });
     }
 
+    function _updatePanelPromise(the_id, new_panel) {
+        return new Promise (function (resolve, reject) {
+            _updatePanel(the_id, new_panel, resolve)
+        })
+    }
+
     function _changeResourceName(the_id, new_name, change_title = true, callback = null) {
         let new_tab_panel_dict = {...tab_panel_dict_ref.current};
         if (change_title) {
@@ -435,28 +429,6 @@ function ContextApp(props) {
         set_tab_panel_dict(new_tab_panel_dict);
         pushCallback(() => {
             _updateOpenResources(() => _update_window_dimensions(callback))
-        });
-    }
-
-    function _changeResourceTitle(the_id, new_title) {
-        let new_tab_panel_dict = {...tab_panel_dict_ref.current};
-        new_tab_panel_dict[the_id].title = new_title;
-        set_tab_panel_dict(new_tab_panel_dict);
-
-        pushCallback(() => {
-            _updateOpenResources(() => _update_window_dimensions(null))
-        });
-
-    }
-
-    function _changeResourceProps(the_id, new_props, callback = null) {
-        let new_tab_panel_dict = {...tab_panel_dict_ref.current};
-        for (let prop in new_props) {
-            new_tab_panel_dict[the_id].panel[prop] = new_props[prop]
-        }
-        set_tab_panel_dict(new_tab_panel_dict);
-        pushCallback(() => {
-            _updateOpenResources(() => _update_window_dimensions(null))
         });
     }
 
@@ -478,7 +450,7 @@ function ContextApp(props) {
         setShowOpenOmnibar(false)
     }
 
-    function _handleCreateViewer(data, callback = null) {
+    async function _handleCreateViewer(data, callback = null) {
         let existing_id = _getResourceId(data.resource_name, data.res_type);
         if (existing_id != -1) {
             setSelectedTabId(existing_id);
@@ -489,12 +461,10 @@ function ContextApp(props) {
         const drmethod = (dmethod) => {
             _registerDirtyMethod(new_id, dmethod)
         };
-        _addPanel(new_id, data.kind, data.res_type, data.resource_name, "spinner", () => {
-            let new_panel = propDict[data.kind](data, drmethod, (new_panel) => {
-                _updatePanel(new_id, {panel: new_panel}, callback);
-            })
-        })
-
+        await _addPanelPromise(new_id, data.kind, data.res_type, data.resource_name, "spinner");
+        let new_panel = propDict[data.kind](data, drmethod, (new_panel) => {
+            _updatePanel(new_id, {panel: new_panel}, callback);
+        });
     }
 
     function _goToNextPane(e) {
@@ -531,7 +501,7 @@ function ContextApp(props) {
         });
     }
 
-    function _goToModule(module_name, line_number) {
+    async function _goToModule(module_name, line_number) {
         for (let tab_id in tab_panel_dict_ref.current) {
             let pdict = tab_panel_dict_ref.current[tab_id];
             if (pdict.kind == "creator-viewer" && pdict.panel.resource_name == module_name) {
@@ -546,26 +516,23 @@ function ContextApp(props) {
         let the_view = view_views()["tile"];
         const re = new RegExp("/$");
         the_view = the_view.replace(re, "_in_context");
-        postAjaxPromise($SCRIPT_ROOT + the_view, {context_id: window.context_id, resource_name: module_name})
-            .then((data) => {
-                const new_id = `${data.kind}: ${data.resource_name}`;
-                const drmethod = (dmethod) => {
-                    _registerDirtyMethod(new_id, dmethod)
-                };
-                _addPanel(new_id, data.kind, data.res_type, data.resource_name, "spinner", () => {
-                    let new_panel = propDict[data.kind](data, drmethod, (new_panel) => {
-                        _updatePanel(new_id, {panel: new_panel}, () => {
-                            let pdict = tab_panel_dict_ref.current[new_id];
-                        });
-                    });
-                })
-            })
-            .catch((data)=>{
-                errorDrawerFuncs.addErrorDrawerEntry({
-                        title: `Error going to module ${module_name}`,
-                        content: "message" in data ? data.message : ""
-                    })
+        let data;
+        try {
+            data = await postAjaxPromise(the_view, {context_id: window.context_id, resource_name: module_name});
+            const new_id = `${data.kind}: ${data.resource_name}`;
+            const drmethod = (dmethod) => {
+                _registerDirtyMethod(new_id, dmethod)
+            };
+            await _addPanelPromise(new_id, data.kind, data.res_type, data.resource_name, "spinner");
+            let new_panel = propDict[data.kind](data, drmethod, (new_panel) => {
+                _updatePanel(new_id, {panel: new_panel}, () => {
+                    let pdict = tab_panel_dict_ref.current[new_id];
+                });
             });
+        }
+        catch(e) {
+            errorDrawerFuncs.addFromError(`Error going to module ${module_name}`, e)
+        }
         return
     }
 
@@ -609,7 +576,6 @@ function ContextApp(props) {
     }
 
     function _onDragOver(event, target_id) {
-        // setState({"dragging_over": target_id});
         event.stopPropagation();
         event.preventDefault();
     }
@@ -625,7 +591,6 @@ function ContextApp(props) {
     }
 
     function _onDragLeave(event, target_id) {
-        // this.setState({"dragging_over": null});
         event.stopPropagation();
         event.preventDefault();
     }
@@ -769,27 +734,25 @@ function ContextApp(props) {
         return !window.in_context || ltab_id == lselectedTabIdRef.current
     }
 
-    const _omni_view_func = useCallback((item) => {
+    const _omni_view_func = useCallback(async (item) => {
         let the_view = view_views(false)[item.res_type];
         statusFuncs.setStatus({show_spinner: true, status_message: "Opening ..."});
         if (window.in_context) {
             const re = new RegExp("/$");
             the_view = the_view.replace(re, "_in_context");
-            postAjaxPromise($SCRIPT_ROOT + the_view, {
-                context_id: context_id,
-                resource_name: item.name
-            })
-                .then((data) => {
-                    _handleCreateViewer(data, statusFuncs.clearStatus);
-                })
-                .catch((data) => {
-                        errorDrawerFuncs.addErrorDrawerEntry({
-                        title: `Error following ${the_view}`,
-                        content: "message" in data ? data.message : ""
-                    });
-                    statusFuncs.clearstatus()
-                }
-            );
+            let data;
+            try {
+                data = await postAjaxPromise(the_view, {
+                    context_id: context_id,
+                    resource_name: item.name
+                });
+                await _handleCreateViewer(data, statusFuncs.clearStatus);
+            }
+            catch(e) {
+                statusFuncs.clearstatus();
+                errorDrawerFuncs.addFromError(`Error following ${the_view}`, e)
+
+            }
         } else {
             statusFuncs.clearStatus();
             window.open($SCRIPT_ROOT + the_view + item.name)
@@ -823,20 +786,16 @@ function ContextApp(props) {
                                           changeResourceName={(new_name, callback = null, change_title = true) => {
                                               _changeResourceName(tab_id, new_name, change_title, callback)
                                           }}
-                                          changeResourceTitle={(new_title) => _changeResourceTitle(tab_id, new_title)}
-                                          changeResourceProps={(new_props, callback = null) => {
-                                              _changeResourceProps(tab_id, new_props, callback)
-                                          }}
                                           updatePanel={(new_panel, callback = null) => {
                                               _updatePanel(tab_id, new_panel, callback)
                                           }}
                                           goToModule={_goToModule}
                                           registerLineSetter={(rfunc) => _registerLineSetter(tab_id, rfunc)}
-                                          refreshTab={() => {
-                                              _refreshTab(tab_id)
+                                          refreshTab={async () => {
+                                              await _refreshTab(tab_id)
                                           }}
-                                          closeTab={() => {
-                                              _closeTab(tab_id)
+                                          closeTab={async () => {
+                                              await _closeTab(tab_id)
                                           }}
                                           tsocket={tab_entry.panel.tsocket}
                                           usable_width={usable_width}
@@ -893,12 +852,12 @@ function ContextApp(props) {
                     </div>
                     <div>
                         <Icon icon="reset" style={icon_style} size={13} className="context-close-button"
-                              tabIndex={-1} onClick={() => {
-                            _refreshTab(tab_id)
+                              tabIndex={-1} onClick={async () => {
+                            await _refreshTab(tab_id)
                         }}/>
                         <Icon icon="delete" style={icon_style} size={13} className="context-close-button"
-                              tabIndex={-1} onClick={() => {
-                            _closeTab(tab_id)
+                              tabIndex={-1} onClick={async () => {
+                            await _closeTab(tab_id)
                         }}/>
                     </div>
                 </div>

@@ -1,8 +1,5 @@
 // noinspection ProblematicWhitespace,ConstantOnRightSideOfComparisonJS,JSUnusedLocalSymbols
 
-/**
- * Created by bls910 much later
- */
 /*jshint esversion: 6 */
 
 import _ from 'lodash';
@@ -11,8 +8,8 @@ import {useState, useEffect, useRef, useReducer, createContext} from "react";
 import * as ReactDOM from 'react-dom'
 import {Spinner, Text} from "@blueprintjs/core";
 
-export {doBinding, propsAreEqual, arrayMove, arraysMatch, get_ppi, isInt};
-export {remove_duplicates, doSignOut, guid, scrollMeIntoView, renderSpinnerMessage};
+export {propsAreEqual, arrayMove, arraysMatch, get_ppi, isInt};
+export {remove_duplicates, guid, scrollMeIntoView, renderSpinnerMessage};
 export {useConstructor, useCallbackStack, useStateAndRef, useReducerAndRef, useConnection, useDidMount}
 
 export {debounce, throttle, useDebounce, SelectedPaneContext}
@@ -24,7 +21,6 @@ function useCallbackStack(myId = "") {
     const [effectCount, setEffectCount, effectCountRef] = useStateAndRef(0);
     const myCallbacksList = useRef([]);
     useEffect(() => {
-        // console.log(`${myId} Entering effect with length ${String(myCallbacksList.current.length)} and effectcount${String(effectCountRef.current)}`);
         if (myCallbacksList.current.length > 0) {
             myCallbacksList.current[0]();
             myCallbacksList.current.shift();
@@ -32,15 +28,12 @@ function useCallbackStack(myId = "") {
                 setEffectCount(effectCountRef.current + 1);
             }
         }
-        // console.log(`${myId} leaving with length ${String(myCallbacksList.current.length)} and effectcount${String(effectCountRef.current)}`)
     }, [effectCount]);
 
     return (callback) => {
         if (callback) {
             myCallbacksList.current.push(callback);
             setEffectCount(effectCountRef.current + 1);
-            // console.log(`${myId} Pushed callback length ${String(myCallbacksList.current.length)} and effectcount${String(effectCountRef.current)}`);
-            // console.log(String(callback))
         }
     }
 }
@@ -138,17 +131,6 @@ function throttle(callback, delay = 1000) {
     };
 }
 
-function doBinding(obj, seq = "_", proto = null) {
-    if (!proto) {
-        proto = Object.getPrototypeOf(obj);
-    }
-    for (const key of Object.getOwnPropertyNames(proto)) {
-        if (key.startsWith(seq)) {
-            obj[key] = obj[key].bind(obj);
-        }
-    }
-}
-
 function isInt(value) {
     if (isNaN(value)) {
         return false;
@@ -194,17 +176,14 @@ function arraysMatch(arr1, arr2) {
     if (arr1.length !== arr2.length) {
         return false;
     }
-
     // Check if all items exist and are in the same order
     for (let i = 0; i < arr1.length; i++) {
         if (arr1[i] !== arr2[i]) {
             return false;
         }
     }
-
     // Otherwise, return true
     return true;
-
 }
 
 
@@ -238,23 +217,6 @@ Array.prototype.empty = function () {
     return this.length == 0;
 };
 
-function doSignOut(page_id) {
-    window.open($SCRIPT_ROOT + "/logout/" + window.page_id, "_self");
-    return false
-}
-
-function scrollIntoView(element, container) {
-    const containerTop = $(container).scrollTop();
-    const containerBottom = containerTop + $(container).height();
-    const elemTop = element.offsetTop;
-    const elemBottom = elemTop + $(element).height();
-    if (elemTop < containerTop) {
-        $(container).scrollTop(elemTop);
-    } else if (elemBottom > containerBottom) {
-        $(container).scrollTop(elemBottom - $(container).height());
-    }
-}
-
 function scrollMeIntoView(element) {
     const outer_element = element.parentNode.parentNode;
     const scrolled_element = element.parentNode;
@@ -268,19 +230,6 @@ function scrollMeIntoView(element) {
         outer_element.scrollTop -= distance_to_move
     }
 }
-
-function altScrollIntoView(element, container) {
-    const containerTop = $(container).scrollTop();
-    const containerBottom = containerTop + $(container).height();
-    const elemTop = element.offsetTop;
-    const elemBottom = elemTop + $(element).height();
-    if (elemTop < containerTop) {
-        element.scrollIntoView({behavior: "smooth", block: "start", inline: "nearest"})
-    } else if (elemBottom > containerBottom) {
-        element.scrollIntoView({behavior: "smooth", block: "end", inline: "nearest"})
-    }
-}
-
 
 function guid() {
     function s4() {

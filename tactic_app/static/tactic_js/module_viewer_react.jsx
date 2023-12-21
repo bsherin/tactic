@@ -146,8 +146,8 @@ function ModuleViewerApp(props) {
             ms = {
                 Transfer: [{
                     "name_text": "Copy to library", "icon_name": "import",
-                    "click_handler": () => {
-                        copyToLibrary("tile", _cProp("resource_name"), dialogFuncs, statusFuncs, errorDrawerFuncs)
+                    "click_handler": async () => {
+                        await copyToLibrary("tile", _cProp("resource_name"), dialogFuncs, statusFuncs, errorDrawerFuncs)
                     }, tooltip: "Copy to library"
                 }]
             }
@@ -196,8 +196,8 @@ function ModuleViewerApp(props) {
                 Transfer: [{
                     name_text: "Share",
                     icon_name: "share",
-                    click_handler: () => {
-                        sendToRepository("list", _cProp("resource_name"), dialogFuncs, statusFuncs, errorDrawerFuncs)
+                    click_handler: async () => {
+                        await sendToRepository("list", _cProp("resource_name"), dialogFuncs, statusFuncs, errorDrawerFuncs)
                     },
                     tooltip: "Share to repository"
                 },]
@@ -572,8 +572,6 @@ ModuleViewerApp = memo(ModuleViewerApp);
 ModuleViewerApp.propTypes = {
     controlled: PropTypes.bool,
     changeResourceName: PropTypes.func,
-    changeResourceTitle: PropTypes.func,
-    changeResourceProps: PropTypes.func,
     updatePanel: PropTypes.func,
     refreshTab: PropTypes.func,
     closeTab: PropTypes.func,
@@ -591,8 +589,6 @@ ModuleViewerApp.propTypes = {
 ModuleViewerApp.defaultProps = {
     controlled: false,
     changeResourceName: null,
-    changeResourceTitle: null,
-    changeResourceProps: null,
     refreshTab: null,
     closeTab: null,
     updatePanel: null

@@ -58,13 +58,6 @@ function BlueprintTable(props, passedRef) {
         return hash(obj)
     }
 
-    // shouldComponentUpdate(nextProps, nextState) {
-    //     if (this.set_scroll || this.data_update_required) {
-    //         return true
-    //     }
-    //     return !propsAreEqual(nextProps, this.props) || !propsAreEqual(nextState, this.state)
-    // }
-
      function computeColumnWidths() {
         if (props.mState.data_row_dict) {
             let cwidths = compute_initial_column_widths(props.filtered_column_names, props.mState.data_row_dict);

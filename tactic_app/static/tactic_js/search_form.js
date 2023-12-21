@@ -1,6 +1,6 @@
 "use strict";
 
-function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -8,15 +8,14 @@ exports.FilterSearchForm = FilterSearchForm;
 var _react = _interopRequireWildcard(require("react"));
 var _propTypes = _interopRequireDefault(require("prop-types"));
 var _core = require("@blueprintjs/core");
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
-function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
+function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 function FilterSearchForm(props) {
   function _handleSubmit(e) {
     props.searchNext();
     e.preventDefault();
   }
-  return /*#__PURE__*/_react["default"].createElement("form", {
+  return /*#__PURE__*/_react.default.createElement("form", {
     onSubmit: _handleSubmit,
     id: "console-search-form",
     className: "d-flex flex-row bp5-form-group",
@@ -26,11 +25,11 @@ function FilterSearchForm(props) {
       marginBottom: 6,
       marginTop: 12
     }
-  }, /*#__PURE__*/_react["default"].createElement("div", {
+  }, /*#__PURE__*/_react.default.createElement("div", {
     className: "d-flex flex-column"
-  }, /*#__PURE__*/_react["default"].createElement("div", {
+  }, /*#__PURE__*/_react.default.createElement("div", {
     className: "d-flex flex-row"
-  }, /*#__PURE__*/_react["default"].createElement(_core.InputGroup, {
+  }, /*#__PURE__*/_react.default.createElement(_core.InputGroup, {
     type: "search",
     leftIcon: "search",
     placeholder: "Search",
@@ -40,23 +39,23 @@ function FilterSearchForm(props) {
     autoCapitalize: "none",
     autoCorrect: "off",
     className: "mr-2"
-  }), /*#__PURE__*/_react["default"].createElement(_core.ButtonGroup, null, props.handleFilter && /*#__PURE__*/_react["default"].createElement(_core.Button, {
+  }), /*#__PURE__*/_react.default.createElement(_core.ButtonGroup, null, props.handleFilter && /*#__PURE__*/_react.default.createElement(_core.Button, {
     onClick: props.handleFilter,
     small: true
-  }, "Filter"), props.handleUnFilter && /*#__PURE__*/_react["default"].createElement(_core.Button, {
+  }, "Filter"), props.handleUnFilter && /*#__PURE__*/_react.default.createElement(_core.Button, {
     onClick: props.handleUnFilter,
     small: true
-  }, "Clear"), props.searchNext && /*#__PURE__*/_react["default"].createElement(_core.Button, {
+  }, "Clear"), props.searchNext && /*#__PURE__*/_react.default.createElement(_core.Button, {
     onClick: props.searchNext,
     icon: "caret-down",
     text: undefined,
     small: true
-  }), props.searchPrevious && /*#__PURE__*/_react["default"].createElement(_core.Button, {
+  }), props.searchPrevious && /*#__PURE__*/_react.default.createElement(_core.Button, {
     onClick: props.searchPrevious,
     icon: "caret-up",
     text: undefined,
     small: true
-  }))), /*#__PURE__*/_react["default"].createElement("div", {
+  }))), /*#__PURE__*/_react.default.createElement("div", {
     className: "bp5-form-helper-text",
     style: {
       marginLeft: 10
@@ -64,14 +63,14 @@ function FilterSearchForm(props) {
   }, props.search_helper_text)));
 }
 FilterSearchForm.propTypes = {
-  search_string: _propTypes["default"].string,
-  handleSearchFieldChange: _propTypes["default"].func,
-  handleFilter: _propTypes["default"].func,
-  handleUnFilter: _propTypes["default"].func,
-  searchNext: _propTypes["default"].func,
-  searchPrevious: _propTypes["default"].func,
-  search_helper_text: _propTypes["default"].string,
-  margin_right: _propTypes["default"].number
+  search_string: _propTypes.default.string,
+  handleSearchFieldChange: _propTypes.default.func,
+  handleFilter: _propTypes.default.func,
+  handleUnFilter: _propTypes.default.func,
+  searchNext: _propTypes.default.func,
+  searchPrevious: _propTypes.default.func,
+  search_helper_text: _propTypes.default.string,
+  margin_right: _propTypes.default.number
 };
 FilterSearchForm.defaultProps = {
   handleFilter: null,

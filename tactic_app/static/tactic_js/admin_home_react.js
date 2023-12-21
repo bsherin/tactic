@@ -1,6 +1,7 @@
 "use strict";
 
-function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
+var _extends2 = _interopRequireDefault(require("@babel/runtime/helpers/extends"));
 require("../tactic_css/tactic.scss");
 require("../tactic_css/tactic_table.scss");
 require("../tactic_css/library_home.scss");
@@ -21,24 +22,16 @@ var _error_drawer = require("./error_drawer");
 var _utilities_react = require("./utilities_react");
 var _library_menubars = require("./library_menubars");
 var _theme = require("./theme");
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
-function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-function _extends() { _extends = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
-function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
-function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
-function _iterableToArrayLimit(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
-function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
+function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 window.library_id = (0, _utilities_react.guid)();
-var MARGIN_SIZE = 17;
-var tsocket;
+const MARGIN_SIZE = 17;
+let tsocket;
 function _administer_home_main() {
   tsocket = new _tactic_socket.TacticSocket("main", 5000, "admin", window.library_id);
-  var AdministerHomeAppPlus = (0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(AdministerHomeApp))));
-  var domContainer = document.querySelector('#library-home-root');
-  ReactDOM.render( /*#__PURE__*/_react["default"].createElement(AdministerHomeAppPlus, {
+  let AdministerHomeAppPlus = (0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(AdministerHomeApp))));
+  let domContainer = document.querySelector('#library-home-root');
+  ReactDOM.render( /*#__PURE__*/_react.default.createElement(AdministerHomeAppPlus, {
     tsocket: tsocket,
     initial_theme: window.theme
   }), domContainer);
@@ -53,8 +46,7 @@ function NamesToDict(acc, item) {
   return acc;
 }
 var initial_pane_states = {};
-for (var _i = 0, _res_types = res_types; _i < _res_types.length; _i++) {
-  var res_type = _res_types[_i];
+for (let res_type of res_types) {
   initial_pane_states[res_type] = {
     left_width_fraction: .65,
     selected_resource: col_names[res_type].reduce(NamesToDict, {}),
@@ -78,45 +70,30 @@ for (var _i = 0, _res_types = res_types; _i < _res_types.length; _i++) {
   };
 }
 function AdministerHomeApp(props) {
-  var _useState = (0, _react.useState)(),
-    _useState2 = _slicedToArray(_useState, 2),
-    selected_tab_id = _useState2[0],
-    set_selected_tab_id = _useState2[1];
-  var _useStateAndRef = (0, _utilities_react.useStateAndRef)(initial_pane_states),
-    _useStateAndRef2 = _slicedToArray(_useStateAndRef, 3),
-    pane_states = _useStateAndRef2[0],
-    set_pane_states = _useStateAndRef2[1],
-    pane_states_ref = _useStateAndRef2[2];
-  var _useState3 = (0, _react.useState)((0, _sizing_tools.getUsableDimensions)(true).usable_height_no_bottom),
-    _useState4 = _slicedToArray(_useState3, 2),
-    usable_height = _useState4[0],
-    set_usable_height = _useState4[1];
-  var _useState5 = (0, _react.useState)((0, _sizing_tools.getUsableDimensions)(true).usable_width - 170),
-    _useState6 = _slicedToArray(_useState5, 2),
-    usable_width = _useState6[0],
-    set_usable_width = _useState6[1];
-  var theme = (0, _react.useContext)(_theme.ThemeContext);
-  var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
-  var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
-  var top_ref = (0, _react.useRef)(null);
-  var pushCallback = (0, _utilities_react.useCallbackStack)();
-  (0, _react.useEffect)(function () {
+  const [selected_tab_id, set_selected_tab_id] = (0, _react.useState)();
+  const [pane_states, set_pane_states, pane_states_ref] = (0, _utilities_react.useStateAndRef)(initial_pane_states);
+  const [usable_height, set_usable_height] = (0, _react.useState)((0, _sizing_tools.getUsableDimensions)(true).usable_height_no_bottom);
+  const [usable_width, set_usable_width] = (0, _react.useState)((0, _sizing_tools.getUsableDimensions)(true).usable_width - 170);
+  const theme = (0, _react.useContext)(_theme.ThemeContext);
+  const dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
+  const statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
+  const top_ref = (0, _react.useRef)(null);
+  const pushCallback = (0, _utilities_react.useCallbackStack)();
+  (0, _react.useEffect)(() => {
     initSocket();
     statusFuncs.stopSpinner();
     window.addEventListener("resize", _update_window_dimensions);
     _update_window_dimensions();
-    return function () {
+    return () => {
       props.tsocket.disconnect();
     };
   }, []);
   function initSocket() {
-    props.tsocket.attachListener("window-open", function (data) {
-      return window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data["the_id"]));
-    });
-    props.tsocket.attachListener('handle-callback', function (task_packet) {
+    props.tsocket.attachListener("window-open", data => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
+    props.tsocket.attachListener('handle-callback', task_packet => {
       (0, _communication_react.handleCallback)(task_packet, window.library_id);
     });
-    props.tsocket.attachListener('close-user-windows', function (data) {
+    props.tsocket.attachListener('close-user-windows', data => {
       if (!(data["originator"] == window.library_id)) {
         window.close();
       }
@@ -124,16 +101,21 @@ function AdministerHomeApp(props) {
     props.tsocket.attachListener('doflashUser', _toaster.doFlash);
   }
   function _updatePaneState(res_type, state_update) {
-    var callback = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
-    var old_state = Object.assign({}, pane_states_ref.current[res_type]);
-    var new_pane_states = Object.assign({}, pane_states_ref.current);
+    let callback = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
+    let old_state = Object.assign({}, pane_states_ref.current[res_type]);
+    let new_pane_states = Object.assign({}, pane_states_ref.current);
     new_pane_states[res_type] = Object.assign(old_state, state_update);
     set_pane_states(new_pane_states);
     pushCallback(callback);
   }
+  function _updatePaneStatePromise(res_type, state_update) {
+    return new Promise((resolve, reject) => {
+      _updatePaneState(res_type, state_update, resolve);
+    });
+  }
   function _update_window_dimensions() {
-    var uwidth = window.innerWidth - 2 * _sizing_tools.SIDE_MARGIN;
-    var uheight = window.innerHeight;
+    let uwidth = window.innerWidth - 2 * _sizing_tools.SIDE_MARGIN;
+    let uheight = window.innerHeight;
     if (top_ref && top_ref.current) {
       uheight = uheight - top_ref.current.offsetTop;
     } else {
@@ -149,61 +131,61 @@ function AdministerHomeApp(props) {
   function getIconColor(paneId) {
     return paneId == selected_tab_id ? "white" : "#CED9E0";
   }
-  var container_pane = /*#__PURE__*/_react["default"].createElement(_administer_pane.AdminPane, _extends({}, props, {
+  let container_pane = /*#__PURE__*/_react.default.createElement(_administer_pane.AdminPane, (0, _extends2.default)({}, props, {
     usable_width: usable_width,
     usable_height: usable_height,
     res_type: "container",
     allow_search_inside: false,
     allow_search_metadata: false,
     MenubarClass: ContainerMenubar,
-    updatePaneState: _updatePaneState
-  }, pane_states_ref.current["container"], props.errorDrawerFuncs, {
-    errorDrawerFuncs: props.errorDrawerFuncs,
+    updatePaneState: _updatePaneState,
+    updatePaneStatePromise: _updatePaneStatePromise
+  }, pane_states_ref.current["container"], {
     tsocket: tsocket,
     colnames: col_names.container,
     id_field: "Id"
   }));
-  var user_pane = /*#__PURE__*/_react["default"].createElement(_administer_pane.AdminPane, _extends({}, props, {
+  let user_pane = /*#__PURE__*/_react.default.createElement(_administer_pane.AdminPane, (0, _extends2.default)({}, props, {
     usable_width: usable_width,
     usable_height: usable_height,
     res_type: "user",
     allow_search_inside: false,
     allow_search_metadata: false,
     MenubarClass: UserMenubar,
-    updatePaneState: _updatePaneState
-  }, pane_states_ref.current["user"], props.errorDrawerFuncs, {
-    errorDrawerFuncs: props.errorDrawerFuncs,
+    updatePaneState: _updatePaneState,
+    updatePaneStatePromise: _updatePaneStatePromise
+  }, pane_states_ref.current["user"], {
     tsocket: tsocket,
     colnames: col_names.user,
     id_field: "_id"
   }));
-  var outer_style = {
+  let outer_style = {
     width: "100%",
     height: usable_height,
     paddingLeft: 0
   };
-  var outer_class = "pane-holder";
+  let outer_class = "pane-holder";
   if (theme.dark_theme) {
-    outer_class = "".concat(outer_class, " bp5-dark");
+    outer_class = `${outer_class} bp5-dark`;
   } else {
-    outer_class = "".concat(outer_class, " light-theme");
+    outer_class = `${outer_class} light-theme`;
   }
-  return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
+  return /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement(_blueprint_navbar.TacticNavbar, {
     is_authenticated: window.is_authenticated,
     selected: null,
     show_api_links: false,
     extra_text: "",
     page_id: window.library_id,
     user_name: window.username
-  }), /*#__PURE__*/_react["default"].createElement(_resource_viewer_context.ViewerContext.Provider, {
+  }), /*#__PURE__*/_react.default.createElement(_resource_viewer_context.ViewerContext.Provider, {
     value: {
       readOnly: false
     }
-  }, /*#__PURE__*/_react["default"].createElement("div", {
+  }, /*#__PURE__*/_react.default.createElement("div", {
     className: outer_class,
     ref: top_ref,
     style: outer_style
-  }, /*#__PURE__*/_react["default"].createElement(_core.Tabs, {
+  }, /*#__PURE__*/_react.default.createElement(_core.Tabs, {
     id: "the_container",
     style: {
       marginTop: 100
@@ -213,24 +195,24 @@ function AdministerHomeApp(props) {
     vertical: true,
     large: true,
     onChange: _handleTabChange
-  }, /*#__PURE__*/_react["default"].createElement(_core.Tab, {
+  }, /*#__PURE__*/_react.default.createElement(_core.Tab, {
     id: "containers-pane",
     panel: container_pane
-  }, /*#__PURE__*/_react["default"].createElement(_core.Tooltip, {
+  }, /*#__PURE__*/_react.default.createElement(_core.Tooltip, {
     content: "Containers",
     position: _core.Position.RIGHT
-  }, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
+  }, /*#__PURE__*/_react.default.createElement(_core.Icon, {
     icon: "box",
     size: 20,
     tabIndex: -1,
     color: getIconColor("collections-pane")
-  }))), /*#__PURE__*/_react["default"].createElement(_core.Tab, {
+  }))), /*#__PURE__*/_react.default.createElement(_core.Tab, {
     id: "users-pane",
     panel: user_pane
-  }, /*#__PURE__*/_react["default"].createElement(_core.Tooltip, {
+  }, /*#__PURE__*/_react.default.createElement(_core.Tooltip, {
     content: "users",
     position: _core.Position.RIGHT
-  }, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
+  }, /*#__PURE__*/_react.default.createElement(_core.Icon, {
     icon: "user",
     size: 20,
     tabIndex: -1,
@@ -239,35 +221,38 @@ function AdministerHomeApp(props) {
 }
 AdministerHomeApp = /*#__PURE__*/(0, _react.memo)(AdministerHomeApp);
 function ContainerMenubar(props) {
-  var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
+  const statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
+  const errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
   function _doFlashStopSpinner(data) {
     statusFuncs.stopSpinner();
     (0, _toaster.doFlash)(data);
   }
-  function _container_logs() {
-    var cont_id = props.selected_resource.Id;
-    $.getJSON($SCRIPT_ROOT + '/container_logs/' + cont_id, function (data) {
-      props.setConsoleText(data.log_text);
-    });
+  async function _container_logs() {
+    let cont_id = props.selected_resource.Id;
+    let data = await (0, _communication_react.postAjaxPromise)('container_logs/' + cont_id);
+    props.setConsoleText(data.log_text);
   }
-  function _clear_user_func(event) {
+  async function _clear_user_func(event) {
     statusFuncs.startSpinner();
-    $.getJSON($SCRIPT_ROOT + '/clear_user_containers', _doFlashStopSpinner);
+    let data = await (0, _communication_react.postAjaxPromise)('clear_user_containers');
+    _doFlashStopSpinner(data);
   }
-  function _reset_server_func(event) {
+  async function _reset_server_func(event) {
     statusFuncs.startSpinner();
-    $.getJSON($SCRIPT_ROOT + '/reset_server/' + library_id, _doFlashStopSpinner);
+    let data = await (0, _communication_react.postAjaxPromise)("reset_server/" + library_id);
+    _doFlashStopSpinner(data);
   }
-  function _destroy_container() {
+  async function _destroy_container() {
     statusFuncs.startSpinner();
-    var cont_id = props.selected_resource.Id;
-    $.getJSON($SCRIPT_ROOT + '/kill_container/' + cont_id, function (data) {
+    let cont_id = props.selected_resource.Id;
+    try {
+      let data = await (0, _communication_react.postAjaxPromise)('kill_container/' + cont_id, {});
       _doFlashStopSpinner(data);
-      if (data.success) {
-        props.delete_row(cont_id);
-      }
-    });
-    statusFuncs.stopSpinner();
+      props.delete_row(cont_id);
+    } catch (e) {
+      errorDrawerFuncs.addFromError("Error destroying container", e);
+      statusFuncs.stopSpinner();
+    }
   }
   function menu_specs() {
     return {
@@ -286,7 +271,7 @@ function ContainerMenubar(props) {
       }]
     };
   }
-  return /*#__PURE__*/_react["default"].createElement(_library_menubars.LibraryMenubar, {
+  return /*#__PURE__*/_react.default.createElement(_library_menubars.LibraryMenubar, {
     menu_specs: menu_specs(),
     context_menu_items: null,
     multi_select: false,
@@ -299,25 +284,25 @@ function ContainerMenubar(props) {
   });
 }
 ContainerMenubar.propTypes = {
-  selected_resource: _propTypes["default"].object,
-  list_of_selected: _propTypes["default"].array,
-  setConsoleText: _propTypes["default"].func,
-  delete_row: _propTypes["default"].func,
-  refresh_func: _propTypes["default"].func
+  selected_resource: _propTypes.default.object,
+  list_of_selected: _propTypes.default.array,
+  setConsoleText: _propTypes.default.func,
+  delete_row: _propTypes.default.func,
+  refresh_func: _propTypes.default.func
 };
 ContainerMenubar = /*#__PURE__*/(0, _react.memo)(ContainerMenubar);
 function UserMenubar(props) {
-  var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
+  const dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   function _delete_user() {
-    var user_id = props.selected_resource._id;
-    var username = props.selected_resource.username;
-    var confirm_text = "Are you sure that you want to delete user ".concat(username, " and all their data ?");
+    let user_id = props.selected_resource._id;
+    let username = props.selected_resource.username;
+    const confirm_text = `Are you sure that you want to delete user ${username} and all their data ?`;
     dialogFuncs.showModal("ConfirmDialog", {
       title: "Delete User",
       text_body: confirm_text,
       cancel_text: "do nothing",
       submit_text: "delete",
-      handleSubmit: function handleSubmit() {
+      handleSubmit: () => {
         $.getJSON($SCRIPT_ROOT + '/delete_user/' + user_id, _toaster.doFlash);
       },
       handleClose: dialogFuncs.hideModal,
@@ -325,15 +310,15 @@ function UserMenubar(props) {
     });
   }
   function _bump_user_alt_id() {
-    var user_id = props.selected_resource._id;
-    var username = props.selected_resource.username;
-    var confirm_text = "Are you sure that you want to bump the id for user " + String(username) + "?  " + "This will effectively log them out";
+    let user_id = props.selected_resource._id;
+    let username = props.selected_resource.username;
+    const confirm_text = "Are you sure that you want to bump the id for user " + String(username) + "?  " + "This will effectively log them out";
     dialogFuncs.showModal("ConfirmDialog", {
       title: "Bump User",
       text_body: confirm_text,
       cancel_text: "do nothing",
       submit_text: "bump",
-      handleSubmit: function handleSubmit() {
+      handleSubmit: () => {
         $.getJSON($SCRIPT_ROOT + '/bump_one_alt_id/' + user_id, _toaster.doFlash);
       },
       handleClose: dialogFuncs.hideModal,
@@ -341,17 +326,17 @@ function UserMenubar(props) {
     });
   }
   function _toggle_status() {
-    var user_id = props.selected_resource._id;
+    let user_id = props.selected_resource._id;
     $.getJSON($SCRIPT_ROOT + '/toggle_status/' + user_id, _toaster.doFlash);
   }
   function _bump_all_alt_ids() {
-    var confirm_text = "Are you sure that you want to bump all alt ids?" + "This will effectively log them out";
+    const confirm_text = "Are you sure that you want to bump all alt ids?" + "This will effectively log them out";
     dialogFuncs.showModal("ConfirmDialog", {
       title: "Bump all",
       text_body: confirm_text,
       cancel_text: "do nothing",
       submit_text: "bump",
-      handleSubmit: function handleSubmit() {
+      handleSubmit: () => {
         $.getJSON($SCRIPT_ROOT + '/bump_all_alt_ids', _toaster.doFlash);
       },
       handleClose: dialogFuncs.hideModal,
@@ -393,7 +378,7 @@ function UserMenubar(props) {
     window.open($SCRIPT_ROOT + '/register');
   }
   function _duplicate_user(event) {
-    var username = props.selected_resource.username;
+    let username = props.selected_resource.username;
     window.open($SCRIPT_ROOT + '/user_duplicate/' + username);
   }
   function _update_all_collections(event) {
@@ -429,8 +414,7 @@ function UserMenubar(props) {
       ]
     };
   }
-
-  return /*#__PURE__*/_react["default"].createElement(_library_menubars.LibraryMenubar, {
+  return /*#__PURE__*/_react.default.createElement(_library_menubars.LibraryMenubar, {
     menu_specs: menu_specs(),
     context_menu_items: null,
     multi_select: false,
@@ -443,11 +427,11 @@ function UserMenubar(props) {
   });
 }
 UserMenubar.propTypes = {
-  selected_resource: _propTypes["default"].object,
-  list_of_selected: _propTypes["default"].array,
-  setConsoleText: _propTypes["default"].func,
-  delete_row: _propTypes["default"].func,
-  refresh_func: _propTypes["default"].func
+  selected_resource: _propTypes.default.object,
+  list_of_selected: _propTypes.default.array,
+  setConsoleText: _propTypes.default.func,
+  delete_row: _propTypes.default.func,
+  refresh_func: _propTypes.default.func
 };
 UserMenubar = /*#__PURE__*/(0, _react.memo)(UserMenubar);
 _administer_home_main();

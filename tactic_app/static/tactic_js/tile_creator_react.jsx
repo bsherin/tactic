@@ -19,7 +19,7 @@ import {ReactCodemirror} from "./react-codemirror";
 import {CombinedMetadata} from "./blueprint_mdata_fields";
 import {OptionModule, ExportModule, CommandsModule} from "./creator_modules_react";
 import {HorizontalPanes, VerticalPanes} from "./resizing_layouts";
-import {postAjax, postAjaxPromise, postWithCallback} from "./communication_react"
+import {postAjax, postAjaxPromise, postPromise} from "./communication_react"
 import {withStatus, doFlash, StatusContext} from "./toaster"
 import {getUsableDimensions, SIDE_MARGIN} from "./sizing_tools";
 import {withErrorDrawer} from "./error_drawer";
@@ -121,12 +121,16 @@ function CreatorApp(props) {
 
     const connection_status = useConnection(props.tsocket, initSocket);
 
-    useEffect(() => {
+    useEffect(async () => {
         let data_dict = {pane_type: "tile", is_repository: false, show_hidden: true};
-        postAjaxPromise("get_tag_list", data_dict)
-            .then(data => {
-                set_all_tags(data.tag_list)
-            })
+        let data;
+        try {
+            data = await postAjaxPromise("get_tag_list", data_dict);
+            set_all_tags(data.tag_list)
+        }
+        catch (e) {
+            errorDrawerFuncs.addFromError("Error getting tag list", e)
+        }
     }, []);
 
     useEffect(() => {
@@ -210,8 +214,8 @@ function CreatorApp(props) {
             Transfer: [
                 {
                     name_text: "Share", icon_name: "share",
-                    click_handler: () => {
-                        sendToRepository("tile", _cProp("resource_name"), dialogFuncs, statusFuncs, errorDrawerFuncs)
+                    click_handler: async () => {
+                        await sendToRepository("tile", _cProp("resource_name"), dialogFuncs, statusFuncs, errorDrawerFuncs)
                     }
                 }
             ]
@@ -364,71 +368,52 @@ function CreatorApp(props) {
         return false
     }
 
-    function _saveAndLoadModule() {
+    async function _saveAndLoadModule() {
         if (!am_selected()) {
             return false
         }
         statusFuncs.startSpinner();
-        doSavePromise()
-            .then(function () {
-                statusFuncs.statusMessage("Loading Module");
-                postWithCallback(
-                    "host",
-                    "load_tile_module_task",
-                    {"tile_module_name": _cProp("resource_name"), "user_id": window.user_id},
-                    load_success,
-                    null,
-                    props.module_viewer_id
-                )
-            })
-            .catch((data) => {
-                _logErrorStopSpinner("Error saving and loading module", data)
-            });
-
-        function load_success(data) {
-            if (data.success) {
-                statusFuncs.statusMessage("Loaded successfully");
-                statusFuncs.stopSpinner()
-            }
-            else {
-                _logErrorStopSpinner("Error loading module", data)
-            }
-            return false
+        let data;
+        try {
+            await doSavePromise();
+            statusFuncs.statusMessage("Loading Module");
+            await postPromise(
+                "host", "load_tile_module_task",
+                {"tile_module_name": _cProp("resource_name"), "user_id": window.user_id},
+                props.module_viewer_id);
+            statusFuncs.statusMessage("Loaded successfully");
+            statusFuncs.stopSpinner()
+        }
+        catch(e) {
+            _logErrorStopSpinner("Error saving and loading module", e)
         }
     }
 
-    function _loadModule() {
+    async function _loadModule() {
         if (!am_selected()) {
             return false
         }
         statusFuncs.startSpinner();
         statusFuncs.statusMessage("Loading module...");
-        postWithCallback(
-            "host",
-            "load_tile_module_task",
-            {"tile_module_name": _cProp("resource_name"), "user_id": window.user_id},
-            load_success,
-            null,
-            props.module_viewer_id
-        );
-
-        function load_success(data) {
-            if (data.success) {
-                statusFuncs.statusMessage("Loaded module");
-                statusFuncs.stopSpinner();
-            }
-            else {
-                _logErrorStopSpinner("Error loading module", data)
-            }
-            return false
+        try {
+            await postPromise(
+                "host", "load_tile_module_task",
+                {"tile_module_name": _cProp("resource_name"), "user_id": window.user_id},
+                props.module_viewer_id);
+            statusFuncs.statusMessage("Loaded successfully");
+            statusFuncs.stopSpinner()
+        }
+        catch(e) {
+            _logErrorStopSpinner("Error saving and loading module", e)
         }
     }
 
-    function _saveModuleAs() {
+    async function _saveModuleAs() {
         statusFuncs.startSpinner();
-        postWithCallback("host", "get_tile_names", {"user_id": window.user_id}, function (data) {
-            let checkboxes;
-                dialogFuncs.showModal("ModalDialog", {
+        let data;
+        try {
+            data = await postPromise("host", "get_tile_names", {"user_id": window.user_id}, props.main_id);
+            dialogFuncs.showModal("ModalDialog", {
                         title: "Save Module As",
                         field_title: "New Module Name",
                         handleSubmit: CreateNewModule,
@@ -438,73 +423,69 @@ function CreatorApp(props) {
                         handleCancel: doCancel,
                         handleClose: dialogFuncs.hideModal
                     })
-        }, null, props.main_id);
+        }
+        catch (e) {
+            _logErrorStopSpinner("Error saving module", e)
+        }
 
         function doCancel() {
             statusFuncs.stopSpinner()
         }
 
-        function CreateNewModule(new_name) {
+        async function CreateNewModule(new_name) {
             const result_dict = {
                 "new_res_name": new_name,
                 "res_to_copy": _cProp("resource_name")
             };
-            postAjaxPromise('/create_duplicate_tile', result_dict)
-                .then((data) => {
-                        _setResourceNameState(new_name, () => {
-                            _saveMe()
-                        })
-                    }
-                )
-                .catch((data)=>{
-                    _logErrorStopSpinner("Error saving module", data)
+            try {
+                data = await postAjaxPromise('/create_duplicate_tile', result_dict);
+                _setResourceNameState(new_name, () => {
+                    _saveMe()
                 })
+            }
+            catch(e) {
+                _logErrorStopSpinner("Error saving module", e)
+            }
         }
-
     }
 
     function am_selected() {
         return selectedPane.amSelected(selectedPane.tab_id, selectedPane.selectedTabIdRef)
     }
 
-    function _saveMe() {
+    async function _saveMe() {
         if (!am_selected()) {
             return false
         }
         statusFuncs.startSpinner();
         statusFuncs.statusMessage("Saving module...");
-        doSavePromise()
-            .then((data)=>{
-                statusFuncs.statusMessage("Saved module");
-                statusFuncs.stopSpinner()
-            })
-            .catch((data) => {
-                _logErrorStopSpinner("Error saving module", data)
-            });
+        try {
+            await doSavePromise();
+            statusFuncs.statusMessage("Saved module");
+            statusFuncs.stopSpinner()
+        }
+        catch(e) {
+             _logErrorStopSpinner("Error saving module", e)
+        }
         return false
     }
 
-
-    function _saveAndCheckpoint() {
+    async function _saveAndCheckpoint() {
         if (!am_selected()) {
             return false
         }
         statusFuncs.startSpinner();
-        doSavePromise()
-            .then(function () {
-                statusFuncs.statusMessage("Checkpointing");
-                doCheckpointPromise()
-                    .then((data)=>{
-                        statusFuncs.statusMessage("Saved and checkpointed");
-                        statusFuncs.stopSpinner()
-                    })
-                    .catch((data) => {
-                        _logErrorStopSpinner("Error checkpointing module", data)
-                    })
-            })
-            .catch((data) => {
-                _logErrorStopSpinner("Error saving module", data)
-            });
+        statusFuncs.statusMessage("Checkpointing");
+        let data;
+        try {
+            await doSavePromise();
+            await doCheckpointPromise();
+            statusFuncs.statusMessage("Saved and checkpointed");
+            statusFuncs.stopSpinner()
+        }
+        catch(e) {
+            _logErrorStopSpinner("Error in save and checkpoint", e)
+        }
         return false
 
     }
@@ -541,30 +522,22 @@ function CreatorApp(props) {
     }
 
     function doSavePromise() {
-        return new Promise(function (resolve, reject) {
+        return new Promise(async (resolve, reject) => {
             let result_dict = _getSaveDict();
-
-            postWithCallback(props.module_viewer_id, "update_module", result_dict, function (data) {
-                if (data.success) {
-                    save_success(data);
-                    resolve(data)
-                } else {
-                    reject(data)
-                }
-            }, null, props.module_viewer_id)
+            let data;
+            try {
+                data = await postPromise(props.module_viewer_id, "update_module", result_dict, props.module_viewer_id);
+                save_success(data);
+                resolve(data)
+            }
+            catch(e) {
+                reject(e)
+            }
         })
     }
 
     function doCheckpointPromise() {
-        return new Promise(function (resolve, reject) {
-            postAjax("checkpoint_module", {"module_name": _cProp("resource_name")}, function (data) {
-                if (data.success) {
-                    resolve(data)
-                } else {
-                    reject(data)
-                }
-            });
-        })
+        return postAjaxPromise("checkpoint_module", {"module_name": _cProp("resource_name")});
     }
 
     function save_success(data) {
@@ -591,7 +564,6 @@ function CreatorApp(props) {
                 {line: lnumber, ch: doc.getLine(lnumber).length},
                 {scroll: true})
         }
-
     }
 
     function _goToLineNumber() {
@@ -1159,8 +1131,6 @@ CreatorApp = memo(CreatorApp);
 CreatorApp.propTypes = {
     controlled: PropTypes.bool,
     changeResourceName: PropTypes.func,
-    changeResourceTitle: PropTypes.func,
-    changeResourceProps: PropTypes.func,
     refreshTab: PropTypes.func,
     closeTab: PropTypes.func,
     registerLineSetter: PropTypes.func,

@@ -22,7 +22,7 @@ import {GlyphButton} from "./blueprint_react_widgets";
 import {ReactCodemirror} from "./react-codemirror";
 import {SortableComponent} from "./sortable_container";
 import {KeyTrap} from "./key_trap";
-import {postAjaxPromise, postWithCallback} from "./communication_react"
+import {postAjaxPromise, postWithCallback, postFormDataPromise, postPromise} from "./communication_react"
 import {icon_dict} from "./blueprint_mdata_fields";
 import {view_views} from "./library_pane";
 import {TacticMenubar} from "./menu_utilities";
@@ -67,11 +67,11 @@ function ConsoleComponent(props) {
     const selectedPane = useContext(SelectedPaneContext);
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
 
-    useEffect(() => {
+    useEffect(async () => {
         initSocket();
         _requestPseudoTileId();
         if (props.console_items.current.length == 0) {
-            _addCodeArea("", false)
+            await _addCodeArea("", false)
         }
         if (props.console_selected_items_ref.current.length == 0) {
             _clear_all_selected_items(() => {
@@ -89,9 +89,9 @@ function ConsoleComponent(props) {
                 let handlerDict = {
                     consoleLog: (data) => _addConsoleEntry(data.message, data.force_open, true),
                     consoleLogMultiple: (data) => _addConsoleEntries(data.message, data.force_open, true),
-                    createLink: (data) => {
+                    createLink: async (data) => {
                         let unique_id = data.message.unique_id;
-                        _addConsoleEntry(data.message, data.force_open, false, null, () => {
+                        await _addConsoleEntry(data.message, data.force_open, false, null, () => {
                             _insertLinkInItem(unique_id)
                         })
                     },
@@ -132,90 +132,74 @@ function ConsoleComponent(props) {
         }
     }
 
-    function _pasteImage() {
+    async function _pasteImage() {
         var clipboardContents;
         let blob = null;
-        navigator.clipboard.read()
-            .then((response) => {
-                    clipboardContents = response;
-                    for (const item of clipboardContents) {
-                        if (item.types.includes("image/png")) {
-                            item.getType("image/png")
-                                .then((response) => {
-                                    blob = response;
-                                    if (blob == null) return;
-                                    gotBlob(blob);
-                                });
-                            break;
-                        }
-                    }
-                }
-            );
+        clipboardContents = await navigator.clipboard.read();
+        for (const item of clipboardContents) {
+            if (item.types.includes("image/png")) {
+                blob = await item.getType("image/png");
+                if (blob == null) return;
+                await gotBlob(blob);
+                break;
+            }
+        }
 
-        function gotBlob(blob) {
+        async function gotBlob(blob) {
             const formData = new FormData();
             formData.append('image', blob, 'image.png');
             formData.append("main_id", props.main_id);
-            $.ajax({
-                url: '/print_blob_area_to_console',
-                type: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function (response) {
-                    console.log("");
-                },
-                error: function (xhr, status, error) {
-                    console.log(xhr.responseText);
-                }
-            });
+            try {
+                await postFormDataPromise("print_blob_area_to_console", formData);
+            }
+            catch (e) {
+                 console.log(e);
+            }
         }
     }
 
-    function _addConsoleText(the_text, callback = null) {
-        postWithCallback("host", "print_text_area_to_console",
-            {"console_text": the_text, "user_id": window.user_id, "main_id": props.main_id}, function (data) {
-                if (!data.success) {
-                    errorDrawerFuncs.addErrorDrawerEntry({
-                        title: "Error creating text area",
-                        content: "message" in data ? data.message : ""
-                    });
-                } else if (callback != null) {
-                    callback();
-                }
-            }, null, props.main_id);
+    async function _addConsoleText(the_text, callback = null) {
+        try {
+            await postPromise("host", "print_text_area_to_console",
+                {"console_text": the_text, "user_id": window.user_id, "main_id": props.main_id}, props.main_id);
+            if (callback != null) {
+                callback();
+            }
+        }
+        catch (e) {
+            errorDrawerFuncs.addFromError("Error creating text area", e)
+        }
     }
 
     function am_selected() {
         return selectedPane.amSelected(selectedPane.tab_id, selectedPane.selectedTabIdRef)
     }
 
-    const _addBlankText = useCallback(() => {
+    const _addBlankText = useCallback(async () => {
         if (window.in_context && !am_selected()) {
             return
         }
-        _addConsoleText("")
+        await _addConsoleText("")
     }, []);
 
-    function _addConsoleDivider(header_text, callback = null) {
-        postWithCallback("host", "print_divider_area_to_console",
-            {"header_text": header_text, "user_id": window.user_id, "main_id": props.main_id}, function (data) {
-                if (!data.success) {
-                    errorDrawerFuncs.addErrorDrawerEntry({
-                        title: "Error creating divider",
-                        content: "message" in data ? data.message : ""
-                    });
-                } else if (callback) {
-                    callback()
-                }
-            }, null, props.main_id);
+    async function _addConsoleDivider(header_text, callback = null) {
+        try {
+            await postPromise("host", "print_divider_area_to_console",
+                {"header_text": header_text, "user_id": window.user_id, "main_id": props.main_id}, props.main_id);
+            if (callback != null) {
+                callback();
+            }
+        }
+        catch (e) {
+            errorDrawerFuncs.addFromError("Error creating divider", e)
+        }
     }
 
-    const _addBlankDivider = useCallback(() => {
+     const _addBlankDivider = useCallback(async () => {
         if (window.in_context && !am_selected()) {
             return
         }
-        _addConsoleDivider("")
+        await _addConsoleDivider("")
     }, []);
 
     function _getSectionIds(unique_id) {
@@ -231,28 +215,32 @@ function ConsoleComponent(props) {
         return id_list
     }
 
-    const _deleteSection = useCallback((unique_id) => {
+    const _deleteSection = useCallback(async (unique_id) => {
         let centry = get_console_item_entry(unique_id);
         const confirm_text = `Delete section ${centry.header_text}?`;
-        dialogFuncs.showModal("ConfirmDialog", {
-            title: "Delete Section",
-            text_body: confirm_text,
-            cancel_text: "do nothing",
-            submit_text: "delete",
-            handleSubmit: ()=>{
-                let id_list = _getSectionIds(unique_id);
-                let cindex = _consoleItemIndex(unique_id);
-                let new_console_items = [...props.console_items.current];
-                new_console_items.splice(cindex, id_list.length);
-                _clear_all_selected_items();
-                props.dispatch({
-                    type: "delete_items",
-                    id_list: id_list,
-                });
-            },
-            handleClose: dialogFuncs.hideModal,
-            handleCancel: null
-        });
+        try {
+            await dialogFuncs.showModalPromise("ConfirmDialog", {
+                title: "Delete Section",
+                text_body: confirm_text,
+                cancel_text: "do nothing",
+                submit_text: "delete",
+                handleClose: dialogFuncs.hideModal,
+            });
+            let id_list = _getSectionIds(unique_id);
+            let cindex = _consoleItemIndex(unique_id);
+            let new_console_items = [...props.console_items.current];
+            new_console_items.splice(cindex, id_list.length);
+            _clear_all_selected_items();
+            props.dispatch({
+                type: "delete_items",
+                id_list: id_list,
+            });
+        }
+        catch (e) {
+            if (e != "canceled") {
+                errorDrawerFuncs.addFromError(`Error deleting section`, e)
+            }
+        }
     }, []);
 
     const _copySection = useCallback((unique_id = null) => {
@@ -318,31 +306,27 @@ function ConsoleComponent(props) {
         postWithCallback("host", "copy_console_cells", result_dict, null, null, props.main_id);
     }
 
-    const _pasteCell = useCallback((unique_id = null) => {
-        postWithCallback("host", "get_copied_console_cells", {user_id: window.user_id}, (data) => {
-            if (!data.success) {
-                errorDrawerFuncs.addErrorDrawerEntry({
-                    title: "Error getting copied cells",
-                    content: "message" in data ? data.message : ""
-                });
-            } else {
-                _addConsoleEntries(data.console_items, true, false, unique_id)
-            }
-        }, null, props.main_id)
+    const _pasteCell = useCallback(async (unique_id = null) => {
+        try {
+            let data = await postPromise("host", "get_copied_console_cells", {user_id: window.user_id}, props.main_id);
+            _addConsoleEntries(data.console_items, true, false, unique_id)
+        }
+        catch (e) {
+            errorDrawerFuncs.addFromError(`Error getting copied cells`, e)
+        }
     }, []);
 
-    function _addConsoleTextLink(callback = null) {
-        postWithCallback("host", "print_link_area_to_console",
-            {"user_id": window.user_id, "main_id": props.main_id}, function (data) {
-                if (!data.success) {
-                    errorDrawerFuncs.addErrorDrawerEntry({
-                        title: "Error creatinng link",
-                        content: "message" in data ? data.message : ""
-                    });
-                } else if (callback) {
-                    callback()
-                }
-            }, null, props.main_id);
+    async function _addConsoleTextLink(callback = null) {
+        try {
+            await postPromise("host", "print_link_area_to_console",
+                {"user_id": window.user_id, "main_id": props.main_id}, props.main_id);
+            if (callback) {
+                callback()
+            }
+        }
+        catch (e) {
+            errorDrawerFuncs.addFromError("Error creating link", e)
+        }
     }
 
     function _currently_selected() {
@@ -353,51 +337,53 @@ function ConsoleComponent(props) {
         }
     }
 
-    const _insertResourceLink = useCallback(() => {
+    const _insertResourceLink = useCallback(async () => {
         if (!_currently_selected()) {
-            _addConsoleTextLink();
+            await _addConsoleTextLink();
             return
         }
         let entry = get_console_item_entry(_currently_selected());
         if (!entry || entry.type != "text") {
-            _addConsoleTextLink();
+            await _addConsoleTextLink();
             return;
         }
-        _insertLinkInItem(_currently_selected());
+        await _insertLinkInItem(_currently_selected());
     }, []);
 
-    function _insertLinkInItem(unique_id) {
-        let entry = get_console_item_entry(unique_id);
-        dialogFuncs.showModal("SelectResourceDialog", {
-            cancel_text: "cancel",
-            submit_text: "insert link",
-            handleSubmit: (result) => {
-                let new_links = "links" in entry ? [...entry.links] : [];
-                new_links.push({res_type: result.type, res_name: result.selected_resource});
-                _setConsoleItemValue(entry.unique_id, "links", new_links)
-            },
-            handleClose: dialogFuncs.hideModal,
-        });
+    async function _insertLinkInItem(unique_id) {
+        try {
+            let entry = get_console_item_entry(unique_id);
+            let result = await dialogFuncs.showModalPromise("SelectResourceDialog", {
+                cancel_text: "cancel",
+                submit_text: "insert link",
+                handleClose: dialogFuncs.hideModal
+            });
+            let new_links = "links" in entry ? [...entry.links] : [];
+            new_links.push({res_type: result.type, res_name: result.selected_resource});
+            _setConsoleItemValue(entry.unique_id, "links", new_links)
+        }
+        catch (e) {
+            errorDrawerFuncs.addFromError("Error inserting link", e)
+        }
     }
 
-    const _addBlankCode = useCallback((e) => {
+    const _addBlankCode = useCallback(async (e) => {
         if (window.in_context && !am_selected()) {
             return
         }
-        _addCodeArea("");
+        await _addCodeArea("");
     }, []);
 
-    function _addCodeArea(the_text, force_open = true) {
-        postWithCallback("host", "print_code_area_to_console",
+    async function _addCodeArea(the_text, force_open = true) {
+        try {
+            await postPromise("host",
+            "print_code_area_to_console",
             {console_text: the_text, user_id: window.user_id, main_id: props.main_id, force_open: force_open},
-            function (data) {
-                if (!data.success) {
-                    errorDrawerFuncs.addErrorDrawerEntry({
-                        title: "Error creating code area",
-                        content: "message" in data ? data.message : ""
-                    });
-                }
-            }, null, props.main_id);
+            props.main_id);
+        }
+        catch (e) {
+            errorDrawerFuncs.addFromError("Error creating code cell", e);
+        }
     }
 
     const _resetConsole = useCallback(() => {
@@ -409,22 +395,26 @@ function ConsoleComponent(props) {
         postWithCallback(props.main_id, "stop_all_console_code", {}, null, null, props.main_id)
     }
 
-    const _clearConsole = useCallback(() => {
-        const confirm_text = "Are you sure that you want to erase everything in this log?";
-        dialogFuncs.showModal("ConfirmDialog", {
-            title: "Clear entire log",
-            text_body: confirm_text,
-            cancel_text: "do nothing",
-            submit_text: "clear",
-            handleSubmit: ()=>{
-                props.set_console_selected_items([]);
-                pushCallback(() => {
-                    props.dispatch({type: "delete_all_items"})
-                })
-            },
-            handleClose: dialogFuncs.hideModal,
-            handleCancel: null
-        });
+    const _clearConsole = useCallback(async () => {
+        try {
+            const confirm_text = "Are you sure that you want to erase everything in this log?";
+            await dialogFuncs.showModalPromise("ConfirmDialog", {
+                title: "Clear entire log",
+                text_body: confirm_text,
+                cancel_text: "do nothing",
+                submit_text: "clear",
+                handleClose: dialogFuncs.hideModal,
+            });
+            props.set_console_selected_items([]);
+            pushCallback(() => {
+                props.dispatch({type: "delete_all_items"})
+            })
+        }
+        catch (e) {
+            if (e != "canceled") {
+                errorDrawerFuncs.addFromError(`Error clearing console`, e)
+            }
+        }
     }, []);
 
     function _togglePseudoLog() {
@@ -729,7 +719,7 @@ function ConsoleComponent(props) {
         _moveEntryAfterEntry(move_entry.unique_id, target_id, callback)
     }, []);
 
-    const _goToNextCell = useCallback((unique_id) => {
+    const _goToNextCell = useCallback(async (unique_id) => {
         let next_index = _consoleItemIndex(unique_id) + 1;
         while (next_index < props.console_items.current.length) {
             let next_id = props.console_items.current[next_index].unique_id;
@@ -748,7 +738,7 @@ function ConsoleComponent(props) {
             }
             next_index += 1;
         }
-        _addCodeArea("");
+        await _addCodeArea("");
         return
     }, []);
 
@@ -787,25 +777,27 @@ function ConsoleComponent(props) {
         })
     }
 
-    function _deleteSelected() {
+   async function _deleteSelected() {
         if (_are_selected()) {
             let new_console_items = [];
-            if (_isDividerSelected()) {
-                const confirm_text = "The selection includes section dividers. " +
-                    "The sections will be completed in their entirety. Do you want to continue";
-                dialogFuncs.showModal("ConfirmDialog", {
-                    title: "Do Delete",
-                    text_body: confirm_text,
-                    cancel_text: "do nothing",
-                    submit_text: "delete",
-                    handleSubmit: ()=>{
-                        _doDeleteSelected();
-                    },
-                    handleClose: dialogFuncs.hideModal,
-                    handleCancel: null
-                });
-            } else {
+            try {
+                if (_isDividerSelected()) {
+                    const confirm_text = "The selection includes section dividers. " +
+                        "The sections will be completed in their entirety. Do you want to continue";
+                    await dialogFuncs.showModalPromise("ConfirmDialog", {
+                        title: "Do Delete",
+                        text_body: confirm_text,
+                        cancel_text: "do nothing",
+                        submit_text: "delete",
+                        handleClose: dialogFuncs.hideModal,
+                    });
+                }
                 _doDeleteSelected()
+            }
+            catch (e) {
+                if (e != "canceled") {
+                    errorDrawerFuncs.addFromError(`Error duplicating resource ${res_name}`, e)
+                }
             }
         }
     }
@@ -1176,13 +1168,13 @@ function ConsoleComponent(props) {
                     }
                 },
                 {
-                    name_text: "Paste Image", icon_name: "clipboard", click_handler: () => {
-                        _pasteImage()
+                    name_text: "Paste Image", icon_name: "clipboard", click_handler: async () => {
+                        await _pasteImage()
                     }
                 },
                 {
-                    name_text: "Delete Selected", icon_name: "trash", click_handler: () => {
-                        _deleteSelected()
+                    name_text: "Delete Selected", icon_name: "trash", click_handler: async () => {
+                        await _deleteSelected()
                     }
                 },
                 {name_text: "divider2", icon_name: null, click_handler: "divider"},
@@ -1255,17 +1247,16 @@ function ConsoleComponent(props) {
     }
 
     const _runCodeItem = useCallback((unique_id, go_to_next = false) => {
-        _clearCodeOutput(unique_id, () => {
+        _clearCodeOutput(unique_id, async () => {
             _startSpinner(unique_id);
             let entry = get_console_item_entry(unique_id);
-            postWithCallback(props.main_id, "exec_console_code", {
+            await postPromise(props.main_id, "exec_console_code", {
                 "the_code": entry.console_text,
                 "console_id": unique_id
-            }, function () {
-                if (go_to_next) {
-                    _goToNextCell(unique_id)
-                }
-            }, null, props.main_id)
+            }, props.main_id);
+            if (go_to_next) {
+                _goToNextCell(unique_id)
+            }
         })
     }, []);
 
@@ -2492,20 +2483,20 @@ function ResourceLinkButton(props) {
         }
     });
 
-    function _goToLink() {
+    async function _goToLink() {
         if (window.in_context) {
-            postAjaxPromise($SCRIPT_ROOT + my_view.current, {
-                context_id: window.context_id,
-                resource_name: props.res_name
-            })
-                .then(props.handleCreateViewer)
-                .catch(()=>{
-                    errorDrawerFuncs.addErrorDrawerEntry({
-                        title: "Error following link",
-                        content: "message" in data ? data.message : ""
-                    });
+            try {
+                let data = await postAjaxPromise(my_view.current, {
+                    context_id: window.context_id,
+                    resource_name: props.res_name
                 });
-        } else {
+                props.handleCreateViewer(data)
+            }
+            catch(e){
+                errorDrawerFuncs.addFromError("Error following link", e)
+            }
+        }
+        else {
             window.open($SCRIPT_ROOT + my_view.current + props.res_name)
         }
     }
@@ -2654,17 +2645,24 @@ function ConsoleTextItem(props) {
         props.selectConsoleItem(props.unique_id, e, callback)
     }
 
-    function _insertResourceLink() {
-        dialogFuncs.showModal("SelectResourceDialog", {
-            cancel_text: "cancel",
-            submit_text: "insert link",
-            handleSubmit: (result) => {
-                let new_links = [...props.links];
-                new_links.push({res_type: result.type, res_name: result.selected_resource});
-                props.setConsoleItemValue(props.unique_id, "links", new_links)
-            },
-            handleClose: dialogFuncs.hideModal,
-        });
+    async function _insertResourceLink() {
+        try {
+            let result = await dialogFuncs.showModalPromise("SelectResourceDialog", {
+                cancel_text: "cancel",
+                submit_text: "insert link",
+                handleClose: dialogFuncs.hideModal,
+            });
+            let new_links = [...props.links];
+            new_links.push({res_type: result.type, res_name: result.selected_resource});
+            props.setConsoleItemValue(props.unique_id, "links", new_links)
+        }
+        catch (e) {
+            if (e != "canceled") {
+                errorDrawerFuncs.addFromError(`Error duplicating resource ${res_name}`, e)
+            }
+            return
+        }
+
     }
 
     function _deleteLinkButton(index) {

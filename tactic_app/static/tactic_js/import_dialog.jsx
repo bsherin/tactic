@@ -12,10 +12,11 @@ import {
 import {BpSelect} from "./blueprint_mdata_fields.js";
 import {useConstructor, useStateAndRef} from "./utilities_react";
 import {renderToStaticMarkup} from "react-dom/server";
-import {ErrorItem} from "./error_drawer";
+import {ErrorDrawerContext, ErrorItem} from "./error_drawer";
 import {PoolAddressSelector} from "./pool_tree";
 
 import {ThemeContext} from "./theme";
+import {postAjaxPromise} from "./communication_react";
 
 export {FileImportDialog}
 
@@ -47,16 +48,21 @@ function FileImportDialog(props) {
     const [csv_options_open, set_csv_options_open] = useState(false);
 
     const theme = useContext(ThemeContext);
+    const errorDrawerFuncs = useContext(ErrorDrawerContext);
 
-    useConstructor(() => {
-        $.getJSON(`${$SCRIPT_ROOT}get_resource_names/${props.res_type}`, function (data) {
+    useConstructor(async () => {
+        try {
+            let data = await postAjaxPromise(`get_resource_names/${props.res_type}`);
             existing_names.current = data.resource_names;
             while (_name_exists(default_name)) {
                     name_counter.current += 1;
                     default_name.current = "new" + props.res_type + String(name_counter.current)
-                }
-            set_show(true)
-        });
+            }
+            set_show(true);
+        }
+        catch (e) {
+            errorDrawerFuncs.addFromError("Error getting existing names", e)
+        }
     });
 
     useEffect(() => {

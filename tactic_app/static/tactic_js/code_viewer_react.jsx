@@ -9,7 +9,7 @@ import {ReactCodemirror} from "./react-codemirror";
 
 import {ResourceViewerApp, copyToLibrary, sendToRepository} from "./resource_viewer_react_app";
 import {TacticSocket} from "./tactic_socket";
-import {postAjaxPromise, postWithCallback} from "./communication_react.js"
+import {postAjaxPromise, postPromise} from "./communication_react.js"
 import {withStatus, StatusContext} from "./toaster.js"
 
 import {getUsableDimensions, BOTTOM_MARGIN} from "./sizing_tools.js";
@@ -137,8 +137,8 @@ function CodeViewerApp(props) {
             ms = {
                 Transfer: [{
                     "name_text": "Copy to library", "icon_name": "import",
-                    "click_handler": () => {
-                        copyToLibrary("list", _cProp("resource_name"), dialogFuncs, statusFuncs, errorDrawerFuncs)
+                    "click_handler": async () => {
+                        await copyToLibrary("list", _cProp("resource_name"), dialogFuncs, statusFuncs, errorDrawerFuncs)
                     }, tooltip: "Copy to library"
                 }]
             }
@@ -152,7 +152,6 @@ function CodeViewerApp(props) {
                         key_bindings: ['ctrl+s'],
                         tooltip: "Save"
                     },
-
                     {
                         name_text: "Save As...",
                         icon_name: "floppy-disk",
@@ -164,8 +163,8 @@ function CodeViewerApp(props) {
                     {
                         name_text: "Share",
                         icon_name: "share",
-                        click_handler: () => {
-                            sendToRepository("list", _cProp("resource_name"), dialogFuncs, statusFuncs, errorDrawerFuncs)
+                        click_handler: async () => {
+                            await sendToRepository("list", _cProp("resource_name"), dialogFuncs, statusFuncs, errorDrawerFuncs)
                         },
                         tooltip: "Share to repository"
                     },
@@ -182,6 +181,12 @@ function CodeViewerApp(props) {
             set_resource_name(new_name);
             pushCallback(callback);
         }
+    }
+
+    async function _setResourceNameStatePromise(new_name) {
+        return new Promise((resolve, reject) => {
+            _setResourceNameState(new_name, resolve)
+        })
     }
 
     function _handleMetadataChange(state_stuff) {
@@ -232,12 +237,11 @@ function CodeViewerApp(props) {
         }
     }
 
-
     function am_selected() {
         return selectedPane.amSelected(selectedPane.tab_id, selectedPane.selectedTabIdRef)
     }
 
-    function _saveMe() {
+    async function _saveMe() {
         if (!am_selected()) {
             return false
         }
@@ -252,68 +256,47 @@ function CodeViewerApp(props) {
             "notes": local_notes,
             "user_id": window.user_id
         };
-        postWithCallback("host", "update_code_task", result_dict,
-            update_success, null, props.resource_viewer_id);
+        try {
+            await postPromise("host", "update_code_task", result_dict, props.resource_viewer_id);
+            savedContent.current = new_code;
+            savedTags.current = local_tags;
+            savedNotes.current = local_notes;
+            statusFuncs.statusMessage(`Updated code resource ${_cProp("resource_name")}`, 7)
+        } catch (e) {
+            errorDrawerFuncs.addFromError("Error saving code", e)
 
-        function update_success(data) {
-            if (data.success) {
-                savedContent.current = new_code;
-                savedTags.current = local_tags;
-                savedNotes.current = local_notes;
-                statusFuncs.statusMessage(`Updated code resource ${_cProp("resource_name")}`, 7)
-            }
-            else {
-                errorDrawerFuncs.addErrorDrawerEntry({
-                    title: "Error saving code",
-                    content: "message" in data ? data.message : ""
-                })
-            }
-            return false
         }
+        return false
     }
 
-    function _saveMeAs(e) {
+    async function _saveMeAs(e) {
         if (!am_selected()) {
             return false
         }
         statusFuncs.startSpinner();
-        postWithCallback("host", "get_code_names", {"user_id": window.user_id}, function (data) {
-            let checkboxes;
-            dialogFuncs.showModal("ModalDialog", {
-                    title: "Save Code As",
-                    field_title: "New Code Name",
-                    handleSubmit: CreateNewList,
-                    default_value: "NewCode",
-                    existing_names: data.code_names,
-                    checkboxes: [],
-                    handleCancel: doCancel,
-                    handleClose: dialogFuncs.hideModal,
-                })
-        }, null, props.main_id);
-
-        function doCancel() {
-            statusFuncs.stopSpinner()
-        }
-
-        function CreateNewList(new_name) {
+        try {
+            let data = await postPromise("host", "get_code_names", {"user_id": window.user_id}, props.main_id);
+            let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
+                title: "Save Code As",
+                field_title: "New Code Name",
+                default_value: "NewCode",
+                existing_names: data.code_names,
+                checkboxes: [],
+                handleClose: dialogFuncs.hideModal,
+            });
             const result_dict = {
                 "new_res_name": new_name,
                 "res_to_copy": _cProp("resource_name")
             };
-            postAjaxPromise('/create_duplicate_code', result_dict)
-                .then((data) => {
-                        _setResourceNameState(new_name, () => {
-                            _saveMe()
-                        })
-                    }
-                )
-                .catch((data)=>{
-                    errorDrawerFuncs.addErrorDrawerEntry({
-                        title: "Error saving code",
-                        content: "message" in data ? data.message : ""
-                    })
-                })
+            await postAjaxPromise('/create_duplicate_code', result_dict);
+            await _setResourceNameStatePromise(new_name);
+            await _saveMe()
+        } catch (e) {
+            if (e != "canceled") {
+                errorDrawerFuncs.addFromError(`Error saving code`, e)
+            }
         }
+        statusFuncs.stopSpinner()
     }
 
     function _dirty() {
@@ -353,7 +336,6 @@ function CodeViewerApp(props) {
             <div className={outer_class} ref={top_ref} style={outer_style}>
                 <ResourceViewerApp {...my_props}
                                    resource_viewer_id={props.resource_viewer_id}
-                                   setResourceNameState={_setResourceNameState}
                                    refreshTab={props.refreshTab}
                                    closeTab={props.closeTab}
                                    res_type="code"
@@ -397,8 +379,6 @@ CodeViewerApp = memo(CodeViewerApp);
 CodeViewerApp.propTypes = {
     controlled: PropTypes.bool,
     changeResourceName: PropTypes.func,
-    changeResourceTitle: PropTypes.func,
-    changeResourceProps: PropTypes.func,
     updatePanel: PropTypes.func,
     refreshTab: PropTypes.func,
     closeTab: PropTypes.func,
@@ -417,8 +397,6 @@ CodeViewerApp.propTypes = {
 CodeViewerApp.defaultProps = {
     controlled: false,
     changeResourceName: null,
-    changeResourceTitle: null,
-    changeResourceProps: null,
     updatePanel: null,
     refreshTab: null,
     closeTab: null,

@@ -21,7 +21,7 @@ import {TacticSocket} from "./tactic_socket.js";
 import {useCallbackStack, useConnection} from "./utilities_react";
 import {withTheme} from "./theme";
 
-function history_viewer_main ()  {
+async function history_viewer_main ()  {
     function gotProps(the_props) {
         let HistoryViewerAppPlus = withTheme(withErrorDrawer(withStatus(HistoryViewerApp)));
         let the_element = <HistoryViewerAppPlus {...the_props}
@@ -31,36 +31,26 @@ function history_viewer_main ()  {
         let domContainer = document.querySelector('#root');
         ReactDOM.render(the_element, domContainer)
     }
-    function failedToLoad(data) {
-        let fallback = "History viewer failed to load";
-        if ("message" in data) {
-            fallback = fallback + " " + data.message
-        }
-        let domContainer = document.querySelector('#root');
-        let the_element = <pre>{fallback}</pre>;
-        return ReactDOM.render(the_element, domContainer);
-    }
 
     let get_url = "get_module_code";
 
-    postAjaxPromise(`${get_url}/${window.resource_name}`, {})
-        .then(function (data) {
-            var edit_content = data.the_content;
-            postAjaxPromise("get_checkpoint_dates", {"module_name": window.resource_name})
-                .then(function (data2) {
-                    data.history_list = data2.checkpoints;
-                    data.resource_name = window.resource_name,
-                    history_viewer_props(data, null, gotProps)
-                })
-                .catch((data2)=>{
-                    failedToLoad(data2)
-                })
-
-            }
-        )
-        .catch((data2)=>{
-            failedToLoad(data2)
-        });
+    try {
+        let data = await postAjaxPromise(`${get_url}/${window.resource_name}`, {});
+        var edit_content = data.the_content;
+        let data2 = await postAjaxPromise("get_checkpoint_dates", {"module_name": window.resource_name});
+        data.history_list = data2.checkpoints;
+        data.resource_name = window.resource_name;
+        history_viewer_props(data, null, gotProps);
+    }
+    catch (e) {
+        let fallback = "History viewer failed to load";
+        if ("message" in e) {
+            fallback = fallback + " " + e.message
+        }
+        let domContainer = document.querySelector('#root');
+        let the_element = <pre>{fallback}</pre>;
+        ReactDOM.render(the_element, domContainer);
+    }
 }
 
 function history_viewer_props(data, registerDirtyMethod, finalCallback) {
@@ -230,5 +220,10 @@ HistoryViewerApp.propTypes = {
 HistoryViewerApp = memo(HistoryViewerApp);
 
 if (!window.in_context) {
-    history_viewer_main();
+    try {
+        history_viewer_main();
+    }
+    catch(e) {
+        console.log("Error at the top level")
+    }
 }
