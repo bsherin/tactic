@@ -1,0 +1,11 @@
+#!/bin/bash
+cd /Users/bls910/PycharmProjects2/tactic/tactic_app
+if [ "$1" == "all" ] ; then
+	sudo docker compose --env-file developold.env --profile build_project build
+else
+  if [ "$1" == "host" ] ; then
+    sudo docker compose --env-file developold.env --profile build_project build "tactic_host1"
+  else
+    sudo docker compose --env-file developold.env --profile build_project build "tactic_$1"
+  fi
+fi

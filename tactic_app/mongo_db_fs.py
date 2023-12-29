@@ -62,7 +62,7 @@ def get_dbs(get_repo=True):
 
                 from ssh_pymongo import MongoSession
                 print("getting session")
-                session = MongoSession(host="tactic.northwestern.edu", port=22, user=remote_username,
+                session = MongoSession(host="tactictext.net", port=22, user=remote_username,
                                        password=remote_password,
                                        to_port=27017)
                 print("connecting to session")

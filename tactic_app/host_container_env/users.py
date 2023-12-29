@@ -289,12 +289,15 @@ def load_remote_user(userid, the_db):
 class RemoteUser(User):
     def __init__(self, user_dict, repository_db):
         self.username = ""  # This is just to be make introspection happy
-        for key in user_data_fields:
-            if key in user_dict:
+        for field in user_data_fields:
+            key = field["name"]
+            print(f"got key {key}")
+            if field["name"] in user_dict:
                 setattr(self, key, user_dict[key])
             else:
                 setattr(self, key, "")
-        self.password_hash = user_dict["password_hash"]
+        if "password_has" in user_dict:
+            self.password_hash = user_dict["password_hash"]
         self.repository_db = repository_db
 
     @staticmethod

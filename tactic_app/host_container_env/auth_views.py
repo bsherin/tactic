@@ -1,13 +1,15 @@
 import datetime
 import re
+import os
 import copy
 from flask import render_template, request, jsonify, redirect, url_for
 from flask_login import login_user, login_required, logout_user, fresh_login_required
 from flask_login import current_user
+import gridfs
 from tactic_app import login_manager
 
-from users import User, user_data_fields
-from mongo_accesser import res_types
+from users import User, user_data_fields, RemoteUser
+from mongo_accesser import res_types, name_keys
 from library_views import copy_between_accounts
 from flask_wtf import Form
 # noinspection PyProtectedMember
@@ -19,6 +21,7 @@ from wtforms.validators import ValidationError
 from tactic_app import ANYONE_CAN_REGISTER
 import tactic_app
 import loaded_tile_management
+from mongo_db_fs import db_name
 
 from js_source_management import js_source_dict, _develop, css_source
 
@@ -30,13 +33,37 @@ admin_user = User.get_user_by_username("admin")
 
 tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
 
+@app.route('/get_starter_tiles', methods=['GET', 'POST'])
+def get_starter_tiles():
+    res_type = "tile"
+    repo_user = User.get_user_by_username("repository")
+    cname = repo_user.resource_collection_name(res_type)
+    name_key = name_keys[res_type]
+    tile_dicts = []
+    if cname in db.list_collection_names():
+        for doc in db[cname].find():
+            if "metadata" in doc and "tags" in doc["metdata"]:
+                if "starter" in doc["metadata"]["tags"].lower():
+                    tile_dicts.append(doc)
+    return {"success": True, "tile_dicts": tile_dicts}
+
+def initialize_db():
+    from ssh_pymongo import MongoSession
+    User.create_new({"username": "admin", "password": "abcd"})
+    User.create_new({"username": "repository", "password": "abcd"})
+    local_repo_user = User.get_user_by_username("repository")
+    for res_type in res_types:
+        cname = remote_repo_user.resource_collection_name(res_type)
+        name_key = name_keys[res_type]
+        if cname not in db.list_collection_names():
+            db.create_collection(cname)
+    return
 
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     print("entering login view")
     next_view = request.args.get('next')
-
     if next_view is None:
         if current_user.is_authenticated:
             return redirect(url_for("successful_login"))
@@ -103,6 +130,9 @@ def login_after_register():
 @app.route('/attempt_login', methods=['GET', 'POST'])
 def attempt_login():
     data = request.json
+    if "user_collection" not in db.list_collection_names():
+        print("initializing db")
+        initialize_db()
     result_dict = {}
     user = User.get_user_by_username(data["username"])
     if user is not None and user.verify_password(data["password"]):
@@ -149,8 +179,8 @@ def logout(page_id):
 
 
 @app.route('/register', methods=['GET', 'POST'])
-@login_required
 def register():
+    print(f"Anyone can register is {ANYONE_CAN_REGISTER}")
     if ANYONE_CAN_REGISTER or (current_user.username == "admin"):
         return render_template('auth/register_react.html',
                                css_source=css_source("register_react"),

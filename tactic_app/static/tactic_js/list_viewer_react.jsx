@@ -10,7 +10,7 @@ import {TextArea} from "@blueprintjs/core";
 
 import {ResourceViewerApp, copyToLibrary, sendToRepository} from "./resource_viewer_react_app";
 import {TacticSocket} from "./tactic_socket";
-import {postAjax, postAjaxPromise, postWithCallback} from "./communication_react"
+import {postAjaxPromise, postPromise} from "./communication_react"
 import {withStatus} from "./toaster"
 
 import {getUsableDimensions, BOTTOM_MARGIN} from "./sizing_tools";
@@ -246,7 +246,7 @@ function ListViewerApp(props) {
         return selectedPane.amSelected(selectedPane.tab_id, selectedPane.selectedTabIdRef)
     }
 
-    function _saveMe() {
+    async function _saveMe() {
         if (!am_selected()) {
             return false
         }
@@ -260,67 +260,51 @@ function ListViewerApp(props) {
             "tags": tagstring,
             "notes": notes
         };
-        let self = this;
-        postAjax("update_list", result_dict, update_success);
 
-        function update_success(data) {
-            if (data.success) {
-                savedContent.current = new_list_as_string;
-                savedTags.current = local_tags;
-                savedNotes.current = local_notes;
-                statusFuncs.statusMessage(`Saved list ${result_dict.list_name}`)
-            } else {
-                errorDrawerFuncs.addErrorDrawerEntry({
-                    title: `Error creating new notebook`,
-                    content: "message" in data ? data.message : ""
-                });
-            }
+        try {
+            let data = await postAjaxPromise("update_list", result_dict, update_success);
+            savedContent.current = new_list_as_string;
+            savedTags.current = local_tags;
+            savedNotes.current = local_notes;
+            statusFuncs.statusMessage(`Saved list ${result_dict.list_name}`)
+        }
+        catch(e) {
+            errorDrawerFuncs.addErrorDrawerEntry({
+                title: `Error creating new notebook`,
+                content: "message" in data ? data.message : ""
+            });
         }
     }
 
-    function _saveMeAs(e) {
+    async function _saveMeAs(e) {
         if (!am_selected()) {
             return false
         }
         statusFuncs.startSpinner();
-        let self = this;
-        postWithCallback("host", "get_list_names", {"user_id": window.user_id}, function (data) {
-            let checkboxes;
-            dialogFuncs.showModal("ModalDialog", {
-                    title: "Save List As",
-                    field_title: "New List Name",
-                    handleSubmit: CreateNewList,
-                    default_value: "NewList",
-                    existing_names: data.list_names,
-                    checkboxes: [],
-                    handleCancel: doCancel,
-                    handleClose: dialogFuncs.hideModal,
+        try {
+            let data = await postPromise("host", "get_list_names", {"user_id": window.user_id}, props.main_id);
+            let new_name = dialogFuncs.showModalPromise("ModalDialog", {
+                title: "Save List As",
+                field_title: "New List Name",
+                default_value: "NewList",
+                existing_names: data.list_names,
+                checkboxes: [],
+                handleClose: dialogFuncs.hideModal,
                 })
-        }, null, props.main_id);
-
-        function doCancel() {
-            statusFuncs.stopSpinner();
-            dialogFuncs.hideModal()
-        }
-
-        function CreateNewList(new_name) {
             const result_dict = {
                 "new_res_name": new_name,
                 "res_to_copy": _cProp("resource_name")
             };
-            postAjaxPromise('/create_duplicate_list', result_dict)
-                .then((data) => {
-                        _setResourceNameState(new_name, () => {
-                            _saveMe()
-                        })
-                    }
-                )
-                .catch((data)=>{
-                    errorDrawerFuncs.addErrorDrawerEntry({
-                        title: `Error saving list`,
-                        content: "message" in data ? data.message : ""
-                    });
-                })
+            let data = await postAjaxPromise('/create_duplicate_list', result_dict);
+            _setResourceNameState(new_name, () => {
+                _saveMe()
+            })
+        }
+        catch(e) {
+            if (e != "canceled") {
+                errorDrawerFuncs.addFromError(`Error saving listy`, e);
+                statusFuncs.stopSpinner();
+            }
         }
     }
 
@@ -414,7 +398,7 @@ ListViewerApp.defaultProps = {
     closeTab: null,
 };
 
-function list_viewer_main() {
+async function list_viewer_main() {
 
     function gotProps(the_props) {
         let ListViewerAppPlus = withTheme(withDialogs(withErrorDrawer(withStatus(ListViewerApp))));
@@ -428,12 +412,10 @@ function list_viewer_main() {
     }
 
     let target = window.is_repository ? "repository_view_list_in_context" : "view_list_in_context";
-    postAjaxPromise(target, {"resource_name": window.resource_name})
-        .then((data) => {
-            list_viewer_props(data, null, gotProps, null);
-        })
+    let data = await postAjaxPromise(target, {"resource_name": window.resource_name});
+    list_viewer_props(data, null, gotProps, null);
 }
 
 if (!window.in_context) {
-    list_viewer_main();
+    await list_viewer_main();
 }
