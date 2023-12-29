@@ -37,7 +37,7 @@ services:
       - OWNER=host
 
   megaplex:
-    image: rabbitmq:3-management
+    image: rabbitmq:3.12-management
     labels:
       project: tactic_aux
     depends_on:
@@ -103,6 +103,7 @@ services:
       - REMOTE_USERNAME=${REMOTE_USERNAME}
       - REMOTE_PASSWORD=${REMOTE_PASSWORD}
       - REMOTE_KEY_FILE=${REMOTE_KEY_FILE}
+      - ANYONE_CAN_REGISTER=${ANYONE_CAN_REGISTER}
     volumes:
       - type: bind
         source: "/var/run/docker.sock"
@@ -184,6 +185,7 @@ services:
     restart: always
     init: true
     container_name: tile_test_container
+    platform: ${PLATFORM}
     labels:
       project: tactic
       my_id: tile_test_container
