@@ -205,20 +205,19 @@ function MainApp(props) {
       "main_id": props.main_id
     });
   }
-  function _update_menus_listener(data) {
-    (0, _communication_react.postWithCallback)("host", "get_tile_types", {
+  async function _update_menus_listener() {
+    let data = await (0, _communication_react.postPromise)("host", "get_tile_types", {
       "user_id": window.user_id
-    }, function (data) {
-      mDispatch({
-        type: "change_multiple_fields",
-        newPartialState: {
-          tile_types: data.tile_types,
-          tile_icon_dict: data.icon_dict
-        }
-      });
-    }), null, props.main_id;
+    }, props.main_id);
+    mDispatch({
+      type: "change_multiple_fields",
+      newPartialState: {
+        tile_types: data.tile_types,
+        tile_icon_dict: data.icon_dict
+      }
+    });
   }
-  function _change_doc_listener(data) {
+  async function _change_doc_listener(data) {
     if (data.main_id == props.main_id) {
       let row_id = data.hasOwnProperty("row_id") ? data.row_id : null;
       let scroll_to_row = data.hasOwnProperty("scroll_to_row") ? data.scroll_to_row : true;
@@ -226,7 +225,7 @@ function MainApp(props) {
       if (mState.table_is_shrunk) {
         _setMainStateValue("table_is_shrunk", false);
       }
-      _handleChangeDoc(data.doc_name, row_id, scroll_to_row, select_row);
+      await _handleChangeDoc(data.doc_name, row_id, scroll_to_row, select_row);
     }
   }
   function initSocket() {
@@ -246,17 +245,17 @@ function MainApp(props) {
         (0, _toaster.doFlash)(data);
       });
     } else {
-      props.tsocket.attachListener("notebook-open", function (data) {
+      props.tsocket.attachListener("notebook-open", async function (data) {
         const the_view = `${$SCRIPT_ROOT}/new_notebook_in_context`;
-        (0, _communication_react.postAjaxPromise)(the_view, {
-          temp_data_id: data.temp_data_id,
-          resource_name: ""
-        }).then(props.handleCreateViewer).catch(data => {
-          errorDrawerFuncs.addErrorDrawerEntry({
-            title: `Error saving list`,
-            content: "message" in data ? data.message : ""
+        try {
+          let createData = await (0, _communication_react.postAjaxPromise)(the_view, {
+            temp_data_id: data.temp_data_id,
+            resource_name: ""
           });
-        });
+          props.handleCreateViewer(createData);
+        } catch (e) {
+          errorDrawerFuncs.addFromError(`Error saving list`, e);
+        }
       });
     }
     props.tsocket.attachListener('table-message', _handleTableMessage);
@@ -332,16 +331,17 @@ function MainApp(props) {
   function _setAltSearchText(the_text) {
     _setMainStateValue("alt_search_text", the_text);
   }
-  function _handleChangeDoc(new_doc_name) {
+  async function _handleChangeDoc(new_doc_name) {
     let row_index = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
     let scroll_to_row = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
     let select_row = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : true;
     _setMainStateValue("show_table_spinner", true);
     if (isFreeform()) {
-      (0, _communication_react.postWithCallback)(props.main_id, "grab_freeform_data", {
-        "doc_name": new_doc_name,
-        "set_visible_doc": true
-      }, function (data) {
+      try {
+        let data = await (0, _communication_react.postPromise)(props.main_id, "grab_freeform_data", {
+          "doc_name": new_doc_name,
+          "set_visible_doc": true
+        }, props.main_id);
         statusFuncs.stopSpinner();
         statusFuncs.clearStatusMessage();
         let new_table_spec = {
@@ -358,14 +358,17 @@ function MainApp(props) {
         pushCallback(() => {
           _setMainStateValue("show_table_spinner", false);
         });
-      }, null, props.main_id);
+      } catch (e) {
+        errorDrawerFuncs.addFromError("Error changing doc", e);
+      }
     } else {
-      const data_dict = {
-        "doc_name": new_doc_name,
-        "row_index": row_index,
-        "set_visible_doc": true
-      };
-      (0, _communication_react.postWithCallback)(props.main_id, "grab_chunk_by_row_index", data_dict, function (data) {
+      try {
+        const data_dict = {
+          "doc_name": new_doc_name,
+          "row_index": row_index,
+          "set_visible_doc": true
+        };
+        let data = await (0, _communication_react.postPromise)(props.main_id, "grab_chunk_by_row_index", data_dict, props.main_id);
         _setStateFromDataObject(data, new_doc_name, () => {
           _setMainStateValue("show_table_spinner", false);
           if (select_row) {
@@ -379,7 +382,9 @@ function MainApp(props) {
             set_table_scroll.current = row_index;
           }
         });
-      }, null, props.main_id);
+      } catch (e) {
+        errorDrawerFuncs.addFromError("Error changing doc", e);
+      }
     }
   }
   function _handleVerticalSplitUpdate(top_height, bottom_height, top_fraction) {
@@ -396,7 +401,8 @@ function MainApp(props) {
       (0, _communication_react.postWithCallback)(props.main_id, "UpdateTableSpec", spec_update, null, null, props.main_id);
     }
   }
-  function _broadcast_event_to_server(event_name, data_dict, callback) {
+  function _broadcast_event_to_server(event_name, data_dict) {
+    let callback = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
     data_dict.main_id = props.main_id;
     data_dict.event_name = event_name;
     if (!("doc_name" in data_dict)) {
@@ -404,22 +410,28 @@ function MainApp(props) {
     }
     (0, _communication_react.postWithCallback)(props.main_id, "distribute_events_stub", data_dict, callback, null, props.main_id);
   }
-  function _tile_command(menu_id) {
+  function _broadcast_event_promise(event_name, data_dict) {
+    data_dict.main_id = props.main_id;
+    data_dict.event_name = event_name;
+    if (!("doc_name" in data_dict)) {
+      data_dict.doc_name = mState.table_spec.current_doc_name;
+    }
+    return (0, _communication_react.postPromise)(props.main_id, "distribute_events_stub", data_dict, props.main_id);
+  }
+  async function _tile_command(menu_id) {
     var existing_tile_names = [];
     for (let tile_entry of tile_list) {
       existing_tile_names.push(tile_entry.tile_name);
     }
-    dialogFuncs.showModal("ModalDialog", {
-      title: "Create " + menu_id,
-      field_title: "New Tile Name",
-      handleSubmit: createNewTile,
-      default_value: menu_id,
-      existing_names: existing_tile_names,
-      checkboxes: [],
-      handleCancel: null,
-      handleClose: dialogFuncs.hideModal
-    });
-    function createNewTile(tile_name) {
+    try {
+      let tile_name = await dialogFuncs.showModalPromise("ModalDialog", {
+        title: "Create " + menu_id,
+        field_title: "New Tile Name",
+        default_value: menu_id,
+        existing_names: existing_tile_names,
+        checkboxes: [],
+        handleClose: dialogFuncs.hideModal
+      });
       statusFuncs.startSpinner();
       statusFuncs.statusMessage("Creating Tile " + tile_name);
       const data_dict = {
@@ -428,24 +440,22 @@ function MainApp(props) {
         user_id: window.user_id,
         parent: props.main_id
       };
-      (0, _communication_react.postWithCallback)(props.main_id, "create_tile", data_dict, function (create_data) {
-        if (create_data.success) {
-          let new_tile_entry = _createTileEntry(tile_name, menu_id, create_data.tile_id, create_data.form_data);
-          tileDispatch({
-            type: "add_at_index",
-            insert_index: tile_list.length,
-            new_item: new_tile_entry
-          });
-          if (updateExportsList.current) updateExportsList.current();
-          statusFuncs.clearStatusMessage();
-          statusFuncs.stopSpinner();
-        } else {
-          errorDrawerFuncs.addErrorDrawerEntry({
-            title: "Error creating tile",
-            content: create_data.message
-          });
-        }
-      }, null, props.main_id);
+      let create_data = await (0, _communication_react.postPromise)(props.main_id, "create_tile", data_dict, props.main_id);
+      let new_tile_entry = _createTileEntry(tile_name, menu_id, create_data.tile_id, create_data.form_data);
+      tileDispatch({
+        type: "add_at_index",
+        insert_index: tile_list.length,
+        new_item: new_tile_entry
+      });
+      if (updateExportsList.current) updateExportsList.current();
+      statusFuncs.clearStatusMessage();
+      statusFuncs.stopSpinner();
+    } catch (e) {
+      if (e != "canceled") {
+        errorDrawerFuncs.addFromError(`Error creating tile}`, e);
+      }
+      statusFuncs.clearStatusMessage();
+      statusFuncs.stopSpinner();
     }
   }
   function create_tile_menus() {
@@ -489,7 +499,6 @@ function MainApp(props) {
   }
 
   // Table doctype-only methods start here
-
   function _getTableBodyHeight(table_available_height) {
     if (!tbody_ref.current) {
       return table_available_height - 50;
@@ -597,7 +606,7 @@ function MainApp(props) {
       column_widths: cwidths
     }, true);
   }
-  function _hideColumnInAll() {
+  async function _hideColumnInAll() {
     let hc_list = [...mState.table_spec.hidden_columns_list];
     let fnames = _filteredColumnNames();
     let cname = mState.selected_column;
@@ -608,11 +617,10 @@ function MainApp(props) {
     const data_dict = {
       "column_name": mState.selected_column
     };
-    _broadcast_event_to_server("HideColumnInAllDocs", data_dict, () => {
-      _updateTableSpec({
-        hidden_columns_list: hc_list,
-        column_widths: cwidths
-      }, false);
+    await _broadcast_event_promise("HideColumnInAllDocs", data_dict, false);
+    _updateTableSpec({
+      hidden_columns_list: hc_list,
+      column_widths: cwidths
     });
   }
   function _unhideAllColumns() {
@@ -623,27 +631,27 @@ function MainApp(props) {
   function _clearTableScroll() {
     set_table_scroll.current = null;
   }
-  function _deleteRow() {
-    (0, _communication_react.postWithCallback)(props.main_id, "delete_row", {
+  async function _deleteRow() {
+    await (0, _communication_react.postPromise)(props.main_id, "delete_row", {
       "document_name": mState.table_spec.current_doc_name,
       "index": mState.selected_row
-    }, null);
+    });
   }
-  function _insertRow(index) {
-    (0, _communication_react.postWithCallback)(props.main_id, "insert_row", {
+  async function _insertRow(index) {
+    await (0, _communication_react.postPromise)(props.main_id, "insert_row", {
       "document_name": mState.table_spec.current_doc_name,
       "index": index,
       "row_dict": {}
-    }, null, null, props.main_id);
+    }, props.main_id);
   }
-  function _duplicateRow() {
-    (0, _communication_react.postWithCallback)(props.main_id, "insert_row", {
+  async function _duplicateRow() {
+    await (0, _communication_react.postPromise)(props.main_id, "insert_row", {
       "document_name": mState.table_spec.current_doc_name,
       "index": mState.selected_row,
       "row_dict": mState.data_text[mState.selected_row]
-    }, null, null, props.main_id);
+    }, props.main_id);
   }
-  function _deleteColumn() {
+  async function _deleteColumn() {
     let delete_in_all = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
     let fnames = _filteredColumnNames();
     let cname = mState.selected_column;
@@ -662,34 +670,38 @@ function MainApp(props) {
       "doc_name": mState.table_spec.current_doc_name,
       "all_docs": delete_in_all
     };
-    (0, _communication_react.postWithCallback)(props.main_id, "DeleteColumn", data_dict, null, null, props.main_id);
+    await (0, _communication_react.postPromise)(props.main_id, "DeleteColumn", data_dict, props.main_id);
   }
-  function _addColumn() {
+  async function _addColumn() {
     let add_in_all = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
-    let title = add_in_all ? "Create Column All Documents" : "Create Column This Document";
-    dialogFuncs.showModal("ModalDialog", {
-      title: title,
-      field_title: "New Column Name",
-      handleSubmit: new_name => {
-        let cwidth = (0, _blueprint_table.compute_added_column_width)(new_name);
-        _updateTableSpec({
-          column_names: [...mState.table_spec.column_names, new_name],
-          column_widths: [...mState.table_spec.column_widths, cwidth]
-        }, false);
-        const data_dict = {
-          "column_name": new_name,
-          "doc_name": mState.table_spec.current_doc_name,
-          "column_width": cwidth,
-          "all_docs": add_in_all
-        };
-        _broadcast_event_to_server("CreateColumn", data_dict);
-      },
-      default_value: "newcol",
-      existing_names: mState.table_spec.column_names,
-      checkboxes: [],
-      handleCancel: null,
-      handleClose: dialogFuncs.hideModal
-    });
+    try {
+      let title = add_in_all ? "Create Column All Documents" : "Create Column This Document";
+      let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
+        title: title,
+        field_title: "New Column Name",
+        default_value: "newcol",
+        existing_names: mState.table_spec.column_names,
+        checkboxes: [],
+        handleClose: dialogFuncs.hideModal
+      });
+      let cwidth = (0, _blueprint_table.compute_added_column_width)(new_name);
+      _updateTableSpec({
+        column_names: [...mState.table_spec.column_names, new_name],
+        column_widths: [...mState.table_spec.column_widths, cwidth]
+      }, false);
+      const data_dict = {
+        "column_name": new_name,
+        "doc_name": mState.table_spec.current_doc_name,
+        "column_width": cwidth,
+        "all_docs": add_in_all
+      };
+      _broadcast_event_to_server("CreateColumn", data_dict);
+    } catch (e) {
+      if (e != "canceled") {
+        errorDrawerFuncs.addFromError(`Error adding column`, e);
+      }
+      return;
+    }
   }
   function _setStateFromDataObject(data, doc_name) {
     let func = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
@@ -709,124 +721,113 @@ function MainApp(props) {
     });
     pushCallback(func);
   }
-  function _initiateDataGrab(row_index) {
-    _grabNewChunkWithRow(row_index);
+  async function _initiateDataGrab(row_index) {
+    await _grabNewChunkWithRow(row_index);
   }
-  function _grabNewChunkWithRow(row_index) {
-    (0, _communication_react.postWithCallback)(props.main_id, "grab_chunk_by_row_index", {
-      doc_name: mState.table_spec.current_doc_name,
-      row_index: row_index
-    }, function (data) {
+  async function _grabNewChunkWithRow(row_index) {
+    try {
+      let data = await (0, _communication_react.postPromise)(props.main_id, "grab_chunk_by_row_index", {
+        doc_name: mState.table_spec.current_doc_name,
+        row_index: row_index
+      }, props.main_id);
       mDispatch({
         type: "update_data_row_dict",
         new_data_row_dict: data.data_row_dict
       });
-    }, null, props.main_id);
-  }
-  function _removeCollection() {
-    const result_dict = {
-      "new_collection_name": null,
-      "main_id": props.main_id
-    };
-    (0, _communication_react.postWithCallback)(props.main_id, "remove_collection_from_project", result_dict, removeCollectionDone, null, props.main_id);
-    function removeCollectionDone(data_object) {
-      if (data_object.success) {
-        let table_spec = {
-          current_doc_name: ""
-        };
-        mDispatch({
-          type: "change_multiple_fields",
-          newPartialState: {
-            doc_names: [],
-            table_is_shrunk: true,
-            short_collection_name: data_object.short_collection_name,
-            doc_type: "none",
-            table_spec: table_spec
-          }
-        });
-        statusFuncs.stopSpinner();
-      } else {
-        statusFuncs.clearStatusMessage();
-        statusFuncs.stopSpinner();
-        errorDrawerFuncs.addErrorDrawerEntry({
-          title: "Error removing collection",
-          content: data_object.message
-        });
-      }
+    } catch (e) {
+      errorDrawerFuncs.addFromError("Error grabbing data chunk", e);
     }
   }
-  function _changeCollection() {
-    statusFuncs.startSpinner();
-    (0, _communication_react.postWithCallback)("host", "get_collection_names", {
-      "user_id": user_id
-    }, function (data) {
-      dialogFuncs.showModal("SelectDialog", {
+  async function _removeCollection() {
+    try {
+      const result_dict = {
+        "new_collection_name": null,
+        "main_id": props.main_id
+      };
+      let data_object = await (0, _communication_react.postPromise)(props.main_id, "remove_collection_from_project", result_dict, props.main_id);
+      let table_spec = {
+        current_doc_name: ""
+      };
+      mDispatch({
+        type: "change_multiple_fields",
+        newPartialState: {
+          doc_names: [],
+          table_is_shrunk: true,
+          short_collection_name: data_object.short_collection_name,
+          doc_type: "none",
+          table_spec: table_spec
+        }
+      });
+    } catch (e) {
+      errorDrawerFuncs.addFromError("Error removing collection", e);
+    }
+  }
+  async function _changeCollection() {
+    try {
+      statusFuncs.startSpinner();
+      let data = await (0, _communication_react.postPromise)("host", "get_collection_names", {
+        "user_id": user_id
+      }, props.main_id);
+      let new_collection_name = await dialogFuncs.showModalPromise("SelectDialog", {
         title: "Select New Collection",
         select_label: "New Collection",
         cancel_text: "Cancel",
         submit_text: "Submit",
-        handleSubmit: changeTheCollection,
         option_list: data.collection_names,
         handleClose: dialogFuncs.hideModal
       });
-    }, null, props.main_id);
-    function changeTheCollection(new_collection_name) {
       const result_dict = {
         "new_collection_name": new_collection_name,
         "main_id": props.main_id
       };
-      (0, _communication_react.postWithCallback)(props.main_id, "change_collection", result_dict, changeCollectionResult, null, props.main_id);
-      function changeCollectionResult(data_object) {
-        if (data_object.success) {
-          if (!window.in_context && !_cProp("is_project")) document.title = new_collection_name;
-          window._collection_name = data_object.collection_name;
-          let table_spec;
-          if (data_object.doc_type == "table") {
-            table_spec = {
-              column_names: data_object.table_spec.header_list,
-              column_widths: data_object.table_spec.column_widths,
-              cell_backgrounds: data_object.table_spec.cell_backgrounds,
-              hidden_columns_list: data_object.table_spec.hidden_columns_list,
-              current_doc_name: data_object.doc_names[0]
-            };
-          } else if (data_object.doc_type == "freeform") {
-            table_spec = {
-              current_doc_name: data_object.doc_names[0]
-            };
-          } else {
-            table_spec = {
-              current_doc_name: ""
-            };
-          }
-          mDispatch({
-            type: "change_multiple_fields",
-            newPartialState: {
-              doc_names: data_object.doc_names,
-              table_is_shrunk: data_object.doc_type == "none",
-              short_collection_name: data_object.short_collection_name,
-              doc_type: data_object.doc_type,
-              table_spec: table_spec
-            }
-          });
-          pushCallback(() => {
-            _handleChangeDoc(data_object.doc_names[0]);
-          });
-          statusFuncs.stopSpinner();
-        } else {
-          statusFuncs.clearStatusMessage();
-          statusFuncs.stopSpinner();
-          errorDrawerFuncs.addErrorDrawerEntry({
-            title: "Error changing collection",
-            content: data_object.message
-          });
-        }
+      let data_object = await (0, _communication_react.postPromise)(props.main_id, "change_collection", result_dict, props.main_id);
+      if (!window.in_context && !_cProp("is_project")) document.title = new_collection_name;
+      window._collection_name = data_object.collection_name;
+      let table_spec;
+      if (data_object.doc_type == "table") {
+        table_spec = {
+          column_names: data_object.table_spec.header_list,
+          column_widths: data_object.table_spec.column_widths,
+          cell_backgrounds: data_object.table_spec.cell_backgrounds,
+          hidden_columns_list: data_object.table_spec.hidden_columns_list,
+          current_doc_name: data_object.doc_names[0]
+        };
+      } else if (data_object.doc_type == "freeform") {
+        table_spec = {
+          current_doc_name: data_object.doc_names[0]
+        };
+      } else {
+        table_spec = {
+          current_doc_name: ""
+        };
       }
+      mDispatch({
+        type: "change_multiple_fields",
+        newPartialState: {
+          doc_names: data_object.doc_names,
+          table_is_shrunk: data_object.doc_type == "none",
+          short_collection_name: data_object.short_collection_name,
+          doc_type: data_object.doc_type,
+          table_spec: table_spec
+        }
+      });
+      pushCallback(() => {
+        _handleChangeDoc(data_object.doc_names[0]);
+      });
+      statusFuncs.clearStatusMessage();
+      statusFuncs.stopSpinner();
+    } catch (e) {
+      if (e != "canceled") {
+        errorDrawerFuncs.addFromError(`Error changing collection`, e);
+      }
+      statusFuncs.clearStatusMessage();
+      statusFuncs.stopSpinner();
     }
   }
   function _updateDocList(doc_names, visible_doc) {
     _setMainStateValue("doc_names", doc_names);
-    pushCallback(() => {
-      _handleChangeDoc(visible_doc);
+    pushCallback(async () => {
+      await _handleChangeDoc(visible_doc);
     });
   }
   function get_hp_height() {
@@ -965,11 +966,11 @@ function MainApp(props) {
     is_notebook: props.is_notebook,
     is_juptyer: props.is_jupyter,
     deleteRow: _deleteRow,
-    insertRowBefore: () => {
-      _insertRow(mState.selected_row);
+    insertRowBefore: async () => {
+      await _insertRow(mState.selected_row);
     },
-    insertRowAfter: () => {
-      _insertRow(mState.selected_row + 1);
+    insertRowAfter: async () => {
+      await _insertRow(mState.selected_row + 1);
     },
     duplicateRow: _duplicateRow,
     selected_row: mState.selected_row,

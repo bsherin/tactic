@@ -88,7 +88,11 @@ function postPromise(dest_id, task_type, task_data, special_main_id=null) {
                 resolve(data)
             }
         }
-        postWithCallback(dest_id, task_type, task_data, tentResolve, reject, special_main_id)
+        function errorCallback(qXHR, textStatus, errorThrown){
+            reject({success: false, message: errorThrown,
+                title: "Post Ajax Failure: {}".format(textStatus)})
+        }
+        postWithCallback(dest_id, task_type, task_data, tentResolve, errorCallback, special_main_id)
     })
 }
 

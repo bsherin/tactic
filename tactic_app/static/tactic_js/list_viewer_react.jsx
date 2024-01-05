@@ -262,7 +262,7 @@ function ListViewerApp(props) {
         };
 
         try {
-            let data = await postAjaxPromise("update_list", result_dict, update_success);
+            let data = await postAjaxPromise("update_list", result_dict);
             savedContent.current = new_list_as_string;
             savedTags.current = local_tags;
             savedNotes.current = local_notes;
@@ -280,30 +280,28 @@ function ListViewerApp(props) {
         if (!am_selected()) {
             return false
         }
-        statusFuncs.startSpinner();
         try {
-            let data = await postPromise("host", "get_list_names", {"user_id": window.user_id}, props.main_id);
-            let new_name = dialogFuncs.showModalPromise("ModalDialog", {
+            let ln_result = await postPromise("host", "get_list_names", {"user_id": window.user_id}, props.main_id);
+            let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
                 title: "Save List As",
                 field_title: "New List Name",
                 default_value: "NewList",
-                existing_names: data.list_names,
+                existing_names: ln_result.list_names,
                 checkboxes: [],
                 handleClose: dialogFuncs.hideModal,
-                })
+                });
             const result_dict = {
                 "new_res_name": new_name,
                 "res_to_copy": _cProp("resource_name")
             };
             let data = await postAjaxPromise('/create_duplicate_list', result_dict);
             _setResourceNameState(new_name, () => {
-                _saveMe()
+                _saveMe();
             })
         }
         catch(e) {
             if (e != "canceled") {
                 errorDrawerFuncs.addFromError(`Error saving listy`, e);
-                statusFuncs.stopSpinner();
             }
         }
     }
@@ -413,9 +411,9 @@ async function list_viewer_main() {
 
     let target = window.is_repository ? "repository_view_list_in_context" : "view_list_in_context";
     let data = await postAjaxPromise(target, {"resource_name": window.resource_name});
-    list_viewer_props(data, null, gotProps, null);
+    list_viewer_props(data, null, gotProps);
 }
 
 if (!window.in_context) {
-    await list_viewer_main();
+    list_viewer_main().then();
 }

@@ -31,8 +31,7 @@ const dialogDict = {ModalDialog, PresentationDialog, ReportDialog,
 
 function withDialogs(WrappedComponent) {
 
-    function ModalFunc(props) {
-        // When state was dealt with in this way updates weren't getting batched and
+    function ModalFunc(props) {        // When state was dealt with in this way updates weren't getting batched and
         // that was causinga ll sorts of problems
         const [state, setState] = useState({
             modalType: null,
@@ -47,7 +46,7 @@ function withDialogs(WrappedComponent) {
                 keyCounter: state.keyCounter + 1
             })
         }
-        
+
         function showModalPromise(modalType, newDialogProps) {
             return new Promise(function(resolve, reject) {
                 newDialogProps.handleSubmit = resolve;
@@ -83,6 +82,7 @@ function withDialogs(WrappedComponent) {
                 </div>
             </Fragment>
         )
+
     }
     return memo(ModalFunc)
 }
@@ -139,7 +139,12 @@ function ModalDialog(props) {
             msg = "That name already exists";
             set_warning_text(msg)
         } else {
-            props.handleSubmit(current_value_ref.current, checkbox_states);
+            if ((props.checkboxes != null) && (props.checkboxes.length != 0)) {
+                props.handleSubmit([current_value_ref.current, checkbox_states]);
+            }
+            else {
+                props.handleSubmit(current_value_ref.current);
+            }
             props.handleClose();
         }
     }
@@ -271,9 +276,9 @@ function PresentationDialog(props) {
         }
         set_show(false);
         props.handleSubmit(
-            use_dark_theme,
+            [use_dark_theme,
             save_as_collection,
-            collection_name);
+            collection_name]);
         props.handleClose();
     }
 
@@ -405,11 +410,11 @@ function ReportDialog(props) {
         }
         set_show(false);
         props.handleSubmit(
-            collapsible,
+            [collapsible,
             include_summaries,
             use_dark_theme,
             save_as_collection,
-            collection_name);
+            collection_name]);
         props.handleClose();
     }
 

@@ -122,7 +122,11 @@ function ModalDialog(props) {
       msg = "That name already exists";
       set_warning_text(msg);
     } else {
-      props.handleSubmit(current_value_ref.current, checkbox_states);
+      if (props.checkboxes != null && props.checkboxes.length != 0) {
+        props.handleSubmit([current_value_ref.current, checkbox_states]);
+      } else {
+        props.handleSubmit(current_value_ref.current);
+      }
       props.handleClose();
     }
   }
@@ -238,7 +242,7 @@ function PresentationDialog(props) {
       }
     }
     set_show(false);
-    props.handleSubmit(use_dark_theme, save_as_collection, collection_name);
+    props.handleSubmit([use_dark_theme, save_as_collection, collection_name]);
     props.handleClose();
   }
   function _cancelHandler() {
@@ -354,7 +358,7 @@ function ReportDialog(props) {
       }
     }
     set_show(false);
-    props.handleSubmit(collapsible, include_summaries, use_dark_theme, save_as_collection, collection_name);
+    props.handleSubmit([collapsible, include_summaries, use_dark_theme, save_as_collection, collection_name]);
     props.handleClose();
   }
   function _cancelHandler() {

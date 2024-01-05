@@ -54,31 +54,24 @@ function ProjectMenu(props) {
       console_width_fraction: props.mState.console_width_fraction
     };
   }
-  function _saveProjectAs() {
+  async function _saveProjectAs() {
     statusFuncs.startSpinner();
-    (0, _communication_react.postWithCallback)("host", "get_project_names", {
+    let data = await (0, _communication_react.postPromise)("host", "get_project_names", {
       "user_id": window.user_id
-    }, function (data) {
-      let checkboxes = [{
-        checkname: "lite_save",
-        checktext: "create lite save"
-      }];
-      dialogFuncs.showModal("ModalDialog", {
+    }, props.main_id);
+    let checkboxes = [{
+      checkname: "lite_save",
+      checktext: "create lite save"
+    }];
+    try {
+      let [new_name, checkbox_states] = await dialogFuncs.showModalPromise("ModalDialog", {
         title: "Save Project As",
         field_title: "New Project Name",
-        handleSubmit: CreateNewProject,
         default_value: "NewProject",
         existing_names: data.project_names,
         checkboxes: checkboxes,
-        handleCancel: doCancel,
         handleClose: dialogFuncs.hideModal
       });
-    }, null, props.main_id);
-    function doCancel() {
-      statusFuncs.stopSpinner();
-    }
-    function CreateNewProject(new_name, checkbox_states) {
-      //let console_node = cleanse_bokeh(document.getElementById("console"));
       const result_dict = {
         "project_name": new_name,
         "main_id": props.main_id,
@@ -87,71 +80,61 @@ function ProjectMenu(props) {
         "lite_save": checkbox_states["lite_save"]
       };
       result_dict.interface_state = save_state;
+      let data_object;
       if (props.is_notebook) {
-        (0, _communication_react.postWithCallback)(props.main_id, "save_new_notebook_project", result_dict, save_as_success, errorDrawerFuncs.postAjaxFailure, props.main_id);
+        await (0, _communication_react.postPromise)(props.main_id, "save_new_notebook_project", result_dict, props.main_id);
       } else {
         result_dict["purgetiles"] = true;
-        (0, _communication_react.postWithCallback)(props.main_id, "save_new_project", result_dict, save_as_success, errorDrawerFuncs.postAjaxFailure, props.main_id);
+        await (0, _communication_react.postPromise)(props.main_id, "save_new_project", result_dict, props.main_id);
       }
-      function save_as_success(data_object) {
-        if (data_object["success"]) {
-          props.setProjectName(new_name, () => {
-            if (!window.in_context) {
-              document.title = new_name;
-            }
-            statusFuncs.clearStatusMessage();
-            props.updateLastSave();
-            statusFuncs.stopSpinner();
-            statusFuncs.statusMessage(`Saved project ${new_name}`);
-          });
-        } else {
-          statusFuncs.clearStatusMessage();
-          statusFuncs.stopSpinner();
-          errorDrawerFuncs.addErrorDrawerEntry({
-            title: `Error saving project`,
-            content: "message" in data_object ? data_object.message : ""
-          });
+      props.setProjectName(new_name, () => {
+        if (!window.in_context) {
+          document.title = new_name;
         }
-      }
-    }
-  }
-  function _saveProject(lite_save) {
-    // let console_node = cleanse_bokeh(document.getElementById("console"));
-    const result_dict = {
-      main_id: props.main_id,
-      project_name: props.project_name,
-      lite_save: lite_save
-    };
-    result_dict.interface_state = save_state;
-    statusFuncs.startSpinner();
-    (0, _communication_react.postWithCallback)(props.main_id, "update_project", result_dict, updateSuccess, errorDrawerFuncs.postAjaxFailure, props.main_id);
-    function updateSuccess(data) {
-      if (data.success) {
-        props.updateLastSave();
-        statusFuncs.statusMessage(`Saved project ${props.project_name}`);
-      } else {
-        errorDrawerFuncs.addErrorDrawerEntry({
-          title: `Error saving project`,
-          content: "message" in data ? data.message : ""
-        });
         statusFuncs.clearStatusMessage();
+        props.updateLastSave();
+        statusFuncs.stopSpinner();
+        statusFuncs.statusMessage(`Saved project ${new_name}`);
+      });
+    } catch (e) {
+      if (e != "canceled") {
+        let title = "title" in e ? e.title : "Error saving project";
+        errorDrawerFuncs.addFromError(title, e);
       }
+      statusFuncs.clearStatusMessage();
       statusFuncs.stopSpinner();
     }
   }
-  function _exportAsPresentation() {
-    (0, _communication_react.postWithCallback)("host", "get_collection_names", {
-      "user_id": user_id
-    }, function (data) {
-      dialogFuncs.showModal("PresentationDialog", {
-        handleSubmit: ExportPresentation,
+  async function _saveProject(lite_save) {
+    try {
+      const result_dict = {
+        main_id: props.main_id,
+        project_name: props.project_name,
+        lite_save: lite_save
+      };
+      result_dict.interface_state = save_state;
+      statusFuncs.startSpinner();
+      await (0, _communication_react.postPromise)(props.main_id, "update_project", result_dict, props.main_id);
+      props.updateLastSave();
+      statusFuncs.statusMessage(`Saved project ${props.project_name}`);
+      statusFuncs.stopSpinner();
+    } catch (e) {
+      let title = "title" in e ? e.title : "Error saving project";
+      errorDrawerFuncs.addFromError(title, e);
+      statusFuncs.clearStatusMessage();
+      statusFuncs.stopSpinner();
+    }
+  }
+  async function _exportAsPresentation() {
+    try {
+      let data = await (0, _communication_react.postPromise)("host", "get_collection_names", {
+        "user_id": user_id
+      }, props.main_id);
+      let [use_dark_theme, save_as_collection, collection_name] = await dialogFuncs.showModalPromise("PresentationDialog", {
         default_value: "NewPresentation",
         existing_names: data.collection_names,
-        handleCancel: null,
         handleClose: dialogFuncs.hideModal
       });
-    }, null, props.main_id);
-    function ExportPresentation(use_dark_theme, save_as_collection, collection_name) {
       var cell_list = [];
       for (let entry of props.console_items) {
         let new_entry = {};
@@ -191,37 +174,30 @@ function ProjectMenu(props) {
         "main_id": props.main_id,
         "cell_list": cell_list
       };
-      (0, _communication_react.postWithCallback)(props.main_id, "export_as_presentation", result_dict, save_as_success, errorDrawerFuncs.postAjaxFailure, props.main_id);
-      function save_as_success(data_object) {
-        statusFuncs.clearStatusMessage();
-        if (data_object.success) {
-          if (save_as_collection) {
-            statusFuncs.statusMessage("Exported presentation");
-          } else {
-            window.open(`${$SCRIPT_ROOT}/load_temp_page/${data_object["temp_id"]}`);
-          }
-        } else {
-          errorDrawerFuncs.addErrorDrawerEntry({
-            title: `Error exporting presentation`,
-            content: "message" in data_object ? data_object.message : ""
-          });
-        }
+      let data_object = await (0, _communication_react.postPromise)(props.main_id, "export_as_presentation", result_dict, props.main_id);
+      statusFuncs.clearStatusMessage();
+      if (save_as_collection) {
+        statusFuncs.statusMessage("Exported presentation");
+      } else {
+        window.open(`${$SCRIPT_ROOT}/load_temp_page/${data_object["temp_id"]}`);
+      }
+    } catch (e) {
+      if (e != "canceled") {
+        let title = "title" in e ? e.title : "Error exporting presentation";
+        errorDrawerFuncs.addFromError(title, e);
       }
     }
   }
-  function _exportAsReport() {
-    (0, _communication_react.postWithCallback)("host", "get_collection_names", {
-      "user_id": user_id
-    }, function (data) {
-      dialogFuncs.showModal("ReportDialog", {
-        handleSubmit: ExportRport,
+  async function _exportAsReport() {
+    try {
+      let data = await (0, _communication_react.postPromise)("host", "get_collection_names", {
+        "user_id": user_id
+      }, props.main_id);
+      let [collapsible, include_summaries, use_dark_theme, save_as_collection, collection_name] = await dialogFuncs.showModalPromise("ReportDialog", {
         default_value: "NewReport",
         existing_names: data.collection_names,
-        handleCancel: null,
         handleClose: dialogFuncs.hideModal
       });
-    }, null, props.main_id);
-    function ExportRport(collapsible, include_summaries, use_dark_theme, save_as_collection, collection_name) {
       var cell_list = [];
       for (let entry of props.console_items) {
         let new_entry = {};
@@ -261,45 +237,37 @@ function ProjectMenu(props) {
         "main_id": props.main_id,
         "cell_list": cell_list
       };
-      (0, _communication_react.postWithCallback)(props.main_id, "export_as_report", result_dict, save_as_success, errorDrawerFuncs.postAjaxFailure, props.main_id);
-      function save_as_success(data_object) {
-        statusFuncs.clearStatusMessage();
-        if (data_object.success) {
-          if (save_as_collection) {
-            data_object.alert_type = "alert-success";
-            data_object.timeout = 2000;
-            statusFuncs.statusMessage("Exported report");
-          } else {
-            window.open(`${$SCRIPT_ROOT}/load_temp_page/${data_object["temp_id"]}`);
-          }
-        } else {
-          errorDrawerFuncs.addErrorDrawerEntry({
-            title: `Error exporting report`,
-            content: "message" in data_object ? data_object.message : ""
-          });
-        }
+      let data_object = await (0, _communication_react.postPromise)(props.main_id, "export_as_report", result_dict, props.main_id);
+      statusFuncs.clearStatusMessage();
+      if (save_as_collection) {
+        data_object.alert_type = "alert-success";
+        data_object.timeout = 2000;
+        statusFuncs.statusMessage("Exported report");
+      } else {
+        window.open(`${$SCRIPT_ROOT}/load_temp_page/${data_object["temp_id"]}`);
       }
+    } catch (e) {
+      if (e != "canceled") {
+        let title = "title" in e ? e.title : "Error exporting report";
+        errorDrawerFuncs.addFromError(title, e);
+      }
+      statusFuncs.clearStatusMessage();
     }
   }
-  function _exportAsJupyter() {
+  async function _exportAsJupyter() {
     statusFuncs.startSpinner();
-    (0, _communication_react.postWithCallback)("host", "get_project_names", {
-      "user_id": user_id
-    }, function (data) {
-      let checkboxes;
-      // noinspection JSUnusedAssignment
-      dialogFuncs.showModal("ModalDialog", {
+    try {
+      let data = await (0, _communication_react.postPromise)("host", "get_project_names", {
+        "user_id": user_id
+      }, props.main_id);
+      let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
         title: "Export Notebook in Jupyter Format",
         field_title: "New Project Name",
-        handleSubmit: ExportJupyter,
         default_value: "NewJupyter",
         existing_names: data.project_names,
         checkboxes: [],
-        handleCancel: null,
         handleClose: dialogFuncs.hideModal
       });
-    }, null, props.main_id);
-    function ExportJupyter(new_name) {
       var cell_list = [];
       for (let entry of props.console_items) {
         let new_cell = {};
@@ -315,58 +283,55 @@ function ProjectMenu(props) {
         "main_id": props.main_id,
         "cell_list": cell_list
       };
-      (0, _communication_react.postWithCallback)(props.main_id, "export_to_jupyter_notebook", result_dict, save_as_success, errorDrawerFuncs.postAjaxFailure, props.main_id);
-      function save_as_success(data_object) {
-        statusFuncs.clearStatusMessage();
-        if (data_object.success) {
-          statusFuncs.statusMessage("Exported jupyter notebook");
-        } else {
-          errorDrawerFuncs.addErrorDrawerEntry({
-            title: `Error exporting jupyter notebook`,
-            content: "message" in data_object ? data_object.message : ""
-          });
-        }
-        statusFuncs.stopSpinner();
+      let data_object = await (0, _communication_react.postPromise)(props.main_id, "export_to_jupyter_notebook", result_dict, props.main_id);
+      statusFuncs.statusMessage("Exported jupyter notebook");
+      statusFuncs.stopSpinner();
+    } catch (e) {
+      if (e != "canceled") {
+        let title = "title" in e ? e.title : "Error exporting as Jupyter notebook";
+        errorDrawerFuncs.addFromError(title, e);
       }
+      statusFuncs.clearStatusMessage();
+      statusFuncs.stopSpinner();
     }
   }
-  function _exportDataTable() {
-    (0, _communication_react.postWithCallback)("host", "get_collection_names", {
-      "user_id": user_id
-    }, function (data) {
-      dialogFuncs.showModal("ModalDialog", {
+  async function _exportDataTable() {
+    try {
+      let data = await (0, _communication_react.postPromise)("host", "get_collection_names", {
+        "user_id": user_id
+      });
+      let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
         title: "Export Data",
         field_title: "New Collection NameName",
-        handleSubmit: new_name => {
-          const result_dict = {
-            "export_name": new_name,
-            "main_id": props.main_id,
-            "user_id": window.user_id
-          };
-          $.ajax({
-            url: $SCRIPT_ROOT + "/export_data",
-            contentType: 'application/json',
-            type: 'POST',
-            async: true,
-            data: JSON.stringify(result_dict),
-            dataType: 'json'
-          });
-        },
         default_value: "new collection",
         existing_names: data.collection_names,
         checkboxes: [],
-        handleCancel: null,
         handleClose: dialogFuncs.hideModal
       });
-    });
+      const result_dict = {
+        "export_name": new_name,
+        "main_id": props.main_id,
+        "user_id": window.user_id
+      };
+      await (0, _communication_react.postAjaxPromise)("export_data", result_dict);
+      statusFuncs.statusMessage("Exported table as collection");
+    } catch (e) {
+      if (e != "canceled") {
+        errorDrawerFuncs.addFromError("Error exporting table", e);
+      }
+    }
   }
-  function _consoleToNotebook() {
-    const result_dict = {
-      "main_id": props.main_id,
-      "console_items": props.console_items,
-      "user_id": window.user_id
-    };
-    (0, _communication_react.postWithCallback)(props.main_id, "console_to_notebook", result_dict, null, null, props.main_id);
+  async function _consoleToNotebook() {
+    try {
+      const result_dict = {
+        "main_id": props.main_id,
+        "console_items": props.console_items,
+        "user_id": window.user_id
+      };
+      await (0, _communication_react.postPromise)(props.main_id, "console_to_notebook", result_dict, props.main_id);
+    } catch (e) {
+      errorDrawerFuncs.addFromError("Error converting to notebook", e);
+    }
   }
   function menu_items() {
     let cc_name;
@@ -385,14 +350,14 @@ function ProjectMenu(props) {
     }, {
       name_text: "Save",
       icon_name: "saved",
-      click_handler: () => {
-        _saveProject(false);
+      click_handler: async () => {
+        await _saveProject(false);
       }
     }, {
       name_text: "Save Lite",
       icon_name: "saved",
-      click_handler: () => {
-        _saveProject(true);
+      click_handler: async () => {
+        await _saveProject(true);
       }
     }, {
       name_text: "divider1",
@@ -463,76 +428,73 @@ exports.ProjectMenu = ProjectMenu = /*#__PURE__*/(0, _react.memo)(ProjectMenu);
 function DocumentMenu(props) {
   const dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   const statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
-  function _newDocument() {
-    statusFuncs.startSpinner();
-    dialogFuncs.showModal("ModalDialog", {
-      title: "New Document",
-      field_title: "New Document Name",
-      handleSubmit: doNew,
-      default_value: props.currentDoc,
-      existing_names: props.documentNames,
-      checkboxes: [],
-      handleCancel: doCancel,
-      handleClose: dialogFuncs.hideModal
-    });
-    function doCancel() {
-      statusFuncs.stopSpinner();
-    }
-    function doNew(new_name) {
-      (0, _communication_react.postWithCallback)(props.main_id, "new_blank_document", {
+  async function _newDocument() {
+    try {
+      statusFuncs.startSpinner();
+      let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
+        title: "New Document",
+        field_title: "New Document Name",
+        default_value: props.currentDoc,
+        existing_names: props.documentNames,
+        checkboxes: [],
+        handleClose: dialogFuncs.hideModal
+      });
+      await (0, _communication_react.postPromise)(props.main_id, "new_blank_document", {
         model_document_name: props.currentDoc,
         new_document_name: new_name
-      }, result => {
-        statusFuncs.stopSpinner();
-      }, null, props.main_id);
-    }
-  }
-  function _duplicateDocument() {
-    statusFuncs.startSpinner();
-    dialogFuncs.showModal("ModalDialog", {
-      title: "Duplicate Document",
-      field_title: "New Document Name",
-      handleSubmit: doDuplicate,
-      default_value: props.currentDoc,
-      existing_names: props.documentNames,
-      checkboxes: [],
-      handleCancel: doCancel,
-      handleClose: dialogFuncs.hideModal
-    });
-    function doCancel() {
+      }, props.main_id);
+      statusFuncs.stopSpinner();
+    } catch (e) {
+      if (e != "canceled") {
+        errorDrawerFuncs.addFromError(`Error adding new document`, e);
+      }
       statusFuncs.stopSpinner();
     }
-    function doDuplicate(new_name) {
-      (0, _communication_react.postWithCallback)(props.main_id, "duplicate_document", {
+  }
+  async function _duplicateDocument() {
+    try {
+      statusFuncs.startSpinner();
+      let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
+        title: "Duplicate Document",
+        field_title: "New Document Name",
+        default_value: props.currentDoc,
+        existing_names: props.documentNames,
+        checkboxes: [],
+        handleClose: dialogFuncs.hideModal
+      });
+      await (0, _communication_react.postPromise)(props.main_id, "duplicate_document", {
         original_document_name: props.currentDoc,
         new_document_name: new_name
-      }, result => {
-        statusFuncs.stopSpinner();
-      }, null, props.main_id);
-    }
-  }
-  function _renameDocument() {
-    statusFuncs.startSpinner();
-    dialogFuncs.showModal("ModalDialog", {
-      title: "Rename Document",
-      field_title: "New Document Name",
-      handleSubmit: doRename,
-      default_value: props.currentDoc,
-      existing_names: props.documentNames,
-      checkboxes: [],
-      handleCancel: doCancel,
-      handleClose: dialogFuncs.hideModal
-    });
-    function doCancel() {
+      }, props.main_id);
+      statusFuncs.stopSpinner();
+    } catch (e) {
+      if (e != "canceled") {
+        errorDrawerFuncs.addFromError(`Error duplicating document`, e);
+      }
       statusFuncs.stopSpinner();
     }
-    function doRename(new_name) {
-      (0, _communication_react.postWithCallback)(props.main_id, "rename_document", {
+  }
+  async function _renameDocument() {
+    try {
+      statusFuncs.startSpinner();
+      let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
+        title: "Rename Document",
+        field_title: "New Document Name",
+        default_value: props.currentDoc,
+        existing_names: props.documentNames,
+        checkboxes: [],
+        handleClose: dialogFuncs.hideModal
+      });
+      await (0, _communication_react.postPromise)(props.main_id, "rename_document", {
         old_document_name: props.currentDoc,
         new_document_name: new_name
-      }, result => {
-        statusFuncs.stopSpinner();
-      }, null, props.main_id);
+      }, props.main_id);
+      statusFuncs.stopSpinner();
+    } catch (e) {
+      if (e != "canceled") {
+        errorDrawerFuncs.addFromError(`Error renaming document`, e);
+      }
+      statusFuncs.stopSpinner();
     }
   }
   const option_dict = {
