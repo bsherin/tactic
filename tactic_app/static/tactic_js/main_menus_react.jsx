@@ -1,14 +1,14 @@
-
 import React from "react";
 import {memo, useContext} from "react";
 import PropTypes from 'prop-types';
 import markdownIt from 'markdown-it'
 import 'markdown-it-latex/dist/index.css'
 import markdownItLatex from 'markdown-it-latex'
+
 const mdi = markdownIt({html: true});
 mdi.use(markdownItLatex);
 
-import {postWithCallback} from "./communication_react"
+import {postPromise, postAjaxPromise} from "./communication_react"
 import {MenuComponent, ToolMenu} from "./menu_utilities";
 
 import {DialogContext} from "./modal_react";
@@ -25,7 +25,7 @@ function ProjectMenu(props) {
 
     var save_state;
     if (props.is_notebook)
-         save_state = {
+        save_state = {
             console_items: props.console_items,
             show_exports_pane: props.mState.show_exports_pane,
             console_width_fraction: props.mState.console_width_fraction
@@ -45,28 +45,20 @@ function ProjectMenu(props) {
         };
     }
 
-    function _saveProjectAs() {
+    async function _saveProjectAs() {
         statusFuncs.startSpinner();
-        postWithCallback("host", "get_project_names", {"user_id": window.user_id}, function (data) {
-            let checkboxes = [{checkname: "lite_save", checktext: "create lite save"}];
+        let data = await postPromise("host", "get_project_names", {"user_id": window.user_id}, props.main_id);
+        let checkboxes = [{checkname: "lite_save", checktext: "create lite save"}];
 
-            dialogFuncs.showModal("ModalDialog", {
-                    title: "Save Project As",
-                    field_title: "New Project Name",
-                    handleSubmit: CreateNewProject,
-                    default_value: "NewProject",
-                    existing_names: data.project_names,
-                    checkboxes: checkboxes,
-                    handleCancel: doCancel,
-                    handleClose: dialogFuncs.hideModal,
-                })
-        }, null, props.main_id);
-
-        function doCancel() {
-            statusFuncs.stopSpinner()
-        }
-        function CreateNewProject (new_name, checkbox_states) {
-            //let console_node = cleanse_bokeh(document.getElementById("console"));
+        try {
+            let [new_name, checkbox_states] = await dialogFuncs.showModalPromise("ModalDialog", {
+                title: "Save Project As",
+                field_title: "New Project Name",
+                default_value: "NewProject",
+                existing_names: data.project_names,
+                checkboxes: checkboxes,
+                handleClose: dialogFuncs.hideModal,
+            });
             const result_dict = {
                 "project_name": new_name,
                 "main_id": props.main_id,
@@ -76,80 +68,64 @@ function ProjectMenu(props) {
             };
 
             result_dict.interface_state = save_state;
+            let data_object;
             if (props.is_notebook) {
-                postWithCallback(props.main_id, "save_new_notebook_project", result_dict,
-                    save_as_success, errorDrawerFuncs.postAjaxFailure, props.main_id);
-            }
-            else {
+                await postPromise(props.main_id, "save_new_notebook_project", result_dict, props.main_id);
+            } else {
                 result_dict["purgetiles"] = true;
-                postWithCallback(props.main_id, "save_new_project", result_dict,
-                    save_as_success, errorDrawerFuncs.postAjaxFailure, props.main_id);
+                await postPromise(props.main_id, "save_new_project", result_dict, props.main_id);
             }
-
-            function save_as_success(data_object) {
-                if (data_object["success"]) {
-                    props.setProjectName(new_name, ()=>{
-                        if (!window.in_context) {
-                            document.title = new_name;
-                        }
-                        statusFuncs.clearStatusMessage();
-                        props.updateLastSave();
-                        statusFuncs.stopSpinner();
-                        statusFuncs.statusMessage(`Saved project ${new_name}`)
-                    });
-
+            props.setProjectName(new_name, () => {
+                if (!window.in_context) {
+                    document.title = new_name;
                 }
-                else {
-                    statusFuncs.clearStatusMessage();
-                    statusFuncs.stopSpinner();
-                    errorDrawerFuncs.addErrorDrawerEntry({
-                        title: `Error saving project`,
-                        content: "message" in data_object ? data_object.message : ""
-                    });
-                }
-            }
-        }
-    }
-
-    function _saveProject (lite_save) {
-        // let console_node = cleanse_bokeh(document.getElementById("console"));
-        const result_dict = {
-            main_id: props.main_id,
-            project_name: props.project_name,
-            lite_save: lite_save
-        };
-
-        result_dict.interface_state = save_state;
-
-        statusFuncs.startSpinner();
-        postWithCallback(props.main_id, "update_project", result_dict, updateSuccess, errorDrawerFuncs.postAjaxFailure, props.main_id);
-        function updateSuccess(data) {
-            if (data.success) {
-                props.updateLastSave();
-                statusFuncs.statusMessage(`Saved project ${props.project_name}`)
-            }
-            else {
-                errorDrawerFuncs.addErrorDrawerEntry({
-                    title: `Error saving project`,
-                    content: "message" in data ? data.message : ""
-                });
                 statusFuncs.clearStatusMessage();
+                props.updateLastSave();
+                statusFuncs.stopSpinner();
+                statusFuncs.statusMessage(`Saved project ${new_name}`)
+            });
+        } catch (e) {
+            if (e != "canceled") {
+                let title = "title" in e ? e.title : "Error saving project";
+                errorDrawerFuncs.addFromError(title, e)
             }
+            statusFuncs.clearStatusMessage();
             statusFuncs.stopSpinner();
         }
     }
 
-    function _exportAsPresentation() {
-        postWithCallback("host", "get_collection_names", {"user_id": user_id}, function (data) {
-                dialogFuncs.showModal("PresentationDialog", {
-                    handleSubmit: ExportPresentation,
-                    default_value: "NewPresentation",
-                    existing_names: data.collection_names,
-                    handleCancel: null,
-                    handleClose: dialogFuncs.hideModal
-                })
-            }, null, props.main_id);
-        function ExportPresentation(use_dark_theme, save_as_collection, collection_name) {
+    async function _saveProject(lite_save) {
+        try {
+            const result_dict = {
+                main_id: props.main_id,
+                project_name: props.project_name,
+                lite_save: lite_save
+            };
+
+            result_dict.interface_state = save_state;
+
+            statusFuncs.startSpinner();
+            await postPromise(props.main_id, "update_project", result_dict, props.main_id);
+            props.updateLastSave();
+            statusFuncs.statusMessage(`Saved project ${props.project_name}`);
+            statusFuncs.stopSpinner();
+        } catch (e) {
+            let title = "title" in e ? e.title : "Error saving project";
+            errorDrawerFuncs.addFromError(title, e);
+            statusFuncs.clearStatusMessage();
+            statusFuncs.stopSpinner();
+        }
+    }
+
+    async function _exportAsPresentation() {
+        try {
+            let data = await postPromise("host", "get_collection_names", {"user_id": user_id}, props.main_id);
+            let [use_dark_theme, save_as_collection, collection_name] = await dialogFuncs.showModalPromise(
+                "PresentationDialog", {
+                default_value: "NewPresentation",
+                existing_names: data.collection_names,
+                handleClose: dialogFuncs.hideModal
+            });
             var cell_list = [];
             for (let entry of props.console_items) {
                 let new_entry = {};
@@ -169,9 +145,9 @@ function ProjectMenu(props) {
                         new_entry.header_text = entry.header_text;
                         new_entry.summary_text = "";
                         break;
-                     case "figure":
+                    case "figure":
                         new_entry.image_data_str = entry.image_data_str;
-                        new_entry.summary_text =entry.summary_text;
+                        new_entry.summary_text = entry.summary_text;
                         break;
                     default:
                         new_entry.console_text = entry.console_text;
@@ -189,41 +165,32 @@ function ProjectMenu(props) {
                 "main_id": props.main_id,
                 "cell_list": cell_list,
             };
-            postWithCallback(props.main_id, "export_as_presentation",
-                result_dict, save_as_success, errorDrawerFuncs.postAjaxFailure, props.main_id);
-
-            function save_as_success(data_object) {
-               statusFuncs.clearStatusMessage();
-               if (data_object.success) {
-                   if (save_as_collection) {
-                       statusFuncs.statusMessage("Exported presentation")
-                   }
-                   else {
-                       window.open(`${$SCRIPT_ROOT}/load_temp_page/${data_object["temp_id"]}`)
-                   }
-               }
-               else {
-                   errorDrawerFuncs.addErrorDrawerEntry({
-                        title: `Error exporting presentation`,
-                        content: "message" in data_object ? data_object.message : ""
-                    });
-               }
-           }
+            let data_object = await postPromise(props.main_id, "export_as_presentation",
+                result_dict, props.main_id);
+            statusFuncs.clearStatusMessage();
+            if (save_as_collection) {
+                statusFuncs.statusMessage("Exported presentation")
+            } else {
+                window.open(`${$SCRIPT_ROOT}/load_temp_page/${data_object["temp_id"]}`)
+            }
+        } catch (e) {
+            if (e != "canceled") {
+                let title = "title" in e ? e.title : "Error exporting presentation";
+                errorDrawerFuncs.addFromError(title, e)
+            }
 
         }
     }
 
-    function _exportAsReport() {
-        postWithCallback("host", "get_collection_names", {"user_id": user_id}, function (data) {
-                dialogFuncs.showModal("ReportDialog", {
-                        handleSubmit: ExportRport,
-                        default_value: "NewReport",
-                        existing_names: data.collection_names,
-                        handleCancel: null,
-                        handleClose: dialogFuncs.hideModal
-                    })
-            }, null, props.main_id);
-        function ExportRport(collapsible, include_summaries, use_dark_theme, save_as_collection, collection_name) {
+    async function _exportAsReport() {
+        try {
+            let data = await postPromise("host", "get_collection_names", {"user_id": user_id}, props.main_id);
+            let [collapsible, include_summaries, use_dark_theme, save_as_collection, collection_name] =
+                await dialogFuncs.showModalPromise("ReportDialog", {
+                    default_value: "NewReport",
+                    existing_names: data.collection_names,
+                    handleClose: dialogFuncs.hideModal
+                });
             var cell_list = [];
             for (let entry of props.console_items) {
                 let new_entry = {};
@@ -244,11 +211,11 @@ function ProjectMenu(props) {
                         break;
                     case "figure":
                         new_entry.image_data_str = entry.image_data_str;
-                        new_entry.summary_text =entry.summary_text;
+                        new_entry.summary_text = entry.summary_text;
                         break;
                     default:
                         new_entry.console_text = entry.console_text;
-                        new_entry.summary_text =entry.summary_text;
+                        new_entry.summary_text = entry.summary_text;
                         break;
                 }
                 cell_list.push(new_entry)
@@ -264,49 +231,38 @@ function ProjectMenu(props) {
                 "main_id": props.main_id,
                 "cell_list": cell_list,
             };
-            postWithCallback(props.main_id, "export_as_report",
-                result_dict, save_as_success, errorDrawerFuncs.postAjaxFailure, props.main_id);
+            let data_object = await postPromise(props.main_id, "export_as_report", result_dict, props.main_id);
 
-            function save_as_success(data_object) {
-               statusFuncs.clearStatusMessage();
-               if (data_object.success) {
-                   if (save_as_collection) {
-                       data_object.alert_type = "alert-success";
-                       data_object.timeout = 2000;
-                       statusFuncs.statusMessage("Exported report")
-                   }
-                   else {
-                       window.open(`${$SCRIPT_ROOT}/load_temp_page/${data_object["temp_id"]}`)
-                   }
-               }
-               else {
-                   errorDrawerFuncs.addErrorDrawerEntry({
-                    title: `Error exporting report`,
-                    content: "message" in data_object ? data_object.message : ""
-                });
-               }
-           }
-
+            statusFuncs.clearStatusMessage();
+            if (save_as_collection) {
+                data_object.alert_type = "alert-success";
+                data_object.timeout = 2000;
+                statusFuncs.statusMessage("Exported report")
+            } else {
+                window.open(`${$SCRIPT_ROOT}/load_temp_page/${data_object["temp_id"]}`)
+            }
+        }
+        catch (e) {
+            if (e != "canceled") {
+                let title = "title" in e ? e.title : "Error exporting report";
+                errorDrawerFuncs.addFromError(title, e)
+            }
+            statusFuncs.clearStatusMessage();
         }
     }
 
-    function _exportAsJupyter() {
+    async function _exportAsJupyter() {
         statusFuncs.startSpinner();
-        postWithCallback("host", "get_project_names", {"user_id": user_id}, function (data) {
-            let checkboxes;
-            // noinspection JSUnusedAssignment
-            dialogFuncs.showModal("ModalDialog", {
-                    title: "Export Notebook in Jupyter Format",
-                    field_title: "New Project Name",
-                    handleSubmit: ExportJupyter,
-                    default_value: "NewJupyter",
-                    existing_names: data.project_names,
-                    checkboxes: [],
-                    handleCancel: null,
-                    handleClose: dialogFuncs.hideModal,
-                })
-        }, null, props.main_id);
-        function ExportJupyter(new_name) {
+        try {
+            let data = await postPromise("host", "get_project_names", {"user_id": user_id}, props.main_id);
+            let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
+                title: "Export Notebook in Jupyter Format",
+                field_title: "New Project Name",
+                default_value: "NewJupyter",
+                existing_names: data.project_names,
+                checkboxes: [],
+                handleClose: dialogFuncs.hideModal,
+            });
             var cell_list = [];
             for (let entry of props.console_items) {
                 let new_cell = {};
@@ -322,83 +278,91 @@ function ProjectMenu(props) {
                 "main_id": props.main_id,
                 "cell_list": cell_list
             };
-            postWithCallback(props.main_id, "export_to_jupyter_notebook",
-                result_dict, save_as_success, errorDrawerFuncs.postAjaxFailure, props.main_id);
+            let data_object = await postPromise(props.main_id, "export_to_jupyter_notebook",
+                result_dict, props.main_id);
+            statusFuncs.statusMessage("Exported jupyter notebook");
+            statusFuncs.stopSpinner();
+        }
+        catch (e) {
+            if (e != "canceled") {
+                let title = "title" in e ? e.title : "Error exporting as Jupyter notebook";
+                errorDrawerFuncs.addFromError(title, e)
+            }
+            statusFuncs.clearStatusMessage();
+            statusFuncs.stopSpinner();
+        }
+    }
 
-            function save_as_success(data_object) {
-               statusFuncs.clearStatusMessage();
-                if (data_object.success) {
-                    statusFuncs.statusMessage("Exported jupyter notebook")
-                }
-                else {
-                    errorDrawerFuncs.addErrorDrawerEntry({
-                        title: `Error exporting jupyter notebook`,
-                        content: "message" in data_object ? data_object.message : ""
-                    });
-
-                }
-                statusFuncs.stopSpinner();
+    async function _exportDataTable() {
+        try {
+            let data = await postPromise("host", "get_collection_names", {"user_id": user_id});
+            let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
+                    title: "Export Data",
+                    field_title: "New Collection NameName",
+                    default_value: "new collection",
+                    existing_names: data.collection_names,
+                    checkboxes: [],
+                    handleClose: dialogFuncs.hideModal,
+                });
+            const result_dict = {
+                "export_name": new_name,
+                "main_id": props.main_id,
+                "user_id": window.user_id
+            };
+            await postAjaxPromise("export_data", result_dict);
+            statusFuncs.statusMessage("Exported table as collection")
+        }
+        catch (e) {
+            if (e != "canceled") {
+                errorDrawerFuncs.addFromError("Error exporting table", e)
             }
         }
     }
 
-    function _exportDataTable() {
-        postWithCallback("host", "get_collection_names", {"user_id": user_id}, function (data) {
-            dialogFuncs.showModal("ModalDialog", {
-                title: "Export Data",
-                field_title: "New Collection NameName",
-                handleSubmit: (new_name)=>{
-                    const result_dict = {
-                        "export_name": new_name,
-                        "main_id": props.main_id,
-                        "user_id": window.user_id
-                    };
-                    $.ajax({
-                        url: $SCRIPT_ROOT + "/export_data",
-                        contentType: 'application/json',
-                        type: 'POST',
-                        async: true,
-                        data: JSON.stringify(result_dict),
-                        dataType: 'json'
-                    });
-                },
-                default_value: "new collection",
-                existing_names: data.collection_names,
-                checkboxes: [],
-                handleCancel: null,
-                handleClose: dialogFuncs.hideModal,
-            })
-        })
-    }
-
-    function _consoleToNotebook() {
-        const result_dict = {
-            "main_id": props.main_id,
-            "console_items": props.console_items,
-            "user_id": window.user_id,
-        };
-        postWithCallback(props.main_id, "console_to_notebook", result_dict, null, null, props.main_id)
+    async function _consoleToNotebook() {
+        try {
+            const result_dict = {
+                "main_id": props.main_id,
+                "console_items": props.console_items,
+                "user_id": window.user_id,
+            };
+            await postPromise(props.main_id, "console_to_notebook", result_dict, props.main_id)
+        }
+        catch (e) {
+            errorDrawerFuncs.addFromError("Error converting to notebook", e);
+        }
     }
 
     function menu_items() {
         let cc_name;
         let cc_icon;
-        if (props.mState.doc_type == "none" ) {
+        if (props.mState.doc_type == "none") {
             cc_name = "Add Collection";
             cc_icon = "add"
-        }
-        else {
+        } else {
             cc_name = "Change Collection";
             cc_icon = "exchange"
         }
         let items = [
             {name_text: "Save As...", icon_name: "floppy-disk", click_handler: _saveProjectAs},
-            {name_text: "Save", icon_name: "saved", click_handler: ()=>{_saveProject(false)}},
-            {name_text: "Save Lite", icon_name: "saved", click_handler: ()=>{_saveProject(true)}},
+            {
+                name_text: "Save", icon_name: "saved", click_handler: async () => {
+                    await _saveProject(false)
+                }
+            },
+            {
+                name_text: "Save Lite", icon_name: "saved", click_handler: async () => {
+                    await _saveProject(true)
+                }
+            },
             {name_text: "divider1", icon_name: null, click_handler: "divider"},
             {name_text: "Export as Jupyter Notebook", icon_name: "export", click_handler: _exportAsJupyter,},
             {name_text: "Create Report From Notebook", icon_name: "document", click_handler: _exportAsReport,},
-            {name_text: "Create Presentation from Notebook", icon_name: "presentation", click_handler: _exportAsPresentation,},
+            {
+                name_text: "Create Presentation from Notebook",
+                icon_name: "presentation",
+                click_handler: _exportAsPresentation,
+            },
             {name_text: "Export Table as Collection", icon_name: "export", click_handler: _exportDataTable},
             {name_text: "Open Console as Notebook", icon_name: "console", click_handler: _consoleToNotebook},
             {name_text: "divider2", icon_name: null, click_handler: "divider"},
@@ -417,9 +381,9 @@ function ProjectMenu(props) {
     return (
         <ToolMenu menu_name="Project"
                   menu_items={menu_items()}
-                   binding_dict={{}}
-                   disabled_items={props.disabled_items}
-                   disable_all={false}
+                  binding_dict={{}}
+                  disabled_items={props.disabled_items}
+                  disable_all={false}
         />
     )
 }
@@ -444,85 +408,78 @@ function DocumentMenu(props) {
     const dialogFuncs = useContext(DialogContext);
     const statusFuncs = useContext(StatusContext);
 
-    function _newDocument() {
-        statusFuncs.startSpinner();
-        dialogFuncs.showModal("ModalDialog", {
-            title: "New Document",
-            field_title: "New Document Name",
-            handleSubmit: doNew,
-            default_value: props.currentDoc,
-            existing_names: props.documentNames,
-            checkboxes: [],
-            handleCancel: doCancel,
-            handleClose: dialogFuncs.hideModal,
-        });
-
-        function doCancel() {
+    async function _newDocument() {
+        try {
+            statusFuncs.startSpinner();
+            let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
+                title: "New Document",
+                field_title: "New Document Name",
+                default_value: props.currentDoc,
+                existing_names: props.documentNames,
+                checkboxes: [],
+                handleClose: dialogFuncs.hideModal,
+            });
+            await postPromise(props.main_id, "new_blank_document", {
+                    model_document_name: props.currentDoc,
+                    new_document_name: new_name
+                }, props.main_id);
             statusFuncs.stopSpinner()
         }
-
-        function doNew(new_name) {
-            postWithCallback(props.main_id, "new_blank_document",
-                {model_document_name: props.currentDoc,
-                new_document_name: new_name}, (result)=>{
-                statusFuncs.stopSpinner()
-                }, null, props.main_id
-            )
+        catch (e) {
+            if (e != "canceled") {
+                errorDrawerFuncs.addFromError(`Error adding new document`, e)
+            }
+            statusFuncs.stopSpinner();
         }
     }
 
-    function _duplicateDocument() {
-        statusFuncs.startSpinner();
-        dialogFuncs.showModal("ModalDialog", {
-            title: "Duplicate Document",
-            field_title: "New Document Name",
-            handleSubmit: doDuplicate,
-            default_value: props.currentDoc,
-            existing_names: props.documentNames,
-            checkboxes: [],
-            handleCancel: doCancel,
-            handleClose: dialogFuncs.hideModal,
-        });
-
-        function doCancel() {
+    async function _duplicateDocument() {
+        try {
+            statusFuncs.startSpinner();
+            let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
+                title: "Duplicate Document",
+                field_title: "New Document Name",
+                default_value: props.currentDoc,
+                existing_names: props.documentNames,
+                checkboxes: [],
+                handleClose: dialogFuncs.hideModal,
+            });
+            await postPromise(props.main_id, "duplicate_document", {
+                    original_document_name: props.currentDoc,
+                    new_document_name: new_name
+                }, props.main_id);
             statusFuncs.stopSpinner()
         }
-
-        function doDuplicate(new_name) {
-            postWithCallback(props.main_id, "duplicate_document",
-                {original_document_name: props.currentDoc,
-                new_document_name: new_name}, (result)=>{
-                statusFuncs.stopSpinner()
-                }, null, props.main_id
-            )
+        catch (e) {
+            if (e != "canceled") {
+                errorDrawerFuncs.addFromError(`Error duplicating document`, e)
+            }
+            statusFuncs.stopSpinner()
         }
-
     }
 
-    function _renameDocument() {
-        statusFuncs.startSpinner();
-        dialogFuncs.showModal("ModalDialog", {
-            title: "Rename Document",
-            field_title: "New Document Name",
-            handleSubmit: doRename,
-            default_value: props.currentDoc,
-            existing_names: props.documentNames,
-            checkboxes: [],
-            handleCancel: doCancel,
-            handleClose: dialogFuncs.hideModal,
-        });
-
-        function doCancel() {
+    async function _renameDocument() {
+        try {
+            statusFuncs.startSpinner();
+            let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
+                title: "Rename Document",
+                field_title: "New Document Name",
+                default_value: props.currentDoc,
+                existing_names: props.documentNames,
+                checkboxes: [],
+                handleClose: dialogFuncs.hideModal,
+            });
+            await postPromise(props.main_id, "rename_document", {
+                    old_document_name: props.currentDoc,
+                    new_document_name: new_name
+                }, props.main_id);
             statusFuncs.stopSpinner()
         }
-
-        function doRename(new_name) {
-            postWithCallback(props.main_id, "rename_document",
-                {old_document_name: props.currentDoc,
-                new_document_name: new_name}, (result)=>{
-                statusFuncs.stopSpinner()
-                }, null, props.main_id
-            )
+        catch (e) {
+            if (e != "canceled") {
+                errorDrawerFuncs.addFromError(`Error renaming document`, e)
+            }
+            statusFuncs.stopSpinner()
         }
     }
 
@@ -548,6 +505,7 @@ function DocumentMenu(props) {
         />
     )
 }
+
 DocumentMenu.propTypes = {
     documentNames: PropTypes.array,
     currentDoc: PropTypes.string,
@@ -623,6 +581,7 @@ function ColumnMenu(props) {
         />
     )
 }
+
 ColumnMenu.propTypes = {
     moveColumn: PropTypes.func,
     table_spec: PropTypes.object,
@@ -701,7 +660,7 @@ function ViewMenu(props) {
     }
 
 
-    function option_dict () {
+    function option_dict() {
         let result = {};
         if (props.toggleTableShrink) {
             let table_opt_name = props.table_is_shrunk ? "Maximize Table" : "Minimize Table";
@@ -717,7 +676,7 @@ function ViewMenu(props) {
         return result
     }
 
-    function icon_dict () {
+    function icon_dict() {
         let result = {};
         if (props.toggleTableShrink) {
             let opt_name = props.table_is_shrunk ? "Maximize Table" : "Minimize Table";
@@ -743,6 +702,7 @@ function ViewMenu(props) {
         />
     )
 }
+
 ViewMenu.propTypes = {
     table_is_shrunk: PropTypes.bool,
     toggleTableShrink: PropTypes.func,

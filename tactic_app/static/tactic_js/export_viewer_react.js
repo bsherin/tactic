@@ -11,6 +11,7 @@ var _core = require("@blueprintjs/core");
 var _blueprint_react_widgets = require("./blueprint_react_widgets.js");
 var _communication_react = require("./communication_react.js");
 var _utilities_react = require("./utilities_react");
+var _error_drawer = require("./error_drawer");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 function TextIcon(props) {
@@ -192,6 +193,7 @@ function ExportsViewer(props) {
   const [type, set_type] = (0, _react.useState)(null);
   const [pipe_dict, set_pipe_dict] = (0, _react.useState)({});
   const pushCallback = (0, _utilities_react.useCallbackStack)();
+  const errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
   (0, _react.useEffect)(async () => {
     initSocket();
     props.setUpdate(_updateExportsList);
@@ -220,7 +222,7 @@ function ExportsViewer(props) {
   }
   async function _updateExportsList() {
     try {
-      let data = await postPromise(props.main_id, "get_full_pipe_dict", {}, props.main_id);
+      let data = await (0, _communication_react.postPromise)(props.main_id, "get_full_pipe_dict", {}, props.main_id);
       set_pipe_dict(data.pipe_dict);
     } catch (e) {
       errorDrawerFuncs.addFromError("Error geting pipe didct", e);
@@ -325,7 +327,7 @@ function ExportsViewer(props) {
       the_text = `Tiles["${tilename}"]["${shortname}"]` + key_string + tail;
     }
     try {
-      await postPromise("host", "print_code_area_to_console", {
+      await (0, _communication_react.postPromise)("host", "print_code_area_to_console", {
         "console_text": the_text,
         "user_id": window.user_id,
         "main_id": props.main_id

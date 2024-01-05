@@ -221,7 +221,7 @@ HistoryViewerApp = memo(HistoryViewerApp);
 
 if (!window.in_context) {
     try {
-        history_viewer_main();
+        history_viewer_main().then();
     }
     catch(e) {
         console.log("Error at the top level")

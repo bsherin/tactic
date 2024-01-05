@@ -216,7 +216,7 @@ function ListViewerApp(props) {
   function am_selected() {
     return selectedPane.amSelected(selectedPane.tab_id, selectedPane.selectedTabIdRef);
   }
-  function _saveMe() {
+  async function _saveMe() {
     if (!am_selected()) {
       return false;
     }
@@ -230,62 +230,47 @@ function ListViewerApp(props) {
       "tags": tagstring,
       "notes": notes
     };
-    let self = this;
-    (0, _communication_react.postAjax)("update_list", result_dict, update_success);
-    function update_success(data) {
-      if (data.success) {
-        savedContent.current = new_list_as_string;
-        savedTags.current = local_tags;
-        savedNotes.current = local_notes;
-        statusFuncs.statusMessage(`Saved list ${result_dict.list_name}`);
-      } else {
-        errorDrawerFuncs.addErrorDrawerEntry({
-          title: `Error creating new notebook`,
-          content: "message" in data ? data.message : ""
-        });
-      }
+    try {
+      let data = await (0, _communication_react.postAjaxPromise)("update_list", result_dict);
+      savedContent.current = new_list_as_string;
+      savedTags.current = local_tags;
+      savedNotes.current = local_notes;
+      statusFuncs.statusMessage(`Saved list ${result_dict.list_name}`);
+    } catch (e) {
+      errorDrawerFuncs.addErrorDrawerEntry({
+        title: `Error creating new notebook`,
+        content: "message" in data ? data.message : ""
+      });
     }
   }
-  function _saveMeAs(e) {
+  async function _saveMeAs(e) {
     if (!am_selected()) {
       return false;
     }
-    statusFuncs.startSpinner();
-    let self = this;
-    (0, _communication_react.postWithCallback)("host", "get_list_names", {
-      "user_id": window.user_id
-    }, function (data) {
-      let checkboxes;
-      dialogFuncs.showModal("ModalDialog", {
+    try {
+      let ln_result = await (0, _communication_react.postPromise)("host", "get_list_names", {
+        "user_id": window.user_id
+      }, props.main_id);
+      let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
         title: "Save List As",
         field_title: "New List Name",
-        handleSubmit: CreateNewList,
         default_value: "NewList",
-        existing_names: data.list_names,
+        existing_names: ln_result.list_names,
         checkboxes: [],
-        handleCancel: doCancel,
         handleClose: dialogFuncs.hideModal
       });
-    }, null, props.main_id);
-    function doCancel() {
-      statusFuncs.stopSpinner();
-      dialogFuncs.hideModal();
-    }
-    function CreateNewList(new_name) {
       const result_dict = {
         "new_res_name": new_name,
         "res_to_copy": _cProp("resource_name")
       };
-      (0, _communication_react.postAjaxPromise)('/create_duplicate_list', result_dict).then(data => {
-        _setResourceNameState(new_name, () => {
-          _saveMe();
-        });
-      }).catch(data => {
-        errorDrawerFuncs.addErrorDrawerEntry({
-          title: `Error saving list`,
-          content: "message" in data ? data.message : ""
-        });
+      let data = await (0, _communication_react.postAjaxPromise)('/create_duplicate_list', result_dict);
+      _setResourceNameState(new_name, () => {
+        _saveMe();
       });
+    } catch (e) {
+      if (e != "canceled") {
+        errorDrawerFuncs.addFromError(`Error saving listy`, e);
+      }
     }
   }
   function _dirty() {
@@ -371,7 +356,7 @@ ListViewerApp.defaultProps = {
   refreshTab: null,
   closeTab: null
 };
-function list_viewer_main() {
+async function list_viewer_main() {
   function gotProps(the_props) {
     let ListViewerAppPlus = (0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(ListViewerApp))));
     let the_element = /*#__PURE__*/_react.default.createElement(ListViewerAppPlus, (0, _extends2.default)({}, the_props, {
@@ -383,12 +368,11 @@ function list_viewer_main() {
     ReactDOM.render(the_element, domContainer);
   }
   let target = window.is_repository ? "repository_view_list_in_context" : "view_list_in_context";
-  (0, _communication_react.postAjaxPromise)(target, {
+  let data = await (0, _communication_react.postAjaxPromise)(target, {
     "resource_name": window.resource_name
-  }).then(data => {
-    list_viewer_props(data, null, gotProps, null);
   });
+  list_viewer_props(data, null, gotProps);
 }
 if (!window.in_context) {
-  list_viewer_main();
+  list_viewer_main().then();
 }

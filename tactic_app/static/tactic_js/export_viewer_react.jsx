@@ -1,12 +1,13 @@
 
 import React from "react";
-import {Fragment, useState, useEffect, useRef, memo} from "react";
+import {Fragment, useState, useEffect, useRef, memo, useContext} from "react";
 import PropTypes from 'prop-types';
 import { Card, Button, InputGroup, Spinner, ButtonGroup, FormGroup, Divider} from "@blueprintjs/core";
 
 import {GlyphButton, SelectList} from "./blueprint_react_widgets.js";
-import {postWithCallback} from "./communication_react.js"
+import {postWithCallback, postPromise} from "./communication_react.js"
 import {useCallbackStack, useStateAndRef} from "./utilities_react";
+import {ErrorDrawerContext} from "./error_drawer";
 
 export {ExportsViewer}
 
@@ -173,6 +174,8 @@ function ExportsViewer(props) {
     const [pipe_dict, set_pipe_dict] = useState({});
 
     const pushCallback = useCallbackStack();
+
+    const errorDrawerFuncs = useContext(ErrorDrawerContext);
 
     useEffect(async () => {
         initSocket();
