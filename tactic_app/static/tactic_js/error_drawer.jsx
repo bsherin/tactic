@@ -64,9 +64,16 @@ function withErrorDrawer(WrappedComponent, lposition = "right", error_drawer_siz
         }
 
         function _addFromError(title, data, open = true) {
+            let content = "";
+            if ("message" in data){
+                content = data.message
+            }
+            else if (typeof data == "string") {
+                content = data
+            }
             _addEntry({
                 title: title,
-                content: "message" in data ? data.message : ""
+                content: content
             }, open);
         }
 

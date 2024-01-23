@@ -1,7 +1,7 @@
 
 import {guid} from "./utilities_react.js";
 
-export {handleCallback, postAjax, postAjaxPromise, postWithCallback, postPromise, postFormDataPromise}
+export {handleCallback, postAjax, postAjaxPromise, postWithCallback, postPromise, postFormDataPromise, getBlobPromise}
 
 let callbacks = {};
 
@@ -73,10 +73,41 @@ function postAjaxPromise(target, data = {}) {
                 else {
                     reject(data)
                 }
+            },
+            error: function (xhr, status, error) {
+                reject(xhr.responseText);
             }
         })
     });
 }
+
+function getBlobPromise(target, data={}) {
+    return new Promise (function(resolve, reject) {
+        if (target[0] == "/") {
+            target = target.slice(1)
+        }
+        $.ajax({
+            url: $SCRIPT_ROOT + "/" + target,
+            method: 'GET',
+            data: data,
+            xhrFields: {
+                responseType: 'blob' // Response type as blob
+            },
+            success: (data, status, xhr) => {
+                if ("success" in data && data.success == false) {
+                    reject(data)
+                }
+                else {
+                    resolve([data, status, xhr])
+                }
+            },
+            error: function (xhr, status, error) {
+                reject(xhr.responseText);
+            }
+        })
+    });
+}
+
 
 function postPromise(dest_id, task_type, task_data, special_main_id=null) {
     return new Promise(function(resolve, reject) {
