@@ -65,9 +65,15 @@ function withErrorDrawer(WrappedComponent) {
     }
     function _addFromError(title, data) {
       let open = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
+      let content = "";
+      if ("message" in data) {
+        content = data.message;
+      } else if (typeof data == "string") {
+        content = data;
+      }
       _addEntry({
         title: title,
-        content: "message" in data ? data.message : ""
+        content: content
       }, open);
     }
     function _closeEntry(ukey) {

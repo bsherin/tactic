@@ -264,26 +264,24 @@ function ModuleViewerApp(props) {
   function am_selected() {
     return selectedPane.amSelected(selectedPane.tab_id, selectedPane.selectedTabIdRef);
   }
-  function _saveMe() {
+  async function _saveMe() {
     if (!am_selected()) {
       return false;
     }
     statusFuncs.startSpinner();
     statusFuncs.statusMessage("Saving nodule");
-    doSavePromise().then(data => {
+    try {
+      await doSavePromise();
+      statusFuncs.stopSpinner();
       statusFuncs.statusMessage("Saved module");
+    } catch (e) {
+      errorDrawerFuncs.addFromError("Error saving module", e);
       statusFuncs.stopSpinner();
-    }).catch(data => {
-      errorDrawerFuncs.addErrorDrawerEntry({
-        title: "Error saving module",
-        content: "message" in data ? data.message : ""
-      });
-      statusFuncs.stopSpinner();
-    });
+    }
     return false;
   }
   function doSavePromise() {
-    return new Promise(function (resolve, reject) {
+    return new Promise(async function (resolve, reject) {
       const new_code = code_content;
       const tagstring = tags.join(" ");
       const local_notes = notes;
@@ -301,133 +299,113 @@ function ModuleViewerApp(props) {
         "new_code": new_code,
         "last_saved": "viewer"
       };
-      (0, _communication_react.postAjax)("update_module", result_dict, function (data) {
-        if (data.success) {
-          savedContent.current = new_code;
-          savedTags.current = local_tags;
-          savedNotes.current = local_notes;
-          savedIcon.current = local_icon;
-          data.timeout = 2000;
-          resolve(data);
-        } else {
-          reject(data);
-        }
-      });
+      try {
+        let data = await (0, _communication_react.postAjaxPromise)("update_module", result_dict);
+        savedContent.current = new_code;
+        savedTags.current = local_tags;
+        savedNotes.current = local_notes;
+        savedIcon.current = local_icon;
+        data.timeout = 2000;
+        resolve(data);
+      } catch (e) {
+        reject(e);
+      }
     });
   }
-  function _saveModuleAs() {
+  async function _saveModuleAs() {
     statusFuncs.startSpinner();
-    (0, _communication_react.postWithCallback)("host", "get_tile_names", {
-      "user_id": window.user_id
-    }, function (data) {
-      let checkboxes;
-      dialogFuncs.showModal("ModalDialog", {
+    try {
+      let data = await (0, _communication_react.postPromise)("host", "get_tile_names", {
+        "user_id": window.user_id
+      }, props.main_id);
+      let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
         title: "Save Module As",
         field_title: "New Module Name",
-        handleSubmit: CreateNewModule,
         default_value: "NewModule",
         existing_names: data.tile_names,
         checkboxes: [],
-        handleCancel: doCancel,
         handleClose: dialogFuncs.hideModal
       });
-    }, null, props.main_id);
-    function doCancel() {
-      statusFuncs.stopSpinner();
-    }
-    function CreateNewModule(new_name) {
       const result_dict = {
         "new_res_name": new_name,
         "res_to_copy": _cProp("resource_name")
       };
-      (0, _communication_react.postAjaxPromise)('/create_duplicate_tile', result_dict).then(data => {
-        _setResourceNameState(new_name, () => {
-          _saveMe();
-        });
-      }).catch(data => {
-        statusFuncs.stopSpinner();
-        statusFuncs.clearstatus();
-        errorDrawerFuncs.addErrorDrawerEntry({
-          title: "Error saving module",
-          content: "message" in data ? data.message : ""
-        });
+      await (0, _communication_react.postAjaxPromise)('/create_duplicate_tile', result_dict);
+      _setResourceNameState(new_name, () => {
+        _saveMe();
       });
+      statusFuncs.stopSpinner();
+    } catch (e) {
+      statusFuncs.stopSpinner();
+      statusFuncs.clearstatus();
+      if (e != "canceled") {
+        errorDrawerFuncs.addFromError(`Error saving module`, e);
+      }
+      return;
     }
   }
-  function _saveAndLoadModule() {
+  async function _saveAndLoadModule() {
     if (!am_selected()) {
       return false;
     }
     statusFuncs.startSpinner();
-    doSavePromise().then(function () {
+    try {
+      await doSavePromise();
       statusFuncs.statusMessage("Loading Module");
-      (0, _communication_react.postWithCallback)("host", "load_tile_module_task", {
+      let data = await (0, _communication_react.postPromise)("host", "load_tile_module_task", {
         "tile_module_name": _cProp("resource_name"),
         "user_id": window.user_id
-      }, load_success, null, props.resource_viewer_id);
-    }).catch(data => {
-      errorDrawerFuncs.addErrorDrawerEntry({
-        title: "Error saving and loading odule",
-        content: "message" in data ? data.message : ""
-      });
-    });
-    function load_success(data) {
-      handleResult(data, "Saved and loaded module", "Failed to load module");
-      return false;
+      }, props.resource_viewer_id);
+      statusFuncs.statusMessage("Saved and loaded module");
+      statusFuncs.stopSpinner();
+    } catch (e) {
+      errorDrawerFuncs.addFromError("Error saving and loading module", e);
+      statusFuncs.clearStatusMessage();
+      statusFuncs.stopSpinner();
+      return;
     }
   }
-  function _loadModule() {
+  async function _loadModule() {
     if (!am_selected()) {
       return false;
     }
-    statusFuncs.startSpinner();
-    statusFuncs.statusMessage("Loading Module");
-    (0, _communication_react.postWithCallback)("host", "load_tile_module_task", {
-      "tile_module_name": _cProp("resource_name"),
-      "user_id": window.user_id
-    }, load_success, null, props.resource_viewer_id);
-    function load_success(data) {
-      handleResult(data, "Loaded module", "Failure loading modules");
-      return false;
+    try {
+      statusFuncs.startSpinner();
+      statusFuncs.statusMessage("Loading Module");
+      await (0, _communication_react.postPromise)("host", "load_tile_module_task", {
+        "tile_module_name": _cProp("resource_name"),
+        "user_id": window.user_id
+      }, props.resource_viewer_id);
+      statusFuncs.statusMessage("Loaded module");
+      statusFuncs.stopSpinner();
+    } catch (e) {
+      errorDrawerFuncs.addFromError("Error loading module", e);
+      statusFuncs.clearStatusMessage();
+      statusFuncs.stopSpinner();
     }
   }
-  function _saveAndCheckpoint() {
+  async function _saveAndCheckpoint() {
     if (!am_selected()) {
       return false;
     }
-    statusFuncs.startSpinner();
-    statusFuncs.statusmessage("Saving...");
-    doSavePromise().then(function () {
+    try {
+      statusFuncs.startSpinner();
+      statusFuncs.statusMessage("Saving...");
+      await doSavePromise();
       statusFuncs.statusMessage("Checkpointing...");
-      doCheckpointPromise().then(data => {
-        statusFuncs.stopSpinner();
-        statusFuncs.statusMessage("Saved and checkpointed");
-      }).catch(data => {
-        statusFuncs.clearStatusMessage();
-        errorDrawerFuncs.addErrorDrawerEntry({
-          title: "Error checkpointing",
-          content: "message" in data ? data.message : ""
-        });
-      });
-    }).catch(data => {
-      errorDrawerFuncs.addErrorDrawerEntry({
-        title: "Error saving and checkpointing",
-        content: "message" in data ? data.message : ""
-      });
-    });
-    return false;
+      await doCheckpointPromise();
+      statusFuncs.stopSpinner();
+      statusFuncs.statusMessage("Saved and checkpointed");
+    } catch (e) {
+      errorDrawerFuncs.addFromError("Error saving and checkpointing", e);
+      statusFuncs.clearStatusMessage();
+      statusFuncs.stopSpinner();
+      return;
+    }
   }
   function doCheckpointPromise() {
-    return new Promise(function (resolve, reject) {
-      (0, _communication_react.postAjax)("checkpoint_module", {
-        "module_name": _cProp("resource_name")
-      }, function (data) {
-        if (data.success) {
-          resolve(data);
-        } else {
-          reject(data);
-        }
-      });
+    return (0, _communication_react.postAjaxPromise)("checkpoint_module", {
+      "module_name": _cProp("resource_name")
     });
   }
   function _showHistoryViewer() {

@@ -9,7 +9,7 @@ import {LibraryMenubar} from "./library_menubars"
 import {CombinedMetadata, icon_dict} from "./blueprint_mdata_fields";
 import {PoolTree, getBasename, splitFilePath, getFileParentPath} from "./pool_tree";
 import {HorizontalPanes} from "./resizing_layouts";
-import {postAjax, postAjaxPromise} from "./communication_react";
+import {getBlobPromise, postAjaxPromise} from "./communication_react";
 import {ErrorDrawerContext} from "./error_drawer";
 import {doFlash, StatusContext} from "./toaster";
 import {ThemeContext} from "./theme";
@@ -78,226 +78,196 @@ function PoolBrowser(props) {
         
     }
 
-    function _rename_func(node = null) {
+    async function _rename_func(node = null) {
         if (!valueRef.current && !node) return;
-
-        const path = node && "isDirectory" in node ? node.fullpath : valueRef.current;
-        dialogFuncs.showModal("ModalDialog", {
-            title: "Rename Pool Resource",
-            field_title: "New Name",
-            handleSubmit: RenameResource,
-            default_value: getBasename(path),
-            existing_names: [],
-            checkboxes: [],
-            handleCancel: null,
-            handleClose: dialogFuncs.hideModal,
-        });
-
-        function RenameResource(new_name) {
-            const the_data = {new_name: new_name, old_path: path};
-            postAjax(`rename_pool_resource`, the_data, renameSuccess);
-
-            function renameSuccess(data) {
-                if (!data.success) {
-                    errorDrawerFuncs.addErrorDrawerEntry({title: "Error renaming resource", content: data.message});
-                    return false
-                } else {
-                    return true
-                }
-            }
-        }
-    }
-
-    function _add_directory(node = null) {
-        if (!valueRef.current && !node) return;
-
-        const sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
-        let initial_address;
-        if (sNode.isDirectory) {
-            initial_address = sNode.fullpath
-        } else {
-            initial_address = getFileParentPath(sNode.fullpath)
-        }
-        dialogFuncs.showModal("SelectAddressDialog", {
-            title: "Add a Pool Directory",
-            handleSubmit: AddDirectory,
-            selectType: "folder",
-            initial_address: initial_address,
-            initial_name: "New Directory",
-            showName: true,
-            handleClose: dialogFuncs.hideModal,
-        });
-
-        function AddDirectory(full_path) {
-            const the_data = {full_path: full_path};
-            postAjax(`create_pool_directory`, the_data, addSuccess);
-
-            function addSuccess(data) {
-                if (!data.success) {
-                    errorDrawerFuncs.addErrorDrawerEntry({title: "Error Adding Directory", content: data.message});
-                    return false
-                } else {
-                    return true
-                }
-            }
-        }
-    }
-
-    function _duplicate_file(node = null) {
-        if (!valueRef.current && !node) return;
-
-        const sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
-        if (sNode.isDirectory) {
-            doFlash("You can't duplicate a directory");
-            return
-        }
-        const src = sNode.fullpath;
-        const [initial_address, initial_name] = splitFilePath(sNode.fullpath);
-
-        dialogFuncs.showModal("SelectAddressDialog", {
-            title: "Duplicate a file",
-            handleSubmit: DupFile,
-            selectType: "folder",
-            initial_address: initial_address,
-            initial_name: initial_name,
-            showName: true,
-            handleClose: dialogFuncs.hideModal,
-        });
-
-        function DupFile(dst) {
-            const the_data = {dst, src};
-            postAjax(`duplicate_pool_file`, the_data, addSuccess);
-
-            function addSuccess(data) {
-                if (!data.success) {
-                    errorDrawerFuncs.addErrorDrawerEntry({title: "Error Duplicating", content: data.message});
-                    return false
-                } else {
-                    return true
-                }
-            }
-        }
-    }
-
-    function _downloadFile(node = null) {
-        if (!valueRef.current && !node) return;
-
-        const sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
-        if (sNode.isDirectory) {
-            doFlash("You can't download a directory");
-            return
-        }
-        const src = sNode.fullpath;
-        console.log("Got source " + String(src));
-
-        dialogFuncs.showModal("ModalDialog", {
-            title: "Download File",
-            field_title: "New File Name",
-            handleSubmit: downloadFile,
-            default_value: getBasename(src),
-            existing_names: [],
-            checkboxes: [],
-            handleCancel: null,
-            handleClose: dialogFuncs.hideModal,
-        });
-
-        function downloadFile(new_name) {
-            const the_data = {src};
-            $.ajax({
-                url: $SCRIPT_ROOT + '/download_pool_file',
-                method: 'GET',
-                data: {src: src},
-                xhrFields: {
-                    responseType: 'blob' // Response type as blob
-                },
-                success: function (data, status, xhr) {
-                    if (xhr.status === 200) {
-                        // Create a download link and trigger the download
-                        var blob = new Blob([data], {type: 'application/octet-stream'});
-                        var url = window.URL.createObjectURL(blob);
-                        var a = document.createElement('a');
-                        a.href = url;
-                        a.download = new_name; // Set the desired file name
-                        // noinspection XHTMLIncompatabilitiesJS
-                        document.body.appendChild(a);
-                        a.click();
-                        window.URL.revokeObjectURL(url);
-                    }
-                },
-                error: function (xhr, status, error) {
-                    errorDrawerFuncs.addErrorDrawerEntry({title: "Error Downloading From Pool", content: String(error)});
-                }
+        try {
+            const path = node && "isDirectory" in node ? node.fullpath : valueRef.current;
+            let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
+                title: "Rename Pool Resource",
+                field_title: "New Name",
+                default_value: getBasename(path),
+                existing_names: [],
+                checkboxes: [],
+                handleClose: dialogFuncs.hideModal,
             });
+            const the_data = {new_name: new_name, old_path: path};
+            await postAjaxPromise(`rename_pool_resource`, the_data);
+        }
+        catch (e) {
+            if (e != "canceled") {
+                errorDrawerFuncs.addFromError(`Error renaming`, e)
+            }
+            return
         }
     }
 
-    function MoveResource(src, dst) {
-        if (src == dst) return;
-        const the_data = {dst: dst, src: src};
-        postAjax(`move_pool_resource`, the_data, addSuccess);
+    async function _add_directory(node = null) {
+        if (!valueRef.current && !node) return;
 
-        function addSuccess(data) {
-            if (!data.success) {
-                errorDrawerFuncs.addErrorDrawerEntry({title: "Error Moving Resource", content: data.message});
-                return false
+        try {
+            const sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
+            let initial_address;
+            if (sNode.isDirectory) {
+                initial_address = sNode.fullpath
             } else {
-                return true
+                initial_address = getFileParentPath(sNode.fullpath)
+            }
+            let full_path = await dialogFuncs.showModalPromise("SelectAddressDialog", {
+                title: "Add a Pool Directory",
+                selectType: "folder",
+                initial_address: initial_address,
+                initial_name: "New Directory",
+                showName: true,
+                handleClose: dialogFuncs.hideModal,
+            });
+            const the_data = {full_path: full_path};
+            await postAjaxPromise(`create_pool_directory`, the_data);
+        }
+        catch (e) {
+            if (e != "canceled") {
+                errorDrawerFuncs.addFromError(`Error adding directory`, e)
+            }
+            return
+        }
+    }
+
+    async function _duplicate_file(node = null) {
+        if (!valueRef.current && !node) return;
+
+        try {
+            const sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
+            if (sNode.isDirectory) {
+                doFlash("You can't duplicate a directory");
+                return
+            }
+            const src = sNode.fullpath;
+            const [initial_address, initial_name] = splitFilePath(sNode.fullpath);
+            let dst = await dialogFuncs.showModalPromise("SelectAddressDialog", {
+                title: "Duplicate a file",
+                selectType: "folder",
+                initial_address: initial_address,
+                initial_name: initial_name,
+                showName: true,
+                handleClose: dialogFuncs.hideModal,
+            });
+            const the_data = {dst, src};
+            await postAjaxPromise(`duplicate_pool_file`, the_data);
+        }
+        catch (e) {
+            if (e != "canceled") {
+                errorDrawerFuncs.addFromError(`Error duplicating file`, e)
+            }
+            return
+        }
+    }
+
+    async function _downloadFile(node = null) {
+        if (!valueRef.current && !node) return;
+
+        try {
+            const sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
+            if (sNode.isDirectory) {
+                doFlash("You can't download a directory");
+                return
+            }
+            const src = sNode.fullpath;
+            console.log("Got source " + String(src));
+
+            let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
+                title: "Download File",
+                field_title: "New File Name",
+                default_value: getBasename(src),
+                existing_names: [],
+                checkboxes: [],
+                handleClose: dialogFuncs.hideModal,
+            });
+            const the_data = {src};
+            let [data, status, xhr] = await getBlobPromise("download_pool_file", the_data);
+            if (xhr.status === 200) {
+                // Create a download link and trigger the download
+                var blob = new Blob([data], {type: 'application/octet-stream'});
+                var url = window.URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = new_name; // Set the desired file name
+                // noinspection XHTMLIncompatabilitiesJS
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+            }
+        }
+        catch (e) {
+            if (e != "canceled") {
+                errorDrawerFuncs.addFromError(`Error downloading from pool`, e)
             }
         }
     }
 
-    function _move_resource(node = null) {
-        if (!valueRef.current && !node) return;
-
-        const sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
-        const src = sNode.fullpath;
-        let initial_address;
-        if (sNode.isDirectory) {
-            initial_address = sNode.fullpath
-        } else {
-            initial_address = getFileParentPath(sNode.fullpath)
+    async function MoveResource(src, dst) {
+        if (src == dst) return;
+        try {
+            const the_data = {dst: dst, src: src};
+            await postAjaxPromise(`move_pool_resource`, the_data);
         }
-
-        dialogFuncs.showModal("SelectAddressDialog", {
-            title: `Select a destination for ${getBasename(src)}`,
-            handleSubmit: (dst)=>{MoveResource(src, dst)},
-            selectType: "folder",
-            initial_address: initial_address,
-            initial_name: "",
-            showName: false,
-            handleClose: dialogFuncs.hideModal,
-        });
-
+        catch (e) {
+            errorDrawerFuncs.addFromError("Error moving resource", e)
+        }
     }
 
-    function _delete_func(node = null) {
+    async function _move_resource(node = null) {
         if (!valueRef.current && !node) return;
-        const path = node && "isDirectory" in node ? node.fullpath : valueRef.current;
-        const sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
-        if (sNode.isDirectory && sNode.childNodes.length > 0) {
-            doFlash("You can't delete a non-empty directory");
-            return
+        try {
+            const sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
+            const src = sNode.fullpath;
+            let initial_address;
+            if (sNode.isDirectory) {
+                initial_address = sNode.fullpath
+            } else {
+                initial_address = getFileParentPath(sNode.fullpath)
+            }
+            let dst = await dialogFuncs.showModalPromise("SelectAddressDialog", {
+                title: `Select a destination for ${getBasename(src)}`,
+                selectType: "folder",
+                initial_address: initial_address,
+                initial_name: "",
+                showName: false,
+                handleClose: dialogFuncs.hideModal,
+            });
+            await MoveResource(src, dst)
         }
-        const basename = getBasename(path);
-        const confirm_text = `Are you sure that you want to delete ${basename}?`;
+        catch (e) {
+            if (e != "canceled") {
+                errorDrawerFuncs.addFromError(`Error moving resource`, e)
+            }
+        }
+    }
 
-        dialogFuncs.showModal("ConfirmDialog", {
-            title: "Delete resource",
-            text_body: confirm_text,
-            cancel_text: "do nothing",
-            submit_text: "delete",
-            handleSubmit: () => {
-                postAjaxPromise("delete_pool_resource", {full_path: path, is_directory: sNode.isDirectory})
-                    .then(() => {
-                        return true
-                    })
-                    .catch((data) => {
-                        errorDrawerFuncs.addErrorDrawerEntry({title: "Error deleting resource", content: data.message})
-                    })
-            },
-            handleClose: dialogFuncs.hideModal,
-            handleCancel: null
-        });
+    async function _delete_func(node = null) {
+        if (!valueRef.current && !node) return;
+        try {
+            const path = node && "isDirectory" in node ? node.fullpath : valueRef.current;
+            const sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
+            if (sNode.isDirectory && sNode.childNodes.length > 0) {
+                doFlash("You can't delete a non-empty directory");
+                return
+            }
+            const basename = getBasename(path);
+            const confirm_text = `Are you sure that you want to delete ${basename}?`;
+
+            await dialogFuncs.showModalPromise("ConfirmDialog", {
+                title: "Delete resource",
+                text_body: confirm_text,
+                cancel_text: "do nothing",
+                submit_text: "delete",
+                handleClose: dialogFuncs.hideModal,
+            });
+            await postAjaxPromise("delete_pool_resource", {full_path: path, is_directory: sNode.isDirectory})
+        }
+        catch (e) {
+            if (e != "canceled") {
+                errorDrawerFuncs.addFromError(`Error deleting`, e)
+            }
+        }
     }
 
     function _add_to_pool(myDropZone, setCurrentUrl, current_value) {
@@ -334,8 +304,7 @@ function PoolBrowser(props) {
         });
     }
 
-    function handleDrop(e, dst) {
-
+    async function handleDrop(e, dst) {
         const files = e.dataTransfer.files;
 
         if (files.length != 0) {
@@ -361,7 +330,7 @@ function PoolBrowser(props) {
         else {
             let src = e.dataTransfer.getData("fullpath");
             if (src) {
-                MoveResource(src, dst)
+                await MoveResource(src, dst)
             }
         }
 
@@ -388,44 +357,44 @@ function PoolBrowser(props) {
         return true
     }
 
-    function renderContextMenu(props) {
+   function renderContextMenu(props) {
         return (
             <Menu>
                 <MenuItem icon="edit"
-                          onClick={() => {
-                              _rename_func(props.node)
+                          onClick={async () => {
+                              await _rename_func(props.node)
                           }}
                           text="Rename Resource"/>
                 <MenuItem icon="inheritance"
-                          onClick={() => {
-                              _move_resource(props.node)
+                          onClick={async () => {
+                              await _move_resource(props.node)
                           }}
                           text="Move Resource"/>
                 <MenuItem icon="duplicate"
-                          onClick={() => {
-                              _duplicate_file(props.node)
+                          onClick={async () => {
+                              await _duplicate_file(props.node)
                           }}
                           text="Duplicate File"/>
                 <MenuItem icon="folder-close"
-                          onClick={() => {
-                              _add_directory(props.node)
+                          onClick={async () => {
+                              await _add_directory(props.node)
                           }}
                           text="Create Directory"/>
                 <MenuItem icon="trash"
-                          onClick={() => {
-                              _delete_func(props.node)
+                          onClick={async () => {
+                              await _delete_func(props.node)
                           }}
                           intent="danger"
                           text="Delete Resource"/>
                 <MenuDivider/>
                 <MenuItem icon="cloud-upload"
-                          onClick={() => {
-                              _showPoolImport(props.node)
+                          onClick={async () => {
+                              await _showPoolImport(props.node)
                           }}
                           text="Import To Pool"/>
                 <MenuItem icon="download"
-                          onClick={() => {
-                              _downloadFile(props.node)
+                          onClick={async () => {
+                              await _downloadFile(props.node)
                           }}
                           text="Download from Pool"/>
             </Menu>

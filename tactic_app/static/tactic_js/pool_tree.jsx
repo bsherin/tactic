@@ -5,7 +5,7 @@ import {TreeNode, Popover, Button, ContextMenuPopover, Classes, HTMLSelect} from
 import _ from "lodash";
 import {doFlash} from "./toaster"
 import {useCallbackStack, useReducerAndRef, useStateAndRef} from "./utilities_react";
-import {postWithCallback} from "./communication_react";
+import {postPromise} from "./communication_react";
 import {ThemeContext} from "./theme";
 import {SearchForm} from "./library_widgets";
 
@@ -273,16 +273,17 @@ function PoolTree(props) {
 
     const pushCallback = useCallbackStack();
 
-    useEffect(()=>{
+    useEffect(async ()=>{
         initSocket();
         if (props.registerTreeRefreshFunc) {
             props.registerTreeRefreshFunc(getTree)
         }
-        getTree();
+        await getTree();
     }, []);
 
-    function getTree() {
-        postWithCallback("host", "GetPoolTree", {user_id: props.user_id}, function (data) {
+    async function getTree() {
+        try {
+            let data = await postPromise("host", "GetPoolTree", {user_id: props.user_id});
             if (!data.dtree) {
                 doFlash("No pool storage available for this account.");
                 return
@@ -306,7 +307,10 @@ function PoolTree(props) {
             else {
                 pushCallback(exposeBaseNode)
             }
-        })
+        }
+        catch (e) {
+            errorDrawerFuncs.addFromError("Error getting pool tree", e)
+        }
     }
 
     function focusNode(fullpath, nodes) {

@@ -273,17 +273,18 @@ function PoolTree(props) {
   const [sortDirection, setSortDirection] = (0, _react.useState)("descending");
   const theme = (0, _react.useContext)(_theme.ThemeContext);
   const pushCallback = (0, _utilities_react.useCallbackStack)();
-  (0, _react.useEffect)(() => {
+  (0, _react.useEffect)(async () => {
     initSocket();
     if (props.registerTreeRefreshFunc) {
       props.registerTreeRefreshFunc(getTree);
     }
-    getTree();
+    await getTree();
   }, []);
-  function getTree() {
-    (0, _communication_react.postWithCallback)("host", "GetPoolTree", {
-      user_id: props.user_id
-    }, function (data) {
+  async function getTree() {
+    try {
+      let data = await (0, _communication_react.postPromise)("host", "GetPoolTree", {
+        user_id: props.user_id
+      });
       if (!data.dtree) {
         (0, _toaster.doFlash)("No pool storage available for this account.");
         return;
@@ -306,7 +307,9 @@ function PoolTree(props) {
       } else {
         pushCallback(exposeBaseNode);
       }
-    });
+    } catch (e) {
+      errorDrawerFuncs.addFromError("Error getting pool tree", e);
+    }
   }
   function focusNode(fullpath, nodes) {
     if (props.handleNodeClick) {
