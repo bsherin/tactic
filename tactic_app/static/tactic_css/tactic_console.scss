@@ -132,6 +132,10 @@ body {
             color: $gray4
         }
     }
+    .CodeMirror {
+        border-width: 0.1px;
+        border-color: rgba(171,179,191,.6);
+    }
 }
 
 .log-panel {
@@ -361,7 +365,7 @@ body {
 
 .log-panel-summary {
     padding: 5px 15px;
-    border: 1px solid #c7c7c7 !important;
+    border: .5px solid #c7c7c7 !important;
     margin-left: 27px;
     margin-bottom: 5px;
     margin-top: 5px;

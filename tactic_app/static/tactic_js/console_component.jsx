@@ -1903,7 +1903,7 @@ function LogItem(props) {
                                 marginLeft: 30,
                                 padding: 8,
                                 width: body_width,
-                                border: "1px solid #c7c7c7"
+                                border: ".5px solid #c7c7c7"
                             }}
                                  dangerouslySetInnerHTML={converted_dict}/>
                             <div className="button-div d-flex flex-row">
@@ -2083,7 +2083,7 @@ function BlobItem(props) {
                                 marginLeft: 30,
                                 padding: 8,
                                 width: body_width,
-                                border: "1px solid #c7c7c7"
+                                border: ".5px solid #c7c7c7"
                             }}>
                                 {props.image_data_str && (
                                     <img src={props.image_data_str}

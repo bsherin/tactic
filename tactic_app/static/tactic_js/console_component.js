@@ -1902,7 +1902,7 @@ function LogItem(props) {
       marginLeft: 30,
       padding: 8,
       width: body_width,
-      border: "1px solid #c7c7c7"
+      border: ".5px solid #c7c7c7"
     },
     dangerouslySetInnerHTML: converted_dict
   }), /*#__PURE__*/_react.default.createElement("div", {
@@ -2071,7 +2071,7 @@ function BlobItem(props) {
       marginLeft: 30,
       padding: 8,
       width: body_width,
-      border: "1px solid #c7c7c7"
+      border: ".5px solid #c7c7c7"
     }
   }, props.image_data_str && /*#__PURE__*/_react.default.createElement("img", {
     src: props.image_data_str,
