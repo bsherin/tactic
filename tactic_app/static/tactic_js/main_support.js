@@ -56,7 +56,7 @@ function main_props(data, registerDirtyMethod, finalCallback) {
         "user_id": window.user_id,
         "ppi": ppi
       };
-      postWithCallback(main_id, "initialize_project_mainwindow", data_dict, null, null, main_id);
+      (0, _communication_react.postWithCallback)(main_id, "initialize_project_mainwindow", data_dict, null, null, main_id);
     } else {
       let data_dict = {
         "collection_name": data.collection_name,
@@ -65,7 +65,7 @@ function main_props(data, registerDirtyMethod, finalCallback) {
         "user_id": window.user_id,
         "ppi": ppi
       };
-      postWithCallback(main_id, "initialize_mainwindow", data_dict, _finish_post_load_in_context, null, main_id);
+      (0, _communication_react.postWithCallback)(main_id, "initialize_mainwindow", data_dict, _finish_post_load_in_context, null, main_id);
     }
   }
   function _finish_post_load_in_context(fdata) {

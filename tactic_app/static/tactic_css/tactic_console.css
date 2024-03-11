@@ -103,6 +103,10 @@ body {
 .bp5-dark .link-button-group .bp5-button-text {
   color: #abb3bf;
 }
+.bp5-dark .CodeMirror {
+  border-width: 0.1px;
+  border-color: rgba(171, 179, 191, 0.6);
+}
 
 .log-panel {
   border: none;
@@ -280,7 +284,7 @@ body {
 
 .log-panel-summary {
   padding: 5px 15px;
-  border: 1px solid #c7c7c7 !important;
+  border: 0.5px solid #c7c7c7 !important;
   margin-left: 27px;
   margin-bottom: 5px;
   margin-top: 5px;

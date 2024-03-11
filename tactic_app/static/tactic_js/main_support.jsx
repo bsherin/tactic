@@ -1,6 +1,7 @@
 import {get_ppi, renderSpinnerMessage} from "./utilities_react";
 import {handleCallback} from "./communication_react";
 import {TacticSocket} from "./tactic_socket";
+import {postWithCallback} from "./communication_react";
 
 let ppi;
 var tsocket;
