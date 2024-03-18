@@ -14,6 +14,7 @@ import {doFlash, StatusContext} from "./toaster.js"
 import {postAjax, postAjaxPromise} from "./communication_react.js"
 import {withErrorDrawer, ErrorDrawerContext} from "./error_drawer.js";
 import {withStatus} from "./toaster.js";
+import {withSizeContext} from "./sizing_tools";
 
 import {guid} from "./utilities_react.js";
 import {TacticNavbar} from "./blueprint_navbar";
@@ -217,7 +218,7 @@ HistoryViewerApp.propTypes = {
     edit_content: PropTypes.string,
 };
 
-HistoryViewerApp = memo(HistoryViewerApp);
+HistoryViewerApp = withSizeContext(memo(HistoryViewerApp));
 
 if (!window.in_context) {
     try {
