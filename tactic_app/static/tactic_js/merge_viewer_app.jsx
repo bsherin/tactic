@@ -1,6 +1,5 @@
-
 import React from "react";
-import {Fragment, useState, useEffect, useRef, memo, useContext} from "react";
+import {Fragment, useEffect, useRef, memo, useContext} from "react";
 import PropTypes from 'prop-types';
 
 import {PopoverPosition} from "@blueprintjs/core";
@@ -10,26 +9,28 @@ import {BpSelect} from "./blueprint_mdata_fields";
 import {TacticMenubar} from "./menu_utilities";
 import {ThemeContext} from "./theme"
 import {StatusContext} from "./toaster";
+import {useSize} from "./sizing_tools";
 
 export {MergeViewerApp}
 
+const BOTTOM_MARGIN = 85;
+
 function MergeViewerApp(props) {
 
-    const left_div_ref = useRef(null);
+    const top_ref = useRef(null);
     const above_main_ref = useRef(null);
 
-    const [inner_height, set_inner_height] = useState(window.innerHeight);
     const theme = useContext(ThemeContext);
     const statusFuncs = useContext(StatusContext);
+
+    const [usable_width, usable_height, topX, topY] = useSize(top_ref, 0, "MergeViewerApp");
 
     const button_groups = [
         [{"name_text": "Save", "icon_name": "saved", "click_handler": props.saveHandler}]
     ];
 
-    useEffect(()=>{
-        window.addEventListener("resize", resize_to_window);
+    useEffect(() => {
         props.handleSelectChange(props.select_val);
-        resize_to_window();
         statusFuncs.stopSpinner();
     }, []);
 
@@ -37,10 +38,12 @@ function MergeViewerApp(props) {
         let ms;
         ms = {
             Save: [
-                {name_text: "Save",
-                icon_name: "saved",
-                click_handler: props.saveHandler,
-                key_bindings: ['ctrl+s']},
+                {
+                    name_text: "Save",
+                    icon_name: "saved",
+                    click_handler: props.saveHandler,
+                    key_bindings: ['ctrl+s']
+                },
             ]
         };
         for (const [menu_name, menu] of Object.entries(ms)) {
@@ -51,76 +54,56 @@ function MergeViewerApp(props) {
         return ms
     }
 
-    function resize_to_window() {
-        set_inner_height(window.innerHeight);
+    let toolbar_holder_style = {"paddingTop": 20, paddingLeft: 50};
+    let max_merge_height = usable_height - BOTTOM_MARGIN;
+
+    let left_div_style = {
+        "width": "100%",
+        "height": usable_height,
+        paddingLeft: 25,
+        paddingRight: 25
+
+    };
+
+    let outer_class = "merge-viewer-outer";
+    if (theme.dark_theme) {
+        outer_class = outer_class + " bp5-dark";
+    } else {
+        outer_class = outer_class + " light-theme"
     }
-
-    function get_new_heights (bottom_margin) {
-        let new_ld_height;
-        let max_merge_height;
-        if (left_div_ref && left_div_ref.current) {  // This will be true after the initial render
-            new_ld_height = inner_height - left_div_ref.current.offsetTop ;
-            max_merge_height = new_ld_height - bottom_margin;
-        }
-        else {
-            new_ld_height = inner_height - 45 - bottom_margin;
-            max_merge_height = new_ld_height- 50;
-        }
-        return [new_ld_height, max_merge_height]
-    }
-
-        let toolbar_holder_style = {"paddingTop": 20, paddingLeft: 50};
-        let new_ld_height;
-        let max_merge_height;
-        [new_ld_height, max_merge_height] = get_new_heights(65);
-        let left_div_style = {
-            "width": "100%",
-            "height": new_ld_height,
-            paddingLeft: 25,
-            paddingRight: 25
-
-        };
-
-        let outer_class = "merge-viewer-outer";
-        if (theme.dark_theme) {
-            outer_class = outer_class + " bp5-dark";
-        }
-        else {
-            outer_class = outer_class + " light-theme"
-        }
-        let current_style = {"bottom": 0};
-        return (
-            <Fragment>
-                <TacticMenubar menu_specs={menu_specs()}
-                               connection_status={props.connection_status}
-                               showRefresh={false}
-                               showClose={false}
-                               refreshTab={null}
-                               closeTab={null}
-                               resource_name={props.resource_name}
-                               controlled={false}
-                    />
-                <div className={outer_class}>
-                    <div id="left-div" ref={left_div_ref} style={left_div_style}>
-                        <div id="above-main" ref={above_main_ref} className="d-flex flex-row justify-content-between mb-2">
-                            <span className="align-self-end">Current</span>
-                            <BpSelect options={props.option_list}
-                                      onChange={props.handleSelectChange}
-                                      buttonIcon="application"
-                                      popoverPosition={PopoverPosition.BOTTOM_RIGHT}
-                                      value={props.select_val}/>
-                        </div>
-                        <ReactCodemirrorMergeView handleEditChange={props.handleEditChange}
-                                                  editor_content={props.edit_content}
-                                                  right_content={props.right_content}
-                                                  saveMe={props.saveHandler}
-                                                  max_height={max_merge_height}
-
-                        />
+    let current_style = {"bottom": 0};
+    return (
+        <Fragment>
+            <TacticMenubar menu_specs={menu_specs()}
+                           connection_status={props.connection_status}
+                           showRefresh={false}
+                           showClose={false}
+                           refreshTab={null}
+                           closeTab={null}
+                           resource_name={props.resource_name}
+                           controlled={false}
+            />
+            <div className={outer_class}>
+                <div id="left-div" ref={top_ref} style={left_div_style}>
+                    <div id="above-main" ref={above_main_ref} className="d-flex flex-row justify-content-between mb-2">
+                        <span className="align-self-end">Current</span>
+                        <BpSelect options={props.option_list}
+                                  onChange={props.handleSelectChange}
+                                  buttonIcon="application"
+                                  popoverPosition={PopoverPosition.BOTTOM_RIGHT}
+                                  value={props.select_val}/>
                     </div>
+                    <ReactCodemirrorMergeView handleEditChange={props.handleEditChange}
+                                              editor_content={props.edit_content}
+                                              right_content={props.right_content}
+                                              saveMe={props.saveHandler}
+                                              max_height={max_merge_height}
+
+                    />
                 </div>
-            </Fragment>
-        )
+            </div>
+        </Fragment>
+    )
 }
 
 MergeViewerApp.propTypes = {

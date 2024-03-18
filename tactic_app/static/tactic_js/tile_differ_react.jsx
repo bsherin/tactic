@@ -15,6 +15,7 @@ import {TacticNavbar} from "./blueprint_navbar";
 import {TacticSocket} from "./tactic_socket";
 import {useCallbackStack} from "./utilities_react";
 import {withTheme} from "./theme";
+import {withSizeContext} from "./sizing_tools";
 
 function tile_differ_main() {
     function gotProps(the_props) {
@@ -187,7 +188,7 @@ TileDifferApp.propTypes = {
     second_resource_name: PropTypes.string
 };
 
-TileDifferApp = memo(TileDifferApp);
+TileDifferApp = withSizeContext(memo(TileDifferApp));
 
 if (!window.in_context) {
     tile_differ_main();

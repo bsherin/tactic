@@ -13,23 +13,23 @@ var _blueprint_mdata_fields = require("./blueprint_mdata_fields");
 var _menu_utilities = require("./menu_utilities");
 var _theme = require("./theme");
 var _toaster = require("./toaster");
+var _sizing_tools = require("./sizing_tools");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
+const BOTTOM_MARGIN = 85;
 function MergeViewerApp(props) {
-  const left_div_ref = (0, _react.useRef)(null);
+  const top_ref = (0, _react.useRef)(null);
   const above_main_ref = (0, _react.useRef)(null);
-  const [inner_height, set_inner_height] = (0, _react.useState)(window.innerHeight);
   const theme = (0, _react.useContext)(_theme.ThemeContext);
   const statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
+  const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(top_ref, 0, "MergeViewerApp");
   const button_groups = [[{
     "name_text": "Save",
     "icon_name": "saved",
     "click_handler": props.saveHandler
   }]];
   (0, _react.useEffect)(() => {
-    window.addEventListener("resize", resize_to_window);
     props.handleSelectChange(props.select_val);
-    resize_to_window();
     statusFuncs.stopSpinner();
   }, []);
   function menu_specs() {
@@ -49,32 +49,14 @@ function MergeViewerApp(props) {
     }
     return ms;
   }
-  function resize_to_window() {
-    set_inner_height(window.innerHeight);
-  }
-  function get_new_heights(bottom_margin) {
-    let new_ld_height;
-    let max_merge_height;
-    if (left_div_ref && left_div_ref.current) {
-      // This will be true after the initial render
-      new_ld_height = inner_height - left_div_ref.current.offsetTop;
-      max_merge_height = new_ld_height - bottom_margin;
-    } else {
-      new_ld_height = inner_height - 45 - bottom_margin;
-      max_merge_height = new_ld_height - 50;
-    }
-    return [new_ld_height, max_merge_height];
-  }
   let toolbar_holder_style = {
     "paddingTop": 20,
     paddingLeft: 50
   };
-  let new_ld_height;
-  let max_merge_height;
-  [new_ld_height, max_merge_height] = get_new_heights(65);
+  let max_merge_height = usable_height - BOTTOM_MARGIN;
   let left_div_style = {
     "width": "100%",
-    "height": new_ld_height,
+    "height": usable_height,
     paddingLeft: 25,
     paddingRight: 25
   };
@@ -100,7 +82,7 @@ function MergeViewerApp(props) {
     className: outer_class
   }, /*#__PURE__*/_react.default.createElement("div", {
     id: "left-div",
-    ref: left_div_ref,
+    ref: top_ref,
     style: left_div_style
   }, /*#__PURE__*/_react.default.createElement("div", {
     id: "above-main",

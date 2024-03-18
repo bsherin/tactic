@@ -10,6 +10,7 @@ var _merge_viewer_app = require("./merge_viewer_app");
 var _toaster = require("./toaster.js");
 var _communication_react = require("./communication_react.js");
 var _error_drawer = require("./error_drawer.js");
+var _sizing_tools = require("./sizing_tools");
 var _utilities_react = require("./utilities_react.js");
 var _blueprint_navbar = require("./blueprint_navbar");
 var _tactic_socket = require("./tactic_socket.js");
@@ -194,7 +195,7 @@ HistoryViewerApp.propTypes = {
   history_list: _propTypes.default.array,
   edit_content: _propTypes.default.string
 };
-HistoryViewerApp = /*#__PURE__*/(0, _react.memo)(HistoryViewerApp);
+HistoryViewerApp = (0, _sizing_tools.withSizeContext)( /*#__PURE__*/(0, _react.memo)(HistoryViewerApp));
 if (!window.in_context) {
   try {
     history_viewer_main().then();
