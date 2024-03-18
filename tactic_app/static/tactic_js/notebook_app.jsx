@@ -3,7 +3,7 @@ import "../tactic_css/tactic_console.scss";
 import "../tactic_css/tactic_main.scss";
 
 import React from "react";
-import {Fragment, useEffect, useRef, memo, useContext, useReducer} from "react";
+import {Fragment, useEffect, useRef, memo, useContext, useReducer, useCallback} from "react";
 import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
 
@@ -18,9 +18,9 @@ import {renderSpinnerMessage, SelectedPaneContext, useConnection, useStateAndRef
 
 import {postAjaxPromise, postAjax} from "./communication_react"
 import {ExportsViewer} from "./export_viewer_react";
-import {HorizontalPanes} from "./resizing_layouts";
+import {HorizontalPanes} from "./resizing_layouts2";
 import {ErrorDrawerContext, withErrorDrawer} from "./error_drawer";
-import {getUsableDimensions} from "./sizing_tools";
+import {withSizeContext, useSize, SizeContext} from "./sizing_tools";
 import {useCallbackStack, useConstructor, useReducerAndRef} from "./utilities_react";
 import {notebook_props, notebookReducer} from "./notebook_support";
 
@@ -31,8 +31,9 @@ import {withDialogs} from "./modal_react";
 const MARGIN_SIZE = 10;
 const BOTTOM_MARGIN = 20;
 const MARGIN_ADJUSTMENT = 8; // This is the amount at the top of both the table and the conso
-const USUAL_TOOLBAR_HEIGHT = 50;
 const MENU_BAR_HEIGHT = 30; // will only appear when in context
+
+const cc_style = {marginTop: MARGIN_SIZE};
 
 export {NotebookApp}
 
@@ -41,7 +42,6 @@ function NotebookApp(props) {
     const last_save = useRef({});
     const main_outer_ref = useRef(null);
     const updateExportsList = useRef(null);
-    const height_adjustment = useRef(props.controlled ? MENU_BAR_HEIGHT : 0);
     const connection_status = useConnection(props.tsocket, initSocket);
     const [console_selected_items, set_console_selected_items, console_selected_items_ref] = useStateAndRef([]);
 
@@ -53,8 +53,6 @@ function NotebookApp(props) {
         console_is_shrunk: false,
         resource_name: props.resource_name,
         is_project: props.is_project,
-        usable_height: getUsableDimensions(true).usable_height_no_bottom,
-        usable_width: getUsableDimensions(true).usable_width - 170
     });
     const theme = useContext(ThemeContext);
     const statusFuncs = useContext(StatusContext);
@@ -62,6 +60,7 @@ function NotebookApp(props) {
 
     const pushCallback = useCallbackStack();
     const selectedPane = useContext(SelectedPaneContext);
+    const [usable_width, usable_height, topX, topY] = useSize(main_outer_ref, 0, "NotebookApp");
 
     useConstructor(()=>{
         dispatch({
@@ -86,8 +85,6 @@ function NotebookApp(props) {
 
         if (!props.controlled) {
             document.title = mState.resource_name;
-            window.addEventListener("resize", _update_window_dimensions);
-            _update_window_dimensions();
         }
 
         return (() => {
@@ -109,33 +106,14 @@ function NotebookApp(props) {
         console_width_fraction: mState.console_width_fraction
     };
 
-    function _setMainStateValue(field_name, new_value, callback = null) {
+    const _setMainStateValue = useCallback(function (field_name, new_value, callback=null) {
         mDispatch({
             type: "change_field",
             field: field_name,
             new_value: new_value
         });
         pushCallback(callback)
-    }
-
-    function _update_window_dimensions() {
-        let uwidth;
-        let uheight;
-        if (main_outer_ref && main_outer_ref.current) {
-            uheight = window.innerHeight - main_outer_ref.current.offsetTop;
-            uwidth = window.innerWidth - main_outer_ref.current.offsetLeft;
-        } else {
-            uheight = window.innerHeight - USUAL_TOOLBAR_HEIGHT;
-            uwidth = window.innerWidth - 2 * MARGIN_SIZE;
-        }
-        mDispatch({
-            type: "change_multiple_fields",
-            newPartialState: {
-                usable_height: uheight,
-                usable_width: uwidth
-            }
-        });
-    }
+    }, []);
 
     function _updateLastSave() {
         last_save.current = save_state
@@ -174,9 +152,9 @@ function NotebookApp(props) {
         }
     }
 
-    function _handleConsoleFractionChange(left_width, right_width, new_fraction) {
+    const _handleConsoleFractionChange = useCallback((left_width, right_width, new_fraction)=>{
         _setMainStateValue("console_width_fraction", new_fraction)
-    }
+    }, []);
 
     function _setProjectName(new_project_name, callback = null) {
         if (props.controlled) {
@@ -199,23 +177,11 @@ function NotebookApp(props) {
         }
     }
 
-    function get_zoomed_console_height() {
-        if (main_outer_ref.current) {
-            return _cProp("usable_height") - height_adjustment.current - BOTTOM_MARGIN;
-        } else {
-            return _cProp("usable_height") - height_adjustment.current - 50
-        }
-    }
-
     let my_props = {...props};
     if (!props.controlled) {
         my_props.resource_name = mState.resource_name;
-        my_props.usable_height = mState.usable_height;
-        my_props.usable_width = mState.usable_width;
         my_props.is_project = mState.is_project
     }
-    let true_usable_width = my_props.usable_width;
-    let console_available_height = get_zoomed_console_height() - MARGIN_ADJUSTMENT;
     let project_name = my_props.is_project ? props.resource_name : "";
     let menus = (
         <Fragment>
@@ -246,11 +212,9 @@ function NotebookApp(props) {
                           dispatch={dispatch}
                           mState={mState}
                           setMainStateValue={_setMainStateValue}
-                          console_available_height={console_available_height - MARGIN_SIZE}
-                          console_available_width={true_usable_width * mState.console_width_fraction - 16}
                           zoomable={false}
                           shrinkable={false}
-                          style={{marginTop: MARGIN_SIZE}}
+                          style={cc_style}
         />
     );
     let exports_pane;
@@ -260,10 +224,9 @@ function NotebookApp(props) {
                                       setUpdate={(ufunc) => {
                                           updateExportsList.current = ufunc
                                       }}
-                                      available_height={console_available_height - MARGIN_SIZE}
                                       console_is_shrunk={mState.console_is_shrunk}
                                       console_is_zoomed={mState.console_is_zoomed}
-                                      style={{marginTop: MARGIN_SIZE}}
+                                      style={cc_style}
         />
     } else {
         exports_pane = <div></div>
@@ -291,17 +254,22 @@ function NotebookApp(props) {
             />
             <div className={`main-outer ${theme.dark_theme ? "bp5-dark" : "light-theme"}`}
                  ref={main_outer_ref}
-                 style={{width: "100%", height: my_props.usable_height - height_adjustment.current}}>
+                 style={{width: "100%", height: usable_height}}>
+                <SizeContext.Provider value={{
+                    availableWidth: usable_width,
+                    availableHeight: usable_height - BOTTOM_MARGIN,
+                    topX: topX,
+                    topY: topY
+                }}>
                 <HorizontalPanes left_pane={console_pane}
                                  right_pane={exports_pane}
                                  show_handle={true}
-                                 available_height={console_available_height}
-                                 available_width={true_usable_width}
                                  initial_width_fraction={mState.console_width_fraction}
                                  controlled={true}
                                  dragIconSize={15}
                                  handleSplitUpdate={_handleConsoleFractionChange}
                 />
+            </SizeContext.Provider>
             </div>
         </Fragment>
     )
@@ -326,7 +294,7 @@ NotebookApp.defaultProps = {
 
 function main_main() {
     function gotProps(the_props) {
-        let NotebookAppPlus = withTheme(withDialogs(withErrorDrawer(withStatus(NotebookApp))));
+        let NotebookAppPlus = withSizeContext(withTheme(withDialogs(withErrorDrawer(withStatus(NotebookApp)))));
         let the_element = <NotebookAppPlus {...the_props}
                                            controlled={false}
                                            initial_theme={window.theme}

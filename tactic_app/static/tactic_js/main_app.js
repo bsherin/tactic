@@ -22,7 +22,7 @@ var _blueprint_navbar = require("./blueprint_navbar");
 var _menu_utilities = require("./menu_utilities");
 var _table_react = require("./table_react");
 var _blueprint_table = require("./blueprint_table");
-var _resizing_layouts = require("./resizing_layouts");
+var _resizing_layouts = require("./resizing_layouts2");
 var _main_menus_react = require("./main_menus_react");
 var _tile_react = require("./tile_react");
 var _export_viewer_react = require("./export_viewer_react");
@@ -43,8 +43,8 @@ const BOTTOM_MARGIN = 30; // includes space for status messages at bottom
 const MARGIN_ADJUSTMENT = 8; // This is the amount at the top of both the table and the console
 const CONSOLE_HEADER_HEIGHT = 35;
 const EXTRA_TABLE_AREA_SPACE = 500;
-const USUAL_TOOLBAR_HEIGHT = 50;
 const MENU_BAR_HEIGHT = 30; // will only appear when in context
+const TABLE_CONSOLE_GAP = 20; // handle width plus margin
 
 const iStateDefaults = {
   table_is_shrunk: false,
@@ -70,10 +70,7 @@ function MainApp(props) {
   const last_save = (0, _react.useRef)({});
   const resizing = (0, _react.useRef)(false);
   const updateExportsList = (0, _react.useRef)(null);
-  const height_adjustment = (0, _react.useRef)(0);
   const table_container_ref = (0, _react.useRef)(null);
-  const tile_div_ref = (0, _react.useRef)(null);
-  const tbody_ref = (0, _react.useRef)(null);
   const main_outer_ref = (0, _react.useRef)(null);
   const set_table_scroll = (0, _react.useRef)(null);
   const [console_selected_items, set_console_selected_items, console_selected_items_ref] = (0, _utilities_react.useStateAndRef)([]);
@@ -114,16 +111,14 @@ function MainApp(props) {
     spreadsheet_mode: false,
     // These will maybe only be used if not controlled
     resource_name: props.resource_name,
-    is_project: props.is_project,
-    usable_height: (0, _sizing_tools.getUsableDimensions)(true).usable_height_no_bottom,
-    usable_width: (0, _sizing_tools.getUsableDimensions)(true).usable_width - 170
+    is_project: props.is_project
   });
+  const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(main_outer_ref, 0, "MainApp");
   const connection_status = (0, _utilities_react.useConnection)(props.tsocket, initSocket);
   const pushCallback = (0, _utilities_react.useCallbackStack)();
   (0, _react.useEffect)(() => {
     if (props.controlled) {
       props.registerDirtyMethod(_dirty);
-      height_adjustment.current = MENU_BAR_HEIGHT;
     } else {
       window.addEventListener("beforeunload", function (e) {
         if (_dirty()) {
@@ -136,8 +131,6 @@ function MainApp(props) {
     statusFuncs.stopSpinner();
     if (!props.controlled) {
       document.title = mState.resource_name;
-      window.addEventListener("resize", _update_window_dimensions);
-      _update_window_dimensions();
     }
     return () => {
       delete_my_containers();
@@ -168,26 +161,6 @@ function MainApp(props) {
     show_console_pane: mState.show_console_pane,
     console_is_zoomed: mState.console_is_zoomed
   };
-
-  // This will only be called if not controlled
-  function _update_window_dimensions() {
-    let uwidth;
-    let uheight;
-    if (main_outer_ref && main_outer_ref.current) {
-      uheight = window.innerHeight - main_outer_ref.current.offsetTop;
-      uwidth = window.innerWidth - main_outer_ref.current.offsetLeft;
-    } else {
-      uheight = window.innerHeight - USUAL_TOOLBAR_HEIGHT;
-      uwidth = window.innerWidth - 2 * MARGIN_SIZE;
-    }
-    mDispatch({
-      type: "change_multiple_fields",
-      newPartialState: {
-        usable_height: uheight,
-        usable_width: uwidth
-      }
-    });
-  }
   function _updateLastSave() {
     last_save.current = save_state;
   }
@@ -499,15 +472,7 @@ function MainApp(props) {
   }
 
   // Table doctype-only methods start here
-  function _getTableBodyHeight(table_available_height) {
-    if (!tbody_ref.current) {
-      return table_available_height - 50;
-    } else {
-      let top_offset = tbody_ref.current.getBoundingClientRect().top - table_container_ref.current.getBoundingClientRect().top;
-      let madjust = mState.console_is_shrunk ? 2 * MARGIN_ADJUSTMENT : MARGIN_ADJUSTMENT;
-      return table_available_height - top_offset - madjust;
-    }
-  }
+
   function _setFreeformDoc(doc_name, new_content) {
     if (doc_name == mState.table_spec.current_doc_name) {
       _setMainStateValue("data_text", new_content);
@@ -830,31 +795,6 @@ function MainApp(props) {
       await _handleChangeDoc(visible_doc);
     });
   }
-  function get_hp_height() {
-    if (tile_div_ref.current) {
-      if (mState.console_is_shrunk) {
-        return _cProp("usable_height") - CONSOLE_HEADER_HEIGHT - BOTTOM_MARGIN - height_adjustment.current;
-      } else {
-        return (_cProp("usable_height") - BOTTOM_MARGIN - height_adjustment.current) * mState.height_fraction;
-      }
-    } else {
-      return _cProp("usable_height") - 100;
-    }
-  }
-  function get_vp_height() {
-    if (tile_div_ref.current) {
-      return _cProp("usable_height") - height_adjustment.current - BOTTOM_MARGIN;
-    } else {
-      return _cProp("usable_height") - height_adjustment.current - 50;
-    }
-  }
-  function get_zoomed_console_height() {
-    if (main_outer_ref.current) {
-      return _cProp("usable_height") - height_adjustment.current - BOTTOM_MARGIN;
-    } else {
-      return _cProp("usable_height") - height_adjustment.current - 50;
-    }
-  }
   function _filteredColumnNames() {
     return mState.table_spec.column_names.filter(name => {
       return !(mState.table_spec.hidden_columns_list.includes(name) || name == "__id__");
@@ -885,29 +825,12 @@ function MainApp(props) {
       pushCallback(callback);
     }
   }
-  let vp_height;
-  let hp_height;
-  let console_available_height;
   let my_props = {
     ...props
   };
   if (!props.controlled) {
     my_props.is_project = mState.is_project;
     my_props.resource_name = mState.resource_name;
-    my_props.usable_width = mState.usable_width;
-    my_props.usable_height = mState.usable_height;
-  }
-  let true_usable_width = my_props.usable_width;
-  if (mState.console_is_zoomed) {
-    console_available_height = get_zoomed_console_height() - MARGIN_ADJUSTMENT;
-  } else {
-    vp_height = get_vp_height();
-    hp_height = get_hp_height();
-    if (mState.console_is_shrunk) {
-      console_available_height = CONSOLE_HEADER_HEIGHT;
-    } else {
-      console_available_height = vp_height - hp_height - MARGIN_ADJUSTMENT - 3;
-    }
   }
   let disabled_column_items = [];
   if (mState.selected_column == null) {
@@ -986,7 +909,6 @@ function MainApp(props) {
     show_console_pane: mState.show_console_pane,
     setMainStateValue: _setMainStateValue
   }), /*#__PURE__*/_react.default.createElement(_core.NavbarDivider, null), create_tile_menus());
-  let table_available_height = hp_height;
   let card_body;
   let card_header;
   if (mState.doc_type != "none") {
@@ -1005,19 +927,14 @@ function MainApp(props) {
     if (isFreeform()) {
       card_body = /*#__PURE__*/_react.default.createElement(_table_react.FreeformBody, {
         main_id: props.main_id,
-        ref: tbody_ref,
-        code_container_width: mState.horizontal_fraction * true_usable_width,
-        code_container_height: _getTableBodyHeight(table_available_height),
         mState: mState,
         setMainStateValue: _setMainStateValue
       });
     } else {
       card_body = /*#__PURE__*/_react.default.createElement(_blueprint_table.BlueprintTable, {
         main_id: props.main_id,
-        ref: tbody_ref,
         clearScroll: _clearTableScroll,
         initiateDataGrab: _initiateDataGrab,
-        height: _getTableBodyHeight(table_available_height),
         setCellContent: _setCellContent,
         filtered_column_names: _filteredColumnNames(),
         moveColumn: _moveColumn,
@@ -1028,13 +945,9 @@ function MainApp(props) {
       });
     }
   }
-  let tile_container_height = mState.console_is_shrunk ? table_available_height - MARGIN_ADJUSTMENT : table_available_height;
-  let tile_pane = /*#__PURE__*/_react.default.createElement("div", {
-    ref: tile_div_ref
-  }, /*#__PURE__*/_react.default.createElement(_tile_react.TileContainer, {
+  let tile_pane = /*#__PURE__*/_react.default.createElement("div", null, /*#__PURE__*/_react.default.createElement(_tile_react.TileContainer, {
     main_id: props.main_id,
     tsocket: props.tsocket,
-    height: tile_container_height,
     tile_list: tile_list_ref,
     current_doc_name: mState.table_spec.current_doc_name,
     selected_row: mState.selected_row,
@@ -1053,7 +966,6 @@ function MainApp(props) {
         updateExportsList.current = ufunc;
       },
       setMainStateValue: _setMainStateValue,
-      available_height: console_available_height,
       console_is_shrunk: mState.console_is_shrunk,
       console_is_zoomed: mState.console_is_zoomed
     });
@@ -1073,27 +985,30 @@ function MainApp(props) {
       dispatch: dispatch,
       mState: mState,
       setMainStateValue: _setMainStateValue,
-      console_available_height: console_available_height,
-      console_available_width: true_usable_width * mState.console_width_fraction - 16,
       zoomable: true,
       shrinkable: true
     });
   } else {
-    let console_available_width = true_usable_width * mState.console_width_fraction - 16;
     console_pane = /*#__PURE__*/_react.default.createElement("div", {
       style: {
-        width: console_available_width
+        width: "100%"
       }
     });
+  }
+  let outer_hp_style = null;
+  if (mState.console_is_shrunk) {
+    outer_hp_style = {
+      marginTop: TABLE_CONSOLE_GAP
+    };
   }
   let bottom_pane = /*#__PURE__*/_react.default.createElement(_resizing_layouts.HorizontalPanes, {
     left_pane: console_pane,
     right_pane: exports_pane,
-    show_handle: !mState.console_is_shrunk,
-    available_height: console_available_height,
-    available_width: true_usable_width,
+    show_handle: true,
+    fixed_height: mState.console_is_shrunk,
     initial_width_fraction: mState.console_width_fraction,
     dragIconSize: 15,
+    outer_style: outer_hp_style,
     handleSplitUpdate: _handleConsoleFractionChange
   });
   let table_pane;
@@ -1116,16 +1031,14 @@ function MainApp(props) {
     top_pane = /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement(_resizing_layouts.HorizontalPanes, {
       left_pane: table_pane,
       right_pane: tile_pane,
-      available_height: hp_height,
       show_handle: true,
       scrollAdjustSelectors: [".bp5-table-quadrant-scroll-container", "#tile-div"],
-      available_width: true_usable_width,
       initial_width_fraction: mState.horizontal_fraction,
       dragIconSize: 15,
       handleSplitUpdate: _handleHorizontalFractionChange,
       handleResizeStart: _handleResizeStart,
       handleResizeEnd: _handleResizeEnd
-    }), mState.console_is_shrunk && bottom_pane);
+    }));
   }
   let extra_menubar_buttons = [];
   if (mState.doc_type != "none") {
@@ -1154,14 +1067,49 @@ function MainApp(props) {
     ref: main_outer_ref,
     style: {
       width: "100%",
-      height: my_props.usable_height - height_adjustment.current
+      height: usable_height
     }
-  }, mState.console_is_zoomed && bottom_pane, !mState.console_is_zoomed && mState.console_is_shrunk && top_pane, !mState.console_is_zoomed && !mState.console_is_shrunk && /*#__PURE__*/_react.default.createElement(_resizing_layouts.VerticalPanes, {
+  }, mState.console_is_zoomed && /*#__PURE__*/_react.default.createElement(_sizing_tools.SizeContext.Provider, {
+    value: {
+      availableWidth: usable_width,
+      availableHeight: usable_height - BOTTOM_MARGIN,
+      topX: topX,
+      topY: topY
+    }
+  }, /*#__PURE__*/_react.default.createElement(_resizing_layouts.HorizontalPanes, {
+    left_pane: console_pane,
+    right_pane: exports_pane,
+    show_handle: true,
+    fixed_height: mState.console_is_shrunk,
+    initial_width_fraction: mState.console_width_fraction,
+    dragIconSize: 15,
+    outer_style: outer_hp_style,
+    handleSplitUpdate: _handleConsoleFractionChange
+  })), !mState.console_is_zoomed && mState.console_is_shrunk && /*#__PURE__*/_react.default.createElement(_sizing_tools.SizeContext.Provider, {
+    value: {
+      availableWidth: usable_width,
+      availableHeight: usable_height - CONSOLE_HEADER_HEIGHT - BOTTOM_MARGIN - 20,
+      topX: topX,
+      topY: topY
+    }
+  }, top_pane, /*#__PURE__*/_react.default.createElement(_sizing_tools.SizeContext.Provider, {
+    value: {
+      topX: topX,
+      topY: topY,
+      availableWidth: usable_width,
+      availableHeight: CONSOLE_HEADER_HEIGHT
+    }
+  }, bottom_pane)), !mState.console_is_zoomed && !mState.console_is_shrunk && /*#__PURE__*/_react.default.createElement(_sizing_tools.SizeContext.Provider, {
+    value: {
+      availableWidth: usable_width,
+      availableHeight: usable_height - BOTTOM_MARGIN,
+      topX: topX,
+      topY: topY
+    }
+  }, /*#__PURE__*/_react.default.createElement(_resizing_layouts.VerticalPanes, {
     top_pane: top_pane,
     bottom_pane: bottom_pane,
     show_handle: true,
-    available_width: true_usable_width,
-    available_height: vp_height,
     initial_height_fraction: mState.height_fraction,
     dragIconSize: 15,
     scrollAdjustSelectors: [".bp5-table-quadrant-scroll-container", "#tile-div"],
@@ -1169,7 +1117,7 @@ function MainApp(props) {
     handleResizeStart: _handleResizeStart,
     handleResizeEnd: _handleResizeEnd,
     overflow: "hidden"
-  }))));
+  })))));
 }
 exports.MainApp = MainApp = /*#__PURE__*/(0, _react.memo)(MainApp);
 MainApp.propTypes = {
@@ -1192,7 +1140,7 @@ MainApp.defaultProps = {
 };
 function main_main() {
   function gotProps(the_props) {
-    let MainAppPlus = (0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(MainApp))));
+    let MainAppPlus = (0, _sizing_tools.withSizeContext)((0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(MainApp)))));
     let the_element = /*#__PURE__*/_react.default.createElement(MainAppPlus, (0, _extends2.default)({}, the_props, {
       controlled: false,
       initial_theme: window.theme,

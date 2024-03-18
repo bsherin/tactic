@@ -15,13 +15,14 @@ var _core = require("@blueprintjs/core");
 var _resource_viewer_react_app = require("./resource_viewer_react_app");
 var _tactic_socket = require("./tactic_socket");
 var _communication_react = require("./communication_react");
-var _toaster = require("./toaster");
-var _sizing_tools = require("./sizing_tools");
-var _error_drawer = require("./error_drawer");
+var _toaster = require("./toaster.js");
+var _theme = require("./theme");
+var _error_drawer = require("./error_drawer.js");
 var _utilities_react = require("./utilities_react");
 var _blueprint_navbar = require("./blueprint_navbar");
-var _theme = require("./theme");
 var _modal_react = require("./modal_react");
+var _toaster2 = require("./toaster");
+var _sizing_tools = require("./sizing_tools");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 function list_viewer_props(data, registerDirtyMethod, finalCallback) {
@@ -42,18 +43,20 @@ function list_viewer_props(data, registerDirtyMethod, finalCallback) {
     registerDirtyMethod: registerDirtyMethod
   });
 }
-const LIST_PADDING_TOP = 15;
+const LIST_PADDING_TOP = 20;
 function ListEditor(props) {
+  const top_ref = (0, _react.useRef)(null);
+  const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(top_ref, 0, "ListEditor");
   let tastyle = {
     resize: "horizontal",
     margin: 2,
-    height: props.height - LIST_PADDING_TOP
+    height: usable_height - LIST_PADDING_TOP - 4
   };
   return /*#__PURE__*/_react.default.createElement("div", {
     id: "listarea-container",
-    ref: props.outer_ref,
+    ref: top_ref,
     style: {
-      margin: 0,
+      margin: 2,
       paddingTop: LIST_PADDING_TOP
     }
   }, /*#__PURE__*/_react.default.createElement(_core.TextArea, {
@@ -69,43 +72,28 @@ ListEditor.propTypes = {
   the_content: _propTypes.default.string,
   handleChange: _propTypes.default.func,
   readOnly: _propTypes.default.bool,
-  outer_ref: _propTypes.default.object,
   height: _propTypes.default.number
 };
 function ListViewerApp(props) {
   const top_ref = (0, _react.useRef)(null);
-  const cc_ref = (0, _react.useRef)(null);
   const search_ref = (0, _react.useRef)(null);
-  const cc_offset_top = (0, _react.useRef)(null);
   const savedContent = (0, _react.useRef)(props.the_content);
   const savedTags = (0, _react.useRef)(props.split_tags);
   const savedNotes = (0, _react.useRef)(props.notes);
   const [list_content, set_list_content, list_content_ref] = (0, _utilities_react.useStateAndRef)(props.the_content);
   const [notes, set_notes, notes_ref] = (0, _utilities_react.useStateAndRef)(props.notes);
   const [tags, set_tags, tags_ref] = (0, _utilities_react.useStateAndRef)(props.split_tags);
-
-  // The following only are used if not in context
-  const [usable_width, set_usable_width] = (0, _react.useState)(() => {
-    return (0, _sizing_tools.getUsableDimensions)(true).usable_width - 170;
-  });
-  const [usable_height, set_usable_height] = (0, _react.useState)(() => {
-    return (0, _sizing_tools.getUsableDimensions)(true).usable_height_no_bottom;
-  });
+  const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(top_ref, 0, "ListViewer");
   const [resource_name, set_resource_name] = (0, _react.useState)(props.resource_name);
   const theme = (0, _react.useContext)(_theme.ThemeContext);
   const dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
-  const statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
+  const statusFuncs = (0, _react.useContext)(_toaster2.StatusContext);
   const selectedPane = (0, _react.useContext)(_utilities_react.SelectedPaneContext);
   const errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
+  const sizeInfo = (0, _react.useContext)(_sizing_tools.SizeContext);
   (0, _react.useEffect)(() => {
     statusFuncs.stopSpinner();
-    if (cc_ref && cc_ref.current) {
-      cc_offset_top.current = cc_ref.current.offsetTop;
-    }
-    if (!props.controlled) {
-      window.addEventListener("resize", _update_window_dimensions);
-      _update_window_dimensions();
-    } else {
+    if (props.controlled) {
       props.registerDirtyMethod(_dirty);
     }
   }, []);
@@ -122,8 +110,6 @@ function ListViewerApp(props) {
   });
   function cPropGetters() {
     return {
-      usable_width: usable_width,
-      usable_height: usable_height,
       resource_name: resource_name
     };
   }
@@ -198,21 +184,6 @@ function ListViewerApp(props) {
   function _handleListChange(event) {
     set_list_content(event.target.value);
   }
-  function _update_window_dimensions() {
-    set_usable_width(window.innerWidth - top_ref.current.offsetLeft);
-    set_usable_height(window.innerHeight - top_ref.current.offsetTop);
-  }
-  function get_new_cc_height() {
-    let uheight = _cProp("usable_height");
-    if (cc_offset_top.current) {
-      return uheight - cc_offset_top.current - _sizing_tools.BOTTOM_MARGIN;
-    } else if (cc_ref && cc_ref.current) {
-      // This will be true after the initial render
-      return uheight - cc_ref.current.offsetTop - _sizing_tools.BOTTOM_MARGIN;
-    } else {
-      return uheight - 100;
-    }
-  }
   function am_selected() {
     return selectedPane.amSelected(selectedPane.tab_id, selectedPane.selectedTabIdRef);
   }
@@ -279,19 +250,15 @@ function ListViewerApp(props) {
   let my_props = {
     ...props
   };
-  if (!props.controlled) {
-    my_props.resource_name = resource_name;
-    my_props.usable_height = usable_height;
-    my_props.usable_width = usable_width;
-  }
   let outer_style = {
     width: "100%",
-    height: my_props.usable_height,
+    height: sizeInfo.availableHeight,
     paddingLeft: 0,
     position: "relative"
   };
   let outer_class = "resource-viewer-holder";
   if (!props.controlled) {
+    my_props.resource_name = resource_name;
     if (theme.dark_theme) {
       outer_class = outer_class + " bp5-dark";
     } else {
@@ -326,8 +293,6 @@ function ListViewerApp(props) {
   }), /*#__PURE__*/_react.default.createElement(ListEditor, {
     the_content: list_content,
     readOnly: props.readOnly,
-    outer_ref: cc_ref,
-    height: get_new_cc_height(),
     handleChange: _handleListChange
   }))));
 }
@@ -358,7 +323,7 @@ ListViewerApp.defaultProps = {
 };
 async function list_viewer_main() {
   function gotProps(the_props) {
-    let ListViewerAppPlus = (0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(ListViewerApp))));
+    let ListViewerAppPlus = (0, _sizing_tools.withSizeContext)((0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(ListViewerApp)))));
     let the_element = /*#__PURE__*/_react.default.createElement(ListViewerAppPlus, (0, _extends2.default)({}, the_props, {
       controlled: false,
       initial_theme: window.theme,

@@ -20,7 +20,7 @@ import {withDialogs} from "./modal_react";
 
 
 import {AdminPane} from "./administer_pane"
-import {SIDE_MARGIN, USUAL_TOOLBAR_HEIGHT, getUsableDimensions} from "./sizing_tools";
+import {SIDE_MARGIN, USUAL_NAVBAR_HEIGHT, getUsableDimensions} from "./sizing_tools";
 import {ViewerContext} from "./resource_viewer_context";
 import {ErrorDrawerContext, withErrorDrawer} from "./error_drawer";
 import {guid} from "./utilities_react";
@@ -140,7 +140,7 @@ function AdministerHomeApp(props) {
             uheight = uheight - top_ref.current.offsetTop;
         }
         else {
-            uheight = uheight - USUAL_TOOLBAR_HEIGHT
+            uheight = uheight - USUAL_NAVBAR_HEIGHT
         }
         set_usable_height(uheight);
         set_usable_width(uwidth)

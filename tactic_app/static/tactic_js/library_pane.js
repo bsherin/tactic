@@ -14,10 +14,8 @@ var _core = require("@blueprintjs/core");
 var _popover = require("@blueprintjs/popover2");
 var _table = require("@blueprintjs/table");
 var _lodash = _interopRequireDefault(require("lodash"));
-var _tag_buttons_react = require("./tag_buttons_react");
 var _blueprint_mdata_fields = require("./blueprint_mdata_fields");
-var _library_widgets = require("./library_widgets");
-var _resizing_layouts = require("./resizing_layouts");
+var _resizing_layouts = require("./resizing_layouts2");
 var _communication_react = require("./communication_react");
 var _sizing_tools = require("./sizing_tools");
 var _toaster = require("./toaster.js");
@@ -27,6 +25,7 @@ var _theme = require("./theme");
 var _modal_react = require("./modal_react");
 var _toaster2 = require("./toaster");
 var _error_drawer = require("./error_drawer");
+var _library_table_pane = require("./library_table_pane");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 // noinspection JSValidateTypes,JSDeprecatedSymbols
@@ -94,10 +93,11 @@ BodyMenu.propTypes = {
   selected_rows: _propTypes.default.array
 };
 function LibraryPane(props) {
+  const [usable_width, set_usable_width] = (0, _react.useState)(window.innerWidth);
+  const [usable_height, set_usable_height] = (0, _react.useState)(window.innerHeight);
+  const [topX, setTopX] = (0, _react.useState)(0);
+  const [topY, setTopY] = (0, _react.useState)(0);
   const top_ref = (0, _react.useRef)(null);
-  const table_ref = (0, _react.useRef)(null);
-  const tr_bounding_top = (0, _react.useRef)(null);
-  const resizing = (0, _react.useRef)(false);
   const previous_search_spec = (0, _react.useRef)(null);
   const socket_counter = (0, _react.useRef)(null);
   const blank_selected_resource = (0, _react.useRef)({});
@@ -105,8 +105,6 @@ function LibraryPane(props) {
   const [num_rows, set_num_rows] = (0, _react.useState)(0);
   const [tag_list, set_tag_list, tag_list_ref] = (0, _utilities_react.useStateAndRef)([]);
   const [contextMenuItems, setContextMenuItems] = (0, _react.useState)([]);
-  const [total_width, set_total_width] = (0, _react.useState)(500);
-  const [left_width_fraction, set_left_width_fraction, left_width_fraction_ref] = (0, _utilities_react.useStateAndRef)(.65);
   const [selected_resource, set_selected_resource, selected_resource_ref] = (0, _utilities_react.useStateAndRef)({
     "name": "",
     "_id": "",
@@ -134,13 +132,12 @@ function LibraryPane(props) {
   const dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   const statusFuncs = (0, _react.useContext)(_toaster2.StatusContext);
   const errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
+  const sizeInfo = (0, _react.useContext)(_sizing_tools.SizeContext);
   const stateSetters = {
     data_dict: set_data_dict,
     num_rows: set_num_rows,
     tag_list: set_tag_list,
     contextMenuItems: setContextMenuItems,
-    total_width: set_total_width,
-    left_width_fraction: set_left_width_fraction,
     selected_resource: set_selected_resource,
     selected_rows: set_selected_rows,
     expanded_tags: set_expanded_tags,
@@ -163,10 +160,24 @@ function LibraryPane(props) {
     }
   });
   (0, _react.useEffect)(async () => {
-    tr_bounding_top.current = table_ref.current.getBoundingClientRect().top;
     initSocket();
     await _grabNewChunkWithRow(0);
   }, []);
+  (0, _react.useEffect)(() => {
+    let awidth = sizeInfo.availableWidth;
+    let aheight = sizeInfo.availableHeight;
+    if (top_ref.current) {
+      awidth = awidth - top_ref.current.offsetLeft + sizeInfo.topX;
+      aheight = aheight - top_ref.current.offsetTop + sizeInfo.topY;
+      setTopX(top_ref.current ? top_ref.current.offsetLeft : sizeInfo.topX);
+      setTopY(top_ref.current ? top_ref.current.offsetTop : sizeInfo.topY);
+    } else {
+      setTopX(sizeInfo.topX);
+      setTopY(sizeInfo.topY);
+    }
+    set_usable_width(awidth);
+    set_usable_height(aheight);
+  }, [sizeInfo.availableWidth, sizeInfo.availableHeight]);
   const pushCallback = (0, _utilities_react.useCallbackStack)("library_home");
   function setState(new_state) {
     let callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
@@ -512,43 +523,6 @@ function LibraryPane(props) {
       revised_selected_resource["tags"] = revised_selected_resource["tags"].join(" ");
       set_selected_resource(revised_selected_resource);
       pushCallback(_overwriteCommonTags);
-    }
-  }
-  function _handleSplitResize(left_width, right_width, width_fraction) {
-    if (!resizing.current) {
-      set_left_width_fraction(width_fraction);
-    }
-  }
-  function _handleSplitResizeStart() {
-    resizing.current = true;
-  }
-  function _handleSplitResizeEnd(width_fraction) {
-    resizing.current = false;
-    set_left_width_fraction(width_fraction);
-  }
-  async function _doTagDelete(tag) {
-    const result_dict = {
-      "pane_type": props.pane_type,
-      "tag": tag
-    };
-    let data;
-    try {
-      await (0, _communication_react.postAjaxPromise)("delete_tag", result_dict);
-      await _refresh_func();
-    } catch (e) {
-      errorDrawerFuncs.addFromError("Error deleting tag", e);
-    }
-  }
-  async function _doTagRename(tag_changes) {
-    const result_dict = {
-      "pane_type": props.pane_type,
-      "tag_changes": tag_changes
-    };
-    try {
-      await (0, _communication_react.postAjaxPromise)("rename_tag", result_dict);
-      await _refresh_func();
-    } catch (e) {
-      errorDrawerFuncs.addFromError("Error renaming tag", e);
     }
   }
   function _handleRowDoubleClick(row_dict) {
@@ -1377,18 +1351,6 @@ function LibraryPane(props) {
       }
     }
   }
-  function get_left_pane_height() {
-    let left_pane_height;
-    if (tr_bounding_top.current) {
-      left_pane_height = window.innerHeight - tr_bounding_top.current - _sizing_tools.BOTTOM_MARGIN;
-    } else if (table_ref && table_ref.current) {
-      left_pane_height = window.innerHeight - table_ref.current.getBoundingClientRect().top - _sizing_tools.BOTTOM_MARGIN;
-    } else {
-      table_width = left_width - 150;
-      left_pane_height = props.usable_height - 100;
-    }
-    return left_pane_height;
-  }
   function _menu_funcs() {
     return {
       view_func: _view_func,
@@ -1422,8 +1384,6 @@ function LibraryPane(props) {
     };
   }
   let new_button_groups;
-  let uwidth = props.usable_width;
-  let left_width = uwidth * left_width_fraction_ref.current;
   const primary_mdata_fields = ["name", "created", "updated", "tags", "notes"];
   const ignore_fields = ["doc_type", "res_type"];
   let additional_metadata = {};
@@ -1475,13 +1435,6 @@ function LibraryPane(props) {
     "whiteSpace": "nowrap"
   };
   let MenubarClass = props.MenubarClass;
-  let table_width;
-  const left_pane_height = get_left_pane_height();
-  if (table_ref && table_ref.current) {
-    table_width = left_width - table_ref.current.offsetLeft + top_ref.current.offsetLeft;
-  } else {
-    table_width = left_width - 150;
-  }
   let key_bindings = [[["up"], () => _handleArrowKeyPress("ArrowUp")], [["down"], () => _handleArrowKeyPress("ArrowDown")], [["esc"], _unsearch]];
   let filter_buttons = [];
   for (let rtype of ["all"].concat(res_types)) {
@@ -1500,72 +1453,31 @@ function LibraryPane(props) {
       }
     })));
   }
-  let left_pane = /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement("div", {
-    className: "d-flex flex-row",
-    style: {
-      maxHeight: "100%",
-      position: "relative"
-    }
-  }, /*#__PURE__*/_react.default.createElement("div", {
-    className: "d-flex justify-content-around",
-    style: {
-      paddingRight: 10,
-      maxHeight: left_pane_height
-    }
-  }, /*#__PURE__*/_react.default.createElement(_tag_buttons_react.TagButtonList, {
+  let left_pane = /*#__PURE__*/_react.default.createElement(_library_table_pane.LibraryTablePane, {
+    pane_type: props.pane_type,
     tag_list: tag_list,
-    expanded_tags: expanded_tags_ref.current,
-    active_tag: active_tag_ref.current,
+    expanded_tags_ref: expanded_tags_ref,
+    active_tag_ref: active_tag_ref,
     updateTagState: _update_search_state,
-    doTagDelete: _doTagDelete,
-    doTagRename: _doTagRename
-  })), /*#__PURE__*/_react.default.createElement("div", {
-    ref: table_ref,
-    className: props.pane_type + "-pane",
-    style: {
-      width: table_width,
-      maxWidth: total_width,
-      maxHeight: left_pane_height - 20,
-      // The 20 is for the marginTop and padding
-      overflowY: "scroll",
-      marginTop: 15,
-      padding: 5
-    }
-  }, /*#__PURE__*/_react.default.createElement("div", {
-    style: {
-      display: "flex",
-      flexDirection: "column"
-    }
-  }, props.pane_type == "all" && /*#__PURE__*/_react.default.createElement(_core.FormGroup, {
-    label: "Filter:",
-    inline: true,
-    style: {
-      marginBottom: 0
-    }
-  }, filter_buttons), /*#__PURE__*/_react.default.createElement(_library_widgets.SearchForm, {
-    allow_search_inside: props.allow_search_inside,
-    allow_search_metadata: props.allow_search_metadata,
-    allow_show_hidden: true,
+    filter_buttons: filter_buttons,
     update_search_state: _update_search_state,
-    search_string: search_string_ref.current,
-    search_inside: search_inside_ref.current,
-    show_hidden: show_hidden_ref.current,
-    search_metadata: search_metadata_ref.current
-  })), /*#__PURE__*/_react.default.createElement(_library_widgets.BpSelectorTable, {
-    data_dict: data_dict_ref.current,
+    search_string_ref: search_string_ref,
+    search_inside_ref: search_inside_ref,
+    show_hidden_ref: show_hidden_ref,
+    search_metadata_ref: search_metadata_ref,
+    data_dict_ref: data_dict_ref,
     rowChanged: rowChanged,
     columns: props.columns,
     num_rows: num_rows,
     open_resources_ref: props.open_resources_ref,
     sortColumn: _set_sort_state,
-    selectedRegions: selectedRegionsRef.current,
-    communicateColumnWidthSum: set_total_width,
+    selectedRegionsRef: selectedRegionsRef,
     onSelection: _onTableSelection,
     keyHandler: _handleTableKeyPress,
     initiateDataGrab: _grabNewChunkWithRow,
     renderBodyContextMenu: _renderBodyContextMenu,
     handleRowDoubleClick: _handleRowDoubleClick
-  }))));
+  });
   let selected_types = _selectedTypes();
   selectedTypeRef.current = selected_types.length == 1 ? selected_resource_ref.current.res_type : "multi";
   return /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement(MenubarClass, (0, _extends2.default)({
@@ -1589,21 +1501,19 @@ function LibraryPane(props) {
     className: "d-flex flex-column"
   }, /*#__PURE__*/_react.default.createElement("div", {
     style: {
-      width: uwidth,
-      height: props.usable_height
+      width: "100%",
+      height: usable_height
     }
   }, /*#__PURE__*/_react.default.createElement(_resizing_layouts.HorizontalPanes, {
-    available_width: uwidth,
-    available_height: props.usable_height,
     show_handle: true,
     left_pane: left_pane,
     right_pane: right_pane,
     right_pane_overflow: "auto",
     initial_width_fraction: .75,
     scrollAdjustSelectors: [".bp5-table-quadrant-scroll-container"],
-    handleSplitUpdate: _handleSplitResize,
-    handleResizeStart: _handleSplitResizeStart,
-    handleResizeEnd: _handleSplitResizeEnd
+    handleSplitUpdate: null,
+    handleResizeStart: null,
+    handleResizeEnd: null
   })), /*#__PURE__*/_react.default.createElement(_key_trap.KeyTrap, {
     global: true,
     bindings: key_bindings
@@ -1617,7 +1527,6 @@ LibraryPane.propTypes = {
   allow_search_inside: _propTypes.default.bool,
   allow_search_metadata: _propTypes.default.bool,
   is_repository: _propTypes.default.bool,
-  left_width_fraction: _propTypes.default.number,
   selected_resource: _propTypes.default.object,
   selected_rows: _propTypes.default.array,
   sort_field: _propTypes.default.string,

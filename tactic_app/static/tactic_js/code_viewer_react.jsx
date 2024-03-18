@@ -12,7 +12,6 @@ import {TacticSocket} from "./tactic_socket";
 import {postAjaxPromise, postPromise} from "./communication_react.js"
 import {withStatus, StatusContext} from "./toaster.js"
 
-import {getUsableDimensions, BOTTOM_MARGIN} from "./sizing_tools.js";
 import {withErrorDrawer} from "./error_drawer.js";
 import {guid, SelectedPaneContext} from "./utilities_react";
 import {TacticNavbar} from "./blueprint_navbar";
@@ -21,6 +20,7 @@ import {useCallbackStack, useConstructor, useStateAndRef} from "./utilities_reac
 import {ThemeContext, withTheme} from "./theme"
 import {DialogContext, withDialogs} from "./modal_react";
 import {ErrorDrawerContext} from "./error_drawer";
+import {SizeContext, useSize, withSizeContext} from "./sizing_tools";
 
 export {code_viewer_props, CodeViewerApp}
 
@@ -48,9 +48,7 @@ function code_viewer_props(data, registerDirtyMethod, finalCallback) {
 function CodeViewerApp(props) {
 
     const top_ref = useRef(null);
-    const cc_ref = useRef(null);
     const search_ref = useRef(null);
-    const cc_bounding_top = useRef(null);
 
     const savedContent = useRef(props.the_content);
     const savedTags = useRef(props.split_tags);
@@ -63,13 +61,7 @@ function CodeViewerApp(props) {
     const [regex, set_regex] = useState(false);
     const [search_matches, set_search_matches] = useState(props.null);
 
-    // The following only are used if not in context
-    const [usable_width, set_usable_width] = useState(() => {
-        return getUsableDimensions(true).usable_width - 170
-    });
-    const [usable_height, set_usable_height] = useState(() => {
-        return getUsableDimensions(true).usable_height_no_bottom
-    });
+    const [usable_width, usable_height, topX, topY] = useSize(top_ref, 0, "CodeViewer");
 
     const [resource_name, set_resource_name] = useState(props.resource_name);
 
@@ -77,16 +69,11 @@ function CodeViewerApp(props) {
     const dialogFuncs = useContext(DialogContext);
     const statusFuncs = useContext(StatusContext);
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
+    const sizeInfo = useContext(SizeContext);
 
     useEffect(() => {
         statusFuncs.stopSpinner();
-        if (cc_ref && cc_ref.current) {
-            cc_bounding_top.current = cc_ref.current.getBoundingClientRect().top;
-        }
-        if (!props.controlled) {
-            window.addEventListener("resize", _update_window_dimensions);
-            _update_window_dimensions();
-        } else {
+        if (props.controlled) {
             props.registerDirtyMethod(_dirty)
         }
     }, []);
@@ -121,8 +108,6 @@ function CodeViewerApp(props) {
 
     function cPropGetters() {
         return {
-            usable_width: usable_width,
-            usable_height: usable_height,
             resource_name: resource_name
         }
     }
@@ -204,21 +189,6 @@ function CodeViewerApp(props) {
 
     function _handleCodeChange(new_code) {
         set_code_content(new_code)
-    }
-
-    function _update_window_dimensions() {
-        set_usable_width(window.innerWidth - top_ref.current.offsetLeft);
-        set_usable_height(window.innerHeight - top_ref.current.offsetTop)
-    }
-
-    function get_new_cc_height() {
-        if (cc_bounding_top.current) {
-            return window.innerHeight - cc_bounding_top.current - BOTTOM_MARGIN
-        } else if (cc_ref && cc_ref.current) {  // This will be true after the initial render
-            return window.innerHeight - cc_ref.current.getBoundingClientRect().top - BOTTOM_MARGIN
-        } else {
-            return _cProp("usable_height") - 100
-        }
     }
 
     function _setSearchMatches(nmatches) {
@@ -305,19 +275,15 @@ function CodeViewerApp(props) {
     }
 
     let my_props = {...props};
-    if (!props.controlled) {
-        my_props.resource_name = resource_name;
-        my_props.usable_height = usable_height;
-        my_props.usable_width = usable_width;
-    }
     let outer_style = {
         width: "100%",
-        height: my_props.usable_height,
+        height: sizeInfo.availableHeight,
         paddingLeft: 0,
         position: "relative"
     };
     let outer_class = "resource-viewer-holder";
     if (!props.controlled) {
+        my_props.resource_name = resource_name;
         if (theme.dark_theme) {
             outer_class = outer_class + " bp5-dark";
         } else {
@@ -334,41 +300,40 @@ function CodeViewerApp(props) {
                               user_name={window.username}/>
             }
             <div className={outer_class} ref={top_ref} style={outer_style}>
-                <ResourceViewerApp {...my_props}
-                                   resource_viewer_id={props.resource_viewer_id}
-                                   refreshTab={props.refreshTab}
-                                   closeTab={props.closeTab}
-                                   res_type="code"
-                                   resource_name={my_props.resource_name}
-                                   menu_specs={menu_specs}
-                                   handleStateChange={_handleMetadataChange}
-                                   created={props.created}
-                                   meta_outer={props.meta_outer}
-                                   notes={notes}
-                                   tags={tags}
-                                   saveMe={_saveMe}
-                                   search_ref={search_ref}
-                                   show_search={true}
-                                   update_search_state={_update_search_state}
-                                   search_string={search_string}
-                                   search_matches={search_matches}
-                                   regex={regex}
-                                   allow_regex_search={true}
-                                   showErrorDrawerButton={true}
-                >
-                    <ReactCodemirror code_content={code_content}
-                                     extraKeys={_extraKeys()}
-                                     readOnly={props.readOnly}
-                                     handleChange={_handleCodeChange}
-                                     saveMe={_saveMe}
-                                     search_term={search_string}
-                                     update_search_state={_update_search_state}
-                                     regex_search={regex}
-                                     setSearchMatches={_setSearchMatches}
-                                     code_container_height={get_new_cc_height()}
-                                     ref={cc_ref}
-                    />
-                </ResourceViewerApp>
+                    <ResourceViewerApp {...my_props}
+                                       resource_viewer_id={props.resource_viewer_id}
+                                       refreshTab={props.refreshTab}
+                                       closeTab={props.closeTab}
+                                       res_type="code"
+                                       resource_name={my_props.resource_name}
+                                       menu_specs={menu_specs}
+                                       handleStateChange={_handleMetadataChange}
+                                       created={props.created}
+                                       meta_outer={props.meta_outer}
+                                       notes={notes}
+                                       tags={tags}
+                                       saveMe={_saveMe}
+                                       search_ref={search_ref}
+                                       show_search={true}
+                                       update_search_state={_update_search_state}
+                                       search_string={search_string}
+                                       search_matches={search_matches}
+                                       regex={regex}
+                                       allow_regex_search={true}
+                                       showErrorDrawerButton={true}
+                    >
+                        <ReactCodemirror code_content={code_content}
+                                         no_width={true}
+                                         extraKeys={_extraKeys()}
+                                         readOnly={props.readOnly}
+                                         handleChange={_handleCodeChange}
+                                         saveMe={_saveMe}
+                                         search_term={search_string}
+                                         update_search_state={_update_search_state}
+                                         regex_search={regex}
+                                         setSearchMatches={_setSearchMatches}
+                        />
+                    </ResourceViewerApp>
             </div>
         </Fragment>
     )
@@ -404,7 +369,7 @@ CodeViewerApp.defaultProps = {
 
 function code_viewer_main() {
     function gotProps(the_props) {
-        let CodeViewerAppPlus = withTheme(withDialogs(withErrorDrawer(withStatus(CodeViewerApp))));
+        let CodeViewerAppPlus = withSizeContext(withTheme(withDialogs(withErrorDrawer(withStatus(CodeViewerApp)))));
         let the_element = <CodeViewerAppPlus {...the_props}
                                              controlled={false}
                                              initial_theme={window.theme}

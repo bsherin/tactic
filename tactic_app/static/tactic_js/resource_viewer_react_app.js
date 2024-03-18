@@ -11,7 +11,7 @@ var _react = _interopRequireWildcard(require("react"));
 var _propTypes = _interopRequireDefault(require("prop-types"));
 var _key_trap = require("./key_trap");
 var _blueprint_mdata_fields = require("./blueprint_mdata_fields");
-var _resizing_layouts = require("./resizing_layouts");
+var _resizing_layouts = require("./resizing_layouts2");
 var _communication_react = require("./communication_react");
 var _menu_utilities = require("./menu_utilities");
 var _toaster = require("./toaster");
@@ -76,9 +76,11 @@ function ResourceViewerApp(props) {
   const key_bindings = (0, _react.useRef)([]);
   const [all_tags, set_all_tags] = (0, _react.useState)([]);
   const statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
+  const sizeInfo = (0, _react.useContext)(_sizing_tools.SizeContext);
 
   // Only used when not in context
   const connection_status = (0, _utilities_react.useConnection)(props.tsocket, initSocket);
+  const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(top_ref, 0, "ResourceViewer");
   (0, _react.useEffect)(() => {
     statusFuncs.stopSpinner();
   }, []);
@@ -126,6 +128,7 @@ function ResourceViewerApp(props) {
   })), props.children);
   let right_pane = /*#__PURE__*/_react.default.createElement(_blueprint_mdata_fields.CombinedMetadata, {
     tags: props.tags,
+    expandWidth: true,
     outer_style: {
       marginTop: 0,
       marginLeft: 10,
@@ -154,19 +157,19 @@ function ResourceViewerApp(props) {
   }), /*#__PURE__*/_react.default.createElement("div", {
     ref: top_ref,
     style: {
-      width: props.usable_width,
-      height: props.usable_height,
+      width: usable_width,
+      height: usable_height,
       marginLeft: 15,
       marginTop: 0
     }
   }, /*#__PURE__*/_react.default.createElement(_resizing_layouts.HorizontalPanes, {
-    available_width: props.usable_width - _sizing_tools.SIDE_MARGIN,
-    available_height: props.usable_height,
     left_pane: left_pane,
     show_handle: true,
     right_pane: right_pane,
     initial_width_fraction: .65,
-    am_outer: true
+    am_outer: true,
+    bottom_margin: _sizing_tools.BOTTOM_MARGIN,
+    right_margin: _sizing_tools.SIDE_MARGIN
   })), !window.in_context && /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement(_key_trap.KeyTrap, {
     global: true,
     bindings: key_bindings.current

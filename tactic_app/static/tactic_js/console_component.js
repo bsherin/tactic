@@ -27,6 +27,7 @@ var _search_form = require("./search_form");
 var _searchable_console = require("./searchable_console");
 var _theme = require("./theme");
 var _modal_react = require("./modal_react");
+var _sizing_tools = require("./sizing_tools");
 var _error_drawer = require("./error_drawer");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
@@ -37,7 +38,7 @@ const mdi = (0, _markdownIt.default)({
 });
 mdi.use(_markdownItLatex.default);
 const MAX_CONSOLE_WIDTH = 1800;
-const BUTTON_CONSUMED_SPACE = 208;
+const BUTTON_CONSUMED_SPACE = 143;
 const SECTION_INDENT = 25; // This is also hard coded into the css file at the moment
 const MAX_OUTPUT_LENGTH = 500000;
 function ConsoleComponent(props) {
@@ -47,8 +48,6 @@ function ConsoleComponent(props) {
   const filtered_items_ref = (0, _react.useRef)([]);
   const [console_item_with_focus, set_console_item_with_focus] = (0, _react.useState)(null);
   const [console_item_saved_focus, set_console_item_saved_focus] = (0, _react.useState)(null);
-
-  // const [all_selected_items, set_all_selected_items, all_selected_items_ref] = useStateAndRef([]);
   const [search_string, set_search_string, search_string_ref] = (0, _utilities_react.useStateAndRef)(null);
   const [filter_console_items, set_filter_console_items] = (0, _react.useState)(false);
   const [search_helper_text, set_search_helper_text] = (0, _react.useState)(null);
@@ -60,6 +59,9 @@ function ConsoleComponent(props) {
   const pushCallback = (0, _utilities_react.useCallbackStack)();
   const selectedPane = (0, _react.useContext)(_utilities_react.SelectedPaneContext);
   const errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
+  const sizeInfo = (0, _react.useContext)(_sizing_tools.SizeContext);
+  const [header_usable_width, header_usable_height, header_topX, header_topY] = (0, _sizing_tools.useSize)(header_ref, 0, "HConsoleComponent");
+  const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(body_ref, 0, "ConsoleComponent");
   (0, _react.useEffect)(async () => {
     initSocket();
     _requestPseudoTileId();
@@ -942,20 +944,6 @@ function ConsoleComponent(props) {
     }
     set_console_error_log_text(log_content + new_line);
   }
-  function _bodyHeight() {
-    if (body_ref && body_ref.current) {
-      return props.console_available_height - (body_ref.current.offsetTop - header_ref.current.offsetTop) - 2;
-    } else {
-      return props.console_available_height - 75;
-    }
-  }
-  const _bodyWidth = (0, _react.useMemo)(() => {
-    if (props.console_available_width > MAX_CONSOLE_WIDTH) {
-      return MAX_CONSOLE_WIDTH;
-    } else {
-      return props.console_available_width;
-    }
-  }, [props.console_available_width]);
   const renderContextMenu = (0, _react.useMemo)(() => {
     // return a single element, or nothing to use default browser behavior
     return /*#__PURE__*/_react.default.createElement(_core.Menu, null, /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
@@ -1299,14 +1287,13 @@ function ConsoleComponent(props) {
     console_class = "am-zoomed";
   }
   let outer_style = Object.assign({}, props.style);
-  outer_style.width = _bodyWidth;
+  let true_usable_width = props.mState.console_is_shrunk ? header_usable_width : usable_width;
+  true_usable_width = true_usable_width > MAX_CONSOLE_WIDTH ? MAX_CONSOLE_WIDTH : true_usable_width;
+  outer_style.width = true_usable_width;
   let show_glif_text = outer_style.width > 800;
   let header_style = {};
   if (!props.shrinkable) {
     header_style["paddingLeft"] = 10;
-  }
-  if (!props.mState.console_is_shrunk) {
-    header_style["paddingRight"] = 15;
   }
   let key_bindings = [[["escape"], () => {
     _clear_all_selected_items();
@@ -1416,7 +1403,7 @@ function ConsoleComponent(props) {
     outer_style: {
       overflowX: "auto",
       overflowY: "auto",
-      height: _bodyHeight(),
+      height: usable_height,
       marginLeft: 20,
       marginRight: 20
     },
@@ -1429,7 +1416,7 @@ function ConsoleComponent(props) {
     outer_style: {
       overflowX: "auto",
       overflowY: "auto",
-      height: _bodyHeight(),
+      height: usable_height,
       marginLeft: 20,
       marginRight: 20
     },
@@ -1440,7 +1427,14 @@ function ConsoleComponent(props) {
     className: "contingent-scroll",
     onClick: _clickConsoleBody,
     style: {
-      height: _bodyHeight()
+      height: usable_height
+    }
+  }, /*#__PURE__*/_react.default.createElement(_sizing_tools.SizeContext.Provider, {
+    value: {
+      availableWidth: true_usable_width,
+      availableHeight: usable_height,
+      topX: topX,
+      topY: topY
     }
   }, /*#__PURE__*/_react.default.createElement(_core.ContextMenu, {
     content: renderContextMenu
@@ -1458,7 +1452,6 @@ function ConsoleComponent(props) {
     onDragEnd: _resortConsoleItems,
     setConsoleItemValue: _setConsoleItemValue,
     selectConsoleItem: _selectConsoleItem,
-    console_available_width: _bodyWidth,
     execution_count: 0,
     runCodeItem: _runCodeItem,
     handleDelete: _closeConsoleItem,
@@ -1476,7 +1469,7 @@ function ConsoleComponent(props) {
     pseudo_tile_id: pseudo_tile_id,
     handleCreateViewer: props.handleCreateViewer,
     axis: "y"
-  })), /*#__PURE__*/_react.default.createElement("div", {
+  }))), /*#__PURE__*/_react.default.createElement("div", {
     id: "padding-div",
     style: {
       height: 500
@@ -1621,7 +1614,6 @@ function DividerItem(props) {
   if (props.is_error) {
     panel_class += " error-log-panel";
   }
-  let body_width = props.console_available_width - BUTTON_CONSUMED_SPACE;
   return /*#__PURE__*/_react.default.createElement(_core.ContextMenu, {
     content: renderContextMenu()
   }, /*#__PURE__*/_react.default.createElement("div", {
@@ -1716,7 +1708,6 @@ function SectionEndItem(props) {
   if (props.am_selected) {
     panel_class += " selected";
   }
-  let body_width = props.console_available_width - BUTTON_CONSUMED_SPACE;
   let line_style = {
     marginLeft: 65,
     marginRight: 85,
@@ -1748,6 +1739,8 @@ SectionEndItem = /*#__PURE__*/(0, _react.memo)(SectionEndItem);
 const log_item_update_props = ["is_error", "am_shrunk", "am_selected", "in_section", "summary_text", "console_text", "console_available_width"];
 function LogItem(props) {
   const last_output_text = (0, _react.useRef)("");
+  const body_ref = (0, _react.useRef)(null);
+  const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(body_ref, 0, "LogItem");
   (0, _react.useEffect)(() => {
     executeEmbeddedScripts();
     makeTablesSortable();
@@ -1851,10 +1844,8 @@ function LogItem(props) {
   if (props.is_error) {
     panel_class += " error-log-panel";
   }
-  let body_width = props.console_available_width - BUTTON_CONSUMED_SPACE;
-  if (props.in_section) {
-    body_width -= SECTION_INDENT / 2;
-  }
+  let uwidth = props.in_section ? usable_width - SECTION_INDENT / 2 : usable_width;
+  uwidth -= BUTTON_CONSUMED_SPACE;
   return /*#__PURE__*/_react.default.createElement(_core.ContextMenu, {
     content: renderContextMenu()
   }, /*#__PURE__*/_react.default.createElement("div", {
@@ -1877,32 +1868,29 @@ function LogItem(props) {
       marginTop: 5
     },
     handleClick: _toggleShrink
-  })), props.am_shrunk && /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement(_core.EditableText, {
-    value: props.summary_text,
-    onChange: _handleSummaryTextChange,
-    className: "log-panel-summary"
-  }), /*#__PURE__*/_react.default.createElement("div", {
-    className: "button-div d-flex flex-row"
-  }, /*#__PURE__*/_react.default.createElement(_blueprint_react_widgets.GlyphButton, {
-    handleClick: _deleteMe,
-    intent: "danger",
-    tooltip: "Delete this item",
-    style: {
-      marginLeft: 10,
-      marginRight: 66
-    },
-    icon: "trash"
-  }))), !props.am_shrunk && /*#__PURE__*/_react.default.createElement("div", {
+  })), /*#__PURE__*/_react.default.createElement("div", {
     className: "d-flex flex-column"
   }, /*#__PURE__*/_react.default.createElement("div", {
     className: "log-panel-body d-flex flex-row"
-  }, /*#__PURE__*/_react.default.createElement("div", {
+  }, props.am_shrunk && /*#__PURE__*/_react.default.createElement("div", {
+    ref: body_ref,
+    style: {
+      marginLeft: 30,
+      width: uwidth
+    }
+  }, /*#__PURE__*/_react.default.createElement(_core.EditableText, {
+    value: props.summary_text,
+    onChange: _handleSummaryTextChange,
+    className: "log-panel-summary"
+  })), !props.am_shrunk && /*#__PURE__*/_react.default.createElement("div", {
+    ref: body_ref,
     style: {
       marginTop: 10,
       marginLeft: 30,
       padding: 8,
-      width: body_width,
-      border: ".5px solid #c7c7c7"
+      width: uwidth,
+      border: ".5px solid #c7c7c7",
+      overflowY: "scroll"
     },
     dangerouslySetInnerHTML: converted_dict
   }), /*#__PURE__*/_react.default.createElement("div", {
@@ -1922,6 +1910,8 @@ LogItem = /*#__PURE__*/(0, _react.memo)(LogItem);
 const blob_item_update_props = ["is_error", "am_shrunk", "am_selected", "in_section", "summary_text", "image_data_str", "console_available_width"];
 function BlobItem(props) {
   const last_output_text = (0, _react.useRef)("");
+  const body_ref = (0, _react.useRef)(null);
+  const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(body_ref, 0, "BlobItem");
   (0, _react.useEffect)(() => {
     executeEmbeddedScripts();
     makeTablesSortable();
@@ -2020,10 +2010,8 @@ function BlobItem(props) {
   if (props.am_selected) {
     panel_class += " selected";
   }
-  let body_width = props.console_available_width - BUTTON_CONSUMED_SPACE;
-  if (props.in_section) {
-    body_width -= SECTION_INDENT / 2;
-  }
+  let uwidth = props.in_section ? usable_width - SECTION_INDENT / 2 : usable_width;
+  uwidth -= BUTTON_CONSUMED_SPACE;
   return /*#__PURE__*/_react.default.createElement(_core.ContextMenu, {
     content: renderContextMenu()
   }, /*#__PURE__*/_react.default.createElement("div", {
@@ -2066,17 +2054,18 @@ function BlobItem(props) {
   }, /*#__PURE__*/_react.default.createElement("div", {
     className: "log-panel-body d-flex flex-row"
   }, /*#__PURE__*/_react.default.createElement("div", {
+    ref: body_ref,
     style: {
       marginTop: 10,
       marginLeft: 30,
       padding: 8,
-      width: body_width,
+      width: uwidth,
       border: ".5px solid #c7c7c7"
     }
   }, props.image_data_str && /*#__PURE__*/_react.default.createElement("img", {
     src: props.image_data_str,
     alt: "An Image",
-    width: body_width - 25
+    width: uwidth - 25
   })), /*#__PURE__*/_react.default.createElement("div", {
     className: "button-div d-flex flex-row"
   }, /*#__PURE__*/_react.default.createElement(_blueprint_react_widgets.GlyphButton, {
@@ -2110,6 +2099,7 @@ function ConsoleCodeItem(props) {
   const last_output_text = (0, _react.useRef)("");
   const am_selected_previous = (0, _react.useRef)(false);
   const setFocusFunc = (0, _react.useRef)(null);
+  const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(elRef, 0, "ConsoleCodeItem");
   (0, _react.useEffect)(() => {
     executeEmbeddedScripts();
     makeTablesSortable();
@@ -2158,12 +2148,12 @@ function ConsoleCodeItem(props) {
       sorttable.makeSortable(table);
     }
   }
-  function _stopMe() {
+  const _stopMe = (0, _react.useCallback)(() => {
     _stopMySpinner();
     (0, _communication_react.postWithCallback)(props.main_id, "stop_console_code", {
       "console_id": props.unique_id
     }, null, null, props.main_id);
-  }
+  }, []);
   function _showMySpinner() {
     let callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
     props.setConsoleItemValue(props.unique_id, "show_spinner", true, callback);
@@ -2174,22 +2164,22 @@ function ConsoleCodeItem(props) {
   const _handleChange = (0, _react.useCallback)(new_code => {
     props.setConsoleItemValue(props.unique_id, "console_text", new_code);
   }, []);
-  function _handleSummaryTextChange(value) {
+  const _handleSummaryTextChange = (0, _react.useCallback)(value => {
     props.setConsoleItemValue(props.unique_id, "summary_text", value);
-  }
-  function _toggleShrink() {
+  });
+  const _toggleShrink = (0, _react.useCallback)(() => {
     props.setConsoleItemValue(props.unique_id, "am_shrunk", !props.am_shrunk);
-  }
-  function _deleteMe() {
+  }, [props.am_shrunk]);
+  const _deleteMe = (0, _react.useCallback)(() => {
     if (props.show_spinner) {
       _stopMe();
     }
     props.handleDelete(props.unique_id);
-  }
-  function _clearOutput() {
+  }, [props.show_spinner]);
+  const _clearOutput = (0, _react.useCallback)(function () {
     let callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
     props.setConsoleItemValue(props.unique_id, "output_text", "", callback);
-  }
+  });
   const _extraKeys = (0, _react.useMemo)(() => {
     return {
       'Ctrl-Enter': () => props.runCodeItem(props.unique_id, true),
@@ -2198,14 +2188,14 @@ function ConsoleCodeItem(props) {
       'Ctrl-T': props.addNewTextItem
     };
   }, []);
-  function _getFirstLine() {
+  const _getFirstLine = (0, _react.useCallback)(() => {
     let re = /^(.*)$/m;
     if (props.console_text == "") {
       return "empty text cell";
     } else {
       return re.exec(props.console_text)[0];
     }
-  }
+  }, [props.console_text]);
   function _copyMe() {
     props.copyCell(props.unique_id);
   }
@@ -2232,7 +2222,7 @@ function ConsoleCodeItem(props) {
       props.addNewCodeItem();
     });
   }
-  function renderContextMenu() {
+  const cm = (0, _react.useMemo)(function renderContextMenu() {
     // return a single element, or nothing to use default browser behavior
     return /*#__PURE__*/_react.default.createElement(_core.Menu, null, !props.show_spinner && /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
       icon: "play",
@@ -2279,11 +2269,11 @@ function ConsoleCodeItem(props) {
       },
       text: "Clear Output"
     }));
-  }
-  function _consoleItemClick(e) {
+  });
+  const _consoleItemClick = (0, _react.useCallback)(e => {
     _selectMe(e);
     e.stopPropagation();
-  }
+  });
   const _handleFocus = (0, _react.useCallback)(() => {
     if (!props.am_selected) {
       _selectMe();
@@ -2300,12 +2290,17 @@ function ConsoleCodeItem(props) {
     __html: props.output_text
   };
   let spinner_val = props.running ? null : 0;
-  let code_container_width = props.console_available_width - BUTTON_CONSUMED_SPACE;
-  if (props.in_section) {
-    code_container_width -= SECTION_INDENT / 2;
-  }
+  let uwidth = props.in_section ? usable_width - SECTION_INDENT / 2 : usable_width;
+  uwidth -= BUTTON_CONSUMED_SPACE;
   return /*#__PURE__*/_react.default.createElement(_core.ContextMenu, {
-    content: renderContextMenu()
+    content: cm
+  }, /*#__PURE__*/_react.default.createElement(_sizing_tools.SizeContext.Provider, {
+    value: {
+      availableWidth: uwidth,
+      availableHeight: usable_height,
+      topX: topX,
+      topY: topY
+    }
   }, /*#__PURE__*/_react.default.createElement("div", {
     className: panel_style + " d-flex flex-row",
     ref: elRef,
@@ -2371,7 +2366,7 @@ function ConsoleCodeItem(props) {
     code_content: props.console_text,
     extraKeys: _extraKeys,
     search_term: props.search_string,
-    code_container_width: code_container_width,
+    no_height: true,
     saveMe: null
   }), /*#__PURE__*/_react.default.createElement("div", {
     className: "button-div d-flex flex-row"
@@ -2408,7 +2403,7 @@ function ConsoleCodeItem(props) {
   }))), /*#__PURE__*/_react.default.createElement("div", {
     className: "log-code-output",
     dangerouslySetInnerHTML: output_dict
-  })))));
+  }))))));
 }
 ConsoleCodeItem = /*#__PURE__*/(0, _react.memo)(ConsoleCodeItem);
 ConsoleCodeItem.propTypes = {
@@ -2489,6 +2484,7 @@ function ConsoleTextItem(props) {
   const elRef = (0, _react.useRef)(null);
   const am_selected_previous = (0, _react.useRef)(false);
   const setFocusFunc = (0, _react.useRef)(null);
+  const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(elRef, 0, "ConsoleTextItem");
   (0, _react.useEffect)(() => {
     if (props.am_selected && !am_selected_previous.current && elRef && elRef.current) {
       scrollMeIntoView();
@@ -2533,9 +2529,9 @@ function ConsoleTextItem(props) {
       _showMarkdown();
     }
   }, [props.show_markdown]);
-  function _hideMarkdown() {
+  const _hideMarkdown = (0, _react.useCallback)(() => {
     props.setConsoleItemValue(props.unique_id, "show_markdown", false);
-  }
+  }, []);
   const _handleChange = (0, _react.useCallback)(new_text => {
     props.setConsoleItemValue(props.unique_id, "console_text", new_text);
   }, []);
@@ -2548,9 +2544,9 @@ function ConsoleTextItem(props) {
   function _toggleShrink() {
     props.setConsoleItemValue(props.unique_id, "am_shrunk", !props.am_shrunk);
   }
-  function _deleteMe() {
+  const _deleteMe = (0, _react.useCallback)(() => {
     props.handleDelete(props.unique_id);
-  }
+  }, []);
   function _handleKeyDown(event) {
     if (event.key == "Tab") {
       props.goToNextCell(props.unique_id);
@@ -2715,8 +2711,6 @@ function ConsoleTextItem(props) {
   let gbstyle = {
     marginLeft: 1
   };
-  let body_width = props.console_available_width - BUTTON_CONSUMED_SPACE;
-  let self = this;
   let link_buttons = props.links.map((link, index) => /*#__PURE__*/_react.default.createElement(ResourceLinkButton, {
     key: index,
     my_index: index,
@@ -2725,12 +2719,17 @@ function ConsoleTextItem(props) {
     res_type: link.res_type,
     res_name: link.res_name
   }));
-  let code_container_width = props.console_available_width - BUTTON_CONSUMED_SPACE;
-  if (props.in_section) {
-    code_container_width -= SECTION_INDENT / 2;
-  }
+  let uwidth = props.in_section ? usable_width - SECTION_INDENT / 2 : usable_width;
+  uwidth -= BUTTON_CONSUMED_SPACE;
   return /*#__PURE__*/_react.default.createElement(_core.ContextMenu, {
     content: renderContextMenu()
+  }, /*#__PURE__*/_react.default.createElement(_sizing_tools.SizeContext.Provider, {
+    value: {
+      availableWidth: uwidth,
+      availableHeight: usable_height,
+      topX: topX,
+      topY: topY
+    }
   }, /*#__PURE__*/_react.default.createElement("div", {
     className: panel_class + " d-flex flex-row",
     onClick: _consoleItemClick,
@@ -2797,13 +2796,15 @@ function ConsoleTextItem(props) {
     code_content: props.console_text,
     extraKeys: _extraKeys,
     search_term: props.search_string,
-    code_container_width: code_container_width,
+    no_height: true
+    //code_container_width={code_container_width}
+    ,
     saveMe: null
   })), really_show_markdown && !hasOnlyWhitespace() && /*#__PURE__*/_react.default.createElement("div", {
     className: "text-panel-output",
     onDoubleClick: _hideMarkdown,
     style: {
-      width: body_width,
+      width: uwidth - 81,
       padding: 9
     },
     dangerouslySetInnerHTML: converted_dict
@@ -2818,7 +2819,7 @@ function ConsoleTextItem(props) {
       marginRight: 66
     },
     icon: "trash"
-  }))))));
+  })))))));
 }
 ConsoleTextItem = /*#__PURE__*/(0, _react.memo)(ConsoleTextItem);
 ConsoleTextItem.propTypes = {

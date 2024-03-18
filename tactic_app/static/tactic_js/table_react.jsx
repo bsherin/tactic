@@ -13,8 +13,8 @@ import {postWithCallback} from "./communication_react"
 
 export {MainTableCard, MainTableCardHeader, FreeformBody}
 
-function FreeformBody(props, passedRef) {
-
+function FreeformBody(props) {
+    const top_ref = useRef(null);
     const cmobject = useRef(null);
     const overlay = useRef(null);
 
@@ -74,15 +74,13 @@ function FreeformBody(props, passedRef) {
     _clearSearch();
     _doSearch();
     return (
-        <div ref={passedRef}>
+        <div ref={top_ref}>
             <ReactCodemirror handleBlur={_handleBlur}
                              handleChange={null}
                              code_content={props.mState.data_text}
                              sync_to_prop={true}
                              soft_wrap={props.mState.soft_wrap}
                              mode="Plain Text"
-                             code_container_height={props.code_container_height}
-                             code_container_width={props.code_container_width - 30}
                              setCMObject={_setCMObject}
                              readOnly={false}/>
         </div>
@@ -101,7 +99,7 @@ function FreeformBody(props, passedRef) {
 //     soft_wrap: PropTypes.bool,
 // };
 
-FreeformBody = memo(forwardRef(FreeformBody));
+FreeformBody = memo(FreeformBody);
 
 
 function SmallSpinner () {

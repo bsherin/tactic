@@ -18,6 +18,7 @@ import {arrayMove, useCallbackStack} from "./utilities_react";
 import {ErrorBoundary} from "./error_boundary";
 import {MenuComponent} from "./menu_utilities"
 import {SearchableConsole} from "./searchable_console";
+import {useSize} from "./sizing_tools";
 
 import {ThemeContext} from "./theme";
 import {DialogContext} from "./modal_react";
@@ -107,9 +108,12 @@ function tilesReducer(tile_list, action) {
 }
 
 function TileContainer(props) {
+    const tile_div_ref = useRef(null);
 
     const theme = useContext(ThemeContext);
     const [dragging, setDragging] = useState(false);
+    
+    const [usable_width, usable_height, topX, topY] = useSize(tile_div_ref, 0, "TileContainer");
 
     useEffect(() => {
         initSocket()
@@ -239,34 +243,36 @@ function TileContainer(props) {
         setDragging(true)
     }
 
-    let outer_style = {height: props.height};
+    let outer_style = {height: usable_height};
     return (
-        <SortableComponent id="tile-div"
-                           main_id={props.main_id}
-                           style={outer_style}
-                           helperClass={theme.dark_theme ? "bp5-dark" : "light-theme"}
-                           goToModule={props.goToModule}
-                           ElementComponent={TileComponent}
-                           key_field_name="tile_name"
-                           item_list={_.cloneDeep(props.tile_list.current)}
-                           handle=".tile-name-div"
-                           onSortStart={(_, event) => event.preventDefault()} // This prevents Safari weirdness
-                           onDragEnd={_resortTiles}
-                           onBeforeCapture={beforeCapture}
-                           handleClose={_closeTile}
-                           setTileValue={_setTileValue}
-                           tsocket={props.tsocket}
-                           setTileState={_setTileState}
-                           direction="vertical"
-                           table_is_shrunk={props.table_is_shrunk}
-                           dragging={dragging}
-                           current_doc_name={props.current_doc_name}
-                           selected_row={props.selected_row}
-                           broadcast_event={props.broadcast_event}
-                           useDragHandle={true}
-                           axis="xy"
+        <div ref={tile_div_ref}>
+            <SortableComponent id="tile-div"
+                               main_id={props.main_id}
+                               style={outer_style}
+                               helperClass={theme.dark_theme ? "bp5-dark" : "light-theme"}
+                               goToModule={props.goToModule}
+                               ElementComponent={TileComponent}
+                               key_field_name="tile_name"
+                               item_list={_.cloneDeep(props.tile_list.current)}
+                               handle=".tile-name-div"
+                               onSortStart={(_, event) => event.preventDefault()} // This prevents Safari weirdness
+                               onDragEnd={_resortTiles}
+                               onBeforeCapture={beforeCapture}
+                               handleClose={_closeTile}
+                               setTileValue={_setTileValue}
+                               tsocket={props.tsocket}
+                               setTileState={_setTileState}
+                               direction="vertical"
+                               table_is_shrunk={props.table_is_shrunk}
+                               dragging={dragging}
+                               current_doc_name={props.current_doc_name}
+                               selected_row={props.selected_row}
+                               broadcast_event={props.broadcast_event}
+                               useDragHandle={true}
+                               axis="xy"
 
-        />
+            />
+        </div>
     )
 }
 

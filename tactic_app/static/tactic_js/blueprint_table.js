@@ -12,6 +12,7 @@ var _propTypes = _interopRequireDefault(require("prop-types"));
 var _table = require("@blueprintjs/table");
 var _objectHash = _interopRequireDefault(require("object-hash"));
 var _utilities_react = require("./utilities_react");
+var _sizing_tools = require("./sizing_tools");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 const MAX_INITIAL_CELL_WIDTH = 400;
@@ -30,10 +31,12 @@ ColoredWord.propTypes = {
 };
 ColoredWord = /*#__PURE__*/(0, _react.memo)(ColoredWord);
 function BlueprintTable(props, passedRef) {
+  const top_ref = (0, _react.useRef)(null);
   const mismatched_column_widths = (0, _react.useRef)(false);
   const table_ref = (0, _react.useRef)(null);
   const data_update_required = (0, _react.useRef)(null);
   const [focusedCell, setFocusedCell] = (0, _react.useState)(null);
+  const [usable_width, usable_height] = (0, _sizing_tools.useSize)(top_ref, 0, "BlueprintTable");
   (0, _react.useEffect)(() => {
     computeColumnWidths();
     _updateRowHeights();
@@ -300,11 +303,11 @@ function BlueprintTable(props, passedRef) {
     display: "block",
     overflowY: "auto",
     overflowX: "hidden",
-    height: props.height
+    height: usable_height
   };
   return /*#__PURE__*/_react.default.createElement("div", {
     id: "table-area",
-    ref: passedRef,
+    ref: top_ref,
     style: style
   }, /*#__PURE__*/_react.default.createElement(_table.Table, {
     ref: table_ref,
@@ -327,7 +330,7 @@ function BlueprintTable(props, passedRef) {
     rowHeaderCellRenderer: _rowHeaderCellRenderer
   }, columns));
 }
-exports.BlueprintTable = BlueprintTable = /*#__PURE__*/(0, _react.memo)( /*#__PURE__*/(0, _react.forwardRef)(BlueprintTable));
+exports.BlueprintTable = BlueprintTable = /*#__PURE__*/(0, _react.memo)(BlueprintTable);
 function EnhancedEditableCell(props) {
   const cell_ref = (0, _react.useRef)(null);
   const [am_editing, set_am_editing] = (0, _react.useState)(false);

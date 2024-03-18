@@ -8,8 +8,11 @@ import {GlyphButton, SelectList} from "./blueprint_react_widgets.js";
 import {postWithCallback, postPromise} from "./communication_react.js"
 import {useCallbackStack, useStateAndRef} from "./utilities_react";
 import {ErrorDrawerContext} from "./error_drawer";
+import {useSize} from "./sizing_tools";
 
 export {ExportsViewer}
+
+const FOOTING_HEIGHT = 23;
 
 function TextIcon(props) {
     return (
@@ -74,9 +77,13 @@ ExportButtonListButton.propTypes = {
     active: PropTypes.bool
 };
 
+
 function ExportButtonList(props) {
+    const top_ref = useRef(null);
     const select_ref = useRef(null);
     const export_index_ref = useRef({});
+
+    const [usable_width, usable_height, topX, topY] = useSize(top_ref, 0, "ExportButtonList");
 
     function _buttonPress(fullname) {
         props.handleChange(fullname, export_index_ref.current[fullname].shortname, export_index_ref.current[fullname].tilename)
@@ -137,8 +144,11 @@ function ExportButtonList(props) {
         return groups
     }
     return (
-        <div id="exports-button-list" style={{flexDirection: "column", display: "inline-block", verticalAlign: "top", padding: 15, height:props.body_height}}
-            className="contingent-scroll">
+        <div id="exports-button-list"
+             ref={top_ref}
+             style={{flexDirection: "column", display: "inline-block",
+                 verticalAlign: "top", padding: 15, height: usable_height - FOOTING_HEIGHT}}
+             className="contingent-scroll">
             {create_groups()}
         </div>
     )
@@ -158,6 +168,7 @@ ExportButtonList.propTypes = {
 function ExportsViewer(props) {
     const header_ref = useRef(null);
     const footer_ref = useRef(null);
+    const body_ref = useRef(null);
 
     const [selected_export, set_selected_export, selected_export_ref] = useStateAndRef("");
     const [selected_export_tilename, set_selected_export_tilename] = useState(null);
@@ -182,6 +193,8 @@ function ExportsViewer(props) {
         props.setUpdate(_updateExportsList);
         await _updateExportsList();
     }, []);
+
+    const [usable_width, usable_height, topX, topY] = useSize(body_ref, 0, "ExportsViewer");
 
     function initSocket() {
         props.tsocket.attachListener("export-viewer-message", _handleExportViewerMessage);
@@ -302,15 +315,6 @@ function ExportsViewer(props) {
         set_tail_value(event.target.value);
     }
 
-    function _bodyHeight() {
-        if (header_ref && header_ref.current && footer_ref && footer_ref.current) {
-            return props.available_height - $(header_ref.current).outerHeight() - $(footer_ref.current).outerHeight()
-        }
-        else {
-            return props.available_height - 75
-        }
-    }
-
     async function _sendToConsole() {
         const tail = tail_value;
         let tilename = selected_export_tilename;
@@ -402,15 +406,15 @@ function ExportsViewer(props) {
 
                  </div>
                  {!props.console_is_shrunk &&
-                     <Fragment>
+                     <div ref={body_ref} style={{height: usable_height}}>
                          <div className="d-flex flex_row">
                              <ExportButtonList pipe_dict={pipe_dict}
-                                               body_height={_bodyHeight()}
                                                value={selected_export_ref.current}
                                                handleChange={_handleExportListChange}
                              />
                              <Divider/>
-                             <div id="exports-body" style={{padding: 15, width: "80%", height: _bodyHeight(), display: "inline-block"}}
+                             <div id="exports-body"
+                                  style={{padding: 15, width: "80%", height: "100%", display: "inline-block"}}
                                   className="contingent-scroll" dangerouslySetInnerHTML={exports_body_dict}/>
                          </div>
                          <div id="exports-footing"
@@ -425,7 +429,7 @@ function ExportsViewer(props) {
                                              fontSize={11}/>
                              </FormGroup>
                          </div>
-                     </Fragment>
+                     </div>
              }
              </div>
          </Card>
@@ -435,7 +439,7 @@ function ExportsViewer(props) {
 ExportsViewer = memo(ExportsViewer);
 
 ExportsViewer.propTypes = {
-    available_height: PropTypes.number,
+    // available_height: PropTypes.number,
     console_is_shrunk: PropTypes.bool,
     console_is_zoomed: PropTypes.bool,
     setUpdate: PropTypes.func,

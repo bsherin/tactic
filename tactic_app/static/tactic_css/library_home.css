@@ -348,6 +348,9 @@
 #library-home-root {
   max-height: 100%;
 }
+#library-home-root.not-in-context {
+  height: 100%;
+}
 #library-home-root .selector-button td {
   border: white;
   padding-bottom: 2px !important;

@@ -12,8 +12,10 @@ var _blueprint_react_widgets = require("./blueprint_react_widgets.js");
 var _communication_react = require("./communication_react.js");
 var _utilities_react = require("./utilities_react");
 var _error_drawer = require("./error_drawer");
+var _sizing_tools = require("./sizing_tools");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
+const FOOTING_HEIGHT = 23;
 function TextIcon(props) {
   return /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement("span", {
     className: "bp5-icon",
@@ -90,8 +92,10 @@ ExportButtonListButton.propTypes = {
   active: _propTypes.default.bool
 };
 function ExportButtonList(props) {
+  const top_ref = (0, _react.useRef)(null);
   const select_ref = (0, _react.useRef)(null);
   const export_index_ref = (0, _react.useRef)({});
+  const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(top_ref, 0, "ExportButtonList");
   function _buttonPress(fullname) {
     props.handleChange(fullname, export_index_ref.current[fullname].shortname, export_index_ref.current[fullname].tilename);
   }
@@ -159,12 +163,13 @@ function ExportButtonList(props) {
   }
   return /*#__PURE__*/_react.default.createElement("div", {
     id: "exports-button-list",
+    ref: top_ref,
     style: {
       flexDirection: "column",
       display: "inline-block",
       verticalAlign: "top",
       padding: 15,
-      height: props.body_height
+      height: usable_height - FOOTING_HEIGHT
     },
     className: "contingent-scroll"
   }, create_groups());
@@ -179,6 +184,7 @@ ExportButtonList.propTypes = {
 function ExportsViewer(props) {
   const header_ref = (0, _react.useRef)(null);
   const footer_ref = (0, _react.useRef)(null);
+  const body_ref = (0, _react.useRef)(null);
   const [selected_export, set_selected_export, selected_export_ref] = (0, _utilities_react.useStateAndRef)("");
   const [selected_export_tilename, set_selected_export_tilename] = (0, _react.useState)(null);
   const [key_list, set_key_list] = (0, _react.useState)(null);
@@ -199,6 +205,7 @@ function ExportsViewer(props) {
     props.setUpdate(_updateExportsList);
     await _updateExportsList();
   }, []);
+  const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(body_ref, 0, "ExportsViewer");
   function initSocket() {
     props.tsocket.attachListener("export-viewer-message", _handleExportViewerMessage);
   }
@@ -305,13 +312,6 @@ function ExportsViewer(props) {
   function _handleTailChange(event) {
     set_tail_value(event.target.value);
   }
-  function _bodyHeight() {
-    if (header_ref && header_ref.current && footer_ref && footer_ref.current) {
-      return props.available_height - $(header_ref.current).outerHeight() - $(footer_ref.current).outerHeight();
-    } else {
-      return props.available_height - 75;
-    }
-  }
   async function _sendToConsole() {
     const tail = tail_value;
     let tilename = selected_export_tilename;
@@ -411,11 +411,15 @@ function ExportsViewer(props) {
   }, /*#__PURE__*/_react.default.createElement(_core.Spinner, {
     size: 13,
     value: spinner_val
-  }))), !props.console_is_shrunk && /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement("div", {
+  }))), !props.console_is_shrunk && /*#__PURE__*/_react.default.createElement("div", {
+    ref: body_ref,
+    style: {
+      height: usable_height
+    }
+  }, /*#__PURE__*/_react.default.createElement("div", {
     className: "d-flex flex_row"
   }, /*#__PURE__*/_react.default.createElement(ExportButtonList, {
     pipe_dict: pipe_dict,
-    body_height: _bodyHeight(),
     value: selected_export_ref.current,
     handleChange: _handleExportListChange
   }), /*#__PURE__*/_react.default.createElement(_core.Divider, null), /*#__PURE__*/_react.default.createElement("div", {
@@ -423,7 +427,7 @@ function ExportsViewer(props) {
     style: {
       padding: 15,
       width: "80%",
-      height: _bodyHeight(),
+      height: "100%",
       display: "inline-block"
     },
     className: "contingent-scroll",
@@ -448,7 +452,7 @@ function ExportsViewer(props) {
 }
 exports.ExportsViewer = ExportsViewer = /*#__PURE__*/(0, _react.memo)(ExportsViewer);
 ExportsViewer.propTypes = {
-  available_height: _propTypes.default.number,
+  // available_height: PropTypes.number,
   console_is_shrunk: _propTypes.default.bool,
   console_is_zoomed: _propTypes.default.bool,
   setUpdate: _propTypes.default.func,

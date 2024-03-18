@@ -23,6 +23,7 @@ exports.useDebounce = useDebounce;
 exports.useDidMount = void 0;
 exports.useReducerAndRef = useReducerAndRef;
 exports.useStateAndRef = useStateAndRef;
+exports.useStateAndRefAndCounter = useStateAndRefAndCounter;
 var _lodash = _interopRequireDefault(require("lodash"));
 var _react = _interopRequireWildcard(require("react"));
 var ReactDOM = _interopRequireWildcard(require("react-dom"));
@@ -38,7 +39,8 @@ const SelectedPaneContext = exports.SelectedPaneContext = /*#__PURE__*/(0, _reac
   selectedTabIdRef: "",
   amSelected: () => {
     return true;
-  }
+  },
+  counter: 0
 });
 
 // It's necessary to have effectcount be a ref. Otherwise there can be subtle bugs
@@ -94,6 +96,17 @@ function useStateAndRef(initial) {
   const valueRef = (0, _react.useRef)(value);
   valueRef.current = value;
   return [value, setValue, valueRef];
+}
+function useStateAndRefAndCounter(initial) {
+  function setMe(newValue) {
+    setValue(newValue);
+    setCounter(counter + 1);
+  }
+  const [value, setValue] = (0, _react.useState)(initial);
+  const [counter, setCounter] = (0, _react.useState)(0);
+  const valueRef = (0, _react.useRef)(value);
+  valueRef.current = value;
+  return [value, setMe, valueRef, counter];
 }
 function useReducerAndRef(reducer, initial) {
   const [value, dispatch] = (0, _react.useReducer)(reducer, initial);

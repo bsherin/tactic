@@ -6,18 +6,18 @@ import "../tactic_css/library_home.scss";
 
 import React from "react";
 import * as ReactDOM from 'react-dom'
-import {Fragment, useState, useEffect, useRef, memo, useContext} from "react";
+import {Fragment, useEffect, useRef, memo, useContext} from "react";
 
 import {TacticSocket} from "./tactic_socket";
 import {doFlash} from "./toaster.js";
 import {LibraryPane} from "./library_pane";
-import {getUsableDimensions} from "./sizing_tools";
 import {withStatus} from "./toaster";
 import {withErrorDrawer} from "./error_drawer";
-import { guid, useCallbackStack, useConstructor, useConnection } from "./utilities_react";
+import {guid, useCallbackStack, useConnection } from "./utilities_react";
 import {TacticNavbar} from "./blueprint_navbar";
 import {AllMenubar} from "./library_menubars"
 import {ThemeContext, withTheme} from "./theme";
+import {BOTTOM_MARGIN, SizeContext, useSize, withSizeContext} from "./sizing_tools";
 import {withDialogs} from "./modal_react";
 import {StatusContext} from "./toaster"
 
@@ -30,34 +30,20 @@ const tab_panes = ["all-pane", "collections-pane", "projects-pane", "tiles-pane"
 const controllable_props = ["usable_width", "usable_height"];
 
 function LibraryHomeApp(props) {
-
-    const [usable_height, set_usable_height] = useState(null);
-    const [usable_width, set_usable_width] = useState(null);
+    const top_ref = useRef(null);
+    const [usable_width, usable_height, topX, topY] = useSize(top_ref, 0, "Library");
 
     const theme = useContext(ThemeContext);
     const statusFuncs = useContext(StatusContext);
+    const sizeInfo = useContext(SizeContext);
 
     const connection_status = useConnection(props.tsocket, initSocket);
 
     const pushCallback = useCallbackStack("library_home");
 
-    const top_ref = useRef(null);
-
-    useConstructor(() => {
-        if (!window.in_context) {
-            const aheight = getUsableDimensions(true).usable_height_no_bottom;
-            const awidth = getUsableDimensions(true).usable_width - 170;
-            set_usable_height(aheight);
-            set_usable_width(awidth);
-            }
-    });
 
     useEffect(() => {
         statusFuncs.stopSpinner(null);
-        if (!props.controlled) {
-            window.addEventListener("resize", _handleResize);
-            _handleResize();
-        }
     }, []);
 
     function initSocket() {
@@ -74,16 +60,7 @@ function LibraryHomeApp(props) {
         }
     }
 
-    function _handleResize() {
-        set_usable_width(window.innerWidth - top_ref.current.offsetLeft);
-        set_usable_height(window.innerHeight - top_ref.current.offsetTop)
-    }
-
     let lib_props = {...props};
-    if (!props.controlled) {
-        lib_props.usable_width = usable_width - TAB_BAR_WIDTH;
-        lib_props.usable_height = usable_height;
-    }
     let all_pane = (
         <LibraryPane {...lib_props}
                      connection_status={connection_status}
@@ -113,15 +90,15 @@ function LibraryHomeApp(props) {
         paddingLeft: 0
     };
     let outer_class = "";
-    if (!props.controlled) {
-        outer_class = "library-pane-holder  ";
+    if (!window.in_context) {
+        outer_style.height = "100%";
+        outer_class = "pane-holder  ";
         if (theme.dark_theme) {
             outer_class = `${outer_class} bp5-dark`;
         } else {
             outer_class = `${outer_class} light-theme`;
         }
     }
-
     return (
         <Fragment>
             { !props.controlled &&
@@ -133,7 +110,14 @@ function LibraryHomeApp(props) {
                               user_name={window.username}/>
             }
             <div className={outer_class} ref={top_ref} style={outer_style}>
-                { all_pane }
+                <SizeContext.Provider value={{
+                    topX: topX,
+                    topY: topY,
+                    availableWidth: usable_width,
+                    availableHeight: usable_height - BOTTOM_MARGIN
+                }}>
+                    { all_pane }
+                </SizeContext.Provider>
             </div>
 
         </Fragment>
@@ -144,7 +128,7 @@ LibraryHomeApp = memo(LibraryHomeApp);
 
 function _library_home_main() {
     const tsocket = new TacticSocket("main", 5000, "library", library_id);
-    const LibraryHomeAppPlus = withTheme(withDialogs(withErrorDrawer(withStatus(LibraryHomeApp))));
+    const LibraryHomeAppPlus = withSizeContext(withTheme(withDialogs(withErrorDrawer(withStatus(LibraryHomeApp)))));
     const domContainer = document.querySelector('#library-home-root');
     ReactDOM.render(<LibraryHomeAppPlus tsocket={tsocket}
                                         controlled={false}
