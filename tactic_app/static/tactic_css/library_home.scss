@@ -16,6 +16,10 @@ $regular: #5c7080;
 #library-home-root {
     max-height: 100%;
 
+    &.not-in-context {
+        height: 100%;
+
+    }
     .selector-button {
         td {
             border: white;

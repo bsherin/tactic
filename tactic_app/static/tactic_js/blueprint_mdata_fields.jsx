@@ -21,6 +21,8 @@ import _ from 'lodash';
 import {propsAreEqual, useDebounce} from "./utilities_react";
 import {tile_icon_dict} from "./icon_info";
 
+import {useSize} from "./sizing_tools";
+
 export {icon_dict};
 export {NotesField, CombinedMetadata, BpSelect, BpSelectAdvanced}
 
@@ -485,11 +487,14 @@ IconSelector.propTypes = {
 };
 
 function CombinedMetadata(props) {
+    const top_ref = useRef();
     const [auxIsOpen, setAuxIsOpen] = useState(false);
     const [tempNotes, setTempNotes] = useState(null);
     const [waiting, doUpdate] = useDebounce((newval)=>{
         props.handleChange({"notes": newval});
     });
+
+    const [usable_width, usable_height, topX, topY] = useSize(top_ref, props.tabSelectCounter, "CombinedMetadata");
 
     function _handleNotesChange(event) {
         doUpdate(event.target.value);
@@ -541,8 +546,16 @@ function CombinedMetadata(props) {
         }
     }
     let button_base = auxIsOpen ? "Hide" : "Show";
+    let ostyle = props.outer_style ? _.cloneDeep(props.outer_style) : {};
+    if (props.expandWidth) {
+        ostyle["width"] = "100%";
+    }
+    else {
+        ostyle["width"] = usable_width;
+    }
+
     return (
-        <Card elevation={props.elevation} className="combined-metadata accent-bg" style={props.outer_style}>
+        <Card ref={top_ref} elevation={props.elevation} className="combined-metadata accent-bg" style={ostyle}>
             {props.name != null &&
                 <H4><Icon icon={icon_dict[props.res_type]}
                           style={{marginRight: 6, marginBottom: 2}}/>{props.name}</H4>}
@@ -638,9 +651,11 @@ CombinedMetadata.propTypes = {
 };
 
 CombinedMetadata.defaultProps = {
+    expandWidth: true,
+    tabSelectCounter: 0,
     useTags: true,
     useNotes: true,
-    outer_style: {marginLeft: 20, overflow: "auto", padding: 15},
+    outer_style: {overflow: "auto", padding: 15},
     elevation: 0,
     handleNotesBlur: null,
     category: null,

@@ -119,7 +119,7 @@ function AdministerHomeApp(props) {
     if (top_ref && top_ref.current) {
       uheight = uheight - top_ref.current.offsetTop;
     } else {
-      uheight = uheight - _sizing_tools.USUAL_TOOLBAR_HEIGHT;
+      uheight = uheight - _sizing_tools.USUAL_NAVBAR_HEIGHT;
     }
     set_usable_height(uheight);
     set_usable_width(uwidth);

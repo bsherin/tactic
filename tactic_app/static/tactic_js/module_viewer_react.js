@@ -49,9 +49,7 @@ function module_viewer_props(data, registerDirtyMethod, finalCallback) {
 }
 function ModuleViewerApp(props) {
   const top_ref = (0, _react.useRef)(null);
-  const cc_ref = (0, _react.useRef)(null);
   const search_ref = (0, _react.useRef)(null);
-  const cc_bounding_top = (0, _react.useRef)(null);
   const savedContent = (0, _react.useRef)(props.the_content);
   const savedTags = (0, _react.useRef)(props.split_tags);
   const savedNotes = (0, _react.useRef)(props.notes);
@@ -67,25 +65,13 @@ function ModuleViewerApp(props) {
   const dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   const statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
   const errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
-
-  // The following only are used if not in context
-  const [usable_width, set_usable_width] = (0, _react.useState)(() => {
-    return (0, _sizing_tools.getUsableDimensions)(true).usable_width - 170;
-  });
-  const [usable_height, set_usable_height] = (0, _react.useState)(() => {
-    return (0, _sizing_tools.getUsableDimensions)(true).usable_height_no_bottom;
-  });
+  const sizeInfo = (0, _react.useContext)(_sizing_tools.SizeContext);
   const [resource_name, set_resource_name] = (0, _react.useState)(props.resource_name);
   const selectedPane = (0, _react.useContext)(_utilities_react.SelectedPaneContext);
+  const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(top_ref, 0, "ModuleViewer");
   (0, _react.useEffect)(() => {
     statusFuncs.stopSpinner();
-    if (cc_ref && cc_ref.current) {
-      cc_bounding_top.current = cc_ref.current.getBoundingClientRect().top;
-    }
-    if (!props.controlled) {
-      window.addEventListener("resize", _update_window_dimensions);
-      _update_window_dimensions();
-    } else {
+    if (props.controlled) {
       props.registerDirtyMethod(_dirty);
     }
   }, []);
@@ -100,14 +86,8 @@ function ModuleViewerApp(props) {
       });
     }
   });
-  function _update_window_dimensions() {
-    set_usable_width(window.innerWidth - top_ref.current.offsetLeft);
-    set_usable_height(window.innerHeight - top_ref.current.offsetTop);
-  }
   function cPropGetters() {
     return {
-      usable_width: usable_width,
-      usable_height: usable_height,
       resource_name: resource_name
     };
   }
@@ -229,15 +209,6 @@ function ModuleViewerApp(props) {
     }
     statusFuncs.stopSpinner();
     statusFuncs.clearStatusMessage();
-  }
-  function get_new_cc_height() {
-    if (cc_bounding_top.current) {
-      return window.innerHeight - cc_bounding_top.current - _sizing_tools.BOTTOM_MARGIN;
-    } else if (cc_ref && cc_ref.current) {
-      return window.innerHeight - cc_ref.current.getBoundingClientRect().top - _sizing_tools.BOTTOM_MARGIN;
-    } else {
-      return _cProp("usable_height") - 100;
-    }
   }
   function _setResourceNameState(new_name) {
     let callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
@@ -425,16 +396,14 @@ function ModuleViewerApp(props) {
   };
   if (!props.controlled) {
     my_props.resource_name = resource_name;
-    my_props.usable_height = usable_height;
-    my_props.usable_width = usable_width;
   }
   let outer_style = {
     width: "100%",
-    height: my_props.usable_height,
+    height: sizeInfo.availableHeight,
     paddingLeft: 0,
     position: "relative"
   };
-  let cc_height = get_new_cc_height();
+  // let cc_height = get_new_cc_height();
   let outer_class = "resource-viewer-holder";
   if (!props.controlled) {
     if (theme.dark_theme) {
@@ -478,6 +447,7 @@ function ModuleViewerApp(props) {
     showErrorDrawerButton: true
   }), /*#__PURE__*/_react.default.createElement(_reactCodemirror.ReactCodemirror, {
     code_content: code_content,
+    no_width: true,
     extraKeys: _extraKeys(),
     readOnly: props.readOnly,
     handleChange: _handleCodeChange,
@@ -485,9 +455,7 @@ function ModuleViewerApp(props) {
     search_term: search_string,
     update_search_state: _update_search_state,
     regex_search: regex,
-    setSearchMatches: _setSearchMatches,
-    code_container_height: cc_height,
-    ref: cc_ref
+    setSearchMatches: _setSearchMatches
   }))));
 }
 exports.ModuleViewerApp = ModuleViewerApp = /*#__PURE__*/(0, _react.memo)(ModuleViewerApp);
@@ -503,9 +471,7 @@ ModuleViewerApp.propTypes = {
   notes: _propTypes.default.string,
   readOnly: _propTypes.default.bool,
   is_repository: _propTypes.default.bool,
-  meta_outer: _propTypes.default.string,
-  usable_height: _propTypes.default.number,
-  usable_width: _propTypes.default.number
+  meta_outer: _propTypes.default.string
 };
 ModuleViewerApp.defaultProps = {
   controlled: false,
@@ -516,7 +482,7 @@ ModuleViewerApp.defaultProps = {
 };
 function module_viewer_main() {
   function gotProps(the_props) {
-    let ModuleViewerAppPlus = (0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(ModuleViewerApp))));
+    let ModuleViewerAppPlus = (0, _sizing_tools.withSizeContext)((0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(ModuleViewerApp)))));
     let the_element = /*#__PURE__*/_react.default.createElement(ModuleViewerAppPlus, (0, _extends2.default)({}, the_props, {
       controlled: false,
       initial_theme: window.theme,

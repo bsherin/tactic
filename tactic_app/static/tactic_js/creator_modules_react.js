@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.CommandsModule = CommandsModule;
 exports.ExportModule = ExportModule;
+exports.MetadataModule = MetadataModule;
 exports.OptionModule = OptionModule;
 exports.correctOptionListTypes = correctOptionListTypes;
 var _extends2 = _interopRequireDefault(require("@babel/runtime/helpers/extends"));
@@ -20,6 +21,7 @@ var _toaster = require("./toaster");
 var _lodash = _interopRequireDefault(require("lodash"));
 var _utilities_react = require("./utilities_react");
 var _blueprint_mdata_fields = require("./blueprint_mdata_fields");
+var _sizing_tools = require("./sizing_tools");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 // noinspection JSConstructorReturnsPrimitive
@@ -333,10 +335,13 @@ const blank_form = {
   name_warning_text: null
 };
 function OptionModule(props) {
+  const top_ref = /*#__PURE__*/_react.default.createRef();
   const [active_row, set_active_row] = (0, _react.useState)(null);
   const [form_state, set_form_state] = (0, _react.useState)({
     ...blank_form
   });
+  const sizeInfo = (0, _react.useContext)(_sizing_tools.SizeContext);
+  const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(top_ref, props.tabSelectCounter, "OptionModule");
   const pushCallback = (0, _utilities_react.useCallbackStack)();
   function _delete_option() {
     let new_data_list = _lodash.default.cloneDeep(props.data_list_ref.current);
@@ -438,7 +443,7 @@ function OptionModule(props) {
     "marginTop": 10,
     "marginLeft": 10,
     "marginRight": 10,
-    "height": props.available_height
+    "height": usable_height
   };
   let copied_dlist = props.data_list_ref.current.map(opt => {
     let new_opt = {};
@@ -463,6 +468,7 @@ function OptionModule(props) {
     return new_opt;
   });
   return /*#__PURE__*/_react.default.createElement(_core.Card, {
+    ref: top_ref,
     elevation: 1,
     id: "options-pane",
     className: "d-flex flex-column",
@@ -576,8 +582,11 @@ ExportModuleForm.propTypes = {
   include_tags: _propTypes.default.bool
 };
 function ExportModule(props) {
+  const top_ref = /*#__PURE__*/_react.default.createRef();
   const [active_export_row, set_active_export_row] = (0, _react.useState)(0);
   const [active_save_row, set_active_save_row] = (0, _react.useState)(0);
+  const sizeInfo = (0, _react.useContext)(_sizing_tools.SizeContext);
+  const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(top_ref, props.tabSelectCounter, "ExportModule");
   function _delete_export() {
     let new_data_list = props.export_list;
     new_data_list.splice(active_export_row, 1);
@@ -646,9 +655,10 @@ function ExportModule(props) {
     "marginTop": 10,
     "marginLeft": 10,
     "marginRight": 10,
-    "height": props.available_height
+    "height": usable_height
   };
   return /*#__PURE__*/_react.default.createElement(_core.Card, {
+    ref: top_ref,
     elevation: 1,
     id: "exports-pane",
     className: "d-flex flex-column",
@@ -705,18 +715,33 @@ ExportModule.propTypes = {
   handleNotesAppend: _propTypes.default.func,
   available_height: _propTypes.default.number
 };
-const commands_pane_style = {
-  "marginTop": 10,
-  "marginLeft": 10,
-  "marginRight": 10,
-  "paddingTop": 10
-};
+function MetadataModule(props) {
+  const top_ref = /*#__PURE__*/_react.default.createRef();
+  const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(top_ref, props.tabSelectCounter, "CreatorModule");
+  let md_style = {
+    height: "100%"
+  };
+  return /*#__PURE__*/_react.default.createElement("div", {
+    ref: top_ref,
+    style: {
+      marginLeft: 10,
+      height: usable_height
+    }
+  }, /*#__PURE__*/_react.default.createElement(_blueprint_mdata_fields.CombinedMetadata, (0, _extends2.default)({}, props, {
+    outer_style: md_style
+  })));
+}
+exports.MetadataModule = MetadataModule = /*#__PURE__*/(0, _react.memo)(MetadataModule);
 function CommandsModule(props) {
+  const top_ref = /*#__PURE__*/_react.default.createRef();
+  const commandsRef = (0, _react.useRef)(null);
   const [search_string, set_search_string] = (0, _react.useState)("");
   const [api_dict, set_api_dict] = (0, _react.useState)({});
   const [ordered_categories, set_ordered_categories] = (0, _react.useState)([]);
   const [object_api_dict, set_object_api_dict] = (0, _react.useState)({});
   const [ordered_object_categories, set_ordered_object_categories] = (0, _react.useState)([]);
+  const sizeInfo = (0, _react.useContext)(_sizing_tools.SizeContext);
+  const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(top_ref, props.tabSelectCounter, "CommandModule");
   (0, _react.useEffect)(() => {
     (0, _communication_react.postAjax)("get_api_dict", {}, function (data) {
       set_api_dict(data.api_dict_by_category);
@@ -748,7 +773,15 @@ function CommandsModule(props) {
     });
     command_items.push(res);
   }
+  const commands_pane_style = {
+    "marginTop": 10,
+    "marginLeft": 10,
+    "marginRight": 10,
+    "paddingTop": 10,
+    height: usable_height
+  };
   return /*#__PURE__*/_react.default.createElement(_core.Card, {
+    ref: top_ref,
     elevation: 1,
     id: "commands-pane",
     className: "d-flex flex-column",
@@ -763,11 +796,10 @@ function CommandsModule(props) {
     update_search_state: _updateSearchState,
     search_string: search_string
   })), /*#__PURE__*/_react.default.createElement("div", {
-    ref: props.commands_ref,
+    ref: commandsRef,
     style: {
       fontSize: 13,
-      overflow: "auto",
-      height: props.available_height
+      overflow: "auto"
     }
   }, /*#__PURE__*/_react.default.createElement("h4", null, "Object api"), object_items, /*#__PURE__*/_react.default.createElement("h4", {
     style: {
@@ -776,10 +808,6 @@ function CommandsModule(props) {
   }, "TileBase methods (accessed with self)"), command_items));
 }
 exports.CommandsModule = CommandsModule = /*#__PURE__*/(0, _react.memo)(CommandsModule);
-CommandsModule.propTypes = {
-  commands_ref: _propTypes.default.object,
-  available_height: _propTypes.default.number
-};
 function stringIncludes(str1, str2) {
   return str1.toLowerCase().includes(str2.toLowerCase());
 }

@@ -8,6 +8,7 @@ import {Cell, EditableCell, RowHeaderCell, Column, Table, Regions, RegionCardina
 import hash from "object-hash"
 
 import {useCallbackStack} from "./utilities_react";
+import {useSize} from "./sizing_tools";
 
 export {BlueprintTable, compute_added_column_width}
 
@@ -31,11 +32,13 @@ ColoredWord = memo(ColoredWord);
 
 function BlueprintTable(props, passedRef) {
 
+    const top_ref = useRef(null);
     const mismatched_column_widths = useRef(false);
     const table_ref = useRef(null);
     const data_update_required = useRef(null);
 
     const [focusedCell, setFocusedCell] = useState(null);
+    const [usable_width, usable_height] = useSize(top_ref, 0, "BlueprintTable");
 
     useEffect(()=> {
         computeColumnWidths();
@@ -290,10 +293,10 @@ function BlueprintTable(props, passedRef) {
     let style = {display: "block",
         overflowY: "auto",
         overflowX: "hidden",
-        height: props.height
+        height: usable_height
     };
     return (
-        <div id="table-area" ref={passedRef} style={style}>
+        <div id="table-area" ref={top_ref} style={style}>
             <Table ref={table_ref}
                    key={hash_value()}  // kludge: Having this prevents partial row rendering
                    numRows={props.mState.total_rows}
@@ -317,7 +320,7 @@ function BlueprintTable(props, passedRef) {
         </div>
     );
 }
-BlueprintTable = memo(forwardRef(BlueprintTable));
+BlueprintTable = memo(BlueprintTable);
 
 function EnhancedEditableCell(props)  {
 

@@ -19,16 +19,14 @@ var _key_trap = require("./key_trap");
 var _menu_utilities = require("./menu_utilities");
 var _resource_viewer_react_app = require("./resource_viewer_react_app");
 var _reactCodemirror = require("./react-codemirror");
-var _blueprint_mdata_fields = require("./blueprint_mdata_fields");
 var _creator_modules_react = require("./creator_modules_react");
-var _resizing_layouts = require("./resizing_layouts");
+var _resizing_layouts = require("./resizing_layouts2");
 var _communication_react = require("./communication_react");
 var _toaster = require("./toaster");
 var _sizing_tools = require("./sizing_tools");
 var _error_drawer = require("./error_drawer");
 var _utilities_react = require("./utilities_react");
 var _blueprint_navbar = require("./blueprint_navbar");
-var _library_widgets = require("./library_widgets");
 var _error_boundary = require("./error_boundary");
 var _autocomplete = require("./autocomplete");
 var _theme = require("./theme");
@@ -58,6 +56,7 @@ function CreatorApp(props) {
     em: 0
   });
   const key_bindings = (0, _react.useRef)([]);
+  const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(top_ref, 0, "TileCreator");
   const [tabSelectCounter, setTabSelectCounter] = (0, _react.useState)(0);
   const [foregrounded_panes, set_foregrounded_panes] = (0, _react.useState)({
     "metadata": true,
@@ -90,17 +89,12 @@ function CreatorApp(props) {
   const [selectedTabId, setSelectedTabId] = (0, _react.useState)("metadata");
   const [top_pane_fraction, set_top_pane_fraction] = (0, _react.useState)(props.is_mpl || props.is_d3 ? .5 : 1);
   const [left_pane_fraction, set_left_pane_fraction] = (0, _react.useState)(.5);
-  const [usable_height, set_usable_height] = (0, _react.useState)(() => {
-    return (0, _sizing_tools.getUsableDimensions)(true).usable_height_no_bottom;
-  });
-  const [usable_width, set_usable_width] = (0, _react.useState)(() => {
-    return (0, _sizing_tools.getUsableDimensions)(true).usable_width - 170;
-  });
   const [all_tags, set_all_tags] = (0, _react.useState)([]);
   const theme = (0, _react.useContext)(_theme.ThemeContext);
   const dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   const statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
   const errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
+  const sizeInfo = (0, _react.useContext)(_sizing_tools.SizeContext);
   const selectedPane = (0, _react.useContext)(_utilities_react.SelectedPaneContext);
   const pushCallback = (0, _utilities_react.useCallbackStack)();
   const [resource_name, set_resource_name] = (0, _react.useState)(props.resource_name);
@@ -131,8 +125,6 @@ function CreatorApp(props) {
         }
       });
       document.title = resource_name;
-      window.addEventListener("resize", _update_window_dimensions);
-      _update_window_dimensions();
     }
     _goToLineNumber();
     _update_saved_state();
@@ -163,8 +155,6 @@ function CreatorApp(props) {
   }
   function cPropGetters() {
     return {
-      usable_width: usable_width,
-      usable_height: usable_height,
       resource_name: resource_name
     };
   }
@@ -515,10 +505,6 @@ function CreatorApp(props) {
     set_draw_plot_line_number(data.draw_plot_line_number);
     _update_saved_state();
   }
-  function _update_window_dimensions() {
-    set_usable_width(window.innerWidth - top_ref.current.offsetLeft);
-    set_usable_height(window.innerHeight - top_ref.current.offsetTop);
-  }
   function _update_saved_state() {
     last_save.current = _getSaveDict();
   }
@@ -594,11 +580,7 @@ function CreatorApp(props) {
       } else if (newTabId == "globals") {
         globalObject.current.refresh();
       }
-      if (props.controlled) {
-        setTabSelectCounter(tabSelectCounter + 1);
-      } else {
-        _update_window_dimensions();
-      }
+      setTabSelectCounter(tabSelectCounter + 1);
     });
   }
   function _handleNotesAppend(new_text) {
@@ -697,35 +679,6 @@ function CreatorApp(props) {
   function handleGlobalsChange(new_globals) {
     set_globals_code(new_globals);
   }
-  function get_height_minus_top_offset(element_ref) {
-    let min_offset = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
-    let default_offset = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 100;
-    if (element_ref && element_ref.current) {
-      let offset = element_ref.current.offsetTop;
-      if (offset < min_offset) {
-        offset = min_offset;
-      }
-      return _cProp("usable_height") - offset;
-    } else {
-      return _cProp("usable_height") - default_offset;
-    }
-  }
-  function get_new_tc_height() {
-    return _cProp("usable_height") * top_pane_fraction - 35;
-  }
-  function get_new_rc_height(outer_rc_height) {
-    if (rc_span_ref && rc_span_ref.current) {
-      return outer_rc_height - rc_span_ref.current.offsetHeight;
-    } else {
-      return outer_rc_height - 50;
-    }
-  }
-  function handleTopPaneResize(top_height, bottom_height, top_fraction) {
-    set_top_pane_fraction(top_fraction);
-  }
-  function handleLeftPaneResize(left_width, right_width, left_fraction) {
-    set_left_pane_fraction(left_fraction);
-  }
   function handleTopCodeChange(new_code) {
     if (props.is_mpl) {
       set_draw_plot_code(new_code);
@@ -794,53 +747,20 @@ function CreatorApp(props) {
   };
   if (!props.controlled) {
     my_props.resource_name = resource_name;
-    my_props.usable_height = usable_height;
-    my_props.usable_width = usable_width;
   }
-  let vp_height = get_height_minus_top_offset(vp_ref);
-  let uwidth = my_props.usable_width - 2 * _sizing_tools.SIDE_MARGIN;
-  let uheight = my_props.usable_height;
-  let code_width = uwidth * left_pane_fraction - 35;
   let ch_style = {
     "width": "100%"
   };
   let tc_item;
   if (my_props.is_mpl || my_props.is_d3) {
-    let tc_height = get_new_tc_height();
     let mode = my_props.is_mpl ? "python" : "javascript";
     let code_content = my_props.is_mpl ? draw_plot_code_ref.current : jscript_code_ref.current;
     let first_line_number = my_props.is_mpl ? draw_plot_line_number_ref.current + 1 : 1;
     let title_label = my_props.is_mpl ? "draw_plot" : "(selector, w, h, arg_dict, resizing) =>";
-    tc_item = /*#__PURE__*/_react.default.createElement("div", {
-      key: "dpcode",
-      style: ch_style,
-      className: "d-flex flex-column align-items-baseline code-holder"
-    }, /*#__PURE__*/_react.default.createElement("div", {
-      style: {
-        display: "flex",
-        flexDirection: "row",
-        justifyContent: "space-between",
-        width: "100%"
-      }
-    }, /*#__PURE__*/_react.default.createElement("span", {
-      className: "bp5-ui-text",
-      style: {
-        display: "flex",
-        alignItems: "self-end"
-      }
-    }, title_label), /*#__PURE__*/_react.default.createElement(_library_widgets.SearchForm, {
-      update_search_state: _updateSearchState,
-      search_string: search_string,
-      regex: regex,
-      allow_regex: true,
-      field_width: 200,
-      include_search_jumper: true,
-      searchPrev: _searchPrev,
-      searchNext: _searchNext,
-      search_ref: search_ref,
-      number_matches: search_matches
-    })), /*#__PURE__*/_react.default.createElement(_reactCodemirror.ReactCodemirror, {
+    tc_item = /*#__PURE__*/_react.default.createElement(_reactCodemirror.ReactCodemirror, {
       code_content: code_content,
+      title_label: title_label,
+      show_search: true,
       mode: mode,
       extraKeys: _extraKeys(),
       current_search_number: current_search_cm == "tc" ? current_search_number : null,
@@ -848,55 +768,29 @@ function CreatorApp(props) {
       saveMe: _saveAndCheckpoint,
       setCMObject: _setDpObject,
       search_term: search_string,
-      update_search_state: _updateSearchState,
+      updateSearchState: _updateSearchState,
       alt_clear_selections: _clearAllSelections,
-      first_line_number: first_line_number.current,
-      code_container_height: tc_height,
+      first_line_number: first_line_number,
       readOnly: props.read_only,
       regex_search: regex,
+      search_ref: search_ref,
+      searchPrev: _searchPrev,
+      searchNext: _searchNext,
+      search_matches: search_matches,
       setSearchMatches: num => _setSearchMatches("tc", num),
       extra_autocomplete_list: mode == "python" ? onames_for_autocomplete : []
-    }));
-  }
-  let rc_height;
-  if (my_props.is_mpl || my_props.is_d3) {
-    let bheight = (1 - top_pane_fraction) * uheight - 35;
-    rc_height = get_new_rc_height(bheight);
-  } else {
-    rc_height = get_new_rc_height(vp_height);
+    });
   }
   let bc_item = /*#__PURE__*/_react.default.createElement("div", {
     key: "rccode",
     id: "rccode",
     style: ch_style,
     className: "d-flex flex-column align-items-baseline code-holder"
-  }, /*#__PURE__*/_react.default.createElement("div", {
-    style: {
-      display: "flex",
-      flexDirection: "row",
-      justifyContent: "space-between",
-      width: "100%"
-    }
-  }, /*#__PURE__*/_react.default.createElement("span", {
-    className: "bp5-ui-text",
-    style: {
-      display: "flex",
-      alignItems: "self-end"
-    },
-    ref: rc_span_ref
-  }, "render_content"), !my_props.is_mpl && !my_props.is_d3 && /*#__PURE__*/_react.default.createElement(_library_widgets.SearchForm, {
-    update_search_state: _updateSearchState,
-    search_string: search_string,
-    regex: regex,
-    allow_regex: true,
-    field_width: 200,
-    include_search_jumper: true,
-    searchPrev: _searchPrev,
-    searchNext: _searchNext,
-    search_ref: search_ref,
-    number_matches: search_matches
-  })), /*#__PURE__*/_react.default.createElement(_reactCodemirror.ReactCodemirror, {
+  }, /*#__PURE__*/_react.default.createElement(_reactCodemirror.ReactCodemirror, {
     code_content: render_content_code_ref.current,
+    title_label: "render_content",
+    show_search: !(my_props.is_mpl || my_props.is_d3),
+    updateSearchState: _updateSearchState,
     current_search_number: current_search_cm == "rc" ? current_search_number : null,
     handleChange: handleRenderContentChange,
     extraKeys: _extraKeys(),
@@ -906,9 +800,11 @@ function CreatorApp(props) {
     update_search_state: _updateSearchState,
     alt_clear_selections: _clearAllSelections,
     first_line_number: render_content_line_number_ref.current + 1,
-    code_container_height: rc_height,
     readOnly: props.read_only,
     regex_search: regex,
+    searchPrev: _searchPrev,
+    searchNext: _searchNext,
+    search_matches: search_matches,
     setSearchMatches: num => _setSearchMatches("rc", num),
     extra_autocomplete_list: onames_for_autocomplete
   }));
@@ -920,9 +816,6 @@ function CreatorApp(props) {
       top_pane: tc_item,
       bottom_pane: bc_item,
       show_handle: true,
-      available_height: vp_height,
-      available_width: left_pane_fraction * uwidth - 20,
-      handleSplitUpdate: handleTopPaneResize,
       id: "creator-left"
     }));
   } else {
@@ -930,15 +823,9 @@ function CreatorApp(props) {
       ref: vp_ref
     }, bc_item));
   }
-  let default_module_height = get_height_minus_top_offset(null, 128, 128);
-  let mdata_style = {
-    marginLeft: 20,
-    overflow: "auto",
-    padding: 15,
-    height: default_module_height
-  };
-  let mdata_panel = /*#__PURE__*/_react.default.createElement(_blueprint_mdata_fields.CombinedMetadata, {
+  let mdata_panel = /*#__PURE__*/_react.default.createElement(_creator_modules_react.MetadataModule, {
     tags: tags_ref.current,
+    expandWidth: false,
     all_tags: all_tags,
     readOnly: props.readOnly,
     notes: notes_ref.current,
@@ -947,14 +834,15 @@ function CreatorApp(props) {
     category: category_ref.current,
     pane_type: "tile",
     notes_buttons: _metadataNotesButtons,
-    handleChange: _handleMetadataChange
+    handleChange: _handleMetadataChange,
+    tabSelectCounter: tabSelectCounter
   });
   let option_panel = /*#__PURE__*/_react.default.createElement(_creator_modules_react.OptionModule, {
     data_list_ref: option_list_ref,
     foregrounded: foregrounded_panes["options"],
     handleChange: handleOptionsListChange,
     handleNotesAppend: _handleNotesAppend,
-    available_height: default_module_height
+    tabSelectCounter: tabSelectCounter
   });
   let export_panel = /*#__PURE__*/_react.default.createElement(_creator_modules_react.ExportModule, {
     export_list: export_list_ref.current,
@@ -963,12 +851,11 @@ function CreatorApp(props) {
     foregrounded: foregrounded_panes["exports"],
     handleChange: handleExportsStateChange,
     handleNotesAppend: _handleNotesAppend,
-    available_height: default_module_height
+    tabSelectCounter: tabSelectCounter
   });
-  let methods_height = get_height_minus_top_offset(methods_ref, 128, 128);
   let methods_panel = /*#__PURE__*/_react.default.createElement("div", {
     style: {
-      marginLeft: 5
+      marginLeft: 10
     }
   }, /*#__PURE__*/_react.default.createElement(_reactCodemirror.ReactCodemirror, {
     handleChange: handleMethodsChange,
@@ -980,19 +867,18 @@ function CreatorApp(props) {
     saveMe: _saveAndCheckpoint,
     setCMObject: _setEmObject,
     code_container_ref: methods_ref,
-    code_container_height: methods_height,
     search_term: search_string,
     update_search_state: _updateSearchState,
     alt_clear_selections: _clearAllSelections,
     regex_search: regex,
     first_line_number: extra_methods_line_number_ref.current,
     setSearchMatches: num => _setSearchMatches("em", num),
-    extra_autocomplete_list: onames_for_autocomplete
+    extra_autocomplete_list: onames_for_autocomplete,
+    iCounter: tabSelectCounter
   }));
-  let globals_height = get_height_minus_top_offset(globals_ref, 128, 128);
   let globals_panel = /*#__PURE__*/_react.default.createElement("div", {
     style: {
-      marginLeft: 5
+      marginLeft: 10
     }
   }, /*#__PURE__*/_react.default.createElement(_reactCodemirror.ReactCodemirror, {
     handleChange: handleGlobalsChange,
@@ -1004,20 +890,18 @@ function CreatorApp(props) {
     saveMe: _saveAndCheckpoint,
     setCMObject: _setGlobalObject,
     code_container_ref: globals_ref,
-    code_container_height: globals_height,
     search_term: search_string,
     update_search_state: _updateSearchState,
     alt_clear_selections: _clearAllSelections,
     regex_search: regex,
     first_line_number: 1,
     setSearchMatches: num => _setSearchMatches("gp", num),
-    extra_autocomplete_list: onames_for_autocomplete
+    extra_autocomplete_list: onames_for_autocomplete,
+    iCounter: tabSelectCounter
   }));
-  let commands_height = get_height_minus_top_offset(commands_ref, 128, 128);
   let commands_panel = /*#__PURE__*/_react.default.createElement(_creator_modules_react.CommandsModule, {
     foregrounded: foregrounded_panes["commands"],
-    available_height: commands_height,
-    commands_ref: commands_ref
+    tabSelectCounter: tabSelectCounter
   });
   let right_pane = /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement("div", {
     id: "creator-resources",
@@ -1072,7 +956,7 @@ function CreatorApp(props) {
   }))));
   let outer_style = {
     width: "100%",
-    height: uheight,
+    height: sizeInfo.availableHeight,
     paddingLeft: props.controlled ? 5 : _sizing_tools.SIDE_MARGIN,
     paddingTop: 15
   };
@@ -1084,6 +968,7 @@ function CreatorApp(props) {
       outer_class = outer_class + " light-theme";
     }
   }
+  let uwidth = usable_width - 2 * _sizing_tools.SIDE_MARGIN;
   return /*#__PURE__*/_react.default.createElement(_error_boundary.ErrorBoundary, null, !window.in_context && /*#__PURE__*/_react.default.createElement(_blueprint_navbar.TacticNavbar, {
     is_authenticated: window.is_authenticated,
     selected: null,
@@ -1104,14 +989,22 @@ function CreatorApp(props) {
     className: outer_class,
     ref: top_ref,
     style: outer_style
+  }, /*#__PURE__*/_react.default.createElement(_sizing_tools.SizeContext.Provider, {
+    value: {
+      availableWidth: uwidth,
+      availableHeight: usable_height,
+      topX: topX,
+      topY: topY
+    }
   }, /*#__PURE__*/_react.default.createElement(_resizing_layouts.HorizontalPanes, {
     left_pane: left_pane,
     right_pane: right_pane,
     show_handle: true,
-    available_height: uheight,
-    available_width: uwidth,
-    handleSplitUpdate: handleLeftPaneResize
-  })), !window.in_context && /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement(_key_trap.KeyTrap, {
+    initial_width_fraction: .5,
+    handleSplitUpdate: null,
+    bottom_margin: BOTTOM_MARGIN,
+    right_margin: _sizing_tools.SIDE_MARGIN
+  }))), !window.in_context && /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement(_key_trap.KeyTrap, {
     global: true,
     bindings: key_bindings.current
   }))));
@@ -1154,7 +1047,7 @@ CreatorApp.defaultProps = {
 };
 function tile_creator_main() {
   function gotProps(the_props) {
-    let CreatorAppPlus = (0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(CreatorApp))));
+    let CreatorAppPlus = (0, _sizing_tools.withSizeContext)((0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(CreatorApp)))));
     let the_element = /*#__PURE__*/_react.default.createElement(CreatorAppPlus, (0, _extends2.default)({}, the_props, {
       controlled: false,
       initial_theme: window.theme,

@@ -4,11 +4,11 @@ import {Fragment, useState, useEffect, useRef, memo, useContext} from 'react';
 
 import {KeyTrap} from "./key_trap";
 import {CombinedMetadata} from "./blueprint_mdata_fields";
-import {HorizontalPanes} from "./resizing_layouts";
+import {HorizontalPanes} from "./resizing_layouts2";
 import {handleCallback} from "./communication_react"
 import {TacticMenubar} from "./menu_utilities"
 import {doFlash, StatusContext} from "./toaster";
-import {SIDE_MARGIN} from "./sizing_tools"
+import {BOTTOM_MARGIN, SIDE_MARGIN, SizeContext, useSize} from "./sizing_tools"
 import {SearchForm} from "./library_widgets";
 import {useConnection} from "./utilities_react";
 import {postAjaxPromise} from "./communication_react";
@@ -77,9 +77,12 @@ function ResourceViewerApp(props) {
     const [all_tags, set_all_tags] = useState([]);
 
     const statusFuncs = useContext(StatusContext);
+    const sizeInfo = useContext(SizeContext);
 
     // Only used when not in context
     const connection_status = useConnection(props.tsocket, initSocket);
+
+    const [usable_width, usable_height, topX, topY] = useSize(top_ref, 0, "ResourceViewer");
 
     useEffect(() => {
         statusFuncs.stopSpinner();
@@ -136,6 +139,7 @@ function ResourceViewerApp(props) {
 
     let right_pane = (
         <CombinedMetadata tags={props.tags}
+                          expandWidth={true}
                           outer_style={{
                               marginTop: 0, marginLeft: 10, overflow: "auto", padding: 15,
                               marginRight: 0, height: "100%"
@@ -161,14 +165,17 @@ function ResourceViewerApp(props) {
                            showErrorDrawerButton={props.showErrorDrawerButton}
             />
             <div ref={top_ref}
-                 style={{width: props.usable_width, height: props.usable_height, marginLeft: 15, marginTop: 0}}>
-                <HorizontalPanes available_width={props.usable_width - SIDE_MARGIN}
-                                 available_height={props.usable_height}
-                                 left_pane={left_pane}
+                 style={{
+                     width: usable_width,
+                     height: usable_height,
+                     marginLeft: 15, marginTop: 0}}>
+                <HorizontalPanes left_pane={left_pane}
                                  show_handle={true}
                                  right_pane={right_pane}
                                  initial_width_fraction={.65}
                                  am_outer={true}
+                                 bottom_margin={BOTTOM_MARGIN}
+                                 right_margin={SIDE_MARGIN}
                 />
             </div>
             {!window.in_context &&

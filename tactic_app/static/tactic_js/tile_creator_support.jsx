@@ -1,10 +1,16 @@
 
+import React from "react";
+import {useContext, useEffect, useRef, useState} from "react";
 import {TacticSocket} from "./tactic_socket";
 import {renderSpinnerMessage} from "./utilities_react";
 import {handleCallback, postWithCallback} from "./communication_react";
 import {correctOptionListTypes} from "./creator_modules_react";
+import {SearchForm} from "./library_widgets";
+import {ReactCodemirror} from "./react-codemirror";
 
-export {creator_props}
+import {SizeContext} from "./sizing_tools";
+
+export {creator_props, TopCodePane}
 
 function creator_props(data, registerDirtyMethod, finalCallback) {
 
@@ -96,3 +102,57 @@ function creator_props(data, registerDirtyMethod, finalCallback) {
         }
     }
 }
+
+function TopCodePane(props) {
+    const sizeInfo = useContext(SizeContext);
+
+    let mode = props.is_mpl ? "python" : "javascript";
+    let code_content = props.is_mpl ? props.draw_plot_code_ref.current : props.jscript_code_ref.current;
+    let first_line_number = props.is_mpl ? props.draw_plot_line_number_ref.current + 1 : 1;
+    let title_label = props.is_mpl ? "draw_plot" : "(selector, w, h, arg_dict, resizing) =>";
+    let ch_style = {"width": "100%"};
+    return (
+        <div key="dpcode" style={ch_style} className="d-flex flex-column align-items-baseline code-holder">
+            <div style={{display: "flex", flexDirection: "row", justifyContent: "space-between", width: "100%"}}>
+                <span className="bp5-ui-text"
+                      style={{display: "flex", alignItems: "self-end"}}>{title_label}</span>
+                <SearchForm update_search_state={props.updateSearchState}
+                            search_string={props.search_string}
+                            regex={props.regex}
+                            allow_regex={true}
+                            field_width={200}
+                            include_search_jumper={true}
+                            searchPrev={_searchPrev}
+                            searchNext={_searchNext}
+                            search_ref={props.search_ref}
+                            number_matches={props.search_matches}
+                />
+            </div>
+            <SizeContext.Provider value={{
+                availableWidth: sizeInfo.availableWidth,
+                availableHeight: sizeInfo.availableHeight,
+                topX: sizeInfo.topX,
+                topY: sizeInfo.topY
+            }}>
+                <ReactCodemirror code_content={code_content}
+                                 mode={mode}
+                                 extraKeys={props.extraKeys()}
+                                 current_search_number={props.current_search_cm == "tc" ? props.current_search_number : null}
+                                 handleChange={props.handleTopCodeChange}
+                                 saveMe={props.saveAndCheckpoint}
+                                 setCMObject={props.setCMObject}
+                                 search_term={props.search_term}
+                                 update_search_state={props.updateSearchState}
+                                 alt_clear_selections={props.clearAllSelections}
+                                 first_line_number={first_line_number.current}
+                                 // code_container_height={tc_height}
+                                 readOnly={props.read_only}
+                                 regex_search={props.regex}
+                                 setSearchMatches={(num) => props.setSearchMatches("tc", num)}
+                                 extra_autocomplete_list={mode == "python" ? props.onames_for_autocomplete : []}
+                />
+            </SizeContext.Provider>
+        </div>
+    );
+}
+

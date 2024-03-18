@@ -30,6 +30,7 @@ import {FilterSearchForm} from "./search_form";
 import {SearchableConsole} from "./searchable_console";
 import {ThemeContext} from "./theme";
 import {DialogContext} from "./modal_react"
+import {SizeContext, useSize} from "./sizing_tools";
 
 import {useCallbackStack, useStateAndRef, useConstructor} from "./utilities_react";
 import {ErrorDrawerContext} from "./error_drawer";
@@ -37,7 +38,7 @@ import {ErrorDrawerContext} from "./error_drawer";
 export {ConsoleComponent}
 
 const MAX_CONSOLE_WIDTH = 1800;
-const BUTTON_CONSUMED_SPACE = 208;
+const BUTTON_CONSUMED_SPACE = 143;
 const SECTION_INDENT = 25;  // This is also hard coded into the css file at the moment
 const MAX_OUTPUT_LENGTH = 500000;
 
@@ -50,7 +51,6 @@ function ConsoleComponent(props) {
     const [console_item_with_focus, set_console_item_with_focus] = useState(null);
     const [console_item_saved_focus, set_console_item_saved_focus] = useState(null);
 
-    // const [all_selected_items, set_all_selected_items, all_selected_items_ref] = useStateAndRef([]);
     const [search_string, set_search_string, search_string_ref] = useStateAndRef(null);
     const [filter_console_items, set_filter_console_items] = useState(false);
     const [search_helper_text, set_search_helper_text] = useState(null);
@@ -66,6 +66,11 @@ function ConsoleComponent(props) {
 
     const selectedPane = useContext(SelectedPaneContext);
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
+
+    const sizeInfo = useContext(SizeContext);
+
+    const [header_usable_width, header_usable_height, header_topX, header_topY] = useSize(header_ref, 0, "HConsoleComponent");
+    const [usable_width, usable_height, topX, topY] = useSize(body_ref, 0, "ConsoleComponent");
 
     useEffect(async () => {
         initSocket();
@@ -956,22 +961,6 @@ function ConsoleComponent(props) {
         set_console_error_log_text(log_content + new_line)
     }
 
-    function _bodyHeight() {
-        if (body_ref && body_ref.current) {
-            return props.console_available_height - (body_ref.current.offsetTop - header_ref.current.offsetTop) - 2
-        } else {
-            return props.console_available_height - 75
-        }
-    }
-
-    const _bodyWidth = useMemo(() => {
-        if (props.console_available_width > MAX_CONSOLE_WIDTH) {
-            return MAX_CONSOLE_WIDTH
-        } else {
-            return props.console_available_width
-        }
-    }, [props.console_available_width]);
-
     const renderContextMenu = useMemo(() => {
         // return a single element, or nothing to use default browser behavior
         return (
@@ -1286,15 +1275,15 @@ function ConsoleComponent(props) {
         console_class = "am-zoomed"
     }
     let outer_style = Object.assign({}, props.style);
-    outer_style.width = _bodyWidth;
+    let true_usable_width = props.mState.console_is_shrunk ? header_usable_width : usable_width;
+    true_usable_width = true_usable_width > MAX_CONSOLE_WIDTH ? MAX_CONSOLE_WIDTH : true_usable_width;
+    outer_style.width = true_usable_width;
     let show_glif_text = outer_style.width > 800;
     let header_style = {};
     if (!props.shrinkable) {
         header_style["paddingLeft"] = 10
     }
-    if (!props.mState.console_is_shrunk) {
-        header_style["paddingRight"] = 15
-    }
+
     let key_bindings = [[["escape"], () => {
         _clear_all_selected_items()
     }]];
@@ -1402,7 +1391,7 @@ function ConsoleComponent(props) {
                                    outer_style={{
                                        overflowX: "auto",
                                        overflowY: "auto",
-                                       height: _bodyHeight(),
+                                       height: usable_height,
                                        marginLeft: 20,
                                        marginRight: 20
                                    }}
@@ -1417,7 +1406,7 @@ function ConsoleComponent(props) {
                                    outer_style={{
                                        overflowX: "auto",
                                        overflowY: "auto",
-                                       height: _bodyHeight(),
+                                       height: usable_height,
                                        marginLeft: 20,
                                        marginRight: 20
                                    }}
@@ -1425,45 +1414,52 @@ function ConsoleComponent(props) {
                 />
             }
             {!props.mState.console_is_shrunk && !show_pseudo_log && !show_main_log &&
+
                 <div id="console"
                      ref={body_ref}
                      className="contingent-scroll"
                      onClick={_clickConsoleBody}
-                     style={{height: _bodyHeight()}}>
-                    <ContextMenu content={renderContextMenu}>
-                        <SortableComponent id="console-items-div"
-                                           direction="vertical"
-                                           style={empty_style}
-                                           main_id={props.main_id}
-                                           ElementComponent={SuperItem}
-                                           key_field_name="unique_id"
-                                           item_list={filtered_items}
-                                           helperClass={theme.dark_theme ? "bp5-dark" : "light-theme"}
-                                           handle=".console-sorter"
-                                           onBeforeCapture={_sortStart}
-                                           onDragEnd={_resortConsoleItems}
-                                           setConsoleItemValue={_setConsoleItemValue}
-                                           selectConsoleItem={_selectConsoleItem}
-                                           console_available_width={_bodyWidth}
-                                           execution_count={0}
-                                           runCodeItem={_runCodeItem}
-                                           handleDelete={_closeConsoleItem}
-                                           goToNextCell={_goToNextCell}
-                                           setFocus={_setFocusedItem}
-                                           addNewTextItem={_addBlankText}
-                                           addNewCodeItem={_addBlankCode}
-                                           addNewDividerItem={_addBlankDivider}
-                                           copyCell={_copyCell}
-                                           pasteCell={_pasteCell}
-                                           copySection={_copySection}
-                                           deleteSection={_deleteSection}
-                                           insertResourceLink={_insertResourceLink}
-                                           useDragHandle={false}
-                                           pseudo_tile_id={pseudo_tile_id}
-                                           handleCreateViewer={props.handleCreateViewer}
-                                           axis="y"
-                        />
-                    </ContextMenu>
+                     style={{height:usable_height}}>
+                    <SizeContext.Provider value={{
+                        availableWidth: true_usable_width,
+                        availableHeight: usable_height,
+                        topX: topX,
+                        topY: topY
+                    }}>
+                        <ContextMenu content={renderContextMenu}>
+                            <SortableComponent id="console-items-div"
+                                               direction="vertical"
+                                               style={empty_style}
+                                               main_id={props.main_id}
+                                               ElementComponent={SuperItem}
+                                               key_field_name="unique_id"
+                                               item_list={filtered_items}
+                                               helperClass={theme.dark_theme ? "bp5-dark" : "light-theme"}
+                                               handle=".console-sorter"
+                                               onBeforeCapture={_sortStart}
+                                               onDragEnd={_resortConsoleItems}
+                                               setConsoleItemValue={_setConsoleItemValue}
+                                               selectConsoleItem={_selectConsoleItem}
+                                               execution_count={0}
+                                               runCodeItem={_runCodeItem}
+                                               handleDelete={_closeConsoleItem}
+                                               goToNextCell={_goToNextCell}
+                                               setFocus={_setFocusedItem}
+                                               addNewTextItem={_addBlankText}
+                                               addNewCodeItem={_addBlankCode}
+                                               addNewDividerItem={_addBlankDivider}
+                                               copyCell={_copyCell}
+                                               pasteCell={_pasteCell}
+                                               copySection={_copySection}
+                                               deleteSection={_deleteSection}
+                                               insertResourceLink={_insertResourceLink}
+                                               useDragHandle={false}
+                                               pseudo_tile_id={pseudo_tile_id}
+                                               handleCreateViewer={props.handleCreateViewer}
+                                               axis="y"
+                            />
+                        </ContextMenu>
+                    </SizeContext.Provider>
                     <div id="padding-div" style={{height: 500}}></div>
                 </div>
             }
@@ -1623,7 +1619,6 @@ function DividerItem(props) {
     if (props.is_error) {
         panel_class += " error-log-panel"
     }
-    let body_width = props.console_available_width - BUTTON_CONSUMED_SPACE;
     return (
         <ContextMenu content={renderContextMenu()}>
             <div className={panel_class + " d-flex flex-row"} onClick={_consoleItemClick}
@@ -1717,7 +1712,7 @@ function SectionEndItem(props) {
     if (props.am_selected) {
         panel_class += " selected"
     }
-    let body_width = props.console_available_width - BUTTON_CONSUMED_SPACE;
+
     let line_style = {
         marginLeft: 65,
         marginRight: 85,
@@ -1746,6 +1741,9 @@ const log_item_update_props = ["is_error", "am_shrunk", "am_selected",
 
 function LogItem(props) {
     const last_output_text = useRef("");
+    const body_ref = useRef(null);
+
+    const [usable_width, usable_height, topX, topY] = useSize(body_ref, 0, "LogItem");
 
     useEffect(() => {
         executeEmbeddedScripts();
@@ -1861,10 +1859,9 @@ function LogItem(props) {
     if (props.is_error) {
         panel_class += " error-log-panel"
     }
-    let body_width = props.console_available_width - BUTTON_CONSUMED_SPACE;
-    if (props.in_section) {
-        body_width -= SECTION_INDENT / 2
-    }
+
+    let uwidth =  props.in_section ? usable_width - SECTION_INDENT / 2 : usable_width;
+    uwidth -= BUTTON_CONSUMED_SPACE;
     return (
         <ContextMenu content={renderContextMenu()}>
             <div className={panel_class + " d-flex flex-row"} onClick={_consoleItemClick}
@@ -1881,31 +1878,28 @@ function LogItem(props) {
                                      handleClick={_toggleShrink}/>
                     }
                 </div>
-                {props.am_shrunk &&
-                    <Fragment>
-                        <EditableText value={props.summary_text}
-                                      onChange={_handleSummaryTextChange}
-                                      className="log-panel-summary"/>
-                        <div className="button-div d-flex flex-row">
-                            <GlyphButton handleClick={_deleteMe}
-                                         intent="danger"
-                                         tooltip="Delete this item"
-                                         style={{marginLeft: 10, marginRight: 66}}
-                                         icon="trash"/>
-                        </div>
-                    </Fragment>
-                }
-                {!props.am_shrunk &&
                     <div className="d-flex flex-column">
-                        <div className="log-panel-body d-flex flex-row">
-                            <div style={{
+                    <div className="log-panel-body d-flex flex-row">
+                        {props.am_shrunk &&
+                            <div ref={body_ref} style={{
+                                marginLeft: 30,
+                                width: uwidth,
+                            }}>
+                            <EditableText value={props.summary_text}
+                                          onChange={_handleSummaryTextChange}
+                                          className="log-panel-summary"/>
+                            </div>
+                        }{!props.am_shrunk &&
+                            <div ref={body_ref} style={{
                                 marginTop: 10,
                                 marginLeft: 30,
                                 padding: 8,
-                                width: body_width,
-                                border: ".5px solid #c7c7c7"
+                                width: uwidth,
+                                border: ".5px solid #c7c7c7",
+                                overflowY: "scroll"
                             }}
                                  dangerouslySetInnerHTML={converted_dict}/>
+                        }
                             <div className="button-div d-flex flex-row">
                                 <GlyphButton handleClick={_deleteMe}
                                              tooltip="Delete this item"
@@ -1915,7 +1909,7 @@ function LogItem(props) {
                             </div>
                         </div>
                     </div>
-                }
+                {/*}*/}
             </div>
         </ContextMenu>
     )
@@ -1928,6 +1922,9 @@ const blob_item_update_props = ["is_error", "am_shrunk", "am_selected",
 
 function BlobItem(props) {
     const last_output_text = useRef("");
+    const body_ref = useRef(null);
+
+    const [usable_width, usable_height, topX, topY] = useSize(body_ref, 0, "BlobItem");
 
     useEffect(() => {
         executeEmbeddedScripts();
@@ -2041,10 +2038,9 @@ function BlobItem(props) {
     if (props.am_selected) {
         panel_class += " selected"
     }
-    let body_width = props.console_available_width - BUTTON_CONSUMED_SPACE;
-    if (props.in_section) {
-        body_width -= SECTION_INDENT / 2
-    }
+
+    let uwidth =  props.in_section ? usable_width - SECTION_INDENT / 2 : usable_width;
+    uwidth -= BUTTON_CONSUMED_SPACE;
     return (
         <ContextMenu content={renderContextMenu()}>
             <div className={panel_class + " d-flex flex-row"} onClick={_consoleItemClick}
@@ -2078,16 +2074,16 @@ function BlobItem(props) {
                 {!props.am_shrunk &&
                     <div className="d-flex flex-column">
                         <div className="log-panel-body d-flex flex-row">
-                            <div style={{
+                            <div ref={body_ref} style={{
                                 marginTop: 10,
                                 marginLeft: 30,
                                 padding: 8,
-                                width: body_width,
+                                width: uwidth,
                                 border: ".5px solid #c7c7c7"
                             }}>
                                 {props.image_data_str && (
                                     <img src={props.image_data_str}
-                                         alt="An Image" width={body_width - 25}/>)
+                                         alt="An Image" width={uwidth - 25}/>)
                                 }
                             </div>
                             <div className="button-div d-flex flex-row">
@@ -2130,6 +2126,8 @@ function ConsoleCodeItem(props) {
     const last_output_text = useRef("");
     const am_selected_previous = useRef(false);
     const setFocusFunc = useRef(null);
+
+    const [usable_width, usable_height, topX, topY] = useSize(elRef, 0, "ConsoleCodeItem");
 
     useEffect(() => {
         executeEmbeddedScripts();
@@ -2185,10 +2183,10 @@ function ConsoleCodeItem(props) {
         }
     }
 
-    function _stopMe() {
+    const _stopMe = useCallback(()=>{
         _stopMySpinner();
         postWithCallback(props.main_id, "stop_console_code", {"console_id": props.unique_id}, null, null, props.main_id)
-    }
+    }, []);
 
     function _showMySpinner(callback = null) {
         props.setConsoleItemValue(props.unique_id, "show_spinner", true, callback)
@@ -2202,24 +2200,24 @@ function ConsoleCodeItem(props) {
         props.setConsoleItemValue(props.unique_id, "console_text", new_code)
     }, []);
 
-    function _handleSummaryTextChange(value) {
+    const _handleSummaryTextChange = useCallback((value)=>{
         props.setConsoleItemValue(props.unique_id, "summary_text", value)
-    }
+    });
 
-    function _toggleShrink() {
+    const _toggleShrink = useCallback(()=>{
         props.setConsoleItemValue(props.unique_id, "am_shrunk", !props.am_shrunk);
-    }
+    }, [props.am_shrunk]);
 
-    function _deleteMe() {
+    const _deleteMe = useCallback(()=>{
         if (props.show_spinner) {
             _stopMe()
         }
         props.handleDelete(props.unique_id)
-    }
+    }, [props.show_spinner]);
 
-    function _clearOutput(callback = null) {
+    const _clearOutput = useCallback((callback = null)=>{
         props.setConsoleItemValue(props.unique_id, "output_text", "", callback)
-    }
+    });
 
     const _extraKeys = useMemo(() => {
         return {
@@ -2230,14 +2228,14 @@ function ConsoleCodeItem(props) {
         }
     }, []);
 
-    function _getFirstLine() {
+    const _getFirstLine = useCallback(()=>{
         let re = /^(.*)$/m;
         if (props.console_text == "") {
             return "empty text cell"
         } else {
             return re.exec(props.console_text)[0]
         }
-    }
+    }, [props.console_text]);
 
     function _copyMe() {
         props.copyCell(props.unique_id)
@@ -2269,7 +2267,7 @@ function ConsoleCodeItem(props) {
         })
     }
 
-    function renderContextMenu() {
+    const cm = useMemo(function renderContextMenu() {
         // return a single element, or nothing to use default browser behavior
         return (
             <Menu>
@@ -2317,12 +2315,12 @@ function ConsoleCodeItem(props) {
                           text="Clear Output"/>
             </Menu>
         );
-    }
+    });
 
-    function _consoleItemClick(e) {
+    const _consoleItemClick = useCallback((e)=>{
         _selectMe(e);
         e.stopPropagation()
-    }
+    });
 
     const _handleFocus = useCallback(() => {
         if (!props.am_selected) {
@@ -2339,104 +2337,111 @@ function ConsoleCodeItem(props) {
     }
     let output_dict = {__html: props.output_text};
     let spinner_val = props.running ? null : 0;
-    let code_container_width = props.console_available_width - BUTTON_CONSUMED_SPACE;
-    if (props.in_section) {
-        code_container_width -= SECTION_INDENT / 2
-    }
+
+    let uwidth =  props.in_section ? usable_width - SECTION_INDENT / 2 : usable_width;
+    uwidth -= BUTTON_CONSUMED_SPACE;
+
     return (
-        <ContextMenu content={renderContextMenu()}>
-            <div className={panel_style + " d-flex flex-row"}
-                 ref={elRef}
-                 onClick={_consoleItemClick} id={props.unique_id}>
-                <div className="button-div shrink-expand-div d-flex flex-row">
-                    <Shandle dragHandleProps={props.dragHandleProps}/>
-                    {!props.am_shrunk &&
-                        <GlyphButton icon="chevron-down"
-                                     handleClick={_toggleShrink}/>
-                    }
+        <ContextMenu content={cm}>
+            <SizeContext.Provider value={{
+                availableWidth: uwidth,
+                availableHeight: usable_height,
+                topX: topX,
+                topY: topY
+            }}>
+                <div className={panel_style + " d-flex flex-row"}
+                     ref={elRef}
+                     onClick={_consoleItemClick} id={props.unique_id}>
+                    <div className="button-div shrink-expand-div d-flex flex-row">
+                        <Shandle dragHandleProps={props.dragHandleProps}/>
+                        {!props.am_shrunk &&
+                            <GlyphButton icon="chevron-down"
+                                         handleClick={_toggleShrink}/>
+                        }
+                        {props.am_shrunk &&
+                            <GlyphButton icon="chevron-right"
+                                         style={{marginTop: 5}}
+                                         handleClick={_toggleShrink}/>
+                        }
+                    </div>
                     {props.am_shrunk &&
-                        <GlyphButton icon="chevron-right"
-                                     style={{marginTop: 5}}
-                                     handleClick={_toggleShrink}/>
+                        <Fragment>
+                            <EditableText
+                                value={props.summary_text ? props.summary_text : _getFirstLine()}
+                                onChange={_handleSummaryTextChange}
+                                className="log-panel-summary code-panel-summary"/>
+                            <div className="button-div d-flex flex-row">
+                                <GlyphButton handleClick={_deleteMe}
+                                             intent="danger"
+                                             tooltip="Delete this item"
+                                             style={{marginLeft: 10, marginRight: 66}}
+                                             icon="trash"/>
+                            </div>
+                        </Fragment>
+
+                    }
+                    {!props.am_shrunk &&
+                        <Fragment>
+                            <div className="d-flex flex-column" style={{width: "100%"}}>
+                                <div className="d-flex flex-row">
+                                    <div className="log-panel-body d-flex flex-row console-code">
+                                        <div className="button-div d-flex pr-1">
+                                            {!props.show_spinner &&
+                                                <GlyphButton handleClick={() => {
+                                                    props.runCodeItem(props.unique_id)
+                                                }}
+                                                             intent="success"
+                                                             tooltip="Execute this item"
+                                                             icon="play"/>
+                                            }
+                                            {props.show_spinner &&
+                                                <GlyphButton handleClick={_stopMe}
+                                                             intent="danger"
+                                                             tooltip="Stop this item"
+                                                             icon="stop"/>
+                                            }
+                                        </div>
+                                        <ReactCodemirror handleChange={_handleChange}
+                                                         handleFocus={_handleFocus}
+                                                         registerSetFocusFunc={registerSetFocusFunc}
+                                                         readOnly={false}
+                                                         show_line_numbers={true}
+                                                         code_content={props.console_text}
+                                                         extraKeys={_extraKeys}
+                                                         search_term={props.search_string}
+                                                         no_height={true}
+                                                         saveMe={null}/>
+                                        <div className="button-div d-flex flex-row">
+                                            <GlyphButton handleClick={_deleteMe}
+                                                         intent="danger"
+                                                         tooltip="Delete this item"
+                                                         style={{marginLeft: 10, marginRight: 0}}
+                                                         icon="trash"/>
+                                            <GlyphButton handleClick={() => {
+                                                _clearOutput()
+                                            }}
+                                                         intent="warning"
+                                                         tooltip="Clear this item's output"
+                                                         style={{marginLeft: 10, marginRight: 0}}
+                                                         icon="clean"/>
+                                        </div>
+                                    </div>
+                                    {!props.show_spinner &&
+                                        <div className='execution-counter'>[{String(props.execution_count)}]</div>
+                                    }
+                                    {props.show_spinner &&
+                                        <div style={{marginTop: 10, marginRight: 22}}>
+                                            <Spinner size={13} value={spinner_val}/>
+                                        </div>
+                                    }
+                                </div>
+                                < div className='log-code-output' dangerouslySetInnerHTML={output_dict}/>
+                            </div>
+
+                        </Fragment>
                     }
                 </div>
-                {props.am_shrunk &&
-                    <Fragment>
-                        <EditableText
-                            value={props.summary_text ? props.summary_text : _getFirstLine()}
-                            onChange={_handleSummaryTextChange}
-                            className="log-panel-summary code-panel-summary"/>
-                        <div className="button-div d-flex flex-row">
-                            <GlyphButton handleClick={_deleteMe}
-                                         intent="danger"
-                                         tooltip="Delete this item"
-                                         style={{marginLeft: 10, marginRight: 66}}
-                                         icon="trash"/>
-                        </div>
-                    </Fragment>
-
-                }
-                {!props.am_shrunk &&
-                    <Fragment>
-                        <div className="d-flex flex-column" style={{width: "100%"}}>
-                            <div className="d-flex flex-row">
-                                <div className="log-panel-body d-flex flex-row console-code">
-                                    <div className="button-div d-flex pr-1">
-                                        {!props.show_spinner &&
-                                            <GlyphButton handleClick={() => {
-                                                props.runCodeItem(props.unique_id)
-                                            }}
-                                                         intent="success"
-                                                         tooltip="Execute this item"
-                                                         icon="play"/>
-                                        }
-                                        {props.show_spinner &&
-                                            <GlyphButton handleClick={_stopMe}
-                                                         intent="danger"
-                                                         tooltip="Stop this item"
-                                                         icon="stop"/>
-                                        }
-                                    </div>
-                                    <ReactCodemirror handleChange={_handleChange}
-                                                     handleFocus={_handleFocus}
-                                                     registerSetFocusFunc={registerSetFocusFunc}
-                                                     readOnly={false}
-                                                     show_line_numbers={true}
-                                                     code_content={props.console_text}
-                                                     extraKeys={_extraKeys}
-                                                     search_term={props.search_string}
-                                                     code_container_width={code_container_width}
-                                                     saveMe={null}/>
-                                    <div className="button-div d-flex flex-row">
-                                        <GlyphButton handleClick={_deleteMe}
-                                                     intent="danger"
-                                                     tooltip="Delete this item"
-                                                     style={{marginLeft: 10, marginRight: 0}}
-                                                     icon="trash"/>
-                                        <GlyphButton handleClick={() => {
-                                            _clearOutput()
-                                        }}
-                                                     intent="warning"
-                                                     tooltip="Clear this item's output"
-                                                     style={{marginLeft: 10, marginRight: 0}}
-                                                     icon="clean"/>
-                                    </div>
-                                </div>
-                                {!props.show_spinner &&
-                                    <div className='execution-counter'>[{String(props.execution_count)}]</div>
-                                }
-                                {props.show_spinner &&
-                                    <div style={{marginTop: 10, marginRight: 22}}>
-                                        <Spinner size={13} value={spinner_val}/>
-                                    </div>
-                                }
-                            </div>
-                            < div className='log-code-output' dangerouslySetInnerHTML={output_dict}/>
-                        </div>
-
-                    </Fragment>
-                }
-            </div>
+            </SizeContext.Provider>
         </ContextMenu>
     )
 }
@@ -2535,6 +2540,7 @@ function ConsoleTextItem(props) {
     const elRef = useRef(null);
     const am_selected_previous = useRef(false);
     const setFocusFunc = useRef(null);
+    const [usable_width, usable_height, topX, topY] = useSize(elRef, 0, "ConsoleTextItem");
 
     useEffect(() => {
         if (props.am_selected && !am_selected_previous.current && elRef && elRef.current) {
@@ -2587,9 +2593,9 @@ function ConsoleTextItem(props) {
         }
     }, [props.show_markdown]);
 
-    function _hideMarkdown() {
+    const _hideMarkdown = useCallback(()=>{
         props.setConsoleItemValue(props.unique_id, "show_markdown", false);
-    }
+    }, []);
 
     const _handleChange = useCallback((new_text) => {
         props.setConsoleItemValue(props.unique_id, "console_text", new_text)
@@ -2607,9 +2613,9 @@ function ConsoleTextItem(props) {
         props.setConsoleItemValue(props.unique_id, "am_shrunk", !props.am_shrunk);
     }
 
-    function _deleteMe() {
+    const _deleteMe = useCallback(()=>{
         props.handleDelete(props.unique_id)
-    }
+    }, []);
 
     function _handleKeyDown(event) {
         if (event.key == "Tab") {
@@ -2783,8 +2789,7 @@ function ConsoleTextItem(props) {
         panel_class += " in-section"
     }
     let gbstyle = {marginLeft: 1};
-    let body_width = props.console_available_width - BUTTON_CONSUMED_SPACE;
-    let self = this;
+
     let link_buttons = props.links.map((link, index) =>
         <ResourceLinkButton key={index}
                             my_index={index}
@@ -2793,12 +2798,16 @@ function ConsoleTextItem(props) {
                             res_type={link.res_type}
                             res_name={link.res_name}/>
     );
-    let code_container_width = props.console_available_width - BUTTON_CONSUMED_SPACE;
-    if (props.in_section) {
-        code_container_width -= SECTION_INDENT / 2
-    }
+    let uwidth =  props.in_section ? usable_width - SECTION_INDENT / 2 : usable_width;
+    uwidth -= BUTTON_CONSUMED_SPACE;
     return (
         <ContextMenu content={renderContextMenu()}>
+            <SizeContext.Provider value={{
+                availableWidth: uwidth,
+                availableHeight: usable_height,
+                topX: topX,
+                topY: topY
+            }}>
             <div className={panel_class + " d-flex flex-row"} onClick={_consoleItemClick}
                  ref={elRef} id={props.unique_id} style={{marginBottom: 10}}>
                 <div className="button-div shrink-expand-div d-flex flex-row">
@@ -2853,14 +2862,15 @@ function ConsoleTextItem(props) {
                                                          code_content={props.console_text}
                                                          extraKeys={_extraKeys}
                                                          search_term={props.search_string}
-                                                         code_container_width={code_container_width}
+                                                         no_height={true}
+                                                         //code_container_width={code_container_width}
                                                          saveMe={null}/>
                                     </Fragment>
                                 }
                                 {really_show_markdown && !hasOnlyWhitespace() &&
                                     <div className="text-panel-output"
                                          onDoubleClick={_hideMarkdown}
-                                         style={{width: body_width, padding: 9}}
+                                         style={{width: uwidth - 81, padding: 9}}
                                          dangerouslySetInnerHTML={converted_dict}/>
                                 }
                                 {link_buttons}
@@ -2877,6 +2887,7 @@ function ConsoleTextItem(props) {
                     </div>
                 }
             </div>
+            </SizeContext.Provider>
         </ContextMenu>
     )
 }

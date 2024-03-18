@@ -8,9 +8,10 @@ import {guid, useStateAndRef} from "./utilities_react";
 import {LibraryMenubar} from "./library_menubars"
 import {CombinedMetadata, icon_dict} from "./blueprint_mdata_fields";
 import {PoolTree, getBasename, splitFilePath, getFileParentPath} from "./pool_tree";
-import {HorizontalPanes} from "./resizing_layouts";
+import {HorizontalPanes} from "./resizing_layouts2";
 import {getBlobPromise, postAjaxPromise} from "./communication_react";
 import {ErrorDrawerContext} from "./error_drawer";
+import {useSize} from "./sizing_tools";
 import {doFlash, StatusContext} from "./toaster";
 import {ThemeContext} from "./theme";
 
@@ -23,6 +24,8 @@ export {PoolBrowser}
 const pool_browser_id = guid();
 
 function PoolBrowser(props) {
+    const top_ref = useRef(null);
+    const resizing = useRef(false);
     const [selected_resource, set_selected_resource, selected_resource_ref] = useStateAndRef({
         name: "",
         tags: "",
@@ -36,7 +39,6 @@ function PoolBrowser(props) {
     const [multi_select, set_multi_select, multi_select_ref] = useStateAndRef(false);
     const [list_of_selected, set_list_of_selected, list_of_selected_ref] = useStateAndRef([]);
     const [contextMenuItems, setContextMenuItems] = useState([]);
-    const [left_width_fraction, set_left_width_fraction, left_width_fraction_ref] = useStateAndRef(.65);
     const [have_activated, set_have_activated] = useState(false);
 
     const theme = useContext(ThemeContext);
@@ -44,13 +46,13 @@ function PoolBrowser(props) {
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
     const statudFuncs = useContext(StatusContext);
 
+    const [usable_width, usable_height, topX, topY] = useSize(top_ref, 0, "pool_browser");
+
     const treeRefreshFunc = useRef(null);
     // Important note: The first mounting of the pool tree must happen after the pool pane
     // is first activated. Otherwise, I do GetPoolTree before everything is ready and I don't
     // get the callback for the post.
 
-    const top_ref = useRef(null);
-    const resizing = useRef(false);
 
     useEffect(() => {
         if (props.am_selected && !have_activated) {
@@ -336,21 +338,6 @@ function PoolBrowser(props) {
 
     }
 
-    function _handleSplitResize(left_width, right_width, width_fraction) {
-        if (!resizing.current) {
-            set_left_width_fraction(width_fraction);
-        }
-    }
-
-    function _handleSplitResizeStart() {
-        resizing.current = true;
-    }
-
-    function _handleSplitResizeEnd(width_fraction) {
-        resizing.current = false;
-        set_left_width_fraction(width_fraction);
-    }
-
     function handleNodeClick(node, nodes) {
         setValue(node.fullpath);
         setSelectedNode(node);
@@ -474,10 +461,8 @@ function PoolBrowser(props) {
                          controlled={props.controlled}
                          tsocket={props.tsocket}/>
             <div ref={top_ref} style={outer_style} className="pool-browser">
-                <div style={{width: props.usable_width, height: props.usable_height}}>
+                <div style={{width: usable_width, height: usable_height}}>
                     <HorizontalPanes
-                        available_width={props.usable_width}
-                        available_height={props.usable_height}
                         outer_hp_style={{paddingBottom: "50px"}}
                         show_handle={true}
                         left_pane={left_pane}
@@ -485,9 +470,9 @@ function PoolBrowser(props) {
                         right_pane_overflow="auto"
                         initial_width_fraction={.75}
                         scrollAdjustSelectors={[".bp5-table-quadrant-scroll-container"]}
-                        handleSplitUpdate={_handleSplitResize}
-                        handleResizeStart={_handleSplitResizeStart}
-                        handleResizeEnd={_handleSplitResizeEnd}
+                        handleSplitUpdate={null}
+                        handleResizeStart={null}
+                        handleResizeEnd={null}
                     />
                 </div>
             </div>
@@ -496,7 +481,6 @@ function PoolBrowser(props) {
 }
 
 PoolBrowser = memo(PoolBrowser);
-// PoolBrowser = withErrorDrawer(withStatus(PoolBrowser));
 
 function PoolMenubar(props) {
 

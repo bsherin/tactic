@@ -20,6 +20,7 @@ var _markdownItLatex = _interopRequireDefault(require("markdown-it-latex"));
 var _lodash = _interopRequireDefault(require("lodash"));
 var _utilities_react = require("./utilities_react");
 var _icon_info = require("./icon_info");
+var _sizing_tools = require("./sizing_tools");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 const mdi = (0, _markdownIt.default)({
@@ -460,6 +461,7 @@ IconSelector.propTypes = {
   icon_val: _propTypes.default.string
 };
 function CombinedMetadata(props) {
+  const top_ref = (0, _react.useRef)();
   const [auxIsOpen, setAuxIsOpen] = (0, _react.useState)(false);
   const [tempNotes, setTempNotes] = (0, _react.useState)(null);
   const [waiting, doUpdate] = (0, _utilities_react.useDebounce)(newval => {
@@ -467,6 +469,7 @@ function CombinedMetadata(props) {
       "notes": newval
     });
   });
+  const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(top_ref, props.tabSelectCounter, "CombinedMetadata");
   function _handleNotesChange(event) {
     doUpdate(event.target.value);
     setTempNotes(event.target.value);
@@ -523,10 +526,17 @@ function CombinedMetadata(props) {
     }
   }
   let button_base = auxIsOpen ? "Hide" : "Show";
+  let ostyle = props.outer_style ? _lodash.default.cloneDeep(props.outer_style) : {};
+  if (props.expandWidth) {
+    ostyle["width"] = "100%";
+  } else {
+    ostyle["width"] = usable_width;
+  }
   return /*#__PURE__*/_react.default.createElement(_core.Card, {
+    ref: top_ref,
     elevation: props.elevation,
     className: "combined-metadata accent-bg",
-    style: props.outer_style
+    style: ostyle
   }, props.name != null && /*#__PURE__*/_react.default.createElement(_core.H4, null, /*#__PURE__*/_react.default.createElement(_core.Icon, {
     icon: icon_dict[props.res_type],
     style: {
@@ -614,10 +624,11 @@ CombinedMetadata.propTypes = {
   notes_buttons: _propTypes.default.oneOfType([_propTypes.default.number, _propTypes.default.func])
 };
 CombinedMetadata.defaultProps = {
+  expandWidth: true,
+  tabSelectCounter: 0,
   useTags: true,
   useNotes: true,
   outer_style: {
-    marginLeft: 20,
     overflow: "auto",
     padding: 15
   },

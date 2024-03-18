@@ -9,6 +9,7 @@ var _react = _interopRequireWildcard(require("react"));
 var _propTypes = _interopRequireDefault(require("prop-types"));
 var _core = require("@blueprintjs/core");
 var _communication_react = require("./communication_react");
+var _sizing_tools = require("./sizing_tools");
 var _codemirror = _interopRequireDefault(require("codemirror/lib/codemirror"));
 require("codemirror/mode/python/python");
 require("codemirror/lib/codemirror.css");
@@ -38,6 +39,7 @@ var _utilities_react = require("./utilities_react");
 var _theme = require("./theme");
 require("./autocomplete");
 var _error_drawer = require("./error_drawer");
+var _library_widgets = require("./library_widgets");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 const REGEXTYPE = Object.getPrototypeOf(new RegExp("that"));
@@ -56,9 +58,8 @@ function countOccurrences(query, the_text) {
     return the_text.split(query).length - 1;
   }
 }
-function ReactCodemirror(props, passedRef) {
+function ReactCodemirror(props) {
   const localRef = (0, _react.useRef)(null);
-  const code_container_ref = (0, _react.useRef)(passedRef ? passedRef : localRef);
   const mousetrap = (0, _react.useRef)(new Mousetrap());
   const saved_theme = (0, _react.useRef)(null);
   const preferred_themes = (0, _react.useRef)(null);
@@ -70,6 +71,7 @@ function ReactCodemirror(props, passedRef) {
   const prevSoftWrap = (0, _react.useRef)(null);
   const theme = (0, _react.useContext)(_theme.ThemeContext);
   const errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
+  const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(localRef, props.iCounter, "CodeMirror");
   (0, _react.useEffect)(() => {
     prevSoftWrap.current = props.soft_wrap;
     if (props.registerSetFocusFunc) {
@@ -77,7 +79,7 @@ function ReactCodemirror(props, passedRef) {
     }
     (0, _communication_react.postAjaxPromise)('get_preferred_codemirror_themes', {}).then(data => {
       preferred_themes.current = data;
-      cmobject.current = createCMArea(code_container_ref.current.current, props.first_line_number);
+      cmobject.current = createCMArea(localRef.current, props.first_line_number);
       cmobject.current.setValue(props.code_content);
       cmobject.current.setOption("extra_autocomplete_list", props.extra_autocomplete_list);
       create_keymap();
@@ -254,7 +256,6 @@ function ReactCodemirror(props, passedRef) {
     let hasBoundary = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
     let style = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : "searchhighlight";
     let focus_style = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : "focussearchhighlight";
-    // var state = cm.state.matchHighlighter;
     let prev_matches = matches.current;
     var reg = _searchMatcher(query, true);
     matches.current = countOccurrences(reg, props.code_content);
@@ -347,24 +348,74 @@ function ReactCodemirror(props, passedRef) {
     });
   }
   let ccstyle = {
-    "height": props.code_container_height,
-    "width": props.code_container_width,
     lineHeight: "21px"
   };
+  if (!props.no_height) {
+    ccstyle.height = usable_height;
+  }
+  if (!props.no_width) {
+    ccstyle.width = usable_width;
+  }
   let bgstyle = null;
-  if (props.show_fold_button && code_container_ref.current && code_container_ref.current.current) {
-    let cc_rect = code_container_ref.current.current.getBoundingClientRect();
-    if (cc_rect.width > 175) {
+  if (props.show_fold_button) {
+    if (usable_width > 175) {
       bgstyle = {
-        position: "absolute",
-        left: cc_rect.left + cc_rect.width - 135 - 15,
-        top: cc_rect.top + cc_rect.height - 35
+        position: "fixed",
+        left: topX + usable_width - 135 - 15,
+        top: topY + usable_height - 35,
+        zIndex: 100
       };
       if (first_render.current) {
         bgstyle.top -= 10;
         first_render.current = false;
       }
     }
+  }
+  if (props.show_search) {
+    let title_label = props.title_label ? props.title_label : "";
+    return /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement("div", {
+      style: {
+        display: "flex",
+        flexDirection: "row",
+        justifyContent: "space-between",
+        marginRight: 10,
+        width: "100%"
+      }
+    }, /*#__PURE__*/_react.default.createElement("span", {
+      className: "bp5-ui-text",
+      style: {
+        display: "flex",
+        alignItems: "self-end"
+      }
+    }, title_label), /*#__PURE__*/_react.default.createElement(_library_widgets.SearchForm, {
+      update_search_state: props.updateSearchState,
+      search_string: props.search_term,
+      regex: props.regex_search,
+      allow_regex: true,
+      field_width: 200,
+      include_search_jumper: true,
+      searchPrev: props.searchPrev,
+      searchNext: props.searchNext,
+      search_ref: props.search_ref,
+      number_matches: props.search_matches
+    })), props.show_fold_button && bgstyle && /*#__PURE__*/_react.default.createElement(_core.ButtonGroup, {
+      minimal: false,
+      style: bgstyle
+    }, /*#__PURE__*/_react.default.createElement(_core.Button, {
+      small: true,
+      icon: "collapse-all",
+      text: "fold",
+      onClick: _foldAll
+    }), /*#__PURE__*/_react.default.createElement(_core.Button, {
+      small: true,
+      icon: "expand-all",
+      text: "unfold",
+      onClick: _unfoldAll
+    })), /*#__PURE__*/_react.default.createElement("div", {
+      className: "code-container",
+      style: ccstyle,
+      ref: localRef
+    }));
   }
   return /*#__PURE__*/_react.default.createElement(_react.Fragment, null, props.show_fold_button && bgstyle && /*#__PURE__*/_react.default.createElement(_core.ButtonGroup, {
     minimal: false,
@@ -382,13 +433,15 @@ function ReactCodemirror(props, passedRef) {
   })), /*#__PURE__*/_react.default.createElement("div", {
     className: "code-container",
     style: ccstyle,
-    ref: code_container_ref.current
+    ref: localRef
   }));
 }
-exports.ReactCodemirror = ReactCodemirror = /*#__PURE__*/(0, _react.memo)( /*#__PURE__*/(0, _react.forwardRef)(ReactCodemirror), (prevProps, newProps) => {
+exports.ReactCodemirror = ReactCodemirror = /*#__PURE__*/(0, _react.memo)(ReactCodemirror, (prevProps, newProps) => {
   (0, _utilities_react.propsAreEqual)(prevProps, newProps, ["extraKeys"]);
 });
 ReactCodemirror.propTypes = {
+  no_width: _propTypes.default.bool,
+  no_height: _propTypes.default.bool,
   handleChange: _propTypes.default.func,
   show_line_numbers: _propTypes.default.bool,
   show_fold_button: _propTypes.default.bool,
@@ -416,6 +469,9 @@ ReactCodemirror.propTypes = {
   extra_autocomplete_list: _propTypes.default.array
 };
 ReactCodemirror.defaultProps = {
+  no_width: false,
+  no_height: false,
+  show_search: false,
   first_line_number: 1,
   show_line_numbers: true,
   show_fold_button: false,

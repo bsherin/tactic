@@ -1,7 +1,7 @@
 // noinspection JSConstructorReturnsPrimitive
 
 import React from "react";
-import {Fragment, useState, useEffect, memo, useContext} from "react";
+import {Fragment, useState, useEffect, memo, useContext, useRef} from "react";
 import PropTypes from 'prop-types';
 
 import {Button, Card, Collapse, Divider, Menu, MenuItem, MenuDivider, Switch, FormGroup} from "@blueprintjs/core";
@@ -19,10 +19,11 @@ import {
 import {StatusContext} from "./toaster";
 import _ from 'lodash';
 import {isInt} from "./utilities_react";
-import {BpSelect} from "./blueprint_mdata_fields";
+import {BpSelect, CombinedMetadata} from "./blueprint_mdata_fields";
 import {useCallbackStack} from "./utilities_react";
+import {SizeContext, useSize} from "./sizing_tools";
 
-export {OptionModule, ExportModule, CommandsModule, correctOptionListTypes}
+export {OptionModule, ExportModule, CommandsModule, MetadataModule, correctOptionListTypes}
 
 function correctType(type, val, error_flag = "__ERROR__") {
     let result;
@@ -298,8 +299,13 @@ const blank_form = {
 
 function OptionModule(props) {
 
+    const top_ref = React.createRef();
     const [active_row, set_active_row] = useState(null);
     const [form_state, set_form_state] = useState({...blank_form});
+
+    const sizeInfo = useContext(SizeContext);
+
+    const [usable_width, usable_height, topX, topY] = useSize(top_ref, props.tabSelectCounter, "OptionModule");
 
     const pushCallback = useCallbackStack();
 
@@ -399,7 +405,7 @@ function OptionModule(props) {
         "marginTop": 10,
         "marginLeft": 10,
         "marginRight": 10,
-        "height": props.available_height
+        "height": usable_height
     };
 
     let copied_dlist = props.data_list_ref.current.map(opt => {
@@ -427,7 +433,7 @@ function OptionModule(props) {
     });
 
     return (
-        <Card elevation={1} id="options-pane" className="d-flex flex-column" style={options_pane_style}>
+        <Card ref={top_ref} elevation={1} id="options-pane" className="d-flex flex-column" style={options_pane_style}>
             {props.foregrounded &&
                 <BpOrderableTable columns={cols}
                                   data_array={copied_dlist}
@@ -524,9 +530,14 @@ ExportModuleForm.propTypes = {
 };
 
 function ExportModule(props) {
+    const top_ref = React.createRef();
 
     const [active_export_row, set_active_export_row] = useState(0);
     const [active_save_row, set_active_save_row] = useState(0);
+
+    const sizeInfo = useContext(SizeContext);
+
+    const [usable_width, usable_height, topX, topY] = useSize(top_ref, props.tabSelectCounter, "ExportModule");
 
     function _delete_export() {
         let new_data_list = props.export_list;
@@ -591,10 +602,10 @@ function ExportModule(props) {
         "marginTop": 10,
         "marginLeft": 10,
         "marginRight": 10,
-        "height": props.available_height
+        "height": usable_height
     };
     return (
-        <Card elevation={1} id="exports-pane" className="d-flex flex-column" style={exports_pane_style}>
+        <Card ref={top_ref} elevation={1} id="exports-pane" className="d-flex flex-column" style={exports_pane_style}>
             {props.foregrounded &&
                 <Fragment>
                     <h4 className="bp5-heading">Exports</h4>
@@ -649,19 +660,37 @@ ExportModule.propTypes = {
     handleNotesAppend: PropTypes.func,
     available_height: PropTypes.number
 };
-const commands_pane_style = {
-    "marginTop": 10,
-    "marginLeft": 10,
-    "marginRight": 10,
-    "paddingTop": 10,
-};
+
+function MetadataModule(props) {
+    const top_ref = React.createRef();
+    const [usable_width, usable_height, topX, topY] = useSize(top_ref, props.tabSelectCounter, "CreatorModule");
+
+    let md_style = {height: "100%"};
+    return (
+        <div ref={top_ref} style={{marginLeft: 10, height: usable_height}}>
+            <CombinedMetadata {...props}
+                outer_style={md_style}
+            />
+        </div>
+    )
+
+}
+
+MetadataModule = memo(MetadataModule);
+
 
 function CommandsModule(props) {
+    const top_ref = React.createRef();
+    const commandsRef = useRef(null);
     const [search_string, set_search_string] = useState("");
     const [api_dict, set_api_dict] = useState({});
     const [ordered_categories, set_ordered_categories] = useState([]);
     const [object_api_dict, set_object_api_dict] = useState({});
     const [ordered_object_categories, set_ordered_object_categories] = useState([]);
+
+    const sizeInfo = useContext(SizeContext);
+
+    const [usable_width, usable_height, topX, topY] = useSize(top_ref, props.tabSelectCounter, "CommandModule");
 
     useEffect(() => {
         postAjax("get_api_dict", {}, function (data) {
@@ -692,14 +721,23 @@ function CommandsModule(props) {
                                  command_list={api_dict[category]}/>;
         command_items.push(res)
     }
+
+    const commands_pane_style = {
+        "marginTop": 10,
+        "marginLeft": 10,
+        "marginRight": 10,
+        "paddingTop": 10,
+        height: usable_height
+    };
+
     return (
 
-        <Card elevation={1} id="commands-pane" className="d-flex flex-column" style={commands_pane_style}>
+        <Card ref={top_ref} elevation={1} id="commands-pane" className="d-flex flex-column" style={commands_pane_style}>
             <div style={{display: "flex", justifyContent: "flex-end", marginRight: 25}}>
                 <SearchForm update_search_state={_updateSearchState}
                             search_string={search_string}/>
             </div>
-            <div ref={props.commands_ref} style={{fontSize: 13, overflow: "auto", height: props.available_height}}>
+            <div ref={commandsRef} style={{fontSize: 13, overflow: "auto"}}>
                 <h4>Object api</h4>
                 {object_items}
                 <h4 style={{marginTop: 20}}>TileBase methods (accessed with self)</h4>
@@ -710,11 +748,6 @@ function CommandsModule(props) {
 }
 
 CommandsModule = memo(CommandsModule);
-
-CommandsModule.propTypes = {
-    commands_ref: PropTypes.object,
-    available_height: PropTypes.number
-};
 
 function stringIncludes(str1, str2) {
     return str1.toLowerCase().includes(str2.toLowerCase())

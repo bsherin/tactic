@@ -11,17 +11,18 @@ import {TextArea} from "@blueprintjs/core";
 import {ResourceViewerApp, copyToLibrary, sendToRepository} from "./resource_viewer_react_app";
 import {TacticSocket} from "./tactic_socket";
 import {postAjaxPromise, postPromise} from "./communication_react"
-import {withStatus} from "./toaster"
+import {withStatus} from "./toaster.js"
 
-import {getUsableDimensions, BOTTOM_MARGIN} from "./sizing_tools";
-import {ErrorDrawerContext, withErrorDrawer} from "./error_drawer";
+import {withTheme} from "./theme"
+import {ErrorDrawerContext, withErrorDrawer} from "./error_drawer.js";
 import {guid} from "./utilities_react";
 import {TacticNavbar} from "./blueprint_navbar";
 import {useCallbackStack, useConstructor, useStateAndRef} from "./utilities_react";
-import {ThemeContext, withTheme} from "./theme"
+import {ThemeContext,} from "./theme"
 import {DialogContext, withDialogs} from "./modal_react";
 import {StatusContext} from "./toaster";
 import {SelectedPaneContext} from "./utilities_react";
+import {SizeContext, useSize, withSizeContext} from "./sizing_tools";
 
 export {list_viewer_props, ListViewerApp}
 
@@ -48,18 +49,21 @@ function list_viewer_props(data, registerDirtyMethod, finalCallback) {
     })
 }
 
-const LIST_PADDING_TOP = 15;
+const LIST_PADDING_TOP = 20;
 
 function ListEditor(props) {
+    const top_ref = useRef(null);
+    const [usable_width, usable_height, topX, topY] = useSize(top_ref, 0, "ListEditor");
+
     let tastyle = {
         resize: "horizontal",
         margin: 2,
-        height: props.height - LIST_PADDING_TOP,
+        height: usable_height - LIST_PADDING_TOP - 4
     };
     return (
         <div id="listarea-container"
-             ref={props.outer_ref}
-             style={{margin: 0, paddingTop: LIST_PADDING_TOP}}>
+             ref={top_ref}
+             style={{margin: 2, paddingTop: LIST_PADDING_TOP}}>
             <TextArea
                 cols="50"
                 style={tastyle}
@@ -78,15 +82,12 @@ ListEditor.propTypes = {
     the_content: PropTypes.string,
     handleChange: PropTypes.func,
     readOnly: PropTypes.bool,
-    outer_ref: PropTypes.object,
     height: PropTypes.number
 };
 
 function ListViewerApp(props) {
     const top_ref = useRef(null);
-    const cc_ref = useRef(null);
     const search_ref = useRef(null);
-    const cc_offset_top = useRef(null);
 
     const savedContent = useRef(props.the_content);
     const savedTags = useRef(props.split_tags);
@@ -96,13 +97,7 @@ function ListViewerApp(props) {
     const [notes, set_notes, notes_ref] = useStateAndRef(props.notes);
     const [tags, set_tags, tags_ref] = useStateAndRef(props.split_tags);
 
-    // The following only are used if not in context
-    const [usable_width, set_usable_width] = useState(() => {
-        return getUsableDimensions(true).usable_width - 170
-    });
-    const [usable_height, set_usable_height] = useState(() => {
-        return getUsableDimensions(true).usable_height_no_bottom
-    });
+    const [usable_width, usable_height, topX, topY] = useSize(top_ref, 0, "ListViewer");
 
     const [resource_name, set_resource_name] = useState(props.resource_name);
 
@@ -111,17 +106,11 @@ function ListViewerApp(props) {
     const statusFuncs = useContext(StatusContext);
     const selectedPane = useContext(SelectedPaneContext);
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
-
+    const sizeInfo = useContext(SizeContext);
 
     useEffect(() => {
         statusFuncs.stopSpinner();
-        if (cc_ref && cc_ref.current) {
-            cc_offset_top.current = cc_ref.current.offsetTop;
-        }
-        if (!props.controlled) {
-            window.addEventListener("resize", _update_window_dimensions);
-            _update_window_dimensions();
-        } else {
+        if (props.controlled) {
             props.registerDirtyMethod(_dirty)
         }
     }, []);
@@ -141,8 +130,6 @@ function ListViewerApp(props) {
 
     function cPropGetters() {
         return {
-            usable_width: usable_width,
-            usable_height: usable_height,
             resource_name: resource_name
         }
     }
@@ -226,22 +213,6 @@ function ListViewerApp(props) {
         set_list_content(event.target.value);
     }
 
-    function _update_window_dimensions() {
-        set_usable_width(window.innerWidth - top_ref.current.offsetLeft);
-        set_usable_height(window.innerHeight - top_ref.current.offsetTop)
-    }
-
-    function get_new_cc_height() {
-        let uheight = _cProp("usable_height");
-        if (cc_offset_top.current) {
-            return uheight - cc_offset_top.current - BOTTOM_MARGIN
-        } else if (cc_ref && cc_ref.current) {  // This will be true after the initial render
-            return uheight - cc_ref.current.offsetTop - BOTTOM_MARGIN
-        } else {
-            return uheight - 100
-        }
-    }
-
     function am_selected() {
         return selectedPane.amSelected(selectedPane.tab_id, selectedPane.selectedTabIdRef)
     }
@@ -312,19 +283,15 @@ function ListViewerApp(props) {
     }
 
     let my_props = {...props};
-    if (!props.controlled) {
-        my_props.resource_name = resource_name;
-        my_props.usable_height = usable_height;
-        my_props.usable_width = usable_width;
-    }
     let outer_style = {
         width: "100%",
-        height: my_props.usable_height,
+        height: sizeInfo.availableHeight,
         paddingLeft: 0,
         position: "relative"
     };
     let outer_class = "resource-viewer-holder";
     if (!props.controlled) {
+        my_props.resource_name = resource_name;
         if (theme.dark_theme) {
             outer_class = outer_class + " bp5-dark";
         } else {
@@ -358,8 +325,6 @@ function ListViewerApp(props) {
                                    saveMe={_saveMe}>
                     <ListEditor the_content={list_content}
                                 readOnly={props.readOnly}
-                                outer_ref={cc_ref}
-                                height={get_new_cc_height()}
                                 handleChange={_handleListChange}
                     />
                 </ResourceViewerApp>
@@ -399,7 +364,7 @@ ListViewerApp.defaultProps = {
 async function list_viewer_main() {
 
     function gotProps(the_props) {
-        let ListViewerAppPlus = withTheme(withDialogs(withErrorDrawer(withStatus(ListViewerApp))));
+        let ListViewerAppPlus = withSizeContext(withTheme(withDialogs(withErrorDrawer(withStatus(ListViewerApp)))));
         let the_element = <ListViewerAppPlus {...the_props}
                                              controlled={false}
                                              initial_theme={window.theme}

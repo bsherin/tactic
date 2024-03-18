@@ -4,26 +4,25 @@ import React from "react";
 import {Fragment, useState, useRef, useEffect, memo, useContext} from "react";
 import PropTypes from 'prop-types';
 
-import {Menu, MenuItem, MenuDivider, FormGroup, Button} from "@blueprintjs/core";
+import {Menu, MenuItem, MenuDivider,Button} from "@blueprintjs/core";
 import {Tooltip2} from "@blueprintjs/popover2"
 import {Regions} from "@blueprintjs/table";
 import _ from 'lodash';
 
-import {TagButtonList} from "./tag_buttons_react";
 import {CombinedMetadata, icon_dict} from "./blueprint_mdata_fields";
-import {SearchForm, BpSelectorTable} from "./library_widgets";
-import {HorizontalPanes} from "./resizing_layouts";
+import {HorizontalPanes} from "./resizing_layouts2";
 import {postAjaxPromise, postPromise} from "./communication_react"
-import {BOTTOM_MARGIN} from "./sizing_tools";
+import {SizeContext} from "./sizing_tools";
 
 import {doFlash} from "./toaster.js"
 import {KeyTrap} from "./key_trap.js";
 import {useCallbackStack, useConstructor, useStateAndRef} from "./utilities_react";
-import {ThemeContext} from "./theme"
+import {ThemeContext} from "./theme";
 
 import {DialogContext} from "./modal_react";
 import {StatusContext} from "./toaster"
 import {ErrorDrawerContext} from "./error_drawer";
+import {LibraryTablePane} from "./library_table_pane";
 
 export {LibraryPane, view_views, res_types}
 
@@ -93,10 +92,12 @@ BodyMenu.propTypes = {
 
 function LibraryPane(props) {
 
+    const [usable_width, set_usable_width] = useState(window.innerWidth);
+    const [usable_height, set_usable_height] = useState(window.innerHeight);
+    const [topX, setTopX] = useState(0);
+    const [topY, setTopY] = useState(0);
+
     const top_ref = useRef(null);
-    const table_ref = useRef(null);
-    const tr_bounding_top = useRef(null);
-    const resizing = useRef(false);
     const previous_search_spec = useRef(null);
     const socket_counter = useRef(null);
     const blank_selected_resource = useRef({});
@@ -105,8 +106,7 @@ function LibraryPane(props) {
     const [num_rows, set_num_rows] = useState(0);
     const [tag_list, set_tag_list, tag_list_ref] = useStateAndRef([]);
     const [contextMenuItems, setContextMenuItems] = useState([]);
-    const [total_width, set_total_width] = useState(500);
-    const [left_width_fraction, set_left_width_fraction, left_width_fraction_ref] = useStateAndRef(.65);
+    
     const [selected_resource, set_selected_resource, selected_resource_ref] = useStateAndRef({
         "name": "",
         "_id": "",
@@ -137,14 +137,13 @@ function LibraryPane(props) {
     const dialogFuncs = useContext(DialogContext);
     const statusFuncs = useContext(StatusContext);
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
+    const sizeInfo = useContext(SizeContext);
 
     const stateSetters = {
         data_dict: set_data_dict,
         num_rows: set_num_rows,
         tag_list: set_tag_list,
         contextMenuItems: setContextMenuItems,
-        total_width: set_total_width,
-        left_width_fraction: set_left_width_fraction,
         selected_resource: set_selected_resource,
         selected_rows: set_selected_rows,
         expanded_tags: set_expanded_tags,
@@ -170,10 +169,27 @@ function LibraryPane(props) {
     });
 
     useEffect(async () => {
-        tr_bounding_top.current = table_ref.current.getBoundingClientRect().top;
         initSocket();
         await _grabNewChunkWithRow(0)
     }, []);
+
+    useEffect(() => {
+        let awidth = sizeInfo.availableWidth;
+        let aheight = sizeInfo.availableHeight;
+        if (top_ref.current) {
+            awidth = awidth - top_ref.current.offsetLeft + sizeInfo.topX;
+            aheight = aheight - top_ref.current.offsetTop + sizeInfo.topY;
+            setTopX(top_ref.current ? top_ref.current.offsetLeft : sizeInfo.topX);
+            setTopY(top_ref.current ? top_ref.current.offsetTop : sizeInfo.topY)
+        }
+        else {
+            setTopX(sizeInfo.topX);
+            setTopY(sizeInfo.topY);
+        }
+        set_usable_width(awidth);
+        set_usable_height(aheight);
+
+    }, [sizeInfo.availableWidth, sizeInfo.availableHeight]);
 
     const pushCallback = useCallbackStack("library_home");
 
@@ -517,42 +533,6 @@ function LibraryPane(props) {
             revised_selected_resource["tags"] = revised_selected_resource["tags"].join(" ");
             set_selected_resource(revised_selected_resource);
             pushCallback(_overwriteCommonTags)
-        }
-    }
-
-    function _handleSplitResize(left_width, right_width, width_fraction) {
-        if (!resizing.current) {
-            set_left_width_fraction(width_fraction);
-        }
-    }
-
-    function _handleSplitResizeStart() {
-        resizing.current = true;
-    }
-
-    function _handleSplitResizeEnd(width_fraction) {
-        resizing.current = false;
-        set_left_width_fraction(width_fraction);
-    }
-
-    async function _doTagDelete(tag) {
-        const result_dict = {"pane_type": props.pane_type, "tag": tag};
-        let data;
-        try {
-            await postAjaxPromise("delete_tag", result_dict);
-            await _refresh_func()
-        } catch (e) {
-            errorDrawerFuncs.addFromError("Error deleting tag", e)
-        }
-    }
-
-    async function _doTagRename(tag_changes) {
-        const result_dict = {"pane_type": props.pane_type, "tag_changes": tag_changes};
-        try {
-            await postAjaxPromise("rename_tag", result_dict);
-            await _refresh_func()
-        } catch (e) {
-            errorDrawerFuncs.addFromError("Error renaming tag", e)
         }
     }
 
@@ -1365,19 +1345,6 @@ function LibraryPane(props) {
         }
     }
 
-    function get_left_pane_height() {
-        let left_pane_height;
-        if (tr_bounding_top.current) {
-            left_pane_height = window.innerHeight - tr_bounding_top.current - BOTTOM_MARGIN
-        } else if (table_ref && table_ref.current) {
-            left_pane_height = window.innerHeight - table_ref.current.getBoundingClientRect().top - BOTTOM_MARGIN
-        } else {
-            table_width = left_width - 150;
-            left_pane_height = props.usable_height - 100
-        }
-        return left_pane_height
-    }
-
     function _menu_funcs() {
         return {
             view_func: _view_func,
@@ -1412,8 +1379,6 @@ function LibraryPane(props) {
     }
 
     let new_button_groups;
-    let uwidth = props.usable_width;
-    let left_width = (uwidth) * left_width_fraction_ref.current;
     const primary_mdata_fields = ["name", "created",
         "updated", "tags", "notes"];
     const ignore_fields = ["doc_type", "res_type"];
@@ -1465,14 +1430,6 @@ function LibraryPane(props) {
 
     let MenubarClass = props.MenubarClass;
 
-    let table_width;
-    const left_pane_height = get_left_pane_height();
-    if (table_ref && table_ref.current) {
-        table_width = left_width - table_ref.current.offsetLeft + top_ref.current.offsetLeft;
-    } else {
-        table_width = left_width - 150;
-    }
-
     let key_bindings = [
         [["up"], () => _handleArrowKeyPress("ArrowUp")],
         [["down"], () => _handleArrowKeyPress("ArrowDown")],
@@ -1498,67 +1455,36 @@ function LibraryPane(props) {
     }
 
     let left_pane = (
-        <Fragment>
-            <div className="d-flex flex-row" style={{maxHeight: "100%", position: "relative"}}>
-                <div className="d-flex justify-content-around"
-                     style={{
-                         paddingRight: 10,
-                         maxHeight: left_pane_height
-                     }}>
-                    <TagButtonList tag_list={tag_list}
-                                   expanded_tags={expanded_tags_ref.current}
-                                   active_tag={active_tag_ref.current}
-                                   updateTagState={_update_search_state}
-                                   doTagDelete={_doTagDelete}
-                                   doTagRename={_doTagRename}
-                    />
-                </div>
-                <div ref={table_ref}
-                     className={props.pane_type + "-pane"}
-                     style={{
-                         width: table_width,
-                         maxWidth: total_width,
-                         maxHeight: left_pane_height - 20, // The 20 is for the marginTop and padding
-                         overflowY: "scroll",
-                         marginTop: 15,
-                         padding: 5
-                     }}>
-                    <div style={{display: "flex", flexDirection: "column"}}>
-                        {props.pane_type == "all" &&
-                            <FormGroup label="Filter:" inline={true} style={{marginBottom: 0}}>
-                                {filter_buttons}
-                            </FormGroup>
-                        }
-                        <SearchForm allow_search_inside={props.allow_search_inside}
-                                    allow_search_metadata={props.allow_search_metadata}
-                                    allow_show_hidden={true}
-                                    update_search_state={_update_search_state}
-                                    search_string={search_string_ref.current}
-                                    search_inside={search_inside_ref.current}
-                                    show_hidden={show_hidden_ref.current}
-                                    search_metadata={search_metadata_ref.current}
-                        />
-                    </div>
-                    <BpSelectorTable data_dict={data_dict_ref.current}
-                                     rowChanged={rowChanged}
-                                     columns={props.columns}
-                                     num_rows={num_rows}
-                                     open_resources_ref={props.open_resources_ref}
-                                     sortColumn={_set_sort_state}
-                                     selectedRegions={selectedRegionsRef.current}
-                                     communicateColumnWidthSum={set_total_width}
-                                     onSelection={_onTableSelection}
-                                     keyHandler={_handleTableKeyPress}
-                                     initiateDataGrab={_grabNewChunkWithRow}
-                                     renderBodyContextMenu={_renderBodyContextMenu}
-                                     handleRowDoubleClick={_handleRowDoubleClick}
-                    />
-                </div>
-            </div>
-        </Fragment>
+        <LibraryTablePane
+            pane_type={props.pane_type}
+            tag_list={tag_list}
+            expanded_tags_ref={expanded_tags_ref}
+            active_tag_ref={active_tag_ref}
+            updateTagState={_update_search_state}
+            filter_buttons={filter_buttons}
+            update_search_state={_update_search_state}
+            search_string_ref={search_string_ref}
+            search_inside_ref={search_inside_ref}
+            show_hidden_ref={show_hidden_ref}
+            search_metadata_ref={search_metadata_ref}
+            data_dict_ref={data_dict_ref}
+            rowChanged={rowChanged}
+            columns={props.columns}
+            num_rows={num_rows}
+            open_resources_ref={props.open_resources_ref}
+            sortColumn={_set_sort_state}
+            selectedRegionsRef={selectedRegionsRef}
+            onSelection={_onTableSelection}
+            keyHandler={_handleTableKeyPress}
+            initiateDataGrab={_grabNewChunkWithRow}
+            renderBodyContextMenu={_renderBodyContextMenu}
+            handleRowDoubleClick={_handleRowDoubleClick}
+        />
     );
+
     let selected_types = _selectedTypes();
     selectedTypeRef.current = selected_types.length == 1 ? selected_resource_ref.current.res_type : "multi";
+
     return (
         <Fragment>
             <MenubarClass selected_resource={selected_resource_ref.current}
@@ -1579,21 +1505,20 @@ function LibraryPane(props) {
             />
 
             <div ref={top_ref} className="d-flex flex-column">
-                <div style={{width: uwidth, height: props.usable_height}}>
-                    <HorizontalPanes
-                        available_width={uwidth}
-                        available_height={props.usable_height}
-                        show_handle={true}
-                        left_pane={left_pane}
-                        right_pane={right_pane}
-                        right_pane_overflow="auto"
-                        initial_width_fraction={.75}
-                        scrollAdjustSelectors={[".bp5-table-quadrant-scroll-container"]}
-                        handleSplitUpdate={_handleSplitResize}
-                        handleResizeStart={_handleSplitResizeStart}
-                        handleResizeEnd={_handleSplitResizeEnd}
-                    />
+                <div style={{width: "100%", height: usable_height}}>
+                        <HorizontalPanes
+                            show_handle={true}
+                            left_pane={left_pane}
+                            right_pane={right_pane}
+                            right_pane_overflow="auto"
+                            initial_width_fraction={.75}
+                            scrollAdjustSelectors={[".bp5-table-quadrant-scroll-container"]}
+                            handleSplitUpdate={null}
+                            handleResizeStart={null}
+                            handleResizeEnd={null}
+                        />
                 </div>
+
                 <KeyTrap global={true} bindings={key_bindings}/>
             </div>
         </Fragment>
@@ -1609,7 +1534,6 @@ LibraryPane.propTypes = {
     allow_search_inside: PropTypes.bool,
     allow_search_metadata: PropTypes.bool,
     is_repository: PropTypes.bool,
-    left_width_fraction: PropTypes.number,
     selected_resource: PropTypes.object,
     selected_rows: PropTypes.array,
     sort_field: PropTypes.string,

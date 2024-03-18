@@ -1,7 +1,6 @@
 import "../tactic_css/tactic.scss";
 import "../tactic_css/tactic_table.scss";
 import "../tactic_css/tile_creator.scss";
-
 import 'codemirror/mode/javascript/javascript'
 
 import React from "react";
@@ -16,16 +15,14 @@ import {KeyTrap} from "./key_trap";
 import {TacticMenubar} from "./menu_utilities"
 import {sendToRepository} from "./resource_viewer_react_app";
 import {ReactCodemirror} from "./react-codemirror";
-import {CombinedMetadata} from "./blueprint_mdata_fields";
-import {OptionModule, ExportModule, CommandsModule} from "./creator_modules_react";
-import {HorizontalPanes, VerticalPanes} from "./resizing_layouts";
+import {OptionModule, ExportModule, CommandsModule, MetadataModule} from "./creator_modules_react";
+import {HorizontalPanes, VerticalPanes} from "./resizing_layouts2";
 import {postAjax, postAjaxPromise, postPromise} from "./communication_react"
 import {withStatus, doFlash, StatusContext} from "./toaster"
-import {getUsableDimensions, SIDE_MARGIN} from "./sizing_tools";
+import {SIDE_MARGIN, SizeContext, useSize, withSizeContext} from "./sizing_tools";
 import {withErrorDrawer} from "./error_drawer";
 import {renderSpinnerMessage} from "./utilities_react"
 import {TacticNavbar} from "./blueprint_navbar";
-import {SearchForm} from "./library_widgets";
 import {ErrorBoundary} from "./error_boundary";
 import {renderAutoCompleteElement} from "./autocomplete";
 import {useCallbackStack, useStateAndRef, useConnection} from "./utilities_react";
@@ -61,6 +58,8 @@ function CreatorApp(props) {
         em: 0
     });
     const key_bindings = useRef([]);
+
+    const [usable_width, usable_height, topX, topY] = useSize(top_ref, 0, "TileCreator");
     
     const [tabSelectCounter, setTabSelectCounter] = useState(0);
 
@@ -100,18 +99,14 @@ function CreatorApp(props) {
     const [selectedTabId, setSelectedTabId] = useState("metadata");
     const [top_pane_fraction, set_top_pane_fraction] = useState(props.is_mpl || props.is_d3 ? .5 : 1);
     const [left_pane_fraction, set_left_pane_fraction] = useState(.5);
-    const [usable_height, set_usable_height] = useState(() => {
-        return getUsableDimensions(true).usable_height_no_bottom
-    });
-    const [usable_width, set_usable_width] = useState(() => {
-        return getUsableDimensions(true).usable_width - 170
-    });
+
     const [all_tags, set_all_tags] = useState([]);
 
     const theme = useContext(ThemeContext);
     const dialogFuncs = useContext(DialogContext);
     const statusFuncs = useContext(StatusContext);
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
+    const sizeInfo = useContext(SizeContext);
 
     const selectedPane = useContext(SelectedPaneContext);
 
@@ -145,8 +140,6 @@ function CreatorApp(props) {
                 }
             });
             document.title = resource_name;
-            window.addEventListener("resize", _update_window_dimensions);
-            _update_window_dimensions()
         }
         _goToLineNumber();
         _update_saved_state();
@@ -160,7 +153,6 @@ function CreatorApp(props) {
     useEffect(() => {
         _goToLineNumber();
     });
-
 
     function initSocket() {
         props.tsocket.attachListener('focus-me', (data) => {
@@ -182,8 +174,6 @@ function CreatorApp(props) {
 
     function cPropGetters() {
         return {
-            usable_width: usable_width,
-            usable_height: usable_height,
             resource_name: resource_name
         }
     }
@@ -547,11 +537,6 @@ function CreatorApp(props) {
         _update_saved_state();
     }
 
-    function _update_window_dimensions() {
-        set_usable_width(window.innerWidth - top_ref.current.offsetLeft);
-        set_usable_height(window.innerHeight - top_ref.current.offsetTop)
-    }
-
     function _update_saved_state() {
         last_save.current = _getSaveDict();
     }
@@ -626,13 +611,7 @@ function CreatorApp(props) {
             else if (newTabId == "globals") {
                 globalObject.current.refresh()
             }
-            if (props.controlled) {
-                setTabSelectCounter(tabSelectCounter + 1);
-            }
-            else {
-                _update_window_dimensions();
-            }
-
+            setTabSelectCounter(tabSelectCounter + 1);
         })
     }
 
@@ -734,38 +713,6 @@ function CreatorApp(props) {
         set_globals_code(new_globals)
     }
 
-    function get_height_minus_top_offset(element_ref, min_offset = 0, default_offset = 100) {
-        if (element_ref && element_ref.current) {
-            let offset = element_ref.current.offsetTop;
-            if (offset < min_offset) {
-                offset = min_offset
-            }
-            return _cProp("usable_height") - offset
-        } else {
-            return _cProp("usable_height") - default_offset
-        }
-    }
-
-    function get_new_tc_height() {
-        return _cProp("usable_height") * top_pane_fraction - 35
-    }
-
-    function get_new_rc_height(outer_rc_height) {
-        if (rc_span_ref && rc_span_ref.current) {
-            return outer_rc_height - rc_span_ref.current.offsetHeight
-        } else {
-            return outer_rc_height - 50
-        }
-    }
-
-    function handleTopPaneResize(top_height, bottom_height, top_fraction) {
-        set_top_pane_fraction(top_fraction)
-    }
-
-    function handleLeftPaneResize(left_width, right_width, left_fraction) {
-        set_left_pane_fraction(left_fraction)
-    }
-
     function handleTopCodeChange(new_code) {
         if (props.is_mpl) {
             set_draw_plot_code(new_code)
@@ -813,7 +760,6 @@ function CreatorApp(props) {
         globalObject.current = cmobject
     }
 
-
     function _setSearchMatches(rc_name, num) {
         search_match_numbers.current[rc_name] = num;
         let current_matches = 0;
@@ -840,89 +786,47 @@ function CreatorApp(props) {
     let my_props = {...props};
     if (!props.controlled) {
         my_props.resource_name = resource_name;
-        my_props.usable_height = usable_height;
-        my_props.usable_width = usable_width;
     }
-    let vp_height = get_height_minus_top_offset(vp_ref);
-    let uwidth = my_props.usable_width - 2 * SIDE_MARGIN;
-    let uheight = my_props.usable_height;
 
-    let code_width = uwidth * left_pane_fraction - 35;
     let ch_style = {"width": "100%"};
-
     let tc_item;
     if (my_props.is_mpl || my_props.is_d3) {
-        let tc_height = get_new_tc_height();
         let mode = my_props.is_mpl ? "python" : "javascript";
         let code_content = my_props.is_mpl ? draw_plot_code_ref.current : jscript_code_ref.current;
         let first_line_number = my_props.is_mpl ? draw_plot_line_number_ref.current + 1 : 1;
         let title_label = my_props.is_mpl ? "draw_plot" : "(selector, w, h, arg_dict, resizing) =>";
         tc_item = (
-            <div key="dpcode" style={ch_style} className="d-flex flex-column align-items-baseline code-holder">
-                <div style={{display: "flex", flexDirection: "row", justifyContent: "space-between", width: "100%"}}>
-                    <span className="bp5-ui-text"
-                          style={{display: "flex", alignItems: "self-end"}}>{title_label}</span>
-                    <SearchForm update_search_state={_updateSearchState}
-                                search_string={search_string}
-                                regex={regex}
-                                allow_regex={true}
-                                field_width={200}
-                                include_search_jumper={true}
-                                searchPrev={_searchPrev}
-                                searchNext={_searchNext}
-                                search_ref={search_ref}
-                                number_matches={search_matches}
-                    />
-                </div>
-                <ReactCodemirror code_content={code_content}
-                                 mode={mode}
-                                 extraKeys={_extraKeys()}
-                                 current_search_number={current_search_cm == "tc" ? current_search_number : null}
-                                 handleChange={handleTopCodeChange}
-                                 saveMe={_saveAndCheckpoint}
-                                 setCMObject={_setDpObject}
-                                 search_term={search_string}
-                                 update_search_state={_updateSearchState}
-                                 alt_clear_selections={_clearAllSelections}
-                                 first_line_number={first_line_number.current}
-                                 code_container_height={tc_height}
-                                 readOnly={props.read_only}
-                                 regex_search={regex}
-                                 setSearchMatches={(num) => _setSearchMatches("tc", num)}
-                                 extra_autocomplete_list={mode == "python" ? onames_for_autocomplete : []}
-                />
-            </div>
-        );
-    }
-    let rc_height;
-    if (my_props.is_mpl || my_props.is_d3) {
-        let bheight = (1 - top_pane_fraction) * uheight - 35;
-        rc_height = get_new_rc_height(bheight)
-    } else {
-        rc_height = get_new_rc_height(vp_height)
-    }
+           <ReactCodemirror code_content={code_content}
+                            title_label={title_label}
+                            show_search={true}
+                            mode={mode}
+                            extraKeys={_extraKeys()}
+                            current_search_number={current_search_cm == "tc" ? current_search_number : null}
+                            handleChange={handleTopCodeChange}
+                            saveMe={_saveAndCheckpoint}
+                            setCMObject={_setDpObject}
+                            search_term={search_string}
+                            updateSearchState={_updateSearchState}
+                            alt_clear_selections={_clearAllSelections}
+                            first_line_number={first_line_number}
+                            readOnly={props.read_only}
+                            regex_search={regex}
+                            search_ref={search_ref}
+                            searchPrev={_searchPrev}
+                            searchNext={_searchNext}
+                            search_matches={search_matches}
+                            setSearchMatches={(num) => _setSearchMatches("tc", num)}
+                            extra_autocomplete_list={mode == "python" ? onames_for_autocomplete : []}/>
 
+        )
+    }
     let bc_item = (
         <div key="rccode" id="rccode" style={ch_style} className="d-flex flex-column align-items-baseline code-holder">
-            <div style={{display: "flex", flexDirection: "row", justifyContent: "space-between", width: "100%"}}>
-                <span className="bp5-ui-text"
-                      style={{display: "flex", alignItems: "self-end"}}
-                      ref={rc_span_ref}>render_content</span>
-                {!my_props.is_mpl && !my_props.is_d3 &&
-                    <SearchForm update_search_state={_updateSearchState}
-                                search_string={search_string}
-                                regex={regex}
-                                allow_regex={true}
-                                field_width={200}
-                                include_search_jumper={true}
-                                searchPrev={_searchPrev}
-                                searchNext={_searchNext}
-                                search_ref={search_ref}
-                                number_matches={search_matches}
-                    />
-                }
-            </div>
+
             <ReactCodemirror code_content={render_content_code_ref.current}
+                             title_label="render_content"
+                             show_search={!(my_props.is_mpl || my_props.is_d3)}
+                             updateSearchState={_updateSearchState}
                              current_search_number={current_search_cm == "rc" ? current_search_number : null}
                              handleChange={handleRenderContentChange}
                              extraKeys={_extraKeys()}
@@ -932,9 +836,11 @@ function CreatorApp(props) {
                              update_search_state={_updateSearchState}
                              alt_clear_selections={_clearAllSelections}
                              first_line_number={render_content_line_number_ref.current + 1}
-                             code_container_height={rc_height}
                              readOnly={props.read_only}
                              regex_search={regex}
+                             searchPrev={_searchPrev}
+                             searchNext={_searchNext}
+                             search_matches={search_matches}
                              setSearchMatches={(num) => _setSearchMatches("rc", num)}
                              extra_autocomplete_list={onames_for_autocomplete}
 
@@ -949,9 +855,6 @@ function CreatorApp(props) {
                 <VerticalPanes top_pane={tc_item}
                                bottom_pane={bc_item}
                                show_handle={true}
-                               available_height={vp_height}
-                               available_width={left_pane_fraction * uwidth - 20}
-                               handleSplitUpdate={handleTopPaneResize}
                                id="creator-left"
                 />
             </Fragment>
@@ -967,26 +870,29 @@ function CreatorApp(props) {
             </Fragment>
         );
     }
-    let default_module_height = get_height_minus_top_offset(null, 128, 128);
-    let mdata_style = {marginLeft: 20, overflow: "auto", padding: 15, height: default_module_height};
-    let mdata_panel = (<CombinedMetadata tags={tags_ref.current}
-                                         all_tags={all_tags}
-                                         readOnly={props.readOnly}
-                                         notes={notes_ref.current}
-                                         icon={icon_ref.current}
-                                         created={my_props.created}
-                                         category={category_ref.current}
-                                         pane_type="tile"
-                                         notes_buttons={_metadataNotesButtons}
-                                         handleChange={_handleMetadataChange}
-    />);
+
+    let mdata_panel = (
+        <MetadataModule tags={tags_ref.current}
+                       expandWidth={false}
+                       all_tags={all_tags}
+                       readOnly={props.readOnly}
+                       notes={notes_ref.current}
+                     icon={icon_ref.current}
+                     created={my_props.created}
+                     category={category_ref.current}
+                     pane_type="tile"
+                     notes_buttons={_metadataNotesButtons}
+                     handleChange={_handleMetadataChange}
+                     tabSelectCounter={tabSelectCounter}
+        />
+    );
 
     let option_panel = (
         <OptionModule data_list_ref={option_list_ref}
                       foregrounded={foregrounded_panes["options"]}
                       handleChange={handleOptionsListChange}
                       handleNotesAppend={_handleNotesAppend}
-                      available_height={default_module_height}
+                      tabSelectCounter={tabSelectCounter}
         />
     );
     let export_panel = (
@@ -996,12 +902,11 @@ function CreatorApp(props) {
                       foregrounded={foregrounded_panes["exports"]}
                       handleChange={handleExportsStateChange}
                       handleNotesAppend={_handleNotesAppend}
-                      available_height={default_module_height}
+                      tabSelectCounter={tabSelectCounter}
         />
     );
-    let methods_height = get_height_minus_top_offset(methods_ref, 128, 128);
     let methods_panel = (
-        <div style={{marginLeft: 5}}>
+        <div style={{marginLeft: 10}}>
             <ReactCodemirror handleChange={handleMethodsChange}
                              show_fold_button={true}
                              current_search_number={current_search_cm == "em" ? current_search_number : null}
@@ -1011,7 +916,6 @@ function CreatorApp(props) {
                              saveMe={_saveAndCheckpoint}
                              setCMObject={_setEmObject}
                              code_container_ref={methods_ref}
-                             code_container_height={methods_height}
                              search_term={search_string}
                              update_search_state={_updateSearchState}
                              alt_clear_selections={_clearAllSelections}
@@ -1019,13 +923,13 @@ function CreatorApp(props) {
                              first_line_number={extra_methods_line_number_ref.current}
                              setSearchMatches={(num) => _setSearchMatches("em", num)}
                              extra_autocomplete_list={onames_for_autocomplete}
+                             iCounter={tabSelectCounter}
             />
         </div>
 
     );
-    let globals_height = get_height_minus_top_offset(globals_ref, 128, 128);
     let globals_panel = (
-        <div style={{marginLeft: 5}}>
+        <div style={{marginLeft: 10}}>
             <ReactCodemirror handleChange={handleGlobalsChange}
                              show_fold_button={true}
                              current_search_number={current_search_cm == "gp" ? current_search_number : null}
@@ -1035,7 +939,6 @@ function CreatorApp(props) {
                              saveMe={_saveAndCheckpoint}
                              setCMObject={_setGlobalObject}
                              code_container_ref={globals_ref}
-                             code_container_height={globals_height}
                              search_term={search_string}
                              update_search_state={_updateSearchState}
                              alt_clear_selections={_clearAllSelections}
@@ -1043,15 +946,14 @@ function CreatorApp(props) {
                              first_line_number={1}
                              setSearchMatches={(num) => _setSearchMatches("gp", num)}
                              extra_autocomplete_list={onames_for_autocomplete}
+                             iCounter={tabSelectCounter}
             />
         </div>
 
     );
-    let commands_height = get_height_minus_top_offset(commands_ref, 128, 128);
     let commands_panel = (
         <CommandsModule foregrounded={foregrounded_panes["commands"]}
-                        available_height={commands_height}
-                        commands_ref={commands_ref}
+                        tabSelectCounter={tabSelectCounter}
         />
     );
     let right_pane = (
@@ -1075,7 +977,7 @@ function CreatorApp(props) {
     );
     let outer_style = {
         width: "100%",
-        height: uheight,
+        height: sizeInfo.availableHeight,
         paddingLeft: props.controlled ? 5 : SIDE_MARGIN,
         paddingTop: 15
     };
@@ -1087,6 +989,8 @@ function CreatorApp(props) {
             outer_class = outer_class + " light-theme"
         }
     }
+
+    let uwidth = usable_width - 2 * SIDE_MARGIN;
     return (
         <ErrorBoundary>
             {!window.in_context &&
@@ -1108,13 +1012,21 @@ function CreatorApp(props) {
             />
             <ErrorBoundary>
                 <div className={outer_class} ref={top_ref} style={outer_style}>
-                    <HorizontalPanes left_pane={left_pane}
-                                     right_pane={right_pane}
-                                     show_handle={true}
-                                     available_height={uheight}
-                                     available_width={uwidth}
-                                     handleSplitUpdate={handleLeftPaneResize}
-                    />
+                     <SizeContext.Provider value={{
+                        availableWidth: uwidth,
+                        availableHeight: usable_height,
+                        topX: topX,
+                        topY: topY
+                    }}>
+                        <HorizontalPanes left_pane={left_pane}
+                                         right_pane={right_pane}
+                                         show_handle={true}
+                                         initial_width_fraction={.5}
+                                         handleSplitUpdate={null}
+                                         bottom_margin={BOTTOM_MARGIN}
+                                         right_margin={SIDE_MARGIN}
+                        />
+                     </SizeContext.Provider>
                 </div>
                 {!window.in_context &&
                     <Fragment>
@@ -1167,7 +1079,7 @@ CreatorApp.defaultProps = {
 
 function tile_creator_main() {
     function gotProps(the_props) {
-        let CreatorAppPlus = withTheme(withDialogs(withErrorDrawer(withStatus(CreatorApp))));
+        let CreatorAppPlus = withSizeContext(withTheme(withDialogs(withErrorDrawer(withStatus(CreatorApp)))));
         let the_element = <CreatorAppPlus {...the_props}
                                           controlled={false}
                                           initial_theme={window.theme}

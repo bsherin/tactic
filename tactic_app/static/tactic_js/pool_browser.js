@@ -12,9 +12,10 @@ var _utilities_react = require("./utilities_react");
 var _library_menubars = require("./library_menubars");
 var _blueprint_mdata_fields = require("./blueprint_mdata_fields");
 var _pool_tree = require("./pool_tree");
-var _resizing_layouts = require("./resizing_layouts");
+var _resizing_layouts = require("./resizing_layouts2");
 var _communication_react = require("./communication_react");
 var _error_drawer = require("./error_drawer");
+var _sizing_tools = require("./sizing_tools");
 var _toaster = require("./toaster");
 var _theme = require("./theme");
 var _modal_react = require("./modal_react");
@@ -23,6 +24,8 @@ function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return 
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 const pool_browser_id = (0, _utilities_react.guid)();
 function PoolBrowser(props) {
+  const top_ref = (0, _react.useRef)(null);
+  const resizing = (0, _react.useRef)(false);
   const [selected_resource, set_selected_resource, selected_resource_ref] = (0, _utilities_react.useStateAndRef)({
     name: "",
     tags: "",
@@ -36,19 +39,17 @@ function PoolBrowser(props) {
   const [multi_select, set_multi_select, multi_select_ref] = (0, _utilities_react.useStateAndRef)(false);
   const [list_of_selected, set_list_of_selected, list_of_selected_ref] = (0, _utilities_react.useStateAndRef)([]);
   const [contextMenuItems, setContextMenuItems] = (0, _react.useState)([]);
-  const [left_width_fraction, set_left_width_fraction, left_width_fraction_ref] = (0, _utilities_react.useStateAndRef)(.65);
   const [have_activated, set_have_activated] = (0, _react.useState)(false);
   const theme = (0, _react.useContext)(_theme.ThemeContext);
   const dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   const errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
   const statudFuncs = (0, _react.useContext)(_toaster.StatusContext);
+  const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(top_ref, 0, "pool_browser");
   const treeRefreshFunc = (0, _react.useRef)(null);
   // Important note: The first mounting of the pool tree must happen after the pool pane
   // is first activated. Otherwise, I do GetPoolTree before everything is ready and I don't
   // get the callback for the post.
 
-  const top_ref = (0, _react.useRef)(null);
-  const resizing = (0, _react.useRef)(false);
   (0, _react.useEffect)(() => {
     if (props.am_selected && !have_activated) {
       set_have_activated(true);
@@ -333,18 +334,6 @@ function PoolBrowser(props) {
       }
     }
   }
-  function _handleSplitResize(left_width, right_width, width_fraction) {
-    if (!resizing.current) {
-      set_left_width_fraction(width_fraction);
-    }
-  }
-  function _handleSplitResizeStart() {
-    resizing.current = true;
-  }
-  function _handleSplitResizeEnd(width_fraction) {
-    resizing.current = false;
-    set_left_width_fraction(width_fraction);
-  }
   function handleNodeClick(node, nodes) {
     setValue(node.fullpath);
     setSelectedNode(node);
@@ -474,12 +463,10 @@ function PoolBrowser(props) {
     className: "pool-browser"
   }, /*#__PURE__*/_react.default.createElement("div", {
     style: {
-      width: props.usable_width,
-      height: props.usable_height
+      width: usable_width,
+      height: usable_height
     }
   }, /*#__PURE__*/_react.default.createElement(_resizing_layouts.HorizontalPanes, {
-    available_width: props.usable_width,
-    available_height: props.usable_height,
     outer_hp_style: {
       paddingBottom: "50px"
     },
@@ -489,14 +476,12 @@ function PoolBrowser(props) {
     right_pane_overflow: "auto",
     initial_width_fraction: .75,
     scrollAdjustSelectors: [".bp5-table-quadrant-scroll-container"],
-    handleSplitUpdate: _handleSplitResize,
-    handleResizeStart: _handleSplitResizeStart,
-    handleResizeEnd: _handleSplitResizeEnd
+    handleSplitUpdate: null,
+    handleResizeStart: null,
+    handleResizeEnd: null
   }))));
 }
 exports.PoolBrowser = PoolBrowser = /*#__PURE__*/(0, _react.memo)(PoolBrowser);
-// PoolBrowser = withErrorDrawer(withStatus(PoolBrowser));
-
 function PoolMenubar(props) {
   function context_menu_items() {
     return [];

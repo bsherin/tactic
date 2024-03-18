@@ -37,11 +37,11 @@ import {notebook_props} from "./notebook_support"
 import {code_viewer_props, CodeViewerApp} from "./code_viewer_react";
 import {list_viewer_props, ListViewerApp} from "./list_viewer_react";
 import {ErrorDrawerContext, withErrorDrawer} from "./error_drawer";
-import {getUsableDimensions, USUAL_TOOLBAR_HEIGHT} from "./sizing_tools";
+import {SizeContext, getUsableDimensions, USUAL_NAVBAR_HEIGHT, INIT_CONTEXT_PANEL_WIDTH} from "./sizing_tools";
 import {postAjaxPromise} from "./communication_react";
 import {KeyTrap} from "./key_trap";
 import {DragHandle} from "./resizing_layouts";
-import {useCallbackStack, useStateAndRef} from "./utilities_react";
+import {useCallbackStack, useStateAndRef, useDebounce, useStateAndRefAndCounter} from "./utilities_react";
 import {ThemeContext, withTheme} from "./theme"
 
 import {withDialogs, DialogContext} from "./modal_react";
@@ -111,8 +111,8 @@ function _context_main() {
 }
 
 function ContextApp(props) {
-    const [selectedTabId, setSelectedTabId, selectedTabIdRef] = useStateAndRef("library");
-    const [saved_width, set_saved_width] = useState(150);
+    const [selectedTabId, setSelectedTabId, selectedTabIdRef, selectedTabIdCounter] = useStateAndRefAndCounter("library");
+    const [saved_width, set_saved_width] = useState(INIT_CONTEXT_PANEL_WIDTH);
 
     const [tab_panel_dict, set_tab_panel_dict, tab_panel_dict_ref] = useStateAndRef({});
     const [tab_ids, set_tab_ids, tab_ids_ref] = useStateAndRef([]);
@@ -122,12 +122,14 @@ function ContextApp(props) {
 
     const [lastSelectedTabId, setLastSelectedTabId] = useState(null);
     const [usable_width, set_usable_width] = useState(() => {
-        return getUsableDimensions(true).usable_width - 170
+        return getUsableDimensions(true).usable_width - INIT_CONTEXT_PANEL_WIDTH
     });
     const [usable_height, set_usable_height] = useState(() => {
         return getUsableDimensions(true).usable_height_no_bottom
     });
-    const [tabWidth, setTabWidth] = useState(150);
+    const [paneX, setPaneX] = useState(170);
+    const [paneY, setPaneY] = useState(USUAL_NAVBAR_HEIGHT);
+    const [tabWidth, setTabWidth] = useState(INIT_CONTEXT_PANEL_WIDTH);
     const [show_repository, set_show_repository] = useState(false);
     const [dragging_over, set_dragging_over] = useState(null);
     const [currently_dragging, set_currently_dragging] = useState(null);
@@ -164,6 +166,10 @@ function ContextApp(props) {
         })
     }, []);
 
+    const [waiting, doResize] = useDebounce(() => {
+        _update_window_dimensions(null)
+    }, 0);
+
     useEffect(() => {  // for mount
         window.addEventListener("resize", () => _update_window_dimensions(null));
         window.addEventListener("beforeunload", function (e) {
@@ -181,6 +187,10 @@ function ContextApp(props) {
         }
     }, []);
 
+    useEffect(() => {
+        _update_window_dimensions(null)
+    }, [selectedTabId]);
+
     function get_tab_list_elem() {
         return document.querySelector("#context-container .context-tab-list > .bp5-tab-list");
     }
@@ -189,6 +199,7 @@ function ContextApp(props) {
         let w = pane_closed ? saved_width : MIN_CONTEXT_WIDTH;
         let tab_elem = get_tab_list_elem();
         tab_elem.setAttribute("style", `width:${w}px`);
+        pushCallback(_update_window_dimensions)
     }
 
     function _handleTabResize(e, ui, lastX, lastY, dx, dy) {
@@ -208,35 +219,42 @@ function ContextApp(props) {
     function _handleTabResizeEnd(e, ui, lastX, lastY, dx, dy) {
         let tab_elem = get_tab_list_elem();
 
-        if (tab_elem.offsetWidth > 45) {
-            let new_width = Math.max(tab_elem.offsetWidth, MIN_CONTEXT_SAVED_WIDTH);
+        let tab_rect = tab_elem.getBoundingClientRect();
+        if (tab_rect.width > 45) {
+            let new_width = Math.max(tab_rect.width, MIN_CONTEXT_SAVED_WIDTH);
             if (new_width != saved_width) {
                 set_saved_width(new_width)
             }
         }
+        pushCallback(_update_window_dimensions)
     }
 
     function _update_window_dimensions(callback = null) {
         const tab_list_elem = get_tab_list_elem();
         let uwidth;
         let uheight;
-        let tabWidth;
+        let tWidth;
+        let top_rect;
         if (top_ref && top_ref.current) {
-            uheight = window.innerHeight - top_ref.current.offsetTop;
+            top_rect = top_ref.current.getBoundingClientRect();
+            uheight = window.innerHeight - top_rect.top
         } else {
-            uheight = window.innerHeight - USUAL_TOOLBAR_HEIGHT
+            uheight = window.innerHeight - USUAL_NAVBAR_HEIGHT
         }
         if (tab_list_elem) {
-            uwidth = window.innerWidth - tab_list_elem.offsetWidth;
-            tabWidth = tab_list_elem.offsetWidth
+            let tab_rect = tab_list_elem.getBoundingClientRect();
+            uwidth = window.innerWidth - tab_rect.width;
+            tWidth = tab_rect.width
         } else {
             uwidth = window.innerWidth - 150;
-            tabWidth = 150
+            tWidth = 150
         }
         set_usable_height(uheight);
         set_usable_width(uwidth);
-        setTabWidth(tabWidth);
-        statusFuncs.setLeftEdge(tabWidth);
+        setPaneX(tWidth);
+        setPaneY(top_ref.current ? top_rect.top : USUAL_NAVBAR_HEIGHT);
+        setTabWidth(tWidth);
+        statusFuncs.setLeftEdge(tWidth);
         pushCallback(callback);
     }
 
@@ -620,7 +638,6 @@ function ContextApp(props) {
     }
 
     function _addContextOmniItems() {
-        // if (tab_ids_ref.current.length == 0) return [];
         let omni_funcs = [
             ["Go To Next Panel", "context", _goToNextPane, "arrow-right"],
             ["Go To Previous Panel", "context", _goToPreviousPane, "arrow-left"],
@@ -643,7 +660,6 @@ function ContextApp(props) {
         _addOmniItems("global", omni_items)
     }
 
-    // Create the library tab
     let bclass = "context-tab-button-content";
     if (selectedTabIdRef.current == "library") {
         bclass += " selected-tab-button"
@@ -654,6 +670,7 @@ function ContextApp(props) {
             tab_id: "library",
             selectedTabIdRef,
             amSelected,
+            counter: selectedTabIdCounter,
             addOmniItems: (items)=>{_addOmniItems("library", items)}
         }}>
             <div id="library-home-root">
@@ -698,6 +715,7 @@ function ContextApp(props) {
             <SelectedPaneContext.Provider value={{
                 tab_id: "pool",
                 selectedTabIdRef, amSelected,
+                counter: selectedTabIdCounter,
                 addOmniItems: (items)=>{_addOmniItems("pool", items)}
             }}>
                 <div id="pool-browser-root">
@@ -776,6 +794,7 @@ function ContextApp(props) {
                     tab_id,
                     selectedTabIdRef,
                     amSelected,
+                    counter: selectedTabIdCounter,
                     addOmniItems: (items)=>{_addOmniItems(tab_id, items)}
                 }}>
                     <TheClass {...tab_entry.panel}
@@ -915,7 +934,6 @@ function ContextApp(props) {
     if (sid in omniItemsRef.current) {
         commandItems = commandItems.concat(omniItemsRef.current[sid])
     }
-
     return (
         <Fragment>
             <TacticNavbar is_authenticated={window.is_authenticated}
@@ -930,7 +948,7 @@ function ContextApp(props) {
                                         size={18}/>}
                             style={{
                                 paddingLeft: 4, paddingRight: 0,
-                                position: "absolute", left: tabWidth - 30, bottom: 10,
+                                position: "fixed", left: tabWidth - 30, bottom: 10,
                                 zIndex: 100
                             }}
                             minimal={true}
@@ -941,19 +959,26 @@ function ContextApp(props) {
                                 _togglePane(pane_closed)
                             }}
                     />
-                    <DragHandle position_dict={{position: "absolute", left: tabWidth - 5}}
+                    <DragHandle position_dict={{position: "fixed", left: tabWidth - 5}}
                                 onDrag={_handleTabResize}
                                 dragStart={_handleTabResizeStart}
                                 dragEnd={_handleTabResizeEnd}
                                 direction="x"
                                 barHeight="100%"
                                 useThinBar={true}/>
-                    <Tabs id="context-tabs" selectedTabId={selectedTabIdRef.current}
-                          className={tlclass}
-                          vertical={true}
-                          onChange={_handleTabSelect}>
-                        {all_tabs}
-                    </Tabs>
+                    <SizeContext.Provider value={{
+                        availableWidth: usable_width,
+                        availableHeight: usable_height,
+                        topX: paneX,
+                        topY: paneY
+                    }}>
+                        <Tabs id="context-tabs" selectedTabId={selectedTabIdRef.current}
+                              className={tlclass}
+                              vertical={true}
+                              onChange={_handleTabSelect}>
+                            {all_tabs}
+                        </Tabs>
+                    </SizeContext.Provider>
                 </div>
                 <SelectedPaneContext.Provider value={{
                     tab_id: sid,

@@ -15,13 +15,13 @@ var ReactDOM = _interopRequireWildcard(require("react-dom"));
 var _tactic_socket = require("./tactic_socket");
 var _toaster = require("./toaster.js");
 var _library_pane = require("./library_pane");
-var _sizing_tools = require("./sizing_tools");
 var _toaster2 = require("./toaster");
 var _error_drawer = require("./error_drawer");
 var _utilities_react = require("./utilities_react");
 var _blueprint_navbar = require("./blueprint_navbar");
 var _library_menubars = require("./library_menubars");
 var _theme = require("./theme");
+var _sizing_tools = require("./sizing_tools");
 var _modal_react = require("./modal_react");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
@@ -32,27 +32,15 @@ const library_id = exports.library_id = (0, _utilities_react.guid)();
 const tab_panes = ["all-pane", "collections-pane", "projects-pane", "tiles-pane", "lists-pane", "code-pane"];
 const controllable_props = ["usable_width", "usable_height"];
 function LibraryHomeApp(props) {
-  const [usable_height, set_usable_height] = (0, _react.useState)(null);
-  const [usable_width, set_usable_width] = (0, _react.useState)(null);
+  const top_ref = (0, _react.useRef)(null);
+  const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(top_ref, 0, "Library");
   const theme = (0, _react.useContext)(_theme.ThemeContext);
   const statusFuncs = (0, _react.useContext)(_toaster2.StatusContext);
+  const sizeInfo = (0, _react.useContext)(_sizing_tools.SizeContext);
   const connection_status = (0, _utilities_react.useConnection)(props.tsocket, initSocket);
   const pushCallback = (0, _utilities_react.useCallbackStack)("library_home");
-  const top_ref = (0, _react.useRef)(null);
-  (0, _utilities_react.useConstructor)(() => {
-    if (!window.in_context) {
-      const aheight = (0, _sizing_tools.getUsableDimensions)(true).usable_height_no_bottom;
-      const awidth = (0, _sizing_tools.getUsableDimensions)(true).usable_width - 170;
-      set_usable_height(aheight);
-      set_usable_width(awidth);
-    }
-  });
   (0, _react.useEffect)(() => {
     statusFuncs.stopSpinner(null);
-    if (!props.controlled) {
-      window.addEventListener("resize", _handleResize);
-      _handleResize();
-    }
   }, []);
   function initSocket() {
     props.tsocket.attachListener("window-open", data => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
@@ -67,17 +55,9 @@ function LibraryHomeApp(props) {
       });
     }
   }
-  function _handleResize() {
-    set_usable_width(window.innerWidth - top_ref.current.offsetLeft);
-    set_usable_height(window.innerHeight - top_ref.current.offsetTop);
-  }
   let lib_props = {
     ...props
   };
-  if (!props.controlled) {
-    lib_props.usable_width = usable_width - TAB_BAR_WIDTH;
-    lib_props.usable_height = usable_height;
-  }
   let all_pane = /*#__PURE__*/_react.default.createElement(_library_pane.LibraryPane, (0, _extends2.default)({}, lib_props, {
     connection_status: connection_status,
     columns: {
@@ -118,8 +98,9 @@ function LibraryHomeApp(props) {
     paddingLeft: 0
   };
   let outer_class = "";
-  if (!props.controlled) {
-    outer_class = "library-pane-holder  ";
+  if (!window.in_context) {
+    outer_style.height = "100%";
+    outer_class = "pane-holder  ";
     if (theme.dark_theme) {
       outer_class = `${outer_class} bp5-dark`;
     } else {
@@ -137,12 +118,19 @@ function LibraryHomeApp(props) {
     className: outer_class,
     ref: top_ref,
     style: outer_style
-  }, all_pane));
+  }, /*#__PURE__*/_react.default.createElement(_sizing_tools.SizeContext.Provider, {
+    value: {
+      topX: topX,
+      topY: topY,
+      availableWidth: usable_width,
+      availableHeight: usable_height - _sizing_tools.BOTTOM_MARGIN
+    }
+  }, all_pane)));
 }
 exports.LibraryHomeApp = LibraryHomeApp = /*#__PURE__*/(0, _react.memo)(LibraryHomeApp);
 function _library_home_main() {
   const tsocket = new _tactic_socket.TacticSocket("main", 5000, "library", library_id);
-  const LibraryHomeAppPlus = (0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster2.withStatus)(LibraryHomeApp))));
+  const LibraryHomeAppPlus = (0, _sizing_tools.withSizeContext)((0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster2.withStatus)(LibraryHomeApp)))));
   const domContainer = document.querySelector('#library-home-root');
   ReactDOM.render( /*#__PURE__*/_react.default.createElement(LibraryHomeAppPlus, {
     tsocket: tsocket,

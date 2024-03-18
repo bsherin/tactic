@@ -16,13 +16,13 @@ var _resource_viewer_react_app = require("./resource_viewer_react_app");
 var _tactic_socket = require("./tactic_socket");
 var _communication_react = require("./communication_react.js");
 var _toaster = require("./toaster.js");
-var _sizing_tools = require("./sizing_tools.js");
 var _error_drawer = require("./error_drawer.js");
 var _utilities_react = require("./utilities_react");
 var _blueprint_navbar = require("./blueprint_navbar");
 var _theme = require("./theme");
 var _modal_react = require("./modal_react");
 var _error_drawer2 = require("./error_drawer");
+var _sizing_tools = require("./sizing_tools");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 function code_viewer_props(data, registerDirtyMethod, finalCallback) {
@@ -45,9 +45,7 @@ function code_viewer_props(data, registerDirtyMethod, finalCallback) {
 }
 function CodeViewerApp(props) {
   const top_ref = (0, _react.useRef)(null);
-  const cc_ref = (0, _react.useRef)(null);
   const search_ref = (0, _react.useRef)(null);
-  const cc_bounding_top = (0, _react.useRef)(null);
   const savedContent = (0, _react.useRef)(props.the_content);
   const savedTags = (0, _react.useRef)(props.split_tags);
   const savedNotes = (0, _react.useRef)(props.notes);
@@ -57,28 +55,16 @@ function CodeViewerApp(props) {
   const [search_string, set_search_string] = (0, _react.useState)("");
   const [regex, set_regex] = (0, _react.useState)(false);
   const [search_matches, set_search_matches] = (0, _react.useState)(props.null);
-
-  // The following only are used if not in context
-  const [usable_width, set_usable_width] = (0, _react.useState)(() => {
-    return (0, _sizing_tools.getUsableDimensions)(true).usable_width - 170;
-  });
-  const [usable_height, set_usable_height] = (0, _react.useState)(() => {
-    return (0, _sizing_tools.getUsableDimensions)(true).usable_height_no_bottom;
-  });
+  const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(top_ref, 0, "CodeViewer");
   const [resource_name, set_resource_name] = (0, _react.useState)(props.resource_name);
   const theme = (0, _react.useContext)(_theme.ThemeContext);
   const dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   const statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
   const errorDrawerFuncs = (0, _react.useContext)(_error_drawer2.ErrorDrawerContext);
+  const sizeInfo = (0, _react.useContext)(_sizing_tools.SizeContext);
   (0, _react.useEffect)(() => {
     statusFuncs.stopSpinner();
-    if (cc_ref && cc_ref.current) {
-      cc_bounding_top.current = cc_ref.current.getBoundingClientRect().top;
-    }
-    if (!props.controlled) {
-      window.addEventListener("resize", _update_window_dimensions);
-      _update_window_dimensions();
-    } else {
+    if (props.controlled) {
       props.registerDirtyMethod(_dirty);
     }
   }, []);
@@ -109,8 +95,6 @@ function CodeViewerApp(props) {
   }
   function cPropGetters() {
     return {
-      usable_width: usable_width,
-      usable_height: usable_height,
       resource_name: resource_name
     };
   }
@@ -184,20 +168,6 @@ function CodeViewerApp(props) {
   }
   function _handleCodeChange(new_code) {
     set_code_content(new_code);
-  }
-  function _update_window_dimensions() {
-    set_usable_width(window.innerWidth - top_ref.current.offsetLeft);
-    set_usable_height(window.innerHeight - top_ref.current.offsetTop);
-  }
-  function get_new_cc_height() {
-    if (cc_bounding_top.current) {
-      return window.innerHeight - cc_bounding_top.current - _sizing_tools.BOTTOM_MARGIN;
-    } else if (cc_ref && cc_ref.current) {
-      // This will be true after the initial render
-      return window.innerHeight - cc_ref.current.getBoundingClientRect().top - _sizing_tools.BOTTOM_MARGIN;
-    } else {
-      return _cProp("usable_height") - 100;
-    }
   }
   function _setSearchMatches(nmatches) {
     set_search_matches(nmatches);
@@ -279,19 +249,15 @@ function CodeViewerApp(props) {
   let my_props = {
     ...props
   };
-  if (!props.controlled) {
-    my_props.resource_name = resource_name;
-    my_props.usable_height = usable_height;
-    my_props.usable_width = usable_width;
-  }
   let outer_style = {
     width: "100%",
-    height: my_props.usable_height,
+    height: sizeInfo.availableHeight,
     paddingLeft: 0,
     position: "relative"
   };
   let outer_class = "resource-viewer-holder";
   if (!props.controlled) {
+    my_props.resource_name = resource_name;
     if (theme.dark_theme) {
       outer_class = outer_class + " bp5-dark";
     } else {
@@ -331,6 +297,7 @@ function CodeViewerApp(props) {
     showErrorDrawerButton: true
   }), /*#__PURE__*/_react.default.createElement(_reactCodemirror.ReactCodemirror, {
     code_content: code_content,
+    no_width: true,
     extraKeys: _extraKeys(),
     readOnly: props.readOnly,
     handleChange: _handleCodeChange,
@@ -338,9 +305,7 @@ function CodeViewerApp(props) {
     search_term: search_string,
     update_search_state: _update_search_state,
     regex_search: regex,
-    setSearchMatches: _setSearchMatches,
-    code_container_height: get_new_cc_height(),
-    ref: cc_ref
+    setSearchMatches: _setSearchMatches
   }))));
 }
 exports.CodeViewerApp = CodeViewerApp = /*#__PURE__*/(0, _react.memo)(CodeViewerApp);
@@ -370,7 +335,7 @@ CodeViewerApp.defaultProps = {
 };
 function code_viewer_main() {
   function gotProps(the_props) {
-    let CodeViewerAppPlus = (0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(CodeViewerApp))));
+    let CodeViewerAppPlus = (0, _sizing_tools.withSizeContext)((0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(CodeViewerApp)))));
     let the_element = /*#__PURE__*/_react.default.createElement(CodeViewerAppPlus, (0, _extends2.default)({}, the_props, {
       controlled: false,
       initial_theme: window.theme,

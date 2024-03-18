@@ -106,20 +106,22 @@ function _context_main() {
   }), domContainer);
 }
 function ContextApp(props) {
-  const [selectedTabId, setSelectedTabId, selectedTabIdRef] = (0, _utilities_react.useStateAndRef)("library");
-  const [saved_width, set_saved_width] = (0, _react.useState)(150);
+  const [selectedTabId, setSelectedTabId, selectedTabIdRef, selectedTabIdCounter] = (0, _utilities_react.useStateAndRefAndCounter)("library");
+  const [saved_width, set_saved_width] = (0, _react.useState)(_sizing_tools.INIT_CONTEXT_PANEL_WIDTH);
   const [tab_panel_dict, set_tab_panel_dict, tab_panel_dict_ref] = (0, _utilities_react.useStateAndRef)({});
   const [tab_ids, set_tab_ids, tab_ids_ref] = (0, _utilities_react.useStateAndRef)([]);
   const [open_resources, set_open_resources, open_resources_ref] = (0, _utilities_react.useStateAndRef)([]);
   const [dirty_methods, set_dirty_methods] = (0, _react.useState)({});
   const [lastSelectedTabId, setLastSelectedTabId] = (0, _react.useState)(null);
   const [usable_width, set_usable_width] = (0, _react.useState)(() => {
-    return (0, _sizing_tools.getUsableDimensions)(true).usable_width - 170;
+    return (0, _sizing_tools.getUsableDimensions)(true).usable_width - _sizing_tools.INIT_CONTEXT_PANEL_WIDTH;
   });
   const [usable_height, set_usable_height] = (0, _react.useState)(() => {
     return (0, _sizing_tools.getUsableDimensions)(true).usable_height_no_bottom;
   });
-  const [tabWidth, setTabWidth] = (0, _react.useState)(150);
+  const [paneX, setPaneX] = (0, _react.useState)(170);
+  const [paneY, setPaneY] = (0, _react.useState)(_sizing_tools.USUAL_NAVBAR_HEIGHT);
+  const [tabWidth, setTabWidth] = (0, _react.useState)(_sizing_tools.INIT_CONTEXT_PANEL_WIDTH);
   const [show_repository, set_show_repository] = (0, _react.useState)(false);
   const [dragging_over, set_dragging_over] = (0, _react.useState)(null);
   const [currently_dragging, set_currently_dragging] = (0, _react.useState)(null);
@@ -143,6 +145,9 @@ function ContextApp(props) {
       tsocket.disconnect();
     };
   }, []);
+  const [waiting, doResize] = (0, _utilities_react.useDebounce)(() => {
+    _update_window_dimensions(null);
+  }, 0);
   (0, _react.useEffect)(() => {
     // for mount
     window.addEventListener("resize", () => _update_window_dimensions(null));
@@ -159,6 +164,9 @@ function ContextApp(props) {
       resizeObserver.observe(tab_list_elem);
     }
   }, []);
+  (0, _react.useEffect)(() => {
+    _update_window_dimensions(null);
+  }, [selectedTabId]);
   function get_tab_list_elem() {
     return document.querySelector("#context-container .context-tab-list > .bp5-tab-list");
   }
@@ -166,6 +174,7 @@ function ContextApp(props) {
     let w = pane_closed ? saved_width : MIN_CONTEXT_WIDTH;
     let tab_elem = get_tab_list_elem();
     tab_elem.setAttribute("style", `width:${w}px`);
+    pushCallback(_update_window_dimensions);
   }
   function _handleTabResize(e, ui, lastX, lastY, dx, dy) {
     let tab_elem = get_tab_list_elem();
@@ -181,35 +190,42 @@ function ContextApp(props) {
   }
   function _handleTabResizeEnd(e, ui, lastX, lastY, dx, dy) {
     let tab_elem = get_tab_list_elem();
-    if (tab_elem.offsetWidth > 45) {
-      let new_width = Math.max(tab_elem.offsetWidth, MIN_CONTEXT_SAVED_WIDTH);
+    let tab_rect = tab_elem.getBoundingClientRect();
+    if (tab_rect.width > 45) {
+      let new_width = Math.max(tab_rect.width, MIN_CONTEXT_SAVED_WIDTH);
       if (new_width != saved_width) {
         set_saved_width(new_width);
       }
     }
+    pushCallback(_update_window_dimensions);
   }
   function _update_window_dimensions() {
     let callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
     const tab_list_elem = get_tab_list_elem();
     let uwidth;
     let uheight;
-    let tabWidth;
+    let tWidth;
+    let top_rect;
     if (top_ref && top_ref.current) {
-      uheight = window.innerHeight - top_ref.current.offsetTop;
+      top_rect = top_ref.current.getBoundingClientRect();
+      uheight = window.innerHeight - top_rect.top;
     } else {
-      uheight = window.innerHeight - _sizing_tools.USUAL_TOOLBAR_HEIGHT;
+      uheight = window.innerHeight - _sizing_tools.USUAL_NAVBAR_HEIGHT;
     }
     if (tab_list_elem) {
-      uwidth = window.innerWidth - tab_list_elem.offsetWidth;
-      tabWidth = tab_list_elem.offsetWidth;
+      let tab_rect = tab_list_elem.getBoundingClientRect();
+      uwidth = window.innerWidth - tab_rect.width;
+      tWidth = tab_rect.width;
     } else {
       uwidth = window.innerWidth - 150;
-      tabWidth = 150;
+      tWidth = 150;
     }
     set_usable_height(uheight);
     set_usable_width(uwidth);
-    setTabWidth(tabWidth);
-    statusFuncs.setLeftEdge(tabWidth);
+    setPaneX(tWidth);
+    setPaneY(top_ref.current ? top_rect.top : _sizing_tools.USUAL_NAVBAR_HEIGHT);
+    setTabWidth(tWidth);
+    statusFuncs.setLeftEdge(tWidth);
     pushCallback(callback);
   }
   function _registerDirtyMethod(tab_id, dirty_method) {
@@ -599,7 +615,6 @@ function ContextApp(props) {
     omniItemsRef.current[tid] = omniItemsRef.current[tid].concat(items);
   }
   function _addContextOmniItems() {
-    // if (tab_ids_ref.current.length == 0) return [];
     let omni_funcs = [["Go To Next Panel", "context", _goToNextPane, "arrow-right"], ["Go To Previous Panel", "context", _goToPreviousPane, "arrow-left"]];
     let omni_items = [];
     for (let item of omni_funcs) {
@@ -614,8 +629,6 @@ function ContextApp(props) {
     }
     _addOmniItems("global", omni_items);
   }
-
-  // Create the library tab
   let bclass = "context-tab-button-content";
   if (selectedTabIdRef.current == "library") {
     bclass += " selected-tab-button";
@@ -625,6 +638,7 @@ function ContextApp(props) {
       tab_id: "library",
       selectedTabIdRef,
       amSelected,
+      counter: selectedTabIdCounter,
       addOmniItems: items => {
         _addOmniItems("library", items);
       }
@@ -688,6 +702,7 @@ function ContextApp(props) {
         tab_id: "pool",
         selectedTabIdRef,
         amSelected,
+        counter: selectedTabIdCounter,
         addOmniItems: items => {
           _addOmniItems("pool", items);
         }
@@ -783,6 +798,7 @@ function ContextApp(props) {
           tab_id,
           selectedTabIdRef,
           amSelected,
+          counter: selectedTabIdCounter,
           addOmniItems: items => {
             _addOmniItems(tab_id, items);
           }
@@ -979,7 +995,7 @@ function ContextApp(props) {
     style: {
       paddingLeft: 4,
       paddingRight: 0,
-      position: "absolute",
+      position: "fixed",
       left: tabWidth - 30,
       bottom: 10,
       zIndex: 100
@@ -993,7 +1009,7 @@ function ContextApp(props) {
     }
   }), /*#__PURE__*/_react.default.createElement(_resizing_layouts.DragHandle, {
     position_dict: {
-      position: "absolute",
+      position: "fixed",
       left: tabWidth - 5
     },
     onDrag: _handleTabResize,
@@ -1002,13 +1018,20 @@ function ContextApp(props) {
     direction: "x",
     barHeight: "100%",
     useThinBar: true
-  }), /*#__PURE__*/_react.default.createElement(_core.Tabs, {
+  }), /*#__PURE__*/_react.default.createElement(_sizing_tools.SizeContext.Provider, {
+    value: {
+      availableWidth: usable_width,
+      availableHeight: usable_height,
+      topX: paneX,
+      topY: paneY
+    }
+  }, /*#__PURE__*/_react.default.createElement(_core.Tabs, {
     id: "context-tabs",
     selectedTabId: selectedTabIdRef.current,
     className: tlclass,
     vertical: true,
     onChange: _handleTabSelect
-  }, all_tabs)), /*#__PURE__*/_react.default.createElement(_utilities_react.SelectedPaneContext.Provider, {
+  }, all_tabs))), /*#__PURE__*/_react.default.createElement(_utilities_react.SelectedPaneContext.Provider, {
     value: {
       tab_id: sid,
       selectedTabIdRef,

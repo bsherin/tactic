@@ -10,11 +10,17 @@ import {Spinner, Text} from "@blueprintjs/core";
 
 export {propsAreEqual, arrayMove, arraysMatch, get_ppi, isInt};
 export {remove_duplicates, guid, scrollMeIntoView, renderSpinnerMessage};
-export {useConstructor, useCallbackStack, useStateAndRef, useReducerAndRef, useConnection, useDidMount}
+export {useConstructor, useCallbackStack, useStateAndRef, useReducerAndRef, useConnection,
+    useStateAndRefAndCounter, useDidMount}
 
 export {debounce, throttle, useDebounce, SelectedPaneContext}
 
-const SelectedPaneContext = createContext({tab_id: "", selectedTabIdRef: "", amSelected: ()=>{return true}});
+const SelectedPaneContext = createContext({
+    tab_id: "",
+    selectedTabIdRef: "",
+    amSelected: ()=>{return true},
+    counter: 0
+});
 
 // It's necessary to have effectcount be a ref. Otherwise there can be subtle bugs
 function useCallbackStack(myId = "") {
@@ -50,6 +56,7 @@ const useConstructor = (callback = () => {
     return returnVal
 };
 
+
 function useConnection(tsocket, initSocket) {
     const [connection_status, set_connection_status] = useState(null);
 
@@ -73,6 +80,18 @@ function useStateAndRef(initial) {
     const valueRef = useRef(value);
     valueRef.current = value;
     return [value, setValue, valueRef];
+}
+
+function useStateAndRefAndCounter(initial) {
+    function setMe(newValue) {
+        setValue(newValue);
+        setCounter(counter + 1);
+    }
+    const [value, setValue] = useState(initial);
+    const [counter, setCounter] = useState(0);
+    const valueRef = useRef(value);
+    valueRef.current = value;
+    return [value, setMe, valueRef, counter];
 }
 
 function useReducerAndRef(reducer, initial) {
