@@ -38,27 +38,33 @@ function ReactCodemirrorMergeView(props) {
   const preferred_themes = (0, _react.useRef)(null);
   const cmobject = (0, _react.useRef)(null);
   const theme = (0, _react.useContext)(_theme.ThemeContext);
-  (0, _react.useEffect)(() => {
-    (0, _communication_react.postAjax)("get_preferred_codemirror_themes", {}, data => {
-      preferred_themes.current = data;
+  (0, _react.useEffect)(async () => {
+    try {
+      preferred_themes.current = await (0, _communication_react.postAjaxPromise)("get_preferred_codemirror_themes", {});
       cmobject.current = createMergeArea(code_container_ref.current);
       resizeHeights(props.max_height);
       refreshAreas();
       create_keymap();
       saved_theme.current = theme.dark_theme;
-    });
+    } catch (e) {
+      errorDrawerFuncs.addFromError("Error getting preferred theme", e);
+      return;
+    }
   }, []);
-  (0, _react.useEffect)(() => {
+  (0, _react.useEffect)(async () => {
     if (!cmobject.current) {
       return;
     }
     if (theme.dark_theme != saved_theme.current) {
-      (0, _communication_react.postAjax)("get_preferred_codemirror_themes", {}, data => {
-        preferred_themes.current = data;
+      try {
+        preferred_themes.current = await (0, _communication_react.postAjaxPromise)("get_preferred_codemirror_themes", {});
         cmobject.current.editor().setOption("theme", _current_codemirror_theme());
         cmobject.current.rightOriginal().setOption("theme", _current_codemirror_theme());
         saved_theme.current = theme.dark_theme;
-      });
+      } catch (e) {
+        errorDrawerFuncs.addFromError("Error getting preferred theme", e);
+        return;
+      }
     }
     if (cmobject.current.editor().getValue() != props.editor_content) {
       cmobject.current.editor().setValue(props.editor_content);
@@ -112,28 +118,26 @@ function ReactCodemirrorMergeView(props) {
     cmobject.current.editor().refresh();
     cmobject.current.rightOriginal().refresh();
   }
-  function create_api() {
-    let self = this;
-    (0, _communication_react.postAjax)("get_api_dict", {}, function (data) {
-      let api_dict_by_category = data.api_dict_by_category;
-      let api_dict_by_name = data.api_dict_by_name;
-      let ordered_api_categories = data.ordered_api_categories;
-      let api_list = [];
-      for (let cat of ordered_api_categories) {
-        for (let entry of api_dict_by_category[cat]) {
-          api_list.push(entry["name"]);
-        }
+  async function create_api() {
+    let data = await (0, _communication_react.postAjaxPromise)("get_api_dict", {});
+    let api_dict_by_category = data.api_dict_by_category;
+    let api_dict_by_name = data.api_dict_by_name;
+    let ordered_api_categories = data.ordered_api_categories;
+    let api_list = [];
+    for (let cat of ordered_api_categories) {
+      for (let entry of api_dict_by_category[cat]) {
+        api_list.push(entry["name"]);
       }
-      //noinspection JSUnresolvedVariable
-      _codemirror.default.commands.autocomplete = function (cm) {
-        //noinspection JSUnresolvedFunction
-        cm.showHint({
-          hint: _codemirror.default.hint.anyword,
-          api_list: api_list,
-          extra_autocomplete_list: extra_autocomplete_list
-        });
-      };
-    });
+    }
+    //noinspection JSUnresolvedVariable
+    _codemirror.default.commands.autocomplete = function (cm) {
+      //noinspection JSUnresolvedFunction
+      cm.showHint({
+        hint: _codemirror.default.hint.anyword,
+        api_list: api_list,
+        extra_autocomplete_list: extra_autocomplete_list
+      });
+    };
   }
   function searchCM() {
     _codemirror.default.commands.find(cmobject.current);

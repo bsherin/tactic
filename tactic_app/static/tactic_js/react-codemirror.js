@@ -72,13 +72,13 @@ function ReactCodemirror(props) {
   const theme = (0, _react.useContext)(_theme.ThemeContext);
   const errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
   const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(localRef, props.iCounter, "CodeMirror");
-  (0, _react.useEffect)(() => {
+  (0, _react.useEffect)(async () => {
     prevSoftWrap.current = props.soft_wrap;
     if (props.registerSetFocusFunc) {
       props.registerSetFocusFunc(setFocus);
     }
-    (0, _communication_react.postAjaxPromise)('get_preferred_codemirror_themes', {}).then(data => {
-      preferred_themes.current = data;
+    try {
+      preferred_themes.current = await (0, _communication_react.postAjaxPromise)('get_preferred_codemirror_themes', {});
       cmobject.current = createCMArea(localRef.current, props.first_line_number);
       cmobject.current.setValue(props.code_content);
       cmobject.current.setOption("extra_autocomplete_list", props.extra_autocomplete_list);
@@ -88,23 +88,27 @@ function ReactCodemirror(props) {
       }
       saved_theme.current = theme.dark_theme;
       _doHighlight();
-    }).catch(data => {
+    } catch (e) {
       errorDrawerFuncs.addErrorDrawerEntry({
         title: `Error getting preferred codemirror theme`,
-        content: "message" in data ? data.message : ""
+        content: "message" in e ? e.message : ""
       });
-    });
+      return;
+    }
   }, []);
-  (0, _react.useEffect)(() => {
+  (0, _react.useEffect)(async () => {
     if (!cmobject.current) {
       return;
     }
     if (theme.dark_theme != saved_theme.current) {
-      (0, _communication_react.postAjax)("get_preferred_codemirror_themes", {}, data => {
-        preferred_themes.current = data;
+      try {
+        preferred_themes.current = await (0, _communication_react.postAjaxPromise)("get_preferred_codemirror_themes", {});
         cmobject.current.setOption("theme", _current_codemirror_theme());
         saved_theme.current = theme.dark_theme;
-      });
+      } catch (e) {
+        errorDrawerFuncs.addFromError("Error getting preferred theme", e);
+        return;
+      }
     }
     if (props.soft_wrap != prevSoftWrap.current) {
       cmobject.current.setOption("lineWrapping", props.soft_wrap);

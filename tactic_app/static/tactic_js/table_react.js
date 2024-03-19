@@ -119,31 +119,40 @@ function MainTableCardHeader(props) {
   function _handleSearchFieldChange(event) {
     props.handleSearchFieldChange(event.target.value);
   }
-  function _handleFilter() {
+  async function _handleFilter() {
     const data_dict = {
       "text_to_find": props.mState.search_text
     };
-    (0, _communication_react.postWithCallback)(props.main_id, "UnfilterTable", data_dict, function () {
+    try {
+      await (0, _communication_react.postPromise)(props.main_id, "UnfilterTable", data_dict);
       if (props.search_text !== "") {
-        (0, _communication_react.postWithCallback)(props.main_id, "FilterTable", data_dict, props.setMainStateValue({
+        await (0, _communication_react.postPromise)(props.main_id, "FilterTable", data_dict);
+        props.setMainStateValue({
           "table_is_filtered": true,
           "selected_regions": null,
           "selected_row": null
-        }), null);
+        });
       }
-    });
+    } catch (e) {
+      errorDrawerFuncs.addFromError("Error filtering table", e);
+    }
   }
-  function _handleUnFilter() {
+  async function _handleUnFilter() {
     props.handleSearchFieldChange(null);
-    if (props.mState.table_is_filtered) {
-      (0, _communication_react.postWithCallback)(props.main_id, "UnfilterTable", {
-        selected_row: props.mState.selected_row
-      }, null);
-      props.setMainStateValue({
-        "table_is_filtered": false,
-        "selected_regions": null,
-        "selected_row": null
-      });
+    try {
+      if (props.mState.table_is_filtered) {
+        await (0, _communication_react.postPromise)(props.main_id, "UnfilterTable", {
+          selected_row: props.mState.selected_row
+        });
+        props.setMainStateValue({
+          "table_is_filtered": false,
+          "selected_regions": null,
+          "selected_row": null
+        });
+      }
+    } catch (e) {
+      errorDrawerFuncs.addFromError("Error unfiltering table", e);
+      return;
     }
   }
   function _handleSubmit(e) {

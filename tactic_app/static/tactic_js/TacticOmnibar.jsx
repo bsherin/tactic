@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import {Omnibar, QueryList, Classes} from "@blueprintjs/select"
 import {MenuItem, Overlay, InputGroup} from "@blueprintjs/core";
 
-import {postAjax, postWithCallback} from "./communication_react";
+import {postAjaxPromise, postWithCallback} from "./communication_react";
 import {ThemeContext} from "./theme"
 import {SelectedPaneContext} from "./utilities_react";
 import {useDebounce} from "./utilities_react";
@@ -62,7 +62,7 @@ function OpenOmnibar(props) {
         set_item_list([])
     }, [selectedPane.tab_id]);
 
-    const grabChunk = useCallback((search_string)=> {
+    const grabChunk = useCallback(async (search_string)=> {
             let search_spec = {
                 active_tag: null,
                 search_string: search_string,
@@ -80,18 +80,24 @@ function OpenOmnibar(props) {
                 number_to_get: 20,
                 is_repository: false
             };
-            postAjax("grab_all_list_chunk", data, function (data) {
-                    let fItems = props.commandItems.filter((item)=>{return commandItemPredicate(search_string, item)});
-                    let gItems = _globalOmniItems().filter((item)=>{return commandItemPredicate(search_string, item)});
-                    fItems = fItems.concat(gItems);
-                    let rItems = Object.values(data.chunk_dict);
-                    for (let the_item of rItems) {
-                        the_item.item_type = "resource"
-                    }
-                    fItems = fItems.concat(rItems);
-                    set_item_list(fItems)
+            try {
+                let result_data = await postAjaxPromise("grab_all_list_chunk", data);
+                let fItems = props.commandItems.filter((item) => {
+                    return commandItemPredicate(search_string, item)
+                });
+                let gItems = _globalOmniItems().filter((item) => {
+                    return commandItemPredicate(search_string, item)
+                });
+                fItems = fItems.concat(gItems);
+                let rItems = Object.values(result_data.chunk_dict);
+                for (let the_item of rItems) {
+                    the_item.item_type = "resource"
                 }
-            )
+                fItems = fItems.concat(rItems);
+                set_item_list(fItems);
+            } catch (e) {
+                errorDrawerFuncs.addFromError("Error grabbing resource chunk", e);
+            }
         }
     );
 
@@ -220,8 +226,7 @@ function OpenOmnibar(props) {
             "user_id": window.user_id,
             "theme": !theme.dark_theme ? "dark" : "light",
         };
-        postWithCallback("host", "set_user_theme", result_dict,
-            null, null);
+        postWithCallback("host", "set_user_theme", result_dict, null, null);
         theme.setTheme(!theme.dark_theme)
     }
 
@@ -344,8 +349,7 @@ function TacticOmnibar(props) {
             "user_id": window.user_id,
             "theme": !theme.dark_theme ? "dark" : "light",
         };
-        postWithCallback("host", "set_user_theme", result_dict,
-            null, null);
+        postWithCallback("host", "set_user_theme", result_dict, null, null);
         theme.setTheme(!theme.dark_theme)
     }
 
