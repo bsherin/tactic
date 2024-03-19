@@ -55,7 +55,7 @@ function OpenOmnibar(props) {
   (0, _react.useEffect)(() => {
     set_item_list([]);
   }, [selectedPane.tab_id]);
-  const grabChunk = (0, _react.useCallback)(search_string => {
+  const grabChunk = (0, _react.useCallback)(async search_string => {
     let search_spec = {
       active_tag: null,
       search_string: search_string,
@@ -72,7 +72,8 @@ function OpenOmnibar(props) {
       number_to_get: 20,
       is_repository: false
     };
-    (0, _communication_react.postAjax)("grab_all_list_chunk", data, function (data) {
+    try {
+      let result_data = await (0, _communication_react.postAjaxPromise)("grab_all_list_chunk", data);
       let fItems = props.commandItems.filter(item => {
         return commandItemPredicate(search_string, item);
       });
@@ -80,13 +81,15 @@ function OpenOmnibar(props) {
         return commandItemPredicate(search_string, item);
       });
       fItems = fItems.concat(gItems);
-      let rItems = Object.values(data.chunk_dict);
+      let rItems = Object.values(result_data.chunk_dict);
       for (let the_item of rItems) {
         the_item.item_type = "resource";
       }
       fItems = fItems.concat(rItems);
       set_item_list(fItems);
-    });
+    } catch (e) {
+      errorDrawerFuncs.addFromError("Error grabbing resource chunk", e);
+    }
   });
   const [waiting, doUpdate] = (0, _utilities_react.useDebounce)(grabChunk);
   function commandItemPredicate(query, item) {

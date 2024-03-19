@@ -13,9 +13,8 @@ var _react = _interopRequireWildcard(require("react"));
 var ReactDOM = _interopRequireWildcard(require("react-dom"));
 var _tactic_socket = require("./tactic_socket");
 var _communication_react = require("./communication_react");
-var _toaster = require("./toaster");
 var _library_pane = require("./library_pane");
-var _sizing_tools = require("./sizing_tools");
+var _toaster = require("./toaster");
 var _error_drawer = require("./error_drawer");
 var _utilities_react = require("./utilities_react");
 var _blueprint_navbar = require("./blueprint_navbar");
@@ -23,6 +22,7 @@ var _theme = require("./theme");
 var _modal_react = require("./modal_react");
 var _repository_menubars = require("./repository_menubars");
 var _library_home_react = require("./library_home_react");
+var _sizing_tools = require("./sizing_tools");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 const MARGIN_SIZE = 17;
@@ -30,22 +30,13 @@ let tsocket;
 const controllable_props = ["usable_height", "usable_width"];
 function RepositoryHomeApp(props) {
   const connection_status = (0, _utilities_react.useConnection)(props.tsocket, initSocket);
-  const [usable_height, set_usable_height] = (0, _react.useState)(null);
-  const [usable_width, set_usable_width] = (0, _react.useState)(null);
   const theme = (0, _react.useContext)(_theme.ThemeContext);
   const statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
   const top_ref = (0, _react.useRef)(null);
-  (0, _utilities_react.useConstructor)(() => {
-    const aheight = (0, _sizing_tools.getUsableDimensions)(true).usable_height_no_bottom;
-    const awidth = (0, _sizing_tools.getUsableDimensions)(true).usable_width - 170;
-    set_usable_height(aheight);
-    set_usable_width(awidth);
-  });
+  const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(top_ref, 0, "Repository");
   const pushCallback = (0, _utilities_react.useCallbackStack)("repository_home");
   (0, _react.useEffect)(() => {
     statusFuncs.stopSpinner();
-    window.addEventListener("resize", _handleResize);
-    _handleResize();
   }, []);
   function initSocket() {
     let tsocket = props.tsocket;
@@ -61,18 +52,12 @@ function RepositoryHomeApp(props) {
       });
     }
   }
-  function _handleResize() {
-    set_usable_width(window.innerWidth - top_ref.current.offsetLeft);
-    set_usable_height(window.innerHeight - top_ref.current.offsetTop);
-  }
   function getIconColor(paneId) {
     return paneId == selected_tab_id ? "white" : "#CED9E0";
   }
   let lib_props = {
     ...props
   };
-  lib_props.usable_width = usable_width;
-  lib_props.usable_height = usable_height;
   let all_pane = /*#__PURE__*/_react.default.createElement(_library_pane.LibraryPane, (0, _extends2.default)({}, lib_props, {
     connection_status: connection_status,
     columns: {
@@ -111,6 +96,7 @@ function RepositoryHomeApp(props) {
   }));
   let outer_style = {
     width: "100%",
+    height: "100%",
     paddingLeft: 0
   };
   let outer_class = "library-pane-holder  ";
@@ -131,13 +117,20 @@ function RepositoryHomeApp(props) {
     className: outer_class,
     ref: top_ref,
     style: outer_style
-  }, all_pane));
+  }, /*#__PURE__*/_react.default.createElement(_sizing_tools.SizeContext.Provider, {
+    value: {
+      topX: topX,
+      topY: topY,
+      availableWidth: usable_width,
+      availableHeight: usable_height - _sizing_tools.BOTTOM_MARGIN
+    }
+  }, all_pane)));
 }
 exports.RepositoryHomeApp = RepositoryHomeApp = /*#__PURE__*/(0, _react.memo)(RepositoryHomeApp);
 function _repository_home_main() {
   tsocket = new _tactic_socket.TacticSocket("main", 5000, "repository", _library_home_react.library_id);
   tsocket.socket.emit('join-repository', {});
-  let RepositoryHomeAppPlus = (0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(RepositoryHomeApp))));
+  let RepositoryHomeAppPlus = (0, _sizing_tools.withSizeContext)((0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(RepositoryHomeApp)))));
   let domContainer = document.querySelector('#library-home-root');
   ReactDOM.render( /*#__PURE__*/_react.default.createElement(RepositoryHomeAppPlus, {
     initial_theme: window.theme,

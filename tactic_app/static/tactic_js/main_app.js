@@ -84,7 +84,7 @@ function MainApp(props) {
   const [mState, mDispatch] = (0, _react.useReducer)(_main_support.mainReducer, {
     table_is_shrunk: props.doc_type == "none" || iStateOrDefault("table_is_shrunk"),
     console_width_fraction: iStateOrDefault("console_width_fraction"),
-    horizontal_fraction: iStateOrDefault("console_width_fraction"),
+    horizontal_fraction: iStateOrDefault("horizontal_fraction"),
     height_fraction: iStateOrDefault("height_fraction"),
     console_is_shrunk: iStateOrDefault("console_is_shrunk"),
     console_is_zoomed: iStateOrDefault("console_is_zoomed"),

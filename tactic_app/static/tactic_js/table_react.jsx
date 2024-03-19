@@ -1,7 +1,7 @@
 
 
 import React from "react";
-import {useState, useEffect, useRef, memo, forwardRef} from "react";
+import {useState, useEffect, useRef, memo} from "react";
 import PropTypes from 'prop-types';
 
 import { Text, FormGroup, Spinner, InputGroup, ButtonGroup, Button, Card, Switch } from "@blueprintjs/core";
@@ -9,7 +9,7 @@ import { Text, FormGroup, Spinner, InputGroup, ButtonGroup, Button, Card, Switch
 import {GlyphButton} from "./blueprint_react_widgets";
 import {ReactCodemirror} from "./react-codemirror";
 import {BpSelect} from "./blueprint_mdata_fields";
-import {postWithCallback} from "./communication_react"
+import {postPromise, postWithCallback} from "./communication_react"
 
 export {MainTableCard, MainTableCardHeader, FreeformBody}
 
@@ -134,25 +134,36 @@ function MainTableCardHeader(props) {
         props.handleSearchFieldChange(event.target.value)
     }
 
-    function _handleFilter() {
+    async function _handleFilter() {
         const data_dict = {"text_to_find": props.mState.search_text};
-        postWithCallback(props.main_id, "UnfilterTable", data_dict, function () {
+        try {
+            await postPromise(props.main_id, "UnfilterTable", data_dict);
             if (props.search_text !== "") {
-                postWithCallback(props.main_id, "FilterTable", data_dict,
-                    props.setMainStateValue({"table_is_filtered": true,
-                        "selected_regions": null,
-                        "selected_row": null}), null)
-                }
-        });
+                await postPromise(props.main_id, "FilterTable", data_dict);
+                props.setMainStateValue({"table_is_filtered": true,
+                    "selected_regions": null,
+                    "selected_row": null})
+
+            }
+        }
+        catch (e) {
+            errorDrawerFuncs.addFromError("Error filtering table", e);
+        }
     }
 
-    function _handleUnFilter() {
+    async function _handleUnFilter() {
         props.handleSearchFieldChange(null);
-        if (props.mState.table_is_filtered) {
-            postWithCallback(props.main_id, "UnfilterTable", {selected_row: props.mState.selected_row}, null);
-            props.setMainStateValue({"table_is_filtered": false,
-                "selected_regions": null,
-                "selected_row": null})
+        try {
+            if (props.mState.table_is_filtered) {
+                await postPromise(props.main_id, "UnfilterTable", {selected_row: props.mState.selected_row});
+                props.setMainStateValue({"table_is_filtered": false,
+                    "selected_regions": null,
+                    "selected_row": null})
+            }
+        }
+        catch (e) {
+            errorDrawerFuncs.addFromError("Error unfiltering table", e);
+            return
         }
     }
 

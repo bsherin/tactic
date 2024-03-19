@@ -3,7 +3,7 @@ import {useState, useEffect, useRef, memo, forwardRef} from "react";
 
 import {Button, ControlGroup, HTMLSelect, InputGroup, Switch} from "@blueprintjs/core";
 import {FilterSearchForm} from "./search_form";
-import {postWithCallback} from "./communication_react";
+import {postPromise} from "./communication_react";
 import {guid, useStateAndRef, useDidMount} from "./utilities_react";
 import {TacticSocket} from "./tactic_socket";
 
@@ -37,16 +37,16 @@ function SearchableConsole(props, inner_ref) {
         }
     });
 
-    useEffect(() => {
+    useEffect(async () => {
         my_room.current = guid();
         tsocket.current = new TacticSocket("main", 5000, "searchable-console", props.main_id);
         tsocket.current.socket.emit("join", {"room": my_room.current});
-        function cleanup() {
-            _stopLogStreaming();
+        async function cleanup() {
+            await _stopLogStreaming();
             tsocket.current.disconnect();
         }
         initSocket();
-        _getLogAndStartStreaming();
+        await _getLogAndStartStreaming();
         window.addEventListener('beforeunload', cleanup);
         return (() => {
             cleanup();
@@ -54,17 +54,16 @@ function SearchableConsole(props, inner_ref) {
         })
     }, []);
 
-    useDidMount(() => {
-        _stopLogStreaming(_getLogAndStartStreaming)
+    useDidMount(async () => {
+        await _stopLogStreaming(_getLogAndStartStreaming)
     }, [max_console_lines]);
 
-    useDidMount(() => {
-        _stopLogStreaming(()=>{
-            cont_id.current = props.container_id;
-            set_log_since(null);
-            set_max_console_lines(100);
-            _getLogAndStartStreaming()
-        })
+    useDidMount(async () => {
+        await _stopLogStreaming();
+        cont_id.current = props.container_id;
+        set_log_since(null);
+        set_max_console_lines(100);
+        await _getLogAndStartStreaming()
     }, [props.container_id]);
 
     function initSocket() {
@@ -86,28 +85,26 @@ function SearchableConsole(props, inner_ref) {
         set_max_console_lines(parseInt(event.target.value))
     }
 
-    function _getLogAndStartStreaming() {
+    async function _getLogAndStartStreaming() {
         function gotStreamerId(data) {
             streamer_id.current = data.streamer_id
         }
-        postWithCallback("host", "get_container_log",
+        let res = await postPromise("host", "get_container_log",
             {container_id: cont_id.current, since: log_since, max_lines: max_console_lines_ref.current},
-            function (res) {
-                set_log_content(res.log_text);
-                postWithCallback(props.streaming_host, "StartLogStreaming",
-                    {container_id: cont_id.current, room: my_room.current, user_id: window.user_id},
-                    gotStreamerId, null, props.main_id);
-            }, null, props.main_id)
+            props.main_id);
+        set_log_content(res.log_text);
+        let data = await postPromise(props.streaming_host, "StartLogStreaming",
+            {container_id: cont_id.current, room: my_room.current, user_id: window.user_id},
+            props.main_id);
+        gotStreamerId(data);
     }
 
-    function _stopLogStreaming(callback = null) {
+    async function _stopLogStreaming(callback = null) {
         if (streamer_id && streamer_id.current) {
-            postWithCallback(props.streaming_host, "StopLogStreaming", {streamer_id: streamer_id.current},
-                callback, null, props.main_id);
+            return postPromise(props.streaming_host, "StopLogStreaming", {streamer_id: streamer_id.current},
+                props.main_id);
         }
-        else {
-            callback()
-        }
+        return null
     }
 
     function _addToLog(new_line) {
@@ -174,19 +171,18 @@ function SearchableConsole(props, inner_ref) {
 
     }
 
-    function _logExec(command, callback = null) {
-        postWithCallback(cont_id.current, "os_command_exec", {
+    async function _logExec(command, callback = null) {
+        return await postPromise(cont_id.current, "os_command_exec", {
             "the_code": command,
-        }, callback, null, props.main_id)
+        }, props.main_id);
     }
 
-    function _commandSubmit(e) {
+    async function _commandSubmit(e) {
         e.preventDefault();
         past_commands.current.push(console_command_value);
         past_commands_index.current = null;
-        _logExec(console_command_value, () => {
-            set_console_command_value("")
-        })
+        await _logExec(console_command_value);
+        set_console_command_value("")
     }
 
     function _setLiveScroll(event) {

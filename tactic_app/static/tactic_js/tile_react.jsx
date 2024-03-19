@@ -13,7 +13,7 @@ import {GlyphButton} from "./blueprint_react_widgets";
 import {DragHandle} from "./resizing_layouts"
 
 import {SortableComponent} from "./sortable_container";
-import {postWithCallback} from "./communication_react"
+import {postWithCallback, postPromise} from "./communication_react"
 import {arrayMove, useCallbackStack} from "./utilities_react";
 import {ErrorBoundary} from "./error_boundary";
 import {MenuComponent} from "./menu_utilities"
@@ -424,18 +424,22 @@ function TileComponent(props) {
         props.setTileValue(props.tile_id, "shrunk", !props.shrunk);
     }
 
-    function _closeTile() {
-        dialogFuncs.showModal("ConfirmDialog", {
-            title: "Delete Tile",
-            text_body: `Delete tile ${props.tile_name}`,
-            cancel_text: "do nothing",
-            submit_text: "delete",
-            handleSubmit: ()=>{
-                props.handleClose(props.tile_id);
-            },
-            handleClose: dialogFuncs.hideModal,
-            handleCancel: null
-        });
+    async function _closeTile() {
+        try {
+            await dialogFuncs.showModalPromise("ConfirmDialog", {
+                title: "Delete Tile",
+                text_body: `Delete tile ${props.tile_name}`,
+                cancel_text: "do nothing",
+                submit_text: "delete",
+                handleClose: dialogFuncs.hideModal,
+            });
+            props.handleClose(props.tile_id);
+        }
+        catch (e) {
+        if (e != "canceled") {
+            errorDrawerFuncs.addFromError(`Error closing tile`, e)
+        }
+    }
     }
 
     function _standard_click_data() {
@@ -447,13 +451,18 @@ function TileComponent(props) {
         }
     }
 
-    function _updateOptionValue(option_name, value, callback = null) {
+    async function _updateOptionValue(option_name, value, callback = null) {
         const data_dict = {tile_id: props.tile_id, option_name: option_name, value: value};
-        postWithCallback(props.tile_id, "_update_single_option", data_dict, function (data) {
+        try {
+            let data = await postPromise(props.tile_id, "_update_single_option", data_dict);
             if (data && ("form_data" in data)) {
                 props.setTileValue(props.tile_id, "form_data", data.form_data, callback)
             }
-        })
+        }
+        catch (e) {
+            errorDrawerFuncs.addFromError("Error updating option value", e);
+            return
+        }
     }
 
     function _toggleBack() {
@@ -490,29 +499,29 @@ function TileComponent(props) {
         props.setTileValue(props.tile_id, "form_data", data.form_data)
     }
 
-    function spin_and_refresh() {
+    async function spin_and_refresh() {
         _startSpinner();
-        postWithCallback(props.tile_id, "RefreshTile", {}, function () {
-            _stopSpinner();
-        }, null, props.main_id)
+        await postPromise(props.tile_id, "RefreshTile", {}, props.main_id);
+        _stopSpinner();
     }
 
-    function _reloadTile(resubmit = false) {
+    async function _reloadTile(resubmit = false) {
         const data_dict = {"tile_id": props.tile_id, "tile_name": props.tile_name};
-        _startSpinner();
-        postWithCallback(props.main_id, "reload_tile", data_dict, reload_success, null, props.main_id);
-
-        function reload_success(data) {
-            if (data.success) {
-                _displayFormContent(data);
-                props.setTileValue(props.tile_id, "source_changed", false);
-                if (data.options_changed || !resubmit) {
-                    _stopSpinner();
-                    _setTileBack(true)
-                } else {
-                    spin_and_refresh()
-                }
+        try {
+            _startSpinner();
+            let data = await postPromise(props.main_id, "reload_tile", data_dict, props.main_id);
+            _displayFormContent(data);
+            props.setTileValue(props.tile_id, "source_changed", false);
+            if (data.options_changed || !resubmit) {
+                _stopSpinner();
+                _setTileBack(true)
+            } else {
+                await spin_and_refresh()
             }
+        }
+        catch (e) {
+            _stopSpinner();
+            errorDrawerFuncs.addFromError("Error reloading tile", e)
         }
     }
 
@@ -673,21 +682,20 @@ function TileComponent(props) {
         postWithCallback("kill_" + props.tile_id, "StopMe", {}, null)
     }
 
-    function _editMe() {
+    async function _editMe() {
         if (!window.in_context) {
             window.blur();
-            postWithCallback("host", "go_to_module_viewer_if_exists",
-                {
+            try {
+                let data = await postPromise("host", "go_to_module_viewer_if_exists", {
                     user_id: window.user_id,
                     tile_type: props.tile_type,
                     line_number: 0
-                }, (data) => {
-                    if (!data.success) {
-                        window.open($SCRIPT_ROOT + "/view_location_in_creator/" + props.tile_type + "/" + "0");
-                    } else {
-                        window.open("", data.window_name)
-                    }
-                }, null, props.main_id)
+                }, props.main_id);
+                window.open("", data.window_name);
+            }
+            catch (e) {
+                window.open($SCRIPT_ROOT + "/view_location_in_creator/" + props.tile_type + "/" + "0");
+            }
         } else {
             props.goToModule(props.tile_type, 0)
         }
@@ -730,11 +738,11 @@ function TileComponent(props) {
             "Run me": _handleSubmitOptions,
             "Stop me": _stopMe,
             "divider99": "divider",
-            "Kill and reload": () => {
-                _reloadTile(false)
+            "Kill and reload": async () => {
+                await _reloadTile(false)
             },
-            "Kill, reload, and resubmit": () => {
-                _reloadTile(true)
+            "Kill, reload, and resubmit": async () => {
+                await _reloadTile(true)
             },
             "divider0": "divider",
             "Toggle console": _toggleTileLog,
@@ -809,8 +817,8 @@ function TileComponent(props) {
                                                             icon="console"/>}
                             {props.source_changed && !props.show_spinner &&
                                 <GlyphButton intent="danger"
-                                             handleClick={() => {
-                                                 _reloadTile(true)
+                                             handleClick={async () => {
+                                                 await _reloadTile(true)
                                              }}
                                              icon="social-media"/>}
                             {props.show_spinner && <GlyphButton intent="danger"

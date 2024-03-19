@@ -93,34 +93,35 @@ function TileDifferApp(props) {
     });
     props.tsocket.attachListener('doflashUser', _toaster.doFlash);
   }
-  function handleSelectChange(new_value) {
+  async function handleSelectChange(new_value) {
     set_tile_popup_val(new_value);
-    let self = this;
-    (0, _communication_react.postAjaxPromise)("get_module_code/" + new_value, {}).then(data => {
+    try {
+      let data = await (0, _communication_react.postAjaxPromise)("get_module_code/" + new_value, {});
       set_right_content(data.the_content);
-    }).catch(data => {
+    } catch (e) {
       errorDrawerFuncs.addErrorDrawerEntry({
         title: "Error getting module code",
-        content: "message" in data ? data.message : ""
+        content: "message" in e ? e.message : ""
       });
-    });
+    }
   }
   function handleEditChange(new_code) {
     set_edit_content(new_code);
   }
-  function saveFromLeft() {
+  async function saveFromLeft() {
     let data_dict = {
       "module_name": props.resource_name,
       "module_code": edit_content
     };
-    (0, _communication_react.postAjaxPromise)("update_from_left", data_dict).then(data => {
+    try {
+      await (0, _communication_react.postAjaxPromise)("update_from_left", data_dict);
       statusFuncs.statusMessage("Updated from left");
-    }).catch(data => {
+    } catch (e) {
       errorDrawerFuncs.addErrorDrawerEntry({
-        title: "Error updating from left",
-        content: "message" in data ? data.message : ""
+        title: "Error saving from left",
+        content: "message" in e ? e.message : ""
       });
-    });
+    }
   }
   function dirty() {
     return edit_content != savedContent.current;

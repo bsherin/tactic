@@ -112,7 +112,7 @@ function getBlobPromise(target, data={}) {
 function postPromise(dest_id, task_type, task_data, special_main_id=null) {
     return new Promise(function(resolve, reject) {
         function tentResolve(data) {
-            if ("success" in data && !data.success) {
+            if (data && "success" in data && !data.success) {
                 reject(data)
             }
             else {

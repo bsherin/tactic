@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 
 import { Button, ButtonGroup } from "@blueprintjs/core";
 
-import {postAjax, postAjaxPromise} from "./communication_react"
+import {postAjaxPromise} from "./communication_react"
 import {useSize} from "./sizing_tools";
 
 import CodeMirror from 'codemirror/lib/codemirror';
@@ -85,43 +85,45 @@ function ReactCodemirror(props) {
 
     const [usable_width, usable_height, topX, topY] = useSize(localRef, props.iCounter, "CodeMirror");
 
-    useEffect(()=>{
+    useEffect(async ()=>{
         prevSoftWrap.current = props.soft_wrap;
         if (props.registerSetFocusFunc) {
             props.registerSetFocusFunc(setFocus);
         }
-        postAjaxPromise('get_preferred_codemirror_themes', {})
-            .then((data) => {
-                    preferred_themes.current = data;
-                    cmobject.current = createCMArea(localRef.current, props.first_line_number);
-                    cmobject.current.setValue(props.code_content);
-                    cmobject.current.setOption("extra_autocomplete_list", props.extra_autocomplete_list);
-                    create_keymap();
-                    if (props.setCMObject != null) {
-                        props.setCMObject(cmobject.current)
-                    }
-                    saved_theme.current = theme.dark_theme;
-                    _doHighlight()
-                }
-            )
-            .catch((data) => {
-                errorDrawerFuncs.addErrorDrawerEntry({
-                    title: `Error getting preferred codemirror theme`,
-                    content: "message" in data ? data.message : ""
-                });
+        try {
+            preferred_themes.current = await postAjaxPromise('get_preferred_codemirror_themes', {});
+            cmobject.current = createCMArea(localRef.current, props.first_line_number);
+            cmobject.current.setValue(props.code_content);
+            cmobject.current.setOption("extra_autocomplete_list", props.extra_autocomplete_list);
+            create_keymap();
+            if (props.setCMObject != null) {
+                props.setCMObject(cmobject.current)
+            }
+            saved_theme.current = theme.dark_theme;
+            _doHighlight()
+        }
+        catch (e) {
+            errorDrawerFuncs.addErrorDrawerEntry({
+                title: `Error getting preferred codemirror theme`,
+                content: "message" in e ? e.message : ""
             });
+            return
+        }
     }, []);
 
-    useEffect(()=>{
+    useEffect(async ()=>{
         if (!cmobject.current) {
             return
         }
         if (theme.dark_theme != saved_theme.current) {
-            postAjax("get_preferred_codemirror_themes", {}, (data)=> {
-                preferred_themes.current = data;
+            try {
+                preferred_themes.current = await postAjaxPromise("get_preferred_codemirror_themes", {});
                 cmobject.current.setOption("theme", _current_codemirror_theme());
                 saved_theme.current = theme.dark_theme
-            })
+            } catch (e) {
+                errorDrawerFuncs.addFromError("Error getting preferred theme", e);
+                return
+            }
         }
         if (props.soft_wrap != prevSoftWrap.current) {
             cmobject.current.setOption("lineWrapping", props.soft_wrap);

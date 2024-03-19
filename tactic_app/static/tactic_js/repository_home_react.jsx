@@ -3,17 +3,15 @@ import "../tactic_css/tactic_table.scss";
 import "../tactic_css/library_home.scss";
 
 import React from "react";
-import {Fragment, useState, useEffect, useRef, memo, useContext} from "react";
+import {Fragment, useEffect, useRef, memo, useContext} from "react";
 import * as ReactDOM from 'react-dom'
 
 import {TacticSocket} from "./tactic_socket"
 import {handleCallback} from "./communication_react"
-import {doFlash} from "./toaster"
 import {LibraryPane} from "./library_pane"
-import {getUsableDimensions} from "./sizing_tools";
 import {withStatus} from "./toaster";
 import {withErrorDrawer} from "./error_drawer";
-import {useCallbackStack, useConnection, useConstructor} from "./utilities_react";
+import {useCallbackStack, useConnection} from "./utilities_react";
 import {TacticNavbar} from "./blueprint_navbar";
 
 import {ThemeContext, withTheme} from "./theme";
@@ -22,6 +20,7 @@ import {StatusContext} from "./toaster"
 
 import {RepositoryAllMenubar} from "./repository_menubars";
 import {library_id} from "./library_home_react";
+import {BOTTOM_MARGIN, useSize, withSizeContext, SizeContext} from "./sizing_tools";
 
 export {RepositoryHomeApp}
 
@@ -33,28 +32,16 @@ const controllable_props = ["usable_height", "usable_width"];
 function RepositoryHomeApp(props) {
 
     const connection_status = useConnection(props.tsocket, initSocket);
-
-    const [usable_height, set_usable_height] = useState(null);
-    const [usable_width, set_usable_width] = useState(null);
-
     const theme = useContext(ThemeContext);
     const statusFuncs = useContext(StatusContext);
 
     const top_ref = useRef(null);
-
-    useConstructor(() => {
-        const aheight = getUsableDimensions(true).usable_height_no_bottom;
-        const awidth = getUsableDimensions(true).usable_width - 170;
-        set_usable_height(aheight);
-        set_usable_width(awidth);
-    });
+    const [usable_width, usable_height, topX, topY] = useSize(top_ref, 0, "Repository");
 
     const pushCallback = useCallbackStack("repository_home");
 
     useEffect(() => {
         statusFuncs.stopSpinner();
-        window.addEventListener("resize", _handleResize);
-        _handleResize();
     }, []);
 
     function initSocket() {
@@ -72,18 +59,11 @@ function RepositoryHomeApp(props) {
         }
     }
 
-    function _handleResize() {
-        set_usable_width(window.innerWidth - top_ref.current.offsetLeft);
-        set_usable_height(window.innerHeight - top_ref.current.offsetTop)
-    }
-
     function getIconColor(paneId) {
         return paneId == selected_tab_id ? "white" : "#CED9E0"
     }
 
     let lib_props = {...props};
-    lib_props.usable_width = usable_width;
-    lib_props.usable_height = usable_height;
     let all_pane = (
         <LibraryPane {...lib_props}
                      connection_status={connection_status}
@@ -111,6 +91,7 @@ function RepositoryHomeApp(props) {
 
     let outer_style = {
         width: "100%",
+        height: "100%",
         paddingLeft: 0
     };
     let outer_class = "library-pane-holder  ";
@@ -128,7 +109,14 @@ function RepositoryHomeApp(props) {
                           extra_text={window.repository_type == "Local" ? "" : window.repository_type}
                           user_name={window.username}/>
             <div id="repository_container" className={outer_class} ref={top_ref} style={outer_style}>
-                { all_pane }
+                <SizeContext.Provider value={{
+                    topX: topX,
+                    topY: topY,
+                    availableWidth: usable_width,
+                    availableHeight: usable_height - BOTTOM_MARGIN
+                }}>
+                    { all_pane }
+                </SizeContext.Provider>
             </div>
         </Fragment>
     )
@@ -140,7 +128,7 @@ RepositoryHomeApp = memo(RepositoryHomeApp);
 function _repository_home_main() {
     tsocket = new TacticSocket("main", 5000, "repository", library_id);
     tsocket.socket.emit('join-repository', {});
-    let RepositoryHomeAppPlus = withTheme(withDialogs(withErrorDrawer(withStatus(RepositoryHomeApp))));
+    let RepositoryHomeAppPlus = withSizeContext(withTheme(withDialogs(withErrorDrawer(withStatus(RepositoryHomeApp)))));
     let domContainer = document.querySelector('#library-home-root');
     ReactDOM.render(<RepositoryHomeAppPlus initial_theme={window.theme}
                                            controlled={false}

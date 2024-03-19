@@ -3,7 +3,7 @@ import {Fragment, useState, useEffect, useRef, memo} from "react";
 import PropTypes from 'prop-types';
 
 import {FormGroup, InputGroup, Button, Divider, Switch,
-    TextArea, Collapse, Card, Elevation, Popover} from "@blueprintjs/core";
+    TextArea, Collapse, Card, Elevation} from "@blueprintjs/core";
 import _ from 'lodash';
 
 import {ReactCodemirror} from "./react-codemirror.js";

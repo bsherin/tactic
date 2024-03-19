@@ -35,34 +35,33 @@ function SearchableConsole(props, inner_ref) {
       inner_ref.current.scrollTo(0, inner_ref.current.scrollHeight);
     }
   });
-  (0, _react.useEffect)(() => {
+  (0, _react.useEffect)(async () => {
     my_room.current = (0, _utilities_react.guid)();
     tsocket.current = new _tactic_socket.TacticSocket("main", 5000, "searchable-console", props.main_id);
     tsocket.current.socket.emit("join", {
       "room": my_room.current
     });
-    function cleanup() {
-      _stopLogStreaming();
+    async function cleanup() {
+      await _stopLogStreaming();
       tsocket.current.disconnect();
     }
     initSocket();
-    _getLogAndStartStreaming();
+    await _getLogAndStartStreaming();
     window.addEventListener('beforeunload', cleanup);
     return () => {
       cleanup();
       window.removeEventListener('beforeunload', cleanup);
     };
   }, []);
-  (0, _utilities_react.useDidMount)(() => {
-    _stopLogStreaming(_getLogAndStartStreaming);
+  (0, _utilities_react.useDidMount)(async () => {
+    await _stopLogStreaming(_getLogAndStartStreaming);
   }, [max_console_lines]);
-  (0, _utilities_react.useDidMount)(() => {
-    _stopLogStreaming(() => {
-      cont_id.current = props.container_id;
-      set_log_since(null);
-      set_max_console_lines(100);
-      _getLogAndStartStreaming();
-    });
+  (0, _utilities_react.useDidMount)(async () => {
+    await _stopLogStreaming();
+    cont_id.current = props.container_id;
+    set_log_since(null);
+    set_max_console_lines(100);
+    await _getLogAndStartStreaming();
   }, [props.container_id]);
   function initSocket() {
     tsocket.current.attachListener("searchable-console-message", _handleUpdateMessage);
@@ -79,32 +78,31 @@ function SearchableConsole(props, inner_ref) {
   function _setMaxConsoleLines(event) {
     set_max_console_lines(parseInt(event.target.value));
   }
-  function _getLogAndStartStreaming() {
+  async function _getLogAndStartStreaming() {
     function gotStreamerId(data) {
       streamer_id.current = data.streamer_id;
     }
-    (0, _communication_react.postWithCallback)("host", "get_container_log", {
+    let res = await (0, _communication_react.postPromise)("host", "get_container_log", {
       container_id: cont_id.current,
       since: log_since,
       max_lines: max_console_lines_ref.current
-    }, function (res) {
-      set_log_content(res.log_text);
-      (0, _communication_react.postWithCallback)(props.streaming_host, "StartLogStreaming", {
-        container_id: cont_id.current,
-        room: my_room.current,
-        user_id: window.user_id
-      }, gotStreamerId, null, props.main_id);
-    }, null, props.main_id);
+    }, props.main_id);
+    set_log_content(res.log_text);
+    let data = await (0, _communication_react.postPromise)(props.streaming_host, "StartLogStreaming", {
+      container_id: cont_id.current,
+      room: my_room.current,
+      user_id: window.user_id
+    }, props.main_id);
+    gotStreamerId(data);
   }
-  function _stopLogStreaming() {
+  async function _stopLogStreaming() {
     let callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
     if (streamer_id && streamer_id.current) {
-      (0, _communication_react.postWithCallback)(props.streaming_host, "StopLogStreaming", {
+      return (0, _communication_react.postPromise)(props.streaming_host, "StopLogStreaming", {
         streamer_id: streamer_id.current
-      }, callback, null, props.main_id);
-    } else {
-      callback();
+      }, props.main_id);
     }
+    return null;
   }
   function _addToLog(new_line) {
     set_log_content(log_content_ref.current + new_line);
@@ -155,19 +153,18 @@ function SearchableConsole(props, inner_ref) {
   function _searchNext() {}
   function _structureText() {}
   function _searchPrevious() {}
-  function _logExec(command) {
+  async function _logExec(command) {
     let callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-    (0, _communication_react.postWithCallback)(cont_id.current, "os_command_exec", {
+    return await (0, _communication_react.postPromise)(cont_id.current, "os_command_exec", {
       "the_code": command
-    }, callback, null, props.main_id);
+    }, props.main_id);
   }
-  function _commandSubmit(e) {
+  async function _commandSubmit(e) {
     e.preventDefault();
     past_commands.current.push(console_command_value);
     past_commands_index.current = null;
-    _logExec(console_command_value, () => {
-      set_console_command_value("");
-    });
+    await _logExec(console_command_value);
+    set_console_command_value("");
   }
   function _setLiveScroll(event) {
     set_livescroll(event.target.checked);

@@ -29,7 +29,7 @@ import 'codemirror/theme/elegant.css'
 import 'codemirror/theme/neat.css'
 import 'codemirror/theme/solarized.css'
 import 'codemirror/theme/juejin.css'
-import {postAjax} from "./communication_react";
+import {postAjaxPromise} from "./communication_react";
 
 import {ThemeContext} from "./theme"
 
@@ -45,29 +45,38 @@ function ReactCodemirrorMergeView(props) {
 
     const theme = useContext(ThemeContext);
 
-    useEffect(()=>{
-        postAjax("get_preferred_codemirror_themes", {}, (data)=> {
-            preferred_themes.current = data;
+    useEffect(async ()=> {
+        try {
+            preferred_themes.current = await postAjaxPromise("get_preferred_codemirror_themes", {});
             cmobject.current = createMergeArea(code_container_ref.current);
             resizeHeights(props.max_height);
             refreshAreas();
             create_keymap();
             saved_theme.current = theme.dark_theme
-        })
+        } catch (e) {
+            errorDrawerFuncs.addFromError("Error getting preferred theme", e);
+            return
+        }
     }, []);
 
-    useEffect(()=>{
+
+
+    useEffect(async ()=>{
         if (!cmobject.current) {
             return
         }
 
         if (theme.dark_theme != saved_theme.current) {
-            postAjax("get_preferred_codemirror_themes", {}, (data) => {
-                preferred_themes.current = data;
+            try {
+                preferred_themes.current = await postAjaxPromise("get_preferred_codemirror_themes", {});
                 cmobject.current.editor().setOption("theme", _current_codemirror_theme());
                 cmobject.current.rightOriginal().setOption("theme", _current_codemirror_theme());
                 saved_theme.current = theme.dark_theme
-            })
+            }
+            catch (e) {
+                errorDrawerFuncs.addFromError("Error getting preferred theme", e);
+                return
+            }
         }
         if (cmobject.current.editor().getValue() != props.editor_content) {
             cmobject.current.editor().setValue(props.editor_content)
@@ -131,28 +140,26 @@ function ReactCodemirrorMergeView(props) {
         cmobject.current.rightOriginal().refresh()
     }
 
-    function create_api() {
-        let self = this;
-        postAjax("get_api_dict", {}, function (data) {
-            let api_dict_by_category = data.api_dict_by_category;
-            let api_dict_by_name = data.api_dict_by_name;
-            let ordered_api_categories = data.ordered_api_categories;
+    async function create_api() {
+        let data = await postAjaxPromise("get_api_dict", {});
+        let api_dict_by_category = data.api_dict_by_category;
+        let api_dict_by_name = data.api_dict_by_name;
+        let ordered_api_categories = data.ordered_api_categories;
 
-            let api_list = [];
-            for (let cat of ordered_api_categories) {
-                for (let entry of api_dict_by_category[cat]) {
-                    api_list.push(entry["name"])
-                }
+        let api_list = [];
+        for (let cat of ordered_api_categories) {
+            for (let entry of api_dict_by_category[cat]) {
+                api_list.push(entry["name"])
             }
-            //noinspection JSUnresolvedVariable
-            CodeMirror.commands.autocomplete = function (cm) {
-                //noinspection JSUnresolvedFunction
-                cm.showHint({
-                    hint: CodeMirror.hint.anyword, api_list: api_list,
-                    extra_autocomplete_list: extra_autocomplete_list
-                });
-            };
-        })
+        }
+        //noinspection JSUnresolvedVariable
+        CodeMirror.commands.autocomplete = function (cm) {
+            //noinspection JSUnresolvedFunction
+            cm.showHint({
+                hint: CodeMirror.hint.anyword, api_list: api_list,
+                extra_autocomplete_list: extra_autocomplete_list
+            });
+        };
     }
 
     function searchCM() {
