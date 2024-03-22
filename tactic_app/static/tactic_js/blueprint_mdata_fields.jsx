@@ -89,9 +89,20 @@ function BpSelectAdvanced({options, value, onChange, buttonIcon, readOnly}) {
         return re.test(the_text.toLowerCase())
     }
 
+    function _getActiveItem(val) {
+        for (let option of options) {
+            if (_.isEqual(option, val)) {
+                return option
+            }
+        }
+        return null
+    }
+
     let display_text = "display_text" in value ? value.display_text : value.text;
+
     return (
         <Select
+            activeItem={_getActiveItem(value)}
             itemRenderer={renderSuggestionAdvanced}
             itemPredicate={_filterSuggestion}
             items={options}

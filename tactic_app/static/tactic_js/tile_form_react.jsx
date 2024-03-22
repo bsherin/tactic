@@ -6,9 +6,9 @@ import {FormGroup, InputGroup, Button, Divider, Switch,
     TextArea, Collapse, Card, Elevation} from "@blueprintjs/core";
 import _ from 'lodash';
 
-import {ReactCodemirror} from "./react-codemirror.js";
-import {BpSelect, BpSelectAdvanced} from "./blueprint_mdata_fields.js"
-import {isInt} from "./utilities_react.js";
+import {ReactCodemirror} from "./react-codemirror";
+import {BpSelect, BpSelectAdvanced} from "./blueprint_mdata_fields"
+import {isInt} from "./utilities_react";
 
 import {PoolAddressSelector} from "./pool_tree";
 
