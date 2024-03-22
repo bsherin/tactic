@@ -103,8 +103,17 @@ function BpSelectAdvanced(_ref3) {
     }
     return re.test(the_text.toLowerCase());
   }
+  function _getActiveItem(val) {
+    for (let option of options) {
+      if (_lodash.default.isEqual(option, val)) {
+        return option;
+      }
+    }
+    return null;
+  }
   let display_text = "display_text" in value ? value.display_text : value.text;
   return /*#__PURE__*/_react.default.createElement(_select.Select, {
+    activeItem: _getActiveItem(value),
     itemRenderer: renderSuggestionAdvanced,
     itemPredicate: _filterSuggestion,
     items: options,
