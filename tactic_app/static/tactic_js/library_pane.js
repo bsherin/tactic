@@ -93,10 +93,6 @@ BodyMenu.propTypes = {
   selected_rows: _propTypes.default.array
 };
 function LibraryPane(props) {
-  const [usable_width, set_usable_width] = (0, _react.useState)(window.innerWidth);
-  const [usable_height, set_usable_height] = (0, _react.useState)(window.innerHeight);
-  const [topX, setTopX] = (0, _react.useState)(0);
-  const [topY, setTopY] = (0, _react.useState)(0);
   const top_ref = (0, _react.useRef)(null);
   const previous_search_spec = (0, _react.useRef)(null);
   const socket_counter = (0, _react.useRef)(null);
@@ -128,11 +124,11 @@ function LibraryPane(props) {
   const [selectedRegions, setSelectedRegions, selectedRegionsRef] = (0, _utilities_react.useStateAndRef)([_table.Regions.row(0)]);
   const [rowChanged, setRowChanged] = (0, _react.useState)(0);
   const selectedTypeRef = (0, _react.useRef)(null);
+  const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(top_ref, 0, "LibraryPane");
   const theme = (0, _react.useContext)(_theme.ThemeContext);
   const dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   const statusFuncs = (0, _react.useContext)(_toaster2.StatusContext);
   const errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
-  const sizeInfo = (0, _react.useContext)(_sizing_tools.SizeContext);
   const stateSetters = {
     data_dict: set_data_dict,
     num_rows: set_num_rows,
@@ -163,21 +159,6 @@ function LibraryPane(props) {
     initSocket();
     await _grabNewChunkWithRow(0);
   }, []);
-  (0, _react.useEffect)(() => {
-    let awidth = sizeInfo.availableWidth;
-    let aheight = sizeInfo.availableHeight;
-    if (top_ref.current) {
-      awidth = awidth - top_ref.current.offsetLeft + sizeInfo.topX;
-      aheight = aheight - top_ref.current.offsetTop + sizeInfo.topY;
-      setTopX(top_ref.current ? top_ref.current.offsetLeft : sizeInfo.topX);
-      setTopY(top_ref.current ? top_ref.current.offsetTop : sizeInfo.topY);
-    } else {
-      setTopX(sizeInfo.topX);
-      setTopY(sizeInfo.topY);
-    }
-    set_usable_width(awidth);
-    set_usable_height(aheight);
-  }, [sizeInfo.availableWidth, sizeInfo.availableHeight]);
   const pushCallback = (0, _utilities_react.useCallbackStack)("library_home");
   function setState(new_state) {
     let callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
@@ -1379,7 +1360,6 @@ function LibraryPane(props) {
       compare_tiles: _compare_tiles,
       new_list: _new_list,
       showListImport: _showListImport,
-      // showPoolImport: _showPoolImport,
       new_code: _new_code
     };
   }
@@ -1453,8 +1433,7 @@ function LibraryPane(props) {
       }
     })));
   }
-  let left_pane = /*#__PURE__*/_react.default.createElement(_library_table_pane.LibraryTablePane, {
-    pane_type: props.pane_type,
+  let left_pane = /*#__PURE__*/_react.default.createElement(_library_table_pane.LibraryTablePane, (0, _extends2.default)({}, props, {
     tag_list: tag_list,
     expanded_tags_ref: expanded_tags_ref,
     active_tag_ref: active_tag_ref,
@@ -1467,9 +1446,7 @@ function LibraryPane(props) {
     search_metadata_ref: search_metadata_ref,
     data_dict_ref: data_dict_ref,
     rowChanged: rowChanged,
-    columns: props.columns,
     num_rows: num_rows,
-    open_resources_ref: props.open_resources_ref,
     sortColumn: _set_sort_state,
     selectedRegionsRef: selectedRegionsRef,
     onSelection: _onTableSelection,
@@ -1477,7 +1454,7 @@ function LibraryPane(props) {
     initiateDataGrab: _grabNewChunkWithRow,
     renderBodyContextMenu: _renderBodyContextMenu,
     handleRowDoubleClick: _handleRowDoubleClick
-  });
+  }));
   let selected_types = _selectedTypes();
   selectedTypeRef.current = selected_types.length == 1 ? selected_resource_ref.current.res_type : "multi";
   return /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement(MenubarClass, (0, _extends2.default)({

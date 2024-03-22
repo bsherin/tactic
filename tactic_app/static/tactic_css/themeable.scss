@@ -1,4 +1,3 @@
-
 @import "blueprint_variables.scss";
 
 $table-border-color: #ddd;
@@ -9,489 +8,465 @@ $dark-table-border-style: $table-border-thickness none;
 $log-panel-font-color: #616161;
 $log-panel-font-color-dark: white;
 
-
 $darkest-bg: $dark-gray3;
 $dark-medium: $dark-gray4;
 
+// Colors for the resource-specific icons
 .light-theme {
-    .lib-tab-button, .context-tab-button-content, .menu-bar, .combined-metadata, .all-pane {
-        .bp5-icon-cube {
-            color: $orange3 ! important
-        }
-        .bp5-icon-folder-close {
-            color: $orange3 ! important
-        }
-        .bp5-icon-database, .bp5-icon-th, .bp5-icon-freeform, .bp5-icon-align-left {
-            color: $blue3 !important;
-        }
-
-        .bp5-icon-projects, .bp5-icon-console, .bp5-icon-globe-network{
-            color: $green3 !important;
-        }
-
-        .bp5-icon-application, .bp5-icon-timeline-line-chart, .bp5-icon-timeline-area-chart {
-            color: $indigo3 !important;
-        }
-
-        .bp5-icon-list {
-            color: $rose3 !important;
-        }
-
-        .bp5-icon-code {
-            color: $lime2 !important;
-        }
+  .lib-tab-button, .context-tab-button-content, .menu-bar, .combined-metadata, .all-pane {
+    .bp5-icon-cube {
+      color: $orange3 ! important
     }
 
-    .lib-tab-button.selected-lib-tab-button, .open-resource-tab.selected-tab-button {
-        .bp5-icon-database + span {
-            color: $pt-text-color !important;
-        }
-
-        .bp5-icon-projects + span {
-            color: $pt-text-color !important;
-        }
-
-        .bp5-icon-application + span {
-            color: $pt-text-color !important;
-        }
-
-        .bp5-icon-list + span {
-            color: $pt-text-color !important;
-        }
-
-        .bp5-icon-code + span {
-            color: $pt-text-color !important;
-        }
+    .bp5-icon-folder-close {
+      color: $orange3 ! important
     }
+
+    .bp5-icon-database, .bp5-icon-th, .bp5-icon-freeform, .bp5-icon-align-left {
+      color: $blue3 !important;
+    }
+
+    .bp5-icon-projects, .bp5-icon-console, .bp5-icon-globe-network {
+      color: $green3 !important;
+    }
+
+    .bp5-icon-application, .bp5-icon-timeline-line-chart, .bp5-icon-timeline-area-chart {
+      color: $indigo3 !important;
+    }
+
+    .bp5-icon-list {
+      color: $rose3 !important;
+    }
+
+    .bp5-icon-code {
+      color: $lime2 !important;
+    }
+  }
 }
 
+// Colors for the resource-specific icons
 .bp5-dark {
-    .lib-tab-button, .context-tab-button-content, .menu-bar, .combined-metadata, .all-pane {
-        .bp5-icon-cube {
-            color: $orange5 ! important
-        }
-        .bp5-icon-folder-close{
-            color: $orange5 ! important
-        }
-        .bp5-icon-database, .bp5-icon-th, .bp5-icon-freeform, .bp5-icon-align-left  {
-            color: $blue5 !important;
-        }
-
-        .bp5-icon-projects, .bp5-icon-console, .bp5-icon-globe-network {
-            color: $green5!important;
-        }
-
-        .bp5-icon-application, .bp5-icon-timeline-line-chart, .bp5-icon-timeline-area-chart {
-            color: $indigo5 !important;
-        }
-
-        .bp5-icon-list {
-            color: $rose5 !important;
-        }
-
-        .bp5-icon-code {
-            color: $lime5 !important;
-        }
+  .lib-tab-button, .context-tab-button-content, .menu-bar, .combined-metadata, .all-pane {
+    .bp5-icon-cube {
+      color: $orange5 ! important
     }
 
-    .lib-tab-button.selected-lib-tab-button, .open-resource-tab.selected-tab-button {
-        .bp5-icon-database + span {
-            color: white !important;
-        }
-
-        .bp5-icon-projects + span {
-            color: white !important;
-        }
-
-        .bp5-icon-application + span {
-            color: white!important;
-        }
-
-        .bp5-icon-list + span {
-            color: white!important;
-        }
-
-        .bp5-icon-code + span {
-            color: white !important;
-        }
+    .bp5-icon-folder-close {
+      color: $orange5 ! important
     }
-    .combined-metadata {
-        .bp5-input:disabled {
-            color: #abb3bf !important;
-        }
+
+    .bp5-icon-database, .bp5-icon-th, .bp5-icon-freeform, .bp5-icon-align-left {
+      color: $blue5 !important;
     }
+
+    .bp5-icon-projects, .bp5-icon-console, .bp5-icon-globe-network {
+      color: $green5 !important;
+    }
+
+    .bp5-icon-application, .bp5-icon-timeline-line-chart, .bp5-icon-timeline-area-chart {
+      color: $indigo5 !important;
+    }
+
+    .bp5-icon-list {
+      color: $rose5 !important;
+    }
+
+    .bp5-icon-code {
+      color: $lime5 !important;
+    }
+  }
 }
-
 
 .option-row-highlight {
-    color: $orange3 !important;
-    font-weight: bold !important
+  color: $orange3 !important;
+  font-weight: bold !important
 }
+
+/// light theme
 
 .light-theme {
-    .divider-option {
+
+  &.main-outer {
+    background-color: $light-gray1
+  }
+
+  #main-panel {
+    .main-heading {
+      color: $gray1;
+      background-color: #f6f8fa;
+      border-bottom: 1px solid #10161a26;
+    }
+  }
+
+  #table-area {
+    border-right: $table-border-style;
+
+    mark {
+      background-color: #cebde6
+    }
+  }
+
+  &.menu-bar {
+    box-shadow: none;
+    border-top: 0.75px solid #c5cbd3;
+    border-bottom: 0.75px solid #c5cbd3;
+  }
+
+  &.resource-viewer-holder, &.merge-viewer-outer &.login-body {
+    background-color: white
+  }
+
+  &.account-settings {
+    background-color: white
+  }
+
+  &.pane-holder, &.library-pane-holder {
+    background-color: white
+  }
+
+  .combined-metadata, div.filepicker {
+    background-color: $light-gray5
+  }
+
+  .combined-metadata {
+    .bp5-input:disabled {
+      color: #5f6b7c !important;
+    }
+  }
+
+  .notes-field-markdown-output {
+    background: rgba(255, 255, 255, 0.7);
+    color: $gray1;
+  }
+
+  .tactic-tag-button-list {
+    .bp5-tree-node-selected {
+      .bp5-tree-node-content {
+        background-color: white;
+        color: $blue3;
+        font-weight: 900
+      }
+
+      .bp5-icon {
+        background-color: white;
         color: $blue3 !important;
-        font-weight: bold !important;
-        background-color: $light-gray5 !important;
+        font-weight: 900
+      }
     }
-    &.resource-viewer-holder, &.merge-viewer-outer &.login-body {
-      background-color: white
+  }
+
+  .cm-matchhighlight {
+    background-color: lightgreen;
+  }
+
+  .cm-searchhighlight {
+    background-color: $light-gray2;
+  }
+
+  .cm-focussearchhighlight {
+    background-color: $orange5;
+  }
+
+  #creator-root, creator-root {
+    .light-theme {
+      .CodeMirror-gutters {
+        background-color: $light-gray5;
+      }
     }
+  }
 
-    &.menu-bar {
-        box-shadow: none;
-        border-top: 0.75px solid #c5cbd3;
-        border-bottom: 0.75px solid #c5cbd3;
+  .searchable-console {
+    mark {
+      background-color: #cebde6
     }
-    .combined-metadata {
-        .bp5-input:disabled {
-            color: #5f6b7c !important;
-        }
+  }
+
+  .tile-panel-heading {
+    color: $gray1;
+    background-color: #f6f8fa;
+    border-bottom: 1px solid #10161a26;
+  }
+
+  .tile-panel {
+    background-color: white !important;
+  }
+
+  .tile-form-divider {
+    .bp5-divider {
+      border-bottom: 2px solid #5c7080;
+      width: 50%;
+      min-width: 200px
     }
+  }
 
-    .cm-matchhighlight {
-        background-color: lightgreen;
+  #commands-pane {
+    .command-name {
+      font-weight: 900;
+      color: $dark-gray5
     }
+  }
 
-    .cm-searchhighlight {
-        background-color: $light-gray2;
-    }
-
-    .cm-focussearchhighlight {
-        background-color: $orange5;
-    }
-
-    &.account-settings {
-      background-color: white
-    }
-
-    &.pane-holder, &.library-pane-holder {
-      background-color: white
-    }
-
-    .combined-metadata, div.filepicker {
-      background-color: $light-gray5
-
-    }
-
-    .notes-field-markdown-output {
-        background: rgba(255, 255, 255, 0.7);
-        color: $gray1;
-    }
-
-    .tactic-tag-button-list {
-        .bp5-tree-node-selected {
-            .bp5-tree-node-content {
-                background-color: white;
-                color: $blue3;
-                font-weight: 900
-            }
-
-            .bp5-icon {
-                background-color: white;
-                color: $blue3 !important;
-                font-weight: 900
-            }
-        }
-    }
+  .divider-option {
+    color: $blue3 !important;
+    font-weight: bold !important;
+    background-color: $light-gray5 !important;
+  }
 
 
+  #console, #exports-panel {
+    background-color: white;
+  }
 
-    #creator-root, creator-root {
-        .light-theme {
-          .CodeMirror-gutters {
-              background-color: $light-gray5;
-          }
-        }
-    }
+  #console-search-form {
+    background-color: white
+  }
 
-    &.main-outer {
-      background-color: $light-gray1
-    }
+  .console-text {
+    background-color: $light-gray5 !important;
+    border: 1px solid #c7c7c7 !important;
+  }
 
-    #main-panel {
-        .main-heading{
-            color: $gray1;
-            background-color: #f6f8fa;
-            border-bottom: 1px solid #10161a26;
-        }
-    }
+  #console-heading, #exports-heading, #exports-footing {
+    background-color: $light-gray4 !important;
+  }
 
-    #table-area {
-        border-right: $table-border-style;
-        mark {
-            background-color: #cebde6
-        }
-    }
+  #exports-body {
+    background-color: white;
+  }
 
-    .searchable-console {
-        mark {
-            background-color: #cebde6
-        }
-    }
+  #selected-export {
+    color: $gray1;
+  }
 
-    .tile-panel-heading {
-        color: $gray1;
-        background-color: #f6f8fa;
-        border-bottom: 1px solid #10161a26;
-        //&.tile-source-changed {
-        //    background-color: $lime5 !important
-        //}
-    }
-    .tile-panel {
-        background-color: white !important;
-    }
+  .export-header-text {
+    color: #6c757d;
+  }
 
-    .tile-form-divider {
-        .bp5-divider {
-            border-bottom: 2px solid #5c7080;
-            width: 50%;
-            min-width: 200px
-        }
-    }
+  .log-panel-body {
+    color: $log-panel-font-color !important;
+  }
 
-    #console, #exports-panel {
-        background-color: white;
-    }
-
-    .console-text {
-        background-color: $light-gray5 !important;
-        border: 1px solid #c7c7c7 !important;
-    }
-
-    #console-heading, #exports-heading, #exports-footing {
-        background-color: $light-gray4 !important;
-    }
-
-    #exports-body {
-        background-color: white;
-    }
-
-    #selected-export {
-        color: $gray1;
-    }
-
-    .export-header-text {
-        color: #6c757d;
-    }
-
-    .log-panel-body {
-        color: $log-panel-font-color !important;
-    }
-
-    .log-panel {
-
-        .CodeMirror {
-            border: 1px solid #c7c7c7 !important;
-        }
-
-        .CodeMirror-lines {
-            background-color: $light-gray5 !important;
-        }
-
-        .CodeMirror-gutters {
-            background-color: $light-gray5;
-        }
-    }
+  .log-panel {
 
     .CodeMirror {
-        border: 1.5px solid #80808063;
-        border-radius: 3px;
-    }
-    caption {
-      color: #6c757d;
+      border: 1px solid #c7c7c7 !important;
     }
 
-    .account-pane {
-        background-color: $light-gray4;
+    .CodeMirror-lines {
+      background-color: $light-gray5 !important;
     }
+
+    .CodeMirror-gutters {
+      background-color: $light-gray5;
+    }
+  }
+
+  .CodeMirror {
+    border: 1.5px solid #80808063;
+    border-radius: 3px;
+  }
+
+  caption {
+    color: #6c757d;
+  }
+
+  .account-pane {
+    background-color: $light-gray4;
+  }
 
 }
 
+///// Dark theme
 
 .bp5-dark {
-    .divider-option {
+
+  &.main-outer {
+    background-color: $gray1
+  }
+
+  #main-panel {
+    .main-heading {
+      background-color: $dark-gray3;
+      border-bottom: 1px solid #10161a26;
+    }
+  }
+
+  #table-area {
+    border-right: $dark-table-border-style;
+
+    mark {
+      background-color: #cebde6
+    }
+  }
+
+  &.resource-viewer-holder, &.merge-viewer-outer, &.login-body {
+    background-color: $darkest-bg
+  }
+
+  &.menu-bar {
+    box-shadow: inset 0 0 0 1px #ffffff33, 0 1px 1px 0 #11141866;
+  }
+
+  &.account-settings {
+    background-color: $darkest-bg
+  }
+
+  &.pane-holder {
+    background-color: $dark-medium
+  }
+
+  &.library-pane-holder {
+    background-color: $darkest-bg
+  }
+
+  .combined-metadata, div.filepicker, #options-pane, #exports-pane {
+    background-color: $darkest-bg;
+  }
+
+  div.filepicker {
+    background-color: $dark-medium
+  }
+
+  .notes-field-markdown-output {
+    background-color: $darkest-bg;
+    color: $light-gray5
+  }
+
+  .tactic-tag-button-list {
+    .bp5-tree-node-selected {
+      .bp5-tree-node-content {
+        background-color: $darkest-bg;
+        color: $blue5;
+        font-weight: 900
+      }
+
+      .bp5-icon {
+        background-color: $darkest-bg;
         color: $blue5 !important;
-        font-weight: bold !important;
-        background-color: $dark-gray4 !important;
+        font-weight: 900
+      }
     }
+  }
 
-    &.resource-viewer-holder, &.merge-viewer-outer, &.login-body {
-      background-color: $darkest-bg
-    }
+  .log-panel-body {
+    color: $log-panel-font-color-dark !important;
+  }
 
-    &.menu-bar {
-        box-shadow: inset 0 0 0 1px #ffffff33, 0 1px 1px 0 #11141866;
-    }
+  .cm-matchhighlight {
+    background-color: lightgreen;
+    color: black !important
+  }
 
-    .cm-matchhighlight {
-        background-color: lightgreen;
-        color: black !important
-    }
+  .cm-searchhighlight {
+    background-color: #6aaed8;
+    color: black !important
+  }
 
-    .cm-searchhighlight {
-        background-color: #6aaed8;
-        color: black !important
-    }
+  .cm-focussearchhighlight {
+    background-color: yellow;
+    color: black !important;
+  }
 
-    .cm-focussearchhighlight {
-        background-color: yellow;
-        color: black !important;
-    }
+  .CodeMirror-merge-gap {
+    background: $gray1;
+  }
 
-    &.account-settings {
-        background-color: $darkest-bg
-    }
+  .CodeMirror-merge-r-chunk {
+    background: $darkest-bg;
+  }
 
-    &.pane-holder{
-      background-color: $dark-medium
-    }
+  .CodeMirror-merge-r-connect {
+    fill: $darkest-bg;
+  }
 
-    &.library-pane-holder {
-      background-color: $darkest-bg
+  .searchable-console {
+    mark {
+      background-color: #cebde6
     }
+  }
 
-    .combined-metadata, div.filepicker, #options-pane, #exports-pane {
-      background-color: $darkest-bg;
-    }
+  .tile-panel-heading {
+    background-color: $dark-gray3;
+    border-bottom: 1px solid #10161a26;
+    margin-right: 2px;
+    margin-left: 2px;
+  }
 
-    div.filepicker {
-      background-color: $dark-medium
+  .tile-panel {
+    background-color: $dark-medium !important;
+  }
 
+  .tile-form-divider {
+    .bp5-divider {
+      border-color: white;
+      width: 50%;
+      min-width: 200px
     }
+  }
 
-    .notes-field-markdown-output {
-        background-color: $darkest-bg;
-        color: $light-gray5
+  #commands-pane {
+    .command-name {
+      font-weight: bold;
+      color: $gray3
     }
+  }
 
-    .tactic-tag-button-list {
-        .bp5-tree-node-selected {
-            .bp5-tree-node-content {
-                background-color: $darkest-bg;
-                color: $blue5;
-                font-weight: 900
-            }
+  .divider-option {
+    color: $blue5 !important;
+    font-weight: bold !important;
+    background-color: $dark-gray4 !important;
+  }
 
-            .bp5-icon {
-                background-color: $darkest-bg;
-                color: $blue5 !important;
-                font-weight: 900
-            }
-        }
-    }
+  #console, #exports {
+    background-color: $darkest-bg;
+    margin-left: 2px;
+    margin-right: 2px;
+  }
 
-    .log-panel-body {
-        color: $log-panel-font-color-dark !important;
-    }
+  #console-search-form, #console-panel {
+    background-color: $darkest-bg;
+  }
 
-    &.main-outer {
-      background-color: $gray1
-    }
+  #console-heading, #exports-heading, #exports-footing {
+    background-color: $dark-medium !important;
+    margin-left: 2px;
+    margin-right: 2px;
+  }
 
-    #main-panel {
-        .main-heading{
-            background-color: $dark-gray3;
-            border-bottom: 1px solid #10161a26;
-        }
-    }
+  .export-header-text {
+    color: $gray5;
+  }
 
-    #table-area {
-        border-right: $dark-table-border-style;
-        mark {
-            background-color: #cebde6
-        }
-    }
+  .console-text {
+    border: 1px solid #c7c7c7 !important;
+  }
 
-    .searchable-console {
-        mark {
-            background-color: #cebde6
-        }
-    }
+  caption {
+    color: $light-gray1;
+  }
 
-    .tile-panel-heading {
-        background-color: $dark-gray3;
-        border-bottom: 1px solid #10161a26;
-        margin-right: 2px;
-        margin-left: 2px;
-        //&.tile-source-changed {
-        //    background-color: $lime1 !important
-        //}
-    }
-
-    .tile-panel {
-        background-color: $dark-medium !important;
-        //&.tile-source-changed {
-        //    background-color: #f7d66b80;
-        //    border: 2px solid #f7d66b80 !important;
-        //}
-    }
-
-    .tile-form-divider {
-        .bp5-divider {
-            border-color: white;
-            width: 50%;
-            min-width: 200px
-        }
-    }
-
-    #console, #exports {
-        background-color: $darkest-bg;
-        margin-left: 2px;
-        margin-right: 2px;
-    }
-
-    #console-heading, #exports-heading, #exports-footing {
-        background-color: $dark-medium !important;
-        margin-left: 2px;
-        margin-right: 2px;
-    }
-
-    .export-header-text {
-        color: $gray5;
-    }
-
-    .console-text {
-        border: 1px solid #c7c7c7 !important;
-    }
-
-    .text-panel-output {
-        //background-color: $dark-gray5;
-        //color: $light-gray5
-    }
-    caption {
-      color: $light-gray1;
-    }
-    .account-pane {
-        background-color: $dark-medium;
-    }
-    .CodeMirror-merge-gap {
-        background: $gray1;
-    }
-    .CodeMirror-merge-r-chunk {
-        background: $darkest-bg;
-    }
-    .CodeMirror-merge-r-connect {
-        fill: $darkest-bg;
-    }
+  .account-pane {
+    background-color: $dark-medium;
+  }
 }
 
 
 .status-holder {
-    &.light-theme {
-        background-color: transparent;
-      }
+  &.light-theme {
+    background-color: transparent;
+  }
 
-    &.bp5-dark {
-        background-color: transparent;
-        &.light-dark{
-            background-color: $gray1;
-        }
-      }
+  &.bp5-dark {
+    background-color: transparent;
+
+    &.light-dark {
+      background-color: $gray1;
+    }
+  }
 }
 
 #main-root {
-    .status-holder.light-theme {
-        background-color: $light-gray1;
-    }
+  .status-holder.light-theme {
+    background-color: $light-gray1;
+  }
 }

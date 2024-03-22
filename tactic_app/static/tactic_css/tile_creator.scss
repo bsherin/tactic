@@ -1,4 +1,5 @@
 @import "blueprint_variables.scss";
+@import "themeable.scss";
 
 #creator-root, .creator-root {
   //margin-right: 25px;
@@ -116,24 +117,6 @@
     }
     h6 {
       color: $forest2
-    }
-  }
-}
-
-.bp5-dark {
-  #commands-pane {
-    .command-name {
-      font-weight: bold;
-      color: $gray3
-    }
-  }
-}
-
-.light-theme {
-  #commands-pane {
-    .command-name {
-      font-weight: 900;
-      color: $dark-gray5
     }
   }
 }

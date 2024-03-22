@@ -12,7 +12,7 @@ import _ from 'lodash';
 import {CombinedMetadata, icon_dict} from "./blueprint_mdata_fields";
 import {HorizontalPanes} from "./resizing_layouts2";
 import {postAjaxPromise, postPromise} from "./communication_react"
-import {SizeContext} from "./sizing_tools";
+import {useSize} from "./sizing_tools";
 
 import {doFlash} from "./toaster.js"
 import {KeyTrap} from "./key_trap.js";
@@ -92,11 +92,6 @@ BodyMenu.propTypes = {
 
 function LibraryPane(props) {
 
-    const [usable_width, set_usable_width] = useState(window.innerWidth);
-    const [usable_height, set_usable_height] = useState(window.innerHeight);
-    const [topX, setTopX] = useState(0);
-    const [topY, setTopY] = useState(0);
-
     const top_ref = useRef(null);
     const previous_search_spec = useRef(null);
     const socket_counter = useRef(null);
@@ -133,11 +128,12 @@ function LibraryPane(props) {
     const [rowChanged, setRowChanged] = useState(0);
     const selectedTypeRef = useRef(null);
 
+    const [usable_width, usable_height, topX, topY] = useSize(top_ref, 0, "LibraryPane");
+
     const theme = useContext(ThemeContext);
     const dialogFuncs = useContext(DialogContext);
     const statusFuncs = useContext(StatusContext);
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
-    const sizeInfo = useContext(SizeContext);
 
     const stateSetters = {
         data_dict: set_data_dict,
@@ -172,24 +168,6 @@ function LibraryPane(props) {
         initSocket();
         await _grabNewChunkWithRow(0)
     }, []);
-
-    useEffect(() => {
-        let awidth = sizeInfo.availableWidth;
-        let aheight = sizeInfo.availableHeight;
-        if (top_ref.current) {
-            awidth = awidth - top_ref.current.offsetLeft + sizeInfo.topX;
-            aheight = aheight - top_ref.current.offsetTop + sizeInfo.topY;
-            setTopX(top_ref.current ? top_ref.current.offsetLeft : sizeInfo.topX);
-            setTopY(top_ref.current ? top_ref.current.offsetTop : sizeInfo.topY)
-        }
-        else {
-            setTopX(sizeInfo.topX);
-            setTopY(sizeInfo.topY);
-        }
-        set_usable_width(awidth);
-        set_usable_height(aheight);
-
-    }, [sizeInfo.availableWidth, sizeInfo.availableHeight]);
 
     const pushCallback = useCallbackStack("library_home");
 
@@ -1373,7 +1351,6 @@ function LibraryPane(props) {
             compare_tiles: _compare_tiles,
             new_list: _new_list,
             showListImport: _showListImport,
-            // showPoolImport: _showPoolImport,
             new_code: _new_code
         }
     }
@@ -1456,7 +1433,7 @@ function LibraryPane(props) {
 
     let left_pane = (
         <LibraryTablePane
-            pane_type={props.pane_type}
+            {...props}
             tag_list={tag_list}
             expanded_tags_ref={expanded_tags_ref}
             active_tag_ref={active_tag_ref}
@@ -1469,9 +1446,7 @@ function LibraryPane(props) {
             search_metadata_ref={search_metadata_ref}
             data_dict_ref={data_dict_ref}
             rowChanged={rowChanged}
-            columns={props.columns}
             num_rows={num_rows}
-            open_resources_ref={props.open_resources_ref}
             sortColumn={_set_sort_state}
             selectedRegionsRef={selectedRegionsRef}
             onSelection={_onTableSelection}

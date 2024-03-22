@@ -3,18 +3,11 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.TopCodePane = TopCodePane;
 exports.creator_props = creator_props;
-var _react = _interopRequireWildcard(require("react"));
 var _tactic_socket = require("./tactic_socket");
 var _utilities_react = require("./utilities_react");
 var _communication_react = require("./communication_react");
 var _creator_modules_react = require("./creator_modules_react");
-var _library_widgets = require("./library_widgets");
-var _reactCodemirror = require("./react-codemirror");
-var _sizing_tools = require("./sizing_tools");
-function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
-function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 function creator_props(data, registerDirtyMethod, finalCallback) {
   let mdata = data.mdata;
   let split_tags = mdata.tags == "" ? [] : mdata.tags.split(" ");
@@ -99,66 +92,4 @@ function creator_props(data, registerDirtyMethod, finalCallback) {
       registerDirtyMethod: registerDirtyMethod
     });
   }
-}
-function TopCodePane(props) {
-  const sizeInfo = (0, _react.useContext)(_sizing_tools.SizeContext);
-  let mode = props.is_mpl ? "python" : "javascript";
-  let code_content = props.is_mpl ? props.draw_plot_code_ref.current : props.jscript_code_ref.current;
-  let first_line_number = props.is_mpl ? props.draw_plot_line_number_ref.current + 1 : 1;
-  let title_label = props.is_mpl ? "draw_plot" : "(selector, w, h, arg_dict, resizing) =>";
-  let ch_style = {
-    "width": "100%"
-  };
-  return /*#__PURE__*/_react.default.createElement("div", {
-    key: "dpcode",
-    style: ch_style,
-    className: "d-flex flex-column align-items-baseline code-holder"
-  }, /*#__PURE__*/_react.default.createElement("div", {
-    style: {
-      display: "flex",
-      flexDirection: "row",
-      justifyContent: "space-between",
-      width: "100%"
-    }
-  }, /*#__PURE__*/_react.default.createElement("span", {
-    className: "bp5-ui-text",
-    style: {
-      display: "flex",
-      alignItems: "self-end"
-    }
-  }, title_label), /*#__PURE__*/_react.default.createElement(_library_widgets.SearchForm, {
-    update_search_state: props.updateSearchState,
-    search_string: props.search_string,
-    regex: props.regex,
-    allow_regex: true,
-    field_width: 200,
-    include_search_jumper: true,
-    searchPrev: _searchPrev,
-    searchNext: _searchNext,
-    search_ref: props.search_ref,
-    number_matches: props.search_matches
-  })), /*#__PURE__*/_react.default.createElement(_sizing_tools.SizeContext.Provider, {
-    value: {
-      availableWidth: sizeInfo.availableWidth,
-      availableHeight: sizeInfo.availableHeight,
-      topX: sizeInfo.topX,
-      topY: sizeInfo.topY
-    }
-  }, /*#__PURE__*/_react.default.createElement(_reactCodemirror.ReactCodemirror, {
-    code_content: code_content,
-    mode: mode,
-    extraKeys: props.extraKeys(),
-    current_search_number: props.current_search_cm == "tc" ? props.current_search_number : null,
-    handleChange: props.handleTopCodeChange,
-    saveMe: props.saveAndCheckpoint,
-    setCMObject: props.setCMObject,
-    search_term: props.search_term,
-    update_search_state: props.updateSearchState,
-    alt_clear_selections: props.clearAllSelections,
-    first_line_number: first_line_number.current,
-    readOnly: props.read_only,
-    regex_search: props.regex,
-    setSearchMatches: num => props.setSearchMatches("tc", num),
-    extra_autocomplete_list: mode == "python" ? props.onames_for_autocomplete : []
-  })));
 }

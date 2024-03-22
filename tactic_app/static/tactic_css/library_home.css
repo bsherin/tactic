@@ -25,21 +25,6 @@
 .light-theme .lib-tab-button .bp5-icon-code, .light-theme .context-tab-button-content .bp5-icon-code, .light-theme .menu-bar .bp5-icon-code, .light-theme .combined-metadata .bp5-icon-code, .light-theme .all-pane .bp5-icon-code {
   color: #5a701a !important;
 }
-.light-theme .lib-tab-button.selected-lib-tab-button .bp5-icon-database + span, .light-theme .open-resource-tab.selected-tab-button .bp5-icon-database + span {
-  color: #1c2127 !important;
-}
-.light-theme .lib-tab-button.selected-lib-tab-button .bp5-icon-projects + span, .light-theme .open-resource-tab.selected-tab-button .bp5-icon-projects + span {
-  color: #1c2127 !important;
-}
-.light-theme .lib-tab-button.selected-lib-tab-button .bp5-icon-application + span, .light-theme .open-resource-tab.selected-tab-button .bp5-icon-application + span {
-  color: #1c2127 !important;
-}
-.light-theme .lib-tab-button.selected-lib-tab-button .bp5-icon-list + span, .light-theme .open-resource-tab.selected-tab-button .bp5-icon-list + span {
-  color: #1c2127 !important;
-}
-.light-theme .lib-tab-button.selected-lib-tab-button .bp5-icon-code + span, .light-theme .open-resource-tab.selected-tab-button .bp5-icon-code + span {
-  color: #1c2127 !important;
-}
 
 .bp5-dark .lib-tab-button .bp5-icon-cube, .bp5-dark .context-tab-button-content .bp5-icon-cube, .bp5-dark .menu-bar .bp5-icon-cube, .bp5-dark .combined-metadata .bp5-icon-cube, .bp5-dark .all-pane .bp5-icon-cube {
   color: #fbb360 !important;
@@ -62,54 +47,33 @@
 .bp5-dark .lib-tab-button .bp5-icon-code, .bp5-dark .context-tab-button-content .bp5-icon-code, .bp5-dark .menu-bar .bp5-icon-code, .bp5-dark .combined-metadata .bp5-icon-code, .bp5-dark .all-pane .bp5-icon-code {
   color: #d4f17e !important;
 }
-.bp5-dark .lib-tab-button.selected-lib-tab-button .bp5-icon-database + span, .bp5-dark .open-resource-tab.selected-tab-button .bp5-icon-database + span {
-  color: white !important;
-}
-.bp5-dark .lib-tab-button.selected-lib-tab-button .bp5-icon-projects + span, .bp5-dark .open-resource-tab.selected-tab-button .bp5-icon-projects + span {
-  color: white !important;
-}
-.bp5-dark .lib-tab-button.selected-lib-tab-button .bp5-icon-application + span, .bp5-dark .open-resource-tab.selected-tab-button .bp5-icon-application + span {
-  color: white !important;
-}
-.bp5-dark .lib-tab-button.selected-lib-tab-button .bp5-icon-list + span, .bp5-dark .open-resource-tab.selected-tab-button .bp5-icon-list + span {
-  color: white !important;
-}
-.bp5-dark .lib-tab-button.selected-lib-tab-button .bp5-icon-code + span, .bp5-dark .open-resource-tab.selected-tab-button .bp5-icon-code + span {
-  color: white !important;
-}
-.bp5-dark .combined-metadata .bp5-input:disabled {
-  color: #abb3bf !important;
-}
 
 .option-row-highlight {
   color: #c87619 !important;
   font-weight: bold !important;
 }
 
-.light-theme .divider-option {
-  color: #2d72d2 !important;
-  font-weight: bold !important;
-  background-color: #f6f7f9 !important;
+.light-theme.main-outer {
+  background-color: #d3d8de;
 }
-.light-theme.resource-viewer-holder, .light-theme.merge-viewer-outer .light-theme.login-body {
-  background-color: white;
+.light-theme #main-panel .main-heading {
+  color: #5f6b7c;
+  background-color: #f6f8fa;
+  border-bottom: 1px solid rgba(16, 22, 26, 0.1490196078);
+}
+.light-theme #table-area {
+  border-right: 1px solid #ddd;
+}
+.light-theme #table-area mark {
+  background-color: #cebde6;
 }
 .light-theme.menu-bar {
   box-shadow: none;
   border-top: 0.75px solid #c5cbd3;
   border-bottom: 0.75px solid #c5cbd3;
 }
-.light-theme .combined-metadata .bp5-input:disabled {
-  color: #5f6b7c !important;
-}
-.light-theme .cm-matchhighlight {
-  background-color: lightgreen;
-}
-.light-theme .cm-searchhighlight {
-  background-color: #dce0e5;
-}
-.light-theme .cm-focussearchhighlight {
-  background-color: #fbb360;
+.light-theme.resource-viewer-holder, .light-theme.merge-viewer-outer .light-theme.login-body {
+  background-color: white;
 }
 .light-theme.account-settings {
   background-color: white;
@@ -119,6 +83,9 @@
 }
 .light-theme .combined-metadata, .light-theme div.filepicker {
   background-color: #f6f7f9;
+}
+.light-theme .combined-metadata .bp5-input:disabled {
+  color: #5f6b7c !important;
 }
 .light-theme .notes-field-markdown-output {
   background: rgba(255, 255, 255, 0.7);
@@ -134,22 +101,17 @@
   color: #2d72d2 !important;
   font-weight: 900;
 }
+.light-theme .cm-matchhighlight {
+  background-color: lightgreen;
+}
+.light-theme .cm-searchhighlight {
+  background-color: #dce0e5;
+}
+.light-theme .cm-focussearchhighlight {
+  background-color: #fbb360;
+}
 .light-theme #creator-root .light-theme .CodeMirror-gutters, .light-theme creator-root .light-theme .CodeMirror-gutters {
   background-color: #f6f7f9;
-}
-.light-theme.main-outer {
-  background-color: #d3d8de;
-}
-.light-theme #main-panel .main-heading {
-  color: #5f6b7c;
-  background-color: #f6f8fa;
-  border-bottom: 1px solid rgba(16, 22, 26, 0.1490196078);
-}
-.light-theme #table-area {
-  border-right: 1px solid #ddd;
-}
-.light-theme #table-area mark {
-  background-color: #cebde6;
 }
 .light-theme .searchable-console mark {
   background-color: #cebde6;
@@ -167,7 +129,19 @@
   width: 50%;
   min-width: 200px;
 }
+.light-theme #commands-pane .command-name {
+  font-weight: 900;
+  color: #47505c;
+}
+.light-theme .divider-option {
+  color: #2d72d2 !important;
+  font-weight: bold !important;
+  background-color: #f6f7f9 !important;
+}
 .light-theme #console, .light-theme #exports-panel {
+  background-color: white;
+}
+.light-theme #console-search-form {
   background-color: white;
 }
 .light-theme .console-text {
@@ -209,28 +183,24 @@
   background-color: #edeff2;
 }
 
-.bp5-dark .divider-option {
-  color: #8abbff !important;
-  font-weight: bold !important;
-  background-color: #383e47 !important;
+.bp5-dark.main-outer {
+  background-color: #5f6b7c;
+}
+.bp5-dark #main-panel .main-heading {
+  background-color: #2f343c;
+  border-bottom: 1px solid rgba(16, 22, 26, 0.1490196078);
+}
+.bp5-dark #table-area {
+  border-right: 1px none;
+}
+.bp5-dark #table-area mark {
+  background-color: #cebde6;
 }
 .bp5-dark.resource-viewer-holder, .bp5-dark.merge-viewer-outer, .bp5-dark.login-body {
   background-color: #2f343c;
 }
 .bp5-dark.menu-bar {
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2), 0 1px 1px 0 rgba(17, 20, 24, 0.4);
-}
-.bp5-dark .cm-matchhighlight {
-  background-color: lightgreen;
-  color: black !important;
-}
-.bp5-dark .cm-searchhighlight {
-  background-color: #6aaed8;
-  color: black !important;
-}
-.bp5-dark .cm-focussearchhighlight {
-  background-color: yellow;
-  color: black !important;
 }
 .bp5-dark.account-settings {
   background-color: #2f343c;
@@ -264,18 +234,26 @@
 .bp5-dark .log-panel-body {
   color: white !important;
 }
-.bp5-dark.main-outer {
-  background-color: #5f6b7c;
+.bp5-dark .cm-matchhighlight {
+  background-color: lightgreen;
+  color: black !important;
 }
-.bp5-dark #main-panel .main-heading {
-  background-color: #2f343c;
-  border-bottom: 1px solid rgba(16, 22, 26, 0.1490196078);
+.bp5-dark .cm-searchhighlight {
+  background-color: #6aaed8;
+  color: black !important;
 }
-.bp5-dark #table-area {
-  border-right: 1px none;
+.bp5-dark .cm-focussearchhighlight {
+  background-color: yellow;
+  color: black !important;
 }
-.bp5-dark #table-area mark {
-  background-color: #cebde6;
+.bp5-dark .CodeMirror-merge-gap {
+  background: #5f6b7c;
+}
+.bp5-dark .CodeMirror-merge-r-chunk {
+  background: #2f343c;
+}
+.bp5-dark .CodeMirror-merge-r-connect {
+  fill: #2f343c;
 }
 .bp5-dark .searchable-console mark {
   background-color: #cebde6;
@@ -294,10 +272,22 @@
   width: 50%;
   min-width: 200px;
 }
+.bp5-dark #commands-pane .command-name {
+  font-weight: bold;
+  color: #8f99a8;
+}
+.bp5-dark .divider-option {
+  color: #8abbff !important;
+  font-weight: bold !important;
+  background-color: #383e47 !important;
+}
 .bp5-dark #console, .bp5-dark #exports {
   background-color: #2f343c;
   margin-left: 2px;
   margin-right: 2px;
+}
+.bp5-dark #console-search-form, .bp5-dark #console-panel {
+  background-color: #2f343c;
 }
 .bp5-dark #console-heading, .bp5-dark #exports-heading, .bp5-dark #exports-footing {
   background-color: #383e47 !important;
@@ -315,15 +305,6 @@
 }
 .bp5-dark .account-pane {
   background-color: #383e47;
-}
-.bp5-dark .CodeMirror-merge-gap {
-  background: #5f6b7c;
-}
-.bp5-dark .CodeMirror-merge-r-chunk {
-  background: #2f343c;
-}
-.bp5-dark .CodeMirror-merge-r-connect {
-  fill: #2f343c;
 }
 
 .status-holder.light-theme {

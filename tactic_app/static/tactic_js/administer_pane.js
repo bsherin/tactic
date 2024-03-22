@@ -9,7 +9,7 @@ var _react = _interopRequireWildcard(require("react"));
 var _propTypes = _interopRequireDefault(require("prop-types"));
 var _table = require("@blueprintjs/table");
 var _library_widgets = require("./library_widgets");
-var _resizing_layouts = require("./resizing_layouts");
+var _resizing_layouts = require("./resizing_layouts2");
 var _sizing_tools = require("./sizing_tools");
 var _utilities_react = require("./utilities_react");
 var _communication_react = require("./communication_react");
@@ -23,15 +23,15 @@ function AdminPane(props) {
   const table_ref = (0, _react.useRef)(null);
   const console_text_ref = (0, _react.useRef)(null);
   const previous_search_spec = (0, _react.useRef)(null);
-  const [available_height, set_available_height] = (0, _react.useState)((0, _sizing_tools.getUsableDimensions)(true).usable_height_no_bottom);
-  const [available_width, set_available_width] = (0, _react.useState)((0, _sizing_tools.getUsableDimensions)(true).usable_width - 170);
   const get_url = `grab_${props.res_type}_list_chunk`;
   const [data_dict, set_data_dict, data_dict_ref] = (0, _utilities_react.useStateAndRef)({});
   const [num_rows, set_num_rows] = (0, _react.useState)(0);
   const [awaiting_data, set_awaiting_data] = (0, _react.useState)(false);
   const [mounted, set_mounted] = (0, _react.useState)(false);
-  const [top_pane_height, set_top_pane_height] = (0, _react.useState)((0, _sizing_tools.getUsableDimensions)(true).usable_height_no_bottom / 2 - 50);
   const [total_width, set_total_width] = (0, _react.useState)(500);
+  const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(top_ref, 0, "AdminPane");
+  const [table_usable_width, table_usable_height, table_topX, table_topY] = (0, _sizing_tools.useSize)(table_ref, 0, "AdminPane");
+  const [console_usable_width, console_usable_height, console_topX, console_topY] = (0, _sizing_tools.useSize)(console_text_ref, 0, "AdminConsole");
   const pushCallback = (0, _utilities_react.useCallbackStack)();
   const errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
   (0, _react.useEffect)(async () => {
@@ -70,14 +70,6 @@ function AdminPane(props) {
     _updatePaneState({
       selectedRegions: revised_regions
     });
-  }
-  function get_height_minus_top_offset(element_ref) {
-    if (mounted) {
-      // This will be true after the initial render
-      return props.usable_height - $(element_ref.current).offset().top;
-    } else {
-      return props.usable_height - 50;
-    }
   }
   async function _grabNewChunkWithRow(row_index) {
     let flush = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
@@ -285,15 +277,6 @@ function AdminPane(props) {
   if (Object.keys(additional_metadata).length == 0) {
     additional_metadata = null;
   }
-  let table_width;
-  let table_height;
-  if (table_ref && table_ref.current) {
-    table_width = left_width - table_ref.current.offsetLeft;
-    table_height = props.usable_height - table_ref.current.offsetTop;
-  } else {
-    table_width = left_width - 150;
-    table_height = props.usable_height - 75;
-  }
   var right_pane;
   if (props.res_type == "container") {
     right_pane = /*#__PURE__*/_react.default.createElement("div", {
@@ -312,7 +295,7 @@ function AdminPane(props) {
       outer_style: {
         overflowX: "auto",
         overflowY: "auto",
-        height: table_height - 35,
+        height: console_usable_height - _sizing_tools.BOTTOM_MARGIN - 25,
         width: "100%",
         marginTop: 0,
         marginLeft: 5,
@@ -349,12 +332,11 @@ function AdminPane(props) {
   }, /*#__PURE__*/_react.default.createElement("div", {
     ref: table_ref,
     style: {
-      width: table_width,
+      width: table_usable_width,
       maxWidth: total_width,
-      maxHeight: table_height,
+      maxHeight: table_usable_height,
       padding: 15,
       marginTop: 10
-      // backgroundColor: "white"
     }
   }, /*#__PURE__*/_react.default.createElement(_library_widgets.SearchForm, {
     allow_search_inside: false,
@@ -365,9 +347,7 @@ function AdminPane(props) {
     data_dict: data_dict_ref.current,
     num_rows: num_rows,
     awaiting_data: awaiting_data,
-    enableColumnResizing: true
-    // maxColumnWidth={225}
-    ,
+    enableColumnResizing: true,
     sortColumn: _set_sort_state,
     selectedRegions: props.selectedRegions,
     communicateColumnWidthSum: _communicateColumnWidthSum,
@@ -395,7 +375,7 @@ function AdminPane(props) {
     right_pane: right_pane,
     show_handle: true,
     available_width: props.usable_width,
-    available_height: table_height,
+    available_height: table_usable_height,
     initial_width_fraction: .65,
     handleSplitUpdate: _handleSplitResize
   }))));
