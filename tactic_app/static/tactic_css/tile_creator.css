@@ -1,6 +1,326 @@
 /*
  * Copyright 2022 Palantir Technologies, Inc. All rights reserved.
  */
+/*
+ * Copyright 2022 Palantir Technologies, Inc. All rights reserved.
+ */
+.light-theme .lib-tab-button .bp5-icon-cube, .light-theme .context-tab-button-content .bp5-icon-cube, .light-theme .menu-bar .bp5-icon-cube, .light-theme .combined-metadata .bp5-icon-cube, .light-theme .all-pane .bp5-icon-cube {
+  color: #c87619 !important;
+}
+.light-theme .lib-tab-button .bp5-icon-folder-close, .light-theme .context-tab-button-content .bp5-icon-folder-close, .light-theme .menu-bar .bp5-icon-folder-close, .light-theme .combined-metadata .bp5-icon-folder-close, .light-theme .all-pane .bp5-icon-folder-close {
+  color: #c87619 !important;
+}
+.light-theme .lib-tab-button .bp5-icon-database, .light-theme .lib-tab-button .bp5-icon-th, .light-theme .lib-tab-button .bp5-icon-freeform, .light-theme .lib-tab-button .bp5-icon-align-left, .light-theme .context-tab-button-content .bp5-icon-database, .light-theme .context-tab-button-content .bp5-icon-th, .light-theme .context-tab-button-content .bp5-icon-freeform, .light-theme .context-tab-button-content .bp5-icon-align-left, .light-theme .menu-bar .bp5-icon-database, .light-theme .menu-bar .bp5-icon-th, .light-theme .menu-bar .bp5-icon-freeform, .light-theme .menu-bar .bp5-icon-align-left, .light-theme .combined-metadata .bp5-icon-database, .light-theme .combined-metadata .bp5-icon-th, .light-theme .combined-metadata .bp5-icon-freeform, .light-theme .combined-metadata .bp5-icon-align-left, .light-theme .all-pane .bp5-icon-database, .light-theme .all-pane .bp5-icon-th, .light-theme .all-pane .bp5-icon-freeform, .light-theme .all-pane .bp5-icon-align-left {
+  color: #2d72d2 !important;
+}
+.light-theme .lib-tab-button .bp5-icon-projects, .light-theme .lib-tab-button .bp5-icon-console, .light-theme .lib-tab-button .bp5-icon-globe-network, .light-theme .context-tab-button-content .bp5-icon-projects, .light-theme .context-tab-button-content .bp5-icon-console, .light-theme .context-tab-button-content .bp5-icon-globe-network, .light-theme .menu-bar .bp5-icon-projects, .light-theme .menu-bar .bp5-icon-console, .light-theme .menu-bar .bp5-icon-globe-network, .light-theme .combined-metadata .bp5-icon-projects, .light-theme .combined-metadata .bp5-icon-console, .light-theme .combined-metadata .bp5-icon-globe-network, .light-theme .all-pane .bp5-icon-projects, .light-theme .all-pane .bp5-icon-console, .light-theme .all-pane .bp5-icon-globe-network {
+  color: #238551 !important;
+}
+.light-theme .lib-tab-button .bp5-icon-application, .light-theme .lib-tab-button .bp5-icon-timeline-line-chart, .light-theme .lib-tab-button .bp5-icon-timeline-area-chart, .light-theme .context-tab-button-content .bp5-icon-application, .light-theme .context-tab-button-content .bp5-icon-timeline-line-chart, .light-theme .context-tab-button-content .bp5-icon-timeline-area-chart, .light-theme .menu-bar .bp5-icon-application, .light-theme .menu-bar .bp5-icon-timeline-line-chart, .light-theme .menu-bar .bp5-icon-timeline-area-chart, .light-theme .combined-metadata .bp5-icon-application, .light-theme .combined-metadata .bp5-icon-timeline-line-chart, .light-theme .combined-metadata .bp5-icon-timeline-area-chart, .light-theme .all-pane .bp5-icon-application, .light-theme .all-pane .bp5-icon-timeline-line-chart, .light-theme .all-pane .bp5-icon-timeline-area-chart {
+  color: #7961db !important;
+}
+.light-theme .lib-tab-button .bp5-icon-list, .light-theme .context-tab-button-content .bp5-icon-list, .light-theme .menu-bar .bp5-icon-list, .light-theme .combined-metadata .bp5-icon-list, .light-theme .all-pane .bp5-icon-list {
+  color: #db2c6f !important;
+}
+.light-theme .lib-tab-button .bp5-icon-code, .light-theme .context-tab-button-content .bp5-icon-code, .light-theme .menu-bar .bp5-icon-code, .light-theme .combined-metadata .bp5-icon-code, .light-theme .all-pane .bp5-icon-code {
+  color: #5a701a !important;
+}
+
+.bp5-dark .lib-tab-button .bp5-icon-cube, .bp5-dark .context-tab-button-content .bp5-icon-cube, .bp5-dark .menu-bar .bp5-icon-cube, .bp5-dark .combined-metadata .bp5-icon-cube, .bp5-dark .all-pane .bp5-icon-cube {
+  color: #fbb360 !important;
+}
+.bp5-dark .lib-tab-button .bp5-icon-folder-close, .bp5-dark .context-tab-button-content .bp5-icon-folder-close, .bp5-dark .menu-bar .bp5-icon-folder-close, .bp5-dark .combined-metadata .bp5-icon-folder-close, .bp5-dark .all-pane .bp5-icon-folder-close {
+  color: #fbb360 !important;
+}
+.bp5-dark .lib-tab-button .bp5-icon-database, .bp5-dark .lib-tab-button .bp5-icon-th, .bp5-dark .lib-tab-button .bp5-icon-freeform, .bp5-dark .lib-tab-button .bp5-icon-align-left, .bp5-dark .context-tab-button-content .bp5-icon-database, .bp5-dark .context-tab-button-content .bp5-icon-th, .bp5-dark .context-tab-button-content .bp5-icon-freeform, .bp5-dark .context-tab-button-content .bp5-icon-align-left, .bp5-dark .menu-bar .bp5-icon-database, .bp5-dark .menu-bar .bp5-icon-th, .bp5-dark .menu-bar .bp5-icon-freeform, .bp5-dark .menu-bar .bp5-icon-align-left, .bp5-dark .combined-metadata .bp5-icon-database, .bp5-dark .combined-metadata .bp5-icon-th, .bp5-dark .combined-metadata .bp5-icon-freeform, .bp5-dark .combined-metadata .bp5-icon-align-left, .bp5-dark .all-pane .bp5-icon-database, .bp5-dark .all-pane .bp5-icon-th, .bp5-dark .all-pane .bp5-icon-freeform, .bp5-dark .all-pane .bp5-icon-align-left {
+  color: #8abbff !important;
+}
+.bp5-dark .lib-tab-button .bp5-icon-projects, .bp5-dark .lib-tab-button .bp5-icon-console, .bp5-dark .lib-tab-button .bp5-icon-globe-network, .bp5-dark .context-tab-button-content .bp5-icon-projects, .bp5-dark .context-tab-button-content .bp5-icon-console, .bp5-dark .context-tab-button-content .bp5-icon-globe-network, .bp5-dark .menu-bar .bp5-icon-projects, .bp5-dark .menu-bar .bp5-icon-console, .bp5-dark .menu-bar .bp5-icon-globe-network, .bp5-dark .combined-metadata .bp5-icon-projects, .bp5-dark .combined-metadata .bp5-icon-console, .bp5-dark .combined-metadata .bp5-icon-globe-network, .bp5-dark .all-pane .bp5-icon-projects, .bp5-dark .all-pane .bp5-icon-console, .bp5-dark .all-pane .bp5-icon-globe-network {
+  color: #72ca9b !important;
+}
+.bp5-dark .lib-tab-button .bp5-icon-application, .bp5-dark .lib-tab-button .bp5-icon-timeline-line-chart, .bp5-dark .lib-tab-button .bp5-icon-timeline-area-chart, .bp5-dark .context-tab-button-content .bp5-icon-application, .bp5-dark .context-tab-button-content .bp5-icon-timeline-line-chart, .bp5-dark .context-tab-button-content .bp5-icon-timeline-area-chart, .bp5-dark .menu-bar .bp5-icon-application, .bp5-dark .menu-bar .bp5-icon-timeline-line-chart, .bp5-dark .menu-bar .bp5-icon-timeline-area-chart, .bp5-dark .combined-metadata .bp5-icon-application, .bp5-dark .combined-metadata .bp5-icon-timeline-line-chart, .bp5-dark .combined-metadata .bp5-icon-timeline-area-chart, .bp5-dark .all-pane .bp5-icon-application, .bp5-dark .all-pane .bp5-icon-timeline-line-chart, .bp5-dark .all-pane .bp5-icon-timeline-area-chart {
+  color: #bdadff !important;
+}
+.bp5-dark .lib-tab-button .bp5-icon-list, .bp5-dark .context-tab-button-content .bp5-icon-list, .bp5-dark .menu-bar .bp5-icon-list, .bp5-dark .combined-metadata .bp5-icon-list, .bp5-dark .all-pane .bp5-icon-list {
+  color: #ff66a1 !important;
+}
+.bp5-dark .lib-tab-button .bp5-icon-code, .bp5-dark .context-tab-button-content .bp5-icon-code, .bp5-dark .menu-bar .bp5-icon-code, .bp5-dark .combined-metadata .bp5-icon-code, .bp5-dark .all-pane .bp5-icon-code {
+  color: #d4f17e !important;
+}
+
+.option-row-highlight {
+  color: #c87619 !important;
+  font-weight: bold !important;
+}
+
+.light-theme.main-outer {
+  background-color: #d3d8de;
+}
+.light-theme #main-panel .main-heading {
+  color: #5f6b7c;
+  background-color: #f6f8fa;
+  border-bottom: 1px solid rgba(16, 22, 26, 0.1490196078);
+}
+.light-theme #table-area {
+  border-right: 1px solid #ddd;
+}
+.light-theme #table-area mark {
+  background-color: #cebde6;
+}
+.light-theme.menu-bar {
+  box-shadow: none;
+  border-top: 0.75px solid #c5cbd3;
+  border-bottom: 0.75px solid #c5cbd3;
+}
+.light-theme.resource-viewer-holder, .light-theme.merge-viewer-outer .light-theme.login-body {
+  background-color: white;
+}
+.light-theme.account-settings {
+  background-color: white;
+}
+.light-theme.pane-holder, .light-theme.library-pane-holder {
+  background-color: white;
+}
+.light-theme .combined-metadata, .light-theme div.filepicker {
+  background-color: #f6f7f9;
+}
+.light-theme .combined-metadata .bp5-input:disabled {
+  color: #5f6b7c !important;
+}
+.light-theme .notes-field-markdown-output {
+  background: rgba(255, 255, 255, 0.7);
+  color: #5f6b7c;
+}
+.light-theme .tactic-tag-button-list .bp5-tree-node-selected .bp5-tree-node-content {
+  background-color: white;
+  color: #2d72d2;
+  font-weight: 900;
+}
+.light-theme .tactic-tag-button-list .bp5-tree-node-selected .bp5-icon {
+  background-color: white;
+  color: #2d72d2 !important;
+  font-weight: 900;
+}
+.light-theme .cm-matchhighlight {
+  background-color: lightgreen;
+}
+.light-theme .cm-searchhighlight {
+  background-color: #dce0e5;
+}
+.light-theme .cm-focussearchhighlight {
+  background-color: #fbb360;
+}
+.light-theme #creator-root .light-theme .CodeMirror-gutters, .light-theme creator-root .light-theme .CodeMirror-gutters {
+  background-color: #f6f7f9;
+}
+.light-theme .searchable-console mark {
+  background-color: #cebde6;
+}
+.light-theme .tile-panel-heading {
+  color: #5f6b7c;
+  background-color: #f6f8fa;
+  border-bottom: 1px solid rgba(16, 22, 26, 0.1490196078);
+}
+.light-theme .tile-panel {
+  background-color: white !important;
+}
+.light-theme .tile-form-divider .bp5-divider {
+  border-bottom: 2px solid #5c7080;
+  width: 50%;
+  min-width: 200px;
+}
+.light-theme #commands-pane .command-name {
+  font-weight: 900;
+  color: #47505c;
+}
+.light-theme .divider-option {
+  color: #2d72d2 !important;
+  font-weight: bold !important;
+  background-color: #f6f7f9 !important;
+}
+.light-theme #console, .light-theme #exports-panel {
+  background-color: white;
+}
+.light-theme #console-search-form {
+  background-color: white;
+}
+.light-theme .console-text {
+  background-color: #f6f7f9 !important;
+  border: 1px solid #c7c7c7 !important;
+}
+.light-theme #console-heading, .light-theme #exports-heading, .light-theme #exports-footing {
+  background-color: #edeff2 !important;
+}
+.light-theme #exports-body {
+  background-color: white;
+}
+.light-theme #selected-export {
+  color: #5f6b7c;
+}
+.light-theme .export-header-text {
+  color: #6c757d;
+}
+.light-theme .log-panel-body {
+  color: #616161 !important;
+}
+.light-theme .log-panel .CodeMirror {
+  border: 1px solid #c7c7c7 !important;
+}
+.light-theme .log-panel .CodeMirror-lines {
+  background-color: #f6f7f9 !important;
+}
+.light-theme .log-panel .CodeMirror-gutters {
+  background-color: #f6f7f9;
+}
+.light-theme .CodeMirror {
+  border: 1.5px solid rgba(128, 128, 128, 0.3882352941);
+  border-radius: 3px;
+}
+.light-theme caption {
+  color: #6c757d;
+}
+.light-theme .account-pane {
+  background-color: #edeff2;
+}
+
+.bp5-dark.main-outer {
+  background-color: #5f6b7c;
+}
+.bp5-dark #main-panel .main-heading {
+  background-color: #2f343c;
+  border-bottom: 1px solid rgba(16, 22, 26, 0.1490196078);
+}
+.bp5-dark #table-area {
+  border-right: 1px none;
+}
+.bp5-dark #table-area mark {
+  background-color: #cebde6;
+}
+.bp5-dark.resource-viewer-holder, .bp5-dark.merge-viewer-outer, .bp5-dark.login-body {
+  background-color: #2f343c;
+}
+.bp5-dark.menu-bar {
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2), 0 1px 1px 0 rgba(17, 20, 24, 0.4);
+}
+.bp5-dark.account-settings {
+  background-color: #2f343c;
+}
+.bp5-dark.pane-holder {
+  background-color: #383e47;
+}
+.bp5-dark.library-pane-holder {
+  background-color: #2f343c;
+}
+.bp5-dark .combined-metadata, .bp5-dark div.filepicker, .bp5-dark #options-pane, .bp5-dark #exports-pane {
+  background-color: #2f343c;
+}
+.bp5-dark div.filepicker {
+  background-color: #383e47;
+}
+.bp5-dark .notes-field-markdown-output {
+  background-color: #2f343c;
+  color: #f6f7f9;
+}
+.bp5-dark .tactic-tag-button-list .bp5-tree-node-selected .bp5-tree-node-content {
+  background-color: #2f343c;
+  color: #8abbff;
+  font-weight: 900;
+}
+.bp5-dark .tactic-tag-button-list .bp5-tree-node-selected .bp5-icon {
+  background-color: #2f343c;
+  color: #8abbff !important;
+  font-weight: 900;
+}
+.bp5-dark .log-panel-body {
+  color: white !important;
+}
+.bp5-dark .cm-matchhighlight {
+  background-color: lightgreen;
+  color: black !important;
+}
+.bp5-dark .cm-searchhighlight {
+  background-color: #6aaed8;
+  color: black !important;
+}
+.bp5-dark .cm-focussearchhighlight {
+  background-color: yellow;
+  color: black !important;
+}
+.bp5-dark .CodeMirror-merge-gap {
+  background: #5f6b7c;
+}
+.bp5-dark .CodeMirror-merge-r-chunk {
+  background: #2f343c;
+}
+.bp5-dark .CodeMirror-merge-r-connect {
+  fill: #2f343c;
+}
+.bp5-dark .searchable-console mark {
+  background-color: #cebde6;
+}
+.bp5-dark .tile-panel-heading {
+  background-color: #2f343c;
+  border-bottom: 1px solid rgba(16, 22, 26, 0.1490196078);
+  margin-right: 2px;
+  margin-left: 2px;
+}
+.bp5-dark .tile-panel {
+  background-color: #383e47 !important;
+}
+.bp5-dark .tile-form-divider .bp5-divider {
+  border-color: white;
+  width: 50%;
+  min-width: 200px;
+}
+.bp5-dark #commands-pane .command-name {
+  font-weight: bold;
+  color: #8f99a8;
+}
+.bp5-dark .divider-option {
+  color: #8abbff !important;
+  font-weight: bold !important;
+  background-color: #383e47 !important;
+}
+.bp5-dark #console, .bp5-dark #exports {
+  background-color: #2f343c;
+  margin-left: 2px;
+  margin-right: 2px;
+}
+.bp5-dark #console-search-form, .bp5-dark #console-panel {
+  background-color: #2f343c;
+}
+.bp5-dark #console-heading, .bp5-dark #exports-heading, .bp5-dark #exports-footing {
+  background-color: #383e47 !important;
+  margin-left: 2px;
+  margin-right: 2px;
+}
+.bp5-dark .export-header-text {
+  color: #c5cbd3;
+}
+.bp5-dark .console-text {
+  border: 1px solid #c7c7c7 !important;
+}
+.bp5-dark caption {
+  color: #d3d8de;
+}
+.bp5-dark .account-pane {
+  background-color: #383e47;
+}
+
+.status-holder.light-theme {
+  background-color: transparent;
+}
+.status-holder.bp5-dark {
+  background-color: transparent;
+}
+.status-holder.bp5-dark.light-dark {
+  background-color: #5f6b7c;
+}
+
+#main-root .status-holder.light-theme {
+  background-color: #d3d8de;
+}
+
 #creator-root, .creator-root {
   vertical-align: top;
 }
@@ -90,16 +410,6 @@
 }
 #creator-resources #commands-pane h6 {
   color: #238c2c;
-}
-
-.bp5-dark #commands-pane .command-name {
-  font-weight: bold;
-  color: #8f99a8;
-}
-
-.light-theme #commands-pane .command-name {
-  font-weight: 900;
-  color: #47505c;
 }
 
 /*# sourceMappingURL=tile_creator.css.map */

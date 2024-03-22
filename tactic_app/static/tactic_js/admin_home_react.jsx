@@ -20,7 +20,7 @@ import {withDialogs} from "./modal_react";
 
 
 import {AdminPane} from "./administer_pane"
-import {SIDE_MARGIN, USUAL_NAVBAR_HEIGHT, getUsableDimensions} from "./sizing_tools";
+import {withSizeContext} from "./sizing_tools";
 import {ViewerContext} from "./resource_viewer_context";
 import {ErrorDrawerContext, withErrorDrawer} from "./error_drawer";
 import {guid} from "./utilities_react";
@@ -38,7 +38,7 @@ let tsocket;
 
 function _administer_home_main () {
     tsocket = new TacticSocket("main", 5000, "admin", window.library_id);
-    let AdministerHomeAppPlus = withTheme(withDialogs(withErrorDrawer(withStatus(AdministerHomeApp))));
+    let AdministerHomeAppPlus = withSizeContext(withTheme(withDialogs(withErrorDrawer(withStatus(AdministerHomeApp)))));
     let domContainer = document.querySelector('#library-home-root');
     ReactDOM.render(<AdministerHomeAppPlus tsocket={tsocket} initial_theme={window.theme}/>, domContainer)
 }
@@ -85,8 +85,8 @@ function AdministerHomeApp(props) {
     const [selected_tab_id, set_selected_tab_id] = useState();
     const [pane_states, set_pane_states, pane_states_ref] = useStateAndRef(initial_pane_states);
 
-    const [usable_height, set_usable_height] = useState(getUsableDimensions(true).usable_height_no_bottom);
-    const [usable_width, set_usable_width] = useState(getUsableDimensions(true).usable_width - 170);
+    // const [usable_height, set_usable_height] = useState(getUsableDimensions(true).usable_height_no_bottom);
+    // const [usable_width, set_usable_width] = useState(getUsableDimensions(true).usable_width - 170);
     const theme = useContext(ThemeContext);
     const dialogFuncs = useContext(DialogContext);
     const statusFuncs = useContext(StatusContext);
@@ -99,8 +99,8 @@ function AdministerHomeApp(props) {
     useEffect(() => {
         initSocket();
         statusFuncs.stopSpinner();
-        window.addEventListener("resize", _update_window_dimensions);
-        _update_window_dimensions();
+        // window.addEventListener("resize", _update_window_dimensions);
+        // _update_window_dimensions();
         return (() => {
             props.tsocket.disconnect()
         })
@@ -133,18 +133,18 @@ function AdministerHomeApp(props) {
         })
     }
 
-    function _update_window_dimensions() {
-        let uwidth = window.innerWidth - 2 * SIDE_MARGIN;
-        let uheight = window.innerHeight;
-        if (top_ref && top_ref.current) {
-            uheight = uheight - top_ref.current.offsetTop;
-        }
-        else {
-            uheight = uheight - USUAL_NAVBAR_HEIGHT
-        }
-        set_usable_height(uheight);
-        set_usable_width(uwidth)
-    }
+    // function _update_window_dimensions() {
+    //     let uwidth = window.innerWidth - 2 * SIDE_MARGIN;
+    //     let uheight = window.innerHeight;
+    //     if (top_ref && top_ref.current) {
+    //         uheight = uheight - top_ref.current.offsetTop;
+    //     }
+    //     else {
+    //         uheight = uheight - USUAL_NAVBAR_HEIGHT
+    //     }
+    //     set_usable_height(uheight);
+    //     set_usable_width(uwidth)
+    // }
 
     function _handleTabChange(newTabId, prevTabId, event) {
         set_selected_tab_id(newTabId);
@@ -157,8 +157,8 @@ function AdministerHomeApp(props) {
 
     let container_pane = (
         <AdminPane {...props}
-                   usable_width={usable_width}
-                   usable_height={usable_height}
+                   // usable_width={usable_width}
+                   // usable_height={usable_height}
                    res_type="container"
                    allow_search_inside={false}
                    allow_search_metadata={false}
@@ -174,8 +174,8 @@ function AdministerHomeApp(props) {
     );
     let user_pane = (
         <AdminPane {...props}
-                   usable_width={usable_width}
-                   usable_height={usable_height}
+                   // usable_width={usable_width}
+                   // usable_height={usable_height}
                    res_type="user"
                    allow_search_inside={false}
                    allow_search_metadata={false}
@@ -191,7 +191,7 @@ function AdministerHomeApp(props) {
     );
     let outer_style = {
         width: "100%",
-        height: usable_height,
+        // height: usable_height,
         paddingLeft: 0
     };
     let outer_class = "pane-holder";

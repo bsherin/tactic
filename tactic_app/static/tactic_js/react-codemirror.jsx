@@ -420,7 +420,11 @@ function ReactCodemirror(props) {
                     marginRight: 10,
                     width: "100%"}}>
                     <span className="bp5-ui-text"
-                          style={{display: "flex", alignItems: "self-end"}}>{title_label}</span>
+                          style={{
+                              display: "flex",
+                              paddingLeft: 5,
+                              paddingBottom: 2,
+                              alignItems: "self-end"}}>{title_label}</span>
                     <SearchForm update_search_state={props.updateSearchState}
                                 search_string={props.search_term}
                                 regex={props.regex_search}
@@ -455,10 +459,18 @@ function ReactCodemirror(props) {
                 </ButtonGroup>
 
              }
+            {props.title_label &&
+                <span className="bp5-ui-text"
+                      style={{
+                          display: "flex",
+                          paddingLeft: 5,
+                          paddingBottom: 2,
+                          alignItems: "self-end"}}>{props.title_label}</span>
+            }
             <div className="code-container" style={ccstyle} ref={localRef}>
 
             </div>
-         </Fragment>
+        </Fragment>
     )
 }
 

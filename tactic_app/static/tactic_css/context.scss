@@ -2,11 +2,11 @@
 @import "themeable.scss";
 
 #context-root {
-    height: 100%;
+  height: 100%;
 
-    .pane-holder {
-        height: 100%
-    }
+  .pane-holder {
+    height: 100%
+  }
 }
 
 $context-highlight-color: $orange4;
@@ -15,226 +15,242 @@ $light-context-highlight-color: $cerulean2;
 $light-highlight-weight: 600;
 
 
-
-
 .bp5-dark {
-    #context-container {
-        .context-tab-list {
+  #context-container {
+    .context-tab-list {
 
-            > .bp5-tab-list {
-                background-color: $darkest-bg;
-                color: white;
-                border-right: 1px solid $light-gray4;
-            }
-            .lib-tab-button {
-                color: white;
+      > .bp5-tab-list {
+        background-color: $darkest-bg;
+        color: white;
+        border-right: 1px solid $light-gray4;
+      }
 
-                .bp5-icon {
-                    color: $gray4
-                }
-            }
-            .lib-tab-button.selected-lib-tab-button {
-                color: white;
-            }
-            .lib-tab-button.selected-rep-tab-button {
-                color: white
-            }
+      .lib-tab-button {
+        color: white;
+
+        .bp5-icon {
+          color: $gray4
         }
-        .context-pane-closed .context-tab-button-content {
-            opacity: 0 !important;
-        }
-        .context-tab-button-content {
-            color: white;
-            opacity: .5;
+      }
 
-            .context-library-title {
-                color: white;
-                font-size: 20px;
-                font-weight: bold;
-            }
+      .lib-tab-button.selected-lib-tab-button {
+        color: white;
+      }
 
-            .bp5-icon {
-                color: $gray4
-            }
-
-
-            .context-close-button:hover {
-                color: $red5;
-            }
-            &.selected-tab-button {
-                opacity: 1;
-                color: $context-highlight-color !important;
-                //border-top: 1px solid $context-highlight-color;
-                //border-bottom: 1px solid $context-highlight-color;
-
-                .repository-highlight {
-                    color: $context-repository-highlight-color
-                }
-
-                .context-close-button .bp5-icon {
-                    color: $context-highlight-color;
-
-                }
-            }
-        }
-
+      .lib-tab-button.selected-rep-tab-button {
+        color: white
+      }
     }
+
+    .context-pane-closed .context-tab-button-content {
+      opacity: 0 !important;
+    }
+
+    .context-tab-button-content {
+      color: white;
+      opacity: .5;
+
+      .context-library-title {
+        color: white;
+        font-size: 20px;
+        font-weight: bold;
+      }
+
+      .bp5-icon {
+        color: $gray4
+      }
+
+
+      .context-close-button:hover {
+        color: $red5;
+      }
+
+      &.selected-tab-button {
+        opacity: 1;
+        color: $context-highlight-color !important;
+        //border-top: 1px solid $context-highlight-color;
+        //border-bottom: 1px solid $context-highlight-color;
+
+        .repository-highlight {
+          color: $context-repository-highlight-color
+        }
+
+        .context-close-button .bp5-icon {
+          color: $context-highlight-color;
+
+        }
+      }
+    }
+
+  }
 }
 
 .light-theme {
-    #context-container {
-        .context-tab-list {
+  #context-container {
+    .context-tab-list {
 
-            > .bp5-tab-list {
-                background-color: $light-gray5;
-                color: white;
-                //box-shadow:  1px 0 0 #11141826;
-                -webkit-box-shadow:0 0 0 1px rgba(17, 20, 24, 0.1), 0 1px 1px rgba(17, 20, 24, 0.2), 0 2px 6px rgba(17, 20, 24, 0.2);
-                box-shadow:0 0 0 1px rgba(17, 20, 24, 0.1), 0 1px 1px rgba(17, 20, 24, 0.2), 0 2px 6px rgba(17, 20, 24, 0.2);
-            }
-            .lib-tab-button {
-                color: $dark-gray1;
+      > .bp5-tab-list {
+        background-color: white;
+        color: white;
+        //box-shadow:  1px 0 0 #11141826;
+        -webkit-box-shadow: 0 0 0 1px rgba(17, 20, 24, 0.1), 0 1px 1px rgba(17, 20, 24, 0.2), 0 2px 6px rgba(17, 20, 24, 0.2);
+        box-shadow: 0 0 0 1px rgba(17, 20, 24, 0.1), 0 1px 1px rgba(17, 20, 24, 0.2), 0 2px 6px rgba(17, 20, 24, 0.2);
+      }
 
-                .bp5-icon {
-                    color: $dark-gray4
-                }
-            }
-            .lib-tab-button.selected-lib-tab-button {
-                color: $pt-text-color;
-                font-weight: $light-highlight-weight;
-            }
-            .lib-tab-button.selected-rep-tab-button {
-                color: $pt-text-color;
-                font-weight: $light-highlight-weight;
-            }
+      .lib-tab-button {
+        color: $dark-gray1;
+
+        .bp5-icon {
+          color: $dark-gray4
         }
-        .context-pane-closed .context-tab-button-content {
-            opacity: 0 !important;
-        }
-        .context-tab-button-content {
-            color: $dark-gray1;
-            opacity: .5;
+      }
 
-            .context-library-title {
-                color: $dark-gray1;
-                font-size: 20px;
-                font-weight: bold;
-            }
+      .lib-tab-button.selected-lib-tab-button {
+        color: $pt-text-color;
+        font-weight: $light-highlight-weight;
+      }
 
-            .bp5-icon {
-                color: $dark-gray4
-            }
-
-            .context-close-button:hover {
-                color: $red5;
-            }
-            &.selected-tab-button {
-                opacity: 1;
-                color: $light-context-highlight-color !important;
-                //border-top: 2px solid $gray1;
-                //border-bottom: 2px solid $gray1;
-                font-weight: $light-highlight-weight;
-
-                .repository-highlight {
-                    color: $context-repository-highlight-color
-                }
-
-                .context-close-button .bp5-icon {
-                    color: $light-context-highlight-color;
-
-                }
-            }
-        }
-
+      .lib-tab-button.selected-rep-tab-button {
+        color: $pt-text-color;
+        font-weight: $light-highlight-weight;
+      }
     }
+
+    .context-pane-closed .context-tab-button-content {
+      opacity: 0 !important;
+    }
+
+    .context-tab-button-content {
+      color: $dark-gray1;
+      opacity: .5;
+
+      .context-library-title {
+        color: $dark-gray1;
+        font-size: 20px;
+        font-weight: bold;
+      }
+
+      .bp5-icon {
+        color: $dark-gray4
+      }
+
+      .context-close-button:hover {
+        color: $red5;
+      }
+
+      &.selected-tab-button {
+        opacity: 1;
+        color: $light-context-highlight-color !important;
+        //border-top: 2px solid $gray1;
+        //border-bottom: 2px solid $gray1;
+        font-weight: $light-highlight-weight;
+
+        .repository-highlight {
+          color: $context-repository-highlight-color
+        }
+
+        .context-close-button .bp5-icon {
+          color: $light-context-highlight-color;
+
+        }
+      }
+    }
+
+  }
 }
 
 #context-container {
+  height: 100%;
+
+  #library-home-root {
+    .bp5-tab-list {
+      display: none
+    }
+
+    width: 100%
+  }
+
+  .context-tab-list {
     height: 100%;
 
-    #library-home-root {
-        .bp5-tab-list {
-            display: none
-        }
-        width: 100%
+    .bp5-tab-indicator-wrapper {
+
     }
 
-    .context-tab-list {
-        height: 100%;
-
-        .bp5-tab-indicator-wrapper {
-
-        }
-        [data-tab-id="library"] {
-            margin-bottom: 10px;
-            padding: 0
-        }
-        &.unified {
-            [data-tab-id="library"] {
-                margin-bottom: 0;
-                padding-left: 10px;
-                padding-right: 10px
-            }
-        }
-
-        .lib-tab-button {
-            padding: 0;
-            margin-left: 20px;
-            font-size: 14px;
-            line-height: 30px;
-        }
-        &.unified {
-            .lib-tab-button {
-                font-size: 14px;
-                margin-left: 0;
-            }
-        }
-
-        > .bp5-tab-panel {
-            padding-left: 2px;
-        }
-
-
-        > .bp5-tab-list {
-            margin-top: unset;
-            padding-top: 100px;
-            padding-left: 2px;
-            padding-right: 2px;
-            min-width: 0;
-            overflow: hidden;
-            &:hover {
-                overflow-y: auto
-            }
-
-            .bp5-tab {
-                outline: none
-            }
-
-            > .bp5-tab-indicator-wrapper {
-                display: none;
-
-                > .bp5-tab-indicator {
-                    background-color: #48aff09e;
-                    border-radius: 0;
-                    width: 46px
-                }
-            }
-        }
-
-        .context-tab-button-content {
-            padding-left: 5px;
-            font-size: 14px;
-
-            &.hovering {
-                margin-top: 40px;
-            }
-            &.currently-dragging {
-                opacity: .25;
-            }
-        }
+    [data-tab-id="library"] {
+      margin-bottom: 10px;
+      padding: 0
     }
+
+    &.unified {
+      [data-tab-id="library"] {
+        margin-bottom: 0;
+        padding-left: 10px;
+        padding-right: 10px
+      }
+    }
+
+    .lib-tab-button {
+      padding: 0;
+      margin-left: 20px;
+      font-size: 14px;
+      line-height: 30px;
+    }
+
+    &.unified {
+      .lib-tab-button {
+        font-size: 14px;
+        margin-left: 0;
+      }
+    }
+
+    > .bp5-tab-panel {
+      padding-left: 2px;
+    }
+
+
+    > .bp5-tab-list {
+      margin-top: unset;
+      padding-top: 100px;
+      padding-left: 2px;
+      padding-right: 2px;
+      min-width: 0;
+      overflow: hidden;
+
+      &:hover {
+        overflow-y: auto
+      }
+
+      .bp5-tab {
+        outline: none
+      }
+
+      > .bp5-tab-indicator-wrapper {
+        display: none;
+
+        > .bp5-tab-indicator {
+          background-color: #48aff09e;
+          border-radius: 0;
+          width: 46px
+        }
+      }
+    }
+
+    .context-tab-button-content {
+      padding-left: 5px;
+      font-size: 14px;
+
+      &.hovering {
+        margin-top: 40px;
+      }
+
+      &.currently-dragging {
+        opacity: .25;
+      }
+    }
+  }
 }
 
 .context-tab.bp5-tab-panel {
-    width: 100%
+  width: 100%
 }

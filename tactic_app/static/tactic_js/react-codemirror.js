@@ -389,6 +389,8 @@ function ReactCodemirror(props) {
       className: "bp5-ui-text",
       style: {
         display: "flex",
+        paddingLeft: 5,
+        paddingBottom: 2,
         alignItems: "self-end"
       }
     }, title_label), /*#__PURE__*/_react.default.createElement(_library_widgets.SearchForm, {
@@ -434,7 +436,15 @@ function ReactCodemirror(props) {
     icon: "expand-all",
     text: "unfold",
     onClick: _unfoldAll
-  })), /*#__PURE__*/_react.default.createElement("div", {
+  })), props.title_label && /*#__PURE__*/_react.default.createElement("span", {
+    className: "bp5-ui-text",
+    style: {
+      display: "flex",
+      paddingLeft: 5,
+      paddingBottom: 2,
+      alignItems: "self-end"
+    }
+  }, props.title_label), /*#__PURE__*/_react.default.createElement("div", {
     className: "code-container",
     style: ccstyle,
     ref: localRef
