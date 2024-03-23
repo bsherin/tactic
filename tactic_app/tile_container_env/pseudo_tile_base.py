@@ -40,7 +40,7 @@ def display(txt):
 
 
 # noinspection PyTypeChecker
-MAX_SINGLE_WRITE = 5000
+MAX_SINGLE_WRITE = 1000000
 
 
 class ConsoleStringIO(StringIO):
