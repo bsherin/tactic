@@ -29,12 +29,9 @@ fi
 if [ $do_git == "True" ] ; then
   echo "*** doing git ***"
   gtoken=$(cat github_token.txt)
-  git config --global credential.helper store
-  git config --global user.name "bsherin"
-  git config --global user.password "gtoken"
+  git remote set-url origin https://bsherin:${gtoken}@github.com/bsherin/tactic.git
   git commit -a
-  # git push origin master
-  git push "https://bsherin:${gtoken}@github.com/bsherin/tactic"
+  git push
 fi
 
 ssh -i /Users/brucesherin/PycharmProjects/tactic/LightsailDefaultKey-us-east-2.pem centos@tactictext.net \
