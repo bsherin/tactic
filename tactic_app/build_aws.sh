@@ -29,7 +29,7 @@ fi
 if [ $do_git == "True" ] ; then
   echo "*** doing git ***"
   gtoken=$(cat github_token.txt)
-  git remote set-url origin https://bsherin:${gtoken}@github.com/bsherin/tactic.git
+  git remote add origin https://bsherin:${gtoken}@github.com/bsherin/tactic.git
   git commit -a
   git push
 fi
