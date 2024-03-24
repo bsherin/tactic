@@ -174,7 +174,7 @@ class LoadSaveTasksMixin:
             jupyter_dict = json.loads(jupyter_text)
             converted_cells = self.convert_jupyter_cells(jupyter_dict["cells"])
             interface_state = {"console_items": converted_cells}
-            self.emit_stop_status()
+            self.emit_clear_status()
             self.mworker.emit_to_main_client("finish-post-load", {"message": "finish-post-load",
                                                                   "collection_name": "",
                                                                   "short_collection_name": "",
@@ -183,6 +183,7 @@ class LoadSaveTasksMixin:
 
         except Exception as ex:
             error_string = self.get_traceback_message(ex)
+            print(error_string)
             self.show_error_window(error_string)
             container_list = [self.mworker.my_id] + list(tile_containers.keys())
             self.mworker.ask_host("delete_container_list", {"container_list": container_list})

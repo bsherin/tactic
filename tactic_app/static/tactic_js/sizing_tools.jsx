@@ -1,10 +1,10 @@
 
 import React from "react";
-import {useState, useEffect, memo, useContext} from "react";
+import {useState, useEffect, memo, useContext, useMemo} from "react";
 import {SelectedPaneContext} from "./utilities_react";
 
 export {getUsableDimensions, SIDE_MARGIN, USUAL_NAVBAR_HEIGHT, TOP_MARGIN, useSize,
-    BOTTOM_MARGIN, INIT_CONTEXT_PANEL_WIDTH, SizeContext, withSizeContext}
+    BOTTOM_MARGIN, INIT_CONTEXT_PANEL_WIDTH, SizeContext, withSizeContext, SizeProvider}
 
 
 const SIDE_MARGIN = 15;
@@ -64,6 +64,9 @@ function withSizeContext(WrappedComponent) {
         useEffect(() => {
             window.addEventListener("resize", _handleResize);
             _handleResize();
+            return (() => {
+                window.removeEventListener('resize', _handleResize);
+            })
         }, []);
 
         function _handleResize() {
@@ -83,3 +86,16 @@ function withSizeContext(WrappedComponent) {
     }
     return memo(newFunc)
 }
+
+function SizeProvider({value, children}) {
+    const newValue = useMemo(() => {return {
+            ...value
+    }}, [value.availableWidth, value.availableHeight, value.topX, value.topY]);
+    return (
+        <SizeContext.Provider value={newValue}>
+            {children}
+        </SizeContext.Provider>
+    )
+}
+
+SizeProvider = memo(SizeProvider);

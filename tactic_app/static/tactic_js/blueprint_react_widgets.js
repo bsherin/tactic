@@ -78,7 +78,9 @@ GlyphButton.defaultProps = {
   intent: "none",
   small: true
 };
-exports.GlyphButton = GlyphButton = withTooltip(GlyphButton);
+
+// GlyphButton = withTooltip(GlyphButton);
+
 function LabeledTextArea(props) {
   return /*#__PURE__*/_react.default.createElement(_core.FormGroup, {
     label: props.label,

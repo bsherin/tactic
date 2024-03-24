@@ -263,7 +263,7 @@ class PseudoTileClass(TileBase, MplFigure):
     def _get_export_info_thread(self, data):
         global executing_console_id
         channel = get_pika_connection()
-        self.emit_export_viewer_message("startMySpinner", data)
+        # self.emit_export_viewer_message("startMySpinner", data)
         try:
             ename = data["export_name"]
             self._pipe_dict = data["pipe_dict"]
@@ -296,7 +296,7 @@ class PseudoTileClass(TileBase, MplFigure):
     def _eval_thread(self, data):
         global executing_console_id
         channel = get_pika_connection()
-        self.emit_export_viewer_message("startMySpinner", data)
+        # self.emit_export_viewer_message("startMySpinner", data)
         self._pipe_dict = data["pipe_dict"]
         pipe_val = self.get_pipe_value(data["export_name"])
         success = True
@@ -415,7 +415,6 @@ class PseudoTileClass(TileBase, MplFigure):
     def exec_thread(self, data):
         global executing_console_id
         channel = get_pika_connection()
-        self.emit_console_message("consoleCodeRun", data)
         try:
             if not Collection:
                 self._tworker.create_pseudo_tile_collection_object(data)

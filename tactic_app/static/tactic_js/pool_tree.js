@@ -559,6 +559,9 @@ function PoolAddressSelector(props) {
   (0, _react.useEffect)(() => {
     window.addEventListener("resize", resizePopover);
     setRefAcquired(false);
+    return () => {
+      window.removeEventListener("resize", resizePopover);
+    };
   }, []);
   (0, _react.useEffect)(() => {
     resizePopover();

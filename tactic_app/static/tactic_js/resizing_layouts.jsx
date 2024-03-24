@@ -6,6 +6,7 @@ import PropTypes from 'prop-types';
 import { Icon } from "@blueprintjs/core";
 import { DraggableCore } from "react-draggable"
 import { guid } from "./utilities_react.js";
+import {propsAreEqual} from "./utilities_react";
 
 export {HorizontalPanes, VerticalPanes, HANDLE_WIDTH, DragHandle}
 
@@ -334,7 +335,9 @@ function HorizontalPanes(props) {
     )
 }
 
-HorizontalPanes = memo(HorizontalPanes);
+HorizontalPanes = memo(HorizontalPanes, (prevProps, newProps)=> {
+    propsAreEqual(prevProps, newProps, ["left_pane", "right_pane", "handleSplitUpdate", "handleResizeStart", "handleResizeEnd", "scrollAdjustSelectors", "initial_width_fraction", "top_ref", "bottom_margin", "show_handle", "dragIconSize", "outer_style"])
+});
 
 HorizontalPanes.propTypes = {
     available_width: PropTypes.number,
