@@ -14,7 +14,7 @@ to stop mongo server
 use admin
 db.db.shutdownServer()
 
-I started the mongo conainer with:
+I started the mongo container with:
 
 `docker run -p 27017:27017 --name tactic-mongo -d mongo:latest`
 
