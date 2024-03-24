@@ -450,7 +450,7 @@ function ContextApp(props) {
   function _closeOpenOmnibar() {
     setShowOpenOmnibar(false);
   }
-  async function _handleCreateViewer(data) {
+  const _handleCreateViewer = (0, _react.useCallback)(async function (data) {
     let callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
     let existing_id = _getResourceId(data.resource_name, data.res_type);
     if (existing_id != -1) {
@@ -468,7 +468,7 @@ function ContextApp(props) {
         panel: new_panel
       }, callback);
     });
-  }
+  }, []);
   function _goToNextPane(e) {
     let templist = ["library"];
     if (window.has_pool) templist.push("pool");

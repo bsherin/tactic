@@ -185,6 +185,7 @@ function ContextApp(props) {
         if (tab_list_elem) {
             resizeObserver.observe(tab_list_elem)
         }
+
     }, []);
 
     useEffect(() => {
@@ -468,7 +469,7 @@ function ContextApp(props) {
         setShowOpenOmnibar(false)
     }
 
-    async function _handleCreateViewer(data, callback = null) {
+    const _handleCreateViewer = useCallback(async (data, callback = null)=>{
         let existing_id = _getResourceId(data.resource_name, data.res_type);
         if (existing_id != -1) {
             setSelectedTabId(existing_id);
@@ -483,7 +484,7 @@ function ContextApp(props) {
         let new_panel = propDict[data.kind](data, drmethod, (new_panel) => {
             _updatePanel(new_id, {panel: new_panel}, callback);
         });
-    }
+    }, []);
 
     function _goToNextPane(e) {
         let templist = ["library"];

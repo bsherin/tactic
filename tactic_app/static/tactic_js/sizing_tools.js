@@ -3,7 +3,9 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.USUAL_NAVBAR_HEIGHT = exports.TOP_MARGIN = exports.SizeContext = exports.SIDE_MARGIN = exports.INIT_CONTEXT_PANEL_WIDTH = exports.BOTTOM_MARGIN = void 0;
+exports.SizeContext = exports.SIDE_MARGIN = exports.INIT_CONTEXT_PANEL_WIDTH = exports.BOTTOM_MARGIN = void 0;
+exports.SizeProvider = SizeProvider;
+exports.USUAL_NAVBAR_HEIGHT = exports.TOP_MARGIN = void 0;
 exports.getUsableDimensions = getUsableDimensions;
 exports.useSize = useSize;
 exports.withSizeContext = withSizeContext;
@@ -66,6 +68,9 @@ function withSizeContext(WrappedComponent) {
     (0, _react.useEffect)(() => {
       window.addEventListener("resize", _handleResize);
       _handleResize();
+      return () => {
+        window.removeEventListener('resize', _handleResize);
+      };
     }, []);
     function _handleResize() {
       set_usable_width(window.innerWidth);
@@ -82,3 +87,18 @@ function withSizeContext(WrappedComponent) {
   }
   return /*#__PURE__*/(0, _react.memo)(newFunc);
 }
+function SizeProvider(_ref) {
+  let {
+    value,
+    children
+  } = _ref;
+  const newValue = (0, _react.useMemo)(() => {
+    return {
+      ...value
+    };
+  }, [value.availableWidth, value.availableHeight, value.topX, value.topY]);
+  return /*#__PURE__*/_react.default.createElement(SizeContext.Provider, {
+    value: newValue
+  }, children);
+}
+exports.SizeProvider = SizeProvider = /*#__PURE__*/(0, _react.memo)(SizeProvider);

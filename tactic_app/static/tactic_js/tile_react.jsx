@@ -1,7 +1,7 @@
 // noinspection XmlDeprecatedElement
 
 import React from "react";
-import {useState, useEffect, useRef, memo, useContext} from "react";
+import {useState, useEffect, useRef, memo, useMemo, useCallback, useContext} from "react";
 import PropTypes from 'prop-types';
 
 import {Icon, Card, Button, ButtonGroup, Spinner, PopoverPosition} from "@blueprintjs/core";
@@ -176,7 +176,7 @@ function TileContainer(props) {
         return -1
     }
 
-    function _closeTile(tile_id) {
+    const _closeTile = useCallback((tile_id)=>{
         props.tileDispatch({
             type: "delete_item",
             tile_id: tile_id
@@ -186,9 +186,9 @@ function TileContainer(props) {
             tile_id: tile_id
         };
         postWithCallback(props.main_id, "RemoveTile", data_dict, null, null, props.main_id);
-    }
+    }, []);
 
-    function _setTileValue(tile_id, field, value, callback = null) {
+    const _setTileValue = useCallback((tile_id, field, value, callback = null)=>{
         props.tileDispatch({
             type: "change_item_value",
             tile_id: tile_id,
@@ -196,16 +196,16 @@ function TileContainer(props) {
             new_value: value
         });
         pushCallback(callback)
-    }
+    }, []);
 
-    function _setTileState(tile_id, new_state, callback = null) {
+    const _setTileState = useCallback((tile_id, new_state, callback = null)=>{
         props.tileDispatch({
             type: "change_item_state",
             tile_id: tile_id,
             new_state: new_state
         });
         pushCallback(callback)
-    }
+    }, []);
 
     function _displayTileContentWithJavascript(tile_id, data) {
         _setTileState(tile_id, {
@@ -244,33 +244,47 @@ function TileContainer(props) {
     }
 
     let outer_style = {height: usable_height};
+
+    function makeTailoredTileComponent() {
+        return memo(function(tile_props) {
+            return <TileComponent {...tile_props}
+                main_id={props.main_id}
+                setTileValue={_setTileValue}
+                setTileState={_setTileState}
+                handleClose={_closeTile}
+                goToModule={props.goToModule}
+                broadcast_event={props.broadcast_event}
+                tsocket={props.tsocket}
+            />}
+        )
+    }
+
+    const TailoredTileComponent = useMemo(()=>{
+        return makeTailoredTileComponent();
+    }, []);
+
     return (
         <div ref={tile_div_ref}>
             <SortableComponent id="tile-div"
                                main_id={props.main_id}
                                style={outer_style}
                                helperClass={theme.dark_theme ? "bp5-dark" : "light-theme"}
-                               goToModule={props.goToModule}
-                               ElementComponent={TileComponent}
+                               ElementComponent={TailoredTileComponent}
                                key_field_name="tile_name"
                                item_list={_.cloneDeep(props.tile_list.current)}
                                handle=".tile-name-div"
                                onSortStart={(_, event) => event.preventDefault()} // This prevents Safari weirdness
                                onDragEnd={_resortTiles}
                                onBeforeCapture={beforeCapture}
-                               handleClose={_closeTile}
-                               setTileValue={_setTileValue}
-                               tsocket={props.tsocket}
-                               setTileState={_setTileState}
                                direction="vertical"
-                               table_is_shrunk={props.table_is_shrunk}
-                               dragging={dragging}
-                               current_doc_name={props.current_doc_name}
-                               selected_row={props.selected_row}
-                               broadcast_event={props.broadcast_event}
                                useDragHandle={true}
                                axis="xy"
-
+                               extraProps={{
+                                   dragging: dragging,
+                                   current_doc_name: props.current_doc_name,
+                                   selected_row: props.selected_row,
+                                   table_is_shrunk: props.table_is_shrunk
+                               }}
             />
         </div>
     )

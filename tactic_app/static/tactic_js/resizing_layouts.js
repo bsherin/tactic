@@ -13,6 +13,7 @@ var _propTypes = _interopRequireDefault(require("prop-types"));
 var _core = require("@blueprintjs/core");
 var _reactDraggable = require("react-draggable");
 var _utilities_react = require("./utilities_react.js");
+var _utilities_react2 = require("./utilities_react");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 const MARGIN_SIZE = 17;
@@ -308,7 +309,9 @@ function HorizontalPanes(props) {
     style: right_div_style
   }, props.right_pane));
 }
-exports.HorizontalPanes = HorizontalPanes = /*#__PURE__*/(0, _react.memo)(HorizontalPanes);
+exports.HorizontalPanes = HorizontalPanes = /*#__PURE__*/(0, _react.memo)(HorizontalPanes, (prevProps, newProps) => {
+  (0, _utilities_react2.propsAreEqual)(prevProps, newProps, ["left_pane", "right_pane", "handleSplitUpdate", "handleResizeStart", "handleResizeEnd", "scrollAdjustSelectors", "initial_width_fraction", "top_ref", "bottom_margin", "show_handle", "dragIconSize", "outer_style"]);
+});
 HorizontalPanes.propTypes = {
   available_width: _propTypes.default.number,
   available_height: _propTypes.default.number,

@@ -30,7 +30,7 @@ import {FilterSearchForm} from "./search_form";
 import {SearchableConsole} from "./searchable_console";
 import {ThemeContext} from "./theme";
 import {DialogContext} from "./modal_react"
-import {SizeContext, useSize} from "./sizing_tools";
+import {SizeProvider, useSize} from "./sizing_tools";
 
 import {useCallbackStack, useStateAndRef, useConstructor} from "./utilities_react";
 import {ErrorDrawerContext} from "./error_drawer";
@@ -41,6 +41,19 @@ const MAX_CONSOLE_WIDTH = 1800;
 const BUTTON_CONSUMED_SPACE = 143;
 const SECTION_INDENT = 25;  // This is also hard coded into the css file at the moment
 const MAX_OUTPUT_LENGTH = 500000;
+
+const GLYPH_BUTTON_STYLE = {marginLeft: 2};
+const GLYPH_BUTTON_STYLE2 = {marginRight: 5, marginTop: 2};
+const GLYPH_BUTTON_STYLE3 = {marginLeft: 10, marginRight: 66, minHeight: 0};
+const GlYPH_BUTTON_STYLE4 = {marginLeft: 10, marginRight: 66};
+const GLYPH_BUTTON_STYLE5 = {marginTop: 5};
+const GLYPH_BUTTON_STYLE6 = {marginLeft: 10, marginRight: 0};
+
+const SPINNER_STYLE = {marginTop: 10, marginRight: 22};
+
+const MB10_STYLE = {marginBottom: 10};
+const empty_style = {};
+
 
 function ConsoleComponent(props) {
     const header_ref = useRef(null);
@@ -66,8 +79,6 @@ function ConsoleComponent(props) {
 
     const selectedPane = useContext(SelectedPaneContext);
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
-
-    const sizeInfo = useContext(SizeContext);
 
     const [header_usable_width, header_usable_height, header_topX, header_topY] = useSize(header_ref, 0, "HConsoleComponent");
     const [usable_width, usable_height, topX, topY] = useSize(body_ref, 0, "ConsoleComponent");
@@ -106,7 +117,6 @@ function ConsoleComponent(props) {
                     },
                     consoleCodePrint: (data) => _appendConsoleItemOutput(data),
                     consoleCodeOverwrite: (data) => _setConsoleItemOutput(data),
-                    consoleCodeRun: (data) => _startSpinner(data.console_id),
                 };
                 handlerDict[data.console_message](data)
             }
@@ -438,28 +448,28 @@ function ConsoleComponent(props) {
         pushCallback(callback);
     }, []);
 
-    function _zoomConsole() {
+    const _zoomConsole = useCallback(() => {
         props.setMainStateValue("console_is_zoomed", true)
-    }
+    }, []);
 
-    function _unzoomConsole() {
+    const _unzoomConsole = useCallback(() =>{
         props.setMainStateValue("console_is_zoomed", false);
-    }
+    }, []);
 
-    function _expandConsole() {
+    const _expandConsole = useCallback(() => {
         props.setMainStateValue("console_is_shrunk", false);
-    }
+    }, []);
 
-    function _shrinkConsole() {
+    const _shrinkConsole = useCallback(() => {
         props.setMainStateValue("console_is_shrunk", true);
         if (props.mState.console_is_zoomed) {
             _unzoomConsole();
         }
-    }
+    }, [props.mState.console_is_zoomed]);
 
-    function _toggleExports() {
+    const _toggleExports = useCallback(() =>{
         props.setMainStateValue("show_exports_pane", !props.mState.show_exports_pane)
-    }
+    }, [props.mState.show_exports_pan]);
 
     const _setConsoleItemValue = useCallback((unique_id, field, new_value, callback = null) => {
         props.dispatch({
@@ -1269,20 +1279,56 @@ function ConsoleComponent(props) {
         }
     }, []);
 
+
+    function superItemMaker(passDowns) {
+        return memo(function (item_props) {
+            return <SuperItem {...item_props} {...passDowns}/>
+        })
+    }
+
+    const TailoredSuperItem = useMemo(()=>{
+        return superItemMaker({
+            setConsoleItemValue: _setConsoleItemValue,
+            selectConsoleItem: _selectConsoleItem,
+            runCodeItem: _runCodeItem,
+            handleDelete: _closeConsoleItem,
+            goToNextCell: _goToNextCell,
+            setFocus: _setFocusedItem,
+            addNewTextItem: _addBlankText,
+            addNewCodeItem: _addBlankCode,
+            addNewDivider: _addBlankDivider,
+            copyCell: _copyCell,
+            pasteCell: _pasteCell,
+            copySection: _copySection,
+            deleteSection: _deleteSection,
+            insertResourceLink: _insertResourceLink,
+            pseudo_tile_id: pseudo_tile_id,
+            handleCreateViewer: props.handleCreateViewer,
+        })
+    }, []);
+
     let gbstyle = {marginLeft: 1, marginTop: 2};
     let console_class = props.mState.console_is_shrunk ? "am-shrunk" : "not-shrunk";
     if (props.mState.console_is_zoomed) {
         console_class = "am-zoomed"
     }
-    let outer_style = Object.assign({}, props.style);
     let true_usable_width = props.mState.console_is_shrunk ? header_usable_width : usable_width;
     true_usable_width = true_usable_width > MAX_CONSOLE_WIDTH ? MAX_CONSOLE_WIDTH : true_usable_width;
-    outer_style.width = true_usable_width;
+    const outer_style = useMemo(()=>{
+        let newStyle = Object.assign({}, props.style);
+        newStyle.width = true_usable_width;
+        return newStyle
+    }, [true_usable_width]);
+
+    const header_style = useMemo(()=>{
+        let newStyle = {};
+        if (!props.shrinkable) {
+            newStyle["paddingLeft"] = 10
+        }
+        return newStyle
+    }, []);
+
     let show_glif_text = outer_style.width > 800;
-    let header_style = {};
-    if (!props.shrinkable) {
-        header_style["paddingLeft"] = 10
-    }
 
     let key_bindings = [[["escape"], () => {
         _clear_all_selected_items()
@@ -1317,9 +1363,6 @@ function ConsoleComponent(props) {
             {intent: "primary", icon: "console", handleClick: show_main_log ? _toggleMainLog : _togglePseudoLog})
     }
 
-    const empty_style = useMemo(() => {
-        return {}
-    }, []);
     return (
         <Card id="console-panel" className={console_class} elevation={2} style={outer_style}>
             <div className="d-flex flex-column justify-content-around">
@@ -1330,12 +1373,12 @@ function ConsoleComponent(props) {
                     <div id="console-header-left" className="d-flex flex-row">
                         {props.mState.console_is_shrunk && props.shrinkable &&
                             <GlyphButton handleClick={_expandConsole}
-                                         style={{marginLeft: 2}}
+                                         style={GLYPH_BUTTON_STYLE}
                                          icon="chevron-right"/>
                         }
                         {!props.mState.console_is_shrunk && props.shrinkable &&
                             <GlyphButton handleClick={_shrinkConsole}
-                                         style={{marginLeft: 2}}
+                                         style={GLYPH_BUTTON_STYLE}
                                          icon="chevron-down"/>
                         }
 
@@ -1357,7 +1400,7 @@ function ConsoleComponent(props) {
                                      tooltip="Show export browser"
                                      small={true}
                                      className="show-exports-but"
-                                     style={{marginRight: 5, marginTop: 2}}
+                                     style={GLYPH_BUTTON_STYLE2}
                                      handleClick={_toggleExports}
                                      icon="variable"/>
 
@@ -1420,46 +1463,30 @@ function ConsoleComponent(props) {
                      className="contingent-scroll"
                      onClick={_clickConsoleBody}
                      style={{height:usable_height}}>
-                    <SizeContext.Provider value={{
+                    <SizeProvider value={{
                         availableWidth: true_usable_width,
                         availableHeight: usable_height,
                         topX: topX,
                         topY: topY
                     }}>
-                        <ContextMenu content={renderContextMenu}>
+                        {/*<ContextMenu content={renderContextMenu}>*/}
                             <SortableComponent id="console-items-div"
                                                direction="vertical"
                                                style={empty_style}
                                                main_id={props.main_id}
-                                               ElementComponent={SuperItem}
+                                               ElementComponent={TailoredSuperItem}
                                                key_field_name="unique_id"
                                                item_list={filtered_items}
                                                helperClass={theme.dark_theme ? "bp5-dark" : "light-theme"}
                                                handle=".console-sorter"
                                                onBeforeCapture={_sortStart}
                                                onDragEnd={_resortConsoleItems}
-                                               setConsoleItemValue={_setConsoleItemValue}
-                                               selectConsoleItem={_selectConsoleItem}
-                                               execution_count={0}
-                                               runCodeItem={_runCodeItem}
-                                               handleDelete={_closeConsoleItem}
-                                               goToNextCell={_goToNextCell}
-                                               setFocus={_setFocusedItem}
-                                               addNewTextItem={_addBlankText}
-                                               addNewCodeItem={_addBlankCode}
-                                               addNewDividerItem={_addBlankDivider}
-                                               copyCell={_copyCell}
-                                               pasteCell={_pasteCell}
-                                               copySection={_copySection}
-                                               deleteSection={_deleteSection}
-                                               insertResourceLink={_insertResourceLink}
                                                useDragHandle={false}
-                                               pseudo_tile_id={pseudo_tile_id}
-                                               handleCreateViewer={props.handleCreateViewer}
                                                axis="y"
+                                               extraProps={empty_style}
                             />
-                        </ContextMenu>
-                    </SizeContext.Provider>
+                        {/*</ContextMenu>*/}
+                    </SizeProvider>
                     <div id="padding-div" style={{height: 500}}></div>
                 </div>
             }
@@ -1489,13 +1516,14 @@ ConsoleComponent.defaultProps = {
     zoomable: true,
 };
 
+const sHandleStyle = {marginLeft: 0, marginRight: 6};
 
 function Shandle(props) {
     return (
         <span {...props.dragHandleProps}>
                 <Icon icon="drag-handle-vertical"
                       {...props.dragHandleProps}
-                      style={{marginLeft: 0, marginRight: 6}}
+                      style={sHandleStyle}
                       size={20}
                       className="console-sorter"/>
             </span>
@@ -1526,17 +1554,17 @@ SuperItem = memo(SuperItem);
 const divider_item_update_props = ["am_shrunk", "am_selected", "header_text", "console_available_width"];
 
 function DividerItem(props) {
-    function _toggleShrink() {
+    const _toggleShrink = useCallback(() => {
         props.setConsoleItemValue(props.unique_id, "am_shrunk", !props.am_shrunk);
-    }
+    }, [props.am_shrunk]);
 
-    function _deleteMe() {
+    const _deleteMe = useCallback(() =>{
         props.handleDelete(props.unique_id)
-    }
+    }, []);
 
-    function _handleHeaderTextChange(value) {
+    const _handleHeaderTextChange = useCallback((value) => {
         props.setConsoleItemValue(props.unique_id, "header_text", value)
-    }
+    }, []);
 
     function _copyMe() {
         props.copyCell(props.unique_id)
@@ -1577,7 +1605,7 @@ function DividerItem(props) {
         })
     }
 
-    function renderContextMenu() {
+    const contextMenu = useMemo(() => {
         // return a single element, or nothing to use default browser behavior
         return (
             <Menu>
@@ -1604,7 +1632,7 @@ function DividerItem(props) {
                           text="Delete Section"/>
             </Menu>
         );
-    }
+    }, []);
 
     function _consoleItemClick(e) {
         _selectMe(e);
@@ -1620,7 +1648,7 @@ function DividerItem(props) {
         panel_class += " error-log-panel"
     }
     return (
-        <ContextMenu content={renderContextMenu()}>
+        <ContextMenu content={contextMenu}>
             <div className={panel_class + " d-flex flex-row"} onClick={_consoleItemClick}
                  id={props.unique_id} style={{marginBottom: 10}}>
                 <div className="button-div shrink-expand-div d-flex flex-row">
@@ -1631,7 +1659,7 @@ function DividerItem(props) {
                     }
                     {props.am_shrunk &&
                         <GlyphButton icon="chevron-right"
-                                     style={{marginTop: 5}}
+                                     style={GLYPH_BUTTON_STYLE5}
                                      handleClick={_toggleShrink}/>
                     }
                 </div>
@@ -1642,7 +1670,7 @@ function DividerItem(props) {
                     <GlyphButton handleClick={_deleteMe}
                                  intent="danger"
                                  tooltip="Delete this item"
-                                 style={{marginLeft: 10, marginRight: 66, minHeight: 0}}
+                                 style={GLYPH_BUTTON_STYLE3}
                                  icon="trash"/>
                 </div>
             </div>
@@ -1681,7 +1709,7 @@ function SectionEndItem(props) {
         })
     }
 
-    function renderContextMenu() {
+    const contextMenu = useMemo(()=>{
         // return a single element, or nothing to use default browser behavior
         return (
             <Menu>
@@ -1701,12 +1729,12 @@ function SectionEndItem(props) {
                 <MenuDivider/>
             </Menu>
         );
-    }
+    }, []);
 
-    function _consoleItemClick(e) {
+    const _consoleItemClick = useCallback((e)=>{
         _selectMe(e);
         e.stopPropagation()
-    }
+    }, []);
 
     let panel_class = "log-panel in-section section-end-log-panel log-panel-visible fixed-log-panel";
     if (props.am_selected) {
@@ -1720,7 +1748,7 @@ function SectionEndItem(props) {
         borderBottomWidth: 2
     };
     return (
-        <ContextMenu content={renderContextMenu()}>
+        <ContextMenu content={contextMenu}>
             <div className={panel_class + " d-flex flex-row"} onClick={_consoleItemClick}
                  id={props.unique_id} style={{marginBottom: 10}}>
                 <ButtonGroup minimal={true} vertical={true} style={{width: "100%"}}>
@@ -1750,17 +1778,17 @@ function LogItem(props) {
         makeTablesSortable()
     });
 
-    function _toggleShrink() {
+    const _toggleShrink = useCallback(() =>{
         props.setConsoleItemValue(props.unique_id, "am_shrunk", !props.am_shrunk);
-    }
+    }, [props.am_shrunk]);
 
-    function _deleteMe() {
+    const _deleteMe = useCallback(() =>{
         props.handleDelete(props.unique_id)
-    }
+    }, []);
 
-    function _handleSummaryTextChange(value) {
+    const _handleSummaryTextChange = useCallback((value)=>{
         props.setConsoleItemValue(props.unique_id, "summary_text", value)
-    }
+    }, []);
 
     function executeEmbeddedScripts() {
         if (props.output_text != last_output_text.current) {  // to avoid doubles of bokeh images
@@ -1862,10 +1890,25 @@ function LogItem(props) {
 
     let uwidth =  props.in_section ? usable_width - SECTION_INDENT / 2 : usable_width;
     uwidth -= BUTTON_CONSUMED_SPACE;
+
+    const body_style = useMemo(()=>{ return {
+        marginTop: 10,
+        marginLeft: 30,
+        padding: 8,
+        width: uwidth,
+        border: ".5px solid #c7c7c7",
+        overflowY: "scroll"
+    }}, [uwidth]);
+
+    const body_shrunk_style = useMemo(()=>{ return {
+        marginLeft: 30,
+        width: uwidth
+    }}, [uwidth]);
+
     return (
         <ContextMenu content={renderContextMenu()}>
             <div className={panel_class + " d-flex flex-row"} onClick={_consoleItemClick}
-                 id={props.unique_id} style={{marginBottom: 10}}>
+                 id={props.unique_id} style={MB10_STYLE}>
                 <div className="button-div shrink-expand-div d-flex flex-row">
                     <Shandle dragHandleProps={props.dragHandleProps}/>
                     {!props.am_shrunk &&
@@ -1874,36 +1917,26 @@ function LogItem(props) {
                     }
                     {props.am_shrunk &&
                         <GlyphButton icon="chevron-right"
-                                     style={{marginTop: 5}}
+                                     style={GLYPH_BUTTON_STYLE5}
                                      handleClick={_toggleShrink}/>
                     }
                 </div>
                     <div className="d-flex flex-column">
                     <div className="log-panel-body d-flex flex-row">
                         {props.am_shrunk &&
-                            <div ref={body_ref} style={{
-                                marginLeft: 30,
-                                width: uwidth,
-                            }}>
+                            <div ref={body_ref} style={body_shrunk_style}>
                             <EditableText value={props.summary_text}
                                           onChange={_handleSummaryTextChange}
                                           className="log-panel-summary"/>
                             </div>
                         }{!props.am_shrunk &&
-                            <div ref={body_ref} style={{
-                                marginTop: 10,
-                                marginLeft: 30,
-                                padding: 8,
-                                width: uwidth,
-                                border: ".5px solid #c7c7c7",
-                                overflowY: "scroll"
-                            }}
+                            <div ref={body_ref} style={body_style}
                                  dangerouslySetInnerHTML={converted_dict}/>
                         }
                             <div className="button-div d-flex flex-row">
                                 <GlyphButton handleClick={_deleteMe}
                                              tooltip="Delete this item"
-                                             style={{marginLeft: 10, marginRight: 66}}
+                                             style={GlYPH_BUTTON_STYLE4}
                                              intent="danger"
                                              icon="trash"/>
                             </div>
@@ -1931,17 +1964,17 @@ function BlobItem(props) {
         makeTablesSortable()
     });
 
-    function _toggleShrink() {
+    const _toggleShrink = useCallback(() =>{
         props.setConsoleItemValue(props.unique_id, "am_shrunk", !props.am_shrunk);
-    }
+    }, [props.am_shrunk]);
 
-    function _deleteMe() {
+    const _deleteMe = useCallback(() =>{
         props.handleDelete(props.unique_id)
-    }
+    }, []);
 
-    function _handleSummaryTextChange(value) {
+    const _handleSummaryTextChange = useCallback((value)=>{
         props.setConsoleItemValue(props.unique_id, "summary_text", value)
-    }
+    }, []);
 
     function executeEmbeddedScripts() {
         if (props.output_text != last_output_text.current) {  // to avoid doubles of bokeh images
@@ -2041,6 +2074,14 @@ function BlobItem(props) {
 
     let uwidth =  props.in_section ? usable_width - SECTION_INDENT / 2 : usable_width;
     uwidth -= BUTTON_CONSUMED_SPACE;
+    const body_style = useMemo(()=>{ return {
+        marginTop: 10,
+        marginLeft: 30,
+        padding: 8,
+        width: uwidth,
+        border: ".5px solid #c7c7c7",
+        overflowY: "scroll"
+    }}, [uwidth]);
     return (
         <ContextMenu content={renderContextMenu()}>
             <div className={panel_class + " d-flex flex-row"} onClick={_consoleItemClick}
@@ -2066,7 +2107,7 @@ function BlobItem(props) {
                             <GlyphButton handleClick={_deleteMe}
                                          intent="danger"
                                          tooltip="Delete this item"
-                                         style={{marginLeft: 10, marginRight: 66}}
+                                         style={GlYPH_BUTTON_STYLE4}
                                          icon="trash"/>
                         </div>
                     </Fragment>
@@ -2074,13 +2115,7 @@ function BlobItem(props) {
                 {!props.am_shrunk &&
                     <div className="d-flex flex-column">
                         <div className="log-panel-body d-flex flex-row">
-                            <div ref={body_ref} style={{
-                                marginTop: 10,
-                                marginLeft: 30,
-                                padding: 8,
-                                width: uwidth,
-                                border: ".5px solid #c7c7c7"
-                            }}>
+                            <div ref={body_ref} style={body_style}>
                                 {props.image_data_str && (
                                     <img src={props.image_data_str}
                                          alt="An Image" width={uwidth - 25}/>)
@@ -2089,7 +2124,7 @@ function BlobItem(props) {
                             <div className="button-div d-flex flex-row">
                                 <GlyphButton handleClick={_deleteMe}
                                              tooltip="Delete this item"
-                                             style={{marginLeft: 10, marginRight: 66}}
+                                             style={GlYPH_BUTTON_STYLE4}
                                              intent="danger"
                                              icon="trash"/>
                             </div>
@@ -2215,9 +2250,9 @@ function ConsoleCodeItem(props) {
         props.handleDelete(props.unique_id)
     }, [props.show_spinner]);
 
-    const _clearOutput = useCallback((callback = null)=>{
-        props.setConsoleItemValue(props.unique_id, "output_text", "", callback)
-    });
+    const _clearOutput = useCallback(()=>{
+        props.setConsoleItemValue(props.unique_id, "output_text", "")
+    }, []);
 
     const _extraKeys = useMemo(() => {
         return {
@@ -2237,46 +2272,48 @@ function ConsoleCodeItem(props) {
         }
     }, [props.console_text]);
 
-    function _copyMe() {
+    const _copyMe = useCallback(()=>{
         props.copyCell(props.unique_id)
-    }
+    }, []);
 
-    function _pasteCell() {
+    const _pasteCell = useCallback(()=>{
         props.pasteCell(props.unique_id)
-    }
+    }, []);
 
     function _selectMe(e = null, callback = null) {
         props.selectConsoleItem(props.unique_id, e, callback)
     }
 
-    function _addBlankText() {
+    const _addBlankText = useCallback(()=>{
         _selectMe(null, () => {
             props.addNewTextItem()
         })
-    }
+    }, []);
 
-    function _addBlankDivider() {
+    const _addBlankDivider = useCallback(()=> {
         _selectMe(null, () => {
             props.addNewDividerItem()
         })
-    }
+    }, []);
 
-    function _addBlankCode() {
+    const _addBlankCode = useCallback(()=>{
         _selectMe(null, () => {
             props.addNewCodeItem()
         })
-    }
+    }, []);
 
-    const cm = useMemo(function renderContextMenu() {
+    const _codeRunner = useCallback(() => {
+        props.runCodeItem(props.unique_id)
+    }, []);
+
+    const cm = useMemo(()=>{
         // return a single element, or nothing to use default browser behavior
         return (
             <Menu>
                 {!props.show_spinner &&
                     <MenuItem icon="play"
                               intent="success"
-                              onClick={() => {
-                                  props.runCodeItem(props.unique_id)
-                              }}
+                              onClick={_codeRunner}
                               text="Run Cell"/>
                 }
                 {props.show_spinner &&
@@ -2309,13 +2346,11 @@ function ConsoleCodeItem(props) {
                           text="Delete Cell"/>
                 <MenuItem icon="clean"
                           intent={"warning"}
-                          onClick={() => {
-                              _clearOutput()
-                          }}
+                          onClick={_clearOutput}
                           text="Clear Output"/>
             </Menu>
         );
-    });
+    }, []);
 
     const _consoleItemClick = useCallback((e)=>{
         _selectMe(e);
@@ -2343,7 +2378,7 @@ function ConsoleCodeItem(props) {
 
     return (
         <ContextMenu content={cm}>
-            <SizeContext.Provider value={{
+            <SizeProvider value={{
                 availableWidth: uwidth,
                 availableHeight: usable_height,
                 topX: topX,
@@ -2360,7 +2395,7 @@ function ConsoleCodeItem(props) {
                         }
                         {props.am_shrunk &&
                             <GlyphButton icon="chevron-right"
-                                         style={{marginTop: 5}}
+                                         style={GLYPH_BUTTON_STYLE5}
                                          handleClick={_toggleShrink}/>
                         }
                     </div>
@@ -2374,7 +2409,7 @@ function ConsoleCodeItem(props) {
                                 <GlyphButton handleClick={_deleteMe}
                                              intent="danger"
                                              tooltip="Delete this item"
-                                             style={{marginLeft: 10, marginRight: 66}}
+                                             style={GlYPH_BUTTON_STYLE4}
                                              icon="trash"/>
                             </div>
                         </Fragment>
@@ -2387,9 +2422,7 @@ function ConsoleCodeItem(props) {
                                     <div className="log-panel-body d-flex flex-row console-code">
                                         <div className="button-div d-flex pr-1">
                                             {!props.show_spinner &&
-                                                <GlyphButton handleClick={() => {
-                                                    props.runCodeItem(props.unique_id)
-                                                }}
+                                                <GlyphButton handleClick={_codeRunner}
                                                              intent="success"
                                                              tooltip="Execute this item"
                                                              icon="play"/>
@@ -2415,14 +2448,12 @@ function ConsoleCodeItem(props) {
                                             <GlyphButton handleClick={_deleteMe}
                                                          intent="danger"
                                                          tooltip="Delete this item"
-                                                         style={{marginLeft: 10, marginRight: 0}}
+                                                         style={GLYPH_BUTTON_STYLE6}
                                                          icon="trash"/>
-                                            <GlyphButton handleClick={() => {
-                                                _clearOutput()
-                                            }}
+                                            <GlyphButton handleClick={_clearOutput}
                                                          intent="warning"
                                                          tooltip="Clear this item's output"
-                                                         style={{marginLeft: 10, marginRight: 0}}
+                                                         style={GLYPH_BUTTON_STYLE6}
                                                          icon="clean"/>
                                         </div>
                                     </div>
@@ -2430,7 +2461,7 @@ function ConsoleCodeItem(props) {
                                         <div className='execution-counter'>[{String(props.execution_count)}]</div>
                                     }
                                     {props.show_spinner &&
-                                        <div style={{marginTop: 10, marginRight: 22}}>
+                                        <div style={SPINNER_STYLE}>
                                             <Spinner size={13} value={spinner_val}/>
                                         </div>
                                     }
@@ -2441,7 +2472,7 @@ function ConsoleCodeItem(props) {
                         </Fragment>
                     }
                 </div>
-            </SizeContext.Provider>
+            </SizeProvider>
         </ContextMenu>
     )
 }
@@ -2609,9 +2640,9 @@ function ConsoleTextItem(props) {
         props.setConsoleItemValue(props.unique_id, "summary_text", value)
     }
 
-    function _toggleShrink() {
+    const _toggleShrink = useCallback(()=>{
         props.setConsoleItemValue(props.unique_id, "am_shrunk", !props.am_shrunk);
-    }
+    }, [props.am_shrunk]);
 
     const _deleteMe = useCallback(()=>{
         props.handleDelete(props.unique_id)
@@ -2699,7 +2730,7 @@ function ConsoleTextItem(props) {
         })
     }
 
-    function renderContextMenu() {
+    const contextMenu = useMemo(() => {
         // return a single element, or nothing to use default browser behavior
         return (
             <Menu>
@@ -2734,12 +2765,12 @@ function ConsoleTextItem(props) {
                           text="Delete Cell"/>
             </Menu>
         );
-    }
+    }, []);
 
-    function _consoleItemClick(e) {
+    const _consoleItemClick = useCallback((e)=>{
         _selectMe(e);
         e.stopPropagation()
-    }
+    }, []);
 
     const _handleFocus = useCallback(() => {
         if (!props.am_selected) {
@@ -2801,8 +2832,8 @@ function ConsoleTextItem(props) {
     let uwidth =  props.in_section ? usable_width - SECTION_INDENT / 2 : usable_width;
     uwidth -= BUTTON_CONSUMED_SPACE;
     return (
-        <ContextMenu content={renderContextMenu()}>
-            <SizeContext.Provider value={{
+        <ContextMenu content={contextMenu}>
+            <SizeProvider value={{
                 availableWidth: uwidth,
                 availableHeight: usable_height,
                 topX: topX,
@@ -2832,7 +2863,7 @@ function ConsoleTextItem(props) {
                             <GlyphButton handleClick={_deleteMe}
                                          intent="danger"
                                          tooltip="Delete this item"
-                                         style={{marginLeft: 10, marginRight: 66}}
+                                         style={GlYPH_BUTTON_STYLE4}
                                          icon="trash"/>
                         </div>
                     </Fragment>
@@ -2863,7 +2894,6 @@ function ConsoleTextItem(props) {
                                                          extraKeys={_extraKeys}
                                                          search_term={props.search_string}
                                                          no_height={true}
-                                                         //code_container_width={code_container_width}
                                                          saveMe={null}/>
                                     </Fragment>
                                 }
@@ -2880,14 +2910,14 @@ function ConsoleTextItem(props) {
                                 <GlyphButton handleClick={_deleteMe}
                                              intent="danger"
                                              tooltip="Delete this item"
-                                             style={{marginLeft: 10, marginRight: 66}}
+                                             style={GlYPH_BUTTON_STYLE4}
                                              icon="trash"/>
                             </div>
                         </div>
                     </div>
                 }
             </div>
-            </SizeContext.Provider>
+            </SizeProvider>
         </ContextMenu>
     )
 }

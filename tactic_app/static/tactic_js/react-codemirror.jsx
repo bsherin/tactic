@@ -513,6 +513,7 @@ ReactCodemirror.propTypes = {
 };
 
 ReactCodemirror.defaultProps = {
+    iCounter: 0,
     no_width: false,
     no_height: false,
     show_search: false,

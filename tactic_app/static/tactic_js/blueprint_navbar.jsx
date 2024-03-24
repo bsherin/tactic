@@ -67,6 +67,9 @@ function TacticNavbar(props) {
                 set_old_left_width(new_left_width)
             }
         }
+        return (()=>{
+            window.removeEventListener("resize", _update_window_dimensions)
+        })
     });
 
     function getIntent(butname) {

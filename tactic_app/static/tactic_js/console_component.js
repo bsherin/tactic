@@ -41,6 +41,37 @@ const MAX_CONSOLE_WIDTH = 1800;
 const BUTTON_CONSUMED_SPACE = 143;
 const SECTION_INDENT = 25; // This is also hard coded into the css file at the moment
 const MAX_OUTPUT_LENGTH = 500000;
+const GLYPH_BUTTON_STYLE = {
+  marginLeft: 2
+};
+const GLYPH_BUTTON_STYLE2 = {
+  marginRight: 5,
+  marginTop: 2
+};
+const GLYPH_BUTTON_STYLE3 = {
+  marginLeft: 10,
+  marginRight: 66,
+  minHeight: 0
+};
+const GlYPH_BUTTON_STYLE4 = {
+  marginLeft: 10,
+  marginRight: 66
+};
+const GLYPH_BUTTON_STYLE5 = {
+  marginTop: 5
+};
+const GLYPH_BUTTON_STYLE6 = {
+  marginLeft: 10,
+  marginRight: 0
+};
+const SPINNER_STYLE = {
+  marginTop: 10,
+  marginRight: 22
+};
+const MB10_STYLE = {
+  marginBottom: 10
+};
+const empty_style = {};
 function ConsoleComponent(props) {
   const header_ref = (0, _react.useRef)(null);
   const body_ref = (0, _react.useRef)(null);
@@ -59,7 +90,6 @@ function ConsoleComponent(props) {
   const pushCallback = (0, _utilities_react.useCallbackStack)();
   const selectedPane = (0, _react.useContext)(_utilities_react.SelectedPaneContext);
   const errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
-  const sizeInfo = (0, _react.useContext)(_sizing_tools.SizeContext);
   const [header_usable_width, header_usable_height, header_topX, header_topY] = (0, _sizing_tools.useSize)(header_ref, 0, "HConsoleComponent");
   const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(body_ref, 0, "ConsoleComponent");
   (0, _react.useEffect)(async () => {
@@ -94,8 +124,7 @@ function ConsoleComponent(props) {
             _stopConsoleSpinner(data.console_id, execution_count);
           },
           consoleCodePrint: data => _appendConsoleItemOutput(data),
-          consoleCodeOverwrite: data => _setConsoleItemOutput(data),
-          consoleCodeRun: data => _startSpinner(data.console_id)
+          consoleCodeOverwrite: data => _setConsoleItemOutput(data)
         };
         handlerDict[data.console_message](data);
       }
@@ -416,24 +445,24 @@ function ConsoleComponent(props) {
     }
     pushCallback(callback);
   }, []);
-  function _zoomConsole() {
+  const _zoomConsole = (0, _react.useCallback)(() => {
     props.setMainStateValue("console_is_zoomed", true);
-  }
-  function _unzoomConsole() {
+  }, []);
+  const _unzoomConsole = (0, _react.useCallback)(() => {
     props.setMainStateValue("console_is_zoomed", false);
-  }
-  function _expandConsole() {
+  }, []);
+  const _expandConsole = (0, _react.useCallback)(() => {
     props.setMainStateValue("console_is_shrunk", false);
-  }
-  function _shrinkConsole() {
+  }, []);
+  const _shrinkConsole = (0, _react.useCallback)(() => {
     props.setMainStateValue("console_is_shrunk", true);
     if (props.mState.console_is_zoomed) {
       _unzoomConsole();
     }
-  }
-  function _toggleExports() {
+  }, [props.mState.console_is_zoomed]);
+  const _toggleExports = (0, _react.useCallback)(() => {
     props.setMainStateValue("show_exports_pane", !props.mState.show_exports_pane);
-  }
+  }, [props.mState.show_exports_pan]);
   const _setConsoleItemValue = (0, _react.useCallback)(function (unique_id, field, new_value) {
     let callback = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
     props.dispatch({
@@ -1278,6 +1307,31 @@ function ConsoleComponent(props) {
       _hideNonDividers();
     }
   }, []);
+  function superItemMaker(passDowns) {
+    return /*#__PURE__*/(0, _react.memo)(function (item_props) {
+      return /*#__PURE__*/_react.default.createElement(SuperItem, (0, _extends2.default)({}, item_props, passDowns));
+    });
+  }
+  const TailoredSuperItem = (0, _react.useMemo)(() => {
+    return superItemMaker({
+      setConsoleItemValue: _setConsoleItemValue,
+      selectConsoleItem: _selectConsoleItem,
+      runCodeItem: _runCodeItem,
+      handleDelete: _closeConsoleItem,
+      goToNextCell: _goToNextCell,
+      setFocus: _setFocusedItem,
+      addNewTextItem: _addBlankText,
+      addNewCodeItem: _addBlankCode,
+      addNewDivider: _addBlankDivider,
+      copyCell: _copyCell,
+      pasteCell: _pasteCell,
+      copySection: _copySection,
+      deleteSection: _deleteSection,
+      insertResourceLink: _insertResourceLink,
+      pseudo_tile_id: pseudo_tile_id,
+      handleCreateViewer: props.handleCreateViewer
+    });
+  }, []);
   let gbstyle = {
     marginLeft: 1,
     marginTop: 2
@@ -1286,15 +1340,21 @@ function ConsoleComponent(props) {
   if (props.mState.console_is_zoomed) {
     console_class = "am-zoomed";
   }
-  let outer_style = Object.assign({}, props.style);
   let true_usable_width = props.mState.console_is_shrunk ? header_usable_width : usable_width;
   true_usable_width = true_usable_width > MAX_CONSOLE_WIDTH ? MAX_CONSOLE_WIDTH : true_usable_width;
-  outer_style.width = true_usable_width;
+  const outer_style = (0, _react.useMemo)(() => {
+    let newStyle = Object.assign({}, props.style);
+    newStyle.width = true_usable_width;
+    return newStyle;
+  }, [true_usable_width]);
+  const header_style = (0, _react.useMemo)(() => {
+    let newStyle = {};
+    if (!props.shrinkable) {
+      newStyle["paddingLeft"] = 10;
+    }
+    return newStyle;
+  }, []);
   let show_glif_text = outer_style.width > 800;
-  let header_style = {};
-  if (!props.shrinkable) {
-    header_style["paddingLeft"] = 10;
-  }
   let key_bindings = [[["escape"], () => {
     _clear_all_selected_items();
   }]];
@@ -1328,9 +1388,6 @@ function ConsoleComponent(props) {
       handleClick: show_main_log ? _toggleMainLog : _togglePseudoLog
     });
   }
-  const empty_style = (0, _react.useMemo)(() => {
-    return {};
-  }, []);
   return /*#__PURE__*/_react.default.createElement(_core.Card, {
     id: "console-panel",
     className: console_class,
@@ -1348,15 +1405,11 @@ function ConsoleComponent(props) {
     className: "d-flex flex-row"
   }, props.mState.console_is_shrunk && props.shrinkable && /*#__PURE__*/_react.default.createElement(_blueprint_react_widgets.GlyphButton, {
     handleClick: _expandConsole,
-    style: {
-      marginLeft: 2
-    },
+    style: GLYPH_BUTTON_STYLE,
     icon: "chevron-right"
   }), !props.mState.console_is_shrunk && props.shrinkable && /*#__PURE__*/_react.default.createElement(_blueprint_react_widgets.GlyphButton, {
     handleClick: _shrinkConsole,
-    style: {
-      marginLeft: 2
-    },
+    style: GLYPH_BUTTON_STYLE,
     icon: "chevron-down"
   }), /*#__PURE__*/_react.default.createElement(_menu_utilities.TacticMenubar, {
     menu_specs: menu_specs(),
@@ -1375,10 +1428,7 @@ function ConsoleComponent(props) {
     tooltip: "Show export browser",
     small: true,
     className: "show-exports-but",
-    style: {
-      marginRight: 5,
-      marginTop: 2
-    },
+    style: GLYPH_BUTTON_STYLE2,
     handleClick: _toggleExports,
     icon: "variable"
   }), !props.mState.console_is_zoomed && props.zoomable && /*#__PURE__*/_react.default.createElement(_blueprint_react_widgets.GlyphButton, {
@@ -1429,47 +1479,29 @@ function ConsoleComponent(props) {
     style: {
       height: usable_height
     }
-  }, /*#__PURE__*/_react.default.createElement(_sizing_tools.SizeContext.Provider, {
+  }, /*#__PURE__*/_react.default.createElement(_sizing_tools.SizeProvider, {
     value: {
       availableWidth: true_usable_width,
       availableHeight: usable_height,
       topX: topX,
       topY: topY
     }
-  }, /*#__PURE__*/_react.default.createElement(_core.ContextMenu, {
-    content: renderContextMenu
   }, /*#__PURE__*/_react.default.createElement(_sortable_container.SortableComponent, {
     id: "console-items-div",
     direction: "vertical",
     style: empty_style,
     main_id: props.main_id,
-    ElementComponent: SuperItem,
+    ElementComponent: TailoredSuperItem,
     key_field_name: "unique_id",
     item_list: filtered_items,
     helperClass: theme.dark_theme ? "bp5-dark" : "light-theme",
     handle: ".console-sorter",
     onBeforeCapture: _sortStart,
     onDragEnd: _resortConsoleItems,
-    setConsoleItemValue: _setConsoleItemValue,
-    selectConsoleItem: _selectConsoleItem,
-    execution_count: 0,
-    runCodeItem: _runCodeItem,
-    handleDelete: _closeConsoleItem,
-    goToNextCell: _goToNextCell,
-    setFocus: _setFocusedItem,
-    addNewTextItem: _addBlankText,
-    addNewCodeItem: _addBlankCode,
-    addNewDividerItem: _addBlankDivider,
-    copyCell: _copyCell,
-    pasteCell: _pasteCell,
-    copySection: _copySection,
-    deleteSection: _deleteSection,
-    insertResourceLink: _insertResourceLink,
     useDragHandle: false,
-    pseudo_tile_id: pseudo_tile_id,
-    handleCreateViewer: props.handleCreateViewer,
-    axis: "y"
-  }))), /*#__PURE__*/_react.default.createElement("div", {
+    axis: "y",
+    extraProps: empty_style
+  })), /*#__PURE__*/_react.default.createElement("div", {
     id: "padding-div",
     style: {
       height: 500
@@ -1496,14 +1528,15 @@ ConsoleComponent.defaultProps = {
   shrinkable: true,
   zoomable: true
 };
+const sHandleStyle = {
+  marginLeft: 0,
+  marginRight: 6
+};
 function Shandle(props) {
   return /*#__PURE__*/_react.default.createElement("span", props.dragHandleProps, /*#__PURE__*/_react.default.createElement(_core.Icon, (0, _extends2.default)({
     icon: "drag-handle-vertical"
   }, props.dragHandleProps, {
-    style: {
-      marginLeft: 0,
-      marginRight: 6
-    },
+    style: sHandleStyle,
     size: 20,
     className: "console-sorter"
   })));
@@ -1529,15 +1562,15 @@ function SuperItem(props) {
 SuperItem = /*#__PURE__*/(0, _react.memo)(SuperItem);
 const divider_item_update_props = ["am_shrunk", "am_selected", "header_text", "console_available_width"];
 function DividerItem(props) {
-  function _toggleShrink() {
+  const _toggleShrink = (0, _react.useCallback)(() => {
     props.setConsoleItemValue(props.unique_id, "am_shrunk", !props.am_shrunk);
-  }
-  function _deleteMe() {
+  }, [props.am_shrunk]);
+  const _deleteMe = (0, _react.useCallback)(() => {
     props.handleDelete(props.unique_id);
-  }
-  function _handleHeaderTextChange(value) {
+  }, []);
+  const _handleHeaderTextChange = (0, _react.useCallback)(value => {
     props.setConsoleItemValue(props.unique_id, "header_text", value);
-  }
+  }, []);
   function _copyMe() {
     props.copyCell(props.unique_id);
   }
@@ -1571,7 +1604,7 @@ function DividerItem(props) {
       props.addNewCodeItem();
     });
   }
-  function renderContextMenu() {
+  const contextMenu = (0, _react.useMemo)(() => {
     // return a single element, or nothing to use default browser behavior
     return /*#__PURE__*/_react.default.createElement(_core.Menu, null, /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
       icon: "duplicate",
@@ -1599,7 +1632,7 @@ function DividerItem(props) {
       intent: "danger",
       text: "Delete Section"
     }));
-  }
+  }, []);
   function _consoleItemClick(e) {
     _selectMe(e);
     e.stopPropagation();
@@ -1615,7 +1648,7 @@ function DividerItem(props) {
     panel_class += " error-log-panel";
   }
   return /*#__PURE__*/_react.default.createElement(_core.ContextMenu, {
-    content: renderContextMenu()
+    content: contextMenu
   }, /*#__PURE__*/_react.default.createElement("div", {
     className: panel_class + " d-flex flex-row",
     onClick: _consoleItemClick,
@@ -1632,9 +1665,7 @@ function DividerItem(props) {
     handleClick: _toggleShrink
   }), props.am_shrunk && /*#__PURE__*/_react.default.createElement(_blueprint_react_widgets.GlyphButton, {
     icon: "chevron-right",
-    style: {
-      marginTop: 5
-    },
+    style: GLYPH_BUTTON_STYLE5,
     handleClick: _toggleShrink
   })), /*#__PURE__*/_react.default.createElement(_core.EditableText, {
     value: props.header_text,
@@ -1646,11 +1677,7 @@ function DividerItem(props) {
     handleClick: _deleteMe,
     intent: "danger",
     tooltip: "Delete this item",
-    style: {
-      marginLeft: 10,
-      marginRight: 66,
-      minHeight: 0
-    },
+    style: GLYPH_BUTTON_STYLE3,
     icon: "trash"
   }))));
 }
@@ -1680,7 +1707,7 @@ function SectionEndItem(props) {
       props.addNewCodeItem();
     });
   }
-  function renderContextMenu() {
+  const contextMenu = (0, _react.useMemo)(() => {
     // return a single element, or nothing to use default browser behavior
     return /*#__PURE__*/_react.default.createElement(_core.Menu, null, /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
       icon: "clipboard",
@@ -1699,11 +1726,11 @@ function SectionEndItem(props) {
       onClick: _addBlankDivider,
       text: "New Section"
     }), /*#__PURE__*/_react.default.createElement(_core.MenuDivider, null));
-  }
-  function _consoleItemClick(e) {
+  }, []);
+  const _consoleItemClick = (0, _react.useCallback)(e => {
     _selectMe(e);
     e.stopPropagation();
-  }
+  }, []);
   let panel_class = "log-panel in-section section-end-log-panel log-panel-visible fixed-log-panel";
   if (props.am_selected) {
     panel_class += " selected";
@@ -1715,7 +1742,7 @@ function SectionEndItem(props) {
     borderBottomWidth: 2
   };
   return /*#__PURE__*/_react.default.createElement(_core.ContextMenu, {
-    content: renderContextMenu()
+    content: contextMenu
   }, /*#__PURE__*/_react.default.createElement("div", {
     className: panel_class + " d-flex flex-row",
     onClick: _consoleItemClick,
@@ -1745,15 +1772,15 @@ function LogItem(props) {
     executeEmbeddedScripts();
     makeTablesSortable();
   });
-  function _toggleShrink() {
+  const _toggleShrink = (0, _react.useCallback)(() => {
     props.setConsoleItemValue(props.unique_id, "am_shrunk", !props.am_shrunk);
-  }
-  function _deleteMe() {
+  }, [props.am_shrunk]);
+  const _deleteMe = (0, _react.useCallback)(() => {
     props.handleDelete(props.unique_id);
-  }
-  function _handleSummaryTextChange(value) {
+  }, []);
+  const _handleSummaryTextChange = (0, _react.useCallback)(value => {
     props.setConsoleItemValue(props.unique_id, "summary_text", value);
-  }
+  }, []);
   function executeEmbeddedScripts() {
     if (props.output_text != last_output_text.current) {
       // to avoid doubles of bokeh images
@@ -1846,15 +1873,29 @@ function LogItem(props) {
   }
   let uwidth = props.in_section ? usable_width - SECTION_INDENT / 2 : usable_width;
   uwidth -= BUTTON_CONSUMED_SPACE;
+  const body_style = (0, _react.useMemo)(() => {
+    return {
+      marginTop: 10,
+      marginLeft: 30,
+      padding: 8,
+      width: uwidth,
+      border: ".5px solid #c7c7c7",
+      overflowY: "scroll"
+    };
+  }, [uwidth]);
+  const body_shrunk_style = (0, _react.useMemo)(() => {
+    return {
+      marginLeft: 30,
+      width: uwidth
+    };
+  }, [uwidth]);
   return /*#__PURE__*/_react.default.createElement(_core.ContextMenu, {
     content: renderContextMenu()
   }, /*#__PURE__*/_react.default.createElement("div", {
     className: panel_class + " d-flex flex-row",
     onClick: _consoleItemClick,
     id: props.unique_id,
-    style: {
-      marginBottom: 10
-    }
+    style: MB10_STYLE
   }, /*#__PURE__*/_react.default.createElement("div", {
     className: "button-div shrink-expand-div d-flex flex-row"
   }, /*#__PURE__*/_react.default.createElement(Shandle, {
@@ -1864,9 +1905,7 @@ function LogItem(props) {
     handleClick: _toggleShrink
   }), props.am_shrunk && /*#__PURE__*/_react.default.createElement(_blueprint_react_widgets.GlyphButton, {
     icon: "chevron-right",
-    style: {
-      marginTop: 5
-    },
+    style: GLYPH_BUTTON_STYLE5,
     handleClick: _toggleShrink
   })), /*#__PURE__*/_react.default.createElement("div", {
     className: "d-flex flex-column"
@@ -1874,34 +1913,21 @@ function LogItem(props) {
     className: "log-panel-body d-flex flex-row"
   }, props.am_shrunk && /*#__PURE__*/_react.default.createElement("div", {
     ref: body_ref,
-    style: {
-      marginLeft: 30,
-      width: uwidth
-    }
+    style: body_shrunk_style
   }, /*#__PURE__*/_react.default.createElement(_core.EditableText, {
     value: props.summary_text,
     onChange: _handleSummaryTextChange,
     className: "log-panel-summary"
   })), !props.am_shrunk && /*#__PURE__*/_react.default.createElement("div", {
     ref: body_ref,
-    style: {
-      marginTop: 10,
-      marginLeft: 30,
-      padding: 8,
-      width: uwidth,
-      border: ".5px solid #c7c7c7",
-      overflowY: "scroll"
-    },
+    style: body_style,
     dangerouslySetInnerHTML: converted_dict
   }), /*#__PURE__*/_react.default.createElement("div", {
     className: "button-div d-flex flex-row"
   }, /*#__PURE__*/_react.default.createElement(_blueprint_react_widgets.GlyphButton, {
     handleClick: _deleteMe,
     tooltip: "Delete this item",
-    style: {
-      marginLeft: 10,
-      marginRight: 66
-    },
+    style: GlYPH_BUTTON_STYLE4,
     intent: "danger",
     icon: "trash"
   }))))));
@@ -1916,15 +1942,15 @@ function BlobItem(props) {
     executeEmbeddedScripts();
     makeTablesSortable();
   });
-  function _toggleShrink() {
+  const _toggleShrink = (0, _react.useCallback)(() => {
     props.setConsoleItemValue(props.unique_id, "am_shrunk", !props.am_shrunk);
-  }
-  function _deleteMe() {
+  }, [props.am_shrunk]);
+  const _deleteMe = (0, _react.useCallback)(() => {
     props.handleDelete(props.unique_id);
-  }
-  function _handleSummaryTextChange(value) {
+  }, []);
+  const _handleSummaryTextChange = (0, _react.useCallback)(value => {
     props.setConsoleItemValue(props.unique_id, "summary_text", value);
-  }
+  }, []);
   function executeEmbeddedScripts() {
     if (props.output_text != last_output_text.current) {
       // to avoid doubles of bokeh images
@@ -2012,6 +2038,16 @@ function BlobItem(props) {
   }
   let uwidth = props.in_section ? usable_width - SECTION_INDENT / 2 : usable_width;
   uwidth -= BUTTON_CONSUMED_SPACE;
+  const body_style = (0, _react.useMemo)(() => {
+    return {
+      marginTop: 10,
+      marginLeft: 30,
+      padding: 8,
+      width: uwidth,
+      border: ".5px solid #c7c7c7",
+      overflowY: "scroll"
+    };
+  }, [uwidth]);
   return /*#__PURE__*/_react.default.createElement(_core.ContextMenu, {
     content: renderContextMenu()
   }, /*#__PURE__*/_react.default.createElement("div", {
@@ -2044,10 +2080,7 @@ function BlobItem(props) {
     handleClick: _deleteMe,
     intent: "danger",
     tooltip: "Delete this item",
-    style: {
-      marginLeft: 10,
-      marginRight: 66
-    },
+    style: GlYPH_BUTTON_STYLE4,
     icon: "trash"
   }))), !props.am_shrunk && /*#__PURE__*/_react.default.createElement("div", {
     className: "d-flex flex-column"
@@ -2055,13 +2088,7 @@ function BlobItem(props) {
     className: "log-panel-body d-flex flex-row"
   }, /*#__PURE__*/_react.default.createElement("div", {
     ref: body_ref,
-    style: {
-      marginTop: 10,
-      marginLeft: 30,
-      padding: 8,
-      width: uwidth,
-      border: ".5px solid #c7c7c7"
-    }
+    style: body_style
   }, props.image_data_str && /*#__PURE__*/_react.default.createElement("img", {
     src: props.image_data_str,
     alt: "An Image",
@@ -2071,10 +2098,7 @@ function BlobItem(props) {
   }, /*#__PURE__*/_react.default.createElement(_blueprint_react_widgets.GlyphButton, {
     handleClick: _deleteMe,
     tooltip: "Delete this item",
-    style: {
-      marginLeft: 10,
-      marginRight: 66
-    },
+    style: GlYPH_BUTTON_STYLE4,
     intent: "danger",
     icon: "trash"
   }))))));
@@ -2176,10 +2200,9 @@ function ConsoleCodeItem(props) {
     }
     props.handleDelete(props.unique_id);
   }, [props.show_spinner]);
-  const _clearOutput = (0, _react.useCallback)(function () {
-    let callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-    props.setConsoleItemValue(props.unique_id, "output_text", "", callback);
-  });
+  const _clearOutput = (0, _react.useCallback)(() => {
+    props.setConsoleItemValue(props.unique_id, "output_text", "");
+  }, []);
   const _extraKeys = (0, _react.useMemo)(() => {
     return {
       'Ctrl-Enter': () => props.runCodeItem(props.unique_id, true),
@@ -2196,40 +2219,41 @@ function ConsoleCodeItem(props) {
       return re.exec(props.console_text)[0];
     }
   }, [props.console_text]);
-  function _copyMe() {
+  const _copyMe = (0, _react.useCallback)(() => {
     props.copyCell(props.unique_id);
-  }
-  function _pasteCell() {
+  }, []);
+  const _pasteCell = (0, _react.useCallback)(() => {
     props.pasteCell(props.unique_id);
-  }
+  }, []);
   function _selectMe() {
     let e = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
     let callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
     props.selectConsoleItem(props.unique_id, e, callback);
   }
-  function _addBlankText() {
+  const _addBlankText = (0, _react.useCallback)(() => {
     _selectMe(null, () => {
       props.addNewTextItem();
     });
-  }
-  function _addBlankDivider() {
+  }, []);
+  const _addBlankDivider = (0, _react.useCallback)(() => {
     _selectMe(null, () => {
       props.addNewDividerItem();
     });
-  }
-  function _addBlankCode() {
+  }, []);
+  const _addBlankCode = (0, _react.useCallback)(() => {
     _selectMe(null, () => {
       props.addNewCodeItem();
     });
-  }
-  const cm = (0, _react.useMemo)(function renderContextMenu() {
+  }, []);
+  const _codeRunner = (0, _react.useCallback)(() => {
+    props.runCodeItem(props.unique_id);
+  }, []);
+  const cm = (0, _react.useMemo)(() => {
     // return a single element, or nothing to use default browser behavior
     return /*#__PURE__*/_react.default.createElement(_core.Menu, null, !props.show_spinner && /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
       icon: "play",
       intent: "success",
-      onClick: () => {
-        props.runCodeItem(props.unique_id);
-      },
+      onClick: _codeRunner,
       text: "Run Cell"
     }), props.show_spinner && /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
       icon: "stop",
@@ -2264,12 +2288,10 @@ function ConsoleCodeItem(props) {
     }), /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
       icon: "clean",
       intent: "warning",
-      onClick: () => {
-        _clearOutput();
-      },
+      onClick: _clearOutput,
       text: "Clear Output"
     }));
-  });
+  }, []);
   const _consoleItemClick = (0, _react.useCallback)(e => {
     _selectMe(e);
     e.stopPropagation();
@@ -2294,7 +2316,7 @@ function ConsoleCodeItem(props) {
   uwidth -= BUTTON_CONSUMED_SPACE;
   return /*#__PURE__*/_react.default.createElement(_core.ContextMenu, {
     content: cm
-  }, /*#__PURE__*/_react.default.createElement(_sizing_tools.SizeContext.Provider, {
+  }, /*#__PURE__*/_react.default.createElement(_sizing_tools.SizeProvider, {
     value: {
       availableWidth: uwidth,
       availableHeight: usable_height,
@@ -2315,9 +2337,7 @@ function ConsoleCodeItem(props) {
     handleClick: _toggleShrink
   }), props.am_shrunk && /*#__PURE__*/_react.default.createElement(_blueprint_react_widgets.GlyphButton, {
     icon: "chevron-right",
-    style: {
-      marginTop: 5
-    },
+    style: GLYPH_BUTTON_STYLE5,
     handleClick: _toggleShrink
   })), props.am_shrunk && /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement(_core.EditableText, {
     value: props.summary_text ? props.summary_text : _getFirstLine(),
@@ -2329,10 +2349,7 @@ function ConsoleCodeItem(props) {
     handleClick: _deleteMe,
     intent: "danger",
     tooltip: "Delete this item",
-    style: {
-      marginLeft: 10,
-      marginRight: 66
-    },
+    style: GlYPH_BUTTON_STYLE4,
     icon: "trash"
   }))), !props.am_shrunk && /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement("div", {
     className: "d-flex flex-column",
@@ -2346,9 +2363,7 @@ function ConsoleCodeItem(props) {
   }, /*#__PURE__*/_react.default.createElement("div", {
     className: "button-div d-flex pr-1"
   }, !props.show_spinner && /*#__PURE__*/_react.default.createElement(_blueprint_react_widgets.GlyphButton, {
-    handleClick: () => {
-      props.runCodeItem(props.unique_id);
-    },
+    handleClick: _codeRunner,
     intent: "success",
     tooltip: "Execute this item",
     icon: "play"
@@ -2374,29 +2389,18 @@ function ConsoleCodeItem(props) {
     handleClick: _deleteMe,
     intent: "danger",
     tooltip: "Delete this item",
-    style: {
-      marginLeft: 10,
-      marginRight: 0
-    },
+    style: GLYPH_BUTTON_STYLE6,
     icon: "trash"
   }), /*#__PURE__*/_react.default.createElement(_blueprint_react_widgets.GlyphButton, {
-    handleClick: () => {
-      _clearOutput();
-    },
+    handleClick: _clearOutput,
     intent: "warning",
     tooltip: "Clear this item's output",
-    style: {
-      marginLeft: 10,
-      marginRight: 0
-    },
+    style: GLYPH_BUTTON_STYLE6,
     icon: "clean"
   }))), !props.show_spinner && /*#__PURE__*/_react.default.createElement("div", {
     className: "execution-counter"
   }, "[", String(props.execution_count), "]"), props.show_spinner && /*#__PURE__*/_react.default.createElement("div", {
-    style: {
-      marginTop: 10,
-      marginRight: 22
-    }
+    style: SPINNER_STYLE
   }, /*#__PURE__*/_react.default.createElement(_core.Spinner, {
     size: 13,
     value: spinner_val
@@ -2541,9 +2545,9 @@ function ConsoleTextItem(props) {
   function _handleSummaryTextChange(value) {
     props.setConsoleItemValue(props.unique_id, "summary_text", value);
   }
-  function _toggleShrink() {
+  const _toggleShrink = (0, _react.useCallback)(() => {
     props.setConsoleItemValue(props.unique_id, "am_shrunk", !props.am_shrunk);
-  }
+  }, [props.am_shrunk]);
   const _deleteMe = (0, _react.useCallback)(() => {
     props.handleDelete(props.unique_id);
   }, []);
@@ -2619,7 +2623,7 @@ function ConsoleTextItem(props) {
       props.addNewCodeItem();
     });
   }
-  function renderContextMenu() {
+  const contextMenu = (0, _react.useMemo)(() => {
     // return a single element, or nothing to use default browser behavior
     return /*#__PURE__*/_react.default.createElement(_core.Menu, null, /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
       icon: "paragraph",
@@ -2656,11 +2660,11 @@ function ConsoleTextItem(props) {
       intent: "danger",
       text: "Delete Cell"
     }));
-  }
-  function _consoleItemClick(e) {
+  }, []);
+  const _consoleItemClick = (0, _react.useCallback)(e => {
     _selectMe(e);
     e.stopPropagation();
-  }
+  }, []);
   const _handleFocus = (0, _react.useCallback)(() => {
     if (!props.am_selected) {
       _selectMe();
@@ -2722,8 +2726,8 @@ function ConsoleTextItem(props) {
   let uwidth = props.in_section ? usable_width - SECTION_INDENT / 2 : usable_width;
   uwidth -= BUTTON_CONSUMED_SPACE;
   return /*#__PURE__*/_react.default.createElement(_core.ContextMenu, {
-    content: renderContextMenu()
-  }, /*#__PURE__*/_react.default.createElement(_sizing_tools.SizeContext.Provider, {
+    content: contextMenu
+  }, /*#__PURE__*/_react.default.createElement(_sizing_tools.SizeProvider, {
     value: {
       availableWidth: uwidth,
       availableHeight: usable_height,
@@ -2761,10 +2765,7 @@ function ConsoleTextItem(props) {
     handleClick: _deleteMe,
     intent: "danger",
     tooltip: "Delete this item",
-    style: {
-      marginLeft: 10,
-      marginRight: 66
-    },
+    style: GlYPH_BUTTON_STYLE4,
     icon: "trash"
   }))), !props.am_shrunk && /*#__PURE__*/_react.default.createElement("div", {
     className: "d-flex flex-column",
@@ -2796,9 +2797,7 @@ function ConsoleTextItem(props) {
     code_content: props.console_text,
     extraKeys: _extraKeys,
     search_term: props.search_string,
-    no_height: true
-    //code_container_width={code_container_width}
-    ,
+    no_height: true,
     saveMe: null
   })), really_show_markdown && !hasOnlyWhitespace() && /*#__PURE__*/_react.default.createElement("div", {
     className: "text-panel-output",
@@ -2814,10 +2813,7 @@ function ConsoleTextItem(props) {
     handleClick: _deleteMe,
     intent: "danger",
     tooltip: "Delete this item",
-    style: {
-      marginLeft: 10,
-      marginRight: 66
-    },
+    style: GlYPH_BUTTON_STYLE4,
     icon: "trash"
   })))))));
 }

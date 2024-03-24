@@ -30,7 +30,7 @@ var _modal_react = require("./modal_react");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 const MARGIN_SIZE = 10;
-const BOTTOM_MARGIN = 20;
+const BOTTOM_MARGIN = 35;
 const MARGIN_ADJUSTMENT = 8; // This is the amount at the top of both the table and the conso
 const MENU_BAR_HEIGHT = 30; // will only appear when in context
 
@@ -216,6 +216,12 @@ function NotebookApp(props) {
   } else {
     exports_pane = /*#__PURE__*/_react.default.createElement("div", null);
   }
+  const outer_style = (0, _react.useMemo)(() => {
+    return {
+      width: "100%",
+      height: usable_height
+    };
+  }, [usable_height]);
   return /*#__PURE__*/_react.default.createElement(_react.Fragment, null, !window.in_context && /*#__PURE__*/_react.default.createElement(_blueprint_navbar.TacticNavbar, {
     is_authenticated: window.is_authenticated,
     user_name: window.username,
@@ -234,11 +240,8 @@ function NotebookApp(props) {
   }), /*#__PURE__*/_react.default.createElement("div", {
     className: `main-outer ${theme.dark_theme ? "bp5-dark" : "light-theme"}`,
     ref: main_outer_ref,
-    style: {
-      width: "100%",
-      height: usable_height
-    }
-  }, /*#__PURE__*/_react.default.createElement(_sizing_tools.SizeContext.Provider, {
+    style: outer_style
+  }, /*#__PURE__*/_react.default.createElement(_sizing_tools.SizeProvider, {
     value: {
       availableWidth: usable_width,
       availableHeight: usable_height - BOTTOM_MARGIN,

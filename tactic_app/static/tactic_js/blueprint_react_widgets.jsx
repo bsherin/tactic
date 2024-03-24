@@ -43,6 +43,7 @@ function GlyphButton(props) {
     let style = useMemo(()=>{
         return props.style == null ? {paddingLeft: 2, paddingRight: 2} : props.style;
     }, [props.style]);
+
     return (
         <Button type="button"
                 minimal={props.minimal}
@@ -82,7 +83,7 @@ GlyphButton.defaultProps = {
     small: true
 };
 
-GlyphButton = withTooltip(GlyphButton);
+// GlyphButton = withTooltip(GlyphButton);
 
 function LabeledTextArea(props) {
     return (

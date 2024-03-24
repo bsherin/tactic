@@ -174,7 +174,7 @@ function TileContainer(props) {
     }
     return -1;
   }
-  function _closeTile(tile_id) {
+  const _closeTile = (0, _react.useCallback)(tile_id => {
     props.tileDispatch({
       type: "delete_item",
       tile_id: tile_id
@@ -184,8 +184,8 @@ function TileContainer(props) {
       tile_id: tile_id
     };
     (0, _communication_react.postWithCallback)(props.main_id, "RemoveTile", data_dict, null, null, props.main_id);
-  }
-  function _setTileValue(tile_id, field, value) {
+  }, []);
+  const _setTileValue = (0, _react.useCallback)(function (tile_id, field, value) {
     let callback = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
     props.tileDispatch({
       type: "change_item_value",
@@ -194,8 +194,8 @@ function TileContainer(props) {
       new_value: value
     });
     pushCallback(callback);
-  }
-  function _setTileState(tile_id, new_state) {
+  }, []);
+  const _setTileState = (0, _react.useCallback)(function (tile_id, new_state) {
     let callback = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
     props.tileDispatch({
       type: "change_item_state",
@@ -203,7 +203,7 @@ function TileContainer(props) {
       new_state: new_state
     });
     pushCallback(callback);
-  }
+  }, []);
   function _displayTileContentWithJavascript(tile_id, data) {
     _setTileState(tile_id, {
       front_content: data.html,
@@ -240,6 +240,22 @@ function TileContainer(props) {
   let outer_style = {
     height: usable_height
   };
+  function makeTailoredTileComponent() {
+    return /*#__PURE__*/(0, _react.memo)(function (tile_props) {
+      return /*#__PURE__*/_react.default.createElement(TileComponent, (0, _extends2.default)({}, tile_props, {
+        main_id: props.main_id,
+        setTileValue: _setTileValue,
+        setTileState: _setTileState,
+        handleClose: _closeTile,
+        goToModule: props.goToModule,
+        broadcast_event: props.broadcast_event,
+        tsocket: props.tsocket
+      }));
+    });
+  }
+  const TailoredTileComponent = (0, _react.useMemo)(() => {
+    return makeTailoredTileComponent();
+  }, []);
   return /*#__PURE__*/_react.default.createElement("div", {
     ref: tile_div_ref
   }, /*#__PURE__*/_react.default.createElement(_sortable_container.SortableComponent, {
@@ -247,8 +263,7 @@ function TileContainer(props) {
     main_id: props.main_id,
     style: outer_style,
     helperClass: theme.dark_theme ? "bp5-dark" : "light-theme",
-    goToModule: props.goToModule,
-    ElementComponent: TileComponent,
+    ElementComponent: TailoredTileComponent,
     key_field_name: "tile_name",
     item_list: _lodash.default.cloneDeep(props.tile_list.current),
     handle: ".tile-name-div",
@@ -256,18 +271,15 @@ function TileContainer(props) {
     ,
     onDragEnd: _resortTiles,
     onBeforeCapture: beforeCapture,
-    handleClose: _closeTile,
-    setTileValue: _setTileValue,
-    tsocket: props.tsocket,
-    setTileState: _setTileState,
     direction: "vertical",
-    table_is_shrunk: props.table_is_shrunk,
-    dragging: dragging,
-    current_doc_name: props.current_doc_name,
-    selected_row: props.selected_row,
-    broadcast_event: props.broadcast_event,
     useDragHandle: true,
-    axis: "xy"
+    axis: "xy",
+    extraProps: {
+      dragging: dragging,
+      current_doc_name: props.current_doc_name,
+      selected_row: props.selected_row,
+      table_is_shrunk: props.table_is_shrunk
+    }
   }));
 }
 TileContainer.propTypes = {

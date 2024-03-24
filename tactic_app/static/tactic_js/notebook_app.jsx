@@ -3,7 +3,7 @@ import "../tactic_css/tactic_console.scss";
 import "../tactic_css/tactic_main.scss";
 
 import React from "react";
-import {Fragment, useEffect, useRef, memo, useContext, useReducer, useCallback} from "react";
+import {Fragment, useEffect, useRef, memo, useMemo, useContext, useReducer, useCallback} from "react";
 import * as ReactDOM from 'react-dom'
 import PropTypes from 'prop-types';
 
@@ -20,7 +20,7 @@ import {postAjaxPromise, postAjax} from "./communication_react"
 import {ExportsViewer} from "./export_viewer_react";
 import {HorizontalPanes} from "./resizing_layouts2";
 import {ErrorDrawerContext, withErrorDrawer} from "./error_drawer";
-import {withSizeContext, useSize, SizeContext} from "./sizing_tools";
+import {withSizeContext, useSize, SizeProvider} from "./sizing_tools";
 import {useCallbackStack, useConstructor, useReducerAndRef} from "./utilities_react";
 import {notebook_props, notebookReducer} from "./notebook_support";
 
@@ -29,7 +29,7 @@ import {withDialogs} from "./modal_react";
 
 
 const MARGIN_SIZE = 10;
-const BOTTOM_MARGIN = 20;
+const BOTTOM_MARGIN = 35;
 const MARGIN_ADJUSTMENT = 8; // This is the amount at the top of both the table and the conso
 const MENU_BAR_HEIGHT = 30; // will only appear when in context
 
@@ -232,6 +232,10 @@ function NotebookApp(props) {
         exports_pane = <div></div>
     }
 
+    const outer_style = useMemo(()=>{
+        return {width: "100%", height: usable_height}
+    }, [usable_height]);
+
     return (
         <Fragment>
             {!window.in_context &&
@@ -254,8 +258,8 @@ function NotebookApp(props) {
             />
             <div className={`main-outer ${theme.dark_theme ? "bp5-dark" : "light-theme"}`}
                  ref={main_outer_ref}
-                 style={{width: "100%", height: usable_height}}>
-                <SizeContext.Provider value={{
+                 style={outer_style}>
+                <SizeProvider value={{
                     availableWidth: usable_width,
                     availableHeight: usable_height - BOTTOM_MARGIN,
                     topX: topX,
@@ -269,7 +273,7 @@ function NotebookApp(props) {
                                  dragIconSize={15}
                                  handleSplitUpdate={_handleConsoleFractionChange}
                 />
-            </SizeContext.Provider>
+            </SizeProvider>
             </div>
         </Fragment>
     )

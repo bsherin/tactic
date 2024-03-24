@@ -299,7 +299,7 @@ function ExportsViewer(props) {
 
     function _handleExportListChange(fullname, shortname, tilename, force_refresh = false) {
         if (!force_refresh && fullname == selected_export_ref.current) return;
-        set_show_spinner(true);
+        // set_show_spinner(true);
         set_selected_export(fullname);
         set_selected_export_tilename(tilename);
         set_selected_export_short_name(shortname);

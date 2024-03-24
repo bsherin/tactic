@@ -671,7 +671,6 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
         return exports_with_type_info
 
     def _do_the_refresh(self, new_html=None):
-        print("entering _do_the_refresh")
         try:
             if new_html is None:
                 if not self.configured:
@@ -690,7 +689,6 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
             else:
                 message = {"html": new_html, "exports_changed": False}
             self._tworker.emit_tile_message("displayTileContent", message)
-            print("exiting _do_the_refresh")
         except Exception as ex:
             print("got an exception in _do_the_refresh")
             self._handle_exception(ex)

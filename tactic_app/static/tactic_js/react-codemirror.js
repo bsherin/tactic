@@ -483,6 +483,7 @@ ReactCodemirror.propTypes = {
   extra_autocomplete_list: _propTypes.default.array
 };
 ReactCodemirror.defaultProps = {
+  iCounter: 0,
   no_width: false,
   no_height: false,
   show_search: false,
