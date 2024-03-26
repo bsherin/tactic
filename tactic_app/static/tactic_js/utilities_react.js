@@ -87,6 +87,7 @@ function useConnection(tsocket, initSocket) {
     socketNotifier(tsocket.socket.connected);
     return () => {
       tsocket.disconnect();
+      tsocket.notifier = null;
     };
   }, []);
   return connection_status;
@@ -223,16 +224,32 @@ String.prototype.format = function () {
   }
   return str;
 };
+
+// function get_ppi_old() {
+//     const d = $("<div/>").css({
+//         position: 'absolute',
+//         top: '-1000in',
+//         left: '-1000in',
+//         height: '1000in',
+//         width: '1000in'
+//     }).appendTo('body');
+//     const px_per_in = d.height() / 1000;
+//     d.remove();
+//     return px_per_in;
+// }
+
 function get_ppi() {
-  const d = $("<div/>").css({
+  const d = document.createElement("div");
+  Object.assign(d.style, {
     position: 'absolute',
     top: '-1000in',
     left: '-1000in',
     height: '1000in',
     width: '1000in'
-  }).appendTo('body');
-  const px_per_in = d.height() / 1000;
-  d.remove();
+  });
+  document.body.appendChild(d);
+  const px_per_in = d.offsetHeight / 1000;
+  document.body.removeChild(d);
   return px_per_in;
 }
 function remove_duplicates(arrArg) {

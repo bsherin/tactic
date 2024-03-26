@@ -41,11 +41,6 @@ function creator_props(data, registerDirtyMethod, finalCallback) {
             "version_string": window.version_string
         };
 
-        window.addEventListener("unload", function sendRemove() {
-            navigator.sendBeacon("/delete_container_on_unload",
-                JSON.stringify({"container_id": module_viewer_id, "notify": false}));
-        });
-
         tsocket.attachListener('handle-callback', (task_packet) => {
             handleCallback(task_packet, module_viewer_id)
         });

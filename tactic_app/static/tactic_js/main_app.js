@@ -132,8 +132,16 @@ function MainApp(props) {
     if (!props.controlled) {
       document.title = mState.resource_name;
     }
+    function sendRemove() {
+      console.log("got the beacon");
+      navigator.sendBeacon("/remove_mainwindow", JSON.stringify({
+        "main_id": props.main_id
+      }));
+    }
+    window.addEventListener("unload", sendRemove);
     return () => {
       delete_my_containers();
+      window.removeEventListener("unload", sendRemove);
     };
   }, []);
   (0, _react.useEffect)(() => {

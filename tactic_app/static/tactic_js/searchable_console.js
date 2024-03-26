@@ -35,19 +35,21 @@ function SearchableConsole(props, inner_ref) {
       inner_ref.current.scrollTo(0, inner_ref.current.scrollHeight);
     }
   });
-  (0, _react.useEffect)(async () => {
+  (0, _react.useEffect)(() => {
     my_room.current = (0, _utilities_react.guid)();
     tsocket.current = new _tactic_socket.TacticSocket("main", 5000, "searchable-console", props.main_id);
     tsocket.current.socket.emit("join", {
       "room": my_room.current
     });
-    async function cleanup() {
-      await _stopLogStreaming();
-      tsocket.current.disconnect();
+    function cleanup() {
+      _stopLogStreaming().then(() => {
+        tsocket.current.disconnect();
+      });
     }
     initSocket();
-    await _getLogAndStartStreaming();
-    window.addEventListener('beforeunload', cleanup);
+    _getLogAndStartStreaming().then(() => {
+      window.addEventListener('beforeunload', cleanup);
+    });
     return () => {
       cleanup();
       window.removeEventListener('beforeunload', cleanup);

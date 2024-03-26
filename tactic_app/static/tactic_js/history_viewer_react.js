@@ -78,12 +78,17 @@ function HistoryViewerApp(props) {
   const errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
   const pushCallback = (0, _utilities_react2.useCallbackStack)();
   (0, _react.useEffect)(() => {
-    window.addEventListener("beforeunload", function (e) {
+    function beforeUnloadFunc(e) {
       if (_dirty()) {
         e.preventDefault();
         e.returnValue = '';
       }
-    });
+    }
+    window.addEventListener("beforeunload", beforeUnloadFunc);
+    return () => {
+      props.tsocket.disconnect();
+      window.removeEventListener("beforeunload", beforeUnloadFunc);
+    };
   }, []);
   function initSocket() {
     props.tsocket.attachListener("window-open", data => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));

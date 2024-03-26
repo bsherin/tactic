@@ -273,12 +273,15 @@ function PoolTree(props) {
   const [sortDirection, setSortDirection] = (0, _react.useState)("descending");
   const theme = (0, _react.useContext)(_theme.ThemeContext);
   const pushCallback = (0, _utilities_react.useCallbackStack)();
-  (0, _react.useEffect)(async () => {
+  (0, _react.useEffect)(() => {
     initSocket();
     if (props.registerTreeRefreshFunc) {
       props.registerTreeRefreshFunc(getTree);
     }
-    await getTree();
+    getTree().then(() => {});
+    return () => {
+      props.tsocket.disconnect();
+    };
   }, []);
   async function getTree() {
     try {

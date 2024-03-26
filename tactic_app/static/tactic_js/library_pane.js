@@ -155,9 +155,12 @@ function LibraryPane(props) {
       blank_selected_resource.current[col] = "";
     }
   });
-  (0, _react.useEffect)(async () => {
+  (0, _react.useEffect)(() => {
     initSocket();
-    await _grabNewChunkWithRow(0);
+    _grabNewChunkWithRow(0).then(() => {});
+    return () => {
+      props.tsocket.disconnect();
+    };
   }, []);
   const pushCallback = (0, _utilities_react.useCallbackStack)("library_home");
   function setState(new_state) {

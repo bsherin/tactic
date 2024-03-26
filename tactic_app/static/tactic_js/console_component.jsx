@@ -83,11 +83,11 @@ function ConsoleComponent(props) {
     const [header_usable_width, header_usable_height, header_topX, header_topY] = useSize(header_ref, 0, "HConsoleComponent");
     const [usable_width, usable_height, topX, topY] = useSize(body_ref, 0, "ConsoleComponent");
 
-    useEffect(async () => {
+    useEffect(() => {
         initSocket();
         _requestPseudoTileId();
         if (props.console_items.current.length == 0) {
-            await _addCodeArea("", false)
+            _addCodeArea("", false)
         }
         if (props.console_selected_items_ref.current.length == 0) {
             _clear_all_selected_items(() => {
@@ -96,6 +96,9 @@ function ConsoleComponent(props) {
                 }
             });
         }
+        return (() => {
+            props.tsocket.disconnect()
+        })
     }, []);
 
     function initSocket() {
@@ -389,12 +392,13 @@ function ConsoleComponent(props) {
         await _addCodeArea("");
     }, []);
 
-    async function _addCodeArea(the_text, force_open = true) {
+    function _addCodeArea(the_text, force_open = true) {
         try {
-            await postPromise("host",
-            "print_code_area_to_console",
-            {console_text: the_text, user_id: window.user_id, main_id: props.main_id, force_open: force_open},
-            props.main_id);
+            postWithCallback("host",
+                "print_code_area_to_console",
+                {console_text: the_text, user_id: window.user_id, main_id: props.main_id, force_open: force_open},
+                null, null,
+                props.main_id);
         }
         catch (e) {
             errorDrawerFuncs.addFromError("Error creating code cell", e);
@@ -1142,7 +1146,7 @@ function ConsoleComponent(props) {
         return filter_console_items
     }
 
-    function menu_specs() {
+    const menu_specs = useMemo(() => {
         let ms = {
             Insert: [{
                 name_text: "Text Cell", icon_name: "new-text-box", click_handler: _addBlankText,
@@ -1200,7 +1204,7 @@ function ConsoleComponent(props) {
         }
 
         return ms
-    }
+    }, [show_main_log, show_pseudo_log]);
 
     function disabled_items() {
         let items = [];
@@ -1382,7 +1386,7 @@ function ConsoleComponent(props) {
                                          icon="chevron-down"/>
                         }
 
-                        <TacticMenubar menu_specs={menu_specs()}
+                        <TacticMenubar menu_specs={menu_specs}
                                        disabled_items={disabled_items()}
                                        suggestionGlyphs={suggestionGlyphs}
                                        showRefresh={false}

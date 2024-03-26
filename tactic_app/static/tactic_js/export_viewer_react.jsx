@@ -188,10 +188,13 @@ function ExportsViewer(props) {
 
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
 
-    useEffect(async () => {
+    useEffect(() => {
         initSocket();
         props.setUpdate(_updateExportsList);
-        await _updateExportsList();
+        _updateExportsList().then(() => {});
+        return (() => {
+            props.tsocket.disconnect()
+        })
     }, []);
 
     const [usable_width, usable_height, topX, topY] = useSize(body_ref, 0, "ExportsViewer");
@@ -202,9 +205,8 @@ function ExportsViewer(props) {
 
     function _handleExportViewerMessage(data) {
         if (data.main_id == props.main_id) {
-            let self = this;
             let handlerDict = {
-                update_exports_popup: () => _updateExportsList(),
+                update_exports_popup: _updateExportsList,
                 display_result: _displayResult,
                 showMySpinner: _showMySpinner,
                 stopMySpinner: _stopMySpinner,

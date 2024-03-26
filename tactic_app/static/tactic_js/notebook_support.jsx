@@ -4,10 +4,10 @@ import {handleCallback, postWithCallback} from "./communication_react";
 
 export {notebook_props, notebookReducer}
 
-var tsocket;
 var ppi;
 
 function notebook_props(data, registerDirtyMethod, finalCallback) {
+    var tsocket;
     ppi = get_ppi();
     let main_id = data.main_id;
     if (!window.in_context) {
@@ -29,12 +29,6 @@ function notebook_props(data, registerDirtyMethod, finalCallback) {
 
     let is_totally_new = !data.is_jupyter && !data.is_project && (data.temp_data_id == "");
     let opening_from_temp_id = data.temp_data_id != "";
-
-
-    window.addEventListener("unload", function sendRemove() {
-        console.log("got the beacon");
-        navigator.sendBeacon("/remove_mainwindow", JSON.stringify({"main_id": main_id}));
-    });
 
     function _everyone_ready_in_context() {
         if (!window.in_context) {

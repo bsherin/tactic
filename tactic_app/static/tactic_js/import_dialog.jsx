@@ -78,6 +78,9 @@ function FileImportDialog(props) {
         }
         _updatePickerSize();
         initSocket()
+        return (() => {
+            props.tsocket.disconnect()
+        })
     }, []);
 
     useEffect(() => {

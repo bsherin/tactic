@@ -45,38 +45,38 @@ function ReactCodemirrorMergeView(props) {
 
     const theme = useContext(ThemeContext);
 
-    useEffect(async ()=> {
-        try {
-            preferred_themes.current = await postAjaxPromise("get_preferred_codemirror_themes", {});
-            cmobject.current = createMergeArea(code_container_ref.current);
-            resizeHeights(props.max_height);
-            refreshAreas();
-            create_keymap();
-            saved_theme.current = theme.dark_theme
-        } catch (e) {
-            errorDrawerFuncs.addFromError("Error getting preferred theme", e);
-            return
-        }
+    useEffect(()=> {
+        postAjaxPromise("get_preferred_codemirror_themes", {})
+            .then((data) => {
+                preferred_themes.current = data;
+                cmobject.current = createMergeArea(code_container_ref.current);
+                resizeHeights(props.max_height);
+                refreshAreas();
+                create_keymap();
+                saved_theme.current = theme.dark_theme
+            })
+            .catch((e) =>{
+                errorDrawerFuncs.addFromError("Error getting preferred theme", e);
+                return
+            })
     }, []);
 
-
-
-    useEffect(async ()=>{
+    useEffect(()=>{
         if (!cmobject.current) {
             return
         }
-
         if (theme.dark_theme != saved_theme.current) {
-            try {
-                preferred_themes.current = await postAjaxPromise("get_preferred_codemirror_themes", {});
+            postAjaxPromise("get_preferred_codemirror_themes", {})
+            .then((data) => {
+                preferred_themes.current = data;
                 cmobject.current.editor().setOption("theme", _current_codemirror_theme());
                 cmobject.current.rightOriginal().setOption("theme", _current_codemirror_theme());
                 saved_theme.current = theme.dark_theme
-            }
-            catch (e) {
+            })
+            .catch((e) =>{
                 errorDrawerFuncs.addFromError("Error getting preferred theme", e);
                 return
-            }
+            })
         }
         if (cmobject.current.editor().getValue() != props.editor_content) {
             cmobject.current.editor().setValue(props.editor_content)
