@@ -69,16 +69,17 @@ function ReactCodemirror(props) {
   const search_focus_info = (0, _react.useRef)(null);
   const first_render = (0, _react.useRef)(true);
   const prevSoftWrap = (0, _react.useRef)(null);
+  const registeredHandlers = (0, _react.useRef)([]);
   const theme = (0, _react.useContext)(_theme.ThemeContext);
   const errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
   const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(localRef, props.iCounter, "CodeMirror");
-  (0, _react.useEffect)(async () => {
+  (0, _react.useEffect)(() => {
     prevSoftWrap.current = props.soft_wrap;
     if (props.registerSetFocusFunc) {
       props.registerSetFocusFunc(setFocus);
     }
-    try {
-      preferred_themes.current = await (0, _communication_react.postAjaxPromise)('get_preferred_codemirror_themes', {});
+    (0, _communication_react.postAjaxPromise)('get_preferred_codemirror_themes', {}).then(data => {
+      preferred_themes.current = data;
       cmobject.current = createCMArea(localRef.current, props.first_line_number);
       cmobject.current.setValue(props.code_content);
       cmobject.current.setOption("extra_autocomplete_list", props.extra_autocomplete_list);
@@ -88,27 +89,29 @@ function ReactCodemirror(props) {
       }
       saved_theme.current = theme.dark_theme;
       _doHighlight();
-    } catch (e) {
+    }).catch(e => {
       errorDrawerFuncs.addErrorDrawerEntry({
         title: `Error getting preferred codemirror theme`,
         content: "message" in e ? e.message : ""
       });
       return;
-    }
+    });
   }, []);
-  (0, _react.useEffect)(async () => {
+  (0, _react.useLayoutEffect)(() => {
+    return () => {
+      for (let [event, handler] of registeredHandlers.current) {
+        cmobject.current.off(event, handler);
+      }
+      delete _codemirror.default.keyMap["default"].Esc;
+      cmobject.current = null;
+      if (localRef.current) {
+        localRef.current.innerHTML = '';
+      }
+    };
+  }, []);
+  (0, _react.useEffect)(() => {
     if (!cmobject.current) {
       return;
-    }
-    if (theme.dark_theme != saved_theme.current) {
-      try {
-        preferred_themes.current = await (0, _communication_react.postAjaxPromise)("get_preferred_codemirror_themes", {});
-        cmobject.current.setOption("theme", _current_codemirror_theme());
-        saved_theme.current = theme.dark_theme;
-      } catch (e) {
-        errorDrawerFuncs.addFromError("Error getting preferred theme", e);
-        return;
-      }
     }
     if (props.soft_wrap != prevSoftWrap.current) {
       cmobject.current.setOption("lineWrapping", props.soft_wrap);
@@ -126,6 +129,19 @@ function ReactCodemirror(props) {
     cmobject.current.setOption("extra_autocomplete_list", props.extra_autocomplete_list);
     _doHighlight();
     set_keymap();
+    if (theme.dark_theme != saved_theme.current) {
+      (0, _communication_react.postAjaxPromise)("get_preferred_codemirror_themes", {}).then(data => {
+        preferred_themes.current = data;
+        cmobject.current.setOption("theme", _current_codemirror_theme());
+        saved_theme.current = theme.dark_theme;
+      }).catch(e => {
+        errorDrawerFuncs.addErrorDrawerEntry({
+          title: `Error getting preferred codemirror theme`,
+          content: "message" in e ? e.message : ""
+        });
+        return;
+      });
+    }
   });
   const selectedPane = (0, _react.useContext)(_utilities_react.SelectedPaneContext);
   function setFocus() {
@@ -142,7 +158,7 @@ function ReactCodemirror(props) {
   }
   function createCMArea(codearea) {
     let first_line_number = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
-    let cmobject = (0, _codemirror.default)(codearea, {
+    let lcmobject = (0, _codemirror.default)(codearea, {
       lineNumbers: props.show_line_numbers,
       lineWrapping: props.soft_wrap,
       matchBrackets: true,
@@ -160,7 +176,7 @@ function ReactCodemirror(props) {
       autoRefresh: true
     });
     if (first_line_number != 1) {
-      cmobject.setOption("firstLineNumber", first_line_number);
+      lcmobject.setOption("firstLineNumber", first_line_number);
     }
     let all_extra_keys = Object.assign(props.extraKeys, {
       Tab: function (cm) {
@@ -169,12 +185,13 @@ function ReactCodemirror(props) {
       },
       "Ctrl-Space": "autocomplete"
     });
-    cmobject.setOption("extraKeys", all_extra_keys);
-    cmobject.setSize("100%", "100%");
-    cmobject.on("change", handleChange);
-    cmobject.on("blur", handleBlur);
-    cmobject.on("focus", handleFocus);
-    return cmobject;
+    lcmobject.setOption("extraKeys", all_extra_keys);
+    lcmobject.setSize("100%", "100%");
+    lcmobject.on("change", handleChange);
+    lcmobject.on("blur", handleBlur);
+    lcmobject.on("focus", handleFocus);
+    registeredHandlers.current = registeredHandlers.current.concat([["change", handleChange], ["blur", handleBlur], ["focus", handleFocus]]);
+    return lcmobject;
   }
   function handleChange(cm, changeObject) {
     if (props.handleChange) {
@@ -337,19 +354,20 @@ function ReactCodemirror(props) {
         clearSelections();
       };
     } else {
-      delete _codemirror.default.keyMap["default"].esc;
+      delete _codemirror.default.keyMap["default"].Esc;
     }
   }
   function create_keymap() {
     set_keymap();
     let is_mac = _codemirror.default.keyMap["default"].hasOwnProperty("Cmd-S");
-    mousetrap.current.bind(['escape'], function (e) {
-      if (selectedPane.amSelected(selectedPane.tab_id, selectedPane.selectedTabIdRef)) {
-        return false;
-      }
-      clearSelections();
-      e.preventDefault();
-    });
+
+    // mousetrap.current.bind(['escape'], function (e) {
+    //     if (selectedPane.amSelected(selectedPane.tab_id, selectedPane.selectedTabIdRef)) {
+    //         return false;
+    //     }
+    //     clearSelections();
+    //     e.preventDefault()
+    // });
   }
   let ccstyle = {
     lineHeight: "21px"

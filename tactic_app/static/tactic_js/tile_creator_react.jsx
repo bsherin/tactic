@@ -116,16 +116,16 @@ function CreatorApp(props) {
 
     const connection_status = useConnection(props.tsocket, initSocket);
 
-    useEffect(async () => {
+    useEffect(() => {
         let data_dict = {pane_type: "tile", is_repository: false, show_hidden: true};
         let data;
-        try {
-            data = await postAjaxPromise("get_tag_list", data_dict);
-            set_all_tags(data.tag_list)
-        }
-        catch (e) {
-            errorDrawerFuncs.addFromError("Error getting tag list", e)
-        }
+        postAjaxPromise("get_tag_list", data_dict)
+            .then((data) => {
+                set_all_tags(data.tag_list)
+            })
+            .catch((e) => {
+                errorDrawerFuncs.addFromError("Error getting tag list", e)
+            })
     }, []);
 
     useEffect(() => {
@@ -144,9 +144,16 @@ function CreatorApp(props) {
         _goToLineNumber();
         _update_saved_state();
         errorDrawerFuncs.setGoToLineNumber(_selectLineNumber);
+
+        function sendRemove() {
+            navigator.sendBeacon("/delete_container_on_unload",
+                JSON.stringify({"container_id": module_viewer_id, "notify": false}));
+        }
+        window.addEventListener("unload", sendRemove);
         statusFuncs.stopSpinner();
         return (() => {
-            delete_my_container()
+            delete_my_container();
+            window.removeEventListener("unload", sendRemove);
         })
     }, []);
 

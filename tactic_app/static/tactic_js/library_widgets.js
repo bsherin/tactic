@@ -413,8 +413,12 @@ function compute_initial_column_widths(header_list, data_list) {
   // Get sample header and body cells
 
   // set up a canvas so that we can use it to compute the width of text
-  let body_font = $($(".bp5-table-truncated-text")[0]).css("font");
-  let header_font = $($(".bp5-table-column-name-text")[0]).css("font");
+  // let body_font = $($(".bp5-table-truncated-text")[0]).css("font");
+  const element = document.querySelector(".bp5-table-truncated-text");
+  const body_font = window.getComputedStyle(element).getPropertyValue("font");
+  //let header_font = $($(".bp5-table-column-name-text")[0]).css("font");
+  const header_element = document.querySelector(".bp5-table-column-name-text");
+  const header_font = window.getComputedStyle(header_element).getPropertyValue("font");
   let canvas_element = document.getElementById("measure-canvas");
   let ctx = canvas_element.getContext("2d");
   let added_body_width = 20;

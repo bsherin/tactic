@@ -273,12 +273,15 @@ function PoolTree(props) {
 
     const pushCallback = useCallbackStack();
 
-    useEffect(async ()=>{
+    useEffect(()=>{
         initSocket();
         if (props.registerTreeRefreshFunc) {
             props.registerTreeRefreshFunc(getTree)
         }
-        await getTree();
+        getTree().then(()=>{});
+        return (() => {
+            props.tsocket.disconnect()
+        })
     }, []);
 
     async function getTree() {

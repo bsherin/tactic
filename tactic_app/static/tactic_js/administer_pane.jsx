@@ -39,9 +39,12 @@ function AdminPane(props) {
 
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
 
-    useEffect(async () => {
+    useEffect(() => {
         initSocket();
-        await _grabNewChunkWithRow(0, true, null, true);
+        _grabNewChunkWithRow(0, true, null, true).then(() => {});
+        return (() => {
+            props.tsocket.disconnect()
+        })
     }, []);
 
     function initSocket() {

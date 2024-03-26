@@ -109,7 +109,10 @@ function withStatus(WrappedComponent) {
 
         useEffect(() => {
             if (props.tsocket) {
-                initSocket()
+                initSocket();
+                return (() => {
+                    props.tsocket.disconnect()
+                })
             }
         }, []);
 

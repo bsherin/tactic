@@ -85,12 +85,17 @@ function HistoryViewerApp(props) {
     const pushCallback = useCallbackStack();
 
     useEffect(()=>{
-        window.addEventListener("beforeunload", function (e) {
+        function beforeUnloadFunc(e) {
             if (_dirty()) {
                 e.preventDefault();
                 e.returnValue = ''
             }
-        });
+        }
+        window.addEventListener("beforeunload", beforeUnloadFunc);
+        return (() => {
+            props.tsocket.disconnect();
+            window.removeEventListener("beforeunload", beforeUnloadFunc)
+        })
     }, []);
 
     function initSocket() {

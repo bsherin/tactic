@@ -1,9 +1,8 @@
-
 import React from "react";
-import { Fragment, useEffect, useRef, memo, useContext } from "react";
+import {Fragment, useEffect, useRef, memo, useLayoutEffect, useContext} from "react";
 import PropTypes from 'prop-types';
 
-import { Button, ButtonGroup } from "@blueprintjs/core";
+import {Button, ButtonGroup} from "@blueprintjs/core";
 
 import {postAjaxPromise} from "./communication_react"
 import {useSize} from "./sizing_tools";
@@ -62,8 +61,7 @@ function countOccurrences(query, the_text) {
             total += (str.match(query) || []).length
         }
         return total
-    }
-    else {
+    } else {
         return the_text.split(query).length - 1
     }
 }
@@ -79,52 +77,58 @@ function ReactCodemirror(props) {
     const search_focus_info = useRef(null);
     const first_render = useRef(true);
     const prevSoftWrap = useRef(null);
+    const registeredHandlers = useRef([]);
 
     const theme = useContext(ThemeContext);
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
 
     const [usable_width, usable_height, topX, topY] = useSize(localRef, props.iCounter, "CodeMirror");
 
-    useEffect(async ()=>{
+    useEffect(() => {
         prevSoftWrap.current = props.soft_wrap;
         if (props.registerSetFocusFunc) {
             props.registerSetFocusFunc(setFocus);
         }
-        try {
-            preferred_themes.current = await postAjaxPromise('get_preferred_codemirror_themes', {});
-            cmobject.current = createCMArea(localRef.current, props.first_line_number);
-            cmobject.current.setValue(props.code_content);
-            cmobject.current.setOption("extra_autocomplete_list", props.extra_autocomplete_list);
-            create_keymap();
-            if (props.setCMObject != null) {
-                props.setCMObject(cmobject.current)
-            }
-            saved_theme.current = theme.dark_theme;
-            _doHighlight()
-        }
-        catch (e) {
-            errorDrawerFuncs.addErrorDrawerEntry({
-                title: `Error getting preferred codemirror theme`,
-                content: "message" in e ? e.message : ""
-            });
-            return
-        }
+        postAjaxPromise('get_preferred_codemirror_themes', {})
+            .then((data) => {
+                preferred_themes.current = data;
+                cmobject.current = createCMArea(localRef.current, props.first_line_number);
+                cmobject.current.setValue(props.code_content);
+                cmobject.current.setOption("extra_autocomplete_list", props.extra_autocomplete_list);
+                create_keymap();
+                if (props.setCMObject != null) {
+                    props.setCMObject(cmobject.current)
+                }
+                saved_theme.current = theme.dark_theme;
+                _doHighlight()
+            })
+            .catch((e) => {
+                errorDrawerFuncs.addErrorDrawerEntry({
+                    title: `Error getting preferred codemirror theme`,
+                    content: "message" in e ? e.message : ""
+                });
+                return
+            })
     }, []);
 
-    useEffect(async ()=>{
+    useLayoutEffect(() => {
+        return (() => {
+            for (let [event, handler] of registeredHandlers.current) {
+                cmobject.current.off(event, handler)
+            }
+            delete CodeMirror.keyMap["default"].Esc;
+            cmobject.current = null;
+            if (localRef.current) {
+                localRef.current.innerHTML = '';
+            }
+        });
+    }, []);
+
+    useEffect(() => {
         if (!cmobject.current) {
             return
         }
-        if (theme.dark_theme != saved_theme.current) {
-            try {
-                preferred_themes.current = await postAjaxPromise("get_preferred_codemirror_themes", {});
-                cmobject.current.setOption("theme", _current_codemirror_theme());
-                saved_theme.current = theme.dark_theme
-            } catch (e) {
-                errorDrawerFuncs.addFromError("Error getting preferred theme", e);
-                return
-            }
-        }
+
         if (props.soft_wrap != prevSoftWrap.current) {
             cmobject.current.setOption("lineWrapping", props.soft_wrap);
             prevSoftWrap.current = props.soft_wrap;
@@ -140,7 +144,23 @@ function ReactCodemirror(props) {
         }
         cmobject.current.setOption("extra_autocomplete_list", props.extra_autocomplete_list);
         _doHighlight();
-        set_keymap()
+        set_keymap();
+
+        if (theme.dark_theme != saved_theme.current) {
+            postAjaxPromise("get_preferred_codemirror_themes", {})
+                .then((data) => {
+                    preferred_themes.current = data;
+                    cmobject.current.setOption("theme", _current_codemirror_theme());
+                    saved_theme.current = theme.dark_theme
+                })
+                .catch((e) => {
+                    errorDrawerFuncs.addErrorDrawerEntry({
+                        title: `Error getting preferred codemirror theme`,
+                        content: "message" in e ? e.message : ""
+                    });
+                    return
+                })
+        }
     });
 
     const selectedPane = useContext(SelectedPaneContext);
@@ -154,12 +174,12 @@ function ReactCodemirror(props) {
 
     function _current_codemirror_theme() {
         return theme.dark_theme ? preferred_themes.current.preferred_dark_theme :
-                preferred_themes.current.preferred_light_theme;
+            preferred_themes.current.preferred_light_theme;
     }
 
     function createCMArea(codearea, first_line_number = 1) {
 
-        let cmobject = CodeMirror(codearea, {
+        let lcmobject = CodeMirror(codearea, {
             lineNumbers: props.show_line_numbers,
             lineWrapping: props.soft_wrap,
             matchBrackets: true,
@@ -177,11 +197,11 @@ function ReactCodemirror(props) {
             autoRefresh: true
         });
         if (first_line_number != 1) {
-            cmobject.setOption("firstLineNumber", first_line_number)
+            lcmobject.setOption("firstLineNumber", first_line_number)
         }
 
         let all_extra_keys = Object.assign(props.extraKeys, {
-            Tab: function (cm) {
+                Tab: function (cm) {
                     let spaces = new Array(5).join(" ");
                     cm.replaceSelection(spaces);
                 },
@@ -189,12 +209,13 @@ function ReactCodemirror(props) {
             }
         );
 
-        cmobject.setOption("extraKeys", all_extra_keys);
-        cmobject.setSize("100%", "100%");
-        cmobject.on("change", handleChange);
-        cmobject.on("blur", handleBlur);
-        cmobject.on("focus", handleFocus);
-        return cmobject
+        lcmobject.setOption("extraKeys", all_extra_keys);
+        lcmobject.setSize("100%", "100%");
+        lcmobject.on("change", handleChange);
+        lcmobject.on("blur", handleBlur);
+        lcmobject.on("focus", handleFocus);
+        registeredHandlers.current = registeredHandlers.current.concat([["change", handleChange], ["blur", handleBlur], ["focus", handleFocus]]);
+        return lcmobject
     }
 
     function handleChange(cm, changeObject) {
@@ -215,17 +236,15 @@ function ReactCodemirror(props) {
         }
     }
 
-    function _searchMatcher(term, global=false) {
+    function _searchMatcher(term, global = false) {
         let matcher;
         if (props.regex_search) {
             try {
-                matcher = global ? new RegExp(term, "g"): new RegExp(term)
-            }
-            catch(e) {
+                matcher = global ? new RegExp(term, "g") : new RegExp(term)
+            } catch (e) {
                 matcher = term
             }
-        }
-        else {
+        } else {
             matcher = term
         }
         return matcher
@@ -250,27 +269,24 @@ function ReactCodemirror(props) {
     function _doHighlight() {
         try {
             if (props.search_term == null || props.search_term == "") {
-                cmobject.current.operation(function() {
+                cmobject.current.operation(function () {
                     _removeOverlay()
                 })
-            }
-            else{
+            } else {
                 if (props.current_search_number != null) {
                     search_focus_info.current = {..._lineNumberFromSearchNumber()};
                     if (search_focus_info.current) {
                         _scrollToLine(search_focus_info.current.line)
                     }
-                }
-                else {
+                } else {
                     search_focus_info.current = null;
                 }
-                cmobject.current.operation(function() {
+                cmobject.current.operation(function () {
                     _removeOverlay();
                     _addOverlay(props.search_term);
                 });
             }
-        }
-        catch(e) {
+        } catch (e) {
             console.log(e.message)
         }
     }
@@ -280,7 +296,7 @@ function ReactCodemirror(props) {
         window.scrollTo(0, 0)  // A kludge. Without it whole window can move when switching contexts
     }
 
-    function _addOverlay(query, hasBoundary=false, style="searchhighlight", focus_style="focussearchhighlight") {
+    function _addOverlay(query, hasBoundary = false, style = "searchhighlight", focus_style = "focussearchhighlight") {
         let prev_matches = matches.current;
         var reg = _searchMatcher(query, true);
         matches.current = countOccurrences(reg, props.code_content);
@@ -289,52 +305,52 @@ function ReactCodemirror(props) {
         }
         overlay.current = _makeOverlay(query, hasBoundary, style, focus_style);
         cmobject.current.addOverlay(overlay.current);
-      }
+    }
 
     function _makeOverlay(query, hasBoundary, style, focus_style) {
         let last_line = -1;
         let line_counter = -1;
         let matcher = _searchMatcher(query);
-        return {token: function(stream) {
-          if (stream.match(matcher) &&
-              (!hasBoundary || _boundariesAround(stream, hasBoundary))) {
-              let lnum = stream.lineOracle.line;
+        return {
+            token: function (stream) {
+                if (stream.match(matcher) &&
+                    (!hasBoundary || _boundariesAround(stream, hasBoundary))) {
+                    let lnum = stream.lineOracle.line;
 
-              if (search_focus_info.current && lnum == search_focus_info.current.line) {
-                  if (lnum != last_line) {
-                      line_counter = 0;
-                      last_line = lnum
-                  }
-                  else {
-                      line_counter += 1
-                  }
-                  if (line_counter == search_focus_info.current.match) {
-                      return focus_style
-                  }
-              }
-              else {
-                  last_line = -1;
-                  line_counter = -1;
-              }
-              return style;
-          }
+                    if (search_focus_info.current && lnum == search_focus_info.current.line) {
+                        if (lnum != last_line) {
+                            line_counter = 0;
+                            last_line = lnum
+                        } else {
+                            line_counter += 1
+                        }
+                        if (line_counter == search_focus_info.current.match) {
+                            return focus_style
+                        }
+                    } else {
+                        last_line = -1;
+                        line_counter = -1;
+                    }
+                    return style;
+                }
 
-          stream.next();
-          if (!isRegex(matcher)) {
-              stream.skipTo(query.charAt(0)) || stream.skipToEnd();
-          }
-        }};
+                stream.next();
+                if (!isRegex(matcher)) {
+                    stream.skipTo(query.charAt(0)) || stream.skipToEnd();
+                }
+            }
+        };
     }
 
     function _boundariesAround(stream, re) {
         return (!stream.start || !re.test(stream.string.charAt(stream.start - 1))) &&
-          (stream.pos == stream.string.length || !re.test(stream.string.charAt(stream.pos)));
+            (stream.pos == stream.string.length || !re.test(stream.string.charAt(stream.pos)));
     }
 
     function _removeOverlay() {
         if (overlay.current) {
-          cmobject.current.removeOverlay(overlay.current);
-          overlay.current = null;
+            cmobject.current.removeOverlay(overlay.current);
+            overlay.current = null;
         }
     }
 
@@ -345,6 +361,7 @@ function ReactCodemirror(props) {
     function _foldAll() {
         CodeMirror.commands.foldAll(cmobject.current)
     }
+
     function _unfoldAll() {
         CodeMirror.commands.unfoldAll(cmobject.current)
     }
@@ -352,8 +369,7 @@ function ReactCodemirror(props) {
     function clearSelections() {
         if (props.alt_clear_selections) {
             props.alt_clear_selections()
-        }
-        else {
+        } else {
             let to = cmobject.current.getCursor("to");
             cmobject.current.setCursor(to);
         }
@@ -367,9 +383,8 @@ function ReactCodemirror(props) {
             CodeMirror.keyMap["default"]["Esc"] = function () {
                 clearSelections()
             }
-        }
-        else {
-            delete CodeMirror.keyMap["default"].esc
+        } else {
+            delete CodeMirror.keyMap["default"].Esc
         }
     }
 
@@ -377,13 +392,13 @@ function ReactCodemirror(props) {
         set_keymap();
         let is_mac = CodeMirror.keyMap["default"].hasOwnProperty("Cmd-S");
 
-        mousetrap.current.bind(['escape'], function (e) {
-            if (selectedPane.amSelected(selectedPane.tab_id, selectedPane.selectedTabIdRef)) {
-                return false;
-            }
-            clearSelections();
-            e.preventDefault()
-        });
+        // mousetrap.current.bind(['escape'], function (e) {
+        //     if (selectedPane.amSelected(selectedPane.tab_id, selectedPane.selectedTabIdRef)) {
+        //         return false;
+        //     }
+        //     clearSelections();
+        //     e.preventDefault()
+        // });
     }
 
     let ccstyle = {
@@ -416,15 +431,18 @@ function ReactCodemirror(props) {
         let title_label = props.title_label ? props.title_label : "";
         return (
             <Fragment>
-                <div style={{display: "flex", flexDirection: "row", justifyContent: "space-between",
+                <div style={{
+                    display: "flex", flexDirection: "row", justifyContent: "space-between",
                     marginRight: 10,
-                    width: "100%"}}>
+                    width: "100%"
+                }}>
                     <span className="bp5-ui-text"
                           style={{
                               display: "flex",
                               paddingLeft: 5,
                               paddingBottom: 2,
-                              alignItems: "self-end"}}>{title_label}</span>
+                              alignItems: "self-end"
+                          }}>{title_label}</span>
                     <SearchForm update_search_state={props.updateSearchState}
                                 search_string={props.search_term}
                                 regex={props.regex_search}
@@ -448,24 +466,25 @@ function ReactCodemirror(props) {
                 </div>
 
             </Fragment>
-    )
+        )
     }
     return (
         <Fragment>
             {props.show_fold_button && bgstyle &&
                 <ButtonGroup minimal={false} style={bgstyle}>
                     <Button small={true} icon="collapse-all" text="fold" onClick={_foldAll}/>
-                     <Button small={true}  icon="expand-all"  text="unfold" onClick={_unfoldAll}/>
+                    <Button small={true} icon="expand-all" text="unfold" onClick={_unfoldAll}/>
                 </ButtonGroup>
 
-             }
+            }
             {props.title_label &&
                 <span className="bp5-ui-text"
                       style={{
                           display: "flex",
                           paddingLeft: 5,
                           paddingBottom: 2,
-                          alignItems: "self-end"}}>{props.title_label}</span>
+                          alignItems: "self-end"
+                      }}>{props.title_label}</span>
             }
             <div className="code-container" style={ccstyle} ref={localRef}>
 
@@ -474,7 +493,7 @@ function ReactCodemirror(props) {
     )
 }
 
-ReactCodemirror = memo(ReactCodemirror, (prevProps, newProps)=>{
+ReactCodemirror = memo(ReactCodemirror, (prevProps, newProps) => {
     propsAreEqual(prevProps, newProps, ["extraKeys"])
 });
 

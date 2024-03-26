@@ -116,7 +116,10 @@ function TileContainer(props) {
     const [usable_width, usable_height, topX, topY] = useSize(tile_div_ref, 0, "TileContainer");
 
     useEffect(() => {
-        initSocket()
+        initSocket();
+        return (() => {
+            props.tsocket.disconnect()
+        })
     }, []);
 
     const pushCallback = useCallbackStack();

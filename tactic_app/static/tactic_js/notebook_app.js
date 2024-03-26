@@ -75,6 +75,13 @@ function NotebookApp(props) {
         }
       });
     }
+    function sendRemove() {
+      console.log("got the beacon");
+      navigator.sendBeacon("/remove_mainwindow", JSON.stringify({
+        "main_id": props.main_id
+      }));
+    }
+    window.addEventListener("unload", sendRemove);
     _updateLastSave();
     statusFuncs.stopSpinner();
     if (!props.controlled) {
@@ -82,6 +89,7 @@ function NotebookApp(props) {
     }
     return () => {
       delete_my_containers();
+      window.removeEventListener("unload", sendRemove);
     };
   }, []);
   function am_selected() {

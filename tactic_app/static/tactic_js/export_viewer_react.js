@@ -200,10 +200,13 @@ function ExportsViewer(props) {
   const [pipe_dict, set_pipe_dict] = (0, _react.useState)({});
   const pushCallback = (0, _utilities_react.useCallbackStack)();
   const errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
-  (0, _react.useEffect)(async () => {
+  (0, _react.useEffect)(() => {
     initSocket();
     props.setUpdate(_updateExportsList);
-    await _updateExportsList();
+    _updateExportsList().then(() => {});
+    return () => {
+      props.tsocket.disconnect();
+    };
   }, []);
   const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(body_ref, 0, "ExportsViewer");
   function initSocket() {
@@ -211,9 +214,8 @@ function ExportsViewer(props) {
   }
   function _handleExportViewerMessage(data) {
     if (data.main_id == props.main_id) {
-      let self = this;
       let handlerDict = {
-        update_exports_popup: () => _updateExportsList(),
+        update_exports_popup: _updateExportsList,
         display_result: _displayResult,
         showMySpinner: _showMySpinner,
         stopMySpinner: _stopMySpinner,

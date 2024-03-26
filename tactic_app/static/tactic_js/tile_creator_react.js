@@ -99,19 +99,18 @@ function CreatorApp(props) {
   const pushCallback = (0, _utilities_react.useCallbackStack)();
   const [resource_name, set_resource_name] = (0, _react.useState)(props.resource_name);
   const connection_status = (0, _utilities_react.useConnection)(props.tsocket, initSocket);
-  (0, _react.useEffect)(async () => {
+  (0, _react.useEffect)(() => {
     let data_dict = {
       pane_type: "tile",
       is_repository: false,
       show_hidden: true
     };
     let data;
-    try {
-      data = await (0, _communication_react.postAjaxPromise)("get_tag_list", data_dict);
+    (0, _communication_react.postAjaxPromise)("get_tag_list", data_dict).then(data => {
       set_all_tags(data.tag_list);
-    } catch (e) {
+    }).catch(e => {
       errorDrawerFuncs.addFromError("Error getting tag list", e);
-    }
+    });
   }, []);
   (0, _react.useEffect)(() => {
     if (props.controlled) {
@@ -129,9 +128,17 @@ function CreatorApp(props) {
     _goToLineNumber();
     _update_saved_state();
     errorDrawerFuncs.setGoToLineNumber(_selectLineNumber);
+    function sendRemove() {
+      navigator.sendBeacon("/delete_container_on_unload", JSON.stringify({
+        "container_id": module_viewer_id,
+        "notify": false
+      }));
+    }
+    window.addEventListener("unload", sendRemove);
     statusFuncs.stopSpinner();
     return () => {
       delete_my_container();
+      window.removeEventListener("unload", sendRemove);
     };
   }, []);
   (0, _react.useEffect)(() => {

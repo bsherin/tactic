@@ -24,7 +24,7 @@ function KeyTrap(props) {
         if (!mousetrap.current) {
             _initializeMousetrap()
         }
-    })
+    });
 
     function _initializeMousetrap() {
         if (mousetrap.current) {

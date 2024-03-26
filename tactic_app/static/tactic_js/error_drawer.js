@@ -31,6 +31,12 @@ function withErrorDrawer(WrappedComponent) {
     const goToModule = (0, _react.useRef)(null);
     (0, _react.useEffect)(() => {
       initSocket();
+      return () => {
+        props.tsocket.disconnect();
+        goToLineNumber.current = null;
+        ucounter.current = null;
+        local_id.current = null;
+      };
     }, []);
     function initSocket() {
       props.tsocket.attachListener('add-error-drawer-entry', _addEntry);

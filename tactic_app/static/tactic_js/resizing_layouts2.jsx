@@ -276,7 +276,8 @@ function HorizontalPanes(props) {
         let result = {};
         if (props.scrollAdjustSelectors && top_ref && top_ref.current) {
             for (let selector of props.scrollAdjustSelectors) {
-                let els = $(top_ref.current).find(selector);
+                // let els = $(top_ref.current).find(selector);
+                let els = top_ref.current.querySelectorAll(selector);
                 if (els.length > 0) {
                     result[selector] = els[0]
                 }
@@ -507,7 +508,8 @@ function VerticalPanes(props) {
         let result = {};
         if (props.scrollAdjustSelectors && top_ref && top_ref.current) {
             for (let selector of props.scrollAdjustSelectors) {
-                let els = $(top_ref.current).find(selector);
+                // let els = $(top_ref.current).find(selector);
+                let els = top_ref.current.querySelectorAll(selector);
                 if (els.length > 0) {
                     result[selector] = els[0]
                 }

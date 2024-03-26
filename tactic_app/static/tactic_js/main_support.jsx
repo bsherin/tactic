@@ -4,12 +4,12 @@ import {TacticSocket} from "./tactic_socket";
 import {postWithCallback} from "./communication_react";
 
 let ppi;
-var tsocket;
+
 
 export {main_props, mainReducer}
 
 function main_props(data, registerDirtyMethod, finalCallback) {
-
+    var tsocket;
     ppi = get_ppi();
     let main_id = data.main_id;
     if (!window.in_context) {
@@ -28,15 +28,11 @@ function main_props(data, registerDirtyMethod, finalCallback) {
         })
     });
 
-    tsocket.socket.on('finish-post-load', _finish_post_load_in_context);
+    tsocket.attachListener('finish-post-load', _finish_post_load_in_context);
 
     function readyListener() {
         _everyone_ready_in_context(finalCallback)
     }
-
-    window.addEventListener("unload", function sendRemove(event) {
-        navigator.sendBeacon("/remove_mainwindow", JSON.stringify({"main_id": main_id}));
-    });
 
     function _everyone_ready_in_context() {
         if (!window.in_context) {

@@ -92,11 +92,11 @@ function ConsoleComponent(props) {
   const errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
   const [header_usable_width, header_usable_height, header_topX, header_topY] = (0, _sizing_tools.useSize)(header_ref, 0, "HConsoleComponent");
   const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(body_ref, 0, "ConsoleComponent");
-  (0, _react.useEffect)(async () => {
+  (0, _react.useEffect)(() => {
     initSocket();
     _requestPseudoTileId();
     if (props.console_items.current.length == 0) {
-      await _addCodeArea("", false);
+      _addCodeArea("", false);
     }
     if (props.console_selected_items_ref.current.length == 0) {
       _clear_all_selected_items(() => {
@@ -105,6 +105,9 @@ function ConsoleComponent(props) {
         }
       });
     }
+    return () => {
+      props.tsocket.disconnect();
+    };
   }, []);
   function initSocket() {
     function _handleConsoleMessage(data) {
@@ -387,15 +390,15 @@ function ConsoleComponent(props) {
     }
     await _addCodeArea("");
   }, []);
-  async function _addCodeArea(the_text) {
+  function _addCodeArea(the_text) {
     let force_open = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
     try {
-      await (0, _communication_react.postPromise)("host", "print_code_area_to_console", {
+      (0, _communication_react.postWithCallback)("host", "print_code_area_to_console", {
         console_text: the_text,
         user_id: window.user_id,
         main_id: props.main_id,
         force_open: force_open
-      }, props.main_id);
+      }, null, null, props.main_id);
     } catch (e) {
       errorDrawerFuncs.addFromError("Error creating code cell", e);
     }
@@ -1134,7 +1137,7 @@ function ConsoleComponent(props) {
   function _shouldCancelSortStart() {
     return filter_console_items;
   }
-  function menu_specs() {
+  const menu_specs = (0, _react.useMemo)(() => {
     let ms = {
       Insert: [{
         name_text: "Text Cell",
@@ -1227,7 +1230,7 @@ function ConsoleComponent(props) {
       }];
     }
     return ms;
-  }
+  }, [show_main_log, show_pseudo_log]);
   function disabled_items() {
     let items = [];
     if (!_are_selected() || props.console_selected_items_ref.current.length != 1) {
@@ -1412,7 +1415,7 @@ function ConsoleComponent(props) {
     style: GLYPH_BUTTON_STYLE,
     icon: "chevron-down"
   }), /*#__PURE__*/_react.default.createElement(_menu_utilities.TacticMenubar, {
-    menu_specs: menu_specs(),
+    menu_specs: menu_specs,
     disabled_items: disabled_items(),
     suggestionGlyphs: suggestionGlyphs,
     showRefresh: false,

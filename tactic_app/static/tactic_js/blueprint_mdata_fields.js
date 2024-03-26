@@ -347,13 +347,13 @@ function NotesField(props) {
     }
   });
   function getNotesField() {
-    return $(notesRef.current);
+    return notesRef.current;
   }
   function hasOnlyWhitespace() {
     return !props.notes || !props.notes.trim().length;
   }
   function getMarkdownField() {
-    return $(mdRef.current);
+    return mdRef.current;
   }
   function focusNotes() {
     getNotesField().focus();

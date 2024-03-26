@@ -34,9 +34,12 @@ function AdminPane(props) {
   const [console_usable_width, console_usable_height, console_topX, console_topY] = (0, _sizing_tools.useSize)(console_text_ref, 0, "AdminConsole");
   const pushCallback = (0, _utilities_react.useCallbackStack)();
   const errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
-  (0, _react.useEffect)(async () => {
+  (0, _react.useEffect)(() => {
     initSocket();
-    await _grabNewChunkWithRow(0, true, null, true);
+    _grabNewChunkWithRow(0, true, null, true).then(() => {});
+    return () => {
+      props.tsocket.disconnect();
+    };
   }, []);
   function initSocket() {
     if (props.tsocket != null) {

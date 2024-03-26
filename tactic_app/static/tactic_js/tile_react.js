@@ -120,6 +120,9 @@ function TileContainer(props) {
   const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(tile_div_ref, 0, "TileContainer");
   (0, _react.useEffect)(() => {
     initSocket();
+    return () => {
+      props.tsocket.disconnect();
+    };
   }, []);
   const pushCallback = (0, _utilities_react.useCallbackStack)();
   function _handleTileFinishedLoading(data) {
