@@ -1367,6 +1367,8 @@ function ConsoleComponent(props) {
             {intent: "primary", icon: "console", handleClick: show_main_log ? _toggleMainLog : _togglePseudoLog})
     }
 
+    const extraProps = useMemo(()=>{return {main_id: props.main_id}});
+
     return (
         <Card id="console-panel" className={console_class} elevation={2} style={outer_style}>
             <div className="d-flex flex-column justify-content-around">
@@ -1487,7 +1489,7 @@ function ConsoleComponent(props) {
                                                onDragEnd={_resortConsoleItems}
                                                useDragHandle={false}
                                                axis="y"
-                                               extraProps={empty_style}
+                                               extraProps={extraProps}
                             />
                         {/*</ContextMenu>*/}
                     </SizeProvider>

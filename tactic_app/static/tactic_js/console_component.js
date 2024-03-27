@@ -1391,6 +1391,11 @@ function ConsoleComponent(props) {
       handleClick: show_main_log ? _toggleMainLog : _togglePseudoLog
     });
   }
+  const extraProps = (0, _react.useMemo)(() => {
+    return {
+      main_id: props.main_id
+    };
+  });
   return /*#__PURE__*/_react.default.createElement(_core.Card, {
     id: "console-panel",
     className: console_class,
@@ -1503,7 +1508,7 @@ function ConsoleComponent(props) {
     onDragEnd: _resortConsoleItems,
     useDragHandle: false,
     axis: "y",
-    extraProps: empty_style
+    extraProps: extraProps
   })), /*#__PURE__*/_react.default.createElement("div", {
     id: "padding-div",
     style: {
