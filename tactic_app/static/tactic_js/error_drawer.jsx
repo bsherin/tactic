@@ -28,7 +28,6 @@ function withErrorDrawer(WrappedComponent, lposition = "right", error_drawer_siz
         useEffect(() => {
             initSocket();
             return (() => {
-                props.tsocket.disconnect();
                 goToLineNumber.current = null;
                 ucounter.current = null;
                 local_id.current = null;

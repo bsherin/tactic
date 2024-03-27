@@ -105,9 +105,6 @@ function ConsoleComponent(props) {
         }
       });
     }
-    return () => {
-      props.tsocket.disconnect();
-    };
   }, []);
   function initSocket() {
     function _handleConsoleMessage(data) {
@@ -1346,7 +1343,10 @@ function ConsoleComponent(props) {
   let true_usable_width = props.mState.console_is_shrunk ? header_usable_width : usable_width;
   true_usable_width = true_usable_width > MAX_CONSOLE_WIDTH ? MAX_CONSOLE_WIDTH : true_usable_width;
   const outer_style = (0, _react.useMemo)(() => {
-    let newStyle = Object.assign({}, props.style);
+    let newStyle = {};
+    if (props.style) {
+      newStyle = Object.assign({}, props.style);
+    }
     newStyle.width = true_usable_width;
     return newStyle;
   }, [true_usable_width]);
@@ -1773,7 +1773,7 @@ function LogItem(props) {
   const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(body_ref, 0, "LogItem");
   (0, _react.useEffect)(() => {
     executeEmbeddedScripts();
-    makeTablesSortable();
+    // makeTablesSortable()
   });
   const _toggleShrink = (0, _react.useCallback)(() => {
     props.setConsoleItemValue(props.unique_id, "am_shrunk", !props.am_shrunk);
@@ -1796,12 +1796,14 @@ function LogItem(props) {
       }
     }
   }
-  function makeTablesSortable() {
-    let tables = $("#" + props.unique_id + " table.sortable").toArray();
-    for (let table of tables) {
-      sorttable.makeSortable(table);
-    }
-  }
+
+  // function makeTablesSortable() {
+  //     let tables = $("#" + props.unique_id + " table.sortable").toArray();
+  //     for (let table of tables) {
+  //         sorttable.makeSortable(table)
+  //     }
+  // }
+
   function _copyMe() {
     props.copyCell(props.unique_id);
   }
@@ -1943,7 +1945,7 @@ function BlobItem(props) {
   const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(body_ref, 0, "BlobItem");
   (0, _react.useEffect)(() => {
     executeEmbeddedScripts();
-    makeTablesSortable();
+    // makeTablesSortable()
   });
   const _toggleShrink = (0, _react.useCallback)(() => {
     props.setConsoleItemValue(props.unique_id, "am_shrunk", !props.am_shrunk);
@@ -1966,12 +1968,14 @@ function BlobItem(props) {
       }
     }
   }
-  function makeTablesSortable() {
-    let tables = $("#" + props.unique_id + " table.sortable").toArray();
-    for (let table of tables) {
-      sorttable.makeSortable(table);
-    }
-  }
+
+  // function makeTablesSortable() {
+  //     let tables = $("#" + props.unique_id + " table.sortable").toArray();
+  //     for (let table of tables) {
+  //         sorttable.makeSortable(table)
+  //     }
+  // }
+
   function _copyMe() {
     props.copyCell(props.unique_id);
   }
@@ -2129,7 +2133,7 @@ function ConsoleCodeItem(props) {
   const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(elRef, 0, "ConsoleCodeItem");
   (0, _react.useEffect)(() => {
     executeEmbeddedScripts();
-    makeTablesSortable();
+    // makeTablesSortable();
     if (props.am_selected && !am_selected_previous.current && elRef && elRef.current) {
       scrollMeIntoView();
     }
@@ -2139,6 +2143,19 @@ function ConsoleCodeItem(props) {
       props.setConsoleItemValue(props.unique_id, "set_focus", false, _selectMe);
     }
   });
+  (0, _react.useLayoutEffect)(() => {
+    return () => {
+      if (elRef.current) {
+        const tables = elRef.current.querySelectorAll('table.sortable');
+        tables.forEach(table => {
+          const parent = table.parentElement;
+          if (parent) {
+            parent.innerHTML = '';
+          }
+        });
+      }
+    };
+  }, []);
   const registerSetFocusFunc = (0, _react.useCallback)(theFunc => {
     setFocusFunc.current = theFunc;
   }, []);
@@ -2169,12 +2186,14 @@ function ConsoleCodeItem(props) {
       }
     }
   }
-  function makeTablesSortable() {
-    let tables = $("#" + props.unique_id + " table.sortable").toArray();
-    for (let table of tables) {
-      sorttable.makeSortable(table);
-    }
-  }
+
+  // function makeTablesSortable() {
+  //     let tables = $("#" + props.unique_id + " table.sortable").toArray();
+  //     for (let table of tables) {
+  //         sorttable.makeSortable(table)
+  //     }
+  // }
+
   const _stopMe = (0, _react.useCallback)(() => {
     _stopMySpinner();
     (0, _communication_react.postWithCallback)(props.main_id, "stop_console_code", {

@@ -279,9 +279,6 @@ function PoolTree(props) {
             props.registerTreeRefreshFunc(getTree)
         }
         getTree().then(()=>{});
-        return (() => {
-            props.tsocket.disconnect()
-        })
     }, []);
 
     async function getTree() {

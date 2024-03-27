@@ -1,7 +1,7 @@
 // noinspection JSConstructorReturnsPrimitive
 
 import React from "react";
-import {Fragment, useState, useEffect, useRef, useCallback, memo, useMemo, useContext} from "react";
+import {Fragment, useState, useEffect, useRef, useCallback, useLayoutEffect, memo, useMemo, useContext} from "react";
 import PropTypes from 'prop-types';
 
 import 'codemirror/mode/markdown/markdown.js'
@@ -96,9 +96,6 @@ function ConsoleComponent(props) {
                 }
             });
         }
-        return (() => {
-            props.tsocket.disconnect()
-        })
     }, []);
 
     function initSocket() {
@@ -1319,7 +1316,10 @@ function ConsoleComponent(props) {
     let true_usable_width = props.mState.console_is_shrunk ? header_usable_width : usable_width;
     true_usable_width = true_usable_width > MAX_CONSOLE_WIDTH ? MAX_CONSOLE_WIDTH : true_usable_width;
     const outer_style = useMemo(()=>{
-        let newStyle = Object.assign({}, props.style);
+        let newStyle = {};
+        if (props.style) {
+            newStyle = Object.assign({}, props.style);
+        }
         newStyle.width = true_usable_width;
         return newStyle
     }, [true_usable_width]);
@@ -1779,7 +1779,7 @@ function LogItem(props) {
 
     useEffect(() => {
         executeEmbeddedScripts();
-        makeTablesSortable()
+        // makeTablesSortable()
     });
 
     const _toggleShrink = useCallback(() =>{
@@ -1808,12 +1808,12 @@ function LogItem(props) {
         }
     }
 
-    function makeTablesSortable() {
-        let tables = $("#" + props.unique_id + " table.sortable").toArray();
-        for (let table of tables) {
-            sorttable.makeSortable(table)
-        }
-    }
+    // function makeTablesSortable() {
+    //     let tables = $("#" + props.unique_id + " table.sortable").toArray();
+    //     for (let table of tables) {
+    //         sorttable.makeSortable(table)
+    //     }
+    // }
 
     function _copyMe() {
         props.copyCell(props.unique_id)
@@ -1965,7 +1965,7 @@ function BlobItem(props) {
 
     useEffect(() => {
         executeEmbeddedScripts();
-        makeTablesSortable()
+        // makeTablesSortable()
     });
 
     const _toggleShrink = useCallback(() =>{
@@ -1994,12 +1994,12 @@ function BlobItem(props) {
         }
     }
 
-    function makeTablesSortable() {
-        let tables = $("#" + props.unique_id + " table.sortable").toArray();
-        for (let table of tables) {
-            sorttable.makeSortable(table)
-        }
-    }
+    // function makeTablesSortable() {
+    //     let tables = $("#" + props.unique_id + " table.sortable").toArray();
+    //     for (let table of tables) {
+    //         sorttable.makeSortable(table)
+    //     }
+    // }
 
     function _copyMe() {
         props.copyCell(props.unique_id)
@@ -2170,7 +2170,7 @@ function ConsoleCodeItem(props) {
 
     useEffect(() => {
         executeEmbeddedScripts();
-        makeTablesSortable();
+        // makeTablesSortable();
         if (props.am_selected && !am_selected_previous.current && elRef && elRef.current) {
             scrollMeIntoView()
         }
@@ -2180,6 +2180,21 @@ function ConsoleCodeItem(props) {
             props.setConsoleItemValue(props.unique_id, "set_focus", false, _selectMe)
         }
     });
+
+    useLayoutEffect(()=>{
+        return(()=>{
+        if (elRef.current) {
+        const tables = elRef.current.querySelectorAll('table.sortable');
+
+        tables.forEach(table => {
+          const parent = table.parentElement;
+          if (parent) {
+            parent.innerHTML = '';
+          }
+        });
+      }
+        })
+    }, []);
 
     const registerSetFocusFunc = useCallback((theFunc) => {
         setFocusFunc.current = theFunc;
@@ -2215,12 +2230,12 @@ function ConsoleCodeItem(props) {
         }
     }
 
-    function makeTablesSortable() {
-        let tables = $("#" + props.unique_id + " table.sortable").toArray();
-        for (let table of tables) {
-            sorttable.makeSortable(table)
-        }
-    }
+    // function makeTablesSortable() {
+    //     let tables = $("#" + props.unique_id + " table.sortable").toArray();
+    //     for (let table of tables) {
+    //         sorttable.makeSortable(table)
+    //     }
+    // }
 
     const _stopMe = useCallback(()=>{
         _stopMySpinner();

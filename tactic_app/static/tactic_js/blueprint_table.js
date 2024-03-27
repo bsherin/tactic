@@ -370,21 +370,27 @@ function EnhancedEditableCell(props) {
 EnhancedEditableCell = /*#__PURE__*/(0, _react.memo)(EnhancedEditableCell);
 function compute_added_column_width(header_text) {
   const max_field_width = MAX_INITIAL_CELL_WIDTH;
-  let header_font = $($(".bp5-table-truncated-text")[0]).css("font");
-  let canvas_element = document.getElementById("measure-canvas");
-  let ctx = canvas_element.getContext("2d");
+  const elements = document.querySelectorAll(".bp5-table-truncated-text");
   let added_header_width = 40;
-  ctx.font = header_font;
-  return ctx.measureText(header_text).width + added_header_width;
+  if (elements.length > 0) {
+    let header_font = window.getComputedStyle(elements[0]).font;
+    let canvas_element = document.getElementById("measure-canvas");
+    if (canvas_element) {
+      let ctx = canvas_element.getContext("2d");
+      ctx.font = header_font;
+      return ctx.measureText(header_text).width + added_header_width;
+    }
+  }
+  return max_field_width + added_header_width;
 }
 function compute_initial_column_widths(header_list, data_row_dict) {
   const ncols = header_list.length;
   const max_field_width = MAX_INITIAL_CELL_WIDTH;
 
   // Get sample header and body cells
-
   // set up a canvas so that we can use it to compute the width of text
-  let body_font = $($(".bp5-table-truncated-text")[0]).css("font");
+  const elements = document.querySelectorAll(".bp5-table-truncated-text");
+  let body_font = window.getComputedStyle(elements[0]).font;
   let header_font = body_font;
   let canvas_element = document.getElementById("measure-canvas");
   let ctx = canvas_element.getContext("2d");

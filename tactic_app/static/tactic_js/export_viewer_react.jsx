@@ -192,9 +192,6 @@ function ExportsViewer(props) {
         initSocket();
         props.setUpdate(_updateExportsList);
         _updateExportsList().then(() => {});
-        return (() => {
-            props.tsocket.disconnect()
-        })
     }, []);
 
     const [usable_width, usable_height, topX, topY] = useSize(body_ref, 0, "ExportsViewer");

@@ -994,7 +994,8 @@ function MainApp(props) {
       mState: mState,
       setMainStateValue: _setMainStateValue,
       zoomable: true,
-      shrinkable: true
+      shrinkable: true,
+      style: null
     });
   } else {
     console_pane = /*#__PURE__*/_react.default.createElement("div", {

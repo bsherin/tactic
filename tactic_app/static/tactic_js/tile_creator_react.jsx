@@ -63,6 +63,11 @@ function CreatorApp(props) {
     
     const [tabSelectCounter, setTabSelectCounter] = useState(0);
 
+    // This hasActivated machinery is necessary because cleanup of codemirror areas doesn't work
+    // properly if the component is unmounted before the codemirror area is activated.
+    const [methodsHasActivated, setMethodsHasActivated] = useState(false);
+    const [globalsHasActivated, setGlobalsHasActivated] = useState(false);
+
     const [foregrounded_panes, set_foregrounded_panes] = useState({
         "metadata": true,
         "options": false,
@@ -152,8 +157,13 @@ function CreatorApp(props) {
         window.addEventListener("unload", sendRemove);
         statusFuncs.stopSpinner();
         return (() => {
+            dpObject.current = null;
+            rcObject.current = null;
+            emObject.current = null;
+            globalObject.current = null;
             delete_my_container();
             window.removeEventListener("unload", sendRemove);
+            errorDrawerFuncs.setGoToLineNumber(null);
         })
     }, []);
 
@@ -610,13 +620,23 @@ function CreatorApp(props) {
         let new_fg = Object.assign({}, foregrounded_panes);
         new_fg[newTabId] = true;
         setSelectedTabId(newTabId);
+        if (newTabId == "methods" && !methodsHasActivated) {
+            setMethodsHasActivated(true)
+        }
+        if (newTabId == "globals" && !globalsHasActivated) {
+            setGlobalsHasActivated(true)
+        }
         set_foregrounded_panes(new_fg);
         pushCallback(() => {
             if (newTabId == "methods") {
-                emObject.current.refresh();
+                if (emObject.current) {
+                    emObject.current.refresh()
+                }
             }
             else if (newTabId == "globals") {
-                globalObject.current.refresh()
+                if (globalObject.current) {
+                    globalObject.current.refresh()
+                }
             }
             setTabSelectCounter(tabSelectCounter + 1);
         })
@@ -914,47 +934,51 @@ function CreatorApp(props) {
     );
     let methods_panel = (
         <div style={{marginLeft: 10}}>
-            <ReactCodemirror handleChange={handleMethodsChange}
-                             show_fold_button={true}
-                             current_search_number={current_search_cm == "em" ? current_search_number : null}
-                             extraKeys={_extraKeys()}
-                             readOnly={props.readOnly}
-                             code_content={extra_functions_ref.current}
-                             saveMe={_saveAndCheckpoint}
-                             setCMObject={_setEmObject}
-                             code_container_ref={methods_ref}
-                             search_term={search_string}
-                             update_search_state={_updateSearchState}
-                             alt_clear_selections={_clearAllSelections}
-                             regex_search={regex}
-                             first_line_number={extra_methods_line_number_ref.current}
-                             setSearchMatches={(num) => _setSearchMatches("em", num)}
-                             extra_autocomplete_list={onames_for_autocomplete}
-                             iCounter={tabSelectCounter}
-            />
+            {methodsHasActivated &&
+                <ReactCodemirror handleChange={handleMethodsChange}
+                                 show_fold_button={true}
+                                 current_search_number={current_search_cm == "em" ? current_search_number : null}
+                                 extraKeys={_extraKeys()}
+                                 readOnly={props.readOnly}
+                                 code_content={extra_functions_ref.current}
+                                 saveMe={_saveAndCheckpoint}
+                                 setCMObject={_setEmObject}
+                                 code_container_ref={methods_ref}
+                                 search_term={search_string}
+                                 update_search_state={_updateSearchState}
+                                 alt_clear_selections={_clearAllSelections}
+                                 regex_search={regex}
+                                 first_line_number={extra_methods_line_number_ref.current}
+                                 setSearchMatches={(num) => _setSearchMatcshes("em", num)}
+                                 extra_autocomplete_list={onames_for_autocomplete}
+                                 iCounter={tabSelectCounter}
+                />
+            }
         </div>
 
     );
     let globals_panel = (
         <div style={{marginLeft: 10}}>
-            <ReactCodemirror handleChange={handleGlobalsChange}
-                             show_fold_button={true}
-                             current_search_number={current_search_cm == "gp" ? current_search_number : null}
-                             extraKeys={_extraKeys()}
-                             readOnly={props.readOnly}
-                             code_content={globals_code_ref.current}
-                             saveMe={_saveAndCheckpoint}
-                             setCMObject={_setGlobalObject}
-                             code_container_ref={globals_ref}
-                             search_term={search_string}
-                             update_search_state={_updateSearchState}
-                             alt_clear_selections={_clearAllSelections}
-                             regex_search={regex}
-                             first_line_number={1}
-                             setSearchMatches={(num) => _setSearchMatches("gp", num)}
-                             extra_autocomplete_list={onames_for_autocomplete}
-                             iCounter={tabSelectCounter}
-            />
+            {globalsHasActivated &&
+                <ReactCodemirror handleChange={handleGlobalsChange}
+                                 show_fold_button={true}
+                                 current_search_number={current_search_cm == "gp" ? current_search_number : null}
+                                 extraKeys={_extraKeys()}
+                                 readOnly={props.readOnly}
+                                 code_content={globals_code_ref.current}
+                                 saveMe={_saveAndCheckpoint}
+                                 setCMObject={_setGlobalObject}
+                                 code_container_ref={globals_ref}
+                                 search_term={search_string}
+                                 update_search_state={_updateSearchState}
+                                 alt_clear_selections={_clearAllSelections}
+                                 regex_search={regex}
+                                 first_line_number={1}
+                                 setSearchMatches={(num) => _setSearchMatches("gp", num)}
+                                 extra_autocomplete_list={onames_for_autocomplete}
+                                 iCounter={tabSelectCounter}
+                />
+            }
         </div>
 
     );

@@ -117,9 +117,6 @@ function TileContainer(props) {
 
     useEffect(() => {
         initSocket();
-        return (() => {
-            props.tsocket.disconnect()
-        })
     }, []);
 
     const pushCallback = useCallbackStack();
@@ -345,7 +342,7 @@ function TileComponent(props) {
     useEffect(() => {
         _broadcastTileSize(props.tile_width, props.tile_height);
         executeEmbeddedScripts();
-        makeTablesSortable();
+        // makeTablesSortable();
         if (props.javascript_code) {
             _executeJavascript()
         }
@@ -356,7 +353,7 @@ function TileComponent(props) {
         if (!resizing) {
             executeEmbeddedScripts();
         }
-        makeTablesSortable();
+        // makeTablesSortable();
         if (props.javascript_code) {
             _executeJavascript()
         }
@@ -406,12 +403,12 @@ function TileComponent(props) {
         }
     }
 
-    function makeTablesSortable() {
-        let tables = $("#" + props.tile_id + " table.sortable").toArray();
-        for (let table of tables) {
-            sorttable.makeSortable(table)
-        }
-    }
+    // function makeTablesSortable() {
+    //     let tables = $("#" + props.tile_id + " table.sortable").toArray();
+    //     for (let table of tables) {
+    //         sorttable.makeSortable(table)
+    //     }
+    // }
 
     function tdaWidth() {
         return props.tile_width + dwidth - TILE_DISPLAY_AREA_MARGIN * 2

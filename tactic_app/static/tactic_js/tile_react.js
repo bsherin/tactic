@@ -120,9 +120,6 @@ function TileContainer(props) {
   const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(tile_div_ref, 0, "TileContainer");
   (0, _react.useEffect)(() => {
     initSocket();
-    return () => {
-      props.tsocket.disconnect();
-    };
   }, []);
   const pushCallback = (0, _utilities_react.useCallbackStack)();
   function _handleTileFinishedLoading(data) {
@@ -329,7 +326,7 @@ function TileComponent(props) {
   (0, _react.useEffect)(() => {
     _broadcastTileSize(props.tile_width, props.tile_height);
     executeEmbeddedScripts();
-    makeTablesSortable();
+    // makeTablesSortable();
     if (props.javascript_code) {
       _executeJavascript();
     }
@@ -339,7 +336,7 @@ function TileComponent(props) {
     if (!resizing) {
       executeEmbeddedScripts();
     }
-    makeTablesSortable();
+    // makeTablesSortable();
     if (props.javascript_code) {
       _executeJavascript();
     }
@@ -384,12 +381,14 @@ function TileComponent(props) {
       }
     }
   }
-  function makeTablesSortable() {
-    let tables = $("#" + props.tile_id + " table.sortable").toArray();
-    for (let table of tables) {
-      sorttable.makeSortable(table);
-    }
-  }
+
+  // function makeTablesSortable() {
+  //     let tables = $("#" + props.tile_id + " table.sortable").toArray();
+  //     for (let table of tables) {
+  //         sorttable.makeSortable(table)
+  //     }
+  // }
+
   function tdaWidth() {
     return props.tile_width + dwidth - TILE_DISPLAY_AREA_MARGIN * 2;
   }

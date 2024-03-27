@@ -1051,6 +1051,7 @@ function MainApp(props) {
                               setMainStateValue={_setMainStateValue}
                               zoomable={true}
                               shrinkable={true}
+                              style={null}
             />
         );
     } else {

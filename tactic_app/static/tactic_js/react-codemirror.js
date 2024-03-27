@@ -60,7 +60,6 @@ function countOccurrences(query, the_text) {
 }
 function ReactCodemirror(props) {
   const localRef = (0, _react.useRef)(null);
-  const mousetrap = (0, _react.useRef)(new Mousetrap());
   const saved_theme = (0, _react.useRef)(null);
   const preferred_themes = (0, _react.useRef)(null);
   const cmobject = (0, _react.useRef)(null);
@@ -88,6 +87,7 @@ function ReactCodemirror(props) {
         props.setCMObject(cmobject.current);
       }
       saved_theme.current = theme.dark_theme;
+      cmobject.current.refresh();
       _doHighlight();
     }).catch(e => {
       errorDrawerFuncs.addErrorDrawerEntry({
@@ -99,13 +99,17 @@ function ReactCodemirror(props) {
   }, []);
   (0, _react.useLayoutEffect)(() => {
     return () => {
-      for (let [event, handler] of registeredHandlers.current) {
-        cmobject.current.off(event, handler);
-      }
-      delete _codemirror.default.keyMap["default"].Esc;
-      cmobject.current = null;
-      if (localRef.current) {
-        localRef.current.innerHTML = '';
+      if (cmobject.current) {
+        cmobject.current.refresh();
+        for (let [event, handler] of registeredHandlers.current) {
+          cmobject.current.off(event, handler);
+        }
+        delete _codemirror.default.keyMap["default"].Esc;
+        cmobject.current.setOption("extraKeys", null);
+        cmobject.current = null;
+        if (localRef.current) {
+          localRef.current.innerHTML = '';
+        }
       }
     };
   }, []);
@@ -360,14 +364,6 @@ function ReactCodemirror(props) {
   function create_keymap() {
     set_keymap();
     let is_mac = _codemirror.default.keyMap["default"].hasOwnProperty("Cmd-S");
-
-    // mousetrap.current.bind(['escape'], function (e) {
-    //     if (selectedPane.amSelected(selectedPane.tab_id, selectedPane.selectedTabIdRef)) {
-    //         return false;
-    //     }
-    //     clearSelections();
-    //     e.preventDefault()
-    // });
   }
   let ccstyle = {
     lineHeight: "21px"
