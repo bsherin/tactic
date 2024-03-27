@@ -68,7 +68,6 @@ function countOccurrences(query, the_text) {
 
 function ReactCodemirror(props) {
     const localRef = useRef(null);
-    const mousetrap = useRef(new Mousetrap());
     const saved_theme = useRef(null);
     const preferred_themes = useRef(null);
     const cmobject = useRef(null);
@@ -100,6 +99,7 @@ function ReactCodemirror(props) {
                     props.setCMObject(cmobject.current)
                 }
                 saved_theme.current = theme.dark_theme;
+                cmobject.current.refresh();
                 _doHighlight()
             })
             .catch((e) => {
@@ -113,13 +113,17 @@ function ReactCodemirror(props) {
 
     useLayoutEffect(() => {
         return (() => {
-            for (let [event, handler] of registeredHandlers.current) {
-                cmobject.current.off(event, handler)
-            }
-            delete CodeMirror.keyMap["default"].Esc;
-            cmobject.current = null;
-            if (localRef.current) {
-                localRef.current.innerHTML = '';
+            if (cmobject.current) {
+                cmobject.current.refresh();
+                for (let [event, handler] of registeredHandlers.current) {
+                    cmobject.current.off(event, handler)
+                }
+                delete CodeMirror.keyMap["default"].Esc;
+                cmobject.current.setOption("extraKeys", null);
+                cmobject.current = null;
+                if (localRef.current) {
+                    localRef.current.innerHTML = '';
+                }
             }
         });
     }, []);
@@ -391,14 +395,6 @@ function ReactCodemirror(props) {
     function create_keymap() {
         set_keymap();
         let is_mac = CodeMirror.keyMap["default"].hasOwnProperty("Cmd-S");
-
-        // mousetrap.current.bind(['escape'], function (e) {
-        //     if (selectedPane.amSelected(selectedPane.tab_id, selectedPane.selectedTabIdRef)) {
-        //         return false;
-        //     }
-        //     clearSelections();
-        //     e.preventDefault()
-        // });
     }
 
     let ccstyle = {

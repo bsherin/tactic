@@ -42,9 +42,6 @@ function AdminPane(props) {
     useEffect(() => {
         initSocket();
         _grabNewChunkWithRow(0, true, null, true).then(() => {});
-        return (() => {
-            props.tsocket.disconnect()
-        })
     }, []);
 
     function initSocket() {

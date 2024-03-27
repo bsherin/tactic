@@ -58,6 +58,11 @@ function CreatorApp(props) {
   const key_bindings = (0, _react.useRef)([]);
   const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(top_ref, 0, "TileCreator");
   const [tabSelectCounter, setTabSelectCounter] = (0, _react.useState)(0);
+
+  // This hasActivated machinery is necessary because cleanup of codemirror areas doesn't work
+  // properly if the component is unmounted before the codemirror area is activated.
+  const [methodsHasActivated, setMethodsHasActivated] = (0, _react.useState)(false);
+  const [globalsHasActivated, setGlobalsHasActivated] = (0, _react.useState)(false);
   const [foregrounded_panes, set_foregrounded_panes] = (0, _react.useState)({
     "metadata": true,
     "options": false,
@@ -137,8 +142,13 @@ function CreatorApp(props) {
     window.addEventListener("unload", sendRemove);
     statusFuncs.stopSpinner();
     return () => {
+      dpObject.current = null;
+      rcObject.current = null;
+      emObject.current = null;
+      globalObject.current = null;
       delete_my_container();
       window.removeEventListener("unload", sendRemove);
+      errorDrawerFuncs.setGoToLineNumber(null);
     };
   }, []);
   (0, _react.useEffect)(() => {
@@ -580,12 +590,22 @@ function CreatorApp(props) {
     let new_fg = Object.assign({}, foregrounded_panes);
     new_fg[newTabId] = true;
     setSelectedTabId(newTabId);
+    if (newTabId == "methods" && !methodsHasActivated) {
+      setMethodsHasActivated(true);
+    }
+    if (newTabId == "globals" && !globalsHasActivated) {
+      setGlobalsHasActivated(true);
+    }
     set_foregrounded_panes(new_fg);
     pushCallback(() => {
       if (newTabId == "methods") {
-        emObject.current.refresh();
+        if (emObject.current) {
+          emObject.current.refresh();
+        }
       } else if (newTabId == "globals") {
-        globalObject.current.refresh();
+        if (globalObject.current) {
+          globalObject.current.refresh();
+        }
       }
       setTabSelectCounter(tabSelectCounter + 1);
     });
@@ -864,7 +884,7 @@ function CreatorApp(props) {
     style: {
       marginLeft: 10
     }
-  }, /*#__PURE__*/_react.default.createElement(_reactCodemirror.ReactCodemirror, {
+  }, methodsHasActivated && /*#__PURE__*/_react.default.createElement(_reactCodemirror.ReactCodemirror, {
     handleChange: handleMethodsChange,
     show_fold_button: true,
     current_search_number: current_search_cm == "em" ? current_search_number : null,
@@ -879,7 +899,7 @@ function CreatorApp(props) {
     alt_clear_selections: _clearAllSelections,
     regex_search: regex,
     first_line_number: extra_methods_line_number_ref.current,
-    setSearchMatches: num => _setSearchMatches("em", num),
+    setSearchMatches: num => _setSearchMatcshes("em", num),
     extra_autocomplete_list: onames_for_autocomplete,
     iCounter: tabSelectCounter
   }));
@@ -887,7 +907,7 @@ function CreatorApp(props) {
     style: {
       marginLeft: 10
     }
-  }, /*#__PURE__*/_react.default.createElement(_reactCodemirror.ReactCodemirror, {
+  }, globalsHasActivated && /*#__PURE__*/_react.default.createElement(_reactCodemirror.ReactCodemirror, {
     handleChange: handleGlobalsChange,
     show_fold_button: true,
     current_search_number: current_search_cm == "gp" ? current_search_number : null,

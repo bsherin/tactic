@@ -70,9 +70,6 @@ function FileImportDialog(props) {
     }
     _updatePickerSize();
     initSocket();
-    return () => {
-      props.tsocket.disconnect();
-    };
   }, []);
   (0, _react.useEffect)(() => {
     _updatePickerSize();

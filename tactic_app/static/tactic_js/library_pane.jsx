@@ -167,9 +167,6 @@ function LibraryPane(props) {
     useEffect(() => {
         initSocket();
         _grabNewChunkWithRow(0).then(() => {});
-        return (() => {
-            props.tsocket.disconnect()
-        })
     }, []);
 
     const pushCallback = useCallbackStack("library_home");

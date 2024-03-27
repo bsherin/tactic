@@ -5,7 +5,6 @@ import {postWithCallback} from "./communication_react";
 
 let ppi;
 
-
 export {main_props, mainReducer}
 
 function main_props(data, registerDirtyMethod, finalCallback) {

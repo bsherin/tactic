@@ -158,9 +158,6 @@ function LibraryPane(props) {
   (0, _react.useEffect)(() => {
     initSocket();
     _grabNewChunkWithRow(0).then(() => {});
-    return () => {
-      props.tsocket.disconnect();
-    };
   }, []);
   const pushCallback = (0, _utilities_react.useCallbackStack)("library_home");
   function setState(new_state) {

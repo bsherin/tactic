@@ -32,7 +32,6 @@ function withErrorDrawer(WrappedComponent) {
     (0, _react.useEffect)(() => {
       initSocket();
       return () => {
-        props.tsocket.disconnect();
         goToLineNumber.current = null;
         ucounter.current = null;
         local_id.current = null;
