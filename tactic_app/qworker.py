@@ -76,7 +76,7 @@ def debug_log(msg):
     return
 
 
-# noinspection PyTypeChecker,PyUnusedLocal
+# noinspection PyTypeChecker,PyUnusedLocal,PyMissingConstructor
 class QWorker(ExceptionMixin):
     def __init__(self):
         self.my_id = os.environ.get("MY_ID")
@@ -296,6 +296,7 @@ class QWorker(ExceptionMixin):
             self.handle_exception(ex, special_string)
         return
 
+    # noinspection PyUnboundLocalVariable
     def handle_event(self, task_packet):
         task_type = task_packet["task_type"]
         if task_type in task_worthy_methods:
@@ -343,7 +344,7 @@ class QWorker(ExceptionMixin):
         return self.get_traceback_message(ex, special_string)
 
 
-# noinspection PyUnusedLocal
+# noinspection PyUnusedLocal,PyMissingConstructor
 class BlockingWaitWorker(ExceptionMixin):
     def __init__(self, queue_name):
         self.queue_name = queue_name
