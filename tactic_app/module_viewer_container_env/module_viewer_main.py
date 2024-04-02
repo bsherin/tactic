@@ -10,7 +10,7 @@ from flask import render_template, Flask
 from tile_code_parser import TileParser, remove_indents, insert_indents
 import exception_mixin
 from exception_mixin import ExceptionMixin
-from communication_utils import emit_direct
+from communication_utils import emit_direct, socketio
 from mongo_db_fs import get_dbs
 
 import sys, os
@@ -41,12 +41,22 @@ class ModuleViewerWorker(QWorker, ExceptionMixin):
         self.tile_collection_name = None
         self.tile_instance = None
         self.generate_heartbeats = True
+        self.open_api_key = None
+        self.chat_client = None
+        self.chat_assistant = None
+        self.chat_thread = None
+        self.current_run_id = None
         return
 
     def ask_host(self, msg_type, task_data=None, callback_func=None):
         task_data["main_id"] = self.my_id
         self.post_task("host", msg_type, task_data, callback_func)
         return
+
+    def emit_to_client(self, message, data):
+        data["main_id"] = self.my_id
+        data["message"] = message
+        self.ask_host("emit_to_client", data)
 
     @task_worthy
     def initialize_parser(self, data_dict):
@@ -76,6 +86,116 @@ class ModuleViewerWorker(QWorker, ExceptionMixin):
     @task_worthy
     def hello(self, data_dict):
         return {"success": True, "message": 'This is a tile communicating'}
+
+    @task_worthy_manual_submit
+    def has_openai_key(self, data_dict, task_packet):
+        def got_settings(result_dict):
+            try:
+                settings = result_dict["settings"]
+                if "openai_api_key" in settings and len(settings["openai_api_key"]) > 4:
+                    self.openai_api_key = settings["openai_api_key"]
+                    final_result = True
+                else:
+                    final_result = False
+                return_data = {"has_key": final_result, "success": True}
+                self.submit_response(task_packet, return_data)
+                return
+            except Exception as ex2:
+                res2 = self.get_traceback_exception_dict(ex2, "Error checking for api key")
+                print(str(res2))
+                return res2
+        try:
+            self.ask_host("get_user_settings", {"user_id": self.user_id}, got_settings)
+        except Exception as ex:
+            res = self.get_traceback_exception_dict(ex, "Error checking for api key")
+            print(str(res["message"]))
+            return res
+
+    def initialize_assistant(self):
+        import open_api
+        from openai import OpenAI
+        if self.openai_api_key is None:
+            return False
+        self.chat_client = OpenAI(
+            api_key=self.open_api_key
+        )
+        file_list = []
+        fnames = ["Tile-Commands.html", "Object-Oriented-API.html"]
+        for fname in fnames:
+            if fname.endswith(".html"):
+                new_file = client.files.create(
+                    file=open(f"{fname}", "rb"),
+                    purpose='assistants'
+                )
+                file_list.append(new_file)
+        id_list = [file.id for file in file_list]
+        instructions = "You are helpful assistant that helps with writing python code for the Tactic environment. You give answers in markdown format. "
+        instructions += "The files uploaded via the retrieval tool contain information about this API. The user will want to ask you questions about this API. "
+        instructions += "You can assume the user has access to an instance of TileBase via self. "
+        instructions += "You can also assume that the user has access to the other objects Library, Tiles, Settings, Collection, and Pipes."
+        self.chat_assistant = self.chat_client.beta.assistants.create(
+            instructions=instructions,
+            model="gpt-4-turbo-preview",
+            tools=[{"type": "code_interpreter"}, {"type": "retrieval"}],
+            file_ids=id_list
+        )
+        self.chat_thread = self.chat_client.beta.threads.create()
+        return True
+
+    def retrieve_message(self):
+        messages = self.chat_clientclient.beta.threads.messages.list(
+          thread_id=self.chat_thread.id
+        )
+        response = messages.data[0].content[0].text.value
+        self.emit_to_client("chat_response", {"response": response})
+        return
+
+    def wait_for_response(self, run_id):
+        sleep_times = [5, 5, 5, 3, 3, 3, 2]
+        success = False
+        for n in range(30):
+            run = client.beta.threads.runs.retrieve(
+                thread_id=thread.id,
+                run_id=run_id
+            )
+            if run.status == "complete":
+                self.retrieve_response()
+                success = True
+            else:
+                if n >= len(sleep_times):
+                    st = 1
+                else:
+                    st = sleep_times[n]
+                print(f"sleeping {st} {n}")
+                gevent.sleep(st)
+        self.emit_to_client("chat_response", {"response": "response timed out"})
+        return
+
+    @task_worthy
+    def post_prompt(self, data_dict):
+        try:
+            if self.chat_client is None:
+                client_exists = self.initialize_assistant()
+                if not client_exists:
+                    raise Exception("No chat client exists")
+            prompt = data_dict["prompt"]
+            self.chat_client.beta.threads.messages.create(
+                thread_id=self.chat_thread.id,
+                role="user",
+                content=prompt
+            )
+            run = self.chat_client.beta.threads.runs.create(
+                thread_id=thread.id,
+                assistant_id=assistant.id,
+            )
+            self.current_run_id = run.id
+            socketio.start_background_task(target=self.wait_for_response)
+            return {"success": True}
+
+        except Exception as ex:
+            res = self.get_traceback_exception_dict(ex, "Error posting to open ai")
+            print(str(res["message"]))
+            return res
 
     @task_worthy
     def reintiailize_parser(self, data_dict):
@@ -258,8 +378,7 @@ class ModuleViewerWorker(QWorker, ExceptionMixin):
 
     def ready(self):
         self.ask_host("participant_ready", {"rb_id": rb_id, "user_id": os.environ.get("OWNER"),
-                                            "participant": self.my_id, "main_id": self.my_id
-                                            })
+                     "participant": self.my_id, "main_id": self.my_id})
         return
 
 

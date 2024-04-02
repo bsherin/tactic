@@ -16,4 +16,5 @@ user_data_fields = [
      "type": "select", "default": "default", "options": ["default", "elegant", "juejin", "neat", "solarized"], "info_type": "setting"},
     {"name": "preferred_interface", "editable": True, "display_text": "preferred interface",
      "type": "select", "default": "single-window", "options": ["separate-tabs", "single-window"], "info_type": "setting"},
+    {"name": "openai_api_key", "editable": True, "display_text": "openai api key", "type": "text", "default": "", "info_type": "setting"},
 ]
