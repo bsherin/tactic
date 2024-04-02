@@ -53,7 +53,8 @@ function CreatorApp(props) {
   const search_match_numbers = (0, _react.useRef)({
     tc: 0,
     rc: 0,
-    em: 0
+    em: 0,
+    gp: 0
   });
   const key_bindings = (0, _react.useRef)([]);
   const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(top_ref, 0, "TileCreator");
@@ -899,7 +900,7 @@ function CreatorApp(props) {
     alt_clear_selections: _clearAllSelections,
     regex_search: regex,
     first_line_number: extra_methods_line_number_ref.current,
-    setSearchMatches: num => _setSearchMatcshes("em", num),
+    setSearchMatches: num => _setSearchMatches("em", num),
     extra_autocomplete_list: onames_for_autocomplete,
     iCounter: tabSelectCounter
   }));
