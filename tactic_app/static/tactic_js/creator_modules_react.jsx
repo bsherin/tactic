@@ -4,8 +4,15 @@ import React from "react";
 import {Fragment, useState, useEffect, memo, useContext, useRef} from "react";
 import PropTypes from 'prop-types';
 
+import markdownIt from 'markdown-it'
+import 'markdown-it-latex/dist/index.css'
+import markdownItLatex from 'markdown-it-latex'
+
+const mdi = markdownIt({html: true});
+mdi.use(markdownItLatex);
+
 import {Button, Collapse, Divider, Menu, MenuItem, MenuDivider, Switch, FormGroup} from "@blueprintjs/core";
-import {Card, CardList, InputGroup} from "@blueprintjs/core";
+import {Card, CardList, TextArea, ControlGroup} from "@blueprintjs/core";
 import {RegionCardinality} from "@blueprintjs/table";
 
 import {postAjax, postPromise} from "./communication_react";
@@ -675,9 +682,10 @@ function MetadataModule(props) {
 
 MetadataModule = memo(MetadataModule);
 
-const chat_input_style = {position: "relative", bottom: 8, margin: 10, width: "100%"};
+const chat_input_style = {position: "relative", bottom: 0, margin: 10, width: "100%"};
 function ChatModule(props) {
-    const top_ref = React.createRef();
+    const top_ref = React.createRef(null);
+    const control_ref = React.createRef(null);
     const [item_list, set_item_list, item_list_ref] = useStateAndRef([]);
     const [prompt_value, set_prompt_value, prompt_value_ref] = useStateAndRef("");
 
@@ -693,7 +701,9 @@ function ChatModule(props) {
     }
 
     function _handleChatResponse(data) {
-        const new_item_list = [...item_list_ref.current, {kind: "response", text: data.response}];
+
+        let converted_markdown = mdi.render(data.response);
+        const new_item_list = [...item_list_ref.current, {kind: "response", text: converted_markdown}];
         set_item_list(new_item_list)
     }
 
@@ -702,6 +712,7 @@ function ChatModule(props) {
         try {
             const new_item_list = [...item_list_ref.current, {kind: "prompt", text: prompt_value_ref.current}];
             set_item_list(new_item_list);
+            set_prompt_value("");
             await postPromise(props.module_viewer_id, "post_prompt", {prompt: prompt_value_ref.current});
         } catch (error) {
             console.log(error.message)
@@ -715,37 +726,49 @@ function ChatModule(props) {
             return <Response key={index} {...item}/>
         }
     });
+    let card_list_height = usable_height - 30;
+    if (control_ref.current) {
+        card_list_height = usable_height - 20 - control_ref.current.clientHeight
+    }
     const chat_pane_style = {
         marginTop: 10,
         marginLeft: 10,
         marginRight: 10,
         paddingTop: 10,
         width: usable_width - 20,
-        height: usable_height - 50,
+        height: usable_height,
         position: "relative",
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between"
     };
+    const chat_input_style = {
+        position: "relative",
+        bottom: 0,
+        margin: 10,
+        width: usable_width - 20,
+        marginLeft: 0
+    };
 
     return (
         <div ref={top_ref} style={chat_pane_style} >
-            <CardList bordered={false}>
+            <CardList bordered={false} style={{height: card_list_height}}>
                 {items}
             </CardList>
-            <form onSubmit={_promptSubmit} style={chat_input_style}>
-                <InputGroup type="text"
-                            style={{width: "100%"}}
-                            className="bp5-monospace-text"
-                            onChange={_onInputChange}
-                            small={true}
-                            large={false}
-                            leftIcon="chevron-right"
-                            fill={true}
-                            // onKeyDown={(e) => _handleKeyDown(e)}
-                            value={prompt_value_ref.current}
+            <ControlGroup ref={control_ref} vertical={false} style={chat_input_style}>
+                <Button icon="send-message"
+                        minimal={true}
+                        large={true}
+                        onClick={_promptSubmit}/>
+                <TextArea type="text"
+                          autoReize={true}
+                          style={{width: "100%"}}
+                          onChange={_onInputChange}
+                          large={true}
+                          fill={true}
+                          value={prompt_value_ref.current}
                 />
-            </form>
+            </ControlGroup>
         </div>
     )
 }
@@ -754,8 +777,11 @@ ChatModule = memo(ChatModule);
 
 function Prompt(props) {
     return (
-        <Card interactive={true}>
-            {props.text}
+        <Card interactive={false}>
+            <div style={{display: "flex", flexDirection: "column"}}>
+                <h6>You</h6>
+                <div>{props.text}</div>
+            </div>
         </Card>
     )
 }
@@ -763,11 +789,16 @@ function Prompt(props) {
 Prompt = memo(Prompt);
 
 function Response(props) {
+    let converted_dict = {__html: props.text};
     return (
-        <Card interactive={true}>
-            {props.text}
+        <Card interactive={false}>
+            <div style={{display: "flex", flexDirection: "column"}}>
+                <h6>ChatBot</h6>
+                <div className=""
+                     dangerouslySetInnerHTML={converted_dict}/>
+            </div>
         </Card>
-    )
+)
 }
 
 Response = memo(Response);

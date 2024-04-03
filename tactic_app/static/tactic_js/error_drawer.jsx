@@ -183,8 +183,8 @@ function ErrorItem(props) {
                 </h6>
             }
             <GlyphButton handleClick={() => {
-                props.handleCloseItem(props.ukey)
-            }}
+                            props.handleCloseItem(props.ukey)
+                        }}
                          style={{position: "absolute", right: 5, top: 5}}
                          icon="cross"/>
             <div style={{fontSize: 13, overflow: "auto"}} dangerouslySetInnerHTML={content_dict}/>
