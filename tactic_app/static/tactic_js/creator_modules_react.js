@@ -13,6 +13,9 @@ exports.correctOptionListTypes = correctOptionListTypes;
 var _extends2 = _interopRequireDefault(require("@babel/runtime/helpers/extends"));
 var _react = _interopRequireWildcard(require("react"));
 var _propTypes = _interopRequireDefault(require("prop-types"));
+var _markdownIt = _interopRequireDefault(require("markdown-it"));
+require("markdown-it-latex/dist/index.css");
+var _markdownItLatex = _interopRequireDefault(require("markdown-it-latex"));
 var _core = require("@blueprintjs/core");
 var _table = require("@blueprintjs/table");
 var _communication_react = require("./communication_react");
@@ -27,6 +30,10 @@ function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return 
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 // noinspection JSConstructorReturnsPrimitive
 
+const mdi = (0, _markdownIt.default)({
+  html: true
+});
+mdi.use(_markdownItLatex.default);
 function correctType(type, val) {
   let error_flag = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : "__ERROR__";
   let result;
@@ -733,12 +740,13 @@ function MetadataModule(props) {
 exports.MetadataModule = MetadataModule = /*#__PURE__*/(0, _react.memo)(MetadataModule);
 const chat_input_style = {
   position: "relative",
-  bottom: 8,
+  bottom: 0,
   margin: 10,
   width: "100%"
 };
 function ChatModule(props) {
-  const top_ref = /*#__PURE__*/_react.default.createRef();
+  const top_ref = /*#__PURE__*/_react.default.createRef(null);
+  const control_ref = /*#__PURE__*/_react.default.createRef(null);
   const [item_list, set_item_list, item_list_ref] = (0, _utilities_react.useStateAndRef)([]);
   const [prompt_value, set_prompt_value, prompt_value_ref] = (0, _utilities_react.useStateAndRef)("");
   const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(top_ref, props.tabSelectCounter, "ChatModule");
@@ -750,9 +758,10 @@ function ChatModule(props) {
     set_prompt_value(event.target.value);
   }
   function _handleChatResponse(data) {
+    let converted_markdown = mdi.render(data.response);
     const new_item_list = [...item_list_ref.current, {
       kind: "response",
-      text: data.response
+      text: converted_markdown
     }];
     set_item_list(new_item_list);
   }
@@ -764,6 +773,7 @@ function ChatModule(props) {
         text: prompt_value_ref.current
       }];
       set_item_list(new_item_list);
+      set_prompt_value("");
       await (0, _communication_react.postPromise)(props.module_viewer_id, "post_prompt", {
         prompt: prompt_value_ref.current
       });
@@ -782,53 +792,85 @@ function ChatModule(props) {
       }, item));
     }
   });
+  let card_list_height = usable_height - 30;
+  if (control_ref.current) {
+    card_list_height = usable_height - 20 - control_ref.current.clientHeight;
+  }
   const chat_pane_style = {
     marginTop: 10,
     marginLeft: 10,
     marginRight: 10,
     paddingTop: 10,
     width: usable_width - 20,
-    height: usable_height - 50,
+    height: usable_height,
     position: "relative",
     display: "flex",
     flexDirection: "column",
     justifyContent: "space-between"
   };
+  const chat_input_style = {
+    position: "relative",
+    bottom: 0,
+    margin: 10,
+    width: usable_width - 20,
+    marginLeft: 0
+  };
   return /*#__PURE__*/_react.default.createElement("div", {
     ref: top_ref,
     style: chat_pane_style
   }, /*#__PURE__*/_react.default.createElement(_core.CardList, {
-    bordered: false
-  }, items), /*#__PURE__*/_react.default.createElement("form", {
-    onSubmit: _promptSubmit,
+    bordered: false,
+    style: {
+      height: card_list_height
+    }
+  }, items), /*#__PURE__*/_react.default.createElement(_core.ControlGroup, {
+    ref: control_ref,
+    vertical: false,
     style: chat_input_style
-  }, /*#__PURE__*/_react.default.createElement(_core.InputGroup, {
+  }, /*#__PURE__*/_react.default.createElement(_core.Button, {
+    icon: "send-message",
+    minimal: true,
+    large: true,
+    onClick: _promptSubmit
+  }), /*#__PURE__*/_react.default.createElement(_core.TextArea, {
     type: "text",
+    autoReize: true,
     style: {
       width: "100%"
     },
-    className: "bp5-monospace-text",
     onChange: _onInputChange,
-    small: true,
-    large: false,
-    leftIcon: "chevron-right",
-    fill: true
-    // onKeyDown={(e) => _handleKeyDown(e)}
-    ,
+    large: true,
+    fill: true,
     value: prompt_value_ref.current
   })));
 }
 exports.ChatModule = ChatModule = /*#__PURE__*/(0, _react.memo)(ChatModule);
 function Prompt(props) {
   return /*#__PURE__*/_react.default.createElement(_core.Card, {
-    interactive: true
-  }, props.text);
+    interactive: false
+  }, /*#__PURE__*/_react.default.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column"
+    }
+  }, /*#__PURE__*/_react.default.createElement("h6", null, "You"), /*#__PURE__*/_react.default.createElement("div", null, props.text)));
 }
 Prompt = /*#__PURE__*/(0, _react.memo)(Prompt);
 function Response(props) {
+  let converted_dict = {
+    __html: props.text
+  };
   return /*#__PURE__*/_react.default.createElement(_core.Card, {
-    interactive: true
-  }, props.text);
+    interactive: false
+  }, /*#__PURE__*/_react.default.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column"
+    }
+  }, /*#__PURE__*/_react.default.createElement("h6", null, "ChatBot"), /*#__PURE__*/_react.default.createElement("div", {
+    className: "",
+    dangerouslySetInnerHTML: converted_dict
+  })));
 }
 Response = /*#__PURE__*/(0, _react.memo)(Response);
 function CommandsModule(props) {
