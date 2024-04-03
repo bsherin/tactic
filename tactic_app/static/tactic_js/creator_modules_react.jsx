@@ -4,10 +4,11 @@ import React from "react";
 import {Fragment, useState, useEffect, memo, useContext, useRef} from "react";
 import PropTypes from 'prop-types';
 
-import {Button, Card, Collapse, Divider, Menu, MenuItem, MenuDivider, Switch, FormGroup} from "@blueprintjs/core";
+import {Button, Collapse, Divider, Menu, MenuItem, MenuDivider, Switch, FormGroup} from "@blueprintjs/core";
+import {Card, CardList, InputGroup} from "@blueprintjs/core";
 import {RegionCardinality} from "@blueprintjs/table";
 
-import {postAjax} from "./communication_react";
+import {postAjax, postPromise} from "./communication_react";
 import {SearchForm} from "./library_widgets";
 import {
     LabeledSelectList,
@@ -18,12 +19,12 @@ import {
 } from "./blueprint_react_widgets";
 import {StatusContext} from "./toaster";
 import _ from 'lodash';
-import {isInt} from "./utilities_react";
+import {isInt, useConnection, useStateAndRef} from "./utilities_react";
 import {BpSelect, CombinedMetadata} from "./blueprint_mdata_fields";
 import {useCallbackStack} from "./utilities_react";
-import {SizeContext, useSize} from "./sizing_tools";
+import {useSize} from "./sizing_tools";
 
-export {OptionModule, ExportModule, CommandsModule, MetadataModule, correctOptionListTypes}
+export {OptionModule, ExportModule, CommandsModule, ChatModule, MetadataModule, correctOptionListTypes}
 
 function correctType(type, val, error_flag = "__ERROR__") {
     let result;
@@ -303,8 +304,6 @@ function OptionModule(props) {
     const [active_row, set_active_row] = useState(null);
     const [form_state, set_form_state] = useState({...blank_form});
 
-    const sizeInfo = useContext(SizeContext);
-
     const [usable_width, usable_height, topX, topY] = useSize(top_ref, props.tabSelectCounter, "OptionModule");
 
     const pushCallback = useCallbackStack();
@@ -535,8 +534,6 @@ function ExportModule(props) {
     const [active_export_row, set_active_export_row] = useState(0);
     const [active_save_row, set_active_save_row] = useState(0);
 
-    const sizeInfo = useContext(SizeContext);
-
     const [usable_width, usable_height, topX, topY] = useSize(top_ref, props.tabSelectCounter, "ExportModule");
 
     function _delete_export() {
@@ -678,6 +675,102 @@ function MetadataModule(props) {
 
 MetadataModule = memo(MetadataModule);
 
+const chat_input_style = {position: "relative", bottom: 8, margin: 10, width: "100%"};
+function ChatModule(props) {
+    const top_ref = React.createRef();
+    const [item_list, set_item_list, item_list_ref] = useStateAndRef([]);
+    const [prompt_value, set_prompt_value, prompt_value_ref] = useStateAndRef("");
+
+    const [usable_width, usable_height, topX, topY] = useSize(top_ref, props.tabSelectCounter, "ChatModule");
+    const connection_status = useConnection(props.tsocket, initSocket);
+
+    function initSocket() {
+        props.tsocket.attachListener("chat_response", _handleChatResponse);
+    }
+
+    function _onInputChange(event) {
+        set_prompt_value(event.target.value);
+    }
+
+    function _handleChatResponse(data) {
+        const new_item_list = [...item_list_ref.current, {kind: "response", text: data.response}];
+        set_item_list(new_item_list)
+    }
+
+    async function _promptSubmit(event) {
+        event.preventDefault();
+        try {
+            const new_item_list = [...item_list_ref.current, {kind: "prompt", text: prompt_value_ref.current}];
+            set_item_list(new_item_list);
+            await postPromise(props.module_viewer_id, "post_prompt", {prompt: prompt_value_ref.current});
+        } catch (error) {
+            console.log(error.message)
+        }
+    }
+
+    let items = item_list.map((item, index) => {
+        if (item.kind == "prompt") {
+            return <Prompt key={index} {...item}/>
+        } else {
+            return <Response key={index} {...item}/>
+        }
+    });
+    const chat_pane_style = {
+        marginTop: 10,
+        marginLeft: 10,
+        marginRight: 10,
+        paddingTop: 10,
+        width: usable_width - 20,
+        height: usable_height - 50,
+        position: "relative",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between"
+    };
+
+    return (
+        <div ref={top_ref} style={chat_pane_style} >
+            <CardList bordered={false}>
+                {items}
+            </CardList>
+            <form onSubmit={_promptSubmit} style={chat_input_style}>
+                <InputGroup type="text"
+                            style={{width: "100%"}}
+                            className="bp5-monospace-text"
+                            onChange={_onInputChange}
+                            small={true}
+                            large={false}
+                            leftIcon="chevron-right"
+                            fill={true}
+                            // onKeyDown={(e) => _handleKeyDown(e)}
+                            value={prompt_value_ref.current}
+                />
+            </form>
+        </div>
+    )
+}
+
+ChatModule = memo(ChatModule);
+
+function Prompt(props) {
+    return (
+        <Card interactive={true}>
+            {props.text}
+        </Card>
+    )
+}
+
+Prompt = memo(Prompt);
+
+function Response(props) {
+    return (
+        <Card interactive={true}>
+            {props.text}
+        </Card>
+    )
+}
+
+Response = memo(Response);
 
 function CommandsModule(props) {
     const top_ref = React.createRef();
@@ -687,8 +780,6 @@ function CommandsModule(props) {
     const [ordered_categories, set_ordered_categories] = useState([]);
     const [object_api_dict, set_object_api_dict] = useState({});
     const [ordered_object_categories, set_ordered_object_categories] = useState([]);
-
-    const sizeInfo = useContext(SizeContext);
 
     const [usable_width, usable_height, topX, topY] = useSize(top_ref, props.tabSelectCounter, "CommandModule");
 

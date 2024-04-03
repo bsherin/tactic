@@ -1,8 +1,9 @@
 from gevent import monkey; monkey.patch_all()
+import gevent
 import copy
 import datetime
 # noinspection PyUnresolvedReferences
-from qworker import QWorker, task_worthy
+from qworker import QWorker, task_worthy, task_worthy_manual_submit
 # noinspection PyUnresolvedReferences
 import pymongo
 import qworker
@@ -41,7 +42,7 @@ class ModuleViewerWorker(QWorker, ExceptionMixin):
         self.tile_collection_name = None
         self.tile_instance = None
         self.generate_heartbeats = True
-        self.open_api_key = None
+        self.openai_api_key = None
         self.chat_client = None
         self.chat_assistant = None
         self.chat_thread = None
@@ -93,6 +94,7 @@ class ModuleViewerWorker(QWorker, ExceptionMixin):
             try:
                 settings = result_dict["settings"]
                 if "openai_api_key" in settings and len(settings["openai_api_key"]) > 4:
+                    print(f"got settings {str(settings)}")
                     self.openai_api_key = settings["openai_api_key"]
                     final_result = True
                 else:
@@ -102,28 +104,30 @@ class ModuleViewerWorker(QWorker, ExceptionMixin):
                 return
             except Exception as ex2:
                 res2 = self.get_traceback_exception_dict(ex2, "Error checking for api key")
+                res2["has_key"] = False
+                self.submit_response(task_packet, res2)
                 print(str(res2))
                 return res2
         try:
             self.ask_host("get_user_settings", {"user_id": self.user_id}, got_settings)
         except Exception as ex:
             res = self.get_traceback_exception_dict(ex, "Error checking for api key")
+            res["has_key"] = False
+            self.submit_response(task_packet, res)
             print(str(res["message"]))
             return res
 
     def initialize_assistant(self):
-        import open_api
         from openai import OpenAI
         if self.openai_api_key is None:
             return False
-        self.chat_client = OpenAI(
-            api_key=self.open_api_key
-        )
+        print(f"openai_api_key is {self.openai_api_key}")
+        self.chat_client = OpenAI(api_key=self.openai_api_key)
         file_list = []
         fnames = ["Tile-Commands.html", "Object-Oriented-API.html"]
         for fname in fnames:
             if fname.endswith(".html"):
-                new_file = client.files.create(
+                new_file = self.chat_client.files.create(
                     file=open(f"{fname}", "rb"),
                     purpose='assistants'
                 )
@@ -142,25 +146,27 @@ class ModuleViewerWorker(QWorker, ExceptionMixin):
         self.chat_thread = self.chat_client.beta.threads.create()
         return True
 
-    def retrieve_message(self):
-        messages = self.chat_clientclient.beta.threads.messages.list(
+    def retrieve_response(self):
+        messages = self.chat_client.beta.threads.messages.list(
           thread_id=self.chat_thread.id
         )
         response = messages.data[0].content[0].text.value
-        self.emit_to_client("chat_response", {"response": response})
+        self.emit_to_client("chat_response", {"success": True, "response": response})
         return
 
-    def wait_for_response(self, run_id):
+    def wait_for_response(self):
+        print("entering wait_for_response")
         sleep_times = [5, 5, 5, 3, 3, 3, 2]
         success = False
         for n in range(30):
-            run = client.beta.threads.runs.retrieve(
-                thread_id=thread.id,
-                run_id=run_id
+            run = self.chat_client.beta.threads.runs.retrieve(
+                thread_id=self.chat_thread.id,
+                run_id=self.current_run_id
             )
-            if run.status == "complete":
+            print("got run.status " + run.status)
+            if run.status == "completed":
                 self.retrieve_response()
-                success = True
+                return
             else:
                 if n >= len(sleep_times):
                     st = 1
@@ -168,27 +174,33 @@ class ModuleViewerWorker(QWorker, ExceptionMixin):
                     st = sleep_times[n]
                 print(f"sleeping {st} {n}")
                 gevent.sleep(st)
-        self.emit_to_client("chat_response", {"response": "response timed out"})
+        self.emit_to_client("chat_response", {"response": "response timed out", "success": True})
         return
 
     @task_worthy
     def post_prompt(self, data_dict):
+        print("entering post_prompt")
         try:
             if self.chat_client is None:
+                print('initializing assistant')
                 client_exists = self.initialize_assistant()
                 if not client_exists:
                     raise Exception("No chat client exists")
+
             prompt = data_dict["prompt"]
+            print(f'posting prompt {prompt}')
             self.chat_client.beta.threads.messages.create(
                 thread_id=self.chat_thread.id,
                 role="user",
                 content=prompt
             )
+            print('starting run')
             run = self.chat_client.beta.threads.runs.create(
-                thread_id=thread.id,
-                assistant_id=assistant.id,
+                thread_id=self.chat_thread.id,
+                assistant_id=self.chat_assistant.id,
             )
             self.current_run_id = run.id
+            print('starting background task')
             socketio.start_background_task(target=self.wait_for_response)
             return {"success": True}
 

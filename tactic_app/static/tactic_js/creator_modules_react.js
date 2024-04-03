@@ -4,6 +4,7 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.ChatModule = ChatModule;
 exports.CommandsModule = CommandsModule;
 exports.ExportModule = ExportModule;
 exports.MetadataModule = MetadataModule;
@@ -340,7 +341,6 @@ function OptionModule(props) {
   const [form_state, set_form_state] = (0, _react.useState)({
     ...blank_form
   });
-  const sizeInfo = (0, _react.useContext)(_sizing_tools.SizeContext);
   const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(top_ref, props.tabSelectCounter, "OptionModule");
   const pushCallback = (0, _utilities_react.useCallbackStack)();
   function _delete_option() {
@@ -585,7 +585,6 @@ function ExportModule(props) {
   const top_ref = /*#__PURE__*/_react.default.createRef();
   const [active_export_row, set_active_export_row] = (0, _react.useState)(0);
   const [active_save_row, set_active_save_row] = (0, _react.useState)(0);
-  const sizeInfo = (0, _react.useContext)(_sizing_tools.SizeContext);
   const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(top_ref, props.tabSelectCounter, "ExportModule");
   function _delete_export() {
     let new_data_list = props.export_list;
@@ -732,6 +731,106 @@ function MetadataModule(props) {
   })));
 }
 exports.MetadataModule = MetadataModule = /*#__PURE__*/(0, _react.memo)(MetadataModule);
+const chat_input_style = {
+  position: "relative",
+  bottom: 8,
+  margin: 10,
+  width: "100%"
+};
+function ChatModule(props) {
+  const top_ref = /*#__PURE__*/_react.default.createRef();
+  const [item_list, set_item_list, item_list_ref] = (0, _utilities_react.useStateAndRef)([]);
+  const [prompt_value, set_prompt_value, prompt_value_ref] = (0, _utilities_react.useStateAndRef)("");
+  const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(top_ref, props.tabSelectCounter, "ChatModule");
+  const connection_status = (0, _utilities_react.useConnection)(props.tsocket, initSocket);
+  function initSocket() {
+    props.tsocket.attachListener("chat_response", _handleChatResponse);
+  }
+  function _onInputChange(event) {
+    set_prompt_value(event.target.value);
+  }
+  function _handleChatResponse(data) {
+    const new_item_list = [...item_list_ref.current, {
+      kind: "response",
+      text: data.response
+    }];
+    set_item_list(new_item_list);
+  }
+  async function _promptSubmit(event) {
+    event.preventDefault();
+    try {
+      const new_item_list = [...item_list_ref.current, {
+        kind: "prompt",
+        text: prompt_value_ref.current
+      }];
+      set_item_list(new_item_list);
+      await (0, _communication_react.postPromise)(props.module_viewer_id, "post_prompt", {
+        prompt: prompt_value_ref.current
+      });
+    } catch (error) {
+      console.log(error.message);
+    }
+  }
+  let items = item_list.map((item, index) => {
+    if (item.kind == "prompt") {
+      return /*#__PURE__*/_react.default.createElement(Prompt, (0, _extends2.default)({
+        key: index
+      }, item));
+    } else {
+      return /*#__PURE__*/_react.default.createElement(Response, (0, _extends2.default)({
+        key: index
+      }, item));
+    }
+  });
+  const chat_pane_style = {
+    marginTop: 10,
+    marginLeft: 10,
+    marginRight: 10,
+    paddingTop: 10,
+    width: usable_width - 20,
+    height: usable_height - 50,
+    position: "relative",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "space-between"
+  };
+  return /*#__PURE__*/_react.default.createElement("div", {
+    ref: top_ref,
+    style: chat_pane_style
+  }, /*#__PURE__*/_react.default.createElement(_core.CardList, {
+    bordered: false
+  }, items), /*#__PURE__*/_react.default.createElement("form", {
+    onSubmit: _promptSubmit,
+    style: chat_input_style
+  }, /*#__PURE__*/_react.default.createElement(_core.InputGroup, {
+    type: "text",
+    style: {
+      width: "100%"
+    },
+    className: "bp5-monospace-text",
+    onChange: _onInputChange,
+    small: true,
+    large: false,
+    leftIcon: "chevron-right",
+    fill: true
+    // onKeyDown={(e) => _handleKeyDown(e)}
+    ,
+    value: prompt_value_ref.current
+  })));
+}
+exports.ChatModule = ChatModule = /*#__PURE__*/(0, _react.memo)(ChatModule);
+function Prompt(props) {
+  return /*#__PURE__*/_react.default.createElement(_core.Card, {
+    interactive: true
+  }, props.text);
+}
+Prompt = /*#__PURE__*/(0, _react.memo)(Prompt);
+function Response(props) {
+  return /*#__PURE__*/_react.default.createElement(_core.Card, {
+    interactive: true
+  }, props.text);
+}
+Response = /*#__PURE__*/(0, _react.memo)(Response);
 function CommandsModule(props) {
   const top_ref = /*#__PURE__*/_react.default.createRef();
   const commandsRef = (0, _react.useRef)(null);
@@ -740,7 +839,6 @@ function CommandsModule(props) {
   const [ordered_categories, set_ordered_categories] = (0, _react.useState)([]);
   const [object_api_dict, set_object_api_dict] = (0, _react.useState)({});
   const [ordered_object_categories, set_ordered_object_categories] = (0, _react.useState)([]);
-  const sizeInfo = (0, _react.useContext)(_sizing_tools.SizeContext);
   const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(top_ref, props.tabSelectCounter, "CommandModule");
   (0, _react.useEffect)(() => {
     (0, _communication_react.postAjax)("get_api_dict", {}, function (data) {
