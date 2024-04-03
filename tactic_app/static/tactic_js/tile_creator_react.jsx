@@ -15,7 +15,7 @@ import {KeyTrap} from "./key_trap";
 import {TacticMenubar} from "./menu_utilities"
 import {sendToRepository} from "./resource_viewer_react_app";
 import {ReactCodemirror} from "./react-codemirror";
-import {OptionModule, ExportModule, CommandsModule, MetadataModule} from "./creator_modules_react";
+import {OptionModule, ExportModule, ChatModule, MetadataModule} from "./creator_modules_react";
 import {HorizontalPanes, VerticalPanes} from "./resizing_layouts2";
 import {postAjax, postAjaxPromise, postPromise} from "./communication_react"
 import {withStatus, doFlash, StatusContext} from "./toaster"
@@ -74,7 +74,7 @@ function CreatorApp(props) {
         "options": false,
         "exports": false,
         "methods": false,
-        "commands": false
+        "chat": false
     });
     const [search_string, set_search_string] = useState("");
     const [current_search_number, set_current_search_number] = useState(null);
@@ -107,6 +107,7 @@ function CreatorApp(props) {
     const [left_pane_fraction, set_left_pane_fraction] = useState(.5);
 
     const [all_tags, set_all_tags] = useState([]);
+    const [has_key, set_has_key] = useState(false);
 
     const theme = useContext(ThemeContext);
     const dialogFuncs = useContext(DialogContext);
@@ -125,6 +126,18 @@ function CreatorApp(props) {
     useEffect(() => {
         let data_dict = {pane_type: "tile", is_repository: false, show_hidden: true};
         let data;
+        postPromise(props.module_viewer_id, "has_openai_key", {})
+            .then((data) => {
+                if (data.has_key) {
+                    set_has_key(true)
+                }
+                else {
+                    set_has_key(false)
+                }
+            })
+            .catch((e)=>{
+                set_has_key(false)
+            });
         postAjaxPromise("get_tag_list", data_dict)
             .then((data) => {
                 set_all_tags(data.tag_list)
@@ -983,11 +996,21 @@ function CreatorApp(props) {
         </div>
 
     );
-    let commands_panel = (
-        <CommandsModule foregrounded={foregrounded_panes["commands"]}
+    // let commands_panel = (
+    //     <CommandsModule foregrounded={foregrounded_panes["commands"]}
+    //                     tabSelectCounter={tabSelectCounter}
+    //     />
+    // );
+    let chat_panel;
+    if (has_key) {
+        chat_panel = (
+            <ChatModule foregrounded={foregrounded_panes["chat"]}
                         tabSelectCounter={tabSelectCounter}
-        />
-    );
+                        tsocket={props.tsocket}
+                        module_viewer_id={props.module_viewer_id}
+            />
+        );
+    }
     let right_pane = (
         <Fragment>
             <div id="creator-resources" className="d-block">
@@ -1001,8 +1024,10 @@ function CreatorApp(props) {
                          panel={export_panel}/>
                     <Tab id="methods" title={<span><Icon size={12} icon="code"/> methods</span>} panel={methods_panel}/>
                     <Tab id="globals" title={<span><Icon size={12} icon="code"/> globals</span>} panel={globals_panel}/>
-                    <Tab id="commands" title={<span><Icon size={12} icon="manual"/> documentation</span>}
-                         panel={commands_panel}/>
+                    {has_key &&
+                        <Tab id="chat" title={<span><Icon size={12} icon="manual"/> chat</span>}
+                         panel={chat_panel}/>
+                    }
                 </Tabs>
             </div>
         </Fragment>

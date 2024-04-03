@@ -6,4 +6,4 @@ pika
 gevent
 pymongo
 ssh-pymongo
-open_api
+openai

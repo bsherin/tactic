@@ -69,7 +69,7 @@ function CreatorApp(props) {
     "options": false,
     "exports": false,
     "methods": false,
-    "commands": false
+    "chat": false
   });
   const [search_string, set_search_string] = (0, _react.useState)("");
   const [current_search_number, set_current_search_number] = (0, _react.useState)(null);
@@ -96,6 +96,7 @@ function CreatorApp(props) {
   const [top_pane_fraction, set_top_pane_fraction] = (0, _react.useState)(props.is_mpl || props.is_d3 ? .5 : 1);
   const [left_pane_fraction, set_left_pane_fraction] = (0, _react.useState)(.5);
   const [all_tags, set_all_tags] = (0, _react.useState)([]);
+  const [has_key, set_has_key] = (0, _react.useState)(false);
   const theme = (0, _react.useContext)(_theme.ThemeContext);
   const dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   const statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
@@ -112,6 +113,15 @@ function CreatorApp(props) {
       show_hidden: true
     };
     let data;
+    (0, _communication_react.postPromise)(props.module_viewer_id, "has_openai_key", {}).then(data => {
+      if (data.has_key) {
+        set_has_key(true);
+      } else {
+        set_has_key(false);
+      }
+    }).catch(e => {
+      set_has_key(false);
+    });
     (0, _communication_react.postAjaxPromise)("get_tag_list", data_dict).then(data => {
       set_all_tags(data.tag_list);
     }).catch(e => {
@@ -927,10 +937,20 @@ function CreatorApp(props) {
     extra_autocomplete_list: onames_for_autocomplete,
     iCounter: tabSelectCounter
   }));
-  let commands_panel = /*#__PURE__*/_react.default.createElement(_creator_modules_react.CommandsModule, {
-    foregrounded: foregrounded_panes["commands"],
-    tabSelectCounter: tabSelectCounter
-  });
+  // let commands_panel = (
+  //     <CommandsModule foregrounded={foregrounded_panes["commands"]}
+  //                     tabSelectCounter={tabSelectCounter}
+  //     />
+  // );
+  let chat_panel;
+  if (has_key) {
+    chat_panel = /*#__PURE__*/_react.default.createElement(_creator_modules_react.ChatModule, {
+      foregrounded: foregrounded_panes["chat"],
+      tabSelectCounter: tabSelectCounter,
+      tsocket: props.tsocket,
+      module_viewer_id: props.module_viewer_id
+    });
+  }
   let right_pane = /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement("div", {
     id: "creator-resources",
     className: "d-block"
@@ -974,13 +994,13 @@ function CreatorApp(props) {
       icon: "code"
     }), " globals"),
     panel: globals_panel
-  }), /*#__PURE__*/_react.default.createElement(_core.Tab, {
-    id: "commands",
+  }), has_key && /*#__PURE__*/_react.default.createElement(_core.Tab, {
+    id: "chat",
     title: /*#__PURE__*/_react.default.createElement("span", null, /*#__PURE__*/_react.default.createElement(_core.Icon, {
       size: 12,
       icon: "manual"
-    }), " documentation"),
-    panel: commands_panel
+    }), " chat"),
+    panel: chat_panel
   }))));
   let outer_style = {
     width: "100%",
