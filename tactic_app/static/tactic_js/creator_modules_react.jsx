@@ -683,17 +683,20 @@ function MetadataModule(props) {
 MetadataModule = memo(MetadataModule);
 
 const chat_input_style = {position: "relative", bottom: 0, margin: 10, width: "100%"};
+const idle_statuses = ["completed", "expired", "cancelled", "failed"];
 function ChatModule(props) {
     const top_ref = React.createRef(null);
     const control_ref = React.createRef(null);
     const [item_list, set_item_list, item_list_ref] = useStateAndRef([]);
     const [prompt_value, set_prompt_value, prompt_value_ref] = useStateAndRef("");
+    const [chat_status, set_chat_status, chat_status_ref] = useStateAndRef("idle");
 
     const [usable_width, usable_height, topX, topY] = useSize(top_ref, props.tabSelectCounter, "ChatModule");
     const connection_status = useConnection(props.tsocket, initSocket);
 
     function initSocket() {
         props.tsocket.attachListener("chat_response", _handleChatResponse);
+        props.tsocket.attachListener("chat_status", _handleChatStatus)
     }
 
     function _onInputChange(event) {
@@ -701,18 +704,45 @@ function ChatModule(props) {
     }
 
     function _handleChatResponse(data) {
-
         let converted_markdown = mdi.render(data.response);
         const new_item_list = [...item_list_ref.current, {kind: "response", text: converted_markdown}];
-        set_item_list(new_item_list)
+        set_item_list(new_item_list);
+        set_chat_status("idle")
+    }
+
+    function _handleChatStatus(data) {
+        if (idle_statuses.includes(data.status)) {
+            set_chat_status("idle")
+        }
+        else {
+            set_chat_status(data.status)
+        }
+    }
+
+    async function _handleButton(event) {
+        event.preventDefault();
+        if (chat_status_ref.current == "idle") {
+            await _promptSubmit()
+        }
+        else {
+            await _cancelPrompt()
+        }
+    }
+
+    async function _cancelPrompt() {
+        try {
+            await postPromise(props.module_viewer_id, "cancel_run_task", {})
+        } catch (error) {
+            console.log(error.message)
+        }
     }
 
     async function _promptSubmit(event) {
-        event.preventDefault();
         try {
             const new_item_list = [...item_list_ref.current, {kind: "prompt", text: prompt_value_ref.current}];
             set_item_list(new_item_list);
             set_prompt_value("");
+            set_chat_status("posted");
             await postPromise(props.module_viewer_id, "post_prompt", {prompt: prompt_value_ref.current});
         } catch (error) {
             console.log(error.message)
@@ -751,17 +781,17 @@ function ChatModule(props) {
     };
 
     return (
-        <div ref={top_ref} style={chat_pane_style} >
+        <div className="chat-module" ref={top_ref} style={chat_pane_style} >
             <CardList bordered={false} style={{height: card_list_height}}>
                 {items}
             </CardList>
             <ControlGroup ref={control_ref} vertical={false} style={chat_input_style}>
-                <Button icon="send-message"
+                <Button icon={chat_status_ref.current == "idle" ? "send-message" : "stop"}
                         minimal={true}
                         large={true}
-                        onClick={_promptSubmit}/>
+                        onClick={_handleButton}/>
                 <TextArea type="text"
-                          autoReize={true}
+                          autoResize={true}
                           style={{width: "100%"}}
                           onChange={_onInputChange}
                           large={true}
@@ -794,7 +824,7 @@ function Response(props) {
         <Card interactive={false}>
             <div style={{display: "flex", flexDirection: "column"}}>
                 <h6>ChatBot</h6>
-                <div className=""
+                <div className="chat-response"
                      dangerouslySetInnerHTML={converted_dict}/>
             </div>
         </Card>

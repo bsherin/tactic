@@ -13,6 +13,7 @@ import exception_mixin
 from exception_mixin import ExceptionMixin
 from communication_utils import emit_direct, socketio
 from mongo_db_fs import get_dbs
+from threading import Lock
 
 import sys, os
 sys.stdout = sys.stderr
@@ -28,6 +29,9 @@ mongo_uri = os.environ.get("MONGO_URI")
 import os
 rb_id = os.environ.get("RB_ID")
 
+
+chat_thread = None
+chat_thread_lock = Lock()
 
 # noinspection PyUnusedLocal
 class ModuleViewerWorker(QWorker, ExceptionMixin):
@@ -154,54 +158,83 @@ class ModuleViewerWorker(QWorker, ExceptionMixin):
         self.emit_to_client("chat_response", {"success": True, "response": response})
         return
 
+    def cancel_run(self):
+        try:
+            self.chat_client.beta.threads.runs.cancel(
+                thread_id=self.chat_thread.id,
+                run_id=self.current_run_id)
+        except Exception as ex:
+            print("error canceling run")
+            print(str(ex))
+        return
+
     def wait_for_response(self):
-        print("entering wait_for_response")
         sleep_times = [5, 5, 5, 3, 3, 3, 2]
         success = False
-        for n in range(30):
+        max_time = 300
+        total_time = 0
+        canceled = False
+        last_status = None
+        for n in range(500):
+            if total_time > max_time and not canceled:
+                self.cancel_run()
+                canceled = True
             run = self.chat_client.beta.threads.runs.retrieve(
                 thread_id=self.chat_thread.id,
                 run_id=self.current_run_id
             )
             print("got run.status " + run.status)
+            if run.status != last_status:
+                last_status = run.status
+                self.emit_to_client("chat_status", {"status": run.status})
             if run.status == "completed":
                 self.retrieve_response()
                 return
-            else:
+            elif run.status in ["in_progress", "queued", "cancelling"]:
                 if n >= len(sleep_times):
                     st = 1
                 else:
                     st = sleep_times[n]
                 print(f"sleeping {st} {n}")
                 gevent.sleep(st)
+                total_time += st
+            elif run.status == "failed":
+                self.emit_to_client("chat_response", {"response": "response failed", "success": True})
+                return
+            else:
+                return
+        self.cancel_run()
         self.emit_to_client("chat_response", {"response": "response timed out", "success": True})
         return
 
     @task_worthy
+    def cancel_run_task(self, data_dict):
+        self.cancel_run()
+        return {"success": True}
+
+    @task_worthy
     def post_prompt(self, data_dict):
-        print("entering post_prompt")
+        global chat_thread
+        global chat_thread_lock
         try:
             if self.chat_client is None:
-                print('initializing assistant')
                 client_exists = self.initialize_assistant()
                 if not client_exists:
                     raise Exception("No chat client exists")
 
             prompt = data_dict["prompt"]
-            print(f'posting prompt {prompt}')
             self.chat_client.beta.threads.messages.create(
                 thread_id=self.chat_thread.id,
                 role="user",
                 content=prompt
             )
-            print('starting run')
             run = self.chat_client.beta.threads.runs.create(
                 thread_id=self.chat_thread.id,
                 assistant_id=self.chat_assistant.id,
             )
             self.current_run_id = run.id
-            print('starting background task')
-            socketio.start_background_task(target=self.wait_for_response)
+            with chat_thread_lock:
+                chat_thread = socketio.start_background_task(target=self.wait_for_response)
             return {"success": True}
 
         except Exception as ex:

@@ -1247,6 +1247,13 @@ pre code {
   width: 50%;
   min-width: 200px;
 }
+.light-theme .chat-module .bp5-card-list .bp5-card {
+  background-color: #f6f7f9;
+}
+.light-theme .chat-response pre {
+  padding: 10px;
+  background-color: #d3d8de;
+}
 .light-theme #commands-pane .command-name {
   font-weight: 900;
   color: #47505c;
@@ -1389,6 +1396,10 @@ pre code {
   border-color: white;
   width: 50%;
   min-width: 200px;
+}
+.bp5-dark .chat-response pre {
+  padding: 10px;
+  background-color: #252a31;
 }
 .bp5-dark #commands-pane .command-name {
   font-weight: bold;
