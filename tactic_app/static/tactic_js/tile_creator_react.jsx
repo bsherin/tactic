@@ -15,7 +15,8 @@ import {KeyTrap} from "./key_trap";
 import {TacticMenubar} from "./menu_utilities"
 import {sendToRepository} from "./resource_viewer_react_app";
 import {ReactCodemirror} from "./react-codemirror";
-import {OptionModule, ExportModule, ChatModule, MetadataModule} from "./creator_modules_react";
+import {OptionModule, ExportModule, MetadataModule} from "./creator_modules_react";
+import {ChatModule} from "./assistant";
 import {HorizontalPanes, VerticalPanes} from "./resizing_layouts2";
 import {postAjax, postAjaxPromise, postPromise} from "./communication_react"
 import {withStatus, doFlash, StatusContext} from "./toaster"

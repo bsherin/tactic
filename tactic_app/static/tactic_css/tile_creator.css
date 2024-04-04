@@ -135,6 +135,7 @@
 .light-theme .chat-response pre {
   padding: 10px;
   background-color: #d3d8de;
+  overflow: scroll;
 }
 .light-theme #commands-pane .command-name {
   font-weight: 900;
@@ -282,6 +283,7 @@
 .bp5-dark .chat-response pre {
   padding: 10px;
   background-color: #252a31;
+  overflow: scroll;
 }
 .bp5-dark #commands-pane .command-name {
   font-weight: bold;
