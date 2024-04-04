@@ -1,0 +1,1071 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+    <title>Object-Oriented API &#8212; Tactic .1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="_static/css/custom.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Handler Methods" href="Handler-Methods.html" />
+    <link rel="prev" title="The Tile API" href="Tile-Commands.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="object-oriented-api">
+<h1>Object-Oriented API<a class="headerlink" href="#object-oriented-api" title="Permalink to this heading">¶</a></h1>
+<p>The low-level commands are documented in the section of this documentation <a class="reference external" href="Tile-Commands.html">Tile-Commands</a>.
+There is an alternative way to access much of the same functions that uses an object-oriented interface.
+This object-oriented interface tends to be easier to read and right, and there is less to remember in terms of
+special-purpose commands. However, in some cases, the code will run more slowly.</p>
+<section id="accessing-and-manipulating-the-collection">
+<h2>Accessing and manipulating the collection<a class="headerlink" href="#accessing-and-manipulating-the-collection" title="Permalink to this heading">¶</a></h2>
+<dl class="py data">
+<dt class="sig sig-object py" id="Collection">
+<span class="sig-name descname"><span class="pre">Collection</span></span><a class="headerlink" href="#Collection" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">Collection</span></code> is a global containing a TacticCollection object corresponding to</dt><dd><p>the collection in the current project. <code class="docutils literal notranslate"><span class="pre">self.collection</span></code> can also be used.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="TacticCollection">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">TacticCollection</span></span><a class="headerlink" href="#TacticCollection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterating over the TacticCollection object iterates over the documents in the collection, giving TacticDocument objects.
+These can also be accessed by name.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">doc</span> <span class="o">=</span> <span class="n">Collection</span><span class="p">[</span><span class="s2">&quot;doc_name&quot;</span><span class="p">]</span>  <span class="c1"># Get the document named doc_name</span>
+<span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="n">Collection</span><span class="p">:</span>  <span class="c1"># iterate of over documents in the collection</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+<span class="nb">len</span><span class="p">(</span><span class="n">Collection</span><span class="p">)</span>  <span class="c1"># returns the number of documents in the collection</span>
+<span class="n">Collection</span><span class="p">[</span><span class="n">docname</span><span class="p">]</span> <span class="o">=</span> <span class="n">detached_doc</span>  <span class="c1"># adds or replaces a document to the collection</span>
+<span class="k">del</span> <span class="n">Collection</span><span class="p">[</span><span class="n">docname</span><span class="p">]</span>  <span class="c1"># deletes the document from the collection</span>
+</pre></div>
+</div>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="TacticCollection.document_names">
+<span class="sig-name descname"><span class="pre">document_names</span></span><a class="headerlink" href="#TacticCollection.document_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list of the names of the documents in the collection.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="TacticCollection.current_document">
+<span class="sig-name descname"><span class="pre">current_document</span></span><a class="headerlink" href="#TacticCollection.current_document" title="Permalink to this definition">¶</a></dt>
+<dd><p>A <a class="reference internal" href="#TacticDocument" title="TacticDocument"><code class="xref py py-class docutils literal notranslate"><span class="pre">TacticDocument</span></code></a> object corresponding to the currently visible document.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="TacticCollection.column">
+<span class="sig-name descname"><span class="pre">column</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">column_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#TacticCollection.column" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns, as a list, the data in the specified column from all of the documents in the collection.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="TacticCollection.tokenize">
+<span class="sig-name descname"><span class="pre">tokenize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">column_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tokenizer_func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#TacticCollection.tokenize" title="Permalink to this definition">¶</a></dt>
+<dd><p>In table documents, applies <cite>tokenizer_func</cite> to each entry in the column <cite>column_name</cite>, in every document,
+and returns the result as a list.</p>
+<p>In freeform documents, applies <cite>tokenizer_func</cite> to each line in every document
+and returns the result as a list.</p>
+<p>If <cite>tokenizer_func</cite> is None then uses <code class="docutils literal notranslate"><span class="pre">nltk.word_tokenize</span></code>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="TacticCollection.detach">
+<span class="sig-name descname"><span class="pre">detach</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#TacticCollection.detach" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a <a class="reference internal" href="#DetachedTacticCollection" title="DetachedTacticCollection"><code class="xref py py-class docutils literal notranslate"><span class="pre">DetachedTacticCollection</span></code></a> with the data corresponding to this collection.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="TacticCollection.rewind">
+<span class="sig-name descname"><span class="pre">rewind</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#TacticCollection.rewind" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset the iterator to the first document.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="TacticDocument">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">TacticDocument</span></span><a class="headerlink" href="#TacticDocument" title="Permalink to this definition">¶</a></dt>
+<dd><p>Objects in this class correspond to one of the documents in the collection in the current project.
+It is only for table documents. Freeform documents have their own class, <a class="reference internal" href="#FreeformTacticDocument" title="FreeformTacticDocument"><code class="xref py py-class docutils literal notranslate"><span class="pre">FreeformTacticDocument</span></code></a>
+described below.</p>
+<p>Keep in mind that modifying rows in a TacticDocument object modify the collection within the
+current project.</p>
+<p>Iterating over a document iterates over the rows.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">doc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">collection</span><span class="o">.</span><span class="n">current_document</span>
+<span class="n">doc</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>  <span class="c1"># Gets the third row in the document as a TacticRow</span>
+<span class="n">doc</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_row</span>  <span class="c1"># new_row can be either a dict or a TacticRow</span>
+<span class="n">doc</span><span class="p">[</span><span class="mi">3</span><span class="p">:</span><span class="mi">5</span><span class="p">]</span>  <span class="c1"># Gets the third and fourth rows</span>
+<span class="k">del</span> <span class="n">doc</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>  <span class="c1"># Deletes the third row</span>
+<span class="nb">len</span><span class="p">(</span><span class="n">doc</span><span class="p">)</span>  <span class="c1"># Returns the number of rows</span>
+</pre></div>
+</div>
+<p>It is possible to change a row in the document by assigning it to a new value.
+In the following, <code class="docutils literal notranslate"><span class="pre">new_row</span></code> can be a <a class="reference internal" href="#TacticRow" title="TacticRow"><code class="xref py py-class docutils literal notranslate"><span class="pre">TacticRow</span></code></a>, a <a class="reference internal" href="#DetachedTacticRow" title="DetachedTacticRow"><code class="xref py py-class docutils literal notranslate"><span class="pre">DetachedTacticRow</span></code></a>, or a <code class="docutils literal notranslate"><span class="pre">dict</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">doc</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_row</span>
+</pre></div>
+</div>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="TacticDocument.name">
+<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#TacticDocument.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the document.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="TacticDocument.metadata">
+<span class="sig-name descname"><span class="pre">metadata</span></span><a class="headerlink" href="#TacticDocument.metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>A dictionary with the metadata for the document.</p>
+<p>Writing <code class="docutils literal notranslate"><span class="pre">self.metadata</span> <span class="pre">=</span> <span class="pre">a_dictionary</span></code> sets the metadata to the provided dictionary.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="TacticDocument.column_names">
+<span class="sig-name descname"><span class="pre">column_names</span></span><a class="headerlink" href="#TacticDocument.column_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list of the column_names for the document.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="TacticDocument.df">
+<span class="sig-name descname"><span class="pre">df</span></span><a class="headerlink" href="#TacticDocument.df" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the document as a pandas DataFrame.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="TacticDocument.insert">
+<span class="sig-name descname"><span class="pre">insert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detached_row_or_row_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#TacticDocument.insert" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inserts a new row at the specified index. The new row can either be a
+<a class="reference internal" href="#DetachedTacticRow" title="DetachedTacticRow"><code class="xref py py-class docutils literal notranslate"><span class="pre">DetachedTacticRow</span></code></a> or a dict.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="TacticDocument.column">
+<span class="sig-name descname"><span class="pre">column</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">column_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#TacticDocument.column" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns, as a list, the data in the specified column.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="TacticDocument.dict_list">
+<span class="sig-name descname"><span class="pre">dict_list</span></span><a class="headerlink" href="#TacticDocument.dict_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>The contents of the document as a list of dictionaries.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="TacticDocument.get_matching_rows">
+<span class="sig-name descname"><span class="pre">get_matching_rows</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filter_function</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#TacticDocument.get_matching_rows" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of rows meeting the requirement in <cite>filter_function</cite>.
+<cite>filter_function</cite> should expect a TacticRow as an argument, and it should return
+True or False.  See <a class="reference internal" href="Tile-Commands.html#get_matching_rows" title="get_matching_rows"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_matching_rows()</span></code></a>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="TacticDocument.tokenize">
+<span class="sig-name descname"><span class="pre">tokenize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">column_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tokenizer_func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#TacticDocument.tokenize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies tokenizer_func to each entry in the column <cite>column_name</cite> and returns the result as a list. If
+<cite>tokenizer_func</cite> is None then uses <code class="docutils literal notranslate"><span class="pre">nltk.word_tokenize</span></code>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="TacticDocument.set_column_data">
+<span class="sig-name descname"><span class="pre">set_column_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">column_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cellchange</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#TacticDocument.set_column_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the column in the document using <cite>column_data</cite>. <cite>column_data</cite> can be
+either a dict or a list. If it’s a dict, then the keys are interpreted
+as the row_id. If it’s a list, then the ordinal position in the list is
+interpreted as the row_id.  See <a class="reference internal" href="Tile-Commands.html#set_column_data" title="set_column_data"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_column_data()</span></code></a>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">to_html(title=None,</span> <span class="pre">click_type=&quot;word-clickable&quot;,</span> <span class="pre">sortable=True,</span> <span class="pre">sidebyside=False,</span> <span class="pre">has_header=True,</span></span></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">max_rows=None,</span> <span class="pre">header_style=None,</span> <span class="pre">body_style=None,</span></span></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">column_order=None,</span> <span class="pre">include_row_labels=False)</span></span></dt>
+<dd><p>Returns an html table for the document. See <a class="reference internal" href="Tile-Commands.html#html_table" title="html_table"><code class="xref py py-meth docutils literal notranslate"><span class="pre">html_table()</span></code></a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="TacticDocument.detach">
+<span class="sig-name descname"><span class="pre">detach</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#TacticDocument.detach" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a <a class="reference internal" href="#DetachedTacticDocument" title="DetachedTacticDocument"><code class="xref py py-class docutils literal notranslate"><span class="pre">DetachedTacticDocument</span></code></a> object with the data in this document.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="TacticDocument.rewind">
+<span class="sig-name descname"><span class="pre">rewind</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#TacticDocument.rewind" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset the iterator to the first row.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="TacticRow">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">TacticRow</span></span><a class="headerlink" href="#TacticRow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Objects in this class correspond to a row in one of the the documents in the current project.
+Keep in mind that changes to a row will be reflected in the project’s table.</p>
+<p>The fields in a row can be accessed either as attributes or items.</p>
+<blockquote>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">doc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">collection</span><span class="o">.</span><span class="n">current_document</span>
+<span class="n">a_row</span> <span class="o">=</span> <span class="n">doc</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>  <span class="c1"># Get a TacticRow corresponding to the third row</span>
+<span class="n">a_row</span><span class="p">[</span><span class="s2">&quot;some_column&quot;</span><span class="p">]</span>  <span class="c1"># Returns the value in the field some_column</span>
+<span class="n">a_row</span><span class="o">.</span><span class="n">some_column</span>  <span class="c1">#  Also returns the value in the field some_column</span>
+<span class="n">a_row</span><span class="p">[</span><span class="s2">&quot;some_column&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;This is some text&quot;</span>  <span class="c1">#  Sets the field</span>
+<span class="n">a_row</span><span class="o">.</span><span class="n">some_column</span> <span class="o">=</span> <span class="s2">&quot;This is some text&quot;</span>  <span class="c1"># Also sets the field</span>
+</pre></div>
+</div>
+</div></blockquote>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="TacticRow.row_dict">
+<span class="sig-name descname"><span class="pre">row_dict</span></span><a class="headerlink" href="#TacticRow.row_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>A dictionary with the data corresponding to the row.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="TacticRow.series">
+<span class="sig-name descname"><span class="pre">series</span></span><a class="headerlink" href="#TacticRow.series" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the row as a pandas Series.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="TacticRow.detach">
+<span class="sig-name descname"><span class="pre">detach</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#TacticRow.detach" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a <a class="reference internal" href="#DetachedTacticRow" title="DetachedTacticRow"><code class="xref py py-class docutils literal notranslate"><span class="pre">DetachedTacticRow</span></code></a> object with the data in this document.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="FreeformTacticDocument">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">FreeformTacticDocument</span></span><a class="headerlink" href="#FreeformTacticDocument" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is the document object class for freeform collections.</p>
+<p>Iterating over a FreeformTacticDocument document object iterates over the lines.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">doc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">collection</span><span class="o">.</span><span class="n">current_document</span>
+<span class="n">doc</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>    <span class="c1"># Returns the third line</span>
+<span class="n">doc</span><span class="p">[</span><span class="mi">3</span><span class="p">:</span><span class="mi">5</span><span class="p">]</span>  <span class="c1"># Gets the third and fourth lines</span>
+<span class="nb">len</span><span class="p">(</span><span class="n">doc</span><span class="p">)</span>  <span class="c1"># Returns the number of lines</span>
+</pre></div>
+</div>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="FreeformTacticDocument.text">
+<span class="sig-name descname"><span class="pre">text</span></span><a class="headerlink" href="#FreeformTacticDocument.text" title="Permalink to this definition">¶</a></dt>
+<dd><p>The text of the entire current document as a string.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="FreeformTacticDocument.line_list">
+<span class="sig-name descname"><span class="pre">line_list</span></span><a class="headerlink" href="#FreeformTacticDocument.line_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list of <a class="reference internal" href="#TacticLine" title="TacticLine"><code class="xref py py-class docutils literal notranslate"><span class="pre">TacticLine</span></code></a> objects corresponding to the lines in the document.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="FreeformTacticDocument.metadata">
+<span class="sig-name descname"><span class="pre">metadata</span></span><a class="headerlink" href="#FreeformTacticDocument.metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>A dictionary with the metadata for the document.</p>
+<p>Writing <code class="docutils literal notranslate"><span class="pre">self.metadata</span> <span class="pre">=</span> <span class="pre">a_dictionary</span></code> sets the metadata to the provided dictionary.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="FreeformTacticDocument.tokenize">
+<span class="sig-name descname"><span class="pre">tokenize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tokenizer_func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#FreeformTacticDocument.tokenize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies tokenizer_func to each line and returns the result as a list. If
+<cite>tokenizer_func</cite> is None then uses <code class="docutils literal notranslate"><span class="pre">nltk.word_tokenize</span></code>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="FreeformTacticDocument.download">
+<span class="sig-name descname"><span class="pre">download</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#FreeformTacticDocument.download" title="Permalink to this definition">¶</a></dt>
+<dd><p>Downloads the text of the document to the local client.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="FreeformTacticDocument.rewind">
+<span class="sig-name descname"><span class="pre">rewind</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#FreeformTacticDocument.rewind" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resets the iterator to the first line.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="TacticLine">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">TacticLine</span></span><a class="headerlink" href="#TacticLine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Objects in this class correspond to a line in one of the the documents in a freeform project.
+Keep in mind that changes to a row will be reflected in the project’s table.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">doc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">collection</span><span class="o">.</span><span class="n">current_document</span>
+<span class="n">my_line</span> <span class="o">=</span> <span class="n">doc</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+<span class="n">my_line</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span>  <span class="c1"># Gives the fifth character in the line.</span>
+</pre></div>
+</div>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="TacticLine.text">
+<span class="sig-name descname"><span class="pre">text</span></span><a class="headerlink" href="#TacticLine.text" title="Permalink to this definition">¶</a></dt>
+<dd><p>The text of the line as a string.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="creating-and-manipulating-detached-data">
+<h2>Creating and manipulating detached data<a class="headerlink" href="#creating-and-manipulating-detached-data" title="Permalink to this heading">¶</a></h2>
+<blockquote>
+<div><p>The above classes all provide access to classes that are directly linked to the collection in the
+current project. This means, for example, that if you change a row, you will see that change
+reflected in the table.</p>
+<p>However, in some cases you will want to work with data that is not connected to the current collection.
+For this purpose, there are “detached” versions of each of the classes described above.</p>
+</div></blockquote>
+<dl class="py class">
+<dt class="sig sig-object py" id="DetachedTacticCollection">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DetachedTacticCollection</span></span><a class="headerlink" href="#DetachedTacticCollection" title="Permalink to this definition">¶</a></dt>
+<dd><p>A DetachedTacticCollection can be created either via the <code class="docutils literal notranslate"><span class="pre">.detach()</span></code> method of project collection or
+using the <a class="reference internal" href="Tile-Commands.html#create_collection_object" title="create_collection_object"><code class="xref py py-meth docutils literal notranslate"><span class="pre">create_collection_object()</span></code></a> method of TileBase.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">dcollection</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_collection_object</span><span class="p">(</span><span class="s2">&quot;table&quot;</span><span class="p">)</span>
+<span class="n">dcollection</span><span class="p">[</span><span class="s2">&quot;new_document&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">a_detached_document</span>  <span class="c1"># Adds a new document to the collection</span>
+<span class="n">dcollection</span><span class="p">[</span><span class="s2">&quot;new_document&quot;</span><span class="p">]</span>  <span class="c1"># Returns the document</span>
+<span class="nb">len</span><span class="p">(</span><span class="n">dcollection</span><span class="p">)</span>  <span class="c1"># Returns the number of documents</span>
+<span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="n">dcollection</span><span class="p">:</span>  <span class="c1"># Iterate over documents</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+<span class="n">dcollection</span> <span class="o">+=</span> <span class="n">other_dcollection</span>  <span class="c1"># Updates dcollection with the documents in other_dcollection</span>
+<span class="n">new_collection</span> <span class="o">=</span> <span class="n">dcollection</span> <span class="o">+</span> <span class="n">other_collection</span>  <span class="c1"># Combines dcollection and other_collection in a new collection</span>
+</pre></div>
+</div>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="DetachedTacticCollection.document_names">
+<span class="sig-name descname"><span class="pre">document_names</span></span><a class="headerlink" href="#DetachedTacticCollection.document_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list of the names of the documents in the collection.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="DetachedTacticCollection.append">
+<span class="sig-name descname"><span class="pre">append</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">detached_tactic_document</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#DetachedTacticCollection.append" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds the specified <a class="reference internal" href="#DetachedTacticDocument" title="DetachedTacticDocument"><code class="xref py py-class docutils literal notranslate"><span class="pre">DetachedTacticDocument</span></code></a> object to the collection.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="DetachedTacticCollection.column">
+<span class="sig-name descname"><span class="pre">column</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">column_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#DetachedTacticCollection.column" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns, as a list, the data in the specified column from all of the documents in the collection.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="DetachedTacticCollection.update">
+<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other_collection</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#DetachedTacticCollection.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>This works like a dictionary update. <code class="docutils literal notranslate"><span class="pre">other_collection</span></code> can be a <a class="reference internal" href="#DetachedTacticCollection" title="DetachedTacticCollection"><code class="xref py py-class docutils literal notranslate"><span class="pre">DetachedTacticCollection</span></code></a>
+or a <a class="reference internal" href="#TacticCollection" title="TacticCollection"><code class="xref py py-class docutils literal notranslate"><span class="pre">TacticCollection</span></code></a>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="DetachedTacticCollection.rewind">
+<span class="sig-name descname"><span class="pre">rewind</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#DetachedTacticCollection.rewind" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset the iterator to the first document.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="DetachedTacticCollection.add_to_library">
+<span class="sig-name descname"><span class="pre">add_to_library</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">collection_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#DetachedTacticCollection.add_to_library" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a new collection in the user’s library, with the name <cite>collection_name</cite>,
+with all of the data in the collection.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="DetachedTacticDocument">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DetachedTacticDocument</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">TacticDocument</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#DetachedTacticDocument" title="Permalink to this definition">¶</a></dt>
+<dd><p>A DetachedTacticDocument can be created either via the <code class="docutils literal notranslate"><span class="pre">.detach()</span></code> method of a TacticDocument or
+using the <a class="reference internal" href="Tile-Commands.html#create_document" title="create_document"><code class="xref py py-meth docutils literal notranslate"><span class="pre">create_document()</span></code></a> method of TileBase.</p>
+<p>Note that this class inherits from <a class="reference internal" href="#TacticDocument" title="TacticDocument"><code class="xref py py-class docutils literal notranslate"><span class="pre">TacticDocument</span></code></a>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">new_doc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">collection</span><span class="o">.</span><span class="n">current_document</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span>
+<span class="n">new_doc</span> <span class="o">+=</span> <span class="n">other_detached_doc</span>  <span class="c1"># Appends the row of other-detached_doc</span>
+<span class="n">doc</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_row</span>  <span class="c1"># new_row can be either a dict or a DetachedTacticRow</span>
+<span class="n">new_doc</span>
+</pre></div>
+</div>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="DetachedTacticDocument.name">
+<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#DetachedTacticDocument.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the document. The name can be set with <code class="docutils literal notranslate"><span class="pre">doc.name</span> <span class="pre">=</span> <span class="pre">new_name</span></code>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="DetachedTacticDocument.add_column">
+<span class="sig-name descname"><span class="pre">add_column</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">column_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#DetachedTacticDocument.add_column" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds a new column with the given name. The value of the corresponding field in all rows
+will be initialized to None.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="DetachedTacticDocument.append">
+<span class="sig-name descname"><span class="pre">append</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">detached_row</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#DetachedTacticDocument.append" title="Permalink to this definition">¶</a></dt>
+<dd><p>Appends the <a class="reference internal" href="#DetachedTacticRow" title="DetachedTacticRow"><code class="xref py py-class docutils literal notranslate"><span class="pre">DetachedTacticRow</span></code></a> object to the collection.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="DetachedTacticDocument.insert">
+<span class="sig-name descname"><span class="pre">insert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">position</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">element</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#DetachedTacticDocument.insert" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inserts the element in the specified position. Element can be either a <a class="reference internal" href="#DetachedTacticRow" title="DetachedTacticRow"><code class="xref py py-class docutils literal notranslate"><span class="pre">DetachedTacticRow</span></code></a>
+or a <code class="docutils literal notranslate"><span class="pre">dict</span></code>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="DetachedTacticRow">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DetachedTacticRow</span></span><a class="headerlink" href="#DetachedTacticRow" title="Permalink to this definition">¶</a></dt>
+<dd><p>A DetachedTacticDocument can be created either via the <code class="docutils literal notranslate"><span class="pre">.detach()</span></code> method of a TacticRow or
+using the <a class="reference internal" href="Tile-Commands.html#create_row" title="create_row"><code class="xref py py-meth docutils literal notranslate"><span class="pre">create_row()</span></code></a> method of TileBase.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="DetachedTacticRow.row_dict">
+<span class="sig-name descname"><span class="pre">row_dict</span></span><a class="headerlink" href="#DetachedTacticRow.row_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>A dictionary with the data corresponding to the row.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="DetachedTacticRow.series">
+<span class="sig-name descname"><span class="pre">series</span></span><a class="headerlink" href="#DetachedTacticRow.series" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the row as a pandas Series.</p>
+</dd></dl>
+
+<p>The fields in a row can be accessed and set just as in a TacticRow:</p>
+<blockquote>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">doc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">collection</span><span class="o">.</span><span class="n">current_document</span>
+<span class="n">a_row</span> <span class="o">=</span> <span class="n">doc</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span>  <span class="c1"># Get a DetachedTacticRow corresponding to the third row</span>
+<span class="n">a_row</span><span class="p">[</span><span class="s2">&quot;some_column&quot;</span><span class="p">]</span>  <span class="c1"># Returns the value in the field some_column</span>
+<span class="n">a_row</span><span class="o">.</span><span class="n">some_column</span>  <span class="c1">#  Also returns the value in the field some_column</span>
+<span class="n">a_row</span><span class="p">[</span><span class="s2">&quot;some_column&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;This is some text&quot;</span>  <span class="c1">#  Sets the field</span>
+<span class="n">a_row</span><span class="o">.</span><span class="n">some_column</span> <span class="o">=</span> <span class="s2">&quot;This is some text&quot;</span>  <span class="c1"># Also sets the field</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>Fields can also be deleted:</p>
+<blockquote>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">del</span> <span class="n">arow</span><span class="p">[</span><span class="s2">&quot;some_column&quot;</span><span class="p">]</span>
+<span class="k">del</span> <span class="n">arow</span><span class="o">.</span><span class="n">some_column</span>
+</pre></div>
+</div>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="DetachedFreeformTacticDocument">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DetachedFreeformTacticDocument</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">FreeformTacticDocument</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#DetachedFreeformTacticDocument" title="Permalink to this definition">¶</a></dt>
+<dd><p>A DetachedFreeformTacticDocument can be created either via the <code class="docutils literal notranslate"><span class="pre">.detach()</span></code> method of a TacticDocument or
+using the <a class="reference internal" href="Tile-Commands.html#create_freeform_document" title="create_freeform_document"><code class="xref py py-meth docutils literal notranslate"><span class="pre">create_freeform_document()</span></code></a> method of TileBase.</p>
+<p>Note that this class inherits from <a class="reference internal" href="#FreeformTacticDocument" title="FreeformTacticDocument"><code class="xref py py-class docutils literal notranslate"><span class="pre">FreeformTacticDocument</span></code></a>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">new_doc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">collection</span><span class="o">.</span><span class="n">current_document</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span>
+<span class="n">new_doc</span> <span class="o">+=</span> <span class="n">other_detached_freeform_doc</span>  <span class="c1"># Appends the row of other-detached_doc</span>
+<span class="n">doc</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_line</span>  <span class="c1"># new_line can be either a str or a DetachedTacticLine</span>
+</pre></div>
+</div>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="DetachedFreeformTacticDocument.name">
+<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#DetachedFreeformTacticDocument.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the document. The name can be set with <code class="docutils literal notranslate"><span class="pre">doc.name</span> <span class="pre">=</span> <span class="pre">new_name</span></code>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="DetachedFreeformTacticDocument.append">
+<span class="sig-name descname"><span class="pre">append</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">detached_line</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#DetachedFreeformTacticDocument.append" title="Permalink to this definition">¶</a></dt>
+<dd><p>Appends the DetachedTacticLine object to the collection.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="DetachedTacticLine">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DetachedTacticLine</span></span><a class="headerlink" href="#DetachedTacticLine" title="Permalink to this definition">¶</a></dt>
+<dd><p>A DetachedTacticDocument can be created either via the <code class="docutils literal notranslate"><span class="pre">.detach()</span></code> method of a TacticLine or
+using the <a class="reference internal" href="Tile-Commands.html#create_line" title="create_line"><code class="xref py py-meth docutils literal notranslate"><span class="pre">create_line()</span></code></a> method of TileBase.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">dline</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">collection</span><span class="o">.</span><span class="n">current_document</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+<span class="n">dline</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span>  <span class="c1"># Returns the fifth character</span>
+</pre></div>
+</div>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="DetachedTacticLine.text">
+<span class="sig-name descname"><span class="pre">text</span></span><a class="headerlink" href="#DetachedTacticLine.text" title="Permalink to this definition">¶</a></dt>
+<dd><p>The text of the line as a string. Also, <code class="docutils literal notranslate"><span class="pre">dline.text</span> <span class="pre">=</span> <span class="pre">new_text</span></code> sets the text of the line.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="communicating-with-other-tiles">
+<h2>Communicating with other tiles<a class="headerlink" href="#communicating-with-other-tiles" title="Permalink to this heading">¶</a></h2>
+<blockquote>
+<div><p>These classes provide a means of communicating with tiles other than the one within which code is executing.</p>
+</div></blockquote>
+<dl class="py data">
+<dt class="sig sig-object py" id="Tiles">
+<span class="sig-name descname"><span class="pre">Tiles</span></span><a class="headerlink" href="#Tiles" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">Tiles</span></code> is a global containing a RemoteTiles object corresponding to</dt><dd><p>the tiles in the current project. <code class="docutils literal notranslate"><span class="pre">self.tiles</span></code> can also be used.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="RemoteTiles">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">RemoteTiles</span></span><a class="headerlink" href="#RemoteTiles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterating over this object iterates over the tiles in the project, giving RemoteTile objects.
+These can also be accessed by name.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">len</span><span class="p">(</span><span class="n">Tiles</span><span class="p">)</span>  <span class="c1"># returns the number of other tiles</span>
+<span class="n">Tile</span><span class="p">[</span><span class="s2">&quot;tile_name&quot;</span><span class="p">]</span>  <span class="c1"># returns a RemoteTile object corresponding to the tile</span>
+<span class="k">for</span> <span class="n">tile</span> <span class="ow">in</span> <span class="n">Tiles</span><span class="p">:</span>  <span class="c1"># iterate of over tiles in the project</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">tile</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="RemoteTiles.names">
+<span class="sig-name descname"><span class="pre">names</span></span><a class="headerlink" href="#RemoteTiles.names" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list of the names of other tiles in the project.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="RemoteTiles.rewind">
+<span class="sig-name descname"><span class="pre">rewind</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#RemoteTiles.rewind" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset the iterator.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="RemoteTile">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">RemoteTile</span></span><a class="headerlink" href="#RemoteTile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Object corresponding to another tile in a project.</p>
+<p>You can ask a tile for a pipe value as in the code below.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">other_tile</span> <span class="o">=</span> <span class="n">Tiles</span><span class="p">[</span><span class="s2">&quot;other_tile_name&quot;</span><span class="p">]</span>
+<span class="n">pipe_value</span> <span class="o">=</span> <span class="n">other_tile</span><span class="p">[</span><span class="s2">&quot;pipe_name&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="RemoteTile.name">
+<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#RemoteTile.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the tile.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="RemoteTile.pipe_names">
+<span class="sig-name descname"><span class="pre">pipe_names</span></span><a class="headerlink" href="#RemoteTile.pipe_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list of the names of the pipes (exports) of the tile.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="RemoteTile.pipe_tags">
+<span class="sig-name descname"><span class="pre">pipe_tags</span></span><a class="headerlink" href="#RemoteTile.pipe_tags" title="Permalink to this definition">¶</a></dt>
+<dd><p>A dict where the keys are the names of the pipes, and the values are the tags associated with those pipes.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="RemoteTile.tile_id">
+<span class="sig-name descname"><span class="pre">tile_id</span></span><a class="headerlink" href="#RemoteTile.tile_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>The id of this tile.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="RemoteTile.send_message">
+<span class="sig-name descname"><span class="pre">send_message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callback_func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#RemoteTile.send_message" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send a message from the tile in which the code is executing to this RemoteTile object.
+Refer to py:meth:<cite>send_tile_message</cite>.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="the-pipes-object">
+<h2>The Pipes Object<a class="headerlink" href="#the-pipes-object" title="Permalink to this heading">¶</a></h2>
+<dl class="py data">
+<dt class="sig sig-object py" id="Pipes">
+<span class="sig-name descname"><span class="pre">Pipes</span></span><a class="headerlink" href="#Pipes" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">Pipes</span></code> is a global containing a RemotePipes object corresponding to</dt><dd><p>the pipes in the current project.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="RemotePipes">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">RemotePipes</span></span><a class="headerlink" href="#RemotePipes" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class provides easy access to pipe values.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">Pipes</span><span class="o">.</span><span class="n">names</span>  <span class="c1"># Returns the keys for all of the pipes</span>
+<span class="n">Pipes</span><span class="p">[</span><span class="s2">&quot;pipe_key&quot;</span><span class="p">]</span>  <span class="c1"># Returns the value of the pipe</span>
+</pre></div>
+</div>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="RemotePipes.names">
+<span class="sig-name descname"><span class="pre">names</span></span><a class="headerlink" href="#RemotePipes.names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the keys for all of the pipes.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="the-library-object">
+<h2>The Library Object<a class="headerlink" href="#the-library-object" title="Permalink to this heading">¶</a></h2>
+<blockquote>
+<div><p>These classes provide access to the resources in a user’s library.</p>
+</div></blockquote>
+<dl class="py data">
+<dt class="sig sig-object py" id="Library">
+<span class="sig-name descname"><span class="pre">Library</span></span><a class="headerlink" href="#Library" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">Library</span></code> is a global containing a TacticLibrary object corresponding to</dt><dd><p>the user’s library.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="TacticLibrary">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">TacticLibrary</span></span><a class="headerlink" href="#TacticLibrary" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">Library</span></code> returns a <a class="reference internal" href="#TacticLibrary" title="TacticLibrary"><code class="xref py py-class docutils literal notranslate"><span class="pre">TacticLibrary</span></code></a> object corresponding to the user’s library.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="TacticLibrary.collections">
+<span class="sig-name descname"><span class="pre">collections</span></span><a class="headerlink" href="#TacticLibrary.collections" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a TacticCollectionSet object corresponding to a user’s collection resources</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="TacticLibrary.lists">
+<span class="sig-name descname"><span class="pre">lists</span></span><a class="headerlink" href="#TacticLibrary.lists" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a TacticListSet object corresponding to a user’s list resources</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="TacticLibrary.functions">
+<span class="sig-name descname"><span class="pre">functions</span></span><a class="headerlink" href="#TacticLibrary.functions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a TacticFunctionSet object corresponding to a user’s function resources</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="TacticLibrary.classes">
+<span class="sig-name descname"><span class="pre">classes</span></span><a class="headerlink" href="#TacticLibrary.classes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a TacticClassnSet object corresponding to a user’s class resources</p>
+</dd></dl>
+
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">Library</span><span class="o">.</span><span class="n">lists</span>  <span class="c1"># Returns a TacticListSet object corresponding to a user&#39;s list resources</span>
+<span class="n">Library</span><span class="o">.</span><span class="n">lists</span><span class="o">.</span><span class="n">names</span><span class="p">()</span>  <span class="c1"># Returns a list of the names of all list resources.</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="TacticListSet">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">TacticListSet</span></span><a class="headerlink" href="#TacticListSet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Object corresponding to a user’s list resources.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_lists</span> <span class="o">=</span> <span class="n">Library</span><span class="o">.</span><span class="n">lists</span>
+<span class="n">my_lists</span><span class="o">.</span><span class="n">names</span><span class="p">()</span>  <span class="c1"># Returns the names of all list resources</span>
+<span class="n">my_lists</span><span class="p">[</span><span class="s2">&quot;list_name&quot;</span><span class="p">]</span>  <span class="c1"># Returns ListResource object corresponding to the list</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="TacticListSet.names">
+<span class="sig-name descname"><span class="pre">names</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tag_filter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">search_filter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#TacticListSet.names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the names of the user’s list resources. If tag_filter or search_filter are specified, then
+the results are filtered accordingly. (This behaves just as it does when typing into the corresponding
+fields in the library interface.)</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ListResource">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ListResource</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ListResource" title="Permalink to this definition">¶</a></dt>
+<dd><p>Corresponds to an item in the list library. It behaves just like a list except that it has a <code class="docutils literal notranslate"><span class="pre">metadata</span></code> attribute.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_list</span> <span class="o">=</span> <span class="n">Library</span><span class="o">.</span><span class="n">lists</span><span class="p">[</span><span class="s2">&quot;list_name&quot;</span><span class="p">]</span>
+<span class="n">my_list</span><span class="o">.</span><span class="n">metadata</span>
+</pre></div>
+</div>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ListResource.metadata">
+<span class="sig-name descname"><span class="pre">metadata</span></span><a class="headerlink" href="#ListResource.metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the ListResource’s metadata</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="TacticCollectionSet">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">TacticCollectionSet</span></span><a class="headerlink" href="#TacticCollectionSet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Object corresponding to a user’s collection resources.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_collections</span> <span class="o">=</span> <span class="n">Library</span><span class="o">.</span><span class="n">collections</span>
+<span class="n">my_collections</span><span class="o">.</span><span class="n">names</span><span class="p">()</span>  <span class="c1"># Returns the names of all list resources</span>
+<span class="n">my_collection</span><span class="p">[</span><span class="s2">&quot;collection _name&quot;</span><span class="p">]</span>  <span class="c1"># Returns DetachedTacticCollection object corresponding to the collection</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="TacticCollectionSet.names">
+<span class="sig-name descname"><span class="pre">names</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tag_filter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">search_filter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#TacticCollectionSet.names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the names of the user’s collection resources. If tag_filter or search_filter are specified, then
+the results are filtered accordingly. (This behaves just as it does when typing into the corresponding
+fields in the library interface.)</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="TacticFunctionSet">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">TacticFunctionSet</span></span><a class="headerlink" href="#TacticFunctionSet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Object corresponding to a user’s function resources.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_functions</span> <span class="o">=</span> <span class="n">Library</span><span class="o">.</span><span class="n">functions</span>
+<span class="n">my_functions</span><span class="o">.</span><span class="n">names</span><span class="p">()</span>  <span class="c1"># Returns the names of all function resources</span>
+<span class="n">afunc</span> <span class="o">=</span> <span class="n">my_functions</span><span class="p">[</span><span class="s2">&quot;function_name&quot;</span><span class="p">]</span>  <span class="c1"># Returns FunctionResource object corresponding to the function</span>
+<span class="n">afunc</span><span class="p">(</span><span class="n">arguments</span><span class="p">)</span>  <span class="c1"># executes the function on the arguments</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="TacticFunctionSet.names">
+<span class="sig-name descname"><span class="pre">names</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tag_filter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">search_filter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#TacticFunctionSet.names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the names of the user’s function resources. If tag_filter or search_filter are specified, then
+the results are filtered accordingly. (This behaves just as it does when typing into the corresponding
+fields in the library interface.)</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="FunctionResource">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">FunctionResource</span></span><a class="headerlink" href="#FunctionResource" title="Permalink to this definition">¶</a></dt>
+<dd><p>Corresponds to a function library resource. It should be have like a function, except it has a couple of attributes,
+as noted below.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">afunc</span> <span class="o">=</span> <span class="n">my_functions</span><span class="p">[</span><span class="s2">&quot;function_name&quot;</span><span class="p">]</span>  <span class="c1"># Returns FunctionResource object corresponding to the function</span>
+<span class="n">afunc</span><span class="p">(</span><span class="n">arguments</span><span class="p">)</span>  <span class="c1"># executes the function on the arguments</span>
+</pre></div>
+</div>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="FunctionResource.metadata">
+<span class="sig-name descname"><span class="pre">metadata</span></span><a class="headerlink" href="#FunctionResource.metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the FunctionResource’s metadata</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="FunctionResource.code_resource">
+<span class="sig-name descname"><span class="pre">code_resource</span></span><a class="headerlink" href="#FunctionResource.code_resource" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the the name of the code resource containing the function.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="the-settings-object">
+<h2>The Settings Object<a class="headerlink" href="#the-settings-object" title="Permalink to this heading">¶</a></h2>
+<blockquote>
+<div><p>This object provides easy access to user’s account-level settings.</p>
+</div></blockquote>
+<dl class="py data">
+<dt class="sig sig-object py" id="Settings">
+<span class="sig-name descname"><span class="pre">Settings</span></span><a class="headerlink" href="#Settings" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">Settings</span></code> is a global containing a TacticSettings object corresponding to</dt><dd><p>the user’s settings.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="TacticSettings">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">TacticSettings</span></span><a class="headerlink" href="#TacticSettings" title="Permalink to this definition">¶</a></dt>
+<dd><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">Settings</span><span class="o">.</span><span class="n">names</span>  <span class="c1"># Returns the keys for all of the settings</span>
+<span class="n">Settings</span><span class="p">[</span><span class="s2">&quot;theme&quot;</span><span class="p">]</span>  <span class="c1"># Returns the value of the setting &quot;theme&quot;</span>
+</pre></div>
+</div>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="TacticSettings.names">
+<span class="sig-name descname"><span class="pre">names</span></span><a class="headerlink" href="#TacticSettings.names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the keys for all of the settings.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">Tactic</a></h1>
+
+
+
+<p class="blurb">A text mining environment for qualitative researchers</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=bsherin&repo=tactic&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Using Tactic</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Getting-Started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Account-Interface.html">Settings and Themes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Library-Interface.html">Library Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Uploading-Data.html">Uploading Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Main-interface.html">The Main Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Working-With-Tiles.html">Working with tile instances</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Log-And-Notebook.html">The Log and Notebook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Working-With-Tags.html">Working With Tags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Which-tiles-are-available-when.html">Tile Availability and Loading</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Reports-and-Presentations.html">Reports and Presentation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tile Creation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Making-Tiles.html">Making Tiles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Tile-Creator.html">The Tile Creator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Module-Viewer.html">The Module Viewer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Module-Viewer-Keyboard-Shortcuts.html">Keyboard Shortcuts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Tile-Version-History-And-Compare.html">History and Compare</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tile Reference</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Tile-Reference-Introduction.html">Tile Reference Intro</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Tile-Structure.html">Tile Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Tile-Commands.html">The Tile API</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Object-Oriented API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#accessing-and-manipulating-the-collection">Accessing and manipulating the collection</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Collection"><code class="docutils literal notranslate"><span class="pre">Collection</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#TacticCollection"><code class="docutils literal notranslate"><span class="pre">TacticCollection</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#TacticCollection.document_names"><code class="docutils literal notranslate"><span class="pre">TacticCollection.document_names</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#TacticCollection.current_document"><code class="docutils literal notranslate"><span class="pre">TacticCollection.current_document</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#TacticCollection.column"><code class="docutils literal notranslate"><span class="pre">TacticCollection.column()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#TacticCollection.tokenize"><code class="docutils literal notranslate"><span class="pre">TacticCollection.tokenize()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#TacticCollection.detach"><code class="docutils literal notranslate"><span class="pre">TacticCollection.detach()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#TacticCollection.rewind"><code class="docutils literal notranslate"><span class="pre">TacticCollection.rewind()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#TacticDocument"><code class="docutils literal notranslate"><span class="pre">TacticDocument</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#TacticDocument.name"><code class="docutils literal notranslate"><span class="pre">TacticDocument.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#TacticDocument.metadata"><code class="docutils literal notranslate"><span class="pre">TacticDocument.metadata</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#TacticDocument.column_names"><code class="docutils literal notranslate"><span class="pre">TacticDocument.column_names</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#TacticDocument.df"><code class="docutils literal notranslate"><span class="pre">TacticDocument.df</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#TacticDocument.insert"><code class="docutils literal notranslate"><span class="pre">TacticDocument.insert()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#TacticDocument.column"><code class="docutils literal notranslate"><span class="pre">TacticDocument.column()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#TacticDocument.dict_list"><code class="docutils literal notranslate"><span class="pre">TacticDocument.dict_list</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#TacticDocument.get_matching_rows"><code class="docutils literal notranslate"><span class="pre">TacticDocument.get_matching_rows()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#TacticDocument.tokenize"><code class="docutils literal notranslate"><span class="pre">TacticDocument.tokenize()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#TacticDocument.set_column_data"><code class="docutils literal notranslate"><span class="pre">TacticDocument.set_column_data()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#TacticDocument.detach"><code class="docutils literal notranslate"><span class="pre">TacticDocument.detach()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#TacticDocument.rewind"><code class="docutils literal notranslate"><span class="pre">TacticDocument.rewind()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#TacticRow"><code class="docutils literal notranslate"><span class="pre">TacticRow</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#TacticRow.row_dict"><code class="docutils literal notranslate"><span class="pre">TacticRow.row_dict</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#TacticRow.series"><code class="docutils literal notranslate"><span class="pre">TacticRow.series</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#TacticRow.detach"><code class="docutils literal notranslate"><span class="pre">TacticRow.detach()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#FreeformTacticDocument"><code class="docutils literal notranslate"><span class="pre">FreeformTacticDocument</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#FreeformTacticDocument.text"><code class="docutils literal notranslate"><span class="pre">FreeformTacticDocument.text</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#FreeformTacticDocument.line_list"><code class="docutils literal notranslate"><span class="pre">FreeformTacticDocument.line_list</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#FreeformTacticDocument.metadata"><code class="docutils literal notranslate"><span class="pre">FreeformTacticDocument.metadata</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#FreeformTacticDocument.tokenize"><code class="docutils literal notranslate"><span class="pre">FreeformTacticDocument.tokenize()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#FreeformTacticDocument.download"><code class="docutils literal notranslate"><span class="pre">FreeformTacticDocument.download()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#FreeformTacticDocument.rewind"><code class="docutils literal notranslate"><span class="pre">FreeformTacticDocument.rewind()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#TacticLine"><code class="docutils literal notranslate"><span class="pre">TacticLine</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#TacticLine.text"><code class="docutils literal notranslate"><span class="pre">TacticLine.text</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#creating-and-manipulating-detached-data">Creating and manipulating detached data</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#DetachedTacticCollection"><code class="docutils literal notranslate"><span class="pre">DetachedTacticCollection</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#DetachedTacticCollection.document_names"><code class="docutils literal notranslate"><span class="pre">DetachedTacticCollection.document_names</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#DetachedTacticCollection.append"><code class="docutils literal notranslate"><span class="pre">DetachedTacticCollection.append()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#DetachedTacticCollection.column"><code class="docutils literal notranslate"><span class="pre">DetachedTacticCollection.column()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#DetachedTacticCollection.update"><code class="docutils literal notranslate"><span class="pre">DetachedTacticCollection.update()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#DetachedTacticCollection.rewind"><code class="docutils literal notranslate"><span class="pre">DetachedTacticCollection.rewind()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#DetachedTacticCollection.add_to_library"><code class="docutils literal notranslate"><span class="pre">DetachedTacticCollection.add_to_library()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#DetachedTacticDocument"><code class="docutils literal notranslate"><span class="pre">DetachedTacticDocument</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#DetachedTacticDocument.name"><code class="docutils literal notranslate"><span class="pre">DetachedTacticDocument.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#DetachedTacticDocument.add_column"><code class="docutils literal notranslate"><span class="pre">DetachedTacticDocument.add_column()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#DetachedTacticDocument.append"><code class="docutils literal notranslate"><span class="pre">DetachedTacticDocument.append()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#DetachedTacticDocument.insert"><code class="docutils literal notranslate"><span class="pre">DetachedTacticDocument.insert()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#DetachedTacticRow"><code class="docutils literal notranslate"><span class="pre">DetachedTacticRow</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#DetachedTacticRow.row_dict"><code class="docutils literal notranslate"><span class="pre">DetachedTacticRow.row_dict</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#DetachedTacticRow.series"><code class="docutils literal notranslate"><span class="pre">DetachedTacticRow.series</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#DetachedFreeformTacticDocument"><code class="docutils literal notranslate"><span class="pre">DetachedFreeformTacticDocument</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#DetachedFreeformTacticDocument.name"><code class="docutils literal notranslate"><span class="pre">DetachedFreeformTacticDocument.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#DetachedFreeformTacticDocument.append"><code class="docutils literal notranslate"><span class="pre">DetachedFreeformTacticDocument.append()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#DetachedTacticLine"><code class="docutils literal notranslate"><span class="pre">DetachedTacticLine</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#DetachedTacticLine.text"><code class="docutils literal notranslate"><span class="pre">DetachedTacticLine.text</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#communicating-with-other-tiles">Communicating with other tiles</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Tiles"><code class="docutils literal notranslate"><span class="pre">Tiles</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#RemoteTiles"><code class="docutils literal notranslate"><span class="pre">RemoteTiles</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#RemoteTiles.names"><code class="docutils literal notranslate"><span class="pre">RemoteTiles.names</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#RemoteTiles.rewind"><code class="docutils literal notranslate"><span class="pre">RemoteTiles.rewind()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#RemoteTile"><code class="docutils literal notranslate"><span class="pre">RemoteTile</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#RemoteTile.name"><code class="docutils literal notranslate"><span class="pre">RemoteTile.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#RemoteTile.pipe_names"><code class="docutils literal notranslate"><span class="pre">RemoteTile.pipe_names</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#RemoteTile.pipe_tags"><code class="docutils literal notranslate"><span class="pre">RemoteTile.pipe_tags</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#RemoteTile.tile_id"><code class="docutils literal notranslate"><span class="pre">RemoteTile.tile_id</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#RemoteTile.send_message"><code class="docutils literal notranslate"><span class="pre">RemoteTile.send_message()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#the-pipes-object">The Pipes Object</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Pipes"><code class="docutils literal notranslate"><span class="pre">Pipes</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#RemotePipes"><code class="docutils literal notranslate"><span class="pre">RemotePipes</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#RemotePipes.names"><code class="docutils literal notranslate"><span class="pre">RemotePipes.names</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#the-library-object">The Library Object</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Library"><code class="docutils literal notranslate"><span class="pre">Library</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#TacticLibrary"><code class="docutils literal notranslate"><span class="pre">TacticLibrary</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#TacticLibrary.collections"><code class="docutils literal notranslate"><span class="pre">TacticLibrary.collections</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#TacticLibrary.lists"><code class="docutils literal notranslate"><span class="pre">TacticLibrary.lists</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#TacticLibrary.functions"><code class="docutils literal notranslate"><span class="pre">TacticLibrary.functions</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#TacticLibrary.classes"><code class="docutils literal notranslate"><span class="pre">TacticLibrary.classes</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#TacticListSet"><code class="docutils literal notranslate"><span class="pre">TacticListSet</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#TacticListSet.names"><code class="docutils literal notranslate"><span class="pre">TacticListSet.names()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#ListResource"><code class="docutils literal notranslate"><span class="pre">ListResource</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ListResource.metadata"><code class="docutils literal notranslate"><span class="pre">ListResource.metadata</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#TacticCollectionSet"><code class="docutils literal notranslate"><span class="pre">TacticCollectionSet</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#TacticCollectionSet.names"><code class="docutils literal notranslate"><span class="pre">TacticCollectionSet.names()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#TacticFunctionSet"><code class="docutils literal notranslate"><span class="pre">TacticFunctionSet</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#TacticFunctionSet.names"><code class="docutils literal notranslate"><span class="pre">TacticFunctionSet.names()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#FunctionResource"><code class="docutils literal notranslate"><span class="pre">FunctionResource</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#FunctionResource.metadata"><code class="docutils literal notranslate"><span class="pre">FunctionResource.metadata</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#FunctionResource.code_resource"><code class="docutils literal notranslate"><span class="pre">FunctionResource.code_resource</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#the-settings-object">The Settings Object</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Settings"><code class="docutils literal notranslate"><span class="pre">Settings</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#TacticSettings"><code class="docutils literal notranslate"><span class="pre">TacticSettings</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#TacticSettings.names"><code class="docutils literal notranslate"><span class="pre">TacticSettings.names</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Handler-Methods.html">Handler Methods</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Working-With-Code-Resources.html">Code Resources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Matplotlib-Tiles.html">Matplotlib Tiles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Javascript-Tiles.html">Javascript Tiles</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">How To</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Use-Existing-Tiles.html">Use Existing Tiles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Create-Simple-Tile.html">Create A Simple Tile</a></li>
+<li class="toctree-l1"><a class="reference internal" href="WordFreqDist-Explained.html">WordFreqDist Explained</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Classifying-With-NLTK.html">Classifying with NLTK</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Getting-Data-From-APIs.html">Getting Data From APIs</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Other</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="open-source-resources.html">Open Source Resources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Developing-Tactic.html">Developing Tactic</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="genindex.html">Index</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="Tile-Commands.html" title="previous chapter">The Tile API</a></li>
+      <li>Next: <a href="Handler-Methods.html" title="next chapter">Handler Methods</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Bruce Sherin.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 6.0.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/Object-Oriented-API.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
