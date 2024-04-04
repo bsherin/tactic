@@ -844,6 +844,7 @@ var idle_statuses = ["completed", "expired", "cancelled", "failed"];
 function ChatModule(props) {
   var top_ref = /*#__PURE__*/_react["default"].createRef(null);
   var control_ref = /*#__PURE__*/_react["default"].createRef(null);
+  var list_ref = /*#__PURE__*/_react["default"].createRef(null);
   var _useStateAndRef = (0, _utilities_react.useStateAndRef)([]),
     _useStateAndRef2 = _slicedToArray(_useStateAndRef, 3),
     item_list = _useStateAndRef2[0],
@@ -866,6 +867,11 @@ function ChatModule(props) {
     topX = _useSize8[2],
     topY = _useSize8[3];
   var connection_status = (0, _utilities_react.useConnection)(props.tsocket, initSocket);
+  (0, _react.useEffect)(function () {
+    if (list_ref && list_ref.current) {
+      list_ref.current.scrollTo(0, list_ref.current.scrollHeight);
+    }
+  });
   function initSocket() {
     props.tsocket.attachListener("chat_response", _handleChatResponse);
     props.tsocket.attachListener("chat_status", _handleChatStatus);
@@ -1019,6 +1025,7 @@ function ChatModule(props) {
     ref: top_ref,
     style: chat_pane_style
   }, /*#__PURE__*/_react["default"].createElement(_core.CardList, {
+    ref: list_ref,
     bordered: false,
     style: {
       height: card_list_height
