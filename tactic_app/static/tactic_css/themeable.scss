@@ -211,6 +211,7 @@ $dark-medium: $dark-gray4;
     pre{
       padding: 10px;
       background-color: $light-gray1;
+      overflow: scroll
     }
   }
 
@@ -423,6 +424,7 @@ $dark-medium: $dark-gray4;
     pre{
       padding: 10px;
       background-color: $dark-gray2;
+      overflow: scroll
     }
   }
 

@@ -1,6 +1,5 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -21,13 +20,26 @@ var _lodash = _interopRequireDefault(require("lodash"));
 var _utilities_react = require("./utilities_react");
 var _icon_info = require("./icon_info");
 var _sizing_tools = require("./sizing_tools");
-function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
-function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
-const mdi = (0, _markdownIt.default)({
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(e) { return e ? t : r; })(e); }
+function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != _typeof(e) && "function" != typeof e) return { "default": e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && {}.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n["default"] = e, t && t.set(e, n), n; }
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+var mdi = (0, _markdownIt["default"])({
   html: true
 });
-mdi.use(_markdownItLatex.default);
-let icon_dict = exports.icon_dict = {
+mdi.use(_markdownItLatex["default"]);
+var icon_dict = exports.icon_dict = {
   all: "cube",
   collection: "database",
   project: "projects",
@@ -39,20 +51,18 @@ let icon_dict = exports.icon_dict = {
   poolFile: "document"
 };
 function SuggestionItemAdvanced(_ref) {
-  let {
-    item,
-    handleClick,
-    modifiers
-  } = _ref;
-  let display_text = "display_text" in item ? item.display_text : item.text;
-  let the_icon = "icon" in item ? item.icon : null;
+  var item = _ref.item,
+    handleClick = _ref.handleClick,
+    modifiers = _ref.modifiers;
+  var display_text = "display_text" in item ? item.display_text : item.text;
+  var the_icon = "icon" in item ? item.icon : null;
   if (item.isgroup) {
-    return /*#__PURE__*/_react.default.createElement(_core.MenuDivider, {
+    return /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, {
       className: "tile-form-menu-item",
       title: display_text
     });
   } else {
-    return /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
+    return /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
       className: "tile-form-menu-item",
       text: display_text,
       key: display_text,
@@ -65,17 +75,15 @@ function SuggestionItemAdvanced(_ref) {
 }
 SuggestionItemAdvanced = /*#__PURE__*/(0, _react.memo)(SuggestionItemAdvanced);
 SuggestionItemAdvanced.propTypes = {
-  item: _propTypes.default.object,
-  modifiers: _propTypes.default.object,
-  handleClick: _propTypes.default.func
+  item: _propTypes["default"].object,
+  modifiers: _propTypes["default"].object,
+  handleClick: _propTypes["default"].func
 };
 function renderSuggestionAdvanced(item, _ref2) {
-  let {
-    modifiers,
-    handleClick,
-    index
-  } = _ref2;
-  return /*#__PURE__*/_react.default.createElement(SuggestionItemAdvanced, {
+  var modifiers = _ref2.modifiers,
+    handleClick = _ref2.handleClick,
+    index = _ref2.index;
+  return /*#__PURE__*/_react["default"].createElement(SuggestionItemAdvanced, {
     item: item,
     key: index,
     modifiers: modifiers,
@@ -83,20 +91,18 @@ function renderSuggestionAdvanced(item, _ref2) {
   });
 }
 function BpSelectAdvanced(_ref3) {
-  let {
-    options,
-    value,
-    onChange,
-    buttonIcon,
-    readOnly
-  } = _ref3;
+  var options = _ref3.options,
+    value = _ref3.value,
+    onChange = _ref3.onChange,
+    buttonIcon = _ref3.buttonIcon,
+    readOnly = _ref3.readOnly;
   function _filterSuggestion(query, item) {
     if (query.length === 0) {
       return true;
     }
-    let re = new RegExp(query.toLowerCase());
-    let the_text;
-    if (typeof item == "object") {
+    var re = new RegExp(query.toLowerCase());
+    var the_text;
+    if (_typeof(item) == "object") {
       the_text = item["text"];
     } else {
       the_text = item;
@@ -104,15 +110,24 @@ function BpSelectAdvanced(_ref3) {
     return re.test(the_text.toLowerCase());
   }
   function _getActiveItem(val) {
-    for (let option of options) {
-      if (_lodash.default.isEqual(option, val)) {
-        return option;
+    var _iterator = _createForOfIteratorHelper(options),
+      _step;
+    try {
+      for (_iterator.s(); !(_step = _iterator.n()).done;) {
+        var option = _step.value;
+        if (_lodash["default"].isEqual(option, val)) {
+          return option;
+        }
       }
+    } catch (err) {
+      _iterator.e(err);
+    } finally {
+      _iterator.f();
     }
     return null;
   }
-  let display_text = "display_text" in value ? value.display_text : value.text;
-  return /*#__PURE__*/_react.default.createElement(_select.Select, {
+  var display_text = "display_text" in value ? value.display_text : value.text;
+  return /*#__PURE__*/_react["default"].createElement(_select.Select, {
     activeItem: _getActiveItem(value),
     itemRenderer: renderSuggestionAdvanced,
     itemPredicate: _filterSuggestion,
@@ -128,7 +143,7 @@ function BpSelectAdvanced(_ref3) {
       },
       position: _core.PopoverPosition.BOTTOM_LEFT
     }
-  }, /*#__PURE__*/_react.default.createElement(_core.Button, {
+  }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
     text: display_text,
     className: "button-in-select",
     icon: buttonIcon
@@ -136,10 +151,10 @@ function BpSelectAdvanced(_ref3) {
 }
 exports.BpSelectAdvanced = BpSelectAdvanced = /*#__PURE__*/(0, _react.memo)(BpSelectAdvanced);
 BpSelectAdvanced.propTypes = {
-  options: _propTypes.default.array,
-  onChange: _propTypes.default.func,
-  value: _propTypes.default.object,
-  buttonIcon: _propTypes.default.string
+  options: _propTypes["default"].array,
+  onChange: _propTypes["default"].func,
+  value: _propTypes["default"].object,
+  buttonIcon: _propTypes["default"].string
 };
 BpSelectAdvanced.defaultProps = {
   buttonIcon: null
@@ -149,9 +164,9 @@ function BpSelect(props) {
     if (query.length === 0 || item["isgroup"]) {
       return true;
     }
-    let re = new RegExp(query.toLowerCase());
-    let the_text;
-    if (typeof item == "object") {
+    var re = new RegExp(query.toLowerCase());
+    var the_text;
+    if (_typeof(item) == "object") {
       the_text = item["text"];
     } else {
       the_text = item;
@@ -159,20 +174,29 @@ function BpSelect(props) {
     return re.test(the_text.toLowerCase());
   }
   function _getActiveItem(val) {
-    for (let option of props.options) {
-      if (_lodash.default.isEqual(option, val)) {
-        return option;
+    var _iterator2 = _createForOfIteratorHelper(props.options),
+      _step2;
+    try {
+      for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+        var option = _step2.value;
+        if (_lodash["default"].isEqual(option, val)) {
+          return option;
+        }
       }
+    } catch (err) {
+      _iterator2.e(err);
+    } finally {
+      _iterator2.f();
     }
     return null;
   }
-  return /*#__PURE__*/_react.default.createElement(_select.Select, {
+  return /*#__PURE__*/_react["default"].createElement(_select.Select, {
     activeItem: _getActiveItem(props.value),
     className: "tile-form-menu-item",
     filterable: props.filterable,
     itemRenderer: renderSuggestion,
     itemPredicate: _filterSuggestion,
-    items: _lodash.default.cloneDeep(props.options),
+    items: _lodash["default"].cloneDeep(props.options),
     onItemSelect: props.onChange,
     popoverProps: {
       minimal: true,
@@ -183,7 +207,7 @@ function BpSelect(props) {
       },
       position: props.popoverPosition
     }
-  }, /*#__PURE__*/_react.default.createElement(_core.Button, {
+  }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
     className: "button-in-select",
     style: props.buttonStyle,
     small: props.small,
@@ -191,19 +215,19 @@ function BpSelect(props) {
     icon: props.buttonIcon
   }));
 }
-exports.BpSelect = BpSelect = /*#__PURE__*/(0, _react.memo)(BpSelect, (prevProps, newProps) => {
+exports.BpSelect = BpSelect = /*#__PURE__*/(0, _react.memo)(BpSelect, function (prevProps, newProps) {
   (0, _utilities_react.propsAreEqual)(newProps, prevProps, ["buttonTextObject"]);
 });
 BpSelect.propTypes = {
-  options: _propTypes.default.array,
-  onChange: _propTypes.default.func,
-  filterable: _propTypes.default.bool,
-  small: _propTypes.default.bool,
-  value: _propTypes.default.string,
-  buttonTextObject: _propTypes.default.object,
-  buttonIcon: _propTypes.default.string,
-  buttonStyle: _propTypes.default.object,
-  popoverPosition: _propTypes.default.string
+  options: _propTypes["default"].array,
+  onChange: _propTypes["default"].func,
+  filterable: _propTypes["default"].bool,
+  small: _propTypes["default"].bool,
+  value: _propTypes["default"].string,
+  buttonTextObject: _propTypes["default"].object,
+  buttonIcon: _propTypes["default"].string,
+  buttonStyle: _propTypes["default"].object,
+  popoverPosition: _propTypes["default"].string
 };
 BpSelect.defaultProps = {
   buttonIcon: null,
@@ -214,61 +238,62 @@ BpSelect.defaultProps = {
   small: undefined
 };
 function SuggestionItem(_ref4) {
-  let {
-    item,
-    modifiers,
-    handleClick
-  } = _ref4;
-  let the_text;
-  let the_icon;
-  if (typeof item == "object") {
+  var item = _ref4.item,
+    modifiers = _ref4.modifiers,
+    handleClick = _ref4.handleClick;
+  var the_text;
+  var the_icon;
+  if (_typeof(item) == "object") {
     the_text = item["text"];
     the_icon = item["icon"];
   } else {
     the_text = item;
     the_icon = null;
   }
-  return /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
+  return /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
     className: "tile-form-menu-item",
     text: the_text,
     icon: the_icon,
     active: modifiers.active,
-    onClick: () => handleClick(the_text),
+    onClick: function onClick() {
+      return handleClick(the_text);
+    },
     shouldDismissPopover: true
   });
 }
 SuggestionItem = /*#__PURE__*/(0, _react.memo)(SuggestionItem);
 SuggestionItem.propTypes = {
-  item: _propTypes.default.oneOfType([_propTypes.default.string, _propTypes.default.object]),
-  modifiers: _propTypes.default.object,
-  handleClick: _propTypes.default.func
+  item: _propTypes["default"].oneOfType([_propTypes["default"].string, _propTypes["default"].object]),
+  modifiers: _propTypes["default"].object,
+  handleClick: _propTypes["default"].func
 };
 function renderSuggestion(item, _ref5) {
-  let {
-    modifiers,
-    handleClick,
-    index
-  } = _ref5;
-  return /*#__PURE__*/_react.default.createElement(SuggestionItem, {
+  var modifiers = _ref5.modifiers,
+    handleClick = _ref5.handleClick,
+    index = _ref5.index;
+  return /*#__PURE__*/_react["default"].createElement(SuggestionItem, {
     item: item,
     key: index,
     modifiers: modifiers,
     handleClick: handleClick
   });
 }
-const renderCreateNewTag = (query, active, handleClick) => {
-  let hclick = handleClick;
-  return /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
+var renderCreateNewTag = function renderCreateNewTag(query, active, handleClick) {
+  var hclick = handleClick;
+  return /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
     icon: "add",
     key: "create_item",
-    text: `Create "${query}"`,
+    text: "Create \"".concat(query, "\""),
     active: active,
     onClick: handleClick,
     shouldDismissPopover: false
   });
 };
 function NativeTags(props) {
-  const [query, setQuery] = (0, _react.useState)("");
+  var _useState = (0, _react.useState)(""),
+    _useState2 = _slicedToArray(_useState, 2),
+    query = _useState2[0],
+    setQuery = _useState2[1];
   function renderTag(item) {
     return item;
   }
@@ -276,12 +301,12 @@ function NativeTags(props) {
     return name;
   }
   function _handleDelete(tag, i) {
-    let new_tlist = [...props.tags];
+    var new_tlist = _toConsumableArray(props.tags);
     new_tlist.splice(i, 1);
     props.handleChange(new_tlist);
   }
   function _handleAddition(tag) {
-    let new_tlist = [...props.tags];
+    var new_tlist = _toConsumableArray(props.tags);
     new_tlist.push(tag);
     props.handleChange(new_tlist);
   }
@@ -289,16 +314,16 @@ function NativeTags(props) {
     if (query.length === 0) {
       return false;
     }
-    let re = new RegExp(`^${query}`);
+    var re = new RegExp("^".concat(query));
     return re.test(item);
   }
   if (props.readOnly) {
-    return /*#__PURE__*/_react.default.createElement(_core.TagInput, {
+    return /*#__PURE__*/_react["default"].createElement(_core.TagInput, {
       values: props.tags,
       disabled: true
     });
   }
-  return /*#__PURE__*/_react.default.createElement(_select.MultiSelect, {
+  return /*#__PURE__*/_react["default"].createElement(_select.MultiSelect, {
     allowCreate: true,
     openOnKeyDown: true,
     createNewItemFromQuery: _createItemFromQuery,
@@ -318,20 +343,26 @@ function NativeTags(props) {
 }
 NativeTags = /*#__PURE__*/(0, _react.memo)(NativeTags);
 NativeTags.proptypes = {
-  tags: _propTypes.default.array,
-  handleChange: _propTypes.default.func,
-  pane_type: _propTypes.default.string,
-  readOnly: _propTypes.default.bool
+  tags: _propTypes["default"].array,
+  handleChange: _propTypes["default"].func,
+  pane_type: _propTypes["default"].string,
+  readOnly: _propTypes["default"].bool
 };
 function NotesField(props) {
-  const [mdHeight, setMdHeight] = (0, _react.useState)(500);
-  const [showMarkdown, setShowMarkdown] = (0, _react.useState)(() => {
-    return hasOnlyWhitespace() ? false : props.show_markdown_initial;
-  });
-  const awaitingFocus = (0, _react.useRef)(false);
+  var _useState3 = (0, _react.useState)(500),
+    _useState4 = _slicedToArray(_useState3, 2),
+    mdHeight = _useState4[0],
+    setMdHeight = _useState4[1];
+  var _useState5 = (0, _react.useState)(function () {
+      return hasOnlyWhitespace() ? false : props.show_markdown_initial;
+    }),
+    _useState6 = _slicedToArray(_useState5, 2),
+    showMarkdown = _useState6[0],
+    setShowMarkdown = _useState6[1];
+  var awaitingFocus = (0, _react.useRef)(false);
   var mdRef = (0, _react.useRef)(null);
   var notesRef = (0, _react.useRef)(null);
-  (0, _react.useEffect)(() => {
+  (0, _react.useEffect)(function () {
     if (awaitingFocus.current) {
       focusNotes();
       awaitingFocus.current = false;
@@ -377,13 +408,13 @@ function NotesField(props) {
       setShowMarkdown(true);
     }
   }
-  let really_show_markdown = hasOnlyWhitespace() ? false : showMarkdown;
-  let notes_style = {
+  var really_show_markdown = hasOnlyWhitespace() ? false : showMarkdown;
+  var notes_style = {
     display: really_show_markdown ? "none" : "block",
     fontSize: 13,
     resize: "both"
   };
-  let md_style = {
+  var md_style = {
     display: really_show_markdown ? "block" : "none",
     maxHeight: mdHeight,
     fontSize: 13
@@ -392,10 +423,10 @@ function NotesField(props) {
   if (really_show_markdown) {
     converted_markdown = mdi.render(props.notes);
   }
-  let converted_dict = {
+  var converted_dict = {
     __html: converted_markdown
   };
-  return /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement(_core.TextArea, {
+  return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_core.TextArea, {
     rows: "20",
     cols: "75",
     inputRef: _notesRefHandler,
@@ -405,7 +436,7 @@ function NotesField(props) {
     value: props.notes,
     disabled: props.readOnly,
     style: notes_style
-  }), /*#__PURE__*/_react.default.createElement("div", {
+  }), /*#__PURE__*/_react["default"].createElement("div", {
     ref: mdRef,
     style: md_style,
     onClick: _hideMarkdown,
@@ -415,48 +446,56 @@ function NotesField(props) {
 }
 exports.NotesField = NotesField = /*#__PURE__*/(0, _react.memo)(NotesField);
 NotesField.propTypes = {
-  readOnly: _propTypes.default.bool,
-  notes: _propTypes.default.string,
-  handleChange: _propTypes.default.func,
-  show_markdown_initial: _propTypes.default.bool,
-  handleBlur: _propTypes.default.func
+  readOnly: _propTypes["default"].bool,
+  notes: _propTypes["default"].string,
+  handleChange: _propTypes["default"].func,
+  show_markdown_initial: _propTypes["default"].bool,
+  handleBlur: _propTypes["default"].func
 };
 NotesField.defaultProps = {
   handleBlur: null
 };
-const icon_list = ["application", "code", "timeline-line-chart", "heatmap", "graph", "heat-grid", "chart", "pie-chart", "regression-chart", "grid", "numerical", "font", "array", "array-numeric", "array-string", "data-lineage", "function", "variable", "build", "group-objects", "ungroup-objects", "inner-join", "filter", "sort-asc", "sort-alphabetical", "sort-numerical", "random", "layout", "layout-auto", "layout-balloon", "changes", "comparison", "exchange", "derive_column", "list-columns", "delta", "edit", "fork", "numbered-list", "path-search", "search", "plus", "repeat", "reset", "resolve", "widget-button", "star", "time", "settings", "properties", "cog", "key-command", "ip-address", "download", "cloud", "globe", "tag", "label", "history", "predictive-analysis", "calculator", "pulse", "warning-sign", "cube", "wrench"];
+var icon_list = ["application", "code", "timeline-line-chart", "heatmap", "graph", "heat-grid", "chart", "pie-chart", "regression-chart", "grid", "numerical", "font", "array", "array-numeric", "array-string", "data-lineage", "function", "variable", "build", "group-objects", "ungroup-objects", "inner-join", "filter", "sort-asc", "sort-alphabetical", "sort-numerical", "random", "layout", "layout-auto", "layout-balloon", "changes", "comparison", "exchange", "derive_column", "list-columns", "delta", "edit", "fork", "numbered-list", "path-search", "search", "plus", "repeat", "reset", "resolve", "widget-button", "star", "time", "settings", "properties", "cog", "key-command", "ip-address", "download", "cloud", "globe", "tag", "label", "history", "predictive-analysis", "calculator", "pulse", "warning-sign", "cube", "wrench"];
 var icon_dlist = [];
 var icon_entry_dict = {};
-const cat_order = ['data', 'action', 'table', 'interface', 'editor', 'file', 'media', 'miscellaneous'];
-for (let category of cat_order) {
+var cat_order = ['data', 'action', 'table', 'interface', 'editor', 'file', 'media', 'miscellaneous'];
+for (var _i = 0, _cat_order = cat_order; _i < _cat_order.length; _i++) {
+  var category = _cat_order[_i];
   var cat_entry = {
     text: category,
     display_text: category,
     isgroup: true
   };
   icon_dlist.push(cat_entry);
-  for (let entry of _icon_info.tile_icon_dict[category]) {
-    let new_entry = {
-      text: entry.tags + ", " + category + ", " + entry.iconName,
-      val: entry.iconName,
-      icon: entry.iconName,
-      display_text: entry.displayName,
-      isgroup: false
-    };
-    cat_entry.text = cat_entry.text + ", " + entry.tags + ", " + entry.iconName;
-    icon_dlist.push(new_entry);
-    icon_entry_dict[new_entry.val] = new_entry;
+  var _iterator3 = _createForOfIteratorHelper(_icon_info.tile_icon_dict[category]),
+    _step3;
+  try {
+    for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+      var entry = _step3.value;
+      var new_entry = {
+        text: entry.tags + ", " + category + ", " + entry.iconName,
+        val: entry.iconName,
+        icon: entry.iconName,
+        display_text: entry.displayName,
+        isgroup: false
+      };
+      cat_entry.text = cat_entry.text + ", " + entry.tags + ", " + entry.iconName;
+      icon_dlist.push(new_entry);
+      icon_entry_dict[new_entry.val] = new_entry;
+    }
+  } catch (err) {
+    _iterator3.e(err);
+  } finally {
+    _iterator3.f();
   }
 }
 function IconSelector(_ref6) {
-  let {
-    handleSelectChange,
-    icon_val,
-    readOnly
-  } = _ref6;
-  return /*#__PURE__*/_react.default.createElement(BpSelectAdvanced, {
+  var handleSelectChange = _ref6.handleSelectChange,
+    icon_val = _ref6.icon_val,
+    readOnly = _ref6.readOnly;
+  return /*#__PURE__*/_react["default"].createElement(BpSelectAdvanced, {
     options: icon_dlist,
-    onChange: item => {
+    onChange: function onChange(item) {
       handleSelectChange(item.val);
     },
     readOnly: readOnly,
@@ -466,19 +505,33 @@ function IconSelector(_ref6) {
 }
 IconSelector = /*#__PURE__*/(0, _react.memo)(IconSelector);
 IconSelector.propTypes = {
-  handleSelectChange: _propTypes.default.func,
-  icon_val: _propTypes.default.string
+  handleSelectChange: _propTypes["default"].func,
+  icon_val: _propTypes["default"].string
 };
 function CombinedMetadata(props) {
-  const top_ref = (0, _react.useRef)();
-  const [auxIsOpen, setAuxIsOpen] = (0, _react.useState)(false);
-  const [tempNotes, setTempNotes] = (0, _react.useState)(null);
-  const [waiting, doUpdate] = (0, _utilities_react.useDebounce)(newval => {
-    props.handleChange({
-      "notes": newval
-    });
-  });
-  const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(top_ref, props.tabSelectCounter, "CombinedMetadata");
+  var top_ref = (0, _react.useRef)();
+  var _useState7 = (0, _react.useState)(false),
+    _useState8 = _slicedToArray(_useState7, 2),
+    auxIsOpen = _useState8[0],
+    setAuxIsOpen = _useState8[1];
+  var _useState9 = (0, _react.useState)(null),
+    _useState10 = _slicedToArray(_useState9, 2),
+    tempNotes = _useState10[0],
+    setTempNotes = _useState10[1];
+  var _useDebounce = (0, _utilities_react.useDebounce)(function (newval) {
+      props.handleChange({
+        "notes": newval
+      });
+    }),
+    _useDebounce2 = _slicedToArray(_useDebounce, 2),
+    waiting = _useDebounce2[0],
+    doUpdate = _useDebounce2[1];
+  var _useSize = (0, _sizing_tools.useSize)(top_ref, props.tabSelectCounter, "CombinedMetadata"),
+    _useSize2 = _slicedToArray(_useSize, 4),
+    usable_width = _useSize2[0],
+    usable_height = _useSize2[1],
+    topX = _useSize2[2],
+    topY = _useSize2[3];
   function _handleNotesChange(event) {
     doUpdate(event.target.value);
     setTempNotes(event.target.value);
@@ -506,105 +559,105 @@ function CombinedMetadata(props) {
   function _toggleAuxVisibility() {
     setAuxIsOpen(!auxIsOpen);
   }
-  let addition_field_style = {
+  var addition_field_style = {
     fontSize: 14
   };
-  let additional_items;
-  let current_notes;
+  var additional_items;
+  var current_notes;
   if (props.useNotes) {
     current_notes = waiting.current ? tempNotes : props.notes;
   }
   if (props.additional_metadata != null) {
     additional_items = [];
-    for (let field in props.additional_metadata) {
-      let md = props.additional_metadata[field];
+    for (var field in props.additional_metadata) {
+      var md = props.additional_metadata[field];
       if (Array.isArray(md)) {
         md = md.join(", ");
       } else if (field == "collection_name") {
-        let sresult = /\.\w*$/.exec(md);
+        var sresult = /\.\w*$/.exec(md);
         if (sresult != null) md = sresult[0].slice(1);
       }
-      additional_items.push( /*#__PURE__*/_react.default.createElement(_core.FormGroup, {
+      additional_items.push( /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
         label: field + ": ",
         className: "metadata-form_group",
         key: field,
         inline: true
-      }, /*#__PURE__*/_react.default.createElement("span", {
+      }, /*#__PURE__*/_react["default"].createElement("span", {
         className: "bp5-ui-text metadata-field"
       }, String(md))));
     }
   }
-  let button_base = auxIsOpen ? "Hide" : "Show";
-  let ostyle = props.outer_style ? _lodash.default.cloneDeep(props.outer_style) : {};
+  var button_base = auxIsOpen ? "Hide" : "Show";
+  var ostyle = props.outer_style ? _lodash["default"].cloneDeep(props.outer_style) : {};
   if (props.expandWidth) {
     ostyle["width"] = "100%";
   } else {
     ostyle["width"] = usable_width;
   }
-  return /*#__PURE__*/_react.default.createElement(_core.Card, {
+  return /*#__PURE__*/_react["default"].createElement(_core.Card, {
     ref: top_ref,
     elevation: props.elevation,
     className: "combined-metadata accent-bg",
     style: ostyle
-  }, props.name != null && /*#__PURE__*/_react.default.createElement(_core.H4, null, /*#__PURE__*/_react.default.createElement(_core.Icon, {
+  }, props.name != null && /*#__PURE__*/_react["default"].createElement(_core.H4, null, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
     icon: icon_dict[props.res_type],
     style: {
       marginRight: 6,
       marginBottom: 2
     }
-  }), props.name), props.useTags && /*#__PURE__*/_react.default.createElement(_core.FormGroup, {
+  }), props.name), props.useTags && /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
     label: "Tags"
-  }, /*#__PURE__*/_react.default.createElement(NativeTags, {
+  }, /*#__PURE__*/_react["default"].createElement(NativeTags, {
     tags: props.tags,
     all_tags: props.all_tags,
     readOnly: props.readOnly,
     handleChange: _handleTagsChange,
     pane_type: props.pane_type
-  })), props.category != null && /*#__PURE__*/_react.default.createElement(_core.FormGroup, {
+  })), props.category != null && /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
     label: "Category"
-  }, /*#__PURE__*/_react.default.createElement(_core.InputGroup, {
+  }, /*#__PURE__*/_react["default"].createElement(_core.InputGroup, {
     onChange: _handleCategoryChange,
     value: props.category
-  })), props.icon != null && /*#__PURE__*/_react.default.createElement(_core.FormGroup, {
+  })), props.icon != null && /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
     label: "Icon"
-  }, /*#__PURE__*/_react.default.createElement(IconSelector, {
+  }, /*#__PURE__*/_react["default"].createElement(IconSelector, {
     icon_val: props.icon,
     readOnly: props.readOnly,
     handleSelectChange: _handleIconChange
-  })), props.useNotes && /*#__PURE__*/_react.default.createElement(_core.FormGroup, {
+  })), props.useNotes && /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
     label: "Notes"
-  }, /*#__PURE__*/_react.default.createElement(NotesField, {
+  }, /*#__PURE__*/_react["default"].createElement(NotesField, {
     notes: current_notes,
     readOnly: props.readOnly,
     handleChange: _handleNotesChange,
     show_markdown_initial: true,
     handleBlur: props.handleNotesBlur
-  }), props.notes_buttons && props.notes_buttons()), /*#__PURE__*/_react.default.createElement(_core.FormGroup, {
+  }), props.notes_buttons && props.notes_buttons()), /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
     label: "Created: ",
     className: "metadata-form_group",
     inline: true
-  }, /*#__PURE__*/_react.default.createElement("span", {
+  }, /*#__PURE__*/_react["default"].createElement("span", {
     className: "bp5-ui-text metadata-field"
-  }, props.created)), props.updated != null && /*#__PURE__*/_react.default.createElement(_core.FormGroup, {
+  }, props.created)), props.updated != null && /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
     label: "Updated: ",
     className: "metadata-form_group",
     inline: true
-  }, /*#__PURE__*/_react.default.createElement("span", {
+  }, /*#__PURE__*/_react["default"].createElement("span", {
     className: "bp5-ui-text metadata-field"
-  }, props.updated)), props.additional_metadata != null && additional_items, props.aux_pane != null && /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement("div", {
+  }, props.updated)), props.additional_metadata != null && additional_items, props.aux_pane != null && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
     className: "d-flex flex-row justify-content-around",
     style: {
       marginTop: 20
     }
-  }, /*#__PURE__*/_react.default.createElement(_core.Button, {
+  }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
     fill: false,
     small: true,
     minimal: false,
     onClick: _toggleAuxVisibility
-  }, button_base + " " + props.aux_pane_title)), /*#__PURE__*/_react.default.createElement(_core.Collapse, {
+  }, button_base + " " + props.aux_pane_title)), /*#__PURE__*/_react["default"].createElement(_core.Collapse, {
     isOpen: auxIsOpen,
     keepChildrenMounted: true
-  }, props.aux_pane)), /*#__PURE__*/_react.default.createElement("div", {
+  }, props.aux_pane)), /*#__PURE__*/_react["default"].createElement("div", {
     style: {
       height: 100
     }
@@ -612,25 +665,25 @@ function CombinedMetadata(props) {
 }
 exports.CombinedMetadata = CombinedMetadata = /*#__PURE__*/(0, _react.memo)(CombinedMetadata);
 CombinedMetadata.propTypes = {
-  useTags: _propTypes.default.bool,
-  outer_style: _propTypes.default.object,
-  readOnly: _propTypes.default.bool,
-  elevation: _propTypes.default.number,
-  res_type: _propTypes.default.string,
-  pane_type: _propTypes.default.string,
-  name: _propTypes.default.string,
-  created: _propTypes.default.string,
-  updated: _propTypes.default.string,
-  tags: _propTypes.default.array,
-  notes: _propTypes.default.string,
-  category: _propTypes.default.string,
-  icon: _propTypes.default.string,
-  handleChange: _propTypes.default.func,
-  handleNotesBlur: _propTypes.default.func,
-  additional_metadata: _propTypes.default.object,
-  aux_pane: _propTypes.default.object,
-  aux_pane_title: _propTypes.default.string,
-  notes_buttons: _propTypes.default.oneOfType([_propTypes.default.number, _propTypes.default.func])
+  useTags: _propTypes["default"].bool,
+  outer_style: _propTypes["default"].object,
+  readOnly: _propTypes["default"].bool,
+  elevation: _propTypes["default"].number,
+  res_type: _propTypes["default"].string,
+  pane_type: _propTypes["default"].string,
+  name: _propTypes["default"].string,
+  created: _propTypes["default"].string,
+  updated: _propTypes["default"].string,
+  tags: _propTypes["default"].array,
+  notes: _propTypes["default"].string,
+  category: _propTypes["default"].string,
+  icon: _propTypes["default"].string,
+  handleChange: _propTypes["default"].func,
+  handleNotesBlur: _propTypes["default"].func,
+  additional_metadata: _propTypes["default"].object,
+  aux_pane: _propTypes["default"].object,
+  aux_pane_title: _propTypes["default"].string,
+  notes_buttons: _propTypes["default"].oneOfType([_propTypes["default"].number, _propTypes["default"].func])
 };
 CombinedMetadata.defaultProps = {
   expandWidth: true,
