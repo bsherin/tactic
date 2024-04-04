@@ -744,15 +744,18 @@ const chat_input_style = {
   margin: 10,
   width: "100%"
 };
+const idle_statuses = ["completed", "expired", "cancelled", "failed"];
 function ChatModule(props) {
   const top_ref = /*#__PURE__*/_react.default.createRef(null);
   const control_ref = /*#__PURE__*/_react.default.createRef(null);
   const [item_list, set_item_list, item_list_ref] = (0, _utilities_react.useStateAndRef)([]);
   const [prompt_value, set_prompt_value, prompt_value_ref] = (0, _utilities_react.useStateAndRef)("");
+  const [chat_status, set_chat_status, chat_status_ref] = (0, _utilities_react.useStateAndRef)("idle");
   const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(top_ref, props.tabSelectCounter, "ChatModule");
   const connection_status = (0, _utilities_react.useConnection)(props.tsocket, initSocket);
   function initSocket() {
     props.tsocket.attachListener("chat_response", _handleChatResponse);
+    props.tsocket.attachListener("chat_status", _handleChatStatus);
   }
   function _onInputChange(event) {
     set_prompt_value(event.target.value);
@@ -764,9 +767,31 @@ function ChatModule(props) {
       text: converted_markdown
     }];
     set_item_list(new_item_list);
+    set_chat_status("idle");
+  }
+  function _handleChatStatus(data) {
+    if (idle_statuses.includes(data.status)) {
+      set_chat_status("idle");
+    } else {
+      set_chat_status(data.status);
+    }
+  }
+  async function _handleButton(event) {
+    event.preventDefault();
+    if (chat_status_ref.current == "idle") {
+      await _promptSubmit();
+    } else {
+      await _cancelPrompt();
+    }
+  }
+  async function _cancelPrompt() {
+    try {
+      await (0, _communication_react.postPromise)(props.module_viewer_id, "cancel_run_task", {});
+    } catch (error) {
+      console.log(error.message);
+    }
   }
   async function _promptSubmit(event) {
-    event.preventDefault();
     try {
       const new_item_list = [...item_list_ref.current, {
         kind: "prompt",
@@ -774,6 +799,7 @@ function ChatModule(props) {
       }];
       set_item_list(new_item_list);
       set_prompt_value("");
+      set_chat_status("posted");
       await (0, _communication_react.postPromise)(props.module_viewer_id, "post_prompt", {
         prompt: prompt_value_ref.current
       });
@@ -816,6 +842,7 @@ function ChatModule(props) {
     marginLeft: 0
   };
   return /*#__PURE__*/_react.default.createElement("div", {
+    className: "chat-module",
     ref: top_ref,
     style: chat_pane_style
   }, /*#__PURE__*/_react.default.createElement(_core.CardList, {
@@ -828,13 +855,13 @@ function ChatModule(props) {
     vertical: false,
     style: chat_input_style
   }, /*#__PURE__*/_react.default.createElement(_core.Button, {
-    icon: "send-message",
+    icon: chat_status_ref.current == "idle" ? "send-message" : "stop",
     minimal: true,
     large: true,
-    onClick: _promptSubmit
+    onClick: _handleButton
   }), /*#__PURE__*/_react.default.createElement(_core.TextArea, {
     type: "text",
-    autoReize: true,
+    autoResize: true,
     style: {
       width: "100%"
     },
@@ -868,7 +895,7 @@ function Response(props) {
       flexDirection: "column"
     }
   }, /*#__PURE__*/_react.default.createElement("h6", null, "ChatBot"), /*#__PURE__*/_react.default.createElement("div", {
-    className: "",
+    className: "chat-response",
     dangerouslySetInnerHTML: converted_dict
   })));
 }

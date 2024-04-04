@@ -199,6 +199,21 @@ $dark-medium: $dark-gray4;
     }
   }
 
+  .chat-module {
+    .bp5-card-list {
+      .bp5-card {
+        background-color: $light-gray5;
+      }
+    }
+  }
+
+  .chat-response {
+    pre{
+      padding: 10px;
+      background-color: $light-gray1;
+    }
+  }
+
   #commands-pane {
     .command-name {
       font-weight: 900;
@@ -401,6 +416,13 @@ $dark-medium: $dark-gray4;
       border-color: white;
       width: 50%;
       min-width: 200px
+    }
+  }
+
+  .chat-response {
+    pre{
+      padding: 10px;
+      background-color: $dark-gray2;
     }
   }
 
