@@ -687,12 +687,19 @@ const idle_statuses = ["completed", "expired", "cancelled", "failed"];
 function ChatModule(props) {
     const top_ref = React.createRef(null);
     const control_ref = React.createRef(null);
+    const list_ref = React.createRef(null);
     const [item_list, set_item_list, item_list_ref] = useStateAndRef([]);
     const [prompt_value, set_prompt_value, prompt_value_ref] = useStateAndRef("");
     const [chat_status, set_chat_status, chat_status_ref] = useStateAndRef("idle");
 
     const [usable_width, usable_height, topX, topY] = useSize(top_ref, props.tabSelectCounter, "ChatModule");
     const connection_status = useConnection(props.tsocket, initSocket);
+
+    useEffect(() => {
+        if (list_ref && list_ref.current) {
+            list_ref.current.scrollTo(0, list_ref.current.scrollHeight)
+        }
+    });
 
     function initSocket() {
         props.tsocket.attachListener("chat_response", _handleChatResponse);
@@ -782,7 +789,7 @@ function ChatModule(props) {
 
     return (
         <div className="chat-module" ref={top_ref} style={chat_pane_style} >
-            <CardList bordered={false} style={{height: card_list_height}}>
+            <CardList ref={list_ref} bordered={false} style={{height: card_list_height}}>
                 {items}
             </CardList>
             <ControlGroup ref={control_ref} vertical={false} style={chat_input_style}>
