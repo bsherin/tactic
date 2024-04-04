@@ -805,10 +805,11 @@ function ChatModule(props) {
 
 ChatModule = memo(ChatModule);
 
+const chat_item_style = {display: "flex", flexDirection: "column", width: "100%"}
 function Prompt(props) {
     return (
         <Card interactive={false}>
-            <div style={{display: "flex", flexDirection: "column"}}>
+            <div style={chat_item_style}>
                 <h6>You</h6>
                 <div>{props.text}</div>
             </div>
@@ -822,13 +823,13 @@ function Response(props) {
     let converted_dict = {__html: props.text};
     return (
         <Card interactive={false}>
-            <div style={{display: "flex", flexDirection: "column"}}>
+            <div style={chat_item_style}>
                 <h6>ChatBot</h6>
                 <div className="chat-response"
                      dangerouslySetInnerHTML={converted_dict}/>
             </div>
         </Card>
-)
+    )
 }
 
 Response = memo(Response);

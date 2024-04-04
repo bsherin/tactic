@@ -1,6 +1,6 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -11,62 +11,91 @@ var _propTypes = _interopRequireDefault(require("prop-types"));
 var _menu_utilities = require("./menu_utilities");
 var _blueprint_mdata_fields = require("./blueprint_mdata_fields");
 var _error_drawer = require("./error_drawer");
-function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
-function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
-// noinspection JSCheckFunctionSignatures
-
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(e) { return e ? t : r; })(e); }
+function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != _typeof(e) && "function" != typeof e) return { "default": e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && {}.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n["default"] = e, t && t.set(e, n), n; }
+function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; } // noinspection JSCheckFunctionSignatures
 function LibraryMenubar(props) {
-  const errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
-  (0, _react.useEffect)(() => {
+  var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
+  (0, _react.useEffect)(function () {
     if (props.context_menu_items) {
       props.sendContextMenuItems(props.context_menu_items);
     }
   }, []);
-  let outer_style = {
+  var outer_style = {
     display: "flex",
     flexDirection: "row",
     position: "relative",
     left: props.left_position,
     marginBottom: 10
   };
-  let disabled_items = [];
+  var disabled_items = [];
   if (props.multi_select) {
-    for (let menu_name in props.menu_specs) {
-      for (let menu_item of props.menu_specs[menu_name]) {
-        if (!menu_item.multi_select) {
-          disabled_items.push(menu_item.name_text);
+    for (var menu_name in props.menu_specs) {
+      var _iterator = _createForOfIteratorHelper(props.menu_specs[menu_name]),
+        _step;
+      try {
+        for (_iterator.s(); !(_step = _iterator.n()).done;) {
+          var menu_item = _step.value;
+          if (!menu_item.multi_select) {
+            disabled_items.push(menu_item.name_text);
+          }
         }
+      } catch (err) {
+        _iterator.e(err);
+      } finally {
+        _iterator.f();
       }
     }
   }
-  for (let menu_name in props.menu_specs) {
+  for (var _menu_name in props.menu_specs) {
     if (props.multi_select) {
-      for (let menu_item of props.menu_specs[menu_name]) {
-        if (!menu_item.multi_select) {
-          disabled_items.push(menu_item.name_text);
-        } else if (menu_item.res_type && props.selectedTypeRef.current == "multi") {
-          disabled_items.push(menu_item.name_text);
+      var _iterator2 = _createForOfIteratorHelper(props.menu_specs[_menu_name]),
+        _step2;
+      try {
+        for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+          var _menu_item = _step2.value;
+          if (!_menu_item.multi_select) {
+            disabled_items.push(_menu_item.name_text);
+          } else if (_menu_item.res_type && props.selectedTypeRef.current == "multi") {
+            disabled_items.push(_menu_item.name_text);
+          }
         }
+      } catch (err) {
+        _iterator2.e(err);
+      } finally {
+        _iterator2.f();
       }
     } else {
-      for (let menu_item of props.menu_specs[menu_name]) {
-        if (menu_item.res_type && Array.isArray(menu_item.res_type)) {
-          if (!menu_item.res_type.includes(props.selectedTypeRef.current)) {
-            disabled_items.push(menu_item.name_text);
-          }
-        } else if (menu_item.res_type && menu_item.res_type != props.selectedTypeRef.current) {
-          disabled_items.push(menu_item.name_text);
-        } else if (menu_item.reqs) {
-          for (let param in menu_item.reqs) {
-            if (!(param in props.selected_resource) || !(props.selected_resource[param] == menu_item.reqs[param])) {
-              disabled_items.push(menu_item.name_text);
+      var _iterator3 = _createForOfIteratorHelper(props.menu_specs[_menu_name]),
+        _step3;
+      try {
+        for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+          var _menu_item2 = _step3.value;
+          if (_menu_item2.res_type && Array.isArray(_menu_item2.res_type)) {
+            if (!_menu_item2.res_type.includes(props.selectedTypeRef.current)) {
+              disabled_items.push(_menu_item2.name_text);
+            }
+          } else if (_menu_item2.res_type && _menu_item2.res_type != props.selectedTypeRef.current) {
+            disabled_items.push(_menu_item2.name_text);
+          } else if (_menu_item2.reqs) {
+            for (var param in _menu_item2.reqs) {
+              if (!(param in props.selected_resource) || !(props.selected_resource[param] == _menu_item2.reqs[param])) {
+                disabled_items.push(_menu_item2.name_text);
+              }
             }
           }
         }
+      } catch (err) {
+        _iterator3.e(err);
+      } finally {
+        _iterator3.f();
       }
     }
   }
-  return /*#__PURE__*/_react.default.createElement(_menu_utilities.TacticMenubar, {
+  return /*#__PURE__*/_react["default"].createElement(_menu_utilities.TacticMenubar, {
     menu_specs: props.menu_specs,
     connection_status: props.connection_status,
     showRefresh: true,
@@ -81,34 +110,34 @@ function LibraryMenubar(props) {
 }
 exports.LibraryMenubar = LibraryMenubar = /*#__PURE__*/(0, _react.memo)(LibraryMenubar);
 LibraryMenubar.propTypes = {
-  sendContextMenuItems: _propTypes.default.func,
-  menu_specs: _propTypes.default.object,
-  multi_select: _propTypes.default.bool,
-  selectedTypeRef: _propTypes.default.object,
-  refreshTab: _propTypes.default.func,
-  showErrorDrawerButton: _propTypes.default.bool,
-  resource_icon: _propTypes.default.string
+  sendContextMenuItems: _propTypes["default"].func,
+  menu_specs: _propTypes["default"].object,
+  multi_select: _propTypes["default"].bool,
+  selectedTypeRef: _propTypes["default"].object,
+  refreshTab: _propTypes["default"].func,
+  showErrorDrawerButton: _propTypes["default"].bool,
+  resource_icon: _propTypes["default"].string
 };
 LibraryMenubar.defaultProps = {
   resource_icon: null
 };
-let specializedMenubarPropTypes = {
-  sendContextMenuItems: _propTypes.default.func,
-  view_func: _propTypes.default.func,
-  view_resource: _propTypes.default.func,
-  duplicate_func: _propTypes.default.func,
-  delete_func: _propTypes.default.func,
-  rename_func: _propTypes.default.func,
-  refresh_func: _propTypes.default.func,
-  send_repository_func: _propTypes.default.func,
-  selected_resource: _propTypes.default.object,
-  list_of_selected: _propTypes.default.array,
-  muti_select: _propTypes.default.bool,
-  add_new_row: _propTypes.default.func
+var specializedMenubarPropTypes = {
+  sendContextMenuItems: _propTypes["default"].func,
+  view_func: _propTypes["default"].func,
+  view_resource: _propTypes["default"].func,
+  duplicate_func: _propTypes["default"].func,
+  delete_func: _propTypes["default"].func,
+  rename_func: _propTypes["default"].func,
+  refresh_func: _propTypes["default"].func,
+  send_repository_func: _propTypes["default"].func,
+  selected_resource: _propTypes["default"].object,
+  list_of_selected: _propTypes["default"].array,
+  muti_select: _propTypes["default"].bool,
+  add_new_row: _propTypes["default"].func
 };
 function AllMenubar(props) {
   function context_menu_items() {
-    let menu_items = [{
+    var menu_items = [{
       text: "open",
       icon: "document-open",
       onClick: props.view_resource
@@ -117,7 +146,7 @@ function AllMenubar(props) {
       menu_items.push({
         text: "open in separate tab",
         icon: "document-open",
-        onClick: resource => {
+        onClick: function onClick(resource) {
           props.view_resource(resource, null, true);
         }
       });
@@ -155,7 +184,7 @@ function AllMenubar(props) {
     return menu_items;
   }
   function menu_specs() {
-    let ms = {
+    var ms = {
       New: [{
         name_text: "New Notebook",
         icon_name: "new-text-box",
@@ -171,19 +200,19 @@ function AllMenubar(props) {
       }, {
         name_text: "Standard Tile",
         icon_name: "code",
-        click_handler: () => {
+        click_handler: function click_handler() {
           props.new_in_creator("BasicTileTemplate");
         }
       }, {
         name_text: "Matplotlib Tile",
         icon_name: "timeline-line-chart",
-        click_handler: () => {
+        click_handler: function click_handler() {
           props.new_in_creator("MatplotlibTileTemplate");
         }
       }, {
         name_text: "Javascript Tile",
         icon_name: "timeline-area-chart",
-        click_handler: () => {
+        click_handler: function click_handler() {
           props.new_in_creator("JSTileTemplate");
         }
       }, {
@@ -193,33 +222,33 @@ function AllMenubar(props) {
       }, {
         name_text: "New List",
         icon_name: "new-text-box",
-        click_handler: () => {
+        click_handler: function click_handler() {
           props.new_list("nltk-english");
         }
       }, {
         name_text: "New Code",
         icon_name: "new-text-box",
-        click_handler: () => {
+        click_handler: function click_handler() {
           props.new_code("BasicCodeTemplate");
         }
       }],
       Open: [{
         name_text: "Open",
         icon_name: "document-open",
-        click_handler: () => {
+        click_handler: function click_handler() {
           props.view_func();
         },
         key_bindings: ["return"]
       }, {
         name_text: "Open In Separate Tab",
         icon_name: "document-share",
-        click_handler: () => {
+        click_handler: function click_handler() {
           props.view_resource(props.selected_resource, null, true);
         }
       }, {
         name_text: "Open As Raw Html",
         icon_name: "document-share",
-        click_handler: () => {
+        click_handler: function click_handler() {
           props.open_raw(props.selected_resource);
         },
         res_type: "collection"
@@ -241,19 +270,19 @@ function AllMenubar(props) {
       Edit: [{
         name_text: "Rename Resource",
         icon_name: "edit",
-        click_handler: () => {
+        click_handler: function click_handler() {
           props.rename_func();
         }
       }, {
         name_text: "Duplicate Resource",
         icon_name: "duplicate",
-        click_handler: () => {
+        click_handler: function click_handler() {
           props.duplicate_func();
         }
       }, {
         name_text: "Delete Resources",
         icon_name: "trash",
-        click_handler: () => {
+        click_handler: function click_handler() {
           props.delete_func();
         },
         multi_select: true
@@ -271,14 +300,14 @@ function AllMenubar(props) {
       Load: [{
         name_text: "Load",
         icon_name: "upload",
-        click_handler: () => {
+        click_handler: function click_handler() {
           props.load_tile();
         },
         res_type: "tile"
       }, {
         name_text: "Unload",
         icon_name: "undo",
-        click_handler: () => {
+        click_handler: function click_handler() {
           props.unload_module();
         },
         res_type: "tile"
@@ -307,7 +336,7 @@ function AllMenubar(props) {
       }, {
         name_text: "Download Collection",
         icon_name: "download",
-        click_handler: () => {
+        click_handler: function click_handler() {
           props.downloadCollection();
         },
         res_type: "collection"
@@ -345,15 +374,17 @@ function AllMenubar(props) {
       }]
     };
     if (!window.has_pool) {
-      let new_ms = {};
-      for (const menu_name in ms) {
-        new_ms[menu_name] = ms[menu_name].filter(b => !b.name_text.toLowerCase().includes("pool"));
+      var new_ms = {};
+      for (var menu_name in ms) {
+        new_ms[menu_name] = ms[menu_name].filter(function (b) {
+          return !b.name_text.toLowerCase().includes("pool");
+        });
       }
       ms = new_ms;
     }
     return ms;
   }
-  return /*#__PURE__*/_react.default.createElement(LibraryMenubar, {
+  return /*#__PURE__*/_react["default"].createElement(LibraryMenubar, {
     sendContextMenuItems: props.sendContextMenuItems,
     connection_status: props.connection_status,
     context_menu_items: context_menu_items(),

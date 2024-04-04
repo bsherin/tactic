@@ -14,7 +14,7 @@ from exception_mixin import ExceptionMixin
 from communication_utils import emit_direct, socketio
 from mongo_db_fs import get_dbs
 from threading import Lock
-
+import signal
 import sys, os
 sys.stdout = sys.stderr
 import time
@@ -51,6 +51,8 @@ class ModuleViewerWorker(QWorker, ExceptionMixin):
         self.chat_assistant = None
         self.chat_thread = None
         self.current_run_id = None
+        signal.signal(signal.SIGTERM, self.clean_up_chat)
+        signal.signal(signal.SIGINT, self.clean_up_chat)
         return
 
     def ask_host(self, msg_type, task_data=None, callback_func=None):
@@ -121,6 +123,27 @@ class ModuleViewerWorker(QWorker, ExceptionMixin):
             print(str(res["message"]))
             return res
 
+    def clean_up_chat(self, signum=None, frame=None):
+        print("Entering clean_up_chat")
+        if self.chat_client is not None:
+            try:
+                if self.chat_thread is not None:
+                    self.chat_client.beta.threads.delete(self.chat_thread.id)
+            except Exception as ex:
+                error_string = self.extract_short_error_message(ex, "error deleting thread")
+                print(error_string)
+            try:
+                if self.chat_assistant is not None:
+                    self.chat_client.beta.assistants.delete(self.chat_assistant.id)
+            except Exception as ex:
+                error_string = self.extract_short_error_message(ex, "error deleting assistant")
+                print(error_string)
+        self.chat_client = None
+        self.chat_assistant = None
+        self.chat_thread = None
+        self.current_run_id = None
+        return
+
     def initialize_assistant(self):
         from openai import OpenAI
         if self.openai_api_key is None:
@@ -171,10 +194,13 @@ class ModuleViewerWorker(QWorker, ExceptionMixin):
     def wait_for_response(self):
         sleep_times = [5, 5, 5, 3, 3, 3, 2]
         success = False
-        max_time = 300
+        max_time = 180
+        max_canceled_count = 15
         total_time = 0
         canceled = False
         last_status = None
+        canceled_count = 0
+
         for n in range(500):
             if total_time > max_time and not canceled:
                 self.cancel_run()
@@ -195,6 +221,12 @@ class ModuleViewerWorker(QWorker, ExceptionMixin):
                     st = 1
                 else:
                     st = sleep_times[n]
+                if run.status == "cancelling":
+                    canceled_count += 1
+                    if canceled_count >= max_canceled_count:
+                        self.clean_up_chat()
+                        self.emit_to_client("chat_status", {"status": "idle"})
+                        return
                 print(f"sleeping {st} {n}")
                 gevent.sleep(st)
                 total_time += st
@@ -213,7 +245,7 @@ class ModuleViewerWorker(QWorker, ExceptionMixin):
         return {"success": True}
 
     @task_worthy
-    def post_prompt(self, data_dict):
+    def post_prompt(self, data_dict, attempts=0):
         global chat_thread
         global chat_thread_lock
         try:
@@ -239,8 +271,13 @@ class ModuleViewerWorker(QWorker, ExceptionMixin):
 
         except Exception as ex:
             res = self.get_traceback_exception_dict(ex, "Error posting to open ai")
-            print(str(res["message"]))
-            return res
+            if attempts == 0:
+                self.clean_up_chat()
+                attempts += 1
+                return self.post_prompt(data_dict, attempts)
+            self.clean_up_chat()
+            self.emit_to_client("chat_status", {"status": "idle"})
+            return {"success": False, "message": res}
 
     @task_worthy
     def reintiailize_parser(self, data_dict):

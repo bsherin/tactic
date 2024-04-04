@@ -1,11 +1,10 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.CreatorApp = CreatorApp;
-var _extends2 = _interopRequireDefault(require("@babel/runtime/helpers/extends"));
 require("../tactic_css/tactic.scss");
 require("../tactic_css/tactic_table.scss");
 require("../tactic_css/tile_creator.scss");
@@ -31,104 +30,239 @@ var _error_boundary = require("./error_boundary");
 var _autocomplete = require("./autocomplete");
 var _theme = require("./theme");
 var _modal_react = require("./modal_react");
-function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
-function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
-const BOTTOM_MARGIN = 50;
-const MARGIN_SIZE = 17;
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(e) { return e ? t : r; })(e); }
+function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != _typeof(e) && "function" != typeof e) return { "default": e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && {}.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n["default"] = e, t && t.set(e, n), n; }
+function _extends() { _extends = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
+function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
+function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
+function _defineProperty(obj, key, value) { key = _toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
+function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
+function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+function _regeneratorRuntime() { "use strict"; /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */ _regeneratorRuntime = function _regeneratorRuntime() { return e; }; var t, e = {}, r = Object.prototype, n = r.hasOwnProperty, o = Object.defineProperty || function (t, e, r) { t[e] = r.value; }, i = "function" == typeof Symbol ? Symbol : {}, a = i.iterator || "@@iterator", c = i.asyncIterator || "@@asyncIterator", u = i.toStringTag || "@@toStringTag"; function define(t, e, r) { return Object.defineProperty(t, e, { value: r, enumerable: !0, configurable: !0, writable: !0 }), t[e]; } try { define({}, ""); } catch (t) { define = function define(t, e, r) { return t[e] = r; }; } function wrap(t, e, r, n) { var i = e && e.prototype instanceof Generator ? e : Generator, a = Object.create(i.prototype), c = new Context(n || []); return o(a, "_invoke", { value: makeInvokeMethod(t, r, c) }), a; } function tryCatch(t, e, r) { try { return { type: "normal", arg: t.call(e, r) }; } catch (t) { return { type: "throw", arg: t }; } } e.wrap = wrap; var h = "suspendedStart", l = "suspendedYield", f = "executing", s = "completed", y = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} var p = {}; define(p, a, function () { return this; }); var d = Object.getPrototypeOf, v = d && d(d(values([]))); v && v !== r && n.call(v, a) && (p = v); var g = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(p); function defineIteratorMethods(t) { ["next", "throw", "return"].forEach(function (e) { define(t, e, function (t) { return this._invoke(e, t); }); }); } function AsyncIterator(t, e) { function invoke(r, o, i, a) { var c = tryCatch(t[r], t, o); if ("throw" !== c.type) { var u = c.arg, h = u.value; return h && "object" == _typeof(h) && n.call(h, "__await") ? e.resolve(h.__await).then(function (t) { invoke("next", t, i, a); }, function (t) { invoke("throw", t, i, a); }) : e.resolve(h).then(function (t) { u.value = t, i(u); }, function (t) { return invoke("throw", t, i, a); }); } a(c.arg); } var r; o(this, "_invoke", { value: function value(t, n) { function callInvokeWithMethodAndArg() { return new e(function (e, r) { invoke(t, n, e, r); }); } return r = r ? r.then(callInvokeWithMethodAndArg, callInvokeWithMethodAndArg) : callInvokeWithMethodAndArg(); } }); } function makeInvokeMethod(e, r, n) { var o = h; return function (i, a) { if (o === f) throw Error("Generator is already running"); if (o === s) { if ("throw" === i) throw a; return { value: t, done: !0 }; } for (n.method = i, n.arg = a;;) { var c = n.delegate; if (c) { var u = maybeInvokeDelegate(c, n); if (u) { if (u === y) continue; return u; } } if ("next" === n.method) n.sent = n._sent = n.arg;else if ("throw" === n.method) { if (o === h) throw o = s, n.arg; n.dispatchException(n.arg); } else "return" === n.method && n.abrupt("return", n.arg); o = f; var p = tryCatch(e, r, n); if ("normal" === p.type) { if (o = n.done ? s : l, p.arg === y) continue; return { value: p.arg, done: n.done }; } "throw" === p.type && (o = s, n.method = "throw", n.arg = p.arg); } }; } function maybeInvokeDelegate(e, r) { var n = r.method, o = e.iterator[n]; if (o === t) return r.delegate = null, "throw" === n && e.iterator["return"] && (r.method = "return", r.arg = t, maybeInvokeDelegate(e, r), "throw" === r.method) || "return" !== n && (r.method = "throw", r.arg = new TypeError("The iterator does not provide a '" + n + "' method")), y; var i = tryCatch(o, e.iterator, r.arg); if ("throw" === i.type) return r.method = "throw", r.arg = i.arg, r.delegate = null, y; var a = i.arg; return a ? a.done ? (r[e.resultName] = a.value, r.next = e.nextLoc, "return" !== r.method && (r.method = "next", r.arg = t), r.delegate = null, y) : a : (r.method = "throw", r.arg = new TypeError("iterator result is not an object"), r.delegate = null, y); } function pushTryEntry(t) { var e = { tryLoc: t[0] }; 1 in t && (e.catchLoc = t[1]), 2 in t && (e.finallyLoc = t[2], e.afterLoc = t[3]), this.tryEntries.push(e); } function resetTryEntry(t) { var e = t.completion || {}; e.type = "normal", delete e.arg, t.completion = e; } function Context(t) { this.tryEntries = [{ tryLoc: "root" }], t.forEach(pushTryEntry, this), this.reset(!0); } function values(e) { if (e || "" === e) { var r = e[a]; if (r) return r.call(e); if ("function" == typeof e.next) return e; if (!isNaN(e.length)) { var o = -1, i = function next() { for (; ++o < e.length;) if (n.call(e, o)) return next.value = e[o], next.done = !1, next; return next.value = t, next.done = !0, next; }; return i.next = i; } } throw new TypeError(_typeof(e) + " is not iterable"); } return GeneratorFunction.prototype = GeneratorFunctionPrototype, o(g, "constructor", { value: GeneratorFunctionPrototype, configurable: !0 }), o(GeneratorFunctionPrototype, "constructor", { value: GeneratorFunction, configurable: !0 }), GeneratorFunction.displayName = define(GeneratorFunctionPrototype, u, "GeneratorFunction"), e.isGeneratorFunction = function (t) { var e = "function" == typeof t && t.constructor; return !!e && (e === GeneratorFunction || "GeneratorFunction" === (e.displayName || e.name)); }, e.mark = function (t) { return Object.setPrototypeOf ? Object.setPrototypeOf(t, GeneratorFunctionPrototype) : (t.__proto__ = GeneratorFunctionPrototype, define(t, u, "GeneratorFunction")), t.prototype = Object.create(g), t; }, e.awrap = function (t) { return { __await: t }; }, defineIteratorMethods(AsyncIterator.prototype), define(AsyncIterator.prototype, c, function () { return this; }), e.AsyncIterator = AsyncIterator, e.async = function (t, r, n, o, i) { void 0 === i && (i = Promise); var a = new AsyncIterator(wrap(t, r, n, o), i); return e.isGeneratorFunction(r) ? a : a.next().then(function (t) { return t.done ? t.value : a.next(); }); }, defineIteratorMethods(g), define(g, u, "Generator"), define(g, a, function () { return this; }), define(g, "toString", function () { return "[object Generator]"; }), e.keys = function (t) { var e = Object(t), r = []; for (var n in e) r.push(n); return r.reverse(), function next() { for (; r.length;) { var t = r.pop(); if (t in e) return next.value = t, next.done = !1, next; } return next.done = !0, next; }; }, e.values = values, Context.prototype = { constructor: Context, reset: function reset(e) { if (this.prev = 0, this.next = 0, this.sent = this._sent = t, this.done = !1, this.delegate = null, this.method = "next", this.arg = t, this.tryEntries.forEach(resetTryEntry), !e) for (var r in this) "t" === r.charAt(0) && n.call(this, r) && !isNaN(+r.slice(1)) && (this[r] = t); }, stop: function stop() { this.done = !0; var t = this.tryEntries[0].completion; if ("throw" === t.type) throw t.arg; return this.rval; }, dispatchException: function dispatchException(e) { if (this.done) throw e; var r = this; function handle(n, o) { return a.type = "throw", a.arg = e, r.next = n, o && (r.method = "next", r.arg = t), !!o; } for (var o = this.tryEntries.length - 1; o >= 0; --o) { var i = this.tryEntries[o], a = i.completion; if ("root" === i.tryLoc) return handle("end"); if (i.tryLoc <= this.prev) { var c = n.call(i, "catchLoc"), u = n.call(i, "finallyLoc"); if (c && u) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } else if (c) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); } else { if (!u) throw Error("try statement without catch or finally"); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } } } }, abrupt: function abrupt(t, e) { for (var r = this.tryEntries.length - 1; r >= 0; --r) { var o = this.tryEntries[r]; if (o.tryLoc <= this.prev && n.call(o, "finallyLoc") && this.prev < o.finallyLoc) { var i = o; break; } } i && ("break" === t || "continue" === t) && i.tryLoc <= e && e <= i.finallyLoc && (i = null); var a = i ? i.completion : {}; return a.type = t, a.arg = e, i ? (this.method = "next", this.next = i.finallyLoc, y) : this.complete(a); }, complete: function complete(t, e) { if ("throw" === t.type) throw t.arg; return "break" === t.type || "continue" === t.type ? this.next = t.arg : "return" === t.type ? (this.rval = this.arg = t.arg, this.method = "return", this.next = "end") : "normal" === t.type && e && (this.next = e), y; }, finish: function finish(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.finallyLoc === t) return this.complete(r.completion, r.afterLoc), resetTryEntry(r), y; } }, "catch": function _catch(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.tryLoc === t) { var n = r.completion; if ("throw" === n.type) { var o = n.arg; resetTryEntry(r); } return o; } } throw Error("illegal catch attempt"); }, delegateYield: function delegateYield(e, r, n) { return this.delegate = { iterator: values(e), resultName: r, nextLoc: n }, "next" === this.method && (this.arg = t), y; } }, e; }
+function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+var BOTTOM_MARGIN = 50;
+var MARGIN_SIZE = 17;
 function CreatorApp(props) {
-  const top_ref = (0, _react.useRef)(null);
-  const rc_span_ref = (0, _react.useRef)(null);
-  const vp_ref = (0, _react.useRef)(null);
-  const methods_ref = (0, _react.useRef)(null);
-  const commands_ref = (0, _react.useRef)(null);
-  const search_ref = (0, _react.useRef)(null);
-  const globals_ref = (0, _react.useRef)(null);
-  const last_save = (0, _react.useRef)({});
-  const dpObject = (0, _react.useRef)(null);
-  const rcObject = (0, _react.useRef)(null);
-  const emObject = (0, _react.useRef)(null);
-  const globalObject = (0, _react.useRef)(null);
-  const rline_number = (0, _react.useRef)(props.initial_line_number);
-  const cm_list = (0, _react.useRef)(props.is_mpl || props.is_d3 ? ["tc", "rc", "em", "gp"] : ["rc", "em", "gp"]);
-  const search_match_numbers = (0, _react.useRef)({
+  var top_ref = (0, _react.useRef)(null);
+  var rc_span_ref = (0, _react.useRef)(null);
+  var vp_ref = (0, _react.useRef)(null);
+  var methods_ref = (0, _react.useRef)(null);
+  var commands_ref = (0, _react.useRef)(null);
+  var search_ref = (0, _react.useRef)(null);
+  var globals_ref = (0, _react.useRef)(null);
+  var last_save = (0, _react.useRef)({});
+  var dpObject = (0, _react.useRef)(null);
+  var rcObject = (0, _react.useRef)(null);
+  var emObject = (0, _react.useRef)(null);
+  var globalObject = (0, _react.useRef)(null);
+  var rline_number = (0, _react.useRef)(props.initial_line_number);
+  var cm_list = (0, _react.useRef)(props.is_mpl || props.is_d3 ? ["tc", "rc", "em", "gp"] : ["rc", "em", "gp"]);
+  var search_match_numbers = (0, _react.useRef)({
     tc: 0,
     rc: 0,
     em: 0,
     gp: 0
   });
-  const key_bindings = (0, _react.useRef)([]);
-  const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(top_ref, 0, "TileCreator");
-  const [tabSelectCounter, setTabSelectCounter] = (0, _react.useState)(0);
+  var key_bindings = (0, _react.useRef)([]);
+  var _useSize = (0, _sizing_tools.useSize)(top_ref, 0, "TileCreator"),
+    _useSize2 = _slicedToArray(_useSize, 4),
+    usable_width = _useSize2[0],
+    usable_height = _useSize2[1],
+    topX = _useSize2[2],
+    topY = _useSize2[3];
+  var _useState = (0, _react.useState)(0),
+    _useState2 = _slicedToArray(_useState, 2),
+    tabSelectCounter = _useState2[0],
+    setTabSelectCounter = _useState2[1];
 
   // This hasActivated machinery is necessary because cleanup of codemirror areas doesn't work
   // properly if the component is unmounted before the codemirror area is activated.
-  const [methodsHasActivated, setMethodsHasActivated] = (0, _react.useState)(false);
-  const [globalsHasActivated, setGlobalsHasActivated] = (0, _react.useState)(false);
-  const [foregrounded_panes, set_foregrounded_panes] = (0, _react.useState)({
-    "metadata": true,
-    "options": false,
-    "exports": false,
-    "methods": false,
-    "chat": false
-  });
-  const [search_string, set_search_string] = (0, _react.useState)("");
-  const [current_search_number, set_current_search_number] = (0, _react.useState)(null);
-  const [current_search_cm, set_current_search_cm] = (0, _react.useState)(cm_list.current[0]);
-  const [regex, set_regex] = (0, _react.useState)(false);
-  const [search_matches, set_search_matches] = (0, _react.useState)(0);
-  const [render_content_code, set_render_content_code, render_content_code_ref] = (0, _utilities_react.useStateAndRef)(props.render_content_code);
-  const [draw_plot_code, set_draw_plot_code, draw_plot_code_ref] = (0, _utilities_react.useStateAndRef)(props.draw_plot_code);
-  const [jscript_code, set_jscript_code, jscript_code_ref] = (0, _utilities_react.useStateAndRef)(props.jscript_code);
-  const [extra_functions, set_extra_functions, extra_functions_ref] = (0, _utilities_react.useStateAndRef)(props.extra_functions);
-  const [globals_code, set_globals_code, globals_code_ref] = (0, _utilities_react.useStateAndRef)(props.globals_code);
-  const [option_list, set_option_list, option_list_ref] = (0, _utilities_react.useStateAndRef)(props.option_list);
-  const [export_list, set_export_list, export_list_ref] = (0, _utilities_react.useStateAndRef)(props.export_list);
-  const [render_content_line_number, set_render_content_line_number, render_content_line_number_ref] = (0, _utilities_react.useStateAndRef)(props.render_content_line_number);
-  const [draw_plot_line_number, set_draw_plot_line_number, draw_plot_line_number_ref] = (0, _utilities_react.useStateAndRef)(props.draw_plot_line_number);
-  const [extra_methods_line_number, set_extra_methods_line_number, extra_methods_line_number_ref] = (0, _utilities_react.useStateAndRef)(props.extra_methods_line_number);
-  const [notes, set_notes, notes_ref] = (0, _utilities_react.useStateAndRef)(props.notes);
-  const [tags, set_tags, tags_ref] = (0, _utilities_react.useStateAndRef)(props.tags);
-  const [icon, set_icon, icon_ref] = (0, _utilities_react.useStateAndRef)(props.icon);
-  const [category, set_category, category_ref] = (0, _utilities_react.useStateAndRef)(props.category);
-  const [additional_save_attrs, set_additional_save_attrs, additional_save_attrs_ref] = (0, _utilities_react.useStateAndRef)(props.additional_save_attrs || []);
-  const [couple_save_attrs_and_exports, set_couple_save_attrs_and_exports, couple_save_attrs_and_exports_ref] = (0, _utilities_react.useStateAndRef)(props.couple_save_attrs_and_exports);
-  const [selectedTabId, setSelectedTabId] = (0, _react.useState)("metadata");
-  const [top_pane_fraction, set_top_pane_fraction] = (0, _react.useState)(props.is_mpl || props.is_d3 ? .5 : 1);
-  const [left_pane_fraction, set_left_pane_fraction] = (0, _react.useState)(.5);
-  const [all_tags, set_all_tags] = (0, _react.useState)([]);
-  const [has_key, set_has_key] = (0, _react.useState)(false);
-  const theme = (0, _react.useContext)(_theme.ThemeContext);
-  const dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
-  const statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
-  const errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
-  const sizeInfo = (0, _react.useContext)(_sizing_tools.SizeContext);
-  const selectedPane = (0, _react.useContext)(_utilities_react.SelectedPaneContext);
-  const pushCallback = (0, _utilities_react.useCallbackStack)();
-  const [resource_name, set_resource_name] = (0, _react.useState)(props.resource_name);
-  const connection_status = (0, _utilities_react.useConnection)(props.tsocket, initSocket);
-  (0, _react.useEffect)(() => {
-    let data_dict = {
+  var _useState3 = (0, _react.useState)(false),
+    _useState4 = _slicedToArray(_useState3, 2),
+    methodsHasActivated = _useState4[0],
+    setMethodsHasActivated = _useState4[1];
+  var _useState5 = (0, _react.useState)(false),
+    _useState6 = _slicedToArray(_useState5, 2),
+    globalsHasActivated = _useState6[0],
+    setGlobalsHasActivated = _useState6[1];
+  var _useState7 = (0, _react.useState)({
+      "metadata": true,
+      "options": false,
+      "exports": false,
+      "methods": false,
+      "chat": false
+    }),
+    _useState8 = _slicedToArray(_useState7, 2),
+    foregrounded_panes = _useState8[0],
+    set_foregrounded_panes = _useState8[1];
+  var _useState9 = (0, _react.useState)(""),
+    _useState10 = _slicedToArray(_useState9, 2),
+    search_string = _useState10[0],
+    set_search_string = _useState10[1];
+  var _useState11 = (0, _react.useState)(null),
+    _useState12 = _slicedToArray(_useState11, 2),
+    current_search_number = _useState12[0],
+    set_current_search_number = _useState12[1];
+  var _useState13 = (0, _react.useState)(cm_list.current[0]),
+    _useState14 = _slicedToArray(_useState13, 2),
+    current_search_cm = _useState14[0],
+    set_current_search_cm = _useState14[1];
+  var _useState15 = (0, _react.useState)(false),
+    _useState16 = _slicedToArray(_useState15, 2),
+    regex = _useState16[0],
+    set_regex = _useState16[1];
+  var _useState17 = (0, _react.useState)(0),
+    _useState18 = _slicedToArray(_useState17, 2),
+    search_matches = _useState18[0],
+    set_search_matches = _useState18[1];
+  var _useStateAndRef = (0, _utilities_react.useStateAndRef)(props.render_content_code),
+    _useStateAndRef2 = _slicedToArray(_useStateAndRef, 3),
+    render_content_code = _useStateAndRef2[0],
+    set_render_content_code = _useStateAndRef2[1],
+    render_content_code_ref = _useStateAndRef2[2];
+  var _useStateAndRef3 = (0, _utilities_react.useStateAndRef)(props.draw_plot_code),
+    _useStateAndRef4 = _slicedToArray(_useStateAndRef3, 3),
+    draw_plot_code = _useStateAndRef4[0],
+    set_draw_plot_code = _useStateAndRef4[1],
+    draw_plot_code_ref = _useStateAndRef4[2];
+  var _useStateAndRef5 = (0, _utilities_react.useStateAndRef)(props.jscript_code),
+    _useStateAndRef6 = _slicedToArray(_useStateAndRef5, 3),
+    jscript_code = _useStateAndRef6[0],
+    set_jscript_code = _useStateAndRef6[1],
+    jscript_code_ref = _useStateAndRef6[2];
+  var _useStateAndRef7 = (0, _utilities_react.useStateAndRef)(props.extra_functions),
+    _useStateAndRef8 = _slicedToArray(_useStateAndRef7, 3),
+    extra_functions = _useStateAndRef8[0],
+    set_extra_functions = _useStateAndRef8[1],
+    extra_functions_ref = _useStateAndRef8[2];
+  var _useStateAndRef9 = (0, _utilities_react.useStateAndRef)(props.globals_code),
+    _useStateAndRef10 = _slicedToArray(_useStateAndRef9, 3),
+    globals_code = _useStateAndRef10[0],
+    set_globals_code = _useStateAndRef10[1],
+    globals_code_ref = _useStateAndRef10[2];
+  var _useStateAndRef11 = (0, _utilities_react.useStateAndRef)(props.option_list),
+    _useStateAndRef12 = _slicedToArray(_useStateAndRef11, 3),
+    option_list = _useStateAndRef12[0],
+    set_option_list = _useStateAndRef12[1],
+    option_list_ref = _useStateAndRef12[2];
+  var _useStateAndRef13 = (0, _utilities_react.useStateAndRef)(props.export_list),
+    _useStateAndRef14 = _slicedToArray(_useStateAndRef13, 3),
+    export_list = _useStateAndRef14[0],
+    set_export_list = _useStateAndRef14[1],
+    export_list_ref = _useStateAndRef14[2];
+  var _useStateAndRef15 = (0, _utilities_react.useStateAndRef)(props.render_content_line_number),
+    _useStateAndRef16 = _slicedToArray(_useStateAndRef15, 3),
+    render_content_line_number = _useStateAndRef16[0],
+    set_render_content_line_number = _useStateAndRef16[1],
+    render_content_line_number_ref = _useStateAndRef16[2];
+  var _useStateAndRef17 = (0, _utilities_react.useStateAndRef)(props.draw_plot_line_number),
+    _useStateAndRef18 = _slicedToArray(_useStateAndRef17, 3),
+    draw_plot_line_number = _useStateAndRef18[0],
+    set_draw_plot_line_number = _useStateAndRef18[1],
+    draw_plot_line_number_ref = _useStateAndRef18[2];
+  var _useStateAndRef19 = (0, _utilities_react.useStateAndRef)(props.extra_methods_line_number),
+    _useStateAndRef20 = _slicedToArray(_useStateAndRef19, 3),
+    extra_methods_line_number = _useStateAndRef20[0],
+    set_extra_methods_line_number = _useStateAndRef20[1],
+    extra_methods_line_number_ref = _useStateAndRef20[2];
+  var _useStateAndRef21 = (0, _utilities_react.useStateAndRef)(props.notes),
+    _useStateAndRef22 = _slicedToArray(_useStateAndRef21, 3),
+    notes = _useStateAndRef22[0],
+    set_notes = _useStateAndRef22[1],
+    notes_ref = _useStateAndRef22[2];
+  var _useStateAndRef23 = (0, _utilities_react.useStateAndRef)(props.tags),
+    _useStateAndRef24 = _slicedToArray(_useStateAndRef23, 3),
+    tags = _useStateAndRef24[0],
+    set_tags = _useStateAndRef24[1],
+    tags_ref = _useStateAndRef24[2];
+  var _useStateAndRef25 = (0, _utilities_react.useStateAndRef)(props.icon),
+    _useStateAndRef26 = _slicedToArray(_useStateAndRef25, 3),
+    icon = _useStateAndRef26[0],
+    set_icon = _useStateAndRef26[1],
+    icon_ref = _useStateAndRef26[2];
+  var _useStateAndRef27 = (0, _utilities_react.useStateAndRef)(props.category),
+    _useStateAndRef28 = _slicedToArray(_useStateAndRef27, 3),
+    category = _useStateAndRef28[0],
+    set_category = _useStateAndRef28[1],
+    category_ref = _useStateAndRef28[2];
+  var _useStateAndRef29 = (0, _utilities_react.useStateAndRef)(props.additional_save_attrs || []),
+    _useStateAndRef30 = _slicedToArray(_useStateAndRef29, 3),
+    additional_save_attrs = _useStateAndRef30[0],
+    set_additional_save_attrs = _useStateAndRef30[1],
+    additional_save_attrs_ref = _useStateAndRef30[2];
+  var _useStateAndRef31 = (0, _utilities_react.useStateAndRef)(props.couple_save_attrs_and_exports),
+    _useStateAndRef32 = _slicedToArray(_useStateAndRef31, 3),
+    couple_save_attrs_and_exports = _useStateAndRef32[0],
+    set_couple_save_attrs_and_exports = _useStateAndRef32[1],
+    couple_save_attrs_and_exports_ref = _useStateAndRef32[2];
+  var _useState19 = (0, _react.useState)("metadata"),
+    _useState20 = _slicedToArray(_useState19, 2),
+    selectedTabId = _useState20[0],
+    setSelectedTabId = _useState20[1];
+  var _useState21 = (0, _react.useState)(props.is_mpl || props.is_d3 ? .5 : 1),
+    _useState22 = _slicedToArray(_useState21, 2),
+    top_pane_fraction = _useState22[0],
+    set_top_pane_fraction = _useState22[1];
+  var _useState23 = (0, _react.useState)(.5),
+    _useState24 = _slicedToArray(_useState23, 2),
+    left_pane_fraction = _useState24[0],
+    set_left_pane_fraction = _useState24[1];
+  var _useState25 = (0, _react.useState)([]),
+    _useState26 = _slicedToArray(_useState25, 2),
+    all_tags = _useState26[0],
+    set_all_tags = _useState26[1];
+  var _useState27 = (0, _react.useState)(false),
+    _useState28 = _slicedToArray(_useState27, 2),
+    has_key = _useState28[0],
+    set_has_key = _useState28[1];
+  var theme = (0, _react.useContext)(_theme.ThemeContext);
+  var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
+  var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
+  var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
+  var sizeInfo = (0, _react.useContext)(_sizing_tools.SizeContext);
+  var selectedPane = (0, _react.useContext)(_utilities_react.SelectedPaneContext);
+  var pushCallback = (0, _utilities_react.useCallbackStack)();
+  var _useState29 = (0, _react.useState)(props.resource_name),
+    _useState30 = _slicedToArray(_useState29, 2),
+    resource_name = _useState30[0],
+    set_resource_name = _useState30[1];
+  var connection_status = (0, _utilities_react.useConnection)(props.tsocket, initSocket);
+  (0, _react.useEffect)(function () {
+    var data_dict = {
       pane_type: "tile",
       is_repository: false,
       show_hidden: true
     };
-    let data;
-    (0, _communication_react.postPromise)(props.module_viewer_id, "has_openai_key", {}).then(data => {
+    var data;
+    (0, _communication_react.postPromise)(props.module_viewer_id, "has_openai_key", {}).then(function (data) {
       if (data.has_key) {
         set_has_key(true);
       } else {
         set_has_key(false);
       }
-    }).catch(e => {
+    })["catch"](function (e) {
       set_has_key(false);
     });
-    (0, _communication_react.postAjaxPromise)("get_tag_list", data_dict).then(data => {
+    (0, _communication_react.postAjaxPromise)("get_tag_list", data_dict).then(function (data) {
       set_all_tags(data.tag_list);
-    }).catch(e => {
+    })["catch"](function (e) {
       errorDrawerFuncs.addFromError("Error getting tag list", e);
     });
   }, []);
-  (0, _react.useEffect)(() => {
+  (0, _react.useEffect)(function () {
     if (props.controlled) {
       props.registerDirtyMethod(_dirty);
       props.registerLineSetter(_selectLineNumber);
@@ -152,7 +286,7 @@ function CreatorApp(props) {
     }
     window.addEventListener("unload", sendRemove);
     statusFuncs.stopSpinner();
-    return () => {
+    return function () {
       dpObject.current = null;
       rcObject.current = null;
       emObject.current = null;
@@ -162,11 +296,11 @@ function CreatorApp(props) {
       errorDrawerFuncs.setGoToLineNumber(null);
     };
   }, []);
-  (0, _react.useEffect)(() => {
+  (0, _react.useEffect)(function () {
     _goToLineNumber();
   });
   function initSocket() {
-    props.tsocket.attachListener('focus-me', data => {
+    props.tsocket.attachListener('focus-me', function (data) {
       window.focus();
       _selectLineNumber(data.line_number);
     });
@@ -174,7 +308,7 @@ function CreatorApp(props) {
       props.tsocket.attachListener("doFlashUser", function (data) {
         (0, _toaster.doFlash)(data);
       });
-      props.tsocket.attachListener('close-user-windows', data => {
+      props.tsocket.attachListener('close-user-windows', function (data) {
         if (!(data["originator"] == props.resource_viewer_id)) {
           window.close();
         }
@@ -190,7 +324,7 @@ function CreatorApp(props) {
     return props.controlled ? props[pname] : cPropGetters()[pname];
   }
   function menu_specs() {
-    let ms = {
+    var ms = {
       Save: [{
         name_text: "Save",
         icon_name: "saved",
@@ -228,14 +362,38 @@ function CreatorApp(props) {
       Transfer: [{
         name_text: "Share",
         icon_name: "share",
-        click_handler: async () => {
-          await (0, _resource_viewer_react_app.sendToRepository)("tile", _cProp("resource_name"), dialogFuncs, statusFuncs, errorDrawerFuncs);
-        }
+        click_handler: function () {
+          var _click_handler = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
+            return _regeneratorRuntime().wrap(function _callee$(_context) {
+              while (1) switch (_context.prev = _context.next) {
+                case 0:
+                  _context.next = 2;
+                  return (0, _resource_viewer_react_app.sendToRepository)("tile", _cProp("resource_name"), dialogFuncs, statusFuncs, errorDrawerFuncs);
+                case 2:
+                case "end":
+                  return _context.stop();
+              }
+            }, _callee);
+          }));
+          function click_handler() {
+            return _click_handler.apply(this, arguments);
+          }
+          return click_handler;
+        }()
       }]
     };
-    for (let menu in ms) {
-      for (let but of ms[menu]) {
-        but.click_handler = but.click_handler.bind(this);
+    for (var menu in ms) {
+      var _iterator = _createForOfIteratorHelper(ms[menu]),
+        _step;
+      try {
+        for (_iterator.s(); !(_step = _iterator.n()).done;) {
+          var but = _step.value;
+          but.click_handler = but.click_handler.bind(this);
+        }
+      } catch (err) {
+        _iterator.e(err);
+      } finally {
+        _iterator.f();
       }
     }
     return ms;
@@ -245,17 +403,17 @@ function CreatorApp(props) {
       'Ctrl-S': _saveMe,
       'Ctrl-L': _saveAndLoadModule,
       'Ctrl-M': _saveAndCheckpoint,
-      'Ctrl-F': () => {
+      'Ctrl-F': function CtrlF() {
         search_ref.current.focus();
       },
-      'Cmd-F': () => {
+      'Cmd-F': function CmdF() {
         search_ref.current.focus();
       }
     };
   }
   function _searchNext() {
     if (current_search_number >= search_match_numbers.current[current_search_cm] - 1) {
-      let next_cm;
+      var next_cm;
       switch (current_search_cm) {
         case "rc":
           next_cm = "em";
@@ -286,8 +444,8 @@ function CreatorApp(props) {
     }
   }
   function _searchPrev() {
-    let next_cm;
-    let next_search_number;
+    var next_cm;
+    var next_search_number;
     if (current_search_number <= 0) {
       if (current_search_cm == "em") {
         next_cm = "rc";
@@ -314,10 +472,10 @@ function CreatorApp(props) {
     }
   }
   function _updateSearchState(new_state) {
-    let callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+    var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
     set_current_search_cm(cm_list.current[0]);
     set_current_search_number(0);
-    for (let field in new_state) {
+    for (var field in new_state) {
       switch (field) {
         case "regex":
           set_regex(new_state[field]);
@@ -332,19 +490,28 @@ function CreatorApp(props) {
     if (search_string == "" || search_string == null) {
       return true;
     } else {
-      for (let cm of cm_list.current) {
-        if (search_match_numbers.current[cm]) {
-          return false;
+      var _iterator2 = _createForOfIteratorHelper(cm_list.current),
+        _step2;
+      try {
+        for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+          var cm = _step2.value;
+          if (search_match_numbers.current[cm]) {
+            return false;
+          }
         }
+      } catch (err) {
+        _iterator2.e(err);
+      } finally {
+        _iterator2.f();
       }
       return true;
     }
   }
   function _showHistoryViewer() {
-    window.open(`${$SCRIPT_ROOT}/show_history_viewer/${_cProp("resource_name")}`);
+    window.open("".concat($SCRIPT_ROOT, "/show_history_viewer/").concat(_cProp("resource_name")));
   }
   function _showTileDiffer() {
-    window.open(`${$SCRIPT_ROOT}/show_tile_differ/${_cProp("resource_name")}`);
+    window.open("".concat($SCRIPT_ROOT, "/show_tile_differ/").concat(_cProp("resource_name")));
   }
   function _selectLineNumber(lnumber) {
     rline_number.current = lnumber;
@@ -352,7 +519,7 @@ function CreatorApp(props) {
   }
   function _logErrorStopSpinner(title, data) {
     statusFuncs.stopSpinner();
-    let entry = {
+    var entry = {
       title: title,
       content: data.message
     };
@@ -363,128 +530,272 @@ function CreatorApp(props) {
     errorDrawerFuncs.openErrorDrawer();
   }
   function _dirty() {
-    let current_state = _getSaveDict();
-    for (let k in current_state) {
+    var current_state = _getSaveDict();
+    for (var k in current_state) {
       if (current_state[k] != last_save.current[k]) {
         return true;
       }
     }
     return false;
   }
-  async function _saveAndLoadModule() {
-    if (!am_selected()) {
-      return false;
-    }
-    statusFuncs.startSpinner();
-    let data;
-    try {
-      await doSavePromise();
-      statusFuncs.statusMessage("Loading Module");
-      await (0, _communication_react.postPromise)("host", "load_tile_module_task", {
-        "tile_module_name": _cProp("resource_name"),
-        "user_id": window.user_id
-      }, props.module_viewer_id);
-      statusFuncs.statusMessage("Loaded successfully");
-      statusFuncs.stopSpinner();
-    } catch (e) {
-      _logErrorStopSpinner("Error saving and loading module", e);
-    }
+  function _saveAndLoadModule() {
+    return _saveAndLoadModule2.apply(this, arguments);
   }
-  async function _loadModule() {
-    if (!am_selected()) {
-      return false;
-    }
-    statusFuncs.startSpinner();
-    statusFuncs.statusMessage("Loading module...");
-    try {
-      await (0, _communication_react.postPromise)("host", "load_tile_module_task", {
-        "tile_module_name": _cProp("resource_name"),
-        "user_id": window.user_id
-      }, props.module_viewer_id);
-      statusFuncs.statusMessage("Loaded successfully");
-      statusFuncs.stopSpinner();
-    } catch (e) {
-      _logErrorStopSpinner("Error saving and loading module", e);
-    }
+  function _saveAndLoadModule2() {
+    _saveAndLoadModule2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee3() {
+      var data;
+      return _regeneratorRuntime().wrap(function _callee3$(_context3) {
+        while (1) switch (_context3.prev = _context3.next) {
+          case 0:
+            if (am_selected()) {
+              _context3.next = 2;
+              break;
+            }
+            return _context3.abrupt("return", false);
+          case 2:
+            statusFuncs.startSpinner();
+            _context3.prev = 3;
+            _context3.next = 6;
+            return doSavePromise();
+          case 6:
+            statusFuncs.statusMessage("Loading Module");
+            _context3.next = 9;
+            return (0, _communication_react.postPromise)("host", "load_tile_module_task", {
+              "tile_module_name": _cProp("resource_name"),
+              "user_id": window.user_id
+            }, props.module_viewer_id);
+          case 9:
+            statusFuncs.statusMessage("Loaded successfully");
+            statusFuncs.stopSpinner();
+            _context3.next = 16;
+            break;
+          case 13:
+            _context3.prev = 13;
+            _context3.t0 = _context3["catch"](3);
+            _logErrorStopSpinner("Error saving and loading module", _context3.t0);
+          case 16:
+          case "end":
+            return _context3.stop();
+        }
+      }, _callee3, null, [[3, 13]]);
+    }));
+    return _saveAndLoadModule2.apply(this, arguments);
   }
-  async function _saveModuleAs() {
-    statusFuncs.startSpinner();
-    let data;
-    try {
-      data = await (0, _communication_react.postPromise)("host", "get_tile_names", {
-        "user_id": window.user_id
-      }, props.main_id);
-      dialogFuncs.showModal("ModalDialog", {
-        title: "Save Module As",
-        field_title: "New Module Name",
-        handleSubmit: CreateNewModule,
-        default_value: "NewModule",
-        existing_names: data.tile_names,
-        checkboxes: [],
-        handleCancel: doCancel,
-        handleClose: dialogFuncs.hideModal
-      });
-    } catch (e) {
-      _logErrorStopSpinner("Error saving module", e);
-    }
-    function doCancel() {
-      statusFuncs.stopSpinner();
-    }
-    async function CreateNewModule(new_name) {
-      const result_dict = {
-        "new_res_name": new_name,
-        "res_to_copy": _cProp("resource_name")
-      };
-      try {
-        data = await (0, _communication_react.postAjaxPromise)('/create_duplicate_tile', result_dict);
-        _setResourceNameState(new_name, () => {
-          _saveMe();
-        });
-      } catch (e) {
-        _logErrorStopSpinner("Error saving module", e);
-      }
-    }
+  function _loadModule() {
+    return _loadModule2.apply(this, arguments);
+  }
+  function _loadModule2() {
+    _loadModule2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee4() {
+      return _regeneratorRuntime().wrap(function _callee4$(_context4) {
+        while (1) switch (_context4.prev = _context4.next) {
+          case 0:
+            if (am_selected()) {
+              _context4.next = 2;
+              break;
+            }
+            return _context4.abrupt("return", false);
+          case 2:
+            statusFuncs.startSpinner();
+            statusFuncs.statusMessage("Loading module...");
+            _context4.prev = 4;
+            _context4.next = 7;
+            return (0, _communication_react.postPromise)("host", "load_tile_module_task", {
+              "tile_module_name": _cProp("resource_name"),
+              "user_id": window.user_id
+            }, props.module_viewer_id);
+          case 7:
+            statusFuncs.statusMessage("Loaded successfully");
+            statusFuncs.stopSpinner();
+            _context4.next = 14;
+            break;
+          case 11:
+            _context4.prev = 11;
+            _context4.t0 = _context4["catch"](4);
+            _logErrorStopSpinner("Error saving and loading module", _context4.t0);
+          case 14:
+          case "end":
+            return _context4.stop();
+        }
+      }, _callee4, null, [[4, 11]]);
+    }));
+    return _loadModule2.apply(this, arguments);
+  }
+  function _saveModuleAs() {
+    return _saveModuleAs2.apply(this, arguments);
+  }
+  function _saveModuleAs2() {
+    _saveModuleAs2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee6() {
+      var data, doCancel, CreateNewModule, _CreateNewModule;
+      return _regeneratorRuntime().wrap(function _callee6$(_context6) {
+        while (1) switch (_context6.prev = _context6.next) {
+          case 0:
+            _CreateNewModule = function _CreateNewModule3() {
+              _CreateNewModule = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee5(new_name) {
+                var result_dict;
+                return _regeneratorRuntime().wrap(function _callee5$(_context5) {
+                  while (1) switch (_context5.prev = _context5.next) {
+                    case 0:
+                      result_dict = {
+                        "new_res_name": new_name,
+                        "res_to_copy": _cProp("resource_name")
+                      };
+                      _context5.prev = 1;
+                      _context5.next = 4;
+                      return (0, _communication_react.postAjaxPromise)('/create_duplicate_tile', result_dict);
+                    case 4:
+                      data = _context5.sent;
+                      _setResourceNameState(new_name, function () {
+                        _saveMe();
+                      });
+                      _context5.next = 11;
+                      break;
+                    case 8:
+                      _context5.prev = 8;
+                      _context5.t0 = _context5["catch"](1);
+                      _logErrorStopSpinner("Error saving module", _context5.t0);
+                    case 11:
+                    case "end":
+                      return _context5.stop();
+                  }
+                }, _callee5, null, [[1, 8]]);
+              }));
+              return _CreateNewModule.apply(this, arguments);
+            };
+            CreateNewModule = function _CreateNewModule2(_x3) {
+              return _CreateNewModule.apply(this, arguments);
+            };
+            doCancel = function _doCancel() {
+              statusFuncs.stopSpinner();
+            };
+            statusFuncs.startSpinner();
+            _context6.prev = 4;
+            _context6.next = 7;
+            return (0, _communication_react.postPromise)("host", "get_tile_names", {
+              "user_id": window.user_id
+            }, props.main_id);
+          case 7:
+            data = _context6.sent;
+            dialogFuncs.showModal("ModalDialog", {
+              title: "Save Module As",
+              field_title: "New Module Name",
+              handleSubmit: CreateNewModule,
+              default_value: "NewModule",
+              existing_names: data.tile_names,
+              checkboxes: [],
+              handleCancel: doCancel,
+              handleClose: dialogFuncs.hideModal
+            });
+            _context6.next = 14;
+            break;
+          case 11:
+            _context6.prev = 11;
+            _context6.t0 = _context6["catch"](4);
+            _logErrorStopSpinner("Error saving module", _context6.t0);
+          case 14:
+          case "end":
+            return _context6.stop();
+        }
+      }, _callee6, null, [[4, 11]]);
+    }));
+    return _saveModuleAs2.apply(this, arguments);
   }
   function am_selected() {
     return selectedPane.amSelected(selectedPane.tab_id, selectedPane.selectedTabIdRef);
   }
-  async function _saveMe() {
-    if (!am_selected()) {
-      return false;
-    }
-    statusFuncs.startSpinner();
-    statusFuncs.statusMessage("Saving module...");
-    try {
-      await doSavePromise();
-      statusFuncs.statusMessage("Saved module");
-      statusFuncs.stopSpinner();
-    } catch (e) {
-      _logErrorStopSpinner("Error saving module", e);
-    }
-    return false;
+  function _saveMe() {
+    return _saveMe2.apply(this, arguments);
   }
-  async function _saveAndCheckpoint() {
-    if (!am_selected()) {
-      return false;
-    }
-    statusFuncs.startSpinner();
-    statusFuncs.statusMessage("Checkpointing");
-    let data;
-    try {
-      await doSavePromise();
-      await doCheckpointPromise();
-      statusFuncs.statusMessage("Saved and checkpointed");
-      statusFuncs.stopSpinner();
-    } catch (e) {
-      _logErrorStopSpinner("Error in save and checkpoint", e);
-    }
-    return false;
+  function _saveMe2() {
+    _saveMe2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee7() {
+      return _regeneratorRuntime().wrap(function _callee7$(_context7) {
+        while (1) switch (_context7.prev = _context7.next) {
+          case 0:
+            if (am_selected()) {
+              _context7.next = 2;
+              break;
+            }
+            return _context7.abrupt("return", false);
+          case 2:
+            statusFuncs.startSpinner();
+            statusFuncs.statusMessage("Saving module...");
+            _context7.prev = 4;
+            _context7.next = 7;
+            return doSavePromise();
+          case 7:
+            statusFuncs.statusMessage("Saved module");
+            statusFuncs.stopSpinner();
+            _context7.next = 14;
+            break;
+          case 11:
+            _context7.prev = 11;
+            _context7.t0 = _context7["catch"](4);
+            _logErrorStopSpinner("Error saving module", _context7.t0);
+          case 14:
+            return _context7.abrupt("return", false);
+          case 15:
+          case "end":
+            return _context7.stop();
+        }
+      }, _callee7, null, [[4, 11]]);
+    }));
+    return _saveMe2.apply(this, arguments);
+  }
+  function _saveAndCheckpoint() {
+    return _saveAndCheckpoint2.apply(this, arguments);
+  }
+  function _saveAndCheckpoint2() {
+    _saveAndCheckpoint2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee8() {
+      var data;
+      return _regeneratorRuntime().wrap(function _callee8$(_context8) {
+        while (1) switch (_context8.prev = _context8.next) {
+          case 0:
+            if (am_selected()) {
+              _context8.next = 2;
+              break;
+            }
+            return _context8.abrupt("return", false);
+          case 2:
+            statusFuncs.startSpinner();
+            statusFuncs.statusMessage("Checkpointing");
+            _context8.prev = 4;
+            _context8.next = 7;
+            return doSavePromise();
+          case 7:
+            _context8.next = 9;
+            return doCheckpointPromise();
+          case 9:
+            statusFuncs.statusMessage("Saved and checkpointed");
+            statusFuncs.stopSpinner();
+            _context8.next = 16;
+            break;
+          case 13:
+            _context8.prev = 13;
+            _context8.t0 = _context8["catch"](4);
+            _logErrorStopSpinner("Error in save and checkpoint", _context8.t0);
+          case 16:
+            return _context8.abrupt("return", false);
+          case 17:
+          case "end":
+            return _context8.stop();
+        }
+      }, _callee8, null, [[4, 13]]);
+    }));
+    return _saveAndCheckpoint2.apply(this, arguments);
   }
   function get_tags_string() {
-    let taglist = tags_ref.current;
-    let local_tags = "";
-    for (let tag of taglist) {
-      local_tags = local_tags + tag + " ";
+    var taglist = tags_ref.current;
+    var local_tags = "";
+    var _iterator3 = _createForOfIteratorHelper(taglist),
+      _step3;
+    try {
+      for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+        var tag = _step3.value;
+        local_tags = local_tags + tag + " ";
+      }
+    } catch (err) {
+      _iterator3.e(err);
+    } finally {
+      _iterator3.f();
     }
     return local_tags.trim();
   }
@@ -510,17 +821,36 @@ function CreatorApp(props) {
     };
   }
   function doSavePromise() {
-    return new Promise(async (resolve, reject) => {
-      let result_dict = _getSaveDict();
-      let data;
-      try {
-        data = await (0, _communication_react.postPromise)(props.module_viewer_id, "update_module", result_dict, props.module_viewer_id);
-        save_success(data);
-        resolve(data);
-      } catch (e) {
-        reject(e);
-      }
-    });
+    return new Promise( /*#__PURE__*/function () {
+      var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2(resolve, reject) {
+        var result_dict, data;
+        return _regeneratorRuntime().wrap(function _callee2$(_context2) {
+          while (1) switch (_context2.prev = _context2.next) {
+            case 0:
+              result_dict = _getSaveDict();
+              _context2.prev = 1;
+              _context2.next = 4;
+              return (0, _communication_react.postPromise)(props.module_viewer_id, "update_module", result_dict, props.module_viewer_id);
+            case 4:
+              data = _context2.sent;
+              save_success(data);
+              resolve(data);
+              _context2.next = 12;
+              break;
+            case 9:
+              _context2.prev = 9;
+              _context2.t0 = _context2["catch"](1);
+              reject(_context2.t0);
+            case 12:
+            case "end":
+              return _context2.stop();
+          }
+        }, _callee2, null, [[1, 9]]);
+      }));
+      return function (_x, _x2) {
+        return _ref.apply(this, arguments);
+      };
+    }());
   }
   function doCheckpointPromise() {
     return (0, _communication_react.postAjaxPromise)("checkpoint_module", {
@@ -537,7 +867,7 @@ function CreatorApp(props) {
     last_save.current = _getSaveDict();
   }
   function _selectLine(cm, lnumber) {
-    let doc = cm.getDoc();
+    var doc = cm.getDoc();
     if (doc.getLine(lnumber)) {
       doc.setSelection({
         line: lnumber,
@@ -598,7 +928,7 @@ function CreatorApp(props) {
     });
   }
   function _handleTabSelect(newTabId, prevTabid, event) {
-    let new_fg = Object.assign({}, foregrounded_panes);
+    var new_fg = Object.assign({}, foregrounded_panes);
     new_fg[newTabId] = true;
     setSelectedTabId(newTabId);
     if (newTabId == "methods" && !methodsHasActivated) {
@@ -608,7 +938,7 @@ function CreatorApp(props) {
       setGlobalsHasActivated(true);
     }
     set_foregrounded_panes(new_fg);
-    pushCallback(() => {
+    pushCallback(function () {
       if (newTabId == "methods") {
         if (emObject.current) {
           emObject.current.refresh();
@@ -625,21 +955,39 @@ function CreatorApp(props) {
     set_notes(notes_ref.current + new_text);
   }
   function _appendOptionText() {
-    let res_string = "\n\noptions: \n\n";
-    for (let opt of option_list_ref.current) {
-      res_string += ` * \`${opt.name}\` (${opt.type}): \n`;
+    var res_string = "\n\noptions: \n\n";
+    var _iterator4 = _createForOfIteratorHelper(option_list_ref.current),
+      _step4;
+    try {
+      for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
+        var opt = _step4.value;
+        res_string += " * `".concat(opt.name, "` (").concat(opt.type, "): \n");
+      }
+    } catch (err) {
+      _iterator4.e(err);
+    } finally {
+      _iterator4.f();
     }
     _handleNotesAppend(res_string);
   }
   function _appendExportText() {
-    let res_string = "\n\nexports: \n\n";
-    for (let exp of export_list_ref.current) {
-      res_string += ` * \`${exp.name}\` : \n`;
+    var res_string = "\n\nexports: \n\n";
+    var _iterator5 = _createForOfIteratorHelper(export_list_ref.current),
+      _step5;
+    try {
+      for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
+        var exp = _step5.value;
+        res_string += " * `".concat(exp.name, "` : \n");
+      }
+    } catch (err) {
+      _iterator5.e(err);
+    } finally {
+      _iterator5.f();
     }
     _handleNotesAppend(res_string);
   }
   function _metadataNotesButtons() {
-    return /*#__PURE__*/_react.default.createElement(_core.ButtonGroup, null, /*#__PURE__*/_react.default.createElement(_core.Button, {
+    return /*#__PURE__*/_react["default"].createElement(_core.ButtonGroup, null, /*#__PURE__*/_react["default"].createElement(_core.Button, {
       style: {
         height: "fit-content",
         alignSelf: "start",
@@ -651,11 +999,11 @@ function CreatorApp(props) {
       minimal: true,
       intent: "primary",
       icon: "select",
-      onClick: e => {
+      onClick: function onClick(e) {
         e.preventDefault();
         _appendOptionText();
       }
-    }), /*#__PURE__*/_react.default.createElement(_core.Button, {
+    }), /*#__PURE__*/_react["default"].createElement(_core.Button, {
       style: {
         height: "fit-content",
         alignSelf: "start",
@@ -667,14 +1015,14 @@ function CreatorApp(props) {
       minimal: true,
       intent: "primary",
       icon: "export",
-      onClick: e => {
+      onClick: function onClick(e) {
         e.preventDefault();
         _appendExportText();
       }
     }));
   }
   function _handleMetadataChange(state_stuff) {
-    for (let field in state_stuff) {
+    for (var field in state_stuff) {
       switch (field) {
         case "tags":
           set_tags(state_stuff[field]);
@@ -692,13 +1040,13 @@ function CreatorApp(props) {
     }
   }
   function handleExportsStateChange(state_stuff) {
-    for (let field in state_stuff) {
+    for (var field in state_stuff) {
       switch (field) {
         case "export_list":
-          set_export_list([...state_stuff[field]]);
+          set_export_list(_toConsumableArray(state_stuff[field]));
           break;
         case "additional_save_attrs":
-          set_additional_save_attrs([...state_stuff[field]]);
+          set_additional_save_attrs(_toConsumableArray(state_stuff[field]));
           break;
         case "couple_save_attrs_and_exports":
           set_couple_save_attrs_and_exports(state_stuff[field]);
@@ -707,8 +1055,8 @@ function CreatorApp(props) {
     }
   }
   function handleOptionsListChange(new_option_list) {
-    let callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-    set_option_list([...new_option_list]);
+    var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+    set_option_list(_toConsumableArray(new_option_list));
     pushCallback(callback);
   }
   function handleMethodsChange(new_methods) {
@@ -728,7 +1076,7 @@ function CreatorApp(props) {
     set_render_content_code(new_code);
   }
   function _setResourceNameState(new_name) {
-    let callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+    var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
     if (props.controlled) {
       props.changeResourceName(new_name, callback);
     } else {
@@ -737,9 +1085,10 @@ function CreatorApp(props) {
     }
   }
   function _clearAllSelections() {
-    for (let cm of [rcObject.current, dpObject.current, emObject.current]) {
+    for (var _i = 0, _arr = [rcObject.current, dpObject.current, emObject.current]; _i < _arr.length; _i++) {
+      var cm = _arr[_i];
       if (cm) {
-        let to = cm.getCursor("to");
+        var to = cm.getCursor("to");
         cm.setCursor(to);
       }
     }
@@ -758,44 +1107,60 @@ function CreatorApp(props) {
   }
   function _setSearchMatches(rc_name, num) {
     search_match_numbers.current[rc_name] = num;
-    let current_matches = 0;
-    for (let cname in search_match_numbers.current) {
+    var current_matches = 0;
+    for (var cname in search_match_numbers.current) {
       current_matches += search_match_numbers.current[cname];
     }
     set_search_matches(current_matches);
   }
   function _getOptionNames() {
-    let onames = [];
-    for (let entry of option_list_ref.current) {
-      onames.push(entry.name);
+    var onames = [];
+    var _iterator6 = _createForOfIteratorHelper(option_list_ref.current),
+      _step6;
+    try {
+      for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
+        var entry = _step6.value;
+        onames.push(entry.name);
+      }
+    } catch (err) {
+      _iterator6.e(err);
+    } finally {
+      _iterator6.f();
     }
     return onames;
   }
-  let onames_for_autocomplete = [];
-  for (let oname of _getOptionNames()) {
-    let the_text = "" + oname;
-    onames_for_autocomplete.push({
-      text: the_text,
-      icon: "select",
-      render: _autocomplete.renderAutoCompleteElement
-    });
+  var onames_for_autocomplete = [];
+  var _iterator7 = _createForOfIteratorHelper(_getOptionNames()),
+    _step7;
+  try {
+    for (_iterator7.s(); !(_step7 = _iterator7.n()).done;) {
+      var oname = _step7.value;
+      var the_text = "" + oname;
+      onames_for_autocomplete.push({
+        text: the_text,
+        icon: "select",
+        render: _autocomplete.renderAutoCompleteElement
+      });
+    }
+  } catch (err) {
+    _iterator7.e(err);
+  } finally {
+    _iterator7.f();
   }
-  let my_props = {
-    ...props
-  };
+  var my_props = _objectSpread({}, props);
   if (!props.controlled) {
     my_props.resource_name = resource_name;
   }
-  let ch_style = {
+  var ch_style = {
     "width": "100%"
   };
-  let tc_item;
+  var tc_item;
   if (my_props.is_mpl || my_props.is_d3) {
-    let mode = my_props.is_mpl ? "python" : "javascript";
-    let code_content = my_props.is_mpl ? draw_plot_code_ref.current : jscript_code_ref.current;
-    let first_line_number = my_props.is_mpl ? draw_plot_line_number_ref.current + 1 : 1;
-    let title_label = my_props.is_mpl ? "draw_plot" : "(selector, w, h, arg_dict, resizing) =>";
-    tc_item = /*#__PURE__*/_react.default.createElement(_reactCodemirror.ReactCodemirror, {
+    var mode = my_props.is_mpl ? "python" : "javascript";
+    var code_content = my_props.is_mpl ? draw_plot_code_ref.current : jscript_code_ref.current;
+    var first_line_number = my_props.is_mpl ? draw_plot_line_number_ref.current + 1 : 1;
+    var title_label = my_props.is_mpl ? "draw_plot" : "(selector, w, h, arg_dict, resizing) =>";
+    tc_item = /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror, {
       code_content: code_content,
       title_label: title_label,
       show_search: true,
@@ -815,16 +1180,18 @@ function CreatorApp(props) {
       searchPrev: _searchPrev,
       searchNext: _searchNext,
       search_matches: search_matches,
-      setSearchMatches: num => _setSearchMatches("tc", num),
+      setSearchMatches: function setSearchMatches(num) {
+        return _setSearchMatches("tc", num);
+      },
       extra_autocomplete_list: mode == "python" ? onames_for_autocomplete : []
     });
   }
-  let bc_item = /*#__PURE__*/_react.default.createElement("div", {
+  var bc_item = /*#__PURE__*/_react["default"].createElement("div", {
     key: "rccode",
     id: "rccode",
     style: ch_style,
     className: "d-flex flex-column align-items-baseline code-holder"
-  }, /*#__PURE__*/_react.default.createElement(_reactCodemirror.ReactCodemirror, {
+  }, /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror, {
     code_content: render_content_code_ref.current,
     title_label: "render_content",
     show_search: !(my_props.is_mpl || my_props.is_d3),
@@ -843,25 +1210,27 @@ function CreatorApp(props) {
     searchPrev: _searchPrev,
     searchNext: _searchNext,
     search_matches: search_matches,
-    setSearchMatches: num => _setSearchMatches("rc", num),
+    setSearchMatches: function setSearchMatches(num) {
+      return _setSearchMatches("rc", num);
+    },
     extra_autocomplete_list: onames_for_autocomplete
   }));
-  let left_pane;
+  var left_pane;
   if (my_props.is_mpl || my_props.is_d3) {
-    left_pane = /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement("div", {
+    left_pane = /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
       ref: vp_ref
-    }), /*#__PURE__*/_react.default.createElement(_resizing_layouts.VerticalPanes, {
+    }), /*#__PURE__*/_react["default"].createElement(_resizing_layouts.VerticalPanes, {
       top_pane: tc_item,
       bottom_pane: bc_item,
       show_handle: true,
       id: "creator-left"
     }));
   } else {
-    left_pane = /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement("div", {
+    left_pane = /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
       ref: vp_ref
     }, bc_item));
   }
-  let mdata_panel = /*#__PURE__*/_react.default.createElement(_creator_modules_react.MetadataModule, {
+  var mdata_panel = /*#__PURE__*/_react["default"].createElement(_creator_modules_react.MetadataModule, {
     tags: tags_ref.current,
     expandWidth: false,
     all_tags: all_tags,
@@ -875,14 +1244,14 @@ function CreatorApp(props) {
     handleChange: _handleMetadataChange,
     tabSelectCounter: tabSelectCounter
   });
-  let option_panel = /*#__PURE__*/_react.default.createElement(_creator_modules_react.OptionModule, {
+  var option_panel = /*#__PURE__*/_react["default"].createElement(_creator_modules_react.OptionModule, {
     data_list_ref: option_list_ref,
     foregrounded: foregrounded_panes["options"],
     handleChange: handleOptionsListChange,
     handleNotesAppend: _handleNotesAppend,
     tabSelectCounter: tabSelectCounter
   });
-  let export_panel = /*#__PURE__*/_react.default.createElement(_creator_modules_react.ExportModule, {
+  var export_panel = /*#__PURE__*/_react["default"].createElement(_creator_modules_react.ExportModule, {
     export_list: export_list_ref.current,
     save_list: additional_save_attrs_ref.current,
     couple_save_attrs_and_exports: couple_save_attrs_and_exports_ref.current,
@@ -891,11 +1260,11 @@ function CreatorApp(props) {
     handleNotesAppend: _handleNotesAppend,
     tabSelectCounter: tabSelectCounter
   });
-  let methods_panel = /*#__PURE__*/_react.default.createElement("div", {
+  var methods_panel = /*#__PURE__*/_react["default"].createElement("div", {
     style: {
       marginLeft: 10
     }
-  }, methodsHasActivated && /*#__PURE__*/_react.default.createElement(_reactCodemirror.ReactCodemirror, {
+  }, methodsHasActivated && /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror, {
     handleChange: handleMethodsChange,
     show_fold_button: true,
     current_search_number: current_search_cm == "em" ? current_search_number : null,
@@ -910,15 +1279,17 @@ function CreatorApp(props) {
     alt_clear_selections: _clearAllSelections,
     regex_search: regex,
     first_line_number: extra_methods_line_number_ref.current,
-    setSearchMatches: num => _setSearchMatches("em", num),
+    setSearchMatches: function setSearchMatches(num) {
+      return _setSearchMatches("em", num);
+    },
     extra_autocomplete_list: onames_for_autocomplete,
     iCounter: tabSelectCounter
   }));
-  let globals_panel = /*#__PURE__*/_react.default.createElement("div", {
+  var globals_panel = /*#__PURE__*/_react["default"].createElement("div", {
     style: {
       marginLeft: 10
     }
-  }, globalsHasActivated && /*#__PURE__*/_react.default.createElement(_reactCodemirror.ReactCodemirror, {
+  }, globalsHasActivated && /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror, {
     handleChange: handleGlobalsChange,
     show_fold_button: true,
     current_search_number: current_search_cm == "gp" ? current_search_number : null,
@@ -933,7 +1304,9 @@ function CreatorApp(props) {
     alt_clear_selections: _clearAllSelections,
     regex_search: regex,
     first_line_number: 1,
-    setSearchMatches: num => _setSearchMatches("gp", num),
+    setSearchMatches: function setSearchMatches(num) {
+      return _setSearchMatches("gp", num);
+    },
     extra_autocomplete_list: onames_for_autocomplete,
     iCounter: tabSelectCounter
   }));
@@ -942,73 +1315,73 @@ function CreatorApp(props) {
   //                     tabSelectCounter={tabSelectCounter}
   //     />
   // );
-  let chat_panel;
+  var chat_panel;
   if (has_key) {
-    chat_panel = /*#__PURE__*/_react.default.createElement(_creator_modules_react.ChatModule, {
+    chat_panel = /*#__PURE__*/_react["default"].createElement(_creator_modules_react.ChatModule, {
       foregrounded: foregrounded_panes["chat"],
       tabSelectCounter: tabSelectCounter,
       tsocket: props.tsocket,
       module_viewer_id: props.module_viewer_id
     });
   }
-  let right_pane = /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement("div", {
+  var right_pane = /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
     id: "creator-resources",
     className: "d-block"
-  }, /*#__PURE__*/_react.default.createElement(_core.Tabs, {
+  }, /*#__PURE__*/_react["default"].createElement(_core.Tabs, {
     id: "resource_tabs",
     selectedTabId: selectedTabId,
     large: false,
     onChange: _handleTabSelect
-  }, /*#__PURE__*/_react.default.createElement(_core.Tab, {
+  }, /*#__PURE__*/_react["default"].createElement(_core.Tab, {
     id: "metadata",
-    title: /*#__PURE__*/_react.default.createElement("span", null, /*#__PURE__*/_react.default.createElement(_core.Icon, {
+    title: /*#__PURE__*/_react["default"].createElement("span", null, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
       size: 12,
       icon: "manually-entered-data"
     }), " metadata"),
     panel: mdata_panel
-  }), /*#__PURE__*/_react.default.createElement(_core.Tab, {
+  }), /*#__PURE__*/_react["default"].createElement(_core.Tab, {
     id: "options",
-    title: /*#__PURE__*/_react.default.createElement("span", null, /*#__PURE__*/_react.default.createElement(_core.Icon, {
+    title: /*#__PURE__*/_react["default"].createElement("span", null, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
       size: 12,
       icon: "select"
     }), " options"),
     panel: option_panel
-  }), /*#__PURE__*/_react.default.createElement(_core.Tab, {
+  }), /*#__PURE__*/_react["default"].createElement(_core.Tab, {
     id: "exports",
-    title: /*#__PURE__*/_react.default.createElement("span", null, /*#__PURE__*/_react.default.createElement(_core.Icon, {
+    title: /*#__PURE__*/_react["default"].createElement("span", null, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
       size: 12,
       icon: "export"
     }), " exports"),
     panel: export_panel
-  }), /*#__PURE__*/_react.default.createElement(_core.Tab, {
+  }), /*#__PURE__*/_react["default"].createElement(_core.Tab, {
     id: "methods",
-    title: /*#__PURE__*/_react.default.createElement("span", null, /*#__PURE__*/_react.default.createElement(_core.Icon, {
+    title: /*#__PURE__*/_react["default"].createElement("span", null, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
       size: 12,
       icon: "code"
     }), " methods"),
     panel: methods_panel
-  }), /*#__PURE__*/_react.default.createElement(_core.Tab, {
+  }), /*#__PURE__*/_react["default"].createElement(_core.Tab, {
     id: "globals",
-    title: /*#__PURE__*/_react.default.createElement("span", null, /*#__PURE__*/_react.default.createElement(_core.Icon, {
+    title: /*#__PURE__*/_react["default"].createElement("span", null, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
       size: 12,
       icon: "code"
     }), " globals"),
     panel: globals_panel
-  }), has_key && /*#__PURE__*/_react.default.createElement(_core.Tab, {
+  }), has_key && /*#__PURE__*/_react["default"].createElement(_core.Tab, {
     id: "chat",
-    title: /*#__PURE__*/_react.default.createElement("span", null, /*#__PURE__*/_react.default.createElement(_core.Icon, {
+    title: /*#__PURE__*/_react["default"].createElement("span", null, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
       size: 12,
       icon: "manual"
     }), " chat"),
     panel: chat_panel
   }))));
-  let outer_style = {
+  var outer_style = {
     width: "100%",
     height: sizeInfo.availableHeight,
     paddingLeft: props.controlled ? 5 : _sizing_tools.SIDE_MARGIN,
     paddingTop: 15
   };
-  let outer_class = "resource-viewer-holder pane-holder";
+  var outer_class = "resource-viewer-holder pane-holder";
   if (!window.in_context) {
     if (theme.dark_theme) {
       outer_class = outer_class + " bp5-dark";
@@ -1016,14 +1389,14 @@ function CreatorApp(props) {
       outer_class = outer_class + " light-theme";
     }
   }
-  let uwidth = usable_width - 2 * _sizing_tools.SIDE_MARGIN;
-  return /*#__PURE__*/_react.default.createElement(_error_boundary.ErrorBoundary, null, !window.in_context && /*#__PURE__*/_react.default.createElement(_blueprint_navbar.TacticNavbar, {
+  var uwidth = usable_width - 2 * _sizing_tools.SIDE_MARGIN;
+  return /*#__PURE__*/_react["default"].createElement(_error_boundary.ErrorBoundary, null, !window.in_context && /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
     is_authenticated: window.is_authenticated,
     selected: null,
     show_api_links: true,
     page_id: props.module_viewer_id,
     user_name: window.username
-  }), /*#__PURE__*/_react.default.createElement(_menu_utilities.TacticMenubar, {
+  }), /*#__PURE__*/_react["default"].createElement(_menu_utilities.TacticMenubar, {
     menu_specs: menu_specs(),
     connection_status: connection_status,
     showRefresh: window.in_context,
@@ -1033,18 +1406,18 @@ function CreatorApp(props) {
     resource_name: _cProp("resource_name"),
     showErrorDrawerButton: true,
     controlled: props.controlled
-  }), /*#__PURE__*/_react.default.createElement(_error_boundary.ErrorBoundary, null, /*#__PURE__*/_react.default.createElement("div", {
+  }), /*#__PURE__*/_react["default"].createElement(_error_boundary.ErrorBoundary, null, /*#__PURE__*/_react["default"].createElement("div", {
     className: outer_class,
     ref: top_ref,
     style: outer_style
-  }, /*#__PURE__*/_react.default.createElement(_sizing_tools.SizeContext.Provider, {
+  }, /*#__PURE__*/_react["default"].createElement(_sizing_tools.SizeContext.Provider, {
     value: {
       availableWidth: uwidth,
       availableHeight: usable_height,
       topX: topX,
       topY: topY
     }
-  }, /*#__PURE__*/_react.default.createElement(_resizing_layouts.HorizontalPanes, {
+  }, /*#__PURE__*/_react["default"].createElement(_resizing_layouts.HorizontalPanes, {
     left_pane: left_pane,
     right_pane: right_pane,
     show_handle: true,
@@ -1052,36 +1425,36 @@ function CreatorApp(props) {
     handleSplitUpdate: null,
     bottom_margin: BOTTOM_MARGIN,
     right_margin: _sizing_tools.SIDE_MARGIN
-  }))), !window.in_context && /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement(_key_trap.KeyTrap, {
+  }))), !window.in_context && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_key_trap.KeyTrap, {
     global: true,
     bindings: key_bindings.current
   }))));
 }
 exports.CreatorApp = CreatorApp = /*#__PURE__*/(0, _react.memo)(CreatorApp);
 CreatorApp.propTypes = {
-  controlled: _propTypes.default.bool,
-  changeResourceName: _propTypes.default.func,
-  refreshTab: _propTypes.default.func,
-  closeTab: _propTypes.default.func,
-  registerLineSetter: _propTypes.default.func,
-  updatePanel: _propTypes.default.func,
-  is_mpl: _propTypes.default.bool,
-  render_content_code: _propTypes.default.string,
-  render_content_line_number: _propTypes.default.number,
-  extra_methods_line_number: _propTypes.default.number,
-  category: _propTypes.default.string,
-  extra_functions: _propTypes.default.string,
-  draw_plot_code: _propTypes.default.string,
-  jscript_code: _propTypes.default.string,
-  tags: _propTypes.default.array,
-  notes: _propTypes.default.string,
-  icon: _propTypes.default.string,
-  option_list: _propTypes.default.array,
-  export_list: _propTypes.default.array,
-  created: _propTypes.default.string,
-  tsocket: _propTypes.default.object,
-  usable_height: _propTypes.default.number,
-  usable_width: _propTypes.default.number
+  controlled: _propTypes["default"].bool,
+  changeResourceName: _propTypes["default"].func,
+  refreshTab: _propTypes["default"].func,
+  closeTab: _propTypes["default"].func,
+  registerLineSetter: _propTypes["default"].func,
+  updatePanel: _propTypes["default"].func,
+  is_mpl: _propTypes["default"].bool,
+  render_content_code: _propTypes["default"].string,
+  render_content_line_number: _propTypes["default"].number,
+  extra_methods_line_number: _propTypes["default"].number,
+  category: _propTypes["default"].string,
+  extra_functions: _propTypes["default"].string,
+  draw_plot_code: _propTypes["default"].string,
+  jscript_code: _propTypes["default"].string,
+  tags: _propTypes["default"].array,
+  notes: _propTypes["default"].string,
+  icon: _propTypes["default"].string,
+  option_list: _propTypes["default"].array,
+  export_list: _propTypes["default"].array,
+  created: _propTypes["default"].string,
+  tsocket: _propTypes["default"].object,
+  usable_height: _propTypes["default"].number,
+  usable_width: _propTypes["default"].number
 };
 CreatorApp.defaultProps = {
   controlled: false,
@@ -1095,19 +1468,19 @@ CreatorApp.defaultProps = {
 };
 function tile_creator_main() {
   function gotProps(the_props) {
-    let CreatorAppPlus = (0, _sizing_tools.withSizeContext)((0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(CreatorApp)))));
-    let the_element = /*#__PURE__*/_react.default.createElement(CreatorAppPlus, (0, _extends2.default)({}, the_props, {
+    var CreatorAppPlus = (0, _sizing_tools.withSizeContext)((0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(CreatorApp)))));
+    var the_element = /*#__PURE__*/_react["default"].createElement(CreatorAppPlus, _extends({}, the_props, {
       controlled: false,
       initial_theme: window.theme,
       changeName: null
     }));
-    const domContainer = document.querySelector('#creator-root');
+    var domContainer = document.querySelector('#creator-root');
     ReactDOM.render(the_element, domContainer);
   }
   (0, _utilities_react.renderSpinnerMessage)("Starting up ...", '#creator-root');
   (0, _communication_react.postAjaxPromise)("view_in_creator_in_context", {
     "resource_name": window.module_name
-  }).then(data => {
+  }).then(function (data) {
     (0, _tile_creator_support.creator_props)(data, null, gotProps, null);
   });
 }
