@@ -109,7 +109,7 @@ class Assistant:
                     file_list.append(new_file)
             id_list = [file.id for file in file_list]
             instructions = "You are helpful assistant that helps with writing python code for the Tactic environment. You give answers in markdown format. "
-            instructions += "The files uploaded via the retrieval tool contain information about this API. The user will want to ask you questions about this API. "
+            instructions += "The files uploaded contain information about this API. You should use these files to answer questions about Tactic."
             instructions += "You can assume the user has access to an instance of TileBase via self. "
             instructions += "You can also assume that the user has access to the other objects Library, Tiles, Settings, Collection, and Pipes."
             self.chat_assistant = self.chat_client.beta.assistants.create(
