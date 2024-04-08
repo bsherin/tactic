@@ -1,0 +1,7 @@
+FROM bsherin/tactic:base-arm64
+WORKDIR /code
+ADD ./assistant_container_env/requirements.txt /code/requirements.txt
+RUN pip install -r requirements.txt
+MAINTAINER "Bruce L Sherin"
+ADD  ./assistant_container_env ./exception_mixin.py ./qworker.py ./communication_utils.py  /code/
+CMD ["python", "-u", "assistant.py"]

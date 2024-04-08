@@ -158,6 +158,7 @@ def context():
                            version_string=tstring,
                            theme=current_user.get_theme(),
                            has_pool=current_user.has_pool,
+                           has_openapi_key=current_user.has_openapi_key,
                            page_title="context",
                            css_source=css_source("context_react"),
                            module_source=js_source_dict["context_react"])

@@ -1,12 +1,13 @@
 "use strict";
 
-function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.ErrorDrawerContext = void 0;
 exports.ErrorItem = ErrorItem;
 exports.withErrorDrawer = withErrorDrawer;
+var _extends2 = _interopRequireDefault(require("@babel/runtime/helpers/extends"));
 var _react = _interopRequireWildcard(require("react"));
 var _propTypes = _interopRequireDefault(require("prop-types"));
 var _core = require("@blueprintjs/core");
@@ -14,48 +15,23 @@ var _communication_react = require("./communication_react");
 var _blueprint_react_widgets = require("./blueprint_react_widgets");
 var _utilities_react = require("./utilities_react");
 var _theme = require("./theme");
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
-function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
-function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
-function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
-function _extends() { _extends = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
-function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys(Object(source), !0).forEach(function (key) { _defineProperty(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
-function _defineProperty(obj, key, value) { key = _toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return _typeof(key) === "symbol" ? key : String(key); }
-function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
-function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
-function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
-function _iterableToArrayLimit(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
-function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
-var ErrorDrawerContext = /*#__PURE__*/(0, _react.createContext)(null);
-exports.ErrorDrawerContext = ErrorDrawerContext;
+function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
+function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
+const ErrorDrawerContext = exports.ErrorDrawerContext = /*#__PURE__*/(0, _react.createContext)(null);
 function withErrorDrawer(WrappedComponent) {
-  var lposition = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "right";
-  var error_drawer_size = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : "30%";
+  let lposition = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "right";
+  let error_drawer_size = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : "30%";
   function WithErrorComponent(props) {
-    var _useState = (0, _react.useState)(false),
-      _useState2 = _slicedToArray(_useState, 2),
-      show_drawer = _useState2[0],
-      set_show_drawer = _useState2[1];
-    var _useStateAndRef = (0, _utilities_react.useStateAndRef)({}),
-      _useStateAndRef2 = _slicedToArray(_useStateAndRef, 3),
-      contents = _useStateAndRef2[0],
-      set_contents = _useStateAndRef2[1],
-      contents_ref = _useStateAndRef2[2]; // the ref is necessary.
+    const [show_drawer, set_show_drawer] = (0, _react.useState)(false);
+    const [contents, set_contents, contents_ref] = (0, _utilities_react.useStateAndRef)({}); // the ref is necessary.
 
-    var goToLineNumber = (0, _react.useRef)(null);
-    var ucounter = (0, _react.useRef)(0);
-    var local_id = (0, _react.useRef)(props.main_id ? props.main_id : props.library_id);
-    var goToModule = (0, _react.useRef)(null);
-    (0, _react.useEffect)(function () {
+    const goToLineNumber = (0, _react.useRef)(null);
+    const ucounter = (0, _react.useRef)(0);
+    const local_id = (0, _react.useRef)(props.main_id ? props.main_id : props.library_id);
+    const goToModule = (0, _react.useRef)(null);
+    (0, _react.useEffect)(() => {
       initSocket();
-      return function () {
+      return () => {
         goToLineNumber.current = null;
         ucounter.current = null;
         local_id.current = null;
@@ -83,16 +59,18 @@ function withErrorDrawer(WrappedComponent) {
       }
     }
     function _addEntry(data) {
-      var open = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+      let open = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
       ucounter.current = ucounter.current + 1;
-      var newcontents = _objectSpread({}, contents_ref.current);
+      const newcontents = {
+        ...contents_ref.current
+      };
       newcontents[String(ucounter.current)] = data;
       set_contents(newcontents);
       set_show_drawer(open);
     }
     function _addFromError(title, data) {
-      var open = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
-      var content = "";
+      let open = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
+      let content = "";
       if ("message" in data) {
         content = data.message;
       } else if (typeof data == "string") {
@@ -104,7 +82,9 @@ function withErrorDrawer(WrappedComponent) {
       }, open);
     }
     function _closeEntry(ukey) {
-      var newcontents = _objectSpread({}, contents_ref.current);
+      const newcontents = {
+        ...contents_ref.current
+      };
       delete newcontents[ukey];
       set_contents(newcontents);
       set_show_drawer(false);
@@ -127,7 +107,7 @@ function withErrorDrawer(WrappedComponent) {
     function _setGoToLineNumber(gtfunc) {
       goToLineNumber.current = gtfunc;
     }
-    var errorDrawerFuncs = {
+    let errorDrawerFuncs = {
       openErrorDrawer: _open,
       closeErrorDrawer: _close,
       clearErrorDrawer: _clearAll,
@@ -138,11 +118,11 @@ function withErrorDrawer(WrappedComponent) {
       setGoToLineNumber: _setGoToLineNumber,
       registerGoToModule: _registerGoToModule
     };
-    return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(ErrorDrawerContext.Provider, {
+    return /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement(ErrorDrawerContext.Provider, {
       value: errorDrawerFuncs
-    }, /*#__PURE__*/_react["default"].createElement(WrappedComponent, _extends({}, props, {
+    }, /*#__PURE__*/_react.default.createElement(WrappedComponent, (0, _extends2.default)({}, props, {
       errorDrawerFuncs: errorDrawerFuncs
-    }))), /*#__PURE__*/_react["default"].createElement(ErrorDrawer, {
+    }))), /*#__PURE__*/_react.default.createElement(ErrorDrawer, {
       show_drawer: show_drawer,
       contents: contents_ref,
       position: lposition,
@@ -168,7 +148,7 @@ function ErrorItem(props) {
         user_id: window.user_id,
         tile_type: props.tile_type,
         line_number: props.line_number
-      }, function (data) {
+      }, data => {
         if (!data.success) {
           window.open($SCRIPT_ROOT + "/view_location_in_creator/" + props.tile_type + "/" + props.line_number);
         } else {
@@ -180,30 +160,30 @@ function ErrorItem(props) {
       props.goToModule.current(props.tile_type, props.line_number);
     }
   }
-  var content_dict = {
+  let content_dict = {
     __html: props.content
   };
-  return /*#__PURE__*/_react["default"].createElement(_core.Card, {
+  return /*#__PURE__*/_react.default.createElement(_core.Card, {
     interactive: true,
     elevation: _core.Elevation.TWO,
     style: {
       marginBottom: 5,
       position: "relative"
     }
-  }, props.title && /*#__PURE__*/_react["default"].createElement("h6", {
+  }, props.title && /*#__PURE__*/_react.default.createElement("h6", {
     style: {
       overflow: "auto"
     }
-  }, /*#__PURE__*/_react["default"].createElement("span", null, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
+  }, /*#__PURE__*/_react.default.createElement("span", null, /*#__PURE__*/_react.default.createElement(_core.Icon, {
     icon: "issue",
     size: 16
-  }), /*#__PURE__*/_react["default"].createElement("a", {
+  }), /*#__PURE__*/_react.default.createElement("a", {
     href: "#",
     style: {
       marginLeft: 10
     }
-  }, props.title))), /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
-    handleClick: function handleClick() {
+  }, props.title))), /*#__PURE__*/_react.default.createElement(_blueprint_react_widgets.GlyphButton, {
+    handleClick: () => {
       props.handleCloseItem(props.ukey);
     },
     style: {
@@ -212,13 +192,13 @@ function ErrorItem(props) {
       top: 5
     },
     icon: "cross"
-  }), /*#__PURE__*/_react["default"].createElement("div", {
+  }), /*#__PURE__*/_react.default.createElement("div", {
     style: {
       fontSize: 13,
       overflow: "auto"
     },
     dangerouslySetInnerHTML: content_dict
-  }), props.has_link && /*#__PURE__*/_react["default"].createElement(_core.Button, {
+  }), props.has_link && /*#__PURE__*/_react.default.createElement(_core.Button, {
     text: "show",
     icon: "eye-open",
     small: true,
@@ -227,14 +207,14 @@ function ErrorItem(props) {
 }
 exports.ErrorItem = ErrorItem = /*#__PURE__*/(0, _react.memo)(ErrorItem);
 ErrorItem.propTypes = {
-  ukey: _propTypes["default"].string,
-  title: _propTypes["default"].string,
-  content: _propTypes["default"].string,
-  has_link: _propTypes["default"].bool,
-  line_number: _propTypes["default"].number,
-  goToLineNumberFunc: _propTypes["default"].func,
-  tile_type: _propTypes["default"].string,
-  handleCloseItem: _propTypes["default"].func
+  ukey: _propTypes.default.string,
+  title: _propTypes.default.string,
+  content: _propTypes.default.string,
+  has_link: _propTypes.default.bool,
+  line_number: _propTypes.default.number,
+  goToLineNumberFunc: _propTypes.default.func,
+  tile_type: _propTypes.default.string,
+  handleCloseItem: _propTypes.default.func
 };
 ErrorItem.defaultProps = {
   title: null,
@@ -244,21 +224,21 @@ ErrorItem.defaultProps = {
   tile_type: null
 };
 function ErrorDrawer(props) {
-  var theme = (0, _react.useContext)(_theme.ThemeContext);
-  var sorted_keys = _toConsumableArray(Object.keys(props.contents.current));
+  const theme = (0, _react.useContext)(_theme.ThemeContext);
+  let sorted_keys = [...Object.keys(props.contents.current)];
   sorted_keys.sort(function (a, b) {
     return parseInt(b) - parseInt(a);
   });
-  var items = sorted_keys.map(function (ukey, index) {
-    var entry = props.contents.current[ukey];
-    var content_dict = {
+  let items = sorted_keys.map((ukey, index) => {
+    let entry = props.contents.current[ukey];
+    let content_dict = {
       __html: entry.content
     };
-    var has_link = false;
+    let has_link = false;
     if (entry.hasOwnProperty("line_number")) {
       has_link = true;
     }
-    return /*#__PURE__*/_react["default"].createElement(ErrorItem, {
+    return /*#__PURE__*/_react.default.createElement(ErrorItem, {
       ukey: ukey,
       title: entry.title,
       content: entry.content,
@@ -274,7 +254,7 @@ function ErrorDrawer(props) {
       tile_type: entry.tile_type
     });
   });
-  return /*#__PURE__*/_react["default"].createElement(_core.Drawer, {
+  return /*#__PURE__*/_react.default.createElement(_core.Drawer, {
     icon: "console",
     className: theme.dark_theme ? "bp5-dark" : "light-theme",
     title: props.title,
@@ -283,28 +263,28 @@ function ErrorDrawer(props) {
     canOutsideClickClose: true,
     onClose: props.onClose,
     size: props.size
-  }, /*#__PURE__*/_react["default"].createElement("div", {
+  }, /*#__PURE__*/_react.default.createElement("div", {
     className: _core.Classes.DRAWER_BODY
-  }, /*#__PURE__*/_react["default"].createElement("div", {
+  }, /*#__PURE__*/_react.default.createElement("div", {
     className: "d-flex flex-row justify-content-around mt-2"
-  }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
+  }, /*#__PURE__*/_react.default.createElement(_core.Button, {
     text: "Clear All",
     onClick: props.clearAll
-  })), /*#__PURE__*/_react["default"].createElement("div", {
+  })), /*#__PURE__*/_react.default.createElement("div", {
     className: _core.Classes.DIALOG_BODY
   }, items)));
 }
 ErrorDrawer = /*#__PURE__*/(0, _react.memo)(ErrorDrawer);
 ErrorDrawer.propTypes = {
-  show_drawer: _propTypes["default"].bool,
-  contents: _propTypes["default"].object,
-  title: _propTypes["default"].string,
-  onClose: _propTypes["default"].func,
-  handleCloseItem: _propTypes["default"].func,
-  position: _propTypes["default"].string,
-  clearAll: _propTypes["default"].func,
-  goToLineNumberFunc: _propTypes["default"].func,
-  size: _propTypes["default"].oneOfType([_propTypes["default"].string, _propTypes["default"].number])
+  show_drawer: _propTypes.default.bool,
+  contents: _propTypes.default.object,
+  title: _propTypes.default.string,
+  onClose: _propTypes.default.func,
+  handleCloseItem: _propTypes.default.func,
+  position: _propTypes.default.string,
+  clearAll: _propTypes.default.func,
+  goToLineNumberFunc: _propTypes.default.func,
+  size: _propTypes.default.oneOfType([_propTypes.default.number, _propTypes.default.string])
 };
 ErrorDrawer.defaultProps = {
   show_drawer: false,

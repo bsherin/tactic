@@ -248,7 +248,6 @@ class QWorker(ExceptionMixin):
         if response_data is not None:
             task_packet["response_data"] = response_data
         task_packet["status"] = "submitted_response"
-
         if "client_post" in task_packet:
 
             if "room" in task_packet:

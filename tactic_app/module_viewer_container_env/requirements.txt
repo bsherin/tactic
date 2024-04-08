@@ -5,5 +5,3 @@ kombu
 pika
 gevent
 pymongo
-ssh-pymongo
-openai

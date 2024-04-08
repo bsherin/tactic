@@ -37,6 +37,7 @@ import {notebook_props} from "./notebook_support"
 import {code_viewer_props, CodeViewerApp} from "./code_viewer_react";
 import {list_viewer_props, ListViewerApp} from "./list_viewer_react";
 import {ErrorDrawerContext, withErrorDrawer} from "./error_drawer";
+import {withAssistant} from "./assistant";
 import {SizeContext, getUsableDimensions, USUAL_NAVBAR_HEIGHT, INIT_CONTEXT_PANEL_WIDTH} from "./sizing_tools";
 import {postAjaxPromise} from "./communication_react";
 import {KeyTrap} from "./key_trap";
@@ -105,7 +106,7 @@ const classDict = {
 };
 
 function _context_main() {
-    const ContextAppPlus = withTheme(withDialogs(withErrorDrawer(withStatus(ContextApp))));
+    const ContextAppPlus = withTheme(withDialogs(withAssistant(withErrorDrawer(withStatus(ContextApp)))));
     const domContainer = document.querySelector('#context-root');
     ReactDOM.render(<ContextAppPlus initial_theme={window.theme} tsocket={tsocket}/>, domContainer)
 }
