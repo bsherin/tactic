@@ -16,7 +16,6 @@ import {TacticMenubar} from "./menu_utilities"
 import {sendToRepository} from "./resource_viewer_react_app";
 import {ReactCodemirror} from "./react-codemirror";
 import {OptionModule, ExportModule, MetadataModule} from "./creator_modules_react";
-import {ChatModule} from "./assistant";
 import {HorizontalPanes, VerticalPanes} from "./resizing_layouts2";
 import {postAjax, postAjaxPromise, postPromise} from "./communication_react"
 import {withStatus, doFlash, StatusContext} from "./toaster"
@@ -75,7 +74,6 @@ function CreatorApp(props) {
         "options": false,
         "exports": false,
         "methods": false,
-        "chat": false
     });
     const [search_string, set_search_string] = useState("");
     const [current_search_number, set_current_search_number] = useState(null);
@@ -167,7 +165,7 @@ function CreatorApp(props) {
 
         function sendRemove() {
             navigator.sendBeacon("/delete_container_on_unload",
-                JSON.stringify({"container_id": module_viewer_id, "notify": false}));
+                JSON.stringify({"container_id": props.module_viewer_id, "notify": false}));
         }
         window.addEventListener("unload", sendRemove);
         statusFuncs.stopSpinner();
@@ -1002,16 +1000,6 @@ function CreatorApp(props) {
     //                     tabSelectCounter={tabSelectCounter}
     //     />
     // );
-    let chat_panel;
-    if (has_key) {
-        chat_panel = (
-            <ChatModule foregrounded={foregrounded_panes["chat"]}
-                        tabSelectCounter={tabSelectCounter}
-                        tsocket={props.tsocket}
-                        module_viewer_id={props.module_viewer_id}
-            />
-        );
-    }
     let right_pane = (
         <Fragment>
             <div id="creator-resources" className="d-block">
@@ -1025,10 +1013,6 @@ function CreatorApp(props) {
                          panel={export_panel}/>
                     <Tab id="methods" title={<span><Icon size={12} icon="code"/> methods</span>} panel={methods_panel}/>
                     <Tab id="globals" title={<span><Icon size={12} icon="code"/> globals</span>} panel={globals_panel}/>
-                    {has_key &&
-                        <Tab id="chat" title={<span><Icon size={12} icon="manual"/> chat</span>}
-                         panel={chat_panel}/>
-                    }
                 </Tabs>
             </div>
         </Fragment>

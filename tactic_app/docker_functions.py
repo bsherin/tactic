@@ -22,7 +22,7 @@ _develop = ("DEVELOP" in os.environ) and (os.environ.get("DEVELOP") == "True")
 RETRIES = os.environ.get("RETRIES")
 tactic_image_names = ["bsherin/tactic:tile", "bsherin/tactic:main",
                       "bsherin/tactic:module_viewer", "bsherin/tactic:host",
-                      "bsherin/tactic:log-streamer"
+                      "bsherin/tactic:log-streamer", "bsherin/tactic:assistant",
                       ]
 
 if "DEBUG_MAIN_CONTAINER" in os.environ:
@@ -94,6 +94,19 @@ def create_log_streamer_container(room, cont_id, user_id, username):
                                                   volume_dict=streamer_volume_dict,
                                                   publish_all_ports=True, remove=True)
     return streamer_id
+
+def create_assistant_container(openai_api_key, parent, user_id, username):
+    assistant_volume_dict = {"/var/run/docker.sock": {"bind": "/var/run/docker.sock", "mode": "rw"}}
+    environ = {
+        "OPENAI_API_KEY": openai_api_key,
+    }
+    assistant_id, _container_id = create_container("bsherin/tactic:assistant", network_mode="bridge",
+                                                    env_vars=environ,
+                                                    parent=parent,
+                                                    owner=user_id, other_name=None, username=username,
+                                                    volume_dict=assistant_volume_dict,
+                                                    publish_all_ports=True, remove=True)
+    return assistant_id
 
 class MainContainerTracker(object):
 
@@ -225,7 +238,7 @@ def create_container(image_name, container_name=None, network_mode="bridge", hos
         run_args["restart_policy"] = restart_policy
 
 
-
+    print("***Got image name " + image_name)
     container = cli.containers.run(**run_args)
     print("did the run")
 

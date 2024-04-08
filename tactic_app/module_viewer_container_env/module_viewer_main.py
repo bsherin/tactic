@@ -11,7 +11,6 @@ import exception_mixin
 from exception_mixin import ExceptionMixin
 from communication_utils import socketio
 from mongo_db_fs import get_dbs
-from assistant import Assistant
 
 import sys, os
 sys.stdout = sys.stderr
@@ -28,10 +27,9 @@ import os
 rb_id = os.environ.get("RB_ID")
 
 # noinspection PyUnusedLocal
-class ModuleViewerWorker(QWorker, ExceptionMixin, Assistant):
+class ModuleViewerWorker(QWorker, ExceptionMixin):
     def __init__(self):
         QWorker.__init__(self)
-        Assistant.__init__(self)
         self.tp = None
         self.tstring = None
         self.module_name = None

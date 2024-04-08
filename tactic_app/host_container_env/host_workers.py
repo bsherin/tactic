@@ -10,7 +10,7 @@ from communication_utils import make_python_object_jsonizable, store_temp_data, 
 import docker_functions
 from docker_functions import create_container, destroy_container, destroy_child_containers, destroy_user_containers
 from docker_functions import get_log, restart_container, create_log_streamer_container
-from docker_functions import get_matching_user_containers, get_container
+from docker_functions import get_matching_user_containers, get_container, create_assistant_container
 from tactic_app import app, socketio, db
 from library_views import tile_manager, project_manager, collection_manager, list_manager, pool_manager, get_manager_for_type
 from library_views import code_manager
@@ -116,6 +116,7 @@ class HostWorker(QWorker):
 
     @task_worthy
     def get_user_settings(self, data):
+        print("in get_user_settings")
         user_id = data["user_id"]
         user_obj = load_user(user_id)
         user_data = user_obj.user_data_dict
@@ -780,6 +781,28 @@ class HostWorker(QWorker):
             print("no streamer to kill")
         return None
 
+    @task_worthy
+    def StartAssistant(self, data):
+        parent_id = data["main_id"]
+        user_id = data["user_id"]
+        user = load_user(user_id)
+        username = user.username
+        openai_api_key = user.get_openai_api_key()
+        assistant_id = create_assistant_container(openai_api_key, parent_id, user_id, username)
+        return {"assistant_id": assistant_id}
+
+    @task_worthy
+    def StopAssistant(self, data):
+        assistant_id = data["assistant_id"]
+        print("stopping assistant " + str(assistant_id))
+        cont = get_container(assistant_id)
+        if cont is not None:
+            cont.kill(signal="SIGTERM")
+            return None
+        else:
+            print("no streamer to kill")
+        return None
+
     def folder_dict(self, path, basename, user_obj, child_nodes=[]):
         base_dict = {
             "id": path,
@@ -914,7 +937,6 @@ class HostWorker(QWorker):
         tactic_app.health_tracker.check_health()
 
     def handle_client_response(self, task_packet):
-
         try:
             if "room" in task_packet:
                 room = task_packet["room"]

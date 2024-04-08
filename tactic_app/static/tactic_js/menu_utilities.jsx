@@ -2,7 +2,7 @@ import React from "react";
 import {Fragment, useEffect, memo, useContext} from "react";
 import PropTypes from 'prop-types';
 
-import {Icon, MenuDivider, Menu, Navbar, Button, PopoverPosition, Classes} from "@blueprintjs/core";
+import {Icon, MenuDivider, Menu, Navbar, Button, PopoverPosition, Classes, ButtonGroup} from "@blueprintjs/core";
 import {Popover2, MenuItem2} from "@blueprintjs/popover2";
 
 import {KeyTrap} from "./key_trap";
@@ -10,11 +10,40 @@ import {ThemeContext} from "./theme"
 import {GlyphButton} from "./blueprint_react_widgets";
 import {SelectedPaneContext} from "./utilities_react";
 import {ErrorDrawerContext} from "./error_drawer";
+import {AssistantContext} from "./assistant";
 
 export {MenuComponent, ToolMenu, TacticMenubar, TopLeftButtons}
 
+const name_style = {
+    marginButton: 0,
+    marginLeft: 10,
+    marginRight: 10,
+    display: "flex",
+    alignItems: "center",
+    fontWeight: "bold"
+};
+
+let top_icon_style = {
+    display: "flex",
+    justifyContent: "flex-end",
+    marginTop: 0,
+    paddingTop: 3,
+    marginRight: 10,
+};
+
+const button_group_style = {
+    position: "absolute",
+    right: 10
+};
+
+const chat_status_style = {
+     marginRight: 7,
+     paddingTop: 7
+};
+
 function TacticMenubar(props) {
     const theme = useContext(ThemeContext);
+    const assistantDrawerFuncs = useContext(AssistantContext);
 
     let menus;
     if (props.menu_specs == null) {
@@ -39,14 +68,7 @@ function TacticMenubar(props) {
                                      icon={sg.icon}/>)
     }
     const theme_class = theme.dark_theme ? "bp5-dark" : "light-theme";
-    const name_style = {
-        marginButton: 0,
-        marginLeft: 10,
-        marginRight: 10,
-        display: "flex",
-        alignItems: "center",
-        fontWeight: "bold"
-    };
+
     return (
         <Navbar style={{paddingLeft: 3, height: 30, display: "flex"}} className={theme_class + " menu-bar"}>
             {(props.showClose || props.showRefresh) &&
@@ -69,13 +91,22 @@ function TacticMenubar(props) {
                     {sug_glyphs}
                 </Fragment>
             </div>
-            {props.showErrorDrawerButton &&
-                <ErrorDrawerButton/>
-            }
             {props.connection_status &&
                 <ConnectionIndicator connection_status={props.connection_status} />
             }
-
+            <ButtonGroup style={button_group_style}>
+                {assistantDrawerFuncs && assistantDrawerFuncs.chat_status_ref.current != "idle" &&
+                    <div className="bp5-text-small" style={chat_status_style}>
+                        {assistantDrawerFuncs.chat_status_ref.current}
+                    </div>
+                }
+                {assistantDrawerFuncs && assistantDrawerFuncs.showAssistantDrawerButton &&
+                    <AssistantDrawerButton/>
+                }
+                {props.showErrorDrawerButton &&
+                    <ErrorDrawerButton/>
+                }
+            </ButtonGroup>
         </Navbar>
     )
 }
@@ -134,17 +165,8 @@ function ConnectionIndicator(props) {
 
 function ErrorDrawerButton(props) {
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
-    let top_icon_style = {
-        display: "flex",
-        justifyContent: "flex-end",
-        marginTop: 0,
-        paddingTop: 3,
-        marginRight: 20,
-        position: "absolute",
-        right: 10
-    };
     return (<div style={top_icon_style}>
-        <Button icon={<Icon icon="drawer-right" size={18}/>}
+        <Button icon={<Icon icon="bug" size={18}/>}
                 style={{paddingLeft: 4, paddingRight: 0}}
                 minimal={true}
                 className="context-close-button"
@@ -158,6 +180,24 @@ function ErrorDrawerButton(props) {
 }
 
 ErrorDrawerButton = memo(ErrorDrawerButton);
+
+function AssistantDrawerButton(props) {
+    const assistantDrawerFuncs = useContext(AssistantContext);
+    return (<div style={top_icon_style}>
+        <Button icon={<Icon icon="chat" size={18}/>}
+                style={{paddingLeft: 4, paddingRight: 0}}
+                minimal={true}
+                className="context-close-button"
+                small={true}
+                tabIndex={-1}
+                onClick={() => {
+                    assistantDrawerFuncs.toggleAssistantDrawer()
+                }}
+        />
+    </div>)
+}
+
+AssistantDrawerButton = memo(AssistantDrawerButton);
 
 function TopLeftButtons(props) {
     let top_icon_style = {

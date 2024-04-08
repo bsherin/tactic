@@ -194,6 +194,13 @@ class User(UserMixin, MongoAccess):
                 create_new_alt_id(username)
             return User(result, use_remote)
 
+    @property
+    def has_openapi_key(self):
+        return len(self.user_data_dict["openai_api_key"]) > 4
+
+    def get_openai_api_key(self):
+        return self.user_data_dict["openai_api_key"]
+
     def get_theme(self):
         return self.user_data_dict["theme"]
 

@@ -90,6 +90,7 @@ def on_client_ready(data):
 def delete_container_on_unload():
     print("in delete_container_on_unload")
     data = json.loads(request.data)
+    print("data is {}".format(data))
     tactic_app.host_worker.delete_container(data)
     return jsonify({"success": True})
 

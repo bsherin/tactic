@@ -279,8 +279,8 @@ ErrorDrawer.propTypes = {
     clearAll: PropTypes.func,
     goToLineNumberFunc: PropTypes.func,
     size: PropTypes.oneOfType([
-        PropTypes.string,
-        PropTypes.number])
+        PropTypes.number,
+        PropTypes.string]),
 };
 
 ErrorDrawer.defaultProps = {

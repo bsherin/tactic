@@ -217,6 +217,17 @@ services:
     environment:
       PYTHONUNBUFFERED: 0
 
+  tactic_assistant:
+    build:
+      context: .
+      dockerfile: Dockerfile-assistant${IMG_SUFFIX}
+    profiles:
+      - build_project
+    image: bsherin/tactic:assistant${IMG_SUFFIX}
+    platform: ${PLATFORM}
+    environment:
+      PYTHONUNBUFFERED: 0
+
   tactic_mongo_watcher:
     image: bsherin/tactic:mongo-watcher${IMG_SUFFIX}
     build:

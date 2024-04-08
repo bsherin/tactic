@@ -20,7 +20,6 @@ var _menu_utilities = require("./menu_utilities");
 var _resource_viewer_react_app = require("./resource_viewer_react_app");
 var _reactCodemirror = require("./react-codemirror");
 var _creator_modules_react = require("./creator_modules_react");
-var _assistant = require("./assistant");
 var _resizing_layouts = require("./resizing_layouts2");
 var _communication_react = require("./communication_react");
 var _toaster = require("./toaster");
@@ -69,8 +68,7 @@ function CreatorApp(props) {
     "metadata": true,
     "options": false,
     "exports": false,
-    "methods": false,
-    "chat": false
+    "methods": false
   });
   const [search_string, set_search_string] = (0, _react.useState)("");
   const [current_search_number, set_current_search_number] = (0, _react.useState)(null);
@@ -147,7 +145,7 @@ function CreatorApp(props) {
     errorDrawerFuncs.setGoToLineNumber(_selectLineNumber);
     function sendRemove() {
       navigator.sendBeacon("/delete_container_on_unload", JSON.stringify({
-        "container_id": module_viewer_id,
+        "container_id": props.module_viewer_id,
         "notify": false
       }));
     }
@@ -943,15 +941,6 @@ function CreatorApp(props) {
   //                     tabSelectCounter={tabSelectCounter}
   //     />
   // );
-  let chat_panel;
-  if (has_key) {
-    chat_panel = /*#__PURE__*/_react.default.createElement(_assistant.ChatModule, {
-      foregrounded: foregrounded_panes["chat"],
-      tabSelectCounter: tabSelectCounter,
-      tsocket: props.tsocket,
-      module_viewer_id: props.module_viewer_id
-    });
-  }
   let right_pane = /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement("div", {
     id: "creator-resources",
     className: "d-block"
@@ -995,13 +984,6 @@ function CreatorApp(props) {
       icon: "code"
     }), " globals"),
     panel: globals_panel
-  }), has_key && /*#__PURE__*/_react.default.createElement(_core.Tab, {
-    id: "chat",
-    title: /*#__PURE__*/_react.default.createElement("span", null, /*#__PURE__*/_react.default.createElement(_core.Icon, {
-      size: 12,
-      icon: "manual"
-    }), " chat"),
-    panel: chat_panel
   }))));
   let outer_style = {
     width: "100%",
