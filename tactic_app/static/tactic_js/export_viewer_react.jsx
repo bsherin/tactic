@@ -1,6 +1,6 @@
 
 import React from "react";
-import {Fragment, useState, useEffect, useRef, memo, useContext} from "react";
+import {Fragment, useState, useEffect, useRef, memo, useMemo, useContext} from "react";
 import PropTypes from 'prop-types';
 import { Card, Button, InputGroup, Spinner, ButtonGroup, FormGroup, Divider} from "@blueprintjs/core";
 
@@ -164,6 +164,8 @@ ExportButtonList.propTypes = {
         PropTypes.number]),
     handleChange: PropTypes.func
 };
+
+const body_style = {padding: 15, width: "80%", height: "100%", display: "inline-block"};
 
 function ExportsViewer(props) {
     const header_ref = useRef(null);
@@ -349,6 +351,9 @@ function ExportsViewer(props) {
     if (props.console_is_zoomed) {
         exports_class = "am-zoomed"
     }
+
+    const usable_height_style = useMemo(()=>{return {height: usable_height}});
+    const height_minus_footing_style = useMemo(()=>{return {height: usable_height - FOOTING_HEIGHT}});
     return (
          <Card id="exports-panel" elevation={2} className={"mr-3 " + exports_class} style={props.style}>
              <div className="d-flex flex-column justify-content-around">
@@ -405,15 +410,15 @@ function ExportsViewer(props) {
 
                  </div>
                  {!props.console_is_shrunk &&
-                     <div ref={body_ref} style={{height: usable_height}}>
-                         <div className="d-flex flex_row">
+                     <div ref={body_ref} style={usable_height_style}>
+                         <div className="d-flex flex-row" style={height_minus_footing_style}>
                              <ExportButtonList pipe_dict={pipe_dict}
                                                value={selected_export_ref.current}
                                                handleChange={_handleExportListChange}
                              />
                              <Divider/>
                              <div id="exports-body"
-                                  style={{padding: 15, width: "80%", height: "100%", display: "inline-block"}}
+                                  style={body_style}
                                   className="contingent-scroll" dangerouslySetInnerHTML={exports_body_dict}/>
                          </div>
                          <div id="exports-footing"
