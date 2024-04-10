@@ -34,6 +34,7 @@ import {SizeProvider, useSize} from "./sizing_tools";
 
 import {useCallbackStack, useStateAndRef, useConstructor} from "./utilities_react";
 import {ErrorDrawerContext} from "./error_drawer";
+import {AssistantContext} from "./assistant";
 
 export {ConsoleComponent}
 
@@ -52,6 +53,7 @@ const GLYPH_BUTTON_STYLE6 = {marginLeft: 10, marginRight: 0};
 const SPINNER_STYLE = {marginTop: 10, marginRight: 22};
 
 const MB10_STYLE = {marginBottom: 10};
+const SHOW_DRAWER_FALSE = {show_drawer: false};
 const empty_style = {};
 
 
@@ -1387,17 +1389,17 @@ function ConsoleComponent(props) {
                                          style={GLYPH_BUTTON_STYLE}
                                          icon="chevron-down"/>
                         }
-
-                        <TacticMenubar menu_specs={menu_specs}
-                                       disabled_items={disabled_items()}
-                                       suggestionGlyphs={suggestionGlyphs}
-                                       showRefresh={false}
-                                       showClose={false}
-                                       refreshTab={props.refreshTab}
-                                       closeTab={null}
-                                       controlled={window.in_context}
-                        />
-
+                        <AssistantContext.Provider value={null}>
+                            <TacticMenubar menu_specs={menu_specs}
+                                           disabled_items={disabled_items()}
+                                           suggestionGlyphs={suggestionGlyphs}
+                                           showRefresh={false}
+                                           showClose={false}
+                                           refreshTab={props.refreshTab}
+                                           closeTab={null}
+                                           controlled={window.in_context}
+                            />
+                        </AssistantContext.Provider>
                     </div>
 
                     <div id="console-header-right"

@@ -274,6 +274,13 @@ function ChatModule(props) {
         }
     }
 
+    async function handleKeyDown(event) {
+        if (event.ctrlKey && event.key === 'Enter') {
+            event.preventDefault();
+            await _promptSubmit(event)
+        }
+    }
+
     let items = assistantDrawerFuncs.item_list_ref.current.map((item, index) => {
         if (item.kind == "prompt") {
             return <Prompt key={index} {...item}/>
@@ -319,6 +326,7 @@ function ChatModule(props) {
                           onChange={_onInputChange}
                           large={true}
                           fill={true}
+                          onKeyDown={handleKeyDown}
                           value={prompt_value_ref.current}
                 />
             </ControlGroup>
