@@ -1016,7 +1016,7 @@ class HealthTracker:
                     cont_list.append(k)
                     continue
                 if (current_time - self.created(k)) > old_container_time:
-                    print("found and old container")
+                    print("found an old container")
                     cont_list.append(k)
         for cont_id in cont_list:
             destroy_container(cont_id)
