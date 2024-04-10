@@ -254,6 +254,12 @@ function ChatModule(props) {
       console.log(error.message);
     }
   }
+  async function handleKeyDown(event) {
+    if (event.ctrlKey && event.key === 'Enter') {
+      event.preventDefault();
+      await _promptSubmit(event);
+    }
+  }
   let items = assistantDrawerFuncs.item_list_ref.current.map((item, index) => {
     if (item.kind == "prompt") {
       return /*#__PURE__*/_react.default.createElement(Prompt, (0, _extends2.default)({
@@ -314,6 +320,7 @@ function ChatModule(props) {
     onChange: _onInputChange,
     large: true,
     fill: true,
+    onKeyDown: handleKeyDown,
     value: prompt_value_ref.current
   })));
 }

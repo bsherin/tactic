@@ -9,6 +9,7 @@ import {postAjaxPromise, postWithCallback} from "./communication_react";
 import {ThemeContext} from "./theme"
 import {SelectedPaneContext} from "./utilities_react";
 import {useDebounce} from "./utilities_react";
+import {AssistantContext} from "./assistant";
 
 export {TacticOmnibar, OpenOmnibar, OmniContext}
 
@@ -57,6 +58,7 @@ function OpenOmnibar(props) {
     const old_search_string = useRef("");
 
     const selectedPane = useContext(SelectedPaneContext);
+    const assistantDrawerFuncs = useContext(AssistantContext);
 
     useEffect(()=>{
         set_item_list([])
@@ -201,6 +203,10 @@ function OpenOmnibar(props) {
                 ["Show Account Info", "account", wopenfunc(account_url), "person"],
                 ["Logout", "account", _handle_signout, "log-out"]];
             omni_funcs = omni_funcs.concat(new_funcs);
+
+            if (window.has_openapi_key) {
+                omni_funcs.push(["Show Assistant", "blah", assistantDrawerFuncs.openAssistantDrawer, "chat"]);
+            }
 
         }
 
