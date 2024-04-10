@@ -413,7 +413,8 @@ def destroy_container(tactic_id, notify=True):
         cont = get_container(tactic_id)
         message = None
         if cont is None:
-            print("container not found")
+            print("container not found, but still need to deregister")
+            post_task_noqworker("host", "host", "deregister_container", {"container_id": tactic_id})
             return -1
         else:
             cont_type = get_container_type(cont)
