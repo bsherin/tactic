@@ -162,6 +162,10 @@ function ContextApp(props) {
         initSocket();
         _addContextOmniItems();
         errorDrawerFuncs.registerGoToModule(_goToModule);
+        const tab_list_elem = document.querySelector("#context-container .context-tab-list > .bp5-tab-list");
+        if (tab_list_elem) {
+            tab_list_elem.setAttribute("style", `width:${INIT_CONTEXT_PANEL_WIDTH}px`)
+        }
         return (() => {
             tsocket.disconnect()
         })

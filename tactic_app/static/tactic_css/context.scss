@@ -11,7 +11,7 @@
 
 $context-highlight-color: $orange4;
 $context-repository-highlight-color: $orange3;
-$light-context-highlight-color: $cerulean2;
+$light-context-highlight-color: #383e47;
 $light-highlight-weight: 600;
 
 
@@ -90,11 +90,12 @@ $light-highlight-weight: 600;
     .context-tab-list {
 
       > .bp5-tab-list {
-        background-color: white;
+        background-color: $light-gray5;
         color: white;
-        //box-shadow:  1px 0 0 #11141826;
-        -webkit-box-shadow: 0 0 0 1px rgba(17, 20, 24, 0.1), 0 1px 1px rgba(17, 20, 24, 0.2), 0 2px 6px rgba(17, 20, 24, 0.2);
-        box-shadow: 0 0 0 1px rgba(17, 20, 24, 0.1), 0 1px 1px rgba(17, 20, 24, 0.2), 0 2px 6px rgba(17, 20, 24, 0.2);
+        //-webkit-box-shadow: 0 0 0 1px rgba(17, 20, 24, 0.1), 0 1px 1px rgba(17, 20, 24, 0.2), 0 2px 6px rgba(17, 20, 24, 0.2);
+        //box-shadow: 0 0 0 1px rgba(17, 20, 24, 0.1), 0 1px 1px rgba(17, 20, 24, 0.2), 0 2px 6px rgba(17, 20, 24, 0.2);
+        // border-right: .75px solid #c5cbd3;
+        border-top: .75px solid #c5cbd3;
       }
 
       .lib-tab-button {

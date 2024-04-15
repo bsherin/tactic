@@ -15,31 +15,31 @@ $dark-medium: $dark-gray4;
 .light-theme {
   .lib-tab-button, .context-tab-button-content, .menu-bar, .combined-metadata, .all-pane {
     .bp5-icon-cube {
-      color: $orange3 ! important
+      color: $dark-gray4 ! important
     }
 
     .bp5-icon-folder-close {
-      color: $orange3 ! important
+      color: $dark-gray4 ! important
     }
 
     .bp5-icon-database, .bp5-icon-th, .bp5-icon-freeform, .bp5-icon-align-left {
-      color: $blue3 !important;
+      color: $dark-gray4 !important;
     }
 
     .bp5-icon-projects, .bp5-icon-console, .bp5-icon-globe-network {
-      color: $green3 !important;
+      color: $dark-gray4 !important;
     }
 
     .bp5-icon-application, .bp5-icon-timeline-line-chart, .bp5-icon-timeline-area-chart {
-      color: $indigo3 !important;
+      color: $dark-gray4 !important;
     }
 
     .bp5-icon-list {
-      color: $rose3 !important;
+      color: $dark-gray4 !important;
     }
 
     .bp5-icon-code {
-      color: $lime2 !important;
+      color: $dark-gray4 !important;
     }
   }
 }
@@ -85,6 +85,10 @@ $dark-medium: $dark-gray4;
 /// light theme
 
 .light-theme {
+
+  &.bp5-navbar {
+    box-shadow: none;
+}
 
   &.main-outer {
     background-color: $light-gray1
