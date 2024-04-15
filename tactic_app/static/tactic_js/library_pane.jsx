@@ -1379,7 +1379,7 @@ function LibraryPane(props) {
     let right_pane = (
         <CombinedMetadata tags={split_tags}
                           all_tags={tag_list}
-                          elevation={2}
+                          elevation={0}
                           name={selected_resource_ref.current.name}
                           created={selected_resource_ref.current.created}
                           updated={selected_resource_ref.current.updated}

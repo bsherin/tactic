@@ -5,25 +5,25 @@
  * Copyright 2022 Palantir Technologies, Inc. All rights reserved.
  */
 .light-theme .lib-tab-button .bp5-icon-cube, .light-theme .context-tab-button-content .bp5-icon-cube, .light-theme .menu-bar .bp5-icon-cube, .light-theme .combined-metadata .bp5-icon-cube, .light-theme .all-pane .bp5-icon-cube {
-  color: #c87619 !important;
+  color: #383e47 !important;
 }
 .light-theme .lib-tab-button .bp5-icon-folder-close, .light-theme .context-tab-button-content .bp5-icon-folder-close, .light-theme .menu-bar .bp5-icon-folder-close, .light-theme .combined-metadata .bp5-icon-folder-close, .light-theme .all-pane .bp5-icon-folder-close {
-  color: #c87619 !important;
+  color: #383e47 !important;
 }
 .light-theme .lib-tab-button .bp5-icon-database, .light-theme .lib-tab-button .bp5-icon-th, .light-theme .lib-tab-button .bp5-icon-freeform, .light-theme .lib-tab-button .bp5-icon-align-left, .light-theme .context-tab-button-content .bp5-icon-database, .light-theme .context-tab-button-content .bp5-icon-th, .light-theme .context-tab-button-content .bp5-icon-freeform, .light-theme .context-tab-button-content .bp5-icon-align-left, .light-theme .menu-bar .bp5-icon-database, .light-theme .menu-bar .bp5-icon-th, .light-theme .menu-bar .bp5-icon-freeform, .light-theme .menu-bar .bp5-icon-align-left, .light-theme .combined-metadata .bp5-icon-database, .light-theme .combined-metadata .bp5-icon-th, .light-theme .combined-metadata .bp5-icon-freeform, .light-theme .combined-metadata .bp5-icon-align-left, .light-theme .all-pane .bp5-icon-database, .light-theme .all-pane .bp5-icon-th, .light-theme .all-pane .bp5-icon-freeform, .light-theme .all-pane .bp5-icon-align-left {
-  color: #2d72d2 !important;
+  color: #383e47 !important;
 }
 .light-theme .lib-tab-button .bp5-icon-projects, .light-theme .lib-tab-button .bp5-icon-console, .light-theme .lib-tab-button .bp5-icon-globe-network, .light-theme .context-tab-button-content .bp5-icon-projects, .light-theme .context-tab-button-content .bp5-icon-console, .light-theme .context-tab-button-content .bp5-icon-globe-network, .light-theme .menu-bar .bp5-icon-projects, .light-theme .menu-bar .bp5-icon-console, .light-theme .menu-bar .bp5-icon-globe-network, .light-theme .combined-metadata .bp5-icon-projects, .light-theme .combined-metadata .bp5-icon-console, .light-theme .combined-metadata .bp5-icon-globe-network, .light-theme .all-pane .bp5-icon-projects, .light-theme .all-pane .bp5-icon-console, .light-theme .all-pane .bp5-icon-globe-network {
-  color: #238551 !important;
+  color: #383e47 !important;
 }
 .light-theme .lib-tab-button .bp5-icon-application, .light-theme .lib-tab-button .bp5-icon-timeline-line-chart, .light-theme .lib-tab-button .bp5-icon-timeline-area-chart, .light-theme .context-tab-button-content .bp5-icon-application, .light-theme .context-tab-button-content .bp5-icon-timeline-line-chart, .light-theme .context-tab-button-content .bp5-icon-timeline-area-chart, .light-theme .menu-bar .bp5-icon-application, .light-theme .menu-bar .bp5-icon-timeline-line-chart, .light-theme .menu-bar .bp5-icon-timeline-area-chart, .light-theme .combined-metadata .bp5-icon-application, .light-theme .combined-metadata .bp5-icon-timeline-line-chart, .light-theme .combined-metadata .bp5-icon-timeline-area-chart, .light-theme .all-pane .bp5-icon-application, .light-theme .all-pane .bp5-icon-timeline-line-chart, .light-theme .all-pane .bp5-icon-timeline-area-chart {
-  color: #7961db !important;
+  color: #383e47 !important;
 }
 .light-theme .lib-tab-button .bp5-icon-list, .light-theme .context-tab-button-content .bp5-icon-list, .light-theme .menu-bar .bp5-icon-list, .light-theme .combined-metadata .bp5-icon-list, .light-theme .all-pane .bp5-icon-list {
-  color: #db2c6f !important;
+  color: #383e47 !important;
 }
 .light-theme .lib-tab-button .bp5-icon-code, .light-theme .context-tab-button-content .bp5-icon-code, .light-theme .menu-bar .bp5-icon-code, .light-theme .combined-metadata .bp5-icon-code, .light-theme .all-pane .bp5-icon-code {
-  color: #5a701a !important;
+  color: #383e47 !important;
 }
 
 .bp5-dark .lib-tab-button .bp5-icon-cube, .bp5-dark .context-tab-button-content .bp5-icon-cube, .bp5-dark .menu-bar .bp5-icon-cube, .bp5-dark .combined-metadata .bp5-icon-cube, .bp5-dark .all-pane .bp5-icon-cube {
@@ -53,6 +53,9 @@
   font-weight: bold !important;
 }
 
+.light-theme.bp5-navbar {
+  box-shadow: none;
+}
 .light-theme.main-outer {
   background-color: #d3d8de;
 }
@@ -388,10 +391,9 @@
 }
 
 .light-theme #context-container .context-tab-list > .bp5-tab-list {
-  background-color: white;
+  background-color: #f6f7f9;
   color: white;
-  -webkit-box-shadow: 0 0 0 1px rgba(17, 20, 24, 0.1), 0 1px 1px rgba(17, 20, 24, 0.2), 0 2px 6px rgba(17, 20, 24, 0.2);
-  box-shadow: 0 0 0 1px rgba(17, 20, 24, 0.1), 0 1px 1px rgba(17, 20, 24, 0.2), 0 2px 6px rgba(17, 20, 24, 0.2);
+  border-top: 0.75px solid #c5cbd3;
 }
 .light-theme #context-container .context-tab-list .lib-tab-button {
   color: #1c2127;
@@ -427,14 +429,14 @@
 }
 .light-theme #context-container .context-tab-button-content.selected-tab-button {
   opacity: 1;
-  color: #2458b3 !important;
+  color: #383e47 !important;
   font-weight: 600;
 }
 .light-theme #context-container .context-tab-button-content.selected-tab-button .repository-highlight {
   color: #c87619;
 }
 .light-theme #context-container .context-tab-button-content.selected-tab-button .context-close-button .bp5-icon {
-  color: #2458b3;
+  color: #383e47;
 }
 
 #context-container {

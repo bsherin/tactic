@@ -356,7 +356,7 @@ function BpSelectorTable(props) {
                     enableColumnResizing={props.enableColumnResizing}
                     maxColumnWidth={props.maxColumnWidth}
                     enableMultipleSelection={true}
-                    defaultRowHeight={23}
+                    defaultRowHeight={27}
                     selectedRegions={props.selectedRegions}
                     enableRowHeader={false}
                     columnWidths={columnWidthsRef.current}
