@@ -1004,7 +1004,7 @@ function ContextApp(props) {
       position: "fixed",
       left: tabWidth - 30,
       bottom: 10,
-      zIndex: 100
+      zIndex: 1
     },
     minimal: true,
     className: "context-close-button",
