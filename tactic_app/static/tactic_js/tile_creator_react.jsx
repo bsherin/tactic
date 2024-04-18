@@ -340,6 +340,14 @@ function CreatorApp(props) {
                     break;
             }
         }
+        const currentTab = selectedTabId;
+        if (!methodsHasActivated) {
+            _handleTabSelect("methods");
+        }
+        if (!globalsHasActivated) {
+            _handleTabSelect("globals");
+        }
+        _handleTabSelect(currentTab);
     }
 
     function _noSearchResults() {

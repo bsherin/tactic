@@ -25,6 +25,13 @@ const mdi = (0, _markdownIt.default)({
 });
 mdi.use(_markdownItLatex.default);
 const AssistantContext = exports.AssistantContext = /*#__PURE__*/(0, _react.createContext)(null);
+function formatLatexEquations(text) {
+  const displayRegex = /\$\$(.+?)\$\$/gs;
+  text = text.replace(displayRegex, (_, equation) => `\`$${equation}$\``);
+  const inlineRegex = /\$(.+?)\$/g;
+  text = text.replace(inlineRegex, (_, equation) => `\`$${equation}$\``);
+  return text;
+}
 function withAssistant(WrappedComponent) {
   let lposition = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "right";
   let assistant_drawer_size = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : "45%";
@@ -204,6 +211,7 @@ function ChatModule(props) {
   }
   function _handleChatEnd(stream_text) {
     stream_dict_ref.current = {};
+    stream_text = formatLatexEquations(stream_text);
     let converted_markdown = mdi.render(stream_text);
     const new_item_list = [...assistantDrawerFuncs.item_list_ref.current, {
       kind: "response",
@@ -357,7 +365,8 @@ If this were a real chatbot, you would be getting useful information.`;
 function ResponseInProgress(props) {
   if (props.stream_text != "") {
     const sortedKeys = Object.keys(props.stream_text).sort((a, b) => a - b);
-    const result = sortedKeys.map(key => props.stream_text[key]).join('');
+    let result = sortedKeys.map(key => props.stream_text[key]).join('');
+    result = formatLatexEquations(result);
     let converted_markdown = mdi.render(result);
     return /*#__PURE__*/_react.default.createElement(Response, {
       text: converted_markdown
