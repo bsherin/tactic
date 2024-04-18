@@ -83,10 +83,12 @@ class Assistant(QWorker, ExceptionMixin, AssistantEventHandler):
             instructions += "If the information you need isn't in the uploaded files, feel free to answer based on your other training data. "
             instructions += "You can assume the user has access to an instance of TileBase via self. "
             instructions += "You can also assume that the user has access to the other objects Library, Tiles, Settings, Collection, and Pipes. "
+            instructions += "Please format any equations in LaTeX format. The equations should be surrounded by double dollar signs."
+            instructions += "Please also format inline equations in LaTex format. The equations should be surrounded by single dollar signs."
             self.chat_assistant = self.chat_client.beta.assistants.create(
                 name="Tactic Assistant",
                 instructions=instructions,
-                model="gpt-4-turbo-preview",
+                model="gpt-4-turbo",
                 tools=[{"type": "code_interpreter"}, {"type": "retrieval"}],
                 file_ids=id_list
             )
