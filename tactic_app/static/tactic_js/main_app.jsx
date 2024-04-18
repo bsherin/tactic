@@ -33,6 +33,7 @@ import {useSize, withSizeContext, SizeContext} from "./sizing_tools";
 import {ErrorBoundary} from "./error_boundary";
 import {useCallbackStack, useReducerAndRef} from "./utilities_react";
 import {ThemeContext, withTheme} from "./theme";
+import {withPool} from "./pool_tree"
 import {DialogContext, withDialogs} from "./modal_react";
 import {StatusContext} from "./toaster";
 import {ErrorDrawerContext} from "./error_drawer";
@@ -1225,7 +1226,7 @@ MainApp.defaultProps = {
 
 function main_main() {
     function gotProps(the_props) {
-        let MainAppPlus = withSizeContext(withTheme(withDialogs(withErrorDrawer(withStatus(MainApp)))));
+        let MainAppPlus = withPool(withSizeContext(withTheme(withDialogs(withErrorDrawer(withStatus(MainApp))))));
         let the_element = <MainAppPlus {...the_props}
                                        controlled={false}
                                        initial_theme={window.theme}

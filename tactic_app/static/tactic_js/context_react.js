@@ -20,6 +20,7 @@ var _error_boundary = require("./error_boundary");
 var _blueprint_mdata_fields = require("./blueprint_mdata_fields");
 var _library_home_react = require("./library_home_react");
 var _pool_browser = require("./pool_browser");
+var _pool_tree = require("./pool_tree");
 var _library_pane = require("./library_pane");
 var _module_viewer_react = require("./module_viewer_react");
 var _tile_creator_react = require("./tile_creator_react");
@@ -99,7 +100,7 @@ const classDict = {
   "notebook-viewer": _notebook_app.NotebookApp
 };
 function _context_main() {
-  const ContextAppPlus = (0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _assistant.withAssistant)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(ContextApp)))));
+  const ContextAppPlus = (0, _pool_tree.withPool)((0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _assistant.withAssistant)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(ContextApp))))));
   const domContainer = document.querySelector('#context-root');
   ReactDOM.render( /*#__PURE__*/_react.default.createElement(ContextAppPlus, {
     initial_theme: window.theme,
