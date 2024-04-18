@@ -1,5 +1,5 @@
 import React from "react";
-import {useState, useEffect, useRef, memo, Fragment, useContext} from "react";
+import {useState, useEffect, useRef, memo, Fragment, useContext, createContext} from "react";
 import {TreeNode, Popover, Button, ContextMenuPopover, Classes, HTMLSelect} from "@blueprintjs/core";
 
 import _ from "lodash";
@@ -9,7 +9,25 @@ import {postPromise} from "./communication_react";
 import {ThemeContext} from "./theme";
 import {SearchForm} from "./library_widgets";
 
-export {PoolTree, PoolAddressSelector, getBasename, splitFilePath, getFileParentPath}
+export {PoolTree, PoolAddressSelector, getBasename, splitFilePath, getFileParentPath, withPool, PoolContext}
+
+const PoolContext = createContext({
+    workingPath: null,
+    setWorkingPath: ()=>{}
+});
+
+function withPool(WrappedComponent) {
+    function newFunc(props) {
+        const [workingPath, setWorkingPath] = useState(null);
+
+        return (
+            <PoolContext.Provider value={{workingPath, setWorkingPath}}>
+                <WrappedComponent {...props}/>
+            </PoolContext.Provider>
+        )
+    }
+    return memo(newFunc)
+}
 
 function treeNodesReducer(nodes, action) {
     switch (action.type) {
@@ -273,12 +291,19 @@ function PoolTree(props) {
 
     const pushCallback = useCallbackStack();
 
+    const pool_context = useContext(PoolContext);
+
     useEffect(()=>{
         initSocket();
         if (props.registerTreeRefreshFunc) {
             props.registerTreeRefreshFunc(getTree)
         }
-        getTree().then(()=>{});
+        getTree().then(()=>{
+            if (!props.value && pool_context.workingPath) {
+                exposeNode(pool_context.workingPath, false)
+            }
+        });
+
     }, []);
 
     async function getTree() {
@@ -416,17 +441,20 @@ function PoolTree(props) {
         })
     }
 
-    function exposeNode(fullpath) {
+    function exposeNode(fullpath, set_working_path=true) {
         let the_path = findNodePath(fullpath);
         if (the_path) {
             dispatch({
                 type: "MULTI_SET_IS_EXPANDED",
                 node_list: the_path,
                 isExpanded: true
-            })
+            });
+            if (set_working_path) {
+                pool_context.setWorkingPath(fullpath);
+            }
         }
         else {
-            exposeBaseNode()
+            exposeBaseNode();
         }
     }
 
@@ -465,7 +493,8 @@ function PoolTree(props) {
             type: "SET_IS_EXPANDED",
             node_id: node.id,
             isExpanded: true
-        })
+        });
+        pool_context.setWorkingPath(node.fullpath);
     }
 
     function handleNodeClick(node) {

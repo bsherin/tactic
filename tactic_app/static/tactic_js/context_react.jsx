@@ -25,6 +25,7 @@ import {ErrorBoundary} from "./error_boundary";
 import {icon_dict} from "./blueprint_mdata_fields";
 import {LibraryHomeApp} from "./library_home_react";
 import {PoolBrowser} from "./pool_browser";
+import {withPool} from "./pool_tree";
 import {view_views} from "./library_pane";
 import {guid} from "./utilities_react";
 import {module_viewer_props, ModuleViewerApp} from "./module_viewer_react";
@@ -106,7 +107,7 @@ const classDict = {
 };
 
 function _context_main() {
-    const ContextAppPlus = withTheme(withDialogs(withAssistant(withErrorDrawer(withStatus(ContextApp)))));
+    const ContextAppPlus = withPool(withTheme(withDialogs(withAssistant(withErrorDrawer(withStatus(ContextApp))))));
     const domContainer = document.querySelector('#context-root');
     ReactDOM.render(<ContextAppPlus initial_theme={window.theme} tsocket={tsocket}/>, domContainer)
 }

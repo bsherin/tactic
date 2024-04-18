@@ -7,7 +7,7 @@ import {Menu, MenuItem, MenuDivider} from "@blueprintjs/core";
 import {guid, useStateAndRef} from "./utilities_react";
 import {LibraryMenubar} from "./library_menubars"
 import {CombinedMetadata, icon_dict} from "./blueprint_mdata_fields";
-import {PoolTree, getBasename, splitFilePath, getFileParentPath} from "./pool_tree";
+import {PoolTree, getBasename, splitFilePath, getFileParentPath, PoolContext} from "./pool_tree";
 import {HorizontalPanes} from "./resizing_layouts2";
 import {getBlobPromise, postAjaxPromise} from "./communication_react";
 import {ErrorDrawerContext} from "./error_drawer";
@@ -427,15 +427,17 @@ function PoolBrowser(props) {
                 <div className="d-flex flex-column"
                      style={{maxHeight: "100%", position: "relative", overflow: "scroll", padding: 15}}>
                     {(props.am_selected || have_activated) &&
-                        <PoolTree value={valueRef.current}
-                                  renderContextMenu={renderContextMenu}
-                                  select_type="both"
-                                  registerTreeRefreshFunc={registerTreeRefreshFunc}
-                                  user_id={window.user_id}
-                                  tsocket={props.tsocket}
-                                  handleDrop={handleDrop}
-                                  showSecondaryLabel={true}
-                                  handleNodeClick={handleNodeClick}/>
+                        <PoolContext.Provider value={{workingPath: null, setWorkingPath: ()=>{}}}>
+                            <PoolTree value={valueRef.current}
+                                      renderContextMenu={renderContextMenu}
+                                      select_type="both"
+                                      registerTreeRefreshFunc={registerTreeRefreshFunc}
+                                      user_id={window.user_id}
+                                      tsocket={props.tsocket}
+                                      handleDrop={handleDrop}
+                                      showSecondaryLabel={true}
+                                      handleNodeClick={handleNodeClick}/>
+                        </PoolContext.Provider>
                     }
                 </div>
             {/*</FileDropWrapper>*/}
