@@ -237,7 +237,7 @@ table {
     content: '';
     background-color: transparent;
     width: 10px;
-    z-index: 100;
+    z-index: 1;
     &:hover {
         background-color: $gray3;
         opacity: 50%;
@@ -248,7 +248,7 @@ table {
     background-color: transparent;
     width: 100%;
     height: 10px;
-    z-index: 100;
+    z-index: 1;
     &:hover {
         background-color: $gray3;
         opacity: 50%;

@@ -1650,7 +1650,7 @@ table caption {
   content: "";
   background-color: transparent;
   width: 10px;
-  z-index: 100;
+  z-index: 1;
 }
 .resize-border:hover {
   background-color: #8f99a8;
@@ -1662,7 +1662,7 @@ table caption {
   background-color: transparent;
   width: 100%;
   height: 10px;
-  z-index: 100;
+  z-index: 1;
 }
 .horizontal-resize-border:hover {
   background-color: #8f99a8;

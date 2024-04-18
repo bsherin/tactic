@@ -415,7 +415,7 @@ function ReactCodemirror(props) {
                 position: "fixed",
                 left: topX + usable_width - 135 - 15,
                 top: topY + usable_height - 35,
-                zIndex: 100
+                zIndex: 1
             };
             if (first_render.current) {
                 bgstyle.top -= 10;
