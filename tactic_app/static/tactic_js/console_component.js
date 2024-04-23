@@ -72,10 +72,21 @@ const SPINNER_STYLE = {
 const MB10_STYLE = {
   marginBottom: 10
 };
+const WIDTH_100 = {
+  width: "100%"
+};
 const SHOW_DRAWER_FALSE = {
   show_drawer: false
 };
 const empty_style = {};
+const trash_icon = /*#__PURE__*/_react.default.createElement(_core.Icon, {
+  icon: "trash",
+  size: 14
+});
+const clean_icon = /*#__PURE__*/_react.default.createElement(_core.Icon, {
+  icon: "clean",
+  size: 14
+});
 function ConsoleComponent(props) {
   const header_ref = (0, _react.useRef)(null);
   const body_ref = (0, _react.useRef)(null);
@@ -1944,7 +1955,6 @@ function LogItem(props) {
     handleClick: _deleteMe,
     tooltip: "Delete this item",
     style: GlYPH_BUTTON_STYLE4,
-    intent: "danger",
     icon: "trash"
   }))))));
 }
@@ -2347,6 +2357,13 @@ function ConsoleCodeItem(props) {
   let spinner_val = props.running ? null : 0;
   let uwidth = props.in_section ? usable_width - SECTION_INDENT / 2 : usable_width;
   uwidth -= BUTTON_CONSUMED_SPACE;
+  uwidth += 80;
+  const body_shrunk_style = (0, _react.useMemo)(() => {
+    return {
+      marginLeft: 30,
+      width: uwidth - 80
+    };
+  }, [uwidth]);
   return /*#__PURE__*/_react.default.createElement(_core.ContextMenu, {
     content: cm
   }, /*#__PURE__*/_react.default.createElement(_sizing_tools.SizeProvider, {
@@ -2372,23 +2389,23 @@ function ConsoleCodeItem(props) {
     icon: "chevron-right",
     style: GLYPH_BUTTON_STYLE5,
     handleClick: _toggleShrink
-  })), props.am_shrunk && /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement(_core.EditableText, {
+  })), props.am_shrunk && /*#__PURE__*/_react.default.createElement("div", {
+    style: body_shrunk_style,
+    className: "d-flex flex-row console-code"
+  }, /*#__PURE__*/_react.default.createElement(_core.EditableText, {
     value: props.summary_text ? props.summary_text : _getFirstLine(),
     onChange: _handleSummaryTextChange,
     className: "log-panel-summary code-panel-summary"
   }), /*#__PURE__*/_react.default.createElement("div", {
-    className: "button-div d-flex flex-row"
+    className: "button-div float-buttons d-flex flex-row"
   }, /*#__PURE__*/_react.default.createElement(_blueprint_react_widgets.GlyphButton, {
     handleClick: _deleteMe,
-    intent: "danger",
     tooltip: "Delete this item",
-    style: GlYPH_BUTTON_STYLE4,
-    icon: "trash"
+    style: empty_style,
+    icon: trash_icon
   }))), !props.am_shrunk && /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement("div", {
     className: "d-flex flex-column",
-    style: {
-      width: "100%"
-    }
+    style: WIDTH_100
   }, /*#__PURE__*/_react.default.createElement("div", {
     className: "d-flex flex-row"
   }, /*#__PURE__*/_react.default.createElement("div", {
@@ -2417,19 +2434,17 @@ function ConsoleCodeItem(props) {
     no_height: true,
     saveMe: null
   }), /*#__PURE__*/_react.default.createElement("div", {
-    className: "button-div d-flex flex-row"
+    className: "button-div float-buttons d-flex flex-row"
   }, /*#__PURE__*/_react.default.createElement(_blueprint_react_widgets.GlyphButton, {
     handleClick: _deleteMe,
-    intent: "danger",
     tooltip: "Delete this item",
-    style: GLYPH_BUTTON_STYLE6,
-    icon: "trash"
+    style: empty_style,
+    icon: trash_icon
   }), /*#__PURE__*/_react.default.createElement(_blueprint_react_widgets.GlyphButton, {
     handleClick: _clearOutput,
-    intent: "warning",
     tooltip: "Clear this item's output",
-    style: GLYPH_BUTTON_STYLE6,
-    icon: "clean"
+    style: empty_style,
+    icon: clean_icon
   }))), !props.show_spinner && /*#__PURE__*/_react.default.createElement("div", {
     className: "execution-counter"
   }, "[", String(props.execution_count), "]"), props.show_spinner && /*#__PURE__*/_react.default.createElement("div", {
@@ -2657,7 +2672,6 @@ function ConsoleTextItem(props) {
     });
   }
   const contextMenu = (0, _react.useMemo)(() => {
-    // return a single element, or nothing to use default browser behavior
     return /*#__PURE__*/_react.default.createElement(_core.Menu, null, /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
       icon: "paragraph",
       intent: "success",
@@ -2758,6 +2772,13 @@ function ConsoleTextItem(props) {
   }));
   let uwidth = props.in_section ? usable_width - SECTION_INDENT / 2 : usable_width;
   uwidth -= BUTTON_CONSUMED_SPACE;
+  uwidth += 80;
+  const body_shrunk_style = (0, _react.useMemo)(() => {
+    return {
+      marginLeft: 30,
+      width: uwidth - 80
+    };
+  }, [uwidth]);
   return /*#__PURE__*/_react.default.createElement(_core.ContextMenu, {
     content: contextMenu
   }, /*#__PURE__*/_react.default.createElement(_sizing_tools.SizeProvider, {
@@ -2772,9 +2793,7 @@ function ConsoleTextItem(props) {
     onClick: _consoleItemClick,
     ref: elRef,
     id: props.unique_id,
-    style: {
-      marginBottom: 10
-    }
+    style: MB10_STYLE
   }, /*#__PURE__*/_react.default.createElement("div", {
     className: "button-div shrink-expand-div d-flex flex-row"
   }, /*#__PURE__*/_react.default.createElement(Shandle, {
@@ -2788,18 +2807,20 @@ function ConsoleTextItem(props) {
       marginTop: 5
     },
     handleClick: _toggleShrink
-  })), props.am_shrunk && /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement(_core.EditableText, {
+  })), props.am_shrunk && /*#__PURE__*/_react.default.createElement("div", {
+    style: body_shrunk_style,
+    className: "d-flex flex-row text-box"
+  }, /*#__PURE__*/_react.default.createElement(_core.EditableText, {
     value: props.summary_text ? props.summary_text : _getFirstLine(),
     onChange: _handleSummaryTextChange,
     className: "log-panel-summary"
   }), /*#__PURE__*/_react.default.createElement("div", {
-    className: "button-div d-flex flex-row"
+    className: "button-div float-buttons d-flex flex-row"
   }, /*#__PURE__*/_react.default.createElement(_blueprint_react_widgets.GlyphButton, {
     handleClick: _deleteMe,
-    intent: "danger",
     tooltip: "Delete this item",
-    style: GlYPH_BUTTON_STYLE4,
-    icon: "trash"
+    style: empty_style,
+    icon: trash_icon
   }))), !props.am_shrunk && /*#__PURE__*/_react.default.createElement("div", {
     className: "d-flex flex-column",
     style: {
@@ -2841,13 +2862,12 @@ function ConsoleTextItem(props) {
     },
     dangerouslySetInnerHTML: converted_dict
   }), link_buttons), /*#__PURE__*/_react.default.createElement("div", {
-    className: "button-div d-flex flex-row"
+    className: "button-div float-buttons d-flex flex-row"
   }, /*#__PURE__*/_react.default.createElement(_blueprint_react_widgets.GlyphButton, {
     handleClick: _deleteMe,
-    intent: "danger",
     tooltip: "Delete this item",
-    style: GlYPH_BUTTON_STYLE4,
-    icon: "trash"
+    style: empty_style,
+    icon: trash_icon
   })))))));
 }
 ConsoleTextItem = /*#__PURE__*/(0, _react.memo)(ConsoleTextItem);
@@ -2872,9 +2892,4 @@ ConsoleTextItem.defaultProps = {
   force_sync_to_prop: false,
   summary_text: null,
   links: []
-};
-const all_update_props = {
-  "text": text_item_update_props,
-  "code": code_item_update_props,
-  "fixed": log_item_update_props
 };

@@ -64,7 +64,9 @@ function GlyphButton(props) {
 GlyphButton = memo(GlyphButton);
 
 GlyphButton.propTypes = {
-    icon: PropTypes.string,
+    icon: PropTypes.oneOfType([
+        PropTypes.object,
+        PropTypes.string]),
     minimal: PropTypes.bool,
     small: PropTypes.bool,
     className: PropTypes.string,

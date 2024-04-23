@@ -35,6 +35,7 @@ body {
 
     margin-right: 0;
     padding: 0 !important;
+
     &.am-shrunk {
         margin-top: 0;
     }
@@ -84,6 +85,21 @@ body {
 .console-code {
     width: 100%;
     padding-right: 10px !important;
+    position: relative;
+    .float-buttons {
+        position: absolute;
+        top: 0px;
+        right: 14px;
+    }
+}
+
+.text-box {
+    position: relative;
+    .float-buttons {
+        position: absolute;
+        top: 0px;
+        right: 49px;
+    }
 }
 
 .text-panel-output {

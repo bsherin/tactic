@@ -51,11 +51,13 @@ const GLYPH_BUTTON_STYLE5 = {marginTop: 5};
 const GLYPH_BUTTON_STYLE6 = {marginLeft: 10, marginRight: 0};
 
 const SPINNER_STYLE = {marginTop: 10, marginRight: 22};
-
 const MB10_STYLE = {marginBottom: 10};
+const WIDTH_100 = {width: "100%"};
+
 const SHOW_DRAWER_FALSE = {show_drawer: false};
 const empty_style = {};
-
+const trash_icon = <Icon icon="trash" size={14} />;
+const clean_icon = <Icon icon="clean" size={14} />;
 
 function ConsoleComponent(props) {
     const header_ref = useRef(null);
@@ -1945,7 +1947,6 @@ function LogItem(props) {
                                 <GlyphButton handleClick={_deleteMe}
                                              tooltip="Delete this item"
                                              style={GlYPH_BUTTON_STYLE4}
-                                             intent="danger"
                                              icon="trash"/>
                             </div>
                         </div>
@@ -2398,7 +2399,12 @@ function ConsoleCodeItem(props) {
 
     let uwidth =  props.in_section ? usable_width - SECTION_INDENT / 2 : usable_width;
     uwidth -= BUTTON_CONSUMED_SPACE;
+    uwidth += 80;
 
+    const body_shrunk_style = useMemo(()=>{ return {
+        marginLeft: 30,
+        width: uwidth - 80
+    }}, [uwidth]);
     return (
         <ContextMenu content={cm}>
             <SizeProvider value={{
@@ -2409,7 +2415,8 @@ function ConsoleCodeItem(props) {
             }}>
                 <div className={panel_style + " d-flex flex-row"}
                      ref={elRef}
-                     onClick={_consoleItemClick} id={props.unique_id}>
+                     onClick={_consoleItemClick}
+                     id={props.unique_id}>
                     <div className="button-div shrink-expand-div d-flex flex-row">
                         <Shandle dragHandleProps={props.dragHandleProps}/>
                         {!props.am_shrunk &&
@@ -2423,24 +2430,23 @@ function ConsoleCodeItem(props) {
                         }
                     </div>
                     {props.am_shrunk &&
-                        <Fragment>
+                        <div style={body_shrunk_style} className="d-flex flex-row console-code">
                             <EditableText
                                 value={props.summary_text ? props.summary_text : _getFirstLine()}
                                 onChange={_handleSummaryTextChange}
                                 className="log-panel-summary code-panel-summary"/>
-                            <div className="button-div d-flex flex-row">
+                            <div className="button-div float-buttons d-flex flex-row">
                                 <GlyphButton handleClick={_deleteMe}
-                                             intent="danger"
                                              tooltip="Delete this item"
-                                             style={GlYPH_BUTTON_STYLE4}
-                                             icon="trash"/>
+                                             style={empty_style}
+                                             icon={trash_icon}/>
                             </div>
-                        </Fragment>
+                        </div>
 
                     }
                     {!props.am_shrunk &&
                         <Fragment>
-                            <div className="d-flex flex-column" style={{width: "100%"}}>
+                            <div className="d-flex flex-column" style={WIDTH_100}>
                                 <div className="d-flex flex-row">
                                     <div className="log-panel-body d-flex flex-row console-code">
                                         <div className="button-div d-flex pr-1">
@@ -2467,17 +2473,15 @@ function ConsoleCodeItem(props) {
                                                          search_term={props.search_string}
                                                          no_height={true}
                                                          saveMe={null}/>
-                                        <div className="button-div d-flex flex-row">
+                                        <div className="button-div float-buttons d-flex flex-row">
                                             <GlyphButton handleClick={_deleteMe}
-                                                         intent="danger"
                                                          tooltip="Delete this item"
-                                                         style={GLYPH_BUTTON_STYLE6}
-                                                         icon="trash"/>
+                                                         style={empty_style}
+                                                         icon={trash_icon}/>
                                             <GlyphButton handleClick={_clearOutput}
-                                                         intent="warning"
                                                          tooltip="Clear this item's output"
-                                                         style={GLYPH_BUTTON_STYLE6}
-                                                         icon="clean"/>
+                                                         style={empty_style}
+                                                         icon={clean_icon}/>
                                         </div>
                                     </div>
                                     {!props.show_spinner &&
@@ -2754,7 +2758,6 @@ function ConsoleTextItem(props) {
     }
 
     const contextMenu = useMemo(() => {
-        // return a single element, or nothing to use default browser behavior
         return (
             <Menu>
                 <MenuItem icon="paragraph"
@@ -2854,6 +2857,11 @@ function ConsoleTextItem(props) {
     );
     let uwidth =  props.in_section ? usable_width - SECTION_INDENT / 2 : usable_width;
     uwidth -= BUTTON_CONSUMED_SPACE;
+    uwidth += 80;
+    const body_shrunk_style = useMemo(()=>{ return {
+        marginLeft: 30,
+        width: uwidth - 80
+    }}, [uwidth]);
     return (
         <ContextMenu content={contextMenu}>
             <SizeProvider value={{
@@ -2862,8 +2870,11 @@ function ConsoleTextItem(props) {
                 topX: topX,
                 topY: topY
             }}>
-            <div className={panel_class + " d-flex flex-row"} onClick={_consoleItemClick}
-                 ref={elRef} id={props.unique_id} style={{marginBottom: 10}}>
+            <div className={panel_class + " d-flex flex-row"}
+                 onClick={_consoleItemClick}
+                 ref={elRef}
+                 id={props.unique_id}
+                 style={MB10_STYLE}>
                 <div className="button-div shrink-expand-div d-flex flex-row">
                     <Shandle dragHandleProps={props.dragHandleProps}/>
                     {!props.am_shrunk &&
@@ -2877,19 +2888,18 @@ function ConsoleTextItem(props) {
                     }
                 </div>
                 {props.am_shrunk &&
-                    <Fragment>
+                    <div style={body_shrunk_style} className="d-flex flex-row text-box">
                         <EditableText
                             value={props.summary_text ? props.summary_text : _getFirstLine()}
                             onChange={_handleSummaryTextChange}
                             className="log-panel-summary"/>
-                        <div className="button-div d-flex flex-row">
+                        <div className="button-div float-buttons d-flex flex-row">
                             <GlyphButton handleClick={_deleteMe}
-                                         intent="danger"
                                          tooltip="Delete this item"
-                                         style={GlYPH_BUTTON_STYLE4}
-                                         icon="trash"/>
+                                         style={empty_style}
+                                         icon={trash_icon}/>
                         </div>
-                    </Fragment>
+                    </div>
                 }
                 {!props.am_shrunk &&
                     <div className="d-flex flex-column" style={{width: "100%"}}>
@@ -2929,12 +2939,11 @@ function ConsoleTextItem(props) {
                                 {link_buttons}
                             </div>
 
-                            <div className="button-div d-flex flex-row">
+                            <div className="button-div float-buttons d-flex flex-row">
                                 <GlyphButton handleClick={_deleteMe}
-                                             intent="danger"
                                              tooltip="Delete this item"
-                                             style={GlYPH_BUTTON_STYLE4}
-                                             icon="trash"/>
+                                             style={empty_style}
+                                             icon={trash_icon}/>
                             </div>
                         </div>
                     </div>
@@ -2970,13 +2979,6 @@ ConsoleTextItem.defaultProps = {
     summary_text: null,
     links: []
 };
-
-const all_update_props = {
-    "text": text_item_update_props,
-    "code": code_item_update_props,
-    "fixed": log_item_update_props
-};
-
 
 
 

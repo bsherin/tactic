@@ -73,6 +73,21 @@ body {
 .console-code {
   width: 100%;
   padding-right: 10px !important;
+  position: relative;
+}
+.console-code .float-buttons {
+  position: absolute;
+  top: 0px;
+  right: 14px;
+}
+
+.text-box {
+  position: relative;
+}
+.text-box .float-buttons {
+  position: absolute;
+  top: 0px;
+  right: 49px;
 }
 
 .text-panel-output h1 {
