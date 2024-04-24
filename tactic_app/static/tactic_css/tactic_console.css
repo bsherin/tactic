@@ -138,9 +138,6 @@ body {
   font-size: 15px;
   padding-bottom: 3px;
 }
-.log-panel.running .card-header .button-div.spinner-div {
-  opacity: 100;
-}
 .log-panel .button-div {
   opacity: 0;
 }
@@ -148,28 +145,13 @@ body {
   align-self: baseline;
   margin-top: 10px;
 }
-.log-panel .card-header {
-  position: absolute;
-  height: 100%;
-  width: 30px;
-  padding: 4px 4px !important;
-  text-align: center;
-  border-right: none;
-  overflow-y: hidden;
-  border-bottom: none;
-  background-color: white;
-  transition-delay: 0s;
-}
 .log-panel .console-sorter {
   padding-top: 6px;
   display: flex;
 }
-.log-panel:focus-within .button-div, .log-panel:hover .button-div, .log-panel.selected .button-div {
+.log-panel:hover .button-div {
   opacity: 100;
   transition-delay: 0.1s;
-}
-.log-panel:focus-within .card-header, .log-panel:hover .card-header, .log-panel.selected .card-header {
-  border-right: 1px solid #c7c7c7;
 }
 .log-panel.selected {
   border-right: 3px solid #738091;
@@ -186,33 +168,8 @@ body {
 .log-panel.log-panel-visible .log-code-output {
   display: block;
 }
-.log-panel.log-panel-visible.fixed-log-panel .close-log-button, .log-panel.log-panel-visible.fixed-log-panel .shrink-log-button {
-  display: inline-block;
-}
-.log-panel.log-panel-visible.fixed-log-panel .card-header .button-div {
-  opacity: 100;
-  transition-delay: 0.25s;
-}
-.log-panel.log-panel-visible .console-spin-outer {
-  display: none;
-}
 .log-panel.log-panel-visible :not(:focus-within), .log-panel.log-panel-visible :not(.selected) {
   min-height: 0;
-}
-.log-panel.log-panel-visible .convert-markdown-button, .log-panel.log-panel-visible .close-log-button, .log-panel.log-panel-visible .run-log-button, .log-panel.log-panel-visible .clear-code-button, .log-panel.log-panel-visible .console-spin-outer, .log-panel.log-panel-visible .shrink-log-button, .log-panel.log-panel-visible .expand-log-button {
-  display: none;
-}
-.log-panel.log-panel-visible.running .clear-code-button {
-  display: none;
-}
-.log-panel.log-panel-visible.running .console-spin-outer {
-  display: inline-block;
-}
-.log-panel.log-panel-visible.running:focus-within .clear-code-button, .log-panel.log-panel-visible.running.selected .clear-code-button {
-  display: none;
-}
-.log-panel.log-panel-visible:focus-within .convert-markdown-button, .log-panel.log-panel-visible:focus-within .close-log-button, .log-panel.log-panel-visible:focus-within .run-log-button, .log-panel.log-panel-visible:focus-within .clear-code-button, .log-panel.log-panel-visible:focus-within .shrink-log-button, .log-panel.log-panel-visible.selected .convert-markdown-button, .log-panel.log-panel-visible.selected .close-log-button, .log-panel.log-panel-visible.selected .run-log-button, .log-panel.log-panel-visible.selected .clear-code-button, .log-panel.log-panel-visible.selected .shrink-log-button {
-  display: inline-block;
 }
 .log-panel.log-panel-visible .link-button-group {
   min-height: unset;
@@ -230,17 +187,8 @@ body {
 .log-panel.log-panel-visible:not(.selected):hover .button-div.shrink-expand-div {
   opacity: 100;
 }
-.log-panel.log-panel-visible:not(:focus-within):hover .shrink-log-button {
-  display: inline-block;
-}
-.log-panel.log-panel-visible:not(.selected):hover .shrink-log-button {
-  display: inline-block;
-}
 .log-panel.log-panel-invisible {
   max-height: 40px;
-}
-.log-panel.log-panel-invisible .card-header {
-  border-right: 0;
 }
 .log-panel.log-panel-invisible .log-panel-summary {
   display: block;
@@ -251,10 +199,7 @@ body {
 .log-panel.log-panel-invisible .log-code-output {
   display: none;
 }
-.log-panel.log-panel-invisible .shrink-log-button {
-  display: none;
-}
-.log-panel.log-panel-invisible.fixed-log-panel:hover .expand-log-buton {
+.log-panel.log-panel-invisible.fixed-log-panel:hover {
   display: inline-block;
 }
 .log-panel.log-panel-invisible:hover .button-div.shrink-expand-div {
@@ -262,9 +207,6 @@ body {
 }
 .log-panel.log-panel-invisible:hover .expand-log-button {
   display: inline-block;
-}
-.log-panel.log-panel-invisible .convert-markdown-button, .log-panel.log-panel-invisible .close-log-button, .log-panel.log-panel-invisible .run-log-button, .log-panel.log-panel-invisible .clear-code-button {
-  display: none;
 }
 
 .log-panel .bp5-editable-text:hover::before {
