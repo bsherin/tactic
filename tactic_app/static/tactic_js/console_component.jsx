@@ -1,4 +1,4 @@
-// noinspection JSConstructorReturnsPrimitive
+// noinspection JSConstructorReturnsPrimitive,JSUnusedAssignment
 
 import React from "react";
 import {Fragment, useState, useEffect, useRef, useCallback, useLayoutEffect, memo, useMemo, useContext} from "react";
@@ -2862,6 +2862,7 @@ function ConsoleTextItem(props) {
         marginLeft: 30,
         width: uwidth - 80
     }}, [uwidth]);
+    // noinspection JSUnusedAssignment
     return (
         <ContextMenu content={contextMenu}>
             <SizeProvider value={{
