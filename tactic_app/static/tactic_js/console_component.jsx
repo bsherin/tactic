@@ -39,7 +39,7 @@ import {AssistantContext} from "./assistant";
 export {ConsoleComponent}
 
 const MAX_CONSOLE_WIDTH = 1800;
-const BUTTON_CONSUMED_SPACE = 143;
+const BUTTON_CONSUMED_SPACE = 63;
 const SECTION_INDENT = 25;  // This is also hard coded into the css file at the moment
 const MAX_OUTPUT_LENGTH = 500000;
 
@@ -2399,7 +2399,6 @@ function ConsoleCodeItem(props) {
 
     let uwidth =  props.in_section ? usable_width - SECTION_INDENT / 2 : usable_width;
     uwidth -= BUTTON_CONSUMED_SPACE;
-    uwidth += 80;
 
     const body_shrunk_style = useMemo(()=>{ return {
         marginLeft: 30,
@@ -2857,7 +2856,6 @@ function ConsoleTextItem(props) {
     );
     let uwidth =  props.in_section ? usable_width - SECTION_INDENT / 2 : usable_width;
     uwidth -= BUTTON_CONSUMED_SPACE;
-    uwidth += 80;
     const body_shrunk_style = useMemo(()=>{ return {
         marginLeft: 30,
         width: uwidth - 80

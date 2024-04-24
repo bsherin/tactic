@@ -39,7 +39,7 @@ const mdi = (0, _markdownIt.default)({
 });
 mdi.use(_markdownItLatex.default);
 const MAX_CONSOLE_WIDTH = 1800;
-const BUTTON_CONSUMED_SPACE = 143;
+const BUTTON_CONSUMED_SPACE = 63;
 const SECTION_INDENT = 25; // This is also hard coded into the css file at the moment
 const MAX_OUTPUT_LENGTH = 500000;
 const GLYPH_BUTTON_STYLE = {
@@ -2357,7 +2357,6 @@ function ConsoleCodeItem(props) {
   let spinner_val = props.running ? null : 0;
   let uwidth = props.in_section ? usable_width - SECTION_INDENT / 2 : usable_width;
   uwidth -= BUTTON_CONSUMED_SPACE;
-  uwidth += 80;
   const body_shrunk_style = (0, _react.useMemo)(() => {
     return {
       marginLeft: 30,
@@ -2772,7 +2771,6 @@ function ConsoleTextItem(props) {
   }));
   let uwidth = props.in_section ? usable_width - SECTION_INDENT / 2 : usable_width;
   uwidth -= BUTTON_CONSUMED_SPACE;
-  uwidth += 80;
   const body_shrunk_style = (0, _react.useMemo)(() => {
     return {
       marginLeft: 30,

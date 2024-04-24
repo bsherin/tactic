@@ -81,6 +81,10 @@ body {
   right: 14px;
 }
 
+.in-section .console-code .float-buttons {
+  right: 26.5px;
+}
+
 .text-box {
   position: relative;
 }
@@ -88,6 +92,10 @@ body {
   position: absolute;
   top: 0px;
   right: 49px;
+}
+
+.in-section .text-box .float-buttons {
+  right: 61.5px;
 }
 
 .text-panel-output h1 {
