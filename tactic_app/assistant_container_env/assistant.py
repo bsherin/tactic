@@ -67,16 +67,16 @@ class Assistant(QWorker, ExceptionMixin, AssistantEventHandler):
             if self.openai_api_key is None:
                 return False
             self.chat_client = OpenAI(api_key=self.openai_api_key)
-            file_list = []
+            self.vector_store = self.chat_client.beta.vector_stores.create(name="Tactic Docs")
+            file_streams = []
             fnames = os.listdir("tactic_docs")
             for fname in fnames:
                 if fname.endswith(".html"):
-                    new_file = self.chat_client.files.create(
-                        file=open(f"tactic_docs/{fname}", "rb"),
-                        purpose='assistants'
-                    )
-                    file_list.append(new_file)
-            id_list = [file.id for file in file_list]
+                    stream = open(f"tactic_docs/{fname}", "rb")
+                    file_streams.append(stream)
+            file_batch = self.chat_client.beta.vector_stores.file_batches.upload_and_poll(
+                vector_store_id=self.vector_store.id, files=file_streams
+            )
             instructions = "You are helpful assistant that helps with writing python code for the Tactic environment. You give answers in markdown format. "
             instructions += "The files uploaded contain information about this API. You should use these files to answer questions about Tactic. "
             instructions += "You should also use the code interpreter tool to help the user write code. "
@@ -89,8 +89,12 @@ class Assistant(QWorker, ExceptionMixin, AssistantEventHandler):
                 name="Tactic Assistant",
                 instructions=instructions,
                 model="gpt-4-turbo",
-                tools=[{"type": "code_interpreter"}, {"type": "retrieval"}],
-                file_ids=id_list
+                tools=[{"type": "code_interpreter"}, {"type": "file_search"}],
+                tool_resources={
+                    "file_search": {
+                        "vector_store_ids": [self.vector_store.id]
+                    },
+                }
             )
             self.chat_thread = self.chat_client.beta.threads.create()
         except Exception as ex:
