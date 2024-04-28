@@ -43,20 +43,7 @@ function withAssistant(WrappedComponent) {
     const [chat_status, set_chat_status, chat_status_ref] = (0, _utilities_react.useStateAndRef)(window.has_openapi_key ? "idle" : null);
     (0, _react.useEffect)(() => {
       if (window.has_openapi_key) {
-        (0, _communication_react.postPromise)("host", "StartAssistant", {
-          main_id: window.main_id,
-          user_id: window.user_id
-        }).then(response => {
-          set_assistant_id(response.assistant_id);
-        });
-        function sendRemove() {
-          if (assistant_id_ref.current) {
-            navigator.sendBeacon("/delete_container_on_unload", JSON.stringify({
-              "container_id": assistant_id_ref.current,
-              "notify": false
-            }));
-          }
-        }
+        getAssistant();
         window.addEventListener("unload", sendRemove);
       }
       return () => {
@@ -64,6 +51,38 @@ function withAssistant(WrappedComponent) {
         window.removeEventListener("unload", sendRemove);
       };
     }, []);
+    (0, _react.useEffect)(() => {
+      if (show_drawer) {
+        getAssistant();
+      }
+    }, [show_drawer]);
+    function sendRemove() {
+      if (assistant_id_ref.current) {
+        navigator.sendBeacon("/delete_container_on_unload", JSON.stringify({
+          "container_id": assistant_id_ref.current,
+          "notify": false
+        }));
+      }
+    }
+    function getAssistant() {
+      (0, _communication_react.postPromise)("host", "GetAssistant", {
+        user_id: window.user_id
+      }).then(response => {
+        if (response.assistant_id == null) {
+          startAssistant();
+        } else if (response.assistant_id != assistant_id_ref.current) {
+          set_assistant_id(response.assistant_id);
+        }
+      });
+    }
+    function startAssistant() {
+      (0, _communication_react.postPromise)("host", "StartAssistant", {
+        main_id: window.main_id,
+        user_id: window.user_id
+      }).then(response => {
+        set_assistant_id(response.assistant_id);
+      });
+    }
     function delete_my_container() {
       if (assistant_id_ref.current) {
         (0, _communication_react.postAjax)("/delete_container_on_unload", {
