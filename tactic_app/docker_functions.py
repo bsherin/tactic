@@ -269,6 +269,26 @@ def container_owner(container):
     else:
         return "system"
 
+def get_user_assistant(user_id):
+    image_name = "bsherin/tactic:assistant"
+    if USE_ARM64:
+        image_name += "-arm64"
+    conts = cli.containers.list(
+        all=True,
+        filters={
+            "label": f"owner={user_id}",
+            "ancestor": image_name
+        }
+    )
+
+    if len(conts) > 0:
+        cont = conts[0]
+        if cont.status != 'running':
+            cont.remove()
+            return None
+        return container_id(cont)
+    return None
+
 
 def container_parent(container):
     if "parent" in container.attrs["Config"]["Labels"]:

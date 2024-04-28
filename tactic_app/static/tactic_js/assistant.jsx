@@ -39,18 +39,7 @@ function withAssistant(WrappedComponent, lposition = "right", assistant_drawer_s
 
         useEffect(()=>{
             if (window.has_openapi_key) {
-                postPromise("host", "StartAssistant", {main_id: window.main_id, user_id: window.user_id})
-                    .then((response) => {
-                        set_assistant_id(response.assistant_id)
-                    });
-
-                function sendRemove() {
-                    if (assistant_id_ref.current) {
-                        navigator.sendBeacon("/delete_container_on_unload",
-                            JSON.stringify({"container_id": assistant_id_ref.current, "notify": false}));
-                    }
-                }
-
+                getAssistant();
                 window.addEventListener("unload", sendRemove);
             }
             return (() => {
@@ -58,6 +47,37 @@ function withAssistant(WrappedComponent, lposition = "right", assistant_drawer_s
                 window.removeEventListener("unload", sendRemove)
             })
         }, []);
+
+        useEffect(()=>{
+            if (show_drawer) {
+                getAssistant()
+            }
+        },[show_drawer]);
+
+        function sendRemove() {
+            if (assistant_id_ref.current) {
+                navigator.sendBeacon("/delete_container_on_unload",
+                    JSON.stringify({"container_id": assistant_id_ref.current, "notify": false}));
+            }
+        }
+
+        function getAssistant() {
+            postPromise("host", "GetAssistant", {user_id: window.user_id,})
+                .then((response) => {
+                    if (response.assistant_id == null) {
+                        startAssistant()
+                    } else if (response.assistant_id != assistant_id_ref.current) {
+                        set_assistant_id(response.assistant_id)
+                    }
+                })
+        }
+
+        function startAssistant() {
+            postPromise("host", "StartAssistant", {main_id: window.main_id, user_id: window.user_id})
+                .then((response) => {
+                    set_assistant_id(response.assistant_id)
+                });
+        }
 
         function delete_my_container() {
             if (assistant_id_ref.current) {
