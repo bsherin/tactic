@@ -18,6 +18,7 @@
 {% endblock %}
 {% block scripts %}
     <script src="{{url_for('static', filename='js/d3.min.js')}}"></script>
+    <script src="{{url_for('static', filename='js/js_api.js')}}"></script>
     <script>
         window.user_id = "{{current_user.get_id()}}";
         window.database_type = "{{database_type}}";
