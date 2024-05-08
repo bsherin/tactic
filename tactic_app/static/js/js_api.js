@@ -1,4 +1,3 @@
-
 function postNoCallback(dest_id, task_type, task_data, special_main_id=null){
     const task_packet =  {
         "source": "client",
