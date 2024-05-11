@@ -100,8 +100,10 @@ function SearchableConsole(props, inner_ref) {
 
     async function _stopLogStreaming(callback = null) {
         if (streamer_id && streamer_id.current) {
-            return postPromise(props.streaming_host, "StopLogStreaming", {streamer_id: streamer_id.current},
-                props.main_id);
+            await postPromise(props.streaming_host, "StopLogStreaming", {streamer_id: streamer_id.current}, props.main_id);
+            if (callback) {
+                callback()
+            }
         }
         return null
     }
