@@ -64,9 +64,12 @@ function TacticMenubar(props) {
     }
   }
   let sug_glyphs = [];
+  let scounter = 0;
   for (let sg of props.suggestionGlyphs) {
+    scounter += 1;
     sug_glyphs.push( /*#__PURE__*/_react.default.createElement(_blueprint_react_widgets.GlyphButton, {
       intent: sg.intent,
+      key: sg.icon + String(scounter),
       handleClick: sg.handleClick,
       icon: sg.icon
     }));
