@@ -71,7 +71,7 @@ class PoolManager(LibraryResourceManager):
             if not os.path.exists(true_full_path):
                 raise FileNotFoundError
             if is_directory:
-                os.rmdir(true_full_path)
+                shutil.rmtree(true_full_path)
             else:
                 os.remove(true_full_path)
         except Exception as ex:
