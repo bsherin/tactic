@@ -250,12 +250,13 @@ function PoolBrowser(props) {
     try {
       const path = node && "isDirectory" in node ? node.fullpath : valueRef.current;
       const sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
-      if (sNode.isDirectory && sNode.childNodes.length > 0) {
-        (0, _toaster.doFlash)("You can't delete a non-empty directory");
-        return;
-      }
       const basename = (0, _pool_tree.getBasename)(path);
-      const confirm_text = `Are you sure that you want to delete ${basename}?`;
+      let confirm_text;
+      if (sNode.isDirectory && sNode.childNodes.length > 0) {
+        confirm_text = `Are you sure that you want to delete the non-empty directory ${basename}?`;
+      } else {
+        confirm_text = `Are you sure that you want to delete ${basename}?`;
+      }
       await dialogFuncs.showModalPromise("ConfirmDialog", {
         title: "Delete resource",
         text_body: confirm_text,
