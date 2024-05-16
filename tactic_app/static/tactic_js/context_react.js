@@ -31,6 +31,7 @@ var _notebook_app = require("./notebook_app");
 var _notebook_support = require("./notebook_support");
 var _code_viewer_react = require("./code_viewer_react");
 var _list_viewer_react = require("./list_viewer_react");
+var _text_viewer_react = require("./text_viewer_react");
 var _error_drawer = require("./error_drawer");
 var _assistant = require("./assistant");
 var _sizing_tools = require("./sizing_tools");
@@ -59,6 +60,7 @@ const iconDict = {
   "module-viewer": "application",
   "code-viewer": "code",
   "list-viewer": "list",
+  "text-viewer": "list",
   "creator-viewer": "application",
   "main-viewer": "projects",
   "notebook-viewer": "projects"
@@ -76,6 +78,7 @@ const propDict = {
   "module-viewer": _module_viewer_react.module_viewer_props,
   "code-viewer": _code_viewer_react.code_viewer_props,
   "list-viewer": _list_viewer_react.list_viewer_props,
+  "text-viewer": _text_viewer_react.text_viewer_props,
   "creator-viewer": _tile_creator_support.creator_props,
   "main-viewer": _main_support.main_props,
   "notebook-viewer": _notebook_support.notebook_props
@@ -84,6 +87,7 @@ const panelRootDict = {
   "module-viewer": "root",
   "code-viewer": "root",
   "list-viewer": "root",
+  "text-viewer": "root",
   "creator-viewer": "creator-root",
   "main-viewer": "main-root",
   "notebook-viewer": "main-root"
@@ -97,7 +101,8 @@ const classDict = {
   "list-viewer": _list_viewer_react.ListViewerApp,
   "creator-viewer": _tile_creator_react.CreatorApp,
   "main-viewer": _main_app.MainApp,
-  "notebook-viewer": _notebook_app.NotebookApp
+  "notebook-viewer": _notebook_app.NotebookApp,
+  "text-viewer": _text_viewer_react.TextViewerApp
 };
 function _context_main() {
   const ContextAppPlus = (0, _pool_tree.withPool)((0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _assistant.withAssistant)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(ContextApp))))));
@@ -719,6 +724,7 @@ function ContextApp(props) {
       tsocket: tsocket,
       am_selected: selectedTabIdRef.current == "pool",
       usable_width: usable_width,
+      handleCreateViewer: _handleCreateViewer,
       usable_height: usable_height
     })));
     const ptab = /*#__PURE__*/_react.default.createElement(_core.Tab, {

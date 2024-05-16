@@ -37,6 +37,7 @@ import {NotebookApp} from "./notebook_app";
 import {notebook_props} from "./notebook_support"
 import {code_viewer_props, CodeViewerApp} from "./code_viewer_react";
 import {list_viewer_props, ListViewerApp} from "./list_viewer_react";
+import {text_viewer_props, TextViewerApp} from "./text_viewer_react";
 import {ErrorDrawerContext, withErrorDrawer} from "./error_drawer";
 import {withAssistant} from "./assistant";
 import {SizeContext, getUsableDimensions, USUAL_NAVBAR_HEIGHT, INIT_CONTEXT_PANEL_WIDTH} from "./sizing_tools";
@@ -60,6 +61,7 @@ const iconDict = {
     "module-viewer": "application",
     "code-viewer": "code",
     "list-viewer": "list",
+    "text-viewer": "list",
     "creator-viewer": "application",
     "main-viewer": "projects",
     "notebook-viewer": "projects"
@@ -78,6 +80,7 @@ const propDict = {
     "module-viewer": module_viewer_props,
     "code-viewer": code_viewer_props,
     "list-viewer": list_viewer_props,
+    "text-viewer": text_viewer_props,
     "creator-viewer": creator_props,
     "main-viewer": main_props,
     "notebook-viewer": notebook_props
@@ -87,6 +90,7 @@ const panelRootDict = {
     "module-viewer": "root",
     "code-viewer": "root",
     "list-viewer": "root",
+    "text-viewer": "root",
     "creator-viewer": "creator-root",
     "main-viewer": "main-root",
     "notebook-viewer": "main-root"
@@ -103,7 +107,8 @@ const classDict = {
     "list-viewer": ListViewerApp,
     "creator-viewer": CreatorApp,
     "main-viewer": MainApp,
-    "notebook-viewer": NotebookApp
+    "notebook-viewer": NotebookApp,
+    "text-viewer": TextViewerApp
 };
 
 function _context_main() {
@@ -729,6 +734,7 @@ function ContextApp(props) {
                     <PoolBrowser tsocket={tsocket}
                                  am_selected={selectedTabIdRef.current == "pool"}
                                  usable_width={usable_width}
+                                 handleCreateViewer={_handleCreateViewer}
                                  usable_height={usable_height}/>
 
                 </div>
