@@ -73,6 +73,7 @@ class ListManager(LibraryResourceManager):
         }
         return jsonify(data)
 
+
     def update_list(self):  # This is called from the list viewer
         try:
             data_dict = request.json

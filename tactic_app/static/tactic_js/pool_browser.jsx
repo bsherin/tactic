@@ -80,6 +80,21 @@ function PoolBrowser(props) {
         
     }
 
+    async function viewTextFile(node = null) {
+        if (!valueRef.current && !node) return;
+        let data;
+        try {
+            if (node.isDirectory) return;
+            data = await postAjaxPromise("view_text_in_context", {
+                context_id: context_id,
+                file_path: node.fullpath
+            });
+            props.handleCreateViewer(data)
+        } catch (e) {
+            errorDrawerFuncs.addFromError(`Error viewing`, e)
+        }
+    }
+
     async function _rename_func(node = null) {
         if (!valueRef.current && !node) return;
         try {
@@ -355,6 +370,11 @@ function PoolBrowser(props) {
                               await _rename_func(props.node)
                           }}
                           text="Rename Resource"/>
+                <MenuItem icon="eye-open"
+                          onClick={async () => {
+                              await viewTextFile(props.node)
+                          }}
+                          text="View as Text"/>
                 <MenuItem icon="inheritance"
                           onClick={async () => {
                               await _move_resource(props.node)

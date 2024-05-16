@@ -16,6 +16,8 @@ class PoolManager(LibraryResourceManager):
                          login_required(self.rename_pool_resource), methods=['get', "post"])
         app.add_url_rule('/delete_pool_resource', "delete_pool_resource",
                          login_required(self.delete_pool_resource), methods=['get', "post"])
+        app.add_url_rule('/view_text_in_context', "view_text_in_context",
+                         login_required(self.view_text_in_context), methods=['get', "post"])
         app.add_url_rule('/create_pool_directory', "create_pool_directory",
                          login_required(self.create_pool_directory), methods=['get', "post"])
         app.add_url_rule('/move_pool_resource', "move_pool_resource",
@@ -30,6 +32,25 @@ class PoolManager(LibraryResourceManager):
 
     def true_to_user(self, true_path):
         return re.sub(current_user.pool_dir, "/mydisk", true_path)
+
+    def view_text_in_context(self):
+        file_path = request.json["file_path"]
+        true_path = self.user_to_true(file_path)
+        with open(true_path, "r") as f:
+            the_text = f.read()
+        mdata = {}
+        _, fname = os.path.split(true_path)
+        data = {
+            "success": True,
+            "kind": "text-viewer",
+            "res_type": "text",
+            "the_content": the_text,
+            "mdata": mdata,
+            "resource_name": fname,
+            "read_only": True,
+            "is_repository": False,
+        }
+        return jsonify(data)
 
     def download_pool_file(self):
         try:

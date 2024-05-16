@@ -76,6 +76,21 @@ function PoolBrowser(props) {
     }
   }, [value]);
   function handlePoolEvent() {}
+  async function viewTextFile() {
+    let node = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+    if (!valueRef.current && !node) return;
+    let data;
+    try {
+      if (node.isDirectory) return;
+      data = await (0, _communication_react.postAjaxPromise)("view_text_in_context", {
+        context_id: context_id,
+        file_path: node.fullpath
+      });
+      props.handleCreateViewer(data);
+    } catch (e) {
+      errorDrawerFuncs.addFromError(`Error viewing`, e);
+    }
+  }
   async function _rename_func() {
     let node = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
     if (!valueRef.current && !node) return;
@@ -347,6 +362,12 @@ function PoolBrowser(props) {
         await _rename_func(props.node);
       },
       text: "Rename Resource"
+    }), /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
+      icon: "eye-open",
+      onClick: async () => {
+        await viewTextFile(props.node);
+      },
+      text: "View as Text"
     }), /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
       icon: "inheritance",
       onClick: async () => {
