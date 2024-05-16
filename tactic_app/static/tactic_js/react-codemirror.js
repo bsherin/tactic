@@ -1,6 +1,6 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -40,18 +40,40 @@ var _theme = require("./theme");
 require("./autocomplete");
 var _error_drawer = require("./error_drawer");
 var _library_widgets = require("./library_widgets");
-function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
-function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
-const REGEXTYPE = Object.getPrototypeOf(new RegExp("that"));
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(e) { return e ? t : r; })(e); }
+function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != _typeof(e) && "function" != typeof e) return { "default": e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && {}.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n["default"] = e, t && t.set(e, n), n; }
+function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
+function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
+function _defineProperty(obj, key, value) { key = _toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
+function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+var REGEXTYPE = Object.getPrototypeOf(new RegExp("that"));
 function isRegex(ob) {
   return Object.getPrototypeOf(ob) == REGEXTYPE;
 }
 function countOccurrences(query, the_text) {
   if (isRegex(query)) {
-    const split_text = the_text.split(/\r?\n/);
-    let total = 0;
-    for (let str of split_text) {
-      total += (str.match(query) || []).length;
+    var split_text = the_text.split(/\r?\n/);
+    var total = 0;
+    var _iterator = _createForOfIteratorHelper(split_text),
+      _step;
+    try {
+      for (_iterator.s(); !(_step = _iterator.n()).done;) {
+        var str = _step.value;
+        total += (str.match(query) || []).length;
+      }
+    } catch (err) {
+      _iterator.e(err);
+    } finally {
+      _iterator.f();
     }
     return total;
   } else {
@@ -59,25 +81,30 @@ function countOccurrences(query, the_text) {
   }
 }
 function ReactCodemirror(props) {
-  const localRef = (0, _react.useRef)(null);
-  const saved_theme = (0, _react.useRef)(null);
-  const preferred_themes = (0, _react.useRef)(null);
-  const cmobject = (0, _react.useRef)(null);
-  const overlay = (0, _react.useRef)(null);
-  const matches = (0, _react.useRef)(null);
-  const search_focus_info = (0, _react.useRef)(null);
-  const first_render = (0, _react.useRef)(true);
-  const prevSoftWrap = (0, _react.useRef)(null);
-  const registeredHandlers = (0, _react.useRef)([]);
-  const theme = (0, _react.useContext)(_theme.ThemeContext);
-  const errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
-  const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(localRef, props.iCounter, "CodeMirror");
-  (0, _react.useEffect)(() => {
+  var localRef = (0, _react.useRef)(null);
+  var saved_theme = (0, _react.useRef)(null);
+  var preferred_themes = (0, _react.useRef)(null);
+  var cmobject = (0, _react.useRef)(null);
+  var overlay = (0, _react.useRef)(null);
+  var matches = (0, _react.useRef)(null);
+  var search_focus_info = (0, _react.useRef)(null);
+  var first_render = (0, _react.useRef)(true);
+  var prevSoftWrap = (0, _react.useRef)(null);
+  var registeredHandlers = (0, _react.useRef)([]);
+  var theme = (0, _react.useContext)(_theme.ThemeContext);
+  var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
+  var _useSize = (0, _sizing_tools.useSize)(localRef, props.iCounter, "CodeMirror"),
+    _useSize2 = _slicedToArray(_useSize, 4),
+    usable_width = _useSize2[0],
+    usable_height = _useSize2[1],
+    topX = _useSize2[2],
+    topY = _useSize2[3];
+  (0, _react.useEffect)(function () {
     prevSoftWrap.current = props.soft_wrap;
     if (props.registerSetFocusFunc) {
       props.registerSetFocusFunc(setFocus);
     }
-    (0, _communication_react.postAjaxPromise)('get_preferred_codemirror_themes', {}).then(data => {
+    (0, _communication_react.postAjaxPromise)('get_preferred_codemirror_themes', {}).then(function (data) {
       preferred_themes.current = data;
       cmobject.current = createCMArea(localRef.current, props.first_line_number);
       cmobject.current.setValue(props.code_content);
@@ -89,22 +116,33 @@ function ReactCodemirror(props) {
       saved_theme.current = theme.dark_theme;
       cmobject.current.refresh();
       _doHighlight();
-    }).catch(e => {
+    })["catch"](function (e) {
       errorDrawerFuncs.addErrorDrawerEntry({
-        title: `Error getting preferred codemirror theme`,
+        title: "Error getting preferred codemirror theme",
         content: "message" in e ? e.message : ""
       });
       return;
     });
   }, []);
-  (0, _react.useLayoutEffect)(() => {
-    return () => {
+  (0, _react.useLayoutEffect)(function () {
+    return function () {
       if (cmobject.current) {
         cmobject.current.refresh();
-        for (let [event, handler] of registeredHandlers.current) {
-          cmobject.current.off(event, handler);
+        var _iterator2 = _createForOfIteratorHelper(registeredHandlers.current),
+          _step2;
+        try {
+          for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+            var _step2$value = _slicedToArray(_step2.value, 2),
+              event = _step2$value[0],
+              handler = _step2$value[1];
+            cmobject.current.off(event, handler);
+          }
+        } catch (err) {
+          _iterator2.e(err);
+        } finally {
+          _iterator2.f();
         }
-        delete _codemirror.default.keyMap["default"].Esc;
+        delete _codemirror["default"].keyMap["default"].Esc;
         cmobject.current.setOption("extraKeys", null);
         cmobject.current = null;
         if (localRef.current) {
@@ -113,7 +151,7 @@ function ReactCodemirror(props) {
       }
     };
   }, []);
-  (0, _react.useEffect)(() => {
+  (0, _react.useEffect)(function () {
     if (!cmobject.current) {
       return;
     }
@@ -134,20 +172,20 @@ function ReactCodemirror(props) {
     _doHighlight();
     set_keymap();
     if (theme.dark_theme != saved_theme.current) {
-      (0, _communication_react.postAjaxPromise)("get_preferred_codemirror_themes", {}).then(data => {
+      (0, _communication_react.postAjaxPromise)("get_preferred_codemirror_themes", {}).then(function (data) {
         preferred_themes.current = data;
         cmobject.current.setOption("theme", _current_codemirror_theme());
         saved_theme.current = theme.dark_theme;
-      }).catch(e => {
+      })["catch"](function (e) {
         errorDrawerFuncs.addErrorDrawerEntry({
-          title: `Error getting preferred codemirror theme`,
+          title: "Error getting preferred codemirror theme",
           content: "message" in e ? e.message : ""
         });
         return;
       });
     }
   });
-  const selectedPane = (0, _react.useContext)(_utilities_react.SelectedPaneContext);
+  var selectedPane = (0, _react.useContext)(_utilities_react.SelectedPaneContext);
   function setFocus() {
     if (cmobject.current) {
       cmobject.current.focus();
@@ -161,8 +199,8 @@ function ReactCodemirror(props) {
     return theme.dark_theme ? preferred_themes.current.preferred_dark_theme : preferred_themes.current.preferred_light_theme;
   }
   function createCMArea(codearea) {
-    let first_line_number = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
-    let lcmobject = (0, _codemirror.default)(codearea, {
+    var first_line_number = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
+    var lcmobject = (0, _codemirror["default"])(codearea, {
       lineNumbers: props.show_line_numbers,
       lineWrapping: props.soft_wrap,
       matchBrackets: true,
@@ -182,9 +220,9 @@ function ReactCodemirror(props) {
     if (first_line_number != 1) {
       lcmobject.setOption("firstLineNumber", first_line_number);
     }
-    let all_extra_keys = Object.assign(props.extraKeys, {
-      Tab: function (cm) {
-        let spaces = new Array(5).join(" ");
+    var all_extra_keys = Object.assign(props.extraKeys, {
+      Tab: function Tab(cm) {
+        var spaces = new Array(5).join(" ");
         cm.replaceSelection(spaces);
       },
       "Ctrl-Space": "autocomplete"
@@ -213,8 +251,8 @@ function ReactCodemirror(props) {
     }
   }
   function _searchMatcher(term) {
-    let global = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-    let matcher;
+    var global = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+    var matcher;
     if (props.regex_search) {
       try {
         matcher = global ? new RegExp(term, "g") : new RegExp(term);
@@ -227,20 +265,29 @@ function ReactCodemirror(props) {
     return matcher;
   }
   function _lineNumberFromSearchNumber() {
-    let lines = props.code_content.split("\n");
-    let lnum = 0;
-    let mnum = 0;
-    let matcher = _searchMatcher(props.search_term);
-    for (let line of lines) {
-      let new_matches = (line.match(matcher) || []).length;
-      if (new_matches + mnum - 1 >= props.current_search_number) {
-        return {
-          line: lnum,
-          match: props.current_search_number - mnum
-        };
+    var lines = props.code_content.split("\n");
+    var lnum = 0;
+    var mnum = 0;
+    var matcher = _searchMatcher(props.search_term);
+    var _iterator3 = _createForOfIteratorHelper(lines),
+      _step3;
+    try {
+      for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+        var line = _step3.value;
+        var new_matches = (line.match(matcher) || []).length;
+        if (new_matches + mnum - 1 >= props.current_search_number) {
+          return {
+            line: lnum,
+            match: props.current_search_number - mnum
+          };
+        }
+        mnum += new_matches;
+        lnum += 1;
       }
-      mnum += new_matches;
-      lnum += 1;
+    } catch (err) {
+      _iterator3.e(err);
+    } finally {
+      _iterator3.f();
     }
     return null;
   }
@@ -252,9 +299,7 @@ function ReactCodemirror(props) {
         });
       } else {
         if (props.current_search_number != null) {
-          search_focus_info.current = {
-            ..._lineNumberFromSearchNumber()
-          };
+          search_focus_info.current = _objectSpread({}, _lineNumberFromSearchNumber());
           if (search_focus_info.current) {
             _scrollToLine(search_focus_info.current.line);
           }
@@ -273,15 +318,15 @@ function ReactCodemirror(props) {
   function _scrollToLine(lnumber) {
     cmobject.current.scrollIntoView({
       line: lnumber,
-      char: 0
+      "char": 0
     }, 50);
     window.scrollTo(0, 0); // A kludge. Without it whole window can move when switching contexts
   }
   function _addOverlay(query) {
-    let hasBoundary = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-    let style = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : "searchhighlight";
-    let focus_style = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : "focussearchhighlight";
-    let prev_matches = matches.current;
+    var hasBoundary = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+    var style = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : "searchhighlight";
+    var focus_style = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : "focussearchhighlight";
+    var prev_matches = matches.current;
     var reg = _searchMatcher(query, true);
     matches.current = countOccurrences(reg, props.code_content);
     if (props.setSearchMatches && matches.current != prev_matches) {
@@ -291,13 +336,13 @@ function ReactCodemirror(props) {
     cmobject.current.addOverlay(overlay.current);
   }
   function _makeOverlay(query, hasBoundary, style, focus_style) {
-    let last_line = -1;
-    let line_counter = -1;
-    let matcher = _searchMatcher(query);
+    var last_line = -1;
+    var line_counter = -1;
+    var matcher = _searchMatcher(query);
     return {
-      token: function (stream) {
+      token: function token(stream) {
         if (stream.match(matcher) && (!hasBoundary || _boundariesAround(stream, hasBoundary))) {
-          let lnum = stream.lineOracle.line;
+          var lnum = stream.lineOracle.line;
           if (search_focus_info.current && lnum == search_focus_info.current.line) {
             if (lnum != last_line) {
               line_counter = 0;
@@ -331,19 +376,19 @@ function ReactCodemirror(props) {
     }
   }
   function searchCM() {
-    _codemirror.default.commands.find(cmobject.current);
+    _codemirror["default"].commands.find(cmobject.current);
   }
   function _foldAll() {
-    _codemirror.default.commands.foldAll(cmobject.current);
+    _codemirror["default"].commands.foldAll(cmobject.current);
   }
   function _unfoldAll() {
-    _codemirror.default.commands.unfoldAll(cmobject.current);
+    _codemirror["default"].commands.unfoldAll(cmobject.current);
   }
   function clearSelections() {
     if (props.alt_clear_selections) {
       props.alt_clear_selections();
     } else {
-      let to = cmobject.current.getCursor("to");
+      var to = cmobject.current.getCursor("to");
       cmobject.current.setCursor(to);
     }
     if (props.update_search_state) {
@@ -354,18 +399,18 @@ function ReactCodemirror(props) {
   }
   function set_keymap() {
     if (selectedPane.amSelected(selectedPane.tab_id, selectedPane.selectedTabIdRef)) {
-      _codemirror.default.keyMap["default"]["Esc"] = function () {
+      _codemirror["default"].keyMap["default"]["Esc"] = function () {
         clearSelections();
       };
     } else {
-      delete _codemirror.default.keyMap["default"].Esc;
+      delete _codemirror["default"].keyMap["default"].Esc;
     }
   }
   function create_keymap() {
     set_keymap();
-    let is_mac = _codemirror.default.keyMap["default"].hasOwnProperty("Cmd-S");
+    var is_mac = _codemirror["default"].keyMap["default"].hasOwnProperty("Cmd-S");
   }
-  let ccstyle = {
+  var ccstyle = {
     lineHeight: "21px"
   };
   if (!props.no_height) {
@@ -374,7 +419,7 @@ function ReactCodemirror(props) {
   if (!props.no_width) {
     ccstyle.width = usable_width;
   }
-  let bgstyle = null;
+  var bgstyle = null;
   if (props.show_fold_button) {
     if (usable_width > 175) {
       bgstyle = {
@@ -390,8 +435,8 @@ function ReactCodemirror(props) {
     }
   }
   if (props.show_search) {
-    let title_label = props.title_label ? props.title_label : "";
-    return /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement("div", {
+    var title_label = props.title_label ? props.title_label : "";
+    return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
       style: {
         display: "flex",
         flexDirection: "row",
@@ -399,7 +444,7 @@ function ReactCodemirror(props) {
         marginRight: 10,
         width: "100%"
       }
-    }, /*#__PURE__*/_react.default.createElement("span", {
+    }, /*#__PURE__*/_react["default"].createElement("span", {
       className: "bp5-ui-text",
       style: {
         display: "flex",
@@ -407,7 +452,7 @@ function ReactCodemirror(props) {
         paddingBottom: 2,
         alignItems: "self-end"
       }
-    }, title_label), /*#__PURE__*/_react.default.createElement(_library_widgets.SearchForm, {
+    }, title_label), /*#__PURE__*/_react["default"].createElement(_library_widgets.SearchForm, {
       update_search_state: props.updateSearchState,
       search_string: props.search_term,
       regex: props.regex_search,
@@ -418,39 +463,39 @@ function ReactCodemirror(props) {
       searchNext: props.searchNext,
       search_ref: props.search_ref,
       number_matches: props.search_matches
-    })), props.show_fold_button && bgstyle && /*#__PURE__*/_react.default.createElement(_core.ButtonGroup, {
+    })), props.show_fold_button && bgstyle && /*#__PURE__*/_react["default"].createElement(_core.ButtonGroup, {
       minimal: false,
       style: bgstyle
-    }, /*#__PURE__*/_react.default.createElement(_core.Button, {
+    }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
       small: true,
       icon: "collapse-all",
       text: "fold",
       onClick: _foldAll
-    }), /*#__PURE__*/_react.default.createElement(_core.Button, {
+    }), /*#__PURE__*/_react["default"].createElement(_core.Button, {
       small: true,
       icon: "expand-all",
       text: "unfold",
       onClick: _unfoldAll
-    })), /*#__PURE__*/_react.default.createElement("div", {
+    })), /*#__PURE__*/_react["default"].createElement("div", {
       className: "code-container",
       style: ccstyle,
       ref: localRef
     }));
   }
-  return /*#__PURE__*/_react.default.createElement(_react.Fragment, null, props.show_fold_button && bgstyle && /*#__PURE__*/_react.default.createElement(_core.ButtonGroup, {
+  return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, props.show_fold_button && bgstyle && /*#__PURE__*/_react["default"].createElement(_core.ButtonGroup, {
     minimal: false,
     style: bgstyle
-  }, /*#__PURE__*/_react.default.createElement(_core.Button, {
+  }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
     small: true,
     icon: "collapse-all",
     text: "fold",
     onClick: _foldAll
-  }), /*#__PURE__*/_react.default.createElement(_core.Button, {
+  }), /*#__PURE__*/_react["default"].createElement(_core.Button, {
     small: true,
     icon: "expand-all",
     text: "unfold",
     onClick: _unfoldAll
-  })), props.title_label && /*#__PURE__*/_react.default.createElement("span", {
+  })), props.title_label && /*#__PURE__*/_react["default"].createElement("span", {
     className: "bp5-ui-text",
     style: {
       display: "flex",
@@ -458,43 +503,43 @@ function ReactCodemirror(props) {
       paddingBottom: 2,
       alignItems: "self-end"
     }
-  }, props.title_label), /*#__PURE__*/_react.default.createElement("div", {
+  }, props.title_label), /*#__PURE__*/_react["default"].createElement("div", {
     className: "code-container",
     style: ccstyle,
     ref: localRef
   }));
 }
-exports.ReactCodemirror = ReactCodemirror = /*#__PURE__*/(0, _react.memo)(ReactCodemirror, (prevProps, newProps) => {
+exports.ReactCodemirror = ReactCodemirror = /*#__PURE__*/(0, _react.memo)(ReactCodemirror, function (prevProps, newProps) {
   (0, _utilities_react.propsAreEqual)(prevProps, newProps, ["extraKeys"]);
 });
 ReactCodemirror.propTypes = {
-  no_width: _propTypes.default.bool,
-  no_height: _propTypes.default.bool,
-  handleChange: _propTypes.default.func,
-  show_line_numbers: _propTypes.default.bool,
-  show_fold_button: _propTypes.default.bool,
-  soft_wrap: _propTypes.default.bool,
-  handleBlur: _propTypes.default.func,
-  handleFocus: _propTypes.default.func,
-  code_content: _propTypes.default.string,
-  sync_to_prop: _propTypes.default.bool,
-  force_sync_to_prop: _propTypes.default.bool,
-  clear_force_sync: _propTypes.default.func,
-  mode: _propTypes.default.string,
-  saveMe: _propTypes.default.func,
-  first_line_number: _propTypes.default.number,
-  extraKeys: _propTypes.default.object,
-  setCMObject: _propTypes.default.func,
-  search_term: _propTypes.default.string,
-  update_search_state: _propTypes.default.func,
-  alt_clear_selections: _propTypes.default.func,
-  regex_search: _propTypes.default.bool,
-  code_container_ref: _propTypes.default.object,
-  code_container_width: _propTypes.default.oneOfType([_propTypes.default.string, _propTypes.default.number]),
-  code_container_height: _propTypes.default.oneOfType([_propTypes.default.string, _propTypes.default.number]),
-  setSearchMatches: _propTypes.default.func,
-  current_search_number: _propTypes.default.number,
-  extra_autocomplete_list: _propTypes.default.array
+  no_width: _propTypes["default"].bool,
+  no_height: _propTypes["default"].bool,
+  handleChange: _propTypes["default"].func,
+  show_line_numbers: _propTypes["default"].bool,
+  show_fold_button: _propTypes["default"].bool,
+  soft_wrap: _propTypes["default"].bool,
+  handleBlur: _propTypes["default"].func,
+  handleFocus: _propTypes["default"].func,
+  code_content: _propTypes["default"].string,
+  sync_to_prop: _propTypes["default"].bool,
+  force_sync_to_prop: _propTypes["default"].bool,
+  clear_force_sync: _propTypes["default"].func,
+  mode: _propTypes["default"].string,
+  saveMe: _propTypes["default"].func,
+  first_line_number: _propTypes["default"].number,
+  extraKeys: _propTypes["default"].object,
+  setCMObject: _propTypes["default"].func,
+  search_term: _propTypes["default"].string,
+  update_search_state: _propTypes["default"].func,
+  alt_clear_selections: _propTypes["default"].func,
+  regex_search: _propTypes["default"].bool,
+  code_container_ref: _propTypes["default"].object,
+  code_container_width: _propTypes["default"].oneOfType([_propTypes["default"].string, _propTypes["default"].number]),
+  code_container_height: _propTypes["default"].oneOfType([_propTypes["default"].string, _propTypes["default"].number]),
+  setSearchMatches: _propTypes["default"].func,
+  current_search_number: _propTypes["default"].number,
+  extra_autocomplete_list: _propTypes["default"].array
 };
 ReactCodemirror.defaultProps = {
   iCounter: 0,
