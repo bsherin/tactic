@@ -5,7 +5,7 @@ from matplotlib.colors import Normalize as mpl_Normalize
 import warnings
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
-    from matplotlib.cm import get_cmap, ScalarMappable, register_cmap, datad
+    from matplotlib.cm import ScalarMappable, register_cmap, datad # get_cmap
 import uuid
 import io
 import os
