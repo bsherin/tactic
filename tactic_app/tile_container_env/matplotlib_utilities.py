@@ -2,7 +2,10 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib.colors import LinearSegmentedColormap, ListedColormap
 from matplotlib.colors import Normalize as mpl_Normalize
-from matplotlib.cm import get_cmap, ScalarMappable, register_cmap, datad
+import warnings
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore")
+    from matplotlib.cm import get_cmap, ScalarMappable, register_cmap, datad
 import uuid
 import io
 import os
