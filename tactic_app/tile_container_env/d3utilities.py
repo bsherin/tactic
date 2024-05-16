@@ -1,8 +1,12 @@
 from __future__ import print_function
 
 import matplotlib
+import warnings
 from matplotlib.colors import rgb2hex
-from matplotlib.cm import get_cmap
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore")
+    from matplotlib.cm import get_cmap
+    # noinspection PyUnresolvedReferences
 from tile_base import TileBase
 import uuid
 
