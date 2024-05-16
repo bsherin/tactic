@@ -8,9 +8,9 @@ import PropTypes from 'prop-types';
 
 import {TextArea} from "@blueprintjs/core";
 
-import {ResourceViewerApp, copyToLibrary, sendToRepository} from "./resource_viewer_react_app";
+import {ResourceViewerApp, copyToLibrary} from "./resource_viewer_react_app";
 import {TacticSocket} from "./tactic_socket";
-import {postAjaxPromise, postPromise} from "./communication_react"
+import {postAjaxPromise} from "./communication_react"
 import {withStatus} from "./toaster.js"
 
 import {withTheme} from "./theme"
@@ -26,7 +26,6 @@ import {SizeContext, useSize, withSizeContext} from "./sizing_tools";
 
 export {text_viewer_props, TextViewerApp}
 
-
 function text_viewer_props(data, registerDirtyMethod, finalCallback) {
 
     let resource_viewer_id = guid();
@@ -38,15 +37,17 @@ function text_viewer_props(data, registerDirtyMethod, finalCallback) {
         main_id: resource_viewer_id,
         tsocket: tsocket,
         split_tags: [],
-        created: "",
         file_path: data.file_path,
-        // resource_name: data.resource_name,
+        resource_name: data.resource_name,
         the_content: data.the_content,
-        notes: "",
+        notes: null,
         readOnly: data.read_only,
         is_repository: data.is_repository,
         meta_outer: "#right-div",
         registerDirtyMethod: registerDirtyMethod,
+        created: data.created,
+        updated: data.updated,
+        size: data.size
     })
 }
 
@@ -66,7 +67,7 @@ function TextEditor(props) {
              ref={top_ref}
              style={{margin: 2, paddingTop: LIST_PADDING_TOP}}>
             <TextArea
-                cols="50"
+                cols="150"
                 style={tastyle}
                 disabled={props.readOnly}
                 onChange={props.handleChange}
@@ -160,24 +161,13 @@ function TextViewerApp(props) {
                         key_bindings: ['ctrl+s'],
                         tooltip: "Save"
                     },
-                    {
-                        name_text: "Save As...",
-                        icon_name: "floppy-disk",
-                        click_handler: _saveMeAs,
-                        tooltip: "Save as"
-                    },
+                    // {
+                    //     name_text: "Save As...",
+                    //     icon_name: "floppy-disk",
+                    //     click_handler: _saveMeAs,
+                    //     tooltip: "Save as"
+                    // },
                 ],
-                Transfer: [
-                    {
-                        name_text: "Share",
-                        icon_name: "share",
-                        click_handler: async () => {
-                            await sendToRepository("list", _cProp("resource_name"), dialogFuncs, statusFuncs, errorDrawerFuncs)
-                        },
-                        tooltip: "Share to repository"
-                    },
-                ]
-
             }
         }
         for (const [menu_name, menu] of Object.entries(ms)) {
@@ -222,29 +212,25 @@ function TextViewerApp(props) {
         if (!am_selected()) {
             return false
         }
-        const new_list_as_string = text_content;
-        const tagstring = tags.join(" ");
-        const local_notes = notes;
-        const local_tags = tags;  // In case it's modified wile saving
         const result_dict = {
-            "list_name": _cProp("resource_name"),
-            "new_list_as_string": new_list_as_string,
-            "tags": tagstring,
-            "notes": notes
+            file_path: props.file_path,
+            the_content: text_content_ref.current
         };
 
         try {
-            let data = await postAjaxPromise("update_list", result_dict);
-            savedContent.current = new_list_as_string;
-            savedTags.current = local_tags;
-            savedNotes.current = local_notes;
-            statusFuncs.statusMessage(`Saved list ${result_dict.list_name}`)
+            let data = await postAjaxPromise("save_text_file", result_dict);
+            if (data.success) {
+                statusFuncs.statusMessage(`Saved text file ${props.resource_name}`)
+            }
+            else {
+                  errorDrawerFuncs.addErrorDrawerEntry({
+                    title: `Error saving text file`,
+                    content: "message" in data ? data.message : ""
+                });
+            }
         }
         catch(e) {
-            errorDrawerFuncs.addErrorDrawerEntry({
-                title: `Error creating new notebook`,
-                content: "message" in data ? data.message : ""
-            });
+            errorDrawerFuncs.addFromError(`Error saving text file`, e)
         }
     }
 
@@ -253,10 +239,10 @@ function TextViewerApp(props) {
             return false
         }
         try {
-            let ln_result = await postPromise("host", "get_list_names", {"user_id": window.user_id}, props.main_id);
+            // let ln_result = await postPromise("host", "get_list_names", {"user_id": window.user_id}, props.main_id);
             let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
-                title: "Save List As",
-                field_title: "New List Name",
+                title: "Save File As",
+                field_title: "New File Name",
                 default_value: "NewList",
                 existing_names: ln_result.list_names,
                 checkboxes: [],
@@ -320,13 +306,17 @@ function TextViewerApp(props) {
                                    handleStateChange={_handleMetadataChange}
                                    created={props.created}
                                    meta_outer={props.meta_outer}
-                                   notes={notes}
-                                   tags={tags}
+                                   notes={null}
+                                   tags={null}
                                    showErrorDrawerButton={false}
+                                   additional_metadata={{
+                                       path: props.file_path,
+                                       size: `${props.size} bytes`
+                                  }}
                                    saveMe={_saveMe}>
                     <TextEditor the_content={text_content}
                                 readOnly={props.readOnly}
-                                handleChange={null}
+                                handleChange={_handleTextChange}
                     />
                 </ResourceViewerApp>
             </div>
@@ -363,9 +353,8 @@ TextViewerApp.defaultProps = {
 };
 
 async function text_viewer_main() {
-
     function gotProps(the_props) {
-        let ListViewerAppPlus = withSizeContext(withTheme(withDialogs(withErrorDrawer(withStatus(TextViewerApp)))));
+        let TextViewerAppPlus = withSizeContext(withTheme(withDialogs(withErrorDrawer(withStatus(TextViewerApp)))));
         let the_element = <TextViewerAppPlus {...the_props}
                                              controlled={false}
                                              initial_theme={window.theme}

@@ -1,11 +1,10 @@
 
-import os, re, shutil
+import os, re, shutil, datetime
 from flask_login import login_required, current_user
 from resource_manager import LibraryResourceManager
 from flask import jsonify, request, send_file
 
 from tactic_app import app, socketio
-
 
 class PoolManager(LibraryResourceManager):
 
@@ -18,6 +17,8 @@ class PoolManager(LibraryResourceManager):
                          login_required(self.delete_pool_resource), methods=['get', "post"])
         app.add_url_rule('/view_text_in_context', "view_text_in_context",
                          login_required(self.view_text_in_context), methods=['get', "post"])
+        app.add_url_rule('/save_text_file', "save_text_file",
+                         login_required(self.save_text_file), methods=['get', "post"])
         app.add_url_rule('/create_pool_directory', "create_pool_directory",
                          login_required(self.create_pool_directory), methods=['get', "post"])
         app.add_url_rule('/move_pool_resource', "move_pool_resource",
@@ -33,24 +34,57 @@ class PoolManager(LibraryResourceManager):
     def true_to_user(self, true_path):
         return re.sub(current_user.pool_dir, "/mydisk", true_path)
 
+    def can_read_as_text(self, file_path):
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                f.read(1024)  # Attempt to read the first 1024 bytes
+            return True
+        except (UnicodeDecodeError, IOError):
+            return False
+
     def view_text_in_context(self):
-        file_path = request.json["file_path"]
-        true_path = self.user_to_true(file_path)
-        with open(true_path, "r") as f:
-            the_text = f.read()
-        mdata = {}
-        _, fname = os.path.split(true_path)
-        data = {
-            "success": True,
-            "kind": "text-viewer",
-            "res_type": "text",
-            "the_content": the_text,
-            "mdata": mdata,
-            "resource_name": fname,
-            "read_only": True,
-            "is_repository": False,
-        }
-        return jsonify(data)
+        try:
+            file_path = request.json["file_path"]
+            true_path = self.user_to_true(file_path)
+            if not self.can_read_as_text(true_path):
+                return jsonify({"success": False, "message": "Not a text file."})
+            with open(true_path, "r") as f:
+                the_text = f.read()
+            mdata = {}
+            _, fname = os.path.split(true_path)
+            fstat = os.stat(true_path)
+            data = {
+                "success": True,
+                "kind": "text-viewer",
+                "res_type": "text",
+                "the_content": the_text,
+                "mdata": mdata,
+                "resource_name": fname,
+                "read_only": False,
+                "is_repository": False,
+                "file_path": file_path,
+                "created": current_user.get_timestrings(datetime.datetime.utcfromtimestamp(fstat.st_ctime))[0],
+                "updated": current_user.get_timestrings(datetime.datetime.utcfromtimestamp(fstat.st_mtime))[0],
+                "size": fstat.st_size
+            }
+            return jsonify(data)
+        except Exception as ex:
+            emsg = self.get_traceback_message(ex, "Error in view_text_in_context")
+            return jsonify({"success": False, "message": emsg})
+
+    def save_text_file(self):
+        try:
+            data = request.json
+            file_path = data["file_path"]
+            true_path = self.user_to_true(file_path)
+            the_content = data["the_content"]
+            with open(true_path, "w") as f:
+                f.write(the_content)
+            return {"success": True}
+        except Exception as ex:
+            emsg = self.get_traceback_message(ex, "error in save_text_file")
+            print(emsg)
+            return jsonify({"success": False, "message": emsg})
 
     def download_pool_file(self):
         try:

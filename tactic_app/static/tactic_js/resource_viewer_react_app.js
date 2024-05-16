@@ -198,6 +198,7 @@ function ResourceViewerApp(props) {
   })), props.children);
   var right_pane = /*#__PURE__*/_react["default"].createElement(_blueprint_mdata_fields.CombinedMetadata, {
     tags: props.tags,
+    useTags: props.tags != null,
     expandWidth: true,
     outer_style: {
       marginTop: 0,
@@ -209,10 +210,13 @@ function ResourceViewerApp(props) {
     },
     all_tags: all_tags,
     created: props.created,
+    updated: props.updated,
     notes: props.notes,
+    useNotes: props.notes != null,
     icon: props.mdata_icon,
     readOnly: props.readOnly,
     handleChange: props.handleStateChange,
+    additional_metadata: props.additional_metadata,
     pane_type: props.res_type
   });
   return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_menu_utilities.TacticMenubar, {
@@ -269,7 +273,8 @@ ResourceViewerApp.propTypes = {
   search_ref: _propTypes["default"].object,
   showErrorDrawerButton: _propTypes["default"].bool,
   allow_regex_search: _propTypes["default"].bool,
-  regex: _propTypes["default"].bool
+  regex: _propTypes["default"].bool,
+  additional_metadata: _propTypes["default"].object
 };
 ResourceViewerApp.defaultProps = {
   search_string: "",
@@ -283,5 +288,6 @@ ResourceViewerApp.defaultProps = {
   search_ref: null,
   allow_regex_search: false,
   regex: false,
-  mdata_icon: null
+  mdata_icon: null,
+  additional_metadata: null
 };

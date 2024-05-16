@@ -139,6 +139,7 @@ function ResourceViewerApp(props) {
 
     let right_pane = (
         <CombinedMetadata tags={props.tags}
+                          useTags={props.tags != null}
                           expandWidth={true}
                           outer_style={{
                               marginTop: 0, marginLeft: 10, overflow: "auto", padding: 15,
@@ -146,10 +147,13 @@ function ResourceViewerApp(props) {
                           }}
                           all_tags={all_tags}
                           created={props.created}
+                          updated={props.updated}
                           notes={props.notes}
+                          useNotes={props.notes != null}
                           icon={props.mdata_icon}
                           readOnly={props.readOnly}
                           handleChange={props.handleStateChange}
+                          additional_metadata={props.additional_metadata}
                           pane_type={props.res_type}/>
     );
 
@@ -212,7 +216,8 @@ ResourceViewerApp.propTypes = {
     search_ref: PropTypes.object,
     showErrorDrawerButton: PropTypes.bool,
     allow_regex_search: PropTypes.bool,
-    regex: PropTypes.bool
+    regex: PropTypes.bool,
+    additional_metadata: PropTypes.object
 };
 
 ResourceViewerApp.defaultProps = {
@@ -227,5 +232,6 @@ ResourceViewerApp.defaultProps = {
     search_ref: null,
     allow_regex_search: false,
     regex: false,
-    mdata_icon: null
+    mdata_icon: null,
+    additional_metadata: null
 };

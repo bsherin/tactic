@@ -675,5 +675,5 @@ CombinedMetadata.defaultProps = {
     updated: null,
     additional_metadata: null,
     aux_pane: null,
-    notes_buttons: null
+    notes_buttons: null,
 };

@@ -84,14 +84,23 @@ function PoolBrowser(props) {
         if (!valueRef.current && !node) return;
         let data;
         try {
+            const path = node && "isDirectory" in node ? node.fullpath : valueRef.current;
             if (node.isDirectory) return;
             data = await postAjaxPromise("view_text_in_context", {
                 context_id: context_id,
-                file_path: node.fullpath
+                file_path: path
             });
-            props.handleCreateViewer(data)
+            if (data.success) {
+                props.handleCreateViewer(data)
+            }
+            else {
+                errorDrawerFuncs.addErrorDrawerEntry({
+                    title: "Error viewing text file",
+                    content: "message" in data ? data.message : ""
+                });
+            }
         } catch (e) {
-            errorDrawerFuncs.addFromError(`Error viewing`, e)
+            errorDrawerFuncs.addFromError(`Error viewing text file`, e)
         }
     }
 
@@ -370,11 +379,13 @@ function PoolBrowser(props) {
                               await _rename_func(props.node)
                           }}
                           text="Rename Resource"/>
-                <MenuItem icon="eye-open"
-                          onClick={async () => {
-                              await viewTextFile(props.node)
-                          }}
-                          text="View as Text"/>
+                {!props.node.isDirectory &&
+                    <MenuItem icon="eye-open"
+                              onClick={async () => {
+                                  await viewTextFile(props.node)
+                              }}
+                              text="View as Text"/>
+                }
                 <MenuItem icon="inheritance"
                           onClick={async () => {
                               await _move_resource(props.node)
@@ -472,6 +483,7 @@ function PoolBrowser(props) {
                          connection_status={null}
                          rename_func={_rename_func}
                          delete_func={_delete_func}
+                         view_func={viewTextFile}
                          add_directory={_add_directory}
                          duplicate_file={_duplicate_file}
                          move_resource={_move_resource}
@@ -515,6 +527,9 @@ function PoolMenubar(props) {
 
     function menu_specs() {
         return {
+            View: [
+                {name_text: "View As Text File", icon_name: "eye-open", click_handler: props.view_func}
+            ],
             Edit: [
                 {name_text: "Rename Resource", icon_name: "edit", click_handler: props.rename_func},
                 {name_text: "Move Resource", icon_name: "inheritance", click_handler: props.move_resource},

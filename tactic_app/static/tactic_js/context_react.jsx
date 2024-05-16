@@ -398,11 +398,11 @@ function ContextApp(props) {
         }
     }
 
-    function _addPanel(new_id, viewer_kind, res_type, title, new_panel, callback = null) {
+    function _addPanel(new_id, viewer_kind, res_type, title, new_panel, callback = null, data = null) {
         let new_tab_panel_dict = {...tab_panel_dict_ref.current};
         new_tab_panel_dict[new_id] = {
             kind: viewer_kind, res_type: res_type, title: title,
-            panel: new_panel,
+            panel: new_panel, data: data
         };
         set_tab_panel_dict(new_tab_panel_dict);
         const new_tab_ids = [...tab_ids_ref.current, new_id];
@@ -413,9 +413,9 @@ function ContextApp(props) {
             _updateOpenResources(callback);
         });
     }
-    function _addPanelPromise(new_id, viewer_kind, res_type, title, new_panel) {
+    function _addPanelPromise(new_id, viewer_kind, res_type, title, new_panel, data = null) {
         return new Promise (function (resolve, reject) {
-            _addPanel(new_id, viewer_kind, res_type, title, new_panel, resolve)
+            _addPanel(new_id, viewer_kind, res_type, title, new_panel, resolve, data)
         })
     }
 
