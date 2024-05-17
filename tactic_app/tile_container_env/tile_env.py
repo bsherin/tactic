@@ -6,12 +6,13 @@ import warnings
 import matplotlib
 from exception_mixin import generic_exception_handler
 matplotlib.use("Agg")
+print(f"matplotlib version is {matplotlib.__version__}")
 
-with warnings.catch_warnings():
+with (warnings.catch_warnings()):
     warnings.simplefilter("ignore")
     from matplotlib_utilities import ColorMapper, FigureCanvas, MplFigure
     # noinspection PyUnresolvedReferences
-    from matplotlib.cm.ColorMapRegistry import get_cmap
+    get_cmap = matplotlib.cm.ColormapRegistry.get_cmap
 
 from tile_base import TileBase
 from d3utilities import D3Tile

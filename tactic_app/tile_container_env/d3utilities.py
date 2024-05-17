@@ -5,7 +5,7 @@ import warnings
 from matplotlib.colors import rgb2hex
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
-    from matplotlib.cm.ColorMapRegistry import get_cmap
+    get_cmap = matplotlib.cm.ColormapRegistry.get_cmap
     # noinspection PyUnresolvedReferences
 from tile_base import TileBase
 import uuid
