@@ -3,9 +3,12 @@ from matplotlib.figure import Figure
 from matplotlib.colors import LinearSegmentedColormap, ListedColormap
 from matplotlib.colors import Normalize as mpl_Normalize
 import warnings
-with warnings.catch_warnings():
+with (warnings.catch_warnings()):
     warnings.simplefilter("ignore")
-    from matplotlib.cm import ScalarMappable, register_cmap, datad # get_cmap
+    from matplotlib.cm.ColorMapRegistry import get_cmap
+    from matplotlib.colormaps import register as register_cmap
+    from matplotlib.cm import datad, ScalarMappable
+
 import uuid
 import io
 import os
