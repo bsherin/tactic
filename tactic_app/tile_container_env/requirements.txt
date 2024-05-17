@@ -2,7 +2,7 @@ beautifulsoup4
 Werkzeug == 2.2.2
 Flask == 2.2.3
 markdown
-matplotlib
+matplotlib >= 3.9.0
 networkx
 nltk
 numpy

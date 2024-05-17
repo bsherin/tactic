@@ -5,11 +5,10 @@ import warnings
 from matplotlib.colors import rgb2hex
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
-    # from matplotlib.cm import get_cmap
+    from matplotlib.cm.ColorMapRegistry import get_cmap
     # noinspection PyUnresolvedReferences
 from tile_base import TileBase
 import uuid
-
 
 class D3Tile(TileBase):
     def __init__(self, main_id_ignored=None, tile_id_ignored=None, tile_name=None):
