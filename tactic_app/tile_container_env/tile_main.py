@@ -299,6 +299,7 @@ class TileWorker(QWorker):
         if not am_notebook and not self.tile_instance.doc_type == "none":
             document_object.Collection.__fully_initialize__()
             pseudo_tile_base.Collection = document_object.Collection
+        if not am_notebook:
             pseudo_tile_base.Tiles = remote_tile_object.Tiles
             pseudo_tile_base.Pipes = remote_tile_object.Pipes
         pseudo_tile_base.Library = library_object.Library
