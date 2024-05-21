@@ -147,7 +147,7 @@ class MongoAccess(object):
 
         if "_id" in mdata:
             del mdata["_id"]  # without this can get an error submitting the result
-        return {"success": True, "message": "Collection created", "metadata": mdata}
+        return {"success": True, "message": "Collection created"}
 
     def append_documents_to_collection(self, collection_name, doc_dict, doc_type,
                                        header_list_dict=None, doc_mddict=None):
