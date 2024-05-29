@@ -400,6 +400,7 @@ function OptionModule(props) {
     }
 
     var cols = ["name", "type", "display_text", "default", "tags"];
+    var extra_cols = ["special_list", "pool_select_type"];
     let options_pane_style = {
         "marginTop": 10,
         "marginLeft": 10,
@@ -409,7 +410,8 @@ function OptionModule(props) {
 
     let copied_dlist = props.data_list_ref.current.map(opt => {
         let new_opt = {};
-        for (let col of cols) {
+        let all_cols = extra_cols.concat(cols);
+        for (let col of all_cols) {
             if (col in opt) {
                 new_opt[col] = opt[col]
             }
