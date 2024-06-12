@@ -3,9 +3,10 @@ from __future__ import print_function
 import matplotlib
 import warnings
 from matplotlib.colors import rgb2hex
+import matplotlib as mpl
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
-    get_cmap = matplotlib.cm.ColormapRegistry.get_cmap
+    # get_cmap = matplotlib.cm.ColormapRegistry.get_cmap
     # noinspection PyUnresolvedReferences
 from tile_base import TileBase
 import uuid
@@ -21,7 +22,7 @@ class D3Tile(TileBase):
 
     def palette_to_hex(self, cmap, num):
         step = 1.0 / num
-        cmap = get_cmap(self.palette_name)
+        cmap = mpl.colormaps[self.palette_name]
         breaks = [i * step for i in range(num)]
         return [rgb2hex(cmap(bb)) for bb in breaks]
 

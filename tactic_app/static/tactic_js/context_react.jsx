@@ -112,7 +112,7 @@ const classDict = {
 };
 
 function _context_main() {
-    const ContextAppPlus = withPool(withTheme(withDialogs(withAssistant(withErrorDrawer(withStatus(ContextApp))))));
+    const ContextAppPlus = withPool(withTheme(withDialogs(withErrorDrawer(withStatus(withAssistant(ContextApp))))));
     const domContainer = document.querySelector('#context-root');
     ReactDOM.render(<ContextAppPlus initial_theme={window.theme} tsocket={tsocket}/>, domContainer)
 }

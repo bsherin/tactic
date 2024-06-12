@@ -13,26 +13,28 @@ from openai import OpenAI, AssistantEventHandler
 from qworker import task_worthy, task_worthy_manual_submit, QWorker
 
 class StreamEventHandler(AssistantEventHandler):
-    def __init__(self, assist):
+    def __init__(self, assist, main_id):
         AssistantEventHandler.__init__(self)
+        self.main_id = main_id
         self.assist = assist
 
     def on_text_created(self, text):
-        self.assist.emit_to_client("chat_status", {"success": True, "status": "created"})
+        self.assist.emit_to_client("chat_status", {"success": True, "status": "created", "main_id": self.main_id})
 
     def on_text_delta(self, delta, snapshot):
         text = delta.value
         if self.assist.cancel_stream:
-            self.assist.emit_to_client("chat_status", {"success": True, "status": "canceled"})
+            self.assist.emit_to_client("chat_status", {"success": True, "status": "canceled", "main_id": self.main_id})
             raise Exception("stream canceled")
         self.assist.emit_to_client("chat_delta", {
             "success": True,
             "counter": self.assist.stream_counter,
+            "main_id": self.main_id,
             "delta": text})
         self.assist.stream_counter += 1
 
     def on_text_done(self, text):
-        self.assist.emit_to_client("chat_status", {"success": True, "status": "completed"})
+        self.assist.emit_to_client("chat_status", {"success": True, "status": "completed", "main_id": self.main_id})
 
 
 # noinspection PyUnusedLocal,PyMissingConstructor
@@ -45,7 +47,6 @@ class Assistant(QWorker, ExceptionMixin, AssistantEventHandler):
         self.chat_assistant = None
         self.chat_thread = None
         self.current_run_id = None
-        self.main_id = os.environ["PARENT"]
         self.stream_counter = 0
         signal.signal(signal.SIGTERM, self.clean_up_chat)
         signal.signal(signal.SIGINT, self.clean_up_chat)
@@ -53,12 +54,10 @@ class Assistant(QWorker, ExceptionMixin, AssistantEventHandler):
         return
 
     def ask_host(self, msg_type, task_data=None, callback_func=None):
-        task_data["main_id"] = self.main_id
         self.post_task("host", msg_type, task_data, callback_func)
         return
 
     def emit_to_client(self, message, data):
-        data["main_id"] = self.main_id
         data["message"] = message
         self.ask_host("emit_to_client", data)
 
@@ -104,8 +103,44 @@ class Assistant(QWorker, ExceptionMixin, AssistantEventHandler):
         return True
 
     @task_worthy
+    def clear_thread(self, _):
+        if self.chat_client is not None:
+            try:
+                if self.chat_thread is not None:
+                    self.chat_client.beta.threads.delete(self.chat_thread.id)
+                self.chat_thread = self.chat_client.beta.threads.create()
+            except Exception as ex:
+                error_string = self.extract_short_error_message(ex, "error deleting thread")
+                print(error_string)
+        return {"success": True}
+
+    @task_worthy
+    def get_past_messages(self, data_dict):
+        print("in get past messages")
+        try:
+            if self.chat_client is None:
+                print("no chat client")
+                return {"success": True, "messages": []}
+            messages = self.chat_client.beta.threads.messages.list(thread_id=self.chat_thread.id)
+            mdict = messages.dict()
+            result = []
+            for k in range(len(mdict["data"]) - 1, -1, -1):
+                txt = mdict["data"][k]["content"][0]["text"]["value"]
+                if mdict["data"][k]["assistant_id"] is None:
+                    kind = "user"
+                else:
+                    kind = "assistant"
+                result.append({"kind": kind, "text": txt})
+            return {"success": True, "messages": result}
+        except Exception as ex:
+            res = self.get_traceback_exception_dict(ex, "Error getting past messages")
+            print(res["message"])
+            return {"success": False, "message": res["message"], "messages": []}
+
+    @task_worthy
     def post_prompt_stream(self, data_dict, attempts=0):
         try:
+            print("in post prompt stream")
             if self.chat_client is None:
                 client_exists = self.initialize_assistant()
                 if not client_exists:
@@ -122,9 +157,10 @@ class Assistant(QWorker, ExceptionMixin, AssistantEventHandler):
             with self.chat_client.beta.threads.runs.stream(
                 thread_id=self.chat_thread.id,
                 assistant_id=self.chat_assistant.id,
-                event_handler=StreamEventHandler(self),
+                event_handler=StreamEventHandler(self, data_dict["main_id"]),
             ) as stream:
                 stream.until_done()
+            print("leaving post prompt stream")
             return {"success": True}
 
         except Exception as ex:
