@@ -211,7 +211,7 @@ $dark-medium: $dark-gray4;
     }
   }
 
-  .chat-response {
+  .chat-response, .text-panel-output {
     pre{
       padding: 10px;
       background-color: $light-gray1;
@@ -424,7 +424,7 @@ $dark-medium: $dark-gray4;
     }
   }
 
-  .chat-response {
+  .chat-response, .text-panel-output {
     pre{
       padding: 10px;
       background-color: $dark-gray2;

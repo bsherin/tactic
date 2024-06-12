@@ -16,6 +16,7 @@
     "@blueprintjs/table": "^5.0.8",
     "@codemirror/lang-markdown": "^0.18.4",
     "codemirror": "^5.62.2",
+    "d3": "^7.9.0",
     "diff-match-patch": "^1.0.5",
     "diff-match-patch-js-browser-and-nodejs": "^1.0.2",
     "dropzone": "^5.9.2",

@@ -10,12 +10,15 @@ const mdi = markdownIt({html: true});
 mdi.use(markdownItLatex);
 
 import {useState, useEffect, memo, useContext, createContext, Fragment} from "react";
-import {Button, Drawer} from "@blueprintjs/core";
+import {Button, Drawer, ButtonGroup} from "@blueprintjs/core";
 import {Card, CardList, TextArea, ControlGroup} from "@blueprintjs/core";
 
 import {useStateAndRef, useCallbackStack} from "./utilities_react";
 import {postAjax, postPromise} from "./communication_react";
 import {ThemeContext} from "./theme";
+import {ErrorDrawerContext} from "./error_drawer";
+import {StatusContext} from "./toaster";
+import {DialogContext} from "./modal_react";
 const AssistantContext = createContext(null);
 
 export {ChatModule,withAssistant, AssistantContext};
@@ -40,11 +43,11 @@ function withAssistant(WrappedComponent, lposition = "right", assistant_drawer_s
         useEffect(()=>{
             if (window.has_openapi_key) {
                 getAssistant();
-                window.addEventListener("unload", sendRemove);
+                // window.addEventListener("unload", sendRemove);
             }
             return (() => {
-                sendRemove();
-                window.removeEventListener("unload", sendRemove)
+                // sendRemove();
+                //window.removeEventListener("unload", sendRemove)
             })
         }, []);
 
@@ -54,11 +57,29 @@ function withAssistant(WrappedComponent, lposition = "right", assistant_drawer_s
             }
         },[show_drawer]);
 
+        const pushCallback = useCallbackStack();
+
         function sendRemove() {
             if (assistant_id_ref.current) {
                 navigator.sendBeacon("/delete_container_on_unload",
                     JSON.stringify({"container_id": assistant_id_ref.current, "notify": false}));
             }
+        }
+
+        function getPastMessages() {
+            if (assistant_id_ref.current == null) return;
+            postPromise(assistant_id_ref.current, "get_past_messages", {})
+                .then((data) => {
+                    if (data["success"]) {
+                        for (let msg of data["messages"]) {
+                            if (msg["kind"] == "assistant") {
+                                msg["text"] = formatLatexEquations(msg["text"]);
+                                msg["text"] = mdi.render(msg["text"])
+                            }
+                        }
+                        set_item_list(data["messages"])
+                    }
+                })
         }
 
         function getAssistant() {
@@ -67,7 +88,9 @@ function withAssistant(WrappedComponent, lposition = "right", assistant_drawer_s
                     if (response.assistant_id == null) {
                         startAssistant()
                     } else if (response.assistant_id != assistant_id_ref.current) {
-                        set_assistant_id(response.assistant_id)
+                        set_assistant_id(response.assistant_id);
+                        pushCallback(getPastMessages)
+
                     }
                 })
         }
@@ -196,6 +219,9 @@ function ChatModule(props) {
     });
 
     const assistantDrawerFuncs = useContext(AssistantContext);
+    const errorDrawerFuncs = useContext(ErrorDrawerContext);
+    const dialogFuncs = useContext(DialogContext);
+    const statusFuncs = useContext(StatusContext);
 
     const pushCallback = useCallbackStack();
 
@@ -291,14 +317,19 @@ function ChatModule(props) {
             console.log(error.message)
         }
     }
+    
+    function _addEntry(entry) {
+        const new_item_list = [...assistantDrawerFuncs.item_list_ref.current, entry];
+        assistantDrawerFuncs.set_item_list(new_item_list);
+    }
 
     async function _promptSubmit(event) {
         try {
-            const new_item_list = [...assistantDrawerFuncs.item_list_ref.current, {kind: "prompt", text: prompt_value_ref.current}];
-            assistantDrawerFuncs.set_item_list(new_item_list);
+            _addEntry({kind: "user", text: prompt_value_ref.current});
             set_prompt_value("");
             assistantDrawerFuncs.set_chat_status("posted");
-            await postPromise(assistantDrawerFuncs.assistant_id_ref.current, "post_prompt_stream", {prompt: prompt_value_ref.current});
+            await postPromise(assistantDrawerFuncs.assistant_id_ref.current, "post_prompt_stream",
+                {prompt: prompt_value_ref.current, main_id: window.main_id})
         } catch (error) {
             console.log(error.message)
         }
@@ -311,8 +342,49 @@ function ChatModule(props) {
         }
     }
 
+    async function _clearThread() {
+        try {
+            await postPromise(assistantDrawerFuncs.assistant_id_ref.current, "clear_thread", {main_id: window.main_id});
+            assistantDrawerFuncs.set_item_list([])
+        } catch (e) {
+            errorDrawerFuncs.addFromError(title, e)
+        }
+    }
+
+    async function _saveThreadAs() {
+        statusFuncs.startSpinner();
+        let data = await postPromise("host", "get_project_names", {"user_id": window.user_id}, props.main_id);
+
+        try {
+            let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
+                title: "Save Thread To Notebook",
+                field_title: "New Notebook Name",
+                default_value: "ThreadNotebook",
+                existing_names: data.project_names,
+                checkboxes: null,
+                handleClose: dialogFuncs.hideModal,
+            });
+            await postPromise("host", "SaveAssistantThread", {
+                main_id: window.main_id,
+                assistant_id: assistantDrawerFuncs.assistant_id_ref.current,
+                new_name: new_name,
+                user_id: window.user_id});
+            statusFuncs.clearStatusMessage();
+            statusFuncs.stopSpinner();
+            statusFuncs.statusMessage(`Saved project ${new_name}`)
+
+        } catch (e) {
+            if (e != "canceled") {
+                let title = "title" in e ? e.title : "Error saving thread";
+                errorDrawerFuncs.addFromError(title, e)
+            }
+            statusFuncs.clearStatusMessage();
+            statusFuncs.stopSpinner();
+        }
+    }
+
     let items = assistantDrawerFuncs.item_list_ref.current.map((item, index) => {
-        if (item.kind == "prompt") {
+        if (item.kind == "user") {
             return <Prompt key={index} {...item}/>
         } else {
             return <Response key={index} {...item}/>
@@ -337,9 +409,14 @@ function ChatModule(props) {
         flexDirection: "column",
         justifyContent: "space-between"
     };
-
     return (
-        <div className="chat-module" ref={top_ref} style={chat_pane_style} >
+        <div className="chat-module" ref={top_ref} style={chat_pane_style}>
+            <div className="d-flex flex-row justify-content-end mt-2">
+                <ButtonGroup>
+                    <Button icon="trash" text="Clear" onClick={_clearThread}/>
+                    <Button icon="floppy-disk" text="Save" onClick={_saveThreadAs}/>
+                </ButtonGroup>
+            </div>
             <CardList ref={list_ref} bordered={false} style={{height: card_list_height}}>
                 {items}
             </CardList>
@@ -367,6 +444,7 @@ function ChatModule(props) {
 ChatModule = memo(ChatModule);
 
 const chat_item_style = {display: "flex", flexDirection: "column", width: "100%"};
+
 function Prompt(props) {
     return (
         <Card interactive={false}>

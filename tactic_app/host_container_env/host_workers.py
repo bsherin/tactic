@@ -7,11 +7,12 @@ import gevent
 import pika
 from bson import ObjectId
 from communication_utils import make_python_object_jsonizable, store_temp_data, read_temp_data, delete_temp_data
+from communication_utils import make_jsonizable_and_compress
 import docker_functions
 from docker_functions import create_container, destroy_container, destroy_child_containers, destroy_user_containers
 from docker_functions import get_log, restart_container, create_log_streamer_container
 from docker_functions import get_matching_user_containers, get_container, create_assistant_container, get_user_assistant
-from tactic_app import app, socketio, db
+from tactic_app import app, socketio, db, fs
 from library_views import tile_manager, project_manager, collection_manager, list_manager, pool_manager, get_manager_for_type
 from library_views import code_manager
 from redis_tools import redis_ht, delete_ready_block_participant
@@ -790,6 +791,61 @@ class HostWorker(QWorker):
         openai_api_key = user.get_openai_api_key()
         assistant_id = create_assistant_container(openai_api_key, parent_id, user_id, username)
         return {"assistant_id": assistant_id}
+
+    @task_worthy
+    def SaveAssistantThread(self, data):
+        def got_past_messages(resp_data):
+            try:
+                print("got past messages")
+                console_items = []
+                for msg in resp_data["messages"]:
+                    unique_id = str(uuid.uuid4())
+                    header = "ChatBot" if msg["kind"] == "assistant" else "You"
+                    citem = {
+                        "unique_id": unique_id,
+                        "type": "text",
+                        "am_shrunk": False,
+                        "search_string": None,
+                        "summary_text": None,
+                        "console_text": f"<h6>{header}</h6>\n{msg['text']}",
+                        "show_markdown": True
+                    }
+                    console_items.append(citem)
+                interface_state = {
+                    "console_items": console_items,
+                    "show_exports_pane": False,
+                    "console_width_fraction": .5
+                }
+                project_dict = {"doc_type": "notebook", "project_name": new_name}
+                mdata = {"datetime": datetime.datetime.utcnow(),
+                        "updated": datetime.datetime.utcnow(),
+                        "tags": "",
+                        "notes": ""}
+                mdata["type"] = "notebook"
+                mdata["collection_name"] = ""
+                mdata["loaded_tiles"] = []
+                mdata["save_style"] = "b64save_react"
+                project_dict["interface_state"] = interface_state
+
+                save_dict = {"metadata": mdata,
+                             "project_name": new_name}
+                pdict = make_jsonizable_and_compress(project_dict)
+                save_dict["file_id"] = fs.put(pdict)
+                db[user_obj.project_collection_name].insert_one(save_dict)
+                return {"success": True}
+            except Exception as ex2:
+                print(self.handle_exception(ex2, "Error saving thread to notebook"))
+                return {"success": False}
+
+        try:
+            assistant_id = data["assistant_id"]
+            user_id = data["user_id"]
+            user_obj = load_user(user_id)
+            new_name = data["new_name"]
+            self.post_task(assistant_id, "get_past_messages", {}, got_past_messages)
+        except Exception as ex:
+            print(self.handle_exception(ex, "Error posting get_past_message"))
+            return {"success": False}
 
     @task_worthy
     def GetAssistant(self, data):

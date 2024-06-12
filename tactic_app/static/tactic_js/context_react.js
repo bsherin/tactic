@@ -105,7 +105,7 @@ const classDict = {
   "text-viewer": _text_viewer_react.TextViewerApp
 };
 function _context_main() {
-  const ContextAppPlus = (0, _pool_tree.withPool)((0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _assistant.withAssistant)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(ContextApp))))));
+  const ContextAppPlus = (0, _pool_tree.withPool)((0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)((0, _assistant.withAssistant)(ContextApp))))));
   const domContainer = document.querySelector('#context-root');
   ReactDOM.render( /*#__PURE__*/_react.default.createElement(ContextAppPlus, {
     initial_theme: window.theme,

@@ -135,7 +135,7 @@
 .light-theme .chat-module .bp5-card-list .bp5-card {
   background-color: #f6f7f9;
 }
-.light-theme .chat-response pre {
+.light-theme .chat-response pre, .light-theme .text-panel-output pre {
   padding: 10px;
   background-color: #d3d8de;
   overflow: scroll;
@@ -283,7 +283,7 @@
   width: 50%;
   min-width: 200px;
 }
-.bp5-dark .chat-response pre {
+.bp5-dark .chat-response pre, .bp5-dark .text-panel-output pre {
   padding: 10px;
   background-color: #252a31;
   overflow: scroll;
