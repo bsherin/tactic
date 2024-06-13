@@ -326,6 +326,7 @@ function TileComponent(props) {
     const log_ref = useRef(null);
     const left_glyphs_ref = useRef(null);
     const right_glyphs_ref = useRef(null);
+    const javascript_error_ref = useRef(false);
 
     const last_front_content = useRef("");
 
@@ -364,6 +365,10 @@ function TileComponent(props) {
             }
         }
     });
+
+    useEffect(()=>{
+        javascript_error_ref.current = false
+    }, [props.javascript_code]);
 
     useEffect(() => {
         _broadcastTileSize(props.tile_width, props.tile_height)
@@ -420,9 +425,12 @@ function TileComponent(props) {
 
     function _executeJavascript() {
         try {
-            let selector = "[id='" + props.tile_id + "'] .jscript-target";
-            eval(props.javascript_code)(selector, tdaWidth(), tdaHeight(), props.javascript_arg_dict, resizing)
+            if (!javascript_error_ref.current) {
+                let selector = "[id='" + props.tile_id + "'] .jscript-target";
+                eval(props.javascript_code)(selector, tdaWidth(), tdaHeight(), props.javascript_arg_dict, resizing)
+            }
         } catch (err) {
+            javascript_error_ref.current = true;
             errorDrawerFuncs.addErrorDrawerEntry({
                 title: "Error evaluating javascript",
                 content: err.message
