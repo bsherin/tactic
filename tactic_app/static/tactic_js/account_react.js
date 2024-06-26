@@ -2,7 +2,7 @@
 
 require("../tactic_css/tactic.scss");
 var _react = _interopRequireWildcard(require("react"));
-var ReactDOM = _interopRequireWildcard(require("react-dom"));
+var _client = require("react-dom/client");
 var _core = require("@blueprintjs/core");
 var _toaster = require("./toaster");
 var _communication_react = require("./communication_react");
@@ -14,12 +14,13 @@ function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; 
 window.main_id = (0, _utilities_react.guid)();
 function _account_main() {
   if (window._show_message) (0, _toaster.doFlash)(window._message);
-  let domContainer = document.querySelector('#root');
+  const domContainer = document.querySelector('#root');
+  const root = (0, _client.createRoot)(domContainer);
   let AccountAppPlus = (0, _theme.withTheme)(AccountApp);
-  ReactDOM.render( /*#__PURE__*/_react.default.createElement(AccountAppPlus, {
+  root.render( /*#__PURE__*/_react.default.createElement(AccountAppPlus, {
     initial_theme: window.theme,
     controlled: false
-  }), domContainer);
+  }));
 }
 const field_names = ["new_password", "confirm_new_password"];
 function AccountTextField(props) {

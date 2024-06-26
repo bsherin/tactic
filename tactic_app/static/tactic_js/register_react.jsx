@@ -2,7 +2,7 @@ import "../tactic_css/tactic.scss";
 
 import React from "react";
 import {Fragment, memo, useContext} from "react";
-import * as ReactDOM from 'react-dom'
+import { createRoot } from 'react-dom/client';
 
 import {FormGroup, InputGroup, Button} from "@blueprintjs/core";
 
@@ -16,9 +16,10 @@ import {withTheme, ThemeContext} from "./theme";
 window.page_id = guid();
 
 function _register_main() {
-    let domContainer = document.querySelector('#root');
+    const domContainer = document.querySelector('#root');
+    const root = createRoot(domContainer);
     let RegisterAppPlus = withTheme(RegisterApp);
-    ReactDOM.render(<RegisterAppPlus initial_theme={window.theme}/>, domContainer)
+    root.render(<RegisterAppPlus initial_theme={window.theme}/>)
 }
 
 const field_names = ["username", "password", "confirm_password"];

@@ -3,8 +3,7 @@ import "../tactic_css/tactic.scss";
 
 import React from "react";
 import {Fragment, useState, useEffect, useRef, memo, useContext} from "react";
-import * as ReactDOM from 'react-dom'
-import PropTypes from 'prop-types';
+import { createRoot } from 'react-dom/client';
 
 import {TextArea} from "@blueprintjs/core";
 
@@ -80,14 +79,15 @@ function TextEditor(props) {
 
 TextEditor = memo(TextEditor);
 
-TextEditor.propTypes = {
-    the_content: PropTypes.string,
-    handleChange: PropTypes.func,
-    readOnly: PropTypes.bool,
-    height: PropTypes.number
-};
-
 function TextViewerApp(props) {
+    props = {
+        controlled: false,
+        changeResourceName: null,
+        updatePanel: null,
+        refreshTab: null,
+        closeTab: null,
+        ...props
+    };
     const top_ref = useRef(null);
     const search_ref = useRef(null);
 
@@ -326,32 +326,6 @@ function TextViewerApp(props) {
 
 TextViewerApp = memo(TextViewerApp);
 
-TextViewerApp.propTypes = {
-    controlled: PropTypes.bool,
-    changeResourceName: PropTypes.func,
-    updatePanel: PropTypes.func,
-    refreshTab: PropTypes.func,
-    closeTab: PropTypes.func,
-    the_content: PropTypes.string,
-    created: PropTypes.string,
-    tags: PropTypes.array,
-    notes: PropTypes.string,
-    readOnly: PropTypes.bool,
-    is_repository: PropTypes.bool,
-    meta_outer: PropTypes.string,
-    tsocket: PropTypes.object,
-    usable_height: PropTypes.number,
-    usable_width: PropTypes.number
-};
-
-TextViewerApp.defaultProps = {
-    controlled: false,
-    changeResourceName: null,
-    updatePanel: null,
-    refreshTab: null,
-    closeTab: null,
-};
-
 async function text_viewer_main() {
     function gotProps(the_props) {
         let TextViewerAppPlus = withSizeContext(withTheme(withDialogs(withErrorDrawer(withStatus(TextViewerApp)))));
@@ -360,8 +334,9 @@ async function text_viewer_main() {
                                              initial_theme={window.theme}
                                              changeName={null}
         />;
-        let domContainer = document.querySelector('#root');
-        ReactDOM.render(the_element, domContainer)
+        const domContainer = document.querySelector('#root');
+        const root = createRoot(domContainer);
+        root.render(the_element)
     }
 
     let target = window.is_repository ? "repository_view_list_in_context" : "view_list_in_context";

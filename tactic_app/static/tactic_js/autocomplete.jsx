@@ -1,5 +1,5 @@
 import React from "react";
-import * as ReactDOM from "react-dom";
+import { createRoot } from 'react-dom/client';
 import {postAjax} from "./communication_react";
 import CodeMirror from 'codemirror/lib/codemirror.js';
 import {Icon} from "@blueprintjs/core";
@@ -104,7 +104,8 @@ function tactic_icon(size) {
 }
 
 function renderAutoCompleteApiElement(elt, data, cur) {
-    ReactDOM.render(
+    const root = createRoot(elt);
+    root.render(
         <React.Fragment>
             <span className="mr-1">
                 <Icon icon={tactic_icon(10)}/>
@@ -117,11 +118,12 @@ function renderAutoCompleteApiElement(elt, data, cur) {
                     {cur.argString}
                 </span>
             }
-        </React.Fragment>, elt)
+        </React.Fragment>)
 }
 
 function renderAutoCompleteElement(elt, data, cur) {
-    ReactDOM.render(
+    const root = createRoot(elt);
+    root.render(
         <React.Fragment>
             <span className="mr-1">
                 <Icon icon={cur.icon} size={10}/>
@@ -129,7 +131,7 @@ function renderAutoCompleteElement(elt, data, cur) {
             <span>
                 {cur.text}
             </span>
-        </React.Fragment>, elt)
+        </React.Fragment>)
 }
 
 function create_api() {

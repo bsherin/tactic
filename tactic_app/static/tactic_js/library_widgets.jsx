@@ -2,7 +2,6 @@ import "../tactic_css/tactic_select.scss"
 
 import React from "react";
 import {Fragment, useState, useEffect, useRef, memo} from 'react';
-import PropTypes from 'prop-types';
 import hash from "object-hash"
 
 import {
@@ -25,6 +24,25 @@ export {SearchForm}
 export {BpSelectorTable}
 
 function SearchForm(props) {
+    props = {
+        allow_search_inside: false,
+        allow_search_metadata: false,
+        allow_show_hidden: false,
+        allow_regex: false,
+        regex: false,
+        search_inside: false,
+        search_metadata: false,
+        show_hidden: false,
+        field_width: 265,
+        include_search_jumper: false,
+        current_search_number: null,
+        searchNext: null,
+        searchPrev: null,
+        search_ref: null,
+        number_matches: null,
+        update_delay: 500,
+        ...props
+    };
     const [temp_text, set_temp_text] = useState(null);
     const [waiting, doUpdate] = useDebounce((newval)=>{
         props.update_search_state({"search_string": newval});
@@ -140,46 +158,25 @@ function SearchForm(props) {
 
 SearchForm = memo(SearchForm);
 
-SearchForm.propTypes = {
-    allow_search_inside: PropTypes.bool,
-    allow_search_metadata: PropTypes.bool,
-    allow_show_hidden: PropTypes.bool,
-    allow_regex: PropTypes.bool,
-    regex: PropTypes.bool,
-    update_search_state: PropTypes.func,
-    search_string: PropTypes.string,
-    search_inside: PropTypes.bool,
-    search_metadata: PropTypes.bool,
-    show_hidden: PropTypes.bool,
-    field_with: PropTypes.number,
-    include_search_jumper: PropTypes.bool,
-    searchNext: PropTypes.func,
-    searchPrev: PropTypes.func,
-    search_ref: PropTypes.object,
-    number_matches: PropTypes.number,
-    update_delay: PropTypes.number
-};
-
-SearchForm.defaultProps = {
-    allow_search_inside: false,
-    allow_search_metadata: false,
-    allow_show_hidden: false,
-    allow_regex: false,
-    regex: false,
-    search_inside: false,
-    search_metadata: false,
-    show_hidden: false,
-    field_width: 265,
-    include_search_jumper: false,
-    current_search_number: null,
-    searchNext: null,
-    searchPrev: null,
-    search_ref: null,
-    number_matches: null,
-    update_delay: 500
-};
-
 function BpSelectorTable(props) {
+    props = {
+        columns: {
+            "name": {"sort_field": "name", "first_sort": "ascending"},
+            "created": {"sort_field": "created_for_sort", "first_sort": "descending"},
+            "updated": {"sort_field": "updated_for_sort", "first_sort": "ascending"},
+            "tags": {"sort_field": "tags", "first_sort": "ascending"}
+        },
+        identifier_field: "name",
+        enableColumnResigin: false,
+        maxColumnWidth: null,
+        active_row: 0,
+        show_animations: false,
+        handleSpaceBarPress: null,
+        keyHandler: null,
+        draggable: true,
+        rowChanged: 0,
+        ...props
+    };
     const [columnWidths, setColumnWidths, columnWidthsRef] = useStateAndRef(null);
     const saved_data_dict = useRef(null);
     const data_update_required = useRef(null);
@@ -371,41 +368,6 @@ function BpSelectorTable(props) {
 }
 
 BpSelectorTable = memo(BpSelectorTable);
-
-BpSelectorTable.propTypes = {
-    columns: PropTypes.object,
-    open_resources_ref: PropTypes.object,
-    maxColumnWidth: PropTypes.number,
-    enableColumnResizing: PropTypes.bool,
-    selectedRegions: PropTypes.array,
-    data_dict: PropTypes.object,
-    num_rows: PropTypes.number,
-    keyHandler: PropTypes.func,
-    communicateColumnWidthSum: PropTypes.func,
-    sortColumn: PropTypes.func,
-    onSelection: PropTypes.func,
-    handleRowDoubleClick: PropTypes.func,
-    identifier_field: PropTypes.string,
-    rowChanged: PropTypes.number
-};
-
-BpSelectorTable.defaultProps = {
-    columns: {
-        "name": {"sort_field": "name", "first_sort": "ascending"},
-        "created": {"sort_field": "created_for_sort", "first_sort": "descending"},
-        "updated": {"sort_field": "updated_for_sort", "first_sort": "ascending"},
-        "tags": {"sort_field": "tags", "first_sort": "ascending"}
-    },
-    identifier_field: "name",
-    enableColumnResigin: false,
-    maxColumnWidth: null,
-    active_row: 0,
-    show_animations: false,
-    handleSpaceBarPress: null,
-    keyHandler: null,
-    draggable: true,
-    rowChanged: 0
-};
 
 const MAX_INITIAL_CELL_WIDTH = 300;
 const ICON_WIDTH = 35;

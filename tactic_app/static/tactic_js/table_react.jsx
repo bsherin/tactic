@@ -1,5 +1,4 @@
 
-
 import React from "react";
 import {useState, useEffect, useRef, memo} from "react";
 import PropTypes from 'prop-types';
@@ -87,20 +86,7 @@ function FreeformBody(props) {
     )
 }
 
-// FreeformBody.propTypes = {
-//     main_id: PropTypes.string,
-//     document_name: PropTypes.string,
-//     my_ref: PropTypes.object,
-//     data_text: PropTypes.string,
-//     code_container_height: PropTypes.number,
-//     search_text: PropTypes.string,
-//     alt_search_text: PropTypes.string,
-//     setMainStateValue: PropTypes.func,
-//     soft_wrap: PropTypes.bool,
-// };
-
 FreeformBody = memo(FreeformBody);
-
 
 function SmallSpinner () {
     return (
@@ -111,6 +97,12 @@ function SmallSpinner () {
 }
 
 function MainTableCardHeader(props) {
+    props = {
+        is_freeform: false,
+        soft_wrap: false,
+        handleSoftWrapChange: null,
+        ...props
+    };
 
     const heading_left_ref = useRef(null);
     const heading_right_ref = useRef(null);
@@ -241,34 +233,6 @@ function MainTableCardHeader(props) {
         </div>
     )
 }
-
-MainTableCardHeader.propTypes = {
-    toggleShrink: PropTypes.func,
-    selected_row: PropTypes.number,
-    table_is_filtered: PropTypes.bool,
-    setMainStateValue: PropTypes.func,
-    handleSearchFieldChange: PropTypes.func,
-    search_text: PropTypes.string,
-    handleFilter: PropTypes.func,
-    short_collection_name: PropTypes.string,
-    current_doc_name: PropTypes.string,
-    handleChangeDoc: PropTypes.func,
-    spreadsheet_mode: PropTypes.bool,
-    handleSpreadsheetModeChange: PropTypes.func,
-    doc_names: PropTypes.array,
-    show_table_spinner: PropTypes.bool,
-    show_filter_button: PropTypes.bool,
-    is_freeform: PropTypes.bool,
-    soft_wrap: PropTypes.bool,
-    handleSoftWrapChange: PropTypes.func
-
-};
-
-MainTableCardHeader.defaultProps = {
-    is_freeform: false,
-    soft_wrap: false,
-    handleSoftWrapChange: null
-};
 
 MainTableCardHeader = memo(MainTableCardHeader);
 

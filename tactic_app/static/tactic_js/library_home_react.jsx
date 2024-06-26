@@ -5,7 +5,7 @@ import "../tactic_css/tactic_table.scss";
 import "../tactic_css/library_home.scss";
 
 import React from "react";
-import * as ReactDOM from 'react-dom'
+import { createRoot } from 'react-dom/client';
 import {Fragment, useEffect, useRef, memo, useContext} from "react";
 
 import {TacticSocket} from "./tactic_socket";
@@ -130,9 +130,10 @@ function _library_home_main() {
     const tsocket = new TacticSocket("main", 5000, "library", library_id);
     const LibraryHomeAppPlus = withSizeContext(withTheme(withDialogs(withErrorDrawer(withStatus(LibraryHomeApp)))));
     const domContainer = document.querySelector('#library-home-root');
-    ReactDOM.render(<LibraryHomeAppPlus tsocket={tsocket}
+    const root = createRoot(domContainer);
+    root.render(<LibraryHomeAppPlus tsocket={tsocket}
                                         controlled={false}
-                                        initial_theme={window.theme}/>, domContainer)
+                                        initial_theme={window.theme}/>)
 }
 
 if (!window.in_context) {

@@ -200,7 +200,10 @@ TileForm.propTypes = {
 TileForm = memo(TileForm);
 
 function FormSection(props) {
-
+    props = {
+        start_open: true,
+        ...props
+    };
     const [isOpen, setIsOpen] = useState(props.start_open);
 
     function _handleClick() {
@@ -229,20 +232,6 @@ function FormSection(props) {
         </Fragment>
     )
 }
-
-FormSection.propTypes = {
-    att_name: PropTypes.string,
-    section_items: PropTypes.array,
-    start_open: PropTypes.bool,
-    display_text: PropTypes.oneOfType([
-        PropTypes.string,
-        PropTypes.number
-    ]),
-};
-
-FormSection.defaultProps = {
-    start_open: true
-};
 
 FormSection = memo(FormSection);
 

@@ -3,7 +3,7 @@ import "../tactic_css/tactic.scss";
 
 import React from "react";
 import {Fragment, memo} from "react";
-import * as ReactDOM from 'react-dom'
+import { createRoot } from 'react-dom/client';
 
 import { FormGroup, InputGroup, Button } from "@blueprintjs/core";
 
@@ -16,8 +16,9 @@ window.page_id = guid();
 
 function _duplicate_main() {
     render_navbar("account");
-    let domContainer = document.querySelector('#root');
-    ReactDOM.render(<DuplicateApp/>, domContainer)
+    const domContainer = document.querySelector('#root');
+    const root = createRoot(domContainer);
+    root.render(<DuplicateApp/>)
 }
 
 const field_names = ["username", "password", "confirm_password"];

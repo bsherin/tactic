@@ -1,13 +1,9 @@
-/**
- * Created by bls910
- */
 
 import "../tactic_css/tactic.scss";
 
 import React from "react";
 import {Fragment, useState, useEffect, useRef, memo, useContext} from "react";
-import * as ReactDOM from 'react-dom'
-import PropTypes from 'prop-types';
+import { createRoot } from 'react-dom/client';
 
 import {ResourceViewerApp, copyToLibrary, sendToRepository} from "./resource_viewer_react_app";
 import {TacticSocket} from "./tactic_socket";
@@ -49,6 +45,14 @@ function module_viewer_props(data, registerDirtyMethod, finalCallback) {
 }
 
 function ModuleViewerApp(props) {
+    props = {
+        controlled: false,
+        changeResourceName: null,
+        refreshTab: null,
+        closeTab: null,
+        updatePanel: null,
+        ...props
+    };
     const top_ref = useRef(null);
     const search_ref = useRef(null);
 
@@ -487,29 +491,6 @@ function ModuleViewerApp(props) {
 
 ModuleViewerApp = memo(ModuleViewerApp);
 
-ModuleViewerApp.propTypes = {
-    controlled: PropTypes.bool,
-    changeResourceName: PropTypes.func,
-    updatePanel: PropTypes.func,
-    refreshTab: PropTypes.func,
-    closeTab: PropTypes.func,
-    the_content: PropTypes.string,
-    created: PropTypes.string,
-    tags: PropTypes.array,
-    notes: PropTypes.string,
-    readOnly: PropTypes.bool,
-    is_repository: PropTypes.bool,
-    meta_outer: PropTypes.string,
-};
-
-ModuleViewerApp.defaultProps = {
-    controlled: false,
-    changeResourceName: null,
-    refreshTab: null,
-    closeTab: null,
-    updatePanel: null
-};
-
 function module_viewer_main() {
     function gotProps(the_props) {
         let ModuleViewerAppPlus = withSizeContext(withTheme(withDialogs(withErrorDrawer(withStatus(ModuleViewerApp)))));
@@ -519,7 +500,8 @@ function module_viewer_main() {
                                                changeName={null}
         />;
         let domContainer = document.querySelector('#root');
-        ReactDOM.render(the_element, domContainer)
+        const root = createRoot(domContainer);
+        root.render(the_element)
     }
 
     let target = window.is_repository ? "repository_view_module_in_context" : "view_module_in_context";

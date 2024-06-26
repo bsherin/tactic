@@ -4,7 +4,7 @@ import "../tactic_css/library_home.scss";
 
 import React from "react";
 import {Fragment, useEffect, useRef, memo, useContext} from "react";
-import * as ReactDOM from 'react-dom'
+import { createRoot } from 'react-dom/client';
 
 import {TacticSocket} from "./tactic_socket"
 import {handleCallback} from "./communication_react"
@@ -129,10 +129,11 @@ function _repository_home_main() {
     tsocket = new TacticSocket("main", 5000, "repository", library_id);
     tsocket.socket.emit('join-repository', {});
     let RepositoryHomeAppPlus = withSizeContext(withTheme(withDialogs(withErrorDrawer(withStatus(RepositoryHomeApp)))));
-    let domContainer = document.querySelector('#library-home-root');
-    ReactDOM.render(<RepositoryHomeAppPlus initial_theme={window.theme}
+    const domContainer = document.querySelector('#library-home-root');
+    const root = createRoot(domContainer);
+    root.render(<RepositoryHomeAppPlus initial_theme={window.theme}
                                            controlled={false}
-                                           tsocket={tsocket}/>, domContainer)
+                                           tsocket={tsocket}/>)
 }
 
 _repository_home_main();

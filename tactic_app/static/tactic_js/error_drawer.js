@@ -9,7 +9,6 @@ exports.ErrorItem = ErrorItem;
 exports.withErrorDrawer = withErrorDrawer;
 var _extends2 = _interopRequireDefault(require("@babel/runtime/helpers/extends"));
 var _react = _interopRequireWildcard(require("react"));
-var _propTypes = _interopRequireDefault(require("prop-types"));
 var _core = require("@blueprintjs/core");
 var _communication_react = require("./communication_react");
 var _blueprint_react_widgets = require("./blueprint_react_widgets");
@@ -141,6 +140,14 @@ function withErrorDrawer(WrappedComponent) {
   return /*#__PURE__*/(0, _react.memo)(WithErrorComponent);
 }
 function ErrorItem(props) {
+  props = {
+    title: null,
+    has_link: false,
+    line_number: null,
+    goToLineNumberfunc: null,
+    tile_type: null,
+    ...props
+  };
   function _openError() {
     if (!window.in_context) {
       window.blur();
@@ -206,24 +213,16 @@ function ErrorItem(props) {
   }));
 }
 exports.ErrorItem = ErrorItem = /*#__PURE__*/(0, _react.memo)(ErrorItem);
-ErrorItem.propTypes = {
-  ukey: _propTypes.default.string,
-  title: _propTypes.default.string,
-  content: _propTypes.default.string,
-  has_link: _propTypes.default.bool,
-  line_number: _propTypes.default.number,
-  goToLineNumberFunc: _propTypes.default.func,
-  tile_type: _propTypes.default.string,
-  handleCloseItem: _propTypes.default.func
-};
-ErrorItem.defaultProps = {
-  title: null,
-  has_link: false,
-  line_number: null,
-  goToLineNumberfunc: null,
-  tile_type: null
-};
 function ErrorDrawer(props) {
+  props = {
+    show_drawer: false,
+    contents: [],
+    position: "right",
+    title: null,
+    size: "30%",
+    goToLineNumberfunc: null,
+    ...props
+  };
   const theme = (0, _react.useContext)(_theme.ThemeContext);
   let sorted_keys = [...Object.keys(props.contents.current)];
   sorted_keys.sort(function (a, b) {
@@ -275,22 +274,3 @@ function ErrorDrawer(props) {
   }, items)));
 }
 ErrorDrawer = /*#__PURE__*/(0, _react.memo)(ErrorDrawer);
-ErrorDrawer.propTypes = {
-  show_drawer: _propTypes.default.bool,
-  contents: _propTypes.default.object,
-  title: _propTypes.default.string,
-  onClose: _propTypes.default.func,
-  handleCloseItem: _propTypes.default.func,
-  position: _propTypes.default.string,
-  clearAll: _propTypes.default.func,
-  goToLineNumberFunc: _propTypes.default.func,
-  size: _propTypes.default.oneOfType([_propTypes.default.number, _propTypes.default.string])
-};
-ErrorDrawer.defaultProps = {
-  show_drawer: false,
-  contents: [],
-  position: "right",
-  title: null,
-  size: "30%",
-  goToLineNumberfunc: null
-};

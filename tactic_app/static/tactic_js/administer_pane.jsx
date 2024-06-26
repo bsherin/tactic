@@ -1,7 +1,6 @@
 
 import React from "react";
 import {Fragment, useState, useRef, useEffect, memo, useContext} from "react";
-import PropTypes from 'prop-types';
 
 import {Regions} from "@blueprintjs/table";
 
@@ -19,6 +18,12 @@ import {ErrorDrawerContext} from "./error_drawer";
 export {AdminPane}
 
 function AdminPane(props) {
+    props = {
+        is_repository: false,
+        tsocket: null,
+        ...props
+    };
+
     const top_ref = useRef(null);
     const table_ref = useRef(null);
     const console_text_ref = useRef(null);
@@ -59,7 +64,7 @@ function AdminPane(props) {
         }
     }
 
-     function _onTableSelection(regions) {
+     async function _onTableSelection(regions) {
         if (regions.length == 0) return;  // Without this get an error when clicking on a body cell
         let selected_rows = [];
         let revised_regions = [];
@@ -74,7 +79,7 @@ function AdminPane(props) {
                 }
             }
         }
-        _handleRowSelection(selected_rows);
+        await _handleRowSelection(selected_rows);
         _updatePaneState({selectedRegions: revised_regions});
     }
 
@@ -137,8 +142,8 @@ function AdminPane(props) {
         props.updatePaneState(props.res_type, new_state, callback)
     }
 
-    function _updatePaneStatePromise(new_state) {
-        props.updatePaneStatePromise(props.res_type, new_state)
+    async function _updatePaneStatePromise(new_state) {
+        await props.updatePaneStatePromise(props.res_type, new_state)
     }
 
     function get_data_dict_index(idval) {
@@ -171,22 +176,22 @@ function AdminPane(props) {
         _updatePaneState({left_width_fraction: width_fraction})
     }
 
-    function _handleRowClick(row_dict, shift_key_down=false) {
-        _updatePaneState({
+    async function _handleRowClick(row_dict, shift_key_down=false) {
+        await _updatePaneStatePromise({
             selected_resource: row_dict,
             multi_select: false,
             list_of_selected: [row_dict[props.id_field]]
         })
-
     }
 
-    function _handleRowSelection(selected_rows) {
+    async function _handleRowSelection(selected_rows) {
          let row_dict = selected_rows[0];
-        _updatePaneState({
-            selected_resource: row_dict,
-            multi_select: false,
-            list_of_selected: [row_dict.name]
-        })
+         await _handleRowClick(row_dict)
+        // _updatePaneState({
+        //     selected_resource: row_dict,
+        //     multi_select: false,
+        //     list_of_selected: [row_dict.Name]
+        // })
     }
 
     function _filter_func(resource_dict, search_string) {
@@ -388,24 +393,5 @@ function AdminPane(props) {
 
     )
 }
-
-AdminPane.propTypes = {
-    usable_height: PropTypes.number,
-    usable_width: PropTypes.number,
-    res_type: PropTypes.string,
-    allow_search_inside: PropTypes.bool,
-    allow_search_metadata: PropTypes.bool,
-    search_inside_view: PropTypes.string,
-    search_metadata_view: PropTypes.string,
-    is_repository: PropTypes.bool,
-    tsocket: PropTypes.object,
-    colnames: PropTypes.array,
-    id_field: PropTypes.string
-};
-
-AdminPane.defaultProps = {
-    is_repository: false,
-    tsocket: null
-};
 
 AdminPane = memo(AdminPane);

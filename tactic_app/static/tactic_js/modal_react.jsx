@@ -88,6 +88,12 @@ function withDialogs(WrappedComponent) {
 }
 
 function ModalDialog(props) {
+    props = {
+        existing_names: [],
+        default_value: "",
+        checkboxes: null,
+        ...props
+    };
 
     const [checkbox_states, set_checkbox_states, checkbox_states_ref] = useStateAndRef({});
     const [warning_text, set_warning_text, warning_text_ref] = useStateAndRef("");
@@ -206,24 +212,12 @@ function ModalDialog(props) {
 
 ModalDialog = memo(ModalDialog);
 
-ModalDialog.propTypes = {
-    handleSubmit: PropTypes.func,
-    handleClose: PropTypes.func,
-    title: PropTypes.string,
-    field_title: PropTypes.string,
-    default_value: PropTypes.string,
-    existing_names: PropTypes.array,
-    checkboxes: PropTypes.array,
-};
-
-ModalDialog.defaultProps = {
-    existing_names: [],
-    default_value: "",
-    checkboxes: null,
-};
-
 function PresentationDialog(props) {
-
+    props = {
+        existing_names: [],
+        default_name: "",
+        ...props
+    };
     const [show, set_show] = useState(false);
     const [save_as_collection, set_save_as_collection] = useState(false);
     const [collection_name, set_collection_name, collection_name_ref] = useStateAndRef(null);
@@ -335,19 +329,12 @@ function PresentationDialog(props) {
 
 PresentationDialog = memo(PresentationDialog);
 
-PresentationDialog.propTypes = {
-    handleSubmit: PropTypes.func,
-    handleClose: PropTypes.func,
-    default_name: PropTypes.string,
-    existing_names: PropTypes.array,
-};
-
-PresentationDialog.defaultProps = {
-    existing_names: [],
-    default_name: "",
-};
-
 function ReportDialog(props) {
+    props = {
+        existing_names: [],
+        default_name: "NewReport",
+        ...props
+    };
     const [show, set_show] = useState(false);
     const [save_as_collection, set_save_as_collection] = useState(false);
     const [collection_name, set_collection_name] = useState(null);
@@ -482,17 +469,6 @@ function ReportDialog(props) {
 }
 
 ReportDialog = memo(ReportDialog);
-ReportDialog.propTypes = {
-    handleSubmit: PropTypes.func,
-    handleClose: PropTypes.func,
-    default_name: PropTypes.string,
-    existing_names: PropTypes.array,
-};
-
-ReportDialog.defaultProps = {
-    existing_names: [],
-    default_name: "NewReport",
-};
 
 function SelectDialog(props) {
     const [show, set_show] = useState(false);
@@ -704,6 +680,12 @@ SelectResourceDialog.propTypes = {
 };
 
 function ConfirmDialog(props) {
+    props = {
+        submit_text: "Submit",
+        cancel_text: "Cancel",
+        handleCancel: null,
+        ...props
+    };
     const [show, set_show] = useState(false);
     const theme = useContext(ThemeContext);
 
@@ -750,18 +732,3 @@ function ConfirmDialog(props) {
 
 ConfirmDialog = memo(ConfirmDialog);
 
-ConfirmDialog.propTypes = {
-    handleSubmit: PropTypes.func,
-    handleCancel: PropTypes.func,
-    handleClose: PropTypes.func,
-    title: PropTypes.string,
-    text_body: PropTypes.string,
-    submit_text: PropTypes.string,
-    cancel_text: PropTypes.string
-};
-
-ConfirmDialog.defaultProps = {
-    submit_text: "Submit",
-    cancel_text: "Cancel",
-    handleCancel: null
-};

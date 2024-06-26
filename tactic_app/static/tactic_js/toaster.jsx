@@ -1,8 +1,8 @@
 'use strict';
 
 import React from "react";
+import { createRoot } from 'react-dom/client';
 import {Fragment, useState, useEffect, useRef, memo, useContext, createContext} from "react";
-import PropTypes from 'prop-types';
 
 import {OverlayToaster, Position, Spinner} from "@blueprintjs/core";
 import {GlyphButton} from "./blueprint_react_widgets";
@@ -19,11 +19,7 @@ const DEFAULT_TIMEOUT = 20000;
 let disconnect_toast_id = null;
 let reconnect_toast_id = null;
 
-const AppToaster = OverlayToaster.create({
-    className: "recipe-toaster",
-    position: Position.TOP,
-    autoFocus: false,
-});
+
 
 const intent_dict = {
     "alert-success": "Success",
@@ -32,56 +28,63 @@ const intent_dict = {
 };
 
 function doFlash(data) {
-    let intent;
-    if (typeof (data) == "string") {
-        AppToaster.show({
-            message: data,
-            timeout: DEFAULT_TIMEOUT,
-            intent: null
-        });
-        return
-    }
-    if (!("alert_type" in data)) {
-        intent = null;
-    } else {
-        intent = intent_dict[data.alert_type];
-    }
-    if (!("timeout" in data)) {
-        data.timeout = DEFAULT_TIMEOUT
-    }
+    const AppToasterPromise = OverlayToaster.createAsync({
+        className: "recipe-toaster",
+        position: Position.TOP,
+        autoFocus: false,
+    }, {domRenderer: (toaster, containerElement) => createRoot(containerElement).render(toaster),});
+    AppToasterPromise.then((AppToaster) => {
+        let intent;
+        if (typeof (data) == "string") {
+            AppToaster.show({
+                message: data,
+                timeout: DEFAULT_TIMEOUT,
+                intent: null
+            });
+            return
+        }
+        if (!("alert_type" in data)) {
+            intent = null;
+        } else {
+            intent = intent_dict[data.alert_type];
+        }
+        if (!("timeout" in data)) {
+            data.timeout = DEFAULT_TIMEOUT
+        }
 
-    if ("is_disconnect_message" in data) {
-        if (disconnect_toast_id) {
-            AppToaster.dismiss(disconnect_toast_id)
+        if ("is_disconnect_message" in data) {
+            if (disconnect_toast_id) {
+                AppToaster.dismiss(disconnect_toast_id)
+            }
+            if (reconnect_toast_id) {
+                AppToaster.dismiss(reconnect_toast_id)
+            }
+            disconnect_toast_id = AppToaster.show({
+                message: data.message,
+                timeout: data.timeout,
+                intent: intent
+            });
+        } else if ("is_reconnect_message" in data) {
+            if (reconnect_toast_id) {
+                AppToaster.dismiss(reconnect_toast_id)
+            }
+            if (disconnect_toast_id) {
+                AppToaster.dismiss(disconnect_toast_id);
+                disconnect_toast_id = null
+            }
+            reconnect_toast_id = AppToaster.show({
+                message: data.message,
+                timeout: data.timeout,
+                intent: intent
+            })
+        } else {
+            AppToaster.show({
+                message: data.message,
+                timeout: data.timeout,
+                intent: intent
+            });
         }
-        if (reconnect_toast_id) {
-            AppToaster.dismiss(reconnect_toast_id)
-        }
-        disconnect_toast_id = AppToaster.show({
-            message: data.message,
-            timeout: data.timeout,
-            intent: intent
-        });
-    } else if ("is_reconnect_message" in data) {
-        if (reconnect_toast_id) {
-            AppToaster.dismiss(reconnect_toast_id)
-        }
-        if (disconnect_toast_id) {
-            AppToaster.dismiss(disconnect_toast_id);
-            disconnect_toast_id = null
-        }
-        reconnect_toast_id = AppToaster.show({
-            message: data.message,
-            timeout: data.timeout,
-            intent: intent
-        })
-    } else {
-        AppToaster.show({
-            message: data.message,
-            timeout: data.timeout,
-            intent: intent
-        });
-    }
+    })
 }
 
 function messageOrError(data, success_message, failure_tiltle, statusFuncs, errorDrawerFuncs) {
@@ -219,6 +222,14 @@ function withStatus(WrappedComponent) {
 }
 
 function Status(props) {
+    props = {
+        show_spinner: false,
+        show_close: true,
+        handleClose: null,
+        status_message: null,
+        spinner_size: 25,
+        ...props
+    };
     const elRef = useRef(null);
     const theme = useContext(ThemeContext);
 
@@ -248,19 +259,3 @@ function Status(props) {
 }
 
 Status = memo(Status);
-
-Status.propTypes = {
-    show_spinner: PropTypes.bool,
-    show_close: PropTypes.bool,
-    handleClose: PropTypes.func,
-    status_message: PropTypes.string,
-    spinner_size: PropTypes.number,
-};
-
-Status.defaultProps = {
-    show_spinner: false,
-    show_close: true,
-    handleClose: null,
-    status_message: null,
-    spinner_size: 25,
-};

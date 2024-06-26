@@ -8,7 +8,7 @@ require("../tactic_css/tactic_table.scss");
 require("../tactic_css/library_home.scss");
 require("../tactic_css/tile_creator.scss");
 var _react = _interopRequireWildcard(require("react"));
-var ReactDOM = _interopRequireWildcard(require("react-dom"));
+var _client = require("react-dom/client");
 var _core = require("@blueprintjs/core");
 var _utilities_react = require("./utilities_react");
 var _tactic_socket = require("./tactic_socket");
@@ -36,7 +36,7 @@ var _error_drawer = require("./error_drawer");
 var _assistant = require("./assistant");
 var _sizing_tools = require("./sizing_tools");
 var _key_trap = require("./key_trap");
-var _resizing_layouts = require("./resizing_layouts");
+var _resizing_layouts = require("./resizing_layouts2");
 var _theme = require("./theme");
 var _modal_react = require("./modal_react");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
@@ -107,10 +107,11 @@ const classDict = {
 function _context_main() {
   const ContextAppPlus = (0, _pool_tree.withPool)((0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)((0, _assistant.withAssistant)(ContextApp))))));
   const domContainer = document.querySelector('#context-root');
-  ReactDOM.render( /*#__PURE__*/_react.default.createElement(ContextAppPlus, {
+  const root = (0, _client.createRoot)(domContainer);
+  root.render( /*#__PURE__*/_react.default.createElement(ContextAppPlus, {
     initial_theme: window.theme,
     tsocket: tsocket
-  }), domContainer);
+  }));
 }
 function ContextApp(props) {
   const [selectedTabId, setSelectedTabId, selectedTabIdRef, selectedTabIdCounter] = (0, _utilities_react.useStateAndRefAndCounter)("library");

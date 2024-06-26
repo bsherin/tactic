@@ -1,13 +1,11 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.AllMenubar = AllMenubar;
 exports.LibraryMenubar = LibraryMenubar;
 var _react = _interopRequireWildcard(require("react"));
-var _propTypes = _interopRequireDefault(require("prop-types"));
 var _menu_utilities = require("./menu_utilities");
 var _blueprint_mdata_fields = require("./blueprint_mdata_fields");
 var _error_drawer = require("./error_drawer");
@@ -16,6 +14,10 @@ function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; 
 // noinspection JSCheckFunctionSignatures
 
 function LibraryMenubar(props) {
+  props = {
+    resource_icon: null,
+    ...props
+  };
   const errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
   (0, _react.useEffect)(() => {
     if (props.context_menu_items) {
@@ -80,32 +82,6 @@ function LibraryMenubar(props) {
   });
 }
 exports.LibraryMenubar = LibraryMenubar = /*#__PURE__*/(0, _react.memo)(LibraryMenubar);
-LibraryMenubar.propTypes = {
-  sendContextMenuItems: _propTypes.default.func,
-  menu_specs: _propTypes.default.object,
-  multi_select: _propTypes.default.bool,
-  selectedTypeRef: _propTypes.default.object,
-  refreshTab: _propTypes.default.func,
-  showErrorDrawerButton: _propTypes.default.bool,
-  resource_icon: _propTypes.default.string
-};
-LibraryMenubar.defaultProps = {
-  resource_icon: null
-};
-let specializedMenubarPropTypes = {
-  sendContextMenuItems: _propTypes.default.func,
-  view_func: _propTypes.default.func,
-  view_resource: _propTypes.default.func,
-  duplicate_func: _propTypes.default.func,
-  delete_func: _propTypes.default.func,
-  rename_func: _propTypes.default.func,
-  refresh_func: _propTypes.default.func,
-  send_repository_func: _propTypes.default.func,
-  selected_resource: _propTypes.default.object,
-  list_of_selected: _propTypes.default.array,
-  muti_select: _propTypes.default.bool,
-  add_new_row: _propTypes.default.func
-};
 function AllMenubar(props) {
   function context_menu_items() {
     let menu_items = [{
@@ -372,4 +348,3 @@ function AllMenubar(props) {
   });
 }
 exports.AllMenubar = AllMenubar = /*#__PURE__*/(0, _react.memo)(AllMenubar);
-AllMenubar.propTypes = specializedMenubarPropTypes;

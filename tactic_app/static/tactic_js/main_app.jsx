@@ -6,8 +6,7 @@ import "../tactic_css/tactic_select.scss"
 
 import React from "react";
 import {Fragment, useEffect, useRef, memo, useContext, useReducer} from "react";
-import * as ReactDOM from 'react-dom'
-import PropTypes from 'prop-types';
+import { createRoot } from 'react-dom/client';
 
 import {NavbarDivider} from "@blueprintjs/core";
 import {Regions} from "@blueprintjs/table"
@@ -63,7 +62,14 @@ const iStateDefaults = {
 };
 
 function MainApp(props) {
-
+    props = {
+        controlled: false,
+        changeResourceName: null,
+        refreshTab: null,
+        closeTab: null,
+        updatePanel: null,
+        ...props
+    };
     function iStateOrDefault(pname) {
         if (props.is_project) {
             if ("interface_state" in props && props.interface_state && pname in props.interface_state) {
@@ -1204,26 +1210,6 @@ function MainApp(props) {
 
 MainApp = memo(MainApp);
 
-MainApp.propTypes = {
-    controlled: PropTypes.bool,
-    changeResourceName: PropTypes.func,
-    updatePanel: PropTypes.func,
-    refreshTab: PropTypes.func,
-    closeTab: PropTypes.func,
-    interface_state: PropTypes.object,
-    initial_doc_names: PropTypes.array,
-    initial_data_row_dict: PropTypes.object,
-    doc_names: PropTypes.array,
-};
-
-MainApp.defaultProps = {
-    controlled: false,
-    changeResourceName: null,
-    refreshTab: null,
-    closeTab: null,
-    updatePanel: null
-};
-
 function main_main() {
     function gotProps(the_props) {
         let MainAppPlus = withPool(withSizeContext(withTheme(withDialogs(withErrorDrawer(withStatus(MainApp))))));
@@ -1233,7 +1219,8 @@ function main_main() {
                                        changeName={null}
         />;
         const domContainer = document.querySelector('#main-root');
-        ReactDOM.render(the_element, domContainer)
+        const root = createRoot(domContainer);
+        root.render(the_element)
     }
 
     renderSpinnerMessage("Starting up ...");

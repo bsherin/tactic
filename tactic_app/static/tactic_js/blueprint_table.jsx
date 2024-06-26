@@ -391,7 +391,13 @@ function compute_initial_column_widths(header_list, data_row_dict) {
     // Get sample header and body cells
     // set up a canvas so that we can use it to compute the width of text
     const elements = document.querySelectorAll(".bp5-table-truncated-text");
-    let body_font = window.getComputedStyle(elements[0]).font;
+    let body_font;
+    if (elements.length > 0) {
+        body_font = window.getComputedStyle(elements[0]).font;
+    }
+    else {
+        body_font = '600 14px / 30px "Helvetica Neue", Helvetica, Arial, sans-serif';
+    }
     let header_font = body_font;
     let canvas_element = document.getElementById("measure-canvas");
     let ctx = canvas_element.getContext("2d");

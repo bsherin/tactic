@@ -2,7 +2,6 @@
 
 import React from "react";
 import {useEffect, memo, useContext} from "react";
-import PropTypes from 'prop-types';
 
 import {TacticMenubar} from "./menu_utilities";
 import {icon_dict} from "./blueprint_mdata_fields";
@@ -11,6 +10,10 @@ import {ErrorDrawerContext} from "./error_drawer";
 export {AllMenubar, LibraryMenubar}
 
 function LibraryMenubar(props) {
+    props = {
+        resource_icon: null,
+        ...props
+    };
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
     useEffect(() => {
         if (props.context_menu_items) {
@@ -78,35 +81,6 @@ function LibraryMenubar(props) {
 }
 
 LibraryMenubar = memo(LibraryMenubar);
-
-LibraryMenubar.propTypes = {
-    sendContextMenuItems: PropTypes.func,
-    menu_specs: PropTypes.object,
-    multi_select: PropTypes.bool,
-    selectedTypeRef: PropTypes.object,
-    refreshTab: PropTypes.func,
-    showErrorDrawerButton: PropTypes.bool,
-    resource_icon: PropTypes.string
-};
-
-LibraryMenubar.defaultProps = {
-    resource_icon: null
-};
-
-let specializedMenubarPropTypes = {
-    sendContextMenuItems: PropTypes.func,
-    view_func: PropTypes.func,
-    view_resource: PropTypes.func,
-    duplicate_func: PropTypes.func,
-    delete_func: PropTypes.func,
-    rename_func: PropTypes.func,
-    refresh_func: PropTypes.func,
-    send_repository_func: PropTypes.func,
-    selected_resource: PropTypes.object,
-    list_of_selected: PropTypes.array,
-    muti_select: PropTypes.bool,
-    add_new_row: PropTypes.func
-};
 
 function AllMenubar(props) {
 
@@ -312,5 +286,4 @@ function AllMenubar(props) {
 
 AllMenubar = memo(AllMenubar);
 
-AllMenubar.propTypes = specializedMenubarPropTypes;
 

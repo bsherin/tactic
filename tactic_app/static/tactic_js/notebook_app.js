@@ -10,8 +10,7 @@ require("../tactic_css/tactic.scss");
 require("../tactic_css/tactic_console.scss");
 require("../tactic_css/tactic_main.scss");
 var _react = _interopRequireWildcard(require("react"));
-var ReactDOM = _interopRequireWildcard(require("react-dom"));
-var _propTypes = _interopRequireDefault(require("prop-types"));
+var _client = require("react-dom/client");
 var _blueprint_navbar = require("./blueprint_navbar");
 var _menu_utilities = require("./menu_utilities");
 var _main_menus_react = require("./main_menus_react");
@@ -38,6 +37,11 @@ const cc_style = {
   marginTop: MARGIN_SIZE
 };
 function NotebookApp(props) {
+  props = {
+    refreshTab: null,
+    closeTab: null,
+    ...props
+  };
   const last_save = (0, _react.useRef)({});
   const main_outer_ref = (0, _react.useRef)(null);
   const updateExportsList = (0, _react.useRef)(null);
@@ -267,18 +271,6 @@ function NotebookApp(props) {
   }))));
 }
 exports.NotebookApp = NotebookApp = /*#__PURE__*/(0, _react.memo)(NotebookApp);
-NotebookApp.propTypes = {
-  console_items: _propTypes.default.array,
-  console_component: _propTypes.default.object,
-  is_project: _propTypes.default.bool,
-  interface_state: _propTypes.default.object,
-  refreshTab: _propTypes.default.func,
-  closeTab: _propTypes.default.func
-};
-NotebookApp.defaultProps = {
-  refreshTab: null,
-  closeTab: null
-};
 function main_main() {
   function gotProps(the_props) {
     let NotebookAppPlus = (0, _sizing_tools.withSizeContext)((0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(NotebookApp)))));
@@ -288,7 +280,8 @@ function main_main() {
       changeName: null
     }));
     const domContainer = document.querySelector('#main-root');
-    ReactDOM.render(the_element, domContainer);
+    const root = (0, _client.createRoot)(domContainer);
+    root.render(the_element);
   }
   (0, _utilities_react.renderSpinnerMessage)("Starting up ...");
   var target = window.is_new_notebook ? "new_notebook_in_context" : "main_project_in_context";

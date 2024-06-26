@@ -8,7 +8,7 @@ import "../tactic_css/tile_creator.scss";
 
 import React from "react";
 import { useState, useEffect, useRef, useContext, Fragment, useCallback } from "react";
-import * as ReactDOM from 'react-dom'
+import { createRoot } from 'react-dom/client';
 
 import {Tab, Tabs, Button, Icon, Spinner} from "@blueprintjs/core";
 import {FocusStyleManager} from "@blueprintjs/core";
@@ -43,7 +43,7 @@ import {withAssistant} from "./assistant";
 import {SizeContext, getUsableDimensions, USUAL_NAVBAR_HEIGHT, INIT_CONTEXT_PANEL_WIDTH} from "./sizing_tools";
 import {postAjaxPromise} from "./communication_react";
 import {KeyTrap} from "./key_trap";
-import {DragHandle} from "./resizing_layouts";
+import {DragHandle} from "./resizing_layouts2";
 import {useCallbackStack, useStateAndRef, useDebounce, useStateAndRefAndCounter} from "./utilities_react";
 import {ThemeContext, withTheme} from "./theme"
 
@@ -114,7 +114,8 @@ const classDict = {
 function _context_main() {
     const ContextAppPlus = withPool(withTheme(withDialogs(withErrorDrawer(withStatus(withAssistant(ContextApp))))));
     const domContainer = document.querySelector('#context-root');
-    ReactDOM.render(<ContextAppPlus initial_theme={window.theme} tsocket={tsocket}/>, domContainer)
+    const root = createRoot(domContainer);
+    root.render(<ContextAppPlus initial_theme={window.theme} tsocket={tsocket}/>)
 }
 
 function ContextApp(props) {

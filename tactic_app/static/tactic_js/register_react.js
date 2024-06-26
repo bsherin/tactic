@@ -2,7 +2,7 @@
 
 require("../tactic_css/tactic.scss");
 var _react = _interopRequireWildcard(require("react"));
-var ReactDOM = _interopRequireWildcard(require("react-dom"));
+var _client = require("react-dom/client");
 var _core = require("@blueprintjs/core");
 var _blueprint_navbar = require("./blueprint_navbar");
 var _toaster = require("./toaster");
@@ -13,11 +13,12 @@ function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return 
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 window.page_id = (0, _utilities_react.guid)();
 function _register_main() {
-  let domContainer = document.querySelector('#root');
+  const domContainer = document.querySelector('#root');
+  const root = (0, _client.createRoot)(domContainer);
   let RegisterAppPlus = (0, _theme.withTheme)(RegisterApp);
-  ReactDOM.render( /*#__PURE__*/_react.default.createElement(RegisterAppPlus, {
+  root.render( /*#__PURE__*/_react.default.createElement(RegisterAppPlus, {
     initial_theme: window.theme
-  }), domContainer);
+  }));
 }
 const field_names = ["username", "password", "confirm_password"];
 var initial_fields = {};

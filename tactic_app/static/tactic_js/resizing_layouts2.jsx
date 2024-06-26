@@ -1,7 +1,6 @@
 
 import React from "react";
 import { useState, useEffect, useRef, memo, useContext } from "react";
-import PropTypes from 'prop-types';
 import _ from 'lodash';
 
 import { Icon } from "@blueprintjs/core";
@@ -16,7 +15,8 @@ export {HorizontalPanes, VerticalPanes, HANDLE_WIDTH, DragHandle}
 const MARGIN_SIZE = 17;
 const HANDLE_WIDTH = 10;
 
-function DragHandle(props) {
+function DragHandle({direction = "x", onDrag = null, dragStart = null, dragEnd = null,
+                        useThinBar = false, barHeight = null, barWidth = null, ...props}) {
     const startX = useRef(null);
     const startY = useRef(null);
     const lastX = useRef(null);
@@ -33,20 +33,20 @@ function DragHandle(props) {
         startY.current = getMouseY(e);
         lastX.current = startX.current;
         lastY.current = startY.current;
-        if (props.dragStart) {
-            props.dragStart(e, ui, startX.current, startY.current);
+        if (dragStart) {
+            dragStart(e, ui, startX.current, startY.current);
         }
         e.preventDefault();
     }
 
     function _onDrag(e, ui) {
-        if (props.direction == "y") {
+        if (direction == "y") {
             lastX.current = startX.current;
         }
         else {
             lastX.current = getMouseX(e);
         }
-        if (props.direction == "x") {
+        if (direction == "x") {
             lastY.current = startY.current;
         }
         else {
@@ -54,20 +54,20 @@ function DragHandle(props) {
         }
         let dx = lastX.current - startX.current;
         let dy = lastY.current - startY.current;
-        if (props.onDrag) {
-            props.onDrag(e, ui, lastX.current, lastY.current, dx, dy)
+        if (onDrag) {
+            onDrag(e, ui, lastX.current, lastY.current, dx, dy)
         }
         e.preventDefault();
     }
 
     function _dragEnd(e, ui) {
-        if (props.direction == "y") {
+        if (direction == "y") {
             lastX.current = startX.current;
         }
         else {
             lastX.current = getMouseX(e);
         }
-        if (props.direction == "x") {
+        if (direction == "x") {
             lastY.current = startY.current;
         }
         else {
@@ -75,8 +75,8 @@ function DragHandle(props) {
         }
         let dx = lastX.current - startX.current;
         let dy = lastY.current - startY.current;
-        if (props.dragEnd) {
-            props.dragEnd(e, ui, lastX.current, lastY.current, dx, dy);
+        if (dragEnd) {
+            dragEnd(e, ui, lastX.current, lastY.current, dx, dy);
         }
         e.preventDefault();
     }
@@ -108,23 +108,23 @@ function DragHandle(props) {
     };
 
     let style = props.position_dict;
-    style.cursor = cursor_dict[props.direction];
-    if (props.direction == "both") {
+    style.cursor = cursor_dict[direction];
+    if (direction == "both") {
         style.transform = "rotate(45deg)"
     }
     let wrappedElement;
-    if (props.useThinBar) {
-        let the_class = props.direction == "x" ? "resize-border" : "horizontal-resize-border";
-        if (props.barHeight != null) {
-            style.height = props.barHeight;
+    if (useThinBar) {
+        let the_class = direction == "x" ? "resize-border" : "horizontal-resize-border";
+        if (barHeight != null) {
+            style.height = barHeight;
         }
-        if (props.barWidth != null) {
-            style.width = props.barWidth
+        if (barWidth != null) {
+            style.width = barWidth
         }
         wrappedElement = <div className={the_class} style={style}/>
     }
     else {
-        wrappedElement = <Icon icon={icon_dict[props.direction]}
+        wrappedElement = <Icon icon={icon_dict[direction]}
                                size={props.iconSize}
                                style={style}/>
     }
@@ -142,38 +142,30 @@ function DragHandle(props) {
 
 DragHandle = memo(DragHandle);
 
-DragHandle.propTypes = {
-    position_dict: PropTypes.object,
-    onDrag: PropTypes.func,
-    dragStart: PropTypes.func,
-    dragEnd: PropTypes.func,
-    direction: PropTypes.string,
-    size: PropTypes.number,
-    useThinBar: PropTypes.bool,
-    barheight: PropTypes.oneOfType([
-        PropTypes.string,
-        PropTypes.number]),
-    barWidth: PropTypes.oneOfType([
-        PropTypes.string,
-        PropTypes.number])
-};
-DragHandle.defaultProps = {
-    direction: "x",
-    size: 20,
-    onDrag: null,
-    dragStart: null,
-    dragEnd: null,
-    useThinBar: false,
-    barHeight: null,
-    barWidth: null
-};
-
 function HorizontalPanes(props) {
+    props = {
+        fixed_height: false,
+        handleSplitUpdate: null,
+        handleResizeStart: null,
+        handleResizeEnd: null,
+        scrollAdjustSelectors: null,
+        initial_width_fraction: .5,
+        hide_me: false,
+        left_margin: null,
+        right_pane_overflow: "visible",
+        ptop_ref: null,
+        bottom_margin: 0,
+        right_margin: 0,
+        show_handle: true,
+        dragIconSize: 20,
+        ...props
+    };
+
     const currentlyDragging = useRef(false);
     const left_pane_ref = useRef(null);
     const right_pane_ref = useRef(null);
     const scroll_bases = useRef({});
-    const top_ref = useRef(props.top_ref == null ? useRef(null) : props.top_ref);
+    const top_ref = useRef(props.ptop_ref == null ? useRef(null) : props.ptop_ref);
     const old_left_width = useRef(0);
     const old_right_width = useRef(0);
     const unique_id = useRef(guid());
@@ -393,43 +385,19 @@ function HorizontalPanes(props) {
 
 HorizontalPanes = memo(HorizontalPanes);
 
-HorizontalPanes.propTypes = {
-    fixed_height:PropTypes.bool,
-    available_width: PropTypes.number,
-    available_height: PropTypes.number,
-    left_pane: PropTypes.object,
-    right_pane: PropTypes.object,
-    right_pane_overflow: PropTypes.string,
-    scrollAdjustSelectors: PropTypes.array,
-    handleSplitUpdate: PropTypes.func,
-    handleResizeStart: PropTypes.func,
-    handleResizeEnd: PropTypes.func,
-    initial_width_fraction: PropTypes.number,
-    top_ref: PropTypes.object,
-    bottom_margin: PropTypes.number,
-
-    show_handle: PropTypes.bool,
-    dragIconSize: PropTypes.number
-};
-
-HorizontalPanes.defaultProps = {
-    fixed_height: false,
-    handleSplitUpdate: null,
-    handleResizeStart: null,
-    handleResizeEnd: null,
-    scrollAdjustSelectors: null,
-    initial_width_fraction: .5,
-    hide_me: false,
-    left_margin: null,
-    right_pane_overflow: "visible",
-    top_ref: null,
-    bottom_margin: 0,
-    right_margin: 0,
-    show_handle: true,
-    dragIconSize: 20
-};
-
 function VerticalPanes(props) {
+    props = {
+        handleSplitUpdate: null,
+        handleResizeStart: null,
+        handleResizeEnd: null,
+        scrollAdjustSelectors: null,
+        initial_height_fraction: .5,
+        hide_top: false,
+        overflow: "scroll",
+        show_handle: true,
+        dragIconSize: 20,
+        ...props
+    };
     const top_ref = useRef(null);
 
     const top_pane_ref = useRef(null);
@@ -579,7 +547,6 @@ function VerticalPanes(props) {
                 <DragHandle position_dict={{}}
                             onDrag={_handleDrag}
                             direction="y"
-                            size={props.dragIconSize}
                             dragStart={_handleDragStart}
                             dragEnd={_handleDragEnd}
                             useThinBar={true}
@@ -601,33 +568,5 @@ function VerticalPanes(props) {
 }
 
 VerticalPanes = memo(VerticalPanes);
-
-VerticalPanes.propTypes = {
-    available_width: PropTypes.number,
-    available_height: PropTypes.number,
-    top_pane: PropTypes.object,
-    hide_top: PropTypes.bool,
-    bottom_pane: PropTypes.object,
-    handleSplitUpdate: PropTypes.func,
-    handleResizeStart: PropTypes.func,
-    handleResizeEnd: PropTypes.func,
-    scrollAdjustSelectors: PropTypes.array,
-    initial_height_fraction: PropTypes.number,
-    overflow: PropTypes.string,
-    show_handle: PropTypes.bool,
-    dragIconSize: PropTypes.number
-};
-
-VerticalPanes.defaultProps = {
-    handleSplitUpdate: null,
-    handleResizeStart: null,
-    handleResizeEnd: null,
-    scrollAdjustSelectors: null,
-    initial_height_fraction: .5,
-    hide_top: false,
-    overflow: "scroll",
-    show_handle: true,
-    dragIconSize: 20
-};
 
 

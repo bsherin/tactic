@@ -2,7 +2,7 @@ import "../tactic_css/tactic.scss";
 
 import React from "react";
 import {Fragment, useState, useEffect, memo, useRef, useContext} from "react";
-import * as ReactDOM from 'react-dom'
+import { createRoot } from 'react-dom/client';
 import PropTypes from 'prop-types';
 
 import {MergeViewerApp} from "./merge_viewer_app";
@@ -25,8 +25,9 @@ function tile_differ_main() {
                                              initial_theme={window.theme}
                                              changeName={null}
         />;
-        let domContainer = document.querySelector('#root');
-        ReactDOM.render(the_element, domContainer)
+        const domContainer = document.querySelector('#root');
+        const root = createRoot(domContainer);
+        root.render(the_element)
 
     }
 
@@ -35,9 +36,10 @@ function tile_differ_main() {
         if ("message" in data) {
             fallback = fallback + " " + data.message
         }
-        let domContainer = document.querySelector('#root');
+        const domContainer = document.querySelector('#root');
+        const root = createRoot(domContainer);
         let the_element = <pre>{fallback}</pre>;
-        return ReactDOM.render(the_element, domContainer);
+        return root.render(the_element)
     }
 
     let get_url = "get_module_code";

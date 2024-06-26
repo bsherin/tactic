@@ -1,16 +1,23 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.FilterSearchForm = FilterSearchForm;
 var _react = _interopRequireWildcard(require("react"));
-var _propTypes = _interopRequireDefault(require("prop-types"));
 var _core = require("@blueprintjs/core");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 function FilterSearchForm(props) {
+  props = {
+    handleFilter: null,
+    handleUnfilter: null,
+    searchNext: null,
+    searchPrevious: null,
+    search_helper_text: null,
+    margin_right: 116,
+    ...props
+  };
   function _handleSubmit(e) {
     props.searchNext();
     e.preventDefault();
@@ -62,22 +69,4 @@ function FilterSearchForm(props) {
     }
   }, props.search_helper_text)));
 }
-FilterSearchForm.propTypes = {
-  search_string: _propTypes.default.string,
-  handleSearchFieldChange: _propTypes.default.func,
-  handleFilter: _propTypes.default.func,
-  handleUnFilter: _propTypes.default.func,
-  searchNext: _propTypes.default.func,
-  searchPrevious: _propTypes.default.func,
-  search_helper_text: _propTypes.default.string,
-  margin_right: _propTypes.default.number
-};
-FilterSearchForm.defaultProps = {
-  handleFilter: null,
-  handleUnfilter: null,
-  searchNext: null,
-  searchPrevious: null,
-  search_helper_text: null,
-  margin_right: 116
-};
 exports.FilterSearchForm = FilterSearchForm = /*#__PURE__*/(0, _react.memo)(FilterSearchForm);

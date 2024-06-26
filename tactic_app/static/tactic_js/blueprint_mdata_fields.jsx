@@ -2,7 +2,6 @@ import "../tactic_css/tactic_select.scss"
 
 import React from "react";
 import {Fragment, useState, useEffect, useRef, memo} from "react";
-import PropTypes from 'prop-types';
 
 import {
     PopoverPosition, Button, MenuDivider, MenuItem, TagInput, TextArea, FormGroup, InputGroup,
@@ -63,17 +62,11 @@ function SuggestionItemAdvanced({item, handleClick, modifiers}) {
 
 SuggestionItemAdvanced = memo(SuggestionItemAdvanced);
 
-SuggestionItemAdvanced.propTypes = {
-    item: PropTypes.object,
-    modifiers: PropTypes.object,
-    handleClick: PropTypes.func
-};
-
 function renderSuggestionAdvanced(item, {modifiers, handleClick, index}) {
     return <SuggestionItemAdvanced item={item} key={index} modifiers={modifiers} handleClick={handleClick}/>
 }
 
-function BpSelectAdvanced({options, value, onChange, buttonIcon, readOnly}) {
+function BpSelectAdvanced({options, value, onChange, buttonIcon = null, readOnly}) {
     function _filterSuggestion(query, item) {
         if (query.length === 0) {
             return true
@@ -121,18 +114,16 @@ function BpSelectAdvanced({options, value, onChange, buttonIcon, readOnly}) {
 
 BpSelectAdvanced = memo(BpSelectAdvanced);
 
-BpSelectAdvanced.propTypes = {
-    options: PropTypes.array,
-    onChange: PropTypes.func,
-    value: PropTypes.object,
-    buttonIcon: PropTypes.string,
-};
-
-BpSelectAdvanced.defaultProps = {
-    buttonIcon: null,
-};
-
 function BpSelect(props) {
+    props = {
+        buttonIcon: null,
+        buttonStyle: {},
+        popoverPosition: PopoverPosition.BOTTOM_LEFT,
+        buttonTextObject: null,
+        filterable: true,
+        small: undefined,
+        ...props
+    };
 
     function _filterSuggestion(query, item) {
         if ((query.length === 0) || (item["isgroup"])) {
@@ -186,27 +177,6 @@ BpSelect = memo(BpSelect, (prevProps, newProps) => {
     propsAreEqual(newProps, prevProps, ["buttonTextObject"])
 });
 
-BpSelect.propTypes = {
-    options: PropTypes.array,
-    onChange: PropTypes.func,
-    filterable: PropTypes.bool,
-    small: PropTypes.bool,
-    value: PropTypes.string,
-    buttonTextObject: PropTypes.object,
-    buttonIcon: PropTypes.string,
-    buttonStyle: PropTypes.object,
-    popoverPosition: PropTypes.string
-};
-
-BpSelect.defaultProps = {
-    buttonIcon: null,
-    buttonStyle: {},
-    popoverPosition: PopoverPosition.BOTTOM_LEFT,
-    buttonTextObject: null,
-    filterable: true,
-    small: undefined
-};
-
 function SuggestionItem({item, modifiers, handleClick}) {
     let the_text;
     let the_icon;
@@ -230,15 +200,6 @@ function SuggestionItem({item, modifiers, handleClick}) {
 }
 
 SuggestionItem = memo(SuggestionItem);
-
-SuggestionItem.propTypes = {
-    item: PropTypes.oneOfType([
-        PropTypes.string,
-        PropTypes.object]),
-    modifiers: PropTypes.object,
-    handleClick: PropTypes.func,
-};
-
 
 function renderSuggestion(item, {modifiers, handleClick, index}) {
     return <SuggestionItem item={item} key={index} modifiers={modifiers} handleClick={handleClick}/>
@@ -313,14 +274,11 @@ function NativeTags(props) {
 
 NativeTags = memo(NativeTags);
 
-NativeTags.proptypes = {
-    tags: PropTypes.array,
-    handleChange: PropTypes.func,
-    pane_type: PropTypes.string,
-    readOnly: PropTypes.bool,
-};
-
 function NotesField(props) {
+    props = {
+        handleBlur: null,
+        ...props
+    };
     const [mdHeight, setMdHeight] = useState(500);
     const [showMarkdown, setShowMarkdown] = useState(() => {
         return hasOnlyWhitespace() ? false : props.show_markdown_initial
@@ -426,18 +384,6 @@ function NotesField(props) {
 
 NotesField = memo(NotesField);
 
-NotesField.propTypes = {
-    readOnly: PropTypes.bool,
-    notes: PropTypes.string,
-    handleChange: PropTypes.func,
-    show_markdown_initial: PropTypes.bool,
-    handleBlur: PropTypes.func
-};
-
-NotesField.defaultProps = {
-    handleBlur: null
-};
-
 const icon_list = ["application", "code",
     "timeline-line-chart", "heatmap", "graph", "heat-grid", "chart", "pie-chart", "regression-chart",
     "grid", "numerical", "font", "array", "array-numeric", "array-string", "data-lineage", "function", "variable",
@@ -492,12 +438,24 @@ function IconSelector({handleSelectChange, icon_val, readOnly}) {
 
 IconSelector = memo(IconSelector);
 
-IconSelector.propTypes = {
-    handleSelectChange: PropTypes.func,
-    icon_val: PropTypes.string
-};
-
 function CombinedMetadata(props) {
+    props = {
+        expandWidth: true,
+        tabSelectCounter: 0,
+        useTags: true,
+        useNotes: true,
+        outer_style: {overflow: "auto", padding: 15},
+        elevation: 0,
+        handleNotesBlur: null,
+        category: null,
+        icon: null,
+        name: null,
+        updated: null,
+        additional_metadata: null,
+        aux_pane: null,
+        notes_buttons: null,
+        ...props
+    };
     const top_ref = useRef();
     const [auxIsOpen, setAuxIsOpen] = useState(false);
     const [tempNotes, setTempNotes] = useState(null);
@@ -636,44 +594,3 @@ function CombinedMetadata(props) {
 }
 
 CombinedMetadata = memo(CombinedMetadata);
-
-CombinedMetadata.propTypes = {
-    useTags: PropTypes.bool,
-    outer_style: PropTypes.object,
-    readOnly: PropTypes.bool,
-    elevation: PropTypes.number,
-    res_type: PropTypes.string,
-    pane_type: PropTypes.string,
-    name: PropTypes.string,
-    created: PropTypes.string,
-    updated: PropTypes.string,
-    tags: PropTypes.array,
-    notes: PropTypes.string,
-    category: PropTypes.string,
-    icon: PropTypes.string,
-    handleChange: PropTypes.func,
-    handleNotesBlur: PropTypes.func,
-    additional_metadata: PropTypes.object,
-    aux_pane: PropTypes.object,
-    aux_pane_title: PropTypes.string,
-    notes_buttons: PropTypes.oneOfType([
-        PropTypes.number,
-        PropTypes.func])
-};
-
-CombinedMetadata.defaultProps = {
-    expandWidth: true,
-    tabSelectCounter: 0,
-    useTags: true,
-    useNotes: true,
-    outer_style: {overflow: "auto", padding: 15},
-    elevation: 0,
-    handleNotesBlur: null,
-    category: null,
-    icon: null,
-    name: null,
-    updated: null,
-    additional_metadata: null,
-    aux_pane: null,
-    notes_buttons: null,
-};

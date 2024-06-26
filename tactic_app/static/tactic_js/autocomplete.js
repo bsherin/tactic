@@ -6,12 +6,10 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.renderAutoCompleteElement = renderAutoCompleteElement;
 var _react = _interopRequireDefault(require("react"));
-var ReactDOM = _interopRequireWildcard(require("react-dom"));
+var _client = require("react-dom/client");
 var _communication_react = require("./communication_react");
 var _codemirror = _interopRequireDefault(require("codemirror/lib/codemirror.js"));
 var _core = require("@blueprintjs/core");
-function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
-function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 const EXTRAWORDS_LIST = ["global_import", "Collection", "Collection", "Collection.document_names", "Collection.current_docment", "Collection.column", "Collection.tokenize", "Collection.detach", "Collection.rewind", "Library", "Library.collections", "Library.lists", "Library.functions", "Library.classes", "Settings", "Settings.names", "Tiles", "Pipes"];
 var EXTRAWORDS = [];
 for (let w of EXTRAWORDS_LIST) {
@@ -133,7 +131,8 @@ function tactic_icon(size) {
   })));
 }
 function renderAutoCompleteApiElement(elt, data, cur) {
-  ReactDOM.render( /*#__PURE__*/_react.default.createElement(_react.default.Fragment, null, /*#__PURE__*/_react.default.createElement("span", {
+  const root = (0, _client.createRoot)(elt);
+  root.render( /*#__PURE__*/_react.default.createElement(_react.default.Fragment, null, /*#__PURE__*/_react.default.createElement("span", {
     className: "mr-1"
   }, /*#__PURE__*/_react.default.createElement(_core.Icon, {
     icon: tactic_icon(10)
@@ -141,15 +140,16 @@ function renderAutoCompleteApiElement(elt, data, cur) {
     className: "api-hint-name"
   }, cur.text), cur.argString && /*#__PURE__*/_react.default.createElement("span", {
     className: "api-hint-args"
-  }, cur.argString)), elt);
+  }, cur.argString)));
 }
 function renderAutoCompleteElement(elt, data, cur) {
-  ReactDOM.render( /*#__PURE__*/_react.default.createElement(_react.default.Fragment, null, /*#__PURE__*/_react.default.createElement("span", {
+  const root = (0, _client.createRoot)(elt);
+  root.render( /*#__PURE__*/_react.default.createElement(_react.default.Fragment, null, /*#__PURE__*/_react.default.createElement("span", {
     className: "mr-1"
   }, /*#__PURE__*/_react.default.createElement(_core.Icon, {
     icon: cur.icon,
     size: 10
-  })), /*#__PURE__*/_react.default.createElement("span", null, cur.text)), elt);
+  })), /*#__PURE__*/_react.default.createElement("span", null, cur.text)));
 }
 function create_api() {
   let self = this;

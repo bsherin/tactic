@@ -5,7 +5,7 @@
 import _ from 'lodash';
 import React from "react";
 import {useState, useEffect, useRef, useReducer, createContext} from "react";
-import * as ReactDOM from 'react-dom'
+import { createRoot } from 'react-dom/client';
 import {Spinner, Text} from "@blueprintjs/core";
 
 export {propsAreEqual, arrayMove, arraysMatch, get_ppi, isInt};
@@ -281,13 +281,14 @@ function guid() {
 }
 
 function renderSpinnerMessage(msg, selector = "#main-root") {
-    let domContainer = document.querySelector(selector);
-    ReactDOM.render(
+    const domContainer = document.querySelector(selector);
+    const root = createRoot(domContainer);
+    root.render(
         (<div className="screen-center" style={{textAlign: "center"}}>
             <Spinner size={100}/>
             <Text className="pt-2">
                 {msg}
             </Text>
-        </div>), domContainer
+        </div>)
     )
 }

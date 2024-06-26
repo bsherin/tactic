@@ -3,7 +3,7 @@ import "../tactic_css/tactic.scss";
 
 import React from "react";
 import {Fragment, useEffect, useState, memo, useContext} from "react";
-import * as ReactDOM from 'react-dom'
+import { createRoot } from 'react-dom/client';
 
 import { FormGroup, InputGroup, Button, HTMLSelect } from "@blueprintjs/core";
 
@@ -19,9 +19,10 @@ window.main_id = guid();
 
 function _account_main() {
     if (window._show_message) doFlash(window._message);
-    let domContainer = document.querySelector('#root');
+    const domContainer = document.querySelector('#root');
+    const root = createRoot(domContainer);
     let AccountAppPlus = withTheme(AccountApp);
-    ReactDOM.render(<AccountAppPlus initial_theme={window.theme} controlled={false}/>, domContainer)
+    root.render(<AccountAppPlus initial_theme={window.theme} controlled={false}/>)
 }
 
 const field_names = ["new_password", "confirm_new_password"];
