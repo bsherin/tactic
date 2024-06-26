@@ -2,7 +2,6 @@
 
 import React from "react";
 import {Fragment, useState, useRef, useEffect, memo, useContext} from "react";
-import PropTypes from 'prop-types';
 
 import {Menu, MenuItem, MenuDivider,Button} from "@blueprintjs/core";
 import {Tooltip2} from "@blueprintjs/popover2"
@@ -85,13 +84,18 @@ function BodyMenu(props) {
     )
 }
 
-BodyMenu.propTypes = {
-    items: PropTypes.array,
-    selected_rows: PropTypes.array
-};
-
 function LibraryPane(props) {
-
+    props = {
+        columns: {
+            "name": {"first_sort": "ascending"},
+            "created": {"first_sort": "descending"},
+            "updated": {"first_sort": "ascending"},
+            "tags": {"first_sort": "ascending"}
+        },
+        is_repository: false,
+        tsocket: null,
+        ...props
+    };
     const top_ref = useRef(null);
     const previous_search_spec = useRef(null);
     const socket_counter = useRef(null);
@@ -1502,41 +1506,5 @@ function LibraryPane(props) {
 
 LibraryPane = memo(LibraryPane);
 
-LibraryPane.propTypes = {
-    columns: PropTypes.object,
-    pane_type: PropTypes.string,
-    open_resources_ref: PropTypes.object,
-    allow_search_inside: PropTypes.bool,
-    allow_search_metadata: PropTypes.bool,
-    is_repository: PropTypes.bool,
-    selected_resource: PropTypes.object,
-    selected_rows: PropTypes.array,
-    sort_field: PropTypes.string,
-    sorting_field: PropTypes.string,
-    sort_direction: PropTypes.string,
-    filterType: PropTypes.string,
-    multi_select: PropTypes.bool,
-    list_of_selected: PropTypes.array,
-    search_string: PropTypes.string,
-    search_inside: PropTypes.bool,
-    search_metadata: PropTypes.bool,
-    show_hidden: PropTypes.bool,
-    search_tag: PropTypes.string,
-    tag_button_state: PropTypes.object,
-    contextItems: PropTypes.array,
-    library_id: PropTypes.string
-
-};
-
-LibraryPane.defaultProps = {
-    columns: {
-        "name": {"first_sort": "ascending"},
-        "created": {"first_sort": "descending"},
-        "updated": {"first_sort": "ascending"},
-        "tags": {"first_sort": "ascending"}
-    },
-    is_repository: false,
-    tsocket: null,
-};
 
 

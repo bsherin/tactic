@@ -8,13 +8,12 @@ exports.TileContainer = TileContainer;
 exports.tilesReducer = tilesReducer;
 var _extends2 = _interopRequireDefault(require("@babel/runtime/helpers/extends"));
 var _react = _interopRequireWildcard(require("react"));
-var _propTypes = _interopRequireDefault(require("prop-types"));
 var _core = require("@blueprintjs/core");
 var _reactTransitionGroup = require("react-transition-group");
 var _lodash = _interopRequireDefault(require("lodash"));
 var _tile_form_react = require("./tile_form_react");
 var _blueprint_react_widgets = require("./blueprint_react_widgets");
-var _resizing_layouts = require("./resizing_layouts");
+var _resizing_layouts = require("./resizing_layouts2");
 var _sortable_container = require("./sortable_container");
 var _communication_react = require("./communication_react");
 var _utilities_react = require("./utilities_react");
@@ -282,17 +281,6 @@ function TileContainer(props) {
     }
   }));
 }
-TileContainer.propTypes = {
-  setMainStateValue: _propTypes.default.func,
-  table_is_shrunk: _propTypes.default.bool,
-  tile_list: _propTypes.default.object,
-  tile_div_ref: _propTypes.default.object,
-  current_doc_name: _propTypes.default.string,
-  height: _propTypes.default.number,
-  broadcast_event: _propTypes.default.func,
-  selected_row: _propTypes.default.number,
-  goToModule: _propTypes.default.func
-};
 exports.TileContainer = TileContainer = /*#__PURE__*/(0, _react.memo)(TileContainer);
 function SortHandle(props) {
   return /*#__PURE__*/_react.default.createElement("span", (0, _extends2.default)({
@@ -302,11 +290,14 @@ function SortHandle(props) {
     size: 15
   }), props.tile_name);
 }
-SortHandle.propTypes = {
-  tile_name: _propTypes.default.string
-};
 SortHandle = /*#__PURE__*/(0, _react.memo)(SortHandle);
 function TileComponent(props) {
+  props = {
+    javascript_code: null,
+    log_since: null,
+    max_console_lines: 100,
+    ...props
+  };
   const my_ref = (0, _react.useRef)(null);
   const body_ref = (0, _react.useRef)(null);
   const inner_log_ref = (0, _react.useRef)(null);
@@ -901,38 +892,7 @@ function TileComponent(props) {
     dragStart: _startResize,
     onDrag: _onResize,
     dragEnd: _stopResize,
-    direction: "both",
-    size: 15
+    direction: "both"
   })));
 }
-TileComponent.propTypes = {
-  tile_name: _propTypes.default.string,
-  tile_id: _propTypes.default.string,
-  form_data: _propTypes.default.array,
-  front_content: _propTypes.default.string,
-  javascript_code: _propTypes.default.string,
-  javascript_arg_dict: _propTypes.default.object,
-  max_console_lines: _propTypes.default.number,
-  source_changed: _propTypes.default.bool,
-  tile_width: _propTypes.default.number,
-  tile_height: _propTypes.default.number,
-  show_form: _propTypes.default.bool,
-  show_spinner: _propTypes.default.bool,
-  shrunk: _propTypes.default.bool,
-  show_log: _propTypes.default.bool,
-  log_content: _propTypes.default.string,
-  log_since: _propTypes.default.number,
-  current_doc_name: _propTypes.default.string,
-  setTileValue: _propTypes.default.func,
-  setTileState: _propTypes.default.func,
-  broadcast_event: _propTypes.default.func,
-  handleReload: _propTypes.default.string,
-  handleClose: _propTypes.default.func,
-  goToModule: _propTypes.default.func
-};
-TileComponent.defaultProps = {
-  javascript_code: null,
-  log_since: null,
-  max_console_lines: 100
-};
 TileComponent = /*#__PURE__*/(0, _react.memo)(TileComponent);

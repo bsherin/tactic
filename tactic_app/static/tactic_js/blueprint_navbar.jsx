@@ -1,7 +1,6 @@
 import React from "react";
 import {Fragment, useState, useEffect, useRef, useContext, memo} from "react";
-import * as ReactDOM from 'react-dom'
-import PropTypes from 'prop-types';
+import { createRoot } from 'react-dom/client';
 
 import {
     Button,
@@ -41,7 +40,7 @@ function set_theme_cookie(theme) {
     document.cookie = "tactic_theme=" + theme;
 }
 
-function TacticNavbar(props) {
+function TacticNavbar({extra_text = null, menus = null, selected = null, show_api_links = false, ...props}) {
     const [usable_width, set_usable_width] = useState(() => {
         return window.innerWidth - padding * 2
     });
@@ -73,7 +72,7 @@ function TacticNavbar(props) {
     });
 
     function getIntent(butname) {
-        return props.selected == butname ? "primary" : null
+        return selected == butname ? "primary" : null
     }
 
     function _onOverflow(items) {
@@ -187,9 +186,9 @@ function TacticNavbar(props) {
         )
     }
 
-    let nav_class = props.menus == null ? "justify-content-end" : "justify-content-between";
+    let nav_class = menus == null ? "justify-content-end" : "justify-content-between";
     let right_nav_items = [];
-    if (props.show_api_links) {
+    if (show_api_links) {
         right_nav_items = [{
             icon: "code-block", text: "Api", intent: null, onClick: () => {
                 window.open("https://tactic.readthedocs.io/en/latest/Tile-Commands.html")
@@ -220,8 +219,8 @@ function TacticNavbar(props) {
     right_style.justifyContent = "flex-end";
     let theme_class = theme.dark_theme ? "bp5-dark" : "light-theme";
     let name_string = "Tactic";
-    if (props.extra_text != null) {
-        name_string += " " + props.extra_text
+    if (extra_text != null) {
+        name_string += " " + extra_text
     }
 
     return (
@@ -231,9 +230,9 @@ function TacticNavbar(props) {
                     <img className="mr-2" src={window.tactic_img_url} alt="" width="32 " height="32"/>
                     {name_string}
                 </NavbarHeading>
-                {props.menus != null && (
+                {menus != null && (
                     <Fragment>
-                        {props.menus}
+                        {menus}
                     </Fragment>)}
             </div>
 
@@ -263,33 +262,11 @@ function TacticNavbar(props) {
 
 TacticNavbar = memo(TacticNavbar);
 
-TacticNavbar.propTypes = {
-    is_authenticated: PropTypes.bool,
-    user_name: PropTypes.string,
-    menus: PropTypes.object,
-    selected: PropTypes.oneOfType([
-        PropTypes.string,
-        PropTypes.number]),
-    page_id: PropTypes.string,
-    extra_text: PropTypes.string,
-    setTheme: PropTypes.func,
-    show_api_links: PropTypes.bool
-};
-
-TacticNavbar.defaultProps = {
-    extra_text: null,
-    refreshTab: null,
-    closeTab: null,
-    menus: null,
-    selected: null,
-    show_api_links: false,
-    setTheme: null
-};
-
 function render_navbar(selected = null, show_api_links = false, dark_theme = false) {
-    let domContainer = document.querySelector('#navbar-root');
-    ReactDOM.render(<TacticNavbar is_authenticated={window.is_authenticated}
+    const domContainer = document.querySelector('#navbar-root');
+    const root = createRoot(domContainer);
+    root.render(<TacticNavbar is_authenticated={window.is_authenticated}
                                   selected={selected}
                                   show_api_links={show_api_links}
-                                  user_name={window.username}/>, domContainer)
+                                  user_name={window.username}/>)
 }

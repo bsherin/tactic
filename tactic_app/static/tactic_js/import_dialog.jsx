@@ -1,6 +1,6 @@
 import React from "react";
 import {useState, useEffect, useRef, useContext} from "react";
-import PropTypes from 'prop-types';
+
 import DropzoneComponent from 'react-dropzone-component';
 import "../css/dzcss/dropzone.css";
 import "../css/dzcss/filepicker.css";
@@ -23,6 +23,15 @@ export {FileImportDialog}
 var defaultImportDialogWidth = 700;
 
 function FileImportDialog(props) {
+    props = {
+        checkboxes: null,
+        textoptions: null,
+        popupoptions: null,
+        after_upload: null,
+        show_address_selector: false,
+        initialFiles: [],
+        ...props
+    };
 
     const name_counter = useRef(1);
     const default_name = useRef("new" + props.res_type);
@@ -417,29 +426,3 @@ function FileImportDialog(props) {
         </Dialog>
     )
 }
-
-FileImportDialog.propTypes = {
-    res_type: PropTypes.string,
-    title: PropTypes.string,
-    existing_names: PropTypes.array,
-    process_handler: PropTypes.func,
-    after_upload: PropTypes.func,
-    allowed_file_types: PropTypes.string,
-    combine: PropTypes.bool,
-    checkboxes: PropTypes.array,
-    textoptions: PropTypes.array,
-    popupoptions: PropTypes.array,
-    handleClose: PropTypes.func,
-    tsocket: PropTypes.object,
-    show_address_selector: PropTypes.bool,
-    initialFiles: PropTypes.array
-};
-
-FileImportDialog.defaultProps = {
-    checkboxes: null,
-    textoptions: null,
-    popupoptions: null,
-    after_upload: null,
-    show_address_selector: false,
-    initialFiles: []
-};

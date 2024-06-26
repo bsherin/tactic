@@ -11,7 +11,6 @@ exports.NotesField = NotesField;
 exports.icon_dict = void 0;
 require("../tactic_css/tactic_select.scss");
 var _react = _interopRequireWildcard(require("react"));
-var _propTypes = _interopRequireDefault(require("prop-types"));
 var _core = require("@blueprintjs/core");
 var _select = require("@blueprintjs/select");
 var _markdownIt = _interopRequireDefault(require("markdown-it"));
@@ -64,11 +63,6 @@ function SuggestionItemAdvanced(_ref) {
   }
 }
 SuggestionItemAdvanced = /*#__PURE__*/(0, _react.memo)(SuggestionItemAdvanced);
-SuggestionItemAdvanced.propTypes = {
-  item: _propTypes.default.object,
-  modifiers: _propTypes.default.object,
-  handleClick: _propTypes.default.func
-};
 function renderSuggestionAdvanced(item, _ref2) {
   let {
     modifiers,
@@ -87,7 +81,7 @@ function BpSelectAdvanced(_ref3) {
     options,
     value,
     onChange,
-    buttonIcon,
+    buttonIcon = null,
     readOnly
   } = _ref3;
   function _filterSuggestion(query, item) {
@@ -135,16 +129,16 @@ function BpSelectAdvanced(_ref3) {
   }));
 }
 exports.BpSelectAdvanced = BpSelectAdvanced = /*#__PURE__*/(0, _react.memo)(BpSelectAdvanced);
-BpSelectAdvanced.propTypes = {
-  options: _propTypes.default.array,
-  onChange: _propTypes.default.func,
-  value: _propTypes.default.object,
-  buttonIcon: _propTypes.default.string
-};
-BpSelectAdvanced.defaultProps = {
-  buttonIcon: null
-};
 function BpSelect(props) {
+  props = {
+    buttonIcon: null,
+    buttonStyle: {},
+    popoverPosition: _core.PopoverPosition.BOTTOM_LEFT,
+    buttonTextObject: null,
+    filterable: true,
+    small: undefined,
+    ...props
+  };
   function _filterSuggestion(query, item) {
     if (query.length === 0 || item["isgroup"]) {
       return true;
@@ -194,25 +188,6 @@ function BpSelect(props) {
 exports.BpSelect = BpSelect = /*#__PURE__*/(0, _react.memo)(BpSelect, (prevProps, newProps) => {
   (0, _utilities_react.propsAreEqual)(newProps, prevProps, ["buttonTextObject"]);
 });
-BpSelect.propTypes = {
-  options: _propTypes.default.array,
-  onChange: _propTypes.default.func,
-  filterable: _propTypes.default.bool,
-  small: _propTypes.default.bool,
-  value: _propTypes.default.string,
-  buttonTextObject: _propTypes.default.object,
-  buttonIcon: _propTypes.default.string,
-  buttonStyle: _propTypes.default.object,
-  popoverPosition: _propTypes.default.string
-};
-BpSelect.defaultProps = {
-  buttonIcon: null,
-  buttonStyle: {},
-  popoverPosition: _core.PopoverPosition.BOTTOM_LEFT,
-  buttonTextObject: null,
-  filterable: true,
-  small: undefined
-};
 function SuggestionItem(_ref4) {
   let {
     item,
@@ -238,11 +213,6 @@ function SuggestionItem(_ref4) {
   });
 }
 SuggestionItem = /*#__PURE__*/(0, _react.memo)(SuggestionItem);
-SuggestionItem.propTypes = {
-  item: _propTypes.default.oneOfType([_propTypes.default.string, _propTypes.default.object]),
-  modifiers: _propTypes.default.object,
-  handleClick: _propTypes.default.func
-};
 function renderSuggestion(item, _ref5) {
   let {
     modifiers,
@@ -317,13 +287,11 @@ function NativeTags(props) {
   });
 }
 NativeTags = /*#__PURE__*/(0, _react.memo)(NativeTags);
-NativeTags.proptypes = {
-  tags: _propTypes.default.array,
-  handleChange: _propTypes.default.func,
-  pane_type: _propTypes.default.string,
-  readOnly: _propTypes.default.bool
-};
 function NotesField(props) {
+  props = {
+    handleBlur: null,
+    ...props
+  };
   const [mdHeight, setMdHeight] = (0, _react.useState)(500);
   const [showMarkdown, setShowMarkdown] = (0, _react.useState)(() => {
     return hasOnlyWhitespace() ? false : props.show_markdown_initial;
@@ -414,16 +382,6 @@ function NotesField(props) {
   }));
 }
 exports.NotesField = NotesField = /*#__PURE__*/(0, _react.memo)(NotesField);
-NotesField.propTypes = {
-  readOnly: _propTypes.default.bool,
-  notes: _propTypes.default.string,
-  handleChange: _propTypes.default.func,
-  show_markdown_initial: _propTypes.default.bool,
-  handleBlur: _propTypes.default.func
-};
-NotesField.defaultProps = {
-  handleBlur: null
-};
 const icon_list = ["application", "code", "timeline-line-chart", "heatmap", "graph", "heat-grid", "chart", "pie-chart", "regression-chart", "grid", "numerical", "font", "array", "array-numeric", "array-string", "data-lineage", "function", "variable", "build", "group-objects", "ungroup-objects", "inner-join", "filter", "sort-asc", "sort-alphabetical", "sort-numerical", "random", "layout", "layout-auto", "layout-balloon", "changes", "comparison", "exchange", "derive_column", "list-columns", "delta", "edit", "fork", "numbered-list", "path-search", "search", "plus", "repeat", "reset", "resolve", "widget-button", "star", "time", "settings", "properties", "cog", "key-command", "ip-address", "download", "cloud", "globe", "tag", "label", "history", "predictive-analysis", "calculator", "pulse", "warning-sign", "cube", "wrench"];
 var icon_dlist = [];
 var icon_entry_dict = {};
@@ -465,11 +423,27 @@ function IconSelector(_ref6) {
   });
 }
 IconSelector = /*#__PURE__*/(0, _react.memo)(IconSelector);
-IconSelector.propTypes = {
-  handleSelectChange: _propTypes.default.func,
-  icon_val: _propTypes.default.string
-};
 function CombinedMetadata(props) {
+  props = {
+    expandWidth: true,
+    tabSelectCounter: 0,
+    useTags: true,
+    useNotes: true,
+    outer_style: {
+      overflow: "auto",
+      padding: 15
+    },
+    elevation: 0,
+    handleNotesBlur: null,
+    category: null,
+    icon: null,
+    name: null,
+    updated: null,
+    additional_metadata: null,
+    aux_pane: null,
+    notes_buttons: null,
+    ...props
+  };
   const top_ref = (0, _react.useRef)();
   const [auxIsOpen, setAuxIsOpen] = (0, _react.useState)(false);
   const [tempNotes, setTempNotes] = (0, _react.useState)(null);
@@ -611,43 +585,3 @@ function CombinedMetadata(props) {
   }));
 }
 exports.CombinedMetadata = CombinedMetadata = /*#__PURE__*/(0, _react.memo)(CombinedMetadata);
-CombinedMetadata.propTypes = {
-  useTags: _propTypes.default.bool,
-  outer_style: _propTypes.default.object,
-  readOnly: _propTypes.default.bool,
-  elevation: _propTypes.default.number,
-  res_type: _propTypes.default.string,
-  pane_type: _propTypes.default.string,
-  name: _propTypes.default.string,
-  created: _propTypes.default.string,
-  updated: _propTypes.default.string,
-  tags: _propTypes.default.array,
-  notes: _propTypes.default.string,
-  category: _propTypes.default.string,
-  icon: _propTypes.default.string,
-  handleChange: _propTypes.default.func,
-  handleNotesBlur: _propTypes.default.func,
-  additional_metadata: _propTypes.default.object,
-  aux_pane: _propTypes.default.object,
-  aux_pane_title: _propTypes.default.string,
-  notes_buttons: _propTypes.default.oneOfType([_propTypes.default.number, _propTypes.default.func])
-};
-CombinedMetadata.defaultProps = {
-  expandWidth: true,
-  tabSelectCounter: 0,
-  useTags: true,
-  useNotes: true,
-  outer_style: {
-    overflow: "auto",
-    padding: 15
-  },
-  elevation: 0,
-  handleNotesBlur: null,
-  category: null,
-  icon: null,
-  name: null,
-  updated: null,
-  additional_metadata: null,
-  aux_pane: null,
-  notes_buttons: null
-};

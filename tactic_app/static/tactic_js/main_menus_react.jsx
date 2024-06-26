@@ -18,6 +18,10 @@ import {ErrorDrawerContext} from "./error_drawer";
 export {ProjectMenu, DocumentMenu, ColumnMenu, RowMenu, ViewMenu, MenuComponent}
 
 function ProjectMenu(props) {
+    props = {
+        disabled_items: [],
+        ...props
+    };
 
     const dialogFuncs = useContext(DialogContext);
     const statusFuncs = useContext(StatusContext);
@@ -388,22 +392,13 @@ function ProjectMenu(props) {
     )
 }
 
-ProjectMenu.propTypes = {
-    is_notebook: PropTypes.bool,
-    console_items: PropTypes.array,
-    tile_list: PropTypes.array,
-    project_kind: PropTypes.string,
-    postAjaxFailure: PropTypes.func,
-    interface_state: PropTypes.object,
-    updateLastSave: PropTypes.func,
-    changeCollection: PropTypes.func,
-    disabled_items: PropTypes.array,
-    hidden_items: PropTypes.array
-};
-
 ProjectMenu = memo(ProjectMenu);
 
 function DocumentMenu(props) {
+    props = {
+        disabled_items: [],
+        ...props
+    };
 
     const dialogFuncs = useContext(DialogContext);
     const statusFuncs = useContext(StatusContext);
@@ -506,14 +501,13 @@ function DocumentMenu(props) {
     )
 }
 
-DocumentMenu.propTypes = {
-    documentNames: PropTypes.array,
-    currentDoc: PropTypes.string,
-};
-
 DocumentMenu = memo(DocumentMenu);
 
 function ColumnMenu(props) {
+    props = {
+        disabled_items: [],
+        ...props
+    };
 
     function _shift_column_left() {
         let cnum = props.filtered_column_names.indexOf(props.selected_column);
@@ -598,6 +592,10 @@ ColumnMenu.propTypes = {
 ColumnMenu = memo(ColumnMenu);
 
 function RowMenu(props) {
+    props = {
+        disabled_items: [],
+        ...props
+    };
     const option_dict = {
         "Insert Row Before": props.insertRowBefore,
         "Insert Row After": props.insertRowAfter,
@@ -623,14 +621,6 @@ function RowMenu(props) {
     )
 }
 
-RowMenu.propTypes = {
-    selected_row: PropTypes.number,
-    deleteRow: PropTypes.func,
-    insertRowBefore: PropTypes.func,
-    insertRowAfter: PropTypes.func,
-    duplicateRow: PropTypes.func,
-    disabled_items: PropTypes.array,
-};
 
 RowMenu = memo(RowMenu);
 

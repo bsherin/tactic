@@ -1,7 +1,6 @@
 
 import React from "react";
 import {Fragment, useState, useEffect, useRef, memo, useMemo, useContext} from "react";
-import PropTypes from 'prop-types';
 import { Card, Button, InputGroup, Spinner, ButtonGroup, FormGroup, Divider} from "@blueprintjs/core";
 
 import {GlyphButton, SelectList} from "./blueprint_react_widgets.js";
@@ -25,10 +24,6 @@ function TextIcon(props) {
 }
 
 TextIcon = memo(TextIcon);
-
-TextIcon.propTypes = {
-    the_text: PropTypes.string
-};
 
 const export_icon_dict = {
     str: "font",
@@ -68,15 +63,6 @@ function ExportButtonListButton(props) {
 }
 
 ExportButtonListButton = memo(ExportButtonListButton);
-
-ExportButtonListButton.propTypes = {
-    fullname: PropTypes.string,
-    shortname: PropTypes.string,
-    type: PropTypes.string,
-    buttonPress: PropTypes.func,
-    active: PropTypes.bool
-};
-
 
 function ExportButtonList(props) {
     const top_ref = useRef(null);
@@ -156,18 +142,14 @@ function ExportButtonList(props) {
 
 ExportButtonList = memo(ExportButtonList);
 
-ExportButtonList.propTypes = {
-    pipe_dict: PropTypes.object,
-    body_height:PropTypes.number,
-    value: PropTypes.oneOfType([
-        PropTypes.string,
-        PropTypes.number]),
-    handleChange: PropTypes.func
-};
-
 const body_style = {padding: 15, width: "80%", height: "100%", display: "inline-block"};
 
 function ExportsViewer(props) {
+    props = {
+        style: {},
+        ...props
+    };
+
     const header_ref = useRef(null);
     const footer_ref = useRef(null);
     const body_ref = useRef(null);
@@ -441,16 +423,4 @@ function ExportsViewer(props) {
 }
 
 ExportsViewer = memo(ExportsViewer);
-
-ExportsViewer.propTypes = {
-    // available_height: PropTypes.number,
-    console_is_shrunk: PropTypes.bool,
-    console_is_zoomed: PropTypes.bool,
-    setUpdate: PropTypes.func,
-    style: PropTypes.object
-};
-
-ExportsViewer.defaultProps = {
-    style: {}
-};
 

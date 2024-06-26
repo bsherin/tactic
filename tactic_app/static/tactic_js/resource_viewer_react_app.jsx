@@ -1,5 +1,4 @@
 import React from "react";
-import PropTypes from 'prop-types';
 import {Fragment, useState, useEffect, useRef, memo, useContext} from 'react';
 
 import {KeyTrap} from "./key_trap";
@@ -68,6 +67,22 @@ async function sendToRepository(res_type, resource_name, dialogFuncs, statusFunc
 }
 
 function ResourceViewerApp(props) {
+    props = {
+        search_string: "",
+        search_matches: null,
+        showErrorDrawerButton: false,
+        dark_theme: false,
+        am_selected: true,
+        controlled: false,
+        refreshTab: null,
+        closeTab: null,
+        search_ref: null,
+        allow_regex_search: false,
+        regex: false,
+        mdata_icon: null,
+        additional_metadata: null,
+        ...props
+    };
 
     const top_ref = useRef(null);
     const savedContent = useRef(props.the_content);
@@ -193,45 +208,3 @@ function ResourceViewerApp(props) {
 
 ResourceViewerApp = memo(ResourceViewerApp);
 
-ResourceViewerApp.propTypes = {
-    resource_name: PropTypes.string,
-    search_string: PropTypes.string,
-    search_matches: PropTypes.number,
-    refreshTab: PropTypes.func,
-    closeTab: PropTypes.func,
-    res_type: PropTypes.string,
-    menu_specs: PropTypes.object,
-    created: PropTypes.string,
-    tags: PropTypes.array,
-    notes: PropTypes.string,
-    mdata_icon: PropTypes.string,
-    handleStateChange: PropTypes.func,
-    meta_outer: PropTypes.string,
-    dark_theme: PropTypes.bool,
-    tsocket: PropTypes.object,
-    saveMe: PropTypes.func,
-    children: PropTypes.element,
-    show_search: PropTypes.bool,
-    update_search_state: PropTypes.func,
-    search_ref: PropTypes.object,
-    showErrorDrawerButton: PropTypes.bool,
-    allow_regex_search: PropTypes.bool,
-    regex: PropTypes.bool,
-    additional_metadata: PropTypes.object
-};
-
-ResourceViewerApp.defaultProps = {
-    search_string: "",
-    search_matches: null,
-    showErrorDrawerButton: false,
-    dark_theme: false,
-    am_selected: true,
-    controlled: false,
-    refreshTab: null,
-    closeTab: null,
-    search_ref: null,
-    allow_regex_search: false,
-    regex: false,
-    mdata_icon: null,
-    additional_metadata: null
-};

@@ -1,5 +1,4 @@
 import React from "react";
-import PropTypes from 'prop-types';
 
 export {ErrorBoundary}
 
@@ -13,10 +12,9 @@ class ErrorBoundary extends React.Component {
     return { hasError: true, message: error.message , stack: error.stack};
   }
 
-
   render() {
     if (this.state.hasError) {
-      if (this.props.fallback == null) {
+      if (!("fallback" in this.props) || (this.props.fallback == null)) {
         let the_message = `${this.state.message}\n${this.state.stack})`;
         return <div style={{margin: 50}}><pre>{the_message}</pre></div>
       }
@@ -31,13 +29,3 @@ class ErrorBoundary extends React.Component {
     return this.props.children;
   }
 }
-
-ErrorBoundary.propTypes = {
-  fallback: PropTypes.oneOfType([
-        PropTypes.string,
-        PropTypes.object]),
-};
-
-ErrorBoundary.defaultProps = {
-  fallback: null
-};

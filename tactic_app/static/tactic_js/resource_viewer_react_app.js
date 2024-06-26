@@ -1,6 +1,5 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -8,7 +7,6 @@ exports.ResourceViewerApp = ResourceViewerApp;
 exports.copyToLibrary = copyToLibrary;
 exports.sendToRepository = sendToRepository;
 var _react = _interopRequireWildcard(require("react"));
-var _propTypes = _interopRequireDefault(require("prop-types"));
 var _key_trap = require("./key_trap");
 var _blueprint_mdata_fields = require("./blueprint_mdata_fields");
 var _resizing_layouts = require("./resizing_layouts2");
@@ -69,6 +67,22 @@ async function sendToRepository(res_type, resource_name, dialogFuncs, statusFunc
   }
 }
 function ResourceViewerApp(props) {
+  props = {
+    search_string: "",
+    search_matches: null,
+    showErrorDrawerButton: false,
+    dark_theme: false,
+    am_selected: true,
+    controlled: false,
+    refreshTab: null,
+    closeTab: null,
+    search_ref: null,
+    allow_regex_search: false,
+    regex: false,
+    mdata_icon: null,
+    additional_metadata: null,
+    ...props
+  };
   const top_ref = (0, _react.useRef)(null);
   const savedContent = (0, _react.useRef)(props.the_content);
   const savedTags = (0, _react.useRef)(props.split_tags);
@@ -180,44 +194,3 @@ function ResourceViewerApp(props) {
   })));
 }
 exports.ResourceViewerApp = ResourceViewerApp = /*#__PURE__*/(0, _react.memo)(ResourceViewerApp);
-ResourceViewerApp.propTypes = {
-  resource_name: _propTypes.default.string,
-  search_string: _propTypes.default.string,
-  search_matches: _propTypes.default.number,
-  refreshTab: _propTypes.default.func,
-  closeTab: _propTypes.default.func,
-  res_type: _propTypes.default.string,
-  menu_specs: _propTypes.default.object,
-  created: _propTypes.default.string,
-  tags: _propTypes.default.array,
-  notes: _propTypes.default.string,
-  mdata_icon: _propTypes.default.string,
-  handleStateChange: _propTypes.default.func,
-  meta_outer: _propTypes.default.string,
-  dark_theme: _propTypes.default.bool,
-  tsocket: _propTypes.default.object,
-  saveMe: _propTypes.default.func,
-  children: _propTypes.default.element,
-  show_search: _propTypes.default.bool,
-  update_search_state: _propTypes.default.func,
-  search_ref: _propTypes.default.object,
-  showErrorDrawerButton: _propTypes.default.bool,
-  allow_regex_search: _propTypes.default.bool,
-  regex: _propTypes.default.bool,
-  additional_metadata: _propTypes.default.object
-};
-ResourceViewerApp.defaultProps = {
-  search_string: "",
-  search_matches: null,
-  showErrorDrawerButton: false,
-  dark_theme: false,
-  am_selected: true,
-  controlled: false,
-  refreshTab: null,
-  closeTab: null,
-  search_ref: null,
-  allow_regex_search: false,
-  regex: false,
-  mdata_icon: null,
-  additional_metadata: null
-};

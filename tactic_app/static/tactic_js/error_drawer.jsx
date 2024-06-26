@@ -1,6 +1,5 @@
 import React from "react";
 import {Fragment, useState, useEffect, useRef, memo, useContext, createContext} from "react";
-import PropTypes from 'prop-types';
 
 import {Card, Elevation, Drawer, Classes, Button, Icon} from "@blueprintjs/core";
 
@@ -149,6 +148,14 @@ function withErrorDrawer(WrappedComponent, lposition = "right", error_drawer_siz
 }
 
 function ErrorItem(props) {
+    props = {
+        title: null,
+        has_link: false,
+        line_number: null,
+        goToLineNumberfunc: null,
+        tile_type: null,
+        ...props
+    };
 
     function _openError() {
         if (!window.in_context) {
@@ -197,26 +204,16 @@ function ErrorItem(props) {
 
 ErrorItem = memo(ErrorItem);
 
-ErrorItem.propTypes = {
-    ukey: PropTypes.string,
-    title: PropTypes.string,
-    content: PropTypes.string,
-    has_link: PropTypes.bool,
-    line_number: PropTypes.number,
-    goToLineNumberFunc: PropTypes.func,
-    tile_type: PropTypes.string,
-    handleCloseItem: PropTypes.func
-};
-
-ErrorItem.defaultProps = {
-    title: null,
-    has_link: false,
-    line_number: null,
-    goToLineNumberfunc: null,
-    tile_type: null
-};
-
 function ErrorDrawer(props) {
+    props = {
+        show_drawer: false,
+        contents: [],
+        position: "right",
+        title: null,
+        size: "30%",
+        goToLineNumberfunc: null,
+        ...props
+    };
 
     const theme = useContext(ThemeContext);
 
@@ -268,26 +265,3 @@ function ErrorDrawer(props) {
 }
 
 ErrorDrawer = memo(ErrorDrawer);
-
-ErrorDrawer.propTypes = {
-    show_drawer: PropTypes.bool,
-    contents: PropTypes.object,
-    title: PropTypes.string,
-    onClose: PropTypes.func,
-    handleCloseItem: PropTypes.func,
-    position: PropTypes.string,
-    clearAll: PropTypes.func,
-    goToLineNumberFunc: PropTypes.func,
-    size: PropTypes.oneOfType([
-        PropTypes.number,
-        PropTypes.string]),
-};
-
-ErrorDrawer.defaultProps = {
-    show_drawer: false,
-    contents: [],
-    position: "right",
-    title: null,
-    size: "30%",
-    goToLineNumberfunc: null,
-};

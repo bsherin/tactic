@@ -4,8 +4,7 @@ import "../tactic_css/tactic_main.scss";
 
 import React from "react";
 import {Fragment, useEffect, useRef, memo, useMemo, useContext, useReducer, useCallback} from "react";
-import * as ReactDOM from 'react-dom'
-import PropTypes from 'prop-types';
+import { createRoot } from 'react-dom/client';
 
 import {TacticNavbar} from "./blueprint_navbar";
 import {TacticMenubar} from "./menu_utilities";
@@ -38,6 +37,11 @@ const cc_style = {marginTop: MARGIN_SIZE};
 export {NotebookApp}
 
 function NotebookApp(props) {
+    props = {
+        refreshTab: null,
+        closeTab: null,
+        ...props
+    };
 
     const last_save = useRef({});
     const main_outer_ref = useRef(null);
@@ -288,20 +292,6 @@ function NotebookApp(props) {
 
 NotebookApp = memo(NotebookApp);
 
-NotebookApp.propTypes = {
-    console_items: PropTypes.array,
-    console_component: PropTypes.object,
-    is_project: PropTypes.bool,
-    interface_state: PropTypes.object,
-    refreshTab: PropTypes.func,
-    closeTab: PropTypes.func,
-};
-
-NotebookApp.defaultProps = {
-    refreshTab: null,
-    closeTab: null,
-};
-
 function main_main() {
     function gotProps(the_props) {
         let NotebookAppPlus = withSizeContext(withTheme(withDialogs(withErrorDrawer(withStatus(NotebookApp)))));
@@ -311,7 +301,8 @@ function main_main() {
                                            changeName={null}
         />;
         const domContainer = document.querySelector('#main-root');
-        ReactDOM.render(the_element, domContainer)
+        const root = createRoot(domContainer);
+        root.render(the_element)
     }
 
     renderSpinnerMessage("Starting up ...");

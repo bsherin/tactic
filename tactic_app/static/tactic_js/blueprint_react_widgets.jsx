@@ -1,6 +1,5 @@
 import React from "react";
 import {memo, useCallback, useMemo} from "react";
-import PropTypes from 'prop-types';
 
 import {
     Tooltip, HotkeysProvider, Button, FormGroup, InputGroup, HTMLSelect, Switch, TextArea
@@ -30,6 +29,15 @@ function withTooltip(WrappedComponent) {
 }
 
 function GlyphButton(props) {
+    props = {
+        style: null,
+        className: "",
+        extra_glyph_text: null,
+        minimal: true,
+        intent: "none",
+        small: true,
+        ...props
+    };
 
     const _handleClick = useCallback((e)=>{
         props.handleClick(e);
@@ -63,30 +71,6 @@ function GlyphButton(props) {
 
 GlyphButton = memo(GlyphButton);
 
-GlyphButton.propTypes = {
-    icon: PropTypes.oneOfType([
-        PropTypes.object,
-        PropTypes.string]),
-    minimal: PropTypes.bool,
-    small: PropTypes.bool,
-    className: PropTypes.string,
-    extra_glyph_text: PropTypes.string,
-    style: PropTypes.object,
-    handleClick: PropTypes.func,
-    intent: PropTypes.string,
-};
-
-GlyphButton.defaultProps = {
-    style: null,
-    className: "",
-    extra_glyph_text: null,
-    minimal: true,
-    intent: "none",
-    small: true
-};
-
-// GlyphButton = withTooltip(GlyphButton);
-
 function LabeledTextArea(props) {
     return (
         <FormGroup label={props.label} style={{marginRight: 5}} helperText={props.helperText}>
@@ -99,6 +83,12 @@ function LabeledTextArea(props) {
 LabeledTextArea = memo(LabeledTextArea);
 
 function LabeledFormField(props) {
+    props = {
+        show: true,
+        helperText: null,
+        isBool: false,
+        ...props
+    };
     let fvalue = props.the_value == null ? "" : props.the_value;
     return (
         <FormGroup label={props.label} style={{marginRight: 5}} helperText={props.helperText}>
@@ -113,24 +103,6 @@ function LabeledFormField(props) {
 
 LabeledFormField = memo(LabeledFormField);
 
-LabeledFormField.propTypes = {
-    show: PropTypes.bool,
-    isBool: PropTypes.bool,
-    label: PropTypes.string,
-    onChange: PropTypes.func,
-    the_value: PropTypes.oneOfType([
-        PropTypes.bool,
-        PropTypes.number,
-        PropTypes.string]),
-    helperText: PropTypes.string
-};
-
-LabeledFormField.defaultProps = {
-    show: true,
-    helperText: null,
-    isBool: false
-};
-
 function LabeledSelectList(props) {
     return (
         <FormGroup label={props.label} style={{marginRight: 5}}>
@@ -142,6 +114,13 @@ function LabeledSelectList(props) {
 LabeledSelectList = memo(LabeledSelectList);
 
 function SelectList(props) {
+    props = {
+        height: null,
+        maxWidth: null,
+        fontSize: null,
+        minimal: false,
+        ...props
+    };
     function handleChange(event) {
         props.onChange(event.target.value)
     }
@@ -175,24 +154,13 @@ function SelectList(props) {
 
 SelectList = memo(SelectList);
 
-SelectList.propTypes = {
-    option_list: PropTypes.array,
-    onChange: PropTypes.func,
-    minimal: PropTypes.bool,
-    value: PropTypes.string,
-    height: PropTypes.number,
-    maxWidth: PropTypes.number,
-    fontSize: PropTypes.number,
-};
-
-SelectList.defaultProps = {
-    height: null,
-    maxWidth: null,
-    fontSize: null,
-    minimal: false
-};
-
 function BpOrderableTable(props, passedRef) {
+    props = {
+        content_editable: true,
+        selectionModes: [RegionCardinality.FULL_COLUMNS, RegionCardinality.FULL_ROWS],
+        handleDeSelect: null,
+        ...props
+    };
 
     function _onRowsReordered(oldIndex, newIndex) {
         let new_data_list = [...props.data_array];
@@ -291,19 +259,4 @@ function BpOrderableTable(props, passedRef) {
 }
 
 BpOrderableTable = memo(BpOrderableTable);
-
-BpOrderableTable.propTypes = {
-    columns: PropTypes.array,
-    data_array: PropTypes.array,
-    handleActiveRowChange: PropTypes.func,
-    handleDeSelect: PropTypes.func,
-    handleChange: PropTypes.func,
-    selectionModes: PropTypes.array,
-};
-
-BpOrderableTable.defaultProps = {
-    content_editable: true,
-    selectionModes: [RegionCardinality.FULL_COLUMNS, RegionCardinality.FULL_ROWS],
-    handleDeSelect: null
-};
 

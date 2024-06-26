@@ -2,8 +2,7 @@ import "../tactic_css/tactic.scss";
 
 import React from "react";
 import {Fragment, useState, useEffect, useRef, useMemo, memo, useContext} from "react";
-import * as ReactDOM from 'react-dom'
-import PropTypes from 'prop-types';
+import { createRoot } from 'react-dom/client';
 
 import {ReactCodemirror} from "./react-codemirror";
 
@@ -46,6 +45,14 @@ function code_viewer_props(data, registerDirtyMethod, finalCallback) {
 }
 
 function CodeViewerApp(props) {
+    props = {
+        controlled: false,
+        changeResourceName: null,
+        updatePanel: null,
+        refreshTab: null,
+        closeTab: null,
+        ...props
+    };
 
     const top_ref = useRef(null);
     const search_ref = useRef(null);
@@ -341,32 +348,6 @@ function CodeViewerApp(props) {
 
 CodeViewerApp = memo(CodeViewerApp);
 
-CodeViewerApp.propTypes = {
-    controlled: PropTypes.bool,
-    changeResourceName: PropTypes.func,
-    updatePanel: PropTypes.func,
-    refreshTab: PropTypes.func,
-    closeTab: PropTypes.func,
-    the_content: PropTypes.string,
-    created: PropTypes.string,
-    tags: PropTypes.array,
-    notes: PropTypes.string,
-    readOnly: PropTypes.bool,
-    is_repository: PropTypes.bool,
-    meta_outer: PropTypes.string,
-    tsocket: PropTypes.object,
-    usable_height: PropTypes.number,
-    usable_width: PropTypes.number
-};
-
-CodeViewerApp.defaultProps = {
-    controlled: false,
-    changeResourceName: null,
-    updatePanel: null,
-    refreshTab: null,
-    closeTab: null,
-};
-
 function code_viewer_main() {
     function gotProps(the_props) {
         let CodeViewerAppPlus = withSizeContext(withTheme(withDialogs(withErrorDrawer(withStatus(CodeViewerApp)))));
@@ -375,8 +356,9 @@ function code_viewer_main() {
                                              initial_theme={window.theme}
                                              changeName={null}
         />;
-        let domContainer = document.querySelector('#root');
-        ReactDOM.render(the_element, domContainer)
+        const domContainer = document.querySelector('#root');
+        const root = createRoot(domContainer);
+        root.render(the_element)
     }
 
     let target = window.is_repository ? "repository_view_code_in_context" : "view_code_in_context";

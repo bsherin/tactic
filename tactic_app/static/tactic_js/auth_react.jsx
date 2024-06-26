@@ -3,7 +3,7 @@ import "../tactic_css/tactic.scss";
 
 import React from "react";
 import { Fragment, useState, useEffect, useRef, memo, useContext } from "react";
-import * as ReactDOM from 'react-dom'
+import { createRoot } from 'react-dom/client';
 
 import { FormGroup, InputGroup, Button } from "@blueprintjs/core";
 
@@ -19,10 +19,11 @@ var tsocket;
 
 function _login_main() {
     if (window._show_message) doFlash(window._message);
-    let domContainer = document.querySelector('#root');
+    const domContainer = document.querySelector('#root');
+    const root = createRoot(domContainer);
     let useDark = get_theme_cookie() == "dark";
     let LoginAppPlus = withTheme(withStatus(LoginApp));
-    ReactDOM.render(<LoginAppPlus tsocket={null} controlled={false} initial_dark={useDark}/>, domContainer)
+    root.render(<LoginAppPlus tsocket={null} controlled={false} initial_dark={useDark}/>)
 }
 
 function LoginApp(props) {

@@ -5,8 +5,7 @@ import 'codemirror/mode/javascript/javascript'
 
 import React from "react";
 import {Fragment, useState, useEffect, useRef, memo, useContext} from "react";
-import * as ReactDOM from 'react-dom'
-import PropTypes from 'prop-types';
+import { createRoot } from 'react-dom/client';
 
 import {Tab, Tabs, Button, ButtonGroup, Icon} from "@blueprintjs/core";
 
@@ -37,6 +36,17 @@ const BOTTOM_MARGIN = 50;
 const MARGIN_SIZE = 17;
 
 function CreatorApp(props) {
+    props = {
+        controlled: false,
+        changeResourceName: null,
+        changeResourceTitle: null,
+        changeResourceProps: null,
+        registerLineSetter: null,
+        refreshTab: null,
+        closeTab: null,
+        updatePanel: null,
+        ...props
+    };
     const top_ref = useRef(null);
     const rc_span_ref = useRef(null);
     const vp_ref = useRef(null);
@@ -1090,43 +1100,6 @@ function CreatorApp(props) {
 
 CreatorApp = memo(CreatorApp);
 
-CreatorApp.propTypes = {
-    controlled: PropTypes.bool,
-    changeResourceName: PropTypes.func,
-    refreshTab: PropTypes.func,
-    closeTab: PropTypes.func,
-    registerLineSetter: PropTypes.func,
-    updatePanel: PropTypes.func,
-    is_mpl: PropTypes.bool,
-    render_content_code: PropTypes.string,
-    render_content_line_number: PropTypes.number,
-    extra_methods_line_number: PropTypes.number,
-    category: PropTypes.string,
-    extra_functions: PropTypes.string,
-    draw_plot_code: PropTypes.string,
-    jscript_code: PropTypes.string,
-    tags: PropTypes.array,
-    notes: PropTypes.string,
-    icon: PropTypes.string,
-    option_list: PropTypes.array,
-    export_list: PropTypes.array,
-    created: PropTypes.string,
-    tsocket: PropTypes.object,
-    usable_height: PropTypes.number,
-    usable_width: PropTypes.number
-};
-
-CreatorApp.defaultProps = {
-    controlled: false,
-    changeResourceName: null,
-    changeResourceTitle: null,
-    changeResourceProps: null,
-    registerLineSetter: null,
-    refreshTab: null,
-    closeTab: null,
-    updatePanel: null
-};
-
 function tile_creator_main() {
     function gotProps(the_props) {
         let CreatorAppPlus = withSizeContext(withTheme(withDialogs(withErrorDrawer(withStatus(CreatorApp)))));
@@ -1136,7 +1109,8 @@ function tile_creator_main() {
                                           changeName={null}
         />;
         const domContainer = document.querySelector('#creator-root');
-        ReactDOM.render(the_element, domContainer)
+        const root = createRoot(domContainer);
+        root.render(the_element)
     }
 
     renderSpinnerMessage("Starting up ...", '#creator-root');

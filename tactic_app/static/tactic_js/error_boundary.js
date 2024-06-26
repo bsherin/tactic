@@ -6,7 +6,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.ErrorBoundary = void 0;
 var _react = _interopRequireDefault(require("react"));
-var _propTypes = _interopRequireDefault(require("prop-types"));
 class ErrorBoundary extends _react.default.Component {
   constructor(props) {
     super(props);
@@ -24,7 +23,7 @@ class ErrorBoundary extends _react.default.Component {
   }
   render() {
     if (this.state.hasError) {
-      if (this.props.fallback == null) {
+      if (!("fallback" in this.props) || this.props.fallback == null) {
         let the_message = `${this.state.message}\n${this.state.stack})`;
         return /*#__PURE__*/_react.default.createElement("div", {
           style: {
@@ -42,9 +41,3 @@ class ErrorBoundary extends _react.default.Component {
   }
 }
 exports.ErrorBoundary = ErrorBoundary;
-ErrorBoundary.propTypes = {
-  fallback: _propTypes.default.oneOfType([_propTypes.default.string, _propTypes.default.object])
-};
-ErrorBoundary.defaultProps = {
-  fallback: null
-};

@@ -2,7 +2,6 @@
 
 import React from "react";
 import {Fragment, useState, useEffect, useRef, useCallback, useLayoutEffect, memo, useMemo, useContext} from "react";
-import PropTypes from 'prop-types';
 
 import 'codemirror/mode/markdown/markdown.js'
 
@@ -60,6 +59,12 @@ const trash_icon = <Icon icon="trash" size={14} />;
 const clean_icon = <Icon icon="clean" size={14} />;
 
 function ConsoleComponent(props) {
+    props = {
+        style: {},
+        shrinkable: true,
+        zoomable: true,
+        ...props
+    };
     const header_ref = useRef(null);
     const body_ref = useRef(null);
     const temporarily_closed_items = useRef([]);
@@ -1509,23 +1514,6 @@ function ConsoleComponent(props) {
 
 ConsoleComponent = memo(ConsoleComponent);
 
-ConsoleComponent.propTypes = {
-    console_items: PropTypes.object,
-    mState: PropTypes.object,
-    setMainStateValue: PropTypes.func,
-    console_available_height: PropTypes.number,
-    console_available_width: PropTypes.number,
-    style: PropTypes.object,
-    shrinkable: PropTypes.bool,
-    zoomable: PropTypes.bool,
-};
-
-ConsoleComponent.defaultProps = {
-    style: {},
-    shrinkable: true,
-    zoomable: true,
-};
-
 const sHandleStyle = {marginLeft: 0, marginRight: 6};
 
 function Shandle(props) {
@@ -2148,24 +2136,14 @@ function BlobItem(props) {
 
 BlobItem = memo(BlobItem);
 
-BlobItem.propTypes = {
-    unique_id: PropTypes.string,
-    in_section: PropTypes.bool,
-    is_error: PropTypes.bool,
-    am_shrunk: PropTypes.bool,
-    summary_text: PropTypes.string,
-    selectConsoleItem: PropTypes.func,
-    am_selected: PropTypes.bool,
-    blob: PropTypes.object,
-    setConsoleItemValue: PropTypes.func,
-    handleDelete: PropTypes.func,
-    console_available_width: PropTypes.number,
-};
-
 const code_item_update_props = ["am_shrunk", "set_focus", "am_selected", "search_string", "summary_text", "console_text",
     "in_section", "show_spinner", "execution_count", "output_text", "console_available_width", "dark_theme"];
 
 function ConsoleCodeItem(props) {
+    props = {
+        summary_text: null,
+        ...props
+    };
     const elRef = useRef(null);
     const last_output_text = useRef("");
     const am_selected_previous = useRef(false);
@@ -2505,35 +2483,6 @@ function ConsoleCodeItem(props) {
 
 ConsoleCodeItem = memo(ConsoleCodeItem);
 
-ConsoleCodeItem.propTypes = {
-    unique_id: PropTypes.string,
-    am_shrunk: PropTypes.bool,
-    set_focus: PropTypes.bool,
-    search_string: PropTypes.string,
-    show_spinner: PropTypes.bool,
-    running: PropTypes.bool,
-    summary_text: PropTypes.string,
-    console_text: PropTypes.string,
-    output_text: PropTypes.string,
-    execution_count: PropTypes.oneOfType([
-        PropTypes.number,
-        PropTypes.string]),
-    console_available_width: PropTypes.number,
-    setConsoleItemValue: PropTypes.func,
-    selectConsoleItem: PropTypes.func,
-    handleDelete: PropTypes.func,
-    addNewTextItem: PropTypes.func,
-    addNewCodeItem: PropTypes.func,
-    addNewDividerItem: PropTypes.func,
-    goToNextCell: PropTypes.func,
-    setFocus: PropTypes.func,
-    runCodeItem: PropTypes.func
-};
-
-ConsoleCodeItem.defaultProps = {
-    summary_text: null
-};
-
 function ResourceLinkButton(props) {
     const my_view = useRef(null);
 
@@ -2584,16 +2533,16 @@ function ResourceLinkButton(props) {
 
 ResourceLinkButton = memo(ResourceLinkButton);
 
-ResourceLinkButton.propTypes = {
-    res_type: PropTypes.string,
-    res_name: PropTypes.string,
-    deleteMe: PropTypes.func
-};
-
 const text_item_update_props = ["am_shrunk", "set_focus", "serach_string", "am_selected", "show_markdown",
     "in_section", "summary_text", "console_text", "console_available_width", "links"];
 
 function ConsoleTextItem(props) {
+    props = {
+        force_sync_to_prop: false,
+        summary_text: null,
+        links: [],
+        ...props
+    };
     const elRef = useRef(null);
     const am_selected_previous = useRef(false);
     const setFocusFunc = useRef(null);
@@ -2955,29 +2904,6 @@ function ConsoleTextItem(props) {
 
 ConsoleTextItem = memo(ConsoleTextItem);
 
-ConsoleTextItem.propTypes = {
-    unique_id: PropTypes.string,
-    am_shrunk: PropTypes.bool,
-    set_focus: PropTypes.bool,
-    show_markdown: PropTypes.bool,
-    force_sync_to_prop: PropTypes.bool,
-    summary_text: PropTypes.string,
-    console_text: PropTypes.string,
-    console_available_width: PropTypes.number,
-    setConsoleItemValue: PropTypes.func,
-    selectConsoleItem: PropTypes.func,
-    am_selected: PropTypes.bool,
-    handleDelete: PropTypes.func,
-    goToNextCell: PropTypes.func,
-    setFocus: PropTypes.func,
-    links: PropTypes.array
-};
-
-ConsoleTextItem.defaultProps = {
-    force_sync_to_prop: false,
-    summary_text: null,
-    links: []
-};
 
 
 

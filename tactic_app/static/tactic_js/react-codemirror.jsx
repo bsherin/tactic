@@ -1,6 +1,5 @@
 import React from "react";
 import {Fragment, useEffect, useRef, memo, useLayoutEffect, useContext} from "react";
-import PropTypes from 'prop-types';
 
 import {Button, ButtonGroup} from "@blueprintjs/core";
 
@@ -67,6 +66,37 @@ function countOccurrences(query, the_text) {
 }
 
 function ReactCodemirror(props) {
+    props = {
+        iCounter: 0,
+        no_width: false,
+        no_height: false,
+        show_search: false,
+        first_line_number: 1,
+        show_line_numbers: true,
+        show_fold_button: false,
+        soft_wrap: false,
+        code_container_height: "100%",
+        search_term: null,
+        update_search_state: null,
+        alt_clear_selections: null,
+        regex_search: false,
+        handleChange: null,
+        handleBlur: null,
+        handleFocus: null,
+        sync_to_prop: false,
+        force_sync_to_prop: false,
+        clear_force_sync: null,
+        mode: "python",
+        readOnly: false,
+        extraKeys: {},
+        setCMObject: null,
+        code_container_ref: null,
+        code_container_width: "100%",
+        setSearchMatches: null,
+        current_search_number: null,
+        extra_autocomplete_list: [],
+        ...props
+    };
     const localRef = useRef(null);
     const saved_theme = useRef(null);
     const preferred_themes = useRef(null);
@@ -128,6 +158,10 @@ function ReactCodemirror(props) {
         });
     }, []);
 
+    useEffect(()=>{
+        _doHighlight();
+    }, [props.search_term, props.current_search_number]);
+
     useEffect(() => {
         if (!cmobject.current) {
             return
@@ -147,7 +181,7 @@ function ReactCodemirror(props) {
             cmobject.current.setOption("firstLineNumber", props.first_line_number);
         }
         cmobject.current.setOption("extra_autocomplete_list", props.extra_autocomplete_list);
-        _doHighlight();
+
         set_keymap();
 
         if (theme.dark_theme != saved_theme.current) {
@@ -492,68 +526,3 @@ function ReactCodemirror(props) {
 ReactCodemirror = memo(ReactCodemirror, (prevProps, newProps) => {
     propsAreEqual(prevProps, newProps, ["extraKeys"])
 });
-
-ReactCodemirror.propTypes = {
-    no_width: PropTypes.bool,
-    no_height: PropTypes.bool,
-    handleChange: PropTypes.func,
-    show_line_numbers: PropTypes.bool,
-    show_fold_button: PropTypes.bool,
-    soft_wrap: PropTypes.bool,
-    handleBlur: PropTypes.func,
-    handleFocus: PropTypes.func,
-    code_content: PropTypes.string,
-    sync_to_prop: PropTypes.bool,
-    force_sync_to_prop: PropTypes.bool,
-    clear_force_sync: PropTypes.func,
-    mode: PropTypes.string,
-    saveMe: PropTypes.func,
-    first_line_number: PropTypes.number,
-    extraKeys: PropTypes.object,
-    setCMObject: PropTypes.func,
-    search_term: PropTypes.string,
-    update_search_state: PropTypes.func,
-    alt_clear_selections: PropTypes.func,
-    regex_search: PropTypes.bool,
-    code_container_ref: PropTypes.object,
-    code_container_width: PropTypes.oneOfType([
-        PropTypes.string,
-        PropTypes.number]),
-    code_container_height: PropTypes.oneOfType([
-        PropTypes.string,
-        PropTypes.number]),
-    setSearchMatches: PropTypes.func,
-    current_search_number: PropTypes.number,
-    extra_autocomplete_list: PropTypes.array
-};
-
-ReactCodemirror.defaultProps = {
-    iCounter: 0,
-    no_width: false,
-    no_height: false,
-    show_search: false,
-    first_line_number: 1,
-    show_line_numbers: true,
-    show_fold_button: false,
-    soft_wrap: false,
-    code_container_height: "100%",
-    search_term: null,
-    update_search_state: null,
-    alt_clear_selections: null,
-    regex_search: false,
-    handleChange: null,
-    handleBlur: null,
-    handleFocus: null,
-    sync_to_prop: false,
-    force_sync_to_prop: false,
-    clear_force_sync: null,
-    mode: "python",
-    readOnly: false,
-    extraKeys: {},
-    setCMObject: null,
-    code_container_ref: null,
-    code_container_width: "100%",
-    setSearchMatches: null,
-    current_search_number: null,
-    extra_autocomplete_list: [],
-};

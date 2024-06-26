@@ -2,7 +2,7 @@
 
 require("../tactic_css/tactic.scss");
 var _react = _interopRequireWildcard(require("react"));
-var ReactDOM = _interopRequireWildcard(require("react-dom"));
+var _client = require("react-dom/client");
 var _core = require("@blueprintjs/core");
 var _blueprint_navbar = require("./blueprint_navbar");
 var _toaster = require("./toaster");
@@ -13,8 +13,9 @@ function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; 
 window.page_id = (0, _utilities_react.guid)();
 function _duplicate_main() {
   (0, _blueprint_navbar.render_navbar)("account");
-  let domContainer = document.querySelector('#root');
-  ReactDOM.render( /*#__PURE__*/_react.default.createElement(DuplicateApp, null), domContainer);
+  const domContainer = document.querySelector('#root');
+  const root = (0, _client.createRoot)(domContainer);
+  root.render( /*#__PURE__*/_react.default.createElement(DuplicateApp, null));
 }
 const field_names = ["username", "password", "confirm_password"];
 var initial_fields = {};

@@ -1,6 +1,5 @@
 import React from "react";
 import {Fragment, useEffect, memo, useContext} from "react";
-import PropTypes from 'prop-types';
 
 import {Icon, MenuDivider, Menu, Navbar, Button, PopoverPosition, Classes, ButtonGroup} from "@blueprintjs/core";
 import {Popover2, MenuItem2} from "@blueprintjs/popover2";
@@ -42,6 +41,22 @@ const chat_status_style = {
 };
 
 function TacticMenubar(props) {
+    props = {
+        showClose: window.in_context,
+        showRefresh: window.in_context,
+        refreshTab: null,
+        closeTab: null,
+        menu_specs: null,
+        menus: null,
+        showErrorDrawerButton: false,
+        resource_name: null,
+        resource_icon: null,
+        disabled_items: [],
+        extraButtons: null,
+        suggestionGlyphs: [],
+        connection_status: null,
+        ...props
+    };
     const theme = useContext(ThemeContext);
     const assistantDrawerFuncs = useContext(AssistantContext);
 
@@ -116,38 +131,6 @@ function TacticMenubar(props) {
 
 TacticMenubar = memo(TacticMenubar);
 
-TacticMenubar.propTypes = {
-    refreshTab: PropTypes.func,
-    closeTab: PropTypes.func,
-    showClose: PropTypes.bool,
-    showRefresh: PropTypes.bool,
-    showErrorDrawerButton: PropTypes.bool,
-    menu_specs: PropTypes.object,
-    resource_name: PropTypes.string,
-    resource_icon: PropTypes.string,
-    controlled: PropTypes.bool,
-    diabled_items: PropTypes.array,
-    extraButtons: PropTypes.array,
-    suggestionGlyphs: PropTypes.array,
-    connection_status: PropTypes.string
-};
-
-TacticMenubar.defaultProps = {
-    showClose: window.in_context,
-    showRefresh: window.in_context,
-    refreshTab: null,
-    closeTab: null,
-    menu_specs: null,
-    menus: null,
-    showErrorDrawerButton: false,
-    resource_name: null,
-    resource_icon: null,
-    disabled_items: [],
-    extraButtons: null,
-    suggestionGlyphs: [],
-    connection_status: null
-};
-
 function ConnectionIndicator(props) {
     let top_icon_style = {
         display: "flex",
@@ -203,6 +186,10 @@ function AssistantDrawerButton(props) {
 AssistantDrawerButton = memo(AssistantDrawerButton);
 
 function TopLeftButtons(props) {
+    props = {
+        extraButtons: null,
+        ...props
+    };
     let top_icon_style = {
         display: "flex",
         justifyContent: "flex-start",
@@ -262,19 +249,20 @@ function TopLeftButtons(props) {
 
 TopLeftButtons = memo(TopLeftButtons);
 
-TopLeftButtons.propTypes = {
-    showRefresh: PropTypes.bool,
-    showClose: PropTypes.bool,
-    refreshTab: PropTypes.func,
-    closeTab: PropTypes.func,
-    extraButtons: PropTypes.array,
-};
-
-TopLeftButtons.defaultProps = {
-    extraButtons: null
-};
-
 function MenuComponent(props) {
+    props = {
+        menu_name: null,
+        item_class: "",
+        disabled_items: [],
+        binding_dict: {},
+        disable_all: false,
+        hidden_items: [],
+        icon_dict: {},
+        alt_button: null,
+        position: PopoverPosition.BOTTOM_LEFT,
+        createOmniItems: true,
+        ...props
+    };
     const replacers = [
         ["CTRL+", "^"],
         ["COMMAND+", "⌘"]
@@ -385,34 +373,11 @@ function MenuComponent(props) {
 
 MenuComponent = memo(MenuComponent);
 
-MenuComponent.propTypes = {
-    menu_name: PropTypes.string,
-    item_class: PropTypes.string,
-    option_dict: PropTypes.object,
-    icon_dict: PropTypes.object,
-    binding_dict: PropTypes.object,
-    disabled_items: PropTypes.array,
-    disable_all: PropTypes.bool,
-    hidden_items: PropTypes.array,
-    alt_button: PropTypes.func,
-    position: PropTypes.string,
-    createOmniItems: PropTypes.bool
-};
-
-MenuComponent.defaultProps = {
-    menu_name: null,
-    item_class: "",
-    disabled_items: [],
-    binding_dict: {},
-    disable_all: false,
-    hidden_items: [],
-    icon_dict: {},
-    alt_button: null,
-    position: PopoverPosition.BOTTOM_LEFT,
-    createOmniItems: true
-};
-
 function ToolMenu(props) {
+    props = {
+        disabled_items: [],
+        ...props
+    };
     const selectedPane = useContext(SelectedPaneContext);
     function option_dict() {
         let opt_dict = {};
@@ -463,15 +428,3 @@ function ToolMenu(props) {
     )
 }
 ToolMenu = memo(ToolMenu);
-
-ToolMenu.propTypes = {
-    menu_name: PropTypes.string,
-    menu_items: PropTypes.array,
-    disabled_items: PropTypes.array,
-    controlled: PropTypes.bool,
-};
-
-ToolMenu.defaultProps = {
-    disabled_items: [],
-
-};

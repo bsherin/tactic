@@ -1,12 +1,20 @@
 
 import React from "react";
 import {memo} from "react";
-import PropTypes from 'prop-types';
 
 import {InputGroup, ButtonGroup, Button} from "@blueprintjs/core";
 export {FilterSearchForm}
 
 function FilterSearchForm(props) {
+    props = {
+         handleFilter: null,
+         handleUnfilter: null,
+         searchNext: null,
+         searchPrevious: null,
+         search_helper_text: null,
+         margin_right: 116,
+        ...props
+     };
 
      function _handleSubmit(e) {
          props.searchNext();
@@ -56,25 +64,5 @@ function FilterSearchForm(props) {
         </form>
     )
  }
-
- FilterSearchForm.propTypes = {
-     search_string: PropTypes.string,
-     handleSearchFieldChange: PropTypes.func,
-     handleFilter: PropTypes.func,
-     handleUnFilter: PropTypes.func,
-     searchNext: PropTypes.func,
-     searchPrevious: PropTypes.func,
-     search_helper_text: PropTypes.string,
-     margin_right: PropTypes.number
-};
-
- FilterSearchForm.defaultProps = {
-     handleFilter: null,
-     handleUnfilter: null,
-     searchNext: null,
-     searchPrevious: null,
-     search_helper_text: null,
-     margin_right: 116
- };
 
  FilterSearchForm = memo(FilterSearchForm);

@@ -5,7 +5,7 @@ import "../tactic_css/library_home.scss";
 
 import React, {Fragment} from "react";
 import {useState, useEffect, useRef, memo, useContext} from "react";
-import * as ReactDOM from 'react-dom'
+import { createRoot } from 'react-dom/client';
 import PropTypes from 'prop-types';
 
 import { Tabs, Tab, Tooltip, Icon, Position } from "@blueprintjs/core";
@@ -39,8 +39,9 @@ let tsocket;
 function _administer_home_main () {
     tsocket = new TacticSocket("main", 5000, "admin", window.library_id);
     let AdministerHomeAppPlus = withSizeContext(withTheme(withDialogs(withErrorDrawer(withStatus(AdministerHomeApp)))));
-    let domContainer = document.querySelector('#library-home-root');
-    ReactDOM.render(<AdministerHomeAppPlus tsocket={tsocket} initial_theme={window.theme}/>, domContainer)
+    const domContainer = document.querySelector('#library-home-root');
+    const root = createRoot(domContainer);
+    root.render(<AdministerHomeAppPlus tsocket={tsocket} initial_theme={window.theme}/>)
 }
 
 var res_types = ["container", "user"];
@@ -132,19 +133,6 @@ function AdministerHomeApp(props) {
             _updatePaneState (res_type, state_update, resolve);
         })
     }
-
-    // function _update_window_dimensions() {
-    //     let uwidth = window.innerWidth - 2 * SIDE_MARGIN;
-    //     let uheight = window.innerHeight;
-    //     if (top_ref && top_ref.current) {
-    //         uheight = uheight - top_ref.current.offsetTop;
-    //     }
-    //     else {
-    //         uheight = uheight - USUAL_NAVBAR_HEIGHT
-    //     }
-    //     set_usable_height(uheight);
-    //     set_usable_width(uwidth)
-    // }
 
     function _handleTabChange(newTabId, prevTabId, event) {
         set_selected_tab_id(newTabId);

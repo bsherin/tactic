@@ -1,7 +1,6 @@
 
 import React from "react";
 import { useState, useEffect, useRef, memo } from "react";
-import PropTypes from 'prop-types';
 
 import { Icon } from "@blueprintjs/core";
 import { DraggableCore } from "react-draggable"
@@ -14,6 +13,17 @@ const MARGIN_SIZE = 17;
 const HANDLE_WIDTH = 10;
 
 function DragHandle(props) {
+    props = {
+        direction: "x",
+        size: 20,
+        onDrag: null,
+        dragStart: null,
+        dragEnd: null,
+        useThinBar: false,
+        barHeight: null,
+        barWidth: null,
+        ...props
+    };
     const startX = useRef(null);
     const startY = useRef(null);
     const lastX = useRef(null);
@@ -139,33 +149,23 @@ function DragHandle(props) {
 
 DragHandle = memo(DragHandle);
 
-DragHandle.propTypes = {
-    position_dict: PropTypes.object,
-    onDrag: PropTypes.func,
-    dragStart: PropTypes.func,
-    dragEnd: PropTypes.func,
-    direction: PropTypes.string,
-    size: PropTypes.number,
-    useThinBar: PropTypes.bool,
-    barheight: PropTypes.oneOfType([
-        PropTypes.string,
-        PropTypes.number]),
-    barWidth: PropTypes.oneOfType([
-        PropTypes.string,
-        PropTypes.number])
-};
-DragHandle.defaultProps = {
-    direction: "x",
-    size: 20,
-    onDrag: null,
-    dragStart: null,
-    dragEnd: null,
-    useThinBar: false,
-    barHeight: null,
-    barWidth: null
-};
-
 function HorizontalPanes(props) {
+    props = {
+        handleSplitUpdate: null,
+        handleResizeStart: null,
+        handleResizeEnd: null,
+        scrollAdjustSelectors: null,
+        initial_width_fraction: .5,
+        hide_me: false,
+        left_margin: null,
+        right_margin: null,
+        right_pane_overflow: "visible",
+        top_ref: null,
+        bottom_margin: 0,
+        show_handle: true,
+        dragIconSize: 20,
+        ...props
+    };
     const left_pane_ref = useRef(null);
     const right_pane_ref = useRef(null);
     const scroll_bases = useRef({});
@@ -321,7 +321,6 @@ function HorizontalPanes(props) {
                             dragStart={_handleDragStart}
                             dragEnd={_handleDragEnd}
                             direction="x"
-                            size={props.dragIconSize}
                             useThinBar={true}
                             barHeight={props.available_height - props.bottom_margin}
 
@@ -339,40 +338,19 @@ HorizontalPanes = memo(HorizontalPanes, (prevProps, newProps)=> {
     propsAreEqual(prevProps, newProps, ["left_pane", "right_pane", "handleSplitUpdate", "handleResizeStart", "handleResizeEnd", "scrollAdjustSelectors", "initial_width_fraction", "top_ref", "bottom_margin", "show_handle", "dragIconSize", "outer_style"])
 });
 
-HorizontalPanes.propTypes = {
-    available_width: PropTypes.number,
-    available_height: PropTypes.number,
-    left_pane: PropTypes.object,
-    right_pane: PropTypes.object,
-    right_pane_overflow: PropTypes.string,
-    scrollAdjustSelectors: PropTypes.array,
-    handleSplitUpdate: PropTypes.func,
-    handleResizeStart: PropTypes.func,
-    handleResizeEnd: PropTypes.func,
-    initial_width_fraction: PropTypes.number,
-    top_ref: PropTypes.object,
-    bottom_margin: PropTypes.number,
-    show_handle: PropTypes.bool,
-    dragIconSize: PropTypes.number
-};
-
-HorizontalPanes.defaultProps = {
-    handleSplitUpdate: null,
-    handleResizeStart: null,
-    handleResizeEnd: null,
-    scrollAdjustSelectors: null,
-    initial_width_fraction: .5,
-    hide_me: false,
-    left_margin: null,
-    right_margin: null,
-    right_pane_overflow: "visible",
-    top_ref: null,
-    bottom_margin: 0,
-    show_handle: true,
-    dragIconSize: 20
-};
-
 function VerticalPanes(props) {
+    props = {
+        handleSplitUpdate: null,
+        handleResizeStart: null,
+        handleResizeEnd: null,
+        scrollAdjustSelectors: null,
+        initial_height_fraction: .5,
+        hide_top: false,
+        overflow: "scroll",
+        show_handle: true,
+        dragIconSize: 20,
+        ...props
+    };
     const top_ref = useRef(null);
 
     const top_pane_ref = useRef(null);
@@ -511,32 +489,5 @@ function VerticalPanes(props) {
 
 VerticalPanes = memo(VerticalPanes);
 
-VerticalPanes.propTypes = {
-    available_width: PropTypes.number,
-    available_height: PropTypes.number,
-    top_pane: PropTypes.object,
-    hide_top: PropTypes.bool,
-    bottom_pane: PropTypes.object,
-    handleSplitUpdate: PropTypes.func,
-    handleResizeStart: PropTypes.func,
-    handleResizeEnd: PropTypes.func,
-    scrollAdjustSelectors: PropTypes.array,
-    initial_height_fraction: PropTypes.number,
-    overflow: PropTypes.string,
-    show_handle: PropTypes.bool,
-    dragIconSize: PropTypes.number
-};
-
-VerticalPanes.defaultProps = {
-    handleSplitUpdate: null,
-    handleResizeStart: null,
-    handleResizeEnd: null,
-    scrollAdjustSelectors: null,
-    initial_height_fraction: .5,
-    hide_top: false,
-    overflow: "scroll",
-    show_handle: true,
-    dragIconSize: 20
-};
 
 

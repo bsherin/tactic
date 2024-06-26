@@ -8,6 +8,11 @@ import Mousetrap from "mousetrap";
 export {KeyTrap}
 
 function KeyTrap(props) {
+    props = {
+        active: true,
+        global: false,
+        ...props
+    };
     const mousetrap = useRef(null);
 
     useEffect(()=>{
@@ -58,16 +63,6 @@ function KeyTrap(props) {
     )
 }
 
-KeyTrap.propTypes = {
-    active: PropTypes.bool,
-    target_ref: PropTypes.object,
-    bindings: PropTypes.array,
-    global: PropTypes.bool
-};
 
-KeyTrap.defaultProps = {
-    active: true,
-    global: false
-};
 
 KeyTrap = memo(KeyTrap);

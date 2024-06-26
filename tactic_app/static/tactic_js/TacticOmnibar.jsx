@@ -1,6 +1,5 @@
 import React from "react";
 import {memo, useContext, useState, useCallback, useRef, useEffect, createContext} from "react";
-import PropTypes from 'prop-types';
 
 import {Omnibar, QueryList, Classes} from "@blueprintjs/select"
 import {MenuItem, Overlay, InputGroup} from "@blueprintjs/core";
@@ -270,12 +269,6 @@ function TacticOmnibarItem(props) {
     );
 }
 
-TacticOmnibarItem.propTypes = {
-    item: PropTypes.object,
-    modifiers: PropTypes.object,
-    handleClick: PropTypes.func
-};
-
 TacticOmnibarItem = memo(TacticOmnibarItem);
 
 function _itemRenderer(item, {modifiers, handleClick}) {
@@ -294,6 +287,11 @@ function _itemPredicate(query, item) {
 
 
 function TacticOmnibar(props) {
+    props = {
+        showOmnibar: false,
+        omniGetters: null,
+        ...props
+    };
 
     const theme = useContext(ThemeContext);
 
@@ -378,16 +376,5 @@ function TacticOmnibar(props) {
         />
     )
 }
-
-TacticOmnibar.propTypes = {
-    omniGetters: PropTypes.array,
-    showOmniBar: PropTypes.bool,
-    closeOmniBar: PropTypes.func,
-};
-
-TacticOmnibar.defaultProps = {
-    showOmnibar: false,
-    omniGetters: null
-};
 
 TacticOmnibar = memo(TacticOmnibar);

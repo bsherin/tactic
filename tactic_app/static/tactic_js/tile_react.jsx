@@ -2,7 +2,6 @@
 
 import React from "react";
 import {useState, useEffect, useRef, memo, useMemo, useCallback, useContext} from "react";
-import PropTypes from 'prop-types';
 
 import {Icon, Card, Button, ButtonGroup, Spinner, PopoverPosition} from "@blueprintjs/core";
 import {Transition} from "react-transition-group";
@@ -10,7 +9,7 @@ import _ from 'lodash';
 
 import {TileForm} from "./tile_form_react";
 import {GlyphButton} from "./blueprint_react_widgets";
-import {DragHandle} from "./resizing_layouts"
+import {DragHandle} from "./resizing_layouts2"
 
 import {SortableComponent} from "./sortable_container";
 import {postWithCallback, postPromise} from "./communication_react"
@@ -290,18 +289,6 @@ function TileContainer(props) {
     )
 }
 
-TileContainer.propTypes = {
-    setMainStateValue: PropTypes.func,
-    table_is_shrunk: PropTypes.bool,
-    tile_list: PropTypes.object,
-    tile_div_ref: PropTypes.object,
-    current_doc_name: PropTypes.string,
-    height: PropTypes.number,
-    broadcast_event: PropTypes.func,
-    selected_row: PropTypes.number,
-    goToModule: PropTypes.func,
-};
-
 TileContainer = memo(TileContainer);
 
 function SortHandle(props) {
@@ -311,13 +298,15 @@ function SortHandle(props) {
     )
 }
 
-SortHandle.propTypes = {
-    tile_name: PropTypes.string
-};
-
 SortHandle = memo(SortHandle);
 
 function TileComponent(props) {
+    props = {
+        javascript_code: null,
+        log_since: null,
+        max_console_lines: 100,
+        ...props
+    };
 
     const my_ref = useRef(null);
     const body_ref = useRef(null);
@@ -898,43 +887,10 @@ function TileComponent(props) {
                             dragStart={_startResize}
                             onDrag={_onResize}
                             dragEnd={_stopResize}
-                            direction="both"
-                            size={15}/>
+                            direction="both"/>
             </ErrorBoundary>
         </Card>
     )
 }
-
-TileComponent.propTypes = {
-    tile_name: PropTypes.string,
-    tile_id: PropTypes.string,
-    form_data: PropTypes.array,
-    front_content: PropTypes.string,
-    javascript_code: PropTypes.string,
-    javascript_arg_dict: PropTypes.object,
-    max_console_lines: PropTypes.number,
-    source_changed: PropTypes.bool,
-    tile_width: PropTypes.number,
-    tile_height: PropTypes.number,
-    show_form: PropTypes.bool,
-    show_spinner: PropTypes.bool,
-    shrunk: PropTypes.bool,
-    show_log: PropTypes.bool,
-    log_content: PropTypes.string,
-    log_since: PropTypes.number,
-    current_doc_name: PropTypes.string,
-    setTileValue: PropTypes.func,
-    setTileState: PropTypes.func,
-    broadcast_event: PropTypes.func,
-    handleReload: PropTypes.string,
-    handleClose: PropTypes.func,
-    goToModule: PropTypes.func
-};
-
-TileComponent.defaultProps = {
-    javascript_code: null,
-    log_since: null,
-    max_console_lines: 100
-};
 
 TileComponent = memo(TileComponent);

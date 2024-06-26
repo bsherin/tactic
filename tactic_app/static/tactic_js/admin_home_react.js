@@ -6,7 +6,7 @@ require("../tactic_css/tactic.scss");
 require("../tactic_css/tactic_table.scss");
 require("../tactic_css/library_home.scss");
 var _react = _interopRequireWildcard(require("react"));
-var ReactDOM = _interopRequireWildcard(require("react-dom"));
+var _client = require("react-dom/client");
 var _propTypes = _interopRequireDefault(require("prop-types"));
 var _core = require("@blueprintjs/core");
 var _table = require("@blueprintjs/table");
@@ -30,11 +30,12 @@ let tsocket;
 function _administer_home_main() {
   tsocket = new _tactic_socket.TacticSocket("main", 5000, "admin", window.library_id);
   let AdministerHomeAppPlus = (0, _sizing_tools.withSizeContext)((0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(AdministerHomeApp)))));
-  let domContainer = document.querySelector('#library-home-root');
-  ReactDOM.render( /*#__PURE__*/_react.default.createElement(AdministerHomeAppPlus, {
+  const domContainer = document.querySelector('#library-home-root');
+  const root = (0, _client.createRoot)(domContainer);
+  root.render( /*#__PURE__*/_react.default.createElement(AdministerHomeAppPlus, {
     tsocket: tsocket,
     initial_theme: window.theme
-  }), domContainer);
+  }));
 }
 var res_types = ["container", "user"];
 var col_names = {
@@ -114,20 +115,6 @@ function AdministerHomeApp(props) {
       _updatePaneState(res_type, state_update, resolve);
     });
   }
-
-  // function _update_window_dimensions() {
-  //     let uwidth = window.innerWidth - 2 * SIDE_MARGIN;
-  //     let uheight = window.innerHeight;
-  //     if (top_ref && top_ref.current) {
-  //         uheight = uheight - top_ref.current.offsetTop;
-  //     }
-  //     else {
-  //         uheight = uheight - USUAL_NAVBAR_HEIGHT
-  //     }
-  //     set_usable_height(uheight);
-  //     set_usable_width(uwidth)
-  // }
-
   function _handleTabChange(newTabId, prevTabId, event) {
     set_selected_tab_id(newTabId);
     pushCallback(_update_window_dimensions);
