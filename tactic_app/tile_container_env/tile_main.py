@@ -230,6 +230,7 @@ class TileWorker(QWorker):
         current_options = self.tile_instance._current_options
         reload_attrs.update(current_options)
         reload_attrs["old_option_names"] = list(current_options.keys())
+        reload_attrs["original_option_names"] = [opt["name"] for opt in self.tile_instance.options]
         return reload_attrs
 
     def send_updated_reload_dict(self):
@@ -251,8 +252,7 @@ class TileWorker(QWorker):
             if options_changed:  # Have to deal with case where an option no longer exists and shouldn't be copied
                 attr_list = list(reload_dict.keys())
                 for attr in attr_list:
-                    if attr in old_option_names and attr not in new_option_names:
-
+                    if attr in reload_dict["original_option_names"] and attr not in new_option_names:
                         del reload_dict[attr]
             for (attr, val) in reload_dict.items():
                 setattr(self.tile_instance, attr, val)
