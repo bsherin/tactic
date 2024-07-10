@@ -431,6 +431,8 @@ function CodeAreaOption(props) {
     return (
         <FormGroup label={label}>
             <ReactCodemirror handleChange={_updateMe}
+                             no_width={true}
+                             no_height={true}
                              code_content={props.value}
                              saveMe={null}
                              code_container_height={100}

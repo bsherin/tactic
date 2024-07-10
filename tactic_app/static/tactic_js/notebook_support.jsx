@@ -69,7 +69,6 @@ function notebook_props(data, registerDirtyMethod, finalCallback) {
         if (data.is_project || opening_from_temp_id) {
             interface_state = fdata.interface_state
         }
-        let domContainer = document.querySelector('#main-root');
         if (data.is_project || opening_from_temp_id) {
             finalCallback({
                 is_project: true,

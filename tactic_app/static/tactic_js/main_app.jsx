@@ -1109,7 +1109,7 @@ function MainApp(props) {
                 <HorizontalPanes left_pane={table_pane}
                                  right_pane={tile_pane}
                                  show_handle={true}
-                                 scrollAdjustSelectors={[".bp5-table-quadrant-scroll-container", "#tile-div"]}
+                                 scrollAdjustSelectors={[".bp5-table-quadrant-scroll-container", ".tile-div"]}
                                  initial_width_fraction={mState.horizontal_fraction}
                                  dragIconSize={15}
                                  handleSplitUpdate={_handleHorizontalFractionChange}
@@ -1194,7 +1194,7 @@ function MainApp(props) {
                                            show_handle={true}
                                            initial_height_fraction={mState.height_fraction}
                                            dragIconSize={15}
-                                           scrollAdjustSelectors={[".bp5-table-quadrant-scroll-container", "#tile-div"]}
+                                           scrollAdjustSelectors={[".bp5-table-quadrant-scroll-container", ".tile-div"]}
                                            handleSplitUpdate={_handleVerticalSplitUpdate}
                                            handleResizeStart={_handleResizeStart}
                                            handleResizeEnd={_handleResizeEnd}

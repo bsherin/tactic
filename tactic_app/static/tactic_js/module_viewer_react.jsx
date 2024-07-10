@@ -39,7 +39,6 @@ function module_viewer_props(data, registerDirtyMethod, finalCallback) {
         icon: data.mdata.additional_mdata.icon,
         readOnly: data.read_only,
         is_repository: data.is_repository,
-        meta_outer: "#right-div",
         registerDirtyMethod: registerDirtyMethod,
     })
 }
@@ -469,7 +468,6 @@ function ModuleViewerApp(props) {
                                        regex={regex}
                                        allow_regex_search={true}
                                        search_ref={search_ref}
-                                       meta_outer={props.meta_outer}
                                        showErrorDrawerButton={true}
                     >
                         <ReactCodemirror code_content={code_content}

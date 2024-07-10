@@ -135,12 +135,19 @@ function TileContainer(props) {
     }
 
     function _resortTiles({destination, source}) {
+
         props.tileDispatch({
             type: "move_item",
             oldIndex: source.index,
             newIndex: destination.index
         });
-        setDragging(false)
+        setDragging(false);
+        if (props.table_is_shrunk) {
+            let elements = document.querySelectorAll('.tile-panel');
+            elements.forEach((element) => {
+                element.classList.add('tile-panel-float');
+            })
+        }
     }
 
     function _markSourceChange(tile_type) {
@@ -239,6 +246,13 @@ function TileContainer(props) {
         }
     }
     function beforeCapture(_, event) {
+        if (props.table_is_shrunk) {
+            // Need to do this manually because of how react-dnd works
+            let elements = document.querySelectorAll('.tile-panel.tile-panel-float');
+            elements.forEach((element) => {
+                element.classList.remove('tile-panel-float');
+            });
+        }
         setDragging(true)
     }
 
@@ -264,7 +278,7 @@ function TileContainer(props) {
 
     return (
         <div ref={tile_div_ref}>
-            <SortableComponent id="tile-div"
+            <SortableComponent className="tile-div"
                                main_id={props.main_id}
                                style={outer_style}
                                helperClass={theme.dark_theme ? "bp5-dark" : "light-theme"}

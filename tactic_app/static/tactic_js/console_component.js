@@ -1517,7 +1517,7 @@ function ConsoleComponent(props) {
       topY: topY
     }
   }, /*#__PURE__*/_react.default.createElement(_sortable_container.SortableComponent, {
-    id: "console-items-div",
+    className: "console-items-div",
     direction: "vertical",
     style: empty_style,
     main_id: props.main_id,

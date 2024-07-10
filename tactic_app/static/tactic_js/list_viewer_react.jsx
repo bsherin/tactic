@@ -44,7 +44,6 @@ function list_viewer_props(data, registerDirtyMethod, finalCallback) {
         notes: data.mdata.notes,
         readOnly: data.read_only,
         is_repository: data.is_repository,
-        meta_outer: "#right-div",
         registerDirtyMethod: registerDirtyMethod,
     })
 }
@@ -326,7 +325,6 @@ function ListViewerApp(props) {
                                    menu_specs={menu_specs()}
                                    handleStateChange={_handleMetadataChange}
                                    created={props.created}
-                                   meta_outer={props.meta_outer}
                                    notes={notes}
                                    tags={tags}
                                    showErrorDrawerButton={false}

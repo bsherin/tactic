@@ -11,10 +11,10 @@
 }
 
 /*main window*/
-#tile-div {
+.tile-div {
   overflow: hidden;
 }
-#tile-div:hover {
+.tile-div:hover {
   overflow: auto;
 }
 
