@@ -387,6 +387,8 @@ function CodeAreaOption(props) {
     label: label
   }, /*#__PURE__*/_react.default.createElement(_reactCodemirror.ReactCodemirror, {
     handleChange: _updateMe,
+    no_width: true,
+    no_height: true,
     code_content: props.value,
     saveMe: null,
     code_container_height: 100

@@ -42,7 +42,6 @@ function text_viewer_props(data, registerDirtyMethod, finalCallback) {
         notes: null,
         readOnly: data.read_only,
         is_repository: data.is_repository,
-        meta_outer: "#right-div",
         registerDirtyMethod: registerDirtyMethod,
         created: data.created,
         updated: data.updated,
@@ -305,7 +304,6 @@ function TextViewerApp(props) {
                                    menu_specs={menu_specs()}
                                    handleStateChange={_handleMetadataChange}
                                    created={props.created}
-                                   meta_outer={props.meta_outer}
                                    notes={null}
                                    tags={null}
                                    showErrorDrawerButton={false}

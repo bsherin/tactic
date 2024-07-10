@@ -18,7 +18,7 @@ function SortableComponent(props) {
                        onBeforeCapture={props.onBeforeCapture}>
         <Droppable droppableId="droppable">
           {(provided) => (
-            <div id={props.id} style={props.style} ref={provided.innerRef} {...provided.droppableProps}>
+            <div className={props.className} style={props.style} ref={provided.innerRef} {...provided.droppableProps}>
               {props.item_list.map((entry, index) => (
                   <DraggableComponent key={entry[props.key_field_name]}
                                       index={index}
