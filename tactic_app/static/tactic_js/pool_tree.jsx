@@ -13,7 +13,8 @@ export {PoolTree, PoolAddressSelector, getBasename, splitFilePath, getFileParent
 
 const PoolContext = createContext({
     workingPath: null,
-    setWorkingPath: ()=>{}
+    setWorkingPath: () => {
+    }
 });
 
 function withPool(WrappedComponent) {
@@ -26,6 +27,7 @@ function withPool(WrappedComponent) {
             </PoolContext.Provider>
         )
     }
+
     return memo(newFunc)
 }
 
@@ -98,7 +100,7 @@ function treeNodesReducer(nodes, action) {
                 }
             });
             return newStateMF;
-         case "MODIFY_DIRECTORY":
+        case "MODIFY_DIRECTORY":
             const newStateMD = _.cloneDeep(nodes);
             forEachNode(newStateMD, (node) => {
                 if (node.fullpath == action.folderDict.fullpath) {
@@ -133,7 +135,7 @@ function treeNodesReducer(nodes, action) {
                     }
                 }
             });
-            return newState10       ;
+            return newState10;
         case "ADD_DIRECTORY":
             const newState11 = _.cloneDeep(nodes);
             const [dpath, dfname] = splitFilePath(action.folderDict.fullpath);
@@ -155,8 +157,7 @@ function treeNodesReducer(nodes, action) {
                     for (const cnode of node.childNodes) {
                         if (cnode.fullpath != action.src) {
                             new_children.push(cnode)
-                        }
-                        else{
+                        } else {
                             found_file = true;
                             action.fileDict.isSelected = cnode.isSelected;
                         }
@@ -182,8 +183,7 @@ function treeNodesReducer(nodes, action) {
                     for (const cnode of node.childNodes) {
                         if (cnode.fullpath != action.src) {
                             new_children.push(cnode)
-                        }
-                        else{
+                        } else {
                             found_dir = true;
                             action.folderDict.isSelected = cnode.isSelected;
                             action.folderDict.childNodes = cnode.childNodes;
@@ -274,18 +274,20 @@ function nodeFromPath(fullpath, root) {
 
 function sortNodes(nlist) {
     let newList = _.cloneDeep(nlist);
-    newList.sort((a, b)=>{return a.basename.localeCompare(b.basename)});
+    newList.sort((a, b) => {
+        return a.basename.localeCompare(b.basename)
+    });
     return newList
 }
 
 function PoolTree(props) {
     const [nodes, dispatch, nodes_ref] = useReducerAndRef(treeNodesReducer, []);
     const [showContextMenu, setShowContextMenu] = useState(false);
-    const [contextMenuTarget, setContentMenuTarget] = useState({left:0, top:0});
+    const [contextMenuTarget, setContentMenuTarget] = useState({left: 0, top: 0});
     const [contextMenuNode, setContextMenuNode] = useState("");
     const [folderOver, setFolderOver] = useState("null");
     const [searchString, setSearchString, searchStringRef] = useStateAndRef("");
-    const [sortBy, setSortBy] = useState("updated") ;
+    const [sortBy, setSortBy] = useState("updated");
     const [sortDirection, setSortDirection] = useState("descending");
     const theme = useContext(ThemeContext);
 
@@ -293,12 +295,12 @@ function PoolTree(props) {
 
     const pool_context = useContext(PoolContext);
 
-    useEffect(()=>{
+    useEffect(() => {
         initSocket();
         if (props.registerTreeRefreshFunc) {
             props.registerTreeRefreshFunc(getTree)
         }
-        getTree().then(()=>{
+        getTree().then(() => {
             if (!props.value && pool_context.workingPath) {
                 exposeNode(pool_context.workingPath, false)
             }
@@ -319,7 +321,7 @@ function PoolTree(props) {
                 new_nodes: data.dtree,
             });
             if (props.value) {
-                pushCallback(()=> {
+                pushCallback(() => {
                     dispatch({
                         type: "SET_IS_SELECTED_FROM_FULLPATH",
                         fullpath: props.value
@@ -328,12 +330,10 @@ function PoolTree(props) {
                 pushCallback(() => {
                     exposeNode(props.value)
                 });
-            }
-            else {
+            } else {
                 pushCallback(exposeBaseNode)
             }
-        }
-        catch (e) {
+        } catch (e) {
             errorDrawerFuncs.addFromError("Error getting pool tree", e)
         }
     }
@@ -441,7 +441,7 @@ function PoolTree(props) {
         })
     }
 
-    function exposeNode(fullpath, set_working_path=true) {
+    function exposeNode(fullpath, set_working_path = true) {
         let the_path = findNodePath(fullpath);
         if (the_path) {
             dispatch({
@@ -452,8 +452,7 @@ function PoolTree(props) {
             if (set_working_path) {
                 pool_context.setWorkingPath(fullpath);
             }
-        }
-        else {
+        } else {
             exposeBaseNode();
         }
     }
@@ -467,8 +466,7 @@ function PoolTree(props) {
         for (let node of childNodes) {
             if (node.fullpath == fullpath) {
                 return current_path + [node.id]
-            }
-            else {
+            } else {
                 if ("childNodes" in node) {
                     var the_path = searchDown(node.childNodes, fullpath, current_path + [node.id]);
                     if (the_path) {
@@ -522,14 +520,18 @@ function PoolTree(props) {
 
     return (
         <Fragment>
-            <ContextMenuPopover onClose={()=>{setShowContextMenu(false)}}  // Without this doesn't close
-                        content={props.renderContextMenu != null ?
-                            props.renderContextMenu({node: contextMenuNode}) : null}
-                        isOpen={showContextMenu}
-                        isDarkTheme={theme.dark_theme}
-                        targetOffset={contextMenuTarget}/>
-            <div style={{paddingLeft: 10, paddingTop: 10,
-                display: "flex", flexDirection: "row", justifyContent: "space-between"}}>
+            <ContextMenuPopover onClose={() => {
+                setShowContextMenu(false)
+            }}  // Without this doesn't close
+                                content={props.renderContextMenu != null ?
+                                    props.renderContextMenu({node: contextMenuNode}) : null}
+                                isOpen={showContextMenu}
+                                isDarkTheme={theme.dark_theme}
+                                targetOffset={contextMenuTarget}/>
+            <div style={{
+                paddingLeft: 10, paddingTop: 10,
+                display: "flex", flexDirection: "row", justifyContent: "space-between"
+            }}>
                 <SearchForm allow_search_inside={false}
                             allow_search_metadata={false}
                             update_search_state={_update_search_state}
@@ -538,17 +540,23 @@ function PoolTree(props) {
                 <div style={{display: "flex", marginLeft: 15}}>
                     <HTMLSelect options={["name", "size", "updated"]}
                                 className="tree-sort-select"
-                                onChange={(event)=>{setSortBy(event.target.value)}}
+                                onChange={(event) => {
+                                    setSortBy(event.target.value)
+                                }}
                                 minimal={true}
                                 value={sortBy}/>
                     <HTMLSelect options={["ascending", "descending"]}
                                 className="tree-sort-select"
-                                onChange={(event)=>{setSortDirection(event.target.value)}}
+                                onChange={(event) => {
+                                    setSortDirection(event.target.value)
+                                }}
                                 minimal={true}
                                 value={sortDirection}/>
                 </div>
             </div>
             <CustomTree contents={nodes_ref.current}
+                        currentRootPath={props.currentRootPath}
+                        setRoot={props.setRoot}
                         searchString={searchStringRef.current}
                         sortField={sortBy}
                         sortDirection={sortDirection}
@@ -566,7 +574,7 @@ function PoolTree(props) {
 PoolTree = memo(PoolTree);
 
 function getBasename(str) {
-    return str.substring(str.lastIndexOf('/')+1);
+    return str.substring(str.lastIndexOf('/') + 1);
 }
 
 function getFileParentPath(path) {
@@ -586,18 +594,19 @@ function PoolAddressSelector(props) {
     const pop_ref = useRef(null);
     const [refAcquired, setRefAcquired] = useState(false);
     const [maxPopoverHeight, setMaxPopoverHeight, maxPopoverHeightRef] = useStateAndRef(.4 * window.innerHeight);
+    const [currentRootPath, setCurrentRootPath, currentRootPathRef] = useStateAndRef("/mydisk");
 
-    useEffect(()=>{
+    useEffect(() => {
         window.addEventListener("resize", resizePopover);
         setRefAcquired(false);
-        return (()=>{
+        return (() => {
             window.removeEventListener("resize", resizePopover)
         })
     }, []);
 
     useEffect(() => {
         resizePopover();
-      }, [refAcquired]);
+    }, [refAcquired]);
 
     function resizePopover() {
         if (pop_ref.current) {
@@ -621,13 +630,14 @@ function PoolAddressSelector(props) {
     let button_text;
     if (!props.value || props.value == "") {
         button_text = "not set"
-    }
-    else {
+    } else {
         button_text = getBasename(props.value)
     }
     let tree_element = (
         <div style={{maxHeight: maxPopoverHeightRef.current, overflowY: "scroll"}}>
             <PoolTree value={props.value}
+                      currentRootPath={currentRootPathRef.current}
+                      setRoot={null}
                       sortField="name"
                       sortDirection="ascending"
                       tsocket={props.tsocket}
@@ -641,27 +651,29 @@ function PoolAddressSelector(props) {
     );
 
     return (
-            <Popover
-                popoverRef={pop_ref}
-                isOpen={isOpen}
-                onInteraction={onInteract}
-                onOpened={()=>{
-                        setRefAcquired(true)
-                    }
-                }
-                onClosed={()=>{
-                        setRefAcquired(false)
-                    }
-                }
-                position="bottom-left"
-                minimal={true}
-                modifiers={{
-                    flip: {enabled: false},
-                    preventOverflow: { enabled: false }
-                }}
-                content={tree_element}>
-                <Button text={button_text} onClick={()=>{setIsOpen(!isOpen)}}/>
-            </Popover>
+        <Popover
+            popoverRef={pop_ref}
+            isOpen={isOpen}
+            onInteraction={onInteract}
+            onOpened={() => {
+                setRefAcquired(true)
+            }
+            }
+            onClosed={() => {
+                setRefAcquired(false)
+            }
+            }
+            position="bottom-left"
+            minimal={true}
+            modifiers={{
+                flip: {enabled: false},
+                preventOverflow: {enabled: false}
+            }}
+            content={tree_element}>
+            <Button text={button_text} onClick={() => {
+                setIsOpen(!isOpen)
+            }}/>
+        </Popover>
     )
 }
 
@@ -674,23 +686,62 @@ function CustomTree(props) {
     function sortFilterNodes(nlist) {
         let newList = _.cloneDeep(nlist);
         if (props.sortField == "name") {
-            newList.sort((a, b)=>{return a.basename.localeCompare(b.basename)});
+            newList.sort((a, b) => {
+                return a.basename.localeCompare(b.basename)
+            });
 
-        }
-        else if (props.sortField == "size") {
-            newList.sort((a, b)=>{return a.size_for_sort - b.size_for_sort})
-        }
-        else {
-            newList.sort((a, b)=>{return a.updated_for_sort - b.updated_for_sort})
+        } else if (props.sortField == "size") {
+            newList.sort((a, b) => {
+                return a.size_for_sort - b.size_for_sort
+            })
+        } else {
+            newList.sort((a, b) => {
+                return a.updated_for_sort - b.updated_for_sort
+            })
         }
 
         if (props.sortDirection == "descending") {
             newList = newList.reverse()
         }
         if (props.searchString != "") {
-            newList = newList.filter(a => a.isDirectory || a.basename.includes(props.searchString))
+            newList = markNodesDisabled(newList);
+            newList = newList.filter(a => !a.isDisabled)
         }
         return newList
+    }
+
+    function checkIfDisabled(node) {
+        if (!node.isDirectory) {
+            node.isDisabled = !node.basename.includes(props.searchString);
+            return node.isDisabled
+        } else {
+            let newChildren = [];
+            let disabled = true;
+            for (let child of node.childNodes) {
+                let newChild = _.cloneDeep(child);
+                newChild.isDisabled = checkIfDisabled(child);
+                if (!newChild.isDisabled) {
+                    disabled = false
+                }
+                newChildren.push(newChild)
+            }
+            node.childNodes = newChildren;
+            node.isDisabled = disabled && !node.basename.includes(props.searchString);
+            return node.isDisabled
+        }
+    }
+
+    function markNodesDisabled(nlist) {
+        let newList = _.cloneDeep(nlist);
+        for (let node of newList) {
+            checkIfDisabled(node)
+        }
+        return newList
+    }
+
+    function nodeDoubleClickFunc(node) {
+        if (!node.isDirectory) return null;
+        return () => { props.setRoot({fullpath: node.fullpath}) }
     }
 
     function renderNodes(treeNodes, currentPath, className) {
@@ -710,12 +761,12 @@ function CustomTree(props) {
                     onClick={props.onNodeClick}
                     onContextMenu={props.onNodeContextMenu}
                     onCollapse={props.onNodeCollapse}
-                    onDoubleClick={props.onNodeDoubleClick}
+                    onDoubleClick={nodeDoubleClickFunc(node)}
                     onExpand={props.onNodeExpand}
                     onMouseEnter={props.onNodeMouseEnter}
                     onMouseLeave={props.onNodeMouseLeave}
                     path={elementPath}
-                    secondaryLabel={props.showSecondaryLabel ? `${node.updated}   ${String(node.size)}`: null}
+                    secondaryLabel={props.showSecondaryLabel ? `${node.updated}   ${String(node.size)}` : null}
                 >
                     {renderNodes(node.childNodes, elementPath)}
                 </TreeNode>
@@ -729,21 +780,19 @@ function CustomTree(props) {
                         {tnode}
                     </FileDropWrapper>
                 )
-            }
-            else if (!node.isDirectory && props.handleDrop) {
+            } else if (!node.isDirectory && props.handleDrop) {
                 return (
                     <div key={node.fullpath}
                          draggable={true}
-                         onDragStart={(e)=>{
+                         onDragStart={(e) => {
                              e.dataTransfer.setData("fullpath", node.fullpath)
                          }}
-                         onDragEnd={(e)=>{
+                         onDragEnd={(e) => {
                          }}>
                         {tnode}
                     </div>
                 )
-            }
-            else {
+            } else {
                 return tnode
             }
         });
@@ -751,9 +800,28 @@ function CustomTree(props) {
         return <ul className={`bp5-tree-node-list ${props.className}`}>{nodeItems}</ul>;
     }
 
+    function getNodeFromPath(fullpath, nodes) {
+        if (nodes == null || nodes.length == 0) return null;
+        for (let node of nodes) {
+            if (node.fullpath == fullpath) {
+                return node
+            }
+            if (node.isDirectory) {
+                let result = getNodeFromPath(fullpath, node.childNodes);
+                if (result) {
+                    return result
+                }
+            }
+        }
+        return null
+    }
+
+    let rootNode = getNodeFromPath(props.currentRootPath, props.contents);
+    let nodes_to_render = !rootNode ? null : [rootNode];
+
     return (
         <div className="bp5-tree" style={{width: "100%"}}>
-            {renderNodes(props.contents, [], Classes.TREE_ROOT)}
+            {renderNodes(nodes_to_render, [], Classes.TREE_ROOT)}
         </div>
     );
 }
