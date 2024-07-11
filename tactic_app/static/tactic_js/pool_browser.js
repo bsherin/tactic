@@ -32,8 +32,10 @@ function PoolBrowser(props) {
     notes: "",
     updated: "",
     created: "",
-    size: ""
+    size: "",
+    res_type: null
   });
+  const [currentRootPath, setCurrentRootPath, currentRootPathRef] = (0, _utilities_react.useStateAndRef)("/mydisk");
   const [value, setValue, valueRef] = (0, _utilities_react.useStateAndRef)(null);
   const [selectedNode, setSelectedNode, selectedNodeRef] = (0, _utilities_react.useStateAndRef)(null);
   const [multi_select, set_multi_select, multi_select_ref] = (0, _utilities_react.useStateAndRef)(false);
@@ -63,7 +65,8 @@ function PoolBrowser(props) {
         notes: "",
         updated: selectedNodeRef.current.updated,
         created: selectedNodeRef.current.created,
-        size: String(selectedNodeRef.current.size)
+        size: String(selectedNodeRef.current.size),
+        res_type: selectedNodeRef.current.isDirectory ? "poolDir" : "poolFile"
       });
     } else {
       set_selected_resource({
@@ -71,7 +74,8 @@ function PoolBrowser(props) {
         tags: "",
         notes: "",
         updated: "",
-        created: ""
+        created: "",
+        res_type: null
       });
     }
   }, [value]);
@@ -363,19 +367,41 @@ function PoolBrowser(props) {
     setSelectedNode(node);
     return true;
   }
+  function setRoot() {
+    let node = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+    if (!node) {
+      node = selectedNodeRef.current;
+    }
+    setCurrentRootPath(node.fullpath);
+  }
+  function setRootToBase() {
+    setCurrentRootPath("/mydisk");
+  }
   function renderContextMenu(props) {
-    return /*#__PURE__*/_react.default.createElement(_core.Menu, null, /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
-      icon: "edit",
+    return /*#__PURE__*/_react.default.createElement(_core.Menu, null, props.node.isDirectory && /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
+      icon: "folder-shared-open",
       onClick: async () => {
-        await _rename_func(props.node);
+        await setRoot(props.node);
       },
-      text: "Rename Resource"
+      text: "Go To Folder"
+    }), /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
+      icon: "home",
+      onClick: async () => {
+        await setRootToBase(props.node);
+      },
+      text: "Go Home"
     }), !props.node.isDirectory && /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
       icon: "eye-open",
       onClick: async () => {
         await viewTextFile(props.node);
       },
       text: "View as Text"
+    }), /*#__PURE__*/_react.default.createElement(_core.MenuDivider, null), /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
+      icon: "edit",
+      onClick: async () => {
+        await _rename_func(props.node);
+      },
+      text: "Rename Resource"
     }), /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
       icon: "inheritance",
       onClick: async () => {
@@ -426,9 +452,6 @@ function PoolBrowser(props) {
     height: "100%"
   };
   let res_type = null;
-  if (selectedNodeRef.current) {
-    res_type = selectedNodeRef.current.isDirectory ? "poolDir" : "poolFile";
-  }
   let right_pane = /*#__PURE__*/_react.default.createElement(_blueprint_mdata_fields.CombinedMetadata, {
     useTags: false,
     all_tags: [],
@@ -440,7 +463,7 @@ function PoolBrowser(props) {
     size: selected_resource_ref.current.size,
     icon: null,
     handleChange: null,
-    res_type: res_type,
+    res_type: selected_resource_ref.current.res_type,
     pane_type: "pool",
     outer_style: outer_style,
     handleNotesBlur: null,
@@ -463,8 +486,13 @@ function PoolBrowser(props) {
       workingPath: null,
       setWorkingPath: () => {}
     }
-  }, /*#__PURE__*/_react.default.createElement(_pool_tree.PoolTree, {
+  }, /*#__PURE__*/_react.default.createElement(PoolBreadcrumbs, {
+    path: currentRootPathRef.current,
+    setRoot: setRoot
+  }), /*#__PURE__*/_react.default.createElement(_pool_tree.PoolTree, {
     value: valueRef.current,
+    currentRootPath: currentRootPathRef.current,
+    setRoot: setRoot,
     renderContextMenu: renderContextMenu,
     select_type: "both",
     registerTreeRefreshFunc: registerTreeRefreshFunc,
@@ -488,7 +516,9 @@ function PoolBrowser(props) {
     showPoolImport: _showPoolImport,
     multi_select: multi_select_ref.current,
     list_of_selected: list_of_selected_ref.current,
-    sendContextMenuItems: setContextMenuItems
+    sendContextMenuItems: setContextMenuItems,
+    setRootToBase: setRootToBase,
+    setRoot: setRoot
   }, props.errorDrawerFuncs, {
     library_id: props.library_id,
     controlled: props.controlled,
@@ -518,12 +548,72 @@ function PoolBrowser(props) {
   }))));
 }
 exports.PoolBrowser = PoolBrowser = /*#__PURE__*/(0, _react.memo)(PoolBrowser);
+function PoolBreadcrumb(props) {
+  return /*#__PURE__*/_react.default.createElement(_core.Breadcrumb, {
+    className: "pool-breadcrumb",
+    key: props.path,
+    icon: props.icon,
+    onClick: props.onClick
+  }, props.name);
+}
+function PoolBreadcrumbs(props) {
+  function clickFunc(path) {
+    return () => {
+      props.setRoot({
+        fullpath: path
+      });
+    };
+  }
+  function pathToCrumbs(path) {
+    let crumbs = [];
+    let parts = path.split("/");
+    let new_path = "";
+    for (const item of parts) {
+      if (item === "") {
+        continue;
+      }
+      new_path += "/" + item;
+      crumbs.push({
+        name: item,
+        icon: "folder-close",
+        path: new_path,
+        onClick: clickFunc(new_path)
+      });
+    }
+    return crumbs;
+  }
+  function renderBreadcrumb(props) {
+    return /*#__PURE__*/_react.default.createElement(PoolBreadcrumb, props);
+  }
+  const crumbs = pathToCrumbs(props.path);
+  return /*#__PURE__*/_react.default.createElement(_core.Breadcrumbs, {
+    className: "pool-breadcrumbs",
+    breadcrumbRenderer: renderBreadcrumb,
+    items: crumbs
+  });
+}
 function PoolMenubar(props) {
+  const [selectedType, setSelectedType, selectedTypeRef] = (0, _utilities_react.useStateAndRef)(props.selected_resource.res_type);
+  (0, _react.useEffect)(() => {
+    setSelectedType(props.selected_resource.res_type);
+  }, [props.selected_resource]);
   function context_menu_items() {
     return [];
   }
   function menu_specs() {
     return {
+      Navigate: [{
+        name_text: "Go Home",
+        icon_name: "home",
+        click_handler: props.setRootToBase
+      }, {
+        name_text: "Go to Folder",
+        icon_name: "folder-shared-open",
+        click_handler: () => {
+          props.setRoot();
+        },
+        res_type: "poolDir"
+      }],
       View: [{
         name_text: "View As Text File",
         icon_name: "eye-open",
@@ -566,7 +656,7 @@ function PoolMenubar(props) {
     connection_status: props.connection_status,
     context_menu_items: context_menu_items(),
     selected_rows: props.selected_rows,
-    selected_type: props.selected_type,
+    selectedTypeRef: selectedTypeRef,
     selected_resource: props.selected_resource,
     resource_icon: _blueprint_mdata_fields.icon_dict["pool"],
     menu_specs: menu_specs(),

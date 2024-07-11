@@ -2,7 +2,7 @@ import React from "react";
 
 import {Fragment, useState, useEffect, useRef, memo, useContext} from "react";
 
-import {Menu, MenuItem, MenuDivider} from "@blueprintjs/core";
+import {Menu, MenuItem, MenuDivider, Breadcrumb, Breadcrumbs} from "@blueprintjs/core";
 
 import {guid, useStateAndRef} from "./utilities_react";
 import {LibraryMenubar} from "./library_menubars"
@@ -32,8 +32,10 @@ function PoolBrowser(props) {
         notes: "",
         updated: "",
         created: "",
-        size: ""
+        size: "",
+        res_type: null,
     });
+    const [currentRootPath, setCurrentRootPath, currentRootPathRef] = useStateAndRef("/mydisk");
     const [value, setValue, valueRef] = useStateAndRef(null);
     const [selectedNode, setSelectedNode, selectedNodeRef] = useStateAndRef(null);
     const [multi_select, set_multi_select, multi_select_ref] = useStateAndRef(false);
@@ -68,16 +70,17 @@ function PoolBrowser(props) {
                 notes: "",
                 updated: selectedNodeRef.current.updated,
                 created: selectedNodeRef.current.created,
-                size: String(selectedNodeRef.current.size)
+                size: String(selectedNodeRef.current.size),
+                res_type: selectedNodeRef.current.isDirectory ? "poolDir" : "poolFile"
             })
 
         } else {
-            set_selected_resource({name: "", tags: "", notes: "", updated: "", created: ""})
+            set_selected_resource({name: "", tags: "", notes: "", updated: "", created: "", res_type: null})
         }
     }, [value]);
 
     function handlePoolEvent() {
-        
+
     }
 
     async function viewTextFile(node = null) {
@@ -92,8 +95,7 @@ function PoolBrowser(props) {
             });
             if (data.success) {
                 props.handleCreateViewer(data)
-            }
-            else {
+            } else {
                 errorDrawerFuncs.addErrorDrawerEntry({
                     title: "Error viewing text file",
                     content: "message" in data ? data.message : ""
@@ -118,8 +120,7 @@ function PoolBrowser(props) {
             });
             const the_data = {new_name: new_name, old_path: path};
             await postAjaxPromise(`rename_pool_resource`, the_data);
-        }
-        catch (e) {
+        } catch (e) {
             if (e != "canceled") {
                 errorDrawerFuncs.addFromError(`Error renaming`, e)
             }
@@ -148,8 +149,7 @@ function PoolBrowser(props) {
             });
             const the_data = {full_path: full_path};
             await postAjaxPromise(`create_pool_directory`, the_data);
-        }
-        catch (e) {
+        } catch (e) {
             if (e != "canceled") {
                 errorDrawerFuncs.addFromError(`Error adding directory`, e)
             }
@@ -178,8 +178,7 @@ function PoolBrowser(props) {
             });
             const the_data = {dst, src};
             await postAjaxPromise(`duplicate_pool_file`, the_data);
-        }
-        catch (e) {
+        } catch (e) {
             if (e != "canceled") {
                 errorDrawerFuncs.addFromError(`Error duplicating file`, e)
             }
@@ -221,8 +220,7 @@ function PoolBrowser(props) {
                 a.click();
                 window.URL.revokeObjectURL(url);
             }
-        }
-        catch (e) {
+        } catch (e) {
             if (e != "canceled") {
                 errorDrawerFuncs.addFromError(`Error downloading from pool`, e)
             }
@@ -234,8 +232,7 @@ function PoolBrowser(props) {
         try {
             const the_data = {dst: dst, src: src};
             await postAjaxPromise(`move_pool_resource`, the_data);
-        }
-        catch (e) {
+        } catch (e) {
             errorDrawerFuncs.addFromError("Error moving resource", e)
         }
     }
@@ -260,8 +257,7 @@ function PoolBrowser(props) {
                 handleClose: dialogFuncs.hideModal,
             });
             await MoveResource(src, dst)
-        }
-        catch (e) {
+        } catch (e) {
             if (e != "canceled") {
                 errorDrawerFuncs.addFromError(`Error moving resource`, e)
             }
@@ -278,8 +274,7 @@ function PoolBrowser(props) {
             let confirm_text;
             if (sNode.isDirectory && sNode.childNodes.length > 0) {
                 confirm_text = `Are you sure that you want to delete the non-empty directory ${basename}?`;
-            }
-            else {
+            } else {
                 confirm_text = `Are you sure that you want to delete ${basename}?`;
             }
 
@@ -291,8 +286,7 @@ function PoolBrowser(props) {
                 handleClose: dialogFuncs.hideModal,
             });
             await postAjaxPromise("delete_pool_resource", {full_path: path, is_directory: sNode.isDirectory})
-        }
-        catch (e) {
+        } catch (e) {
             if (e != "canceled") {
                 errorDrawerFuncs.addFromError(`Error deleting`, e)
             }
@@ -355,8 +349,7 @@ function PoolBrowser(props) {
                 handleCancel: null,
                 initialFiles: files
             });
-        }
-        else {
+        } else {
             let src = e.dataTransfer.getData("fullpath");
             if (src) {
                 await MoveResource(src, dst)
@@ -371,14 +364,32 @@ function PoolBrowser(props) {
         return true
     }
 
-   function renderContextMenu(props) {
+    function setRoot(node = null) {
+        if (!node) {
+            node = selectedNodeRef.current;
+        }
+        setCurrentRootPath(node.fullpath)
+    }
+
+    function setRootToBase() {
+        setCurrentRootPath("/mydisk")
+    }
+
+    function renderContextMenu(props) {
         return (
             <Menu>
-                <MenuItem icon="edit"
+                {props.node.isDirectory &&
+                    <MenuItem icon="folder-shared-open"
+                              onClick={async () => {
+                                  await setRoot(props.node)
+                              }}
+                              text="Go To Folder"/>
+                }
+                <MenuItem icon="home"
                           onClick={async () => {
-                              await _rename_func(props.node)
+                              await setRootToBase(props.node)
                           }}
-                          text="Rename Resource"/>
+                          text="Go Home"/>
                 {!props.node.isDirectory &&
                     <MenuItem icon="eye-open"
                               onClick={async () => {
@@ -386,6 +397,12 @@ function PoolBrowser(props) {
                               }}
                               text="View as Text"/>
                 }
+                <MenuDivider/>
+                <MenuItem icon="edit"
+                          onClick={async () => {
+                              await _rename_func(props.node)
+                          }}
+                          text="Rename Resource"/>
                 <MenuItem icon="inheritance"
                           onClick={async () => {
                               await _move_resource(props.node)
@@ -429,9 +446,6 @@ function PoolBrowser(props) {
 
     let outer_style = {marginTop: 0, marginLeft: 0, overflow: "auto", marginRight: 0, height: "100%"};
     let res_type = null;
-    if (selectedNodeRef.current) {
-        res_type = selectedNodeRef.current.isDirectory ? "poolDir" : "poolFile"
-    }
     let right_pane = (
         <CombinedMetadata useTags={false}
                           all_tags={[]}
@@ -443,7 +457,7 @@ function PoolBrowser(props) {
                           size={selected_resource_ref.current.size}
                           icon={null}
                           handleChange={null}
-                          res_type={res_type}
+                          res_type={selected_resource_ref.current.res_type}
                           pane_type="pool"
                           outer_style={outer_style}
                           handleNotesBlur={null}
@@ -458,22 +472,28 @@ function PoolBrowser(props) {
     let left_pane = (
         <Fragment>
             {/*<FileDropWrapper processFiles={handleFileDrop}>*/}
-                <div className="d-flex flex-column"
-                     style={{maxHeight: "100%", position: "relative", overflow: "scroll", padding: 15}}>
-                    {(props.am_selected || have_activated) &&
-                        <PoolContext.Provider value={{workingPath: null, setWorkingPath: ()=>{}}}>
-                            <PoolTree value={valueRef.current}
-                                      renderContextMenu={renderContextMenu}
-                                      select_type="both"
-                                      registerTreeRefreshFunc={registerTreeRefreshFunc}
-                                      user_id={window.user_id}
-                                      tsocket={props.tsocket}
-                                      handleDrop={handleDrop}
-                                      showSecondaryLabel={true}
-                                      handleNodeClick={handleNodeClick}/>
-                        </PoolContext.Provider>
-                    }
-                </div>
+            <div className="d-flex flex-column"
+                 style={{maxHeight: "100%", position: "relative", overflow: "scroll", padding: 15}}>
+                {(props.am_selected || have_activated) &&
+                    <PoolContext.Provider value={{
+                        workingPath: null, setWorkingPath: () => {
+                        }
+                    }}>
+                        <PoolBreadcrumbs path={currentRootPathRef.current} setRoot={setRoot}/>
+                        <PoolTree value={valueRef.current}
+                                  currentRootPath={currentRootPathRef.current}
+                                  setRoot={setRoot}
+                                  renderContextMenu={renderContextMenu}
+                                  select_type="both"
+                                  registerTreeRefreshFunc={registerTreeRefreshFunc}
+                                  user_id={window.user_id}
+                                  tsocket={props.tsocket}
+                                  handleDrop={handleDrop}
+                                  showSecondaryLabel={true}
+                                  handleNodeClick={handleNodeClick}/>
+                    </PoolContext.Provider>
+                }
+            </div>
             {/*</FileDropWrapper>*/}
         </Fragment>
     );
@@ -493,6 +513,8 @@ function PoolBrowser(props) {
                          multi_select={multi_select_ref.current}
                          list_of_selected={list_of_selected_ref.current}
                          sendContextMenuItems={setContextMenuItems}
+                         setRootToBase={setRootToBase}
+                         setRoot={setRoot}
                          {...props.errorDrawerFuncs}
                          library_id={props.library_id}
                          controlled={props.controlled}
@@ -519,7 +541,59 @@ function PoolBrowser(props) {
 
 PoolBrowser = memo(PoolBrowser);
 
+function PoolBreadcrumb(props) {
+    return (
+        <Breadcrumb className="pool-breadcrumb" key={props.path} icon={props.icon} onClick={props.onClick}>
+            {props.name}
+        </Breadcrumb>
+    )
+}
+
+function PoolBreadcrumbs(props) {
+
+    function clickFunc(path) {
+        return () => {
+            props.setRoot({fullpath: path})
+        }
+    }
+
+    function pathToCrumbs(path) {
+        let crumbs = [];
+        let parts = path.split("/");
+        let new_path = "";
+        for (const item of parts) {
+            if (item === "") {
+                continue
+            }
+            new_path += "/" + item;
+            crumbs.push({
+                name: item, icon: "folder-close", path: new_path,
+                onClick: clickFunc(new_path)
+            })
+        }
+        return crumbs
+    }
+
+    function renderBreadcrumb(props) {
+        return (
+            <PoolBreadcrumb {...props}/>
+        )
+    }
+
+    const crumbs = pathToCrumbs(props.path);
+    return (
+        <Breadcrumbs className="pool-breadcrumbs" breadcrumbRenderer={renderBreadcrumb} items={crumbs}/>
+    )
+
+}
+
 function PoolMenubar(props) {
+
+    const [selectedType, setSelectedType, selectedTypeRef] = useStateAndRef(props.selected_resource.res_type);
+
+    useEffect(() => {
+        setSelectedType(props.selected_resource.res_type)
+    }, [props.selected_resource]);
 
     function context_menu_items() {
         return [];
@@ -527,6 +601,15 @@ function PoolMenubar(props) {
 
     function menu_specs() {
         return {
+            Navigate: [
+                {name_text: "Go Home", icon_name: "home", click_handler: props.setRootToBase},
+                {
+                    name_text: "Go to Folder", icon_name: "folder-shared-open",
+                    click_handler: () => {
+                        props.setRoot()
+                    }, res_type: "poolDir"
+                },
+            ],
             View: [
                 {name_text: "View As Text File", icon_name: "eye-open", click_handler: props.view_func}
             ],
@@ -548,7 +631,7 @@ function PoolMenubar(props) {
                            connection_status={props.connection_status}
                            context_menu_items={context_menu_items()}
                            selected_rows={props.selected_rows}
-                           selected_type={props.selected_type}
+                           selectedTypeRef={selectedTypeRef}
                            selected_resource={props.selected_resource}
                            resource_icon={icon_dict["pool"]}
                            menu_specs={menu_specs()}
@@ -585,7 +668,7 @@ function FileDropWrapper(props) {
         const files = e.dataTransfer.files;
 
         if (files) {
-            if (props.processFiles){
+            if (props.processFiles) {
                 props.processFiles(files)
             }
         }

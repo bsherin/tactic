@@ -50,6 +50,14 @@
   font-size: 15px;
 }
 
+.pool-breadcrumbs {
+  margin-left: 15px;
+}
+
+.pool-breadcrumb {
+  font-size: 14px;
+}
+
 .pool-select-tree {
   padding: 5px;
 }
