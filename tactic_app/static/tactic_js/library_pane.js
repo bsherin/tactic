@@ -126,6 +126,7 @@ function LibraryPane(props) {
   const [selected_rows, set_selected_rows, selected_rows_ref] = (0, _utilities_react.useStateAndRef)([]);
   const [expanded_tags, set_expanded_tags, expanded_tags_ref] = (0, _utilities_react.useStateAndRef)([]);
   const [active_tag, set_active_tag, active_tag_ref] = (0, _utilities_react.useStateAndRef)("all");
+  const [tagRoot, setTagRoot] = (0, _react.useState)("all");
   const [sort_field, set_sort_field, sort_field_ref] = (0, _utilities_react.useStateAndRef)("updated");
   const [sort_direction, set_sort_direction, sort_direction_ref] = (0, _utilities_react.useStateAndRef)("descending");
   const [filterType, setFilterType, filterTypeRef] = (0, _utilities_react.useStateAndRef)(props.pane_type);
@@ -147,6 +148,7 @@ function LibraryPane(props) {
     data_dict: set_data_dict,
     num_rows: set_num_rows,
     tag_list: set_tag_list,
+    tagRoot: setTagRoot,
     contextMenuItems: setContextMenuItems,
     selected_resource: set_selected_resource,
     selected_rows: set_selected_rows,
@@ -1449,6 +1451,7 @@ function LibraryPane(props) {
   }
   let left_pane = /*#__PURE__*/_react.default.createElement(_library_table_pane.LibraryTablePane, (0, _extends2.default)({}, props, {
     tag_list: tag_list,
+    tagRoot: tagRoot,
     expanded_tags_ref: expanded_tags_ref,
     active_tag_ref: active_tag_ref,
     updateTagState: _update_search_state,

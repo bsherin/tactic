@@ -45,6 +45,7 @@ function LibraryTablePane(props) {
                          maxHeight: usable_height
                      }}>
                     <TagButtonList tag_list={props.tag_list}
+                                   tagRoot={props.tagRoot}
                                    expanded_tags={props.expanded_tags_ref.current}
                                    active_tag={props.active_tag_ref.current}
                                    updateTagState={props.updateTagState}

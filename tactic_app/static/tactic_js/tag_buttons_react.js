@@ -47,6 +47,22 @@ function tag_to_list(the_tag) {
 function TagMenu(props) {
   let disabled = props.tagstring == "all";
   return /*#__PURE__*/_react.default.createElement(_core.Menu, null, /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
+    icon: "target",
+    disabled: disabled,
+    onClick: () => {
+      props.setTagRoot(props.tagstring);
+      props.setShowContextMenu(false);
+    },
+    text: "Focus on Tag"
+  }), /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
+    icon: "edit",
+    disabled: disabled,
+    onClick: () => {
+      props.setTagRoot("all");
+      props.setShowContextMenu(false);
+    },
+    text: "Show All Tags"
+  }), /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
     icon: "edit",
     disabled: disabled,
     onClick: () => {
@@ -72,6 +88,8 @@ function TagButtonList(props) {
     top: 0
   });
   const [contextMenuTagString, setContextMenuTagString] = (0, _react.useState)("");
+  // const [tagRoot, setTagRoot] = useState("all");
+
   const theme = (0, _react.useContext)(_theme.ThemeContext);
   const dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   function _renameTagPrep(old_tag, new_tag_base) {
@@ -133,9 +151,15 @@ function TagButtonList(props) {
     }
   }
   function _handleNodeClick(node) {
-    props.updateTagState({
-      active_tag: node.nodeData.tag_string
-    });
+    if (node.nodeData.tag_string == "unfocus") {
+      props.updateTagState({
+        tagRoot: "all"
+      });
+    } else {
+      props.updateTagState({
+        active_tag: node.nodeData.tag_string
+      });
+    }
   }
   function addChildren(node, tlist, prelist) {
     if (tlist.length == 0) return;
@@ -164,10 +188,17 @@ function TagButtonList(props) {
     }
   }
   function _buildTree(tag_list) {
+    let cnodes = [];
+    if (props.tagRoot != "all") {
+      let unfocus_node = _newNode("unfocus", []);
+      unfocus_node.icon = "undo";
+      cnodes.push(unfocus_node);
+    }
     let all_node = _newNode("all", []);
     all_node.icon = "clean";
+    cnodes.push(all_node);
     let tree = {
-      childNodes: [all_node]
+      childNodes: cnodes
     };
     for (let tag of tag_list) {
       let tlist = tag_to_list(tag);
@@ -200,6 +231,11 @@ function TagButtonList(props) {
       _renameTagPrep(tagstring, new_tag_base);
     }
   }
+  function setTagRoot(tagstring) {
+    props.updateTagState({
+      "tagRoot": tagstring
+    });
+  }
   function _delete_tag(tagstring) {
     const confirm_text = `Are you sure that you want to delete the tag "${tagstring}" for this resource type?`;
     let self = this;
@@ -229,12 +265,16 @@ function TagButtonList(props) {
   let tag_list = [...tlist];
   tag_list = tag_list.concat(parent_tags);
   tag_list = (0, _utilities_react.remove_duplicates)(tag_list);
+  if (props.tagRoot != "all") {
+    tag_list = tag_list.filter(x => x.startsWith(props.tagRoot));
+  }
   tag_list.sort();
   let tree = _buildTree(tag_list);
   let tmenu = /*#__PURE__*/_react.default.createElement(TagMenu, {
     tagstring: contextMenuTagString,
     setShowContextMenu: setShowContextMenu,
     delete_tag: _delete_tag,
+    setTagRoot: setTagRoot,
     rename_tag: _rename_tag
   });
   return /*#__PURE__*/_react.default.createElement("div", {
