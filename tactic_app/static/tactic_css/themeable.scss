@@ -141,6 +141,17 @@ $dark-medium: $dark-gray4;
   .notes-field-markdown-output {
     background: rgba(255, 255, 255, 0.7);
     color: $gray1;
+    code {
+      background-color: $light-gray2;
+      color: $dark-gray4;
+      padding-left: 2px;
+      padding-right: 2px;
+    }
+    pre {
+      background-color: $light-gray2;
+      color: $dark-gray4;
+      padding: 4px;
+    }
   }
 
   .tactic-tag-button-list {
@@ -212,7 +223,13 @@ $dark-medium: $dark-gray4;
   }
 
   .chat-response, .text-panel-output {
-    pre{
+    code {
+      background-color: $light-gray2;
+      color: inherit;
+      padding-left: 2px;
+      padding-right: 2px;
+    }
+    pre {
       padding: 10px;
       background-color: $light-gray1;
       overflow: scroll
@@ -349,7 +366,19 @@ $dark-medium: $dark-gray4;
 
   .notes-field-markdown-output {
     background-color: $darkest-bg;
-    color: $light-gray5
+    color: $light-gray5;
+
+    code {
+      background-color: $dark-gray2;
+      color: $light-gray1;
+      padding-left: 2px;
+      padding-right: 2px;
+    }
+    pre {
+      background-color: $dark-gray2;
+      color: $light-gray1;
+      padding: 4px;
+    }
   }
 
   .tactic-tag-button-list {
@@ -425,6 +454,12 @@ $dark-medium: $dark-gray4;
   }
 
   .chat-response, .text-panel-output {
+    code {
+      background-color: $dark-gray2;
+      color: inherit;
+      padding-left: 2px;
+      padding-right: 2px;
+    }
     pre{
       padding: 10px;
       background-color: $dark-gray2;

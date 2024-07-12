@@ -473,7 +473,7 @@ function ContextApp(props) {
       pushCallback(callback);
       return;
     }
-    const new_id = (0, _utilities_react.guid)();
+    const new_id = "a" + (0, _utilities_react.guid)();
     const drmethod = dmethod => {
       _registerDirtyMethod(new_id, dmethod);
     };
@@ -846,7 +846,7 @@ function ContextApp(props) {
         usable_height: usable_height
       })));
       wrapped_panel = /*#__PURE__*/_react.default.createElement(_error_boundary.ErrorBoundary, null, /*#__PURE__*/_react.default.createElement("div", {
-        id: tab_id + "-holder",
+        id: `${tab_id}-holder`,
         className: panelRootDict[tab_panel_dict_ref.current[tab_id].kind]
       }, the_panel));
     }

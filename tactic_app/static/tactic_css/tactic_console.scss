@@ -118,27 +118,11 @@ body {
 }
 
 .text-panel-output {
-    h1 {
-        font-size: 2.0rem;
-    }
-    h2 {
-        font-size: 1.5rem;
-    }
-
-    h3 {
-        font-size: 1.25rem;
-    }
-    h4 {
-        font-size: 1.125rem
-    }
 
     p:last-child, ul:last-child, h1:last-child, h2:last-child, h3:last-child, h4:last-child {
         margin-bottom: 4px
     }
-
     //border: 1px solid #c7c7c7
-
-
 }
 
 //.bp5-dark {

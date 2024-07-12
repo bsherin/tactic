@@ -377,7 +377,7 @@ function NotesField(props) {
     ref: mdRef,
     style: md_style,
     onClick: _hideMarkdown,
-    className: "notes-field-markdown-output",
+    className: "notes-field-markdown-output markdown-heading-sizes",
     dangerouslySetInnerHTML: converted_dict
   }));
 }

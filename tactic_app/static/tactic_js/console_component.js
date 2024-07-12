@@ -2810,7 +2810,7 @@ function ConsoleTextItem(props) {
     no_height: true,
     saveMe: null
   })), really_show_markdown && !hasOnlyWhitespace() && /*#__PURE__*/_react.default.createElement("div", {
-    className: "text-panel-output",
+    className: "text-panel-output markdown-heading-sizes",
     onDoubleClick: _hideMarkdown,
     style: {
       width: uwidth - 81,
