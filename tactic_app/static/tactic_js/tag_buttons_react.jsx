@@ -50,6 +50,14 @@ function TagMenu(props) {
     let disabled = props.tagstring == "all";
     return (
         <Menu>
+             <MenuItem icon="target" disabled={disabled} onClick={() => {
+                props.setTagRoot(props.tagstring);
+                props.setShowContextMenu(false)
+            }} text="Focus on Tag"/>
+            <MenuItem icon="edit" disabled={disabled} onClick={() => {
+                props.setTagRoot("all");
+                props.setShowContextMenu(false)
+            }} text="Show All Tags"/>
             <MenuItem icon="edit" disabled={disabled} onClick={() => {
                 props.rename_tag(props.tagstring);
                 props.setShowContextMenu(false)
@@ -68,6 +76,7 @@ function TagButtonList(props) {
     const [showContextMenu, setShowContextMenu] = useState(false);
     const [contextMenuTarget, setContentMenuTarget] = useState({left:0, top:0});
     const [contextMenuTagString, setContextMenuTagString] = useState("");
+    // const [tagRoot, setTagRoot] = useState("all");
 
     const theme = useContext(ThemeContext);
     const dialogFuncs = useContext(DialogContext);
@@ -131,7 +140,12 @@ function TagButtonList(props) {
     }
 
     function _handleNodeClick(node) {
-        props.updateTagState({active_tag: node.nodeData.tag_string})
+        if (node.nodeData.tag_string == "unfocus") {
+            props.updateTagState({tagRoot: "all"})
+        }
+        else {
+            props.updateTagState({active_tag: node.nodeData.tag_string})
+        }
     }
 
     function addChildren(node, tlist, prelist) {
@@ -163,9 +177,16 @@ function TagButtonList(props) {
     }
 
     function _buildTree(tag_list) {
+        let cnodes = [];
+        if (props.tagRoot != "all") {
+            let unfocus_node = _newNode("unfocus", []);
+            unfocus_node.icon = "undo";
+            cnodes.push(unfocus_node)
+        }
         let all_node = _newNode("all", []);
         all_node.icon = "clean";
-        let tree = {childNodes: [all_node]};
+        cnodes.push(all_node);
+        let tree = {childNodes: cnodes};
         for (let tag of tag_list) {
             let tlist = tag_to_list(tag);
             _digNode(tree, tlist, [], true);
@@ -200,6 +221,10 @@ function TagButtonList(props) {
         }
     }
 
+    function setTagRoot(tagstring) {
+        props.updateTagState({"tagRoot": tagstring})
+    }
+
     function _delete_tag(tagstring) {
         const confirm_text = `Are you sure that you want to delete the tag "${tagstring}" for this resource type?`;
         let self = this;
@@ -225,14 +250,19 @@ function TagButtonList(props) {
 
     let tlist = props.tag_list == undefined ? [] : props.tag_list;
     let parent_tags = get_all_parent_tags(tlist);
+
     let tag_list = [...tlist];
     tag_list = tag_list.concat(parent_tags);
     tag_list = remove_duplicates(tag_list);
+    if (props.tagRoot != "all") {
+        tag_list = tag_list.filter(x => x.startsWith(props.tagRoot))
+    }
     tag_list.sort();
     let tree = _buildTree(tag_list);
     let tmenu = <TagMenu tagstring={contextMenuTagString}
                          setShowContextMenu={setShowContextMenu}
                          delete_tag={_delete_tag}
+                         setTagRoot={setTagRoot}
                          rename_tag={_rename_tag}/>;
     return (
         <div className="tactic-tag-button-list">
