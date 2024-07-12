@@ -168,7 +168,7 @@ function HorizontalPanes(props) {
     const top_ref = useRef(props.ptop_ref == null ? useRef(null) : props.ptop_ref);
     const old_left_width = useRef(0);
     const old_right_width = useRef(0);
-    const unique_id = useRef(guid());
+    const unique_id = useRef("a" + guid());
 
     const [current_width_fraction, set_current_width_fraction] = useState(props.initial_width_fraction);
     const [deltaPosition, setDeltaPosition] = useState({x: 0, y: 0});
@@ -406,7 +406,7 @@ function VerticalPanes(props) {
 
     const old_bottom_height = useRef(0);
     const old_top_height = useRef(0);
-    const unique_id = useRef(guid());
+    const unique_id = useRef("a" + guid());
 
     const [topWidth, setTopWidth] = useState(0);
     const [bottomWidth, setBottomWidth] = useState(0);

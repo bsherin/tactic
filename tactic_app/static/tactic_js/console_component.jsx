@@ -2879,7 +2879,7 @@ function ConsoleTextItem(props) {
                                     </Fragment>
                                 }
                                 {really_show_markdown && !hasOnlyWhitespace() &&
-                                    <div className="text-panel-output"
+                                    <div className="text-panel-output markdown-heading-sizes"
                                          onDoubleClick={_hideMarkdown}
                                          style={{width: uwidth - 81, padding: 9}}
                                          dangerouslySetInnerHTML={converted_dict}/>

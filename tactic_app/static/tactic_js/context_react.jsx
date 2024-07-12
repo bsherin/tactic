@@ -488,7 +488,7 @@ function ContextApp(props) {
             pushCallback(callback);
             return
         }
-        const new_id = guid();
+        const new_id = "a" + guid();
         const drmethod = (dmethod) => {
             _registerDirtyMethod(new_id, dmethod)
         };
@@ -837,7 +837,7 @@ function ContextApp(props) {
             </SelectedPaneContext.Provider>;
             wrapped_panel = (
                 <ErrorBoundary>
-                    <div id={tab_id + "-holder"} className={panelRootDict[tab_panel_dict_ref.current[tab_id].kind]}>
+                    <div id={`${tab_id}-holder`} className={panelRootDict[tab_panel_dict_ref.current[tab_id].kind]}>
                         {the_panel}
                     </div>
                 </ErrorBoundary>
