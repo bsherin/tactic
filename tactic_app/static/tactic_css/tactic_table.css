@@ -1,7 +1,8 @@
-/*
- * Copyright 2022 Palantir Technologies, Inc. All rights reserved.
- */
 @import "~@blueprintjs/table/lib/css/table.css";
+#myplace2 {
+  color: red;
+}
+
 #doc-selector {
   z-index: 500;
 }

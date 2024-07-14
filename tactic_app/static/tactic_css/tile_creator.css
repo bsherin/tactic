@@ -1,9 +1,11 @@
-/*
- * Copyright 2022 Palantir Technologies, Inc. All rights reserved.
- */
-/*
- * Copyright 2022 Palantir Technologies, Inc. All rights reserved.
- */
+#myplace2 {
+  color: red;
+}
+
+#myplace2 {
+  color: red;
+}
+
 .light-theme .lib-tab-button .bp5-icon-cube, .light-theme .context-tab-button-content .bp5-icon-cube, .light-theme .menu-bar .bp5-icon-cube, .light-theme .combined-metadata .bp5-icon-cube, .light-theme .all-pane .bp5-icon-cube {
   color: #383e47 !important;
 }
@@ -157,7 +159,7 @@
 }
 .light-theme .chat-response pre, .light-theme .text-panel-output pre {
   padding: 10px;
-  background-color: #d3d8de;
+  background-color: #dce0e5;
   overflow: scroll;
 }
 .light-theme #commands-pane .command-name {

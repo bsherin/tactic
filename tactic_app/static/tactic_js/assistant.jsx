@@ -2,11 +2,32 @@
 // noinspection TypeScriptUMDGlobal
 
 import React from "react";
+
+
 import markdownIt from 'markdown-it'
 import 'markdown-it-latex/dist/index.css'
 import markdownItLatex from 'markdown-it-latex'
 
-const mdi = markdownIt({html: true});
+import hljs from 'highlight.js/lib/core';
+import javascript from 'highlight.js/lib/languages/javascript';
+hljs.registerLanguage('javascript', javascript);
+
+import python from 'highlight.js/lib/languages/python';
+hljs.registerLanguage('python', python);
+
+const mdi = markdownIt({
+    html: true,
+    highlight: function (str, lang) {
+        if (lang && hljs.getLanguage(lang)) {
+          try {
+            return '<pre><code class="hljs">' +
+                   hljs.highlight(str, { language: lang, ignoreIllegals: true }).value +
+                   '</code></pre>';
+          } catch (__) {}
+        }
+        return '<pre><code class="hljs">' + mdi.utils.escapeHtml(str) + '</code></pre>';
+    }
+});
 mdi.use(markdownItLatex);
 
 import {useState, useEffect, memo, useContext, createContext, Fragment} from "react";
@@ -43,11 +64,8 @@ function withAssistant(WrappedComponent, lposition = "right", assistant_drawer_s
         useEffect(()=>{
             if (window.has_openapi_key) {
                 getAssistant();
-                // window.addEventListener("unload", sendRemove);
             }
             return (() => {
-                // sendRemove();
-                //window.removeEventListener("unload", sendRemove)
             })
         }, []);
 
@@ -182,6 +200,11 @@ function withAssistant(WrappedComponent, lposition = "right", assistant_drawer_s
 function AssistantDrawer(props) {
 
     const theme = useContext(ThemeContext);
+
+    useEffect(() => {
+        console.log("theme changed")  // This is to force re-rendering because of highlight.js theme change
+    }, [theme]);
+
 
     return (
         <Drawer
@@ -465,7 +488,7 @@ function Response(props) {
         <Card interactive={false}>
             <div style={chat_item_style}>
                 <h6>ChatBot</h6>
-                <div className="chat-response"
+                <div className="chat-response markdown-heading-sizes"
                      dangerouslySetInnerHTML={converted_dict}/>
             </div>
         </Card>
@@ -492,7 +515,7 @@ function ResponseInProgress(props) {
         <Card className="bp-skeleton" interactive={false}>
             <div style={chat_item_style}>
                 <h6>ChatBot</h6>
-                <div style={{height: 100}} className="chat-response bp5-skeleton"
+                <div style={{height: 100}} className="chat-response markdown-heading-sizes bp5-skeleton"
                      dangerouslySetInnerHTML={converted_dict}/>
             </div>
         </Card>

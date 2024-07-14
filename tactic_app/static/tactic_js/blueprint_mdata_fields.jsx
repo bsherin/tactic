@@ -1,19 +1,40 @@
 import "../tactic_css/tactic_select.scss"
 
 import React from "react";
-import {Fragment, useState, useEffect, useRef, memo} from "react";
+import {Fragment, useState, useEffect, useRef, memo, useContext} from "react";
 
 import {
     PopoverPosition, Button, MenuDivider, MenuItem, TagInput, TextArea, FormGroup, InputGroup,
     Card, Icon, Collapse, H4
 } from "@blueprintjs/core";
 import {Select, MultiSelect} from "@blueprintjs/select";
+import {ThemeContext} from "./theme";
+
+import hljs from 'highlight.js/lib/core';
+import javascript from 'highlight.js/lib/languages/javascript';
+hljs.registerLanguage('javascript', javascript);
+
+import python from 'highlight.js/lib/languages/python';
+hljs.registerLanguage('python', python);
 
 import markdownIt from 'markdown-it'
 import 'markdown-it-latex/dist/index.css'
 import markdownItLatex from 'markdown-it-latex'
 
-const mdi = markdownIt({html: true});
+const mdi = markdownIt({
+    html: true,
+    highlight: function (str, lang) {
+        if (lang && hljs.getLanguage(lang)) {
+          try {
+            return '<pre><code class="hljs">' +
+                   hljs.highlight(str, { language: lang, ignoreIllegals: true }).value +
+                   '</code></pre>';
+          } catch (__) {}
+        }
+        return '<pre><code class="hljs">' + mdi.utils.escapeHtml(str) + '</code></pre>';
+    }
+});
+
 mdi.use(markdownItLatex);
 import _ from 'lodash';
 
@@ -275,6 +296,14 @@ function NativeTags(props) {
 NativeTags = memo(NativeTags);
 
 function NotesField(props) {
+
+    const theme = useContext(ThemeContext);
+
+    useEffect(() => {
+        console.log("theme changed")  // This is to force re-rendering because of highlight.js theme change
+    }, [theme]);
+
+
     props = {
         handleBlur: null,
         ...props

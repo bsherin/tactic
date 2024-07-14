@@ -11,6 +11,9 @@ require("codemirror/mode/markdown/markdown.js");
 var _core = require("@blueprintjs/core");
 var _utilities_react = require("./utilities_react");
 var _lodash = _interopRequireDefault(require("lodash"));
+var _core2 = _interopRequireDefault(require("highlight.js/lib/core"));
+var _javascript = _interopRequireDefault(require("highlight.js/lib/languages/javascript"));
+var _python = _interopRequireDefault(require("highlight.js/lib/languages/python"));
 var _markdownIt = _interopRequireDefault(require("markdown-it"));
 require("markdown-it-latex/dist/index.css");
 var _markdownItLatex = _interopRequireDefault(require("markdown-it-latex"));
@@ -33,8 +36,21 @@ function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return 
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 // noinspection JSConstructorReturnsPrimitive,JSUnusedAssignment
 
+_core2.default.registerLanguage('javascript', _javascript.default);
+_core2.default.registerLanguage('python', _python.default);
 const mdi = (0, _markdownIt.default)({
-  html: true
+  html: true,
+  highlight: function (str, lang) {
+    if (lang && _core2.default.getLanguage(lang)) {
+      try {
+        return '<pre><code class="hljs">' + _core2.default.highlight(str, {
+          language: lang,
+          ignoreIllegals: true
+        }).value + '</code></pre>';
+      } catch (__) {}
+    }
+    return '<pre><code class="hljs">' + mdi.utils.escapeHtml(str) + '</code></pre>';
+  }
 });
 mdi.use(_markdownItLatex.default);
 const MAX_CONSOLE_WIDTH = 1800;
@@ -126,6 +142,9 @@ function ConsoleComponent(props) {
       });
     }
   }, []);
+  (0, _react.useEffect)(() => {
+    console.log("theme changed"); // This is to force re-rendering because of highlight.js theme change
+  }, [theme]);
   function initSocket() {
     function _handleConsoleMessage(data) {
       if (data.main_id == props.main_id) {

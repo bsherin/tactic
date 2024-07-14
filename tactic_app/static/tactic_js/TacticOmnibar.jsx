@@ -26,8 +26,6 @@ let icon_dict = {
     code: "code",
 };
 
-const OmniContext = createContext(null);
-
 function OpenOmnibarItem(props) {
     function _handleClick() {
         props.handleClick(props.item);

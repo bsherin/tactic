@@ -1,6 +1,7 @@
-/*
- * Copyright 2022 Palantir Technologies, Inc. All rights reserved.
- */
+#myplace2 {
+  color: red;
+}
+
 #main-panel {
   padding: 0;
   margin-top: 0.5rem;
