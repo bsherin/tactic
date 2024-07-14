@@ -1264,6 +1264,9 @@ pre code {
 .light-theme .chat-module .bp5-card-list .bp5-card {
   background-color: #f6f7f9;
 }
+.light-theme .chat-response, .light-theme .text-panel-output {
+  background-color: #edeff2;
+}
 .light-theme .chat-response code, .light-theme .text-panel-output code {
   background-color: #dce0e5;
   color: inherit;
@@ -1428,6 +1431,9 @@ pre code {
   border-color: white;
   width: 50%;
   min-width: 200px;
+}
+.bp5-dark .chat-response, .bp5-dark .text-panel-output {
+  background-color: #383e47;
 }
 .bp5-dark .chat-response code, .bp5-dark .text-panel-output code {
   background-color: #252a31;
@@ -1642,6 +1648,12 @@ table caption {
 }
 .markdown-heading-sizes h5 {
   font-size: 14px;
+}
+
+.chat-response {
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-top: 10px;
 }
 
 #listarea-container {

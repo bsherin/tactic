@@ -269,11 +269,18 @@ function ProjectMenu(props) {
             });
             var cell_list = [];
             for (let entry of props.console_items) {
+                if (entry.type == "section-end") continue;
                 let new_cell = {};
-                new_cell.source = entry.console_text;
-                new_cell.cell_type = entry.type == "code" ? "code" : "markdown";
-                if (entry.type == "code") {
-                    new_cell.outputs = [];
+                if (entry.type == "divider") {
+                    new_cell.cell_type = "markdown";
+                    new_cell.source = "# " + entry.header_text;
+                }
+                else {
+                    new_cell.source = entry.console_text;
+                    new_cell.cell_type = entry.type == "code" ? "code" : "markdown";
+                    if (entry.type == "code") {
+                        new_cell.outputs = [];
+                    }
                 }
                 cell_list.push(new_cell)
             }
