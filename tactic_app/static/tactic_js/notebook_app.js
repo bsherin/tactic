@@ -50,7 +50,7 @@ function NotebookApp(props) {
   const [console_items, dispatch, console_items_ref] = (0, _utilities_react.useReducerAndRef)(_console_support.consoleItemsReducer, []);
   const [mState, mDispatch] = (0, _react.useReducer)(_notebook_support.notebookReducer, {
     show_exports_pane: props.is_project && props.interface_state ? props.interface_state["show_exports_pane"] : true,
-    console_width_fraction: props.is_project && props.interface_state ? props.interface_state["console_width_fraction"] : .5,
+    console_width_fraction: props.is_project && props.interface_state && "console_width_fraction" in props.interface_state ? props.interface_state["console_width_fraction"] : .5,
     console_is_zoomed: true,
     console_is_shrunk: false,
     resource_name: props.resource_name,

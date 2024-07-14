@@ -278,6 +278,7 @@ function ReactCodemirror(props) {
   }
   function _doHighlight() {
     try {
+      if (!cmobject.current) return;
       if (props.search_term == null || props.search_term == "") {
         cmobject.current.operation(function () {
           _removeOverlay();
