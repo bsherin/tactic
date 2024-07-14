@@ -1,6 +1,7 @@
-/*
- * Copyright 2022 Palantir Technologies, Inc. All rights reserved.
- */
+
+#myplace2 {
+    color: red;
+}
 
 $black: #111418 !default;
 
@@ -151,15 +152,12 @@ $bp-ns: bp5;
 
 $pt-grid-size: 10px !default;
 
-$icons16-family: "blueprint-icons-16" !default;
-$icons20-family: "blueprint-icons-20" !default;
-
 $pt-icon-size-standard: 16px !default;
 $pt-icon-size-large: 20px !default;
 
 $pt-font-family: -apple-system, "BlinkMacSystemFont", "Segoe UI", "Roboto",
   "Oxygen", "Ubuntu", "Cantarell", "Open Sans", "Helvetica Neue",
-  "blueprint-icons-16", sans-serif !default;
+  sans-serif !default;
 
 $pt-font-family-monospace: monospace !default;
 

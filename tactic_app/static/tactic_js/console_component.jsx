@@ -10,11 +10,30 @@ import {Menu, MenuItem, ButtonGroup, Button} from "@blueprintjs/core";
 import {SelectedPaneContext} from "./utilities_react";
 import _ from 'lodash';
 
+import hljs from 'highlight.js/lib/core';
+import javascript from 'highlight.js/lib/languages/javascript';
+hljs.registerLanguage('javascript', javascript);
+
+import python from 'highlight.js/lib/languages/python';
+hljs.registerLanguage('python', python);
+
 import markdownIt from 'markdown-it'
 import 'markdown-it-latex/dist/index.css'
 import markdownItLatex from 'markdown-it-latex'
 
-const mdi = markdownIt({html: true});
+const mdi = markdownIt({
+    html: true,
+    highlight: function (str, lang) {
+        if (lang && hljs.getLanguage(lang)) {
+          try {
+            return '<pre><code class="hljs">' +
+                   hljs.highlight(str, { language: lang, ignoreIllegals: true }).value +
+                   '</code></pre>';
+          } catch (__) {}
+        }
+        return '<pre><code class="hljs">' + mdi.utils.escapeHtml(str) + '</code></pre>';
+    }
+});
 mdi.use(markdownItLatex);
 
 import {GlyphButton} from "./blueprint_react_widgets";
@@ -106,11 +125,15 @@ function ConsoleComponent(props) {
             });
         }
     }, []);
+    
+    useEffect(() => {
+        console.log("theme changed")  // This is to force re-rendering because of highlight.js theme change
+    }, [theme]);
 
-    function initSocket() {
-        function _handleConsoleMessage(data) {
-            if (data.main_id == props.main_id) {
-                // noinspection JSUnusedGlobalSymbols
+function initSocket() {
+    function _handleConsoleMessage(data) {
+        if (data.main_id == props.main_id) {
+            // noinspection JSUnusedGlobalSymbols
                 let handlerDict = {
                     consoleLog: (data) => _addConsoleEntry(data.message, data.force_open, true),
                     consoleLogMultiple: (data) => _addConsoleEntries(data.message, data.force_open, true),
@@ -1508,7 +1531,7 @@ function ConsoleComponent(props) {
             <KeyTrap global={true}
                      active={!props.controlled || am_selected()}
                      bindings={key_bindings}/>
-        </Card>
+            </Card>
     );
 }
 

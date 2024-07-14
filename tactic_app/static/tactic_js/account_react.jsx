@@ -1,4 +1,4 @@
-
+//comments
 import "../tactic_css/tactic.scss";
 
 import React from "react";

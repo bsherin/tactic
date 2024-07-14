@@ -13,6 +13,10 @@ require("../tactic_css/tactic_select.scss");
 var _react = _interopRequireWildcard(require("react"));
 var _core = require("@blueprintjs/core");
 var _select = require("@blueprintjs/select");
+var _theme = require("./theme");
+var _core2 = _interopRequireDefault(require("highlight.js/lib/core"));
+var _javascript = _interopRequireDefault(require("highlight.js/lib/languages/javascript"));
+var _python = _interopRequireDefault(require("highlight.js/lib/languages/python"));
 var _markdownIt = _interopRequireDefault(require("markdown-it"));
 require("markdown-it-latex/dist/index.css");
 var _markdownItLatex = _interopRequireDefault(require("markdown-it-latex"));
@@ -22,8 +26,21 @@ var _icon_info = require("./icon_info");
 var _sizing_tools = require("./sizing_tools");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
+_core2.default.registerLanguage('javascript', _javascript.default);
+_core2.default.registerLanguage('python', _python.default);
 const mdi = (0, _markdownIt.default)({
-  html: true
+  html: true,
+  highlight: function (str, lang) {
+    if (lang && _core2.default.getLanguage(lang)) {
+      try {
+        return '<pre><code class="hljs">' + _core2.default.highlight(str, {
+          language: lang,
+          ignoreIllegals: true
+        }).value + '</code></pre>';
+      } catch (__) {}
+    }
+    return '<pre><code class="hljs">' + mdi.utils.escapeHtml(str) + '</code></pre>';
+  }
 });
 mdi.use(_markdownItLatex.default);
 let icon_dict = exports.icon_dict = {
@@ -288,6 +305,10 @@ function NativeTags(props) {
 }
 NativeTags = /*#__PURE__*/(0, _react.memo)(NativeTags);
 function NotesField(props) {
+  const theme = (0, _react.useContext)(_theme.ThemeContext);
+  (0, _react.useEffect)(() => {
+    console.log("theme changed"); // This is to force re-rendering because of highlight.js theme change
+  }, [theme]);
   props = {
     handleBlur: null,
     ...props

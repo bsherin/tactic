@@ -12,7 +12,10 @@ var _react = _interopRequireWildcard(require("react"));
 var _markdownIt = _interopRequireDefault(require("markdown-it"));
 require("markdown-it-latex/dist/index.css");
 var _markdownItLatex = _interopRequireDefault(require("markdown-it-latex"));
-var _core = require("@blueprintjs/core");
+var _core = _interopRequireDefault(require("highlight.js/lib/core"));
+var _javascript = _interopRequireDefault(require("highlight.js/lib/languages/javascript"));
+var _python = _interopRequireDefault(require("highlight.js/lib/languages/python"));
+var _core2 = require("@blueprintjs/core");
 var _utilities_react = require("./utilities_react");
 var _communication_react = require("./communication_react");
 var _theme = require("./theme");
@@ -23,8 +26,21 @@ function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return 
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 // noinspection TypeScriptUMDGlobal
 
+_core.default.registerLanguage('javascript', _javascript.default);
+_core.default.registerLanguage('python', _python.default);
 const mdi = (0, _markdownIt.default)({
-  html: true
+  html: true,
+  highlight: function (str, lang) {
+    if (lang && _core.default.getLanguage(lang)) {
+      try {
+        return '<pre><code class="hljs">' + _core.default.highlight(str, {
+          language: lang,
+          ignoreIllegals: true
+        }).value + '</code></pre>';
+      } catch (__) {}
+    }
+    return '<pre><code class="hljs">' + mdi.utils.escapeHtml(str) + '</code></pre>';
+  }
 });
 mdi.use(_markdownItLatex.default);
 const AssistantContext = exports.AssistantContext = /*#__PURE__*/(0, _react.createContext)(null);
@@ -47,12 +63,8 @@ function withAssistant(WrappedComponent) {
     (0, _react.useEffect)(() => {
       if (window.has_openapi_key) {
         getAssistant();
-        // window.addEventListener("unload", sendRemove);
       }
-      return () => {
-        // sendRemove();
-        //window.removeEventListener("unload", sendRemove)
-      };
+      return () => {};
     }, []);
     (0, _react.useEffect)(() => {
       if (show_drawer) {
@@ -167,7 +179,10 @@ function withAssistant(WrappedComponent) {
 }
 function AssistantDrawer(props) {
   const theme = (0, _react.useContext)(_theme.ThemeContext);
-  return /*#__PURE__*/_react.default.createElement(_core.Drawer, {
+  (0, _react.useEffect)(() => {
+    console.log("theme changed"); // This is to force re-rendering because of highlight.js theme change
+  }, [theme]);
+  return /*#__PURE__*/_react.default.createElement(_core2.Drawer, {
     icon: "chat",
     className: theme.dark_theme ? "bp5-dark" : "light-theme",
     title: props.title,
@@ -393,30 +408,30 @@ function ChatModule(props) {
     style: chat_pane_style
   }, /*#__PURE__*/_react.default.createElement("div", {
     className: "d-flex flex-row justify-content-end mt-2"
-  }, /*#__PURE__*/_react.default.createElement(_core.ButtonGroup, null, /*#__PURE__*/_react.default.createElement(_core.Button, {
+  }, /*#__PURE__*/_react.default.createElement(_core2.ButtonGroup, null, /*#__PURE__*/_react.default.createElement(_core2.Button, {
     icon: "trash",
     text: "Clear",
     onClick: _clearThread
-  }), /*#__PURE__*/_react.default.createElement(_core.Button, {
+  }), /*#__PURE__*/_react.default.createElement(_core2.Button, {
     icon: "floppy-disk",
     text: "Save",
     onClick: _saveThreadAs
-  }))), /*#__PURE__*/_react.default.createElement(_core.CardList, {
+  }))), /*#__PURE__*/_react.default.createElement(_core2.CardList, {
     ref: list_ref,
     bordered: false,
     style: {
       height: card_list_height
     }
-  }, items), /*#__PURE__*/_react.default.createElement(_core.ControlGroup, {
+  }, items), /*#__PURE__*/_react.default.createElement(_core2.ControlGroup, {
     ref: control_ref,
     vertical: false,
     style: input_style
-  }, /*#__PURE__*/_react.default.createElement(_core.Button, {
+  }, /*#__PURE__*/_react.default.createElement(_core2.Button, {
     icon: assistantDrawerFuncs.chat_status_ref.current == "idle" ? "send-message" : "stop",
     minimal: true,
     large: true,
     onClick: _handleButton
-  }), /*#__PURE__*/_react.default.createElement(_core.TextArea, {
+  }), /*#__PURE__*/_react.default.createElement(_core2.TextArea, {
     type: "text",
     autoResize: true,
     style: {
@@ -436,7 +451,7 @@ const chat_item_style = {
   width: "100%"
 };
 function Prompt(props) {
-  return /*#__PURE__*/_react.default.createElement(_core.Card, {
+  return /*#__PURE__*/_react.default.createElement(_core2.Card, {
     interactive: false
   }, /*#__PURE__*/_react.default.createElement("div", {
     style: chat_item_style
@@ -447,12 +462,12 @@ function Response(props) {
   let converted_dict = {
     __html: props.text
   };
-  return /*#__PURE__*/_react.default.createElement(_core.Card, {
+  return /*#__PURE__*/_react.default.createElement(_core2.Card, {
     interactive: false
   }, /*#__PURE__*/_react.default.createElement("div", {
     style: chat_item_style
   }, /*#__PURE__*/_react.default.createElement("h6", null, "ChatBot"), /*#__PURE__*/_react.default.createElement("div", {
-    className: "chat-response",
+    className: "chat-response markdown-heading-sizes",
     dangerouslySetInnerHTML: converted_dict
   })));
 }
@@ -472,7 +487,7 @@ function ResponseInProgress(props) {
   let converted_dict = {
     __html: dummy_text
   };
-  return /*#__PURE__*/_react.default.createElement(_core.Card, {
+  return /*#__PURE__*/_react.default.createElement(_core2.Card, {
     className: "bp-skeleton",
     interactive: false
   }, /*#__PURE__*/_react.default.createElement("div", {
@@ -481,7 +496,7 @@ function ResponseInProgress(props) {
     style: {
       height: 100
     },
-    className: "chat-response bp5-skeleton",
+    className: "chat-response markdown-heading-sizes bp5-skeleton",
     dangerouslySetInnerHTML: converted_dict
   })));
 }

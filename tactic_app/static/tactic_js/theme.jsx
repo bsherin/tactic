@@ -1,5 +1,8 @@
 import React from "react";
-import {useState, createContext, memo, useEffect} from "react";
+import {useState, createContext, memo, Fragment} from "react";
+
+import {Helmet} from 'react-helmet';
+
 import {useCallbackStack} from "./utilities_react";
 
 
@@ -20,12 +23,19 @@ function withTheme(WrappedComponent) {
         }
 
         const ChildElement = props.wrapped_element;
+        const highlightTheme = dark_theme ? "github-dark.css" : "github.css";
 
         return (
-            <ThemeContext.Provider value={{dark_theme, setTheme}}>
-                <WrappedComponent {...props}/>
-            </ThemeContext.Provider>
+            <Fragment>
+                <Helmet>
+                    <link rel="stylesheet" href={`/static/tactic_css/${highlightTheme}`} type="text/css"/>
+                </Helmet>
+                <ThemeContext.Provider value={{dark_theme, setTheme}}>
+                    <WrappedComponent {...props}/>
+                </ThemeContext.Provider>
+            </Fragment>
         )
     }
+
     return memo(newFunc)
 }
