@@ -136,7 +136,6 @@ function MainApp(props) {
         is_project: props.is_project,
     });
     const [usable_width, usable_height, topX, topY] = useSize(main_outer_ref, 0, "MainApp");
-    const [filtered_column_names, setFilteredColumnNames, filtered_column_names_ref] = useStateAndRef(_filteredColumnNames());
 
     const connection_status = useConnection(props.tsocket, initSocket);
 
@@ -168,10 +167,6 @@ function MainApp(props) {
             window.removeEventListener("unload", sendRemove);
         })
     }, []);
-
-    useEffect(() =>{
-        filtered_column_names.ref = _filteredColumnNames();
-    }, [mState.table_spec.column_names, mState.table_spec.hidden_columns_list]);
 
     useEffect(()=>{
          const data = {
