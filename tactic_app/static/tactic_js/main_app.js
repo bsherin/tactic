@@ -36,6 +36,7 @@ var _error_boundary = require("./error_boundary");
 var _theme = require("./theme");
 var _pool_tree = require("./pool_tree");
 var _modal_react = require("./modal_react");
+var _metadata_drawer = require("./metadata_drawer");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 const MARGIN_SIZE = 0;
@@ -75,6 +76,7 @@ function MainApp(props) {
     }
     return iStateDefaults[pname];
   }
+  const errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
   const last_save = (0, _react.useRef)({});
   const resizing = (0, _react.useRef)(false);
   const updateExportsList = (0, _react.useRef)(null);
@@ -87,7 +89,6 @@ function MainApp(props) {
   const theme = (0, _react.useContext)(_theme.ThemeContext);
   const dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   const statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
-  const errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
   const selectedPane = (0, _react.useContext)(_utilities_react.SelectedPaneContext);
   const [mState, mDispatch] = (0, _react.useReducer)(_main_support.mainReducer, {
     table_is_shrunk: props.doc_type == "none" || iStateOrDefault("table_is_shrunk"),
@@ -98,6 +99,7 @@ function MainApp(props) {
     console_is_zoomed: iStateOrDefault("console_is_zoomed"),
     show_exports_pane: iStateOrDefault("show_exports_pane"),
     show_console_pane: iStateOrDefault("show_console_pane"),
+    show_metadata: false,
     table_spec: props.initial_table_spec,
     doc_type: props.doc_type,
     data_text: props.doc_type == "freeform" ? props.initial_data_text : "",
@@ -122,6 +124,7 @@ function MainApp(props) {
     is_project: props.is_project
   });
   const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(main_outer_ref, 0, "MainApp");
+  const [filtered_column_names, setFilteredColumnNames, filtered_column_names_ref] = (0, _utilities_react.useStateAndRef)(_filteredColumnNames());
   const connection_status = (0, _utilities_react.useConnection)(props.tsocket, initSocket);
   const pushCallback = (0, _utilities_react.useCallbackStack)();
   (0, _react.useEffect)(() => {
@@ -153,12 +156,20 @@ function MainApp(props) {
     };
   }, []);
   (0, _react.useEffect)(() => {
+    filtered_column_names.ref = _filteredColumnNames();
+  }, [mState.table_spec.column_names, mState.table_spec.hidden_columns_list]);
+  (0, _react.useEffect)(() => {
     const data = {
       active_row_id: mState.selected_row,
       doc_name: mState.table_spec.current_doc_name
     };
     _broadcast_event_to_server("MainTableRowSelect", data);
   }, [mState.selected_row]);
+  function _filteredColumnNames() {
+    return mState.table_spec.column_names.filter(name => {
+      return !(mState.table_spec.hidden_columns_list.includes(name) || name == "__id__");
+    });
+  }
   function _cProp(pname) {
     return props.controlled ? props[pname] : mState[pname];
   }
@@ -281,7 +292,7 @@ function MainApp(props) {
       front_content: ""
     };
   }
-  function _setMainStateValue(field_name) {
+  const _setMainStateValue = (0, _react.useCallback)(function (field_name) {
     let new_value = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
     let callback = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
     if (typeof field_name == "object") {
@@ -298,7 +309,7 @@ function MainApp(props) {
       });
       pushCallback(callback);
     }
-  }
+  });
   function _handleSearchFieldChange(lsearch_text) {
     mDispatch({
       type: "change_multiple_fields",
@@ -390,7 +401,7 @@ function MainApp(props) {
       (0, _communication_react.postWithCallback)(props.main_id, "UpdateTableSpec", spec_update, null, null, props.main_id);
     }
   }
-  function _broadcast_event_to_server(event_name, data_dict) {
+  const _broadcast_event_to_server = (0, _react.useCallback)(function (event_name, data_dict) {
     let callback = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
     data_dict.main_id = props.main_id;
     data_dict.event_name = event_name;
@@ -398,7 +409,7 @@ function MainApp(props) {
       data_dict.doc_name = mState.table_spec.current_doc_name;
     }
     (0, _communication_react.postWithCallback)(props.main_id, "distribute_events_stub", data_dict, callback, null, props.main_id);
-  }
+  }, [props.main_id, mState.table_spec.current_doc_name]);
   function _broadcast_event_promise(event_name, data_dict) {
     data_dict.main_id = props.main_id;
     data_dict.event_name = event_name;
@@ -510,7 +521,7 @@ function MainApp(props) {
       handlerDict[data.table_message](data);
     }
   }
-  function _setCellContent(row_id, column_header, new_content) {
+  const _setCellContent = (0, _react.useCallback)(function (row_id, column_header, new_content) {
     let broadcast = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
     mDispatch({
       type: "set_cell_content",
@@ -527,7 +538,7 @@ function MainApp(props) {
     if (broadcast) {
       _broadcast_event_to_server("SetCellContent", data, null);
     }
-  }
+  }, []);
   function _setCellBackgroundColor(row_id, column_header, color) {
     mDispatch({
       type: "set_cell_background",
@@ -609,9 +620,9 @@ function MainApp(props) {
       hidden_columns_list: ["__filename__"]
     }, true);
   }
-  function _clearTableScroll() {
+  const _clearTableScroll = (0, _react.useCallback)(() => {
     set_table_scroll.current = null;
-  }
+  }, []);
   async function _deleteRow() {
     await (0, _communication_react.postPromise)(props.main_id, "delete_row", {
       "document_name": mState.table_spec.current_doc_name,
@@ -702,9 +713,9 @@ function MainApp(props) {
     });
     pushCallback(func);
   }
-  async function _initiateDataGrab(row_index) {
+  const _initiateDataGrab = (0, _react.useCallback)(async row_index => {
     await _grabNewChunkWithRow(row_index);
-  }
+  }, []);
   async function _grabNewChunkWithRow(row_index) {
     try {
       let data = await (0, _communication_react.postPromise)(props.main_id, "grab_chunk_by_row_index", {
@@ -811,10 +822,11 @@ function MainApp(props) {
       await _handleChangeDoc(visible_doc);
     });
   }
-  function _filteredColumnNames() {
-    return mState.table_spec.column_names.filter(name => {
-      return !(mState.table_spec.hidden_columns_list.includes(name) || name == "__id__");
-    });
+  function showMetadata() {
+    _setMainStateValue("show_metadata", true);
+  }
+  function hideMetadata() {
+    _setMainStateValue("show_metadata", false);
   }
   function _setProjectName(new_project_name) {
     let callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
@@ -923,6 +935,7 @@ function MainApp(props) {
     toggleTableShrink: mState.doc_type == "none" ? null : _toggleTableShrink,
     show_exports_pane: mState.show_exports_pane,
     show_console_pane: mState.show_console_pane,
+    show_metadata: mState.show_metadata,
     setMainStateValue: _setMainStateValue
   }), /*#__PURE__*/_react.default.createElement(_core.NavbarDivider, null), create_tile_menus());
   let card_body;
@@ -1078,6 +1091,8 @@ function MainApp(props) {
     closeTab: props.closeTab,
     resource_name: _cProp("resource_name"),
     showErrorDrawerButton: true,
+    showMetadataDrawerButton: true,
+    showMetadata: showMetadata,
     extraButtons: extra_menubar_buttons
   }), /*#__PURE__*/_react.default.createElement(_error_boundary.ErrorBoundary, null, /*#__PURE__*/_react.default.createElement("div", {
     className: `main-outer ${theme.dark_theme ? "bp5-dark" : "light-theme"}`,
@@ -1134,7 +1149,16 @@ function MainApp(props) {
     handleResizeStart: _handleResizeStart,
     handleResizeEnd: _handleResizeEnd,
     overflow: "hidden"
-  })))));
+  }))), /*#__PURE__*/_react.default.createElement(_metadata_drawer.MetadataDrawer, {
+    res_type: "project",
+    res_name: _cProp("resource_name"),
+    readOnly: false,
+    is_repository: false,
+    show_drawer: mState.show_metadata,
+    position: "right",
+    onClose: hideMetadata,
+    size: "45%"
+  })));
 }
 exports.MainApp = MainApp = /*#__PURE__*/(0, _react.memo)(MainApp);
 function main_main() {

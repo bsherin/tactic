@@ -46,6 +46,11 @@ $dark-medium: $dark-gray4;
 
 // Colors for the resource-specific icons
 .bp5-dark {
+  .floating-button-group {
+    button {
+      background-color: $dark-gray5;
+    }
+  }
   .lib-tab-button, .context-tab-button-content, .menu-bar, .combined-metadata, .all-pane {
     .bp5-icon-cube {
       color: $orange5 ! important

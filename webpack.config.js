@@ -72,7 +72,16 @@ module.exports = (env, argv) => {
                         path.resolve(__dirname, 'node_modules/markdown-it-latex'),
                         path.resolve(__dirname, 'node_modules/highlight.js')
                         ],
-                    loader: require.resolve("file-loader"),
+                    use: [
+                        {
+                            loader: 'url-loader',
+                            options: {
+                                limit: 8192,
+                                name: '[path][name].[ext]',
+                            }
+                        }
+                    ]
+                    // loader: require.resolve("file-loader"),
                 }
             ],
         },

@@ -501,7 +501,7 @@ function ConsoleComponent(props) {
   }, [props.mState.console_is_zoomed]);
   const _toggleExports = (0, _react.useCallback)(() => {
     props.setMainStateValue("show_exports_pane", !props.mState.show_exports_pane);
-  }, [props.mState.show_exports_pan]);
+  }, [props.mState.show_exports_pane]);
   const _setConsoleItemValue = (0, _react.useCallback)(function (unique_id, field, new_value) {
     let callback = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
     props.dispatch({

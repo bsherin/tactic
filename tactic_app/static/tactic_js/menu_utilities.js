@@ -50,6 +50,7 @@ function TacticMenubar(props) {
     menu_specs: null,
     menus: null,
     showErrorDrawerButton: false,
+    showMetadataDrawerButton: false,
     resource_name: null,
     resource_icon: null,
     disabled_items: [],
@@ -59,7 +60,6 @@ function TacticMenubar(props) {
     ...props
   };
   const theme = (0, _react.useContext)(_theme.ThemeContext);
-  const assistantDrawerFuncs = (0, _react.useContext)(_assistant.AssistantContext);
   let menus;
   if (props.menu_specs == null) {
     menus = props.menus;
@@ -118,12 +118,11 @@ function TacticMenubar(props) {
     className: "bp5-navbar-group bp5-align-left"
   }, /*#__PURE__*/_react.default.createElement(_react.Fragment, null, menus, sug_glyphs)), props.connection_status && /*#__PURE__*/_react.default.createElement(ConnectionIndicator, {
     connection_status: props.connection_status
-  }), /*#__PURE__*/_react.default.createElement(_core.ButtonGroup, {
-    style: button_group_style
-  }, assistantDrawerFuncs && assistantDrawerFuncs.chat_status_ref.current != "idle" && /*#__PURE__*/_react.default.createElement("div", {
-    className: "bp5-text-small",
-    style: chat_status_style
-  }, assistantDrawerFuncs.chat_status_ref.current), assistantDrawerFuncs && assistantDrawerFuncs.showAssistantDrawerButton && /*#__PURE__*/_react.default.createElement(AssistantDrawerButton, null), props.showErrorDrawerButton && /*#__PURE__*/_react.default.createElement(ErrorDrawerButton, null)));
+  }), /*#__PURE__*/_react.default.createElement(DrawerButtonGroup, {
+    showErrorDrawerButton: props.showErrorDrawerButton,
+    showMetadataDrawerButton: props.showMetadataDrawerButton,
+    showMetadata: props.showMetadata
+  }));
 }
 exports.TacticMenubar = TacticMenubar = /*#__PURE__*/(0, _react.memo)(TacticMenubar);
 function ConnectionIndicator(props) {
@@ -143,52 +142,110 @@ function ConnectionIndicator(props) {
     size: 18
   }));
 }
+function DrawerButtonGroup(props) {
+  const [visible, setVisible, visibleRef] = (0, _utilities_react.useStateAndRef)(false);
+  const assistantDrawerFuncs = (0, _react.useContext)(_assistant.AssistantContext);
+  (0, _react.useEffect)(() => {
+    const handleMouseMove = event => {
+      const {
+        clientX
+      } = event;
+      const windowWidth = window.innerWidth;
+      if (windowWidth - clientX < 50) {
+        // Show buttons when near the right edge (50px threshold)
+        if (!visibleRef.current) setVisible(true);
+      } else {
+        if (visibleRef.current) setVisible(false);
+      }
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+    };
+  }, []);
+  return /*#__PURE__*/_react.default.createElement(_core.ButtonGroup, {
+    className: `floating-button-group ${visible ? 'visible' : ''}`,
+    large: true,
+    alignText: "left",
+    vertical: false
+  }, props.showErrorDrawerButton && /*#__PURE__*/_react.default.createElement(ErrorDrawerButton, null), assistantDrawerFuncs && assistantDrawerFuncs.showAssistantDrawerButton && /*#__PURE__*/_react.default.createElement(AssistantDrawerButton, null), props.showMetadataDrawerButton && /*#__PURE__*/_react.default.createElement(MetadataDrawerButton, {
+    showMetadata: props.showMetadata
+  }));
+}
 function ErrorDrawerButton(props) {
   const errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
-  return /*#__PURE__*/_react.default.createElement("div", {
-    style: top_icon_style
-  }, /*#__PURE__*/_react.default.createElement(_core.Button, {
-    icon: /*#__PURE__*/_react.default.createElement(_core.Icon, {
-      icon: "bug",
-      size: 18
-    }),
-    style: {
-      paddingLeft: 4,
-      paddingRight: 0
-    },
-    minimal: true,
-    className: "context-close-button",
-    small: true,
-    tabIndex: -1,
-    onClick: () => {
-      errorDrawerFuncs.toggleErrorDrawer();
-    }
-  }));
+  return (
+    /*#__PURE__*/
+    // <div style={top_icon_style}>
+    _react.default.createElement(_core.Button, {
+      icon: /*#__PURE__*/_react.default.createElement(_core.Icon, {
+        icon: "bug",
+        size: 18
+      })
+      //style={{paddingLeft: 4, paddingRight: 0}}
+      ,
+      minimal: false,
+      className: "context-close-button",
+      small: false,
+      text: "Errors",
+      tabIndex: -1,
+      onClick: () => {
+        errorDrawerFuncs.toggleErrorDrawer();
+      }
+    })
+    // </div>
+  );
 }
 ErrorDrawerButton = /*#__PURE__*/(0, _react.memo)(ErrorDrawerButton);
 function AssistantDrawerButton(props) {
   const assistantDrawerFuncs = (0, _react.useContext)(_assistant.AssistantContext);
-  return /*#__PURE__*/_react.default.createElement("div", {
-    style: top_icon_style
-  }, /*#__PURE__*/_react.default.createElement(_core.Button, {
-    icon: /*#__PURE__*/_react.default.createElement(_core.Icon, {
-      icon: "chat",
-      size: 18
-    }),
-    style: {
-      paddingLeft: 4,
-      paddingRight: 0
-    },
-    minimal: true,
-    className: "context-close-button",
-    small: true,
-    tabIndex: -1,
-    onClick: () => {
-      assistantDrawerFuncs.toggleAssistantDrawer();
-    }
-  }));
+  return (
+    /*#__PURE__*/
+    //div style={top_icon_style}>
+    _react.default.createElement(_core.Button, {
+      icon: /*#__PURE__*/_react.default.createElement(_core.Icon, {
+        icon: "chat",
+        size: 18
+      })
+      //style={{paddingLeft: 4, paddingRight: 0}}
+      ,
+      minimal: false,
+      className: "context-close-button",
+      text: "Assistant",
+      small: false,
+      tabIndex: -1,
+      onClick: () => {
+        assistantDrawerFuncs.toggleAssistantDrawer();
+      }
+    })
+    //</div>
+  );
 }
 AssistantDrawerButton = /*#__PURE__*/(0, _react.memo)(AssistantDrawerButton);
+function MetadataDrawerButton(props) {
+  return (
+    /*#__PURE__*/
+    //<div style={top_icon_style}>
+    _react.default.createElement(_core.Button, {
+      icon: /*#__PURE__*/_react.default.createElement(_core.Icon, {
+        icon: "list-columns",
+        size: 18
+      })
+      //style={{paddingLeft: 4, paddingRight: 0}}
+      ,
+      minimal: false,
+      className: "context-close-button",
+      small: false,
+      text: "Metadata",
+      tabIndex: -1,
+      onClick: () => {
+        props.showMetadata();
+      }
+    })
+    //</div>
+  );
+}
+MetadataDrawerButton = /*#__PURE__*/(0, _react.memo)(MetadataDrawerButton);
 function TopLeftButtons(props) {
   props = {
     extraButtons: null,

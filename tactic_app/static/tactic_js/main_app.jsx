@@ -5,7 +5,7 @@ import "../tactic_css/tactic_console.scss";
 import "../tactic_css/tactic_select.scss"
 
 import React from "react";
-import {Fragment, useEffect, useRef, memo, useContext, useReducer} from "react";
+import {Fragment, useEffect, useRef, memo, useContext, useReducer, useCallback} from "react";
 import { createRoot } from 'react-dom/client';
 
 import {NavbarDivider} from "@blueprintjs/core";
@@ -37,6 +37,7 @@ import {DialogContext, withDialogs} from "./modal_react";
 import {StatusContext} from "./toaster";
 import {ErrorDrawerContext} from "./error_drawer";
 import {SelectedPaneContext} from "./utilities_react";
+import {MetadataDrawer} from "./metadata_drawer";
 
 export {MainApp}
 
@@ -78,6 +79,7 @@ function MainApp(props) {
         }
         return iStateDefaults[pname]
     }
+    const errorDrawerFuncs = useContext(ErrorDrawerContext);
 
     const last_save = useRef({});
     const resizing = useRef(false);
@@ -93,7 +95,6 @@ function MainApp(props) {
     const theme = useContext(ThemeContext);
     const dialogFuncs = useContext(DialogContext);
     const statusFuncs = useContext(StatusContext);
-    const errorDrawerFuncs = useContext(ErrorDrawerContext);
     const selectedPane = useContext(SelectedPaneContext);
 
     const [mState, mDispatch] = useReducer(mainReducer, {
@@ -105,6 +106,7 @@ function MainApp(props) {
         console_is_zoomed: iStateOrDefault("console_is_zoomed"),
         show_exports_pane: iStateOrDefault("show_exports_pane"),
         show_console_pane: iStateOrDefault("show_console_pane"),
+        show_metadata: false,
 
         table_spec: props.initial_table_spec,
         doc_type: props.doc_type,
@@ -134,6 +136,7 @@ function MainApp(props) {
         is_project: props.is_project,
     });
     const [usable_width, usable_height, topX, topY] = useSize(main_outer_ref, 0, "MainApp");
+    const [filtered_column_names, setFilteredColumnNames, filtered_column_names_ref] = useStateAndRef(_filteredColumnNames());
 
     const connection_status = useConnection(props.tsocket, initSocket);
 
@@ -160,12 +163,15 @@ function MainApp(props) {
             navigator.sendBeacon("/remove_mainwindow", JSON.stringify({"main_id": props.main_id}));
         }
         window.addEventListener("unload", sendRemove);
-
         return (() => {
             delete_my_containers();
             window.removeEventListener("unload", sendRemove);
         })
     }, []);
+
+    useEffect(() =>{
+        filtered_column_names.ref = _filteredColumnNames();
+    }, [mState.table_spec.column_names, mState.table_spec.hidden_columns_list]);
 
     useEffect(()=>{
          const data = {
@@ -174,6 +180,12 @@ function MainApp(props) {
          };
          _broadcast_event_to_server("MainTableRowSelect", data)
     }, [mState.selected_row]);
+
+    function _filteredColumnNames() {
+        return mState.table_spec.column_names.filter((name) => {
+            return !(mState.table_spec.hidden_columns_list.includes(name) || (name == "__id__"));
+        })
+    }
 
     function _cProp(pname) {
         return props.controlled ? props[pname] : mState[pname]
@@ -301,7 +313,7 @@ function MainApp(props) {
         }
     }
 
-    function _setMainStateValue(field_name, new_value = null, callback = null) {
+    const _setMainStateValue = useCallback((field_name, new_value = null, callback = null) =>{
         if (typeof (field_name) == "object") {
             mDispatch({
                 type: "change_multiple_fields",
@@ -316,7 +328,7 @@ function MainApp(props) {
             });
             pushCallback(callback)
         }
-    }
+    });
 
     function _handleSearchFieldChange(lsearch_text) {
         mDispatch({
@@ -409,14 +421,14 @@ function MainApp(props) {
         }
     }
 
-    function _broadcast_event_to_server(event_name, data_dict, callback=null) {
+    const  _broadcast_event_to_server = useCallback((event_name, data_dict, callback=null) => {
         data_dict.main_id = props.main_id;
         data_dict.event_name = event_name;
         if (!("doc_name" in data_dict)) {
             data_dict.doc_name = mState.table_spec.current_doc_name;
         }
         postWithCallback(props.main_id, "distribute_events_stub", data_dict, callback, null, props.main_id)
-    }
+    }, [props.main_id, mState.table_spec.current_doc_name]);
 
     function _broadcast_event_promise(event_name, data_dict) {
         data_dict.main_id = props.main_id;
@@ -543,7 +555,7 @@ function MainApp(props) {
         }
     }
 
-    function _setCellContent(row_id, column_header, new_content, broadcast = false) {
+    const _setCellContent = useCallback((row_id, column_header, new_content, broadcast = false) => {
         mDispatch({
             type: "set_cell_content",
             row_id: row_id,
@@ -554,7 +566,7 @@ function MainApp(props) {
         if (broadcast) {
             _broadcast_event_to_server("SetCellContent", data, null)
         }
-    }
+    }, []);
 
     function _setCellBackgroundColor(row_id, column_header, color) {
         mDispatch({
@@ -635,9 +647,9 @@ function MainApp(props) {
         _updateTableSpec({hidden_columns_list: ["__filename__"]}, true)
     }
 
-    function _clearTableScroll() {
+    const _clearTableScroll = useCallback(() => {
         set_table_scroll.current = null
-    }
+    }, []);
 
     async function _deleteRow() {
         await postPromise(props.main_id, "delete_row", {
@@ -733,9 +745,9 @@ function MainApp(props) {
         pushCallback(func)
     }
 
-    async function _initiateDataGrab(row_index) {
+    const _initiateDataGrab = useCallback(async (row_index) => {
         await _grabNewChunkWithRow(row_index)
-    }
+    }, []);
 
     async function _grabNewChunkWithRow(row_index) {
         try {
@@ -849,10 +861,12 @@ function MainApp(props) {
         })
     }
 
-    function _filteredColumnNames() {
-        return mState.table_spec.column_names.filter((name) => {
-            return !(mState.table_spec.hidden_columns_list.includes(name) || (name == "__id__"));
-        })
+    function showMetadata() {
+        _setMainStateValue("show_metadata", true);
+    }
+
+    function hideMetadata() {
+        _setMainStateValue("show_metadata", false);
     }
 
     function _setProjectName(new_project_name, callback = null) {
@@ -967,6 +981,7 @@ function MainApp(props) {
                       toggleTableShrink={mState.doc_type == "none" ? null : _toggleTableShrink}
                       show_exports_pane={mState.show_exports_pane}
                       show_console_pane={mState.show_console_pane}
+                      show_metadata={mState.show_metadata}
                       setMainStateValue={_setMainStateValue}
             />
             <NavbarDivider/>
@@ -1141,6 +1156,8 @@ function MainApp(props) {
                            closeTab={props.closeTab}
                            resource_name={_cProp("resource_name")}
                            showErrorDrawerButton={true}
+                           showMetadataDrawerButton={true}
+                           showMetadata={showMetadata}
                            extraButtons={extra_menubar_buttons}
             />
             <ErrorBoundary>
@@ -1203,6 +1220,15 @@ function MainApp(props) {
                         </SizeContext.Provider>
                     }
                 </div>
+                <MetadataDrawer res_type="project"
+                                res_name={_cProp("resource_name")}
+                                readOnly={false}
+                                is_repository={false}
+                                show_drawer={mState.show_metadata}
+                                position="right"
+                                onClose={hideMetadata}
+                                size="45%"
+                                />
             </ErrorBoundary>
         </ErrorBoundary>
     )

@@ -8,7 +8,7 @@ import { createRoot } from 'react-dom/client';
 
 import {TacticNavbar} from "./blueprint_navbar";
 import {TacticMenubar} from "./menu_utilities";
-import {ProjectMenu} from "./main_menus_react";
+import {ProjectMenu, ViewMenu} from "./main_menus_react";
 import {ConsoleComponent} from "./console_component";
 import {consoleItemsReducer} from "./console_support";
 import {doFlash, StatusContext} from "./toaster"
@@ -25,6 +25,7 @@ import {notebook_props, notebookReducer} from "./notebook_support";
 
 import {withTheme, ThemeContext} from "./theme";
 import {withDialogs} from "./modal_react";
+import {MetadataDrawer} from "./metadata_drawer";
 
 
 const MARGIN_SIZE = 10;
@@ -58,6 +59,8 @@ function NotebookApp(props) {
         console_is_shrunk: false,
         resource_name: props.resource_name,
         is_project: props.is_project,
+        show_metadata: false,
+
     });
     const theme = useContext(ThemeContext);
     const statusFuncs = useContext(StatusContext);
@@ -188,6 +191,14 @@ function NotebookApp(props) {
         }
     }
 
+    function showMetadata() {
+        _setMainStateValue("show_metadata", true);
+    }
+
+    function hideMetadata() {
+        _setMainStateValue("show_metadata", false);
+    }
+
     let my_props = {...props};
     if (!props.controlled) {
         my_props.resource_name = mState.resource_name;
@@ -209,6 +220,17 @@ function NotebookApp(props) {
                          changeCollection={null}
                          disabled_items={my_props.is_project ? [] : ["Save"]}
                          hidden_items={["Open Console as Notebook", "Export Table as Collection", "divider2", "Change collection"]}
+            />
+            <ViewMenu main_id={props.main_id}
+                      project_name={project_name}
+                      is_notebook={true}
+                      is_juptyer={props.is_jupyter}
+                      table_is_shrunk={true}
+                      toggleTableShrink={null}
+                      show_exports_pane={mState.show_exports_pane}
+                      show_console_pane={true}
+                      show_metadata={mState.show_metadata}
+                      setMainStateValue={_setMainStateValue}
             />
         </Fragment>
     );
@@ -266,6 +288,8 @@ function NotebookApp(props) {
                            closeTab={props.closeTab}
                            resource_name={_cProp("resource_name")}
                            showErrorDrawerButton={true}
+                           showMetadataDrawerButton={true}
+                           showMetadata={showMetadata}
             />
             <div className={`main-outer ${theme.dark_theme ? "bp5-dark" : "light-theme"}`}
                  ref={main_outer_ref}
@@ -286,9 +310,17 @@ function NotebookApp(props) {
                 />
             </SizeProvider>
             </div>
+            <MetadataDrawer res_type="project"
+                res_name={project_name}
+                readOnly={false}
+                is_repository={false}
+                show_drawer={mState.show_metadata}
+                position="right"
+                onClose={hideMetadata}
+                size="45%"
+                />
         </Fragment>
     )
-
 }
 
 NotebookApp = memo(NotebookApp);

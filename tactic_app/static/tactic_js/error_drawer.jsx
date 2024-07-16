@@ -1,5 +1,5 @@
 import React from "react";
-import {Fragment, useState, useEffect, useRef, memo, useContext, createContext} from "react";
+import {Fragment, useState, useEffect, useRef, memo, useContext, createContext, useCallback} from "react";
 
 import {Card, Elevation, Drawer, Classes, Button, Icon} from "@blueprintjs/core";
 
@@ -18,6 +18,8 @@ function withErrorDrawer(WrappedComponent, lposition = "right", error_drawer_siz
         const [show_drawer, set_show_drawer] = useState(false);
         const [contents, set_contents, contents_ref] = useStateAndRef({}); // the ref is necessary.
 
+
+
         const goToLineNumber = useRef(null);
         const ucounter = useRef(0);
         const local_id = useRef(props.main_id ? props.main_id : props.library_id);
@@ -33,41 +35,42 @@ function withErrorDrawer(WrappedComponent, lposition = "right", error_drawer_siz
             })
         }, []);
 
+
         function initSocket() {
             props.tsocket.attachListener('add-error-drawer-entry', _addEntry);
         }
 
-        function _registerGoToModule(the_func) {
+        const _registerGoToModule = useCallback((the_func) =>{
             goToModule.current = the_func
-        }
+        }, []);
 
-        function _close(data) {
+        const _close = useCallback((data) =>  {
             if (data == null || !("main_id" in data) || (data.main_id == local_id.current)) {
                 set_show_drawer(false)
             }
-        }
+        }, [local_id.current]);
 
-        function _open(data) {
+        const _open = useCallback((data) => {
             if (data == null || !("main_id" in data) || (data.main_id == local_id.current)) {
                 set_show_drawer(true)
             }
-        }
+        }, [local_id.current]);
 
-        function _toggle(data) {
+        const _toggle = useCallback((data) => {
             if (data == null || !("main_id" in data) || (data.main_id == local_id.current)) {
                 set_show_drawer(!show_drawer)
             }
-        }
+        }, [local_id.current]);
 
-        function _addEntry(data, open = true) {
+        const _addEntry = useCallback((data, open = true) => {
             ucounter.current = ucounter.current + 1;
             const newcontents = {...contents_ref.current};
             newcontents[String(ucounter.current)] = data;
             set_contents(newcontents);
             set_show_drawer(open);
-        }
+        }, [contents_ref.current, ucounter.current]);
 
-        function _addFromError(title, data, open = true) {
+        const _addFromError = useCallback((title, data, open = true) =>{
             let content = "";
             if ("message" in data){
                 content = data.message
@@ -79,38 +82,38 @@ function withErrorDrawer(WrappedComponent, lposition = "right", error_drawer_siz
                 title: title,
                 content: content
             }, open);
-        }
+        }, []);
 
-        function _closeEntry(ukey) {
+        const _closeEntry = useCallback((ukey)=>{
             const newcontents = {...contents_ref.current};
             delete newcontents[ukey];
             set_contents(newcontents);
             set_show_drawer(false)
-        }
+        }, [contents_ref.current]);
 
-        function _postAjaxFailure(qXHR, textStatus, errorThrown) {
+        const _postAjaxFailure = useCallback((qXHR, textStatus, errorThrown) => {
             _addEntry({
                 title: "Post Ajax Failure: {}".format(textStatus),
                 content: errorThrown
             })
-        }
+        }, []);
 
-        function _clearAll(data) {
+        const _clearAll = useCallback((data) =>{
             if (data == null || !("main_id" in data) || (data.main_id == props.main_id)) {
                 set_contents([]);
                 set_show_drawer(false)
             }
-        }
+        }, [props.main_id]);
 
-        function _onClose() {
+        const _onClose = useCallback(()=>{
             set_show_drawer(false);
-        }
+        }, []);
 
-        function _setGoToLineNumber(gtfunc) {
+        const _setGoToLineNumber = useCallback((gtfunc) =>{
             goToLineNumber.current = gtfunc
-        }
+        }, []);
 
-        let errorDrawerFuncs = {
+        const [errorDrawerFuncs, setErrorDrawerFuncs, errorDrawerFuncsRef] = useStateAndRef({
             openErrorDrawer: _open,
             closeErrorDrawer: _close,
             clearErrorDrawer: _clearAll,
@@ -119,13 +122,28 @@ function withErrorDrawer(WrappedComponent, lposition = "right", error_drawer_siz
             postAjaxFailure: _postAjaxFailure,
             toggleErrorDrawer: _toggle,
             setGoToLineNumber: _setGoToLineNumber,
-            registerGoToModule:_registerGoToModule
-        };
+            registerGoToModule: _registerGoToModule
+        });
+
+        useEffect(() => {
+            setErrorDrawerFuncs({
+                openErrorDrawer: _open,
+                closeErrorDrawer: _close,
+                clearErrorDrawer: _clearAll,
+                addErrorDrawerEntry: _addEntry,
+                addFromError: _addFromError,
+                postAjaxFailure: _postAjaxFailure,
+                toggleErrorDrawer: _toggle,
+                setGoToLineNumber: _setGoToLineNumber,
+                registerGoToModule: _registerGoToModule
+            })
+        }, [local_id.current, contents_ref.current, ucounter.current]);
+
         return (
             <Fragment>
                 <ErrorDrawerContext.Provider value={errorDrawerFuncs}>
                     <WrappedComponent {...props}
-                                      errorDrawerFuncs={errorDrawerFuncs}
+                                      errorDrawerFuncs={errorDrawerFuncsRef.current}
                     />
                 </ErrorDrawerContext.Provider>
                 <ErrorDrawer show_drawer={show_drawer}

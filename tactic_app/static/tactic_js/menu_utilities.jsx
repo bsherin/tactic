@@ -7,7 +7,7 @@ import {Popover2, MenuItem2} from "@blueprintjs/popover2";
 import {KeyTrap} from "./key_trap";
 import {ThemeContext} from "./theme"
 import {GlyphButton} from "./blueprint_react_widgets";
-import {SelectedPaneContext} from "./utilities_react";
+import {SelectedPaneContext, useStateAndRef} from "./utilities_react";
 import {ErrorDrawerContext} from "./error_drawer";
 import {AssistantContext} from "./assistant";
 
@@ -36,8 +36,8 @@ const button_group_style = {
 };
 
 const chat_status_style = {
-     marginRight: 7,
-     paddingTop: 7
+    marginRight: 7,
+    paddingTop: 7
 };
 
 function TacticMenubar(props) {
@@ -49,6 +49,7 @@ function TacticMenubar(props) {
         menu_specs: null,
         menus: null,
         showErrorDrawerButton: false,
+        showMetadataDrawerButton: false,
         resource_name: null,
         resource_icon: null,
         disabled_items: [],
@@ -58,7 +59,6 @@ function TacticMenubar(props) {
         ...props
     };
     const theme = useContext(ThemeContext);
-    const assistantDrawerFuncs = useContext(AssistantContext);
 
     let menus;
     if (props.menu_specs == null) {
@@ -110,21 +110,11 @@ function TacticMenubar(props) {
                 </Fragment>
             </div>
             {props.connection_status &&
-                <ConnectionIndicator connection_status={props.connection_status} />
+                <ConnectionIndicator connection_status={props.connection_status}/>
             }
-            <ButtonGroup style={button_group_style}>
-                {assistantDrawerFuncs && assistantDrawerFuncs.chat_status_ref.current != "idle" &&
-                    <div className="bp5-text-small" style={chat_status_style}>
-                        {assistantDrawerFuncs.chat_status_ref.current}
-                    </div>
-                }
-                {assistantDrawerFuncs && assistantDrawerFuncs.showAssistantDrawerButton &&
-                    <AssistantDrawerButton/>
-                }
-                {props.showErrorDrawerButton &&
-                    <ErrorDrawerButton/>
-                }
-            </ButtonGroup>
+            <DrawerButtonGroup showErrorDrawerButton={props.showErrorDrawerButton}
+                               showMetadataDrawerButton={props.showMetadataDrawerButton}
+                               showMetadata={props.showMetadata}/>
         </Navbar>
     )
 }
@@ -149,41 +139,110 @@ function ConnectionIndicator(props) {
     )
 }
 
+function DrawerButtonGroup(props) {
+    const [visible, setVisible, visibleRef] = useStateAndRef(false);
+
+    const assistantDrawerFuncs = useContext(AssistantContext);
+
+    useEffect(() => {
+        const handleMouseMove = (event) => {
+            const {clientX} = event;
+            const windowWidth = window.innerWidth;
+            if (windowWidth - clientX < 50) { // Show buttons when near the right edge (50px threshold)
+                if (!visibleRef.current) setVisible(true);
+            } else {
+                if (visibleRef.current) setVisible(false);
+            }
+        };
+
+        window.addEventListener('mousemove', handleMouseMove);
+
+        return () => {
+            window.removeEventListener('mousemove', handleMouseMove);
+        };
+    }, []);
+
+    return (
+        <ButtonGroup className={`floating-button-group ${visible ? 'visible' : ''}`}
+                     large={true}
+                     alignText={"left"}
+                     vertical={false}>
+            {props.showErrorDrawerButton &&
+                <ErrorDrawerButton/>
+            }
+            {assistantDrawerFuncs && assistantDrawerFuncs.showAssistantDrawerButton &&
+                <AssistantDrawerButton/>
+            }
+            {props.showMetadataDrawerButton &&
+                <MetadataDrawerButton showMetadata={props.showMetadata}/>
+            }
+
+        </ButtonGroup>
+
+    )
+}
+
 function ErrorDrawerButton(props) {
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
-    return (<div style={top_icon_style}>
+    return (
+        // <div style={top_icon_style}>
         <Button icon={<Icon icon="bug" size={18}/>}
-                style={{paddingLeft: 4, paddingRight: 0}}
-                minimal={true}
+            //style={{paddingLeft: 4, paddingRight: 0}}
+                minimal={false}
                 className="context-close-button"
-                small={true}
+                small={false}
+                text="Errors"
                 tabIndex={-1}
                 onClick={() => {
                     errorDrawerFuncs.toggleErrorDrawer()
                 }}
         />
-    </div>)
+        // </div>
+    )
 }
 
 ErrorDrawerButton = memo(ErrorDrawerButton);
 
 function AssistantDrawerButton(props) {
     const assistantDrawerFuncs = useContext(AssistantContext);
-    return (<div style={top_icon_style}>
+    return (
+        //div style={top_icon_style}>
         <Button icon={<Icon icon="chat" size={18}/>}
-                style={{paddingLeft: 4, paddingRight: 0}}
-                minimal={true}
+            //style={{paddingLeft: 4, paddingRight: 0}}
+                minimal={false}
                 className="context-close-button"
-                small={true}
+                text={"Assistant"}
+                small={false}
                 tabIndex={-1}
                 onClick={() => {
                     assistantDrawerFuncs.toggleAssistantDrawer()
                 }}
         />
-    </div>)
+        //</div>
+    )
 }
 
 AssistantDrawerButton = memo(AssistantDrawerButton);
+
+function MetadataDrawerButton(props) {
+    return (
+        //<div style={top_icon_style}>
+        <Button icon={<Icon icon="list-columns" size={18}/>}
+            //style={{paddingLeft: 4, paddingRight: 0}}
+                minimal={false}
+                className="context-close-button"
+                small={false}
+                text={"Metadata"}
+                tabIndex={-1}
+                onClick={() => {
+                    props.showMetadata()
+                }}
+        />
+        //</div>
+    )
+}
+
+MetadataDrawerButton = memo(MetadataDrawerButton);
 
 function TopLeftButtons(props) {
     props = {
@@ -379,6 +438,7 @@ function ToolMenu(props) {
         ...props
     };
     const selectedPane = useContext(SelectedPaneContext);
+
     function option_dict() {
         let opt_dict = {};
         for (let but of props.menu_items) {
@@ -407,6 +467,7 @@ function ToolMenu(props) {
         }
         return binding_dict
     }
+
     let key_bindings = [];
     for (let button of props.menu_items) {
         if (button.hasOwnProperty("key_bindings"))
@@ -427,4 +488,5 @@ function ToolMenu(props) {
         </Fragment>
     )
 }
+
 ToolMenu = memo(ToolMenu);

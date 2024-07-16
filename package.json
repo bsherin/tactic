@@ -38,7 +38,8 @@
     "react-helmet": "^6.1.0",
     "react-transition-group": "^4.4.1",
     "socket.io-client": "^4.0.1",
-    "tls": "latest"
+    "tls": "latest",
+    "url-loader": "^4.1.1"
   },
   "devDependencies": {
     "@babel/cli": "latest",

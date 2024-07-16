@@ -34,12 +34,13 @@ function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; 
 
 /*jshint esversion: 6 */
 
+function trueFunc() {
+  return true;
+}
 const SelectedPaneContext = exports.SelectedPaneContext = /*#__PURE__*/(0, _react.createContext)({
   tab_id: "",
   selectedTabIdRef: "",
-  amSelected: () => {
-    return true;
-  },
+  amSelected: trueFunc,
   counter: 0
 });
 

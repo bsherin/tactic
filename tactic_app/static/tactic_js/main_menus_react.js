@@ -644,32 +644,41 @@ function ViewMenu(props) {
   function _toggleConsole() {
     props.setMainStateValue("show_console_pane", !props.show_console_pane);
   }
+  function _toggleMetadata() {
+    props.setMainStateValue("show_metadata", !props.show_metadata);
+  }
   function option_dict() {
     let result = {};
-    if (props.toggleTableShrink) {
-      let table_opt_name = props.table_is_shrunk ? "Maximize Table" : "Minimize Table";
-      result[table_opt_name] = props.toggleTableShrink;
-      result["divider1"] = "divider";
+    if (!props.is_notebook) {
+      if (props.toggleTableShrink) {
+        let table_opt_name = props.table_is_shrunk ? "Maximize Table" : "Minimize Table";
+        result[table_opt_name] = props.toggleTableShrink;
+        result["divider1"] = "divider";
+      }
+      let console_opt_name = props.show_console_pane ? "Hide Log" : "Show Log";
+      result[console_opt_name] = _toggleConsole;
     }
-    let console_opt_name = props.show_console_pane ? "Hide Log" : "Show Log";
-    result[console_opt_name] = _toggleConsole;
     let exports_opt_name = props.show_exports_pane ? "Hide Exports" : "Show Exports";
     result[exports_opt_name] = _toggleExports;
     result["divider2"] = "divider";
     result["Show Error Drawer"] = errorDrawerFuncs.openErrorDrawer;
+    result["Show Metadata"] = _toggleMetadata;
     return result;
   }
   function icon_dict() {
     let result = {};
-    if (props.toggleTableShrink) {
-      let opt_name = props.table_is_shrunk ? "Maximize Table" : "Minimize Table";
-      result[opt_name] = props.table_is_shrunk ? "maximize" : "minimize";
+    if (!props.is_notebook) {
+      if (props.toggleTableShrink) {
+        let opt_name = props.table_is_shrunk ? "Maximize Table" : "Minimize Table";
+        result[opt_name] = props.table_is_shrunk ? "maximize" : "minimize";
+      }
+      let console_opt_name = props.show_console_pane ? "Hide Log" : "Show Log";
+      result[console_opt_name] = "code";
     }
-    let console_opt_name = props.show_console_pane ? "Hide Log" : "Show Log";
     let exports_opt_name = props.show_exports_pane ? "Hide Exports" : "Show Exports";
-    result[console_opt_name] = "code";
     result[exports_opt_name] = "variable";
     result["Show Error Drawer"] = "panel-stats";
+    result["Show Metadata"] = "panel-stats";
     return result;
   }
   return /*#__PURE__*/_react.default.createElement(_menu_utilities.MenuComponent, {

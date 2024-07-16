@@ -15,10 +15,14 @@ export {useConstructor, useCallbackStack, useStateAndRef, useReducerAndRef, useC
 
 export {debounce, throttle, useDebounce, SelectedPaneContext}
 
+function trueFunc() {
+    return true
+}
+
 const SelectedPaneContext = createContext({
     tab_id: "",
     selectedTabIdRef: "",
-    amSelected: ()=>{return true},
+    amSelected: trueFunc,
     counter: 0
 });
 
