@@ -124,7 +124,6 @@ function MainApp(props) {
     is_project: props.is_project
   });
   const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(main_outer_ref, 0, "MainApp");
-  const [filtered_column_names, setFilteredColumnNames, filtered_column_names_ref] = (0, _utilities_react.useStateAndRef)(_filteredColumnNames());
   const connection_status = (0, _utilities_react.useConnection)(props.tsocket, initSocket);
   const pushCallback = (0, _utilities_react.useCallbackStack)();
   (0, _react.useEffect)(() => {
@@ -155,9 +154,6 @@ function MainApp(props) {
       window.removeEventListener("unload", sendRemove);
     };
   }, []);
-  (0, _react.useEffect)(() => {
-    filtered_column_names.ref = _filteredColumnNames();
-  }, [mState.table_spec.column_names, mState.table_spec.hidden_columns_list]);
   (0, _react.useEffect)(() => {
     const data = {
       active_row_id: mState.selected_row,
