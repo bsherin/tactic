@@ -113,37 +113,36 @@ function withStatus(WrappedComponent) {
       props.tsocket.attachListener('show-status-msg', _statusMessageFromData);
       props.tsocket.attachListener("clear-status-msg", _clearStatusMessage);
     }
-    function getId() {
+    const getId = (0, _react.useCallback)(() => {
       if ("main_id" in props) {
         return props.main_id;
       } else {
         return props.library_id;
       }
-    }
-    function _stopSpinner(data) {
+    }, [props.main_id, props.library_id]);
+    const _stopSpinner = (0, _react.useCallback)(data => {
       if (data == null || data.main_id == getId()) {
         set_show_spinner(false);
       }
-    }
-    function _startSpinner(data) {
+    }, []);
+    const _startSpinner = (0, _react.useCallback)(data => {
       if (data == null || data.main_id == getId()) {
         set_show_spinner(true);
       }
-    }
-    function _clearStatusMessage(data) {
+    }, []);
+    const _clearStatusMessage = (0, _react.useCallback)(data => {
       if (data == null || data.main_id == getId()) {
         set_status_message(null);
       }
-    }
-    function _clearStatus(data) {
+    }, []);
+    const _clearStatus = (0, _react.useCallback)(data => {
       if (data == null || data.main_id == getId()) {
         set_show_spinner(false);
         set_status_message(null);
       }
-    }
-    function _statusMessage(message) {
+    }, []);
+    const _statusMessage = (0, _react.useCallback)(function (message) {
       let timeout = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-      let self = this;
       set_status_message(message);
       if (!timeout) {
         timeout = 7;
@@ -153,16 +152,16 @@ function withStatus(WrappedComponent) {
           setTimeout(_clearStatusMessage, timeout * 1000);
         }
       });
-    }
-    function _statusMessageFromData(data) {
+    }, []);
+    const _statusMessageFromData = (0, _react.useCallback)(data => {
       set_status_message(data.message);
       pushCallback(() => {
         if (data.hasOwnProperty("timeout") && data.timeout != null) {
           setTimeout(_clearStatusMessage, data.timeout * 1000);
         }
       });
-    }
-    function _setStatus(sstate) {
+    }, []);
+    const _setStatus = (0, _react.useCallback)(function (sstate) {
       let callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
       if ("show_spinner" in sstate) {
         set_show_spinner(sstate["show_spinner"]);
@@ -173,8 +172,8 @@ function withStatus(WrappedComponent) {
       if (callback) {
         pushCallback(callback);
       }
-    }
-    const _statusFuncs = {
+    }, []);
+    const statusFuncsRef = (0, _react.useRef)({
       startSpinner: _startSpinner,
       stopSpinner: _stopSpinner,
       clearStatus: _clearStatus,
@@ -182,9 +181,9 @@ function withStatus(WrappedComponent) {
       statusMessage: _statusMessage,
       setStatus: _setStatus,
       setLeftEdge: setLeftEdge
-    };
+    }, []);
     return /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement(StatusContext.Provider, {
-      value: _statusFuncs
+      value: statusFuncsRef.current
     }, /*#__PURE__*/_react.default.createElement(WrappedComponent, props)), /*#__PURE__*/_react.default.createElement(Status, {
       show_spinner: show_spinner,
       status_message: status_message,

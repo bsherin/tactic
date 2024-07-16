@@ -39,25 +39,25 @@ function withErrorDrawer(WrappedComponent) {
     function initSocket() {
       props.tsocket.attachListener('add-error-drawer-entry', _addEntry);
     }
-    function _registerGoToModule(the_func) {
+    const _registerGoToModule = (0, _react.useCallback)(the_func => {
       goToModule.current = the_func;
-    }
-    function _close(data) {
+    }, []);
+    const _close = (0, _react.useCallback)(data => {
       if (data == null || !("main_id" in data) || data.main_id == local_id.current) {
         set_show_drawer(false);
       }
-    }
-    function _open(data) {
+    }, [local_id.current]);
+    const _open = (0, _react.useCallback)(data => {
       if (data == null || !("main_id" in data) || data.main_id == local_id.current) {
         set_show_drawer(true);
       }
-    }
-    function _toggle(data) {
+    }, [local_id.current]);
+    const _toggle = (0, _react.useCallback)(data => {
       if (data == null || !("main_id" in data) || data.main_id == local_id.current) {
         set_show_drawer(!show_drawer);
       }
-    }
-    function _addEntry(data) {
+    }, [local_id.current]);
+    const _addEntry = (0, _react.useCallback)(function (data) {
       let open = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
       ucounter.current = ucounter.current + 1;
       const newcontents = {
@@ -66,8 +66,8 @@ function withErrorDrawer(WrappedComponent) {
       newcontents[String(ucounter.current)] = data;
       set_contents(newcontents);
       set_show_drawer(open);
-    }
-    function _addFromError(title, data) {
+    }, [contents_ref.current, ucounter.current]);
+    const _addFromError = (0, _react.useCallback)(function (title, data) {
       let open = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
       let content = "";
       if ("message" in data) {
@@ -79,34 +79,34 @@ function withErrorDrawer(WrappedComponent) {
         title: title,
         content: content
       }, open);
-    }
-    function _closeEntry(ukey) {
+    }, []);
+    const _closeEntry = (0, _react.useCallback)(ukey => {
       const newcontents = {
         ...contents_ref.current
       };
       delete newcontents[ukey];
       set_contents(newcontents);
       set_show_drawer(false);
-    }
-    function _postAjaxFailure(qXHR, textStatus, errorThrown) {
+    }, [contents_ref.current]);
+    const _postAjaxFailure = (0, _react.useCallback)((qXHR, textStatus, errorThrown) => {
       _addEntry({
         title: "Post Ajax Failure: {}".format(textStatus),
         content: errorThrown
       });
-    }
-    function _clearAll(data) {
+    }, []);
+    const _clearAll = (0, _react.useCallback)(data => {
       if (data == null || !("main_id" in data) || data.main_id == props.main_id) {
         set_contents([]);
         set_show_drawer(false);
       }
-    }
-    function _onClose() {
+    }, [props.main_id]);
+    const _onClose = (0, _react.useCallback)(() => {
       set_show_drawer(false);
-    }
-    function _setGoToLineNumber(gtfunc) {
+    }, []);
+    const _setGoToLineNumber = (0, _react.useCallback)(gtfunc => {
       goToLineNumber.current = gtfunc;
-    }
-    let errorDrawerFuncs = {
+    }, []);
+    const [errorDrawerFuncs, setErrorDrawerFuncs, errorDrawerFuncsRef] = (0, _utilities_react.useStateAndRef)({
       openErrorDrawer: _open,
       closeErrorDrawer: _close,
       clearErrorDrawer: _clearAll,
@@ -116,11 +116,24 @@ function withErrorDrawer(WrappedComponent) {
       toggleErrorDrawer: _toggle,
       setGoToLineNumber: _setGoToLineNumber,
       registerGoToModule: _registerGoToModule
-    };
+    });
+    (0, _react.useEffect)(() => {
+      setErrorDrawerFuncs({
+        openErrorDrawer: _open,
+        closeErrorDrawer: _close,
+        clearErrorDrawer: _clearAll,
+        addErrorDrawerEntry: _addEntry,
+        addFromError: _addFromError,
+        postAjaxFailure: _postAjaxFailure,
+        toggleErrorDrawer: _toggle,
+        setGoToLineNumber: _setGoToLineNumber,
+        registerGoToModule: _registerGoToModule
+      });
+    }, [local_id.current, contents_ref.current, ucounter.current]);
     return /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement(ErrorDrawerContext.Provider, {
       value: errorDrawerFuncs
     }, /*#__PURE__*/_react.default.createElement(WrappedComponent, (0, _extends2.default)({}, props, {
-      errorDrawerFuncs: errorDrawerFuncs
+      errorDrawerFuncs: errorDrawerFuncsRef.current
     }))), /*#__PURE__*/_react.default.createElement(ErrorDrawer, {
       show_drawer: show_drawer,
       contents: contents_ref,

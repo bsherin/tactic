@@ -26,6 +26,7 @@ var _sizing_tools = require("./sizing_tools");
 var _notebook_support = require("./notebook_support");
 var _theme = require("./theme");
 var _modal_react = require("./modal_react");
+var _metadata_drawer = require("./metadata_drawer");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 const MARGIN_SIZE = 10;
@@ -54,7 +55,8 @@ function NotebookApp(props) {
     console_is_zoomed: true,
     console_is_shrunk: false,
     resource_name: props.resource_name,
-    is_project: props.is_project
+    is_project: props.is_project,
+    show_metadata: false
   });
   const theme = (0, _react.useContext)(_theme.ThemeContext);
   const statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
@@ -175,6 +177,12 @@ function NotebookApp(props) {
       pushCallback(callback);
     }
   }
+  function showMetadata() {
+    _setMainStateValue("show_metadata", true);
+  }
+  function hideMetadata() {
+    _setMainStateValue("show_metadata", false);
+  }
   let my_props = {
     ...props
   };
@@ -197,6 +205,17 @@ function NotebookApp(props) {
     changeCollection: null,
     disabled_items: my_props.is_project ? [] : ["Save"],
     hidden_items: ["Open Console as Notebook", "Export Table as Collection", "divider2", "Change collection"]
+  }), /*#__PURE__*/_react.default.createElement(_main_menus_react.ViewMenu, {
+    main_id: props.main_id,
+    project_name: project_name,
+    is_notebook: true,
+    is_juptyer: props.is_jupyter,
+    table_is_shrunk: true,
+    toggleTableShrink: null,
+    show_exports_pane: mState.show_exports_pane,
+    show_console_pane: true,
+    show_metadata: mState.show_metadata,
+    setMainStateValue: _setMainStateValue
   }));
   let console_pane = /*#__PURE__*/_react.default.createElement(_console_component.ConsoleComponent, {
     main_id: props.main_id,
@@ -248,7 +267,9 @@ function NotebookApp(props) {
     refreshTab: props.refreshTab,
     closeTab: props.closeTab,
     resource_name: _cProp("resource_name"),
-    showErrorDrawerButton: true
+    showErrorDrawerButton: true,
+    showMetadataDrawerButton: true,
+    showMetadata: showMetadata
   }), /*#__PURE__*/_react.default.createElement("div", {
     className: `main-outer ${theme.dark_theme ? "bp5-dark" : "light-theme"}`,
     ref: main_outer_ref,
@@ -268,7 +289,16 @@ function NotebookApp(props) {
     controlled: true,
     dragIconSize: 15,
     handleSplitUpdate: _handleConsoleFractionChange
-  }))));
+  }))), /*#__PURE__*/_react.default.createElement(_metadata_drawer.MetadataDrawer, {
+    res_type: "project",
+    res_name: project_name,
+    readOnly: false,
+    is_repository: false,
+    show_drawer: mState.show_metadata,
+    position: "right",
+    onClose: hideMetadata,
+    size: "45%"
+  }));
 }
 exports.NotebookApp = NotebookApp = /*#__PURE__*/(0, _react.memo)(NotebookApp);
 function main_main() {

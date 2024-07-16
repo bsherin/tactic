@@ -2,12 +2,12 @@
 
 import React from "react";
 import { createRoot } from 'react-dom/client';
-import {Fragment, useState, useEffect, useRef, memo, useContext, createContext} from "react";
+import {Fragment, useState, useEffect, useRef, memo, useContext, createContext, useCallback} from "react";
 
 import {OverlayToaster, Position, Spinner} from "@blueprintjs/core";
 import {GlyphButton} from "./blueprint_react_widgets";
 
-import {useCallbackStack} from "./utilities_react";
+import {useCallbackStack, useStateAndRef} from "./utilities_react";
 import {ThemeContext} from "./theme"
 
 const StatusContext = createContext(null);
@@ -122,42 +122,41 @@ function withStatus(WrappedComponent) {
             props.tsocket.attachListener("clear-status-msg", _clearStatusMessage);
         }
 
-        function getId() {
+        const getId = useCallback(() => {
             if ("main_id" in props) {
                 return props.main_id
             }
             else {
                 return props.library_id
             }
-        }
+        }, [props.main_id, props.library_id]);
 
-        function _stopSpinner(data) {
+        const _stopSpinner = useCallback((data) => {
             if (data == null || (data.main_id == getId())) {
                 set_show_spinner(false)
             }
-        }
+        }, []);
 
-        function _startSpinner(data) {
+        const _startSpinner = useCallback((data) =>  {
             if (data == null || (data.main_id == getId() )) {
                 set_show_spinner(true);
             }
-        }
+        }, []);
 
-        function _clearStatusMessage(data) {
+        const _clearStatusMessage = useCallback((data) =>  {
             if (data == null || (data.main_id == getId() )) {
                 set_status_message(null)
             }
-        }
+        }, []);
 
-        function _clearStatus(data) {
+        const _clearStatus = useCallback((data) => {
             if (data == null || (data.main_id == getId())) {
                 set_show_spinner(false);
                 set_status_message(null)
             }
-        }
+        }, []);
 
-        function _statusMessage(message, timeout = null) {
-            let self = this;
+        const _statusMessage = useCallback((message, timeout = null) => {
             set_status_message(message);
             if (!timeout) {
                 timeout = 7
@@ -167,9 +166,9 @@ function withStatus(WrappedComponent) {
                     setTimeout(_clearStatusMessage, timeout * 1000);
                 }
             });
-        }
+        }, []);
 
-        function _statusMessageFromData(data) {
+        const _statusMessageFromData  = useCallback((data) => {
             set_status_message(data.message);
             pushCallback(() => {
                 if (data.hasOwnProperty("timeout") && data.timeout != null) {
@@ -177,9 +176,9 @@ function withStatus(WrappedComponent) {
                 }
             });
 
-        }
+        }, []);
 
-        function _setStatus(sstate, callback = null) {
+        const _setStatus  = useCallback((sstate, callback = null) => {
             if ("show_spinner" in sstate) {
                 set_show_spinner(sstate["show_spinner"])
             }
@@ -189,9 +188,9 @@ function withStatus(WrappedComponent) {
             if (callback) {
                 pushCallback(callback)
             }
-        }
+        }, []);
 
-        const _statusFuncs = {
+        const statusFuncsRef = useRef({
             startSpinner: _startSpinner,
             stopSpinner: _stopSpinner,
             clearStatus: _clearStatus,
@@ -199,11 +198,11 @@ function withStatus(WrappedComponent) {
             statusMessage: _statusMessage,
             setStatus: _setStatus,
             setLeftEdge: setLeftEdge
-        };
+        }, []);
 
         return (
             <Fragment>
-                <StatusContext.Provider value={_statusFuncs}>
+                <StatusContext.Provider value={statusFuncsRef.current}>
                     <WrappedComponent {...props}
                     />
                 </StatusContext.Provider>

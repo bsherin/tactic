@@ -304,6 +304,23 @@ function SortHandle(props) {
   }), props.tile_name);
 }
 SortHandle = /*#__PURE__*/(0, _react.memo)(SortHandle);
+const menu_icons = {
+  "Kill and reload": "refresh",
+  "Kill, reload, and resubmit": "social-media",
+  "Run me": "play",
+  "Stop me": "stop",
+  "Toggle console": "console",
+  "Log me": "clipboard",
+  "Log parameters": "th",
+  "Edit my source": "edit",
+  "Delete me": "trash"
+};
+const menu_button = /*#__PURE__*/_react.default.createElement(_core.Button, {
+  minimal: true,
+  small: true,
+  icon: "more"
+});
+const alt_button = () => menu_button;
 function TileComponent(props) {
   props = {
     javascript_code: null,
@@ -325,11 +342,15 @@ function TileComponent(props) {
   const [resizing, set_resizing] = (0, _react.useState)(false);
   const [dwidth, set_dwidth] = (0, _react.useState)(0);
   const [dheight, set_dheight] = (0, _react.useState)(0);
+
+  // const menu_component_ref = useRef(null);
+
   const pushCallback = (0, _utilities_react.useCallbackStack)();
   const dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   const errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
   (0, _react.useEffect)(() => {
     _broadcastTileSize(props.tile_width, props.tile_height);
+    // menu_component_ref.current = _createMenu();
     executeEmbeddedScripts();
     // makeTablesSortable();
     if (props.javascript_code) {
@@ -337,6 +358,12 @@ function TileComponent(props) {
     }
     listen_for_clicks();
   }, []);
+
+  // useEffect(()=>{
+  //     menu_component_ref.current = _createMenu();
+  // }, [props.setTileState, props.form_data, props.tile_id, props.show_log, props.tile_type,
+  //     props.broadcast_event, props.tile_name, props.main_id]); //
+
   (0, _react.useEffect)(() => {
     if (!resizing) {
       executeEmbeddedScripts();
@@ -358,7 +385,6 @@ function TileComponent(props) {
   (0, _react.useEffect)(() => {
     _broadcastTileSize(props.tile_width, props.tile_height);
   }, [props.tile_width, props.tile_height]);
-  const menu_component = _createMenu();
 
   // Broadcasting the tile size is necessary because some tiles (notably matplotlib tiles)
   // need to know the size of the display area.
@@ -757,52 +783,6 @@ function TileComponent(props) {
       _resizeTileArea(dx, dy);
     });
   }
-  function _createMenu() {
-    let tile_menu_options = {
-      "Run me": _handleSubmitOptions,
-      "Stop me": _stopMe,
-      "divider99": "divider",
-      "Kill and reload": async () => {
-        await _reloadTile(false);
-      },
-      "Kill, reload, and resubmit": async () => {
-        await _reloadTile(true);
-      },
-      "divider0": "divider",
-      "Toggle console": _toggleTileLog,
-      "divider1": "divider",
-      "Log me": _logMe,
-      "Log parameters": _logParams,
-      "divider2": "divider",
-      "Edit my source": _editMe,
-      "divider3": "divider",
-      "Delete me": _closeTile
-    };
-    let menu_icons = {
-      "Kill and reload": "refresh",
-      "Kill, reload, and resubmit": "social-media",
-      "Run me": "play",
-      "Stop me": "stop",
-      "Toggle console": "console",
-      "Log me": "clipboard",
-      "Log parameters": "th",
-      "Edit my source": "edit",
-      "Delete me": "trash"
-    };
-    let menu_button = /*#__PURE__*/_react.default.createElement(_core.Button, {
-      minimal: true,
-      small: true,
-      icon: "more"
-    });
-    return /*#__PURE__*/_react.default.createElement(_menu_utilities.MenuComponent, {
-      option_dict: tile_menu_options,
-      icon_dict: menu_icons,
-      createOmniItems: false,
-      item_class: "tile-menu-item",
-      position: _core.PopoverPosition.BOTTOM_RIGHT,
-      alt_button: () => menu_button
-    });
-  }
   let show_front = !props.show_form && !props.show_log;
   let front_dict = {
     __html: props.front_content
@@ -814,6 +794,26 @@ function TileComponent(props) {
     position: "absolute",
     bottom: 2,
     right: 1
+  };
+  let tile_menu_options = {
+    "Run me": _handleSubmitOptions,
+    "Stop me": _stopMe,
+    "divider99": "divider",
+    "Kill and reload": async () => {
+      await _reloadTile(false);
+    },
+    "Kill, reload, and resubmit": async () => {
+      await _reloadTile(true);
+    },
+    "divider0": "divider",
+    "Toggle console": _toggleTileLog,
+    "divider1": "divider",
+    "Log me": _logMe,
+    "Log parameters": _logParams,
+    "divider2": "divider",
+    "Edit my source": _editMe,
+    "divider3": "divider",
+    "Delete me": _closeTile
   };
   return /*#__PURE__*/_react.default.createElement(_core.Card, {
     ref: my_ref,
@@ -862,7 +862,14 @@ function TileComponent(props) {
     icon: "stop"
   }), props.show_spinner && /*#__PURE__*/_react.default.createElement(_core.Spinner, {
     size: 17
-  }), menu_component))), /*#__PURE__*/_react.default.createElement(_error_boundary.ErrorBoundary, null, !props.shrunk && /*#__PURE__*/_react.default.createElement("div", {
+  }), /*#__PURE__*/_react.default.createElement(_menu_utilities.MenuComponent, {
+    option_dict: tile_menu_options,
+    icon_dict: menu_icons,
+    createOmniItems: false,
+    item_class: "tile-menu-item",
+    position: _core.PopoverPosition.BOTTOM_RIGHT,
+    alt_button: alt_button
+  })))), /*#__PURE__*/_react.default.createElement(_error_boundary.ErrorBoundary, null, !props.shrunk && /*#__PURE__*/_react.default.createElement("div", {
     ref: body_ref,
     style: panel_body_style,
     className: "tile-body"

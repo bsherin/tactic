@@ -502,7 +502,7 @@ function initSocket() {
 
     const _toggleExports = useCallback(() =>{
         props.setMainStateValue("show_exports_pane", !props.mState.show_exports_pane)
-    }, [props.mState.show_exports_pan]);
+    }, [props.mState.show_exports_pane]);
 
     const _setConsoleItemValue = useCallback((unique_id, field, new_value, callback = null) => {
         props.dispatch({

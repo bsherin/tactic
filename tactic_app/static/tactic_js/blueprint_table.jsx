@@ -47,14 +47,18 @@ function BlueprintTable(props, passedRef) {
     }, []);
 
     useEffect(()=>{
-        // if ((props.mState.table_spec.column_widths == null) || (mismatched_column_widths.current) ||
-        //     props.mState.table_spec.current_doc_name != current_doc_name.current) {
-        //     computeColumnWidths();
-        //     current_doc_name.current = props.mState.table_spec.current_doc_name
-        // }
-        computeColumnWidths();  // I need to do this every time or the rows don't resize when changing docs.
+        if ((props.mState.table_spec.column_widths == null) || (mismatched_column_widths.current) ||
+            props.mState.table_spec.current_doc_name != current_doc_name.current) {
+            computeColumnWidths();
+            current_doc_name.current = props.mState.table_spec.current_doc_name
+        }
         _updateRowHeights();
     });
+
+    useEffect(()=>{
+        computeColumnWidths();
+        _updateRowHeights();
+    }, [current_doc_name.current]);
 
     function hash_value() {
         let obj = {

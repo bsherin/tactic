@@ -28,6 +28,9 @@
   color: #383e47 !important;
 }
 
+.bp5-dark .floating-button-group button {
+  background-color: #47505c;
+}
 .bp5-dark .lib-tab-button .bp5-icon-cube, .bp5-dark .context-tab-button-content .bp5-icon-cube, .bp5-dark .menu-bar .bp5-icon-cube, .bp5-dark .combined-metadata .bp5-icon-cube, .bp5-dark .all-pane .bp5-icon-cube {
   color: #fbb360 !important;
 }

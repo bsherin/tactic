@@ -124,6 +124,37 @@ table {
     }
 }
 
+.vertical-button {
+  align-items: center;
+  transform: rotate(90deg); /* Rotate the entire button */
+  transform-origin: right center;
+  height: 100px; /* Adjust height as needed */
+  width: 50px; /* Adjust width as needed */
+  justify-content: center;
+  text-align: center;
+}
+
+
+.floating-button-group {
+  position: fixed;
+  top: 50%;
+  right: 21px;
+  transform: rotate(-90deg) translateX(50%) ;
+  transform-origin: center right;
+  gap: 0;
+  opacity: 0;
+  transition: opacity 0.3s;
+  z-index: 1000;
+}
+
+.floating-button-group .bp5-button {
+  border-radius: 0;
+}
+
+.floating-button-group.visible {
+  opacity: 1;
+}
+
 /* navbar */
 
 #menu-area {
