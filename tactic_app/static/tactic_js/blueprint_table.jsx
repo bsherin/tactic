@@ -4,7 +4,7 @@ import React from "react";
 import {useState, useEffect, useRef, memo} from "react";
 import PropTypes from 'prop-types';
 
-import {Cell, EditableCell, RowHeaderCell, Column, Table, Regions, RegionCardinality} from "@blueprintjs/table";
+import {Cell, EditableCell2, RowHeaderCell, Column, Table2, Regions, RegionCardinality} from "@blueprintjs/table";
 import hash from "object-hash"
 
 import {useCallbackStack} from "./utilities_react";
@@ -305,7 +305,7 @@ function BlueprintTable(props, passedRef) {
     };
     return (
         <div id="table-area" ref={top_ref} style={style}>
-            <Table ref={table_ref}
+            <Table2 ref={table_ref}
                    key={hash_value()}  // kludge: Having this prevents partial row rendering
                    numRows={props.mState.total_rows}
                    enableColumnReordering={true}
@@ -324,7 +324,7 @@ function BlueprintTable(props, passedRef) {
                    rowHeaderCellRenderer={_rowHeaderCellRenderer}
             >
                 {columns}
-            </Table>
+            </Table2>
         </div>
     );
 }
@@ -362,7 +362,7 @@ function EnhancedEditableCell(props)  {
         })
     }
     return (
-        <EditableCell ref={cell_ref}
+        <EditableCell2 ref={cell_ref}
                       onConfirm={_onConfirmCellEdit}
                       onChange={_onChange}
                       onCancel={_onCancel}

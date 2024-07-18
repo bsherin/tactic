@@ -2,9 +2,9 @@ import React from "react";
 import {memo, useCallback, useMemo} from "react";
 
 import {
-    Tooltip, HotkeysProvider, Button, FormGroup, InputGroup, HTMLSelect, Switch, TextArea
+    Tooltip, Button, FormGroup, InputGroup, HTMLSelect, Switch, TextArea
 } from "@blueprintjs/core";
-import {EditableCell, Cell, RowHeaderCell, Column, Table2, RegionCardinality} from "@blueprintjs/table";
+import {EditableCell2, Cell, RowHeaderCell, Column, Table2, RegionCardinality} from "@blueprintjs/table";
 
 export {
     LabeledSelectList, LabeledFormField, LabeledTextArea, SelectList,
@@ -204,7 +204,7 @@ function BpOrderableTable(props, passedRef) {
                 the_text = ""
             }
             if (props.content_editable) {
-                return (<EditableCell key={column_name}
+                return (<EditableCell2 key={column_name}
                                       className={className}
                                       truncated={true}
                                       rowIndex={rowIndex}
@@ -241,20 +241,18 @@ function BpOrderableTable(props, passedRef) {
                        name={column_name}/>
     });
     return (
-        <HotkeysProvider>
-            <Table2 enableFocusedCell={false}
-                    cellRendererDependencies={[props.data_array]}
-                    numRows={props.data_array.length}
-                    enableColumnReordering={false}
-                    selectionModes={props.selectionModes}
-                    enableRowReordering={true}
-                    onRowsReordered={_onRowsReordered}
-                    onSelection={_onSelection}
-                    enableMultipleSelection={false}
-            >
-                {columns}
-            </Table2>
-        </HotkeysProvider>
+        <Table2 enableFocusedCell={false}
+                cellRendererDependencies={[props.data_array]}
+                numRows={props.data_array.length}
+                enableColumnReordering={false}
+                selectionModes={props.selectionModes}
+                enableRowReordering={true}
+                onRowsReordered={_onRowsReordered}
+                onSelection={_onSelection}
+                enableMultipleSelection={false}
+        >
+            {columns}
+        </Table2>
     )
 }
 

@@ -343,26 +343,24 @@ function BpSelectorTable(props) {
         dependencies = [props.data_dict]
     }
     return (
-        //<HotkeysProvider>
-            <Table2 numRows={props.num_rows}
-                    ref={table_ref}
-                    cellRendererDependencies={dependencies}
-                    bodyContextMenuRenderer={props.renderBodyContextMenu}
-                    enableColumnReordering={false}
-                    enableColumnResizing={props.enableColumnResizing}
-                    maxColumnWidth={props.maxColumnWidth}
-                    enableMultipleSelection={true}
-                    defaultRowHeight={27}
-                    selectedRegions={props.selectedRegions}
-                    enableRowHeader={false}
-                    columnWidths={columnWidthsRef.current}
-                    onCompleteRender={_onCompleteRender}
-                    selectionModes={[RegionCardinality.FULL_ROWS, RegionCardinality.CELLS]}
-                    onSelection={(regions) => props.onSelection(regions)}
-            >
-                {columns}
-            </Table2>
-        //</HotkeysProvider>
+        <Table2 numRows={props.num_rows}
+                ref={table_ref}
+                cellRendererDependencies={dependencies}
+                bodyContextMenuRenderer={props.renderBodyContextMenu}
+                enableColumnReordering={false}
+                enableColumnResizing={props.enableColumnResizing}
+                maxColumnWidth={props.maxColumnWidth}
+                enableMultipleSelection={true}
+                defaultRowHeight={27}
+                selectedRegions={props.selectedRegions}
+                enableRowHeader={false}
+                columnWidths={columnWidthsRef.current}
+                onCompleteRender={_onCompleteRender}
+                selectionModes={[RegionCardinality.FULL_ROWS, RegionCardinality.CELLS]}
+                onSelection={(regions) => props.onSelection(regions)}
+        >
+            {columns}
+        </Table2>
     )
 }
 
