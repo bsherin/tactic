@@ -42,6 +42,8 @@ function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return 
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 // noinspection XmlDeprecatedElement,JSXUnresolvedComponent
 
+//import { HotkeysProvider } from "@blueprintjs/core";
+
 _core.FocusStyleManager.onlyShowFocusOnTabs();
 const spinner_panel = /*#__PURE__*/_react.default.createElement("div", {
   style: {
@@ -107,10 +109,15 @@ function _context_main() {
   const ContextAppPlus = (0, _pool_tree.withPool)((0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)((0, _assistant.withAssistant)(ContextApp))))));
   const domContainer = document.querySelector('#context-root');
   const root = (0, _client.createRoot)(domContainer);
-  root.render( /*#__PURE__*/_react.default.createElement(_core.HotkeysProvider, null, /*#__PURE__*/_react.default.createElement(ContextAppPlus, {
+  root.render(
+  /*#__PURE__*/
+  //<HotkeysProvider>
+  _react.default.createElement(ContextAppPlus, {
     initial_theme: window.theme,
     tsocket: tsocket
-  })));
+  })
+  //</HotkeysProvider>
+  );
 }
 function ContextApp(props) {
   const [selectedTabId, setSelectedTabId, selectedTabIdRef, selectedTabIdCounter] = (0, _utilities_react.useStateAndRefAndCounter)("library");

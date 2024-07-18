@@ -5,7 +5,6 @@ var _extends2 = _interopRequireDefault(require("@babel/runtime/helpers/extends")
 require("../tactic_css/tactic.scss");
 var _react = _interopRequireWildcard(require("react"));
 var _client = require("react-dom/client");
-var _core = require("@blueprintjs/core");
 var _merge_viewer_app = require("./merge_viewer_app");
 var _toaster = require("./toaster");
 var _communication_react = require("./communication_react");
@@ -17,6 +16,8 @@ var _theme = require("./theme");
 var _sizing_tools = require("./sizing_tools");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
+// import { HotkeysProvider } from "@blueprintjs/core";
+
 function tile_differ_main() {
   function gotProps(the_props) {
     let TileDifferAppPlus = (0, _theme.withTheme)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(TileDifferApp)));
@@ -27,7 +28,11 @@ function tile_differ_main() {
     }));
     const domContainer = document.querySelector('#root');
     const root = (0, _client.createRoot)(domContainer);
-    root.render( /*#__PURE__*/_react.default.createElement(_core.HotkeysProvider, null, the_element));
+    root.render(
+    //<HotkeysProvider>
+    the_element
+    //</HotkeysProvider>
+    );
   }
   function failedToLoad(data) {
     let fallback = "Tile differ failed to load";

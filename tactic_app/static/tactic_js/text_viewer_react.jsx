@@ -6,7 +6,7 @@ import {Fragment, useState, useEffect, useRef, memo, useMemo, useContext} from "
 import { createRoot } from 'react-dom/client';
 
 import {TextArea} from "@blueprintjs/core";
-import { HotkeysProvider } from "@blueprintjs/core";
+//import { HotkeysProvider } from "@blueprintjs/core";
 import { useHotkeys } from "@blueprintjs/core";
 
 import {ResourceViewerApp, copyToLibrary} from "./resource_viewer_react_app";
@@ -346,9 +346,9 @@ async function text_viewer_main() {
         const domContainer = document.querySelector('#root');
         const root = createRoot(domContainer);
         root.render(
-            <HotkeysProvider>
-                {the_element}
-            </HotkeysProvider>
+            //<HotkeysProvider>
+                the_element
+            //</HotkeysProvider>
         )
     }
 

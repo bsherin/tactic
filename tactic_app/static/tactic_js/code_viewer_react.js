@@ -25,6 +25,7 @@ var _error_drawer2 = require("./error_drawer");
 var _sizing_tools = require("./sizing_tools");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
+``;
 function code_viewer_props(data, registerDirtyMethod, finalCallback) {
   let resource_viewer_id = (0, _utilities_react.guid)();
   var tsocket = new _tactic_socket.TacticSocket("main", 5000, "code_viewer", resource_viewer_id);
@@ -339,7 +340,11 @@ function code_viewer_main() {
     }));
     const domContainer = document.querySelector('#root');
     const root = (0, _client.createRoot)(domContainer);
-    root.render( /*#__PURE__*/_react.default.createElement(_core.HotkeysProvider, null, the_element));
+    root.render(
+    //<HotkeysProvider>
+    the_element
+    //</HotkeysProvider>
+    );
   }
   let target = window.is_repository ? "repository_view_code_in_context" : "view_code_in_context";
   (0, _communication_react.postAjaxPromise)(target, {

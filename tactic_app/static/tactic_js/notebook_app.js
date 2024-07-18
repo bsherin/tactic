@@ -11,7 +11,6 @@ require("../tactic_css/tactic_console.scss");
 require("../tactic_css/tactic_main.scss");
 var _react = _interopRequireWildcard(require("react"));
 var _client = require("react-dom/client");
-var _core = require("@blueprintjs/core");
 var _blueprint_navbar = require("./blueprint_navbar");
 var _menu_utilities = require("./menu_utilities");
 var _main_menus_react = require("./main_menus_react");
@@ -30,6 +29,8 @@ var _modal_react = require("./modal_react");
 var _metadata_drawer = require("./metadata_drawer");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
+//import { HotkeysProvider } from "@blueprintjs/core";
+
 const MARGIN_SIZE = 10;
 const BOTTOM_MARGIN = 35;
 const MARGIN_ADJUSTMENT = 8; // This is the amount at the top of both the table and the conso
@@ -312,7 +313,11 @@ function main_main() {
     }));
     const domContainer = document.querySelector('#main-root');
     const root = (0, _client.createRoot)(domContainer);
-    root.render( /*#__PURE__*/_react.default.createElement(_core.HotkeysProvider, null, the_element));
+    root.render(
+    //<HotkeysProvider>
+    the_element
+    //</HotkeysProvider>
+    );
   }
   (0, _utilities_react.renderSpinnerMessage)("Starting up ...");
   var target = window.is_new_notebook ? "new_notebook_in_context" : "main_project_in_context";

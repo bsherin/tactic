@@ -8,7 +8,7 @@ import {Fragment, useState, useEffect, useRef, memo, useMemo, useContext} from "
 import { createRoot } from 'react-dom/client';
 
 import {Tab, Tabs, Button, ButtonGroup, Icon} from "@blueprintjs/core";
-import { HotkeysProvider } from "@blueprintjs/core";
+//import { HotkeysProvider } from "@blueprintjs/core";
 import { useHotkeys } from "@blueprintjs/core";
 
 import {creator_props} from "./tile_creator_support";
@@ -21,7 +21,7 @@ import {postAjax, postAjaxPromise, postPromise} from "./communication_react"
 import {withStatus, doFlash, StatusContext} from "./toaster"
 import {SIDE_MARGIN, SizeContext, useSize, withSizeContext} from "./sizing_tools";
 import {withErrorDrawer} from "./error_drawer";
-import {renderSpinnerMessage} from "./utilities_react"
+import {renderSpinnerMessage, guid, arrayMove} from "./utilities_react"
 import {TacticNavbar} from "./blueprint_navbar";
 import {ErrorBoundary} from "./error_boundary";
 import {renderAutoCompleteElement} from "./autocomplete";
@@ -29,12 +29,56 @@ import {useCallbackStack, useStateAndRef, useConnection} from "./utilities_react
 import {ThemeContext, withTheme} from "./theme";
 import {DialogContext, withDialogs} from "./modal_react";
 import {ErrorDrawerContext} from "./error_drawer";
-import {SelectedPaneContext} from "./utilities_react";
+import {SelectedPaneContext, useReducerAndRef} from "./utilities_react";
 
 export {CreatorApp}
 
 const BOTTOM_MARGIN = 50;
 const MARGIN_SIZE = 17;
+
+function optionListReducer(option_list, action) {
+    var new_items;
+    switch (action.type) {
+        case "initialize":
+            new_items = action.new_items.map(t => {
+                let new_t = {...t};
+                new_t.option_id = guid();
+                return new_t
+            });
+            break;
+        case "delete_item":
+            new_items = option_list.filter(t => t.option_id !== action.option_id);
+            break;
+        case "update_item":
+            const option_id = action.new_item.option_id;
+            new_items = option_list.map(t => {
+                if (t.option_id == option_id) {
+                    const update_dict = action.new_item;
+                    return {...t, ...update_dict};
+                } else {
+                    return t;
+                }
+            });
+            break;
+        case "move_item":
+            let old_list = [...option_list];
+            new_items = arrayMove(old_list, action.oldIndex, action.newIndex);
+            break;
+        case "add_at_index":
+            new_items = [...option_list];
+            new_items.splice(action.insert_index, 0, action.new_item);
+            break;
+        case "clear_highlights":
+            new_items = option_list.map(t => {
+                return {...t, className: ""}
+            });
+            break;
+        default:
+            console.log("Got Unknown action: " + action.type);
+            return [...option_list]
+    }
+    return new_items;
+}
 
 function CreatorApp(props) {
     props = {
@@ -96,7 +140,7 @@ function CreatorApp(props) {
     const [jscript_code, set_jscript_code, jscript_code_ref] = useStateAndRef(props.jscript_code);
     const [extra_functions, set_extra_functions, extra_functions_ref] = useStateAndRef(props.extra_functions);
     const [globals_code, set_globals_code, globals_code_ref] = useStateAndRef(props.globals_code);
-    const [option_list, set_option_list, option_list_ref] = useStateAndRef(props.option_list);
+    const [option_list, optionDispatch, option_list_ref] = useReducerAndRef(optionListReducer, []);
     const [export_list, set_export_list, export_list_ref] = useStateAndRef(props.export_list);
 
     const [render_content_line_number, set_render_content_line_number, render_content_line_number_ref] = useStateAndRef(props.render_content_line_number);
@@ -149,8 +193,7 @@ function CreatorApp(props) {
                 label: "Save and Checkpoint",
                 onKeyDown: _saveAndCheckpoint
             },
-        ],
-        [_saveMe, _saveAndLoadModule, _saveAndCheckpoint],
+        ], [_saveMe, _saveAndLoadModule, _saveAndCheckpoint]
     );
     const { handleKeyDown, handleKeyUp } = useHotkeys(hotkeys);
 
@@ -163,6 +206,7 @@ function CreatorApp(props) {
     useEffect(() => {
         let data_dict = {pane_type: "tile", is_repository: false, show_hidden: true};
         let data;
+        optionDispatch({type: "initialize", new_items: props.option_list});
         postPromise(props.module_viewer_id, "has_openai_key", {})
             .then((data) => {
                 if (data.has_key) {
@@ -786,11 +830,6 @@ function CreatorApp(props) {
         }
     }
 
-    function handleOptionsListChange(new_option_list, callback = null) {
-        set_option_list([...new_option_list]);
-        pushCallback(callback);
-    }
-
     function handleMethodsChange(new_methods) {
         set_extra_functions(new_methods)
     }
@@ -976,7 +1015,7 @@ function CreatorApp(props) {
     let option_panel = (
         <OptionModule data_list_ref={option_list_ref}
                       foregrounded={foregrounded_panes["options"]}
-                      handleChange={handleOptionsListChange}
+                      optionDispatch={optionDispatch}
                       handleNotesAppend={_handleNotesAppend}
                       tabSelectCounter={tabSelectCounter}
         />
@@ -1135,9 +1174,9 @@ function tile_creator_main() {
         const domContainer = document.querySelector('#creator-root');
         const root = createRoot(domContainer);
         root.render(
-            <HotkeysProvider>
-                {the_element}
-            </HotkeysProvider>
+            //<HotkeysProvider>
+                the_element
+            //</HotkeysProvider>
         )
     }
 

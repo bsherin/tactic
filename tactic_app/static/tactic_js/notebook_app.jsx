@@ -5,7 +5,7 @@ import "../tactic_css/tactic_main.scss";
 import React from "react";
 import {Fragment, useEffect, useRef, memo, useMemo, useContext, useReducer, useCallback} from "react";
 import { createRoot } from 'react-dom/client';
-import { HotkeysProvider } from "@blueprintjs/core";
+//import { HotkeysProvider } from "@blueprintjs/core";
 import {TacticNavbar} from "./blueprint_navbar";
 import {TacticMenubar} from "./menu_utilities";
 import {ProjectMenu, ViewMenu} from "./main_menus_react";
@@ -336,9 +336,9 @@ function main_main() {
         const domContainer = document.querySelector('#main-root');
         const root = createRoot(domContainer);
         root.render(
-            <HotkeysProvider>
-                {the_element}
-            </HotkeysProvider>
+            //<HotkeysProvider>
+                the_element
+            //</HotkeysProvider>
         )
     }
 

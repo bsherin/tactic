@@ -12,7 +12,6 @@ require("../tactic_css/tactic_table.scss");
 require("../tactic_css/library_home.scss");
 var _react = _interopRequireWildcard(require("react"));
 var _client = require("react-dom/client");
-var _core = require("@blueprintjs/core");
 var _tactic_socket = require("./tactic_socket");
 var _toaster = require("./toaster.js");
 var _library_pane = require("./library_pane");
@@ -27,6 +26,8 @@ var _modal_react = require("./modal_react");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 // noinspection JSCheckFunctionSignatures
+
+// import { HotkeysProvider } from "@blueprintjs/core";
 
 const TAB_BAR_WIDTH = 50;
 const library_id = exports.library_id = (0, _utilities_react.guid)();
@@ -134,11 +135,16 @@ function _library_home_main() {
   const LibraryHomeAppPlus = (0, _sizing_tools.withSizeContext)((0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster2.withStatus)(LibraryHomeApp)))));
   const domContainer = document.querySelector('#library-home-root');
   const root = (0, _client.createRoot)(domContainer);
-  root.render( /*#__PURE__*/_react.default.createElement(_core.HotkeysProvider, null, /*#__PURE__*/_react.default.createElement(LibraryHomeAppPlus, {
+  root.render(
+  /*#__PURE__*/
+  // <HotkeysProvider>
+  _react.default.createElement(LibraryHomeAppPlus, {
     tsocket: tsocket,
     controlled: false,
     initial_theme: window.theme
-  })));
+  })
+  //</HotkeysProvider>
+  );
 }
 if (!window.in_context) {
   _library_home_main();

@@ -4,7 +4,7 @@ import React from "react";
 import {Fragment, useState, useEffect, useRef, memo, useMemo, useContext} from "react";
 import {createRoot} from 'react-dom/client';
 
-import {HotkeysProvider} from "@blueprintjs/core";
+// import {HotkeysProvider} from "@blueprintjs/core";
 import {useHotkeys} from "@blueprintjs/core";
 
 import {ResourceViewerApp, copyToLibrary, sendToRepository} from "./resource_viewer_react_app";
@@ -517,9 +517,9 @@ function module_viewer_main() {
         let domContainer = document.querySelector('#root');
         const root = createRoot(domContainer);
         root.render(
-            <HotkeysProvider>
-                {the_element}
-            </HotkeysProvider>
+            //<HotkeysProvider>
+                the_element
+            //</HotkeysProvider>
         )
     }
 

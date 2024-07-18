@@ -135,7 +135,7 @@ function LibraryPane(props) {
     group: "Library",
     label: "Undo Search",
     onKeyDown: _unsearch
-  }], [_handleArrowKeyPress, _unsearch]);
+  }], [_view_func, _handleArrowKeyPress, _unsearch]);
   const {
     handleKeyDown,
     handleKeyUp

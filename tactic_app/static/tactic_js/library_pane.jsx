@@ -129,7 +129,7 @@ function LibraryPane(props) {
                 onKeyDown: _unsearch
             },
         ],
-        [_handleArrowKeyPress, _unsearch],
+        [_view_func, _handleArrowKeyPress, _unsearch],
     );
 
     const { handleKeyDown, handleKeyUp } = useHotkeys(hotkeys);
