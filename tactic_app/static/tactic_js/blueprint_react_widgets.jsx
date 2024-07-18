@@ -159,15 +159,21 @@ function BpOrderableTable(props, passedRef) {
         content_editable: true,
         selectionModes: [RegionCardinality.FULL_COLUMNS, RegionCardinality.FULL_ROWS],
         handleDeSelect: null,
+        useReducer: false,
         ...props
     };
 
     function _onRowsReordered(oldIndex, newIndex) {
-        let new_data_list = [...props.data_array];
-        let the_item = new_data_list[oldIndex];
-        new_data_list.splice(oldIndex, 1);
-        new_data_list.splice(newIndex, 0, the_item);
-        props.handleChange(new_data_list)
+        if (props.useReducer) {
+            props.dispatch({type: "move_item", oldIndex: oldIndex, newIndex: newIndex});
+        }
+        else {
+            let new_data_list = [...props.data_array];
+            let the_item = new_data_list[oldIndex];
+            new_data_list.splice(oldIndex, 1);
+            new_data_list.splice(newIndex, 0, the_item);
+            props.handleChange(new_data_list)
+        }
     }
 
     function _onConfirmCellEdit(value, rowIndex, columnIndex) {

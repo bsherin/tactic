@@ -3,7 +3,7 @@ import "../tactic_css/tactic.scss";
 import React from "react";
 import {Fragment, useState, useEffect, memo, useRef, useContext} from "react";
 import { createRoot } from 'react-dom/client';
-import { HotkeysProvider } from "@blueprintjs/core";
+// import { HotkeysProvider } from "@blueprintjs/core";
 import {MergeViewerApp} from "./merge_viewer_app";
 import {doFlash, StatusContext} from "./toaster"
 import {postAjaxPromise} from "./communication_react"
@@ -27,9 +27,9 @@ function tile_differ_main() {
         const domContainer = document.querySelector('#root');
         const root = createRoot(domContainer);
         root.render(
-            <HotkeysProvider>
-                {the_element}
-            </HotkeysProvider>
+            //<HotkeysProvider>
+                the_element
+            //</HotkeysProvider>
         )
 
     }

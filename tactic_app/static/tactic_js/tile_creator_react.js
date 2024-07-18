@@ -31,8 +31,61 @@ var _theme = require("./theme");
 var _modal_react = require("./modal_react");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
+//import { HotkeysProvider } from "@blueprintjs/core";
+
 const BOTTOM_MARGIN = 50;
 const MARGIN_SIZE = 17;
+function optionListReducer(option_list, action) {
+  var new_items;
+  switch (action.type) {
+    case "initialize":
+      new_items = action.new_items.map(t => {
+        let new_t = {
+          ...t
+        };
+        new_t.option_id = (0, _utilities_react.guid)();
+        return new_t;
+      });
+      break;
+    case "delete_item":
+      new_items = option_list.filter(t => t.option_id !== action.option_id);
+      break;
+    case "update_item":
+      const option_id = action.new_item.option_id;
+      new_items = option_list.map(t => {
+        if (t.option_id == option_id) {
+          const update_dict = action.new_item;
+          return {
+            ...t,
+            ...update_dict
+          };
+        } else {
+          return t;
+        }
+      });
+      break;
+    case "move_item":
+      let old_list = [...option_list];
+      new_items = (0, _utilities_react.arrayMove)(old_list, action.oldIndex, action.newIndex);
+      break;
+    case "add_at_index":
+      new_items = [...option_list];
+      new_items.splice(action.insert_index, 0, action.new_item);
+      break;
+    case "clear_highlights":
+      new_items = option_list.map(t => {
+        return {
+          ...t,
+          className: ""
+        };
+      });
+      break;
+    default:
+      console.log("Got Unknown action: " + action.type);
+      return [...option_list];
+  }
+  return new_items;
+}
 function CreatorApp(props) {
   props = {
     controlled: false,
@@ -88,7 +141,7 @@ function CreatorApp(props) {
   const [jscript_code, set_jscript_code, jscript_code_ref] = (0, _utilities_react.useStateAndRef)(props.jscript_code);
   const [extra_functions, set_extra_functions, extra_functions_ref] = (0, _utilities_react.useStateAndRef)(props.extra_functions);
   const [globals_code, set_globals_code, globals_code_ref] = (0, _utilities_react.useStateAndRef)(props.globals_code);
-  const [option_list, set_option_list, option_list_ref] = (0, _utilities_react.useStateAndRef)(props.option_list);
+  const [option_list, optionDispatch, option_list_ref] = (0, _utilities_react.useReducerAndRef)(optionListReducer, []);
   const [export_list, set_export_list, export_list_ref] = (0, _utilities_react.useStateAndRef)(props.export_list);
   const [render_content_line_number, set_render_content_line_number, render_content_line_number_ref] = (0, _utilities_react.useStateAndRef)(props.render_content_line_number);
   const [draw_plot_line_number, set_draw_plot_line_number, draw_plot_line_number_ref] = (0, _utilities_react.useStateAndRef)(props.draw_plot_line_number);
@@ -143,6 +196,10 @@ function CreatorApp(props) {
       show_hidden: true
     };
     let data;
+    optionDispatch({
+      type: "initialize",
+      new_items: props.option_list
+    });
     (0, _communication_react.postPromise)(props.module_viewer_id, "has_openai_key", {}).then(data => {
       if (data.has_key) {
         set_has_key(true);
@@ -744,11 +801,6 @@ function CreatorApp(props) {
       }
     }
   }
-  function handleOptionsListChange(new_option_list) {
-    let callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-    set_option_list([...new_option_list]);
-    pushCallback(callback);
-  }
   function handleMethodsChange(new_methods) {
     set_extra_functions(new_methods);
   }
@@ -916,7 +968,7 @@ function CreatorApp(props) {
   let option_panel = /*#__PURE__*/_react.default.createElement(_creator_modules_react.OptionModule, {
     data_list_ref: option_list_ref,
     foregrounded: foregrounded_panes["options"],
-    handleChange: handleOptionsListChange,
+    optionDispatch: optionDispatch,
     handleNotesAppend: _handleNotesAppend,
     tabSelectCounter: tabSelectCounter
   });
@@ -1090,7 +1142,11 @@ function tile_creator_main() {
     }));
     const domContainer = document.querySelector('#creator-root');
     const root = (0, _client.createRoot)(domContainer);
-    root.render( /*#__PURE__*/_react.default.createElement(_core.HotkeysProvider, null, the_element));
+    root.render(
+    //<HotkeysProvider>
+    the_element
+    //</HotkeysProvider>
+    );
   }
   (0, _utilities_react.renderSpinnerMessage)("Starting up ...", '#creator-root');
   (0, _communication_react.postAjaxPromise)("view_in_creator_in_context", {

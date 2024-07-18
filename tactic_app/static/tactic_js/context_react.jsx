@@ -11,7 +11,7 @@ import { useState, useEffect, useRef, useContext, Fragment, useCallback, useMemo
 import { createRoot } from 'react-dom/client';
 
 import { Tab, Tabs, Button, Icon, Spinner, useHotkeys } from "@blueprintjs/core";
-import { HotkeysProvider } from "@blueprintjs/core";
+//import { HotkeysProvider } from "@blueprintjs/core";
 import {FocusStyleManager} from "@blueprintjs/core";
 
 FocusStyleManager.onlyShowFocusOnTabs();
@@ -116,9 +116,9 @@ function _context_main() {
     const domContainer = document.querySelector('#context-root');
     const root = createRoot(domContainer);
     root.render(
-        <HotkeysProvider>
+        //<HotkeysProvider>
             <ContextAppPlus initial_theme={window.theme} tsocket={tsocket}/>
-        </HotkeysProvider>
+        //</HotkeysProvider>
     )
 }
 

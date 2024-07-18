@@ -8,7 +8,7 @@ import React from "react";
 import { createRoot } from 'react-dom/client';
 import {Fragment, useEffect, useRef, memo, useContext} from "react";
 
-import { HotkeysProvider } from "@blueprintjs/core";
+// import { HotkeysProvider } from "@blueprintjs/core";
 
 import {TacticSocket} from "./tactic_socket";
 import {doFlash} from "./toaster.js";
@@ -134,11 +134,11 @@ function _library_home_main() {
     const domContainer = document.querySelector('#library-home-root');
     const root = createRoot(domContainer);
     root.render(
-        <HotkeysProvider>
+        // <HotkeysProvider>
             <LibraryHomeAppPlus tsocket={tsocket}
                                             controlled={false}
                                             initial_theme={window.theme}/>
-        </HotkeysProvider>
+        //</HotkeysProvider>
     )
 }
 

@@ -21,7 +21,7 @@ import {StatusContext} from "./toaster";
 import _ from 'lodash';
 import {isInt} from "./utilities_react";
 import {BpSelect, CombinedMetadata} from "./blueprint_mdata_fields";
-import {useCallbackStack} from "./utilities_react";
+import {useCallbackStack, useStateAndRef} from "./utilities_react";
 import {useSize} from "./sizing_tools";
 
 export {OptionModule, ExportModule, CommandsModule, MetadataModule, correctOptionListTypes}
@@ -158,7 +158,6 @@ function OptionModuleForm(props) {
                 return
             } else {
                 copied_state.default = fixed_val
-
             }
         }
         _setFormState({default_warning_text: null, name_warning_text: null});
@@ -302,17 +301,16 @@ function OptionModule(props) {
 
     const top_ref = React.createRef();
     const [active_row, set_active_row] = useState(null);
-    const [form_state, set_form_state] = useState({...blank_form});
+    const [form_state, set_form_state, form_state_ref] = useStateAndRef({...blank_form});
 
     const [usable_width, usable_height, topX, topY] = useSize(top_ref, props.tabSelectCounter, "OptionModule");
 
     const pushCallback = useCallbackStack();
 
     function _delete_option() {
-        let new_data_list = _.cloneDeep(props.data_list_ref.current);
-        new_data_list.splice(active_row, 1);
         let old_active_row = active_row;
-        props.handleChange(new_data_list, () => {
+        props.optionDispatch({type: "delete_item", option_id: props.data_list_ref.current[active_row].option_id});
+        pushCallback(() => {
             if (old_active_row >= props.data_list_ref.current.length) {
                 _handleRowDeSelect()
             } else {
@@ -321,42 +319,38 @@ function OptionModule(props) {
         });
     }
 
-    function _clearHighlights(new_data_list=null) {
-        if (!new_data_list) {
-            new_data_list = props.data_list_ref.current
-        }
-        let newer_data_list = [];
-        for (let option of new_data_list) {
-            if ("className" in option && option.className) {
-                let new_option = {...option};
-                new_option.className = "";
-                newer_data_list.push(new_option)
-            } else {
-                newer_data_list.push(option)
-            }
-        }
-        props.handleChange(newer_data_list)
+    function _clearHighlights() {
+        props.optionDispatch({type: "clear_highlights"});
     }
 
-    function handleCreate(new_row, update) {
-        let new_data_list = [...props.data_list_ref.current];
-        new_row.className = "option-row-highlight";
+    function handleCreate(new_item, update) {
         if (update) {
-            new_data_list[active_row] = new_row;
-
-        } else {
-            new_data_list.push(new_row);
+            new_item.option_id = props.data_list_ref.current[active_row].option_id;
+            new_item.className = "option-row-highlight";
+            props.optionDispatch({
+                type: "update_item",
+                new_item: new_item
+            });
+            pushCallback(() => {
+                let new_form_state = Object.assign(_.cloneDeep(form_state_ref.current), {update_warning_text: "Value Updated"});
+                _setFormState(new_form_state);
+                setTimeout(() => {
+                    _clearHighlights();
+                    let new_form_state = Object.assign(_.cloneDeep(form_state_ref.current), {update_warning_text: null});
+                    _setFormState(new_form_state)
+                }, 5 * 1000)
+            })
         }
-        props.handleChange(new_data_list, () => {
-            if (update) {
-                _setFormState({update_warning_text: "Value Updated"})
-            }
-            setTimeout(() => {
-                _clearHighlights();
-                let new_form_state = Object.assign(_.cloneDeep(form_state), {update_warning_text: null});
-                _setFormState(new_form_state)
-            }, 5 * 1000);
-        })
+        else {
+            new_item.className = "option-row-highlight";
+            props.optionDispatch({type: "add_at_index", insert_index: props.data_list_ref.current.length,
+                new_item: new_item});
+            pushCallback(() => {
+                setTimeout(() => {
+                    _clearHighlights();
+                }, 5 * 1000);
+            })
+        }
     }
 
     function _setFormState(new_form_state) {
@@ -439,10 +433,10 @@ function OptionModule(props) {
                 <BpOrderableTable columns={cols}
                                   data_array={copied_dlist}
                                   active_row={active_row}
+                                  useReducer={true}
+                                  dispatch={props.optionDispatch}
                                   handleActiveRowChange={handleActiveRowChange}
-                                  handleChange={(olist) => {
-                                      props.handleChange(correctOptionListTypes(olist))
-                                  }}
+                                  handleChange={null}
                                   selectionModes={[RegionCardinality.FULL_ROWS]}
                                   handleDeSelect={_handleRowDeSelect}
                                   content_editable={false}
@@ -454,7 +448,7 @@ function OptionModule(props) {
                               active_row={active_row}
                               setFormState={_setFormState}
                               clearForm={_clearForm}
-                              form_state={form_state}
+                              form_state={form_state_ref.current}
                               nameExists={_nameExists}/>
         </Card>
     )

@@ -327,7 +327,11 @@ async function list_viewer_main() {
     }));
     const domContainer = document.querySelector('#root');
     const root = (0, _client.createRoot)(domContainer);
-    root.render( /*#__PURE__*/_react.default.createElement(_core.HotkeysProvider, null, the_element));
+    root.render(
+    // <HotkeysProvider>
+    the_element
+    // </HotkeysProvider>
+    );
   }
   let target = window.is_repository ? "repository_view_list_in_context" : "view_list_in_context";
   let data = await (0, _communication_react.postAjaxPromise)(target, {

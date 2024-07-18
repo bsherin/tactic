@@ -5,7 +5,6 @@ var _extends2 = _interopRequireDefault(require("@babel/runtime/helpers/extends")
 require("../tactic_css/tactic.scss");
 var _react = _interopRequireWildcard(require("react"));
 var _client = require("react-dom/client");
-var _core = require("@blueprintjs/core");
 var _merge_viewer_app = require("./merge_viewer_app");
 var _toaster = require("./toaster.js");
 var _communication_react = require("./communication_react.js");
@@ -22,6 +21,8 @@ function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; 
  * Created by bls910
  */
 
+// import { HotkeysProvider } from "@blueprintjs/core";
+
 async function history_viewer_main() {
   function gotProps(the_props) {
     let HistoryViewerAppPlus = (0, _theme.withTheme)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(HistoryViewerApp)));
@@ -32,7 +33,11 @@ async function history_viewer_main() {
     }));
     const domContainer = document.querySelector('#root');
     const root = (0, _client.createRoot)(domContainer);
-    root.render( /*#__PURE__*/_react.default.createElement(_core.HotkeysProvider, null, the_element));
+    root.render(
+    // <HotkeysProvider>
+    the_element
+    // </HotkeysProvider>
+    );
   }
   let get_url = "get_module_code";
   try {
