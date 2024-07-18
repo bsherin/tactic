@@ -3,8 +3,7 @@ import "../tactic_css/tactic.scss";
 import React from "react";
 import {Fragment, useState, useEffect, memo, useRef, useContext} from "react";
 import { createRoot } from 'react-dom/client';
-import PropTypes from 'prop-types';
-
+import { HotkeysProvider } from "@blueprintjs/core";
 import {MergeViewerApp} from "./merge_viewer_app";
 import {doFlash, StatusContext} from "./toaster"
 import {postAjaxPromise} from "./communication_react"
@@ -27,7 +26,11 @@ function tile_differ_main() {
         />;
         const domContainer = document.querySelector('#root');
         const root = createRoot(domContainer);
-        root.render(the_element)
+        root.render(
+            <HotkeysProvider>
+                {the_element}
+            </HotkeysProvider>
+        )
 
     }
 
@@ -181,13 +184,6 @@ function TileDifferApp(props) {
         </Fragment>
     )
 }
-
-TileDifferApp.propTypes = {
-    resource_name: PropTypes.string,
-    tile_list: PropTypes.array,
-    edit_content: PropTypes.string,
-    second_resource_name: PropTypes.string
-};
 
 TileDifferApp = withSizeContext(memo(TileDifferApp));
 

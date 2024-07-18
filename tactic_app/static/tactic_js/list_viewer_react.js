@@ -105,6 +105,17 @@ function ListViewerApp(props) {
     }
   }, []);
   const pushCallback = (0, _utilities_react.useCallbackStack)("code_viewer");
+  const hotkeys = (0, _react.useMemo)(() => [{
+    combo: "Ctrl+S",
+    global: false,
+    group: "Module Viewer",
+    label: "Save Code",
+    onKeyDown: _saveMe
+  }], [_saveMe]);
+  const {
+    handleKeyDown,
+    handleKeyUp
+  } = (0, _core.useHotkeys)(hotkeys);
   (0, _utilities_react.useConstructor)(() => {
     if (!props.controlled) {
       window.addEventListener("beforeunload", function (e) {
@@ -142,7 +153,7 @@ function ListViewerApp(props) {
           name_text: "Save",
           icon_name: "saved",
           click_handler: _saveMe,
-          key_bindings: ['ctrl+s'],
+          key_bindings: ['Ctrl+S'],
           tooltip: "Save"
         }, {
           name_text: "Save As...",
@@ -281,7 +292,10 @@ function ListViewerApp(props) {
   }), /*#__PURE__*/_react.default.createElement("div", {
     className: outer_class,
     ref: top_ref,
-    style: outer_style
+    style: outer_style,
+    tabIndex: "0",
+    onKeyDown: handleKeyDown,
+    onKeyUp: handleKeyUp
   }, /*#__PURE__*/_react.default.createElement(_resource_viewer_react_app.ResourceViewerApp, (0, _extends2.default)({}, my_props, {
     resource_viewer_id: props.resource_viewer_id,
     setResourceNameState: _setResourceNameState,
@@ -313,7 +327,7 @@ async function list_viewer_main() {
     }));
     const domContainer = document.querySelector('#root');
     const root = (0, _client.createRoot)(domContainer);
-    root.render(the_element);
+    root.render( /*#__PURE__*/_react.default.createElement(_core.HotkeysProvider, null, the_element));
   }
   let target = window.is_repository ? "repository_view_list_in_context" : "view_list_in_context";
   let data = await (0, _communication_react.postAjaxPromise)(target, {

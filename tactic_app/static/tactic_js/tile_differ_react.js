@@ -5,7 +5,7 @@ var _extends2 = _interopRequireDefault(require("@babel/runtime/helpers/extends")
 require("../tactic_css/tactic.scss");
 var _react = _interopRequireWildcard(require("react"));
 var _client = require("react-dom/client");
-var _propTypes = _interopRequireDefault(require("prop-types"));
+var _core = require("@blueprintjs/core");
 var _merge_viewer_app = require("./merge_viewer_app");
 var _toaster = require("./toaster");
 var _communication_react = require("./communication_react");
@@ -27,7 +27,7 @@ function tile_differ_main() {
     }));
     const domContainer = document.querySelector('#root');
     const root = (0, _client.createRoot)(domContainer);
-    root.render(the_element);
+    root.render( /*#__PURE__*/_react.default.createElement(_core.HotkeysProvider, null, the_element));
   }
   function failedToLoad(data) {
     let fallback = "Tile differ failed to load";
@@ -148,12 +148,6 @@ function TileDifferApp(props) {
     saveHandler: saveFromLeft
   }));
 }
-TileDifferApp.propTypes = {
-  resource_name: _propTypes.default.string,
-  tile_list: _propTypes.default.array,
-  edit_content: _propTypes.default.string,
-  second_resource_name: _propTypes.default.string
-};
 TileDifferApp = (0, _sizing_tools.withSizeContext)( /*#__PURE__*/(0, _react.memo)(TileDifferApp));
 if (!window.in_context) {
   tile_differ_main();

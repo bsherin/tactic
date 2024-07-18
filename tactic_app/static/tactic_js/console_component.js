@@ -20,7 +20,6 @@ var _markdownItLatex = _interopRequireDefault(require("markdown-it-latex"));
 var _blueprint_react_widgets = require("./blueprint_react_widgets");
 var _reactCodemirror = require("./react-codemirror");
 var _sortable_container = require("./sortable_container");
-var _key_trap = require("./key_trap");
 var _communication_react = require("./communication_react");
 var _blueprint_mdata_fields = require("./blueprint_mdata_fields");
 var _library_pane = require("./library_pane");
@@ -145,6 +144,53 @@ function ConsoleComponent(props) {
   (0, _react.useEffect)(() => {
     console.log("theme changed"); // This is to force re-rendering because of highlight.js theme change
   }, [theme]);
+  const _addBlankCode = (0, _react.useCallback)(async e => {
+    if (window.in_context && !am_selected()) {
+      return;
+    }
+    await _addCodeArea("");
+  }, []);
+  const _addBlankText = (0, _react.useCallback)(async () => {
+    if (window.in_context && !am_selected()) {
+      return;
+    }
+    await _addConsoleText("");
+  }, []);
+  const hotkeys = (0, _react.useMemo)(() => [{
+    combo: "Ctrl+C",
+    global: false,
+    group: "Notebook",
+    label: "New Code Cell",
+    onKeyDown: _addBlankCode
+  }, {
+    combo: "Ctrl+T",
+    global: false,
+    group: "Notebook",
+    label: "New Text Cell",
+    onKeyDown: _addBlankText
+  }, {
+    combo: "Ctrl+Enter",
+    global: false,
+    group: "Notebook",
+    label: "Run Selected Cell",
+    onKeyDown: _runSelected
+  }, {
+    combo: "Cmd+Enter",
+    global: false,
+    group: "Notebook",
+    label: "Run Selected Cell",
+    onKeyDown: _runSelected
+  }, {
+    combo: "Escape",
+    global: false,
+    group: "Notebook",
+    label: "Clear Selected Cells",
+    onKeyDown: _clear_all_selected_items
+  }], [_addBlankCode, _addBlankText, _runSelected, _clear_all_selected_items]);
+  const {
+    handleKeyDown,
+    handleKeyUp
+  } = (0, _core.useHotkeys)(hotkeys);
   function initSocket() {
     function _handleConsoleMessage(data) {
       if (data.main_id == props.main_id) {
@@ -232,12 +278,6 @@ function ConsoleComponent(props) {
   function am_selected() {
     return selectedPane.amSelected(selectedPane.tab_id, selectedPane.selectedTabIdRef);
   }
-  const _addBlankText = (0, _react.useCallback)(async () => {
-    if (window.in_context && !am_selected()) {
-      return;
-    }
-    await _addConsoleText("");
-  }, []);
   async function _addConsoleDivider(header_text) {
     let callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
     try {
@@ -420,12 +460,6 @@ function ConsoleComponent(props) {
       errorDrawerFuncs.addFromError("Error inserting link", e);
     }
   }
-  const _addBlankCode = (0, _react.useCallback)(async e => {
-    if (window.in_context && !am_selected()) {
-      return;
-    }
-    await _addCodeArea("");
-  }, []);
   function _addCodeArea(the_text) {
     let force_open = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
     try {
@@ -1179,12 +1213,12 @@ function ConsoleComponent(props) {
         name_text: "Text Cell",
         icon_name: "new-text-box",
         click_handler: _addBlankText,
-        key_bindings: ["ctrl+t"]
+        key_bindings: ["Ctrl+T"]
       }, {
         name_text: "Code Cell",
         icon_name: "code",
         click_handler: _addBlankCode,
-        key_bindings: ["ctrl+c"]
+        key_bindings: ["Ctrl+C"]
       }, {
         name_text: "Section",
         icon_name: "header",
@@ -1237,7 +1271,7 @@ function ConsoleComponent(props) {
         name_text: "Run Selected",
         icon_name: "play",
         click_handler: _runSelected,
-        key_bindings: ["ctrl+enter", "command+enter"]
+        key_bindings: ["Ctrl+Enter", "Command+Enter"]
       }, {
         name_text: "Stop All",
         icon_name: "stop",
@@ -1397,9 +1431,6 @@ function ConsoleComponent(props) {
     return newStyle;
   }, []);
   let show_glif_text = outer_style.width > 800;
-  let key_bindings = [[["escape"], () => {
-    _clear_all_selected_items();
-  }]];
   let in_closed_section = false;
   let in_section = false;
   let filtered_items = props.console_items.current.filter(entry => {
@@ -1439,7 +1470,10 @@ function ConsoleComponent(props) {
     id: "console-panel",
     className: console_class,
     elevation: 2,
-    style: outer_style
+    style: outer_style,
+    tabIndex: "0",
+    onKeyDown: handleKeyDown,
+    onKeyUp: handleKeyUp
   }, /*#__PURE__*/_react.default.createElement("div", {
     className: "d-flex flex-column justify-content-around"
   }, /*#__PURE__*/_react.default.createElement("div", {
@@ -1555,11 +1589,7 @@ function ConsoleComponent(props) {
     style: {
       height: 500
     }
-  })), /*#__PURE__*/_react.default.createElement(_key_trap.KeyTrap, {
-    global: true,
-    active: !props.controlled || am_selected(),
-    bindings: key_bindings
-  }));
+  })));
 }
 exports.ConsoleComponent = ConsoleComponent = /*#__PURE__*/(0, _react.memo)(ConsoleComponent);
 const sHandleStyle = {

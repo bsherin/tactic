@@ -1167,7 +1167,7 @@ function main_main() {
     }));
     const domContainer = document.querySelector('#main-root');
     const root = (0, _client.createRoot)(domContainer);
-    root.render(the_element);
+    root.render( /*#__PURE__*/_react.default.createElement(_core.HotkeysProvider, null, the_element));
   }
   (0, _utilities_react.renderSpinnerMessage)("Starting up ...");
   let target;

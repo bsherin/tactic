@@ -1,8 +1,9 @@
 import React from "react";
-import {Fragment, useEffect, useRef, memo, useContext} from "react";
+import {Fragment, useEffect, useRef, memo, useMemo, useContext} from "react";
 import PropTypes from 'prop-types';
 
 import {PopoverPosition} from "@blueprintjs/core";
+import { useHotkeys } from "@blueprintjs/core";
 
 import {ReactCodemirrorMergeView} from "./react-codemirror-mergeview";
 import {BpSelect} from "./blueprint_mdata_fields";
@@ -34,6 +35,20 @@ function MergeViewerApp(props) {
         statusFuncs.stopSpinner();
     }, []);
 
+    const hotkeys = useMemo(
+        () => [
+            {
+                combo: "Ctrl+S",
+                global: false,
+                group: "Merge Viewer",
+                label: "Save Current",
+                onKeyDown: props.saveHandler
+            },
+        ],
+        [props.saveHandler],
+    );
+    const { handleKeyDown, handleKeyUp } = useHotkeys(hotkeys);
+
     function menu_specs() {
         let ms;
         ms = {
@@ -42,15 +57,10 @@ function MergeViewerApp(props) {
                     name_text: "Save",
                     icon_name: "saved",
                     click_handler: props.saveHandler,
-                    key_bindings: ['ctrl+s']
+                    key_bindings: ['Ctrl+S']
                 },
             ]
         };
-        for (const [menu_name, menu] of Object.entries(ms)) {
-            for (let but of menu) {
-                but.click_handler = but.click_handler.bind(this)
-            }
-        }
         return ms
     }
 
@@ -83,7 +93,7 @@ function MergeViewerApp(props) {
                            resource_name={props.resource_name}
                            controlled={false}
             />
-            <div className={outer_class}>
+            <div className={outer_class} tabIndex="0" onKeyDown={handleKeyDown} onKeyUp={handleKeyUp}>
                 <div id="left-div" ref={top_ref} style={left_div_style}>
                     <div id="above-main" ref={above_main_ref} className="d-flex flex-row justify-content-between mb-2">
                         <span className="align-self-end">Current</span>

@@ -155,7 +155,7 @@ function AllMenubar(props) {
                     name_text: "Open", icon_name: "document-open",
                     click_handler: () => {
                         props.view_func()
-                    }, key_bindings: ["return"]
+                    }, key_bindings: ["Enter"]
                 },
                 {
                     name_text: "Open In Separate Tab", icon_name: "document-share",

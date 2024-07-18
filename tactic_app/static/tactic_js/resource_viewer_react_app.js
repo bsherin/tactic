@@ -7,7 +7,6 @@ exports.ResourceViewerApp = ResourceViewerApp;
 exports.copyToLibrary = copyToLibrary;
 exports.sendToRepository = sendToRepository;
 var _react = _interopRequireWildcard(require("react"));
-var _key_trap = require("./key_trap");
 var _blueprint_mdata_fields = require("./blueprint_mdata_fields");
 var _resizing_layouts = require("./resizing_layouts2");
 var _communication_react = require("./communication_react");
@@ -87,7 +86,6 @@ function ResourceViewerApp(props) {
   const savedContent = (0, _react.useRef)(props.the_content);
   const savedTags = (0, _react.useRef)(props.split_tags);
   const savedNotes = (0, _react.useRef)(props.notes);
-  const key_bindings = (0, _react.useRef)([]);
   const [all_tags, set_all_tags] = (0, _react.useState)([]);
   const statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
   const sizeInfo = (0, _react.useContext)(_sizing_tools.SizeContext);
@@ -188,9 +186,6 @@ function ResourceViewerApp(props) {
     am_outer: true,
     bottom_margin: _sizing_tools.BOTTOM_MARGIN,
     right_margin: _sizing_tools.SIDE_MARGIN
-  })), !window.in_context && /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement(_key_trap.KeyTrap, {
-    global: true,
-    bindings: key_bindings.current
   })));
 }
 exports.ResourceViewerApp = ResourceViewerApp = /*#__PURE__*/(0, _react.memo)(ResourceViewerApp);

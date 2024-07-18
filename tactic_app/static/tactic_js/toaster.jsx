@@ -7,7 +7,7 @@ import {Fragment, useState, useEffect, useRef, memo, useContext, createContext, 
 import {OverlayToaster, Position, Spinner} from "@blueprintjs/core";
 import {GlyphButton} from "./blueprint_react_widgets";
 
-import {useCallbackStack, useStateAndRef} from "./utilities_react";
+import {useCallbackStack} from "./utilities_react";
 import {ThemeContext} from "./theme"
 
 const StatusContext = createContext(null);

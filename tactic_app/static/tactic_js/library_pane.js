@@ -17,12 +17,10 @@ var _blueprint_mdata_fields = require("./blueprint_mdata_fields");
 var _resizing_layouts = require("./resizing_layouts2");
 var _communication_react = require("./communication_react");
 var _sizing_tools = require("./sizing_tools");
-var _toaster = require("./toaster.js");
-var _key_trap = require("./key_trap.js");
+var _toaster = require("./toaster");
 var _utilities_react = require("./utilities_react");
 var _theme = require("./theme");
 var _modal_react = require("./modal_react");
-var _toaster2 = require("./toaster");
 var _error_drawer = require("./error_drawer");
 var _library_table_pane = require("./library_table_pane");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
@@ -107,6 +105,41 @@ function LibraryPane(props) {
     tsocket: null,
     ...props
   };
+  const hotkeys = (0, _react.useMemo)(() => [{
+    combo: "Enter",
+    global: false,
+    group: "Library",
+    label: "Open Selected Resource",
+    onKeyDown: async () => {
+      await _view_func();
+    }
+  }, {
+    combo: "ArrowDown",
+    global: false,
+    group: "Library",
+    label: "Move Selection Down",
+    onKeyDown: async () => {
+      await _handleArrowKeyPress("ArrowDown");
+    }
+  }, {
+    combo: "ArrowUp",
+    global: false,
+    group: "Library",
+    label: "Move Selection Up",
+    onKeyDown: async () => {
+      await _handleArrowKeyPress("ArrowUp");
+    }
+  }, {
+    combo: "Escape",
+    global: false,
+    group: "Library",
+    label: "Undo Search",
+    onKeyDown: _unsearch
+  }], [_handleArrowKeyPress, _unsearch]);
+  const {
+    handleKeyDown,
+    handleKeyUp
+  } = (0, _core.useHotkeys)(hotkeys);
   const top_ref = (0, _react.useRef)(null);
   const previous_search_spec = (0, _react.useRef)(null);
   const socket_counter = (0, _react.useRef)(null);
@@ -142,7 +175,7 @@ function LibraryPane(props) {
   const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(top_ref, 0, "LibraryPane");
   const theme = (0, _react.useContext)(_theme.ThemeContext);
   const dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
-  const statusFuncs = (0, _react.useContext)(_toaster2.StatusContext);
+  const statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
   const errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
   const stateSetters = {
     data_dict: set_data_dict,
@@ -666,13 +699,6 @@ function LibraryPane(props) {
       if (new_index < 0) return;
     }
     await _selectRow(new_index);
-  }
-  async function _handleTableKeyPress(key) {
-    if (key.code == "ArrowUp") {
-      await _handleArrowKeyPress("ArrowUp");
-    } else if (key.code == "ArrowDown") {
-      await _handleArrowKeyPress("ArrowDown");
-    }
   }
   async function _selectRow(new_index) {
     if (!Object.keys(data_dict_ref.current).includes(String(new_index))) {
@@ -1431,7 +1457,6 @@ function LibraryPane(props) {
     "whiteSpace": "nowrap"
   };
   let MenubarClass = props.MenubarClass;
-  let key_bindings = [[["up"], () => _handleArrowKeyPress("ArrowUp")], [["down"], () => _handleArrowKeyPress("ArrowDown")], [["esc"], _unsearch]];
   let filter_buttons = [];
   for (let rtype of ["all"].concat(res_types)) {
     filter_buttons.push( /*#__PURE__*/_react.default.createElement(_popover.Tooltip2, {
@@ -1467,7 +1492,7 @@ function LibraryPane(props) {
     sortColumn: _set_sort_state,
     selectedRegionsRef: selectedRegionsRef,
     onSelection: _onTableSelection,
-    keyHandler: _handleTableKeyPress,
+    keyHandler: null,
     initiateDataGrab: _grabNewChunkWithRow,
     renderBodyContextMenu: _renderBodyContextMenu,
     handleRowDoubleClick: _handleRowDoubleClick
@@ -1492,7 +1517,10 @@ function LibraryPane(props) {
     tsocket: props.tsocket
   })), /*#__PURE__*/_react.default.createElement("div", {
     ref: top_ref,
-    className: "d-flex flex-column"
+    tabIndex: "0",
+    className: "d-flex flex-column",
+    onKeyDown: handleKeyDown,
+    onKeyUp: handleKeyUp
   }, /*#__PURE__*/_react.default.createElement("div", {
     style: {
       width: "100%",
@@ -1508,9 +1536,6 @@ function LibraryPane(props) {
     handleSplitUpdate: null,
     handleResizeStart: null,
     handleResizeEnd: null
-  })), /*#__PURE__*/_react.default.createElement(_key_trap.KeyTrap, {
-    global: true,
-    bindings: key_bindings
-  })));
+  }))));
 }
 exports.LibraryPane = LibraryPane = /*#__PURE__*/(0, _react.memo)(LibraryPane);

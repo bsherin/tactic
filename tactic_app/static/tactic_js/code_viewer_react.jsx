@@ -3,6 +3,7 @@ import "../tactic_css/tactic.scss";
 import React from "react";
 import {Fragment, useState, useEffect, useRef, useMemo, memo, useContext} from "react";
 import { createRoot } from 'react-dom/client';
+import { useHotkeys, HotkeysProvider} from "@blueprintjs/core";
 
 import {ReactCodemirror} from "./react-codemirror";
 
@@ -85,6 +86,19 @@ function CodeViewerApp(props) {
     }, []);
 
     const pushCallback = useCallbackStack("code_viewer");
+    const hotkeys = useMemo(
+        () => [
+            {
+                combo: "Ctrl+S",
+                global: false,
+                group: "Code Viewer",
+                label: "Save Code",
+                onKeyDown: _saveMe
+            },
+        ],
+        [_saveMe],
+    );
+    const { handleKeyDown, handleKeyUp } = useHotkeys(hotkeys);
 
     useConstructor(() => {
         if (!props.controlled) {
@@ -140,7 +154,7 @@ function CodeViewerApp(props) {
                         name_text: "Save",
                         icon_name: "saved",
                         click_handler: _saveMe,
-                        key_bindings: ['ctrl+s'],
+                        key_bindings: ['Ctrl+S'],
                         tooltip: "Save"
                     },
                     {
@@ -305,7 +319,8 @@ function CodeViewerApp(props) {
                               page_id={props.resource_viewer_id}
                               user_name={window.username}/>
             }
-            <div className={outer_class} ref={top_ref} style={outer_style}>
+            <div className={outer_class} ref={top_ref} style={outer_style}
+                 tabIndex="0" onKeyDown={handleKeyDown} onKeyUp={handleKeyUp} >
                     <ResourceViewerApp {...my_props}
                                        resource_viewer_id={props.resource_viewer_id}
                                        refreshTab={props.refreshTab}
@@ -356,7 +371,11 @@ function code_viewer_main() {
         />;
         const domContainer = document.querySelector('#root');
         const root = createRoot(domContainer);
-        root.render(the_element)
+        root.render(
+            <HotkeysProvider>
+                {the_element}
+            </HotkeysProvider>
+        )
     }
 
     let target = window.is_repository ? "repository_view_code_in_context" : "view_code_in_context";

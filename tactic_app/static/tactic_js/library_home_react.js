@@ -12,6 +12,7 @@ require("../tactic_css/tactic_table.scss");
 require("../tactic_css/library_home.scss");
 var _react = _interopRequireWildcard(require("react"));
 var _client = require("react-dom/client");
+var _core = require("@blueprintjs/core");
 var _tactic_socket = require("./tactic_socket");
 var _toaster = require("./toaster.js");
 var _library_pane = require("./library_pane");
@@ -133,11 +134,11 @@ function _library_home_main() {
   const LibraryHomeAppPlus = (0, _sizing_tools.withSizeContext)((0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster2.withStatus)(LibraryHomeApp)))));
   const domContainer = document.querySelector('#library-home-root');
   const root = (0, _client.createRoot)(domContainer);
-  root.render( /*#__PURE__*/_react.default.createElement(LibraryHomeAppPlus, {
+  root.render( /*#__PURE__*/_react.default.createElement(_core.HotkeysProvider, null, /*#__PURE__*/_react.default.createElement(LibraryHomeAppPlus, {
     tsocket: tsocket,
     controlled: false,
     initial_theme: window.theme
-  }));
+  })));
 }
 if (!window.in_context) {
   _library_home_main();

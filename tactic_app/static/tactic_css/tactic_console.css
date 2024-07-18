@@ -79,11 +79,11 @@ body {
 .console-code .float-buttons {
   position: absolute;
   top: 0px;
-  right: 14px;
+  right: 20px;
 }
 
 .in-section .console-code .float-buttons {
-  right: 26.5px;
+  right: 31px;
 }
 
 .text-box {
@@ -92,11 +92,11 @@ body {
 .text-box .float-buttons {
   position: absolute;
   top: 0px;
-  right: 49px;
+  right: 54px;
 }
 
 .in-section .text-box .float-buttons {
-  right: 61.5px;
+  right: 65px;
 }
 
 .text-panel-output p:last-child, .text-panel-output ul:last-child, .text-panel-output h1:last-child, .text-panel-output h2:last-child, .text-panel-output h3:last-child, .text-panel-output h4:last-child {

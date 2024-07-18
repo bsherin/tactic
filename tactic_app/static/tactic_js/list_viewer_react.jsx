@@ -2,11 +2,12 @@
 import "../tactic_css/tactic.scss";
 
 import React from "react";
-import {Fragment, useState, useEffect, useRef, memo, useContext} from "react";
+import {Fragment, useState, useEffect, useRef, memo, useMemo, useContext} from "react";
 import { createRoot } from 'react-dom/client';
 import PropTypes from 'prop-types';
 
 import {TextArea} from "@blueprintjs/core";
+import { useHotkeys, HotkeysProvider} from "@blueprintjs/core";
 
 import {ResourceViewerApp, copyToLibrary, sendToRepository} from "./resource_viewer_react_app";
 import {TacticSocket} from "./tactic_socket";
@@ -124,6 +125,20 @@ function ListViewerApp(props) {
 
     const pushCallback = useCallbackStack("code_viewer");
 
+        const hotkeys = useMemo(
+        () => [
+            {
+                combo: "Ctrl+S",
+                global: false,
+                group: "Module Viewer",
+                label: "Save Code",
+                onKeyDown: _saveMe
+            },
+        ],
+        [_saveMe],
+    );
+    const { handleKeyDown, handleKeyUp } = useHotkeys(hotkeys);
+
     useConstructor(() => {
         if (!props.controlled) {
             window.addEventListener("beforeunload", function (e) {
@@ -163,7 +178,7 @@ function ListViewerApp(props) {
                         name_text: "Save",
                         icon_name: "saved",
                         click_handler: _saveMe,
-                        key_bindings: ['ctrl+s'],
+                        key_bindings: ['Ctrl+S'],
                         tooltip: "Save"
                     },
                     {
@@ -314,7 +329,8 @@ function ListViewerApp(props) {
                               page_id={props.resource_viewer_id}
                               user_name={window.username}/>
             }
-            <div className={outer_class} ref={top_ref} style={outer_style}>
+            <div className={outer_class} ref={top_ref} style={outer_style}
+                tabIndex="0" onKeyDown={handleKeyDown} onKeyUp={handleKeyUp} >
                 <ResourceViewerApp {...my_props}
                                    resource_viewer_id={props.resource_viewer_id}
                                    setResourceNameState={_setResourceNameState}
@@ -352,7 +368,11 @@ async function list_viewer_main() {
         />;
         const domContainer = document.querySelector('#root');
         const root = createRoot(domContainer);
-        root.render(the_element)
+        root.render(
+            <HotkeysProvider>
+                {the_element}
+            </HotkeysProvider>
+        )
     }
 
     let target = window.is_repository ? "repository_view_list_in_context" : "view_list_in_context";

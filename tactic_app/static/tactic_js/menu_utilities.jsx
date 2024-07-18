@@ -4,7 +4,6 @@ import {Fragment, useEffect, memo, useContext} from "react";
 import {Icon, MenuDivider, Menu, Navbar, Button, PopoverPosition, Classes, ButtonGroup} from "@blueprintjs/core";
 import {Popover2, MenuItem2} from "@blueprintjs/popover2";
 
-import {KeyTrap} from "./key_trap";
 import {ThemeContext} from "./theme"
 import {GlyphButton} from "./blueprint_react_widgets";
 import {SelectedPaneContext, useStateAndRef} from "./utilities_react";
@@ -468,11 +467,6 @@ function ToolMenu(props) {
         return binding_dict
     }
 
-    let key_bindings = [];
-    for (let button of props.menu_items) {
-        if (button.hasOwnProperty("key_bindings"))
-            key_bindings.push([button.key_bindings, () => button.click_handler()])
-    }
     return (
         <Fragment>
             <MenuComponent menu_name={props.menu_name}
@@ -482,9 +476,6 @@ function ToolMenu(props) {
                            disabled_items={props.disabled_items}
                            hidden_items={[]}
             />
-            <KeyTrap global={true}
-                     active={selectedPane.amSelected(selectedPane.tab_id, selectedPane.selectedTabIdRef)}
-                     bindings={key_bindings}/>
         </Fragment>
     )
 }

@@ -6,7 +6,6 @@ import hash from "object-hash"
 
 import {
     InputGroup,
-    HotkeysProvider,
     Menu,
     MenuItem,
     Icon,
@@ -344,7 +343,7 @@ function BpSelectorTable(props) {
         dependencies = [props.data_dict]
     }
     return (
-        <HotkeysProvider>
+        //<HotkeysProvider>
             <Table2 numRows={props.num_rows}
                     ref={table_ref}
                     cellRendererDependencies={dependencies}
@@ -363,7 +362,7 @@ function BpSelectorTable(props) {
             >
                 {columns}
             </Table2>
-        </HotkeysProvider>
+        //</HotkeysProvider>
     )
 }
 
