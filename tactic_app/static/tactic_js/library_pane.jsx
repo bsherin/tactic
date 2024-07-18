@@ -1,9 +1,9 @@
 // noinspection JSValidateTypes,JSDeprecatedSymbols
 
 import React from "react";
-import {Fragment, useState, useRef, useEffect, memo, useContext} from "react";
+import {Fragment, useState, useRef, useEffect, memo, useContext, useMemo} from "react";
 
-import {Menu, MenuItem, MenuDivider,Button} from "@blueprintjs/core";
+import {Menu, MenuItem, MenuDivider, Button, useHotkeys} from "@blueprintjs/core";
 import {Tooltip2} from "@blueprintjs/popover2"
 import {Regions} from "@blueprintjs/table";
 import _ from 'lodash';
@@ -13,8 +13,7 @@ import {HorizontalPanes} from "./resizing_layouts2";
 import {postAjaxPromise, postPromise} from "./communication_react"
 import {useSize} from "./sizing_tools";
 
-import {doFlash} from "./toaster.js"
-import {KeyTrap} from "./key_trap.js";
+import {doFlash} from "./toaster"
 import {useCallbackStack, useConstructor, useStateAndRef} from "./utilities_react";
 import {ThemeContext} from "./theme";
 
@@ -96,6 +95,44 @@ function LibraryPane(props) {
         tsocket: null,
         ...props
     };
+
+    const hotkeys = useMemo(
+        () => [
+            {
+                combo: "Enter",
+                global: false,
+                group: "Library",
+                label: "Open Selected Resource",
+                onKeyDown: async () => {
+                    await _view_func()
+                }
+            },
+            {
+                combo: "ArrowDown",
+                global: false,
+                group: "Library",
+                label: "Move Selection Down",
+                onKeyDown: async ()=>{await _handleArrowKeyPress("ArrowDown")},
+            },
+            {
+                combo: "ArrowUp",
+                global: false,
+                group: "Library",
+                label: "Move Selection Up",
+                onKeyDown: async ()=>{await _handleArrowKeyPress("ArrowUp")}
+            },
+            {
+                combo: "Escape",
+                global: false,
+                group: "Library",
+                label: "Undo Search",
+                onKeyDown: _unsearch
+            },
+        ],
+        [_handleArrowKeyPress, _unsearch],
+    );
+
+    const { handleKeyDown, handleKeyUp } = useHotkeys(hotkeys);
     const top_ref = useRef(null);
     const previous_search_spec = useRef(null);
     const socket_counter = useRef(null);
@@ -660,14 +697,6 @@ function LibraryPane(props) {
             if (new_index < 0) return
         }
         await _selectRow(new_index)
-    }
-
-    async function _handleTableKeyPress(key) {
-        if (key.code == "ArrowUp") {
-            await _handleArrowKeyPress("ArrowUp")
-        } else if (key.code == "ArrowDown") {
-            await _handleArrowKeyPress("ArrowDown")
-        }
     }
 
     async function _selectRow(new_index) {
@@ -1413,12 +1442,6 @@ function LibraryPane(props) {
 
     let MenubarClass = props.MenubarClass;
 
-    let key_bindings = [
-        [["up"], () => _handleArrowKeyPress("ArrowUp")],
-        [["down"], () => _handleArrowKeyPress("ArrowDown")],
-        [["esc"], _unsearch],
-    ];
-
     let filter_buttons = [];
     for (let rtype of ["all"].concat(res_types)) {
         filter_buttons.push(
@@ -1457,7 +1480,7 @@ function LibraryPane(props) {
             sortColumn={_set_sort_state}
             selectedRegionsRef={selectedRegionsRef}
             onSelection={_onTableSelection}
-            keyHandler={_handleTableKeyPress}
+            keyHandler={null}
             initiateDataGrab={_grabNewChunkWithRow}
             renderBodyContextMenu={_renderBodyContextMenu}
             handleRowDoubleClick={_handleRowDoubleClick}
@@ -1485,8 +1508,8 @@ function LibraryPane(props) {
                           controlled={props.controlled}
                           tsocket={props.tsocket}
             />
-
-            <div ref={top_ref} className="d-flex flex-column">
+            {/*tabIndex is needed to allow the div to get focus so that key events can be captured*/}
+            <div ref={top_ref} tabIndex="0" className="d-flex flex-column" onKeyDown={handleKeyDown} onKeyUp={handleKeyUp}>
                 <div style={{width: "100%", height: usable_height}}>
                         <HorizontalPanes
                             show_handle={true}
@@ -1501,7 +1524,6 @@ function LibraryPane(props) {
                         />
                 </div>
 
-                <KeyTrap global={true} bindings={key_bindings}/>
             </div>
         </Fragment>
     )

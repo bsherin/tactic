@@ -7,6 +7,7 @@ import 'codemirror/mode/markdown/markdown.js'
 
 import {Icon, Card, ContextMenu, EditableText, Spinner, MenuDivider, Divider} from "@blueprintjs/core";
 import {Menu, MenuItem, ButtonGroup, Button} from "@blueprintjs/core";
+import { useHotkeys } from "@blueprintjs/core";
 import {SelectedPaneContext} from "./utilities_react";
 import _ from 'lodash';
 
@@ -39,7 +40,6 @@ mdi.use(markdownItLatex);
 import {GlyphButton} from "./blueprint_react_widgets";
 import {ReactCodemirror} from "./react-codemirror";
 import {SortableComponent} from "./sortable_container";
-import {KeyTrap} from "./key_trap";
 import {postAjaxPromise, postWithCallback, postFormDataPromise, postPromise} from "./communication_react"
 import {icon_dict} from "./blueprint_mdata_fields";
 import {view_views} from "./library_pane";
@@ -129,6 +129,65 @@ function ConsoleComponent(props) {
     useEffect(() => {
         console.log("theme changed")  // This is to force re-rendering because of highlight.js theme change
     }, [theme]);
+
+
+    const _addBlankCode = useCallback(async (e) => {
+        if (window.in_context && !am_selected()) {
+            return
+        }
+        await _addCodeArea("");
+    }, []);
+
+
+    const _addBlankText = useCallback(async () => {
+        if (window.in_context && !am_selected()) {
+            return
+        }
+        await _addConsoleText("")
+    }, []);
+
+    const hotkeys = useMemo(
+        () => [
+            {
+                combo: "Ctrl+C",
+                global: false,
+                group: "Notebook",
+                label: "New Code Cell",
+                onKeyDown: _addBlankCode
+            },
+            {
+                combo: "Ctrl+T",
+                global: false,
+                group: "Notebook",
+                label: "New Text Cell",
+                onKeyDown: _addBlankText
+            },
+            {
+                combo: "Ctrl+Enter",
+                global: false,
+                group: "Notebook",
+                label: "Run Selected Cell",
+                onKeyDown: _runSelected
+            },
+            {
+                combo: "Cmd+Enter",
+                global: false,
+                group: "Notebook",
+                label: "Run Selected Cell",
+                onKeyDown: _runSelected
+            },
+            {
+                combo: "Escape",
+                global: false,
+                group: "Notebook",
+                label: "Clear Selected Cells",
+                onKeyDown: _clear_all_selected_items
+            },
+        ],
+        [_addBlankCode, _addBlankText, _runSelected, _clear_all_selected_items]
+    );
+
+    const { handleKeyDown, handleKeyUp } = useHotkeys(hotkeys);
 
 function initSocket() {
     function _handleConsoleMessage(data) {
@@ -221,13 +280,6 @@ function initSocket() {
     function am_selected() {
         return selectedPane.amSelected(selectedPane.tab_id, selectedPane.selectedTabIdRef)
     }
-
-    const _addBlankText = useCallback(async () => {
-        if (window.in_context && !am_selected()) {
-            return
-        }
-        await _addConsoleText("")
-    }, []);
 
     async function _addConsoleDivider(header_text, callback = null) {
         try {
@@ -413,13 +465,6 @@ function initSocket() {
             errorDrawerFuncs.addFromError("Error inserting link", e)
         }
     }
-
-    const _addBlankCode = useCallback(async (e) => {
-        if (window.in_context && !am_selected()) {
-            return
-        }
-        await _addCodeArea("");
-    }, []);
 
     function _addCodeArea(the_text, force_open = true) {
         try {
@@ -1179,9 +1224,9 @@ function initSocket() {
         let ms = {
             Insert: [{
                 name_text: "Text Cell", icon_name: "new-text-box", click_handler: _addBlankText,
-                key_bindings: ["ctrl+t"]
+                key_bindings: ["Ctrl+T"]
             },
-                {name_text: "Code Cell", icon_name: "code", click_handler: _addBlankCode, key_bindings: ["ctrl+c"]},
+                {name_text: "Code Cell", icon_name: "code", click_handler: _addBlankCode, key_bindings: ["Ctrl+C"]},
                 {name_text: "Section", icon_name: "header", click_handler: _addBlankDivider},
                 {name_text: "Resource Link", icon_name: "link", click_handler: _insertResourceLink}],
             Edit: [{
@@ -1214,7 +1259,7 @@ function initSocket() {
             ],
             Execute: [{
                 name_text: "Run Selected", icon_name: "play", click_handler: _runSelected,
-                key_bindings: ["ctrl+enter", "command+enter"]
+                key_bindings: ["Ctrl+Enter", "Command+Enter"]
             },
                 {name_text: "Stop All", icon_name: "stop", click_handler: _stopAll},
                 {name_text: "Reset All", icon_name: "reset", click_handler: _resetConsole}],
@@ -1366,10 +1411,6 @@ function initSocket() {
 
     let show_glif_text = outer_style.width > 800;
 
-    let key_bindings = [[["escape"], () => {
-        _clear_all_selected_items()
-    }]];
-
     let in_closed_section = false;
     let in_section = false;
     let filtered_items = props.console_items.current.filter((entry) => {
@@ -1402,7 +1443,8 @@ function initSocket() {
     const extraProps = useMemo(()=>{return {main_id: props.main_id}});
 
     return (
-        <Card id="console-panel" className={console_class} elevation={2} style={outer_style}>
+        <Card id="console-panel" className={console_class} elevation={2} style={outer_style}
+               tabIndex="0" onKeyDown={handleKeyDown} onKeyUp={handleKeyUp}>
             <div className="d-flex flex-column justify-content-around">
                 <div id="console-heading"
                      ref={header_ref}
@@ -1528,9 +1570,6 @@ function initSocket() {
                     <div id="padding-div" style={{height: 500}}></div>
                 </div>
             }
-            <KeyTrap global={true}
-                     active={!props.controlled || am_selected()}
-                     bindings={key_bindings}/>
             </Card>
     );
 }

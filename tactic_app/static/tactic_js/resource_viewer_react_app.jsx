@@ -1,7 +1,6 @@
 import React from "react";
 import {Fragment, useState, useEffect, useRef, memo, useContext} from 'react';
 
-import {KeyTrap} from "./key_trap";
 import {CombinedMetadata} from "./blueprint_mdata_fields";
 import {HorizontalPanes} from "./resizing_layouts2";
 import {handleCallback} from "./communication_react"
@@ -88,7 +87,6 @@ function ResourceViewerApp(props) {
     const savedContent = useRef(props.the_content);
     const savedTags = useRef(props.split_tags);
     const savedNotes = useRef(props.notes);
-    const key_bindings = useRef([]);
     const [all_tags, set_all_tags] = useState([]);
 
     const statusFuncs = useContext(StatusContext);
@@ -197,11 +195,6 @@ function ResourceViewerApp(props) {
                                  right_margin={SIDE_MARGIN}
                 />
             </div>
-            {!window.in_context &&
-                <Fragment>
-                    <KeyTrap global={true} bindings={key_bindings.current}/>
-                </Fragment>
-            }
         </Fragment>
     )
 }

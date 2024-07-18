@@ -14,7 +14,6 @@ var _react = _interopRequireWildcard(require("react"));
 var _client = require("react-dom/client");
 var _core = require("@blueprintjs/core");
 var _tile_creator_support = require("./tile_creator_support");
-var _key_trap = require("./key_trap");
 var _menu_utilities = require("./menu_utilities");
 var _resource_viewer_react_app = require("./resource_viewer_react_app");
 var _reactCodemirror = require("./react-codemirror");
@@ -66,7 +65,6 @@ function CreatorApp(props) {
     em: 0,
     gp: 0
   });
-  const key_bindings = (0, _react.useRef)([]);
   const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(top_ref, 0, "TileCreator");
   const [tabSelectCounter, setTabSelectCounter] = (0, _react.useState)(0);
 
@@ -112,6 +110,29 @@ function CreatorApp(props) {
   const errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
   const sizeInfo = (0, _react.useContext)(_sizing_tools.SizeContext);
   const selectedPane = (0, _react.useContext)(_utilities_react.SelectedPaneContext);
+  const hotkeys = (0, _react.useMemo)(() => [{
+    combo: "Ctrl+S",
+    global: false,
+    group: "Tile Creator",
+    label: "Save Code",
+    onKeyDown: _saveMe
+  }, {
+    combo: "Ctrl+L",
+    global: false,
+    group: "Tile Creator",
+    label: "Save And Load",
+    onKeyDown: _saveAndLoadModule
+  }, {
+    combo: "Ctrl+M",
+    global: false,
+    group: "Tile Creator",
+    label: "Save and Checkpoint",
+    onKeyDown: _saveAndCheckpoint
+  }], [_saveMe, _saveAndLoadModule, _saveAndCheckpoint]);
+  const {
+    handleKeyDown,
+    handleKeyUp
+  } = (0, _core.useHotkeys)(hotkeys);
   const pushCallback = (0, _utilities_react.useCallbackStack)();
   const [resource_name, set_resource_name] = (0, _react.useState)(props.resource_name);
   const connection_status = (0, _utilities_react.useConnection)(props.tsocket, initSocket);
@@ -204,7 +225,7 @@ function CreatorApp(props) {
         name_text: "Save",
         icon_name: "saved",
         click_handler: _saveMe,
-        key_bindings: ['ctrl+s']
+        key_bindings: ['Ctrl+S']
       }, {
         name_text: "Save As...",
         icon_name: "floppy-disk",
@@ -213,13 +234,13 @@ function CreatorApp(props) {
         name_text: "Save and Checkpoint",
         icon_name: "map-marker",
         click_handler: _saveAndCheckpoint,
-        key_bindings: ['ctrl+m']
+        key_bindings: ['Ctrl+M']
       }],
       Load: [{
         name_text: "Save and Load",
         icon_name: "upload",
         click_handler: _saveAndLoadModule,
-        key_bindings: ['ctrl+l']
+        key_bindings: ['Ctrl+L']
       }, {
         name_text: "Load",
         icon_name: "upload",
@@ -1037,7 +1058,10 @@ function CreatorApp(props) {
   }), /*#__PURE__*/_react.default.createElement(_error_boundary.ErrorBoundary, null, /*#__PURE__*/_react.default.createElement("div", {
     className: outer_class,
     ref: top_ref,
-    style: outer_style
+    style: outer_style,
+    tabIndex: "0",
+    onKeyDown: handleKeyDown,
+    onKeyUp: handleKeyUp
   }, /*#__PURE__*/_react.default.createElement(_sizing_tools.SizeContext.Provider, {
     value: {
       availableWidth: uwidth,
@@ -1053,10 +1077,7 @@ function CreatorApp(props) {
     handleSplitUpdate: null,
     bottom_margin: BOTTOM_MARGIN,
     right_margin: _sizing_tools.SIDE_MARGIN
-  }))), !window.in_context && /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement(_key_trap.KeyTrap, {
-    global: true,
-    bindings: key_bindings.current
-  }))));
+  })))));
 }
 exports.CreatorApp = CreatorApp = /*#__PURE__*/(0, _react.memo)(CreatorApp);
 function tile_creator_main() {
@@ -1069,7 +1090,7 @@ function tile_creator_main() {
     }));
     const domContainer = document.querySelector('#creator-root');
     const root = (0, _client.createRoot)(domContainer);
-    root.render(the_element);
+    root.render( /*#__PURE__*/_react.default.createElement(_core.HotkeysProvider, null, the_element));
   }
   (0, _utilities_react.renderSpinnerMessage)("Starting up ...", '#creator-root');
   (0, _communication_react.postAjaxPromise)("view_in_creator_in_context", {

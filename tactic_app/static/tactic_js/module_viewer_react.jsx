@@ -1,9 +1,11 @@
-
 import "../tactic_css/tactic.scss";
 
 import React from "react";
-import {Fragment, useState, useEffect, useRef, memo, useContext} from "react";
-import { createRoot } from 'react-dom/client';
+import {Fragment, useState, useEffect, useRef, memo, useMemo, useContext} from "react";
+import {createRoot} from 'react-dom/client';
+
+import {HotkeysProvider} from "@blueprintjs/core";
+import {useHotkeys} from "@blueprintjs/core";
 
 import {ResourceViewerApp, copyToLibrary, sendToRepository} from "./resource_viewer_react_app";
 import {TacticSocket} from "./tactic_socket";
@@ -87,7 +89,21 @@ function ModuleViewerApp(props) {
         }
     }, []);
 
-    const pushCallback = useCallbackStack("code_viewer");
+    const pushCallback = useCallbackStack("module_viewer");
+
+    const hotkeys = useMemo(
+        () => [
+            {
+                combo: "Ctrl+S",
+                global: false,
+                group: "Module Viewer",
+                label: "Save Code",
+                onKeyDown: _saveMe
+            },
+        ],
+        [_saveMe],
+    );
+    const {handleKeyDown, handleKeyUp} = useHotkeys(hotkeys);
 
     useConstructor(() => {
         if (!props.controlled) {
@@ -140,7 +156,7 @@ function ModuleViewerApp(props) {
                     "name_text": "Save",
                     "icon_name": "saved",
                     "click_handler": _saveMe,
-                    key_bindings: ['ctrl+s'],
+                    key_bindings: ['Ctrl+S'],
                     tooltip: "Save"
                 },
                     {
@@ -153,14 +169,14 @@ function ModuleViewerApp(props) {
                         "name_text": "Save and Checkpoint",
                         "icon_name": "map-marker",
                         "click_handler": _saveAndCheckpoint,
-                        key_bindings: ['ctrl+m'],
+                        key_bindings: ['Ctrl+M'],
                         tooltip: "Save and checkpoint"
                     }],
                 Load: [{
                     "name_text": "Save and Load",
                     "icon_name": "upload",
                     "click_handler": _saveAndLoadModule,
-                    key_bindings: ['ctrl+l'],
+                    key_bindings: ['Ctrl+L'],
                     tooltip: "Save and load module"
                 },
                     {"name_text": "Load", "icon_name": "upload", "click_handler": _loadModule, tooltip: "Load tile"}],
@@ -446,42 +462,43 @@ function ModuleViewerApp(props) {
                               page_id={props.resource_viewer_id}
                               user_name={window.username}/>
             }
-            <div className={outer_class} ref={top_ref} style={outer_style}>
-                    <ResourceViewerApp {...my_props}
-                                       resource_viewer_id={my_props.resource_viewer_id}
-                                       setResourceNameState={_setResourceNameState}
-                                       refreshTab={props.refreshTab}
-                                       closeTab={props.closeTab}
-                                       res_type="tile"
-                                       resource_name={my_props.resource_name}
-                                       menu_specs={menu_specs()}
-                                       handleStateChange={_handleMetadataChange}
-                                       created={props.created}
-                                       notes={notes}
-                                       tags={tags}
-                                       mdata_icon={icon}
-                                       saveMe={_saveMe}
-                                       show_search={true}
-                                       update_search_state={_update_search_state}
-                                       search_string={search_string}
-                                       search_matches={search_matches}
-                                       regex={regex}
-                                       allow_regex_search={true}
-                                       search_ref={search_ref}
-                                       showErrorDrawerButton={true}
-                    >
-                        <ReactCodemirror code_content={code_content}
-                                         no_width={true}
-                                         extraKeys={_extraKeys()}
-                                         readOnly={props.readOnly}
-                                         handleChange={_handleCodeChange}
-                                         saveMe={_saveMe}
-                                         search_term={search_string}
-                                         update_search_state={_update_search_state}
-                                         regex_search={regex}
-                                         setSearchMatches={_setSearchMatches}
-                        />
-                    </ResourceViewerApp>
+            <div className={outer_class} ref={top_ref} style={outer_style}
+                tabIndex="0" onKeyDown={handleKeyDown} onKeyUp={handleKeyUp}>
+                <ResourceViewerApp {...my_props}
+                                   resource_viewer_id={my_props.resource_viewer_id}
+                                   setResourceNameState={_setResourceNameState}
+                                   refreshTab={props.refreshTab}
+                                   closeTab={props.closeTab}
+                                   res_type="tile"
+                                   resource_name={my_props.resource_name}
+                                   menu_specs={menu_specs()}
+                                   handleStateChange={_handleMetadataChange}
+                                   created={props.created}
+                                   notes={notes}
+                                   tags={tags}
+                                   mdata_icon={icon}
+                                   saveMe={_saveMe}
+                                   show_search={true}
+                                   update_search_state={_update_search_state}
+                                   search_string={search_string}
+                                   search_matches={search_matches}
+                                   regex={regex}
+                                   allow_regex_search={true}
+                                   search_ref={search_ref}
+                                   showErrorDrawerButton={true}
+                >
+                    <ReactCodemirror code_content={code_content}
+                                     no_width={true}
+                                     extraKeys={_extraKeys()}
+                                     readOnly={props.readOnly}
+                                     handleChange={_handleCodeChange}
+                                     saveMe={_saveMe}
+                                     search_term={search_string}
+                                     update_search_state={_update_search_state}
+                                     regex_search={regex}
+                                     setSearchMatches={_setSearchMatches}
+                    />
+                </ResourceViewerApp>
             </div>
         </Fragment>
     )
@@ -499,7 +516,11 @@ function module_viewer_main() {
         />;
         let domContainer = document.querySelector('#root');
         const root = createRoot(domContainer);
-        root.render(the_element)
+        root.render(
+            <HotkeysProvider>
+                {the_element}
+            </HotkeysProvider>
+        )
     }
 
     let target = window.is_repository ? "repository_view_module_in_context" : "view_module_in_context";

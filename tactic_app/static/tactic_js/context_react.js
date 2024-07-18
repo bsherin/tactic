@@ -35,7 +35,6 @@ var _text_viewer_react = require("./text_viewer_react");
 var _error_drawer = require("./error_drawer");
 var _assistant = require("./assistant");
 var _sizing_tools = require("./sizing_tools");
-var _key_trap = require("./key_trap");
 var _resizing_layouts = require("./resizing_layouts2");
 var _theme = require("./theme");
 var _modal_react = require("./modal_react");
@@ -108,10 +107,10 @@ function _context_main() {
   const ContextAppPlus = (0, _pool_tree.withPool)((0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)((0, _assistant.withAssistant)(ContextApp))))));
   const domContainer = document.querySelector('#context-root');
   const root = (0, _client.createRoot)(domContainer);
-  root.render( /*#__PURE__*/_react.default.createElement(ContextAppPlus, {
+  root.render( /*#__PURE__*/_react.default.createElement(_core.HotkeysProvider, null, /*#__PURE__*/_react.default.createElement(ContextAppPlus, {
     initial_theme: window.theme,
     tsocket: tsocket
-  }));
+  })));
 }
 function ContextApp(props) {
   const [selectedTabId, setSelectedTabId, selectedTabIdRef, selectedTabIdCounter] = (0, _utilities_react.useStateAndRefAndCounter)("library");
@@ -141,9 +140,33 @@ function ContextApp(props) {
   const [tabSelectCounter, setTabSelectCounter] = (0, _react.useState)(0);
   const omniItemsRef = (0, _react.useRef)({});
   const top_ref = (0, _react.useRef)(null);
-  const key_bindings = [[["tab"], _goToNextPane], [["shift+tab"], _goToPreviousPane], [["ctrl+space"], _showOpenOmnibar], [["ctrl+w"], async () => {
-    await _closeTab(selectedTabIdRef.current);
-  }]];
+  const hotkeys = (0, _react.useMemo)(() => [{
+    combo: "Tab",
+    global: true,
+    label: "Go To Next Pane",
+    onKeyDown: _goToNextPane
+  }, {
+    combo: "Shift+Tab",
+    global: true,
+    label: "Go To Previous Pane",
+    onKeyDown: _goToPreviousPane
+  }, {
+    combo: "Ctrl+Space",
+    global: true,
+    label: "Show Omnibar",
+    onKeyDown: _showOpenOmnibar
+  }, {
+    combo: "Ctrl+W",
+    global: true,
+    label: "Close Tab",
+    onKeyDown: async () => {
+      await _closeTab(selectedTabIdRef.current);
+    }
+  }], [_goToNextPane, _goToPreviousPane, _showOpenOmnibar, _closeTab, selectedTabIdRef.current]);
+  const {
+    handleKeyDown,
+    handleKeyUp
+  } = (0, _core.useHotkeys)(hotkeys);
   const pushCallback = (0, _utilities_react.useCallbackStack)("context");
   (0, _react.useEffect)(() => {
     initSocket();
@@ -998,8 +1021,11 @@ function ContextApp(props) {
     user_name: window.username
   }), /*#__PURE__*/_react.default.createElement("div", {
     className: outer_class,
+    tabIndex: "0",
     style: outer_style,
-    ref: top_ref
+    ref: top_ref,
+    onKeyDown: handleKeyDown,
+    onKeyUp: handleKeyUp
   }, /*#__PURE__*/_react.default.createElement("div", {
     id: "context-container",
     style: outer_style
@@ -1063,9 +1089,6 @@ function ContextApp(props) {
     openFunc: _omni_view_func,
     is_authenticated: window.is_authenticated,
     closeOmnibar: _closeOpenOmnibar
-  }))), /*#__PURE__*/_react.default.createElement(_key_trap.KeyTrap, {
-    global: true,
-    bindings: key_bindings
-  }));
+  }))));
 }
 _context_main();

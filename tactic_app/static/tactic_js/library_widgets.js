@@ -351,23 +351,28 @@ function BpSelectorTable(props) {
   } else {
     dependencies = [props.data_dict];
   }
-  return /*#__PURE__*/_react.default.createElement(_core.HotkeysProvider, null, /*#__PURE__*/_react.default.createElement(_table.Table2, {
-    numRows: props.num_rows,
-    ref: table_ref,
-    cellRendererDependencies: dependencies,
-    bodyContextMenuRenderer: props.renderBodyContextMenu,
-    enableColumnReordering: false,
-    enableColumnResizing: props.enableColumnResizing,
-    maxColumnWidth: props.maxColumnWidth,
-    enableMultipleSelection: true,
-    defaultRowHeight: 27,
-    selectedRegions: props.selectedRegions,
-    enableRowHeader: false,
-    columnWidths: columnWidthsRef.current,
-    onCompleteRender: _onCompleteRender,
-    selectionModes: [_table.RegionCardinality.FULL_ROWS, _table.RegionCardinality.CELLS],
-    onSelection: regions => props.onSelection(regions)
-  }, columns));
+  return (
+    /*#__PURE__*/
+    //<HotkeysProvider>
+    _react.default.createElement(_table.Table2, {
+      numRows: props.num_rows,
+      ref: table_ref,
+      cellRendererDependencies: dependencies,
+      bodyContextMenuRenderer: props.renderBodyContextMenu,
+      enableColumnReordering: false,
+      enableColumnResizing: props.enableColumnResizing,
+      maxColumnWidth: props.maxColumnWidth,
+      enableMultipleSelection: true,
+      defaultRowHeight: 27,
+      selectedRegions: props.selectedRegions,
+      enableRowHeader: false,
+      columnWidths: columnWidthsRef.current,
+      onCompleteRender: _onCompleteRender,
+      selectionModes: [_table.RegionCardinality.FULL_ROWS, _table.RegionCardinality.CELLS],
+      onSelection: regions => props.onSelection(regions)
+    }, columns)
+    //</HotkeysProvider>
+  );
 }
 exports.BpSelectorTable = BpSelectorTable = /*#__PURE__*/(0, _react.memo)(BpSelectorTable);
 const MAX_INITIAL_CELL_WIDTH = 300;

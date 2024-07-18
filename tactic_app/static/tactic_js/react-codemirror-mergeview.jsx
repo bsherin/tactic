@@ -1,8 +1,9 @@
 
 
-import PropTypes from 'prop-types';
-import { useEffect, useRef, memo, useContext } from "react";
+import { useEffect, useRef, memo, useMemo, useContext } from "react";
 import React from "react";
+
+import { useHotkeys } from "@blueprintjs/core";
 
 import CodeMirror from 'codemirror/lib/codemirror'
 import 'codemirror/mode/python/python'
@@ -38,12 +39,44 @@ export {ReactCodemirrorMergeView}
 function ReactCodemirrorMergeView(props) {
 
     const code_container_ref = useRef(null);
-    const mousetrap = useRef(new Mousetrap());
     const saved_theme = useRef(null);
     const preferred_themes = useRef(null);
     const cmobject = useRef(null);
 
     const theme = useContext(ThemeContext);
+
+    const hotkeys = useMemo(
+        () => [
+            {
+                combo: "Ctrl+S",
+                global: false,
+                group: "Merge Viewer",
+                label: "Save Code",
+                onKeyDown: props.saveMe
+            },
+            {
+                combo: "Escape",
+                global: false,
+                group: "Merge Viewer",
+                label: "Clear Selections",
+                onKeyDown: (e)=>{
+                    clearSelections();
+                    e.preventDefault()
+                }
+            },
+            {   combo: "Ctrl+F",
+                global: false,
+                group: "Merge Viewer",
+                label: "Search Code",
+                onKeyDown: (e)=>{
+                    searchCM();
+                    e.preventDefault()
+                }
+            },
+        ],
+        [props.saveMe],
+    );
+    const { handleKeyDown, handleKeyUp } = useHotkeys(hotkeys);
 
     useEffect(()=> {
         postAjaxPromise("get_preferred_codemirror_themes", {})
@@ -163,56 +196,39 @@ function ReactCodemirrorMergeView(props) {
     }
 
     function searchCM() {
-        CodeMirror.commands.find(cmobject.current)
+        // CodeMirror.commands.find(cmobject.current)
     }
 
     function clearSelections() {
-        CodeMirror.commands.clearSearch(cmobject.current.editor());
-        CodeMirror.commands.singleSelection(cmobject.current.editor());
+        cmobject.current.editor().setSelection({ line: 0, ch: 0 });
+        cmobject.current.rightOriginal().setSelection({ line: 0, ch: 0 });
     }
 
     function create_keymap() {
-        let self = this;
         CodeMirror.keyMap["default"]["Esc"] = function () {clearSelections()};
         let is_mac = CodeMirror.keyMap["default"].hasOwnProperty("Cmd-S");
 
-        mousetrap.current.bind(['escape'], function (e) {
-            clearSelections();
-            e.preventDefault()
-        });
-
         if (is_mac) {
-            CodeMirror.keyMap["default"]["Cmd-S"] = function () {props.saveMe()};
-
-            mousetrap.current.bind(['command+f'], function (e) {
-                searchCM();
-                e.preventDefault()
-            });
+            CodeMirror.keyMap["default"]["Ctrl-S"] = function () {props.saveMe()};
         }
         else {
-            CodeMirror.keyMap["default"]["Ctrl-S"] = function () {props.saveMe()};
-
-            mousetrap.current.bind(['ctrl+f'], function (e) {
-                searchCM();
-                e.preventDefault()
-            });
+            CodeMirror.keyMap["default"]["Ctrl-S"] = function () {
+                props.saveMe()
+            };
         }
+        CodeMirror.keyMap["default"]["Ctrl-F"] = function (e) {
+            searchCM()
+        };
     }
     let ccstyle = {
         "height": "100%"
     };
     return (
-        <div className="code-container" style={ccstyle} ref={code_container_ref}>
+        <div className="code-container" style={ccstyle} ref={code_container_ref}
+            tabIndex="0" onKeyDown={handleKeyDown} onKeyUp={handleKeyUp}>
 
         </div>
     )
 }
-
-ReactCodemirrorMergeView.propTypes = {
-    handleEditChange: PropTypes.func,
-    editor_content: PropTypes.string,
-    right_content: PropTypes.string,
-    saveMe: PropTypes.func,
-};
 
 ReactCodemirrorMergeView = memo(ReactCodemirrorMergeView);

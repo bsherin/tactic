@@ -4,13 +4,14 @@ import "../tactic_css/tile_creator.scss";
 import 'codemirror/mode/javascript/javascript'
 
 import React from "react";
-import {Fragment, useState, useEffect, useRef, memo, useContext} from "react";
+import {Fragment, useState, useEffect, useRef, memo, useMemo, useContext} from "react";
 import { createRoot } from 'react-dom/client';
 
 import {Tab, Tabs, Button, ButtonGroup, Icon} from "@blueprintjs/core";
+import { HotkeysProvider } from "@blueprintjs/core";
+import { useHotkeys } from "@blueprintjs/core";
 
 import {creator_props} from "./tile_creator_support";
-import {KeyTrap} from "./key_trap";
 import {TacticMenubar} from "./menu_utilities"
 import {sendToRepository} from "./resource_viewer_react_app";
 import {ReactCodemirror} from "./react-codemirror";
@@ -68,7 +69,6 @@ function CreatorApp(props) {
         em: 0,
         gp: 0
     });
-    const key_bindings = useRef([]);
 
     const [usable_width, usable_height, topX, topY] = useSize(top_ref, 0, "TileCreator");
     
@@ -125,6 +125,34 @@ function CreatorApp(props) {
     const sizeInfo = useContext(SizeContext);
 
     const selectedPane = useContext(SelectedPaneContext);
+
+    const hotkeys = useMemo(
+        () => [
+            {
+                combo: "Ctrl+S",
+                global: false,
+                group: "Tile Creator",
+                label: "Save Code",
+                onKeyDown: _saveMe
+            },
+            {
+                combo: "Ctrl+L",
+                global: false,
+                group: "Tile Creator",
+                label: "Save And Load",
+                onKeyDown: _saveAndLoadModule
+            },
+            {
+                combo: "Ctrl+M",
+                global: false,
+                group: "Tile Creator",
+                label: "Save and Checkpoint",
+                onKeyDown: _saveAndCheckpoint
+            },
+        ],
+        [_saveMe, _saveAndLoadModule, _saveAndCheckpoint],
+    );
+    const { handleKeyDown, handleKeyUp } = useHotkeys(hotkeys);
 
     const pushCallback = useCallbackStack();
 
@@ -224,19 +252,19 @@ function CreatorApp(props) {
 
     function menu_specs() {
         let ms = {
-            Save: [{name_text: "Save", icon_name: "saved", click_handler: _saveMe, key_bindings: ['ctrl+s']},
+            Save: [{name_text: "Save", icon_name: "saved", click_handler: _saveMe, key_bindings: ['Ctrl+S']},
                 {name_text: "Save As...", icon_name: "floppy-disk", click_handler: _saveModuleAs},
                 {
                     name_text: "Save and Checkpoint",
                     icon_name: "map-marker",
                     click_handler: _saveAndCheckpoint,
-                    key_bindings: ['ctrl+m']
+                    key_bindings: ['Ctrl+M']
                 }],
             Load: [{
                 name_text: "Save and Load",
                 icon_name: "upload",
                 click_handler: _saveAndLoadModule,
-                key_bindings: ['ctrl+l']
+                key_bindings: ['Ctrl+L']
             },
                 {name_text: "Load", icon_name: "upload", click_handler: _loadModule}],
             Compare: [{name_text: "View History", icon_name: "history", click_handler: _showHistoryViewer},
@@ -1071,7 +1099,8 @@ function CreatorApp(props) {
                            controlled={props.controlled}
             />
             <ErrorBoundary>
-                <div className={outer_class} ref={top_ref} style={outer_style}>
+                <div className={outer_class} ref={top_ref} style={outer_style}
+                    tabIndex="0" onKeyDown={handleKeyDown} onKeyUp={handleKeyUp}>
                      <SizeContext.Provider value={{
                         availableWidth: uwidth,
                         availableHeight: usable_height,
@@ -1088,11 +1117,6 @@ function CreatorApp(props) {
                         />
                      </SizeContext.Provider>
                 </div>
-                {!window.in_context &&
-                    <Fragment>
-                        <KeyTrap global={true} bindings={key_bindings.current}/>
-                    </Fragment>
-                }
             </ErrorBoundary>
         </ErrorBoundary>
     );
@@ -1110,7 +1134,11 @@ function tile_creator_main() {
         />;
         const domContainer = document.querySelector('#creator-root');
         const root = createRoot(domContainer);
-        root.render(the_element)
+        root.render(
+            <HotkeysProvider>
+                {the_element}
+            </HotkeysProvider>
+        )
     }
 
     renderSpinnerMessage("Starting up ...", '#creator-root');

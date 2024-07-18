@@ -7,7 +7,7 @@ import "../tactic_css/tactic_select.scss"
 import React from "react";
 import {Fragment, useEffect, useRef, memo, useContext, useReducer, useCallback} from "react";
 import { createRoot } from 'react-dom/client';
-
+import { HotkeysProvider } from "@blueprintjs/core";
 import {NavbarDivider} from "@blueprintjs/core";
 import {Regions} from "@blueprintjs/table"
 import _ from 'lodash';
@@ -1241,7 +1241,11 @@ function main_main() {
         />;
         const domContainer = document.querySelector('#main-root');
         const root = createRoot(domContainer);
-        root.render(the_element)
+        root.render(
+            <HotkeysProvider>
+                {the_element}
+            </HotkeysProvider>
+        )
     }
 
     renderSpinnerMessage("Starting up ...");

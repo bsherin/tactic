@@ -1,5 +1,5 @@
 import React from "react";
-import { memo, useState, useContext } from 'react';
+import { memo, useState, useContext, useRef } from 'react';
 import PropTypes from 'prop-types';
 
 import {Menu, MenuItem, ContextMenuPopover, Tree} from "@blueprintjs/core";
@@ -265,7 +265,7 @@ function TagButtonList(props) {
                          setTagRoot={setTagRoot}
                          rename_tag={_rename_tag}/>;
     return (
-        <div className="tactic-tag-button-list">
+        <div tabIndex="0" className="tactic-tag-button-list">
             <ContextMenuPopover onClose={()=>{setShowContextMenu(false)}}  // Without this doesn't close
                                 content={tmenu}
                                 isOpen={showContextMenu}

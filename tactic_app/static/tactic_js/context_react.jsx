@@ -7,10 +7,11 @@ import "../tactic_css/library_home.scss";
 import "../tactic_css/tile_creator.scss";
 
 import React from "react";
-import { useState, useEffect, useRef, useContext, Fragment, useCallback } from "react";
+import { useState, useEffect, useRef, useContext, Fragment, useCallback, useMemo } from "react";
 import { createRoot } from 'react-dom/client';
 
-import {Tab, Tabs, Button, Icon, Spinner} from "@blueprintjs/core";
+import { Tab, Tabs, Button, Icon, Spinner, useHotkeys } from "@blueprintjs/core";
+import { HotkeysProvider } from "@blueprintjs/core";
 import {FocusStyleManager} from "@blueprintjs/core";
 
 FocusStyleManager.onlyShowFocusOnTabs();
@@ -42,7 +43,6 @@ import {ErrorDrawerContext, withErrorDrawer} from "./error_drawer";
 import {withAssistant} from "./assistant";
 import {SizeContext, getUsableDimensions, USUAL_NAVBAR_HEIGHT, INIT_CONTEXT_PANEL_WIDTH} from "./sizing_tools";
 import {postAjaxPromise} from "./communication_react";
-import {KeyTrap} from "./key_trap";
 import {DragHandle} from "./resizing_layouts2";
 import {useCallbackStack, useStateAndRef, useDebounce, useStateAndRefAndCounter} from "./utilities_react";
 import {ThemeContext, withTheme} from "./theme"
@@ -115,7 +115,11 @@ function _context_main() {
     const ContextAppPlus = withPool(withTheme(withDialogs(withErrorDrawer(withStatus(withAssistant(ContextApp))))));
     const domContainer = document.querySelector('#context-root');
     const root = createRoot(domContainer);
-    root.render(<ContextAppPlus initial_theme={window.theme} tsocket={tsocket}/>)
+    root.render(
+        <HotkeysProvider>
+            <ContextAppPlus initial_theme={window.theme} tsocket={tsocket}/>
+        </HotkeysProvider>
+    )
 }
 
 function ContextApp(props) {
@@ -154,15 +158,38 @@ function ContextApp(props) {
 
     const top_ref = useRef(null);
 
-    const key_bindings = [
-        [["tab"], _goToNextPane],
-        [["shift+tab"], _goToPreviousPane],
-        [["ctrl+space"], _showOpenOmnibar],
-        [["ctrl+w"], async () => {
-            await _closeTab(selectedTabIdRef.current)
-        }]
-    ];
+    const hotkeys = useMemo(
+        () => [
+            {
+                combo: "Tab",
+                global: true,
+                label: "Go To Next Pane",
+                onKeyDown: _goToNextPane
+            },
+            {
+                combo: "Shift+Tab",
+                global: true,
+                label: "Go To Previous Pane",
+                onKeyDown: _goToPreviousPane
+            },
+            {
+                combo: "Ctrl+Space",
+                global: true,
+                label: "Show Omnibar",
+                onKeyDown: _showOpenOmnibar,
+            },
+            {
+                combo: "Ctrl+W",
+                global: true,
+                label: "Close Tab",
+                onKeyDown: async () => {
+                    await _closeTab(selectedTabIdRef.current)
+                }
+            }
+        ], [_goToNextPane, _goToPreviousPane, _showOpenOmnibar, _closeTab, selectedTabIdRef.current],
+    );
 
+    const { handleKeyDown, handleKeyUp } = useHotkeys(hotkeys);
     const pushCallback = useCallbackStack("context");
 
     useEffect(() => {
@@ -950,13 +977,15 @@ function ContextApp(props) {
     }
     return (
         <Fragment>
+
             <TacticNavbar is_authenticated={window.is_authenticated}
                           selected={null}
                           show_api_links={false}
                           extra_text={window.database_type == "Local" ? "" : window.database_type}
                           page_id={window.context_id}
                           user_name={window.username}/>
-            <div className={outer_class} style={outer_style} ref={top_ref}>
+            <div className={outer_class} tabIndex="0" style={outer_style} ref={top_ref}
+                 onKeyDown={handleKeyDown} onKeyUp={handleKeyUp}>
                 <div id="context-container" style={outer_style}>
                     <Button icon={<Icon icon={pane_closed ? "drawer-left-filled" : "drawer-right-filled"}
                                         size={18}/>}
@@ -1008,7 +1037,6 @@ function ContextApp(props) {
                                  closeOmnibar={_closeOpenOmnibar}/>
                 </SelectedPaneContext.Provider>
             </div>
-            <KeyTrap global={true} bindings={key_bindings}/>
         </Fragment>
     );
 }

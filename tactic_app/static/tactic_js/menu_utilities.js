@@ -10,7 +10,6 @@ exports.TopLeftButtons = TopLeftButtons;
 var _react = _interopRequireWildcard(require("react"));
 var _core = require("@blueprintjs/core");
 var _popover = require("@blueprintjs/popover2");
-var _key_trap = require("./key_trap");
 var _theme = require("./theme");
 var _blueprint_react_widgets = require("./blueprint_react_widgets");
 var _utilities_react = require("./utilities_react");
@@ -462,10 +461,6 @@ function ToolMenu(props) {
     }
     return binding_dict;
   }
-  let key_bindings = [];
-  for (let button of props.menu_items) {
-    if (button.hasOwnProperty("key_bindings")) key_bindings.push([button.key_bindings, () => button.click_handler()]);
-  }
   return /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement(MenuComponent, {
     menu_name: props.menu_name,
     option_dict: option_dict(),
@@ -473,10 +468,6 @@ function ToolMenu(props) {
     binding_dict: binding_dict(),
     disabled_items: props.disabled_items,
     hidden_items: []
-  }), /*#__PURE__*/_react.default.createElement(_key_trap.KeyTrap, {
-    global: true,
-    active: selectedPane.amSelected(selectedPane.tab_id, selectedPane.selectedTabIdRef),
-    bindings: key_bindings
   }));
 }
 exports.ToolMenu = ToolMenu = /*#__PURE__*/(0, _react.memo)(ToolMenu);

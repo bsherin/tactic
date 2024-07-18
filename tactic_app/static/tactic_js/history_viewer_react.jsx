@@ -7,7 +7,7 @@ import "../tactic_css/tactic.scss";
 import React from "react";
 import {Fragment, useState, useEffect, memo, useRef, useContext} from "react";
 import { createRoot } from 'react-dom/client';
-import PropTypes from 'prop-types';
+import { HotkeysProvider } from "@blueprintjs/core";
 
 import {MergeViewerApp} from "./merge_viewer_app";
 import {doFlash, StatusContext} from "./toaster.js"
@@ -31,7 +31,11 @@ async function history_viewer_main ()  {
                                              changeName={null}/>;
         const domContainer = document.querySelector('#root');
         const root = createRoot(domContainer);
-        root.render(the_element)
+        root.render(
+            <HotkeysProvider>
+                {the_element}
+            </HotkeysProvider>
+        )
     }
 
     let get_url = "get_module_code";
@@ -219,11 +223,6 @@ function HistoryViewerApp(props) {
     )
 }
 
-HistoryViewerApp.propTypes = {
-    resource_name: PropTypes.string,
-    history_list: PropTypes.array,
-    edit_content: PropTypes.string,
-};
 
 HistoryViewerApp = withSizeContext(memo(HistoryViewerApp));
 

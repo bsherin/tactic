@@ -278,6 +278,7 @@ function TagButtonList(props) {
     rename_tag: _rename_tag
   });
   return /*#__PURE__*/_react.default.createElement("div", {
+    tabIndex: "0",
     className: "tactic-tag-button-list"
   }, /*#__PURE__*/_react.default.createElement(_core.ContextMenuPopover, {
     onClose: () => {

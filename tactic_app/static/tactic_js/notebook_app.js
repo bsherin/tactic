@@ -11,6 +11,7 @@ require("../tactic_css/tactic_console.scss");
 require("../tactic_css/tactic_main.scss");
 var _react = _interopRequireWildcard(require("react"));
 var _client = require("react-dom/client");
+var _core = require("@blueprintjs/core");
 var _blueprint_navbar = require("./blueprint_navbar");
 var _menu_utilities = require("./menu_utilities");
 var _main_menus_react = require("./main_menus_react");
@@ -311,7 +312,7 @@ function main_main() {
     }));
     const domContainer = document.querySelector('#main-root');
     const root = (0, _client.createRoot)(domContainer);
-    root.render(the_element);
+    root.render( /*#__PURE__*/_react.default.createElement(_core.HotkeysProvider, null, the_element));
   }
   (0, _utilities_react.renderSpinnerMessage)("Starting up ...");
   var target = window.is_new_notebook ? "new_notebook_in_context" : "main_project_in_context";

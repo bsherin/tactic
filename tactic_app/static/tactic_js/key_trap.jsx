@@ -1,7 +1,6 @@
 
 import React from "react";
 import {useEffect, useRef, memo} from "react";
-import PropTypes from 'prop-types';
 
 import Mousetrap from "mousetrap";
 
@@ -62,7 +61,5 @@ function KeyTrap(props) {
         <div/>
     )
 }
-
-
 
 KeyTrap = memo(KeyTrap);
