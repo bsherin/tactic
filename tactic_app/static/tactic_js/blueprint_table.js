@@ -315,7 +315,7 @@ function BlueprintTable(props, passedRef) {
     id: "table-area",
     ref: top_ref,
     style: style
-  }, /*#__PURE__*/_react.default.createElement(_table.Table, {
+  }, /*#__PURE__*/_react.default.createElement(_table.Table2, {
     ref: table_ref,
     key: hash_value() // kludge: Having this prevents partial row rendering
     ,
@@ -362,7 +362,7 @@ function EnhancedEditableCell(props) {
       props.setCellContent(props.rowIndex, props.columnHeader, value, true);
     });
   }
-  return /*#__PURE__*/_react.default.createElement(_table.EditableCell, (0, _extends2.default)({
+  return /*#__PURE__*/_react.default.createElement(_table.EditableCell2, (0, _extends2.default)({
     ref: cell_ref,
     onConfirm: _onConfirmCellEdit,
     onChange: _onChange,

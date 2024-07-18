@@ -203,7 +203,7 @@ function BpOrderableTable(props, passedRef) {
         the_text = "";
       }
       if (props.content_editable) {
-        return /*#__PURE__*/_react.default.createElement(_table.EditableCell, {
+        return /*#__PURE__*/_react.default.createElement(_table.EditableCell2, {
           key: column_name,
           className: className,
           truncated: true,
@@ -240,7 +240,7 @@ function BpOrderableTable(props, passedRef) {
       name: column_name
     });
   });
-  return /*#__PURE__*/_react.default.createElement(_core.HotkeysProvider, null, /*#__PURE__*/_react.default.createElement(_table.Table2, {
+  return /*#__PURE__*/_react.default.createElement(_table.Table2, {
     enableFocusedCell: false,
     cellRendererDependencies: [props.data_array],
     numRows: props.data_array.length,
@@ -250,6 +250,6 @@ function BpOrderableTable(props, passedRef) {
     onRowsReordered: _onRowsReordered,
     onSelection: _onSelection,
     enableMultipleSelection: false
-  }, columns));
+  }, columns);
 }
 exports.BpOrderableTable = BpOrderableTable = /*#__PURE__*/(0, _react.memo)(BpOrderableTable);
