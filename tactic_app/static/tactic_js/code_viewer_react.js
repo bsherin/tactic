@@ -25,7 +25,8 @@ var _error_drawer2 = require("./error_drawer");
 var _sizing_tools = require("./sizing_tools");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
-``;
+//import { HotkeysProvider } from "@blueprintjs/core";
+
 function code_viewer_props(data, registerDirtyMethod, finalCallback) {
   let resource_viewer_id = (0, _utilities_react.guid)();
   var tsocket = new _tactic_socket.TacticSocket("main", 5000, "code_viewer", resource_viewer_id);
@@ -77,6 +78,32 @@ function CodeViewerApp(props) {
     }
   }, []);
   const pushCallback = (0, _utilities_react.useCallbackStack)("code_viewer");
+  const _saveMe = (0, _react.useCallback)(async () => {
+    if (!am_selected()) {
+      return false;
+    }
+    const new_code = code_content;
+    const tagstring = tags.join(" ");
+    const local_notes = notes;
+    const local_tags = tags; // In case it's modified wile saving
+    const result_dict = {
+      "code_name": _cProp("resource_name"),
+      "new_code": new_code,
+      "tags": tagstring,
+      "notes": local_notes,
+      "user_id": window.user_id
+    };
+    try {
+      await (0, _communication_react.postPromise)("host", "update_code_task", result_dict, props.resource_viewer_id);
+      savedContent.current = new_code;
+      savedTags.current = local_tags;
+      savedNotes.current = local_notes;
+      statusFuncs.statusMessage(`Updated code resource ${_cProp("resource_name")}`, 7);
+    } catch (e) {
+      errorDrawerFuncs.addFromError("Error saving code", e);
+    }
+    return false;
+  }, [code_content, tags, notes]);
   const hotkeys = (0, _react.useMemo)(() => [{
     combo: "Ctrl+S",
     global: false,
@@ -205,32 +232,6 @@ function CodeViewerApp(props) {
   function am_selected() {
     return selectedPane.amSelected(selectedPane.tab_id, selectedPane.selectedTabIdRef);
   }
-  async function _saveMe() {
-    if (!am_selected()) {
-      return false;
-    }
-    const new_code = code_content;
-    const tagstring = tags.join(" ");
-    const local_notes = notes;
-    const local_tags = tags; // In case it's modified wile saving
-    const result_dict = {
-      "code_name": _cProp("resource_name"),
-      "new_code": new_code,
-      "tags": tagstring,
-      "notes": local_notes,
-      "user_id": window.user_id
-    };
-    try {
-      await (0, _communication_react.postPromise)("host", "update_code_task", result_dict, props.resource_viewer_id);
-      savedContent.current = new_code;
-      savedTags.current = local_tags;
-      savedNotes.current = local_notes;
-      statusFuncs.statusMessage(`Updated code resource ${_cProp("resource_name")}`, 7);
-    } catch (e) {
-      errorDrawerFuncs.addFromError("Error saving code", e);
-    }
-    return false;
-  }
   async function _saveMeAs(e) {
     if (!am_selected()) {
       return false;
@@ -340,11 +341,7 @@ function code_viewer_main() {
     }));
     const domContainer = document.querySelector('#root');
     const root = (0, _client.createRoot)(domContainer);
-    root.render(
-    //<HotkeysProvider>
-    the_element
-    //</HotkeysProvider>
-    );
+    root.render( /*#__PURE__*/_react.default.createElement(HotkeysProvider, null, the_element));
   }
   let target = window.is_repository ? "repository_view_code_in_context" : "view_code_in_context";
   (0, _communication_react.postAjaxPromise)(target, {

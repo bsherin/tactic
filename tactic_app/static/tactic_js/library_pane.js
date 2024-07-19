@@ -105,41 +105,6 @@ function LibraryPane(props) {
     tsocket: null,
     ...props
   };
-  const hotkeys = (0, _react.useMemo)(() => [{
-    combo: "Enter",
-    global: false,
-    group: "Library",
-    label: "Open Selected Resource",
-    onKeyDown: async () => {
-      await _view_func();
-    }
-  }, {
-    combo: "ArrowDown",
-    global: false,
-    group: "Library",
-    label: "Move Selection Down",
-    onKeyDown: async () => {
-      await _handleArrowKeyPress("ArrowDown");
-    }
-  }, {
-    combo: "ArrowUp",
-    global: false,
-    group: "Library",
-    label: "Move Selection Up",
-    onKeyDown: async () => {
-      await _handleArrowKeyPress("ArrowUp");
-    }
-  }, {
-    combo: "Escape",
-    global: false,
-    group: "Library",
-    label: "Undo Search",
-    onKeyDown: _unsearch
-  }], [_view_func, _handleArrowKeyPress, _unsearch]);
-  const {
-    handleKeyDown,
-    handleKeyUp
-  } = (0, _core.useHotkeys)(hotkeys);
   const top_ref = (0, _react.useRef)(null);
   const previous_search_spec = (0, _react.useRef)(null);
   const socket_counter = (0, _react.useRef)(null);
@@ -177,6 +142,94 @@ function LibraryPane(props) {
   const dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   const statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
   const errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
+  const _handleArrowKeyPress = (0, _react.useCallback)(async key => {
+    if (multi_select_ref.current) return;
+    let the_res = selected_resource_ref.current;
+    let current_index = parseInt(get_data_dict_index(the_res.name, the_res.res_type));
+    let new_index;
+    let new_selected_res;
+    if (key == "ArrowDown") {
+      new_index = current_index + 1;
+    } else {
+      new_index = current_index - 1;
+      if (new_index < 0) return;
+    }
+    await _selectRow(new_index);
+  }, [multi_select_ref.current, selected_resource_ref.current, data_dict_ref.current]);
+  const _view_func = (0, _react.useCallback)(async function () {
+    let the_view = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+    if (the_view == null) {
+      the_view = view_views(props.is_repository)[selected_resource_ref.current.res_type];
+    }
+    statusFuncs.setStatus({
+      show_spinner: true,
+      status_message: "Opening ..."
+    });
+    if (window.in_context) {
+      const re = new RegExp("/$");
+      the_view = the_view.replace(re, "_in_context");
+      let data;
+      try {
+        data = await (0, _communication_react.postAjaxPromise)(the_view, {
+          context_id: context_id,
+          resource_name: selected_resource_ref.current.name
+        });
+        props.handleCreateViewer(data, statusFuncs.clearStatus);
+      } catch (e) {
+        statusFuncs.clearstatus();
+        errorDrawerFuncs.addFromError(`Error viewing with view ${the_view}`, e);
+      }
+    } else {
+      statusFuncs.clearStatus();
+      window.open($SCRIPT_ROOT + the_view + selected_resource_ref.current.name);
+    }
+  }, [selected_resource_ref.current]);
+  async function _unsearch() {
+    if (search_string_ref.current != "") {
+      set_search_string("");
+    } else if (active_tag_ref.current != "all") {
+      _update_search_state({
+        "active_tag": "all"
+      });
+    } else if (props.pane_type == "all" && filterTypeRef.current != "all") {
+      await _setFilterType("all");
+    }
+  }
+  const hotkeys = (0, _react.useMemo)(() => [{
+    combo: "Enter",
+    global: false,
+    group: "Library",
+    label: "Open Selected Resource",
+    onKeyDown: async () => {
+      await _view_func();
+    }
+  }, {
+    combo: "ArrowDown",
+    global: false,
+    group: "Library",
+    label: "Move Selection Down",
+    onKeyDown: async () => {
+      await _handleArrowKeyPress("ArrowDown");
+    }
+  }, {
+    combo: "ArrowUp",
+    global: false,
+    group: "Library",
+    label: "Move Selection Up",
+    onKeyDown: async () => {
+      await _handleArrowKeyPress("ArrowUp");
+    }
+  }, {
+    combo: "Escape",
+    global: false,
+    group: "Library",
+    label: "Undo Search",
+    onKeyDown: _unsearch
+  }], [_view_func, _handleArrowKeyPress, _unsearch]);
+  const {
+    handleKeyDown,
+    handleKeyUp
+  } = (0, _core.useHotkeys)(hotkeys);
   const stateSetters = {
     data_dict: set_data_dict,
     num_rows: set_num_rows,
@@ -639,17 +692,6 @@ function LibraryPane(props) {
       return false;
     }
   }
-  async function _unsearch() {
-    if (search_string_ref.current != "") {
-      set_search_string("");
-    } else if (active_tag_ref.current != "all") {
-      _update_search_state({
-        "active_tag": "all"
-      });
-    } else if (props.pane_type == "all" && filterTypeRef.current != "all") {
-      await _setFilterType("all");
-    }
-  }
   function _update_search_state(new_state) {
     setState(new_state);
     pushCallback(async () => {
@@ -686,20 +728,6 @@ function LibraryPane(props) {
       }
     });
   }
-  async function _handleArrowKeyPress(key) {
-    if (multi_select_ref.current) return;
-    let the_res = selected_resource_ref.current;
-    let current_index = parseInt(get_data_dict_index(the_res.name, the_res.res_type));
-    let new_index;
-    let new_selected_res;
-    if (key == "ArrowDown") {
-      new_index = current_index + 1;
-    } else {
-      new_index = current_index - 1;
-      if (new_index < 0) return;
-    }
-    await _selectRow(new_index);
-  }
   async function _selectRow(new_index) {
     if (!Object.keys(data_dict_ref.current).includes(String(new_index))) {
       await _grabNewChunkWithRow(new_index, false, null, false, null, () => {
@@ -714,34 +742,6 @@ function LibraryPane(props) {
         multi_select: false,
         selectedRegions: new_regions
       });
-    }
-  }
-  async function _view_func() {
-    let the_view = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-    if (the_view == null) {
-      the_view = view_views(props.is_repository)[selected_resource_ref.current.res_type];
-    }
-    statusFuncs.setStatus({
-      show_spinner: true,
-      status_message: "Opening ..."
-    });
-    if (window.in_context) {
-      const re = new RegExp("/$");
-      the_view = the_view.replace(re, "_in_context");
-      let data;
-      try {
-        data = await (0, _communication_react.postAjaxPromise)(the_view, {
-          context_id: context_id,
-          resource_name: selected_resource_ref.current.name
-        });
-        props.handleCreateViewer(data, statusFuncs.clearStatus);
-      } catch (e) {
-        statusFuncs.clearstatus();
-        errorDrawerFuncs.addFromError(`Error viewing with view ${the_view}`, e);
-      }
-    } else {
-      statusFuncs.clearStatus();
-      window.open($SCRIPT_ROOT + the_view + selected_resource_ref.current.name);
     }
   }
   function _open_raw(selected_resource) {
