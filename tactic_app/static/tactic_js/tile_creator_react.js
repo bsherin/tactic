@@ -70,7 +70,11 @@ function optionListReducer(option_list, action) {
       break;
     case "add_at_index":
       new_items = [...option_list];
-      new_items.splice(action.insert_index, 0, action.new_item);
+      let new_t = {
+        ...action.new_item
+      };
+      new_t.option_id = (0, _utilities_react.guid)();
+      new_items.splice(action.insert_index, 0, new_t);
       break;
     case "clear_highlights":
       new_items = option_list.map(t => {

@@ -134,7 +134,7 @@ function _library_home_main() {
     const domContainer = document.querySelector('#library-home-root');
     const root = createRoot(domContainer);
     root.render(
-        // <HotkeysProvider>
+        //<HotkeysProvider>
             <LibraryHomeAppPlus tsocket={tsocket}
                                             controlled={false}
                                             initial_theme={window.theme}/>

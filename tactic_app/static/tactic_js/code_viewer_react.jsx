@@ -1,9 +1,9 @@
 import "../tactic_css/tactic.scss";
-``
 import React from "react";
-import {Fragment, useState, useEffect, useRef, useMemo, memo, useContext} from "react";
+import {Fragment, useState, useEffect, useRef, useMemo, memo, useContext, useCallback} from "react";
 import { createRoot } from 'react-dom/client';
 import { useHotkeys } from "@blueprintjs/core";
+//import { HotkeysProvider } from "@blueprintjs/core";
 
 import {ReactCodemirror} from "./react-codemirror";
 
@@ -86,6 +86,35 @@ function CodeViewerApp(props) {
     }, []);
 
     const pushCallback = useCallbackStack("code_viewer");
+
+    const _saveMe = useCallback (async () => {
+        if (!am_selected()) {
+            return false
+        }
+        const new_code = code_content;
+        const tagstring = tags.join(" ");
+        const local_notes = notes;
+        const local_tags = tags;  // In case it's modified wile saving
+        const result_dict = {
+            "code_name": _cProp("resource_name"),
+            "new_code": new_code,
+            "tags": tagstring,
+            "notes": local_notes,
+            "user_id": window.user_id
+        };
+        try {
+            await postPromise("host", "update_code_task", result_dict, props.resource_viewer_id);
+            savedContent.current = new_code;
+            savedTags.current = local_tags;
+            savedNotes.current = local_notes;
+            statusFuncs.statusMessage(`Updated code resource ${_cProp("resource_name")}`, 7)
+        } catch (e) {
+            errorDrawerFuncs.addFromError("Error saving code", e)
+
+        }
+        return false
+    }, [code_content, tags, notes]);
+
     const hotkeys = useMemo(
         () => [
             {
@@ -231,34 +260,6 @@ function CodeViewerApp(props) {
         return selectedPane.amSelected(selectedPane.tab_id, selectedPane.selectedTabIdRef)
     }
 
-    async function _saveMe() {
-        if (!am_selected()) {
-            return false
-        }
-        const new_code = code_content;
-        const tagstring = tags.join(" ");
-        const local_notes = notes;
-        const local_tags = tags;  // In case it's modified wile saving
-        const result_dict = {
-            "code_name": _cProp("resource_name"),
-            "new_code": new_code,
-            "tags": tagstring,
-            "notes": local_notes,
-            "user_id": window.user_id
-        };
-        try {
-            await postPromise("host", "update_code_task", result_dict, props.resource_viewer_id);
-            savedContent.current = new_code;
-            savedTags.current = local_tags;
-            savedNotes.current = local_notes;
-            statusFuncs.statusMessage(`Updated code resource ${_cProp("resource_name")}`, 7)
-        } catch (e) {
-            errorDrawerFuncs.addFromError("Error saving code", e)
-
-        }
-        return false
-    }
-
     async function _saveMeAs(e) {
         if (!am_selected()) {
             return false
@@ -372,9 +373,9 @@ function code_viewer_main() {
         const domContainer = document.querySelector('#root');
         const root = createRoot(domContainer);
         root.render(
-            //<HotkeysProvider>
-                the_element
-           //</HotkeysProvider>
+            <HotkeysProvider>
+                {the_element}
+           </HotkeysProvider>
         )
     }
 

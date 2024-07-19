@@ -137,7 +137,7 @@ function _library_home_main() {
   const root = (0, _client.createRoot)(domContainer);
   root.render(
   /*#__PURE__*/
-  // <HotkeysProvider>
+  //<HotkeysProvider>
   _react.default.createElement(LibraryHomeAppPlus, {
     tsocket: tsocket,
     controlled: false,
