@@ -60,6 +60,7 @@ function withAssistant(WrappedComponent, lposition = "right", assistant_drawer_s
         const [stream_text, set_stream_text, stream_text_ref] = useStateAndRef("");
         const [assistant_id, set_assistant_id, assistant_id_ref] = useStateAndRef(null);
         const [chat_status, set_chat_status, chat_status_ref] = useStateAndRef(window.has_openapi_key ? "idle" : null);
+        const [assistant_prompt_value, set_assistant_prompt_value, assistant_prompt_value_ref] = useStateAndRef("");
 
         const errorDrawerFuncs = useContext(ErrorDrawerContext);
 
@@ -190,6 +191,8 @@ function withAssistant(WrappedComponent, lposition = "right", assistant_drawer_s
                                 <AssistantDrawer show_drawer={show_drawer}
                                                  position={lposition}
                                                  tsocket={props.tsocket}
+                                                 assistant_prompt_value_ref={assistant_prompt_value_ref}
+                                                 set_assistant_prompt_value={set_assistant_prompt_value}
                                                  assistant_drawer_size={assistant_drawer_size}
                                                  closeAssistantDrawer={_close}
                                                  title="ChatBot"
@@ -229,7 +232,10 @@ function AssistantDrawer(props) {
             hasBackdrop={false}
             size={props.size}
             >
-            <ChatModule tsocket={props.tsocket}/>
+            <ChatModule tsocket={props.tsocket}
+                        assistant_prompt_value_ref={props.assistant_prompt_value_ref}
+                        set_assistant_prompt_value={props.set_assistant_prompt_value}
+            />
         </Drawer>
     )
 }
@@ -245,7 +251,6 @@ function ChatModule(props) {
     const list_ref = React.createRef();
     const stream_dict_ref = React.createRef();
 
-    const [prompt_value, set_prompt_value, prompt_value_ref] = useStateAndRef("");
     const [response_counter, set_response_counter, response_counter_ref] = useStateAndRef(0);
     const [usable_height, set_usable_height] = useState(() => {
         return window.innerHeight - 40 - BOTTOM_MARGIN
@@ -293,7 +298,7 @@ function ChatModule(props) {
     }
 
     function _onInputChange(event) {
-        set_prompt_value(event.target.value);
+        props.set_assistant_prompt_value(event.target.value);
     }
 
     function stream_dict_to_string() {
@@ -358,11 +363,11 @@ function ChatModule(props) {
 
     async function _promptSubmit(event) {
         try {
-            _addEntry({kind: "user", text: prompt_value_ref.current});
-            set_prompt_value("");
+            _addEntry({kind: "user", text: props.assistant_prompt_value_ref.current});
+            props.set_assistant_prompt_value("");
             assistantDrawerFuncs.set_chat_status("posted");
             await postPromise(assistantDrawerFuncs.assistant_id_ref.current, "post_prompt_stream",
-                {prompt: prompt_value_ref.current, main_id: window.main_id})
+                {prompt: props.assistant_prompt_value_ref.current, main_id: window.main_id})
         } catch (error) {
             console.log(error.message)
         }
@@ -467,7 +472,7 @@ function ChatModule(props) {
                           large={true}
                           fill={true}
                           onKeyDown={handleKeyDown}
-                          value={prompt_value_ref.current}
+                          value={props.assistant_prompt_value_ref.current}
                 />
             </ControlGroup>
         </div>
