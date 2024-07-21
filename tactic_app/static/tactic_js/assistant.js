@@ -60,6 +60,7 @@ function withAssistant(WrappedComponent) {
     const [stream_text, set_stream_text, stream_text_ref] = (0, _utilities_react.useStateAndRef)("");
     const [assistant_id, set_assistant_id, assistant_id_ref] = (0, _utilities_react.useStateAndRef)(null);
     const [chat_status, set_chat_status, chat_status_ref] = (0, _utilities_react.useStateAndRef)(window.has_openapi_key ? "idle" : null);
+    const [assistant_prompt_value, set_assistant_prompt_value, assistant_prompt_value_ref] = (0, _utilities_react.useStateAndRef)("");
     const errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
     (0, _react.useEffect)(() => {
       if (window.has_openapi_key) {
@@ -177,6 +178,8 @@ function withAssistant(WrappedComponent) {
       show_drawer: show_drawer,
       position: lposition,
       tsocket: props.tsocket,
+      assistant_prompt_value_ref: assistant_prompt_value_ref,
+      set_assistant_prompt_value: set_assistant_prompt_value,
       assistant_drawer_size: assistant_drawer_size,
       closeAssistantDrawer: _close,
       title: "ChatBot",
@@ -203,7 +206,9 @@ function AssistantDrawer(props) {
     hasBackdrop: false,
     size: props.size
   }, /*#__PURE__*/_react.default.createElement(ChatModule, {
-    tsocket: props.tsocket
+    tsocket: props.tsocket,
+    assistant_prompt_value_ref: props.assistant_prompt_value_ref,
+    set_assistant_prompt_value: props.set_assistant_prompt_value
   }));
 }
 AssistantDrawer = /*#__PURE__*/(0, _react.memo)(AssistantDrawer);
@@ -219,7 +224,6 @@ function ChatModule(props) {
   const control_ref = /*#__PURE__*/_react.default.createRef();
   const list_ref = /*#__PURE__*/_react.default.createRef();
   const stream_dict_ref = /*#__PURE__*/_react.default.createRef();
-  const [prompt_value, set_prompt_value, prompt_value_ref] = (0, _utilities_react.useStateAndRef)("");
   const [response_counter, set_response_counter, response_counter_ref] = (0, _utilities_react.useStateAndRef)(0);
   const [usable_height, set_usable_height] = (0, _react.useState)(() => {
     return window.innerHeight - 40 - BOTTOM_MARGIN;
@@ -259,7 +263,7 @@ function ChatModule(props) {
     set_usable_height(uheight);
   }
   function _onInputChange(event) {
-    set_prompt_value(event.target.value);
+    props.set_assistant_prompt_value(event.target.value);
   }
   function stream_dict_to_string() {
     const sortedKeys = Object.keys(stream_dict_ref.current).sort((a, b) => a - b);
@@ -319,12 +323,12 @@ function ChatModule(props) {
     try {
       _addEntry({
         kind: "user",
-        text: prompt_value_ref.current
+        text: props.assistant_prompt_value_ref.current
       });
-      set_prompt_value("");
+      props.set_assistant_prompt_value("");
       assistantDrawerFuncs.set_chat_status("posted");
       await (0, _communication_react.postPromise)(assistantDrawerFuncs.assistant_id_ref.current, "post_prompt_stream", {
-        prompt: prompt_value_ref.current,
+        prompt: props.assistant_prompt_value_ref.current,
         main_id: window.main_id
       });
     } catch (error) {
@@ -450,7 +454,7 @@ function ChatModule(props) {
     large: true,
     fill: true,
     onKeyDown: handleKeyDown,
-    value: prompt_value_ref.current
+    value: props.assistant_prompt_value_ref.current
   })));
 }
 exports.ChatModule = ChatModule = /*#__PURE__*/(0, _react.memo)(ChatModule);
