@@ -138,6 +138,20 @@ table {
   text-align: center;
 }
 
+.verticalIconBar {
+    position: fixed;
+    right: 0;
+    top: 80px;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 0;
+  }
+
+  .iconBarButton {
+    //margin-bottom: 10px;
+  }
 
 .floating-button-group {
   position: fixed;

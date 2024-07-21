@@ -127,6 +127,7 @@ class CollectionManager(LibraryResourceManager):
                                base_figure_url=url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1],
                                temp_data_id=temp_data_id,
                                develop=str(_develop),
+                               has_openapi_key=current_user.has_openapi_key,
                                theme=current_user.get_theme(),
                                is_jupyter="False",
                                version_string=tstring,
@@ -178,6 +179,7 @@ class CollectionManager(LibraryResourceManager):
                                is_new_notebook="False",
                                theme=current_user.get_theme(),
                                develop=str(_develop),
+                               has_openapi_key=current_user.has_openapi_key,
                                version_string=tstring,
                                css_source=css_source("main_app"),
                                module_source=js_source_dict["main_app"])
@@ -217,6 +219,7 @@ class CollectionManager(LibraryResourceManager):
                                window_title="New Project",
                                project_name="",
                                is_new_notebook="False",
+                               has_openapi_key=current_user.has_openapi_key,
                                theme=current_user.get_theme(),
                                develop=str(_develop),
                                version_string=tstring,

@@ -86,6 +86,10 @@ function MergeViewerApp(props) {
         <Fragment>
             <TacticMenubar menu_specs={menu_specs()}
                            connection_status={props.connection_status}
+                           showIconBar={true}
+                           showErrorDrawerButton={true}
+                           showMetadataDrawerButton={false}
+                           showAssistantDrawerButton={true}
                            showRefresh={false}
                            showClose={false}
                            refreshTab={null}

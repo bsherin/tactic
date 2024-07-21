@@ -109,6 +109,7 @@ class CodeManager(LibraryResourceManager):
                                resource_name=code_name,
                                theme=user_obj.get_theme(),
                                develop=str(_develop),
+                               has_openapi_key=current_user.has_openapi_key,
                                javascript_source=javascript_source,
                                css_source=css_source("code_viewer_react"),
                                version_string=tstring)

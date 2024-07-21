@@ -219,6 +219,14 @@
   background-color: #edeff2;
 }
 
+.bp5-dark .verticalIconBar {
+  bottom: 0;
+  background-color: #252a31;
+  border-left: 1px solid rgba(255, 255, 255, 0.2);
+}
+.bp5-dark .iconBarButton .bp5-icon {
+  color: white !important;
+}
 .bp5-dark.main-outer {
   background-color: #5f6b7c;
 }

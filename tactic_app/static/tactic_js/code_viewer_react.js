@@ -20,6 +20,7 @@ var _error_drawer = require("./error_drawer.js");
 var _utilities_react = require("./utilities_react");
 var _blueprint_navbar = require("./blueprint_navbar");
 var _theme = require("./theme");
+var _assistant = require("./assistant");
 var _modal_react = require("./modal_react");
 var _error_drawer2 = require("./error_drawer");
 var _sizing_tools = require("./sizing_tools");
@@ -29,6 +30,9 @@ function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; 
 
 function code_viewer_props(data, registerDirtyMethod, finalCallback) {
   let resource_viewer_id = (0, _utilities_react.guid)();
+  if (!window.in_context) {
+    window.main_id = resource_viewer_id;
+  }
   var tsocket = new _tactic_socket.TacticSocket("main", 5000, "code_viewer", resource_viewer_id);
   finalCallback({
     resource_viewer_id: resource_viewer_id,
@@ -333,7 +337,7 @@ function CodeViewerApp(props) {
 exports.CodeViewerApp = CodeViewerApp = /*#__PURE__*/(0, _react.memo)(CodeViewerApp);
 function code_viewer_main() {
   function gotProps(the_props) {
-    let CodeViewerAppPlus = (0, _sizing_tools.withSizeContext)((0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(CodeViewerApp)))));
+    let CodeViewerAppPlus = (0, _sizing_tools.withSizeContext)((0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)((0, _assistant.withAssistant)(CodeViewerApp))))));
     let the_element = /*#__PURE__*/_react.default.createElement(CodeViewerAppPlus, (0, _extends2.default)({}, the_props, {
       controlled: false,
       initial_theme: window.theme,
@@ -341,7 +345,11 @@ function code_viewer_main() {
     }));
     const domContainer = document.querySelector('#root');
     const root = (0, _client.createRoot)(domContainer);
-    root.render( /*#__PURE__*/_react.default.createElement(HotkeysProvider, null, the_element));
+    root.render(
+    // <HotkeysProvider>
+    the_element
+    // </HotkeysProvider>
+    );
   }
   let target = window.is_repository ? "repository_view_code_in_context" : "view_code_in_context";
   (0, _communication_react.postAjaxPromise)(target, {

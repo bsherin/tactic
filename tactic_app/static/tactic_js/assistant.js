@@ -60,6 +60,7 @@ function withAssistant(WrappedComponent) {
     const [stream_text, set_stream_text, stream_text_ref] = (0, _utilities_react.useStateAndRef)("");
     const [assistant_id, set_assistant_id, assistant_id_ref] = (0, _utilities_react.useStateAndRef)(null);
     const [chat_status, set_chat_status, chat_status_ref] = (0, _utilities_react.useStateAndRef)(window.has_openapi_key ? "idle" : null);
+    const errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
     (0, _react.useEffect)(() => {
       if (window.has_openapi_key) {
         getAssistant();
@@ -83,15 +84,18 @@ function withAssistant(WrappedComponent) {
     function getPastMessages() {
       if (assistant_id_ref.current == null) return;
       (0, _communication_react.postPromise)(assistant_id_ref.current, "get_past_messages", {}).then(data => {
-        if (data["success"]) {
-          for (let msg of data["messages"]) {
-            if (msg["kind"] == "assistant") {
-              msg["text"] = formatLatexEquations(msg["text"]);
-              msg["text"] = mdi.render(msg["text"]);
-            }
+        for (let msg of data["messages"]) {
+          if (msg["kind"] == "assistant") {
+            msg["text"] = formatLatexEquations(msg["text"]);
+            msg["text"] = mdi.render(msg["text"]);
           }
-          set_item_list(data["messages"]);
         }
+        set_item_list(data["messages"]);
+      }).catch(data => {
+        errorDrawerFuncs.addErrorDrawerEntry({
+          title: "Error getting past messages",
+          content: "message" in data ? data.message : ""
+        });
       });
     }
     function getAssistant() {
@@ -104,6 +108,11 @@ function withAssistant(WrappedComponent) {
           set_assistant_id(response.assistant_id);
           pushCallback(getPastMessages);
         }
+      }).catch(data => {
+        errorDrawerFuncs.addErrorDrawerEntry({
+          title: "Error getting assistant",
+          content: "message" in data ? data.message : ""
+        });
       });
     }
     function startAssistant() {

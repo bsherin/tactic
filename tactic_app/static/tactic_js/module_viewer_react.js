@@ -17,6 +17,7 @@ var _reactCodemirror = require("./react-codemirror");
 var _communication_react = require("./communication_react");
 var _error_drawer = require("./error_drawer");
 var _toaster = require("./toaster");
+var _assistant = require("./assistant");
 var _sizing_tools = require("./sizing_tools");
 var _utilities_react = require("./utilities_react");
 var _blueprint_navbar = require("./blueprint_navbar");
@@ -28,6 +29,9 @@ function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; 
 
 function module_viewer_props(data, registerDirtyMethod, finalCallback) {
   let resource_viewer_id = (0, _utilities_react.guid)();
+  if (!window.in_context) {
+    window.main_id = resource_viewer_id;
+  }
   var tsocket = new _tactic_socket.TacticSocket("main", 5000, "module_viewer", resource_viewer_id);
   finalCallback({
     resource_viewer_id: resource_viewer_id,
@@ -479,7 +483,7 @@ function ModuleViewerApp(props) {
 exports.ModuleViewerApp = ModuleViewerApp = /*#__PURE__*/(0, _react.memo)(ModuleViewerApp);
 function module_viewer_main() {
   function gotProps(the_props) {
-    let ModuleViewerAppPlus = (0, _sizing_tools.withSizeContext)((0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(ModuleViewerApp)))));
+    let ModuleViewerAppPlus = (0, _sizing_tools.withSizeContext)((0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)((0, _assistant.withAssistant)(ModuleViewerApp))))));
     let the_element = /*#__PURE__*/_react.default.createElement(ModuleViewerAppPlus, (0, _extends2.default)({}, the_props, {
       controlled: false,
       initial_theme: window.theme,

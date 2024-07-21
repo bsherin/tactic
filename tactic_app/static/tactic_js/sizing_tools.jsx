@@ -3,7 +3,7 @@ import React from "react";
 import {useState, useEffect, memo, useContext, useMemo} from "react";
 import {SelectedPaneContext} from "./utilities_react";
 
-export {getUsableDimensions, SIDE_MARGIN, USUAL_NAVBAR_HEIGHT, TOP_MARGIN, useSize,
+export {getUsableDimensions, SIDE_MARGIN, USUAL_NAVBAR_HEIGHT, TOP_MARGIN, ICON_BAR_WIDTH, useSize,
     BOTTOM_MARGIN, INIT_CONTEXT_PANEL_WIDTH, SizeContext, withSizeContext, SizeProvider}
 
 
@@ -13,6 +13,7 @@ const TOP_MARGIN = 25;
 const INITIAL_DECREMENT = 50;
 const USUAL_NAVBAR_HEIGHT = 50;
 const INIT_CONTEXT_PANEL_WIDTH = 150;
+const ICON_BAR_WIDTH = 40;
 
 function getUsableDimensions() {
     return {
@@ -59,7 +60,7 @@ function useSize(top_ref=null, iCounter=0, name="noname") {
 function withSizeContext(WrappedComponent) {
     function newFunc(props) {
         const [usable_height, set_usable_height] = useState(window.innerHeight);
-        const [usable_width, set_usable_width] = useState(window.innerWidth);
+        const [usable_width, set_usable_width] = useState(window.innerWidth - ICON_BAR_WIDTH);
 
         useEffect(() => {
             window.addEventListener("resize", _handleResize);
@@ -70,7 +71,7 @@ function withSizeContext(WrappedComponent) {
         }, []);
 
         function _handleResize() {
-            set_usable_width(window.innerWidth);
+            set_usable_width(window.innerWidth - ICON_BAR_WIDTH);
             set_usable_height(window.innerHeight);
         }
         return (

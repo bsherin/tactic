@@ -21,6 +21,7 @@ var _creator_modules_react = require("./creator_modules_react");
 var _resizing_layouts = require("./resizing_layouts2");
 var _communication_react = require("./communication_react");
 var _toaster = require("./toaster");
+var _assistant = require("./assistant");
 var _sizing_tools = require("./sizing_tools");
 var _error_drawer = require("./error_drawer");
 var _utilities_react = require("./utilities_react");
@@ -1109,7 +1110,10 @@ function CreatorApp(props) {
     refreshTab: props.refreshTab,
     closeTab: props.closeTab,
     resource_name: _cProp("resource_name"),
+    showIconBar: true,
     showErrorDrawerButton: true,
+    showMetadataDrawerButton: false,
+    showAssistantDrawerButton: true,
     controlled: props.controlled
   }), /*#__PURE__*/_react.default.createElement(_error_boundary.ErrorBoundary, null, /*#__PURE__*/_react.default.createElement("div", {
     className: outer_class,
@@ -1138,7 +1142,7 @@ function CreatorApp(props) {
 exports.CreatorApp = CreatorApp = /*#__PURE__*/(0, _react.memo)(CreatorApp);
 function tile_creator_main() {
   function gotProps(the_props) {
-    let CreatorAppPlus = (0, _sizing_tools.withSizeContext)((0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(CreatorApp)))));
+    let CreatorAppPlus = (0, _sizing_tools.withSizeContext)((0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)((0, _assistant.withAssistant)(CreatorApp))))));
     let the_element = /*#__PURE__*/_react.default.createElement(CreatorAppPlus, (0, _extends2.default)({}, the_props, {
       controlled: false,
       initial_theme: window.theme,

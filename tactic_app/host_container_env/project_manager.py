@@ -182,6 +182,7 @@ class ProjectManager(LibraryResourceManager):
         data_dict = {"project_name": project_name,
                      "is_new_notebook": "False",
                      "develop": str(_develop),
+                     "has_openapi_key": current_user.has_openapi_key,
                      "collection_name": "",
                      "theme": current_user.get_theme(),
                      "version_string": tstring}

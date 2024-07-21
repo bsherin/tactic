@@ -33,6 +33,7 @@ import {ErrorBoundary} from "./error_boundary";
 import {useCallbackStack, useReducerAndRef} from "./utilities_react";
 import {ThemeContext, withTheme} from "./theme";
 import {withPool} from "./pool_tree"
+import {withAssistant} from "./assistant";
 import {DialogContext, withDialogs} from "./modal_react";
 import {StatusContext} from "./toaster";
 import {ErrorDrawerContext} from "./error_drawer";
@@ -1150,8 +1151,10 @@ function MainApp(props) {
                            refreshTab={props.refreshTab}
                            closeTab={props.closeTab}
                            resource_name={_cProp("resource_name")}
+                           showIconBar={true}
                            showErrorDrawerButton={true}
                            showMetadataDrawerButton={true}
+                           showAssistantDrawerButton={true}
                            showMetadata={showMetadata}
                            extraButtons={extra_menubar_buttons}
             />
@@ -1233,7 +1236,7 @@ MainApp = memo(MainApp);
 
 function main_main() {
     function gotProps(the_props) {
-        let MainAppPlus = withPool(withSizeContext(withTheme(withDialogs(withErrorDrawer(withStatus(MainApp))))));
+        let MainAppPlus = withPool(withSizeContext(withTheme(withDialogs(withErrorDrawer(withStatus(withAssistant(MainApp)))))));
         let the_element = <MainAppPlus {...the_props}
                                        controlled={false}
                                        initial_theme={window.theme}

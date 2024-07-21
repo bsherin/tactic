@@ -1467,6 +1467,7 @@ function initSocket() {
                                            suggestionGlyphs={suggestionGlyphs}
                                            showRefresh={false}
                                            showClose={false}
+                                           showIconBar={false}
                                            refreshTab={props.refreshTab}
                                            closeTab={null}
                                            controlled={window.in_context}

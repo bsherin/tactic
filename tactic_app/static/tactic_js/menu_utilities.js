@@ -15,6 +15,7 @@ var _blueprint_react_widgets = require("./blueprint_react_widgets");
 var _utilities_react = require("./utilities_react");
 var _error_drawer = require("./error_drawer");
 var _assistant = require("./assistant");
+var _sizing_tools = require("./sizing_tools");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 const name_style = {
@@ -48,8 +49,10 @@ function TacticMenubar(props) {
     closeTab: null,
     menu_specs: null,
     menus: null,
+    showIconBar: false,
     showErrorDrawerButton: false,
     showMetadataDrawerButton: false,
+    showAssistantDrawerButton: false,
     resource_name: null,
     resource_icon: null,
     disabled_items: [],
@@ -117,8 +120,9 @@ function TacticMenubar(props) {
     className: "bp5-navbar-group bp5-align-left"
   }, /*#__PURE__*/_react.default.createElement(_react.Fragment, null, menus, sug_glyphs)), props.connection_status && /*#__PURE__*/_react.default.createElement(ConnectionIndicator, {
     connection_status: props.connection_status
-  }), /*#__PURE__*/_react.default.createElement(DrawerButtonGroup, {
+  }), props.showIconBar && /*#__PURE__*/_react.default.createElement(IconBar, {
     showErrorDrawerButton: props.showErrorDrawerButton,
+    showAssistantDrawerButton: props.showAssistantDrawerButton,
     showMetadataDrawerButton: props.showMetadataDrawerButton,
     showMetadata: props.showMetadata
   }));
@@ -140,6 +144,45 @@ function ConnectionIndicator(props) {
     intent: props.connection_status == "up" ? null : "danger",
     size: 18
   }));
+}
+const IconBarStyle = {
+  width: _sizing_tools.ICON_BAR_WIDTH
+};
+function IconBar(props) {
+  const errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
+  const assistantDrawerFuncs = (0, _react.useContext)(_assistant.AssistantContext);
+  return /*#__PURE__*/_react.default.createElement("div", {
+    className: "verticalIconBar",
+    style: IconBarStyle
+  }, props.showErrorDrawerButton && /*#__PURE__*/_react.default.createElement(IconBarButton, {
+    icon: "bug",
+    onClick: () => {
+      errorDrawerFuncs.toggleErrorDrawer();
+    }
+  }), window.has_openapi_key && props.showAssistantDrawerButton && assistantDrawerFuncs && props.showAssistantDrawerButton && /*#__PURE__*/_react.default.createElement(IconBarButton, {
+    icon: "chat",
+    onClick: () => {
+      assistantDrawerFuncs.toggleAssistantDrawer();
+    }
+  }), props.showMetadataDrawerButton && /*#__PURE__*/_react.default.createElement(IconBarButton, {
+    icon: "list-columns",
+    onClick: () => {
+      props.showMetadata();
+    }
+  }));
+}
+IconBar = /*#__PURE__*/(0, _react.memo)(IconBar);
+function IconBarButton(props) {
+  return /*#__PURE__*/_react.default.createElement(_core.Button, {
+    icon: /*#__PURE__*/_react.default.createElement(_core.Icon, {
+      icon: props.icon,
+      size: 18
+    }),
+    minimal: true,
+    large: true,
+    className: "iconBarButton",
+    onClick: props.onClick
+  });
 }
 function DrawerButtonGroup(props) {
   const [visible, setVisible, visibleRef] = (0, _utilities_react.useStateAndRef)(false);

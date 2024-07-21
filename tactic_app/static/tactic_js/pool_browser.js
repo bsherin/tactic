@@ -667,8 +667,7 @@ function PoolMenubar(props) {
     showRefresh: true,
     refreshTab: props.refreshFunc,
     closeTab: null,
-    resource_name: "",
-    showErrorDrawerButton: true
+    resource_name: ""
   });
 }
 PoolMenubar = /*#__PURE__*/(0, _react.memo)(PoolMenubar);

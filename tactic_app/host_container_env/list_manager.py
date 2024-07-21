@@ -49,6 +49,7 @@ class ListManager(LibraryResourceManager):
                                resource_name=list_name,
                                theme=user_obj.get_theme(),
                                develop=str(_develop),
+                               has_openapi_key=current_user.has_openapi_key,
                                javascript_source=javascript_source,
                                css_source=css_source("list_viewer_react"),
                                version_string=tstring)

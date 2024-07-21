@@ -19,6 +19,7 @@ import {OptionModule, ExportModule, MetadataModule} from "./creator_modules_reac
 import {HorizontalPanes, VerticalPanes} from "./resizing_layouts2";
 import {postAjax, postAjaxPromise, postPromise} from "./communication_react"
 import {withStatus, doFlash, StatusContext} from "./toaster"
+import {withAssistant} from "./assistant";
 import {SIDE_MARGIN, SizeContext, useSize, withSizeContext} from "./sizing_tools";
 import {withErrorDrawer} from "./error_drawer";
 import {renderSpinnerMessage, guid, arrayMove} from "./utilities_react"
@@ -1136,7 +1137,10 @@ function CreatorApp(props) {
                            refreshTab={props.refreshTab}
                            closeTab={props.closeTab}
                            resource_name={_cProp("resource_name")}
+                           showIconBar={true}
                            showErrorDrawerButton={true}
+                           showMetadataDrawerButton={false}
+                           showAssistantDrawerButton={true}
                            controlled={props.controlled}
             />
             <ErrorBoundary>
@@ -1167,7 +1171,7 @@ CreatorApp = memo(CreatorApp);
 
 function tile_creator_main() {
     function gotProps(the_props) {
-        let CreatorAppPlus = withSizeContext(withTheme(withDialogs(withErrorDrawer(withStatus(CreatorApp)))));
+        let CreatorAppPlus = withSizeContext(withTheme(withDialogs(withErrorDrawer(withStatus(withAssistant(CreatorApp))))));
         let the_element = <CreatorAppPlus {...the_props}
                                           controlled={false}
                                           initial_theme={window.theme}

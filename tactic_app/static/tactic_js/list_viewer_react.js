@@ -16,6 +16,7 @@ var _resource_viewer_react_app = require("./resource_viewer_react_app");
 var _tactic_socket = require("./tactic_socket");
 var _communication_react = require("./communication_react");
 var _toaster = require("./toaster.js");
+var _assistant = require("./assistant");
 var _theme = require("./theme");
 var _error_drawer = require("./error_drawer.js");
 var _utilities_react = require("./utilities_react");
@@ -27,6 +28,9 @@ function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return 
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 function list_viewer_props(data, registerDirtyMethod, finalCallback) {
   let resource_viewer_id = (0, _utilities_react.guid)();
+  if (!window.in_context) {
+    window.main_id = resource_viewer_id;
+  }
   var tsocket = new _tactic_socket.TacticSocket("main", 5000, "list_viewer", resource_viewer_id);
   finalCallback({
     resource_viewer_id: resource_viewer_id,
@@ -319,7 +323,7 @@ function ListViewerApp(props) {
 exports.ListViewerApp = ListViewerApp = /*#__PURE__*/(0, _react.memo)(ListViewerApp);
 async function list_viewer_main() {
   function gotProps(the_props) {
-    let ListViewerAppPlus = (0, _sizing_tools.withSizeContext)((0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(ListViewerApp)))));
+    let ListViewerAppPlus = (0, _sizing_tools.withSizeContext)((0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)((0, _assistant.withAssistant)(ListViewerApp))))));
     let the_element = /*#__PURE__*/_react.default.createElement(ListViewerAppPlus, (0, _extends2.default)({}, the_props, {
       controlled: false,
       initial_theme: window.theme,

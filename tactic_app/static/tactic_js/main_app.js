@@ -35,6 +35,7 @@ var _sizing_tools = require("./sizing_tools");
 var _error_boundary = require("./error_boundary");
 var _theme = require("./theme");
 var _pool_tree = require("./pool_tree");
+var _assistant = require("./assistant");
 var _modal_react = require("./modal_react");
 var _metadata_drawer = require("./metadata_drawer");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
@@ -1088,8 +1089,10 @@ function MainApp(props) {
     refreshTab: props.refreshTab,
     closeTab: props.closeTab,
     resource_name: _cProp("resource_name"),
+    showIconBar: true,
     showErrorDrawerButton: true,
     showMetadataDrawerButton: true,
+    showAssistantDrawerButton: true,
     showMetadata: showMetadata,
     extraButtons: extra_menubar_buttons
   }), /*#__PURE__*/_react.default.createElement(_error_boundary.ErrorBoundary, null, /*#__PURE__*/_react.default.createElement("div", {
@@ -1161,7 +1164,7 @@ function MainApp(props) {
 exports.MainApp = MainApp = /*#__PURE__*/(0, _react.memo)(MainApp);
 function main_main() {
   function gotProps(the_props) {
-    let MainAppPlus = (0, _pool_tree.withPool)((0, _sizing_tools.withSizeContext)((0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(MainApp))))));
+    let MainAppPlus = (0, _pool_tree.withPool)((0, _sizing_tools.withSizeContext)((0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)((0, _assistant.withAssistant)(MainApp)))))));
     let the_element = /*#__PURE__*/_react.default.createElement(MainAppPlus, (0, _extends2.default)({}, the_props, {
       controlled: false,
       initial_theme: window.theme,
