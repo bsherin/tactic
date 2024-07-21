@@ -18,6 +18,7 @@ import {TacticNavbar} from "./blueprint_navbar";
 import {useCallbackStack, useConstructor, useStateAndRef} from "./utilities_react";
 
 import {ThemeContext, withTheme} from "./theme"
+import {withAssistant} from "./assistant";
 import {DialogContext, withDialogs} from "./modal_react";
 import {ErrorDrawerContext} from "./error_drawer";
 import {SizeContext, useSize, withSizeContext} from "./sizing_tools";
@@ -27,6 +28,9 @@ export {code_viewer_props, CodeViewerApp}
 function code_viewer_props(data, registerDirtyMethod, finalCallback) {
 
     let resource_viewer_id = guid();
+    if (!window.in_context) {
+        window.main_id = resource_viewer_id;
+    }
     var tsocket = new TacticSocket("main", 5000, "code_viewer", resource_viewer_id);
 
     finalCallback({
@@ -364,7 +368,7 @@ CodeViewerApp = memo(CodeViewerApp);
 
 function code_viewer_main() {
     function gotProps(the_props) {
-        let CodeViewerAppPlus = withSizeContext(withTheme(withDialogs(withErrorDrawer(withStatus(CodeViewerApp)))));
+        let CodeViewerAppPlus = withSizeContext(withTheme(withDialogs(withErrorDrawer(withStatus(withAssistant(CodeViewerApp))))));
         let the_element = <CodeViewerAppPlus {...the_props}
                                              controlled={false}
                                              initial_theme={window.theme}
@@ -373,9 +377,9 @@ function code_viewer_main() {
         const domContainer = document.querySelector('#root');
         const root = createRoot(domContainer);
         root.render(
-            <HotkeysProvider>
-                {the_element}
-           </HotkeysProvider>
+            // <HotkeysProvider>
+                the_element
+           // </HotkeysProvider>
         )
     }
 

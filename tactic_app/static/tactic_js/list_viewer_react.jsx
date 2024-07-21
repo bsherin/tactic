@@ -13,6 +13,7 @@ import {ResourceViewerApp, copyToLibrary, sendToRepository} from "./resource_vie
 import {TacticSocket} from "./tactic_socket";
 import {postAjaxPromise, postPromise} from "./communication_react"
 import {withStatus} from "./toaster.js"
+import {withAssistant} from "./assistant";
 
 import {withTheme} from "./theme"
 import {ErrorDrawerContext, withErrorDrawer} from "./error_drawer.js";
@@ -31,6 +32,9 @@ export {list_viewer_props, ListViewerApp}
 function list_viewer_props(data, registerDirtyMethod, finalCallback) {
 
     let resource_viewer_id = guid();
+    if (!window.in_context) {
+        window.main_id = resource_viewer_id;
+    }
     var tsocket = new TacticSocket("main", 5000, "list_viewer", resource_viewer_id);
 
 
@@ -360,7 +364,7 @@ ListViewerApp = memo(ListViewerApp);
 async function list_viewer_main() {
 
     function gotProps(the_props) {
-        let ListViewerAppPlus = withSizeContext(withTheme(withDialogs(withErrorDrawer(withStatus(ListViewerApp)))));
+        let ListViewerAppPlus = withSizeContext(withTheme(withDialogs(withErrorDrawer(withStatus(withAssistant(ListViewerApp))))));
         let the_element = <ListViewerAppPlus {...the_props}
                                              controlled={false}
                                              initial_theme={window.theme}

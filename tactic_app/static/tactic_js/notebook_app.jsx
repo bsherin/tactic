@@ -20,6 +20,7 @@ import {ExportsViewer} from "./export_viewer_react";
 import {HorizontalPanes} from "./resizing_layouts2";
 import {ErrorDrawerContext, withErrorDrawer} from "./error_drawer";
 import {withSizeContext, useSize, SizeProvider} from "./sizing_tools";
+import {withAssistant} from "./assistant";
 import {useCallbackStack, useConstructor, useReducerAndRef} from "./utilities_react";
 import {notebook_props, notebookReducer} from "./notebook_support";
 
@@ -287,8 +288,10 @@ function NotebookApp(props) {
                            refreshTab={props.refreshTab}
                            closeTab={props.closeTab}
                            resource_name={_cProp("resource_name")}
+                           showIconBar={true}
                            showErrorDrawerButton={true}
                            showMetadataDrawerButton={true}
+                           showAssistantDrawerButton={true}
                            showMetadata={showMetadata}
             />
             <div className={`main-outer ${theme.dark_theme ? "bp5-dark" : "light-theme"}`}
@@ -327,7 +330,7 @@ NotebookApp = memo(NotebookApp);
 
 function main_main() {
     function gotProps(the_props) {
-        let NotebookAppPlus = withSizeContext(withTheme(withDialogs(withErrorDrawer(withStatus(NotebookApp)))));
+        let NotebookAppPlus = withSizeContext(withTheme(withDialogs(withErrorDrawer(withStatus(withAssistant(NotebookApp))))));
         let the_element = <NotebookAppPlus {...the_props}
                                            controlled={false}
                                            initial_theme={window.theme}

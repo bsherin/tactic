@@ -13,6 +13,7 @@ import {ReactCodemirror} from "./react-codemirror";
 import {postAjaxPromise, postPromise} from "./communication_react"
 import {ErrorDrawerContext, withErrorDrawer} from "./error_drawer";
 import {withStatus, StatusContext} from "./toaster";
+import {withAssistant} from "./assistant";
 
 import {withSizeContext, SizeContext, useSize} from "./sizing_tools";
 import {guid} from "./utilities_react";
@@ -27,6 +28,9 @@ export {module_viewer_props, ModuleViewerApp}
 function module_viewer_props(data, registerDirtyMethod, finalCallback) {
 
     let resource_viewer_id = guid();
+    if (!window.in_context) {
+        window.main_id = resource_viewer_id;
+    }
     var tsocket = new TacticSocket("main", 5000, "module_viewer", resource_viewer_id);
 
     finalCallback({
@@ -508,7 +512,7 @@ ModuleViewerApp = memo(ModuleViewerApp);
 
 function module_viewer_main() {
     function gotProps(the_props) {
-        let ModuleViewerAppPlus = withSizeContext(withTheme(withDialogs(withErrorDrawer(withStatus(ModuleViewerApp)))));
+        let ModuleViewerAppPlus = withSizeContext(withTheme(withDialogs(withErrorDrawer(withStatus(withAssistant(ModuleViewerApp))))));
         let the_element = <ModuleViewerAppPlus {...the_props}
                                                controlled={false}
                                                initial_theme={window.theme}

@@ -85,6 +85,14 @@ function BodyMenu(props) {
     className: "context-menu-header"
   }), menu_items);
 }
+const metadata_outer_style = {
+  marginTop: 0,
+  marginLeft: 5,
+  overflow: "auto",
+  padding: 25,
+  marginRight: 0,
+  height: "100%"
+};
 function LibraryPane(props) {
   props = {
     columns: {
@@ -1422,14 +1430,6 @@ function LibraryPane(props) {
     additional_metadata = null;
   }
   let split_tags = selected_resource_ref.current.tags == "" ? [] : selected_resource_ref.current.tags.split(" ");
-  let outer_style = {
-    marginTop: 0,
-    marginLeft: 5,
-    overflow: "auto",
-    padding: 15,
-    marginRight: 0,
-    height: "100%"
-  };
   let right_pane = /*#__PURE__*/_react.default.createElement(_blueprint_mdata_fields.CombinedMetadata, {
     tags: split_tags,
     all_tags: tag_list,
@@ -1442,7 +1442,7 @@ function LibraryPane(props) {
     handleChange: _handleMetadataChange,
     res_type: selected_resource_ref.current.res_type,
     pane_type: props.pane_type,
-    outer_style: outer_style,
+    outer_style: metadata_outer_style,
     handleNotesBlur: null,
     additional_metadata: additional_metadata,
     readOnly: props.is_repository

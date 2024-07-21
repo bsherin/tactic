@@ -643,7 +643,6 @@ function PoolMenubar(props) {
                            refreshTab={props.refreshFunc}
                            closeTab={null}
                            resource_name=""
-                           showErrorDrawerButton={true}
     />
 }
 

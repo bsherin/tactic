@@ -19,6 +19,7 @@
     <script>
         window.user_id = "{{current_user.get_id()}}";
         window.theme="{{theme}}";
+        window.has_openapi_key = "{{has_openapi_key}}" == "True";
         window.module_name = "{{module_name}}";
         window.version_string = "{{tstring}}";
         window.line_number = {{ line_number }};

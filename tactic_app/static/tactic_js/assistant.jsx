@@ -61,6 +61,8 @@ function withAssistant(WrappedComponent, lposition = "right", assistant_drawer_s
         const [assistant_id, set_assistant_id, assistant_id_ref] = useStateAndRef(null);
         const [chat_status, set_chat_status, chat_status_ref] = useStateAndRef(window.has_openapi_key ? "idle" : null);
 
+        const errorDrawerFuncs = useContext(ErrorDrawerContext);
+
         useEffect(()=>{
             if (window.has_openapi_key) {
                 getAssistant();
@@ -88,16 +90,19 @@ function withAssistant(WrappedComponent, lposition = "right", assistant_drawer_s
             if (assistant_id_ref.current == null) return;
             postPromise(assistant_id_ref.current, "get_past_messages", {})
                 .then((data) => {
-                    if (data["success"]) {
-                        for (let msg of data["messages"]) {
-                            if (msg["kind"] == "assistant") {
-                                msg["text"] = formatLatexEquations(msg["text"]);
-                                msg["text"] = mdi.render(msg["text"])
-                            }
+                    for (let msg of data["messages"]) {
+                        if (msg["kind"] == "assistant") {
+                            msg["text"] = formatLatexEquations(msg["text"]);
+                            msg["text"] = mdi.render(msg["text"])
                         }
-                        set_item_list(data["messages"])
                     }
+                    set_item_list(data["messages"])
                 })
+                .catch((data)=>{
+                        errorDrawerFuncs.addErrorDrawerEntry({
+                            title: "Error getting past messages",
+                            content: "message" in data ? data.message : ""})
+                 })
         }
 
         function getAssistant() {
@@ -111,6 +116,11 @@ function withAssistant(WrappedComponent, lposition = "right", assistant_drawer_s
 
                     }
                 })
+                 .catch((data)=>{
+                        errorDrawerFuncs.addErrorDrawerEntry({
+                            title: "Error getting assistant",
+                            content: "message" in data ? data.message : ""})
+                 })
         }
 
         function startAssistant() {

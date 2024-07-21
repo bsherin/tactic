@@ -19,6 +19,7 @@
     <script>
         window.user_id = "{{current_user.get_id()}}";
         window.theme="{{theme}}";
+        window.has_openapi_key = "{{has_openapi_key}}" == "True";
         window.resource_name = "{{resource_name}}";
         window.second_resource_name = "{{second_resource_name}}";
         window.is_repository = "{{is_repository}}" == "True";

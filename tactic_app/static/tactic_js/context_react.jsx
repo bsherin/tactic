@@ -41,7 +41,13 @@ import {list_viewer_props, ListViewerApp} from "./list_viewer_react";
 import {text_viewer_props, TextViewerApp} from "./text_viewer_react";
 import {ErrorDrawerContext, withErrorDrawer} from "./error_drawer";
 import {withAssistant} from "./assistant";
-import {SizeContext, getUsableDimensions, USUAL_NAVBAR_HEIGHT, INIT_CONTEXT_PANEL_WIDTH} from "./sizing_tools";
+import {
+    SizeContext,
+    getUsableDimensions,
+    USUAL_NAVBAR_HEIGHT,
+    INIT_CONTEXT_PANEL_WIDTH,
+    ICON_BAR_WIDTH
+} from "./sizing_tools";
 import {postAjaxPromise} from "./communication_react";
 import {DragHandle} from "./resizing_layouts2";
 import {useCallbackStack, useStateAndRef, useDebounce, useStateAndRefAndCounter} from "./utilities_react";
@@ -134,7 +140,7 @@ function ContextApp(props) {
 
     const [lastSelectedTabId, setLastSelectedTabId] = useState(null);
     const [usable_width, set_usable_width] = useState(() => {
-        return getUsableDimensions(true).usable_width - INIT_CONTEXT_PANEL_WIDTH
+        return getUsableDimensions(true).usable_width - INIT_CONTEXT_PANEL_WIDTH - ICON_BAR_WIDTH;
     });
     const [usable_height, set_usable_height] = useState(() => {
         return getUsableDimensions(true).usable_height_no_bottom
@@ -290,7 +296,7 @@ function ContextApp(props) {
             tWidth = 150
         }
         set_usable_height(uheight);
-        set_usable_width(uwidth);
+        set_usable_width(uwidth - ICON_BAR_WIDTH);
         setPaneX(tWidth);
         setPaneY(top_ref.current ? top_rect.top : USUAL_NAVBAR_HEIGHT);
         setTabWidth(tWidth);

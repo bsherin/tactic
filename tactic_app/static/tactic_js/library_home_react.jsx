@@ -22,11 +22,16 @@ import {ThemeContext, withTheme} from "./theme";
 import {BOTTOM_MARGIN, SizeContext, useSize, withSizeContext} from "./sizing_tools";
 import {withDialogs} from "./modal_react";
 import {StatusContext} from "./toaster"
+import {withAssistant} from "./assistant";
+import {handleCallback} from "./communication_react";
 
 const TAB_BAR_WIDTH = 50;
 
 export {LibraryHomeApp, library_id}
 const library_id = guid();
+if (!window.in_context) {
+    window.main_id = library_id;
+}
 
 const tab_panes = ["all-pane", "collections-pane", "projects-pane", "tiles-pane", "lists-pane", "code-pane"];
 const controllable_props = ["usable_width", "usable_height"];
@@ -58,6 +63,9 @@ function LibraryHomeApp(props) {
                 if (!(data["originator"] == library_id)) {
                     window.close()
                 }
+            });
+            props.tsocket.attachListener('handle-callback', (task_packet) => {
+                handleCallback(task_packet, window.main_id)
             });
         }
     }
@@ -130,14 +138,14 @@ LibraryHomeApp = memo(LibraryHomeApp);
 
 function _library_home_main() {
     const tsocket = new TacticSocket("main", 5000, "library", library_id);
-    const LibraryHomeAppPlus = withSizeContext(withTheme(withDialogs(withErrorDrawer(withStatus(LibraryHomeApp)))));
+    const LibraryHomeAppPlus = withSizeContext(withTheme(withDialogs(withErrorDrawer(withStatus(withAssistant(LibraryHomeApp))))));
     const domContainer = document.querySelector('#library-home-root');
     const root = createRoot(domContainer);
     root.render(
         //<HotkeysProvider>
             <LibraryHomeAppPlus tsocket={tsocket}
-                                            controlled={false}
-                                            initial_theme={window.theme}/>
+                                controlled={false}
+                                initial_theme={window.theme}/>
         //</HotkeysProvider>
     )
 }

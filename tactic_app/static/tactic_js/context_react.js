@@ -128,7 +128,7 @@ function ContextApp(props) {
   const [dirty_methods, set_dirty_methods] = (0, _react.useState)({});
   const [lastSelectedTabId, setLastSelectedTabId] = (0, _react.useState)(null);
   const [usable_width, set_usable_width] = (0, _react.useState)(() => {
-    return (0, _sizing_tools.getUsableDimensions)(true).usable_width - _sizing_tools.INIT_CONTEXT_PANEL_WIDTH;
+    return (0, _sizing_tools.getUsableDimensions)(true).usable_width - _sizing_tools.INIT_CONTEXT_PANEL_WIDTH - _sizing_tools.ICON_BAR_WIDTH;
   });
   const [usable_height, set_usable_height] = (0, _react.useState)(() => {
     return (0, _sizing_tools.getUsableDimensions)(true).usable_height_no_bottom;
@@ -263,7 +263,7 @@ function ContextApp(props) {
       tWidth = 150;
     }
     set_usable_height(uheight);
-    set_usable_width(uwidth);
+    set_usable_width(uwidth - _sizing_tools.ICON_BAR_WIDTH);
     setPaneX(tWidth);
     setPaneY(top_ref.current ? top_rect.top : _sizing_tools.USUAL_NAVBAR_HEIGHT);
     setTabWidth(tWidth);

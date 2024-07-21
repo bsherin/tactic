@@ -323,6 +323,19 @@ $dark-medium: $dark-gray4;
 
 .bp5-dark {
 
+  .verticalIconBar {
+    bottom: 0;
+    background-color: $dark-gray2;
+    border-left: 1px solid #fff3;
+  }
+
+  .iconBarButton {
+    .bp5-icon {
+      color: white !important
+    }
+  }
+
+
   &.main-outer {
     background-color: $gray1
   }

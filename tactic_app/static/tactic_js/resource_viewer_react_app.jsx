@@ -65,6 +65,11 @@ async function sendToRepository(res_type, resource_name, dialogFuncs, statusFunc
     }
 }
 
+const metadata_outer_style = {
+  marginTop: 0, marginLeft: 10, overflow: "auto", padding: 25,
+  marginRight: 0, height: "100%",
+};
+
 function ResourceViewerApp(props) {
     props = {
         search_string: "",
@@ -154,10 +159,7 @@ function ResourceViewerApp(props) {
         <CombinedMetadata tags={props.tags}
                           useTags={props.tags != null}
                           expandWidth={true}
-                          outer_style={{
-                              marginTop: 0, marginLeft: 10, overflow: "auto", padding: 15,
-                              marginRight: 0, height: "100%"
-                          }}
+                          outer_style={metadata_outer_style}
                           all_tags={all_tags}
                           created={props.created}
                           updated={props.updated}
@@ -179,7 +181,10 @@ function ResourceViewerApp(props) {
                            refreshTab={props.refreshTab}
                            closeTab={props.closeTab}
                            resource_name={props.resource_name}
-                           showErrorDrawerButton={props.showErrorDrawerButton}
+                           showIconBar={true}
+                           showMetadataDrawerButton={false}
+                           showAssistantDrawerButton={true}
+                           showErrorDrawerButton={true}
             />
             <div ref={top_ref}
                  style={{

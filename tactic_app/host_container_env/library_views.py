@@ -141,6 +141,7 @@ def library():
                                develop=str(_develop),
                                is_remote="no",
                                repository_type="",
+                               has_openapi_key=current_user.has_openapi_key,
                                database_type=database_type,
                                version_string=tstring,
                                theme=current_user.get_theme(),

@@ -15,6 +15,10 @@ function creator_props(data, registerDirtyMethod, finalCallback) {
     let module_viewer_id = data.module_viewer_id;
     window.name = module_viewer_id;
 
+    if (!window.in_context) {
+        window.main_id = module_viewer_id;
+    }
+
     async function readyListener() {
         await _everyone_ready_in_context(finalCallback);
     }

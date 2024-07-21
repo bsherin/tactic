@@ -177,6 +177,7 @@ class TileManager(LibraryResourceManager):
                                resource_name=module_name,
                                theme=user_obj.get_theme(),
                                develop=str(_develop),
+                               has_openapi_key=current_user.has_openapi_key,
                                css_source=css_source("module_viewer_react"),
                                javascript_source=javascript_source,
                                version_string=tstring)
@@ -256,6 +257,7 @@ class TileManager(LibraryResourceManager):
                                css_source=css_source("tile_creator_react"),
                                module_source=js_source_dict["tile_creator_react"],
                                develop=str(_develop),
+                               has_openapi_key=current_user.has_openapi_key,
                                theme=current_user.get_theme(),
                                version_string=tstring,)
 

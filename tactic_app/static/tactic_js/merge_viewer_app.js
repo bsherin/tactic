@@ -78,6 +78,10 @@ function MergeViewerApp(props) {
   return /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement(_menu_utilities.TacticMenubar, {
     menu_specs: menu_specs(),
     connection_status: props.connection_status,
+    showIconBar: true,
+    showErrorDrawerButton: true,
+    showMetadataDrawerButton: false,
+    showAssistantDrawerButton: true,
     showRefresh: false,
     showClose: false,
     refreshTab: null,

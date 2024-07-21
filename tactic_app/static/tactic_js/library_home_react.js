@@ -23,6 +23,8 @@ var _library_menubars = require("./library_menubars");
 var _theme = require("./theme");
 var _sizing_tools = require("./sizing_tools");
 var _modal_react = require("./modal_react");
+var _assistant = require("./assistant");
+var _communication_react = require("./communication_react");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 // noinspection JSCheckFunctionSignatures
@@ -31,6 +33,9 @@ function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; 
 
 const TAB_BAR_WIDTH = 50;
 const library_id = exports.library_id = (0, _utilities_react.guid)();
+if (!window.in_context) {
+  window.main_id = library_id;
+}
 const tab_panes = ["all-pane", "collections-pane", "projects-pane", "tiles-pane", "lists-pane", "code-pane"];
 const controllable_props = ["usable_width", "usable_height"];
 function LibraryHomeApp(props) {
@@ -54,6 +59,9 @@ function LibraryHomeApp(props) {
         if (!(data["originator"] == library_id)) {
           window.close();
         }
+      });
+      props.tsocket.attachListener('handle-callback', task_packet => {
+        (0, _communication_react.handleCallback)(task_packet, window.main_id);
       });
     }
   }
@@ -132,7 +140,7 @@ function LibraryHomeApp(props) {
 exports.LibraryHomeApp = LibraryHomeApp = /*#__PURE__*/(0, _react.memo)(LibraryHomeApp);
 function _library_home_main() {
   const tsocket = new _tactic_socket.TacticSocket("main", 5000, "library", library_id);
-  const LibraryHomeAppPlus = (0, _sizing_tools.withSizeContext)((0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster2.withStatus)(LibraryHomeApp)))));
+  const LibraryHomeAppPlus = (0, _sizing_tools.withSizeContext)((0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster2.withStatus)((0, _assistant.withAssistant)(LibraryHomeApp))))));
   const domContainer = document.querySelector('#library-home-root');
   const root = (0, _client.createRoot)(domContainer);
   root.render(

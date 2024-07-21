@@ -10,6 +10,8 @@ import {SelectedPaneContext, useStateAndRef} from "./utilities_react";
 import {ErrorDrawerContext} from "./error_drawer";
 import {AssistantContext} from "./assistant";
 
+import {ICON_BAR_WIDTH} from "./sizing_tools";
+
 export {MenuComponent, ToolMenu, TacticMenubar, TopLeftButtons}
 
 const name_style = {
@@ -47,8 +49,10 @@ function TacticMenubar(props) {
         closeTab: null,
         menu_specs: null,
         menus: null,
+        showIconBar: false,
         showErrorDrawerButton: false,
         showMetadataDrawerButton: false,
+        showAssistantDrawerButton: false,
         resource_name: null,
         resource_icon: null,
         disabled_items: [],
@@ -111,9 +115,12 @@ function TacticMenubar(props) {
             {props.connection_status &&
                 <ConnectionIndicator connection_status={props.connection_status}/>
             }
-            <DrawerButtonGroup showErrorDrawerButton={props.showErrorDrawerButton}
-                               showMetadataDrawerButton={props.showMetadataDrawerButton}
-                               showMetadata={props.showMetadata}/>
+            {props.showIconBar &&
+                <IconBar showErrorDrawerButton={props.showErrorDrawerButton}
+                         showAssistantDrawerButton={props.showAssistantDrawerButton}
+                         showMetadataDrawerButton={props.showMetadataDrawerButton}
+                         showMetadata={props.showMetadata}/>
+            }
         </Navbar>
     )
 }
@@ -135,6 +142,40 @@ function ConnectionIndicator(props) {
                   intent={props.connection_status == "up" ? null : "danger"}
                   size={18}/>
         </div>
+    )
+}
+
+const IconBarStyle = {width: ICON_BAR_WIDTH};
+function IconBar(props) {
+    const errorDrawerFuncs = useContext(ErrorDrawerContext);
+    const assistantDrawerFuncs = useContext(AssistantContext);
+    return (
+    <div className="verticalIconBar" style={IconBarStyle}>
+           {props.showErrorDrawerButton &&
+                <IconBarButton icon="bug" onClick={() => {
+                    errorDrawerFuncs.toggleErrorDrawer()
+                }}/>
+            }
+            {window.has_openapi_key && props.showAssistantDrawerButton && assistantDrawerFuncs && props.showAssistantDrawerButton &&
+                <IconBarButton icon="chat" onClick={() => {
+                    assistantDrawerFuncs.toggleAssistantDrawer()
+                }}/>
+            }
+            {props.showMetadataDrawerButton &&
+                <IconBarButton icon="list-columns" onClick={() => {
+                    props.showMetadata()
+                }}/>
+            }
+        </div>
+      );
+}
+
+IconBar = memo(IconBar);
+
+function IconBarButton(props) {
+    return (
+        <Button icon={<Icon icon={props.icon} size={18}/>}
+                minimal={true} large={true} className="iconBarButton" onClick={props.onClick}/>
     )
 }
 
