@@ -22,6 +22,10 @@ function DragHandle({direction = "x", onDrag = null, dragStart = null, dragEnd =
     const lastX = useRef(null);
     const lastY = useRef(null);
 
+    // This nodeRef stuff is encessary to get react-draggable to now give an error
+    // See here: https://github.com/react-grid-layout/react-draggable/blob/v4.4.2/lib/DraggableCore.js#L159-L171
+    const nodeRef = useRef(null);
+
     const icon_dict = {
         x: "drag-handle-vertical",
         y: "drag-handle-horizontal",
@@ -121,7 +125,7 @@ function DragHandle({direction = "x", onDrag = null, dragStart = null, dragEnd =
         if (barWidth != null) {
             style.width = barWidth
         }
-        wrappedElement = <div className={the_class} style={style}/>
+        wrappedElement = <div ref={nodeRef} className={the_class} style={style}/>
     }
     else {
         wrappedElement = <Icon icon={icon_dict[direction]}
@@ -129,7 +133,7 @@ function DragHandle({direction = "x", onDrag = null, dragStart = null, dragEnd =
                                style={style}/>
     }
     return (
-        <DraggableCore
+        <DraggableCore nodeRef={nodeRef}
             onStart={_dragStart}
             onStop={_dragEnd}
             onDrag={_onDrag}
