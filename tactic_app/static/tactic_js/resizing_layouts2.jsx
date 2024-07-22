@@ -128,9 +128,12 @@ function DragHandle({direction = "x", onDrag = null, dragStart = null, dragEnd =
         wrappedElement = <div ref={nodeRef} className={the_class} style={style}/>
     }
     else {
-        wrappedElement = <Icon icon={icon_dict[direction]}
-                               size={props.iconSize}
-                               style={style}/>
+        wrappedElement =
+            <div ref={nodeRef} >
+                <Icon icon={icon_dict[direction]}
+                                   size={props.iconSize}
+                                   style={style}/>
+            </div>
     }
     return (
         <DraggableCore nodeRef={nodeRef}
