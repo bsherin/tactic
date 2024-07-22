@@ -14624,11 +14624,11 @@ a > .bp5-dark .bp5-tooltip .bp5-running-text code{
   \***************************************************************************************************************/
 @font-face{
   font-family:"blueprint-icons-16";
-  src:url(a623163f779196b8c69a.ttf?ec6513420d7320fe9d6afb75ca586af5) format("truetype"), url(de9baea6cec9dc57579e.eot?ec6513420d7320fe9d6afb75ca586af5#iefix) format("embedded-opentype"), url(42acf487df3965ddc79c.woff2?ec6513420d7320fe9d6afb75ca586af5) format("woff2"), url(0a7e49ca9bf1e5734087.woff?ec6513420d7320fe9d6afb75ca586af5) format("woff"), url(0f11c4066c6d72d0a16c.svg?ec6513420d7320fe9d6afb75ca586af5#blueprint-icons-16) format("svg");
+  src:url(26da38434432a6f2ab65.ttf?ec6513420d7320fe9d6afb75ca586af5) format("truetype"), url(138b2ae56c70c62f26d7.eot?ec6513420d7320fe9d6afb75ca586af5#iefix) format("embedded-opentype"), url(79a13a89407c8f9c36a3.woff2?ec6513420d7320fe9d6afb75ca586af5) format("woff2"), url(3ad06afff3d047d28a32.woff?ec6513420d7320fe9d6afb75ca586af5) format("woff"), url(f868fdf6a5273a1e9ac6.svg?ec6513420d7320fe9d6afb75ca586af5#blueprint-icons-16) format("svg");
 }
 @font-face{
   font-family:"blueprint-icons-20";
-  src:url(c2c4929c44feb2caf15e.ttf?c4b75bae44f3d7c4a42635f60927e172) format("truetype"), url(74de91188e8be6e06874.eot?c4b75bae44f3d7c4a42635f60927e172#iefix) format("embedded-opentype"), url(54e5e91479b8b5b89cfd.woff2?c4b75bae44f3d7c4a42635f60927e172) format("woff2"), url(279fb531471a39be6bfb.woff?c4b75bae44f3d7c4a42635f60927e172) format("woff"), url(159c90419149d211d5e5.svg?c4b75bae44f3d7c4a42635f60927e172#blueprint-icons-20) format("svg");
+  src:url(fadf85fab04c291a32d1.ttf?c4b75bae44f3d7c4a42635f60927e172) format("truetype"), url(92592e90a5b6aa03ec5d.eot?c4b75bae44f3d7c4a42635f60927e172#iefix) format("embedded-opentype"), url(8c57a8146b856de21f46.woff2?c4b75bae44f3d7c4a42635f60927e172) format("woff2"), url(518ef6a6563db1f0dcf2.woff?c4b75bae44f3d7c4a42635f60927e172) format("woff"), url(5cd9e71567db6b235cbe.svg?c4b75bae44f3d7c4a42635f60927e172#blueprint-icons-20) format("svg");
 }
 /*!*****************************************************************************************************************************************************************************!*\
   !*** css ./node_modules/css-loader/dist/cjs.js!./node_modules/postcss-loader/dist/cjs.js!./node_modules/sass-loader/dist/cjs.js!./tactic_app/static/tactic_css/tactic.scss ***!
