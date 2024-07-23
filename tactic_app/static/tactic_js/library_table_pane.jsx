@@ -44,10 +44,10 @@ function LibraryTablePane(props) {
                          paddingRight: 10,
                          maxHeight: usable_height
                      }}>
-                    <TagButtonList tag_list={props.tag_list}
-                                   tagRoot={props.tagRoot}
-                                   expanded_tags={props.expanded_tags_ref.current}
-                                   active_tag={props.active_tag_ref.current}
+                    <TagButtonList tag_list={props.pStateRef.current.tag_list}
+                                   tagRoot={props.pStateRef.current.search_state.tagRoot}
+                                   expanded_tags={props.pStateRef.current.search_state.expanded_tags}
+                                   active_tag={props.pStateRef.current.search_state.active_tag}
                                    updateTagState={props.updateTagState}
                                    doTagDelete={props.doTagDelete}
                                    doTagRename={props.doTagRename}
@@ -73,19 +73,19 @@ function LibraryTablePane(props) {
                                     allow_search_metadata={props.allow_search_metadata}
                                     allow_show_hidden={true}
                                     update_search_state={props.update_search_state}
-                                    search_string={props.search_string_ref.current}
-                                    search_inside={props.search_inside_ref.current}
-                                    show_hidden={props.show_hidden_ref.current}
-                                    search_metadata={props.search_metadata_ref.current}
+                                    search_string={props.pStateRef.current.search_state.search_string}
+                                    search_inside={props.pStateRef.current.search_state.search_inside}
+                                    show_hidden={props.pStateRef.current.search_state.show_hidden}
+                                    search_metadata={props.pStateRef.current.search_state.search_metadata}
                         />
                     </div>
-                    <BpSelectorTable data_dict={props.data_dict_ref.current}
-                                     rowChanged={props.rowChanged}
+                    <BpSelectorTable data_dict={props.pStateRef.current.data_dict}
+                                     rowChanged={props.pStateRef.current.rowChanged}
                                      columns={props.columns}
-                                     num_rows={props.num_rows}
+                                     num_rows={props.pStateRef.current.num_rows}
                                      open_resources_ref={props.open_resources_ref}
                                      sortColumn={props.sortColumn}
-                                     selectedRegions={props.selectedRegionsRef.current}
+                                     selectedRegions={props.pStateRef.current.select_state.selectedRegions}
                                      communicateColumnWidthSum={set_total_width}
                                      onSelection={props.onSelection}
                                      keyHandler={props.keyHandler}

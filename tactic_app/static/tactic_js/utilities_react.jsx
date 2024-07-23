@@ -8,10 +8,12 @@ import {useState, useEffect, useRef, useReducer, createContext} from "react";
 import { createRoot } from 'react-dom/client';
 import {Spinner, Text} from "@blueprintjs/core";
 
+import { useImmerReducer } from 'use-immer';
+
 export {propsAreEqual, arrayMove, arraysMatch, get_ppi, isInt};
 export {remove_duplicates, guid, scrollMeIntoView, renderSpinnerMessage};
 export {useConstructor, useCallbackStack, useStateAndRef, useReducerAndRef, useConnection,
-    useStateAndRefAndCounter, useDidMount}
+    useStateAndRefAndCounter, useDidMount, useImmerReducerAndRef};
 
 export {debounce, throttle, useDebounce, SelectedPaneContext}
 
@@ -101,6 +103,13 @@ function useStateAndRefAndCounter(initial) {
 
 function useReducerAndRef(reducer, initial) {
     const [value, dispatch] = useReducer(reducer, initial);
+    const valueRef = useRef(value);
+    valueRef.current = value;
+    return [value, dispatch, valueRef]
+}
+
+function useImmerReducerAndRef(reducer, initial) {
+    const [value, dispatch] = useImmerReducer(reducer, initial);
     const valueRef = useRef(value);
     valueRef.current = value;
     return [value, dispatch, valueRef]
