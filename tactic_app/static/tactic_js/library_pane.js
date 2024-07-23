@@ -12,7 +12,6 @@ var _react = _interopRequireWildcard(require("react"));
 var _core = require("@blueprintjs/core");
 var _popover = require("@blueprintjs/popover2");
 var _table = require("@blueprintjs/table");
-var _lodash = _interopRequireDefault(require("lodash"));
 var _blueprint_mdata_fields = require("./blueprint_mdata_fields");
 var _resizing_layouts = require("./resizing_layouts2");
 var _communication_react = require("./communication_react");
@@ -23,6 +22,7 @@ var _theme = require("./theme");
 var _modal_react = require("./modal_react");
 var _error_drawer = require("./error_drawer");
 var _library_table_pane = require("./library_table_pane");
+var _library_pane_reducer = require("./library_pane_reducer");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 // noinspection JSValidateTypes,JSDeprecatedSymbols
@@ -93,6 +93,39 @@ const metadata_outer_style = {
   marginRight: 0,
   height: "100%"
 };
+const initial_state = {
+  data_dict: {},
+  num_rows: 0,
+  tag_list: [],
+  contextMenuItems: [],
+  select_state: {
+    selected_resource: {
+      "name": "",
+      "_id": "",
+      "tags": "",
+      "notes": "",
+      "updated": "",
+      "created": ""
+    },
+    selected_rows: [],
+    multi_select: false,
+    list_of_selected: [],
+    selectedRegions: [_table.Regions.row(0)]
+  },
+  search_state: {
+    sort_field: "updated",
+    sort_direction: "descending",
+    expanded_tags: [],
+    active_tag: "all",
+    tagRoot: "all",
+    search_string: "",
+    search_inside: false,
+    search_metadata: false,
+    filterType: "all",
+    show_hidden: false
+  },
+  rowChanged: 0
+};
 function LibraryPane(props) {
   props = {
     columns: {
@@ -113,37 +146,11 @@ function LibraryPane(props) {
     tsocket: null,
     ...props
   };
+  const [pState, pDispatch, pStateRef] = (0, _utilities_react.useImmerReducerAndRef)(_library_pane_reducer.paneReducer, initial_state);
   const top_ref = (0, _react.useRef)(null);
   const previous_search_spec = (0, _react.useRef)(null);
   const socket_counter = (0, _react.useRef)(null);
   const blank_selected_resource = (0, _react.useRef)({});
-  const [data_dict, set_data_dict, data_dict_ref] = (0, _utilities_react.useStateAndRef)({});
-  const [num_rows, set_num_rows] = (0, _react.useState)(0);
-  const [tag_list, set_tag_list, tag_list_ref] = (0, _utilities_react.useStateAndRef)([]);
-  const [contextMenuItems, setContextMenuItems] = (0, _react.useState)([]);
-  const [selected_resource, set_selected_resource, selected_resource_ref] = (0, _utilities_react.useStateAndRef)({
-    "name": "",
-    "_id": "",
-    "tags": "",
-    "notes": "",
-    "updated": "",
-    "created": ""
-  });
-  const [selected_rows, set_selected_rows, selected_rows_ref] = (0, _utilities_react.useStateAndRef)([]);
-  const [expanded_tags, set_expanded_tags, expanded_tags_ref] = (0, _utilities_react.useStateAndRef)([]);
-  const [active_tag, set_active_tag, active_tag_ref] = (0, _utilities_react.useStateAndRef)("all");
-  const [tagRoot, setTagRoot] = (0, _react.useState)("all");
-  const [sort_field, set_sort_field, sort_field_ref] = (0, _utilities_react.useStateAndRef)("updated");
-  const [sort_direction, set_sort_direction, sort_direction_ref] = (0, _utilities_react.useStateAndRef)("descending");
-  const [filterType, setFilterType, filterTypeRef] = (0, _utilities_react.useStateAndRef)(props.pane_type);
-  const [multi_select, set_multi_select, multi_select_ref] = (0, _utilities_react.useStateAndRef)(false);
-  const [list_of_selected, set_list_of_selected, list_of_selected_ref] = (0, _utilities_react.useStateAndRef)([]);
-  const [search_string, set_search_string, search_string_ref] = (0, _utilities_react.useStateAndRef)("");
-  const [search_inside, set_search_inside, search_inside_ref] = (0, _utilities_react.useStateAndRef)(false);
-  const [search_metadata, set_search_metadata, search_metadata_ref] = (0, _utilities_react.useStateAndRef)(false);
-  const [show_hidden, set_show_hidden, show_hidden_ref] = (0, _utilities_react.useStateAndRef)(false);
-  const [selectedRegions, setSelectedRegions, selectedRegionsRef] = (0, _utilities_react.useStateAndRef)([_table.Regions.row(0)]);
-  const [rowChanged, setRowChanged] = (0, _react.useState)(0);
   const selectedTypeRef = (0, _react.useRef)(null);
   const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(top_ref, 0, "LibraryPane");
   const theme = (0, _react.useContext)(_theme.ThemeContext);
@@ -151,9 +158,9 @@ function LibraryPane(props) {
   const statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
   const errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
   const _handleArrowKeyPress = (0, _react.useCallback)(async key => {
-    if (multi_select_ref.current) return;
-    let the_res = selected_resource_ref.current;
-    let current_index = parseInt(get_data_dict_index(the_res.name, the_res.res_type));
+    if (pStateRef.current.select_state.multi_select) return;
+    let the_res = pStateRef.current.select_state.selected_resource;
+    let current_index = parseInt((0, _library_pane_reducer.get_index)(the_res.name, the_res.res_type, pStateRef.current.data_dict));
     let new_index;
     let new_selected_res;
     if (key == "ArrowDown") {
@@ -163,11 +170,11 @@ function LibraryPane(props) {
       if (new_index < 0) return;
     }
     await _selectRow(new_index);
-  }, [multi_select_ref.current, selected_resource_ref.current, data_dict_ref.current]);
+  }, [pStateRef.current.select_state.multi_select, pStateRef.current.select_state.selected_resource, pStateRef.current.data_dict]);
   const _view_func = (0, _react.useCallback)(async function () {
     let the_view = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
     if (the_view == null) {
-      the_view = view_views(props.is_repository)[selected_resource_ref.current.res_type];
+      the_view = view_views(props.is_repository)[pStateRef.current.select_state.selected_resource.res_type];
     }
     statusFuncs.setStatus({
       show_spinner: true,
@@ -180,7 +187,7 @@ function LibraryPane(props) {
       try {
         data = await (0, _communication_react.postAjaxPromise)(the_view, {
           context_id: context_id,
-          resource_name: selected_resource_ref.current.name
+          resource_name: pStateRef.current.select_state.selected_resource.name
         });
         props.handleCreateViewer(data, statusFuncs.clearStatus);
       } catch (e) {
@@ -189,17 +196,19 @@ function LibraryPane(props) {
       }
     } else {
       statusFuncs.clearStatus();
-      window.open($SCRIPT_ROOT + the_view + selected_resource_ref.current.name);
+      window.open($SCRIPT_ROOT + the_view + pStateRef.current.select_state.selected_resource.name);
     }
-  }, [selected_resource_ref.current]);
+  }, [pStateRef.current.select_state.selected_resource]);
   async function _unsearch() {
-    if (search_string_ref.current != "") {
-      set_search_string("");
-    } else if (active_tag_ref.current != "all") {
+    if (pStateRef.current.search_state.search_string != "") {
       _update_search_state({
-        "active_tag": "all"
+        search_string: ""
       });
-    } else if (props.pane_type == "all" && filterTypeRef.current != "all") {
+    } else if (pStateRef.current.search_state.active_tag != "all") {
+      _update_search_state({
+        active_tag: "all"
+      });
+    } else if (props.pane_type == "all" && pStateRef.current.search_state.filterType != "all") {
       await _setFilterType("all");
     }
   }
@@ -238,28 +247,6 @@ function LibraryPane(props) {
     handleKeyDown,
     handleKeyUp
   } = (0, _core.useHotkeys)(hotkeys);
-  const stateSetters = {
-    data_dict: set_data_dict,
-    num_rows: set_num_rows,
-    tag_list: set_tag_list,
-    tagRoot: setTagRoot,
-    contextMenuItems: setContextMenuItems,
-    selected_resource: set_selected_resource,
-    selected_rows: set_selected_rows,
-    expanded_tags: set_expanded_tags,
-    active_tag: set_active_tag,
-    sort_field: set_sort_field,
-    sort_direction: set_sort_direction,
-    filterType: setFilterType,
-    multi_select: set_multi_select,
-    list_of_selected: set_list_of_selected,
-    search_string: set_search_string,
-    search_inside: set_search_inside,
-    search_metadata: set_search_metadata,
-    show_hidden: set_show_hidden,
-    selectedRegions: setSelectedRegions,
-    rowChanged: setRowChanged
-  };
   (0, _utilities_react.useConstructor)(() => {
     for (let col in props.columns) {
       blank_selected_resource.current[col] = "";
@@ -270,13 +257,6 @@ function LibraryPane(props) {
     _grabNewChunkWithRow(0).then(() => {});
   }, []);
   const pushCallback = (0, _utilities_react.useCallbackStack)("library_home");
-  function setState(new_state) {
-    let callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-    for (let attr in new_state) {
-      stateSetters[attr](new_state[attr]);
-    }
-    pushCallback(callback);
-  }
   function initSocket() {
     if (props.tsocket != null && !props.is_repository) {
       props.tsocket.attachListener(`update-selector-row`, _handleRowUpdate);
@@ -287,15 +267,7 @@ function LibraryPane(props) {
     }
   }
   function _getSearchSpec() {
-    return {
-      active_tag: active_tag_ref.current == "all" ? null : active_tag_ref.current,
-      search_string: search_string_ref.current,
-      search_inside: search_inside_ref.current,
-      search_metadata: search_metadata_ref.current,
-      show_hidden: show_hidden_ref.current,
-      sort_field: sort_field_ref.current,
-      sort_direction: sort_direction_ref.current
-    };
+    return pStateRef.current.search_state;
   }
   function _renderBodyContextMenu(menu_context) {
     if (event) {
@@ -310,41 +282,39 @@ function LibraryPane(props) {
         let last_row = region["rows"][1];
         for (let i = first_row; i <= last_row; ++i) {
           if (!selected_rows.includes(i)) {
-            selected_rows.push(data_dict_ref.current[i]);
+            selected_rows.push(pStateRef.current.data_dict[i]);
           }
         }
       }
     }
     return /*#__PURE__*/_react.default.createElement(BodyMenu, {
-      items: contextMenuItems,
+      items: pStateRef.current.contextMenuItems,
       selected_rows: selected_rows
     });
   }
   async function _setFilterType(rtype) {
-    if (rtype == filterTypeRef.current) return;
-    if (!multi_select_ref.current) {
-      let sres = selected_resource_ref.current;
+    if (rtype == pStateRef.current.search_state.filterType) return;
+    if (!pStateRef.current.search_state.multi_select) {
+      let sres = pStateRef.current.select_state.selected_resource;
       if (sres.name != "" && sres.notes != get_data_dict_entry(sres.name, sres.res_type).notes) {
         await _saveFromSelectedResource();
       }
     }
-    setFilterType(rtype);
+    pDispatch({
+      type: "UPDATE_SEARCH_STATE",
+      search_state: {
+        filterType: rtype
+      }
+    });
     clearSelected();
     pushCallback(async () => {
       await _grabNewChunkWithRow(0, true, null, true);
     });
   }
   function clearSelected() {
-    set_selected_resource({
-      "name": "",
-      "_id": "",
-      "tags": "",
-      "notes": "",
-      "updated": "",
-      "created": ""
+    pDispatch({
+      type: "CLEAR_SELECTED"
     });
-    set_list_of_selected([]);
-    set_selected_rows([]);
   }
   async function _onTableSelection(regions) {
     if (regions.length == 0) return; // Without this get an error when clicking on a body cell
@@ -359,14 +329,19 @@ function LibraryPane(props) {
         for (let i = first_row; i <= last_row; ++i) {
           if (!selected_row_indices.includes(i)) {
             selected_row_indices.push(i);
-            selected_rows.push(data_dict_ref.current[i]);
+            selected_rows.push(pStateRef.current.data_dict[i]);
             revised_regions.push(_table.Regions.row(i));
           }
         }
       }
     }
     await _handleRowSelection(selected_rows);
-    setSelectedRegions(revised_regions);
+    pDispatch({
+      type: "UPDATE_SELECT_STATE",
+      select_state: {
+        selectedRegions: revised_regions
+      }
+    });
   }
   async function _grabNewChunkWithRow(row_index) {
     let flush = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
@@ -374,7 +349,12 @@ function LibraryPane(props) {
     let select = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
     let select_by_name = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : null;
     let callback = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : null;
-    let search_spec = _getSearchSpec();
+    let search_spec = {
+      ...pStateRef.current.search_state
+    };
+    if (search_spec.active_tag == "all") {
+      search_spec.active_tag = null;
+    }
     if (spec_update) {
       search_spec = Object.assign(search_spec, spec_update);
     }
@@ -382,7 +362,7 @@ function LibraryPane(props) {
       search_spec.active_tag = "/" + search_spec.active_tag;
     }
     let args = {
-      pane_type: filterTypeRef.current,
+      pane_type: pStateRef.current.search_state.filterType,
       search_spec: search_spec,
       row_number: row_index,
       is_repository: props.is_repository
@@ -392,18 +372,23 @@ function LibraryPane(props) {
       data = await (0, _communication_react.postAjaxPromise)("grab_all_list_chunk", args);
       let new_data_dict;
       if (flush) {
-        new_data_dict = data.chunk_dict;
+        pDispatch({
+          type: "INIT_DATA_DICT",
+          data_dict: data.chunk_dict,
+          num_rows: data.num_rows
+        });
       } else {
-        new_data_dict = _lodash.default.cloneDeep(data_dict_ref.current);
-        new_data_dict = Object.assign(new_data_dict, data.chunk_dict);
+        pDispatch({
+          type: "UPDATE_DATA_DICT",
+          data_dict: data.chunk_dict,
+          num_rows: data.num_rows
+        });
       }
       previous_search_spec.current = search_spec;
-      set_data_dict(new_data_dict);
-      set_num_rows(data.num_rows);
       set_tag_list(data.all_tags);
       if (callback) {
         pushCallback(callback);
-      } else if (select || selected_resource_ref.current.name == "") {
+      } else if (select || pStateRef.current.select_state.selected_resource.name == "") {
         pushCallback(() => {
           _selectRow(row_index);
         });
@@ -412,11 +397,15 @@ function LibraryPane(props) {
       errorDrawerFuncs.addFromError("Error grabbing resource chunk", e);
     }
   }
+  function set_tag_list(tag_list) {
+    pDispatch({
+      type: "SET_TAG_LIST",
+      tag_list: tag_list
+    });
+  }
   async function _handleRowUpdate(res_dict) {
     let res_name = res_dict.name;
     let ind;
-    let new_data_dict;
-    let new_state;
     let _id;
     let event_type = res_dict.event_type;
     delete res_dict.event_type;
@@ -424,38 +413,44 @@ function LibraryPane(props) {
       case "update":
         if ("_id" in res_dict) {
           _id = res_dict._id;
-          ind = get_data_dict_index_from_id(res_dict._id);
+          ind = (0, _library_pane_reducer.get_index_from_id)(res_dict._id, pStateRef.current.data_dict);
         } else {
-          ind = get_data_dict_index(res_name, res_dict.res_type);
+          ind = (0, _library_pane_reducer.get_index)(res_name, res_dict.res_type, pStateRef.current.data_dict);
           if (ind) {
-            _id = data_dict_ref.current[ind]._id;
+            _id = pStateRef.current.data_dict[ind]._id;
           }
         }
         if (!ind) return;
-        new_data_dict = _lodash.default.cloneDeep(data_dict_ref.current);
-        let the_row = new_data_dict[ind];
-        for (let field in res_dict) {
-          the_row[field] = res_dict[field];
-        }
-        new_state = {
-          data_dict: new_data_dict,
-          rowChanged: rowChanged + 1
+        let the_row = {
+          ...pStateRef.current.data_dict[ind],
+          ...res_dict
         };
+        pDispatch({
+          type: "UPDATE_ROW",
+          index: ind,
+          res_dict: res_dict
+        });
         if ("tags" in res_dict) {
           let data_dict = {
             pane_type: props.pane_type,
             is_repository: props.is_repository,
-            show_hidden: show_hidden_ref.current
+            show_hidden: pStateRef.current.search_state.show_hidden
           };
           let data = await (0, _communication_react.postAjaxPromise)("get_tag_list", data_dict);
           let all_tags = data.tag_list;
           set_tag_list(all_tags);
         }
-        if (_id == selected_resource_ref.current._id) {
-          set_selected_resource(the_row);
-          pushCallback(() => setState(new_state));
-        } else {
-          setState(new_state);
+        if (_id == pStateRef.current.select_state.selected_resource._id) {
+          let the_row = {
+            ...pStateRef.current.data_dict[ind],
+            ...res_dict
+          };
+          pDispatch({
+            type: "UPDATE_SELECT_STATE",
+            select_state: {
+              selected_resource: the_row
+            }
+          });
         }
         break;
       case "insert":
@@ -463,27 +458,25 @@ function LibraryPane(props) {
         break;
       case "delete":
         if ("_id" in res_dict) {
-          ind = parseInt(get_data_dict_index_from_id(res_dict._id));
+          ind = parseInt((0, _library_pane_reducer.get_index_from_id)(res_dict._id, pStateRef.current.data_dict));
         } else {
-          ind = parseInt(get_data_dict_index(res_name, res_dict.res_type));
+          ind = parseInt((0, _library_pane_reducer.get_index)(res_name, res_dict.res_type, pStateRef.current.data_dict));
         }
-        new_data_dict = _lodash.default.cloneDeep(data_dict_ref.current);
-        let is_last = ind == new_data_dict.length - 1;
+        let is_last = ind == pStateRef.current.data_dict.length - 1;
         let selected_ind = null;
-        if ("_id" in selected_resource_ref.current) {
-          selected_ind = parseInt(get_data_dict_index_from_id(selected_resource_ref.current._id));
+        if ("_id" in pStateRef.current.select_state.selected_resource) {
+          selected_ind = parseInt((0, _library_pane_reducer.get_index_from_id)(pStateRef.current.select_state.selected_resource._id, pStateRef.current.data_dict));
         }
         let is_selected_row = ind && ind == selected_ind;
         let new_selected_ind = selected_ind;
         if (selected_ind > ind) {
           new_selected_ind = selected_ind - 1;
         }
-        delete new_data_dict[String(ind)];
-        new_state = {
-          data_dict: new_data_dict,
-          rowChanged: rowChanged + 1
-        };
-        setState(new_state, async () => {
+        pDispatch({
+          type: "DELETE_ROW",
+          index: ind
+        });
+        pushCallback(async () => {
           await _grabNewChunkWithRow(ind, false, null, false, null, () => {
             if (new_selected_ind) {
               _selectRow(new_selected_ind);
@@ -498,58 +491,10 @@ function LibraryPane(props) {
     }
   }
   function get_data_dict_entry(name, res_type) {
-    for (let index in data_dict_ref.current) {
-      let the_row = data_dict_ref.current[index];
+    for (let index in pStateRef.current.data_dict) {
+      let the_row = pStateRef.current.data_dict[index];
       if (the_row.name == name && the_row.res_type == res_type) {
-        return data_dict_ref.current[index];
-      }
-    }
-    return null;
-  }
-  function _match_row(row1, row2) {
-    return row1.name == row2.name && row1.res_type == row2.res_type;
-  }
-  function _match_row_by_id(row1, row2) {
-    return row1._id == row2._id;
-  }
-  function _match_any_row(row1, row_list) {
-    for (let row2 of row_list) {
-      if (_match_row(row1, row2)) {
-        return true;
-      }
-    }
-    return false;
-  }
-  function set_in_data_dict(old_rows, new_val_dict, data_dict) {
-    let new_data_dict = {};
-    for (let index in data_dict_ref.current) {
-      let entry = data_dict_ref.current[index];
-      if (_match_any_row(entry, old_rows)) {
-        for (let k in new_val_dict) {
-          entry[k] = new_val_dict[k];
-        }
-      }
-      new_data_dict[index] = entry;
-    }
-    return new_data_dict;
-  }
-  function get_data_dict_index(name, res_type) {
-    for (let index in data_dict_ref.current) {
-      if (_match_row(data_dict_ref.current[index], {
-        name: name,
-        res_type: res_type
-      })) {
-        return index;
-      }
-    }
-    return null;
-  }
-  function get_data_dict_index_from_id(_id) {
-    for (let index in data_dict_ref.current) {
-      if (_match_row_by_id(data_dict_ref.current[index], {
-        _id: _id
-      })) {
-        return index;
+        return pStateRef.current.data_dict[index];
       }
     }
     return null;
@@ -558,7 +503,7 @@ function LibraryPane(props) {
     let tlist = tstring.split(" ");
     let new_tags = [];
     for (let tag of tlist) {
-      if (!(tag.length == 0) && !(tag in tag_list)) {
+      if (!(tag.length == 0) && !(tag in pStateRef.current.tag_list)) {
         new_tags.push(tag);
       }
     }
@@ -567,17 +512,17 @@ function LibraryPane(props) {
   async function _saveFromSelectedResource() {
     // This will only be called when there is a single row selected
     const result_dict = {
-      "res_type": selected_rows_ref.current[0].res_type,
-      "res_name": list_of_selected_ref.current[0],
-      "tags": selected_resource_ref.current.tags,
-      "notes": selected_resource_ref.current.notes
+      "res_type": pStateRef.current.select_state.selected_rows[0].res_type,
+      "res_name": pStateRef.current.select_state.list_of_selected[0],
+      "tags": pStateRef.current.select_state.selected_resource.tags,
+      "notes": pStateRef.current.select_state.selected_resource.notes
     };
-    if (selected_rows_ref.current[0].res_type == "tile" && "icon" in selected_resource_ref.current) {
-      result_dict["icon"] = selected_resource_ref.current["icon"];
+    if (pStateRef.current.select_state.selected_rows[0].res_type == "tile" && "icon" in pStateRef.current.select_state.selected_resource) {
+      result_dict["icon"] = pStateRef.current.select_state.selected_resource["icon"];
     }
-    let saved_selected_resource = Object.assign({}, selected_resource_ref.current);
-    let saved_selected_rows = [...selected_rows_ref.current];
-    let new_tags = _extractNewTags(selected_resource_ref.current.tags);
+    let saved_selected_resource = Object.assign({}, pStateRef.current.select_state.selected_resource);
+    let saved_selected_rows = [...pStateRef.current.select_state.selected_rows];
+    let new_tags = _extractNewTags(pStateRef.current.select_state.selected_resource.tags);
     try {
       await (0, _communication_react.postAjaxPromise)("save_metadata", result_dict);
     } catch (e) {
@@ -586,19 +531,27 @@ function LibraryPane(props) {
   }
   async function _overwriteCommonTags() {
     const result_dict = {
-      "selected_rows": selected_rows_ref.current,
-      "tags": selected_resource_ref.current.tags
+      "selected_rows": pStateRef.current.select_state.selected_rows,
+      "tags": pStateRef.current.select_state.selected_resource.tags
     };
-    let new_tags = _extractNewTags(selected_resource_ref.current.tags);
+    let new_tags = _extractNewTags(pStateRef.current.select_state.selected_resource.tags);
     try {
       await (0, _communication_react.postAjaxPromise)("overwrite_common_tags", result_dict);
     } catch (e) {
       errorDrawerFuncs.addFromError("Error overwriting tags", e);
     }
   }
+  function set_selected_resource(new_resource) {
+    pDispatch({
+      type: "UPDATE_SELECT_STATE",
+      select_state: {
+        selected_resource: new_resource
+      }
+    });
+  }
   function _handleMetadataChange(changed_state_elements) {
-    if (!multi_select_ref.current) {
-      let revised_selected_resource = Object.assign({}, selected_resource_ref.current);
+    if (!pStateRef.current.select_state.multi_select) {
+      let revised_selected_resource = Object.assign({}, pStateRef.current.select_state.selected_resource);
       revised_selected_resource = Object.assign(revised_selected_resource, changed_state_elements);
       if (Object.keys(changed_state_elements).includes("tags")) {
         revised_selected_resource["tags"] = revised_selected_resource["tags"].join(" ");
@@ -609,12 +562,20 @@ function LibraryPane(props) {
         pushCallback(_saveFromSelectedResource);
       }
     } else {
-      let revised_selected_resource = Object.assign({}, selected_resource_ref.current);
+      let revised_selected_resource = Object.assign({}, pStateRef.current.select_state.selected_resource);
       revised_selected_resource = Object.assign(revised_selected_resource, changed_state_elements);
       revised_selected_resource["tags"] = revised_selected_resource["tags"].join(" ");
       set_selected_resource(revised_selected_resource);
       pushCallback(_overwriteCommonTags);
     }
+  }
+  function set_multi_select(new_val) {
+    pDispatch({
+      type: "UPDATE_SELECT_STATE",
+      select_state: {
+        multi_select: new_val
+      }
+    });
   }
   function _handleRowDoubleClick(row_dict) {
     let view_view = view_views(props.is_repository)[row_dict.res_type];
@@ -623,10 +584,15 @@ function LibraryPane(props) {
       show_spinner: true,
       status_message: "Opening ..."
     });
-    set_selected_resource(row_dict);
-    set_multi_select(false);
-    set_list_of_selected([row_dict.name]);
-    set_selected_rows([row_dict]);
+    pDispatch({
+      type: "UPDATE_SELECT_STATE",
+      select_state: {
+        selected_resource: row_dict,
+        multi_select: false,
+        list_of_selected: [row_dict.name],
+        selected_rows: [row_dict]
+      }
+    });
     pushCallback(async () => {
       if (window.in_context) {
         const re = new RegExp("/$");
@@ -649,15 +615,15 @@ function LibraryPane(props) {
     });
   }
   function _selectedTypes() {
-    let the_types = selected_rows_ref.current.map(function (row) {
+    let the_types = pStateRef.current.select_state.selected_rows.map(function (row) {
       return row.res_type;
     });
     the_types = [...new Set(the_types)];
     return the_types;
   }
   async function _handleRowSelection(selected_rows) {
-    if (!multi_select_ref.current) {
-      let sres = selected_resource_ref.current;
+    if (!pStateRef.current.select_state.multi_select) {
+      let sres = pStateRef.current.select_state.selected_resource;
       if (sres.name != "" && get_data_dict_entry(sres.name, sres.res_type) && sres.notes != get_data_dict_entry(sres.name, sres.res_type).notes) {
         await _saveFromSelectedResource();
       }
@@ -681,16 +647,26 @@ function LibraryPane(props) {
         tags: common_tags.join(" "),
         notes: ""
       };
-      set_selected_resource(new_selected_resource);
-      set_multi_select(true);
-      set_list_of_selected(multi_select_list);
-      set_selected_rows(selected_rows);
+      pDispatch({
+        type: "UPDATE_SELECT_STATE",
+        select_state: {
+          selected_resource: new_selected_resource,
+          multi_select: true,
+          list_of_selected: multi_select_list,
+          selected_rows: selected_rows
+        }
+      });
     } else {
       let row_dict = selected_rows[0];
-      set_selected_resource(row_dict);
-      set_multi_select(false);
-      set_list_of_selected([row_dict.name]);
-      set_selected_rows(selected_rows);
+      pDispatch({
+        type: "UPDATE_SELECT_STATE",
+        select_state: {
+          selected_resource: row_dict,
+          multi_select: false,
+          list_of_selected: [row_dict.name],
+          selected_rows: selected_rows
+        }
+      });
     }
   }
   function _filter_func(resource_dict, search_string) {
@@ -701,7 +677,10 @@ function LibraryPane(props) {
     }
   }
   function _update_search_state(new_state) {
-    setState(new_state);
+    pDispatch({
+      type: "UPDATE_SEARCH_STATE",
+      search_state: new_state
+    });
     pushCallback(async () => {
       if (search_spec_changed(new_state)) {
         clearSelected();
@@ -728,27 +707,23 @@ function LibraryPane(props) {
       sort_field: column_name,
       sort_direction: direction
     };
-    set_sort_field(column_name);
-    set_sort_direction(direction);
-    pushCallback(async () => {
-      if (search_spec_changed(spec_update)) {
-        await _grabNewChunkWithRow(0, true, spec_update, true);
-      }
-    });
+    _update_search_state(spec_update);
   }
   async function _selectRow(new_index) {
-    if (!Object.keys(data_dict_ref.current).includes(String(new_index))) {
+    if (!Object.keys(pStateRef.current.data_dict).includes(String(new_index))) {
       await _grabNewChunkWithRow(new_index, false, null, false, null, () => {
         _selectRow(new_index);
       });
     } else {
-      let new_regions = [_table.Regions.row(new_index)];
-      setState({
-        selected_resource: data_dict_ref.current[new_index],
-        list_of_selected: [data_dict_ref.current[new_index].name],
-        selected_rows: [data_dict_ref.current[new_index]],
-        multi_select: false,
-        selectedRegions: new_regions
+      pDispatch({
+        type: "UPDATE_SELECT_STATE",
+        select_state: {
+          selected_resource: pStateRef.current.data_dict[new_index],
+          multi_select: false,
+          list_of_selected: [pStateRef.current.data_dict[new_index].name],
+          selected_rows: [pStateRef.current.data_dict[new_index]],
+          selectedRegions: [_table.Regions.row(new_index)]
+        }
       });
     }
   }
@@ -791,7 +766,7 @@ function LibraryPane(props) {
   }
   async function _duplicate_func() {
     let row = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-    let the_row = row ? row : selected_resource_ref.current;
+    let the_row = row ? row : pStateRef.current.select_state.selected_resource;
     let res_name = the_row.name;
     let res_type = the_row.res_type;
     try {
@@ -820,7 +795,7 @@ function LibraryPane(props) {
     }
   }
   async function _delete_func(resource) {
-    let res_list = resource ? [resource] : selected_rows_ref.current;
+    let res_list = resource ? [resource] : pStateRef.current.select_state.selected_rows;
     var confirm_text;
     if (res_list.length == 1) {
       let res_name = res_list[0].name;
@@ -829,8 +804,8 @@ function LibraryPane(props) {
       confirm_text = `Are you sure that you want to delete multiple items?`;
     }
     let first_index = 99999;
-    for (let row of selected_rows_ref.current) {
-      let ind = parseInt(get_data_dict_index(row.name, row.res_type));
+    for (let row of pStateRef.current.select_state.selected_rows) {
+      let ind = parseInt((0, _library_pane_reducer.get_index)(row.name, row.res_type, pStateRef.current.data_dict));
       if (ind < first_index) {
         first_index = ind;
       }
@@ -858,8 +833,8 @@ function LibraryPane(props) {
     let res_type;
     let res_name;
     if (!row) {
-      res_type = selected_resource_ref.current.res_type;
-      res_name = selected_resource_ref.current.name;
+      res_type = pStateRef.current.select_state.selected_resource.res_type;
+      res_name = pStateRef.current.select_state.selected_resource.name;
     } else {
       res_type = row.res_type;
       res_name = row.name;
@@ -891,9 +866,9 @@ function LibraryPane(props) {
     }
   }
   async function _repository_copy_func() {
-    if (!multi_select_ref.current) {
-      let res_type = selected_resource_ref.current.res_type;
-      let res_name = selected_resource_ref.current.name;
+    if (!pStateRef.current.select_state.multi_select) {
+      let res_type = pStateRef.current.select_state.selected_resource.res_type;
+      let res_name = pStateRef.current.select_state.selected_resource.name;
       try {
         let data = await (0, _communication_react.postAjaxPromise)("get_resource_names/" + res_type, {});
         let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
@@ -920,7 +895,7 @@ function LibraryPane(props) {
       }
     } else {
       const result_dict = {
-        "selected_rows": selected_rows_ref.current
+        "selected_rows": pStateRef.current.select_state.selected_rows
       };
       try {
         await (0, _communication_react.postAjaxPromise)("/copy_from_repository", result_dict);
@@ -933,9 +908,9 @@ function LibraryPane(props) {
   }
   async function _send_repository_func() {
     let pane_type = props.pane_type;
-    if (!multi_select_ref.current) {
-      let res_type = selected_resource_ref.current.res_type;
-      let res_name = selected_resource_ref.current.name;
+    if (!pStateRef.current.select_state.multi_select) {
+      let res_type = pStateRef.current.select_state.selected_resource.res_type;
+      let res_name = pStateRef.current.select_state.selected_resource.name;
       try {
         let data = await (0, _communication_react.postAjaxPromise)("get_repository_resource_names/" + res_type, {});
         let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
@@ -963,7 +938,7 @@ function LibraryPane(props) {
     } else {
       const result_dict = {
         "pane_type": pane_type,
-        "selected_rows": selected_rows_ref.current
+        "selected_rows": pStateRef.current.select_state.selected_rows
       };
       try {
         await (0, _communication_react.postAjaxPromise)('/send_to_repository', result_dict);
@@ -1009,7 +984,7 @@ function LibraryPane(props) {
     }
   }
   async function _downloadJupyter() {
-    let res_name = selected_resource_ref.current.name;
+    let res_name = pStateRef.current.select_state.selected_resource.name;
     try {
       let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
         title: `Download Notebook as Jupyter Notebook`,
@@ -1050,8 +1025,8 @@ function LibraryPane(props) {
     myDropZone.processQueue();
   }
   async function _combineCollections() {
-    var res_name = selected_resource_ref.current.name;
-    if (!multi_select_ref.current) {
+    var res_name = pStateRef.current.select_state.selected_resource.name;
+    if (!pStateRef.current.select_state.multi_select) {
       try {
         let data = await (0, _communication_react.postAjaxPromise)("get_resource_names/collection", {});
         let other_name = await dialogFuncs.showModalPromise("SelectDialog", {
@@ -1086,7 +1061,7 @@ function LibraryPane(props) {
           handleClose: dialogFuncs.hideModal
         });
         await (0, _communication_react.postAjaxPromise)("combine_to_new_collection", {
-          "original_collections": list_of_selected_ref.current,
+          "original_collections": pStateRef.current.select_state.list_of_selected,
           "new_name": new_name
         });
       } catch (e) {
@@ -1100,7 +1075,7 @@ function LibraryPane(props) {
   }
   async function _downloadCollection() {
     let resource_name = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-    let res_name = resource_name ? resource_name : selected_resource_ref.current.name;
+    let res_name = resource_name ? resource_name : pStateRef.current.select_state.selected_resource.name;
     try {
       let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
         title: "Download Collection",
@@ -1197,10 +1172,10 @@ function LibraryPane(props) {
     await _view_func("/view_in_creator/");
   }
   function _showHistoryViewer() {
-    window.open(`${$SCRIPT_ROOT}/show_history_viewer/${selected_resource_ref.current.name}`);
+    window.open(`${$SCRIPT_ROOT}/show_history_viewer/${pStateRef.current.select_state.selected_resource.name}`);
   }
   function _compare_tiles() {
-    let res_names = list_of_selected_ref.current;
+    let res_names = pStateRef.current.select_state.list_of_selected;
     if (res_names.length == 0) return;
     if (res_names.length == 1) {
       window.open(`${$SCRIPT_ROOT}/show_tile_differ/${res_names[0]}`);
@@ -1215,7 +1190,7 @@ function LibraryPane(props) {
   }
   async function _load_tile() {
     let resource = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-    let res_name = resource ? resource.name : selected_resource_ref.current.name;
+    let res_name = resource ? resource.name : pStateRef.current.select_state.selected_resource.name;
     try {
       await (0, _communication_react.postPromise)("host", "load_tile_module_task", {
         "tile_module_name": res_name,
@@ -1228,7 +1203,7 @@ function LibraryPane(props) {
   }
   async function _unload_module() {
     let resource = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-    let res_name = resource ? resource.name : selected_resource_ref.current.name;
+    let res_name = resource ? resource.name : pStateRef.current.select_state.selected_resource.name;
     try {
       await (0, _communication_react.postAjaxPromise)(`unload_one_module/${res_name}`, {});
       statusFuncs.statusMessage("Tile unloaded");
@@ -1382,6 +1357,12 @@ function LibraryPane(props) {
       }
     }
   }
+  function setContextMenuItems(context_menu_items) {
+    pDispatch({
+      type: "SET_CONTEXT_MENU_ITEMS",
+      context_menu_items: context_menu_items
+    });
+  }
   function _menu_funcs() {
     return {
       view_func: _view_func,
@@ -1418,29 +1399,29 @@ function LibraryPane(props) {
   const ignore_fields = ["doc_type", "res_type"];
   let additional_metadata = {};
   let selected_resource_icon = null;
-  for (let field in selected_resource_ref.current) {
-    if (selected_rows_ref.current.length == 1 && selected_resource_ref.current.res_type == "tile" && field == "icon") {
-      selected_resource_icon = selected_resource_ref.current["icon"];
+  for (let field in pStateRef.current.select_state.selected_resource) {
+    if (pStateRef.current.select_state.selected_rows.length == 1 && pStateRef.current.select_state.selected_resource.res_type == "tile" && field == "icon") {
+      selected_resource_icon = pStateRef.current.select_state.selected_resource["icon"];
     }
     if (!primary_mdata_fields.includes(field) && !ignore_fields.includes(field) && !field.startsWith("icon:")) {
-      additional_metadata[field] = selected_resource_ref.current[field];
+      additional_metadata[field] = pStateRef.current.select_state.selected_resource[field];
     }
   }
   if (Object.keys(additional_metadata).length == 0) {
     additional_metadata = null;
   }
-  let split_tags = selected_resource_ref.current.tags == "" ? [] : selected_resource_ref.current.tags.split(" ");
+  let split_tags = pStateRef.current.select_state.selected_resource.tags == "" ? [] : pStateRef.current.select_state.selected_resource.tags.split(" ");
   let right_pane = /*#__PURE__*/_react.default.createElement(_blueprint_mdata_fields.CombinedMetadata, {
     tags: split_tags,
-    all_tags: tag_list,
+    all_tags: pStateRef.current.tag_list,
     elevation: 0,
-    name: selected_resource_ref.current.name,
-    created: selected_resource_ref.current.created,
-    updated: selected_resource_ref.current.updated,
-    notes: selected_resource_ref.current.notes,
+    name: pStateRef.current.select_state.selected_resource.name,
+    created: pStateRef.current.select_state.selected_resource.created,
+    updated: pStateRef.current.select_state.selected_resource.updated,
+    notes: pStateRef.current.select_state.selected_resource.notes,
     icon: selected_resource_icon,
     handleChange: _handleMetadataChange,
-    res_type: selected_resource_ref.current.res_type,
+    res_type: pStateRef.current.select_state.selected_resource.res_type,
     pane_type: props.pane_type,
     outer_style: metadata_outer_style,
     handleNotesBlur: null,
@@ -1468,29 +1449,18 @@ function LibraryPane(props) {
     }, /*#__PURE__*/_react.default.createElement(_core.Button, {
       icon: _blueprint_mdata_fields.icon_dict[rtype],
       minimal: true,
-      active: rtype == filterTypeRef.current,
+      active: rtype == pState.search_state.filterType,
       onClick: async () => {
         await _setFilterType(rtype);
       }
     })));
   }
   let left_pane = /*#__PURE__*/_react.default.createElement(_library_table_pane.LibraryTablePane, (0, _extends2.default)({}, props, {
-    tag_list: tag_list,
-    tagRoot: tagRoot,
-    expanded_tags_ref: expanded_tags_ref,
-    active_tag_ref: active_tag_ref,
-    updateTagState: _update_search_state,
+    pStateRef: pStateRef,
     filter_buttons: filter_buttons,
     update_search_state: _update_search_state,
-    search_string_ref: search_string_ref,
-    search_inside_ref: search_inside_ref,
-    show_hidden_ref: show_hidden_ref,
-    search_metadata_ref: search_metadata_ref,
-    data_dict_ref: data_dict_ref,
-    rowChanged: rowChanged,
-    num_rows: num_rows,
+    updateTagState: _update_search_state,
     sortColumn: _set_sort_state,
-    selectedRegionsRef: selectedRegionsRef,
     onSelection: _onTableSelection,
     keyHandler: null,
     initiateDataGrab: _grabNewChunkWithRow,
@@ -1498,13 +1468,13 @@ function LibraryPane(props) {
     handleRowDoubleClick: _handleRowDoubleClick
   }));
   let selected_types = _selectedTypes();
-  selectedTypeRef.current = selected_types.length == 1 ? selected_resource_ref.current.res_type : "multi";
+  selectedTypeRef.current = selected_types.length == 1 ? pState.select_state.selected_resource.res_type : "multi";
   return /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement(MenubarClass, (0, _extends2.default)({
-    selected_resource: selected_resource_ref.current,
+    selected_resource: pStateRef.current.select_state.selected_resource,
     connection_status: props.connection_status,
-    multi_select: multi_select_ref.current,
-    list_of_selected: list_of_selected_ref.current,
-    selected_rows: selected_rows_ref.current,
+    multi_select: pStateRef.current.select_state.multi_select,
+    list_of_selected: pStateRef.current.select_state.list_of_selected,
+    selected_rows: pStateRef.current.select_state.selected_rows,
     selectedTypeRef: selectedTypeRef
   }, _menu_funcs(), {
     sendContextMenuItems: setContextMenuItems,
