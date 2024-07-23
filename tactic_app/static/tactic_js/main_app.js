@@ -227,6 +227,17 @@ function MainApp(props) {
       await _handleChangeDoc(data.doc_name, row_id, scroll_to_row, select_row);
     }
   }
+  function _setTileValue(tile_id, field, value) {
+    tileDispatch({
+      type: "change_item_value",
+      tile_id: tile_id,
+      field: field,
+      new_value: value
+    });
+  }
+  function _handleTileFinishedLoading(data) {
+    _setTileValue(data.tile_id, "finished_loading", true);
+  }
   function initSocket() {
     props.tsocket.attachListener("window-open", data => {
       window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`);
@@ -259,6 +270,7 @@ function MainApp(props) {
     }
     props.tsocket.attachListener('table-message', _handleTableMessage);
     props.tsocket.attachListener("update-menus", _update_menus_listener);
+    props.tsocket.attachListener("tile-finished-loading", _handleTileFinishedLoading);
     props.tsocket.attachListener('change-doc', _change_doc_listener);
     props.tsocket.attachListener('handle-callback', task_packet => {
       (0, _communication_react.handleCallback)(task_packet, props.main_id);

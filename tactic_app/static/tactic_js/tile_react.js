@@ -121,15 +121,11 @@ function TileContainer(props) {
     initSocket();
   }, []);
   const pushCallback = (0, _utilities_react.useCallbackStack)();
-  function _handleTileFinishedLoading(data) {
-    _setTileValue(data.tile_id, "finished_loading", true);
-  }
   function _handleTileSourceChange(data) {
     _markSourceChange(data.tile_type);
   }
   function initSocket() {
     props.tsocket.attachListener("tile-message", _handleTileMessage);
-    props.tsocket.attachListener("tile-finished-loading", _handleTileFinishedLoading);
     props.tsocket.attachListener('tile-source-change', _handleTileSourceChange);
   }
   function _resortTiles(_ref) {
