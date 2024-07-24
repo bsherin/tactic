@@ -8,9 +8,9 @@ import copy
 import datetime
 import uuid
 from collections import OrderedDict
-from flask import jsonify, request
+from flask import jsonify, request, url_for
 from flask_login import UserMixin
-from tactic_app import login_manager, db, fs, repository_db, repository_fs  # global_stuff db
+from tactic_app import login_manager, app, db, fs, repository_db, repository_fs  # global_stuff db
 from communication_utils import read_project_dict, make_jsonizable_and_compress
 from bson.objectid import ObjectId
 from exception_mixin import generic_exception_handler
@@ -85,6 +85,21 @@ def get_username_true_id(userid):
     else:
         return None
 
+def get_full_user_data_fields():
+    static_folder = app.static_folder
+    dark_path = os.path.join(static_folder, 'tactic_css/codemirror_dark')
+    light_path = os.path.join(static_folder, 'tactic_css/codemirror_light')
+    dark_files = sorted(os.listdir(dark_path))
+    light_files = sorted(os.listdir(light_path))
+    dark_themes = [re.sub(r'\.css$', '', f) for f in dark_files]
+    light_themes = [re.sub(r'\.css$', '', f) for f in light_files]
+    ufields = copy.deepcopy(user_data_fields)
+    for field in ufields:
+        if field["name"] == "preferred_dark_theme":
+            field["options"] = dark_themes
+        if field["name"] == "preferred_light_theme":
+            field["options"] = light_themes
+    return ufields
 
 class User(UserMixin, MongoAccess):
 
@@ -96,7 +111,7 @@ class User(UserMixin, MongoAccess):
         else:
             self.db = db  # This is to make mongoaccesser work
             self.fs = fs  # This is to make mongoaccesser work
-        for fdict in user_data_fields:
+        for fdict in get_full_user_data_fields():
             key = fdict["name"]
             if key in user_dict:
                 setattr(self, key, user_dict[key])
@@ -219,7 +234,7 @@ class User(UserMixin, MongoAccess):
     @property
     def user_data_dict(self):
         result = OrderedDict()
-        for fdict in user_data_fields:
+        for fdict in get_full_user_data_fields():
             key = fdict["name"]
             if hasattr(self, key):
                 result[key] = getattr(self, key)
@@ -296,7 +311,7 @@ def load_remote_user(userid, the_db):
 class RemoteUser(User):
     def __init__(self, user_dict, repository_db):
         self.username = ""  # This is just to be make introspection happy
-        for field in user_data_fields:
+        for field in get_full_user_data_fields():
             key = field["name"]
             print(f"got key {key}")
             if field["name"] in user_dict:

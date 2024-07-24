@@ -1,8 +1,8 @@
 
 
-import { useEffect, useRef, memo, useMemo, useContext } from "react";
+import { useEffect, useRef, memo, useMemo, useContext, Fragment } from "react";
 import React from "react";
-
+import {Helmet} from 'react-helmet';
 import { useHotkeys } from "@blueprintjs/core";
 
 import CodeMirror from 'codemirror/lib/codemirror'
@@ -22,22 +22,16 @@ import 'codemirror/addon/edit/matchbrackets'
 import 'codemirror/addon/edit/closebrackets'
 import 'codemirror/addon/search/match-highlighter'
 
-import 'codemirror/theme/material.css'
-import 'codemirror/theme/nord.css'
-import 'codemirror/theme/oceanic-next.css'
-import 'codemirror/theme/pastel-on-dark.css'
-import 'codemirror/theme/elegant.css'
-import 'codemirror/theme/neat.css'
-import 'codemirror/theme/solarized.css'
-import 'codemirror/theme/juejin.css'
 import {postAjaxPromise} from "./communication_react";
 
 import {ThemeContext} from "./theme"
+import {useStateAndRef} from "./utilities_react";
 
 export {ReactCodemirrorMergeView}
 
 function ReactCodemirrorMergeView(props) {
 
+    const [cmTheme, setCmTheme, cmThemeRef] = useStateAndRef("nord");
     const code_container_ref = useRef(null);
     const saved_theme = useRef(null);
     const preferred_themes = useRef(null);
@@ -82,7 +76,11 @@ function ReactCodemirrorMergeView(props) {
         postAjaxPromise("get_preferred_codemirror_themes", {})
             .then((data) => {
                 preferred_themes.current = data;
+                let current_theme = _current_codemirror_theme();
+                setCmTheme(current_theme);
                 cmobject.current = createMergeArea(code_container_ref.current);
+                cmobject.current.editor().setOption("theme", current_theme);
+                cmobject.current.rightOriginal().setOption("theme", current_theme);
                 resizeHeights(props.max_height);
                 refreshAreas();
                 create_keymap();
@@ -102,8 +100,10 @@ function ReactCodemirrorMergeView(props) {
             postAjaxPromise("get_preferred_codemirror_themes", {})
             .then((data) => {
                 preferred_themes.current = data;
-                cmobject.current.editor().setOption("theme", _current_codemirror_theme());
-                cmobject.current.rightOriginal().setOption("theme", _current_codemirror_theme());
+                let current_theme = _current_codemirror_theme();
+                setCmTheme(current_theme);
+                cmobject.current.editor().setOption("theme", current_theme);
+                cmobject.current.rightOriginal().setOption("theme", current_theme);
                 saved_theme.current = theme.dark_theme
             })
             .catch((e) =>{
@@ -223,11 +223,17 @@ function ReactCodemirrorMergeView(props) {
     let ccstyle = {
         "height": "100%"
     };
+    const tTheme = theme.dark_theme ? "dark" : "light";
     return (
-        <div className="code-container" style={ccstyle} ref={code_container_ref}
-            tabIndex="0" onKeyDown={handleKeyDown} onKeyUp={handleKeyUp}>
+        <Fragment>
+            <Helmet>
+                <link rel="stylesheet" href={`/static/tactic_css/codemirror_${tTheme}/${cmThemeRef.current}.css`} type="text/css"/>
+            </Helmet>
+            <div className="code-container" style={ccstyle} ref={code_container_ref}
+                tabIndex="0" onKeyDown={handleKeyDown} onKeyUp={handleKeyUp}>
 
-        </div>
+            </div>
+        </Fragment>
     )
 }
 

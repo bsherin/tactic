@@ -13,7 +13,7 @@ user_data_fields = [
     {"name": "preferred_dark_theme", "editable": True, "display_text": "codemirror dark theme",
      "type": "select", "default": "nord", "options": ["material", "nord", "oceanic-next", "pastel-on-dark"], "info_type": "setting"},
     {"name": "preferred_light_theme", "editable": True, "display_text": "codemirror light theme",
-     "type": "select", "default": "default", "options": ["default", "elegant", "juejin", "neat", "solarized"], "info_type": "setting"},
+     "type": "select", "default": "default", "options": ["default", "elegant", "juejin", "neat", "solarized", "github"], "info_type": "setting"},
     {"name": "preferred_interface", "editable": True, "display_text": "preferred interface",
      "type": "select", "default": "single-window", "options": ["separate-tabs", "single-window"], "info_type": "setting"},
     {"name": "openai_api_key", "editable": True, "display_text": "openai api key", "type": "text", "default": "", "info_type": "setting"},

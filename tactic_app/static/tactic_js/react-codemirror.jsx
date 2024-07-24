@@ -2,9 +2,11 @@ import React from "react";
 import {Fragment, useEffect, useRef, memo, useLayoutEffect, useContext} from "react";
 
 import {Button, ButtonGroup} from "@blueprintjs/core";
+import {Helmet} from 'react-helmet';
 
 import {postAjaxPromise} from "./communication_react"
 import {useSize} from "./sizing_tools";
+
 
 import CodeMirror from 'codemirror/lib/codemirror';
 import 'codemirror/mode/python/python';
@@ -28,16 +30,7 @@ import 'codemirror/addon/edit/matchbrackets'
 import 'codemirror/addon/edit/closebrackets'
 import 'codemirror/addon/search/match-highlighter'
 
-import 'codemirror/theme/material.css'
-import 'codemirror/theme/nord.css'
-import 'codemirror/theme/oceanic-next.css'
-import 'codemirror/theme/pastel-on-dark.css'
-import 'codemirror/theme/elegant.css'
-import 'codemirror/theme/neat.css'
-import 'codemirror/theme/solarized.css'
-import 'codemirror/theme/juejin.css'
-
-import {propsAreEqual} from "./utilities_react";
+import {propsAreEqual, useStateAndRef} from "./utilities_react";
 import {ThemeContext} from "./theme"
 import {SelectedPaneContext} from "./utilities_react";
 
@@ -97,6 +90,7 @@ function ReactCodemirror(props) {
         extra_autocomplete_list: [],
         ...props
     };
+    const [cmTheme, setCmTheme, cmThemeRef] = useStateAndRef("nord");
     const localRef = useRef(null);
     const saved_theme = useRef(null);
     const preferred_themes = useRef(null);
@@ -121,8 +115,11 @@ function ReactCodemirror(props) {
         postAjaxPromise('get_preferred_codemirror_themes', {})
             .then((data) => {
                 preferred_themes.current = data;
+                let current_theme = _current_codemirror_theme();
+                setCmTheme(current_theme);
                 cmobject.current = createCMArea(localRef.current, props.first_line_number);
                 cmobject.current.setValue(props.code_content);
+                cmobject.current.setOption("theme", current_theme);
                 cmobject.current.setOption("extra_autocomplete_list", props.extra_autocomplete_list);
                 create_keymap();
                 if (props.setCMObject != null) {
@@ -188,7 +185,9 @@ function ReactCodemirror(props) {
             postAjaxPromise("get_preferred_codemirror_themes", {})
                 .then((data) => {
                     preferred_themes.current = data;
-                    cmobject.current.setOption("theme", _current_codemirror_theme());
+                    let current_theme = _current_codemirror_theme();
+                    setCmTheme(current_theme);
+                    cmobject.current.setOption("theme", current_theme);
                     saved_theme.current = theme.dark_theme
                 })
                 .catch((e) => {
@@ -458,10 +457,14 @@ function ReactCodemirror(props) {
             }
         }
     }
+    const tTheme = theme.dark_theme ? "dark" : "light";
     if (props.show_search) {
         let title_label = props.title_label ? props.title_label : "";
         return (
             <Fragment>
+                <Helmet>
+                    <link rel="stylesheet" href={`/static/tactic_css/codemirror_${tTheme}/${cmThemeRef.current}.css`} type="text/css"/>
+                </Helmet>
                 <div style={{
                     display: "flex", flexDirection: "row", justifyContent: "space-between",
                     marginRight: 10,
@@ -499,8 +502,12 @@ function ReactCodemirror(props) {
             </Fragment>
         )
     }
+
     return (
         <Fragment>
+            <Helmet>
+                <link rel="stylesheet" href={`/static/tactic_css/codemirror_${tTheme}/${cmThemeRef.current}.css`} type="text/css"/>
+            </Helmet>
             {props.show_fold_button && bgstyle &&
                 <ButtonGroup minimal={false} style={bgstyle}>
                     <Button small={true} icon="collapse-all" text="fold" onClick={_foldAll}/>

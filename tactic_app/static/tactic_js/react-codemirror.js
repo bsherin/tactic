@@ -7,6 +7,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.ReactCodemirror = ReactCodemirror;
 var _react = _interopRequireWildcard(require("react"));
 var _core = require("@blueprintjs/core");
+var _reactHelmet = require("react-helmet");
 var _communication_react = require("./communication_react");
 var _sizing_tools = require("./sizing_tools");
 var _codemirror = _interopRequireDefault(require("codemirror/lib/codemirror"));
@@ -26,14 +27,6 @@ require("codemirror/addon/dialog/dialog.css");
 require("codemirror/addon/edit/matchbrackets");
 require("codemirror/addon/edit/closebrackets");
 require("codemirror/addon/search/match-highlighter");
-require("codemirror/theme/material.css");
-require("codemirror/theme/nord.css");
-require("codemirror/theme/oceanic-next.css");
-require("codemirror/theme/pastel-on-dark.css");
-require("codemirror/theme/elegant.css");
-require("codemirror/theme/neat.css");
-require("codemirror/theme/solarized.css");
-require("codemirror/theme/juejin.css");
 var _utilities_react = require("./utilities_react");
 var _theme = require("./theme");
 require("./autocomplete");
@@ -89,6 +82,7 @@ function ReactCodemirror(props) {
     extra_autocomplete_list: [],
     ...props
   };
+  const [cmTheme, setCmTheme, cmThemeRef] = (0, _utilities_react.useStateAndRef)("nord");
   const localRef = (0, _react.useRef)(null);
   const saved_theme = (0, _react.useRef)(null);
   const preferred_themes = (0, _react.useRef)(null);
@@ -109,8 +103,11 @@ function ReactCodemirror(props) {
     }
     (0, _communication_react.postAjaxPromise)('get_preferred_codemirror_themes', {}).then(data => {
       preferred_themes.current = data;
+      let current_theme = _current_codemirror_theme();
+      setCmTheme(current_theme);
       cmobject.current = createCMArea(localRef.current, props.first_line_number);
       cmobject.current.setValue(props.code_content);
+      cmobject.current.setOption("theme", current_theme);
       cmobject.current.setOption("extra_autocomplete_list", props.extra_autocomplete_list);
       create_keymap();
       if (props.setCMObject != null) {
@@ -168,7 +165,9 @@ function ReactCodemirror(props) {
     if (theme.dark_theme != saved_theme.current) {
       (0, _communication_react.postAjaxPromise)("get_preferred_codemirror_themes", {}).then(data => {
         preferred_themes.current = data;
-        cmobject.current.setOption("theme", _current_codemirror_theme());
+        let current_theme = _current_codemirror_theme();
+        setCmTheme(current_theme);
+        cmobject.current.setOption("theme", current_theme);
         saved_theme.current = theme.dark_theme;
       }).catch(e => {
         errorDrawerFuncs.addErrorDrawerEntry({
@@ -422,9 +421,14 @@ function ReactCodemirror(props) {
       }
     }
   }
+  const tTheme = theme.dark_theme ? "dark" : "light";
   if (props.show_search) {
     let title_label = props.title_label ? props.title_label : "";
-    return /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement("div", {
+    return /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement(_reactHelmet.Helmet, null, /*#__PURE__*/_react.default.createElement("link", {
+      rel: "stylesheet",
+      href: `/static/tactic_css/codemirror_${tTheme}/${cmThemeRef.current}.css`,
+      type: "text/css"
+    })), /*#__PURE__*/_react.default.createElement("div", {
       style: {
         display: "flex",
         flexDirection: "row",
@@ -470,7 +474,11 @@ function ReactCodemirror(props) {
       ref: localRef
     }));
   }
-  return /*#__PURE__*/_react.default.createElement(_react.Fragment, null, props.show_fold_button && bgstyle && /*#__PURE__*/_react.default.createElement(_core.ButtonGroup, {
+  return /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement(_reactHelmet.Helmet, null, /*#__PURE__*/_react.default.createElement("link", {
+    rel: "stylesheet",
+    href: `/static/tactic_css/codemirror_${tTheme}/${cmThemeRef.current}.css`,
+    type: "text/css"
+  })), props.show_fold_button && bgstyle && /*#__PURE__*/_react.default.createElement(_core.ButtonGroup, {
     minimal: false,
     style: bgstyle
   }, /*#__PURE__*/_react.default.createElement(_core.Button, {
