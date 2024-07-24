@@ -8,7 +8,7 @@ from flask_login import current_user
 import gridfs
 from tactic_app import login_manager
 
-from users import User, user_data_fields, RemoteUser
+from users import User, user_data_fields, get_full_user_data_fields, RemoteUser
 from mongo_accesser import res_types, name_keys
 from library_views import copy_between_accounts
 from flask_wtf import Form
@@ -258,7 +258,7 @@ def account_info():
 def get_account_info():
     user_data = current_user.user_data_dict
     field_list = []
-    for fdict in user_data_fields:
+    for fdict in get_full_user_data_fields():
         if not fdict["editable"]:
             continue
         new_fdict = copy.copy(fdict)

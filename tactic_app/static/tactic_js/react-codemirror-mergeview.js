@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.ReactCodemirrorMergeView = ReactCodemirrorMergeView;
 var _react = _interopRequireWildcard(require("react"));
+var _reactHelmet = require("react-helmet");
 var _core = require("@blueprintjs/core");
 var _codemirror = _interopRequireDefault(require("codemirror/lib/codemirror"));
 require("codemirror/mode/python/python");
@@ -19,19 +20,13 @@ require("codemirror/addon/dialog/dialog.css");
 require("codemirror/addon/edit/matchbrackets");
 require("codemirror/addon/edit/closebrackets");
 require("codemirror/addon/search/match-highlighter");
-require("codemirror/theme/material.css");
-require("codemirror/theme/nord.css");
-require("codemirror/theme/oceanic-next.css");
-require("codemirror/theme/pastel-on-dark.css");
-require("codemirror/theme/elegant.css");
-require("codemirror/theme/neat.css");
-require("codemirror/theme/solarized.css");
-require("codemirror/theme/juejin.css");
 var _communication_react = require("./communication_react");
 var _theme = require("./theme");
+var _utilities_react = require("./utilities_react");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 function ReactCodemirrorMergeView(props) {
+  const [cmTheme, setCmTheme, cmThemeRef] = (0, _utilities_react.useStateAndRef)("nord");
   const code_container_ref = (0, _react.useRef)(null);
   const saved_theme = (0, _react.useRef)(null);
   const preferred_themes = (0, _react.useRef)(null);
@@ -69,7 +64,11 @@ function ReactCodemirrorMergeView(props) {
   (0, _react.useEffect)(() => {
     (0, _communication_react.postAjaxPromise)("get_preferred_codemirror_themes", {}).then(data => {
       preferred_themes.current = data;
+      let current_theme = _current_codemirror_theme();
+      setCmTheme(current_theme);
       cmobject.current = createMergeArea(code_container_ref.current);
+      cmobject.current.editor().setOption("theme", current_theme);
+      cmobject.current.rightOriginal().setOption("theme", current_theme);
       resizeHeights(props.max_height);
       refreshAreas();
       create_keymap();
@@ -86,8 +85,10 @@ function ReactCodemirrorMergeView(props) {
     if (theme.dark_theme != saved_theme.current) {
       (0, _communication_react.postAjaxPromise)("get_preferred_codemirror_themes", {}).then(data => {
         preferred_themes.current = data;
-        cmobject.current.editor().setOption("theme", _current_codemirror_theme());
-        cmobject.current.rightOriginal().setOption("theme", _current_codemirror_theme());
+        let current_theme = _current_codemirror_theme();
+        setCmTheme(current_theme);
+        cmobject.current.editor().setOption("theme", current_theme);
+        cmobject.current.rightOriginal().setOption("theme", current_theme);
         saved_theme.current = theme.dark_theme;
       }).catch(e => {
         errorDrawerFuncs.addFromError("Error getting preferred theme", e);
@@ -201,13 +202,18 @@ function ReactCodemirrorMergeView(props) {
   let ccstyle = {
     "height": "100%"
   };
-  return /*#__PURE__*/_react.default.createElement("div", {
+  const tTheme = theme.dark_theme ? "dark" : "light";
+  return /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement(_reactHelmet.Helmet, null, /*#__PURE__*/_react.default.createElement("link", {
+    rel: "stylesheet",
+    href: `/static/tactic_css/codemirror_${tTheme}/${cmThemeRef.current}.css`,
+    type: "text/css"
+  })), /*#__PURE__*/_react.default.createElement("div", {
     className: "code-container",
     style: ccstyle,
     ref: code_container_ref,
     tabIndex: "0",
     onKeyDown: handleKeyDown,
     onKeyUp: handleKeyUp
-  });
+  }));
 }
 exports.ReactCodemirrorMergeView = ReactCodemirrorMergeView = /*#__PURE__*/(0, _react.memo)(ReactCodemirrorMergeView);

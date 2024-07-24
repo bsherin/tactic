@@ -89,6 +89,9 @@ function MergeViewerApp(props) {
     resource_name: props.resource_name,
     controlled: false
   }), /*#__PURE__*/_react.default.createElement("div", {
+    style: {
+      width: usable_width
+    },
     className: outer_class,
     tabIndex: "0",
     onKeyDown: handleKeyDown,

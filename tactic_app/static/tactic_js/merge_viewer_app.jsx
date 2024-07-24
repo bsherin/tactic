@@ -10,7 +10,7 @@ import {BpSelect} from "./blueprint_mdata_fields";
 import {TacticMenubar} from "./menu_utilities";
 import {ThemeContext} from "./theme"
 import {StatusContext} from "./toaster";
-import {useSize} from "./sizing_tools";
+import {ICON_BAR_WIDTH, useSize} from "./sizing_tools";
 
 export {MergeViewerApp}
 
@@ -97,7 +97,7 @@ function MergeViewerApp(props) {
                            resource_name={props.resource_name}
                            controlled={false}
             />
-            <div className={outer_class} tabIndex="0" onKeyDown={handleKeyDown} onKeyUp={handleKeyUp}>
+            <div style={{width: usable_width}} className={outer_class} tabIndex="0" onKeyDown={handleKeyDown} onKeyUp={handleKeyUp}>
                 <div id="left-div" ref={top_ref} style={left_div_style}>
                     <div id="above-main" ref={above_main_ref} className="d-flex flex-row justify-content-between mb-2">
                         <span className="align-self-end">Current</span>
