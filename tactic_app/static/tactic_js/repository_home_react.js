@@ -18,7 +18,7 @@ var _toaster = require("./toaster");
 var _error_drawer = require("./error_drawer");
 var _utilities_react = require("./utilities_react");
 var _blueprint_navbar = require("./blueprint_navbar");
-var _theme = require("./theme");
+var _settings = require("./settings");
 var _modal_react = require("./modal_react");
 var _repository_menubars = require("./repository_menubars");
 var _library_home_react = require("./library_home_react");
@@ -30,7 +30,7 @@ let tsocket;
 const controllable_props = ["usable_height", "usable_width"];
 function RepositoryHomeApp(props) {
   const connection_status = (0, _utilities_react.useConnection)(props.tsocket, initSocket);
-  const theme = (0, _react.useContext)(_theme.ThemeContext);
+  const settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   const statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
   const top_ref = (0, _react.useRef)(null);
   const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(top_ref, 0, "Repository");
@@ -100,7 +100,7 @@ function RepositoryHomeApp(props) {
     paddingLeft: 0
   };
   let outer_class = "library-pane-holder  ";
-  if (theme.dark_theme) {
+  if (settingsContext.isDark()) {
     outer_class = `${outer_class} bp5-dark`;
   } else {
     outer_class = `${outer_class} light-theme`;
@@ -130,11 +130,10 @@ exports.RepositoryHomeApp = RepositoryHomeApp = /*#__PURE__*/(0, _react.memo)(Re
 function _repository_home_main() {
   tsocket = new _tactic_socket.TacticSocket("main", 5000, "repository", _library_home_react.library_id);
   tsocket.socket.emit('join-repository', {});
-  let RepositoryHomeAppPlus = (0, _sizing_tools.withSizeContext)((0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(RepositoryHomeApp)))));
+  let RepositoryHomeAppPlus = (0, _sizing_tools.withSizeContext)((0, _settings.withSettings)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(RepositoryHomeApp)))));
   const domContainer = document.querySelector('#library-home-root');
   const root = (0, _client.createRoot)(domContainer);
   root.render( /*#__PURE__*/_react.default.createElement(RepositoryHomeAppPlus, {
-    initial_theme: window.theme,
     controlled: false,
     tsocket: tsocket
   }));

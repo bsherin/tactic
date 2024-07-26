@@ -8,7 +8,7 @@ import {
     Card, Icon, Collapse, H4
 } from "@blueprintjs/core";
 import {Select, MultiSelect} from "@blueprintjs/select";
-import {ThemeContext} from "./theme";
+import {SettingsContext} from "./settings";
 
 import hljs from 'highlight.js/lib/core';
 import javascript from 'highlight.js/lib/languages/javascript';
@@ -297,11 +297,11 @@ NativeTags = memo(NativeTags);
 
 function NotesField(props) {
 
-    const theme = useContext(ThemeContext);
+    const settingsContext = useContext(SettingsContext);
 
     useEffect(() => {
-        console.log("theme changed")  // This is to force re-rendering because of highlight.js theme change
-    }, [theme]);
+        // console.log("theme changed")  // This is to force re-rendering because of highlight.js theme change
+    }, [settingsContext.settings.theme]);
 
 
     props = {

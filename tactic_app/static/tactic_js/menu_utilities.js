@@ -10,7 +10,7 @@ exports.TopLeftButtons = TopLeftButtons;
 var _react = _interopRequireWildcard(require("react"));
 var _core = require("@blueprintjs/core");
 var _popover = require("@blueprintjs/popover2");
-var _theme = require("./theme");
+var _settings = require("./settings");
 var _blueprint_react_widgets = require("./blueprint_react_widgets");
 var _utilities_react = require("./utilities_react");
 var _error_drawer = require("./error_drawer");
@@ -53,6 +53,7 @@ function TacticMenubar(props) {
     showErrorDrawerButton: false,
     showMetadataDrawerButton: false,
     showAssistantDrawerButton: false,
+    showSettingsDrawerButton: true,
     resource_name: null,
     resource_icon: null,
     disabled_items: [],
@@ -61,7 +62,7 @@ function TacticMenubar(props) {
     connection_status: null,
     ...props
   };
-  const theme = (0, _react.useContext)(_theme.ThemeContext);
+  const settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   let menus;
   if (props.menu_specs == null) {
     menus = props.menus;
@@ -90,7 +91,7 @@ function TacticMenubar(props) {
       icon: sg.icon
     }));
   }
-  const theme_class = theme.dark_theme ? "bp5-dark" : "light-theme";
+  const theme_class = settingsContext.isDark() ? "bp5-dark" : "light-theme";
   return /*#__PURE__*/_react.default.createElement(_core.Navbar, {
     style: {
       paddingLeft: 3,
@@ -124,6 +125,7 @@ function TacticMenubar(props) {
     showErrorDrawerButton: props.showErrorDrawerButton,
     showAssistantDrawerButton: props.showAssistantDrawerButton,
     showMetadataDrawerButton: props.showMetadataDrawerButton,
+    showSettingsDrawerButton: props.showSettingsDrawerButton,
     showMetadata: props.showMetadata
   }));
 }
@@ -151,10 +153,16 @@ const IconBarStyle = {
 function IconBar(props) {
   const errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
   const assistantDrawerFuncs = (0, _react.useContext)(_assistant.AssistantContext);
+  const settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   return /*#__PURE__*/_react.default.createElement("div", {
     className: "verticalIconBar",
     style: IconBarStyle
-  }, props.showErrorDrawerButton && /*#__PURE__*/_react.default.createElement(IconBarButton, {
+  }, props.showSettingsDrawerButton && /*#__PURE__*/_react.default.createElement(IconBarButton, {
+    icon: "cog",
+    onClick: () => {
+      settingsContext.setShowSettingsDrawer(true);
+    }
+  }), props.showErrorDrawerButton && /*#__PURE__*/_react.default.createElement(IconBarButton, {
     icon: "bug",
     onClick: () => {
       errorDrawerFuncs.toggleErrorDrawer();

@@ -13,7 +13,7 @@ require("../tactic_css/tactic_select.scss");
 var _react = _interopRequireWildcard(require("react"));
 var _core = require("@blueprintjs/core");
 var _select = require("@blueprintjs/select");
-var _theme = require("./theme");
+var _settings = require("./settings");
 var _core2 = _interopRequireDefault(require("highlight.js/lib/core"));
 var _javascript = _interopRequireDefault(require("highlight.js/lib/languages/javascript"));
 var _python = _interopRequireDefault(require("highlight.js/lib/languages/python"));
@@ -305,10 +305,10 @@ function NativeTags(props) {
 }
 NativeTags = /*#__PURE__*/(0, _react.memo)(NativeTags);
 function NotesField(props) {
-  const theme = (0, _react.useContext)(_theme.ThemeContext);
+  const settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   (0, _react.useEffect)(() => {
-    console.log("theme changed"); // This is to force re-rendering because of highlight.js theme change
-  }, [theme]);
+    // console.log("theme changed")  // This is to force re-rendering because of highlight.js theme change
+  }, [settingsContext.settings.theme]);
   props = {
     handleBlur: null,
     ...props

@@ -80,6 +80,7 @@ function LibraryMenubar(props) {
                           showErrorDrawerButton={true}
                           showMetadataDrawerButton={false}
                           showAssistantDrawerButton={true}
+                          showSettingsDrawerButton={true}
     />
 }
 

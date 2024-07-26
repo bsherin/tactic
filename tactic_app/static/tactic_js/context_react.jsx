@@ -6,6 +6,18 @@ import "../tactic_css/tactic_table.scss";
 import "../tactic_css/library_home.scss";
 import "../tactic_css/tile_creator.scss";
 
+const originalWarn = console.warn;
+console.warn = function (message, ...args) {
+    const suppressWarnings = [
+        "[Blueprint] useHotkeys() was used outside",
+        "findDOMNode is deprecated and will be removed"
+    ];
+
+    if (!suppressWarnings.some(warning => message.includes(warning))) {
+        originalWarn.apply(console, [message, ...args]);
+    }
+};
+
 import React from "react";
 import { useState, useEffect, useRef, useContext, Fragment, useCallback, useMemo } from "react";
 import { createRoot } from 'react-dom/client';
@@ -51,7 +63,7 @@ import {
 import {postAjaxPromise} from "./communication_react";
 import {DragHandle} from "./resizing_layouts2";
 import {useCallbackStack, useStateAndRef, useDebounce, useStateAndRefAndCounter} from "./utilities_react";
-import {ThemeContext, withTheme} from "./theme"
+import {SettingsContext, withSettings} from "./settings"
 
 import {withDialogs, DialogContext} from "./modal_react";
 
@@ -118,12 +130,12 @@ const classDict = {
 };
 
 function _context_main() {
-    const ContextAppPlus = withPool(withTheme(withDialogs(withErrorDrawer(withStatus(withAssistant(ContextApp))))));
+    const ContextAppPlus = withPool(withSettings(withDialogs(withErrorDrawer(withStatus(withAssistant(ContextApp))))));
     const domContainer = document.querySelector('#context-root');
     const root = createRoot(domContainer);
     root.render(
         //<HotkeysProvider>
-            <ContextAppPlus initial_theme={window.theme} tsocket={tsocket}/>
+            <ContextAppPlus tsocket={tsocket}/>
         //</HotkeysProvider>
     )
 }
@@ -153,7 +165,7 @@ function ContextApp(props) {
     const [currently_dragging, set_currently_dragging] = useState(null);
     const [showOpenOmnibar, setShowOpenOmnibar] = useState(false);
 
-    const theme = useContext(ThemeContext);
+    const settingsContext = useContext(SettingsContext);
     const dialogFuncs = useContext(DialogContext);
     const statusFuncs = useContext(StatusContext);
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
@@ -961,7 +973,7 @@ function ContextApp(props) {
     all_tabs.push(dummy_tab);
 
     let outer_class = "pane-holder ";
-    if (theme.dark_theme) {
+    if (settingsContext.isDark()) {
         outer_class = `${outer_class} bp5-dark`;
     } else {
         outer_class = `${outer_class} light-theme`;

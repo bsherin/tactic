@@ -6,7 +6,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.TileForm = TileForm;
 var _react = _interopRequireWildcard(require("react"));
-var _propTypes = _interopRequireDefault(require("prop-types"));
 var _core = require("@blueprintjs/core");
 var _lodash = _interopRequireDefault(require("lodash"));
 var _reactCodemirror = require("./react-codemirror");
@@ -195,13 +194,6 @@ function TileForm(props) {
     onClick: _submitOptions
   }));
 }
-TileForm.propTypes = {
-  tile_id: _propTypes.default.string,
-  dark_theme: _propTypes.default.bool,
-  options: _propTypes.default.array,
-  handleSubmit: _propTypes.default.func,
-  updateValue: _propTypes.default.func
-};
 exports.TileForm = TileForm = /*#__PURE__*/(0, _react.memo)(TileForm);
 function FormSection(props) {
   props = {
@@ -253,10 +245,6 @@ function DividerOption(props) {
     }
   }, label), /*#__PURE__*/_react.default.createElement(_core.Divider, null));
 }
-DividerOption.propTypes = {
-  att_name: _propTypes.default.string,
-  display_text: _propTypes.default.oneOfType([_propTypes.default.string, _propTypes.default.number])
-};
 DividerOption = /*#__PURE__*/(0, _react.memo)(DividerOption);
 function TextOption(props) {
   const current_timer = (0, _react.useRef)(null);
@@ -285,13 +273,6 @@ function TextOption(props) {
     value: val_to_show
   }));
 }
-TextOption.propTypes = {
-  att_name: _propTypes.default.string,
-  display_text: _propTypes.default.oneOfType([_propTypes.default.string, _propTypes.default.number]),
-  value: _propTypes.default.oneOfType([_propTypes.default.string, _propTypes.default.number]),
-  updateValue: _propTypes.default.func,
-  leftIcon: _propTypes.default.string
-};
 TextOption = /*#__PURE__*/(0, _react.memo)(TextOption);
 function IntOption(props) {
   const [am_empty, set_am_empty] = (0, _react.useState)(props.value == "");
@@ -314,12 +295,6 @@ function IntOption(props) {
     updateValue: _updateMe
   });
 }
-IntOption.propTypes = {
-  att_name: _propTypes.default.string,
-  display_text: _propTypes.default.oneOfType([_propTypes.default.string, _propTypes.default.number]),
-  value: _propTypes.default.oneOfType([_propTypes.default.string, _propTypes.default.number]),
-  updateValue: _propTypes.default.func
-};
 IntOption = /*#__PURE__*/(0, _react.memo)(IntOption);
 function FloatOption(props) {
   const [temp_val, set_temp_val] = (0, _react.useState)(null);
@@ -344,12 +319,6 @@ function FloatOption(props) {
     updateValue: _updateMe
   });
 }
-FloatOption.propTypes = {
-  att_name: _propTypes.default.string,
-  display_text: _propTypes.default.oneOfType([_propTypes.default.string, _propTypes.default.number]),
-  value: _propTypes.default.oneOfType([_propTypes.default.string, _propTypes.default.number]),
-  updateValue: _propTypes.default.func
-};
 FloatOption = /*#__PURE__*/(0, _react.memo)(FloatOption);
 function BoolOption(props) {
   function _updateMe(event) {
@@ -371,12 +340,6 @@ function BoolOption(props) {
     alignIndicator: "center"
   });
 }
-BoolOption.propTypes = {
-  att_name: _propTypes.default.string,
-  display_text: _propTypes.default.oneOfType([_propTypes.default.string, _propTypes.default.number]),
-  value: _propTypes.default.oneOfType([_propTypes.default.bool, _propTypes.default.string]),
-  updateValue: _propTypes.default.func
-};
 BoolOption = /*#__PURE__*/(0, _react.memo)(BoolOption);
 function CodeAreaOption(props) {
   function _updateMe(newval) {
@@ -391,16 +354,10 @@ function CodeAreaOption(props) {
     no_height: true,
     code_content: props.value,
     saveMe: null,
+    tsocket: null,
     code_container_height: 100
   }));
 }
-CodeAreaOption.propTypes = {
-  att_name: _propTypes.default.string,
-  display_text: _propTypes.default.oneOfType([_propTypes.default.string, _propTypes.default.number]),
-  dark_theme: _propTypes.default.bool,
-  value: _propTypes.default.oneOfType([_propTypes.default.string, _propTypes.default.number]),
-  updateValue: _propTypes.default.func
-};
 CodeAreaOption = /*#__PURE__*/(0, _react.memo)(CodeAreaOption);
 function TextAreaOption(props) {
   const inputRef = (0, _react.useRef)(null);
@@ -427,12 +384,6 @@ function TextAreaOption(props) {
     value: props.value
   }));
 }
-TextAreaOption.propTypes = {
-  att_name: _propTypes.default.string,
-  display_text: _propTypes.default.oneOfType([_propTypes.default.string, _propTypes.default.number]),
-  value: _propTypes.default.oneOfType([_propTypes.default.string, _propTypes.default.number]),
-  updateValue: _propTypes.default.func
-};
 TextAreaOption = /*#__PURE__*/(0, _react.memo)(TextAreaOption);
 function SelectOption(props) {
   function _updateMe(val) {
@@ -448,14 +399,6 @@ function SelectOption(props) {
     options: props.choice_list
   }));
 }
-SelectOption.propTypes = {
-  att_name: _propTypes.default.string,
-  display_text: _propTypes.default.oneOfType([_propTypes.default.string, _propTypes.default.number]),
-  choice_list: _propTypes.default.array,
-  buttonIcon: _propTypes.default.string,
-  value: _propTypes.default.oneOfType([_propTypes.default.string, _propTypes.default.number]),
-  updateValue: _propTypes.default.func
-};
 SelectOption = /*#__PURE__*/(0, _react.memo)(SelectOption);
 function PoolOption(props) {
   const [isOpen, setIsOpen] = (0, _react.useState)(false);
@@ -521,11 +464,4 @@ function PipeOption(props) {
     options: create_choice_list()
   }));
 }
-PipeOption.propTypes = {
-  att_name: _propTypes.default.string,
-  display_text: _propTypes.default.oneOfType([_propTypes.default.string, _propTypes.default.number]),
-  pipe_dict: _propTypes.default.object,
-  value: _propTypes.default.oneOfType([_propTypes.default.string, _propTypes.default.number]),
-  updateValue: _propTypes.default.func
-};
 PipeOption = /*#__PURE__*/(0, _react.memo)(PipeOption);

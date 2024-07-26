@@ -20,7 +20,7 @@ var _error_drawer = require("./error_drawer");
 var _utilities_react = require("./utilities_react");
 var _blueprint_navbar = require("./blueprint_navbar");
 var _library_menubars = require("./library_menubars");
-var _theme = require("./theme");
+var _settings = require("./settings");
 var _sizing_tools = require("./sizing_tools");
 var _modal_react = require("./modal_react");
 var _assistant = require("./assistant");
@@ -41,7 +41,7 @@ const controllable_props = ["usable_width", "usable_height"];
 function LibraryHomeApp(props) {
   const top_ref = (0, _react.useRef)(null);
   const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(top_ref, 0, "Library");
-  const theme = (0, _react.useContext)(_theme.ThemeContext);
+  const settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   const statusFuncs = (0, _react.useContext)(_toaster2.StatusContext);
   const sizeInfo = (0, _react.useContext)(_sizing_tools.SizeContext);
   const connection_status = (0, _utilities_react.useConnection)(props.tsocket, initSocket);
@@ -111,7 +111,7 @@ function LibraryHomeApp(props) {
   if (!window.in_context) {
     outer_style.height = "100%";
     outer_class = "pane-holder  ";
-    if (theme.dark_theme) {
+    if (settingsContext.isDark()) {
       outer_class = `${outer_class} bp5-dark`;
     } else {
       outer_class = `${outer_class} light-theme`;
@@ -140,7 +140,7 @@ function LibraryHomeApp(props) {
 exports.LibraryHomeApp = LibraryHomeApp = /*#__PURE__*/(0, _react.memo)(LibraryHomeApp);
 function _library_home_main() {
   const tsocket = new _tactic_socket.TacticSocket("main", 5000, "library", library_id);
-  const LibraryHomeAppPlus = (0, _sizing_tools.withSizeContext)((0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster2.withStatus)((0, _assistant.withAssistant)(LibraryHomeApp))))));
+  const LibraryHomeAppPlus = (0, _sizing_tools.withSizeContext)((0, _settings.withSettings)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster2.withStatus)((0, _assistant.withAssistant)(LibraryHomeApp))))));
   const domContainer = document.querySelector('#library-home-root');
   const root = (0, _client.createRoot)(domContainer);
   root.render(
@@ -148,8 +148,7 @@ function _library_home_main() {
   //<HotkeysProvider>
   _react.default.createElement(LibraryHomeAppPlus, {
     tsocket: tsocket,
-    controlled: false,
-    initial_theme: window.theme
+    controlled: false
   })
   //</HotkeysProvider>
   );

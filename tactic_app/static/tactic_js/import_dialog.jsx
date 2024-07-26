@@ -15,7 +15,7 @@ import {renderToStaticMarkup} from "react-dom/server";
 import {ErrorDrawerContext, ErrorItem} from "./error_drawer";
 import {PoolAddressSelector} from "./pool_tree";
 
-import {ThemeContext} from "./theme";
+import {SettingsContext} from "./settings";
 import {postAjaxPromise} from "./communication_react";
 
 export {FileImportDialog}
@@ -56,7 +56,7 @@ function FileImportDialog(props) {
     const [skipinitialspace, set_skipinitialspace] = useState(true);
     const [csv_options_open, set_csv_options_open] = useState(false);
 
-    const theme = useContext(ThemeContext);
+    const settingsContext = useContext(SettingsContext);
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
 
     useConstructor(async () => {
@@ -329,7 +329,7 @@ function FileImportDialog(props) {
     }
     return (
         <Dialog isOpen={show}
-                className={theme.dark_theme ? "import-dialog bp5-dark" : "import-dialog light-theme"}
+                className={settingsContext.isDark() ? "import-dialog bp5-dark" : "import-dialog light-theme"}
                 title={props.title}
                 onClose={_closeHandler}
                 canOutsideClickClose={true}

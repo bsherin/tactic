@@ -18,7 +18,7 @@ var _python = _interopRequireDefault(require("highlight.js/lib/languages/python"
 var _core2 = require("@blueprintjs/core");
 var _utilities_react = require("./utilities_react");
 var _communication_react = require("./communication_react");
-var _theme = require("./theme");
+var _settings = require("./settings");
 var _error_drawer = require("./error_drawer");
 var _toaster = require("./toaster");
 var _modal_react = require("./modal_react");
@@ -190,13 +190,13 @@ function withAssistant(WrappedComponent) {
   return /*#__PURE__*/(0, _react.memo)(WithAssistant);
 }
 function AssistantDrawer(props) {
-  const theme = (0, _react.useContext)(_theme.ThemeContext);
+  const settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   (0, _react.useEffect)(() => {
-    console.log("theme changed"); // This is to force re-rendering because of highlight.js theme change
-  }, [theme]);
+    // console.log("theme changed")  // This is to force re-rendering because of highlight.js theme change
+  }, [settingsContext.settings.theme]);
   return /*#__PURE__*/_react.default.createElement(_core2.Drawer, {
     icon: "chat",
-    className: theme.dark_theme ? "bp5-dark" : "light-theme",
+    className: settingsContext.isDark() ? "bp5-dark" : "light-theme",
     title: props.title,
     isOpen: props.show_drawer,
     position: props.position,

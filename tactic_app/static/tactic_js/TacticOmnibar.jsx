@@ -1,16 +1,17 @@
 import React from "react";
-import {memo, useContext, useState, useCallback, useRef, useEffect, createContext} from "react";
+import {memo, useContext, useState, useCallback, useRef, useEffect} from "react";
 
-import {Omnibar, QueryList, Classes} from "@blueprintjs/select"
+import {QueryList, Classes} from "@blueprintjs/select"
 import {MenuItem, Overlay, InputGroup} from "@blueprintjs/core";
 
-import {postAjaxPromise, postWithCallback} from "./communication_react";
-import {ThemeContext} from "./theme"
+import {postAjax, postAjaxPromise} from "./communication_react";
+import {SettingsContext} from "./settings"
 import {SelectedPaneContext} from "./utilities_react";
 import {useDebounce} from "./utilities_react";
 import {AssistantContext} from "./assistant";
+import {ErrorDrawerContext} from "./error_drawer";
 
-export {TacticOmnibar, OpenOmnibar, OmniContext}
+export {OpenOmnibar}
 
 const context_url = $SCRIPT_ROOT + '/context';
 const library_url = $SCRIPT_ROOT + '/library';
@@ -51,11 +52,12 @@ function OpenOmnibar(props) {
     // const [commandItems, setCommandItems] = useState([]);
     const [item_list, set_item_list] = useState([]);
 
-    const theme = useContext(ThemeContext);
+    const settingsContext = useContext(SettingsContext);
     const old_search_string = useRef("");
 
     const selectedPane = useContext(SelectedPaneContext);
     const assistantDrawerFuncs = useContext(AssistantContext);
+    const errorDrawerFuncs = useContext(ErrorDrawerContext);
 
     useEffect(()=>{
         set_item_list([])
@@ -131,9 +133,9 @@ function OpenOmnibar(props) {
 
     function openItemRenderer(item, {modifiers, handleClick}) {
         if (item.item_type == "command") {
-            return <TacticOmnibarItem modifiers={modifiers} item={item} handleClick={handleClick}/>
+            return <TacticOmnibarItem key={item.search_text} modifiers={modifiers} item={item} handleClick={handleClick}/>
         }
-        return <OpenOmnibarItem modifiers={modifiers} item={item} handleClick={handleClick}/>
+        return <OpenOmnibarItem key={item.search_text} modifiers={modifiers} item={item} handleClick={handleClick}/>
     }
 
     function _onItemSelect(item) {
@@ -176,6 +178,10 @@ function OpenOmnibar(props) {
         return false
     }
 
+    function _showSettings() {
+        settingsContext.setShowSettingsDrawer(true)
+    }
+
     function _globalOmniItems() {
         function wopenfunc(the_url) {
             return () => {
@@ -185,6 +191,8 @@ function OpenOmnibar(props) {
 
         let omni_funcs = [
             ["Toggle Theme", "account", _toggleTheme, "contrast"],
+            ["Settings", "account", _showSettings, "cog"],
+            ["Errors", "account", errorDrawerFuncs.openErrorDrawer, "bug"],
             ["Docs", "documentation", wopenfunc("https://tactic.readthedocs.io/en/latest/Object-Oriented-API.html"),
                 "log-out"],
             ["Tile Commands", "documentation", wopenfunc("https://tactic.readthedocs.io/en/latest/Tile-Commands.html"),
@@ -225,17 +233,13 @@ function OpenOmnibar(props) {
     }
 
     function _toggleTheme() {
-        const result_dict = {
-            "user_id": window.user_id,
-            "theme": !theme.dark_theme ? "dark" : "light",
-        };
-        postWithCallback("host", "set_user_theme", result_dict, null, null);
-        theme.setTheme(!theme.dark_theme)
+        const new_theme = settingsContext.isDark() ? "light" : "dark";
+        postAjax("update_settings", {theme: new_theme}, null);
     }
 
     return (
         <QueryList items={item_list}
-                   className={theme.dark_theme ? "bp5-dark" : ""}
+                   className={settingsContext.isDark() ? "bp5-dark" : ""}
                    isOpen={props.showOmnibar}
                    onItemSelect={_onItemSelect}
                    itemRenderer={openItemRenderer}
@@ -269,110 +273,3 @@ function TacticOmnibarItem(props) {
 
 TacticOmnibarItem = memo(TacticOmnibarItem);
 
-function _itemRenderer(item, {modifiers, handleClick}) {
-    return <TacticOmnibarItem modifiers={modifiers} item={item} handleClick={handleClick}/>
-}
-
-function _itemPredicate(query, item) {
-    if (query.length == 0) {
-        return false
-    }
-    let lquery = query.toLowerCase();
-    let re = new RegExp(lquery);
-
-    return re.test(item.search_text.toLowerCase()) || re.test(item.category.toLowerCase())
-}
-
-
-function TacticOmnibar(props) {
-    props = {
-        showOmnibar: false,
-        omniGetters: null,
-        ...props
-    };
-
-    const theme = useContext(ThemeContext);
-
-    function _onItemSelect(item) {
-        item.the_function();
-        props.closeOmnibar()
-    }
-
-    function _handle_signout() {
-        window.open($SCRIPT_ROOT + "/logout/" + props.page_id, "_self");
-        return false
-    }
-
-    function _globalOmniItems() {
-        function wopenfunc(the_url) {
-            return () => {
-                window.open(the_url)
-            }
-        }
-
-        let omni_funcs = [
-            ["Toggle Theme", "account", _toggleTheme, "contrast"],
-            ["Docs", "documentation", wopenfunc("https://tactic.readthedocs.io/en/latest/Object-Oriented-API.html"),
-                "log-out"],
-            ["Tile Commands", "documentation", wopenfunc("https://tactic.readthedocs.io/en/latest/Tile-Commands.html"),
-                "code-block"],
-            ["Object Api", "documentation", wopenfunc("https://tactic.readthedocs.io/en/latest/Object-Oriented-API.html"),
-                "code-block"],
-        ];
-        if (props.is_authenticated) {
-            let new_funcs = [
-                ["New Context Tab", "window", wopenfunc(context_url), "add"],
-                ["New Tabbed Window", "window", wopenfunc(library_url), "add"],
-                ["Show Repository", "window", wopenfunc(repository_url), "database"],
-                ["Show Account Info", "account", wopenfunc(account_url), "person"],
-                ["Logout", "account", _handle_signout, "log-out"]];
-            omni_funcs = omni_funcs.concat(new_funcs);
-
-        }
-
-        let omni_items = [];
-        for (let item of omni_funcs) {
-            omni_items.push(
-                {
-                    category: item[1],
-                    display_text: item[0],
-                    search_text: item[0],
-                    icon_name: item[3],
-                    the_function: item[2]
-                }
-            )
-
-        }
-        return omni_items
-    }
-
-    function _toggleTheme() {
-        const result_dict = {
-            "user_id": window.user_id,
-            "theme": !theme.dark_theme ? "dark" : "light",
-        };
-        postWithCallback("host", "set_user_theme", result_dict, null, null);
-        theme.setTheme(!theme.dark_theme)
-    }
-
-    let the_items = [];
-    if (props.showOmnibar) {
-        for (let ogetter of props.omniGetters) {
-            the_items = the_items.concat(ogetter())
-        }
-        the_items = the_items.concat(_globalOmniItems())
-    }
-    return (
-        <Omnibar items={the_items}
-                 className={theme.dark_theme ? "bp5-dark" : ""}
-                 isOpen={props.showOmnibar}
-                 onItemSelect={_onItemSelect}
-                 itemRenderer={_itemRenderer}
-                 itemPredicate={_itemPredicate}
-                 resetOnSelect={true}
-                 onClose={props.closeOmnibar}
-        />
-    )
-}
-
-TacticOmnibar = memo(TacticOmnibar);

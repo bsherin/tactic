@@ -27,7 +27,7 @@ import {TacticNavbar} from "./blueprint_navbar";
 import {ErrorBoundary} from "./error_boundary";
 import {renderAutoCompleteElement} from "./autocomplete";
 import {useCallbackStack, useStateAndRef, useConnection} from "./utilities_react";
-import {ThemeContext, withTheme} from "./theme";
+import {SettingsContext, withSettings} from "./settings";
 import {DialogContext, withDialogs} from "./modal_react";
 import {ErrorDrawerContext} from "./error_drawer";
 import {SelectedPaneContext, useReducerAndRef} from "./utilities_react";
@@ -165,7 +165,7 @@ function CreatorApp(props) {
     const [all_tags, set_all_tags] = useState([]);
     const [has_key, set_has_key] = useState(false);
 
-    const theme = useContext(ThemeContext);
+    const settingsContext = useContext(SettingsContext);
     const dialogFuncs = useContext(DialogContext);
     const statusFuncs = useContext(StatusContext);
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
@@ -944,6 +944,7 @@ function CreatorApp(props) {
                             searchNext={_searchNext}
                             search_matches={search_matches}
                             setSearchMatches={(num) => _setSearchMatches("tc", num)}
+                            tsocket={props.tsocket}
                             extra_autocomplete_list={mode == "python" ? onames_for_autocomplete : []}/>
 
         )
@@ -970,6 +971,7 @@ function CreatorApp(props) {
                              searchNext={_searchNext}
                              search_matches={search_matches}
                              setSearchMatches={(num) => _setSearchMatches("rc", num)}
+                             tsocket={props.tsocket}
                              extra_autocomplete_list={onames_for_autocomplete}
 
             />
@@ -1052,6 +1054,7 @@ function CreatorApp(props) {
                                  first_line_number={extra_methods_line_number_ref.current}
                                  setSearchMatches={(num) => _setSearchMatches("em", num)}
                                  extra_autocomplete_list={onames_for_autocomplete}
+                                 tsocket={props.tsocket}
                                  iCounter={tabSelectCounter}
                 />
             }
@@ -1077,6 +1080,7 @@ function CreatorApp(props) {
                                  first_line_number={1}
                                  setSearchMatches={(num) => _setSearchMatches("gp", num)}
                                  extra_autocomplete_list={onames_for_autocomplete}
+                                 tsocket={props.tsocket}
                                  iCounter={tabSelectCounter}
                 />
             }
@@ -1113,7 +1117,7 @@ function CreatorApp(props) {
     };
     let outer_class = "resource-viewer-holder pane-holder";
     if (!window.in_context) {
-        if (theme.dark_theme) {
+        if (settingsContext.isDark()) {
             outer_class = outer_class + " bp5-dark";
         } else {
             outer_class = outer_class + " light-theme"
@@ -1141,6 +1145,7 @@ function CreatorApp(props) {
                            showErrorDrawerButton={true}
                            showMetadataDrawerButton={false}
                            showAssistantDrawerButton={true}
+                           showSettingsDrawerButton={true}
                            controlled={props.controlled}
             />
             <ErrorBoundary>
@@ -1171,10 +1176,9 @@ CreatorApp = memo(CreatorApp);
 
 function tile_creator_main() {
     function gotProps(the_props) {
-        let CreatorAppPlus = withSizeContext(withTheme(withDialogs(withErrorDrawer(withStatus(withAssistant(CreatorApp))))));
+        let CreatorAppPlus = withSizeContext(withSettings(withDialogs(withErrorDrawer(withStatus(withAssistant(CreatorApp))))));
         let the_element = <CreatorAppPlus {...the_props}
                                           controlled={false}
-                                          initial_theme={window.theme}
                                           changeName={null}
         />;
         const domContainer = document.querySelector('#creator-root');

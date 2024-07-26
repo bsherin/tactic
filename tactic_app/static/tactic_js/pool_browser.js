@@ -17,7 +17,7 @@ var _communication_react = require("./communication_react");
 var _error_drawer = require("./error_drawer");
 var _sizing_tools = require("./sizing_tools");
 var _toaster = require("./toaster");
-var _theme = require("./theme");
+var _settings = require("./settings");
 var _modal_react = require("./modal_react");
 var _library_home_react = require("./library_home_react");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
@@ -42,7 +42,7 @@ function PoolBrowser(props) {
   const [list_of_selected, set_list_of_selected, list_of_selected_ref] = (0, _utilities_react.useStateAndRef)([]);
   const [contextMenuItems, setContextMenuItems] = (0, _react.useState)([]);
   const [have_activated, set_have_activated] = (0, _react.useState)(false);
-  const theme = (0, _react.useContext)(_theme.ThemeContext);
+  const settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   const dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   const errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
   const statudFuncs = (0, _react.useContext)(_toaster.StatusContext);

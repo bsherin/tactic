@@ -21,17 +21,13 @@ require("codemirror/addon/edit/matchbrackets");
 require("codemirror/addon/edit/closebrackets");
 require("codemirror/addon/search/match-highlighter");
 var _communication_react = require("./communication_react");
-var _theme = require("./theme");
-var _utilities_react = require("./utilities_react");
+var _settings = require("./settings");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 function ReactCodemirrorMergeView(props) {
-  const [cmTheme, setCmTheme, cmThemeRef] = (0, _utilities_react.useStateAndRef)("nord");
   const code_container_ref = (0, _react.useRef)(null);
-  const saved_theme = (0, _react.useRef)(null);
-  const preferred_themes = (0, _react.useRef)(null);
   const cmobject = (0, _react.useRef)(null);
-  const theme = (0, _react.useContext)(_theme.ThemeContext);
+  const settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   const hotkeys = (0, _react.useMemo)(() => [{
     combo: "Ctrl+S",
     global: false,
@@ -62,38 +58,17 @@ function ReactCodemirrorMergeView(props) {
     handleKeyUp
   } = (0, _core.useHotkeys)(hotkeys);
   (0, _react.useEffect)(() => {
-    (0, _communication_react.postAjaxPromise)("get_preferred_codemirror_themes", {}).then(data => {
-      preferred_themes.current = data;
-      let current_theme = _current_codemirror_theme();
-      setCmTheme(current_theme);
-      cmobject.current = createMergeArea(code_container_ref.current);
-      cmobject.current.editor().setOption("theme", current_theme);
-      cmobject.current.rightOriginal().setOption("theme", current_theme);
-      resizeHeights(props.max_height);
-      refreshAreas();
-      create_keymap();
-      saved_theme.current = theme.dark_theme;
-    }).catch(e => {
-      errorDrawerFuncs.addFromError("Error getting preferred theme", e);
-      return;
-    });
+    let current_theme = _current_codemirror_theme();
+    cmobject.current = createMergeArea(code_container_ref.current);
+    cmobject.current.editor().setOption("theme", current_theme);
+    cmobject.current.rightOriginal().setOption("theme", current_theme);
+    resizeHeights(props.max_height);
+    refreshAreas();
+    create_keymap();
   }, []);
   (0, _react.useEffect)(() => {
     if (!cmobject.current) {
       return;
-    }
-    if (theme.dark_theme != saved_theme.current) {
-      (0, _communication_react.postAjaxPromise)("get_preferred_codemirror_themes", {}).then(data => {
-        preferred_themes.current = data;
-        let current_theme = _current_codemirror_theme();
-        setCmTheme(current_theme);
-        cmobject.current.editor().setOption("theme", current_theme);
-        cmobject.current.rightOriginal().setOption("theme", current_theme);
-        saved_theme.current = theme.dark_theme;
-      }).catch(e => {
-        errorDrawerFuncs.addFromError("Error getting preferred theme", e);
-        return;
-      });
     }
     if (cmobject.current.editor().getValue() != props.editor_content) {
       cmobject.current.editor().setValue(props.editor_content);
@@ -101,8 +76,19 @@ function ReactCodemirrorMergeView(props) {
     cmobject.current.rightOriginal().setValue(props.right_content);
     resizeHeights(props.max_height);
   });
+  (0, _react.useEffect)(() => {
+    if (!cmobject.current) {
+      return;
+    }
+    let current_theme = _current_codemirror_theme();
+    cmobject.current.editor().setOption("theme", current_theme);
+    cmobject.current.rightOriginal().setOption("theme", current_theme);
+  }, [settingsContext.settings.theme, settingsContext.settings.preferred_dark_theme, settingsContext.settings.preferred_light_theme]);
+  function isDark() {
+    return settingsContext.settingsRef.current.theme == "dark";
+  }
   function _current_codemirror_theme() {
-    return theme.dark_theme ? preferred_themes.current.preferred_dark_theme : preferred_themes.current.preferred_light_theme;
+    return isDark() ? settingsContext.settingsRef.current.preferred_dark_theme : settingsContext.settingsRef.current.preferred_light_theme;
   }
   function createMergeArea(codearea) {
     let cmobject = _codemirror.default.MergeView(codearea, {
@@ -202,10 +188,10 @@ function ReactCodemirrorMergeView(props) {
   let ccstyle = {
     "height": "100%"
   };
-  const tTheme = theme.dark_theme ? "dark" : "light";
+  const tTheme = settingsContext.settingsRef.current.theme;
   return /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement(_reactHelmet.Helmet, null, /*#__PURE__*/_react.default.createElement("link", {
     rel: "stylesheet",
-    href: `/static/tactic_css/codemirror_${tTheme}/${cmThemeRef.current}.css`,
+    href: `/static/tactic_css/codemirror_${tTheme}/${_current_codemirror_theme()}.css`,
     type: "text/css"
   })), /*#__PURE__*/_react.default.createElement("div", {
     className: "code-container",

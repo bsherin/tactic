@@ -25,7 +25,7 @@ var _error_drawer = require("./error_drawer");
 var _sizing_tools = require("./sizing_tools");
 var _assistant = require("./assistant");
 var _notebook_support = require("./notebook_support");
-var _theme = require("./theme");
+var _settings = require("./settings");
 var _modal_react = require("./modal_react");
 var _metadata_drawer = require("./metadata_drawer");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
@@ -61,7 +61,7 @@ function NotebookApp(props) {
     is_project: props.is_project,
     show_metadata: false
   });
-  const theme = (0, _react.useContext)(_theme.ThemeContext);
+  const settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   const statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
   const errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
   const pushCallback = (0, _utilities_react.useCallbackStack)();
@@ -274,9 +274,10 @@ function NotebookApp(props) {
     showErrorDrawerButton: true,
     showMetadataDrawerButton: true,
     showAssistantDrawerButton: true,
+    showSettingsDrawerButton: true,
     showMetadata: showMetadata
   }), /*#__PURE__*/_react.default.createElement("div", {
-    className: `main-outer ${theme.dark_theme ? "bp5-dark" : "light-theme"}`,
+    className: `main-outer ${settingsContext.isDark() ? "bp5-dark" : "light-theme"}`,
     ref: main_outer_ref,
     style: outer_style
   }, /*#__PURE__*/_react.default.createElement(_sizing_tools.SizeProvider, {
@@ -308,10 +309,9 @@ function NotebookApp(props) {
 exports.NotebookApp = NotebookApp = /*#__PURE__*/(0, _react.memo)(NotebookApp);
 function main_main() {
   function gotProps(the_props) {
-    let NotebookAppPlus = (0, _sizing_tools.withSizeContext)((0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)((0, _assistant.withAssistant)(NotebookApp))))));
+    let NotebookAppPlus = (0, _sizing_tools.withSizeContext)((0, _settings.withSettings)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)((0, _assistant.withAssistant)(NotebookApp))))));
     let the_element = /*#__PURE__*/_react.default.createElement(NotebookAppPlus, (0, _extends2.default)({}, the_props, {
       controlled: false,
-      initial_theme: window.theme,
       changeName: null
     }));
     const domContainer = document.querySelector('#main-root');

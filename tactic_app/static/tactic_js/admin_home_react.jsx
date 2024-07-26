@@ -27,7 +27,7 @@ import {guid} from "./utilities_react";
 import {LibraryMenubar} from "./library_menubars";
 import {useCallbackStack, useStateAndRef} from "./utilities_react";
 
-import {ThemeContext, withTheme} from "./theme";
+import {SettingsContext, withSettings} from "./settings";
 import {DialogContext} from "./modal_react";
 import {StatusContext} from "./toaster"
 
@@ -38,7 +38,7 @@ let tsocket;
 
 function _administer_home_main () {
     tsocket = new TacticSocket("main", 5000, "admin", window.library_id);
-    let AdministerHomeAppPlus = withSizeContext(withTheme(withDialogs(withErrorDrawer(withStatus(AdministerHomeApp)))));
+    let AdministerHomeAppPlus = withSizeContext(withSettings(withDialogs(withErrorDrawer(withStatus(AdministerHomeApp)))));
     const domContainer = document.querySelector('#library-home-root');
     const root = createRoot(domContainer);
     root.render(<AdministerHomeAppPlus tsocket={tsocket} initial_theme={window.theme}/>)
@@ -88,7 +88,7 @@ function AdministerHomeApp(props) {
 
     // const [usable_height, set_usable_height] = useState(getUsableDimensions(true).usable_height_no_bottom);
     // const [usable_width, set_usable_width] = useState(getUsableDimensions(true).usable_width - 170);
-    const theme = useContext(ThemeContext);
+    const settingsContext = useContext(SettingsContext);
     const dialogFuncs = useContext(DialogContext);
     const statusFuncs = useContext(StatusContext);
 
@@ -183,7 +183,7 @@ function AdministerHomeApp(props) {
         paddingLeft: 0
     };
     let outer_class = "pane-holder";
-    if (theme.dark_theme) {
+    if (settingsContext.isDark()) {
         outer_class = `${outer_class} bp5-dark`;
     } else {
         outer_class = `${outer_class} light-theme`;

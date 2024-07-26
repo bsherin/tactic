@@ -13,7 +13,7 @@ var _core = require("@blueprintjs/core");
 var _communication_react = require("./communication_react");
 var _blueprint_react_widgets = require("./blueprint_react_widgets");
 var _utilities_react = require("./utilities_react");
-var _theme = require("./theme");
+var _settings = require("./settings");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 const ErrorDrawerContext = exports.ErrorDrawerContext = /*#__PURE__*/(0, _react.createContext)(null);
@@ -138,13 +138,12 @@ function withErrorDrawer(WrappedComponent) {
       show_drawer: show_drawer,
       contents: contents_ref,
       position: lposition,
-      error_drawer_size: error_drawer_size,
       local_id: local_id.current,
       handleCloseItem: _closeEntry,
       goToLineNumberFunc: goToLineNumber.current,
       goToModule: goToModule,
       closeErrorDrawer: _close,
-      title: "Error Drawer",
+      title: "Errors",
       size: error_drawer_size,
       onClose: _onClose,
       clearAll: _clearAll
@@ -236,7 +235,7 @@ function ErrorDrawer(props) {
     goToLineNumberfunc: null,
     ...props
   };
-  const theme = (0, _react.useContext)(_theme.ThemeContext);
+  const settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   let sorted_keys = [...Object.keys(props.contents.current)];
   sorted_keys.sort(function (a, b) {
     return parseInt(b) - parseInt(a);
@@ -268,7 +267,7 @@ function ErrorDrawer(props) {
   });
   return /*#__PURE__*/_react.default.createElement(_core.Drawer, {
     icon: "console",
-    className: theme.dark_theme ? "bp5-dark" : "light-theme",
+    className: settingsContext.isDark() ? "bp5-dark" : "light-theme",
     title: props.title,
     isOpen: props.show_drawer,
     position: props.position,

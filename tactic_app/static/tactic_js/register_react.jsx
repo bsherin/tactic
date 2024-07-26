@@ -11,15 +11,12 @@ import {doFlash} from "./toaster"
 import {postAjax} from "./communication_react";
 import {useStateAndRef, guid} from "./utilities_react";
 
-import {withTheme, ThemeContext} from "./theme";
-
 window.page_id = guid();
 
 function _register_main() {
     const domContainer = document.querySelector('#root');
     const root = createRoot(domContainer);
-    let RegisterAppPlus = withTheme(RegisterApp);
-    root.render(<RegisterAppPlus initial_theme={window.theme}/>)
+    root.render(<RegisterApp/>)
 }
 
 const field_names = ["username", "password", "confirm_password"];
@@ -38,8 +35,6 @@ function RegisterApp(props) {
 
     const [fields, set_fields, fields_ref] = useStateAndRef(initial_fields);
     const [helper_text, set_helper_text, helper_text_ref] = useStateAndRef(initial_helper_text);
-
-    const theme = useContext(ThemeContext);
 
     function _onFieldChange(field, value) {
         let new_fields = {...fields_ref.current};
@@ -97,11 +92,7 @@ function RegisterApp(props) {
         height: "100%"
     };
     let outer_class = "d-flex flex-column pane-holder";
-    if (theme.dark_theme) {
-        outer_class = outer_class + " bp5-dark";
-    } else {
-        outer_class = outer_class + " light-theme"
-    }
+    outer_class = outer_class + " light-theme";
     return (
         <Fragment>
             <TacticNavbar is_authenticated={window.is_authenticated}

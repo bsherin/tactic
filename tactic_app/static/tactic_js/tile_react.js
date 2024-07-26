@@ -21,7 +21,7 @@ var _error_boundary = require("./error_boundary");
 var _menu_utilities = require("./menu_utilities");
 var _searchable_console = require("./searchable_console");
 var _sizing_tools = require("./sizing_tools");
-var _theme = require("./theme");
+var _settings = require("./settings");
 var _modal_react = require("./modal_react");
 var _error_drawer = require("./error_drawer");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
@@ -114,7 +114,7 @@ function tilesReducer(tile_list, action) {
 }
 function TileContainer(props) {
   const tile_div_ref = (0, _react.useRef)(null);
-  const theme = (0, _react.useContext)(_theme.ThemeContext);
+  const settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   const [dragging, setDragging] = (0, _react.useState)(false);
   const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(tile_div_ref, 0, "TileContainer");
   (0, _react.useEffect)(() => {
@@ -270,7 +270,7 @@ function TileContainer(props) {
     className: "tile-div",
     main_id: props.main_id,
     style: outer_style,
-    helperClass: theme.dark_theme ? "bp5-dark" : "light-theme",
+    helperClass: settingsContext.isDark() ? "bp5-dark" : "light-theme",
     ElementComponent: TailoredTileComponent,
     key_field_name: "tile_name",
     item_list: _lodash.default.cloneDeep(props.tile_list.current),

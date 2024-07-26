@@ -10,7 +10,7 @@ import uuid
 from collections import OrderedDict
 from flask import jsonify, request, url_for
 from flask_login import UserMixin
-from tactic_app import login_manager, app, db, fs, repository_db, repository_fs  # global_stuff db
+from tactic_app import login_manager, app, db, fs, repository_db, repository_fs , socketio
 from communication_utils import read_project_dict, make_jsonizable_and_compress
 from bson.objectid import ObjectId
 from exception_mixin import generic_exception_handler
@@ -257,6 +257,23 @@ class User(UserMixin, MongoAccess):
         try:
             self.db["user_collection"].update_one({"username": self.username},
                                              {'$set': update_dict})
+            if "password_hash" in update_dict:
+                del update_dict["password_hash"]
+            data = {"updates": update_dict}
+            socketio.emit("user-settings-updated", data, namespace='/main', room=self.get_id())
+            return {"success": True, "message": "Information successfully updated."}
+        except:
+            return {"success": False, "message": "Problem updating info."}
+
+    def update_settings(self, data_dict):
+        update_dict = {}
+        for (key, val) in data_dict.items():
+            update_dict[key] = val
+        try:
+            self.db["user_collection"].update_one({"username": self.username},
+                                             {'$set': update_dict})
+            data = {"updates": update_dict}
+            socketio.emit("user-settings-updated", data, namespace='/main', room=self.get_id())
             return {"success": True, "message": "Information successfully updated."}
         except:
             return {"success": False, "message": "Problem updating info."}
@@ -318,7 +335,7 @@ class RemoteUser(User):
                 setattr(self, key, user_dict[key])
             else:
                 setattr(self, key, "")
-        if "password_has" in user_dict:
+        if "password_hash" in user_dict:
             self.password_hash = user_dict["password_hash"]
         self.repository_db = repository_db
 

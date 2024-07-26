@@ -8,7 +8,9 @@ var _toaster = require("./toaster");
 var _communication_react = require("./communication_react");
 var _utilities_react = require("./utilities_react");
 var _blueprint_navbar = require("./blueprint_navbar");
-var _theme = require("./theme");
+var _settings = require("./settings");
+var _account_fields = require("./account_fields");
+var _tactic_socket = require("./tactic_socket");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 //comments
@@ -18,60 +20,20 @@ function _account_main() {
   if (window._show_message) (0, _toaster.doFlash)(window._message);
   const domContainer = document.querySelector('#root');
   const root = (0, _client.createRoot)(domContainer);
-  let AccountAppPlus = (0, _theme.withTheme)(AccountApp);
+  var tsocket = new _tactic_socket.TacticSocket("main", 5000, "code_viewer", window.main_id);
+  let AccountAppPlus = (0, _settings.withSettings)(AccountApp);
   root.render( /*#__PURE__*/_react.default.createElement(AccountAppPlus, {
-    initial_theme: window.theme,
-    controlled: false
+    controlled: false,
+    tsocket: tsocket
   }));
 }
 const field_names = ["new_password", "confirm_new_password"];
-function AccountTextField(props) {
-  return /*#__PURE__*/_react.default.createElement(_core.FormGroup, {
-    key: props.name,
-    inline: false,
-    style: {
-      padding: 5
-    },
-    label: props.display_text,
-    helperText: props.helper_text
-  }, /*#__PURE__*/_react.default.createElement(_core.InputGroup, {
-    type: "text",
-    onChange: event => props.onFieldChange(props.name, event.target.value, false),
-    onBlur: () => props.onBlur(props.name, props.value),
-    style: {
-      width: 250
-    },
-    large: false,
-    fill: false,
-    placeholder: props.name,
-    value: props.value
-  }));
-}
-AccountTextField = /*#__PURE__*/(0, _react.memo)(AccountTextField);
-function AccountSelectField(props) {
-  return /*#__PURE__*/_react.default.createElement(_core.FormGroup, {
-    key: props.name,
-    inline: false,
-    style: {
-      padding: 5
-    },
-    label: props.display_text,
-    helperText: props.helper_text
-  }, /*#__PURE__*/_react.default.createElement(_core.HTMLSelect, {
-    options: props.options,
-    onChange: e => {
-      props.onFieldChange(props.name, e.currentTarget.value, true);
-    },
-    value: props.value
-  }));
-}
-AccountSelectField = /*#__PURE__*/(0, _react.memo)(AccountSelectField);
 function AccountApp(props) {
   const [fields, set_fields, fields_ref] = (0, _utilities_react.useStateAndRef)([]);
   const [password, set_password] = (0, _react.useState)("");
   const [confirm_password, set_confirm_password] = (0, _react.useState)("");
   const [password_helper, set_password_helper] = (0, _react.useState)(null);
-  const theme = (0, _react.useContext)(_theme.ThemeContext);
+  const settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   const pushCallback = (0, _utilities_react.useCallbackStack)();
   (0, _react.useEffect)(() => {
     (0, _communication_react.postAjax)("get_account_info", {}, data => {
@@ -192,7 +154,7 @@ function AccountApp(props) {
     for (let fdict of fields) {
       let new_item;
       if (fdict.type == "text") {
-        new_item = /*#__PURE__*/_react.default.createElement(AccountTextField, {
+        new_item = /*#__PURE__*/_react.default.createElement(_account_fields.AccountTextField, {
           name: fdict.name,
           key: fdict.name,
           value: fdict.val,
@@ -202,7 +164,7 @@ function AccountApp(props) {
           onFieldChange: _onFieldChange
         });
       } else {
-        new_item = /*#__PURE__*/_react.default.createElement(AccountSelectField, {
+        new_item = /*#__PURE__*/_react.default.createElement(_account_fields.AccountSelectField, {
           name: fdict.name,
           key: fdict.name,
           value: fdict.val,
@@ -222,7 +184,7 @@ function AccountApp(props) {
   }
   let field_items = _getFieldItems();
   let outer_class = "account-settings";
-  if (theme.dark_theme) {
+  if (settingsContext.isDark()) {
     outer_class = outer_class + " bp5-dark";
   } else {
     outer_class = outer_class + " light-theme";
@@ -248,13 +210,13 @@ function AccountApp(props) {
     className: "account-pane bp5-card"
   }, /*#__PURE__*/_react.default.createElement("h6", null, "User Settings"), field_items[1])), /*#__PURE__*/_react.default.createElement("div", {
     className: "account-pane bp5-card"
-  }, /*#__PURE__*/_react.default.createElement("h6", null, "Change Password"), /*#__PURE__*/_react.default.createElement(AccountTextField, {
+  }, /*#__PURE__*/_react.default.createElement("h6", null, "Change Password"), /*#__PURE__*/_react.default.createElement(_account_fields.AccountTextField, {
     name: "password",
     key: "password",
     value: password,
     helper_text: password_helper,
     onFieldChange: _onFieldChange
-  }), /*#__PURE__*/_react.default.createElement(AccountTextField, {
+  }), /*#__PURE__*/_react.default.createElement(_account_fields.AccountTextField, {
     name: "confirm_password",
     key: "confirm_password",
     value: confirm_password,

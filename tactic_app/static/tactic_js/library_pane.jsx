@@ -14,7 +14,7 @@ import {useSize} from "./sizing_tools";
 
 import {doFlash} from "./toaster"
 import {useCallbackStack, useConstructor, useImmerReducerAndRef} from "./utilities_react";
-import {ThemeContext} from "./theme";
+import {SettingsContext} from "./settings";
 
 import {DialogContext} from "./modal_react";
 import {StatusContext} from "./toaster"
@@ -84,7 +84,7 @@ function BodyMenu(props) {
 }
 
 const metadata_outer_style = {
-    marginTop: 0, marginLeft: 5, overflow: "auto", padding: 25, marginRight: 0, height: "100%"
+    marginTop: 0, marginLeft: 0, overflow: "auto", padding: 25, marginRight: 0, height: "100%"
 };
 
 const initial_state = {
@@ -146,7 +146,7 @@ function LibraryPane(props) {
 
     const [usable_width, usable_height, topX, topY] = useSize(top_ref, 0, "LibraryPane");
 
-    const theme = useContext(ThemeContext);
+    const settingsContext = useContext(SettingsContext);
     const dialogFuncs = useContext(DialogContext);
     const statusFuncs = useContext(StatusContext);
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
@@ -1371,6 +1371,7 @@ function LibraryPane(props) {
                           pane_type={props.pane_type}
                           outer_style={metadata_outer_style}
                           handleNotesBlur={null}
+                          expandWidth={true}
                           additional_metadata={additional_metadata}
                           readOnly={props.is_repository}
         />

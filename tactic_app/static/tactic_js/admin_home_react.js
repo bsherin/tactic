@@ -21,7 +21,7 @@ var _resource_viewer_context = require("./resource_viewer_context");
 var _error_drawer = require("./error_drawer");
 var _utilities_react = require("./utilities_react");
 var _library_menubars = require("./library_menubars");
-var _theme = require("./theme");
+var _settings = require("./settings");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 window.library_id = (0, _utilities_react.guid)();
@@ -29,7 +29,7 @@ const MARGIN_SIZE = 17;
 let tsocket;
 function _administer_home_main() {
   tsocket = new _tactic_socket.TacticSocket("main", 5000, "admin", window.library_id);
-  let AdministerHomeAppPlus = (0, _sizing_tools.withSizeContext)((0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(AdministerHomeApp)))));
+  let AdministerHomeAppPlus = (0, _sizing_tools.withSizeContext)((0, _settings.withSettings)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(AdministerHomeApp)))));
   const domContainer = document.querySelector('#library-home-root');
   const root = (0, _client.createRoot)(domContainer);
   root.render( /*#__PURE__*/_react.default.createElement(AdministerHomeAppPlus, {
@@ -76,7 +76,7 @@ function AdministerHomeApp(props) {
 
   // const [usable_height, set_usable_height] = useState(getUsableDimensions(true).usable_height_no_bottom);
   // const [usable_width, set_usable_width] = useState(getUsableDimensions(true).usable_width - 170);
-  const theme = (0, _react.useContext)(_theme.ThemeContext);
+  const settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   const dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   const statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
   const top_ref = (0, _react.useRef)(null);
@@ -156,7 +156,7 @@ function AdministerHomeApp(props) {
     paddingLeft: 0
   };
   let outer_class = "pane-holder";
-  if (theme.dark_theme) {
+  if (settingsContext.isDark()) {
     outer_class = `${outer_class} bp5-dark`;
   } else {
     outer_class = `${outer_class} light-theme`;

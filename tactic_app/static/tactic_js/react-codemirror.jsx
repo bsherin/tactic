@@ -4,7 +4,7 @@ import {Fragment, useEffect, useRef, memo, useLayoutEffect, useContext} from "re
 import {Button, ButtonGroup} from "@blueprintjs/core";
 import {Helmet} from 'react-helmet';
 
-import {postAjaxPromise} from "./communication_react"
+//import {postAjaxPromise} from "./communication_react"
 import {useSize} from "./sizing_tools";
 
 
@@ -30,8 +30,8 @@ import 'codemirror/addon/edit/matchbrackets'
 import 'codemirror/addon/edit/closebrackets'
 import 'codemirror/addon/search/match-highlighter'
 
-import {propsAreEqual, useStateAndRef} from "./utilities_react";
-import {ThemeContext} from "./theme"
+import {propsAreEqual} from "./utilities_react";
+import {SettingsContext} from "./settings"
 import {SelectedPaneContext} from "./utilities_react";
 
 export {ReactCodemirror}
@@ -40,6 +40,8 @@ import {ErrorDrawerContext} from "./error_drawer";
 import {SearchForm} from "./library_widgets";
 
 const REGEXTYPE = Object.getPrototypeOf(new RegExp("that"));
+const TITLE_STYLE = {display: "flex", paddingLeft: 5, paddingBottom: 2, alignItems: "self-end"};
+
 
 function isRegex(ob) {
     return Object.getPrototypeOf(ob) == REGEXTYPE
@@ -90,9 +92,7 @@ function ReactCodemirror(props) {
         extra_autocomplete_list: [],
         ...props
     };
-    const [cmTheme, setCmTheme, cmThemeRef] = useStateAndRef("nord");
     const localRef = useRef(null);
-    const saved_theme = useRef(null);
     const preferred_themes = useRef(null);
     const cmobject = useRef(null);
     const overlay = useRef(null);
@@ -102,7 +102,7 @@ function ReactCodemirror(props) {
     const prevSoftWrap = useRef(null);
     const registeredHandlers = useRef([]);
 
-    const theme = useContext(ThemeContext);
+    const settingsContext = useContext(SettingsContext);
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
 
     const [usable_width, usable_height, topX, topY] = useSize(localRef, props.iCounter, "CodeMirror");
@@ -112,31 +112,26 @@ function ReactCodemirror(props) {
         if (props.registerSetFocusFunc) {
             props.registerSetFocusFunc(setFocus);
         }
-        postAjaxPromise('get_preferred_codemirror_themes', {})
-            .then((data) => {
-                preferred_themes.current = data;
-                let current_theme = _current_codemirror_theme();
-                setCmTheme(current_theme);
-                cmobject.current = createCMArea(localRef.current, props.first_line_number);
-                cmobject.current.setValue(props.code_content);
-                cmobject.current.setOption("theme", current_theme);
-                cmobject.current.setOption("extra_autocomplete_list", props.extra_autocomplete_list);
-                create_keymap();
-                if (props.setCMObject != null) {
-                    props.setCMObject(cmobject.current)
-                }
-                saved_theme.current = theme.dark_theme;
-                cmobject.current.refresh();
-                _doHighlight()
-            })
-            .catch((e) => {
-                errorDrawerFuncs.addErrorDrawerEntry({
-                    title: `Error getting preferred codemirror theme`,
-                    content: "message" in e ? e.message : ""
-                });
-                return
-            })
+
+        cmobject.current = createCMArea(localRef.current, props.first_line_number);
+        cmobject.current.setValue(props.code_content);
+        cmobject.current.setOption("theme", _current_codemirror_theme());
+        cmobject.current.setOption("extra_autocomplete_list", props.extra_autocomplete_list);
+        create_keymap();
+        if (props.setCMObject != null) {
+            props.setCMObject(cmobject.current)
+        }
+        cmobject.current.refresh();
+        _doHighlight();
     }, []);
+
+    useEffect(()=>{
+        if (!cmobject.current) {
+            return
+        }
+        cmobject.current.setOption("theme", _current_codemirror_theme());
+        cmobject.current.refresh();
+    }, [settingsContext.settings.theme, settingsContext.settings.preferred_dark_theme, settingsContext.settings.preferred_light_theme]);
 
     useLayoutEffect(() => {
         return (() => {
@@ -180,27 +175,13 @@ function ReactCodemirror(props) {
         cmobject.current.setOption("extra_autocomplete_list", props.extra_autocomplete_list);
 
         set_keymap();
-
-        if (theme.dark_theme != saved_theme.current) {
-            postAjaxPromise("get_preferred_codemirror_themes", {})
-                .then((data) => {
-                    preferred_themes.current = data;
-                    let current_theme = _current_codemirror_theme();
-                    setCmTheme(current_theme);
-                    cmobject.current.setOption("theme", current_theme);
-                    saved_theme.current = theme.dark_theme
-                })
-                .catch((e) => {
-                    errorDrawerFuncs.addErrorDrawerEntry({
-                        title: `Error getting preferred codemirror theme`,
-                        content: "message" in e ? e.message : ""
-                    });
-                    return
-                })
-        }
     });
 
     const selectedPane = useContext(SelectedPaneContext);
+
+    function isDark() {
+        return settingsContext.settingsRef.current.theme == "dark";
+    }
 
     function setFocus() {
         if (cmobject.current) {
@@ -210,8 +191,8 @@ function ReactCodemirror(props) {
     }
 
     function _current_codemirror_theme() {
-        return theme.dark_theme ? preferred_themes.current.preferred_dark_theme :
-            preferred_themes.current.preferred_light_theme;
+        return isDark() ? settingsContext.settingsRef.current.preferred_dark_theme :
+            settingsContext.settingsRef.current.preferred_light_theme;
     }
 
     function createCMArea(codearea, first_line_number = 1) {
@@ -457,13 +438,13 @@ function ReactCodemirror(props) {
             }
         }
     }
-    const tTheme = theme.dark_theme ? "dark" : "light";
+    const tTheme = settingsContext.settingsRef.current.theme;
     if (props.show_search) {
         let title_label = props.title_label ? props.title_label : "";
         return (
             <Fragment>
                 <Helmet>
-                    <link rel="stylesheet" href={`/static/tactic_css/codemirror_${tTheme}/${cmThemeRef.current}.css`} type="text/css"/>
+                    <link rel="stylesheet" href={`/static/tactic_css/codemirror_${tTheme}/${_current_codemirror_theme()}.css`} type="text/css"/>
                 </Helmet>
                 <div style={{
                     display: "flex", flexDirection: "row", justifyContent: "space-between",
@@ -506,7 +487,7 @@ function ReactCodemirror(props) {
     return (
         <Fragment>
             <Helmet>
-                <link rel="stylesheet" href={`/static/tactic_css/codemirror_${tTheme}/${cmThemeRef.current}.css`} type="text/css"/>
+                <link rel="stylesheet" href={`/static/tactic_css/codemirror_${tTheme}/${_current_codemirror_theme()}.css`} type="text/css"/>
             </Helmet>
             {props.show_fold_button && bgstyle &&
                 <ButtonGroup minimal={false} style={bgstyle}>
@@ -517,12 +498,7 @@ function ReactCodemirror(props) {
             }
             {props.title_label &&
                 <span className="bp5-ui-text"
-                      style={{
-                          display: "flex",
-                          paddingLeft: 5,
-                          paddingBottom: 2,
-                          alignItems: "self-end"
-                      }}>{props.title_label}</span>
+                      style={TITLE_STYLE}>{props.title_label}</span>
             }
             <div className="code-container" style={ccstyle} ref={localRef}>
 

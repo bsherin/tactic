@@ -1,6 +1,5 @@
 import React from "react";
 import {Fragment, useState, useEffect, useRef, memo} from "react";
-import PropTypes from 'prop-types';
 
 import {FormGroup, InputGroup, Button, Divider, Switch,
     TextArea, Collapse, Card, Elevation} from "@blueprintjs/core";
@@ -189,14 +188,6 @@ function TileForm(props) {
     )
 }
 
-TileForm.propTypes = {
-    tile_id: PropTypes.string,
-    dark_theme: PropTypes.bool,
-    options: PropTypes.array,
-    handleSubmit: PropTypes.func,
-    updateValue: PropTypes.func
-};
-
 TileForm = memo(TileForm);
 
 function FormSection(props) {
@@ -249,14 +240,6 @@ function DividerOption(props) {
     )
 }
 
-DividerOption.propTypes = {
-    att_name: PropTypes.string,
-    display_text: PropTypes.oneOfType([
-        PropTypes.string,
-        PropTypes.number
-    ]),
-};
-
 DividerOption = memo(DividerOption);
 
 function TextOption(props) {
@@ -286,19 +269,6 @@ function TextOption(props) {
     )
 }
 
-TextOption.propTypes = {
-    att_name: PropTypes.string,
-    display_text: PropTypes.oneOfType([
-        PropTypes.string,
-        PropTypes.number
-    ]),
-    value: PropTypes.oneOfType([
-        PropTypes.string,
-        PropTypes.number]),
-    updateValue: PropTypes.func,
-    leftIcon: PropTypes.string
-};
-
 TextOption = memo(TextOption);
 
 function IntOption(props) {
@@ -325,18 +295,6 @@ function IntOption(props) {
         />
     )
 }
-
-IntOption.propTypes = {
-    att_name: PropTypes.string,
-    display_text: PropTypes.oneOfType([
-        PropTypes.string,
-        PropTypes.number
-    ]),
-    value: PropTypes.oneOfType([
-        PropTypes.string,
-        PropTypes.number]),
-    updateValue: PropTypes.func
-};
 
 IntOption = memo(IntOption);
 
@@ -368,18 +326,6 @@ function FloatOption(props) {
     )
 }
 
-FloatOption.propTypes = {
-    att_name: PropTypes.string,
-    display_text: PropTypes.oneOfType([
-        PropTypes.string,
-        PropTypes.number
-    ]),
-    value: PropTypes.oneOfType([
-        PropTypes.string,
-        PropTypes.number]),
-    updateValue: PropTypes.func
-};
-
 FloatOption = memo(FloatOption);
 
 function BoolOption(props) {
@@ -407,18 +353,6 @@ function BoolOption(props) {
     )
 }
 
-BoolOption.propTypes = {
-    att_name: PropTypes.string,
-    display_text: PropTypes.oneOfType([
-        PropTypes.string,
-        PropTypes.number
-    ]),
-    value: PropTypes.oneOfType([
-        PropTypes.bool,
-        PropTypes.string]),
-    updateValue: PropTypes.func
-};
-
 BoolOption = memo(BoolOption);
 
 function CodeAreaOption(props) {
@@ -435,24 +369,12 @@ function CodeAreaOption(props) {
                              no_height={true}
                              code_content={props.value}
                              saveMe={null}
+                             tsocket={null}
                              code_container_height={100}
             />
         </FormGroup>
     )
 }
-
-CodeAreaOption.propTypes = {
-    att_name: PropTypes.string,
-    display_text: PropTypes.oneOfType([
-        PropTypes.string,
-        PropTypes.number
-    ]),
-    dark_theme: PropTypes.bool,
-    value: PropTypes.oneOfType([
-        PropTypes.string,
-        PropTypes.number]),
-    updateValue: PropTypes.func
-};
 
 CodeAreaOption = memo(CodeAreaOption);
 
@@ -485,18 +407,6 @@ function TextAreaOption(props) {
     )
 }
 
-TextAreaOption.propTypes = {
-    att_name: PropTypes.string,
-    display_text: PropTypes.oneOfType([
-        PropTypes.string,
-        PropTypes.number
-    ]),
-    value: PropTypes.oneOfType([
-        PropTypes.string,
-        PropTypes.number]),
-    updateValue: PropTypes.func
-};
-
 TextAreaOption = memo(TextAreaOption);
 
 function SelectOption(props) {
@@ -515,20 +425,6 @@ function SelectOption(props) {
         </FormGroup>
     )
 }
-
-SelectOption.propTypes = {
-    att_name: PropTypes.string,
-    display_text: PropTypes.oneOfType([
-        PropTypes.string,
-        PropTypes.number
-    ]),
-    choice_list: PropTypes.array,
-    buttonIcon: PropTypes.string,
-    value: PropTypes.oneOfType([
-        PropTypes.string,
-        PropTypes.number]),
-    updateValue: PropTypes.func
-};
 
 SelectOption = memo(SelectOption);
 
@@ -593,19 +489,6 @@ function PipeOption(props) {
         </FormGroup>
     )
 }
-
-PipeOption.propTypes = {
-    att_name: PropTypes.string,
-    display_text: PropTypes.oneOfType([
-        PropTypes.string,
-        PropTypes.number
-    ]),
-    pipe_dict: PropTypes.object,
-    value: PropTypes.oneOfType([
-        PropTypes.string,
-        PropTypes.number]),
-    updateValue: PropTypes.func
-};
 
 PipeOption = memo(PipeOption);
 

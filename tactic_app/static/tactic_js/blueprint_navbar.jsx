@@ -9,15 +9,13 @@ import {
     NavbarHeading,
     NavbarDivider,
     OverflowList,
-    Alignment,
-    Switch
+    Alignment
 } from "@blueprintjs/core";
 
 import {MenuComponent} from "./main_menus_react.js";
-import {postWithCallback} from "./communication_react";
-import {ThemeContext} from "./theme"
+import {SettingsContext} from "./settings"
 
-export {render_navbar, TacticNavbar, get_theme_cookie, set_theme_cookie}
+export {render_navbar, TacticNavbar}
 
 const context_url = $SCRIPT_ROOT + '/context';
 const library_url = $SCRIPT_ROOT + '/library';
@@ -27,26 +25,13 @@ const login_url = $SCRIPT_ROOT + "/login";
 
 const padding = 10;
 
-function get_theme_cookie() {
-    let cookie_str = document.cookie.split('; ').find(row => row.startsWith('tactic_theme'));
-    if (cookie_str == undefined) {
-        set_theme_cookie("light");
-        return "light"
-    }
-    return cookie_str.split('=')[1];
-}
-
-function set_theme_cookie(theme) {
-    document.cookie = "tactic_theme=" + theme;
-}
-
 function TacticNavbar({extra_text = null, menus = null, selected = null, show_api_links = false, ...props}) {
     const [usable_width, set_usable_width] = useState(() => {
         return window.innerWidth - padding * 2
     });
     const [old_left_width, set_old_left_width] = useState(null);
     const lg_ref = useRef(null);
-    const theme = useContext(ThemeContext);
+    const settingsContext = useContext(SettingsContext);
 
     var overflow_items = [];
 
@@ -84,19 +69,19 @@ function TacticNavbar({extra_text = null, menus = null, selected = null, show_ap
         return false
     }
 
-    function _setTheme(event) {
-        let dtheme = event.target.checked ? "dark" : "light";
-        set_theme_cookie(dtheme);
-        if (window.user_id != undefined) {
-            const result_dict = {
-                "user_id": window.user_id,
-                "theme": dtheme,
-            };
-            postWithCallback("host", "set_user_theme", result_dict,
-                null, null);
-        }
-        theme.setTheme(event.target.checked)
-    }
+    // function _setTheme(event) {
+    //     let dtheme = event.target.checked ? "dark" : "light";
+    //     set_theme_cookie(dtheme);
+    //     if (window.user_id != undefined) {
+    //         const result_dict = {
+    //             "user_id": window.user_id,
+    //             "theme": dtheme,
+    //         };
+    //         postWithCallback("host", "set_user_theme", result_dict,
+    //             null, null);
+    //     }
+    //     theme.setTheme(event.target.checked)
+    // }
 
     function renderNav(item) {
         return (
@@ -217,7 +202,7 @@ function TacticNavbar({extra_text = null, menus = null, selected = null, show_ap
     let right_width = _getRightWidth();
     let right_style = {width: right_width};
     right_style.justifyContent = "flex-end";
-    let theme_class = theme.dark_theme ? "bp5-dark" : "light-theme";
+    let theme_class = settingsContext.isDark() ? "bp5-dark" : "light-theme";
     let name_string = "Tactic";
     if (extra_text != null) {
         name_string += " " + extra_text
@@ -245,16 +230,6 @@ function TacticNavbar({extra_text = null, menus = null, selected = null, show_ap
                               onOverflow={_onOverflow}
                 />
 
-                <NavbarDivider/>
-                <Switch
-                    checked={theme.dark_theme}
-                    onChange={_setTheme}
-                    large={false}
-                    style={{marginBottom: 0}}
-                    innerLabel="Light"
-                    innerLabelChecked="Dark"
-                    alignIndicator="center"
-                />
             </NavbarGroup>
         </Navbar>
     )

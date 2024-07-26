@@ -14,12 +14,11 @@ import {TacticSocket} from "./tactic_socket";
 import {postAjaxPromise} from "./communication_react"
 import {withStatus} from "./toaster.js"
 
-import {withTheme} from "./theme"
 import {ErrorDrawerContext, withErrorDrawer} from "./error_drawer.js";
 import {guid} from "./utilities_react";
 import {TacticNavbar} from "./blueprint_navbar";
 import {useCallbackStack, useConstructor, useStateAndRef} from "./utilities_react";
-import {ThemeContext,} from "./theme"
+import {SettingsContext, withSettings} from "./settings"
 import {DialogContext, withDialogs} from "./modal_react";
 import {StatusContext} from "./toaster";
 import {SelectedPaneContext} from "./utilities_react";
@@ -104,7 +103,7 @@ function TextViewerApp(props) {
 
     const [resource_name, set_resource_name] = useState(props.resource_name);
 
-    const theme = useContext(ThemeContext);
+    const settingsContext = useContext(SettingsContext);
     const dialogFuncs = useContext(DialogContext);
     const statusFuncs = useContext(StatusContext);
     const selectedPane = useContext(SelectedPaneContext);
@@ -288,7 +287,7 @@ function TextViewerApp(props) {
     let outer_class = "resource-viewer-holder";
     if (!props.controlled) {
         my_props.resource_name = resource_name;
-        if (theme.dark_theme) {
+        if (settingsContext.isDark()) {
             outer_class = outer_class + " bp5-dark";
         } else {
             outer_class = outer_class + " light-theme"
@@ -337,10 +336,9 @@ TextViewerApp = memo(TextViewerApp);
 
 async function text_viewer_main() {
     function gotProps(the_props) {
-        let TextViewerAppPlus = withSizeContext(withTheme(withDialogs(withErrorDrawer(withStatus(TextViewerApp)))));
+        let TextViewerAppPlus = withSizeContext(withSettings(withDialogs(withErrorDrawer(withStatus(TextViewerApp)))));
         let the_element = <TextViewerAppPlus {...the_props}
                                              controlled={false}
-                                             initial_theme={window.theme}
                                              changeName={null}
         />;
         const domContainer = document.querySelector('#root');

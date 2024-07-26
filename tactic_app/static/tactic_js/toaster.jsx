@@ -8,7 +8,7 @@ import {OverlayToaster, Position, Spinner} from "@blueprintjs/core";
 import {GlyphButton} from "./blueprint_react_widgets";
 
 import {useCallbackStack} from "./utilities_react";
-import {ThemeContext} from "./theme"
+import {SettingsContext} from "./settings"
 
 const StatusContext = createContext(null);
 
@@ -230,11 +230,11 @@ function Status(props) {
         ...props
     };
     const elRef = useRef(null);
-    const theme = useContext(ThemeContext);
+    const settingsContext = useContext(SettingsContext);
 
     let cname = "d-flex flex-row";
-    let outer_cname = theme.dark_theme ? "status-holder bp5-dark" : "status-holder light-theme";
-    let left = elRef && elRef.current ? elRef.current.parentNode.offsetLeft : 25;
+    let outer_cname = settingsContext.isDark() ? "status-holder bp5-dark" : "status-holder light-theme";
+    let left = elRef && elRef.current && elRef.current.parentNode ? elRef.current.parentNode.offsetLeft : 25;
 
     return (
         <div ref={elRef}

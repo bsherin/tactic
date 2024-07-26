@@ -17,7 +17,7 @@ import {guid, SelectedPaneContext} from "./utilities_react";
 import {TacticNavbar} from "./blueprint_navbar";
 import {useCallbackStack, useConstructor, useStateAndRef} from "./utilities_react";
 
-import {ThemeContext, withTheme} from "./theme"
+import {SettingsContext, withSettings} from "./settings"
 import {withAssistant} from "./assistant";
 import {DialogContext, withDialogs} from "./modal_react";
 import {ErrorDrawerContext} from "./error_drawer";
@@ -76,7 +76,7 @@ function CodeViewerApp(props) {
 
     const [resource_name, set_resource_name] = useState(props.resource_name);
 
-    const theme = useContext(ThemeContext);
+    const settingsContext = useContext(SettingsContext);
     const dialogFuncs = useContext(DialogContext);
     const statusFuncs = useContext(StatusContext);
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
@@ -309,7 +309,7 @@ function CodeViewerApp(props) {
     let outer_class = "resource-viewer-holder";
     if (!props.controlled) {
         my_props.resource_name = resource_name;
-        if (theme.dark_theme) {
+        if (settingsContext.isDark()) {
             outer_class = outer_class + " bp5-dark";
         } else {
             outer_class = outer_class + " light-theme"
@@ -356,6 +356,7 @@ function CodeViewerApp(props) {
                                          search_term={search_string}
                                          update_search_state={_update_search_state}
                                          regex_search={regex}
+                                         tsocket={props.tsocket}
                                          setSearchMatches={_setSearchMatches}
                         />
                     </ResourceViewerApp>
@@ -368,10 +369,9 @@ CodeViewerApp = memo(CodeViewerApp);
 
 function code_viewer_main() {
     function gotProps(the_props) {
-        let CodeViewerAppPlus = withSizeContext(withTheme(withDialogs(withErrorDrawer(withStatus(withAssistant(CodeViewerApp))))));
+        let CodeViewerAppPlus = withSizeContext(withSettings(withDialogs(withErrorDrawer(withStatus(withAssistant(CodeViewerApp))))));
         let the_element = <CodeViewerAppPlus {...the_props}
                                              controlled={false}
-                                             initial_theme={window.theme}
                                              changeName={null}
         />;
         const domContainer = document.querySelector('#root');

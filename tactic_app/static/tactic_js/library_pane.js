@@ -18,7 +18,7 @@ var _communication_react = require("./communication_react");
 var _sizing_tools = require("./sizing_tools");
 var _toaster = require("./toaster");
 var _utilities_react = require("./utilities_react");
-var _theme = require("./theme");
+var _settings = require("./settings");
 var _modal_react = require("./modal_react");
 var _error_drawer = require("./error_drawer");
 var _library_table_pane = require("./library_table_pane");
@@ -87,7 +87,7 @@ function BodyMenu(props) {
 }
 const metadata_outer_style = {
   marginTop: 0,
-  marginLeft: 5,
+  marginLeft: 0,
   overflow: "auto",
   padding: 25,
   marginRight: 0,
@@ -153,7 +153,7 @@ function LibraryPane(props) {
   const blank_selected_resource = (0, _react.useRef)({});
   const selectedTypeRef = (0, _react.useRef)(null);
   const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(top_ref, 0, "LibraryPane");
-  const theme = (0, _react.useContext)(_theme.ThemeContext);
+  const settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   const dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   const statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
   const errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
@@ -1425,6 +1425,7 @@ function LibraryPane(props) {
     pane_type: props.pane_type,
     outer_style: metadata_outer_style,
     handleNotesBlur: null,
+    expandWidth: true,
     additional_metadata: additional_metadata,
     readOnly: props.is_repository
   });

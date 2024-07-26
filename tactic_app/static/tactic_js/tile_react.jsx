@@ -19,7 +19,7 @@ import {MenuComponent} from "./menu_utilities"
 import {SearchableConsole} from "./searchable_console";
 import {useSize} from "./sizing_tools";
 
-import {ThemeContext} from "./theme";
+import {SettingsContext} from "./settings";
 import {DialogContext} from "./modal_react";
 import {ErrorDrawerContext} from "./error_drawer";
 
@@ -109,7 +109,7 @@ function tilesReducer(tile_list, action) {
 function TileContainer(props) {
     const tile_div_ref = useRef(null);
 
-    const theme = useContext(ThemeContext);
+    const settingsContext = useContext(SettingsContext);
     const [dragging, setDragging] = useState(false);
     
     const [usable_width, usable_height, topX, topY] = useSize(tile_div_ref, 0, "TileContainer");
@@ -276,7 +276,7 @@ function TileContainer(props) {
             <SortableComponent className="tile-div"
                                main_id={props.main_id}
                                style={outer_style}
-                               helperClass={theme.dark_theme ? "bp5-dark" : "light-theme"}
+                               helperClass={settingsContext.isDark() ? "bp5-dark" : "light-theme"}
                                ElementComponent={TailoredTileComponent}
                                key_field_name="tile_name"
                                item_list={_.cloneDeep(props.tile_list.current)}

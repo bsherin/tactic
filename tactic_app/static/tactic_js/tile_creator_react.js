@@ -28,7 +28,7 @@ var _utilities_react = require("./utilities_react");
 var _blueprint_navbar = require("./blueprint_navbar");
 var _error_boundary = require("./error_boundary");
 var _autocomplete = require("./autocomplete");
-var _theme = require("./theme");
+var _settings = require("./settings");
 var _modal_react = require("./modal_react");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
@@ -162,7 +162,7 @@ function CreatorApp(props) {
   const [left_pane_fraction, set_left_pane_fraction] = (0, _react.useState)(.5);
   const [all_tags, set_all_tags] = (0, _react.useState)([]);
   const [has_key, set_has_key] = (0, _react.useState)(false);
-  const theme = (0, _react.useContext)(_theme.ThemeContext);
+  const settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   const dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   const statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
   const errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
@@ -911,6 +911,7 @@ function CreatorApp(props) {
       searchNext: _searchNext,
       search_matches: search_matches,
       setSearchMatches: num => _setSearchMatches("tc", num),
+      tsocket: props.tsocket,
       extra_autocomplete_list: mode == "python" ? onames_for_autocomplete : []
     });
   }
@@ -939,6 +940,7 @@ function CreatorApp(props) {
     searchNext: _searchNext,
     search_matches: search_matches,
     setSearchMatches: num => _setSearchMatches("rc", num),
+    tsocket: props.tsocket,
     extra_autocomplete_list: onames_for_autocomplete
   }));
   let left_pane;
@@ -1007,6 +1009,7 @@ function CreatorApp(props) {
     first_line_number: extra_methods_line_number_ref.current,
     setSearchMatches: num => _setSearchMatches("em", num),
     extra_autocomplete_list: onames_for_autocomplete,
+    tsocket: props.tsocket,
     iCounter: tabSelectCounter
   }));
   let globals_panel = /*#__PURE__*/_react.default.createElement("div", {
@@ -1030,6 +1033,7 @@ function CreatorApp(props) {
     first_line_number: 1,
     setSearchMatches: num => _setSearchMatches("gp", num),
     extra_autocomplete_list: onames_for_autocomplete,
+    tsocket: props.tsocket,
     iCounter: tabSelectCounter
   }));
   // let commands_panel = (
@@ -1089,7 +1093,7 @@ function CreatorApp(props) {
   };
   let outer_class = "resource-viewer-holder pane-holder";
   if (!window.in_context) {
-    if (theme.dark_theme) {
+    if (settingsContext.isDark()) {
       outer_class = outer_class + " bp5-dark";
     } else {
       outer_class = outer_class + " light-theme";
@@ -1114,6 +1118,7 @@ function CreatorApp(props) {
     showErrorDrawerButton: true,
     showMetadataDrawerButton: false,
     showAssistantDrawerButton: true,
+    showSettingsDrawerButton: true,
     controlled: props.controlled
   }), /*#__PURE__*/_react.default.createElement(_error_boundary.ErrorBoundary, null, /*#__PURE__*/_react.default.createElement("div", {
     className: outer_class,
@@ -1142,10 +1147,9 @@ function CreatorApp(props) {
 exports.CreatorApp = CreatorApp = /*#__PURE__*/(0, _react.memo)(CreatorApp);
 function tile_creator_main() {
   function gotProps(the_props) {
-    let CreatorAppPlus = (0, _sizing_tools.withSizeContext)((0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)((0, _assistant.withAssistant)(CreatorApp))))));
+    let CreatorAppPlus = (0, _sizing_tools.withSizeContext)((0, _settings.withSettings)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)((0, _assistant.withAssistant)(CreatorApp))))));
     let the_element = /*#__PURE__*/_react.default.createElement(CreatorAppPlus, (0, _extends2.default)({}, the_props, {
       controlled: false,
-      initial_theme: window.theme,
       changeName: null
     }));
     const domContainer = document.querySelector('#creator-root');

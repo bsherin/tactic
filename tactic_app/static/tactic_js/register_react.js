@@ -8,17 +8,13 @@ var _blueprint_navbar = require("./blueprint_navbar");
 var _toaster = require("./toaster");
 var _communication_react = require("./communication_react");
 var _utilities_react = require("./utilities_react");
-var _theme = require("./theme");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 window.page_id = (0, _utilities_react.guid)();
 function _register_main() {
   const domContainer = document.querySelector('#root');
   const root = (0, _client.createRoot)(domContainer);
-  let RegisterAppPlus = (0, _theme.withTheme)(RegisterApp);
-  root.render( /*#__PURE__*/_react.default.createElement(RegisterAppPlus, {
-    initial_theme: window.theme
-  }));
+  root.render( /*#__PURE__*/_react.default.createElement(RegisterApp, null));
 }
 const field_names = ["username", "password", "confirm_password"];
 var initial_fields = {};
@@ -32,7 +28,6 @@ for (let field of field_names) {
 function RegisterApp(props) {
   const [fields, set_fields, fields_ref] = (0, _utilities_react.useStateAndRef)(initial_fields);
   const [helper_text, set_helper_text, helper_text_ref] = (0, _utilities_react.useStateAndRef)(initial_helper_text);
-  const theme = (0, _react.useContext)(_theme.ThemeContext);
   function _onFieldChange(field, value) {
     let new_fields = {
       ...fields_ref.current
@@ -99,11 +94,7 @@ function RegisterApp(props) {
     height: "100%"
   };
   let outer_class = "d-flex flex-column pane-holder";
-  if (theme.dark_theme) {
-    outer_class = outer_class + " bp5-dark";
-  } else {
-    outer_class = outer_class + " light-theme";
-  }
+  outer_class = outer_class + " light-theme";
   return /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement(_blueprint_navbar.TacticNavbar, {
     is_authenticated: window.is_authenticated,
     selected: null,

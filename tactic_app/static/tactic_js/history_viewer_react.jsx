@@ -20,14 +20,13 @@ import {guid} from "./utilities_react.js";
 import {TacticNavbar} from "./blueprint_navbar";
 import {TacticSocket} from "./tactic_socket.js";
 import {useCallbackStack, useConnection} from "./utilities_react";
-import {withTheme} from "./theme";
+import {withSettings} from "./settings";
 
 async function history_viewer_main ()  {
     function gotProps(the_props) {
-        let HistoryViewerAppPlus = withTheme(withErrorDrawer(withStatus(HistoryViewerApp)));
+        let HistoryViewerAppPlus = withSettings(withErrorDrawer(withStatus(HistoryViewerApp)));
         let the_element = <HistoryViewerAppPlus {...the_props}
                                              controlled={false}
-                                             initial_theme={window.theme}
                                              changeName={null}/>;
         const domContainer = document.querySelector('#root');
         const root = createRoot(domContainer);

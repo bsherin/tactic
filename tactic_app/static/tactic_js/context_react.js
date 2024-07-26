@@ -36,11 +36,22 @@ var _error_drawer = require("./error_drawer");
 var _assistant = require("./assistant");
 var _sizing_tools = require("./sizing_tools");
 var _resizing_layouts = require("./resizing_layouts2");
-var _theme = require("./theme");
+var _settings = require("./settings");
 var _modal_react = require("./modal_react");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 // noinspection XmlDeprecatedElement,JSXUnresolvedComponent
+
+const originalWarn = console.warn;
+console.warn = function (message) {
+  const suppressWarnings = ["[Blueprint] useHotkeys() was used outside", "findDOMNode is deprecated and will be removed"];
+  if (!suppressWarnings.some(warning => message.includes(warning))) {
+    for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+      args[_key - 1] = arguments[_key];
+    }
+    originalWarn.apply(console, [message, ...args]);
+  }
+};
 
 //import { HotkeysProvider } from "@blueprintjs/core";
 
@@ -106,14 +117,13 @@ const classDict = {
   "text-viewer": _text_viewer_react.TextViewerApp
 };
 function _context_main() {
-  const ContextAppPlus = (0, _pool_tree.withPool)((0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)((0, _assistant.withAssistant)(ContextApp))))));
+  const ContextAppPlus = (0, _pool_tree.withPool)((0, _settings.withSettings)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)((0, _assistant.withAssistant)(ContextApp))))));
   const domContainer = document.querySelector('#context-root');
   const root = (0, _client.createRoot)(domContainer);
   root.render(
   /*#__PURE__*/
   //<HotkeysProvider>
   _react.default.createElement(ContextAppPlus, {
-    initial_theme: window.theme,
     tsocket: tsocket
   })
   //</HotkeysProvider>
@@ -140,7 +150,7 @@ function ContextApp(props) {
   const [dragging_over, set_dragging_over] = (0, _react.useState)(null);
   const [currently_dragging, set_currently_dragging] = (0, _react.useState)(null);
   const [showOpenOmnibar, setShowOpenOmnibar] = (0, _react.useState)(false);
-  const theme = (0, _react.useContext)(_theme.ThemeContext);
+  const settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   const dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   const statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
   const errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
@@ -999,7 +1009,7 @@ function ContextApp(props) {
   }));
   all_tabs.push(dummy_tab);
   let outer_class = "pane-holder ";
-  if (theme.dark_theme) {
+  if (settingsContext.isDark()) {
     outer_class = `${outer_class} bp5-dark`;
   } else {
     outer_class = `${outer_class} light-theme`;

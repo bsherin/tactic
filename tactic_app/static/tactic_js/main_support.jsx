@@ -101,7 +101,6 @@ function main_props(data, registerDirtyMethod, finalCallback) {
                 initial_table_spec: {
                     current_doc_name: ""
                 },
-                initial_theme: window.theme,
                 initial_doc_names: [],
                 registerDirtyMethod: registerDirtyMethod,
             })
@@ -124,7 +123,6 @@ function main_props(data, registerDirtyMethod, finalCallback) {
                 initial_table_spec: {
                     current_doc_name: fdata.doc_names[0]
                 },
-                initial_theme: window.theme,
                 initial_doc_names: fdata.doc_names,
                 registerDirtyMethod: registerDirtyMethod,
             })
@@ -150,7 +148,6 @@ function main_props(data, registerDirtyMethod, finalCallback) {
                 },
                 interface_state: interface_state,
                 total_rows: fdata.total_rows,
-                initial_theme: window.theme,
                 initial_data_row_dict: fdata.data_row_dict,
                 initial_doc_names: fdata.doc_names,
                 registerDirtyMethod: registerDirtyMethod,

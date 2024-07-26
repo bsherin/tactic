@@ -8,7 +8,7 @@ var _toaster = require("./toaster");
 var _communication_react = require("./communication_react");
 var _utilities_react = require("./utilities_react");
 var _blueprint_navbar = require("./blueprint_navbar");
-var _theme = require("./theme");
+var _settings = require("./settings");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 window.page_id = (0, _utilities_react.guid)();
@@ -17,20 +17,27 @@ function _login_main() {
   if (window._show_message) (0, _toaster.doFlash)(window._message);
   const domContainer = document.querySelector('#root');
   const root = (0, _client.createRoot)(domContainer);
-  let useDark = (0, _blueprint_navbar.get_theme_cookie)() == "dark";
-  let LoginAppPlus = (0, _theme.withTheme)((0, _toaster.withStatus)(LoginApp));
-  root.render( /*#__PURE__*/_react.default.createElement(LoginAppPlus, {
+  let LoginAppPlus = (0, _toaster.withStatus)(LoginApp);
+  //let useDark = get_theme_cookie() == "dark";
+  root.render( /*#__PURE__*/_react.default.createElement(_settings.SettingsContext.Provider, {
+    value: {
+      settings: null,
+      setSettings: null,
+      setShowSettingsDrawer: null,
+      isDark: () => {
+        return false;
+      }
+    }
+  }, /*#__PURE__*/_react.default.createElement(LoginAppPlus, {
     tsocket: null,
-    controlled: false,
-    initial_dark: useDark
-  }));
+    controlled: false
+  })));
 }
 function LoginApp(props) {
   const [username, setUsername] = (0, _react.useState)(null);
   const [password, setPassword] = (0, _react.useState)(null);
   const [username_warning_text, set_username_warning_text] = (0, _react.useState)("");
   const [password_warning_text, set_password_warning_text] = (0, _react.useState)("");
-  const theme = (0, _react.useContext)(_theme.ThemeContext);
   const statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
   const pushCallback = (0, _utilities_react.useCallbackStack)();
   const inputRef = (0, _react.useRef)(null);
@@ -79,12 +86,11 @@ function LoginApp(props) {
   function _refHandler(the_ref) {
     inputRef.current = the_ref;
   }
-  let outer_class = "login-body d-flex flex-column justify-content-center";
-  if (theme.dark_theme) {
-    outer_class = outer_class + " bp5-dark";
-  } else {
-    outer_class = outer_class + " light-theme";
+  function ffunc() {
+    return false;
   }
+  let outer_class = "login-body d-flex flex-column justify-content-center";
+  outer_class = outer_class + " light-theme";
   return /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement(_blueprint_navbar.TacticNavbar, {
     is_authenticated: window.is_authenticated,
     selected: null,

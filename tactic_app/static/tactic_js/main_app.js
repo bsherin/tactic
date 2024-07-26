@@ -33,7 +33,7 @@ var _error_drawer = require("./error_drawer");
 var _utilities_react = require("./utilities_react");
 var _sizing_tools = require("./sizing_tools");
 var _error_boundary = require("./error_boundary");
-var _theme = require("./theme");
+var _settings = require("./settings");
 var _pool_tree = require("./pool_tree");
 var _assistant = require("./assistant");
 var _modal_react = require("./modal_react");
@@ -89,7 +89,7 @@ function MainApp(props) {
   const [console_selected_items, set_console_selected_items, console_selected_items_ref] = (0, _utilities_react.useStateAndRef)([]);
   const [console_items, dispatch, console_items_ref] = (0, _utilities_react.useReducerAndRef)(_console_support.consoleItemsReducer, iStateOrDefault("console_items"));
   const [tile_list, tileDispatch, tile_list_ref] = (0, _utilities_react.useReducerAndRef)(_tile_react.tilesReducer, iStateOrDefault("tile_list"));
-  const theme = (0, _react.useContext)(_theme.ThemeContext);
+  const settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   const dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   const statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
   const selectedPane = (0, _react.useContext)(_utilities_react.SelectedPaneContext);
@@ -1105,10 +1105,11 @@ function MainApp(props) {
     showErrorDrawerButton: true,
     showMetadataDrawerButton: true,
     showAssistantDrawerButton: true,
+    showSettingsDrawerButton: true,
     showMetadata: showMetadata,
     extraButtons: extra_menubar_buttons
   }), /*#__PURE__*/_react.default.createElement(_error_boundary.ErrorBoundary, null, /*#__PURE__*/_react.default.createElement("div", {
-    className: `main-outer ${theme.dark_theme ? "bp5-dark" : "light-theme"}`,
+    className: `main-outer ${settingsContext.isDark() ? "bp5-dark" : "light-theme"}`,
     ref: main_outer_ref,
     style: {
       width: "100%",
@@ -1176,10 +1177,9 @@ function MainApp(props) {
 exports.MainApp = MainApp = /*#__PURE__*/(0, _react.memo)(MainApp);
 function main_main() {
   function gotProps(the_props) {
-    let MainAppPlus = (0, _pool_tree.withPool)((0, _sizing_tools.withSizeContext)((0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)((0, _assistant.withAssistant)(MainApp)))))));
+    let MainAppPlus = (0, _pool_tree.withPool)((0, _sizing_tools.withSizeContext)((0, _settings.withSettings)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)((0, _assistant.withAssistant)(MainApp)))))));
     let the_element = /*#__PURE__*/_react.default.createElement(MainAppPlus, (0, _extends2.default)({}, the_props, {
       controlled: false,
-      initial_theme: window.theme,
       changeName: null
     }));
     const domContainer = document.querySelector('#main-root');

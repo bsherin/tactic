@@ -14,7 +14,7 @@ import {withErrorDrawer} from "./error_drawer";
 import {useCallbackStack, useConnection} from "./utilities_react";
 import {TacticNavbar} from "./blueprint_navbar";
 
-import {ThemeContext, withTheme} from "./theme";
+import {SettingsContext, withSettings} from "./settings";
 import {withDialogs} from "./modal_react";
 import {StatusContext} from "./toaster"
 
@@ -32,7 +32,7 @@ const controllable_props = ["usable_height", "usable_width"];
 function RepositoryHomeApp(props) {
 
     const connection_status = useConnection(props.tsocket, initSocket);
-    const theme = useContext(ThemeContext);
+    const settingsContext = useContext(SettingsContext);
     const statusFuncs = useContext(StatusContext);
 
     const top_ref = useRef(null);
@@ -95,7 +95,7 @@ function RepositoryHomeApp(props) {
         paddingLeft: 0
     };
     let outer_class = "library-pane-holder  ";
-    if (theme.dark_theme) {
+    if (settingsContext.isDark()) {
         outer_class = `${outer_class} bp5-dark`;
     } else {
         outer_class = `${outer_class} light-theme`;
@@ -128,12 +128,11 @@ RepositoryHomeApp = memo(RepositoryHomeApp);
 function _repository_home_main() {
     tsocket = new TacticSocket("main", 5000, "repository", library_id);
     tsocket.socket.emit('join-repository', {});
-    let RepositoryHomeAppPlus = withSizeContext(withTheme(withDialogs(withErrorDrawer(withStatus(RepositoryHomeApp)))));
+    let RepositoryHomeAppPlus = withSizeContext(withSettings(withDialogs(withErrorDrawer(withStatus(RepositoryHomeApp)))));
     const domContainer = document.querySelector('#library-home-root');
     const root = createRoot(domContainer);
-    root.render(<RepositoryHomeAppPlus initial_theme={window.theme}
-                                           controlled={false}
-                                           tsocket={tsocket}/>)
+    root.render(<RepositoryHomeAppPlus controlled={false}
+                                       tsocket={tsocket}/>)
 }
 
 _repository_home_main();

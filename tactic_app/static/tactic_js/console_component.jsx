@@ -46,7 +46,7 @@ import {view_views} from "./library_pane";
 import {TacticMenubar} from "./menu_utilities";
 import {FilterSearchForm} from "./search_form";
 import {SearchableConsole} from "./searchable_console";
-import {ThemeContext} from "./theme";
+import {SettingsContext} from "./settings";
 import {DialogContext} from "./modal_react"
 import {SizeProvider, useSize} from "./sizing_tools";
 
@@ -101,7 +101,7 @@ function ConsoleComponent(props) {
 
     const [pseudo_tile_id, set_pseudo_tile_id] = useState(null);
 
-    const theme = useContext(ThemeContext);
+    const settingsContext = useContext(SettingsContext);
     const dialogFuncs = useContext(DialogContext);
     const pushCallback = useCallbackStack();
 
@@ -127,8 +127,8 @@ function ConsoleComponent(props) {
     }, []);
     
     useEffect(() => {
-        console.log("theme changed")  // This is to force re-rendering because of highlight.js theme change
-    }, [theme]);
+        //console.log("theme changed")  // This is to force re-rendering because of highlight.js theme change
+    }, [settingsContext.settings.theme]);
 
 
     const _addBlankCode = useCallback(async (e) => {
@@ -1558,12 +1558,13 @@ function initSocket() {
                                                ElementComponent={TailoredSuperItem}
                                                key_field_name="unique_id"
                                                item_list={filtered_items}
-                                               helperClass={theme.dark_theme ? "bp5-dark" : "light-theme"}
+                                               helperClass={settingsContext.isDark() ? "bp5-dark" : "light-theme"}
                                                handle=".console-sorter"
                                                onBeforeCapture={_sortStart}
                                                onDragEnd={_resortConsoleItems}
                                                useDragHandle={false}
                                                axis="y"
+                                               tsocket={props.tsocket}
                                                extraProps={extraProps}
                             />
                         {/*</ContextMenu>*/}
@@ -2512,6 +2513,7 @@ function ConsoleCodeItem(props) {
                                                          extraKeys={_extraKeys}
                                                          search_term={props.search_string}
                                                          no_height={true}
+                                                         tsocket={props.tsocket}
                                                          saveMe={null}/>
                                         <div className="button-div float-buttons d-flex flex-row">
                                             <GlyphButton handleClick={_deleteMe}
@@ -2938,6 +2940,7 @@ function ConsoleTextItem(props) {
                                                          extraKeys={_extraKeys}
                                                          search_term={props.search_string}
                                                          no_height={true}
+                                                         tsocket={props.tsocket}
                                                          saveMe={null}/>
                                     </Fragment>
                                 }

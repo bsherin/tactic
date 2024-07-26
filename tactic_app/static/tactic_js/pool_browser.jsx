@@ -13,7 +13,7 @@ import {getBlobPromise, postAjaxPromise} from "./communication_react";
 import {ErrorDrawerContext} from "./error_drawer";
 import {useSize} from "./sizing_tools";
 import {doFlash, StatusContext} from "./toaster";
-import {ThemeContext} from "./theme";
+import {SettingsContext} from "./settings";
 
 import {DialogContext} from "./modal_react";
 
@@ -43,7 +43,7 @@ function PoolBrowser(props) {
     const [contextMenuItems, setContextMenuItems] = useState([]);
     const [have_activated, set_have_activated] = useState(false);
 
-    const theme = useContext(ThemeContext);
+    const settingsContext = useContext(SettingsContext);
     const dialogFuncs = useContext(DialogContext);
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
     const statudFuncs = useContext(StatusContext);

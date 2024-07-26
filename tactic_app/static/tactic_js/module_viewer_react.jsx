@@ -19,7 +19,7 @@ import {withSizeContext, SizeContext, useSize} from "./sizing_tools";
 import {guid} from "./utilities_react";
 import {TacticNavbar} from "./blueprint_navbar";
 import {useCallbackStack, useConstructor, useStateAndRef} from "./utilities_react";
-import {ThemeContext, withTheme} from "./theme";
+import {SettingsContext, withSettings} from "./settings";
 import {DialogContext, withDialogs} from "./modal_react";
 import {SelectedPaneContext} from "./utilities_react";
 
@@ -74,7 +74,7 @@ function ModuleViewerApp(props) {
     const [regex, set_regex] = useState(false);
     const [search_matches, set_search_matches] = useState(props.null);
 
-    const theme = useContext(ThemeContext);
+    const settingsContext = useContext(SettingsContext);
     const dialogFuncs = useContext(DialogContext);
     const statusFuncs = useContext(StatusContext);
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
@@ -450,7 +450,7 @@ function ModuleViewerApp(props) {
     // let cc_height = get_new_cc_height();
     let outer_class = "resource-viewer-holder";
     if (!props.controlled) {
-        if (theme.dark_theme) {
+        if (settingsContext.isDark()) {
             outer_class = outer_class + " bp5-dark";
         } else {
             outer_class = outer_class + " light-theme"
@@ -512,10 +512,9 @@ ModuleViewerApp = memo(ModuleViewerApp);
 
 function module_viewer_main() {
     function gotProps(the_props) {
-        let ModuleViewerAppPlus = withSizeContext(withTheme(withDialogs(withErrorDrawer(withStatus(withAssistant(ModuleViewerApp))))));
+        let ModuleViewerAppPlus = withSizeContext(withSettings(withDialogs(withErrorDrawer(withStatus(withAssistant(ModuleViewerApp))))));
         let the_element = <ModuleViewerAppPlus {...the_props}
                                                controlled={false}
-                                               initial_theme={window.theme}
                                                changeName={null}
         />;
         let domContainer = document.querySelector('#root');
