@@ -33,7 +33,7 @@ mdi.use(markdownItLatex);
 import {useState, useEffect, memo, useContext} from "react";
 import {Drawer} from "@blueprintjs/core";
 import {postAjaxPromise} from "./communication_react";
-import {ThemeContext} from "./theme";
+import {SettingsContext} from "./settings";
 import {CombinedMetadata} from "./blueprint_mdata_fields";
 
 export {MetadataDrawer}
@@ -68,7 +68,7 @@ function MetadataDrawer(props) {
     const [savedNotes, setSavedNotes] = useState(null);
     const [additionalMdata, setAdditionalMdata] = useState({});
 
-    const theme = useContext(ThemeContext);
+    const settingsContext = useContext(SettingsContext);
 
     useEffect(() => {
         if (props.show_drawer) {
@@ -105,8 +105,8 @@ function MetadataDrawer(props) {
     }, [props.show_drawer]);
 
     useEffect(() => {
-        console.log("theme changed")  // This is to force re-rendering because of highlight.js theme change
-    }, [theme]);
+        //console.log("theme changed")  // This is to force re-rendering because of highlight.js theme change
+    }, [settingsContext.settings.theme]);
 
     async function _handleMetadataChange(state_stuff) {
         for (let field in state_stuff) {
@@ -138,7 +138,7 @@ function MetadataDrawer(props) {
     return (
         <Drawer
             icon={icon_dict[props.res_type]}
-            className={theme.dark_theme ? "bp5-dark" : "light-theme"}
+            className={settingsContext.isDark() ? "bp5-dark" : "light-theme"}
             style={drawerStyle}
             title={props.res_name}
             isOpen={props.show_drawer}

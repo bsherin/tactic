@@ -19,7 +19,7 @@ var _toaster = require("./toaster.js");
 var _error_drawer = require("./error_drawer.js");
 var _utilities_react = require("./utilities_react");
 var _blueprint_navbar = require("./blueprint_navbar");
-var _theme = require("./theme");
+var _settings = require("./settings");
 var _assistant = require("./assistant");
 var _modal_react = require("./modal_react");
 var _error_drawer2 = require("./error_drawer");
@@ -70,7 +70,7 @@ function CodeViewerApp(props) {
   const [search_matches, set_search_matches] = (0, _react.useState)(props.null);
   const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(top_ref, 0, "CodeViewer");
   const [resource_name, set_resource_name] = (0, _react.useState)(props.resource_name);
-  const theme = (0, _react.useContext)(_theme.ThemeContext);
+  const settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   const dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   const statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
   const errorDrawerFuncs = (0, _react.useContext)(_error_drawer2.ErrorDrawerContext);
@@ -282,7 +282,7 @@ function CodeViewerApp(props) {
   let outer_class = "resource-viewer-holder";
   if (!props.controlled) {
     my_props.resource_name = resource_name;
-    if (theme.dark_theme) {
+    if (settingsContext.isDark()) {
       outer_class = outer_class + " bp5-dark";
     } else {
       outer_class = outer_class + " light-theme";
@@ -331,16 +331,16 @@ function CodeViewerApp(props) {
     search_term: search_string,
     update_search_state: _update_search_state,
     regex_search: regex,
+    tsocket: props.tsocket,
     setSearchMatches: _setSearchMatches
   }))));
 }
 exports.CodeViewerApp = CodeViewerApp = /*#__PURE__*/(0, _react.memo)(CodeViewerApp);
 function code_viewer_main() {
   function gotProps(the_props) {
-    let CodeViewerAppPlus = (0, _sizing_tools.withSizeContext)((0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)((0, _assistant.withAssistant)(CodeViewerApp))))));
+    let CodeViewerAppPlus = (0, _sizing_tools.withSizeContext)((0, _settings.withSettings)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)((0, _assistant.withAssistant)(CodeViewerApp))))));
     let the_element = /*#__PURE__*/_react.default.createElement(CodeViewerAppPlus, (0, _extends2.default)({}, the_props, {
       controlled: false,
-      initial_theme: window.theme,
       changeName: null
     }));
     const domContainer = document.querySelector('#root');

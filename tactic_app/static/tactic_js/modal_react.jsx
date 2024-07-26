@@ -17,7 +17,7 @@ import {BpSelect} from "./blueprint_mdata_fields"
 import {useCallbackStack} from "./utilities_react";
 import {postWithCallback} from "./communication_react";
 import {PoolAddressSelector} from "./pool_tree";
-import {ThemeContext} from "./theme";
+import {SettingsContext} from "./settings";
 
 import {useStateAndRef} from "./utilities_react";
 import {FileImportDialog} from "./import_dialog";
@@ -99,7 +99,7 @@ function ModalDialog(props) {
     const [warning_text, set_warning_text, warning_text_ref] = useStateAndRef("");
     const [current_value, set_current_value, current_value_ref] = useStateAndRef(null);
 
-    const theme = useContext(ThemeContext);
+    const settingsContext = useContext(SettingsContext);
 
     const input_ref = useRef(null);
 
@@ -182,7 +182,7 @@ function ModalDialog(props) {
     }
     return (
         <Dialog isOpen={props.isOpen}
-                className={theme.dark_theme ? "bp5-dark" : ""}
+                className={settingsContext.isDark() ? "bp5-dark" : ""}
                 title={props.title}
                 onClose={_cancelHandler}
                 onOpened={() => {
@@ -224,7 +224,7 @@ function PresentationDialog(props) {
     const [use_dark_theme, set_use_dark_theme] = useState(null);
     const [warning_text, set_warning_text] = useState("");
 
-    const theme = useContext(ThemeContext);
+    const settingsContext = useContext(SettingsContext);
 
     const input_ref = useRef(null);
 
@@ -290,7 +290,7 @@ function PresentationDialog(props) {
 
     return (
         <Dialog isOpen={show}
-                className={theme.dark_theme ? "bp5-dark" : ""}
+                className={settingsContext.isDark() ? "bp5-dark" : ""}
                 title="Create Presentation"
                 onClose={_cancelHandler}
                 canEscapeKeyClose={true}>
@@ -343,7 +343,7 @@ function ReportDialog(props) {
     const [collapsible, set_collapsible] = useState(false);
     const [include_summaries, set_include_summaries] = useState(false);
 
-    const theme = useContext(ThemeContext);
+    const settingsContext = useContext(SettingsContext);
 
     const input_ref = useRef(null);
 
@@ -419,7 +419,7 @@ function ReportDialog(props) {
 
     return (
         <Dialog isOpen={show}
-                className={theme.dark_theme ? "bp5-dark" : ""}
+                className={settingsContext.isDark() ? "bp5-dark" : ""}
                 title="Create Report"
                 onClose={_cancelHandler}
                 canEscapeKeyClose={true}>
@@ -474,7 +474,7 @@ function SelectDialog(props) {
     const [show, set_show] = useState(false);
     const [value, set_value] = useState("");
 
-    const theme = useContext(ThemeContext);
+    const settingsContext = useContext(SettingsContext);
 
     useEffect(() => {
         set_show(true);
@@ -498,7 +498,7 @@ function SelectDialog(props) {
 
     return (
         <Dialog isOpen={show}
-                className={theme.dark_theme ? "bp5-dark" : ""}
+                className={settingsContext.isDark() ? "bp5-dark" : ""}
                 title={props.title}
                 onClose={_cancelHandler}
                 canEscapeKeyClose={true}>
@@ -536,7 +536,7 @@ function SelectAddressDialog(props) {
     const [new_name, set_new_name] = useState("");
     const [path, set_path] = useState();
 
-    const theme = useContext(ThemeContext);
+    const settingsContext = useContext(SettingsContext);
 
     useEffect(() => {
         set_show(true);
@@ -566,7 +566,7 @@ function SelectAddressDialog(props) {
 
     return (
         <Dialog isOpen={show}
-                className={theme.dark_theme ? "bp5-dark" : ""}
+                className={settingsContext.isDark() ? "bp5-dark" : ""}
                 title={props.title}
                 onClose={_cancelHandler}
                 canEscapeKeyClose={true}>
@@ -607,7 +607,7 @@ function SelectResourceDialog(props) {
     const [option_names, set_option_names] = useState([]);
     const [selected_resource, set_selected_resource] = useState(null);
 
-    const theme = useContext(ThemeContext);
+    const settingsContext = useContext(SettingsContext);
     const pushCallback = useCallbackStack();
 
     useEffect(() => {
@@ -647,7 +647,7 @@ function SelectResourceDialog(props) {
 
     return (
         <Dialog isOpen={show}
-                className={theme.dark_theme ? "bp5-dark" : ""}
+                className={settingsContext.isDark() ? "bp5-dark" : ""}
                 title="Select a library resource"
                 onClose={_cancelHandler}
                 canEscapeKeyClose={true}>
@@ -687,7 +687,7 @@ function ConfirmDialog(props) {
         ...props
     };
     const [show, set_show] = useState(false);
-    const theme = useContext(ThemeContext);
+    const settingsContext = useContext(SettingsContext);
 
     useEffect(() => {
         set_show(true);
@@ -709,7 +709,7 @@ function ConfirmDialog(props) {
 
     return (
         <Dialog isOpen={show}
-                className={theme.dark_theme ? "bp5-dark" : ""}
+                className={settingsContext.isDark() ? "bp5-dark" : ""}
                 title={props.title}
                 onClose={_cancelHandler}
                 autoFocus={true}

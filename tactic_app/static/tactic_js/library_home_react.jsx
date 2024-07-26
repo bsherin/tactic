@@ -18,7 +18,7 @@ import {withErrorDrawer} from "./error_drawer";
 import {guid, useCallbackStack, useConnection } from "./utilities_react";
 import {TacticNavbar} from "./blueprint_navbar";
 import {AllMenubar} from "./library_menubars"
-import {ThemeContext, withTheme} from "./theme";
+import {SettingsContext, withSettings} from "./settings";
 import {BOTTOM_MARGIN, SizeContext, useSize, withSizeContext} from "./sizing_tools";
 import {withDialogs} from "./modal_react";
 import {StatusContext} from "./toaster"
@@ -40,7 +40,7 @@ function LibraryHomeApp(props) {
     const top_ref = useRef(null);
     const [usable_width, usable_height, topX, topY] = useSize(top_ref, 0, "Library");
 
-    const theme = useContext(ThemeContext);
+    const settingsContext = useContext(SettingsContext);
     const statusFuncs = useContext(StatusContext);
     const sizeInfo = useContext(SizeContext);
 
@@ -103,7 +103,7 @@ function LibraryHomeApp(props) {
     if (!window.in_context) {
         outer_style.height = "100%";
         outer_class = "pane-holder  ";
-        if (theme.dark_theme) {
+        if (settingsContext.isDark()) {
             outer_class = `${outer_class} bp5-dark`;
         } else {
             outer_class = `${outer_class} light-theme`;
@@ -138,14 +138,13 @@ LibraryHomeApp = memo(LibraryHomeApp);
 
 function _library_home_main() {
     const tsocket = new TacticSocket("main", 5000, "library", library_id);
-    const LibraryHomeAppPlus = withSizeContext(withTheme(withDialogs(withErrorDrawer(withStatus(withAssistant(LibraryHomeApp))))));
+    const LibraryHomeAppPlus = withSizeContext(withSettings(withDialogs(withErrorDrawer(withStatus(withAssistant(LibraryHomeApp))))));
     const domContainer = document.querySelector('#library-home-root');
     const root = createRoot(domContainer);
     root.render(
         //<HotkeysProvider>
             <LibraryHomeAppPlus tsocket={tsocket}
-                                controlled={false}
-                                initial_theme={window.theme}/>
+                                controlled={false}/>
         //</HotkeysProvider>
     )
 }

@@ -5,7 +5,7 @@ import React from "react";
 import {Fragment, useEffect, useState, memo, useContext} from "react";
 import { createRoot } from 'react-dom/client';
 
-import { FormGroup, InputGroup, Button, HTMLSelect } from "@blueprintjs/core";
+import { Button } from "@blueprintjs/core";
 
 import {doFlash} from "./toaster"
 import {postAjax} from "./communication_react";
@@ -13,7 +13,10 @@ import {postAjax} from "./communication_react";
 import {guid, useCallbackStack, useStateAndRef} from "./utilities_react";
 import {TacticNavbar} from "./blueprint_navbar";
 
-import {withTheme, ThemeContext} from "./theme";
+import {withSettings, SettingsContext} from "./settings";
+
+import {AccountTextField, AccountSelectField} from "./account_fields";
+import {TacticSocket} from "./tactic_socket";
 
 window.main_id = guid();
 
@@ -21,49 +24,12 @@ function _account_main() {
     if (window._show_message) doFlash(window._message);
     const domContainer = document.querySelector('#root');
     const root = createRoot(domContainer);
-    let AccountAppPlus = withTheme(AccountApp);
-    root.render(<AccountAppPlus initial_theme={window.theme} controlled={false}/>)
+    var tsocket = new TacticSocket("main", 5000, "code_viewer", window.main_id);
+    let AccountAppPlus = withSettings(AccountApp);
+    root.render(<AccountAppPlus controlled={false} tsocket={tsocket}/>)
 }
 
 const field_names = ["new_password", "confirm_new_password"];
-
-function AccountTextField(props){
-    return (
-        <FormGroup key={props.name}
-                      inline={false}
-                      style={{padding: 5}}
-                      label={props.display_text}
-                      helperText={props.helper_text}>
-                        <InputGroup type="text"
-                                       onChange={(event)=>props.onFieldChange(props.name, event.target.value, false)}
-                                       onBlur={()=>props.onBlur(props.name, props.value)}
-                                       style={{width: 250}}
-                                       large={false}
-                                       fill={false}
-                                       placeholder={props.name}
-                                       value={props.value}
-                                       />
-            </FormGroup>
-    )
-}
-
-AccountTextField = memo(AccountTextField);
-
-function AccountSelectField(props) {
-    return (
-        <FormGroup key={props.name}
-                   inline={false}
-                   style={{padding: 5}}
-                   label={props.display_text}
-                   helperText={props.helper_text}>
-            <HTMLSelect options={props.options}
-                        onChange={(e)=>{props.onFieldChange(props.name, e.currentTarget.value, true)}}
-                        value={props.value}/>
-        </FormGroup>
-    )
-}
-
-AccountSelectField = memo(AccountSelectField);
 
 function AccountApp(props) {
 
@@ -72,7 +38,7 @@ function AccountApp(props) {
     const [confirm_password, set_confirm_password] = useState("");
     const [password_helper, set_password_helper] = useState(null);
 
-    const theme = useContext(ThemeContext);
+    const settingsContext = useContext(SettingsContext);
 
     const pushCallback = useCallbackStack();
 
@@ -224,7 +190,7 @@ function AccountApp(props) {
 
         let field_items = _getFieldItems();
         let outer_class = "account-settings";
-        if (theme.dark_theme) {
+        if (settingsContext.isDark()) {
             outer_class = outer_class + " bp5-dark";
         }
         else {

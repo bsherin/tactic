@@ -8,7 +8,6 @@ exports.ReactCodemirror = ReactCodemirror;
 var _react = _interopRequireWildcard(require("react"));
 var _core = require("@blueprintjs/core");
 var _reactHelmet = require("react-helmet");
-var _communication_react = require("./communication_react");
 var _sizing_tools = require("./sizing_tools");
 var _codemirror = _interopRequireDefault(require("codemirror/lib/codemirror"));
 require("codemirror/mode/python/python");
@@ -28,13 +27,21 @@ require("codemirror/addon/edit/matchbrackets");
 require("codemirror/addon/edit/closebrackets");
 require("codemirror/addon/search/match-highlighter");
 var _utilities_react = require("./utilities_react");
-var _theme = require("./theme");
+var _settings = require("./settings");
 require("./autocomplete");
 var _error_drawer = require("./error_drawer");
 var _library_widgets = require("./library_widgets");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
+//import {postAjaxPromise} from "./communication_react"
+
 const REGEXTYPE = Object.getPrototypeOf(new RegExp("that"));
+const TITLE_STYLE = {
+  display: "flex",
+  paddingLeft: 5,
+  paddingBottom: 2,
+  alignItems: "self-end"
+};
 function isRegex(ob) {
   return Object.getPrototypeOf(ob) == REGEXTYPE;
 }
@@ -82,9 +89,7 @@ function ReactCodemirror(props) {
     extra_autocomplete_list: [],
     ...props
   };
-  const [cmTheme, setCmTheme, cmThemeRef] = (0, _utilities_react.useStateAndRef)("nord");
   const localRef = (0, _react.useRef)(null);
-  const saved_theme = (0, _react.useRef)(null);
   const preferred_themes = (0, _react.useRef)(null);
   const cmobject = (0, _react.useRef)(null);
   const overlay = (0, _react.useRef)(null);
@@ -93,7 +98,7 @@ function ReactCodemirror(props) {
   const first_render = (0, _react.useRef)(true);
   const prevSoftWrap = (0, _react.useRef)(null);
   const registeredHandlers = (0, _react.useRef)([]);
-  const theme = (0, _react.useContext)(_theme.ThemeContext);
+  const settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   const errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
   const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(localRef, props.iCounter, "CodeMirror");
   (0, _react.useEffect)(() => {
@@ -101,29 +106,24 @@ function ReactCodemirror(props) {
     if (props.registerSetFocusFunc) {
       props.registerSetFocusFunc(setFocus);
     }
-    (0, _communication_react.postAjaxPromise)('get_preferred_codemirror_themes', {}).then(data => {
-      preferred_themes.current = data;
-      let current_theme = _current_codemirror_theme();
-      setCmTheme(current_theme);
-      cmobject.current = createCMArea(localRef.current, props.first_line_number);
-      cmobject.current.setValue(props.code_content);
-      cmobject.current.setOption("theme", current_theme);
-      cmobject.current.setOption("extra_autocomplete_list", props.extra_autocomplete_list);
-      create_keymap();
-      if (props.setCMObject != null) {
-        props.setCMObject(cmobject.current);
-      }
-      saved_theme.current = theme.dark_theme;
-      cmobject.current.refresh();
-      _doHighlight();
-    }).catch(e => {
-      errorDrawerFuncs.addErrorDrawerEntry({
-        title: `Error getting preferred codemirror theme`,
-        content: "message" in e ? e.message : ""
-      });
-      return;
-    });
+    cmobject.current = createCMArea(localRef.current, props.first_line_number);
+    cmobject.current.setValue(props.code_content);
+    cmobject.current.setOption("theme", _current_codemirror_theme());
+    cmobject.current.setOption("extra_autocomplete_list", props.extra_autocomplete_list);
+    create_keymap();
+    if (props.setCMObject != null) {
+      props.setCMObject(cmobject.current);
+    }
+    cmobject.current.refresh();
+    _doHighlight();
   }, []);
+  (0, _react.useEffect)(() => {
+    if (!cmobject.current) {
+      return;
+    }
+    cmobject.current.setOption("theme", _current_codemirror_theme());
+    cmobject.current.refresh();
+  }, [settingsContext.settings.theme, settingsContext.settings.preferred_dark_theme, settingsContext.settings.preferred_light_theme]);
   (0, _react.useLayoutEffect)(() => {
     return () => {
       if (cmobject.current) {
@@ -162,23 +162,11 @@ function ReactCodemirror(props) {
     }
     cmobject.current.setOption("extra_autocomplete_list", props.extra_autocomplete_list);
     set_keymap();
-    if (theme.dark_theme != saved_theme.current) {
-      (0, _communication_react.postAjaxPromise)("get_preferred_codemirror_themes", {}).then(data => {
-        preferred_themes.current = data;
-        let current_theme = _current_codemirror_theme();
-        setCmTheme(current_theme);
-        cmobject.current.setOption("theme", current_theme);
-        saved_theme.current = theme.dark_theme;
-      }).catch(e => {
-        errorDrawerFuncs.addErrorDrawerEntry({
-          title: `Error getting preferred codemirror theme`,
-          content: "message" in e ? e.message : ""
-        });
-        return;
-      });
-    }
   });
   const selectedPane = (0, _react.useContext)(_utilities_react.SelectedPaneContext);
+  function isDark() {
+    return settingsContext.settingsRef.current.theme == "dark";
+  }
   function setFocus() {
     if (cmobject.current) {
       cmobject.current.focus();
@@ -189,7 +177,7 @@ function ReactCodemirror(props) {
     }
   }
   function _current_codemirror_theme() {
-    return theme.dark_theme ? preferred_themes.current.preferred_dark_theme : preferred_themes.current.preferred_light_theme;
+    return isDark() ? settingsContext.settingsRef.current.preferred_dark_theme : settingsContext.settingsRef.current.preferred_light_theme;
   }
   function createCMArea(codearea) {
     let first_line_number = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
@@ -421,12 +409,12 @@ function ReactCodemirror(props) {
       }
     }
   }
-  const tTheme = theme.dark_theme ? "dark" : "light";
+  const tTheme = settingsContext.settingsRef.current.theme;
   if (props.show_search) {
     let title_label = props.title_label ? props.title_label : "";
     return /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement(_reactHelmet.Helmet, null, /*#__PURE__*/_react.default.createElement("link", {
       rel: "stylesheet",
-      href: `/static/tactic_css/codemirror_${tTheme}/${cmThemeRef.current}.css`,
+      href: `/static/tactic_css/codemirror_${tTheme}/${_current_codemirror_theme()}.css`,
       type: "text/css"
     })), /*#__PURE__*/_react.default.createElement("div", {
       style: {
@@ -476,7 +464,7 @@ function ReactCodemirror(props) {
   }
   return /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement(_reactHelmet.Helmet, null, /*#__PURE__*/_react.default.createElement("link", {
     rel: "stylesheet",
-    href: `/static/tactic_css/codemirror_${tTheme}/${cmThemeRef.current}.css`,
+    href: `/static/tactic_css/codemirror_${tTheme}/${_current_codemirror_theme()}.css`,
     type: "text/css"
   })), props.show_fold_button && bgstyle && /*#__PURE__*/_react.default.createElement(_core.ButtonGroup, {
     minimal: false,
@@ -493,12 +481,7 @@ function ReactCodemirror(props) {
     onClick: _unfoldAll
   })), props.title_label && /*#__PURE__*/_react.default.createElement("span", {
     className: "bp5-ui-text",
-    style: {
-      display: "flex",
-      paddingLeft: 5,
-      paddingBottom: 2,
-      alignItems: "self-end"
-    }
+    style: TITLE_STYLE
   }, props.title_label), /*#__PURE__*/_react.default.createElement("div", {
     className: "code-container",
     style: ccstyle,

@@ -13,15 +13,14 @@ import {guid, useConnection} from "./utilities_react";
 import {TacticNavbar} from "./blueprint_navbar";
 import {TacticSocket} from "./tactic_socket";
 import {useCallbackStack} from "./utilities_react";
-import {withTheme} from "./theme";
+import {withSettings} from "./settings";
 import {withSizeContext} from "./sizing_tools";
 
 function tile_differ_main() {
     function gotProps(the_props) {
-        let TileDifferAppPlus = withTheme(withErrorDrawer(withStatus(TileDifferApp)));
+        let TileDifferAppPlus = withSettings(withErrorDrawer(withStatus(TileDifferApp)));
         let the_element = <TileDifferAppPlus {...the_props}
                                              controlled={false}
-                                             initial_theme={window.theme}
                                              changeName={null}
         />;
         const domContainer = document.querySelector('#root');

@@ -2,7 +2,6 @@
  * Created by bls910 on 7/18/15.ss
  */
 
-const mousetrap = new Mousetrap();
 const library_id = guid();
 const page_id = library_id;
 

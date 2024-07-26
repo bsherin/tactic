@@ -1,6 +1,4 @@
 import React from "react";
-import {memo} from "react";
-import PropTypes from 'prop-types';
 
 import {LibraryMenubar} from "./library_menubars";
 

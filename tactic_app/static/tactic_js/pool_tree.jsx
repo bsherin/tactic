@@ -6,7 +6,7 @@ import _ from "lodash";
 import {doFlash} from "./toaster"
 import {useCallbackStack, useReducerAndRef, useStateAndRef} from "./utilities_react";
 import {postPromise} from "./communication_react";
-import {ThemeContext} from "./theme";
+import {SettingsContext} from "./settings";
 import {SearchForm} from "./library_widgets";
 
 export {PoolTree, PoolAddressSelector, getBasename, splitFilePath, getFileParentPath, withPool, PoolContext}
@@ -289,7 +289,7 @@ function PoolTree(props) {
     const [searchString, setSearchString, searchStringRef] = useStateAndRef("");
     const [sortBy, setSortBy] = useState("updated");
     const [sortDirection, setSortDirection] = useState("descending");
-    const theme = useContext(ThemeContext);
+    const settingsContext = useContext(SettingsContext);
 
     const pushCallback = useCallbackStack();
 
@@ -521,12 +521,12 @@ function PoolTree(props) {
     return (
         <Fragment>
             <ContextMenuPopover onClose={() => {
-                setShowContextMenu(false)
-            }}  // Without this doesn't close
+                                    setShowContextMenu(false)
+                                }}  // Without this doesn't close
                                 content={props.renderContextMenu != null ?
                                     props.renderContextMenu({node: contextMenuNode}) : null}
                                 isOpen={showContextMenu}
-                                isDarkTheme={theme.dark_theme}
+                                isDarkTheme={settingsContext.isDark()}
                                 targetOffset={contextMenuTarget}/>
             <div style={{
                 paddingLeft: 10, paddingTop: 10,

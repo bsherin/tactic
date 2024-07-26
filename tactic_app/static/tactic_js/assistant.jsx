@@ -36,7 +36,7 @@ import {Card, CardList, TextArea, ControlGroup} from "@blueprintjs/core";
 
 import {useStateAndRef, useCallbackStack} from "./utilities_react";
 import {postAjax, postPromise} from "./communication_react";
-import {ThemeContext} from "./theme";
+import {SettingsContext} from "./settings";
 import {ErrorDrawerContext} from "./error_drawer";
 import {StatusContext} from "./toaster";
 import {DialogContext} from "./modal_react";
@@ -212,17 +212,17 @@ function withAssistant(WrappedComponent, lposition = "right", assistant_drawer_s
 
 function AssistantDrawer(props) {
 
-    const theme = useContext(ThemeContext);
+    const settingsContext = useContext(SettingsContext);
 
     useEffect(() => {
-        console.log("theme changed")  // This is to force re-rendering because of highlight.js theme change
-    }, [theme]);
+        // console.log("theme changed")  // This is to force re-rendering because of highlight.js theme change
+    }, [settingsContext.settings.theme]);
 
 
     return (
         <Drawer
             icon="chat"
-            className={theme.dark_theme ? "bp5-dark" : "light-theme"}
+            className={settingsContext.isDark() ? "bp5-dark" : "light-theme"}
             title={props.title}
             isOpen={props.show_drawer}
             position={props.position}

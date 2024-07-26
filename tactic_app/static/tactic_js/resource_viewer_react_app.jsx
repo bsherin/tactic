@@ -66,7 +66,7 @@ async function sendToRepository(res_type, resource_name, dialogFuncs, statusFunc
 }
 
 const metadata_outer_style = {
-  marginTop: 0, marginLeft: 10, overflow: "auto", padding: 25,
+  marginTop: 0, marginLeft: 0, overflow: "auto", padding: 25,
   marginRight: 0, height: "100%",
 };
 
@@ -75,7 +75,6 @@ function ResourceViewerApp(props) {
         search_string: "",
         search_matches: null,
         showErrorDrawerButton: false,
-        dark_theme: false,
         am_selected: true,
         controlled: false,
         refreshTab: null,
@@ -185,6 +184,7 @@ function ResourceViewerApp(props) {
                            showMetadataDrawerButton={false}
                            showAssistantDrawerButton={true}
                            showErrorDrawerButton={true}
+                           showSettingsDrawerButton={true}
             />
             <div ref={top_ref}
                  style={{

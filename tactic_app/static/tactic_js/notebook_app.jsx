@@ -24,7 +24,7 @@ import {withAssistant} from "./assistant";
 import {useCallbackStack, useConstructor, useReducerAndRef} from "./utilities_react";
 import {notebook_props, notebookReducer} from "./notebook_support";
 
-import {withTheme, ThemeContext} from "./theme";
+import {withSettings, SettingsContext} from "./settings";
 import {withDialogs} from "./modal_react";
 import {MetadataDrawer} from "./metadata_drawer";
 
@@ -63,7 +63,7 @@ function NotebookApp(props) {
         show_metadata: false,
 
     });
-    const theme = useContext(ThemeContext);
+    const settingsContext = useContext(SettingsContext);
     const statusFuncs = useContext(StatusContext);
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
 
@@ -292,9 +292,10 @@ function NotebookApp(props) {
                            showErrorDrawerButton={true}
                            showMetadataDrawerButton={true}
                            showAssistantDrawerButton={true}
+                           showSettingsDrawerButton={true}
                            showMetadata={showMetadata}
             />
-            <div className={`main-outer ${theme.dark_theme ? "bp5-dark" : "light-theme"}`}
+            <div className={`main-outer ${settingsContext.isDark() ? "bp5-dark" : "light-theme"}`}
                  ref={main_outer_ref}
                  style={outer_style}>
                 <SizeProvider value={{
@@ -330,10 +331,9 @@ NotebookApp = memo(NotebookApp);
 
 function main_main() {
     function gotProps(the_props) {
-        let NotebookAppPlus = withSizeContext(withTheme(withDialogs(withErrorDrawer(withStatus(withAssistant(NotebookApp))))));
+        let NotebookAppPlus = withSizeContext(withSettings(withDialogs(withErrorDrawer(withStatus(withAssistant(NotebookApp))))));
         let the_element = <NotebookAppPlus {...the_props}
                                            controlled={false}
-                                           initial_theme={window.theme}
                                            changeName={null}
         />;
         const domContainer = document.querySelector('#main-root');

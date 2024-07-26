@@ -4,15 +4,12 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.TacticNavbar = TacticNavbar;
-exports.get_theme_cookie = get_theme_cookie;
 exports.render_navbar = render_navbar;
-exports.set_theme_cookie = set_theme_cookie;
 var _react = _interopRequireWildcard(require("react"));
 var _client = require("react-dom/client");
 var _core = require("@blueprintjs/core");
 var _main_menus_react = require("./main_menus_react.js");
-var _communication_react = require("./communication_react");
-var _theme = require("./theme");
+var _settings = require("./settings");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 const context_url = $SCRIPT_ROOT + '/context';
@@ -21,17 +18,6 @@ const repository_url = $SCRIPT_ROOT + '/repository';
 const account_url = $SCRIPT_ROOT + '/account_info';
 const login_url = $SCRIPT_ROOT + "/login";
 const padding = 10;
-function get_theme_cookie() {
-  let cookie_str = document.cookie.split('; ').find(row => row.startsWith('tactic_theme'));
-  if (cookie_str == undefined) {
-    set_theme_cookie("light");
-    return "light";
-  }
-  return cookie_str.split('=')[1];
-}
-function set_theme_cookie(theme) {
-  document.cookie = "tactic_theme=" + theme;
-}
 function TacticNavbar(_ref) {
   let {
     extra_text = null,
@@ -45,7 +31,7 @@ function TacticNavbar(_ref) {
   });
   const [old_left_width, set_old_left_width] = (0, _react.useState)(null);
   const lg_ref = (0, _react.useRef)(null);
-  const theme = (0, _react.useContext)(_theme.ThemeContext);
+  const settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   var overflow_items = [];
   function _update_window_dimensions() {
     set_usable_width(window.innerWidth - 2 * padding);
@@ -77,18 +63,21 @@ function TacticNavbar(_ref) {
     window.open($SCRIPT_ROOT + "/logout/" + props.page_id, "_self");
     return false;
   }
-  function _setTheme(event) {
-    let dtheme = event.target.checked ? "dark" : "light";
-    set_theme_cookie(dtheme);
-    if (window.user_id != undefined) {
-      const result_dict = {
-        "user_id": window.user_id,
-        "theme": dtheme
-      };
-      (0, _communication_react.postWithCallback)("host", "set_user_theme", result_dict, null, null);
-    }
-    theme.setTheme(event.target.checked);
-  }
+
+  // function _setTheme(event) {
+  //     let dtheme = event.target.checked ? "dark" : "light";
+  //     set_theme_cookie(dtheme);
+  //     if (window.user_id != undefined) {
+  //         const result_dict = {
+  //             "user_id": window.user_id,
+  //             "theme": dtheme,
+  //         };
+  //         postWithCallback("host", "set_user_theme", result_dict,
+  //             null, null);
+  //     }
+  //     theme.setTheme(event.target.checked)
+  // }
+
   function renderNav(item) {
     return /*#__PURE__*/_react.default.createElement(_core.Button, {
       icon: item.icon,
@@ -218,7 +207,7 @@ function TacticNavbar(_ref) {
     width: right_width
   };
   right_style.justifyContent = "flex-end";
-  let theme_class = theme.dark_theme ? "bp5-dark" : "light-theme";
+  let theme_class = settingsContext.isDark() ? "bp5-dark" : "light-theme";
   let name_string = "Tactic";
   if (extra_text != null) {
     name_string += " " + extra_text;
@@ -247,16 +236,6 @@ function TacticNavbar(_ref) {
     overflowRenderer: _overflowRenderer,
     visibleItemRenderer: renderNav,
     onOverflow: _onOverflow
-  }), /*#__PURE__*/_react.default.createElement(_core.NavbarDivider, null), /*#__PURE__*/_react.default.createElement(_core.Switch, {
-    checked: theme.dark_theme,
-    onChange: _setTheme,
-    large: false,
-    style: {
-      marginBottom: 0
-    },
-    innerLabel: "Light",
-    innerLabelChecked: "Dark",
-    alignIndicator: "center"
   })));
 }
 exports.TacticNavbar = TacticNavbar = /*#__PURE__*/(0, _react.memo)(TacticNavbar);

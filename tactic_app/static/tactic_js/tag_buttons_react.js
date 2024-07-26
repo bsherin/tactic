@@ -10,7 +10,7 @@ var _react = _interopRequireWildcard(require("react"));
 var _propTypes = _interopRequireDefault(require("prop-types"));
 var _core = require("@blueprintjs/core");
 var _utilities_react = require("./utilities_react");
-var _theme = require("./theme");
+var _settings = require("./settings");
 var _modal_react = require("./modal_react");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
@@ -90,7 +90,7 @@ function TagButtonList(props) {
   const [contextMenuTagString, setContextMenuTagString] = (0, _react.useState)("");
   // const [tagRoot, setTagRoot] = useState("all");
 
-  const theme = (0, _react.useContext)(_theme.ThemeContext);
+  const settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   const dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   function _renameTagPrep(old_tag, new_tag_base) {
     let old_tag_list = tag_to_list(old_tag);
@@ -287,7 +287,7 @@ function TagButtonList(props) {
     ,
     content: tmenu,
     isOpen: showContextMenu,
-    isDarkTheme: theme.dark_theme,
+    isDarkTheme: settingsContext.isDark(),
     targetOffset: contextMenuTarget
   }), /*#__PURE__*/_react.default.createElement(_core.Tree, {
     contents: tree,

@@ -11,7 +11,7 @@ var _core = require("@blueprintjs/core");
 var _reactCodemirrorMergeview = require("./react-codemirror-mergeview");
 var _blueprint_mdata_fields = require("./blueprint_mdata_fields");
 var _menu_utilities = require("./menu_utilities");
-var _theme = require("./theme");
+var _settings = require("./settings");
 var _toaster = require("./toaster");
 var _sizing_tools = require("./sizing_tools");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
@@ -20,7 +20,7 @@ const BOTTOM_MARGIN = 85;
 function MergeViewerApp(props) {
   const top_ref = (0, _react.useRef)(null);
   const above_main_ref = (0, _react.useRef)(null);
-  const theme = (0, _react.useContext)(_theme.ThemeContext);
+  const settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   const statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
   const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(top_ref, 0, "MergeViewerApp");
   const button_groups = [[{
@@ -67,7 +67,7 @@ function MergeViewerApp(props) {
     paddingRight: 25
   };
   let outer_class = "merge-viewer-outer";
-  if (theme.dark_theme) {
+  if (settingsContext.isDark()) {
     outer_class = outer_class + " bp5-dark";
   } else {
     outer_class = outer_class + " light-theme";
@@ -82,6 +82,7 @@ function MergeViewerApp(props) {
     showErrorDrawerButton: true,
     showMetadataDrawerButton: false,
     showAssistantDrawerButton: true,
+    showSettingsDrawerButton: true,
     showRefresh: false,
     showClose: false,
     refreshTab: null,

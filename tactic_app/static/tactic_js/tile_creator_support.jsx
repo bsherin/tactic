@@ -85,7 +85,6 @@ function creator_props(data, registerDirtyMethod, finalCallback) {
                 tags: split_tags,
                 notes: mdata.notes,
                 icon: mdata.additional_mdata.icon,
-                initial_theme: window.theme,
                 option_list: correctOptionListTypes(parsed_data.option_dict),
                 export_list: parsed_data.export_list,
                 additional_save_attrs: parsed_data.additional_save_attrs,

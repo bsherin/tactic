@@ -7,12 +7,13 @@ import { createRoot } from 'react-dom/client';
 
 import { FormGroup, InputGroup, Button } from "@blueprintjs/core";
 
-import {doFlash, withStatus, StatusContext} from "./toaster"
+import {doFlash, StatusContext} from "./toaster"
 import {postAjaxPromise} from "./communication_react";
 import {guid} from "./utilities_react";
-import {TacticNavbar, get_theme_cookie} from "./blueprint_navbar";
-import { useCallbackStack } from "./utilities_react";
-import {withTheme, ThemeContext} from "./theme";
+import {TacticNavbar} from "./blueprint_navbar";
+import {useCallbackStack } from "./utilities_react";
+import {withStatus} from "./toaster";
+import {SettingsContext} from "./settings";
 
 window.page_id = guid();
 var tsocket;
@@ -21,9 +22,17 @@ function _login_main() {
     if (window._show_message) doFlash(window._message);
     const domContainer = document.querySelector('#root');
     const root = createRoot(domContainer);
-    let useDark = get_theme_cookie() == "dark";
-    let LoginAppPlus = withTheme(withStatus(LoginApp));
-    root.render(<LoginAppPlus tsocket={null} controlled={false} initial_dark={useDark}/>)
+    let LoginAppPlus = withStatus(LoginApp);
+    //let useDark = get_theme_cookie() == "dark";
+    root.render(
+        <SettingsContext.Provider value={{
+            settings: null,
+            setSettings: null,
+            setShowSettingsDrawer: null,
+            isDark: ()=>{return false}}}>
+            <LoginAppPlus tsocket={null} controlled={false}/>
+        </SettingsContext.Provider>
+    )
 }
 
 function LoginApp(props) {
@@ -31,7 +40,6 @@ function LoginApp(props) {
     const [password, setPassword] = useState(null);
     const [username_warning_text, set_username_warning_text] = useState("");
     const [password_warning_text, set_password_warning_text] = useState("");
-    const theme = useContext(ThemeContext);
     const statusFuncs = useContext(StatusContext);
     const pushCallback = useCallbackStack();
 
@@ -86,13 +94,12 @@ function LoginApp(props) {
         inputRef.current = the_ref;
     }
 
+    function ffunc() {
+        return false
+    }
+
     let outer_class = "login-body d-flex flex-column justify-content-center";
-    if (theme.dark_theme) {
-        outer_class = outer_class + " bp5-dark";
-    }
-    else {
-        outer_class = outer_class + " light-theme"
-    }
+    outer_class = outer_class + " light-theme";
     return (
         <Fragment>
                 <TacticNavbar is_authenticated={window.is_authenticated}
@@ -145,7 +152,7 @@ function LoginApp(props) {
                     </form>
                 </div>
         </Fragment>
-    )
+        )
 }
 
 LoginApp = memo(LoginApp);

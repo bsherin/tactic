@@ -4,7 +4,7 @@ import {Fragment, useEffect, memo, useContext} from "react";
 import {Icon, MenuDivider, Menu, Navbar, Button, PopoverPosition, Classes, ButtonGroup} from "@blueprintjs/core";
 import {Popover2, MenuItem2} from "@blueprintjs/popover2";
 
-import {ThemeContext} from "./theme"
+import {SettingsContext} from "./settings"
 import {GlyphButton} from "./blueprint_react_widgets";
 import {SelectedPaneContext, useStateAndRef} from "./utilities_react";
 import {ErrorDrawerContext} from "./error_drawer";
@@ -53,6 +53,7 @@ function TacticMenubar(props) {
         showErrorDrawerButton: false,
         showMetadataDrawerButton: false,
         showAssistantDrawerButton: false,
+        showSettingsDrawerButton: true,
         resource_name: null,
         resource_icon: null,
         disabled_items: [],
@@ -61,7 +62,7 @@ function TacticMenubar(props) {
         connection_status: null,
         ...props
     };
-    const theme = useContext(ThemeContext);
+    const settingsContext = useContext(SettingsContext);
 
     let menus;
     if (props.menu_specs == null) {
@@ -88,7 +89,7 @@ function TacticMenubar(props) {
                                      handleClick={sg.handleClick}
                                      icon={sg.icon}/>)
     }
-    const theme_class = theme.dark_theme ? "bp5-dark" : "light-theme";
+    const theme_class = settingsContext.isDark() ? "bp5-dark" : "light-theme";
 
     return (
         <Navbar style={{paddingLeft: 3, height: 30, display: "flex"}} className={theme_class + " menu-bar"}>
@@ -119,6 +120,7 @@ function TacticMenubar(props) {
                 <IconBar showErrorDrawerButton={props.showErrorDrawerButton}
                          showAssistantDrawerButton={props.showAssistantDrawerButton}
                          showMetadataDrawerButton={props.showMetadataDrawerButton}
+                         showSettingsDrawerButton={props.showSettingsDrawerButton}
                          showMetadata={props.showMetadata}/>
             }
         </Navbar>
@@ -149,8 +151,14 @@ const IconBarStyle = {width: ICON_BAR_WIDTH};
 function IconBar(props) {
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
     const assistantDrawerFuncs = useContext(AssistantContext);
+    const settingsContext = useContext(SettingsContext);
     return (
     <div className="verticalIconBar" style={IconBarStyle}>
+            {props.showSettingsDrawerButton &&
+                <IconBarButton icon="cog" onClick={() => {
+                    settingsContext.setShowSettingsDrawer(true)
+                }}/>
+            }
            {props.showErrorDrawerButton &&
                 <IconBarButton icon="bug" onClick={() => {
                     errorDrawerFuncs.toggleErrorDrawer()

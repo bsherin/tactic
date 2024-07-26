@@ -12,7 +12,7 @@ var _client = require("react-dom/client");
 var _core = require("@blueprintjs/core");
 var _blueprint_react_widgets = require("./blueprint_react_widgets");
 var _utilities_react = require("./utilities_react");
-var _theme = require("./theme");
+var _settings = require("./settings");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 const StatusContext = exports.StatusContext = /*#__PURE__*/(0, _react.createContext)(null);
@@ -207,10 +207,10 @@ function Status(props) {
     ...props
   };
   const elRef = (0, _react.useRef)(null);
-  const theme = (0, _react.useContext)(_theme.ThemeContext);
+  const settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   let cname = "d-flex flex-row";
-  let outer_cname = theme.dark_theme ? "status-holder bp5-dark" : "status-holder light-theme";
-  let left = elRef && elRef.current ? elRef.current.parentNode.offsetLeft : 25;
+  let outer_cname = settingsContext.isDark() ? "status-holder bp5-dark" : "status-holder light-theme";
+  let left = elRef && elRef.current && elRef.current.parentNode ? elRef.current.parentNode.offsetLeft : 25;
   return /*#__PURE__*/_react.default.createElement("div", {
     ref: elRef,
     style: {

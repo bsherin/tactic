@@ -31,7 +31,7 @@ import {renderSpinnerMessage, useConnection, useStateAndRef} from "./utilities_r
 import {useSize, withSizeContext, SizeContext} from "./sizing_tools";
 import {ErrorBoundary} from "./error_boundary";
 import {useCallbackStack, useReducerAndRef} from "./utilities_react";
-import {ThemeContext, withTheme} from "./theme";
+import {SettingsContext, withSettings} from "./settings";
 import {withPool} from "./pool_tree"
 import {withAssistant} from "./assistant";
 import {DialogContext, withDialogs} from "./modal_react";
@@ -93,7 +93,7 @@ function MainApp(props) {
     const [console_items, dispatch, console_items_ref] = useReducerAndRef(consoleItemsReducer, iStateOrDefault("console_items"));
     const [tile_list, tileDispatch, tile_list_ref] = useReducerAndRef(tilesReducer, iStateOrDefault("tile_list"));
 
-    const theme = useContext(ThemeContext);
+    const settingsContext = useContext(SettingsContext);
     const dialogFuncs = useContext(DialogContext);
     const statusFuncs = useContext(StatusContext);
     const selectedPane = useContext(SelectedPaneContext);
@@ -1169,11 +1169,12 @@ function MainApp(props) {
                            showErrorDrawerButton={true}
                            showMetadataDrawerButton={true}
                            showAssistantDrawerButton={true}
+                           showSettingsDrawerButton={true}
                            showMetadata={showMetadata}
                            extraButtons={extra_menubar_buttons}
             />
             <ErrorBoundary>
-                <div className={`main-outer ${theme.dark_theme ? "bp5-dark" : "light-theme"}`}
+                <div className={`main-outer ${settingsContext.isDark() ? "bp5-dark" : "light-theme"}`}
                      ref={main_outer_ref}
                      style={{width: "100%", height: usable_height}}>
                     {mState.console_is_zoomed &&
@@ -1250,10 +1251,9 @@ MainApp = memo(MainApp);
 
 function main_main() {
     function gotProps(the_props) {
-        let MainAppPlus = withPool(withSizeContext(withTheme(withDialogs(withErrorDrawer(withStatus(withAssistant(MainApp)))))));
+        let MainAppPlus = withPool(withSizeContext(withSettings(withDialogs(withErrorDrawer(withStatus(withAssistant(MainApp)))))));
         let the_element = <MainAppPlus {...the_props}
                                        controlled={false}
-                                       initial_theme={window.theme}
                                        changeName={null}
         />;
         const domContainer = document.querySelector('#main-root');

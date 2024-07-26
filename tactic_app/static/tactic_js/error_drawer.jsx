@@ -7,7 +7,7 @@ import {postWithCallback} from "./communication_react";
 import {GlyphButton} from "./blueprint_react_widgets";
 
 import {useStateAndRef} from "./utilities_react";
-import {ThemeContext} from "./theme";
+import {SettingsContext} from "./settings";
 
 const ErrorDrawerContext = createContext(null);
 export {withErrorDrawer, ErrorItem, ErrorDrawerContext}
@@ -149,13 +149,12 @@ function withErrorDrawer(WrappedComponent, lposition = "right", error_drawer_siz
                 <ErrorDrawer show_drawer={show_drawer}
                              contents={contents_ref}
                              position={lposition}
-                             error_drawer_size={error_drawer_size}
                              local_id={local_id.current}
                              handleCloseItem={_closeEntry}
                              goToLineNumberFunc={goToLineNumber.current}
                              goToModule={goToModule}
                              closeErrorDrawer={_close}
-                             title="Error Drawer"
+                             title="Errors"
                              size={error_drawer_size}
                              onClose={_onClose}
                              clearAll={_clearAll}/>
@@ -233,7 +232,7 @@ function ErrorDrawer(props) {
         ...props
     };
 
-    const theme = useContext(ThemeContext);
+    const settingsContext = useContext(SettingsContext);
 
     let sorted_keys = [...Object.keys(props.contents.current)];
     sorted_keys.sort(function (a, b) {
@@ -262,7 +261,7 @@ function ErrorDrawer(props) {
     return (
         <Drawer
             icon="console"
-            className={theme.dark_theme ? "bp5-dark" : "light-theme"}
+            className={settingsContext.isDark() ? "bp5-dark" : "light-theme"}
             title={props.title}
             isOpen={props.show_drawer}
             position={props.position}

@@ -6,7 +6,7 @@ import {Menu, MenuItem, ContextMenuPopover, Tree} from "@blueprintjs/core";
 
 import {arraysMatch, remove_duplicates} from "./utilities_react";
 
-import {ThemeContext} from "./theme"
+import {SettingsContext} from "./settings"
 import {DialogContext} from "./modal_react";
 
 export {TagButtonList, get_all_parent_tags}
@@ -78,7 +78,7 @@ function TagButtonList(props) {
     const [contextMenuTagString, setContextMenuTagString] = useState("");
     // const [tagRoot, setTagRoot] = useState("all");
 
-    const theme = useContext(ThemeContext);
+    const settingsContext = useContext(SettingsContext);
     const dialogFuncs = useContext(DialogContext);
 
     function _renameTagPrep(old_tag, new_tag_base) {
@@ -269,7 +269,7 @@ function TagButtonList(props) {
             <ContextMenuPopover onClose={()=>{setShowContextMenu(false)}}  // Without this doesn't close
                                 content={tmenu}
                                 isOpen={showContextMenu}
-                                isDarkTheme={theme.dark_theme}
+                                isDarkTheme={settingsContext.isDark()}
                                 targetOffset={contextMenuTarget} />
             <Tree contents={tree}
                   onNodeContextMenu={_showContextMenu}

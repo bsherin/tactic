@@ -81,7 +81,8 @@ function LibraryMenubar(props) {
     showIconBar: true,
     showErrorDrawerButton: true,
     showMetadataDrawerButton: false,
-    showAssistantDrawerButton: true
+    showAssistantDrawerButton: true,
+    showSettingsDrawerButton: true
   });
 }
 exports.LibraryMenubar = LibraryMenubar = /*#__PURE__*/(0, _react.memo)(LibraryMenubar);

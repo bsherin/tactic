@@ -10,7 +10,7 @@ import {Spinner, Text} from "@blueprintjs/core";
 
 import { useImmerReducer } from 'use-immer';
 
-export {propsAreEqual, arrayMove, arraysMatch, get_ppi, isInt};
+export {propsAreEqual, arrayMove, arraysMatch, get_ppi, isInt, hasAnyKey};
 export {remove_duplicates, guid, scrollMeIntoView, renderSpinnerMessage};
 export {useConstructor, useCallbackStack, useStateAndRef, useReducerAndRef, useConnection,
     useStateAndRefAndCounter, useDidMount, useImmerReducerAndRef};
@@ -64,6 +64,7 @@ const useConstructor = (callback = () => {
 
 
 function useConnection(tsocket, initSocket) {
+    if (!tsocket) return null;
     const [connection_status, set_connection_status] = useState(null);
 
     function socketNotifier(connected) {
@@ -217,6 +218,10 @@ function arraysMatch(arr1, arr2) {
     }
     // Otherwise, return true
     return true;
+}
+
+function hasAnyKey(object, keysList) {
+    return keysList.some(key => Object.keys(object).includes(key));
 }
 
 

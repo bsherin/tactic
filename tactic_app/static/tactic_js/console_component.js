@@ -26,7 +26,7 @@ var _library_pane = require("./library_pane");
 var _menu_utilities = require("./menu_utilities");
 var _search_form = require("./search_form");
 var _searchable_console = require("./searchable_console");
-var _theme = require("./theme");
+var _settings = require("./settings");
 var _modal_react = require("./modal_react");
 var _sizing_tools = require("./sizing_tools");
 var _error_drawer = require("./error_drawer");
@@ -120,7 +120,7 @@ function ConsoleComponent(props) {
   const [show_main_log, set_show_main_log] = (0, _react.useState)(false);
   const [show_pseudo_log, set_show_pseudo_log] = (0, _react.useState)(false);
   const [pseudo_tile_id, set_pseudo_tile_id] = (0, _react.useState)(null);
-  const theme = (0, _react.useContext)(_theme.ThemeContext);
+  const settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   const dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   const pushCallback = (0, _utilities_react.useCallbackStack)();
   const selectedPane = (0, _react.useContext)(_utilities_react.SelectedPaneContext);
@@ -142,8 +142,8 @@ function ConsoleComponent(props) {
     }
   }, []);
   (0, _react.useEffect)(() => {
-    console.log("theme changed"); // This is to force re-rendering because of highlight.js theme change
-  }, [theme]);
+    //console.log("theme changed")  // This is to force re-rendering because of highlight.js theme change
+  }, [settingsContext.settings.theme]);
   const _addBlankCode = (0, _react.useCallback)(async e => {
     if (window.in_context && !am_selected()) {
       return;
@@ -1578,12 +1578,13 @@ function ConsoleComponent(props) {
     ElementComponent: TailoredSuperItem,
     key_field_name: "unique_id",
     item_list: filtered_items,
-    helperClass: theme.dark_theme ? "bp5-dark" : "light-theme",
+    helperClass: settingsContext.isDark() ? "bp5-dark" : "light-theme",
     handle: ".console-sorter",
     onBeforeCapture: _sortStart,
     onDragEnd: _resortConsoleItems,
     useDragHandle: false,
     axis: "y",
+    tsocket: props.tsocket,
     extraProps: extraProps
   })), /*#__PURE__*/_react.default.createElement("div", {
     id: "padding-div",
@@ -2462,6 +2463,7 @@ function ConsoleCodeItem(props) {
     extraKeys: _extraKeys,
     search_term: props.search_string,
     no_height: true,
+    tsocket: props.tsocket,
     saveMe: null
   }), /*#__PURE__*/_react.default.createElement("div", {
     className: "button-div float-buttons d-flex flex-row"
@@ -2858,6 +2860,7 @@ function ConsoleTextItem(props) {
     extraKeys: _extraKeys,
     search_term: props.search_string,
     no_height: true,
+    tsocket: props.tsocket,
     saveMe: null
   })), really_show_markdown && !hasOnlyWhitespace() && /*#__PURE__*/_react.default.createElement("div", {
     className: "text-panel-output markdown-heading-sizes",

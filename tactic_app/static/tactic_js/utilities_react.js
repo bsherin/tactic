@@ -10,6 +10,7 @@ exports.arraysMatch = arraysMatch;
 exports.debounce = debounce;
 exports.get_ppi = get_ppi;
 exports.guid = guid;
+exports.hasAnyKey = hasAnyKey;
 exports.isInt = isInt;
 exports.propsAreEqual = propsAreEqual;
 exports.remove_duplicates = remove_duplicates;
@@ -80,6 +81,7 @@ const useConstructor = function () {
 };
 exports.useConstructor = useConstructor;
 function useConnection(tsocket, initSocket) {
+  if (!tsocket) return null;
   const [connection_status, set_connection_status] = (0, _react.useState)(null);
   function socketNotifier(connected) {
     set_connection_status(connected ? "up" : "down");
@@ -224,6 +226,9 @@ function arraysMatch(arr1, arr2) {
   }
   // Otherwise, return true
   return true;
+}
+function hasAnyKey(object, keysList) {
+  return keysList.some(key => Object.keys(object).includes(key));
 }
 String.prototype.format = function () {
   let str = this;

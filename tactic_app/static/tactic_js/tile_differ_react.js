@@ -12,7 +12,7 @@ var _error_drawer = require("./error_drawer");
 var _utilities_react = require("./utilities_react");
 var _blueprint_navbar = require("./blueprint_navbar");
 var _tactic_socket = require("./tactic_socket");
-var _theme = require("./theme");
+var _settings = require("./settings");
 var _sizing_tools = require("./sizing_tools");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
@@ -20,10 +20,9 @@ function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; 
 
 function tile_differ_main() {
   function gotProps(the_props) {
-    let TileDifferAppPlus = (0, _theme.withTheme)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(TileDifferApp)));
+    let TileDifferAppPlus = (0, _settings.withSettings)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(TileDifferApp)));
     let the_element = /*#__PURE__*/_react.default.createElement(TileDifferAppPlus, (0, _extends2.default)({}, the_props, {
       controlled: false,
-      initial_theme: window.theme,
       changeName: null
     }));
     const domContainer = document.querySelector('#root');

@@ -8,7 +8,7 @@ import { useHotkeys } from "@blueprintjs/core";
 import {ReactCodemirrorMergeView} from "./react-codemirror-mergeview";
 import {BpSelect} from "./blueprint_mdata_fields";
 import {TacticMenubar} from "./menu_utilities";
-import {ThemeContext} from "./theme"
+import {SettingsContext} from "./settings"
 import {StatusContext} from "./toaster";
 import {ICON_BAR_WIDTH, useSize} from "./sizing_tools";
 
@@ -21,7 +21,7 @@ function MergeViewerApp(props) {
     const top_ref = useRef(null);
     const above_main_ref = useRef(null);
 
-    const theme = useContext(ThemeContext);
+    const settingsContext = useContext(SettingsContext);
     const statusFuncs = useContext(StatusContext);
 
     const [usable_width, usable_height, topX, topY] = useSize(top_ref, 0, "MergeViewerApp");
@@ -76,7 +76,7 @@ function MergeViewerApp(props) {
     };
 
     let outer_class = "merge-viewer-outer";
-    if (theme.dark_theme) {
+    if (settingsContext.isDark()) {
         outer_class = outer_class + " bp5-dark";
     } else {
         outer_class = outer_class + " light-theme"
@@ -90,6 +90,7 @@ function MergeViewerApp(props) {
                            showErrorDrawerButton={true}
                            showMetadataDrawerButton={false}
                            showAssistantDrawerButton={true}
+                           showSettingsDrawerButton={true}
                            showRefresh={false}
                            showClose={false}
                            refreshTab={null}

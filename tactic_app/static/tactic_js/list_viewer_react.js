@@ -17,7 +17,7 @@ var _tactic_socket = require("./tactic_socket");
 var _communication_react = require("./communication_react");
 var _toaster = require("./toaster.js");
 var _assistant = require("./assistant");
-var _theme = require("./theme");
+var _settings = require("./settings");
 var _error_drawer = require("./error_drawer.js");
 var _utilities_react = require("./utilities_react");
 var _blueprint_navbar = require("./blueprint_navbar");
@@ -96,7 +96,7 @@ function ListViewerApp(props) {
   const [tags, set_tags, tags_ref] = (0, _utilities_react.useStateAndRef)(props.split_tags);
   const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(top_ref, 0, "ListViewer");
   const [resource_name, set_resource_name] = (0, _react.useState)(props.resource_name);
-  const theme = (0, _react.useContext)(_theme.ThemeContext);
+  const settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   const dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   const statusFuncs = (0, _react.useContext)(_toaster2.StatusContext);
   const selectedPane = (0, _react.useContext)(_utilities_react.SelectedPaneContext);
@@ -281,7 +281,7 @@ function ListViewerApp(props) {
   let outer_class = "resource-viewer-holder";
   if (!props.controlled) {
     my_props.resource_name = resource_name;
-    if (theme.dark_theme) {
+    if (settingsContext.isDark()) {
       outer_class = outer_class + " bp5-dark";
     } else {
       outer_class = outer_class + " light-theme";
@@ -323,10 +323,9 @@ function ListViewerApp(props) {
 exports.ListViewerApp = ListViewerApp = /*#__PURE__*/(0, _react.memo)(ListViewerApp);
 async function list_viewer_main() {
   function gotProps(the_props) {
-    let ListViewerAppPlus = (0, _sizing_tools.withSizeContext)((0, _theme.withTheme)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)((0, _assistant.withAssistant)(ListViewerApp))))));
+    let ListViewerAppPlus = (0, _sizing_tools.withSizeContext)((0, _settings.withSettings)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)((0, _assistant.withAssistant)(ListViewerApp))))));
     let the_element = /*#__PURE__*/_react.default.createElement(ListViewerAppPlus, (0, _extends2.default)({}, the_props, {
       controlled: false,
-      initial_theme: window.theme,
       changeName: null
     }));
     const domContainer = document.querySelector('#root');

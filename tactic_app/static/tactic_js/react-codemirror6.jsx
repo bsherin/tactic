@@ -14,7 +14,7 @@ import {useSize} from "./sizing_tools";
 
 
 import {propsAreEqual} from "./utilities_react";
-import {ThemeContext} from "./theme"
+import {SettingsContext} from "./settings"
 import {SelectedPaneContext} from "./utilities_react";
 
 export {ReactCodemirror}
@@ -84,7 +84,7 @@ function ReactCodemirror(props) {
     const prevSoftWrap = useRef(null);
     const registeredHandlers = useRef([]);
 
-    const theme = useContext(ThemeContext);
+    const settingsContext = useContext(SettingsContext);
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
 
     const [usable_width, usable_height, topX, topY] = useSize(localRef, props.iCounter, "CodeMirror");
@@ -187,7 +187,7 @@ function ReactCodemirror(props) {
     }
 
     function _current_codemirror_theme() {
-        return theme.dark_theme ? preferred_themes.current.preferred_dark_theme :
+        return settingsContext.isDark() ? preferred_themes.current.preferred_dark_theme :
             preferred_themes.current.preferred_light_theme;
     }
 

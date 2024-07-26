@@ -266,6 +266,21 @@ def get_account_info():
         field_list.append(new_fdict)
     return jsonify({"field_list": field_list})
 
+@app.route('/get_user_settings', methods=['GET', 'POST'])
+def get_user_settings():
+    user_data = current_user.user_data_dict
+    settings_dict = {}
+    fields_list = []
+    for fdict in get_full_user_data_fields():
+        if not fdict["editable"] or not fdict["is_setting"]:
+            continue
+
+        settings_dict[fdict["name"]] = user_data[fdict["name"]]
+        new_fdict = copy.copy(fdict)
+        new_fdict["val"] = user_data[new_fdict["name"]]
+        fields_list.append(new_fdict)
+    return jsonify({"success": True, "settings": settings_dict, "fields": fields_list})
+
 
 @app.route('/get_preferred_codemirror_themes', methods=['GET', 'POST'])
 def get_preferred_codemirror_themes():
@@ -282,6 +297,13 @@ def get_preferred_codemirror_themes():
 def update_account_info():
     data = request.json
     result_dict = current_user.update_account(data)
+    return jsonify(result_dict)
+
+@app.route('/update_settings', methods=['GET', 'POST'])
+def update_settings():
+    data = request.json
+    print("in update_settings with data = ", data)
+    result_dict = current_user.update_settings(data)
     return jsonify(result_dict)
 
 

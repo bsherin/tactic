@@ -79,7 +79,6 @@ function notebook_props(data, registerDirtyMethod, finalCallback) {
         interface_state: interface_state,
         is_notebook: true,
         is_juptyer: data.is_jupyter,
-        initial_theme: window.theme,
         registerDirtyMethod: registerDirtyMethod
       });
     } else {
@@ -91,7 +90,6 @@ function notebook_props(data, registerDirtyMethod, finalCallback) {
         interface_state: null,
         is_notebook: true,
         is_juptyer: data.is_jupyter,
-        initial_theme: window.theme,
         registerDirtyMethod: registerDirtyMethod
       });
     }

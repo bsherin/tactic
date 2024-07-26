@@ -14,7 +14,7 @@ var _blueprint_mdata_fields = require("./blueprint_mdata_fields");
 var _utilities_react = require("./utilities_react");
 var _communication_react = require("./communication_react");
 var _pool_tree = require("./pool_tree");
-var _theme = require("./theme");
+var _settings = require("./settings");
 var _import_dialog = require("./import_dialog");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
@@ -88,7 +88,7 @@ function ModalDialog(props) {
   const [checkbox_states, set_checkbox_states, checkbox_states_ref] = (0, _utilities_react.useStateAndRef)({});
   const [warning_text, set_warning_text, warning_text_ref] = (0, _utilities_react.useStateAndRef)("");
   const [current_value, set_current_value, current_value_ref] = (0, _utilities_react.useStateAndRef)(null);
-  const theme = (0, _react.useContext)(_theme.ThemeContext);
+  const settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   const input_ref = (0, _react.useRef)(null);
   (0, _react.useEffect)(() => {
     if (props.checkboxes != null && props.checkboxes.length != 0) {
@@ -160,7 +160,7 @@ function ModalDialog(props) {
   }
   return /*#__PURE__*/_react.default.createElement(_core.Dialog, {
     isOpen: props.isOpen,
-    className: theme.dark_theme ? "bp5-dark" : "",
+    className: settingsContext.isDark() ? "bp5-dark" : "",
     title: props.title,
     onClose: _cancelHandler,
     onOpened: () => {
@@ -201,7 +201,7 @@ function PresentationDialog(props) {
   const [collection_name, set_collection_name, collection_name_ref] = (0, _utilities_react.useStateAndRef)(null);
   const [use_dark_theme, set_use_dark_theme] = (0, _react.useState)(null);
   const [warning_text, set_warning_text] = (0, _react.useState)("");
-  const theme = (0, _react.useContext)(_theme.ThemeContext);
+  const settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   const input_ref = (0, _react.useRef)(null);
   (0, _react.useEffect)(() => {
     set_show(true);
@@ -254,7 +254,7 @@ function PresentationDialog(props) {
   }
   return /*#__PURE__*/_react.default.createElement(_core.Dialog, {
     isOpen: show,
-    className: theme.dark_theme ? "bp5-dark" : "",
+    className: settingsContext.isDark() ? "bp5-dark" : "",
     title: "Create Presentation",
     onClose: _cancelHandler,
     canEscapeKeyClose: true
@@ -306,7 +306,7 @@ function ReportDialog(props) {
   const [warning_text, set_warning_text] = (0, _react.useState)("");
   const [collapsible, set_collapsible] = (0, _react.useState)(false);
   const [include_summaries, set_include_summaries] = (0, _react.useState)(false);
-  const theme = (0, _react.useContext)(_theme.ThemeContext);
+  const settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   const input_ref = (0, _react.useRef)(null);
   (0, _react.useEffect)(() => {
     set_show(true);
@@ -365,7 +365,7 @@ function ReportDialog(props) {
   }
   return /*#__PURE__*/_react.default.createElement(_core.Dialog, {
     isOpen: show,
-    className: theme.dark_theme ? "bp5-dark" : "",
+    className: settingsContext.isDark() ? "bp5-dark" : "",
     title: "Create Report",
     onClose: _cancelHandler,
     canEscapeKeyClose: true
@@ -419,7 +419,7 @@ ReportDialog = /*#__PURE__*/(0, _react.memo)(ReportDialog);
 function SelectDialog(props) {
   const [show, set_show] = (0, _react.useState)(false);
   const [value, set_value] = (0, _react.useState)("");
-  const theme = (0, _react.useContext)(_theme.ThemeContext);
+  const settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   (0, _react.useEffect)(() => {
     set_show(true);
     set_value(props.option_list[0]);
@@ -438,7 +438,7 @@ function SelectDialog(props) {
   }
   return /*#__PURE__*/_react.default.createElement(_core.Dialog, {
     isOpen: show,
-    className: theme.dark_theme ? "bp5-dark" : "",
+    className: settingsContext.isDark() ? "bp5-dark" : "",
     title: props.title,
     onClose: _cancelHandler,
     canEscapeKeyClose: true
@@ -476,7 +476,7 @@ function SelectAddressDialog(props) {
   const [show, set_show] = (0, _react.useState)(false);
   const [new_name, set_new_name] = (0, _react.useState)("");
   const [path, set_path] = (0, _react.useState)();
-  const theme = (0, _react.useContext)(_theme.ThemeContext);
+  const settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   (0, _react.useEffect)(() => {
     set_show(true);
     set_path(props.initial_address);
@@ -500,7 +500,7 @@ function SelectAddressDialog(props) {
   }
   return /*#__PURE__*/_react.default.createElement(_core.Dialog, {
     isOpen: show,
-    className: theme.dark_theme ? "bp5-dark" : "",
+    className: settingsContext.isDark() ? "bp5-dark" : "",
     title: props.title,
     onClose: _cancelHandler,
     canEscapeKeyClose: true
@@ -538,7 +538,7 @@ function SelectResourceDialog(props) {
   const [type, set_type] = (0, _react.useState)("collection");
   const [option_names, set_option_names] = (0, _react.useState)([]);
   const [selected_resource, set_selected_resource] = (0, _react.useState)(null);
-  const theme = (0, _react.useContext)(_theme.ThemeContext);
+  const settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   const pushCallback = (0, _utilities_react.useCallbackStack)();
   (0, _react.useEffect)(() => {
     console.log("I'm in useEffect");
@@ -579,7 +579,7 @@ function SelectResourceDialog(props) {
   }
   return /*#__PURE__*/_react.default.createElement(_core.Dialog, {
     isOpen: show,
-    className: theme.dark_theme ? "bp5-dark" : "",
+    className: settingsContext.isDark() ? "bp5-dark" : "",
     title: "Select a library resource",
     onClose: _cancelHandler,
     canEscapeKeyClose: true
@@ -624,7 +624,7 @@ function ConfirmDialog(props) {
     ...props
   };
   const [show, set_show] = (0, _react.useState)(false);
-  const theme = (0, _react.useContext)(_theme.ThemeContext);
+  const settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   (0, _react.useEffect)(() => {
     set_show(true);
   }, []);
@@ -642,7 +642,7 @@ function ConfirmDialog(props) {
   }
   return /*#__PURE__*/_react.default.createElement(_core.Dialog, {
     isOpen: show,
-    className: theme.dark_theme ? "bp5-dark" : "",
+    className: settingsContext.isDark() ? "bp5-dark" : "",
     title: props.title,
     onClose: _cancelHandler,
     autoFocus: true,

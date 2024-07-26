@@ -16,7 +16,7 @@ var _utilities_react = require("./utilities_react");
 var _server = require("react-dom/server");
 var _error_drawer = require("./error_drawer");
 var _pool_tree = require("./pool_tree");
-var _theme = require("./theme");
+var _settings = require("./settings");
 var _communication_react = require("./communication_react");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
@@ -50,7 +50,7 @@ function FileImportDialog(props) {
   const [quoting, set_quoting] = (0, _react.useState)("QUOTE_MINIMAL");
   const [skipinitialspace, set_skipinitialspace] = (0, _react.useState)(true);
   const [csv_options_open, set_csv_options_open] = (0, _react.useState)(false);
-  const theme = (0, _react.useContext)(_theme.ThemeContext);
+  const settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   const errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
   (0, _utilities_react.useConstructor)(async () => {
     try {
@@ -327,7 +327,7 @@ function FileImportDialog(props) {
   }
   return /*#__PURE__*/_react.default.createElement(_core.Dialog, {
     isOpen: show,
-    className: theme.dark_theme ? "import-dialog bp5-dark" : "import-dialog light-theme",
+    className: settingsContext.isDark() ? "import-dialog bp5-dark" : "import-dialog light-theme",
     title: props.title,
     onClose: _closeHandler,
     canOutsideClickClose: true,
