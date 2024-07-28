@@ -11,11 +11,11 @@ import { SearchForm } from "./library_widgets";
 import {basicSetup, EditorView} from "codemirror"
 import {Compartment, EditorState} from "@codemirror/state"
 import {python} from "@codemirror/lang-python"
-
+import {syntaxHighlighting, foldKeymap} from "@codemirror/language"
 import {StateEffect} from "@codemirror/state";
 // import { matchBrackets, closeBrackets } from "@codemirror/matchbrackets";
 import { searchKeymap, highlightSelectionMatches } from "@codemirror/search";
-import { oneDark } from "@codemirror/theme-one-dark";
+import { oneDark, oneDarkTheme, oneDarkHighlightStyle } from "@codemirror/theme-one-dark";
 //import { dracula } from "mirrorthemes";
 
 
@@ -101,11 +101,12 @@ function ReactCodemirror6(props) {
         themeCompartment.current = new Compartment();
         const state = EditorState.create({
             doc: props.code_content,
-            //theme: dracula,
             extensions: [
                 basicSetup,
                 python(),
-                themeCompartment.current.of(oneDark)
+                oneDarkTheme,
+                syntaxHighlighting(oneDarkHighlightStyle)
+               //themeCompartment.current.of(oneDark)
             ]
         });
         editorView.current = new EditorView({
