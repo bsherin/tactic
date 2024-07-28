@@ -11,11 +11,12 @@ import { SearchForm } from "./library_widgets";
 import {basicSetup, EditorView} from "codemirror"
 import {Compartment, EditorState} from "@codemirror/state"
 import {python} from "@codemirror/lang-python"
-import {syntaxHighlighting, foldKeymap} from "@codemirror/language"
+import {syntaxHighlighting, HighlightStyle, foldKeymap} from "@codemirror/language"
 import {StateEffect} from "@codemirror/state";
 // import { matchBrackets, closeBrackets } from "@codemirror/matchbrackets";
 import { searchKeymap, highlightSelectionMatches } from "@codemirror/search";
-import { oneDark, oneDarkTheme, oneDarkHighlightStyle } from "@codemirror/theme-one-dark";
+// import { oneDark, oneDarkTheme, oneDarkHighlightStyle } from "@codemirror/theme-one-dark";
+import { birdsOfParadiseThemeCss, birdsOfParadisHighlightStyles} from "./birds-of-paradise";
 //import { dracula } from "mirrorthemes";
 
 
@@ -99,13 +100,17 @@ function ReactCodemirror6(props) {
         }
         editorThemeRef.current = settingsContext.settingsRef.current.theme;
         themeCompartment.current = new Compartment();
+        let birdsTheme = EditorView.theme(birdsOfParadiseThemeCss);
+        let birdsHighlight = HighlightStyle.define(birdsOfParadisHighlightStyles);
         const state = EditorState.create({
             doc: props.code_content,
             extensions: [
                 basicSetup,
                 python(),
-                oneDarkTheme,
-                syntaxHighlighting(oneDarkHighlightStyle)
+                birdsTheme,
+                syntaxHighlighting(birdsHighlight),
+                // oneDarkTheme,
+                // syntaxHighlighting(oneDarkHighlightStyle)
                //themeCompartment.current.of(oneDark)
             ]
         });

@@ -11,7 +11,7 @@ const settings =  {
         lineHighlight: '#1F1611',
 };
 
-const birdsOfParadiseThemeCss =  {
+var birdsOfParadiseThemeCss =  {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     '&': {
         backgroundColor: settings.background,
@@ -38,7 +38,7 @@ const birdsOfParadiseThemeCss =  {
     },
 };
 
-const birdsOfParadisHighlightStyles = [
+var birdsOfParadisHighlightStyles = [
         {
             tag: t.comment,
             color: '#6B4E32',
