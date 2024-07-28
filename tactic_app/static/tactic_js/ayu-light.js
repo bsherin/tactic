@@ -1,7 +1,7 @@
 import { tags as t } from '@lezer/highlight';
-export { ayuLight };
+export { ayuLightBase };
 
-var ayuLight = {
+var ayuLightBase = {
     variant: 'light',
     settings: {
         background: '#fcfcfc',
