@@ -9,6 +9,7 @@ module.exports = (env, argv) => {
     console.log("starting");
     console.log("mode = " + argv.mode);
     const devmode = argv.mode != 'production';
+    const codeonly = argv.env.codeonly == "true";
     // var devmode = true
 
     if (devmode) {
@@ -16,9 +17,14 @@ module.exports = (env, argv) => {
     } else {
         console.log("got production mode")
     }
-
-    let result = {
-        entry: {
+    let entry_dict;
+    if (codeonly) {
+        entry_dict = {
+            code_viewer_react: './tactic_app/static/tactic_js/code_viewer_react.js',
+        }
+    }
+    else {
+        entry_dict = {
             main_app: './tactic_app/static/tactic_js/main_app.js',
             notebook_app: './tactic_app/static/tactic_js/notebook_app.js',
             library_home_react: './tactic_app/static/tactic_js/library_home_react.js',
@@ -35,7 +41,11 @@ module.exports = (env, argv) => {
             history_viewer_react: './tactic_app/static/tactic_js/history_viewer_react.js',
             tile_differ_react: './tactic_app/static/tactic_js/tile_differ_react.js',
             context_react: './tactic_app/static/tactic_js/context_react.js',
-        },
+        }
+    }
+
+    let result = {
+        entry: entry_dict,
         plugins: [
             new MiniCssExtractPlugin({
                 filename: '[name].css',

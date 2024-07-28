@@ -5,7 +5,8 @@ import { createRoot } from 'react-dom/client';
 import { useHotkeys } from "@blueprintjs/core";
 //import { HotkeysProvider } from "@blueprintjs/core";
 
-import {ReactCodemirror} from "./react-codemirror";
+// import {ReactCodemirror} from "./react-codemirror";
+import {ReactCodemirror6} from "./react-codemirror6";
 
 import {ResourceViewerApp, copyToLibrary, sendToRepository} from "./resource_viewer_react_app";
 import {TacticSocket} from "./tactic_socket";
@@ -347,7 +348,7 @@ function CodeViewerApp(props) {
                                        allow_regex_search={true}
                                        showErrorDrawerButton={true}
                     >
-                        <ReactCodemirror code_content={code_content}
+                        <ReactCodemirror6 code_content={code_content}
                                          no_width={true}
                                          extraKeys={_extraKeys()}
                                          readOnly={props.readOnly}

@@ -43,13 +43,23 @@ function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; 
 // noinspection XmlDeprecatedElement,JSXUnresolvedComponent
 
 const originalWarn = console.warn;
+const originalError = console.error;
 console.warn = function (message) {
-  const suppressWarnings = ["[Blueprint] useHotkeys() was used outside", "findDOMNode is deprecated and will be removed"];
+  const suppressWarnings = ["[Blueprint] useHotkeys() was used outside"];
   if (!suppressWarnings.some(warning => message.includes(warning))) {
     for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
       args[_key - 1] = arguments[_key];
     }
     originalWarn.apply(console, [message, ...args]);
+  }
+};
+console.error = function (message) {
+  const suppressErrors = ["findDOMNode is deprecated and will be removed"];
+  if (!suppressErrors.some(error => message.includes(error))) {
+    for (var _len2 = arguments.length, args = new Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
+      args[_key2 - 1] = arguments[_key2];
+    }
+    originalError.apply(console, [message, ...args]);
   }
 };
 
