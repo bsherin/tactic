@@ -16,7 +16,9 @@ import {StateEffect} from "@codemirror/state";
 // import { matchBrackets, closeBrackets } from "@codemirror/matchbrackets";
 import { searchKeymap, highlightSelectionMatches } from "@codemirror/search";
 // import { oneDark, oneDarkTheme, oneDarkHighlightStyle } from "@codemirror/theme-one-dark";
-import { birdsOfParadiseThemeCss, birdsOfParadisHighlightStyles} from "./birds-of-paradise";
+import {createCMTheme} from "./create_cm_theme";
+import { birdsOfParadiseBase } from "./birds-of-paradise";
+import { ayuLightBase} from "./ayu-light";
 //import { dracula } from "mirrorthemes";
 
 
@@ -84,8 +86,12 @@ function ReactCodemirror6(props) {
     const first_render = useRef(true);
     const prevSoftWrap = useRef(null);
     const registeredHandlers = useRef([]);
-    const editorThemeRef = useRef(null);
     const themeCompartment = useRef(null);
+    const highlightCompartment = useRef(null);
+    const darkTheme = useRef(null);
+    const darkHighlight = useRef(null);
+    const lightTheme = useRef(null);
+    const lightHighlight = useRef(null);
 
     const settingsContext = useContext(SettingsContext);
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
@@ -98,20 +104,27 @@ function ReactCodemirror6(props) {
         if (props.registerSetFocusFunc) {
             props.registerSetFocusFunc(setFocus);
         }
-        editorThemeRef.current = settingsContext.settingsRef.current.theme;
         themeCompartment.current = new Compartment();
-        let birdsTheme = EditorView.theme(birdsOfParadiseThemeCss);
-        let birdsHighlight = HighlightStyle.define(birdsOfParadisHighlightStyles);
+        highlightCompartment.current = new Compartment();
+        let birdsThemeDict = createCMTheme(birdsOfParadiseBase);
+        darkTheme.current = EditorView.theme(birdsThemeDict.themeCss);
+        darkHighlight.current = HighlightStyle.define(birdsThemeDict.highlightStyles);
+
+        let ayuThemeDict = createCMTheme(ayuLightBase);
+        lightTheme.current = EditorView.theme(ayuThemeDict.themeCss);
+        lightHighlight.current = HighlightStyle.define(ayuThemeDict.highlightStyles);
         const state = EditorState.create({
             doc: props.code_content,
             extensions: [
                 basicSetup,
                 python(),
-                birdsTheme,
-                syntaxHighlighting(birdsHighlight),
+                themeCompartment.current.of(darkTheme.current),
+                //darkTheme.current,
+                // syntaxHighlighting(darkHighlight.current),
+                highlightCompartment.current.of(syntaxHighlighting(darkHighlight.current)),
                 // oneDarkTheme,
                 // syntaxHighlighting(oneDarkHighlightStyle)
-               //themeCompartment.current.of(oneDark)
+                // themeCompartment.current.of(oneDark)
             ]
         });
         editorView.current = new EditorView({
@@ -124,13 +137,17 @@ function ReactCodemirror6(props) {
     }, []);
 
     useEffect(() => {
-        // if (!editorView.current) return;
-        //
-        // const newTheme = isDark() ? dracula : EditorView.theme({});
-        //
-        // editorView.current.dispatch({
-        //     effects: editorThemeRef.current.reconfigure.of(newTheme)
-        // });
+        if (!editorView.current) return;
+
+        const newTheme = isDark() ? darkTheme.current : lightTheme.current;
+        const newHighlight = isDark() ? darkHighlight.current : lightHighlight.current;
+
+        editorView.current.dispatch({
+            effects: themeCompartment.current.reconfigure(newTheme)
+        });
+        editorView.current.dispatch({
+            effects: highlightCompartment.current.reconfigure(syntaxHighlighting(newHighlight))
+        });
     }, [settingsContext.settings.theme, settingsContext.settings.preferred_dark_theme, settingsContext.settings.preferred_light_theme]);
 
     useLayoutEffect(() => {
