@@ -1,0 +1,153 @@
+import { tags as t } from '@lezer/highlight';
+export { birdsOfParadiseThemeCss, birdsOfParadisHighlightStyles };
+
+const settings =  {
+        background: '#3b2627',
+        foreground: '#E6E1C4',
+        caret: '#E6E1C4',
+        selection: '#16120E',
+        gutterBackground: '#3b2627',
+        gutterForeground: '#E6E1C490',
+        lineHighlight: '#1F1611',
+};
+
+const birdsOfParadiseThemeCss =  {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    '&': {
+        backgroundColor: settings.background,
+        color: settings.foreground,
+    },
+    '.cm-content': {
+        caretColor: settings.caret,
+    },
+    '.cm-cursor, .cm-dropCursor': {
+        borderLeftColor: settings.caret,
+    },
+    '&.cm-focused .cm-selectionBackgroundm .cm-selectionBackground, .cm-content ::selection': {
+        backgroundColor: settings.selection,
+    },
+    '.cm-activeLine': {
+        backgroundColor: settings.lineHighlight,
+    },
+    '.cm-gutters': {
+        backgroundColor: settings.gutterBackground,
+        color: settings.gutterForeground,
+    },
+    '.cm-activeLineGutter': {
+        backgroundColor: settings.lineHighlight,
+    },
+};
+
+const birdsOfParadisHighlightStyles = [
+        {
+            tag: t.comment,
+            color: '#6B4E32',
+        },
+        {
+            tag: [t.keyword, t.operator, t.derefOperator],
+            color: '#EF5D32',
+        },
+        {
+            tag: t.className,
+            color: '#EFAC32',
+            fontWeight: 'bold',
+        },
+        {
+            tag: [
+                t.typeName,
+                t.propertyName,
+                t.function(t.variableName),
+                t.definition(t.variableName),
+            ],
+            color: '#EFAC32',
+        },
+        {
+            tag: t.definition(t.typeName),
+            color: '#EFAC32',
+            fontWeight: 'bold',
+        },
+        {
+            tag: t.labelName,
+            color: '#EFAC32',
+            fontWeight: 'bold',
+        },
+        {
+            tag: [t.number, t.bool],
+            color: '#6C99BB',
+        },
+        {
+            tag: [t.variableName, t.self],
+            color: '#7DAF9C',
+        },
+        {
+            tag: [t.string, t.special(t.brace), t.regexp],
+            color: '#D9D762',
+        },
+        {
+            tag: [t.angleBracket, t.tagName, t.attributeName],
+            color: '#EFCB43',
+        },
+    ];
+
+var birdsOfParadiseOld = {
+    variant: 'dark',
+    settings: {
+        background: '#3b2627',
+        foreground: '#E6E1C4',
+        caret: '#E6E1C4',
+        selection: '#16120E',
+        gutterBackground: '#3b2627',
+        gutterForeground: '#E6E1C490',
+        lineHighlight: '#1F1611',
+    },
+    styles: [
+        {
+            tag: t.comment,
+            color: '#6B4E32',
+        },
+        {
+            tag: [t.keyword, t.operator, t.derefOperator],
+            color: '#EF5D32',
+        },
+        {
+            tag: t.className,
+            color: '#EFAC32',
+            fontWeight: 'bold',
+        },
+        {
+            tag: [
+                t.typeName,
+                t.propertyName,
+                t.function(t.variableName),
+                t.definition(t.variableName),
+            ],
+            color: '#EFAC32',
+        },
+        {
+            tag: t.definition(t.typeName),
+            color: '#EFAC32',
+            fontWeight: 'bold',
+        },
+        {
+            tag: t.labelName,
+            color: '#EFAC32',
+            fontWeight: 'bold',
+        },
+        {
+            tag: [t.number, t.bool],
+            color: '#6C99BB',
+        },
+        {
+            tag: [t.variableName, t.self],
+            color: '#7DAF9C',
+        },
+        {
+            tag: [t.string, t.special(t.brace), t.regexp],
+            color: '#D9D762',
+        },
+        {
+            tag: [t.angleBracket, t.tagName, t.attributeName],
+            color: '#EFCB43',
+        },
+    ],
+};
