@@ -39,7 +39,7 @@ function OpenOmnibarItem(props) {
             active={props.modifiers.active}
             text={props.item.name}
             label={props.item.res_type}
-            key={props.item.name}
+            key={props.item.search_text}
             onClick={_handleClick}
             shouldDismissPopover={true}
         />
