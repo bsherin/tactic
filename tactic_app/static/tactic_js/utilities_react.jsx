@@ -15,7 +15,7 @@ export {remove_duplicates, guid, scrollMeIntoView, renderSpinnerMessage};
 export {useConstructor, useCallbackStack, useStateAndRef, useReducerAndRef, useConnection,
     useStateAndRefAndCounter, useDidMount, useImmerReducerAndRef};
 
-export {debounce, throttle, useDebounce, SelectedPaneContext}
+export {debounce, throttle, useDebounce, SelectedPaneContext, convertExtraKeys}
 
 function trueFunc() {
     return true
@@ -27,6 +27,15 @@ const SelectedPaneContext = createContext({
     amSelected: trueFunc,
     counter: 0
 });
+
+const convertExtraKeys = (extraKeys) => {
+    const newExtraKeys = [];
+    for (const key in extraKeys) {
+        newExtraKeys.push({key: key, run: extraKeys[key], preventDefault: true, preventPropagation: true})
+    }
+    return newExtraKeys;
+
+};
 
 // It's necessary to have effectcount be a ref. Otherwise there can be subtle bugs
 function useCallbackStack(myId = "") {

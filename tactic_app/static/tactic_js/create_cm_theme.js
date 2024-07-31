@@ -9,6 +9,7 @@ function createCMTheme(styleDict) {
             '&': {
                 backgroundColor: settings.background,
                 color: settings.foreground,
+                border: "borderColor" in settings ? `.5px solid ${settings.borderColor}` : null
             },
             '.cm-content': {
                 caretColor: settings.caret,
@@ -16,21 +17,23 @@ function createCMTheme(styleDict) {
             '.cm-cursor, .cm-dropCursor': {
                 borderLeftColor: settings.caret,
             },
-            '&.cm-focused .cm-selectionBackgroundm .cm-selectionBackground, .cm-content ::selection': {
+            '&.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground, .cm-selectionBackground, .cm-content ::selection': {
                 backgroundColor: settings.selection,
             },
             '.cm-activeLine': {
                 backgroundColor: settings.lineHighlight,
             },
             '.cm-gutters': {
-                backgroundColor: settings.gutterBackground,
-                color: settings.gutterForeground,
+                backgroundColor: "gutterBackground" in settings ? settings.gutterBackground : settings.background,
+                color: "gutterForeground" in settings ? settings.gutterForeground : settings.foreground,
+                borderRight: "none"
             },
-            '.cm-activeLineGutter': {
-                backgroundColor: settings.lineHighlight,
+            ".cm-searchMatch, .cm-activeLineGutter":{
+                backgroundColor: settings.selection
             },
         },
         highlightStyles: styleDict.styles
     };
 }
+
 

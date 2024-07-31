@@ -289,9 +289,13 @@ $dark-medium: $dark-gray4;
     color: $log-panel-font-color !important;
   }
 
+  .cm-editor {
+      border: 1px solid #c7c7c7 !important;
+    }
+
   .log-panel {
 
-    .CodeMirror {
+    .CodeMirror, .cm-editor {
       border: 1px solid #c7c7c7 !important;
     }
 

@@ -7,6 +7,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.SelectedPaneContext = void 0;
 exports.arrayMove = arrayMove;
 exports.arraysMatch = arraysMatch;
+exports.convertExtraKeys = void 0;
 exports.debounce = debounce;
 exports.get_ppi = get_ppi;
 exports.guid = guid;
@@ -46,8 +47,21 @@ const SelectedPaneContext = exports.SelectedPaneContext = /*#__PURE__*/(0, _reac
   amSelected: trueFunc,
   counter: 0
 });
+const convertExtraKeys = extraKeys => {
+  const newExtraKeys = [];
+  for (const key in extraKeys) {
+    newExtraKeys.push({
+      key: key,
+      run: extraKeys[key],
+      preventDefault: true,
+      preventPropagation: true
+    });
+  }
+  return newExtraKeys;
+};
 
 // It's necessary to have effectcount be a ref. Otherwise there can be subtle bugs
+exports.convertExtraKeys = convertExtraKeys;
 function useCallbackStack() {
   let myId = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "";
   const [effectCount, setEffectCount, effectCountRef] = useStateAndRef(0);

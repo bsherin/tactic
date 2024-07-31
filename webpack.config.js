@@ -84,19 +84,17 @@ module.exports = (env, argv) => {
                         ],
                     type: 'asset/resource',
                     dependency: { not: ['url'] }
-                    // use: [
-                    //     {
-                    //         loader: 'url-loader',
-                    //         options: {
-                    //             limit: 8192,
-                    //             name: '[path][name].[ext]',
-                    //         }
-                    //     }
-                    // ]
-                    // loader: require.resolve("file-loader"),
                 }
             ],
         },
+        // optimization: {
+        //     splitChunks: {
+        //         chunks: 'all'
+        //     }
+        // },
+        // resolve: {
+        //         extensions: ['.js'],
+        // },
         mode: argv.mode,
     };
     if (!devmode) {
@@ -112,7 +110,7 @@ module.exports = (env, argv) => {
         result.mode = "development";
         result.output = {
             filename: '[name].bundle.js',
-            path: path.resolve(__dirname, 'tactic_app/static/tactic_js_dev')
+            path: path.resolve(__dirname, 'tactic_app/static/tactic_js_dev'),
         }
     }
     return result

@@ -1,20 +1,21 @@
 import "../tactic_css/tactic.scss";
 import "../tactic_css/tactic_table.scss";
 import "../tactic_css/tile_creator.scss";
-import 'codemirror/mode/javascript/javascript'
 
 import React from "react";
 import {Fragment, useState, useEffect, useRef, memo, useMemo, useContext} from "react";
-import { createRoot } from 'react-dom/client';
+import {createRoot} from 'react-dom/client';
 
 import {Tab, Tabs, Button, ButtonGroup, Icon} from "@blueprintjs/core";
-//import { HotkeysProvider } from "@blueprintjs/core";
-import { useHotkeys } from "@blueprintjs/core";
+import {useHotkeys} from "@blueprintjs/core";
+
+import { EditorView } from "@codemirror/view";
+import { EditorSelection } from "@codemirror/state";
 
 import {creator_props} from "./tile_creator_support";
 import {TacticMenubar} from "./menu_utilities"
 import {sendToRepository} from "./resource_viewer_react_app";
-import {ReactCodemirror} from "./react-codemirror";
+import {ReactCodemirror6} from "./react-codemirror6";
 import {OptionModule, ExportModule, MetadataModule} from "./creator_modules_react";
 import {HorizontalPanes, VerticalPanes} from "./resizing_layouts2";
 import {postAjax, postAjaxPromise, postPromise} from "./communication_react"
@@ -22,10 +23,9 @@ import {withStatus, doFlash, StatusContext} from "./toaster"
 import {withAssistant} from "./assistant";
 import {SIDE_MARGIN, SizeContext, useSize, withSizeContext} from "./sizing_tools";
 import {withErrorDrawer} from "./error_drawer";
-import {renderSpinnerMessage, guid, arrayMove} from "./utilities_react"
+import {renderSpinnerMessage, guid, arrayMove, convertExtraKeys} from "./utilities_react"
 import {TacticNavbar} from "./blueprint_navbar";
 import {ErrorBoundary} from "./error_boundary";
-import {renderAutoCompleteElement} from "./autocomplete";
 import {useCallbackStack, useStateAndRef, useConnection} from "./utilities_react";
 import {SettingsContext, withSettings} from "./settings";
 import {DialogContext, withDialogs} from "./modal_react";
@@ -118,7 +118,7 @@ function CreatorApp(props) {
     });
 
     const [usable_width, usable_height, topX, topY] = useSize(top_ref, 0, "TileCreator");
-    
+
     const [tabSelectCounter, setTabSelectCounter] = useState(0);
 
     // This hasActivated machinery is necessary because cleanup of codemirror areas doesn't work
@@ -198,7 +198,7 @@ function CreatorApp(props) {
             },
         ], [_saveMe, _saveAndLoadModule, _saveAndCheckpoint]
     );
-    const { handleKeyDown, handleKeyUp } = useHotkeys(hotkeys);
+    const {handleKeyDown, handleKeyUp} = useHotkeys(hotkeys);
 
     const pushCallback = useCallbackStack();
 
@@ -214,12 +214,11 @@ function CreatorApp(props) {
             .then((data) => {
                 if (data.has_key) {
                     set_has_key(true)
-                }
-                else {
+                } else {
                     set_has_key(false)
                 }
             })
-            .catch((e)=>{
+            .catch((e) => {
                 set_has_key(false)
             });
         postAjaxPromise("get_tag_list", data_dict)
@@ -252,6 +251,7 @@ function CreatorApp(props) {
             navigator.sendBeacon("/delete_container_on_unload",
                 JSON.stringify({"container_id": props.module_viewer_id, "notify": false}));
         }
+
         window.addEventListener("unload", sendRemove);
         statusFuncs.stopSpinner();
         return (() => {
@@ -335,18 +335,19 @@ function CreatorApp(props) {
     }
 
     function _extraKeys() {
-        return {
-            'Ctrl-S': _saveMe,
-            'Ctrl-L': _saveAndLoadModule,
-            'Ctrl-M': _saveAndCheckpoint,
-            'Ctrl-F': () => {
+        const ekeys = {
+            'Ctrl-s': _saveMe,
+            'Ctrl-l': _saveAndLoadModule,
+            'Ctrl-m': _saveAndCheckpoint,
+            'Ctrl-f': () => {
                 search_ref.current.focus()
             },
-            'Cmd-F': () => {
+            'Cmd-f': () => {
                 search_ref.current.focus()
             }
 
-        }
+        };
+        return convertExtraKeys(ekeys)
     }
 
     function _searchNext() {
@@ -364,7 +365,7 @@ function CreatorApp(props) {
                     break;
                 default:
                     if (props.is_mpl || props.is_d3) {
-                    next_cm = "tc"
+                        next_cm = "tc"
                     } else {
                         next_cm = "rc"
                     }
@@ -372,8 +373,7 @@ function CreatorApp(props) {
             }
             if (next_cm == "em") {
                 _handleTabSelect("methods");
-            }
-            else if (next_cm == "gp") {
+            } else if (next_cm == "gp") {
                 _handleTabSelect("globals");
             }
             set_current_search_cm(next_cm);
@@ -406,6 +406,9 @@ function CreatorApp(props) {
                 _handleTabSelect("methods");
             }
             set_current_search_cm(next_cm);
+            if (next_search_number < 0) {
+                next_search_number = 0
+            }
             set_current_search_number(next_search_number);
         } else {
             set_current_search_number(current_search_number - 1);
@@ -463,7 +466,7 @@ function CreatorApp(props) {
 
     function _logErrorStopSpinner(title, data) {
         statusFuncs.stopSpinner();
-        let entry = {title: title, content: data.message};
+        let entry = {title: title, content: data.message, tile_type: resource_name};
         if ("line_number" in data) {
             entry.line_number = data.line_number
         }
@@ -496,8 +499,7 @@ function CreatorApp(props) {
                 props.module_viewer_id);
             statusFuncs.statusMessage("Loaded successfully");
             statusFuncs.stopSpinner()
-        }
-        catch(e) {
+        } catch (e) {
             _logErrorStopSpinner("Error saving and loading module", e)
         }
     }
@@ -515,8 +517,7 @@ function CreatorApp(props) {
                 props.module_viewer_id);
             statusFuncs.statusMessage("Loaded successfully");
             statusFuncs.stopSpinner()
-        }
-        catch(e) {
+        } catch (e) {
             _logErrorStopSpinner("Error saving and loading module", e)
         }
     }
@@ -527,17 +528,16 @@ function CreatorApp(props) {
         try {
             data = await postPromise("host", "get_tile_names", {"user_id": window.user_id}, props.main_id);
             dialogFuncs.showModal("ModalDialog", {
-                        title: "Save Module As",
-                        field_title: "New Module Name",
-                        handleSubmit: CreateNewModule,
-                        default_value: "NewModule",
-                        existing_names: data.tile_names,
-                        checkboxes: [],
-                        handleCancel: doCancel,
-                        handleClose: dialogFuncs.hideModal
-                    })
-        }
-        catch (e) {
+                title: "Save Module As",
+                field_title: "New Module Name",
+                handleSubmit: CreateNewModule,
+                default_value: "NewModule",
+                existing_names: data.tile_names,
+                checkboxes: [],
+                handleCancel: doCancel,
+                handleClose: dialogFuncs.hideModal
+            })
+        } catch (e) {
             _logErrorStopSpinner("Error saving module", e)
         }
 
@@ -555,8 +555,7 @@ function CreatorApp(props) {
                 _setResourceNameState(new_name, () => {
                     _saveMe()
                 })
-            }
-            catch(e) {
+            } catch (e) {
                 _logErrorStopSpinner("Error saving module", e)
             }
         }
@@ -576,9 +575,8 @@ function CreatorApp(props) {
             await doSavePromise();
             statusFuncs.statusMessage("Saved module");
             statusFuncs.stopSpinner()
-        }
-        catch(e) {
-             _logErrorStopSpinner("Error saving module", e)
+        } catch (e) {
+            _logErrorStopSpinner("Error saving module", e)
         }
         return false
     }
@@ -595,8 +593,7 @@ function CreatorApp(props) {
             await doCheckpointPromise();
             statusFuncs.statusMessage("Saved and checkpointed");
             statusFuncs.stopSpinner()
-        }
-        catch(e) {
+        } catch (e) {
             _logErrorStopSpinner("Error in save and checkpoint", e)
         }
         return false
@@ -642,8 +639,7 @@ function CreatorApp(props) {
                 data = await postPromise(props.module_viewer_id, "update_module", result_dict, props.module_viewer_id);
                 save_success(data);
                 resolve(data)
-            }
-            catch(e) {
+            } catch (e) {
                 reject(e)
             }
         })
@@ -665,13 +661,13 @@ function CreatorApp(props) {
     }
 
     function _selectLine(cm, lnumber) {
-        let doc = cm.getDoc();
-        if (doc.getLine(lnumber)) {
-            doc.setSelection(
-                {line: lnumber, ch: 0},
-                {line: lnumber, ch: doc.getLine(lnumber).length},
-                {scroll: true})
-        }
+        const line = cm.state.doc.line(lnumber + 1);
+        cm.dispatch({
+            selection: EditorSelection.single(line.from, line.to),
+            effects: EditorView.scrollIntoView(line.from, {
+                y: "center"  // Center the line in the view
+            })
+        });
     }
 
     function _goToLineNumber() {
@@ -734,16 +730,16 @@ function CreatorApp(props) {
         }
         set_foregrounded_panes(new_fg);
         pushCallback(() => {
-            if (newTabId == "methods") {
-                if (emObject.current) {
-                    emObject.current.refresh()
-                }
-            }
-            else if (newTabId == "globals") {
-                if (globalObject.current) {
-                    globalObject.current.refresh()
-                }
-            }
+            // if (newTabId == "methods") {
+            //     if (emObject.current) {
+            //         emObject.current.refresh()
+            //     }
+            // }
+            // else if (newTabId == "globals") {
+            //     if (globalObject.current) {
+            //         globalObject.current.refresh()
+            //     }
+            // }
             setTabSelectCounter(tabSelectCounter + 1);
         })
     }
@@ -864,12 +860,12 @@ function CreatorApp(props) {
     }
 
     function _clearAllSelections() {
-        for (let cm of [rcObject.current, dpObject.current, emObject.current]) {
-            if (cm) {
-                let to = cm.getCursor("to");
-                cm.setCursor(to);
-            }
-        }
+        // for (let cm of [rcObject.current, dpObject.current, emObject.current]) {
+        //     if (cm) {
+        //         let to = cm.getCursor("to");
+        //         cm.setCursor(to);
+        //     }
+        // }
     }
 
     function _setDpObject(cmobject) {
@@ -906,11 +902,11 @@ function CreatorApp(props) {
         return onames
     }
 
-    let onames_for_autocomplete = [];
-    for (let oname of _getOptionNames()) {
-        let the_text = "" + oname;
-        onames_for_autocomplete.push({text: the_text, icon: "select", render: renderAutoCompleteElement});
-    }
+    //let onames_for_autocomplete = [];
+    // for (let oname of _getOptionNames()) {
+    //     let the_text = "" + oname;
+    //     onames_for_autocomplete.push({text: the_text, icon: "select", render: renderAutoCompleteElement});
+    // }
     let my_props = {...props};
     if (!props.controlled) {
         my_props.resource_name = resource_name;
@@ -924,56 +920,56 @@ function CreatorApp(props) {
         let first_line_number = my_props.is_mpl ? draw_plot_line_number_ref.current + 1 : 1;
         let title_label = my_props.is_mpl ? "draw_plot" : "(selector, w, h, arg_dict, resizing) =>";
         tc_item = (
-           <ReactCodemirror code_content={code_content}
-                            title_label={title_label}
-                            show_search={true}
-                            mode={mode}
-                            extraKeys={_extraKeys()}
-                            current_search_number={current_search_cm == "tc" ? current_search_number : null}
-                            handleChange={handleTopCodeChange}
-                            saveMe={_saveAndCheckpoint}
-                            setCMObject={_setDpObject}
-                            search_term={search_string}
-                            updateSearchState={_updateSearchState}
-                            alt_clear_selections={_clearAllSelections}
-                            first_line_number={first_line_number}
-                            readOnly={props.read_only}
-                            regex_search={regex}
-                            search_ref={search_ref}
-                            searchPrev={_searchPrev}
-                            searchNext={_searchNext}
-                            search_matches={search_matches}
-                            setSearchMatches={(num) => _setSearchMatches("tc", num)}
-                            tsocket={props.tsocket}
-                            extra_autocomplete_list={mode == "python" ? onames_for_autocomplete : []}/>
+            <ReactCodemirror6 code_content={code_content}
+                              title_label={title_label}
+                              show_search={true}
+                              mode={mode}
+                              extraKeys={_extraKeys()}
+                              current_search_number={current_search_cm == "tc" ? current_search_number : null}
+                              handleChange={handleTopCodeChange}
+                              saveMe={_saveAndCheckpoint}
+                              setCMObject={_setDpObject}
+                              search_term={search_string}
+                              updateSearchState={_updateSearchState}
+                              alt_clear_selections={_clearAllSelections}
+                              first_line_number={first_line_number}
+                              readOnly={props.read_only}
+                              regex_search={regex}
+                              search_ref={search_ref}
+                              searchPrev={_searchPrev}
+                              searchNext={_searchNext}
+                              search_matches={search_matches}
+                              setSearchMatches={(num) => _setSearchMatches("tc", num)}
+                              tsocket={props.tsocket}
+                              extra_autocomplete_list={[]}/>
 
         )
     }
     let bc_item = (
         <div key="rccode" id="rccode" style={ch_style} className="d-flex flex-column align-items-baseline code-holder">
 
-            <ReactCodemirror code_content={render_content_code_ref.current}
-                             title_label="render_content"
-                             show_search={!(my_props.is_mpl || my_props.is_d3)}
-                             updateSearchState={_updateSearchState}
-                             current_search_number={current_search_cm == "rc" ? current_search_number : null}
-                             handleChange={handleRenderContentChange}
-                             extraKeys={_extraKeys()}
-                             saveMe={_saveAndCheckpoint}
-                             setCMObject={_setRcObject}
-                             search_term={search_string}
-                             update_search_state={_updateSearchState}
-                             alt_clear_selections={_clearAllSelections}
-                             first_line_number={render_content_line_number_ref.current + 1}
-                             readOnly={props.read_only}
-                             regex_search={regex}
-                             searchPrev={_searchPrev}
-                             searchNext={_searchNext}
-                             search_matches={search_matches}
-                             setSearchMatches={(num) => _setSearchMatches("rc", num)}
-                             tsocket={props.tsocket}
-                             extra_autocomplete_list={onames_for_autocomplete}
-
+            <ReactCodemirror6 code_content={render_content_code_ref.current}
+                              title_label="render_content"
+                              show_search={!(my_props.is_mpl || my_props.is_d3)}
+                              updateSearchState={_updateSearchState}
+                              current_search_number={current_search_cm == "rc" ? current_search_number : null}
+                              handleChange={handleRenderContentChange}
+                              extraKeys={_extraKeys()}
+                              saveMe={_saveAndCheckpoint}
+                              setCMObject={_setRcObject}
+                              search_term={search_string}
+                              update_search_state={_updateSearchState}
+                              alt_clear_selections={_clearAllSelections}
+                              first_line_number={render_content_line_number_ref.current + 1}
+                              readOnly={props.read_only}
+                              regex_search={regex}
+                              search_ref={search_ref}
+                              searchPrev={_searchPrev}
+                              searchNext={_searchNext}
+                              search_matches={search_matches}
+                              setSearchMatches={(num) => _setSearchMatches("rc", num)}
+                              tsocket={props.tsocket}
+                              extra_autocomplete_list={[]}
             />
         </div>
     );
@@ -1003,17 +999,17 @@ function CreatorApp(props) {
 
     let mdata_panel = (
         <MetadataModule tags={tags_ref.current}
-                       expandWidth={false}
-                       all_tags={all_tags}
-                       readOnly={props.readOnly}
-                       notes={notes_ref.current}
-                     icon={icon_ref.current}
-                     created={my_props.created}
-                     category={category_ref.current}
-                     pane_type="tile"
-                     notes_buttons={_metadataNotesButtons}
-                     handleChange={_handleMetadataChange}
-                     tabSelectCounter={tabSelectCounter}
+                        expandWidth={false}
+                        all_tags={all_tags}
+                        readOnly={props.readOnly}
+                        notes={notes_ref.current}
+                        icon={icon_ref.current}
+                        created={my_props.created}
+                        category={category_ref.current}
+                        pane_type="tile"
+                        notes_buttons={_metadataNotesButtons}
+                        handleChange={_handleMetadataChange}
+                        tabSelectCounter={tabSelectCounter}
         />
     );
 
@@ -1038,24 +1034,24 @@ function CreatorApp(props) {
     let methods_panel = (
         <div style={{marginLeft: 10}}>
             {methodsHasActivated &&
-                <ReactCodemirror handleChange={handleMethodsChange}
-                                 show_fold_button={true}
-                                 current_search_number={current_search_cm == "em" ? current_search_number : null}
-                                 extraKeys={_extraKeys()}
-                                 readOnly={props.readOnly}
-                                 code_content={extra_functions_ref.current}
-                                 saveMe={_saveAndCheckpoint}
-                                 setCMObject={_setEmObject}
-                                 code_container_ref={methods_ref}
-                                 search_term={search_string}
-                                 update_search_state={_updateSearchState}
-                                 alt_clear_selections={_clearAllSelections}
-                                 regex_search={regex}
-                                 first_line_number={extra_methods_line_number_ref.current}
-                                 setSearchMatches={(num) => _setSearchMatches("em", num)}
-                                 extra_autocomplete_list={onames_for_autocomplete}
-                                 tsocket={props.tsocket}
-                                 iCounter={tabSelectCounter}
+                <ReactCodemirror6 handleChange={handleMethodsChange}
+                                  show_fold_button={true}
+                                  current_search_number={current_search_cm == "em" ? current_search_number : null}
+                                  extraKeys={_extraKeys()}
+                                  readOnly={props.readOnly}
+                                  code_content={extra_functions_ref.current}
+                                  saveMe={_saveAndCheckpoint}
+                                  setCMObject={_setEmObject}
+                                  code_container_ref={methods_ref}
+                                  search_term={search_string}
+                                  update_search_state={_updateSearchState}
+                                  alt_clear_selections={_clearAllSelections}
+                                  regex_search={regex}
+                                  first_line_number={extra_methods_line_number_ref.current}
+                                  setSearchMatches={(num) => _setSearchMatches("em", num)}
+                                  extra_autocomplete_list={[]}
+                                  tsocket={props.tsocket}
+                                  iCounter={tabSelectCounter}
                 />
             }
         </div>
@@ -1064,24 +1060,24 @@ function CreatorApp(props) {
     let globals_panel = (
         <div style={{marginLeft: 10}}>
             {globalsHasActivated &&
-                <ReactCodemirror handleChange={handleGlobalsChange}
-                                 show_fold_button={true}
-                                 current_search_number={current_search_cm == "gp" ? current_search_number : null}
-                                 extraKeys={_extraKeys()}
-                                 readOnly={props.readOnly}
-                                 code_content={globals_code_ref.current}
-                                 saveMe={_saveAndCheckpoint}
-                                 setCMObject={_setGlobalObject}
-                                 code_container_ref={globals_ref}
-                                 search_term={search_string}
-                                 update_search_state={_updateSearchState}
-                                 alt_clear_selections={_clearAllSelections}
-                                 regex_search={regex}
-                                 first_line_number={1}
-                                 setSearchMatches={(num) => _setSearchMatches("gp", num)}
-                                 extra_autocomplete_list={onames_for_autocomplete}
-                                 tsocket={props.tsocket}
-                                 iCounter={tabSelectCounter}
+                <ReactCodemirror6 handleChange={handleGlobalsChange}
+                                  show_fold_button={true}
+                                  current_search_number={current_search_cm == "gp" ? current_search_number : null}
+                                  extraKeys={_extraKeys()}
+                                  readOnly={props.readOnly}
+                                  code_content={globals_code_ref.current}
+                                  saveMe={_saveAndCheckpoint}
+                                  setCMObject={_setGlobalObject}
+                                  code_container_ref={globals_ref}
+                                  search_term={search_string}
+                                  update_search_state={_updateSearchState}
+                                  alt_clear_selections={_clearAllSelections}
+                                  regex_search={regex}
+                                  first_line_number={1}
+                                  setSearchMatches={(num) => _setSearchMatches("gp", num)}
+                                  extra_autocomplete_list={[]}
+                                  tsocket={props.tsocket}
+                                  iCounter={tabSelectCounter}
                 />
             }
         </div>
@@ -1150,8 +1146,8 @@ function CreatorApp(props) {
             />
             <ErrorBoundary>
                 <div className={outer_class} ref={top_ref} style={outer_style}
-                    tabIndex="0" onKeyDown={handleKeyDown} onKeyUp={handleKeyUp}>
-                     <SizeContext.Provider value={{
+                     tabIndex="0" onKeyDown={handleKeyDown} onKeyUp={handleKeyUp}>
+                    <SizeContext.Provider value={{
                         availableWidth: uwidth,
                         availableHeight: usable_height,
                         topX: topX,
@@ -1165,7 +1161,7 @@ function CreatorApp(props) {
                                          bottom_margin={BOTTOM_MARGIN}
                                          right_margin={SIDE_MARGIN}
                         />
-                     </SizeContext.Provider>
+                    </SizeContext.Provider>
                 </div>
             </ErrorBoundary>
         </ErrorBoundary>
@@ -1185,7 +1181,7 @@ function tile_creator_main() {
         const root = createRoot(domContainer);
         root.render(
             //<HotkeysProvider>
-                the_element
+            the_element
             //</HotkeysProvider>
         )
     }

@@ -3,8 +3,6 @@
 import React from "react";
 import {Fragment, useState, useEffect, useRef, useCallback, useLayoutEffect, memo, useMemo, useContext} from "react";
 
-import 'codemirror/mode/markdown/markdown.js'
-
 import {Icon, Card, ContextMenu, EditableText, Spinner, MenuDivider, Divider} from "@blueprintjs/core";
 import {Menu, MenuItem, ButtonGroup, Button} from "@blueprintjs/core";
 import { useHotkeys } from "@blueprintjs/core";
@@ -38,7 +36,7 @@ const mdi = markdownIt({
 mdi.use(markdownItLatex);
 
 import {GlyphButton} from "./blueprint_react_widgets";
-import {ReactCodemirror} from "./react-codemirror";
+import {ReactCodemirror6} from "./react-codemirror6";
 import {SortableComponent} from "./sortable_container";
 import {postAjaxPromise, postWithCallback, postFormDataPromise, postPromise} from "./communication_react"
 import {icon_dict} from "./blueprint_mdata_fields";
@@ -2321,12 +2319,12 @@ function ConsoleCodeItem(props) {
     }, []);
 
     const _extraKeys = useMemo(() => {
-        return {
-            'Ctrl-Enter': () => props.runCodeItem(props.unique_id, true),
-            'Cmd-Enter': () => props.runCodeItem(props.unique_id, true),
-            'Ctrl-C': props.addNewCodeItem,
-            'Ctrl-T': props.addNewTextItem
-        }
+        return [
+        {key:'Ctrl-Enter', run: () => props.runCodeItem(props.unique_id, true)},
+        {key: 'Cmd-Enter', run: () => props.runCodeItem(props.unique_id, true)},
+        {key: 'Ctrl-c', run: props.addNewCodeItem},
+        {key: 'Ctrl-t', run: props.addNewTextItem}
+        ]
     }, []);
 
     const _getFirstLine = useCallback(()=>{
@@ -2504,7 +2502,7 @@ function ConsoleCodeItem(props) {
                                                              icon="stop"/>
                                             }
                                         </div>
-                                        <ReactCodemirror handleChange={_handleChange}
+                                        <ReactCodemirror6 handleChange={_handleChange}
                                                          handleFocus={_handleFocus}
                                                          registerSetFocusFunc={registerSetFocusFunc}
                                                          readOnly={false}
@@ -2836,12 +2834,12 @@ function ConsoleTextItem(props) {
     }
 
     const _extraKeys = useMemo(() => {
-        return {
-            'Ctrl-Enter': () => _gotEnter(),
-            'Cmd-Enter': () => _gotEnter(),
-            'Ctrl-C': props.addNewCodeItem,
-            'Ctrl-T': props.addNewTextItem
-        }
+        return [
+            {key: 'Ctrl-Enter', run: () => _gotEnter()},
+            {key: 'Cmd-Enter', run: () => _gotEnter()},
+            {key: 'Ctrl-C', run: props.addNewCodeItem},
+            {key: 'Ctrl-T', run: props.addNewTextItem},
+        ]
     }, []);
 
     let really_show_markdown = hasOnlyWhitespace() && props.links.length == 0 ? false : props.show_markdown;
@@ -2926,7 +2924,7 @@ function ConsoleTextItem(props) {
                             <div className="d-flex flex-column">
                                 {!really_show_markdown &&
                                     <Fragment>
-                                        <ReactCodemirror handleChange={_handleChange}
+                                        <ReactCodemirror6 handleChange={_handleChange}
                                                          readOnly={false}
                                                          handleFocus={_handleFocus}
                                                          registerSetFocusFunc={registerSetFocusFunc}

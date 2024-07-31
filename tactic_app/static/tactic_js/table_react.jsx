@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import { Text, FormGroup, Spinner, InputGroup, ButtonGroup, Button, Card, Switch } from "@blueprintjs/core";
 
 import {GlyphButton} from "./blueprint_react_widgets";
-import {ReactCodemirror} from "./react-codemirror";
+import {ReactCodemirror6} from "./react-codemirror6";
 import {BpSelect} from "./blueprint_mdata_fields";
 import {postPromise, postWithCallback} from "./communication_react"
 
@@ -74,12 +74,12 @@ function FreeformBody(props) {
     _doSearch();
     return (
         <div ref={top_ref}>
-            <ReactCodemirror handleBlur={_handleBlur}
+            <ReactCodemirror6 handleBlur={_handleBlur}
                              handleChange={null}
                              code_content={props.mState.data_text}
                              sync_to_prop={true}
                              soft_wrap={props.mState.soft_wrap}
-                             mode="Plain Text"
+                             mode="text"
                              setCMObject={_setCMObject}
                              readOnly={false}/>
         </div>

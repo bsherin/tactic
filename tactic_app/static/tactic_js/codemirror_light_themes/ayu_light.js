@@ -1,7 +1,7 @@
 import { tags as t } from '@lezer/highlight';
-export { ayuLightBase };
-
-var ayuLightBase = {
+import {createCMTheme} from "../create_cm_theme";
+export { ayu_light };
+var themeBase = {
     variant: 'light',
     settings: {
         background: '#fcfcfc',
@@ -75,3 +75,5 @@ var ayuLightBase = {
         },
     ],
 };
+const themeDict = createCMTheme(themeBase);
+const ayu_light = [themeDict.themeCss, themeDict.highlightStyles];

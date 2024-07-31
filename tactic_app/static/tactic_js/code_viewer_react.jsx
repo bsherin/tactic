@@ -3,9 +3,7 @@ import React from "react";
 import {Fragment, useState, useEffect, useRef, useMemo, memo, useContext, useCallback} from "react";
 import { createRoot } from 'react-dom/client';
 import { useHotkeys } from "@blueprintjs/core";
-//import { HotkeysProvider } from "@blueprintjs/core";
 
-// import {ReactCodemirror} from "./react-codemirror";
 import {ReactCodemirror6} from "./react-codemirror6";
 
 import {ResourceViewerApp, copyToLibrary, sendToRepository} from "./resource_viewer_react_app";
@@ -250,15 +248,15 @@ function CodeViewerApp(props) {
     }
 
     function _extraKeys() {
-        return {
-            'Ctrl-S': _saveMe,
-            'Ctrl-F': () => {
-                search_ref.current.focus()
-            },
-            'Cmd-F': () => {
-                search_ref.current.focus()
-            }
-        }
+        return [
+            {key: 'Ctrl-s', run: _saveMe},
+            {key: 'Ctrl-f', run: () => {
+                search_ref.current.focus();
+            }, preventDefault: true},
+            {key: 'Cmd-f', run: () => {
+                search_ref.current.focus();
+            }, preventDefault: true},
+        ]
     }
 
     function am_selected() {

@@ -13,7 +13,7 @@ var _client = require("react-dom/client");
 var _core = require("@blueprintjs/core");
 var _resource_viewer_react_app = require("./resource_viewer_react_app");
 var _tactic_socket = require("./tactic_socket");
-var _reactCodemirror = require("./react-codemirror");
+var _reactCodemirror = require("./react-codemirror6");
 var _communication_react = require("./communication_react");
 var _error_drawer = require("./error_drawer");
 var _toaster = require("./toaster");
@@ -64,6 +64,7 @@ function ModuleViewerApp(props) {
   const savedNotes = (0, _react.useRef)(props.notes);
   const savedIcon = (0, _react.useRef)(props.icon);
   const [code_content, set_code_content, code_content_ref] = (0, _utilities_react.useStateAndRef)(props.the_content);
+  const [current_search_number, set_current_search_number] = (0, _react.useState)(null);
   const [notes, set_notes, notes_ref] = (0, _utilities_react.useStateAndRef)(props.notes);
   const [tags, set_tags, tags_ref] = (0, _utilities_react.useStateAndRef)(props.split_tags);
   const [icon, set_icon, icon_ref] = (0, _utilities_react.useStateAndRef)(props.icon);
@@ -116,6 +117,7 @@ function ModuleViewerApp(props) {
   }
   function _update_search_state(nstate) {
     let callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+    set_current_search_number(0);
     for (let field in nstate) {
       switch (field) {
         case "regex":
@@ -240,17 +242,18 @@ function ModuleViewerApp(props) {
     }
   }
   function _extraKeys() {
-    return {
-      'Ctrl-S': _saveMe,
-      'Ctrl-L': _saveAndLoadModule,
-      'Ctrl-M': _saveAndCheckpoint,
-      'Ctrl-F': () => {
+    const ekeys = {
+      'Ctrl-s': _saveMe,
+      'Ctrl-l': _saveAndLoadModule,
+      'Ctrl-m': _saveAndCheckpoint,
+      'Ctrl-f': () => {
         search_ref.current.focus();
       },
-      'Cmd-F': () => {
+      'Cmd-f': () => {
         search_ref.current.focus();
       }
     };
+    return (0, _utilities_react.convertExtraKeys)(ekeys);
   }
   function am_selected() {
     return selectedPane.amSelected(selectedPane.tab_id, selectedPane.selectedTabIdRef);
@@ -411,6 +414,16 @@ function ModuleViewerApp(props) {
   function _setSearchMatches(nmatches) {
     set_search_matches(nmatches);
   }
+  function _searchNext() {
+    if (current_search_number < search_matches - 1) {
+      set_current_search_number(current_search_number + 1);
+    }
+  }
+  function _searchPrev() {
+    if (current_search_number > 0) {
+      set_current_search_number(current_search_number - 1);
+    }
+  }
   let my_props = {
     ...props
   };
@@ -459,24 +472,25 @@ function ModuleViewerApp(props) {
     tags: tags,
     mdata_icon: icon,
     saveMe: _saveMe,
-    show_search: true,
     update_search_state: _update_search_state,
-    search_string: search_string,
-    search_matches: search_matches,
-    regex: regex,
-    allow_regex_search: true,
     search_ref: search_ref,
     showErrorDrawerButton: true
-  }), /*#__PURE__*/_react.default.createElement(_reactCodemirror.ReactCodemirror, {
+  }), /*#__PURE__*/_react.default.createElement(_reactCodemirror.ReactCodemirror6, {
     code_content: code_content,
     no_width: true,
     extraKeys: _extraKeys(),
     readOnly: props.readOnly,
     handleChange: _handleCodeChange,
     saveMe: _saveMe,
+    show_search: true,
     search_term: search_string,
-    update_search_state: _update_search_state,
+    search_ref: search_ref,
+    search_matches: search_matches,
+    updateSearchState: _update_search_state,
     regex_search: regex,
+    searchPrev: _searchPrev,
+    searchNext: _searchNext,
+    current_search_number: current_search_number,
     setSearchMatches: _setSearchMatches
   }))));
 }

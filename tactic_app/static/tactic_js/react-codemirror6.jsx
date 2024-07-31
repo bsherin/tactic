@@ -1,32 +1,48 @@
-import React, { Fragment, useEffect, useRef, memo, useLayoutEffect, useContext } from "react";
-import { Button, ButtonGroup } from "@blueprintjs/core";
-import { Helmet } from 'react-helmet';
-import { useSize } from "./sizing_tools";
-import { propsAreEqual } from "./utilities_react";
-import { SettingsContext } from "./settings";
-import { SelectedPaneContext } from "./utilities_react";
-import { ErrorDrawerContext } from "./error_drawer";
-import { SearchForm } from "./library_widgets";
+import React, {Fragment, useEffect, useRef, memo, useLayoutEffect, useContext} from "react";
+import {Button, ButtonGroup} from "@blueprintjs/core";
+import {useSize} from "./sizing_tools";
+import {propsAreEqual} from "./utilities_react";
+import {SettingsContext} from "./settings";
+import {SelectedPaneContext} from "./utilities_react";
+import {ErrorDrawerContext} from "./error_drawer";
+import {SearchForm} from "./library_widgets";
 
-import {basicSetup, EditorView} from "codemirror"
-import {Compartment, EditorState} from "@codemirror/state"
+import {indentWithTab} from "@codemirror/commands"
+import {Compartment} from "@codemirror/state"
 import {python} from "@codemirror/lang-python"
-import {syntaxHighlighting, HighlightStyle, foldKeymap} from "@codemirror/language"
-import {StateEffect} from "@codemirror/state";
-// import { matchBrackets, closeBrackets } from "@codemirror/matchbrackets";
-import { searchKeymap, highlightSelectionMatches } from "@codemirror/search";
-// import { oneDark, oneDarkTheme, oneDarkHighlightStyle } from "@codemirror/theme-one-dark";
-import {createCMTheme} from "./create_cm_theme";
-import { birdsOfParadiseBase } from "./birds-of-paradise";
-import { ayuLightBase} from "./ayu-light";
-//import { dracula } from "mirrorthemes";
+import {javascript} from "@codemirror/lang-javascript"
+import {markdown} from "@codemirror/lang-markdown"
+import {indentUnit} from "@codemirror/language";
+import {HighlightStyle, foldAll, unfoldAll} from "@codemirror/language"
+import {EditorView, Decoration} from "@codemirror/view";
+import {StateField, StateEffect, RangeSetBuilder} from "@codemirror/state";
 
+import {
+    gutter, GutterMarker, highlightActiveLineGutter, highlightSpecialChars, drawSelection,
+    dropCursor, rectangularSelection, crosshairCursor, keymap
+} from '@codemirror/view';
 
+export {EditorView} from '@codemirror/view';
+import {EditorState} from '@codemirror/state';
+import {foldGutter, indentOnInput, syntaxHighlighting, bracketMatching, foldKeymap} from '@codemirror/language';
+import {history, defaultKeymap, historyKeymap} from '@codemirror/commands';
+import {highlightSelectionMatches} from '@codemirror/search';
+import {closeBrackets, autocompletion, closeBracketsKeymap, completionKeymap} from '@codemirror/autocomplete';
+import {lintKeymap} from '@codemirror/lint';
 
-export { ReactCodemirror6 };
+import {themeList, importTheme} from "./theme_support";
 
+export {ReactCodemirror6};
+
+const SEARCH_HEIGHT = 55;
 const REGEXTYPE = Object.getPrototypeOf(new RegExp("that"));
-const TITLE_STYLE = { display: "flex", paddingLeft: 5, paddingBottom: 2, alignItems: "self-end" };
+const TITLE_STYLE = {display: "flex", paddingLeft: 5, paddingBottom: 2, alignItems: "self-end"};
+
+function textMode() {
+    return []
+}
+
+const mode_dict = {python, javascript, markdown, text: textMode};
 
 function isRegex(ob) {
     return Object.getPrototypeOf(ob) === REGEXTYPE;
@@ -43,6 +59,67 @@ function countOccurrences(query, the_text) {
     } else {
         return the_text.split(query).length - 1;
     }
+}
+
+function createHighlightDeco(view, searchTerm, current_search_number, literal = false) {
+    const builder = new RangeSetBuilder();
+    let regex;
+    if (literal) {
+        // Escape special characters for literal search
+        const escapedSearchTerm = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        regex = new RegExp(escapedSearchTerm, "gi");
+    } else {
+        regex = new RegExp(searchTerm, "gi");
+    }
+    let counter = 0;
+    for (let {from, to} of view.visibleRanges) {
+        const text = view.state.doc.sliceString(from, to);
+        let match;
+        while ((match = regex.exec(text)) !== null) {
+            const start = from + match.index;
+            const end = start + match[0].length;
+            if (current_search_number != null && counter === current_search_number) {
+                builder.add(start, end, Decoration.mark({class: "cm-searchMatch cm-searchMatch-selected"}));
+            }
+            else {
+                builder.add(start, end, Decoration.mark({class: "cm-searchMatch"}));
+            }
+            counter += 1;
+        }
+    }
+    return builder.finish()
+}
+
+const setHighlights = StateEffect.define();
+const highlightField = StateField.define({
+    create() {
+        return Decoration.none;
+    },
+    update(highlights, tr) {
+        highlights = highlights.map(tr.changes);
+        for (let e of tr.effects) {
+            if (e.is(setHighlights)) {
+                highlights = e.value;
+            }
+        }
+        return highlights;
+    },
+    provide: f => EditorView.decorations.from(f)
+});
+
+function customLineNumbers(startLine = 1) {
+    return gutter({
+        class: "cm-lineNumbers",
+        renderEmptyElements: false,
+        lineMarker: (view, line) => {
+            const lineNumber = startLine + view.state.doc.lineAt(line.from).number - 1;
+            return new class extends GutterMarker {
+                toDOM() {
+                    return document.createTextNode(lineNumber);
+                }
+            };
+        }
+    });
 }
 
 function ReactCodemirror6(props) {
@@ -69,7 +146,7 @@ function ReactCodemirror6(props) {
         clear_force_sync: null,
         mode: "python",
         readOnly: false,
-        extraKeys: {},
+        extraKeys: [],
         setCMObject: null,
         code_container_ref: null,
         setSearchMatches: null,
@@ -87,15 +164,11 @@ function ReactCodemirror6(props) {
     const prevSoftWrap = useRef(null);
     const registeredHandlers = useRef([]);
     const themeCompartment = useRef(null);
-    const highlightCompartment = useRef(null);
-    const darkTheme = useRef(null);
-    const darkHighlight = useRef(null);
-    const lightTheme = useRef(null);
-    const lightHighlight = useRef(null);
+    const theme = useRef(null);
+    const highlightStyle = useRef(null);
 
     const settingsContext = useContext(SettingsContext);
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
-
 
     const [usable_width, usable_height, topX, topY] = useSize(localRef, props.iCounter, "CodeMirror");
 
@@ -105,26 +178,53 @@ function ReactCodemirror6(props) {
             props.registerSetFocusFunc(setFocus);
         }
         themeCompartment.current = new Compartment();
-        highlightCompartment.current = new Compartment();
-        let birdsThemeDict = createCMTheme(birdsOfParadiseBase);
-        darkTheme.current = EditorView.theme(birdsThemeDict.themeCss);
-        darkHighlight.current = HighlightStyle.define(birdsThemeDict.highlightStyles);
-
-        let ayuThemeDict = createCMTheme(ayuLightBase);
-        lightTheme.current = EditorView.theme(ayuThemeDict.themeCss);
-        lightHighlight.current = HighlightStyle.define(ayuThemeDict.highlightStyles);
         const state = EditorState.create({
             doc: props.code_content,
             extensions: [
-                basicSetup,
-                python(),
-                themeCompartment.current.of(darkTheme.current),
-                //darkTheme.current,
-                // syntaxHighlighting(darkHighlight.current),
-                highlightCompartment.current.of(syntaxHighlighting(darkHighlight.current)),
-                // oneDarkTheme,
-                // syntaxHighlighting(oneDarkHighlightStyle)
-                // themeCompartment.current.of(oneDark)
+                // lineNumbers(),
+                mode_dict[props.mode](),
+                customLineNumbers(props.first_line_number),
+                themeCompartment.current.of([]),
+                history(),
+                highlightActiveLineGutter(),
+                highlightSpecialChars(),
+                history(),
+                foldGutter(),
+                drawSelection(),
+                dropCursor(),
+                EditorState.allowMultipleSelections.of(true),
+                indentOnInput(),
+                bracketMatching(),
+                closeBrackets(),
+                autocompletion(),
+                rectangularSelection(),
+                crosshairCursor(),
+                highlightSelectionMatches(),
+                indentUnit.of("    "),
+                highlightField.init(),
+                keymap.of([
+                    ...props.extraKeys,
+                    ...closeBracketsKeymap,
+                    ...defaultKeymap,
+                    ...historyKeymap,
+                    ...foldKeymap,
+                    ...completionKeymap,
+                    ...lintKeymap,
+                    indentWithTab
+                ]),
+                // keymap.of([standardKeymap, indentWithTab]),
+                EditorView.updateListener.of((update) => {
+                    if (update.docChanged) {
+                        handleChange(update.state.doc.toString());
+                    }
+                    if (update.focusChanged) {
+                        if (update.view.hasFocus) {
+                            handleFocus();
+                        } else {
+                            handleBlur();
+                        }
+                    }
+                }),
             ]
         });
         editorView.current = new EditorView({
@@ -136,19 +236,36 @@ function ReactCodemirror6(props) {
         }
     }, []);
 
+    const switchTheme = (themeName) => {
+        if (!(themeList.includes(themeName))) {
+            themeName = "one_dark";
+        }
+        importTheme(themeName, settingsContext.settingsRef.current.theme)
+            .then(theTheme => {
+                theme.current = EditorView.theme(theTheme[0]);
+                highlightStyle.current = HighlightStyle.define(theTheme[1]);
+                if (editorView.current) {
+                    editorView.current.dispatch({
+                        effects: themeCompartment.current.reconfigure([theme.current,
+                            syntaxHighlighting(highlightStyle.current)])
+                    });
+                }
+            })
+            .catch(error => {
+                console.log("Error importing theme", error);
+            })
+    };
+
     useEffect(() => {
         if (!editorView.current) return;
+        switchTheme(_current_codemirror_theme());
 
-        const newTheme = isDark() ? darkTheme.current : lightTheme.current;
-        const newHighlight = isDark() ? darkHighlight.current : lightHighlight.current;
-
-        editorView.current.dispatch({
-            effects: themeCompartment.current.reconfigure(newTheme)
-        });
-        editorView.current.dispatch({
-            effects: highlightCompartment.current.reconfigure(syntaxHighlighting(newHighlight))
-        });
     }, [settingsContext.settings.theme, settingsContext.settings.preferred_dark_theme, settingsContext.settings.preferred_light_theme]);
+
+    function _current_codemirror_theme() {
+        return isDark() ? settingsContext.settingsRef.current.preferred_dark_theme :
+            settingsContext.settingsRef.current.preferred_light_theme;
+    }
 
     useLayoutEffect(() => {
         return () => {
@@ -163,18 +280,6 @@ function ReactCodemirror6(props) {
         _doHighlight();
     }, [props.search_term, props.current_search_number]);
 
-    // useEffect(() => {
-    //     if (!editorView.current) return;
-    //
-    //     const extensions = props.soft_wrap ? [EditorView.lineWrapping] : [];
-    //
-    //     editorView.current.dispatch({
-    //         effects: StateEffect.reconfigure.of(extensions)
-    //     });
-    //
-    //     prevSoftWrap.current = props.soft_wrap;
-    // }, [props.soft_wrap]);
-
     const selectedPane = useContext(SelectedPaneContext);
 
     function isDark() {
@@ -185,7 +290,7 @@ function ReactCodemirror6(props) {
         if (editorView.current) {
             editorView.current.focus();
             editorView.current.dispatch({
-                selection: { anchor: 0, head: 0 }
+                selection: {anchor: 0, head: 0}
             });
         }
     }
@@ -208,51 +313,95 @@ function ReactCodemirror6(props) {
         }
     }
 
+    function _searchMatcher(term, global = false) {
+        let matcher;
+        if (props.regex_search) {
+            try {
+                matcher = global ? new RegExp(term, "g") : new RegExp(term)
+            } catch (e) {
+                matcher = term
+            }
+        } else {
+            matcher = term
+        }
+        return matcher
+    }
+
+    function _lineNumberFromSearchNumber(current_search_number) {
+        let lines = props.code_content.split("\n");
+        let lnum = 1;
+        let mnum = 0;
+        let matcher = _searchMatcher(props.search_term);
+        for (let line of lines) {
+            let new_matches = (line.match(matcher) || []).length;
+            if (new_matches + mnum - 1 >= current_search_number) {
+                return {line: lnum, match: current_search_number - mnum};
+            }
+            mnum += new_matches;
+            lnum += 1
+        }
+        return null
+    }
+
+
     function _doHighlight() {
         if (!editorView.current) return;
-
-        if (props.search_term == null || props.search_term === "") {
-            // Remove any previous highlights
+        let prev_matches = matches.current;
+        var searchTerm = props.search_term;
+        if (!searchTerm) {
+            searchTerm = ""
+        }
+        var reg = _searchMatcher(searchTerm, true);
+        matches.current = countOccurrences(reg, props.code_content);
+        if (props.setSearchMatches && matches.current != prev_matches) {
+            props.setSearchMatches(matches.current)
+        }
+        if (searchTerm === "") {
+            editorView.current.dispatch({
+                effects: setHighlights.of(Decoration.none)
+            });
         } else {
-            // Add highlights based on props.search_term
+            const current_search_number = props.current_search_number ? props.current_search_number : 0;
+            let line_info = _lineNumberFromSearchNumber(current_search_number);
+            if (line_info) {
+                scrollToLine(line_info.line);
+            }
+            const deco = createHighlightDeco(editorView.current, searchTerm,
+                props.current_search_number, !props.regex_search);
+            editorView.current.dispatch({
+                effects: setHighlights.of(deco)
+            });
         }
     }
 
-    function searchCM() {
-        // Code for opening search in CodeMirror 6
+    function scrollToLine(lineNumber) {
+        const line = editorView.current.state.doc.line(lineNumber);
+        editorView.current.dispatch({
+            effects: EditorView.scrollIntoView(line.from, {
+                y: "center"  // Center the line in the view
+            })
+        });
     }
 
     function _foldAll() {
-        editorView.current.dispatch({
-            effects: StateEffect.reconfigure.of(foldKeymap.foldAll)
-        });
+        foldAll(editorView.current);
     }
 
     function _unfoldAll() {
-        editorView.current.dispatch({
-            effects: StateEffect.reconfigure.of(foldKeymap.unfoldAll)
-        });
+        unfoldAll(editorView.current);
     }
 
     function clearSelections() {
         if (props.alt_clear_selections) {
             props.alt_clear_selections();
         } else {
-            const { to } = editorView.current.state.selection.main;
+            const {to} = editorView.current.state.selection.main;
             editorView.current.dispatch({
-                selection: { anchor: to, head: to }
+                selection: {anchor: to, head: to}
             });
         }
         if (props.update_search_state) {
-            props.update_search_state({ search_string: "" });
-        }
-    }
-
-    function set_keymap() {
-        if (selectedPane.amSelected(selectedPane.tab_id, selectedPane.selectedTabIdRef)) {
-            // Add escape key handling if needed
-        } else {
-            // Remove escape key handling if needed
+            props.update_search_state({search_string: ""});
         }
     }
 
@@ -290,7 +439,9 @@ function ReactCodemirror6(props) {
                 <div style={{
                     display: "flex", flexDirection: "row", justifyContent: "space-between",
                     marginRight: 10,
-                    width: "100%"
+                    width: "100%",
+                    marginTop: 5,
+                    height: SEARCH_HEIGHT,
                 }}>
                     <span className="bp5-ui-text"
                           style={{

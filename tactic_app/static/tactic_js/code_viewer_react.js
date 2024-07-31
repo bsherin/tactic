@@ -26,10 +26,6 @@ var _error_drawer2 = require("./error_drawer");
 var _sizing_tools = require("./sizing_tools");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
-//import { HotkeysProvider } from "@blueprintjs/core";
-
-// import {ReactCodemirror} from "./react-codemirror";
-
 function code_viewer_props(data, registerDirtyMethod, finalCallback) {
   let resource_viewer_id = (0, _utilities_react.guid)();
   if (!window.in_context) {
@@ -225,15 +221,22 @@ function CodeViewerApp(props) {
     set_search_matches(nmatches);
   }
   function _extraKeys() {
-    return {
-      'Ctrl-S': _saveMe,
-      'Ctrl-F': () => {
+    return [{
+      key: 'Ctrl-s',
+      run: _saveMe
+    }, {
+      key: 'Ctrl-f',
+      run: () => {
         search_ref.current.focus();
       },
-      'Cmd-F': () => {
+      preventDefault: true
+    }, {
+      key: 'Cmd-f',
+      run: () => {
         search_ref.current.focus();
-      }
-    };
+      },
+      preventDefault: true
+    }];
   }
   function am_selected() {
     return selectedPane.amSelected(selectedPane.tab_id, selectedPane.selectedTabIdRef);

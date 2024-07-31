@@ -6,27 +6,27 @@ import "../tactic_css/tactic_table.scss";
 import "../tactic_css/library_home.scss";
 import "../tactic_css/tile_creator.scss";
 
-const originalWarn = console.warn;
-const originalError = console.error;
-console.warn = function (message, ...args) {
-    const suppressWarnings = [
-        "[Blueprint] useHotkeys() was used outside"
-    ];
-
-    if (!suppressWarnings.some(warning => message.includes(warning))) {
-        originalWarn.apply(console, [message, ...args]);
-    }
-};
-
-console.error = function (message, ...args) {
-    const suppressErrors = [
-        "findDOMNode is deprecated and will be removed"
-    ];
-
-    if (!suppressErrors.some(error => message.includes(error))) {
-        originalError.apply(console, [message, ...args]);
-    }
-};
+// const originalWarn = console.warn;
+// const originalError = console.error;
+// console.warn = function (message, ...args) {
+//     const suppressWarnings = [
+//         "[Blueprint] useHotkeys() was used outside"
+//     ];
+//
+//     if (!suppressWarnings.some(warning => message.includes(warning))) {
+//         originalWarn.apply(console, [message, ...args]);
+//     }
+// };
+//
+// console.error = function (message, ...args) {
+//     const suppressErrors = [
+//         "findDOMNode is deprecated and will be removed"
+//     ];
+//
+//     if (!suppressErrors.some(error => message.includes(error))) {
+//         originalError.apply(console, [message, ...args]);
+//     }
+// };
 
 import React from "react";
 import { useState, useEffect, useRef, useContext, Fragment, useCallback, useMemo } from "react";

@@ -8,7 +8,7 @@ exports.MergeViewerApp = MergeViewerApp;
 var _react = _interopRequireWildcard(require("react"));
 var _propTypes = _interopRequireDefault(require("prop-types"));
 var _core = require("@blueprintjs/core");
-var _reactCodemirrorMergeview = require("./react-codemirror-mergeview");
+var _reactCodemirrorMergeview = require("./react-codemirror-mergeview6");
 var _blueprint_mdata_fields = require("./blueprint_mdata_fields");
 var _menu_utilities = require("./menu_utilities");
 var _settings = require("./settings");
@@ -113,7 +113,7 @@ function MergeViewerApp(props) {
     buttonIcon: "application",
     popoverPosition: _core.PopoverPosition.BOTTOM_RIGHT,
     value: props.select_val
-  })), /*#__PURE__*/_react.default.createElement(_reactCodemirrorMergeview.ReactCodemirrorMergeView, {
+  })), /*#__PURE__*/_react.default.createElement(_reactCodemirrorMergeview.ReactCodemirrorMergeView6, {
     handleEditChange: props.handleEditChange,
     editor_content: props.edit_content,
     right_content: props.right_content,

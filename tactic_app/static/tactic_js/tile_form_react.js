@@ -8,7 +8,7 @@ exports.TileForm = TileForm;
 var _react = _interopRequireWildcard(require("react"));
 var _core = require("@blueprintjs/core");
 var _lodash = _interopRequireDefault(require("lodash"));
-var _reactCodemirror = require("./react-codemirror");
+var _reactCodemirror = require("./react-codemirror6");
 var _blueprint_mdata_fields = require("./blueprint_mdata_fields");
 var _utilities_react = require("./utilities_react");
 var _pool_tree = require("./pool_tree");
@@ -348,7 +348,7 @@ function CodeAreaOption(props) {
   let label = props.display_text == null ? props.att_name : props.display_text;
   return /*#__PURE__*/_react.default.createElement(_core.FormGroup, {
     label: label
-  }, /*#__PURE__*/_react.default.createElement(_reactCodemirror.ReactCodemirror, {
+  }, /*#__PURE__*/_react.default.createElement(_reactCodemirror.ReactCodemirror6, {
     handleChange: _updateMe,
     no_width: true,
     no_height: true,
