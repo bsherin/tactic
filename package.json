@@ -2,9 +2,9 @@
   "name": "tactic",
   "version": "1.0.0",
   "scripts": {
-    "build": "NODE_OPTIONS=--openssl-legacy-provider webpack --mode=development --env codeonly=false",
-    "build-code": "NODE_OPTIONS=--openssl-legacy-provider webpack --mode=development --env codeonly=true",
-    "build-production": "NODE_OPTIONS=--openssl-legacy-provider webpack --mode=production --env codeonly=false",
+    "build": "NODE_OPTIONS=--openssl-legacy-provider webpack --mode=development",
+    "build-code": "NODE_OPTIONS=--openssl-legacy-provider webpack --mode=development",
+    "build-production": "NODE_OPTIONS=--openssl-legacy-provider webpack --mode=production",
     "convertjsx": "/usr/local/bin/npx babel --presets=@babel/preset-env,@babel/preset-react --plugins=@babel/plugin-proposal-class-properties",
     "push-images": "push_images.sh",
     "dc": "docker-compose -f ./tactic_app/docker-compose.yml build"
