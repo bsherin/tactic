@@ -12,6 +12,7 @@ class TacticLibrary:
         self.functions = TacticFunctionSet(self)
         self.classes = TacticClassSet(self)
         self.collections = TacticCollectionSet(self)
+        self.codes = TacticCodeSet(self)
 
     @property
     def _tinst(self):
@@ -70,6 +71,25 @@ class TacticListSet(TacticResourceSet):
             raise ListNotFound(f"Couldnt't find list {the_list}")
         return result
 
+class TacticCodeSet(TacticResourceSet):
+    def __init__(self, library_object):
+        TacticResourceSet.__init__(self, library_object, "code")
+        return
+
+    def __getitem__(self, name):
+        code_dict = self.get_user_code_with_metadata(name)
+        return CodeResource(code_dict["the_code"], code_dict["metadata"])
+
+    def get_user_code_with_metadata(self, the_code):
+        self._tinst._save_stdout()
+        raw_result = _tworker.post_and_wait(self._tinst._main_id, "get_code_with_metadata",
+                                            {"code_name": the_code})
+
+        result = debinarize_python_object(raw_result["code_data"])
+        self._tinst._restore_stdout()
+        if result is None:
+            raise ListNotFound(f"Couldnt't find list {the_code}")
+        return result
 
 class TacticCollectionSet(TacticResourceSet):
     def __init__(self, library_object):
@@ -150,6 +170,11 @@ class ListResource(list):
         list.__init__(self, the_list)
         return
 
+class CodeResource:
+    def __init__(self, the_code, metadata):
+        self.metadata = metadata
+        self.the_code = the_code
+        return
 
 class FunctionResource:
     def __init__(self, the_function, metadata, code_resource):

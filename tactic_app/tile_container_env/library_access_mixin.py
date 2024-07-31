@@ -61,6 +61,13 @@ class LibraryAccessMixin:
             raise CollectionNotFound(f"Couldn't find collection {collection_name}")
         return result["the_collection"]
 
+    def get_user_code(self, code_name):
+        self._save_stdout()
+        result = self._tworker.post_and_wait(self._main_id, "get_user_code",
+                                             {"user_id": self.user_id, "code_name": code_name})
+        self._restore_stdout()
+        return result["the_code"]
+
     def get_collection_names(self):
         self._save_stdout()
         result = self._tworker.post_and_wait(self._main_id, "get_collection_names",

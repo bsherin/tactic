@@ -3,7 +3,7 @@ WORKDIR /code
 ADD ./tile_container_env/requirements.txt /code/requirements.txt
 RUN pip3 install --no-cache-dir -r requirements.txt
 RUN apt-get update && apt-get -y install default-jre
-RUN wget http://mallet.cs.umass.edu/dist/mallet-2.0.8.tar.gz && mkdir -p /opt/mallet && tar -xvzf mallet-2.0.8.tar.gz -C /opt/mallet --strip-components=1 && rm -f mallet-2.0.8.tar.gz
+ADD ./Mallet /opt/mallet
 ADD ./tile_container_env/new_requirements.txt /code/new_requirements.txt
 RUN pip3 install --no-cache-dir -r new_requirements.txt
 ADD ./tile_container_env/transformers_requirements.txt /code/transformers_requirements.txt
