@@ -87,12 +87,12 @@ def get_username_true_id(userid):
 
 def get_full_user_data_fields():
     static_folder = app.static_folder
-    dark_path = os.path.join(static_folder, 'tactic_css/codemirror_dark')
-    light_path = os.path.join(static_folder, 'tactic_css/codemirror_light')
+    dark_path = os.path.join(static_folder, 'tactic_js/codemirror_dark_themes')
+    light_path = os.path.join(static_folder, 'tactic_js/codemirror_light_themes')
     dark_files = sorted(os.listdir(dark_path))
     light_files = sorted(os.listdir(light_path))
-    dark_themes = [re.sub(r'\.css$', '', f) for f in dark_files]
-    light_themes = [re.sub(r'\.css$', '', f) for f in light_files]
+    dark_themes = [re.sub(r'\.js$', '', f) for f in dark_files]
+    light_themes = [re.sub(r'\.js$', '', f) for f in light_files]
     ufields = copy.deepcopy(user_data_fields)
     for field in ufields:
         if field["name"] == "preferred_dark_theme":

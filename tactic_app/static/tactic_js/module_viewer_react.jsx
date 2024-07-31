@@ -9,7 +9,7 @@ import {useHotkeys} from "@blueprintjs/core";
 
 import {ResourceViewerApp, copyToLibrary, sendToRepository} from "./resource_viewer_react_app";
 import {TacticSocket} from "./tactic_socket";
-import {ReactCodemirror} from "./react-codemirror";
+import {ReactCodemirror6} from "./react-codemirror6";
 import {postAjaxPromise, postPromise} from "./communication_react"
 import {ErrorDrawerContext, withErrorDrawer} from "./error_drawer";
 import {withStatus, StatusContext} from "./toaster";
@@ -21,7 +21,7 @@ import {TacticNavbar} from "./blueprint_navbar";
 import {useCallbackStack, useConstructor, useStateAndRef} from "./utilities_react";
 import {SettingsContext, withSettings} from "./settings";
 import {DialogContext, withDialogs} from "./modal_react";
-import {SelectedPaneContext} from "./utilities_react";
+import {SelectedPaneContext, convertExtraKeys} from "./utilities_react";
 
 export {module_viewer_props, ModuleViewerApp}
 
@@ -67,6 +67,7 @@ function ModuleViewerApp(props) {
     const savedIcon = useRef(props.icon);
 
     const [code_content, set_code_content, code_content_ref] = useStateAndRef(props.the_content);
+    const [current_search_number, set_current_search_number] = useState(null);
     const [notes, set_notes, notes_ref] = useStateAndRef(props.notes);
     const [tags, set_tags, tags_ref] = useStateAndRef(props.split_tags);
     const [icon, set_icon, icon_ref] = useStateAndRef(props.icon);
@@ -131,6 +132,7 @@ function ModuleViewerApp(props) {
     }
 
     function _update_search_state(nstate, callback = null) {
+        set_current_search_number(0);
         for (let field in nstate) {
             switch (field) {
                 case "regex":
@@ -258,17 +260,18 @@ function ModuleViewerApp(props) {
     }
 
     function _extraKeys() {
-        return {
-            'Ctrl-S': _saveMe,
-            'Ctrl-L': _saveAndLoadModule,
-            'Ctrl-M': _saveAndCheckpoint,
-            'Ctrl-F': () => {
-                search_ref.current.focus()
+        const ekeys = {
+            'Ctrl-s': _saveMe,
+            'Ctrl-l': _saveAndLoadModule,
+            'Ctrl-m': _saveAndCheckpoint,
+            'Ctrl-f': () => {
+                search_ref.current.focus();
             },
-            'Cmd-F': () => {
+            'Cmd-f': () => {
                 search_ref.current.focus()
             }
-        }
+        };
+        return convertExtraKeys(ekeys)
     }
 
     function am_selected() {
@@ -437,6 +440,18 @@ function ModuleViewerApp(props) {
         set_search_matches(nmatches);
     }
 
+    function _searchNext() {
+        if (current_search_number < search_matches - 1) {
+            set_current_search_number(current_search_number + 1);
+        }
+    }
+
+    function _searchPrev() {
+        if (current_search_number > 0) {
+            set_current_search_number(current_search_number - 1);
+        }
+    }
+
     let my_props = {...props};
     if (!props.controlled) {
         my_props.resource_name = resource_name;
@@ -467,7 +482,7 @@ function ModuleViewerApp(props) {
                               user_name={window.username}/>
             }
             <div className={outer_class} ref={top_ref} style={outer_style}
-                tabIndex="0" onKeyDown={handleKeyDown} onKeyUp={handleKeyUp}>
+                 tabIndex="0" onKeyDown={handleKeyDown} onKeyUp={handleKeyUp}>
                 <ResourceViewerApp {...my_props}
                                    resource_viewer_id={my_props.resource_viewer_id}
                                    setResourceNameState={_setResourceNameState}
@@ -482,25 +497,26 @@ function ModuleViewerApp(props) {
                                    tags={tags}
                                    mdata_icon={icon}
                                    saveMe={_saveMe}
-                                   show_search={true}
                                    update_search_state={_update_search_state}
-                                   search_string={search_string}
-                                   search_matches={search_matches}
-                                   regex={regex}
-                                   allow_regex_search={true}
                                    search_ref={search_ref}
                                    showErrorDrawerButton={true}
                 >
-                    <ReactCodemirror code_content={code_content}
-                                     no_width={true}
-                                     extraKeys={_extraKeys()}
-                                     readOnly={props.readOnly}
-                                     handleChange={_handleCodeChange}
-                                     saveMe={_saveMe}
-                                     search_term={search_string}
-                                     update_search_state={_update_search_state}
-                                     regex_search={regex}
-                                     setSearchMatches={_setSearchMatches}
+                    <ReactCodemirror6 code_content={code_content}
+                                      no_width={true}
+                                      extraKeys={_extraKeys()}
+                                      readOnly={props.readOnly}
+                                      handleChange={_handleCodeChange}
+                                      saveMe={_saveMe}
+                                      show_search={true}
+                                      search_term={search_string}
+                                      search_ref={search_ref}
+                                      search_matches={search_matches}
+                                      updateSearchState={_update_search_state}
+                                      regex_search={regex}
+                                      searchPrev={_searchPrev}
+                                      searchNext={_searchNext}
+                                      current_search_number={current_search_number}
+                                      setSearchMatches={_setSearchMatches}
                     />
                 </ResourceViewerApp>
             </div>
@@ -521,7 +537,7 @@ function module_viewer_main() {
         const root = createRoot(domContainer);
         root.render(
             //<HotkeysProvider>
-                the_element
+            the_element
             //</HotkeysProvider>
         )
     }

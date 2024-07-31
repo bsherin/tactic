@@ -199,7 +199,10 @@
 .light-theme .log-panel-body {
   color: #616161 !important;
 }
-.light-theme .log-panel .CodeMirror {
+.light-theme .cm-editor {
+  border: 1px solid #c7c7c7 !important;
+}
+.light-theme .log-panel .CodeMirror, .light-theme .log-panel .cm-editor {
   border: 1px solid #c7c7c7 !important;
 }
 .light-theme .log-panel .CodeMirror-lines {

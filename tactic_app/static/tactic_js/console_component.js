@@ -7,7 +7,6 @@ Object.defineProperty(exports, "__esModule", {
 exports.ConsoleComponent = ConsoleComponent;
 var _extends2 = _interopRequireDefault(require("@babel/runtime/helpers/extends"));
 var _react = _interopRequireWildcard(require("react"));
-require("codemirror/mode/markdown/markdown.js");
 var _core = require("@blueprintjs/core");
 var _utilities_react = require("./utilities_react");
 var _lodash = _interopRequireDefault(require("lodash"));
@@ -18,7 +17,7 @@ var _markdownIt = _interopRequireDefault(require("markdown-it"));
 require("markdown-it-latex/dist/index.css");
 var _markdownItLatex = _interopRequireDefault(require("markdown-it-latex"));
 var _blueprint_react_widgets = require("./blueprint_react_widgets");
-var _reactCodemirror = require("./react-codemirror");
+var _reactCodemirror = require("./react-codemirror6");
 var _sortable_container = require("./sortable_container");
 var _communication_react = require("./communication_react");
 var _blueprint_mdata_fields = require("./blueprint_mdata_fields");
@@ -2279,12 +2278,19 @@ function ConsoleCodeItem(props) {
     props.setConsoleItemValue(props.unique_id, "output_text", "");
   }, []);
   const _extraKeys = (0, _react.useMemo)(() => {
-    return {
-      'Ctrl-Enter': () => props.runCodeItem(props.unique_id, true),
-      'Cmd-Enter': () => props.runCodeItem(props.unique_id, true),
-      'Ctrl-C': props.addNewCodeItem,
-      'Ctrl-T': props.addNewTextItem
-    };
+    return [{
+      key: 'Ctrl-Enter',
+      run: () => props.runCodeItem(props.unique_id, true)
+    }, {
+      key: 'Cmd-Enter',
+      run: () => props.runCodeItem(props.unique_id, true)
+    }, {
+      key: 'Ctrl-c',
+      run: props.addNewCodeItem
+    }, {
+      key: 'Ctrl-t',
+      run: props.addNewTextItem
+    }];
   }, []);
   const _getFirstLine = (0, _react.useCallback)(() => {
     let re = /^(.*)$/m;
@@ -2453,7 +2459,7 @@ function ConsoleCodeItem(props) {
     intent: "danger",
     tooltip: "Stop this item",
     icon: "stop"
-  })), /*#__PURE__*/_react.default.createElement(_reactCodemirror.ReactCodemirror, {
+  })), /*#__PURE__*/_react.default.createElement(_reactCodemirror.ReactCodemirror6, {
     handleChange: _handleChange,
     handleFocus: _handleFocus,
     registerSetFocusFunc: registerSetFocusFunc,
@@ -2745,12 +2751,19 @@ function ConsoleTextItem(props) {
     }
   }
   const _extraKeys = (0, _react.useMemo)(() => {
-    return {
-      'Ctrl-Enter': () => _gotEnter(),
-      'Cmd-Enter': () => _gotEnter(),
-      'Ctrl-C': props.addNewCodeItem,
-      'Ctrl-T': props.addNewTextItem
-    };
+    return [{
+      key: 'Ctrl-Enter',
+      run: () => _gotEnter()
+    }, {
+      key: 'Cmd-Enter',
+      run: () => _gotEnter()
+    }, {
+      key: 'Ctrl-C',
+      run: props.addNewCodeItem
+    }, {
+      key: 'Ctrl-T',
+      run: props.addNewTextItem
+    }];
   }, []);
   let really_show_markdown = hasOnlyWhitespace() && props.links.length == 0 ? false : props.show_markdown;
   var converted_markdown;
@@ -2845,7 +2858,7 @@ function ConsoleTextItem(props) {
     icon: "paragraph"
   })), /*#__PURE__*/_react.default.createElement("div", {
     className: "d-flex flex-column"
-  }, !really_show_markdown && /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement(_reactCodemirror.ReactCodemirror, {
+  }, !really_show_markdown && /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement(_reactCodemirror.ReactCodemirror6, {
     handleChange: _handleChange,
     readOnly: false,
     handleFocus: _handleFocus,

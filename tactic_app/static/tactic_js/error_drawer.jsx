@@ -254,7 +254,8 @@ function ErrorDrawer(props) {
                        closeErrorDrawer={props.closeErrorDrawer}
                        goToLineNumberFunc={props.goToLineNumberFunc}
                        goToModule={props.goToModule}
-                       line_number={entry.line_number} tile_type={entry.tile_type}/>
+                       line_number={entry.line_number}
+                       tile_type={entry.tile_type}/>
         )
     });
 

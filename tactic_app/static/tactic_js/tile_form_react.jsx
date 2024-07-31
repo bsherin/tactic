@@ -5,7 +5,7 @@ import {FormGroup, InputGroup, Button, Divider, Switch,
     TextArea, Collapse, Card, Elevation} from "@blueprintjs/core";
 import _ from 'lodash';
 
-import {ReactCodemirror} from "./react-codemirror";
+import {ReactCodemirror6} from "./react-codemirror6";
 import {BpSelect, BpSelectAdvanced} from "./blueprint_mdata_fields"
 import {isInt} from "./utilities_react";
 
@@ -364,7 +364,7 @@ function CodeAreaOption(props) {
     let label = props.display_text == null ? props.att_name : props.display_text;
     return (
         <FormGroup label={label}>
-            <ReactCodemirror handleChange={_updateMe}
+            <ReactCodemirror6 handleChange={_updateMe}
                              no_width={true}
                              no_height={true}
                              code_content={props.value}

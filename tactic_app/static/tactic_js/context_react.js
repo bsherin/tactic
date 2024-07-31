@@ -42,26 +42,27 @@ function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return 
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 // noinspection XmlDeprecatedElement,JSXUnresolvedComponent
 
-const originalWarn = console.warn;
-const originalError = console.error;
-console.warn = function (message) {
-  const suppressWarnings = ["[Blueprint] useHotkeys() was used outside"];
-  if (!suppressWarnings.some(warning => message.includes(warning))) {
-    for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-      args[_key - 1] = arguments[_key];
-    }
-    originalWarn.apply(console, [message, ...args]);
-  }
-};
-console.error = function (message) {
-  const suppressErrors = ["findDOMNode is deprecated and will be removed"];
-  if (!suppressErrors.some(error => message.includes(error))) {
-    for (var _len2 = arguments.length, args = new Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
-      args[_key2 - 1] = arguments[_key2];
-    }
-    originalError.apply(console, [message, ...args]);
-  }
-};
+// const originalWarn = console.warn;
+// const originalError = console.error;
+// console.warn = function (message, ...args) {
+//     const suppressWarnings = [
+//         "[Blueprint] useHotkeys() was used outside"
+//     ];
+//
+//     if (!suppressWarnings.some(warning => message.includes(warning))) {
+//         originalWarn.apply(console, [message, ...args]);
+//     }
+// };
+//
+// console.error = function (message, ...args) {
+//     const suppressErrors = [
+//         "findDOMNode is deprecated and will be removed"
+//     ];
+//
+//     if (!suppressErrors.some(error => message.includes(error))) {
+//         originalError.apply(console, [message, ...args]);
+//     }
+// };
 
 //import { HotkeysProvider } from "@blueprintjs/core";
 

@@ -3,6 +3,8 @@
 @import "~@blueprintjs/core/lib/css/blueprint.css";
 @import "~@blueprintjs/popover2/lib/css/blueprint-popover2.css";
 @import "~@blueprintjs/icons/lib/css/blueprint-icons.css";
+@import "~@blueprintjs/select/lib/css/blueprint-select.css";
+@import 'markdown-it-latex/dist/index.css';
 @import "themeable.scss";
 
 /* main navbar */
@@ -26,10 +28,15 @@ body {
     width: 100%;
 }
 
-.CodeMirror {
+.CodeMirror, .cm-editor, .cm-scroller {
     font-size: 14px;
     font-family: Courier, Courier New !important;
     box-shadow: none !important;
+}
+
+.cm-mergeView {
+    overflow: auto;
+    height: 100%;
 }
 
 .CodeMirror-hints {
@@ -259,6 +266,13 @@ table {
     border: 1px solid #eee;
     height: auto;
     width: auto;
+}
+
+.cm-editor {
+    //border: 1px solid #eee;
+    height: 100%;
+    width: 100%;
+    padding: 5px;
 }
 
 .combined-metadata {

@@ -1,30 +1,30 @@
 import { tags as t } from '@lezer/highlight';
-export { birdsOfParadiseBase};
-
-var birdsOfParadiseBase = {
+import {createCMTheme} from "../create_cm_theme";
+export { nord };
+var themeBase = {
     variant: 'dark',
     settings: {
-        background: '#3b2627',
-        foreground: '#E6E1C4',
+        background: '#2e3440',
+        foreground: '#d8dee9',
         caret: '#E6E1C4',
-        selection: '#16120E',
-        gutterBackground: '#3b2627',
-        gutterForeground: '#E6E1C490',
-        lineHighlight: '#1F1611',
+        selection: '#3b4252',
+        gutterBackground: '#2e3440',
+        gutterForeground: '#4c566a',
+        lineHighlight: '#3b4252',
+        borderColor: "#abb3bf99"
     },
     styles: [
         {
             tag: t.comment,
-            color: '#6B4E32',
+            color: '#4c566a'
         },
         {
             tag: [t.keyword, t.operator, t.derefOperator],
-            color: '#EF5D32',
+            color: '#81A1C1',
         },
         {
             tag: t.className,
-            color: '#EFAC32',
-            fontWeight: 'bold',
+            color: '#d8dee9',
         },
         {
             tag: [
@@ -33,33 +33,38 @@ var birdsOfParadiseBase = {
                 t.function(t.variableName),
                 t.definition(t.variableName),
             ],
-            color: '#EFAC32',
+            color: '#8FBCBB',
         },
         {
             tag: t.definition(t.typeName),
-            color: '#EFAC32',
-            fontWeight: 'bold',
+            color: '#8FBCBB',
         },
         {
             tag: t.labelName,
-            color: '#EFAC32',
-            fontWeight: 'bold',
+            color: '#d8dee9',
         },
         {
             tag: [t.number, t.bool],
-            color: '#6C99BB',
+            color: "#b48ead",
         },
         {
             tag: [t.variableName, t.self],
-            color: '#7DAF9C',
+            color: '#d8dee9',
         },
         {
             tag: [t.string, t.special(t.brace), t.regexp],
-            color: '#D9D762',
+            color: '#A3BE8C',
         },
         {
             tag: [t.angleBracket, t.tagName, t.attributeName],
-            color: '#EFCB43',
+            color: "#81A1C1",
         },
+        {
+            tag: [t.color, t.constant(t.name), t.standard(t.name)],
+            color: "#d8dee9"
+        }
     ],
 };
+
+const themeDict = createCMTheme(themeBase);
+const nord = [themeDict.themeCss, themeDict.highlightStyles];

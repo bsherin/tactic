@@ -9,14 +9,15 @@ var _extends2 = _interopRequireDefault(require("@babel/runtime/helpers/extends")
 require("../tactic_css/tactic.scss");
 require("../tactic_css/tactic_table.scss");
 require("../tactic_css/tile_creator.scss");
-require("codemirror/mode/javascript/javascript");
 var _react = _interopRequireWildcard(require("react"));
 var _client = require("react-dom/client");
 var _core = require("@blueprintjs/core");
+var _view = require("@codemirror/view");
+var _state = require("@codemirror/state");
 var _tile_creator_support = require("./tile_creator_support");
 var _menu_utilities = require("./menu_utilities");
 var _resource_viewer_react_app = require("./resource_viewer_react_app");
-var _reactCodemirror = require("./react-codemirror");
+var _reactCodemirror = require("./react-codemirror6");
 var _creator_modules_react = require("./creator_modules_react");
 var _resizing_layouts = require("./resizing_layouts2");
 var _communication_react = require("./communication_react");
@@ -27,13 +28,10 @@ var _error_drawer = require("./error_drawer");
 var _utilities_react = require("./utilities_react");
 var _blueprint_navbar = require("./blueprint_navbar");
 var _error_boundary = require("./error_boundary");
-var _autocomplete = require("./autocomplete");
 var _settings = require("./settings");
 var _modal_react = require("./modal_react");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
-//import { HotkeysProvider } from "@blueprintjs/core";
-
 const BOTTOM_MARGIN = 50;
 const MARGIN_SIZE = 17;
 function optionListReducer(option_list, action) {
@@ -333,17 +331,18 @@ function CreatorApp(props) {
     return ms;
   }
   function _extraKeys() {
-    return {
-      'Ctrl-S': _saveMe,
-      'Ctrl-L': _saveAndLoadModule,
-      'Ctrl-M': _saveAndCheckpoint,
-      'Ctrl-F': () => {
+    const ekeys = {
+      'Ctrl-s': _saveMe,
+      'Ctrl-l': _saveAndLoadModule,
+      'Ctrl-m': _saveAndCheckpoint,
+      'Ctrl-f': () => {
         search_ref.current.focus();
       },
-      'Cmd-F': () => {
+      'Cmd-f': () => {
         search_ref.current.focus();
       }
     };
+    return (0, _utilities_react.convertExtraKeys)(ekeys);
   }
   function _searchNext() {
     if (current_search_number >= search_match_numbers.current[current_search_cm] - 1) {
@@ -400,6 +399,9 @@ function CreatorApp(props) {
         _handleTabSelect("methods");
       }
       set_current_search_cm(next_cm);
+      if (next_search_number < 0) {
+        next_search_number = 0;
+      }
       set_current_search_number(next_search_number);
     } else {
       set_current_search_number(current_search_number - 1);
@@ -454,7 +456,8 @@ function CreatorApp(props) {
     statusFuncs.stopSpinner();
     let entry = {
       title: title,
-      content: data.message
+      content: data.message,
+      tile_type: resource_name
     };
     if ("line_number" in data) {
       entry.line_number = data.line_number;
@@ -637,18 +640,13 @@ function CreatorApp(props) {
     last_save.current = _getSaveDict();
   }
   function _selectLine(cm, lnumber) {
-    let doc = cm.getDoc();
-    if (doc.getLine(lnumber)) {
-      doc.setSelection({
-        line: lnumber,
-        ch: 0
-      }, {
-        line: lnumber,
-        ch: doc.getLine(lnumber).length
-      }, {
-        scroll: true
-      });
-    }
+    const line = cm.state.doc.line(lnumber + 1);
+    cm.dispatch({
+      selection: _state.EditorSelection.single(line.from, line.to),
+      effects: _view.EditorView.scrollIntoView(line.from, {
+        y: "center" // Center the line in the view
+      })
+    });
   }
   function _goToLineNumber() {
     if (rline_number.current) {
@@ -709,15 +707,16 @@ function CreatorApp(props) {
     }
     set_foregrounded_panes(new_fg);
     pushCallback(() => {
-      if (newTabId == "methods") {
-        if (emObject.current) {
-          emObject.current.refresh();
-        }
-      } else if (newTabId == "globals") {
-        if (globalObject.current) {
-          globalObject.current.refresh();
-        }
-      }
+      // if (newTabId == "methods") {
+      //     if (emObject.current) {
+      //         emObject.current.refresh()
+      //     }
+      // }
+      // else if (newTabId == "globals") {
+      //     if (globalObject.current) {
+      //         globalObject.current.refresh()
+      //     }
+      // }
       setTabSelectCounter(tabSelectCounter + 1);
     });
   }
@@ -832,12 +831,12 @@ function CreatorApp(props) {
     }
   }
   function _clearAllSelections() {
-    for (let cm of [rcObject.current, dpObject.current, emObject.current]) {
-      if (cm) {
-        let to = cm.getCursor("to");
-        cm.setCursor(to);
-      }
-    }
+    // for (let cm of [rcObject.current, dpObject.current, emObject.current]) {
+    //     if (cm) {
+    //         let to = cm.getCursor("to");
+    //         cm.setCursor(to);
+    //     }
+    // }
   }
   function _setDpObject(cmobject) {
     dpObject.current = cmobject;
@@ -866,15 +865,12 @@ function CreatorApp(props) {
     }
     return onames;
   }
-  let onames_for_autocomplete = [];
-  for (let oname of _getOptionNames()) {
-    let the_text = "" + oname;
-    onames_for_autocomplete.push({
-      text: the_text,
-      icon: "select",
-      render: _autocomplete.renderAutoCompleteElement
-    });
-  }
+
+  //let onames_for_autocomplete = [];
+  // for (let oname of _getOptionNames()) {
+  //     let the_text = "" + oname;
+  //     onames_for_autocomplete.push({text: the_text, icon: "select", render: renderAutoCompleteElement});
+  // }
   let my_props = {
     ...props
   };
@@ -890,7 +886,7 @@ function CreatorApp(props) {
     let code_content = my_props.is_mpl ? draw_plot_code_ref.current : jscript_code_ref.current;
     let first_line_number = my_props.is_mpl ? draw_plot_line_number_ref.current + 1 : 1;
     let title_label = my_props.is_mpl ? "draw_plot" : "(selector, w, h, arg_dict, resizing) =>";
-    tc_item = /*#__PURE__*/_react.default.createElement(_reactCodemirror.ReactCodemirror, {
+    tc_item = /*#__PURE__*/_react.default.createElement(_reactCodemirror.ReactCodemirror6, {
       code_content: code_content,
       title_label: title_label,
       show_search: true,
@@ -912,7 +908,7 @@ function CreatorApp(props) {
       search_matches: search_matches,
       setSearchMatches: num => _setSearchMatches("tc", num),
       tsocket: props.tsocket,
-      extra_autocomplete_list: mode == "python" ? onames_for_autocomplete : []
+      extra_autocomplete_list: []
     });
   }
   let bc_item = /*#__PURE__*/_react.default.createElement("div", {
@@ -920,7 +916,7 @@ function CreatorApp(props) {
     id: "rccode",
     style: ch_style,
     className: "d-flex flex-column align-items-baseline code-holder"
-  }, /*#__PURE__*/_react.default.createElement(_reactCodemirror.ReactCodemirror, {
+  }, /*#__PURE__*/_react.default.createElement(_reactCodemirror.ReactCodemirror6, {
     code_content: render_content_code_ref.current,
     title_label: "render_content",
     show_search: !(my_props.is_mpl || my_props.is_d3),
@@ -936,12 +932,13 @@ function CreatorApp(props) {
     first_line_number: render_content_line_number_ref.current + 1,
     readOnly: props.read_only,
     regex_search: regex,
+    search_ref: search_ref,
     searchPrev: _searchPrev,
     searchNext: _searchNext,
     search_matches: search_matches,
     setSearchMatches: num => _setSearchMatches("rc", num),
     tsocket: props.tsocket,
-    extra_autocomplete_list: onames_for_autocomplete
+    extra_autocomplete_list: []
   }));
   let left_pane;
   if (my_props.is_mpl || my_props.is_d3) {
@@ -992,7 +989,7 @@ function CreatorApp(props) {
     style: {
       marginLeft: 10
     }
-  }, methodsHasActivated && /*#__PURE__*/_react.default.createElement(_reactCodemirror.ReactCodemirror, {
+  }, methodsHasActivated && /*#__PURE__*/_react.default.createElement(_reactCodemirror.ReactCodemirror6, {
     handleChange: handleMethodsChange,
     show_fold_button: true,
     current_search_number: current_search_cm == "em" ? current_search_number : null,
@@ -1008,7 +1005,7 @@ function CreatorApp(props) {
     regex_search: regex,
     first_line_number: extra_methods_line_number_ref.current,
     setSearchMatches: num => _setSearchMatches("em", num),
-    extra_autocomplete_list: onames_for_autocomplete,
+    extra_autocomplete_list: [],
     tsocket: props.tsocket,
     iCounter: tabSelectCounter
   }));
@@ -1016,7 +1013,7 @@ function CreatorApp(props) {
     style: {
       marginLeft: 10
     }
-  }, globalsHasActivated && /*#__PURE__*/_react.default.createElement(_reactCodemirror.ReactCodemirror, {
+  }, globalsHasActivated && /*#__PURE__*/_react.default.createElement(_reactCodemirror.ReactCodemirror6, {
     handleChange: handleGlobalsChange,
     show_fold_button: true,
     current_search_number: current_search_cm == "gp" ? current_search_number : null,
@@ -1032,7 +1029,7 @@ function CreatorApp(props) {
     regex_search: regex,
     first_line_number: 1,
     setSearchMatches: num => _setSearchMatches("gp", num),
-    extra_autocomplete_list: onames_for_autocomplete,
+    extra_autocomplete_list: [],
     tsocket: props.tsocket,
     iCounter: tabSelectCounter
   }));

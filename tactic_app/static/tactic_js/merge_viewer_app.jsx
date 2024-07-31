@@ -5,12 +5,12 @@ import PropTypes from 'prop-types';
 import {PopoverPosition} from "@blueprintjs/core";
 import { useHotkeys } from "@blueprintjs/core";
 
-import {ReactCodemirrorMergeView} from "./react-codemirror-mergeview";
+import {ReactCodemirrorMergeView6} from "./react-codemirror-mergeview6";
 import {BpSelect} from "./blueprint_mdata_fields";
 import {TacticMenubar} from "./menu_utilities";
 import {SettingsContext} from "./settings"
 import {StatusContext} from "./toaster";
-import {ICON_BAR_WIDTH, useSize} from "./sizing_tools";
+import {useSize} from "./sizing_tools";
 
 export {MergeViewerApp}
 
@@ -108,7 +108,7 @@ function MergeViewerApp(props) {
                                   popoverPosition={PopoverPosition.BOTTOM_RIGHT}
                                   value={props.select_val}/>
                     </div>
-                    <ReactCodemirrorMergeView handleEditChange={props.handleEditChange}
+                    <ReactCodemirrorMergeView6 handleEditChange={props.handleEditChange}
                                               editor_content={props.edit_content}
                                               right_content={props.right_content}
                                               saveMe={props.saveHandler}

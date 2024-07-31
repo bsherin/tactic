@@ -11,7 +11,7 @@ var _react = _interopRequireWildcard(require("react"));
 var _propTypes = _interopRequireDefault(require("prop-types"));
 var _core = require("@blueprintjs/core");
 var _blueprint_react_widgets = require("./blueprint_react_widgets");
-var _reactCodemirror = require("./react-codemirror");
+var _reactCodemirror = require("./react-codemirror6");
 var _blueprint_mdata_fields = require("./blueprint_mdata_fields");
 var _communication_react = require("./communication_react");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
@@ -69,13 +69,13 @@ function FreeformBody(props) {
   _doSearch();
   return /*#__PURE__*/_react.default.createElement("div", {
     ref: top_ref
-  }, /*#__PURE__*/_react.default.createElement(_reactCodemirror.ReactCodemirror, {
+  }, /*#__PURE__*/_react.default.createElement(_reactCodemirror.ReactCodemirror6, {
     handleBlur: _handleBlur,
     handleChange: null,
     code_content: props.mState.data_text,
     sync_to_prop: true,
     soft_wrap: props.mState.soft_wrap,
-    mode: "Plain Text",
+    mode: "text",
     setCMObject: _setCMObject,
     readOnly: false
   }));
