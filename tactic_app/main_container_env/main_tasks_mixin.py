@@ -1051,6 +1051,17 @@ class APISupportTasksMixin:
         return {"list_data": make_python_object_jsonizable(list_dict)}
 
     @task_worthy
+    def get_code_with_metadata(self, data):
+        result = self.db[self.code_collection_name].find_one({"code_name": data["code_name"]})
+        if result is None:
+            code_dict = None
+        else:
+            code_dict = {"the_code": result["the_code"],
+                         "code_name": result["code_name"],
+                         "metadata": result["metadata"]}
+        return {"code_data": make_python_object_jsonizable(code_dict)}
+
+    @task_worthy
     def get_function_names(self, data):
         tag_filter = data["tag_filter"]
         search_filter = data["search_filter"]
