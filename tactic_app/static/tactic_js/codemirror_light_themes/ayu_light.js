@@ -7,7 +7,7 @@ var themeBase = {
         background: '#fcfcfc',
         foreground: '#5c6166',
         caret: '#ffaa33',
-        selection: '#036dd626',
+        selection: '#036dd647',
         gutterBackground: '#fcfcfc',
         gutterForeground: '#8a919966',
         lineHighlight: '#8a91991a',

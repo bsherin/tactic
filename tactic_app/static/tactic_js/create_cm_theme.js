@@ -31,6 +31,10 @@ function createCMTheme(styleDict) {
             ".cm-searchMatch, .cm-activeLineGutter":{
                 backgroundColor: settings.selection
             },
+            ".cm-searchMatch.cm-searchMatch-selected": {
+                backgroundColor: settings.background,
+                outline: `3px solid ${settings.selection}`
+            }
         },
         highlightStyles: styleDict.styles
     };

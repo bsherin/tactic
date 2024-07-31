@@ -7,7 +7,7 @@ const config = {
     dark: false,
     background: '#FAFAFA',
     foreground: '#90A4AE',
-    selection: '#80CBC440',
+    selection: '#80cbc482',
     cursor: '#272727',
     dropdownBackground: '#FAFAFA',
     dropdownBorder: '#00000010',
@@ -40,11 +40,7 @@ var settings ={
     '.cm-panels.cm-panels-top': { borderBottom: '2px solid black' },
     '.cm-panels.cm-panels-bottom': { borderTop: '2px solid black' },
     '.cm-searchMatch': {
-        backgroundColor: config.dropdownBackground,
-        outline: `1px solid ${config.dropdownBorder}`
-    },
-    '.cm-searchMatch.cm-searchMatch-selected': {
-        backgroundColor: config.selection
+        backgroundColor: config.selection,
     },
     '.cm-activeLine': { backgroundColor: config.activeLine },
     '.cm-selectionMatch': { backgroundColor: config.selection },
@@ -83,6 +79,12 @@ var settings ={
         }
     }
 };
+
+settings[".cm-searchMatch.cm-searchMatch-selected"] = {
+    outline: `3px solid ${config.selection}`,
+    backgroundColor: config.background
+};
+
 
 const styles = [
     { tag: tags.keyword, color: config.keyword },
