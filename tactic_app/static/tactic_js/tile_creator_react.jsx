@@ -661,13 +661,19 @@ function CreatorApp(props) {
     }
 
     function _selectLine(cm, lnumber) {
-        const line = cm.state.doc.line(lnumber + 1);
-        cm.dispatch({
-            selection: EditorSelection.single(line.from, line.to),
-            effects: EditorView.scrollIntoView(line.from, {
-                y: "center"  // Center the line in the view
-            })
-        });
+        try {
+            const line = cm.state.doc.line(lnumber + 1);
+            cm.dispatch({
+                selection: EditorSelection.single(line.from, line.to),
+                effects: EditorView.scrollIntoView(line.from, {
+                    y: "center"  // Center the line in the view
+                })
+            });
+        }
+        catch(e) {
+            console.log("Error in selectLine", e)
+        }
+
     }
 
     function _goToLineNumber() {
@@ -730,16 +736,6 @@ function CreatorApp(props) {
         }
         set_foregrounded_panes(new_fg);
         pushCallback(() => {
-            // if (newTabId == "methods") {
-            //     if (emObject.current) {
-            //         emObject.current.refresh()
-            //     }
-            // }
-            // else if (newTabId == "globals") {
-            //     if (globalObject.current) {
-            //         globalObject.current.refresh()
-            //     }
-            // }
             setTabSelectCounter(tabSelectCounter + 1);
         })
     }

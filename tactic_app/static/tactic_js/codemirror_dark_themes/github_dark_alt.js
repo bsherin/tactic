@@ -6,7 +6,7 @@ const config = {
     dark: true,
     background: '#24292e',
     foreground: '#d1d5da',
-    selection: '#3392FF44',
+    selection: '#717985',
     cursor: '#c8e1ff',
     dropdownBackground: '#24292e',
     dropdownBorder: '#1b1f23',
@@ -40,11 +40,7 @@ const settings = {
     '.cm-panels.cm-panels-top': { borderBottom: '2px solid black' },
     '.cm-panels.cm-panels-bottom': { borderTop: '2px solid black' },
     '.cm-searchMatch': {
-        backgroundColor: config.dropdownBackground,
-        outline: `1px solid ${config.dropdownBorder}`
-    },
-    '.cm-searchMatch.cm-searchMatch-selected': {
-        backgroundColor: config.selection
+        backgroundColor: config.selection,
     },
     '.cm-activeLine': { backgroundColor: config.activeLine },
     '.cm-selectionMatch': { backgroundColor: config.selection },
@@ -83,6 +79,12 @@ const settings = {
         }
     }
 };
+
+settings[".cm-searchMatch.cm-searchMatch-selected"] = {
+    outline: `3px solid ${config.selection}`,
+    backgroundColor: config.background
+};
+
 const styles = [
     { tag: tags.keyword, color: config.keyword },
     { tag: [tags.name, tags.deleted, tags.character, tags.macroName], color: config.variable },

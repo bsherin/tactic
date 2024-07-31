@@ -328,49 +328,59 @@ function ReactCodemirror6(props) {
     }
 
     function _lineNumberFromSearchNumber(current_search_number) {
-        let lines = props.code_content.split("\n");
-        let lnum = 1;
-        let mnum = 0;
-        let matcher = _searchMatcher(props.search_term);
-        for (let line of lines) {
-            let new_matches = (line.match(matcher) || []).length;
-            if (new_matches + mnum - 1 >= current_search_number) {
-                return {line: lnum, match: current_search_number - mnum};
+        try {
+            let lines = props.code_content.split("\n");
+            let lnum = 1;
+            let mnum = 0;
+            let matcher = _searchMatcher(props.search_term);
+            for (let line of lines) {
+                let new_matches = (line.match(matcher) || []).length;
+                if (new_matches + mnum - 1 >= current_search_number) {
+                    return {line: lnum, match: current_search_number - mnum};
+                }
+                mnum += new_matches;
+                lnum += 1
             }
-            mnum += new_matches;
-            lnum += 1
+        }
+        catch(e) {
+            console.log("Error in _lineNumberFromSearchNumber", e);
         }
         return null
     }
 
 
     function _doHighlight() {
-        if (!editorView.current) return;
-        let prev_matches = matches.current;
-        var searchTerm = props.search_term;
-        if (!searchTerm) {
-            searchTerm = ""
-        }
-        var reg = _searchMatcher(searchTerm, true);
-        matches.current = countOccurrences(reg, props.code_content);
-        if (props.setSearchMatches && matches.current != prev_matches) {
-            props.setSearchMatches(matches.current)
-        }
-        if (searchTerm === "") {
-            editorView.current.dispatch({
-                effects: setHighlights.of(Decoration.none)
-            });
-        } else {
-            const current_search_number = props.current_search_number ? props.current_search_number : 0;
-            let line_info = _lineNumberFromSearchNumber(current_search_number);
-            if (line_info) {
-                scrollToLine(line_info.line);
+        try {
+            if (!editorView.current) return;
+            let prev_matches = matches.current;
+            var searchTerm = props.search_term;
+            if (!searchTerm) {
+                searchTerm = ""
             }
-            const deco = createHighlightDeco(editorView.current, searchTerm,
-                props.current_search_number, !props.regex_search);
-            editorView.current.dispatch({
-                effects: setHighlights.of(deco)
-            });
+            var reg = _searchMatcher(searchTerm, true);
+            matches.current = countOccurrences(reg, props.code_content);
+            if (props.setSearchMatches && matches.current != prev_matches) {
+                props.setSearchMatches(matches.current)
+            }
+            if (searchTerm === "") {
+                editorView.current.dispatch({
+                    effects: setHighlights.of(Decoration.none)
+                });
+            } else {
+                const current_search_number = props.current_search_number ? props.current_search_number : 0;
+                let line_info = _lineNumberFromSearchNumber(current_search_number);
+                if (line_info) {
+                    scrollToLine(line_info.line);
+                }
+                const deco = createHighlightDeco(editorView.current, searchTerm,
+                    props.current_search_number, !props.regex_search);
+                editorView.current.dispatch({
+                    effects: setHighlights.of(deco)
+                });
+            }
+        }
+        catch(e) {
+            console.log("Error in _doHighlight", e);
         }
     }
 
