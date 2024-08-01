@@ -61,11 +61,12 @@ function CodeViewerApp(props) {
   const savedTags = (0, _react.useRef)(props.split_tags);
   const savedNotes = (0, _react.useRef)(props.notes);
   const [code_content, set_code_content, code_content_ref] = (0, _utilities_react.useStateAndRef)(props.the_content);
+  const [current_search_number, set_current_search_number, current_search_number_ref] = (0, _utilities_react.useStateAndRef)(null);
   const [notes, set_notes, notes_ref] = (0, _utilities_react.useStateAndRef)(props.notes);
   const [tags, set_tags, tags_ref] = (0, _utilities_react.useStateAndRef)(props.split_tags);
   const [search_string, set_search_string] = (0, _react.useState)("");
   const [regex, set_regex] = (0, _react.useState)(false);
-  const [search_matches, set_search_matches] = (0, _react.useState)(props.null);
+  const [search_matches, set_search_matches, search_matches_ref] = (0, _utilities_react.useStateAndRef)(null);
   const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(top_ref, 0, "CodeViewer");
   const [resource_name, set_resource_name] = (0, _react.useState)(props.resource_name);
   const settingsContext = (0, _react.useContext)(_settings.SettingsContext);
@@ -130,6 +131,7 @@ function CodeViewerApp(props) {
   const selectedPane = (0, _react.useContext)(_utilities_react.SelectedPaneContext);
   function _update_search_state(nstate) {
     let callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+    set_current_search_number(0);
     for (let field in nstate) {
       switch (field) {
         case "regex":
@@ -220,6 +222,16 @@ function CodeViewerApp(props) {
   function _setSearchMatches(nmatches) {
     set_search_matches(nmatches);
   }
+  function _searchNext() {
+    if (current_search_number_ref.current < search_matches_ref.current - 1) {
+      set_current_search_number(current_search_number_ref.current + 1);
+    }
+  }
+  function _searchPrev() {
+    if (current_search_number_ref.current > 0) {
+      set_current_search_number(current_search_number_ref.current - 1);
+    }
+  }
   function _extraKeys() {
     return [{
       key: 'Ctrl-s',
@@ -234,6 +246,30 @@ function CodeViewerApp(props) {
       key: 'Cmd-f',
       run: () => {
         search_ref.current.focus();
+      },
+      preventDefault: true
+    }, {
+      key: 'Ctrl-g',
+      run: () => {
+        _searchNext();
+      },
+      preventDefault: true
+    }, {
+      key: 'Cmd-g',
+      run: () => {
+        _searchNext();
+      },
+      preventDefault: true
+    }, {
+      key: 'Ctrl-Shift-g',
+      run: () => {
+        _searchPrev();
+      },
+      preventDefault: true
+    }, {
+      key: 'Cmd-Shift-g',
+      run: () => {
+        _searchPrev();
       },
       preventDefault: true
     }];
@@ -319,7 +355,7 @@ function CodeViewerApp(props) {
     tags: tags,
     saveMe: _saveMe,
     search_ref: search_ref,
-    show_search: true,
+    show_search: false,
     update_search_state: _update_search_state,
     search_string: search_string,
     search_matches: search_matches,
@@ -328,15 +364,21 @@ function CodeViewerApp(props) {
     showErrorDrawerButton: true
   }), /*#__PURE__*/_react.default.createElement(_reactCodemirror.ReactCodemirror6, {
     code_content: code_content,
+    show_fold_button: true,
     no_width: true,
     extraKeys: _extraKeys(),
     readOnly: props.readOnly,
     handleChange: _handleCodeChange,
     saveMe: _saveMe,
+    show_search: true,
     search_term: search_string,
-    update_search_state: _update_search_state,
+    search_ref: search_ref,
+    search_matches: search_matches,
+    updateSearchState: _update_search_state,
     regex_search: regex,
-    tsocket: props.tsocket,
+    searchPrev: _searchPrev,
+    searchNext: _searchNext,
+    current_search_number: current_search_number,
     setSearchMatches: _setSearchMatches
   }))));
 }
@@ -350,11 +392,7 @@ function code_viewer_main() {
     }));
     const domContainer = document.querySelector('#root');
     const root = (0, _client.createRoot)(domContainer);
-    root.render(
-    // <HotkeysProvider>
-    the_element
-    // </HotkeysProvider>
-    );
+    root.render(the_element);
   }
   let target = window.is_repository ? "repository_view_code_in_context" : "view_code_in_context";
   (0, _communication_react.postAjaxPromise)(target, {

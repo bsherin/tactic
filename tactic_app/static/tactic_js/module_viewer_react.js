@@ -64,13 +64,13 @@ function ModuleViewerApp(props) {
   const savedNotes = (0, _react.useRef)(props.notes);
   const savedIcon = (0, _react.useRef)(props.icon);
   const [code_content, set_code_content, code_content_ref] = (0, _utilities_react.useStateAndRef)(props.the_content);
-  const [current_search_number, set_current_search_number] = (0, _react.useState)(null);
+  const [current_search_number, set_current_search_number, current_search_number_ref] = (0, _utilities_react.useStateAndRef)(null);
   const [notes, set_notes, notes_ref] = (0, _utilities_react.useStateAndRef)(props.notes);
   const [tags, set_tags, tags_ref] = (0, _utilities_react.useStateAndRef)(props.split_tags);
   const [icon, set_icon, icon_ref] = (0, _utilities_react.useStateAndRef)(props.icon);
   const [search_string, set_search_string] = (0, _react.useState)("");
   const [regex, set_regex] = (0, _react.useState)(false);
-  const [search_matches, set_search_matches] = (0, _react.useState)(props.null);
+  const [search_matches, set_search_matches, search_matches_ref] = (0, _utilities_react.useStateAndRef)(null);
   const settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   const dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   const statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
@@ -253,7 +253,33 @@ function ModuleViewerApp(props) {
         search_ref.current.focus();
       }
     };
-    return (0, _utilities_react.convertExtraKeys)(ekeys);
+    let convertedKeys = (0, _utilities_react.convertExtraKeys)(ekeys);
+    let moreKeys = [{
+      key: 'Ctrl-g',
+      run: () => {
+        _searchNext();
+      },
+      preventDefault: true
+    }, {
+      key: 'Cmd-g',
+      run: () => {
+        _searchNext();
+      },
+      preventDefault: true
+    }, {
+      key: 'Ctrl-Shift-g',
+      run: () => {
+        _searchPrev();
+      },
+      preventDefault: true
+    }, {
+      key: 'Cmd-Shift-g',
+      run: () => {
+        _searchPrev();
+      },
+      preventDefault: true
+    }];
+    return [...convertedKeys, ...moreKeys];
   }
   function am_selected() {
     return selectedPane.amSelected(selectedPane.tab_id, selectedPane.selectedTabIdRef);
@@ -415,13 +441,13 @@ function ModuleViewerApp(props) {
     set_search_matches(nmatches);
   }
   function _searchNext() {
-    if (current_search_number < search_matches - 1) {
-      set_current_search_number(current_search_number + 1);
+    if (current_search_number_ref.current < search_matches_ref.current - 1) {
+      set_current_search_number(current_search_number_ref.current + 1);
     }
   }
   function _searchPrev() {
-    if (current_search_number > 0) {
-      set_current_search_number(current_search_number - 1);
+    if (current_search_number_ref.current > 0) {
+      set_current_search_number(current_search_number_ref.current - 1);
     }
   }
   let my_props = {
@@ -472,11 +498,13 @@ function ModuleViewerApp(props) {
     tags: tags,
     mdata_icon: icon,
     saveMe: _saveMe,
+    show_search: false,
     update_search_state: _update_search_state,
     search_ref: search_ref,
     showErrorDrawerButton: true
   }), /*#__PURE__*/_react.default.createElement(_reactCodemirror.ReactCodemirror6, {
     code_content: code_content,
+    show_fold_button: true,
     no_width: true,
     extraKeys: _extraKeys(),
     readOnly: props.readOnly,
@@ -504,11 +532,7 @@ function module_viewer_main() {
     }));
     let domContainer = document.querySelector('#root');
     const root = (0, _client.createRoot)(domContainer);
-    root.render(
-    //<HotkeysProvider>
-    the_element
-    //</HotkeysProvider>
-    );
+    root.render(the_element);
   }
   let target = window.is_repository ? "repository_view_module_in_context" : "view_module_in_context";
   (0, _communication_react.postAjaxPromise)(target, {

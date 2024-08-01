@@ -8,14 +8,13 @@ import {ErrorDrawerContext} from "./error_drawer";
 import {SearchForm} from "./library_widgets";
 
 import {indentWithTab} from "@codemirror/commands"
-import {Compartment} from "@codemirror/state"
 import {python} from "@codemirror/lang-python"
 import {javascript} from "@codemirror/lang-javascript"
 import {markdown} from "@codemirror/lang-markdown"
 import {indentUnit} from "@codemirror/language";
 import {HighlightStyle, foldAll, unfoldAll} from "@codemirror/language"
 import {EditorView, Decoration} from "@codemirror/view";
-import {StateField, StateEffect, RangeSetBuilder} from "@codemirror/state";
+import {StateField, StateEffect, RangeSetBuilder, EditorSelection, Compartment} from "@codemirror/state";
 
 import {
     gutter, GutterMarker, highlightActiveLineGutter, highlightSpecialChars, drawSelection,
@@ -61,31 +60,21 @@ function countOccurrences(query, the_text) {
     }
 }
 
-function createHighlightDeco(view, searchTerm, current_search_number, literal = false) {
-    const builder = new RangeSetBuilder();
-    let regex;
-    if (literal) {
-        // Escape special characters for literal search
-        const escapedSearchTerm = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        regex = new RegExp(escapedSearchTerm, "gi");
-    } else {
-        regex = new RegExp(searchTerm, "gi");
-    }
+function createHighlightDeco(view, regex, current_search_number) {
     let counter = 0;
-    for (let {from, to} of view.visibleRanges) {
-        const text = view.state.doc.sliceString(from, to);
-        let match;
-        while ((match = regex.exec(text)) !== null) {
-            const start = from + match.index;
-            const end = start + match[0].length;
-            if (current_search_number != null && counter === current_search_number) {
-                builder.add(start, end, Decoration.mark({class: "cm-searchMatch cm-searchMatch-selected"}));
-            }
-            else {
-                builder.add(start, end, Decoration.mark({class: "cm-searchMatch"}));
-            }
-            counter += 1;
+    const builder = new RangeSetBuilder();
+    let text = view.state.doc.toString();
+    let match;
+    while ((match = regex.exec(text)) !== null) {
+        const start = match.index;
+        const end = start + match[0].length;
+        if (current_search_number != null && counter === current_search_number) {
+            builder.add(start, end, Decoration.mark({class: "cm-searchMatch cm-searchMatch-selected"}));
         }
+        else {
+            builder.add(start, end, Decoration.mark({class: "cm-searchMatch"}));
+        }
+        counter += 1;
     }
     return builder.finish()
 }
@@ -278,7 +267,7 @@ function ReactCodemirror6(props) {
 
     useEffect(() => {
         _doHighlight();
-    }, [props.search_term, props.current_search_number]);
+    }, [props.search_term, props.current_search_number, props.regex_search]);
 
     const selectedPane = useContext(SelectedPaneContext);
 
@@ -313,26 +302,44 @@ function ReactCodemirror6(props) {
         }
     }
 
-    function _searchMatcher(term, global = false) {
-        let matcher;
-        if (props.regex_search) {
-            try {
-                matcher = global ? new RegExp(term, "g") : new RegExp(term)
-            } catch (e) {
-                matcher = term
-            }
-        } else {
-            matcher = term
+    function _searchMatcher(term, global = false, ignore_case = true) {
+        let regex;
+        let flags = "";
+        if (global) {
+            flags += "g"
         }
-        return matcher
+        if (ignore_case) {
+            flags += "i"
+        }
+        try {
+            if (!props.regex_search) {
+                // Escape special characters for literal search
+                const escapedSearchTerm = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                regex = new RegExp(escapedSearchTerm, flags);
+            } else {
+                try {
+                    regex = new RegExp(term, flags)
+                }
+                catch(e) {
+                    console.log("Error creating regex, trying escaping");
+                    const escapedSearchTerm = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                        regex = new RegExp(escapedSearchTerm, flags);
+                    }
+                    return regex
+            }
+        }
+        catch(e) {
+            console.log("Error creating regex", e);
+            return null
+        }
+        return regex
     }
 
-    function _lineNumberFromSearchNumber(current_search_number) {
+    function _lineNumberFromSearchNumber(matcher, current_search_number) {
         try {
             let lines = props.code_content.split("\n");
             let lnum = 1;
             let mnum = 0;
-            let matcher = _searchMatcher(props.search_term);
             for (let line of lines) {
                 let new_matches = (line.match(matcher) || []).length;
                 if (new_matches + mnum - 1 >= current_search_number) {
@@ -357,23 +364,29 @@ function ReactCodemirror6(props) {
             if (!searchTerm) {
                 searchTerm = ""
             }
+
             var reg = _searchMatcher(searchTerm, true);
-            matches.current = countOccurrences(reg, props.code_content);
+            if (!reg) {
+                matches.current = 0
+            }
+            else {
+                matches.current = countOccurrences(reg, props.code_content);
+            }
             if (props.setSearchMatches && matches.current != prev_matches) {
                 props.setSearchMatches(matches.current)
             }
-            if (searchTerm === "") {
+            if (!reg || searchTerm === "") {
                 editorView.current.dispatch({
                     effects: setHighlights.of(Decoration.none)
                 });
             } else {
                 const current_search_number = props.current_search_number ? props.current_search_number : 0;
-                let line_info = _lineNumberFromSearchNumber(current_search_number);
+                let line_info = _lineNumberFromSearchNumber(reg, current_search_number);
                 if (line_info) {
-                    scrollToLine(line_info.line);
+                    _scrollToAndSelectLine(line_info.line);
                 }
-                const deco = createHighlightDeco(editorView.current, searchTerm,
-                    props.current_search_number, !props.regex_search);
+                const deco = createHighlightDeco(editorView.current, reg,
+                    props.current_search_number);
                 editorView.current.dispatch({
                     effects: setHighlights.of(deco)
                 });
@@ -382,6 +395,22 @@ function ReactCodemirror6(props) {
         catch(e) {
             console.log("Error in _doHighlight", e);
         }
+    }
+
+    function _scrollToAndSelectLine(lineNumber) {
+        try {
+            const line = editorView.current.state.doc.line(lineNumber);
+            editorView.current.dispatch({
+                selection: EditorSelection.single(line.from, line.to),
+                effects: EditorView.scrollIntoView(line.from, {
+                    y: "center"
+                })
+            });
+        }
+        catch(e) {
+            console.log("Error in selectLine", e)
+        }
+
     }
 
     function scrollToLine(lineNumber) {
