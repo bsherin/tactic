@@ -65,11 +65,12 @@ function CodeViewerApp(props) {
     const savedNotes = useRef(props.notes);
 
     const [code_content, set_code_content, code_content_ref] = useStateAndRef(props.the_content);
+    const [current_search_number, set_current_search_number, current_search_number_ref] = useStateAndRef(null);
     const [notes, set_notes, notes_ref] = useStateAndRef(props.notes);
     const [tags, set_tags, tags_ref] = useStateAndRef(props.split_tags);
     const [search_string, set_search_string] = useState("");
     const [regex, set_regex] = useState(false);
-    const [search_matches, set_search_matches] = useState(props.null);
+    const [search_matches, set_search_matches, search_matches_ref] = useStateAndRef(null);
 
     const [usable_width, usable_height, topX, topY] = useSize(top_ref, 0, "CodeViewer");
 
@@ -146,6 +147,7 @@ function CodeViewerApp(props) {
     const selectedPane = useContext(SelectedPaneContext);
 
     function _update_search_state(nstate, callback = null) {
+        set_current_search_number(0);
         for (let field in nstate) {
             switch (field) {
                 case "regex":
@@ -247,6 +249,18 @@ function CodeViewerApp(props) {
         set_search_matches(nmatches);
     }
 
+    function _searchNext() {
+        if (current_search_number_ref.current < search_matches_ref.current - 1) {
+            set_current_search_number(current_search_number_ref.current + 1);
+        }
+    }
+
+    function _searchPrev() {
+        if (current_search_number_ref.current > 0) {
+            set_current_search_number(current_search_number_ref.current - 1);
+        }
+    }
+
     function _extraKeys() {
         return [
             {key: 'Ctrl-s', run: _saveMe},
@@ -256,6 +270,18 @@ function CodeViewerApp(props) {
             {key: 'Cmd-f', run: () => {
                 search_ref.current.focus();
             }, preventDefault: true},
+            {key: 'Ctrl-g', run: () => {
+                _searchNext();
+            }, preventDefault: true},
+            {key: 'Cmd-g', run: () => {
+                _searchNext();
+            }, preventDefault: true},
+           {key: 'Ctrl-Shift-g', run: () => {
+                _searchPrev();
+            }, preventDefault: true},
+            {key: 'Cmd-Shift-g', run: () => {
+                _searchPrev();
+            }, preventDefault: true}
         ]
     }
 
@@ -338,7 +364,7 @@ function CodeViewerApp(props) {
                                        tags={tags}
                                        saveMe={_saveMe}
                                        search_ref={search_ref}
-                                       show_search={true}
+                                       show_search={false}
                                        update_search_state={_update_search_state}
                                        search_string={search_string}
                                        search_matches={search_matches}
@@ -347,16 +373,22 @@ function CodeViewerApp(props) {
                                        showErrorDrawerButton={true}
                     >
                         <ReactCodemirror6 code_content={code_content}
-                                         no_width={true}
-                                         extraKeys={_extraKeys()}
-                                         readOnly={props.readOnly}
-                                         handleChange={_handleCodeChange}
-                                         saveMe={_saveMe}
-                                         search_term={search_string}
-                                         update_search_state={_update_search_state}
-                                         regex_search={regex}
-                                         tsocket={props.tsocket}
-                                         setSearchMatches={_setSearchMatches}
+                                          show_fold_button={true}
+                                          no_width={true}
+                                          extraKeys={_extraKeys()}
+                                          readOnly={props.readOnly}
+                                          handleChange={_handleCodeChange}
+                                          saveMe={_saveMe}
+                                          show_search={true}
+                                          search_term={search_string}
+                                          search_ref={search_ref}
+                                          search_matches={search_matches}
+                                          updateSearchState={_update_search_state}
+                                          regex_search={regex}
+                                          searchPrev={_searchPrev}
+                                          searchNext={_searchNext}
+                                          current_search_number={current_search_number}
+                                          setSearchMatches={_setSearchMatches}
                         />
                     </ResourceViewerApp>
             </div>
@@ -376,9 +408,7 @@ function code_viewer_main() {
         const domContainer = document.querySelector('#root');
         const root = createRoot(domContainer);
         root.render(
-            // <HotkeysProvider>
-                the_element
-           // </HotkeysProvider>
+            the_element
         )
     }
 

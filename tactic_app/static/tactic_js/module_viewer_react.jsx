@@ -67,13 +67,13 @@ function ModuleViewerApp(props) {
     const savedIcon = useRef(props.icon);
 
     const [code_content, set_code_content, code_content_ref] = useStateAndRef(props.the_content);
-    const [current_search_number, set_current_search_number] = useState(null);
+    const [current_search_number, set_current_search_number, current_search_number_ref] = useStateAndRef(null);
     const [notes, set_notes, notes_ref] = useStateAndRef(props.notes);
     const [tags, set_tags, tags_ref] = useStateAndRef(props.split_tags);
     const [icon, set_icon, icon_ref] = useStateAndRef(props.icon);
     const [search_string, set_search_string] = useState("");
     const [regex, set_regex] = useState(false);
-    const [search_matches, set_search_matches] = useState(props.null);
+    const [search_matches, set_search_matches, search_matches_ref] = useStateAndRef(null);
 
     const settingsContext = useContext(SettingsContext);
     const dialogFuncs = useContext(DialogContext);
@@ -271,7 +271,22 @@ function ModuleViewerApp(props) {
                 search_ref.current.focus()
             }
         };
-        return convertExtraKeys(ekeys)
+        let convertedKeys = convertExtraKeys(ekeys);
+        let moreKeys = [
+            {key: 'Ctrl-g', run: () => {
+                _searchNext();
+            }, preventDefault: true},
+            {key: 'Cmd-g', run: () => {
+                _searchNext();
+            }, preventDefault: true},
+           {key: 'Ctrl-Shift-g', run: () => {
+                _searchPrev();
+            }, preventDefault: true},
+            {key: 'Cmd-Shift-g', run: () => {
+                _searchPrev();
+            }, preventDefault: true}
+        ];
+        return [...convertedKeys, ...moreKeys]
     }
 
     function am_selected() {
@@ -441,14 +456,14 @@ function ModuleViewerApp(props) {
     }
 
     function _searchNext() {
-        if (current_search_number < search_matches - 1) {
-            set_current_search_number(current_search_number + 1);
+        if (current_search_number_ref.current < search_matches_ref.current - 1) {
+            set_current_search_number(current_search_number_ref.current + 1);
         }
     }
 
     function _searchPrev() {
-        if (current_search_number > 0) {
-            set_current_search_number(current_search_number - 1);
+        if (current_search_number_ref.current > 0) {
+            set_current_search_number(current_search_number_ref.current - 1);
         }
     }
 
@@ -497,11 +512,13 @@ function ModuleViewerApp(props) {
                                    tags={tags}
                                    mdata_icon={icon}
                                    saveMe={_saveMe}
+                                   show_search={false}
                                    update_search_state={_update_search_state}
                                    search_ref={search_ref}
                                    showErrorDrawerButton={true}
                 >
                     <ReactCodemirror6 code_content={code_content}
+                                      show_fold_button={true}
                                       no_width={true}
                                       extraKeys={_extraKeys()}
                                       readOnly={props.readOnly}
@@ -536,9 +553,7 @@ function module_viewer_main() {
         let domContainer = document.querySelector('#root');
         const root = createRoot(domContainer);
         root.render(
-            //<HotkeysProvider>
             the_element
-            //</HotkeysProvider>
         )
     }
 

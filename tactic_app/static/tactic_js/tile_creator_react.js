@@ -135,10 +135,10 @@ function CreatorApp(props) {
     "methods": false
   });
   const [search_string, set_search_string] = (0, _react.useState)("");
-  const [current_search_number, set_current_search_number] = (0, _react.useState)(null);
-  const [current_search_cm, set_current_search_cm] = (0, _react.useState)(cm_list.current[0]);
+  const [current_search_number, set_current_search_number, current_search_number_ref] = (0, _utilities_react.useStateAndRef)(null);
+  const [current_search_cm, set_current_search_cm, current_search_cm_ref] = (0, _utilities_react.useStateAndRef)(cm_list.current[0]);
   const [regex, set_regex] = (0, _react.useState)(false);
-  const [search_matches, set_search_matches] = (0, _react.useState)(0);
+  const [search_matches, set_search_matches, search_matches_ref] = (0, _utilities_react.useStateAndRef)(null);
   const [render_content_code, set_render_content_code, render_content_code_ref] = (0, _utilities_react.useStateAndRef)(props.render_content_code);
   const [draw_plot_code, set_draw_plot_code, draw_plot_code_ref] = (0, _utilities_react.useStateAndRef)(props.draw_plot_code);
   const [jscript_code, set_jscript_code, jscript_code_ref] = (0, _utilities_react.useStateAndRef)(props.jscript_code);
@@ -342,12 +342,38 @@ function CreatorApp(props) {
         search_ref.current.focus();
       }
     };
-    return (0, _utilities_react.convertExtraKeys)(ekeys);
+    let convertedKeys = (0, _utilities_react.convertExtraKeys)(ekeys);
+    let moreKeys = [{
+      key: 'Ctrl-g',
+      run: () => {
+        _searchNext();
+      },
+      preventDefault: true
+    }, {
+      key: 'Cmd-g',
+      run: () => {
+        _searchNext();
+      },
+      preventDefault: true
+    }, {
+      key: 'Ctrl-Shift-g',
+      run: () => {
+        _searchPrev();
+      },
+      preventDefault: true
+    }, {
+      key: 'Cmd-Shift-g',
+      run: () => {
+        _searchPrev();
+      },
+      preventDefault: true
+    }];
+    return [...convertedKeys, ...moreKeys];
   }
   function _searchNext() {
-    if (current_search_number >= search_match_numbers.current[current_search_cm] - 1) {
+    if (current_search_number_ref.current >= search_match_numbers.current[current_search_cm] - 1) {
       let next_cm;
-      switch (current_search_cm) {
+      switch (current_search_cm_ref.current) {
         case "rc":
           next_cm = "em";
           break;
@@ -373,17 +399,17 @@ function CreatorApp(props) {
       set_current_search_cm(next_cm);
       set_current_search_number(0);
     } else {
-      set_current_search_number(current_search_number + 1);
+      set_current_search_number(current_search_number_ref.current + 1);
     }
   }
   function _searchPrev() {
     let next_cm;
     let next_search_number;
-    if (current_search_number <= 0) {
-      if (current_search_cm == "em") {
+    if (current_search_number_ref.current <= 0) {
+      if (current_search_cm_ref.current == "em") {
         next_cm = "rc";
         next_search_number = search_match_numbers.current["rc"] - 1;
-      } else if (current_search_cm == "tc") {
+      } else if (current_search_cm_ref.current == "tc") {
         next_cm = "em";
         next_search_number = search_match_numbers.current["em"] - 1;
       } else {
@@ -404,7 +430,7 @@ function CreatorApp(props) {
       }
       set_current_search_number(next_search_number);
     } else {
-      set_current_search_number(current_search_number - 1);
+      set_current_search_number(current_search_number_ref.current - 1);
     }
   }
   function _updateSearchState(new_state) {

@@ -2323,7 +2323,7 @@ function ConsoleCodeItem(props) {
         {key:'Ctrl-Enter', run: () => props.runCodeItem(props.unique_id, true)},
         {key: 'Cmd-Enter', run: () => props.runCodeItem(props.unique_id, true)},
         {key: 'Ctrl-c', run: props.addNewCodeItem},
-        {key: 'Ctrl-t', run: props.addNewTextItem}
+        {key: 'Ctrl-t', run: props.addNewTextItem},
         ]
     }, []);
 
