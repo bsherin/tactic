@@ -6,7 +6,7 @@ import {SettingsContext} from "./settings";
 import {SelectedPaneContext} from "./utilities_react";
 import {ErrorDrawerContext} from "./error_drawer";
 import {SearchForm} from "./library_widgets";
-
+//comment
 import {indentWithTab} from "@codemirror/commands"
 import {python} from "@codemirror/lang-python"
 import {javascript} from "@codemirror/lang-javascript"
@@ -15,6 +15,7 @@ import {indentUnit} from "@codemirror/language";
 import {HighlightStyle, foldAll, unfoldAll} from "@codemirror/language"
 import {EditorView, Decoration} from "@codemirror/view";
 import {StateField, StateEffect, RangeSetBuilder, EditorSelection, Compartment} from "@codemirror/state";
+import {combinedCompletions} from "./autocomplete";
 
 import {
     gutter, GutterMarker, highlightActiveLineGutter, highlightSpecialChars, drawSelection,
@@ -37,11 +38,11 @@ const SEARCH_HEIGHT = 55;
 const REGEXTYPE = Object.getPrototypeOf(new RegExp("that"));
 const TITLE_STYLE = {display: "flex", paddingLeft: 5, paddingBottom: 2, alignItems: "self-end"};
 
-function textMode() {
+function emptyExtension() {
     return []
 }
 
-const mode_dict = {python, javascript, markdown, text: textMode};
+const mode_dict = {python, javascript, markdown, text: emptyExtension};
 
 function isRegex(ob) {
     return Object.getPrototypeOf(ob) === REGEXTYPE;
@@ -70,8 +71,7 @@ function createHighlightDeco(view, regex, current_search_number) {
         const end = start + match[0].length;
         if (current_search_number != null && counter === current_search_number) {
             builder.add(start, end, Decoration.mark({class: "cm-searchMatch cm-searchMatch-selected"}));
-        }
-        else {
+        } else {
             builder.add(start, end, Decoration.mark({class: "cm-searchMatch"}));
         }
         counter += 1;
@@ -140,7 +140,8 @@ function ReactCodemirror6(props) {
         code_container_ref: null,
         setSearchMatches: null,
         current_search_number: null,
-        extra_autocomplete_list: [],
+        highlight_active_line: false,
+        extraSelfCompletions: [],
         ...props
     };
 
@@ -153,8 +154,10 @@ function ReactCodemirror6(props) {
     const prevSoftWrap = useRef(null);
     const registeredHandlers = useRef([]);
     const themeCompartment = useRef(null);
+    const completionCompartment = useRef(null);
     const theme = useRef(null);
     const highlightStyle = useRef(null);
+    const autocompletionArgRef = useRef({});
 
     const settingsContext = useContext(SettingsContext);
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
@@ -167,15 +170,17 @@ function ReactCodemirror6(props) {
             props.registerSetFocusFunc(setFocus);
         }
         themeCompartment.current = new Compartment();
+        completionCompartment.current = new Compartment();
+        const activeLineExtension = props.highlight_active_line ? highlightActiveLineGutter : emptyExtension;
+
         const state = EditorState.create({
             doc: props.code_content,
             extensions: [
-                // lineNumbers(),
                 mode_dict[props.mode](),
                 customLineNumbers(props.first_line_number),
                 themeCompartment.current.of([]),
                 history(),
-                highlightActiveLineGutter(),
+                activeLineExtension(),
                 highlightSpecialChars(),
                 history(),
                 foldGutter(),
@@ -185,7 +190,7 @@ function ReactCodemirror6(props) {
                 indentOnInput(),
                 bracketMatching(),
                 closeBrackets(),
-                autocompletion(),
+                completionCompartment.current.of(autocompletion(autocompletionArgRef.current)),
                 rectangularSelection(),
                 crosshairCursor(),
                 highlightSelectionMatches(),
@@ -201,7 +206,6 @@ function ReactCodemirror6(props) {
                     ...lintKeymap,
                     indentWithTab
                 ]),
-                // keymap.of([standardKeymap, indentWithTab]),
                 EditorView.updateListener.of((update) => {
                     if (update.docChanged) {
                         handleChange(update.state.doc.toString());
@@ -244,6 +248,17 @@ function ReactCodemirror6(props) {
                 console.log("Error importing theme", error);
             })
     };
+
+    useEffect(()=>{
+        autocompletionArgRef.current = props.mode == "python" ?
+            {override: [(context)=>{return combinedCompletions(context, props.extraSelfCompletions)}]} :
+            {};
+        if (editorView.current) {
+            editorView.current.dispatch({
+                effects: completionCompartment.current.reconfigure(autocompletion(autocompletionArgRef.current))
+            });
+        }
+    }, [props.extraSelfCompletions]);
 
     useEffect(() => {
         if (!editorView.current) return;
@@ -319,16 +334,14 @@ function ReactCodemirror6(props) {
             } else {
                 try {
                     regex = new RegExp(term, flags)
-                }
-                catch(e) {
+                } catch (e) {
                     console.log("Error creating regex, trying escaping");
                     const escapedSearchTerm = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                        regex = new RegExp(escapedSearchTerm, flags);
-                    }
-                    return regex
+                    regex = new RegExp(escapedSearchTerm, flags);
+                }
+                return regex
             }
-        }
-        catch(e) {
+        } catch (e) {
             console.log("Error creating regex", e);
             return null
         }
@@ -348,8 +361,7 @@ function ReactCodemirror6(props) {
                 mnum += new_matches;
                 lnum += 1
             }
-        }
-        catch(e) {
+        } catch (e) {
             console.log("Error in _lineNumberFromSearchNumber", e);
         }
         return null
@@ -368,8 +380,7 @@ function ReactCodemirror6(props) {
             var reg = _searchMatcher(searchTerm, true);
             if (!reg) {
                 matches.current = 0
-            }
-            else {
+            } else {
                 matches.current = countOccurrences(reg, props.code_content);
             }
             if (props.setSearchMatches && matches.current != prev_matches) {
@@ -391,8 +402,7 @@ function ReactCodemirror6(props) {
                     effects: setHighlights.of(deco)
                 });
             }
-        }
-        catch(e) {
+        } catch (e) {
             console.log("Error in _doHighlight", e);
         }
     }
@@ -406,8 +416,7 @@ function ReactCodemirror6(props) {
                     y: "center"
                 })
             });
-        }
-        catch(e) {
+        } catch (e) {
             console.log("Error in selectLine", e)
         }
 

@@ -179,7 +179,7 @@ function ConsoleComponent(props) {
                 global: false,
                 group: "Notebook",
                 label: "Clear Selected Cells",
-                onKeyDown: _clear_all_selected_items
+                onKeyDown: ()=>{_clear_all_selected_items()}
             },
         ],
         [_addBlankCode, _addBlankText, _runSelected, _clear_all_selected_items]
@@ -2837,8 +2837,8 @@ function ConsoleTextItem(props) {
         return [
             {key: 'Ctrl-Enter', run: () => _gotEnter()},
             {key: 'Cmd-Enter', run: () => _gotEnter()},
-            {key: 'Ctrl-C', run: props.addNewCodeItem},
-            {key: 'Ctrl-T', run: props.addNewTextItem},
+            {key: 'Ctrl-c', run: props.addNewCodeItem},
+            {key: 'Ctrl-t', run: props.addNewTextItem},
         ]
     }, []);
 

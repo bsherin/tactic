@@ -1,7 +1,7 @@
 import "../tactic_css/tactic.scss";
 import "../tactic_css/tactic_table.scss";
 import "../tactic_css/tile_creator.scss";
-
+//comment
 import React from "react";
 import {Fragment, useState, useEffect, useRef, memo, useMemo, useContext} from "react";
 import {createRoot} from 'react-dom/client';
@@ -165,6 +165,8 @@ function CreatorApp(props) {
     const [all_tags, set_all_tags] = useState([]);
     const [has_key, set_has_key] = useState(false);
 
+    const extraSelfCompletionsRef = useRef([]);
+
     const settingsContext = useContext(SettingsContext);
     const dialogFuncs = useContext(DialogContext);
     const statusFuncs = useContext(StatusContext);
@@ -268,6 +270,22 @@ function CreatorApp(props) {
     useEffect(() => {
         _goToLineNumber();
     });
+
+    useEffect(() => {
+        function _getOptionNames() {
+            let onames = [];
+            for (let entry of option_list_ref.current) {
+                onames.push(entry.name)
+            }
+            return onames
+        }
+
+        extraSelfCompletionsRef.current = [];
+        for (let oname of _getOptionNames()) {
+            let the_text = "" + oname;
+            extraSelfCompletionsRef.current.push({label: the_text, type: "variable"});
+        }
+        }, [option_list_ref.current]);
 
     function initSocket() {
         props.tsocket.attachListener('focus-me', (data) => {
@@ -905,19 +923,6 @@ function CreatorApp(props) {
         set_search_matches(current_matches)
     }
 
-    function _getOptionNames() {
-        let onames = [];
-        for (let entry of option_list_ref.current) {
-            onames.push(entry.name)
-        }
-        return onames
-    }
-
-    //let onames_for_autocomplete = [];
-    // for (let oname of _getOptionNames()) {
-    //     let the_text = "" + oname;
-    //     onames_for_autocomplete.push({text: the_text, icon: "select", render: renderAutoCompleteElement});
-    // }
     let my_props = {...props};
     if (!props.controlled) {
         my_props.resource_name = resource_name;
@@ -952,7 +957,8 @@ function CreatorApp(props) {
                               search_matches={search_matches}
                               setSearchMatches={(num) => _setSearchMatches("tc", num)}
                               tsocket={props.tsocket}
-                              extra_autocomplete_list={[]}/>
+                              extraSelfCompletions={mode == "python" ? extraSelfCompletionsRef.current : []}
+                              highlight_active_line={true}/>
 
         )
     }
@@ -980,7 +986,8 @@ function CreatorApp(props) {
                               search_matches={search_matches}
                               setSearchMatches={(num) => _setSearchMatches("rc", num)}
                               tsocket={props.tsocket}
-                              extra_autocomplete_list={[]}
+                              extraSelfCompletions={extraSelfCompletionsRef.current }
+                              highlight_active_line={true}
             />
         </div>
     );
@@ -1060,8 +1067,9 @@ function CreatorApp(props) {
                                   regex_search={regex}
                                   first_line_number={extra_methods_line_number_ref.current}
                                   setSearchMatches={(num) => _setSearchMatches("em", num)}
-                                  extra_autocomplete_list={[]}
                                   tsocket={props.tsocket}
+                                  highlight_active_line={true}
+                                  extraSelfCompletions={extraSelfCompletionsRef.current}
                                   iCounter={tabSelectCounter}
                 />
             }
@@ -1086,8 +1094,8 @@ function CreatorApp(props) {
                                   regex_search={regex}
                                   first_line_number={1}
                                   setSearchMatches={(num) => _setSearchMatches("gp", num)}
-                                  extra_autocomplete_list={[]}
                                   tsocket={props.tsocket}
+                                  highlight_active_line={true}
                                   iCounter={tabSelectCounter}
                 />
             }

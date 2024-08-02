@@ -387,6 +387,7 @@ function CodeViewerApp(props) {
                                           regex_search={regex}
                                           searchPrev={_searchPrev}
                                           searchNext={_searchNext}
+                                          highlight_active_line={true}
                                           current_search_number={current_search_number}
                                           setSearchMatches={_setSearchMatches}
                         />
