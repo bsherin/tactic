@@ -59,9 +59,12 @@ const convertExtraKeys = extraKeys => {
   }
   return newExtraKeys;
 };
+exports.convertExtraKeys = convertExtraKeys;
+function isFunction(variable) {
+  return typeof variable === 'function';
+}
 
 // It's necessary to have effectcount be a ref. Otherwise there can be subtle bugs
-exports.convertExtraKeys = convertExtraKeys;
 function useCallbackStack() {
   let myId = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "";
   const [effectCount, setEffectCount, effectCountRef] = useStateAndRef(0);
@@ -76,9 +79,17 @@ function useCallbackStack() {
     }
   }, [effectCount]);
   return callback => {
-    if (callback) {
-      myCallbacksList.current.push(callback);
-      setEffectCount(effectCountRef.current + 1);
+    try {
+      if (callback) {
+        if (isFunction(callback)) {
+          myCallbacksList.current.push(callback);
+          setEffectCount(effectCountRef.current + 1);
+        } else {
+          console.log("Bad callback in useCallbackStack", myId);
+        }
+      }
+    } catch (err) {
+      console.log("Problem invoking callback in useCallbackStack", err);
     }
   };
 }

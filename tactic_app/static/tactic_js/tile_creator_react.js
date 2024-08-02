@@ -32,6 +32,8 @@ var _settings = require("./settings");
 var _modal_react = require("./modal_react");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
+//comment
+
 const BOTTOM_MARGIN = 50;
 const MARGIN_SIZE = 17;
 function optionListReducer(option_list, action) {
@@ -160,6 +162,7 @@ function CreatorApp(props) {
   const [left_pane_fraction, set_left_pane_fraction] = (0, _react.useState)(.5);
   const [all_tags, set_all_tags] = (0, _react.useState)([]);
   const [has_key, set_has_key] = (0, _react.useState)(false);
+  const extraSelfCompletionsRef = (0, _react.useRef)([]);
   const settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   const dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   const statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
@@ -255,6 +258,23 @@ function CreatorApp(props) {
   (0, _react.useEffect)(() => {
     _goToLineNumber();
   });
+  (0, _react.useEffect)(() => {
+    function _getOptionNames() {
+      let onames = [];
+      for (let entry of option_list_ref.current) {
+        onames.push(entry.name);
+      }
+      return onames;
+    }
+    extraSelfCompletionsRef.current = [];
+    for (let oname of _getOptionNames()) {
+      let the_text = "" + oname;
+      extraSelfCompletionsRef.current.push({
+        label: the_text,
+        type: "variable"
+      });
+    }
+  }, [option_list_ref.current]);
   function initSocket() {
     props.tsocket.attachListener('focus-me', data => {
       window.focus();
@@ -878,19 +898,6 @@ function CreatorApp(props) {
     }
     set_search_matches(current_matches);
   }
-  function _getOptionNames() {
-    let onames = [];
-    for (let entry of option_list_ref.current) {
-      onames.push(entry.name);
-    }
-    return onames;
-  }
-
-  //let onames_for_autocomplete = [];
-  // for (let oname of _getOptionNames()) {
-  //     let the_text = "" + oname;
-  //     onames_for_autocomplete.push({text: the_text, icon: "select", render: renderAutoCompleteElement});
-  // }
   let my_props = {
     ...props
   };
@@ -928,7 +935,8 @@ function CreatorApp(props) {
       search_matches: search_matches,
       setSearchMatches: num => _setSearchMatches("tc", num),
       tsocket: props.tsocket,
-      extra_autocomplete_list: []
+      extraSelfCompletions: mode == "python" ? extraSelfCompletionsRef.current : [],
+      highlight_active_line: true
     });
   }
   let bc_item = /*#__PURE__*/_react.default.createElement("div", {
@@ -958,7 +966,8 @@ function CreatorApp(props) {
     search_matches: search_matches,
     setSearchMatches: num => _setSearchMatches("rc", num),
     tsocket: props.tsocket,
-    extra_autocomplete_list: []
+    extraSelfCompletions: extraSelfCompletionsRef.current,
+    highlight_active_line: true
   }));
   let left_pane;
   if (my_props.is_mpl || my_props.is_d3) {
@@ -1025,8 +1034,9 @@ function CreatorApp(props) {
     regex_search: regex,
     first_line_number: extra_methods_line_number_ref.current,
     setSearchMatches: num => _setSearchMatches("em", num),
-    extra_autocomplete_list: [],
     tsocket: props.tsocket,
+    highlight_active_line: true,
+    extraSelfCompletions: extraSelfCompletionsRef.current,
     iCounter: tabSelectCounter
   }));
   let globals_panel = /*#__PURE__*/_react.default.createElement("div", {
@@ -1049,8 +1059,8 @@ function CreatorApp(props) {
     regex_search: regex,
     first_line_number: 1,
     setSearchMatches: num => _setSearchMatches("gp", num),
-    extra_autocomplete_list: [],
     tsocket: props.tsocket,
+    highlight_active_line: true,
     iCounter: tabSelectCounter
   }));
   // let commands_panel = (

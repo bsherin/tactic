@@ -34,7 +34,11 @@ function createCMTheme(styleDict) {
             ".cm-searchMatch.cm-searchMatch-selected": {
                 backgroundColor: settings.background,
                 outline: `3px solid ${settings.selection}`
-            }
+            },
+            ".cm-tooltip": {
+                backgroundColor: settings.background,
+                color: settings.foreground
+            },
         },
         highlightStyles: styleDict.styles
     };
