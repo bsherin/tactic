@@ -153,6 +153,7 @@ function ReactCodemirror6(props) {
     const registeredHandlers = useRef([]);
     const themeCompartment = useRef(null);
     const completionCompartment = useRef(null);
+    const lineNumberCompartment = useRef(null);
     const theme = useRef(null);
     const highlightStyle = useRef(null);
     const autocompletionArgRef = useRef({});
@@ -169,13 +170,14 @@ function ReactCodemirror6(props) {
         }
         themeCompartment.current = new Compartment();
         completionCompartment.current = new Compartment();
+        lineNumberCompartment.current = new Compartment();
         const activeLineExtension = props.highlight_active_line ? highlightActiveLineGutter : emptyExtension;
 
         const state = EditorState.create({
             doc: props.code_content,
             extensions: [
                 mode_dict[props.mode](),
-                customLineNumbers(props.first_line_number),
+                lineNumberCompartment.current.of(customLineNumbers(props.first_line_number)),
                 themeCompartment.current.of([]),
                 history(),
                 activeLineExtension(),
@@ -201,7 +203,6 @@ function ReactCodemirror6(props) {
                     ...historyKeymap,
                     ...foldKeymap,
                     ...completionKeymap,
-                    ...lintKeymap,
                     indentWithTab
                 ]),
                 EditorView.updateListener.of((update) => {
@@ -274,6 +275,14 @@ function ReactCodemirror6(props) {
         switchTheme(_current_codemirror_theme());
 
     }, [settingsContext.settings.theme, settingsContext.settings.preferred_dark_theme, settingsContext.settings.preferred_light_theme]);
+
+    useEffect(()=> {
+        if (editorView.current) {
+            editorView.current.dispatch({
+                effects: lineNumberCompartment.current.reconfigure(customLineNumbers(props.first_line_number))
+            })
+        }
+    }, [props.first_line_number]);
 
     function _current_codemirror_theme() {
         return isDark() ? settingsContext.settingsRef.current.preferred_dark_theme :
