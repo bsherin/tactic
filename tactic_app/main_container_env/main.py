@@ -193,7 +193,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
                     new_entry["unique_id"] = str(uuid.uuid4())
                 elif console_cm_code is not None:
                     new_entry["unique_id"] = item.select(".console-code")[0]["id"]
-                    new_entry["output_text"] = str(item.select(".log-code-output")[0])
+                    new_entry["output_dict"] = {-1: str(item.select(".log-code-output")[0])}
                     new_entry["type"] = "code"
                     new_entry["console_text"] = console_cm_code[new_entry["unique_id"]]
                     new_entry["execution_count"] = 0
@@ -201,6 +201,20 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
             except Exception as ex:
                 print("error converting one console cell")
         return entries
+
+    def check_for_output_text(self, console_items):
+        new_console_items = []
+        for entry in console_items:
+            if entry["type"] == "code":
+                if "output_dict" not in entry:
+                    if "output_text" in entry:
+                        entry["output_dict"] = {-1: entry["output_text"]}
+                        del entry["output_text"]
+                    else:
+                        entry["output_dict"] = {}
+            new_console_items.append(entry)
+        return new_console_items
+
 
     def add_missing_section_ends(self, console_items):
         new_console_items = []
@@ -218,6 +232,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
             end_section = {"unique_id": str(uuid.uuid4()), "type": "section-end"}
             new_console_items.append(end_section)
         return new_console_items
+
 
     def convert_legacy_save(self, project_dict):
         try:
@@ -340,7 +355,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
                 else:
                     project_dict["interface_state"] = interface_state
             try:
-                project_dict["interface_state"]["console_items"] = self.add_missing_section_ends(project_dict["interface_state"]["console_items"])
+                project_dict["interface_state"]["console_items"] = self.check_for_output_text(self.add_missing_section_ends(project_dict["interface_state"]["console_items"]))
             except Exception as ex:
                 project_dict["interface_state"]["console_items"] = []
                 error_string = self.handle_exception(ex, "Error adding missing sections")
@@ -352,8 +367,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
                     "console_items": self.convert_legacy_console(project_dict)
                 }
             try:
-                project_dict["interface_state"]["console_items"] = self.add_missing_section_ends(
-                    project_dict["interface_state"]["console_items"])
+                project_dict["interface_state"]["console_items"] =  self.check_for_output_text(self.add_missing_section_ends(project_dict["interface_state"]["console_items"]))
             except Exception as ex:
                 project_dict["interface_state"]["console_items"] = []
                 error_string = self.handle_exception(ex, "Error adding missing sections")

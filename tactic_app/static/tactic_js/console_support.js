@@ -65,6 +65,19 @@ function consoleItemsReducer(console_items, action) {
         }
       });
       break;
+    case "change_code_output_row":
+      new_items = console_items.map(t => {
+        if (t.unique_id === action.unique_id) {
+          let new_t = {
+            ...t
+          };
+          new_t["output_dict"][action.row] = action.new_value;
+          return new_t;
+        } else {
+          return t;
+        }
+      });
+      break;
     case "update_items":
       new_items = console_items.map(t => {
         if (t.unique_id in action.updates) {

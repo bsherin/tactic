@@ -9,6 +9,7 @@ exports.arrayMove = arrayMove;
 exports.arraysMatch = arraysMatch;
 exports.convertExtraKeys = void 0;
 exports.debounce = debounce;
+exports.default = void 0;
 exports.get_ppi = get_ppi;
 exports.guid = guid;
 exports.hasAnyKey = hasAnyKey;
@@ -22,6 +23,7 @@ exports.useCallbackStack = useCallbackStack;
 exports.useConnection = useConnection;
 exports.useConstructor = void 0;
 exports.useDebounce = useDebounce;
+exports.useDeepCompareEffect = useDeepCompareEffect;
 exports.useDidMount = void 0;
 exports.useImmerReducerAndRef = useImmerReducerAndRef;
 exports.useReducerAndRef = useReducerAndRef;
@@ -93,6 +95,30 @@ function useCallbackStack() {
     }
   };
 }
+
+// function useDeepCompareEffect(callback, dependencies) {
+//     const currentDependenciesRef = useRef();
+//     const changeCounter = useRef(0);
+//
+//   if (!_.isEqual(currentDependenciesRef.current, dependencies)) {
+//       currentDependenciesRef.current = dependencies;
+//       changeCounter.current += 1;
+//   }
+//
+//   useEffect(callback, [changeCounter.current]);
+// }
+
+function useDeepCompareEffect(callback, dependencies) {
+  const currentDependenciesRef = (0, _react.useRef)();
+  if (!_lodash.default.isEqual(currentDependenciesRef.current, dependencies)) {
+    console.log('Dependencies changed:', dependencies);
+    currentDependenciesRef.current = dependencies;
+  }
+  (0, _react.useEffect)(() => {
+    return callback();
+  }, [currentDependenciesRef.current]);
+}
+var _default = exports.default = useDeepCompareEffect;
 const useConstructor = function () {
   let callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : () => {};
   const hasBeenCalled = (0, _react.useRef)(false);

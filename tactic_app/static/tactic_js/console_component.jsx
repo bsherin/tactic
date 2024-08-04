@@ -1016,24 +1016,31 @@ function initSocket() {
     }
 
     function _appendConsoleItemOutput(data) {
-        let current = get_console_item_entry(data.console_id).output_text;
-        if (current != "") {
-            current += "<br>"
-        }
-        current += data.result_text;
-        if (current.length > MAX_OUTPUT_LENGTH) {
-            current = current.slice(-1 * MAX_OUTPUT_LENGTH,)
-        }
+        //let current = get_console_item_entry(data.console_id).output_dict;
+        // if (current != "") {
+        //     current += "<br>"
+        // }
+        // current[data.counter] = data.result_text;
+        // if (current.length > MAX_OUTPUT_LENGTH) {
+        //     current = current.slice(-1 * MAX_OUTPUT_LENGTH,)
+        // }
+        props.dispatch({
+            type: "change_code_output_row",
+            unique_id: data.console_id,
+            row: data.counter,
+            new_value: data.result_text
+        });
 
-        _setConsoleItemValue(data.console_id, "output_text", current)
+        // _setConsoleItemValue(data.console_id, "output_dict", current)
     }
 
     function _setConsoleItemOutput(data) {
-        let current = data.result_text;
-        if (current.length > MAX_OUTPUT_LENGTH) {
-            current = current.slice(-1 * MAX_OUTPUT_LENGTH,)
-        }
-        _setConsoleItemValue(data.console_id, "output_text", current)
+        let current = {};
+        current[-1] = data.result_text;
+        // if (current.length > MAX_OUTPUT_LENGTH) {
+        //     current = current.slice(-1 * MAX_OUTPUT_LENGTH,)
+        // }
+        _setConsoleItemValue(data.console_id, "output_dict", current)
     }
 
     function _addToLog(new_line) {
@@ -1304,7 +1311,7 @@ function initSocket() {
     }
 
     function _clearCodeOutput(unique_id, callback = null) {
-        _setConsoleItemValue(unique_id, "output_text", "", callback)
+        _setConsoleItemValue(unique_id, "output_dict", {}, callback)
     }
 
     function _runSelected() {
@@ -2199,23 +2206,24 @@ function BlobItem(props) {
 BlobItem = memo(BlobItem);
 
 const code_item_update_props = ["am_shrunk", "set_focus", "am_selected", "search_string", "summary_text", "console_text",
-    "in_section", "show_spinner", "execution_count", "output_text", "console_available_width", "dark_theme"];
+    "in_section", "show_spinner", "execution_count", "output_dict", "console_available_width", "dark_theme"];
 
 function ConsoleCodeItem(props) {
     props = {
         summary_text: null,
         ...props
     };
+
+    const [outputText, setOutputText, outputTextRef] = useStateAndRef("");
     const elRef = useRef(null);
-    const last_output_text = useRef("");
     const am_selected_previous = useRef(false);
     const setFocusFunc = useRef(null);
+    const lastOutputText = useRef("");
+
 
     const [usable_width, usable_height, topX, topY] = useSize(elRef, 0, "ConsoleCodeItem");
 
     useEffect(() => {
-        executeEmbeddedScripts();
-        // makeTablesSortable();
         if (props.am_selected && !am_selected_previous.current && elRef && elRef.current) {
             scrollMeIntoView()
         }
@@ -2241,6 +2249,20 @@ function ConsoleCodeItem(props) {
         })
     }, []);
 
+    function concatenateSortedValues(dict) {
+      const sortedKeys = Object.keys(dict).map(Number).sort((a, b) => a - b);
+      return sortedKeys.map(key => dict[key]).join('<br>');
+    }
+
+    useEffect(()=>{
+        let newText = concatenateSortedValues(props.output_dict);
+        if (newText != lastOutputText.current) {
+            lastOutputText.current = newText;
+            setOutputText(newText);
+            executeEmbeddedScripts();
+        }
+    });
+
     const registerSetFocusFunc = useCallback((theFunc) => {
         setFocusFunc.current = theFunc;
     }, []);
@@ -2261,16 +2283,13 @@ function ConsoleCodeItem(props) {
     }
 
     function executeEmbeddedScripts() {
-        if (props.output_text != last_output_text.current) {  // to avoid doubles of bokeh images
-            last_output_text.current = props.output_text;
-            let scripts = $("#" + props.unique_id + " .log-code-output script").toArray();
-            for (let script of scripts) {
-                // noinspection EmptyCatchBlockJS,UnusedCatchParameterJS
-                try {
-                    window.eval(script.text)
-                } catch (e) {
+        let scripts = $("#" + props.unique_id + " .log-code-output script").toArray();
+        for (let script of scripts) {
+            // noinspection EmptyCatchBlockJS,UnusedCatchParameterJS
+            try {
+                window.eval(script.text)
+            } catch (e) {
 
-                }
             }
         }
     }
@@ -2315,7 +2334,7 @@ function ConsoleCodeItem(props) {
     }, [props.show_spinner]);
 
     const _clearOutput = useCallback(()=>{
-        props.setConsoleItemValue(props.unique_id, "output_text", "")
+        props.setConsoleItemValue(props.unique_id, "output_dict", {})
     }, []);
 
     const _extraKeys = useMemo(() => {
@@ -2434,7 +2453,7 @@ function ConsoleCodeItem(props) {
     if (props.in_section) {
         panel_style += " in-section"
     }
-    let output_dict = {__html: props.output_text};
+    let output_dict = {__html: outputTextRef.current};
     let spinner_val = props.running ? null : 0;
 
     let uwidth =  props.in_section ? usable_width - SECTION_INDENT / 2 : usable_width;
@@ -2601,7 +2620,6 @@ const text_item_update_props = ["am_shrunk", "set_focus", "serach_string", "am_s
 
 function ConsoleTextItem(props) {
     props = {
-        force_sync_to_prop: false,
         summary_text: null,
         links: [],
         ...props
@@ -2668,10 +2686,6 @@ function ConsoleTextItem(props) {
 
     const _handleChange = useCallback((new_text) => {
         props.setConsoleItemValue(props.unique_id, "console_text", new_text)
-    }, []);
-
-    const _clearForceSync = useCallback(() => {
-        props.setConsoleItemValue(props.unique_id, "force_sync_to_prop", false)
     }, []);
 
     function _handleSummaryTextChange(value) {
@@ -2930,9 +2944,6 @@ function ConsoleTextItem(props) {
                                                          registerSetFocusFunc={registerSetFocusFunc}
                                                          show_line_numbers={false}
                                                          soft_wrap={true}
-                                                         sync_to_prop={false}
-                                                         force_sync_to_prop={props.force_sync_to_prop}
-                                                         clear_force_sync={_clearForceSync}
                                                          mode="markdown"
                                                          code_content={props.console_text}
                                                          extraKeys={_extraKeys}

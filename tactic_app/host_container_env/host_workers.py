@@ -687,7 +687,7 @@ class HostWorker(QWorker):
                            "summary_text": None,
                            "search_string": None,
                            "console_text": data["console_text"],
-                           "output_text": "",
+                           "output_dict": {},
                            "execution_count": 0}
 
         data["console_message"] = "consoleLog"

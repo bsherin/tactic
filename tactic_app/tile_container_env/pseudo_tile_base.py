@@ -48,6 +48,7 @@ class ConsoleStringIO(StringIO):
         self.my_tile = tile
         self.data = data
         self.old_stdout = old_stdout
+        self.counter = 0
         StringIO.__init__(self)
         return
 
@@ -67,7 +68,9 @@ class ConsoleStringIO(StringIO):
             self.data["force_open"] = True
             self.data["result_text"] = s
             self.data["console_message"] = "consoleCodePrint"
+            self.data["counter"] = self.counter
             self.my_tile.emit_console_message("consoleCodePrint", self.data)
+            self.counter += 1
         sys.stdout = sv_stdout
         return
 

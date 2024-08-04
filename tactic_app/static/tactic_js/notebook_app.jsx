@@ -21,7 +21,7 @@ import {HorizontalPanes} from "./resizing_layouts2";
 import {ErrorDrawerContext, withErrorDrawer} from "./error_drawer";
 import {withSizeContext, useSize, SizeProvider} from "./sizing_tools";
 import {withAssistant} from "./assistant";
-import {useCallbackStack, useConstructor, useReducerAndRef} from "./utilities_react";
+import {useCallbackStack, useConstructor, useImmerReducerAndRef, useReducerAndRef} from "./utilities_react";
 import {notebook_props, notebookReducer} from "./notebook_support";
 
 import {withSettings, SettingsContext} from "./settings";

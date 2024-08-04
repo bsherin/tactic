@@ -13,7 +13,7 @@ import { useImmerReducer } from 'use-immer';
 export {propsAreEqual, arrayMove, arraysMatch, get_ppi, isInt, hasAnyKey};
 export {remove_duplicates, guid, scrollMeIntoView, renderSpinnerMessage};
 export {useConstructor, useCallbackStack, useStateAndRef, useReducerAndRef, useConnection,
-    useStateAndRefAndCounter, useDidMount, useImmerReducerAndRef};
+    useStateAndRefAndCounter, useDidMount, useImmerReducerAndRef, useDeepCompareEffect};
 
 export {debounce, throttle, useDebounce, SelectedPaneContext, convertExtraKeys}
 
@@ -71,6 +71,33 @@ function useCallbackStack(myId = "") {
         }
     }
 }
+
+// function useDeepCompareEffect(callback, dependencies) {
+//     const currentDependenciesRef = useRef();
+//     const changeCounter = useRef(0);
+//
+//   if (!_.isEqual(currentDependenciesRef.current, dependencies)) {
+//       currentDependenciesRef.current = dependencies;
+//       changeCounter.current += 1;
+//   }
+//
+//   useEffect(callback, [changeCounter.current]);
+// }
+
+function useDeepCompareEffect(callback, dependencies) {
+    const currentDependenciesRef = useRef();
+
+    if (!_.isEqual(currentDependenciesRef.current, dependencies)) {
+        console.log('Dependencies changed:', dependencies);
+        currentDependenciesRef.current = dependencies;
+    }
+
+    useEffect(() => {
+        return callback();
+    }, [currentDependenciesRef.current]);
+}
+
+export default useDeepCompareEffect;
 
 const useConstructor = (callback = () => {
 }) => {

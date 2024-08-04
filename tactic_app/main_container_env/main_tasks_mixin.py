@@ -145,7 +145,7 @@ class LoadSaveTasksMixin:
                     "show_spinner": False,
                     "summary_text": "code item",
                     "console_text": "".join(cell_dict["source"]),
-                    "output_text": "",
+                    "output_dict": {},
                     "execution_count": 0
                 }
             elif cell_dict["cell_type"] == "markdown":
@@ -1869,8 +1869,11 @@ class DataSupportTasksMixin:
     def grab_freeform_data(self, data):
         print("entering grab_freeformdata with fixed message")
         if "set_visible_doc" in data and data["set_visible_doc"]:
+            print("about to call set visible doc")
             self.set_visible_doc(data)
+            print("back from set_visible_doc")
         doc_name = data["doc_name"]
+        print("got doc_name and about to return")
         return {"doc_name": doc_name,
                 "data_text": self.doc_dict[doc_name].data_text}
 

@@ -87,7 +87,7 @@ function MainApp(props) {
   const main_outer_ref = (0, _react.useRef)(null);
   const set_table_scroll = (0, _react.useRef)(null);
   const [console_selected_items, set_console_selected_items, console_selected_items_ref] = (0, _utilities_react.useStateAndRef)([]);
-  const [console_items, dispatch, console_items_ref] = (0, _utilities_react.useReducerAndRef)(_console_support.consoleItemsReducer, iStateOrDefault("console_items"));
+  const [console_items, dispatch, console_items_ref] = (0, _utilities_react.useReducerAndRef)(_console_support.consoleItemsReducer, []);
   const [tile_list, tileDispatch, tile_list_ref] = (0, _utilities_react.useReducerAndRef)(_tile_react.tilesReducer, iStateOrDefault("tile_list"));
   const settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   const dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
@@ -129,6 +129,12 @@ function MainApp(props) {
   const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(main_outer_ref, 0, "MainApp");
   const connection_status = (0, _utilities_react.useConnection)(props.tsocket, initSocket);
   const pushCallback = (0, _utilities_react.useCallbackStack)();
+  (0, _utilities_react.useConstructor)(() => {
+    dispatch({
+      type: "initialize",
+      new_items: props.is_project && props.interface_state ? props.interface_state["console_items"] : []
+    });
+  });
   (0, _react.useEffect)(() => {
     if (props.controlled) {
       props.registerDirtyMethod(_dirty);

@@ -130,9 +130,6 @@ function ReactCodemirror6(props) {
         handleChange: null,
         handleBlur: null,
         handleFocus: null,
-        sync_to_prop: false,
-        force_sync_to_prop: false,
-        clear_force_sync: null,
         mode: "python",
         readOnly: false,
         extraKeys: [],
@@ -142,6 +139,7 @@ function ReactCodemirror6(props) {
         current_search_number: null,
         highlight_active_line: false,
         extraSelfCompletions: [],
+        controlled: false,
         ...props
     };
 
@@ -259,6 +257,17 @@ function ReactCodemirror6(props) {
             });
         }
     }, [props.extraSelfCompletions]);
+
+    useEffect(() =>{
+        if (props.controlled) {
+            if (editorView.current) {
+                editorView.current.dispatch({
+                    changes: {from: 0, to: editorView.current.state.doc.length, insert: props.code_content}
+                });
+            }
+        }
+
+    }, [props.code_content]);
 
     useEffect(() => {
         if (!editorView.current) return;
