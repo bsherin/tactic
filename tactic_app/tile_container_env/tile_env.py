@@ -36,6 +36,20 @@ def global_import(*argv):
         globals()[imp] = __import__(imp, globals(), locals(), [], 0)
     return
 
+def escape_html(html):
+    return (
+        str(html).replace("&", "&amp;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
+            .replace('"', "&quot;")
+            .replace("'", "&#39;")
+    )
+xh = escape_html
+
+def ds(txt):
+    if Tile:
+        Tile.display_status(txt)
+    return
 
 def user_tile(tclass):
     class_info["class_name"] = tclass.__name__

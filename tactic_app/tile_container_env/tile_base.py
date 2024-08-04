@@ -60,6 +60,16 @@ def global_import(*argv):
         globals()[imp] = __import__(imp, globals(), locals(), [], 0)
     return
 
+# This too
+def escape_html(html):
+    return (
+        str(html).replace("&", "&amp;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
+            .replace('"', "&quot;")
+            .replace("'", "&#39;")
+    )
+xh = escape_html
 
 def user_function(the_func):
     _code_names["functions"][the_func.__name__] = the_func
