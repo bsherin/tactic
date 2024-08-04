@@ -38,6 +38,15 @@ def display(txt):
     sys.stdout.overwrite(txt)
     return
 
+def escape_html(html):
+    return (
+        str(html).replace("&", "&amp;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
+            .replace('"', "&quot;")
+            .replace("'", "&#39;")
+    )
+xh = escape_html
 
 # noinspection PyTypeChecker
 MAX_SINGLE_WRITE = 1000000
