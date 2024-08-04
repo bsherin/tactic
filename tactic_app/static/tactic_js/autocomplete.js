@@ -5,7 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.combinedCompletions = combinedCompletions;
 var _communication_react = require("./communication_react");
-const EXTRAWORDS_LIST = ["global_import", "Collection", "Collection", "Collection.document_names", "Collection.current_docment", "Collection.column", "Collection.tokenize", "Collection.detach", "Collection.rewind", "Library", "Library.collections", "Library.lists", "Library.functions", "Library.classes", "Settings", "Settings.names", "Tiles", "Pipes"];
+const EXTRAWORDS_LIST = ["global_import", "escape_html", "xh", "ds", "Collection", "Collection", "Collection.document_names", "Collection.current_docment", "Collection.column", "Collection.tokenize", "Collection.detach", "Collection.rewind", "Library", "Library.collections", "Library.lists", "Library.functions", "Library.classes", "Settings", "Settings.names", "Tiles", "Pipes"];
 var self_commands = [];
 function create_api() {
   let self = this;
@@ -22,6 +22,7 @@ function create_api() {
         self_commands.push({
           label: the_name,
           type: "method",
+          detail: "tactic",
           info: entry["signature"]
         });
       }
@@ -51,7 +52,7 @@ function periodCompletions(context) {
     periodCompletions.push({
       label: word,
       type: "property",
-      detail: "Extra words"
+      detail: "tactic"
     });
   }
   return {

@@ -5,7 +5,7 @@ import {postAjax} from "./communication_react";
 export {combinedCompletions};
 
 
-const EXTRAWORDS_LIST = ["global_import", "Collection",
+const EXTRAWORDS_LIST = ["global_import", "escape_html", "xh", "ds", "Collection",
     "Collection", "Collection.document_names", "Collection.current_docment", "Collection.column",
     "Collection.tokenize", "Collection.detach", "Collection.rewind",
     "Library", "Library.collections", "Library.lists", "Library.functions", "Library.classes",
@@ -30,6 +30,7 @@ function create_api() {
                 self_commands.push({
                     label: the_name,
                     type: "method",
+                    detail: "tactic",
                     info: entry["signature"]
                 })
             }
@@ -59,7 +60,7 @@ function periodCompletions(context) {
         periodCompletions.push({
         label: word,
         type: "property",
-        detail: "Extra words"
+        detail: "tactic"
         });
     }
 
