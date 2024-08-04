@@ -1020,22 +1020,30 @@ function ConsoleComponent(props) {
     });
   }
   function _appendConsoleItemOutput(data) {
-    let current = get_console_item_entry(data.console_id).output_text;
-    if (current != "") {
-      current += "<br>";
-    }
-    current += data.result_text;
-    if (current.length > MAX_OUTPUT_LENGTH) {
-      current = current.slice(-1 * MAX_OUTPUT_LENGTH);
-    }
-    _setConsoleItemValue(data.console_id, "output_text", current);
+    //let current = get_console_item_entry(data.console_id).output_dict;
+    // if (current != "") {
+    //     current += "<br>"
+    // }
+    // current[data.counter] = data.result_text;
+    // if (current.length > MAX_OUTPUT_LENGTH) {
+    //     current = current.slice(-1 * MAX_OUTPUT_LENGTH,)
+    // }
+    props.dispatch({
+      type: "change_code_output_row",
+      unique_id: data.console_id,
+      row: data.counter,
+      new_value: data.result_text
+    });
+
+    // _setConsoleItemValue(data.console_id, "output_dict", current)
   }
   function _setConsoleItemOutput(data) {
-    let current = data.result_text;
-    if (current.length > MAX_OUTPUT_LENGTH) {
-      current = current.slice(-1 * MAX_OUTPUT_LENGTH);
-    }
-    _setConsoleItemValue(data.console_id, "output_text", current);
+    let current = {};
+    current[-1] = data.result_text;
+    // if (current.length > MAX_OUTPUT_LENGTH) {
+    //     current = current.slice(-1 * MAX_OUTPUT_LENGTH,)
+    // }
+    _setConsoleItemValue(data.console_id, "output_dict", current);
   }
   function _addToLog(new_line) {
     let log_content = console_error_log_text_ref.current;
@@ -1328,7 +1336,7 @@ function ConsoleComponent(props) {
   }
   function _clearCodeOutput(unique_id) {
     let callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-    _setConsoleItemValue(unique_id, "output_text", "", callback);
+    _setConsoleItemValue(unique_id, "output_dict", {}, callback);
   }
   function _runSelected() {
     if (window.in_context && !am_selected()) {
@@ -2174,20 +2182,19 @@ function BlobItem(props) {
   }))))));
 }
 BlobItem = /*#__PURE__*/(0, _react.memo)(BlobItem);
-const code_item_update_props = ["am_shrunk", "set_focus", "am_selected", "search_string", "summary_text", "console_text", "in_section", "show_spinner", "execution_count", "output_text", "console_available_width", "dark_theme"];
+const code_item_update_props = ["am_shrunk", "set_focus", "am_selected", "search_string", "summary_text", "console_text", "in_section", "show_spinner", "execution_count", "output_dict", "console_available_width", "dark_theme"];
 function ConsoleCodeItem(props) {
   props = {
     summary_text: null,
     ...props
   };
+  const [outputText, setOutputText, outputTextRef] = (0, _utilities_react.useStateAndRef)("");
   const elRef = (0, _react.useRef)(null);
-  const last_output_text = (0, _react.useRef)("");
   const am_selected_previous = (0, _react.useRef)(false);
   const setFocusFunc = (0, _react.useRef)(null);
+  const lastOutputText = (0, _react.useRef)("");
   const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(elRef, 0, "ConsoleCodeItem");
   (0, _react.useEffect)(() => {
-    executeEmbeddedScripts();
-    // makeTablesSortable();
     if (props.am_selected && !am_selected_previous.current && elRef && elRef.current) {
       scrollMeIntoView();
     }
@@ -2210,6 +2217,18 @@ function ConsoleCodeItem(props) {
       }
     };
   }, []);
+  function concatenateSortedValues(dict) {
+    const sortedKeys = Object.keys(dict).map(Number).sort((a, b) => a - b);
+    return sortedKeys.map(key => dict[key]).join('<br>');
+  }
+  (0, _react.useEffect)(() => {
+    let newText = concatenateSortedValues(props.output_dict);
+    if (newText != lastOutputText.current) {
+      lastOutputText.current = newText;
+      setOutputText(newText);
+      executeEmbeddedScripts();
+    }
+  });
   const registerSetFocusFunc = (0, _react.useCallback)(theFunc => {
     setFocusFunc.current = theFunc;
   }, []);
@@ -2228,16 +2247,12 @@ function ConsoleCodeItem(props) {
     }
   }
   function executeEmbeddedScripts() {
-    if (props.output_text != last_output_text.current) {
-      // to avoid doubles of bokeh images
-      last_output_text.current = props.output_text;
-      let scripts = $("#" + props.unique_id + " .log-code-output script").toArray();
-      for (let script of scripts) {
-        // noinspection EmptyCatchBlockJS,UnusedCatchParameterJS
-        try {
-          window.eval(script.text);
-        } catch (e) {}
-      }
+    let scripts = $("#" + props.unique_id + " .log-code-output script").toArray();
+    for (let script of scripts) {
+      // noinspection EmptyCatchBlockJS,UnusedCatchParameterJS
+      try {
+        window.eval(script.text);
+      } catch (e) {}
     }
   }
 
@@ -2277,7 +2292,7 @@ function ConsoleCodeItem(props) {
     props.handleDelete(props.unique_id);
   }, [props.show_spinner]);
   const _clearOutput = (0, _react.useCallback)(() => {
-    props.setConsoleItemValue(props.unique_id, "output_text", "");
+    props.setConsoleItemValue(props.unique_id, "output_dict", {});
   }, []);
   const _extraKeys = (0, _react.useMemo)(() => {
     return [{
@@ -2392,7 +2407,7 @@ function ConsoleCodeItem(props) {
     panel_style += " in-section";
   }
   let output_dict = {
-    __html: props.output_text
+    __html: outputTextRef.current
   };
   let spinner_val = props.running ? null : 0;
   let uwidth = props.in_section ? usable_width - SECTION_INDENT / 2 : usable_width;
@@ -2544,7 +2559,6 @@ ResourceLinkButton = /*#__PURE__*/(0, _react.memo)(ResourceLinkButton);
 const text_item_update_props = ["am_shrunk", "set_focus", "serach_string", "am_selected", "show_markdown", "in_section", "summary_text", "console_text", "console_available_width", "links"];
 function ConsoleTextItem(props) {
   props = {
-    force_sync_to_prop: false,
     summary_text: null,
     links: [],
     ...props
@@ -2602,9 +2616,6 @@ function ConsoleTextItem(props) {
   }, []);
   const _handleChange = (0, _react.useCallback)(new_text => {
     props.setConsoleItemValue(props.unique_id, "console_text", new_text);
-  }, []);
-  const _clearForceSync = (0, _react.useCallback)(() => {
-    props.setConsoleItemValue(props.unique_id, "force_sync_to_prop", false);
   }, []);
   function _handleSummaryTextChange(value) {
     props.setConsoleItemValue(props.unique_id, "summary_text", value);
@@ -2867,9 +2878,6 @@ function ConsoleTextItem(props) {
     registerSetFocusFunc: registerSetFocusFunc,
     show_line_numbers: false,
     soft_wrap: true,
-    sync_to_prop: false,
-    force_sync_to_prop: props.force_sync_to_prop,
-    clear_force_sync: _clearForceSync,
     mode: "markdown",
     code_content: props.console_text,
     extraKeys: _extraKeys,

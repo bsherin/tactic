@@ -27,7 +27,7 @@ import {handleCallback, postWithCallback, postPromise, postAjaxPromise, postAjax
 import {doFlash} from "./toaster"
 import {withStatus} from "./toaster";
 import {withErrorDrawer} from "./error_drawer";
-import {renderSpinnerMessage, useConnection, useStateAndRef} from "./utilities_react";
+import {renderSpinnerMessage, useConnection, useConstructor, useStateAndRef} from "./utilities_react";
 import {useSize, withSizeContext, SizeContext} from "./sizing_tools";
 import {ErrorBoundary} from "./error_boundary";
 import {useCallbackStack, useReducerAndRef} from "./utilities_react";
@@ -90,7 +90,7 @@ function MainApp(props) {
     const set_table_scroll = useRef(null);
 
     const [console_selected_items, set_console_selected_items, console_selected_items_ref] = useStateAndRef([]);
-    const [console_items, dispatch, console_items_ref] = useReducerAndRef(consoleItemsReducer, iStateOrDefault("console_items"));
+    const [console_items, dispatch, console_items_ref] = useReducerAndRef(consoleItemsReducer, []);
     const [tile_list, tileDispatch, tile_list_ref] = useReducerAndRef(tilesReducer, iStateOrDefault("tile_list"));
 
     const settingsContext = useContext(SettingsContext);
@@ -142,6 +142,12 @@ function MainApp(props) {
 
     const pushCallback = useCallbackStack();
 
+   useConstructor(()=>{
+        dispatch({
+            type: "initialize",
+            new_items: props.is_project && props.interface_state ? props.interface_state["console_items"] : []
+        })
+    });
     useEffect(() => {
         if (props.controlled) {
             props.registerDirtyMethod(_dirty);

@@ -80,6 +80,7 @@ function FreeformBody(props) {
                              sync_to_prop={true}
                              soft_wrap={props.mState.soft_wrap}
                              mode="text"
+                              controlled={true}
                              setCMObject={_setCMObject}
                              readOnly={false}/>
         </div>
