@@ -12,7 +12,7 @@ with (warnings.catch_warnings()):
     warnings.simplefilter("ignore")
     from matplotlib_utilities import ColorMapper, FigureCanvas, MplFigure
     # noinspection PyUnresolvedReferences
-    get_cmap = matplotlib.cm.ColormapRegistry.get_cmap
+    # get_cmap = matplotlib.cm.ColormapRegistry.get_cmap
 
 from tile_base import TileBase
 from d3utilities import D3Tile

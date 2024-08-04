@@ -6,7 +6,7 @@ import warnings
 import matplotlib
 with (warnings.catch_warnings()):
     warnings.simplefilter("ignore")
-    get_cmap = matplotlib.cm.ColormapRegistry.get_cmap
+    # get_cmap = matplotlib.cm.ColormapRegistry.get_cmap
     register_cmap = matplotlib.colormaps.register
     from matplotlib.cm import datad, ScalarMappable
 
@@ -189,7 +189,7 @@ class DispersionPlot(MplFigure):
 class ColorMapper(object):
     def __init__(self, bottom_val, top_val, color_palette_name):
         cnorm = mpl_Normalize(vmin=bottom_val, vmax=top_val)
-        comap = get_cmap(color_palette_name)
+        comap = matplotlib.colormaps[color_palette_name]
         self.scalar_map = ScalarMappable(norm=cnorm, cmap=comap)
 
     @staticmethod
