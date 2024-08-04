@@ -179,13 +179,11 @@ function ReactCodemirrorMergeView6(props) {
                 indentUnit.of("    "),
                 highlightField.init(),
                 keymap.of([
-                    // ...props.extraKeys,
                     ...closeBracketsKeymap,
                     ...defaultKeymap,
                     ...historyKeymap,
                     ...foldKeymap,
                     ...completionKeymap,
-                    ...lintKeymap,
                     indentWithTab
                 ]),
                 EditorView.updateListener.of((update) => {
