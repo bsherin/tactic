@@ -1,20 +1,20 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.RepositoryAllMenubar = RepositoryAllMenubar;
 var _react = _interopRequireDefault(require("react"));
 var _library_menubars = require("./library_menubars");
-const resource_icon = window.is_remote ? "globe-network" : "map-marker";
-const endpointDict = {
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+var resource_icon = window.is_remote ? "globe-network" : "map-marker";
+var endpointDict = {
   tile: "/repository_view_module/",
   list: "/repository_view_list/",
   code: "/repository_view_code/"
 };
 function RepositoryAllMenubar(props) {
-  const context_menu_items = [{
+  var context_menu_items = [{
     text: "view",
     icon: "eye-open",
     onClick: _view_resource
@@ -30,7 +30,7 @@ function RepositoryAllMenubar(props) {
       props.view_func(endpointDict[props.selectedTypeRef.current]);
     }
   }
-  const menu_specs = {
+  var menu_specs = {
     View: [{
       name_text: "View",
       icon_name: "eye-open",
@@ -44,7 +44,7 @@ function RepositoryAllMenubar(props) {
       multi_select: true
     }]
   };
-  return /*#__PURE__*/_react.default.createElement(_library_menubars.LibraryMenubar, {
+  return /*#__PURE__*/_react["default"].createElement(_library_menubars.LibraryMenubar, {
     menu_specs: menu_specs,
     sendContextMenuItems: props.sendContextMenuItems,
     connection_status: props.connection_status,

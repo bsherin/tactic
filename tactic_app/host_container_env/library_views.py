@@ -261,6 +261,7 @@ def send_to_repository():
 @app.route('/grab_metadata', methods=['POST'])
 @login_required
 def grab_metadata():
+    print("entering grab_metadata in host")
     try:
         res_type = request.json["res_type"]
         res_name = request.json["res_name"]
@@ -271,6 +272,7 @@ def grab_metadata():
             return jsonify({"success": False, "message": "No metadata found", "alert_type": "alert-warning"})
         else:
             result = current_user.process_metadata(mdata)
+            print("returning from grab_metadata in host with result " + str(result))
             result.update({"success": True, "res_name": res_name})
             return jsonify(result)
     except Exception as ex:

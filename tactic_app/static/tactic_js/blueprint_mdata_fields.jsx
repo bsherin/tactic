@@ -303,19 +303,27 @@ function NativeTags(props) {
 NativeTags = memo(NativeTags);
 
 function NotesField(props) {
+    props = {
+        handleBlur: null,
+        ...props
+    };
     const setFocusFunc = useRef(null);
 
     const settingsContext = useContext(SettingsContext);
 
     useEffect(() => {
+        if (props.notesRef.current.length == 0) {
+            console.log("got notes of zero length")
+        }
+        else {
+            console.log("Got new notes " + props.notesRef.current.slice(0, 100))
+        }
+    }, [props.notesRef.current]);
+
+    useEffect(() => {
         // console.log("theme changed")  // This is to force re-rendering because of highlight.js theme change
     }, [settingsContext.settings.theme]);
 
-
-    props = {
-        handleBlur: null,
-        ...props
-    };
     const [mdHeight, setMdHeight] = useState(500);
     const [showMarkdown, setShowMarkdown] = useState(hasOnlyWhitespace() ? false : props.show_markdown_initial);
     const awaitingFocus = useRef(false);
@@ -582,6 +590,7 @@ function CombinedMetadata(props) {
                     setAllTags(data.tag_list)
                 })
         }
+        console.log(`grabbing metadata for ${props.res_type} ${props.res_name}`)
         postAjaxPromise("grab_metadata", {
             res_type: props.res_type,
             res_name: props.res_name,
@@ -589,6 +598,7 @@ function CombinedMetadata(props) {
         })
             .then(data => {
                 setTags(data.tags);
+                console.log("length of data.notes is " + data.notes.length);
                 setNotes(data.notes);
                 setCreated(data.datestring);
                 setUpdated(data.additional_mdata.updated);
@@ -605,6 +615,7 @@ function CombinedMetadata(props) {
     }
 
     async function postChanges(state_stuff) {
+
         const result_dict = {
             "res_type": props.res_type,
             "res_name": props.res_name,
@@ -614,6 +625,10 @@ function CombinedMetadata(props) {
             "category": "category" in state_stuff ? state_stuff["category"] : category,
             "mdata_uid": guid()
         };
+        if ("notes" in state_stuff) {
+            console.log("notes is in state_stuff")
+        }
+        console.log(`postingChanges ${props.res_type} ${props.res_name} with notes ${result_dict["notes"]}`)
         try {
             await postAjaxPromise("save_metadata", result_dict);
             updatedIdRef.current = result_dict["mdata_uid"];
@@ -648,7 +663,7 @@ function CombinedMetadata(props) {
     }
 
     async function _handleNotesChange(new_text) {
-        await _handleMetadataChange({"notes": new_text}, false);
+        await _handleMetadataChange({"notes": new_text}, true);
     }
 
     async function _handleTagsChange(tags) {
@@ -737,7 +752,8 @@ function CombinedMetadata(props) {
             }
             {!props.useFixedData && props.useNotes && notesRef.current != null &&
                 <FormGroup label="Notes">
-                    <NotesField notesRef={notesRef}
+                    <NotesField key={`${props.res_name}-${props.res_type}`}
+                                notesRef={notesRef}
                                 res_name={props.res_name}
                                 res_type={props.res_type}
                                 readOnly={props.readOnly}

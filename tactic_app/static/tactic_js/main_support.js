@@ -1,5 +1,6 @@
 "use strict";
 
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -8,16 +9,24 @@ exports.main_props = main_props;
 var _utilities_react = require("./utilities_react");
 var _communication_react = require("./communication_react");
 var _tactic_socket = require("./tactic_socket");
-let ppi;
+function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
+function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
+function _defineProperty(obj, key, value) { key = _toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
+function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+var ppi;
 function main_props(data, registerDirtyMethod, finalCallback) {
   var tsocket;
   ppi = (0, _utilities_react.get_ppi)();
-  let main_id = data.main_id;
+  var main_id = data.main_id;
   if (!window.in_context) {
     window.main_id = main_id;
   }
-  let initial_tile_types;
-  let initial_tile_icon_dict;
+  var initial_tile_types;
+  var initial_tile_icon_dict;
   tsocket = new _tactic_socket.TacticSocket("main", 5000, "main_app", main_id, function (response) {
     tsocket.socket.on("remove-ready-block", readyListener);
     initial_tile_types = response.tile_types;
@@ -39,12 +48,12 @@ function main_props(data, registerDirtyMethod, finalCallback) {
       (0, _utilities_react.renderSpinnerMessage)("Everyone is ready, initializing...");
     }
     tsocket.socket.off("remove-ready-block", readyListener);
-    tsocket.attachListener('handle-callback', task_packet => {
+    tsocket.attachListener('handle-callback', function (task_packet) {
       (0, _communication_react.handleCallback)(task_packet, main_id);
     });
     window.base_figure_url = data.base_figure_url;
     if (data.is_project) {
-      let data_dict = {
+      var data_dict = {
         "project_name": data.project_name,
         "doc_type": data.doc_type,
         "base_figure_url": data.base_figure_url,
@@ -53,14 +62,14 @@ function main_props(data, registerDirtyMethod, finalCallback) {
       };
       (0, _communication_react.postWithCallback)(main_id, "initialize_project_mainwindow", data_dict, null, null, main_id);
     } else {
-      let data_dict = {
+      var _data_dict = {
         "collection_name": data.collection_name,
         "doc_type": data.doc_type,
         "base_figure_url": data.base_figure_url,
         "user_id": window.user_id,
         "ppi": ppi
       };
-      (0, _communication_react.postWithCallback)(main_id, "initialize_mainwindow", data_dict, _finish_post_load_in_context, null, main_id);
+      (0, _communication_react.postWithCallback)(main_id, "initialize_mainwindow", _data_dict, _finish_post_load_in_context, null, main_id);
     }
   }
   function _finish_post_load_in_context(fdata) {
@@ -78,8 +87,17 @@ function main_props(data, registerDirtyMethod, finalCallback) {
       if (!("show_console_pane" in interface_state)) {
         interface_state["show_console_pane"] = true;
       }
-      for (let entry of interface_state.tile_list) {
-        entry.finished_loading = false;
+      var _iterator = _createForOfIteratorHelper(interface_state.tile_list),
+        _step;
+      try {
+        for (_iterator.s(); !(_step = _iterator.n()).done;) {
+          var entry = _step.value;
+          entry.finished_loading = false;
+        }
+      } catch (err) {
+        _iterator.e(err);
+      } finally {
+        _iterator.f();
       }
     }
     if (data.doc_type == "none") {
@@ -157,66 +175,39 @@ function mainReducer(mState, action) {
   var newMstate;
   switch (action.type) {
     case "change_field":
-      newMstate = {
-        ...mState
-      };
+      newMstate = _objectSpread({}, mState);
       newMstate[action.field] = action.new_value;
       break;
     case "change_multiple_fields":
-      newMstate = {
-        ...mState,
-        ...action.newPartialState
-      };
+      newMstate = _objectSpread(_objectSpread({}, mState), action.newPartialState);
       break;
     case "update_table_spec":
-      newMstate = {
-        ...mState
-      };
-      newMstate.table_spec = {
-        ...mState.table_spec,
-        ...action.spec_update
-      };
+      newMstate = _objectSpread({}, mState);
+      newMstate.table_spec = _objectSpread(_objectSpread({}, mState.table_spec), action.spec_update);
       break;
     case "set_cell_content":
-      newMstate = {
-        ...mState
-      };
-      let new_data_row_dict = {
-        ...mState.data_row_dict
-      };
-      let the_row = {
-        ...new_data_row_dict[action.row_id]
-      };
+      newMstate = _objectSpread({}, mState);
+      var new_data_row_dict = _objectSpread({}, mState.data_row_dict);
+      var the_row = _objectSpread({}, new_data_row_dict[action.row_id]);
       the_row[action.column_header] = action.new_content;
       new_data_row_dict[action.row_id] = the_row;
       newMstate.data_row_dict = new_data_row_dict;
       break;
     case "set_cell_background":
-      newMstate = {
-        ...mState
-      };
-      let new_cell_backgrounds = {
-        ...mState.table_spec.cell_backgrounds
-      };
+      newMstate = _objectSpread({}, mState);
+      var new_cell_backgrounds = _objectSpread({}, mState.table_spec.cell_backgrounds);
       if (!new_cell_backgrounds.hasOwnProperty(action.row_id)) {
         new_cell_backgrounds[action.row_id] = {};
       }
       new_cell_backgrounds[action.row_id][action.column_header] = color;
-      newMstate.table_spec = {
-        ...mState.table_spec,
+      newMstate.table_spec = _objectSpread(_objectSpread({}, mState.table_spec), {}, {
         cell_backgrounds: new_cell_backgrounds
-      };
+      });
       break;
     case "set_cells_to_color_text":
-      newMstate = {
-        ...mState
-      };
-      let ccd = {
-        ...newMstate.cells_to_color_text
-      };
-      let entry = {
-        ...ccd[action.row_id]
-      };
+      newMstate = _objectSpread({}, mState);
+      var ccd = _objectSpread({}, newMstate.cells_to_color_text);
+      var entry = _objectSpread({}, ccd[action.row_id]);
       entry[action.column_header] = {
         token_text: action.token_text,
         color_dict: action.color_dict
@@ -225,19 +216,12 @@ function mainReducer(mState, action) {
       newMstate.cells_to_color_text = ccd;
       break;
     case "update_data_row_dict":
-      newMstate = {
-        ...mState
-      };
-      newMstate.data_row_dict = {
-        ...mState.data_row_dict,
-        ...action.new_data_row_dict
-      };
+      newMstate = _objectSpread({}, mState);
+      newMstate.data_row_dict = _objectSpread(_objectSpread({}, mState.data_row_dict), action.new_data_row_dict);
       break;
     default:
       console.log("Got Unknown action: " + action.type);
-      newMstate = {
-        ...mState
-      };
+      newMstate = _objectSpread({}, mState);
   }
   return newMstate;
 }

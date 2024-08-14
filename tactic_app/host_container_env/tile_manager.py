@@ -72,6 +72,7 @@ class TileManager(LibraryResourceManager):
             return self.get_exception_for_ajax(ex, "Error renaming collection")
 
     def grab_metadata(self, res_name, user_obj=None):
+        print("entering grab_metadata in tile_manager")
         if user_obj is None:
             user_obj = current_user
         tile_dict = self.db[user_obj.tile_collection_name].find_one({self.name_field: res_name})
@@ -90,6 +91,7 @@ class TileManager(LibraryResourceManager):
                     mdata["category"] = "basic"
         else:
             mdata = None
+        print("returning tile metadata " + str(mdata))
         return mdata
 
     def get_tile_icon(self, tile_type, user_obj):
