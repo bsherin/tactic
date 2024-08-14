@@ -1,5 +1,5 @@
 import React from "react";
-import {Fragment, useState, useEffect, useRef, memo, useContext} from 'react';
+import {Fragment, useEffect, useRef, memo, useContext} from 'react';
 
 import {CombinedMetadata} from "./blueprint_mdata_fields";
 import {HorizontalPanes} from "./resizing_layouts2";
@@ -89,9 +89,6 @@ function ResourceViewerApp(props) {
 
     const top_ref = useRef(null);
     const savedContent = useRef(props.the_content);
-    const savedTags = useRef(props.split_tags);
-    const savedNotes = useRef(props.notes);
-    const [all_tags, set_all_tags] = useState([]);
 
     const statusFuncs = useContext(StatusContext);
     const sizeInfo = useContext(SizeContext);
@@ -103,20 +100,6 @@ function ResourceViewerApp(props) {
 
     useEffect(() => {
         statusFuncs.stopSpinner();
-    }, []);
-
-    useEffect(() => {
-        if (!props.readOnly) {
-            let data_dict = {
-                pane_type: props.res_type,
-                is_repository: false,
-                show_hidden: true
-            };
-            postAjaxPromise("get_tag_list", data_dict)
-                .then(data => {
-                    set_all_tags(data.tag_list)
-                })
-        }
     }, []);
 
     function initSocket() {
@@ -155,20 +138,14 @@ function ResourceViewerApp(props) {
     );
 
     let right_pane = (
-        <CombinedMetadata tags={props.tags}
-                          useTags={props.tags != null}
-                          expandWidth={true}
+        <CombinedMetadata expandWidth={true}
+                          tsocket={props.tsocket}
                           outer_style={metadata_outer_style}
-                          all_tags={all_tags}
-                          created={props.created}
-                          updated={props.updated}
-                          notes={props.notes}
-                          useNotes={props.notes != null}
-                          icon={props.mdata_icon}
+                          useTags={true}
+                          useNotes={true}
                           readOnly={props.readOnly}
-                          handleChange={props.handleStateChange}
-                          additional_metadata={props.additional_metadata}
-                          pane_type={props.res_type}/>
+                          res_name={props.resource_name}
+                          res_type={props.res_type}/>
     );
 
     return (

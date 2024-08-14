@@ -51,6 +51,13 @@ class TacticSocket {
         this.listeners[event] = newListener
     }
 
+    detachListener(event) {
+        if (event in this.listeners) {
+            this.socket.off(event, this.listeners[event]);
+            delete this.listeners[event]
+        }
+    }
+
     disconnect() {
         this.stopListening();
         this.socket.disconnect();

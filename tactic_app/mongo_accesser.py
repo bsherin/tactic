@@ -212,7 +212,7 @@ class MongoAccess(object):
                                                                   projection=["metadata"])["metadata"]
         return mdata
 
-    def set_collection_metadata(self, short_collection_name, tags, notes):
+    def set_collection_metadata(self, short_collection_name, tags, notes, uid=""):
         name_exists = short_collection_name in self.data_collection_names
         if not name_exists:
             return None
@@ -222,6 +222,7 @@ class MongoAccess(object):
             mdata = self.create_initial_metadata()
         mdata["tags"] = tags
         mdata["notes"] = notes
+        mdata["mdata_uid"] = uid
         self.db[self.collection_collection_name].update_one({"collection_name": short_collection_name},
                                                              {'$set': {"metadata": mdata}})
         return

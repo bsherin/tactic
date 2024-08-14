@@ -1040,7 +1040,12 @@ function initSocket() {
         // if (current.length > MAX_OUTPUT_LENGTH) {
         //     current = current.slice(-1 * MAX_OUTPUT_LENGTH,)
         // }
-        _setConsoleItemValue(data.console_id, "output_dict", current)
+        props.dispatch({
+            type: "change_code_output",
+            unique_id: data.console_id,
+            new_value: current
+        });
+        //_setConsoleItemValue(data.console_id, "output_dict", current)
     }
 
     function _addToLog(new_line) {
@@ -2213,12 +2218,9 @@ function ConsoleCodeItem(props) {
         summary_text: null,
         ...props
     };
-
-    const [outputText, setOutputText, outputTextRef] = useStateAndRef("");
     const elRef = useRef(null);
     const am_selected_previous = useRef(false);
     const setFocusFunc = useRef(null);
-    const lastOutputText = useRef("");
 
 
     const [usable_width, usable_height, topX, topY] = useSize(elRef, 0, "ConsoleCodeItem");
@@ -2248,20 +2250,6 @@ function ConsoleCodeItem(props) {
       }
         })
     }, []);
-
-    function concatenateSortedValues(dict) {
-      const sortedKeys = Object.keys(dict).map(Number).sort((a, b) => a - b);
-      return sortedKeys.map(key => dict[key]).join('<br>');
-    }
-
-    useEffect(()=>{
-        let newText = concatenateSortedValues(props.output_dict);
-        if (newText != lastOutputText.current) {
-            lastOutputText.current = newText;
-            setOutputText(newText);
-            executeEmbeddedScripts();
-        }
-    });
 
     const registerSetFocusFunc = useCallback((theFunc) => {
         setFocusFunc.current = theFunc;
@@ -2453,7 +2441,7 @@ function ConsoleCodeItem(props) {
     if (props.in_section) {
         panel_style += " in-section"
     }
-    let output_dict = {__html: outputTextRef.current};
+    let output_dict = {__html: props.output_text};
     let spinner_val = props.running ? null : 0;
 
     let uwidth =  props.in_section ? usable_width - SECTION_INDENT / 2 : usable_width;

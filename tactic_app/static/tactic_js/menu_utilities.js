@@ -219,7 +219,7 @@ function DrawerButtonGroup(props) {
     alignText: "left",
     vertical: false
   }, props.showErrorDrawerButton && /*#__PURE__*/_react.default.createElement(ErrorDrawerButton, null), assistantDrawerFuncs && assistantDrawerFuncs.showAssistantDrawerButton && /*#__PURE__*/_react.default.createElement(AssistantDrawerButton, null), props.showMetadataDrawerButton && /*#__PURE__*/_react.default.createElement(MetadataDrawerButton, {
-    showMetadata: props.showMetadata
+    show_drawer: props.showMetadata
   }));
 }
 function ErrorDrawerButton(props) {

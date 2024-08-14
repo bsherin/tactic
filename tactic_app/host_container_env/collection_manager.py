@@ -382,8 +382,8 @@ class CollectionManager(LibraryResourceManager):
         user_obj = current_user
         return user_obj.get_collection_metadata(res_name)
 
-    def save_metadata(self, res_name, tags, notes):
-        current_user.set_collection_metadata(res_name, tags, notes)
+    def save_metadata(self, res_name, tags, notes, uid=""):
+        current_user.set_collection_metadata(res_name, tags, notes, uid)
         return
 
     def delete_tag(self, tag):

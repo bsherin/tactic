@@ -11,9 +11,9 @@ require("../tactic_css/tactic.scss");
 var _react = _interopRequireWildcard(require("react"));
 var _client = require("react-dom/client");
 var _core = require("@blueprintjs/core");
-var _reactCodemirror = require("./react-codemirror6");
 var _resource_viewer_react_app = require("./resource_viewer_react_app");
 var _tactic_socket = require("./tactic_socket");
+var _reactCodemirror = require("./react-codemirror6");
 var _communication_react = require("./communication_react.js");
 var _toaster = require("./toaster.js");
 var _error_drawer = require("./error_drawer.js");
@@ -190,6 +190,33 @@ function CodeViewerApp(props) {
     }
     return ms;
   });
+  function _handleCodeChange(new_code) {
+    set_code_content(new_code);
+  }
+  async function _handleMetadataChange(state_stuff) {
+    for (let field in state_stuff) {
+      switch (field) {
+        case "tags":
+          set_tags(state_stuff[field]);
+          break;
+        case "notes":
+          set_notes(state_stuff[field]);
+          break;
+      }
+    }
+    const result_dict = {
+      "res_type": "code",
+      "res_name": _cProp("resource_name"),
+      "tags": "tags" in state_stuff ? state_stuff["tags"].join(" ") : tags,
+      "notes": "notes" in state_stuff ? state_stuff["notes"] : notes,
+      "icon": "icon" in state_stuff ? state_stuff["icon"] : icon
+    };
+    try {
+      await (0, _communication_react.postAjaxPromise)("save_metadata", result_dict);
+    } catch (e) {
+      console.log("error saving metadata ", e);
+    }
+  }
   function _setResourceNameState(new_name) {
     let callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
     if (props.controlled) {
@@ -203,21 +230,6 @@ function CodeViewerApp(props) {
     return new Promise((resolve, reject) => {
       _setResourceNameState(new_name, resolve);
     });
-  }
-  function _handleMetadataChange(state_stuff) {
-    for (let field in state_stuff) {
-      switch (field) {
-        case "tags":
-          set_tags(state_stuff[field]);
-          break;
-        case "notes":
-          set_notes(state_stuff[field]);
-          break;
-      }
-    }
-  }
-  function _handleCodeChange(new_code) {
-    set_code_content(new_code);
   }
   function _setSearchMatches(nmatches) {
     set_search_matches(nmatches);
@@ -353,14 +365,7 @@ function CodeViewerApp(props) {
     created: props.created,
     notes: notes,
     tags: tags,
-    saveMe: _saveMe,
-    search_ref: search_ref,
     show_search: false,
-    update_search_state: _update_search_state,
-    search_string: search_string,
-    search_matches: search_matches,
-    regex: regex,
-    allow_regex_search: true,
     showErrorDrawerButton: true
   }), /*#__PURE__*/_react.default.createElement(_reactCodemirror.ReactCodemirror6, {
     code_content: code_content,

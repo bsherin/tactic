@@ -5,7 +5,7 @@ import "../tactic_css/tactic_main.scss";
 import React from "react";
 import {Fragment, useEffect, useRef, memo, useMemo, useContext, useReducer, useCallback} from "react";
 import { createRoot } from 'react-dom/client';
-//import { HotkeysProvider } from "@blueprintjs/core";
+
 import {TacticNavbar} from "./blueprint_navbar";
 import {TacticMenubar} from "./menu_utilities";
 import {ProjectMenu, ViewMenu} from "./main_menus_react";
@@ -21,7 +21,7 @@ import {HorizontalPanes} from "./resizing_layouts2";
 import {ErrorDrawerContext, withErrorDrawer} from "./error_drawer";
 import {withSizeContext, useSize, SizeProvider} from "./sizing_tools";
 import {withAssistant} from "./assistant";
-import {useCallbackStack, useConstructor, useImmerReducerAndRef, useReducerAndRef} from "./utilities_react";
+import {useCallbackStack, useConstructor, useReducerAndRef} from "./utilities_react";
 import {notebook_props, notebookReducer} from "./notebook_support";
 
 import {withSettings, SettingsContext} from "./settings";
@@ -315,13 +315,14 @@ function NotebookApp(props) {
             </SizeProvider>
             </div>
             <MetadataDrawer res_type="project"
-                res_name={project_name}
-                readOnly={false}
-                is_repository={false}
-                show_drawer={mState.show_metadata}
-                position="right"
-                onClose={hideMetadata}
-                size="45%"
+                            res_name={project_name}
+                            tsocket={props.tsocket}
+                            readOnly={false}
+                            is_repository={false}
+                            show_drawer={mState.show_metadata}
+                            position="right"
+                            onClose={hideMetadata}
+                            size="45%"
                 />
         </Fragment>
     )

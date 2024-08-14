@@ -20,7 +20,8 @@ CHUNK_SIZE = int(int(os.environ.get("CHUNK_SIZE")) / 2)
 default_tile_icons = {
     "standard": "application",
     "matplotlib": "timeline-line-chart",
-    "d3": "code"
+    "d3": "code",
+    "js": "code"
 }
 
 
@@ -122,7 +123,7 @@ class ResourceManager(ExceptionMixin):
                 for tagstr, icon in tag_match_dict.items():
                     if tagstr in mdata["tags"]:
                         return icon
-            if "type" in mdata and mdata["type"] in ["matplotlib", "d3"]:
+            if "type" in mdata and mdata["type"] in ["matplotlib", "d3", "js"]:
                 return default_tile_icons[mdata["type"]]
         return default_tile_icons["standard"]
 

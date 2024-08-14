@@ -57,7 +57,7 @@ class CodeManager(LibraryResourceManager):
             mdata = None
         return mdata
 
-    def save_metadata(self, res_name, tags, notes):
+    def save_metadata(self, res_name, tags, notes, uid=""):
         doc = self.db[current_user.code_collection_name].find_one({"code_name": res_name})
         if "metadata" in doc:
             mdata = doc["metadata"]
@@ -65,6 +65,7 @@ class CodeManager(LibraryResourceManager):
             mdata = {}
         mdata["tags"] = tags
         mdata["notes"] = notes
+        mdata["mdata_uid"] = uid
         self.db[current_user.code_collection_name].update_one({"code_name": res_name}, {'$set': {"metadata": mdata}})
 
     def delete_tag(self, tag):

@@ -28,7 +28,6 @@ import {foldGutter, indentOnInput, syntaxHighlighting, bracketMatching, foldKeym
 import {history, defaultKeymap, historyKeymap} from '@codemirror/commands';
 import {highlightSelectionMatches} from '@codemirror/search';
 import {closeBrackets, autocompletion, closeBracketsKeymap, completionKeymap} from '@codemirror/autocomplete';
-import {lintKeymap} from '@codemirror/lint';
 
 import {themeList, importTheme} from "./theme_support";
 
@@ -163,27 +162,16 @@ function ReactCodemirror6(props) {
 
     const [usable_width, usable_height, topX, topY] = useSize(localRef, props.iCounter, "CodeMirror");
 
-    useEffect(() => {
-        prevSoftWrap.current = props.soft_wrap;
-        if (props.registerSetFocusFunc) {
-            props.registerSetFocusFunc(setFocus);
-        }
-        themeCompartment.current = new Compartment();
-        completionCompartment.current = new Compartment();
-        lineNumberCompartment.current = new Compartment();
-        const activeLineExtension = props.highlight_active_line ? highlightActiveLineGutter : emptyExtension;
-
-        const state = EditorState.create({
-            doc: props.code_content,
-            extensions: [
+    const getExtensions = () => {
+        let extensions = [
                 mode_dict[props.mode](),
-                lineNumberCompartment.current.of(customLineNumbers(props.first_line_number)),
+                //lineNumberCompartment.current.of(customLineNumbers(props.first_line_number)),
                 themeCompartment.current.of([]),
                 history(),
-                activeLineExtension(),
+                //activeLineExtension(),
                 highlightSpecialChars(),
                 history(),
-                foldGutter(),
+                //foldGutter(),
                 drawSelection(),
                 dropCursor(),
                 EditorState.allowMultipleSelections.of(true),
@@ -217,7 +205,33 @@ function ReactCodemirror6(props) {
                         }
                     }
                 }),
-            ]
+            ];
+        if (props.show_line_numbers) {
+            extensions.concat([
+                lineNumberCompartment.current.of(customLineNumbers(props.first_line_number)),
+                foldGutter()
+                ]
+            );
+        }
+        if (props.highlight_active_line) {
+            extensions.push(highlightActiveLineGutter());
+        }
+        return extensions
+    };
+
+    useEffect(() => {
+        prevSoftWrap.current = props.soft_wrap;
+        if (props.registerSetFocusFunc) {
+            props.registerSetFocusFunc(setFocus);
+        }
+        themeCompartment.current = new Compartment();
+        completionCompartment.current = new Compartment();
+        lineNumberCompartment.current = new Compartment();
+        //const activeLineExtension = props.highlight_active_line ? highlightActiveLineGutter : emptyExtension;
+
+        const state = EditorState.create({
+            doc: props.code_content,
+            extensions: getExtensions()
         });
         editorView.current = new EditorView({
             state,
@@ -226,6 +240,13 @@ function ReactCodemirror6(props) {
         if (props.setCMObject != null) {
             props.setCMObject(editorView.current);
         }
+        return () => {
+            if (editorView.current) {
+                editorView.current.destroy();
+                editorView.current = null;
+            }
+        };
+
     }, []);
 
     const switchTheme = (themeName) => {
@@ -277,7 +298,7 @@ function ReactCodemirror6(props) {
     }, [settingsContext.settings.theme, settingsContext.settings.preferred_dark_theme, settingsContext.settings.preferred_light_theme]);
 
     useEffect(()=> {
-        if (editorView.current) {
+        if (editorView.current && props.show_line_numbers) {
             editorView.current.dispatch({
                 effects: lineNumberCompartment.current.reconfigure(customLineNumbers(props.first_line_number))
             })

@@ -1,15 +1,11 @@
 from gevent import monkey; monkey.patch_all()
-import copy
 import datetime
 # noinspection PyUnresolvedReferences
 from qworker import QWorker, task_worthy
-import pymongo
-import qworker
 from flask import render_template, Flask
 from tile_code_parser import TileParser, remove_indents, insert_indents
 import exception_mixin
 from exception_mixin import ExceptionMixin
-from communication_utils import socketio
 from mongo_db_fs import get_dbs
 
 import sys, os
@@ -112,7 +108,7 @@ class ModuleViewerWorker(QWorker, ExceptionMixin):
         with app.test_request_context():
             full_code = render_template("tile_creator_template.html",
                                         class_name=data_dict["module_name"],
-                                        category=data_dict["category"],
+                                        category="none",
                                         exports=export_list_of_dicts,
                                         couple_save_attrs_and_exports=couple_save_attrs_and_exports,
                                         additional_save_attrs=additional_save_attrs,
@@ -139,6 +135,8 @@ class ModuleViewerWorker(QWorker, ExceptionMixin):
                                                       {'$set': {"recent_history": recent_history}})
         return
 
+    optional_mdata_fields = ["tags", "notes", "icon", "category"]
+
     @task_worthy
     def update_module(self, data_dict):
         try:
@@ -159,9 +157,10 @@ class ModuleViewerWorker(QWorker, ExceptionMixin):
                 mdata = doc["metadata"]
             else:
                 mdata = {}
-            mdata["tags"] = data_dict["tags"]
-            mdata["notes"] = data_dict["notes"]
-            mdata["icon"] = data_dict["icon"]
+            for field in self.optional_mdata_fields:
+                if field in data_dict:
+                    mdata[field] = data_dict[field]
+
             mdata["updated"] = datetime.datetime.utcnow()
             mdata["last_viewer"] = data_dict["last_saved"]
             mdata["couple_save_attrs_and_exports"] = data_dict["couple_save_attrs_and_exports"]

@@ -242,7 +242,7 @@ class ProjectManager(LibraryResourceManager):
             mdata = None
         return mdata
 
-    def save_metadata(self, res_name, tags, notes):
+    def save_metadata(self, res_name, tags, notes, uid=""):
         doc = self.db[current_user.project_collection_name].find_one({"project_name": res_name})
         if "metadata" in doc:
             mdata = doc["metadata"]
@@ -250,6 +250,7 @@ class ProjectManager(LibraryResourceManager):
             mdata = {}
         mdata["tags"] = tags
         mdata["notes"] = notes
+        mdata["mdata_uid"] = uid
         self.db[current_user.project_collection_name].update_one({"project_name": res_name}, {'$set': {"metadata": mdata}})
 
     def delete_tag(self, tag):

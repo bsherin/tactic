@@ -151,16 +151,12 @@ function CreatorApp(props) {
   const [render_content_line_number, set_render_content_line_number, render_content_line_number_ref] = (0, _utilities_react.useStateAndRef)(props.render_content_line_number);
   const [draw_plot_line_number, set_draw_plot_line_number, draw_plot_line_number_ref] = (0, _utilities_react.useStateAndRef)(props.draw_plot_line_number);
   const [extra_methods_line_number, set_extra_methods_line_number, extra_methods_line_number_ref] = (0, _utilities_react.useStateAndRef)(props.extra_methods_line_number);
-  const [notes, set_notes, notes_ref] = (0, _utilities_react.useStateAndRef)(props.notes);
-  const [tags, set_tags, tags_ref] = (0, _utilities_react.useStateAndRef)(props.tags);
-  const [icon, set_icon, icon_ref] = (0, _utilities_react.useStateAndRef)(props.icon);
   const [category, set_category, category_ref] = (0, _utilities_react.useStateAndRef)(props.category);
   const [additional_save_attrs, set_additional_save_attrs, additional_save_attrs_ref] = (0, _utilities_react.useStateAndRef)(props.additional_save_attrs || []);
   const [couple_save_attrs_and_exports, set_couple_save_attrs_and_exports, couple_save_attrs_and_exports_ref] = (0, _utilities_react.useStateAndRef)(props.couple_save_attrs_and_exports);
   const [selectedTabId, setSelectedTabId] = (0, _react.useState)("metadata");
   const [top_pane_fraction, set_top_pane_fraction] = (0, _react.useState)(props.is_mpl || props.is_d3 ? .5 : 1);
   const [left_pane_fraction, set_left_pane_fraction] = (0, _react.useState)(.5);
-  const [all_tags, set_all_tags] = (0, _react.useState)([]);
   const [has_key, set_has_key] = (0, _react.useState)(false);
   const extraSelfCompletionsRef = (0, _react.useRef)([]);
   const settingsContext = (0, _react.useContext)(_settings.SettingsContext);
@@ -214,11 +210,6 @@ function CreatorApp(props) {
       }
     }).catch(e => {
       set_has_key(false);
-    });
-    (0, _communication_react.postAjaxPromise)("get_tag_list", data_dict).then(data => {
-      set_all_tags(data.tag_list);
-    }).catch(e => {
-      errorDrawerFuncs.addFromError("Error getting tag list", e);
     });
   }, []);
   (0, _react.useEffect)(() => {
@@ -640,10 +631,6 @@ function CreatorApp(props) {
   function _getSaveDict() {
     return {
       "module_name": _cProp("resource_name"),
-      "category": category.length == 0 ? "basic" : category_ref.current,
-      "tags": get_tags_string(),
-      "notes": notes_ref.current,
-      "icon": icon_ref.current,
       "exports": export_list_ref.current,
       "additional_save_attrs": additional_save_attrs_ref.current,
       "couple_save_attrs_and_exports": couple_save_attrs_and_exports_ref.current,
@@ -812,24 +799,6 @@ function CreatorApp(props) {
       }
     }));
   }
-  function _handleMetadataChange(state_stuff) {
-    for (let field in state_stuff) {
-      switch (field) {
-        case "tags":
-          set_tags(state_stuff[field]);
-          break;
-        case "notes":
-          set_notes(state_stuff[field]);
-          break;
-        case "icon":
-          set_icon(state_stuff[field]);
-          break;
-        case "category":
-          set_category(state_stuff[field]);
-          break;
-      }
-    }
-  }
   function handleExportsStateChange(state_stuff) {
     for (let field in state_stuff) {
       switch (field) {
@@ -870,14 +839,7 @@ function CreatorApp(props) {
       pushCallback(callback);
     }
   }
-  function _clearAllSelections() {
-    // for (let cm of [rcObject.current, dpObject.current, emObject.current]) {
-    //     if (cm) {
-    //         let to = cm.getCursor("to");
-    //         cm.setCursor(to);
-    //     }
-    // }
-  }
+  function _clearAllSelections() {}
   function _setDpObject(cmobject) {
     dpObject.current = cmobject;
   }
@@ -985,17 +947,11 @@ function CreatorApp(props) {
     }, bc_item));
   }
   let mdata_panel = /*#__PURE__*/_react.default.createElement(_creator_modules_react.MetadataModule, {
-    tags: tags_ref.current,
     expandWidth: false,
-    all_tags: all_tags,
+    tsocket: props.tsocket,
     readOnly: props.readOnly,
-    notes: notes_ref.current,
-    icon: icon_ref.current,
-    created: my_props.created,
-    category: category_ref.current,
-    pane_type: "tile",
-    notes_buttons: _metadataNotesButtons,
-    handleChange: _handleMetadataChange,
+    res_name: _cProp("resource_name"),
+    res_type: "tile",
     tabSelectCounter: tabSelectCounter
   });
   let option_panel = /*#__PURE__*/_react.default.createElement(_creator_modules_react.OptionModule, {

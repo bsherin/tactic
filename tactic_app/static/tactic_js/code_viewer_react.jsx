@@ -1,13 +1,12 @@
 import "../tactic_css/tactic.scss";
 import React from "react";
 import {Fragment, useState, useEffect, useRef, useMemo, memo, useContext, useCallback} from "react";
-import { createRoot } from 'react-dom/client';
-import { useHotkeys } from "@blueprintjs/core";
-
-import {ReactCodemirror6} from "./react-codemirror6";
+import {createRoot} from 'react-dom/client';
+import {useHotkeys} from "@blueprintjs/core";
 
 import {ResourceViewerApp, copyToLibrary, sendToRepository} from "./resource_viewer_react_app";
 import {TacticSocket} from "./tactic_socket";
+import {ReactCodemirror6} from "./react-codemirror6";
 import {postAjaxPromise, postPromise} from "./communication_react.js"
 import {withStatus, StatusContext} from "./toaster.js"
 
@@ -91,7 +90,7 @@ function CodeViewerApp(props) {
 
     const pushCallback = useCallbackStack("code_viewer");
 
-    const _saveMe = useCallback (async () => {
+    const _saveMe = useCallback(async () => {
         if (!am_selected()) {
             return false
         }
@@ -131,7 +130,7 @@ function CodeViewerApp(props) {
         ],
         [_saveMe],
     );
-    const { handleKeyDown, handleKeyUp } = useHotkeys(hotkeys);
+    const {handleKeyDown, handleKeyUp} = useHotkeys(hotkeys);
 
     useConstructor(() => {
         if (!props.controlled) {
@@ -213,6 +212,37 @@ function CodeViewerApp(props) {
         return ms
     });
 
+
+    function _handleCodeChange(new_code) {
+        set_code_content(new_code)
+    }
+
+    async function _handleMetadataChange(state_stuff) {
+        for (let field in state_stuff) {
+            switch (field) {
+                case "tags":
+                    set_tags(state_stuff[field]);
+                    break;
+                case "notes":
+                    set_notes(state_stuff[field]);
+                    break;
+            }
+        }
+        const result_dict = {
+            "res_type": "code",
+            "res_name": _cProp("resource_name"),
+            "tags": "tags" in state_stuff ? state_stuff["tags"].join(" ") : tags,
+            "notes": "notes" in state_stuff ? state_stuff["notes"] : notes,
+            "icon": "icon" in state_stuff ? state_stuff["icon"] : icon,
+        };
+        try {
+            await postAjaxPromise("save_metadata", result_dict)
+        }
+        catch(e) {
+            console.log("error saving metadata ", e)
+        }
+    }
+
     function _setResourceNameState(new_name, callback = null) {
         if (props.controlled) {
             props.changeResourceName(new_name, callback)
@@ -228,22 +258,6 @@ function CodeViewerApp(props) {
         })
     }
 
-    function _handleMetadataChange(state_stuff) {
-        for (let field in state_stuff) {
-            switch (field) {
-                case "tags":
-                    set_tags(state_stuff[field]);
-                    break;
-                case "notes":
-                    set_notes(state_stuff[field]);
-                    break;
-            }
-        }
-    }
-
-    function _handleCodeChange(new_code) {
-        set_code_content(new_code)
-    }
 
     function _setSearchMatches(nmatches) {
         set_search_matches(nmatches);
@@ -264,24 +278,36 @@ function CodeViewerApp(props) {
     function _extraKeys() {
         return [
             {key: 'Ctrl-s', run: _saveMe},
-            {key: 'Ctrl-f', run: () => {
-                search_ref.current.focus();
-            }, preventDefault: true},
-            {key: 'Cmd-f', run: () => {
-                search_ref.current.focus();
-            }, preventDefault: true},
-            {key: 'Ctrl-g', run: () => {
-                _searchNext();
-            }, preventDefault: true},
-            {key: 'Cmd-g', run: () => {
-                _searchNext();
-            }, preventDefault: true},
-           {key: 'Ctrl-Shift-g', run: () => {
-                _searchPrev();
-            }, preventDefault: true},
-            {key: 'Cmd-Shift-g', run: () => {
-                _searchPrev();
-            }, preventDefault: true}
+            {
+                key: 'Ctrl-f', run: () => {
+                    search_ref.current.focus();
+                }, preventDefault: true
+            },
+            {
+                key: 'Cmd-f', run: () => {
+                    search_ref.current.focus();
+                }, preventDefault: true
+            },
+            {
+                key: 'Ctrl-g', run: () => {
+                    _searchNext();
+                }, preventDefault: true
+            },
+            {
+                key: 'Cmd-g', run: () => {
+                    _searchNext();
+                }, preventDefault: true
+            },
+            {
+                key: 'Ctrl-Shift-g', run: () => {
+                    _searchPrev();
+                }, preventDefault: true
+            },
+            {
+                key: 'Cmd-Shift-g', run: () => {
+                    _searchPrev();
+                }, preventDefault: true
+            }
         ]
     }
 
@@ -350,48 +376,41 @@ function CodeViewerApp(props) {
                               user_name={window.username}/>
             }
             <div className={outer_class} ref={top_ref} style={outer_style}
-                 tabIndex="0" onKeyDown={handleKeyDown} onKeyUp={handleKeyUp} >
-                    <ResourceViewerApp {...my_props}
-                                       resource_viewer_id={props.resource_viewer_id}
-                                       refreshTab={props.refreshTab}
-                                       closeTab={props.closeTab}
-                                       res_type="code"
-                                       resource_name={my_props.resource_name}
-                                       menu_specs={menu_specs}
-                                       handleStateChange={_handleMetadataChange}
-                                       created={props.created}
-                                       notes={notes}
-                                       tags={tags}
-                                       saveMe={_saveMe}
-                                       search_ref={search_ref}
-                                       show_search={false}
-                                       update_search_state={_update_search_state}
-                                       search_string={search_string}
-                                       search_matches={search_matches}
-                                       regex={regex}
-                                       allow_regex_search={true}
-                                       showErrorDrawerButton={true}
-                    >
-                        <ReactCodemirror6 code_content={code_content}
-                                          show_fold_button={true}
-                                          no_width={true}
-                                          extraKeys={_extraKeys()}
-                                          readOnly={props.readOnly}
-                                          handleChange={_handleCodeChange}
-                                          saveMe={_saveMe}
-                                          show_search={true}
-                                          search_term={search_string}
-                                          search_ref={search_ref}
-                                          search_matches={search_matches}
-                                          updateSearchState={_update_search_state}
-                                          regex_search={regex}
-                                          searchPrev={_searchPrev}
-                                          searchNext={_searchNext}
-                                          highlight_active_line={true}
-                                          current_search_number={current_search_number}
-                                          setSearchMatches={_setSearchMatches}
-                        />
-                    </ResourceViewerApp>
+                 tabIndex="0" onKeyDown={handleKeyDown} onKeyUp={handleKeyUp}>
+                <ResourceViewerApp {...my_props}
+                                   resource_viewer_id={props.resource_viewer_id}
+                                   refreshTab={props.refreshTab}
+                                   closeTab={props.closeTab}
+                                   res_type="code"
+                                   resource_name={my_props.resource_name}
+                                   menu_specs={menu_specs}
+                                   handleStateChange={_handleMetadataChange}
+                                   created={props.created}
+                                   notes={notes}
+                                   tags={tags}
+                                   show_search={false}
+                                   showErrorDrawerButton={true}
+                >
+                    <ReactCodemirror6 code_content={code_content}
+                                      show_fold_button={true}
+                                      no_width={true}
+                                      extraKeys={_extraKeys()}
+                                      readOnly={props.readOnly}
+                                      handleChange={_handleCodeChange}
+                                      saveMe={_saveMe}
+                                      show_search={true}
+                                      search_term={search_string}
+                                      search_ref={search_ref}
+                                      search_matches={search_matches}
+                                      updateSearchState={_update_search_state}
+                                      regex_search={regex}
+                                      searchPrev={_searchPrev}
+                                      searchNext={_searchNext}
+                                      highlight_active_line={true}
+                                      current_search_number={current_search_number}
+                                      setSearchMatches={_setSearchMatches}
+                    />
+                </ResourceViewerApp>
             </div>
         </Fragment>
     )

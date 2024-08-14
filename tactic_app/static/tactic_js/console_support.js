@@ -4,11 +4,34 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.consoleItemsReducer = consoleItemsReducer;
+function concatenateSortedValues(dict) {
+  const sortedKeys = Object.keys(dict).map(Number).sort((a, b) => a - b);
+  return sortedKeys.map(key => dict[key]).join('<br>');
+}
+function processOutputDicts(items) {
+  return items.map(t => {
+    if (t.type == "code") {
+      let new_t = {
+        ...t
+      };
+      new_t["output_text"] = concatenateSortedValues(new_t["output_dict"]);
+      return new_t;
+    } else {
+      return t;
+    }
+  });
+}
+function updateOutputText(item) {
+  if (item.type == "code") {
+    item["output_text"] = concatenateSortedValues(item["output_dict"]);
+  }
+  return item;
+}
 function consoleItemsReducer(console_items, action) {
   var new_items;
   switch (action.type) {
     case "initialize":
-      new_items = action.new_items;
+      new_items = processOutputDicts(action.new_items);
       break;
     case "delete_item":
       new_items = console_items.filter(t => t.unique_id !== action.unique_id);
@@ -27,6 +50,7 @@ function consoleItemsReducer(console_items, action) {
           let new_t = {
             ...t
           };
+          new_t.output_dict = {};
           new_t.output_text = "";
           new_t.execution_count = 0;
           return new_t;
@@ -36,7 +60,10 @@ function consoleItemsReducer(console_items, action) {
     case "replace_item":
       new_items = console_items.map(t => {
         if (t.unique === action.unique_id) {
-          return action.new_item;
+          let new_t = {
+            ...action.new_item
+          };
+          updateOutputText(new_t);
         } else {
           return t;
         }
@@ -59,6 +86,21 @@ function consoleItemsReducer(console_items, action) {
             ...t
           };
           new_t[action.field] = action.new_value;
+          new_t = updateOutputText(new_t);
+          return new_t;
+        } else {
+          return t;
+        }
+      });
+      break;
+    case "change_code_output":
+      new_items = console_items.map(t => {
+        if (t.unique_id === action.unique_id) {
+          let new_t = {
+            ...t
+          };
+          new_t["output_dict"] = action.new_value;
+          new_t = updateOutputText(new_t);
           return new_t;
         } else {
           return t;
@@ -72,6 +114,7 @@ function consoleItemsReducer(console_items, action) {
             ...t
           };
           new_t["output_dict"][action.row] = action.new_value;
+          new_t = updateOutputText(new_t);
           return new_t;
         } else {
           return t;
@@ -82,10 +125,10 @@ function consoleItemsReducer(console_items, action) {
       new_items = console_items.map(t => {
         if (t.unique_id in action.updates) {
           const update_dict = action.updates[t.unique_id];
-          return {
+          return updateOutputText({
             ...t,
             ...update_dict
-          };
+          });
         } else {
           return t;
         }
@@ -93,7 +136,7 @@ function consoleItemsReducer(console_items, action) {
       break;
     case "add_at_index":
       new_items = [...console_items];
-      new_items.splice(action.insert_index, 0, ...action.new_items);
+      new_items.splice(action.insert_index, 0, ...processOutputDicts(action.new_items));
       break;
     case "open_listed_dividers":
       new_items = console_items.map(t => {

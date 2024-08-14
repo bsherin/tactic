@@ -1,10 +1,7 @@
 import "../tactic_css/tactic.scss";
-
 import React from "react";
 import {Fragment, useState, useEffect, useRef, memo, useMemo, useContext} from "react";
 import {createRoot} from 'react-dom/client';
-
-// import {HotkeysProvider} from "@blueprintjs/core";
 import {useHotkeys} from "@blueprintjs/core";
 
 import {ResourceViewerApp, copyToLibrary, sendToRepository} from "./resource_viewer_react_app";
@@ -121,16 +118,6 @@ function ModuleViewerApp(props) {
         }
     });
 
-    function cPropGetters() {
-        return {
-            resource_name: resource_name
-        }
-    }
-
-    function _cProp(pname) {
-        return props.controlled ? props[pname] : cPropGetters()[pname]
-    }
-
     function _update_search_state(nstate, callback = null) {
         set_current_search_number(0);
         for (let field in nstate) {
@@ -143,6 +130,16 @@ function ModuleViewerApp(props) {
                     break;
             }
         }
+    }
+
+    function cPropGetters() {
+        return {
+            resource_name: resource_name
+        }
+    }
+
+    function _cProp(pname) {
+        return props.controlled ? props[pname] : cPropGetters()[pname]
     }
 
     function menu_specs() {
@@ -205,12 +202,8 @@ function ModuleViewerApp(props) {
                         await sendToRepository("list", _cProp("resource_name"), dialogFuncs, statusFuncs, errorDrawerFuncs)
                     },
                     tooltip: "Share to repository"
-                },]
-            }
-        }
-        for (const [menu_name, menu] of Object.entries(ms)) {
-            for (let but of menu) {
-                but.click_handler = but.click_handler.bind(this)
+                },
+                ]
             }
         }
         return ms
@@ -220,7 +213,7 @@ function ModuleViewerApp(props) {
         set_code_content(new_code)
     }
 
-    function _handleMetadataChange(state_stuff) {
+    async function _handleMetadataChange(state_stuff) {
         for (let field in state_stuff) {
             switch (field) {
                 case "tags":
@@ -234,6 +227,28 @@ function ModuleViewerApp(props) {
                     set_icon(state_stuff[field]);
                     break;
             }
+        }
+        const result_dict = {
+            "res_type": "tile",
+            "res_name": _cProp("resource_name"),
+            "tags": "tags" in state_stuff ? state_stuff["tags"].join(" ") : tags,
+            "notes": "notes" in state_stuff ? state_stuff["notes"] : notes,
+            "icon": "icon" in state_stuff ? state_stuff["icon"] : icon,
+        };
+        try {
+            await postAjaxPromise("save_metadata", result_dict)
+        }
+        catch(e) {
+            console.log("error saving metadata ", e)
+        }
+    }
+
+    function _setResourceNameState(new_name, callback = null) {
+        if (props.controlled) {
+            props.changeResourceName(new_name, callback)
+        } else {
+            set_resource_name(new_name);
+            pushCallback(callback);
         }
     }
 
@@ -250,15 +265,6 @@ function ModuleViewerApp(props) {
         statusFuncs.clearStatusMessage();
     }
 
-    function _setResourceNameState(new_name, callback = null) {
-        if (props.controlled) {
-            props.changeResourceName(new_name, callback)
-        } else {
-            set_resource_name(new_name);
-            pushCallback(callback);
-        }
-    }
-
     function _extraKeys() {
         const ekeys = {
             'Ctrl-s': _saveMe,
@@ -273,18 +279,26 @@ function ModuleViewerApp(props) {
         };
         let convertedKeys = convertExtraKeys(ekeys);
         let moreKeys = [
-            {key: 'Ctrl-g', run: () => {
-                _searchNext();
-            }, preventDefault: true},
-            {key: 'Cmd-g', run: () => {
-                _searchNext();
-            }, preventDefault: true},
-           {key: 'Ctrl-Shift-g', run: () => {
-                _searchPrev();
-            }, preventDefault: true},
-            {key: 'Cmd-Shift-g', run: () => {
-                _searchPrev();
-            }, preventDefault: true}
+            {
+                key: 'Ctrl-g', run: () => {
+                    _searchNext();
+                }, preventDefault: true
+            },
+            {
+                key: 'Cmd-g', run: () => {
+                    _searchNext();
+                }, preventDefault: true
+            },
+            {
+                key: 'Ctrl-Shift-g', run: () => {
+                    _searchPrev();
+                }, preventDefault: true
+            },
+            {
+                key: 'Cmd-Shift-g', run: () => {
+                    _searchPrev();
+                }, preventDefault: true
+            }
         ];
         return [...convertedKeys, ...moreKeys]
     }
@@ -500,7 +514,6 @@ function ModuleViewerApp(props) {
                  tabIndex="0" onKeyDown={handleKeyDown} onKeyUp={handleKeyUp}>
                 <ResourceViewerApp {...my_props}
                                    resource_viewer_id={my_props.resource_viewer_id}
-                                   setResourceNameState={_setResourceNameState}
                                    refreshTab={props.refreshTab}
                                    closeTab={props.closeTab}
                                    res_type="tile"
@@ -511,10 +524,7 @@ function ModuleViewerApp(props) {
                                    notes={notes}
                                    tags={tags}
                                    mdata_icon={icon}
-                                   saveMe={_saveMe}
                                    show_search={false}
-                                   update_search_state={_update_search_state}
-                                   search_ref={search_ref}
                                    showErrorDrawerButton={true}
                 >
                     <ReactCodemirror6 code_content={code_content}

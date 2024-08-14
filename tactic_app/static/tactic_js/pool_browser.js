@@ -452,25 +452,19 @@ function PoolBrowser(props) {
     height: "100%"
   };
   let res_type = null;
-  let right_pane = /*#__PURE__*/_react.default.createElement(_blueprint_mdata_fields.CombinedMetadata, {
-    useTags: false,
-    all_tags: [],
-    useNotes: false,
-    elevation: 2,
-    name: selected_resource_ref.current.name,
+  let fixed_data = {
     created: selected_resource_ref.current.created,
     updated: selected_resource_ref.current.updated,
     size: selected_resource_ref.current.size,
-    icon: null,
-    handleChange: null,
+    path: valueRef.current
+  };
+  let right_pane = /*#__PURE__*/_react.default.createElement(_blueprint_mdata_fields.CombinedMetadata, {
     res_type: selected_resource_ref.current.res_type,
-    pane_type: "pool",
+    res_name: selected_resource_ref.current.name,
+    useFixedData: true,
+    fixedData: fixed_data,
+    elevation: 2,
     outer_style: outer_style,
-    handleNotesBlur: null,
-    additional_metadata: {
-      size: selected_resource_ref.current.size,
-      path: valueRef.current
-    },
     readOnly: true
   });
   let left_pane = /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement("div", {

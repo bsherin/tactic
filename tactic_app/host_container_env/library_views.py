@@ -415,11 +415,12 @@ def save_metadata():
         res_name = request.json["res_name"]
         tags = request.json["tags"]
         notes = request.json["notes"]
+        uid = request.json["mdata_uid"] if "mdata_uid" in request.json else ""
         manager = get_manager_for_type(res_type)
         if res_type == "tile" and "icon" in request.json:
-            manager.save_metadata(res_name, tags, notes, request.json["icon"])
+            manager.save_metadata(res_name, tags, notes, request.json["icon"], uid)
         else:
-            manager.save_metadata(res_name, tags, notes)
+            manager.save_metadata(res_name, tags, notes, uid)
         res_tags = manager.get_tag_list()
 
         return jsonify({"success": True, "res_tags": res_tags,

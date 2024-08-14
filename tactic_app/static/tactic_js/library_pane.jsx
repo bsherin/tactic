@@ -398,16 +398,16 @@ function LibraryPane(props) {
                 if (!ind) return;
                 let the_row = {...pStateRef.current.data_dict[ind], ...res_dict};
                 pDispatch({type: "UPDATE_ROW", index: ind, res_dict: res_dict});
-                if ("tags" in res_dict) {
-                    let data_dict = {
-                        pane_type: props.pane_type,
-                        is_repository: props.is_repository,
-                        show_hidden: pStateRef.current.search_state.show_hidden
-                    };
-                    let data = await postAjaxPromise("get_tag_list", data_dict);
-                    let all_tags = data.tag_list;
-                    set_tag_list(all_tags);
-                }
+                // if ("tags" in res_dict) {
+                //     let data_dict = {
+                //         pane_type: props.pane_type,
+                //         is_repository: props.is_repository,
+                //         show_hidden: pStateRef.current.search_state.show_hidden
+                //     };
+                //     let data = await postAjaxPromise("get_tag_list", data_dict);
+                //     let all_tags = data.tag_list;
+                //     set_tag_list(all_tags);
+                // }
                 if (_id == pStateRef.current.select_state.selected_resource._id) {
                     let the_row = {...pStateRef.current.data_dict[ind], ...res_dict};
                     pDispatch({type: "UPDATE_SELECT_STATE", select_state: {selected_resource: the_row}});
@@ -1337,42 +1337,13 @@ function LibraryPane(props) {
     }
 
     let new_button_groups;
-    const primary_mdata_fields = ["name", "created",
-        "updated", "tags", "notes"];
-    const ignore_fields = ["doc_type", "res_type"];
-    let additional_metadata = {};
-    let selected_resource_icon = null;
-    for (let field in pStateRef.current.select_state.selected_resource) {
-        if (pStateRef.current.select_state.selected_rows.length == 1 && pStateRef.current.select_state.selected_resource.res_type == "tile" && field == "icon") {
-            selected_resource_icon = pStateRef.current.select_state.selected_resource["icon"]
-        }
-        if (!primary_mdata_fields.includes(field) && !ignore_fields.includes(field)
-            && !field.startsWith("icon:")) {
-            additional_metadata[field] = pStateRef.current.select_state.selected_resource[field]
-        }
-    }
-    if (Object.keys(additional_metadata).length == 0) {
-        additional_metadata = null
-    }
-
-    let split_tags = pStateRef.current.select_state.selected_resource.tags == "" ? [] : pStateRef.current.select_state.selected_resource.tags.split(" ");
-
     let right_pane = (
-        <CombinedMetadata tags={split_tags}
-                          all_tags={pStateRef.current.tag_list}
-                          elevation={0}
-                          name={pStateRef.current.select_state.selected_resource.name}
-                          created={pStateRef.current.select_state.selected_resource.created}
-                          updated={pStateRef.current.select_state.selected_resource.updated}
-                          notes={pStateRef.current.select_state.selected_resource.notes}
-                          icon={selected_resource_icon}
-                          handleChange={_handleMetadataChange}
+        <CombinedMetadata elevation={0}
+                          tsocket={props.tsocket}
+                          res_name={pStateRef.current.select_state.selected_resource.name}
                           res_type={pStateRef.current.select_state.selected_resource.res_type}
-                          pane_type={props.pane_type}
                           outer_style={metadata_outer_style}
-                          handleNotesBlur={null}
                           expandWidth={true}
-                          additional_metadata={additional_metadata}
                           readOnly={props.is_repository}
         />
     );

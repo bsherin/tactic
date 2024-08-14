@@ -150,9 +150,6 @@ function CreatorApp(props) {
     const [draw_plot_line_number, set_draw_plot_line_number, draw_plot_line_number_ref] = useStateAndRef(props.draw_plot_line_number);
     const [extra_methods_line_number, set_extra_methods_line_number, extra_methods_line_number_ref] = useStateAndRef(props.extra_methods_line_number);
 
-    const [notes, set_notes, notes_ref] = useStateAndRef(props.notes);
-    const [tags, set_tags, tags_ref] = useStateAndRef(props.tags);
-    const [icon, set_icon, icon_ref] = useStateAndRef(props.icon);
     const [category, set_category, category_ref] = useStateAndRef(props.category);
 
     const [additional_save_attrs, set_additional_save_attrs, additional_save_attrs_ref] = useStateAndRef(props.additional_save_attrs || []);
@@ -161,8 +158,6 @@ function CreatorApp(props) {
     const [selectedTabId, setSelectedTabId] = useState("metadata");
     const [top_pane_fraction, set_top_pane_fraction] = useState(props.is_mpl || props.is_d3 ? .5 : 1);
     const [left_pane_fraction, set_left_pane_fraction] = useState(.5);
-
-    const [all_tags, set_all_tags] = useState([]);
     const [has_key, set_has_key] = useState(false);
 
     const extraSelfCompletionsRef = useRef([]);
@@ -223,13 +218,6 @@ function CreatorApp(props) {
             .catch((e) => {
                 set_has_key(false)
             });
-        postAjaxPromise("get_tag_list", data_dict)
-            .then((data) => {
-                set_all_tags(data.tag_list)
-            })
-            .catch((e) => {
-                errorDrawerFuncs.addFromError("Error getting tag list", e)
-            })
     }, []);
 
     useEffect(() => {
@@ -645,10 +633,6 @@ function CreatorApp(props) {
     function _getSaveDict() {
         return {
             "module_name": _cProp("resource_name"),
-            "category": category.length == 0 ? "basic" : category_ref.current,
-            "tags": get_tags_string(),
-            "notes": notes_ref.current,
-            "icon": icon_ref.current,
             "exports": export_list_ref.current,
             "additional_save_attrs": additional_save_attrs_ref.current,
             "couple_save_attrs_and_exports": couple_save_attrs_and_exports_ref.current,
@@ -820,27 +804,6 @@ function CreatorApp(props) {
         )
     }
 
-    function _handleMetadataChange(state_stuff) {
-        for (let field in state_stuff) {
-            switch (field) {
-                case "tags":
-                    set_tags(state_stuff[field]);
-                    break;
-                case "notes":
-                    set_notes(state_stuff[field]);
-                    break;
-
-                case "icon":
-                    set_icon(state_stuff[field]);
-                    break;
-
-                case "category":
-                    set_category(state_stuff[field]);
-                    break;
-            }
-        }
-    }
-
     function handleExportsStateChange(state_stuff) {
         for (let field in state_stuff) {
             switch (field) {
@@ -889,12 +852,6 @@ function CreatorApp(props) {
     }
 
     function _clearAllSelections() {
-        // for (let cm of [rcObject.current, dpObject.current, emObject.current]) {
-        //     if (cm) {
-        //         let to = cm.getCursor("to");
-        //         cm.setCursor(to);
-        //     }
-        // }
     }
 
     function _setDpObject(cmobject) {
@@ -1016,17 +973,11 @@ function CreatorApp(props) {
     }
 
     let mdata_panel = (
-        <MetadataModule tags={tags_ref.current}
-                        expandWidth={false}
-                        all_tags={all_tags}
+        <MetadataModule expandWidth={false}
+                        tsocket={props.tsocket}
                         readOnly={props.readOnly}
-                        notes={notes_ref.current}
-                        icon={icon_ref.current}
-                        created={my_props.created}
-                        category={category_ref.current}
-                        pane_type="tile"
-                        notes_buttons={_metadataNotesButtons}
-                        handleChange={_handleMetadataChange}
+                        res_name={_cProp("resource_name")}
+                        res_type="tile"
                         tabSelectCounter={tabSelectCounter}
         />
     );

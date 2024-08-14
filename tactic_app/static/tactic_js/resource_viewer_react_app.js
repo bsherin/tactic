@@ -91,9 +91,6 @@ function ResourceViewerApp(props) {
   };
   const top_ref = (0, _react.useRef)(null);
   const savedContent = (0, _react.useRef)(props.the_content);
-  const savedTags = (0, _react.useRef)(props.split_tags);
-  const savedNotes = (0, _react.useRef)(props.notes);
-  const [all_tags, set_all_tags] = (0, _react.useState)([]);
   const statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
   const sizeInfo = (0, _react.useContext)(_sizing_tools.SizeContext);
 
@@ -102,18 +99,6 @@ function ResourceViewerApp(props) {
   const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(top_ref, 0, "ResourceViewer");
   (0, _react.useEffect)(() => {
     statusFuncs.stopSpinner();
-  }, []);
-  (0, _react.useEffect)(() => {
-    if (!props.readOnly) {
-      let data_dict = {
-        pane_type: props.res_type,
-        is_repository: false,
-        show_hidden: true
-      };
-      (0, _communication_react.postAjaxPromise)("get_tag_list", data_dict).then(data => {
-        set_all_tags(data.tag_list);
-      });
-    }
   }, []);
   function initSocket() {
     props.tsocket.attachListener('handle-callback', task_packet => {
@@ -146,20 +131,14 @@ function ResourceViewerApp(props) {
     number_matches: props.search_matches
   })), props.children);
   let right_pane = /*#__PURE__*/_react.default.createElement(_blueprint_mdata_fields.CombinedMetadata, {
-    tags: props.tags,
-    useTags: props.tags != null,
     expandWidth: true,
+    tsocket: props.tsocket,
     outer_style: metadata_outer_style,
-    all_tags: all_tags,
-    created: props.created,
-    updated: props.updated,
-    notes: props.notes,
-    useNotes: props.notes != null,
-    icon: props.mdata_icon,
+    useTags: true,
+    useNotes: true,
     readOnly: props.readOnly,
-    handleChange: props.handleStateChange,
-    additional_metadata: props.additional_metadata,
-    pane_type: props.res_type
+    res_name: props.resource_name,
+    res_type: props.res_type
   });
   return /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement(_menu_utilities.TacticMenubar, {
     menu_specs: props.menu_specs,

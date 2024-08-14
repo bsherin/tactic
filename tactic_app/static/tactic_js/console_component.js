@@ -1043,7 +1043,12 @@ function ConsoleComponent(props) {
     // if (current.length > MAX_OUTPUT_LENGTH) {
     //     current = current.slice(-1 * MAX_OUTPUT_LENGTH,)
     // }
-    _setConsoleItemValue(data.console_id, "output_dict", current);
+    props.dispatch({
+      type: "change_code_output",
+      unique_id: data.console_id,
+      new_value: current
+    });
+    //_setConsoleItemValue(data.console_id, "output_dict", current)
   }
   function _addToLog(new_line) {
     let log_content = console_error_log_text_ref.current;
@@ -2188,11 +2193,9 @@ function ConsoleCodeItem(props) {
     summary_text: null,
     ...props
   };
-  const [outputText, setOutputText, outputTextRef] = (0, _utilities_react.useStateAndRef)("");
   const elRef = (0, _react.useRef)(null);
   const am_selected_previous = (0, _react.useRef)(false);
   const setFocusFunc = (0, _react.useRef)(null);
-  const lastOutputText = (0, _react.useRef)("");
   const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(elRef, 0, "ConsoleCodeItem");
   (0, _react.useEffect)(() => {
     if (props.am_selected && !am_selected_previous.current && elRef && elRef.current) {
@@ -2217,18 +2220,6 @@ function ConsoleCodeItem(props) {
       }
     };
   }, []);
-  function concatenateSortedValues(dict) {
-    const sortedKeys = Object.keys(dict).map(Number).sort((a, b) => a - b);
-    return sortedKeys.map(key => dict[key]).join('<br>');
-  }
-  (0, _react.useEffect)(() => {
-    let newText = concatenateSortedValues(props.output_dict);
-    if (newText != lastOutputText.current) {
-      lastOutputText.current = newText;
-      setOutputText(newText);
-      executeEmbeddedScripts();
-    }
-  });
   const registerSetFocusFunc = (0, _react.useCallback)(theFunc => {
     setFocusFunc.current = theFunc;
   }, []);
@@ -2407,7 +2398,7 @@ function ConsoleCodeItem(props) {
     panel_style += " in-section";
   }
   let output_dict = {
-    __html: outputTextRef.current
+    __html: props.output_text
   };
   let spinner_val = props.running ? null : 0;
   let uwidth = props.in_section ? usable_width - SECTION_INDENT / 2 : usable_width;

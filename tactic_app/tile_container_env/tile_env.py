@@ -63,8 +63,6 @@ def exec_tile_code(tile_code):
         exec(tile_code, globals(), globals())
     except Exception as ex:
         return generic_exception_handler.get_traceback_exception_dict(ex)
+    ## Note it shouldn't be necessary to return the category anymore
     return {"success": True, "tile_name": class_info["class_name"], "category": class_info["tile_class"].category}
 
-# I want nltk to only search here so that I can see
-# what behavior on remote will be like.
-# nltk.data.path = ['/code/lexicons/']

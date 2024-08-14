@@ -222,7 +222,7 @@ function DrawerButtonGroup(props) {
                 <AssistantDrawerButton/>
             }
             {props.showMetadataDrawerButton &&
-                <MetadataDrawerButton showMetadata={props.showMetadata}/>
+                <MetadataDrawerButton show_drawer={props.showMetadata}/>
             }
 
         </ButtonGroup>

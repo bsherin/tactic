@@ -24,6 +24,9 @@ var _lodash = _interopRequireDefault(require("lodash"));
 var _utilities_react = require("./utilities_react");
 var _icon_info = require("./icon_info");
 var _sizing_tools = require("./sizing_tools");
+var _error_boundary = require("./error_boundary");
+var _communication_react = require("./communication_react");
+var _reactCodemirror = require("./react-codemirror6");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 _core2.default.registerLanguage('javascript', _javascript.default);
@@ -123,7 +126,7 @@ function BpSelectAdvanced(_ref3) {
     return null;
   }
   let display_text = "display_text" in value ? value.display_text : value.text;
-  return /*#__PURE__*/_react.default.createElement(_select.Select, {
+  return /*#__PURE__*/_react.default.createElement(_error_boundary.ErrorBoundary, null, /*#__PURE__*/_react.default.createElement(_select.Select, {
     activeItem: _getActiveItem(value),
     itemRenderer: renderSuggestionAdvanced,
     itemPredicate: _filterSuggestion,
@@ -143,7 +146,7 @@ function BpSelectAdvanced(_ref3) {
     text: display_text,
     className: "button-in-select",
     icon: buttonIcon
-  }));
+  })));
 }
 exports.BpSelectAdvanced = BpSelectAdvanced = /*#__PURE__*/(0, _react.memo)(BpSelectAdvanced);
 function BpSelect(props) {
@@ -305,6 +308,7 @@ function NativeTags(props) {
 }
 NativeTags = /*#__PURE__*/(0, _react.memo)(NativeTags);
 function NotesField(props) {
+  const setFocusFunc = (0, _react.useRef)(null);
   const settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   (0, _react.useEffect)(() => {
     // console.log("theme changed")  // This is to force re-rendering because of highlight.js theme change
@@ -314,41 +318,47 @@ function NotesField(props) {
     ...props
   };
   const [mdHeight, setMdHeight] = (0, _react.useState)(500);
-  const [showMarkdown, setShowMarkdown] = (0, _react.useState)(() => {
-    return hasOnlyWhitespace() ? false : props.show_markdown_initial;
-  });
+  const [showMarkdown, setShowMarkdown] = (0, _react.useState)(hasOnlyWhitespace() ? false : props.show_markdown_initial);
   const awaitingFocus = (0, _react.useRef)(false);
+  const cmObject = (0, _react.useRef)(null);
   var mdRef = (0, _react.useRef)(null);
-  var notesRef = (0, _react.useRef)(null);
+  //var notesRef = useRef(null);
+
   (0, _react.useEffect)(() => {
     if (awaitingFocus.current) {
       focusNotes();
       awaitingFocus.current = false;
-    } else if (hasOnlyWhitespace()) {
-      if (showMarkdown) {
-        // If we are here, then we are reusing a notes field that previously showed markdown
-        // and now is empty. We want to prevent markdown being shown when a character is typed.
-        setShowMarkdown(false);
-      }
-    } else if (!showMarkdown && notesRef.current !== document.activeElement) {
-      // If we are here it means the change was initiated externally
-      _showMarkdown();
     }
+    if (cmObject.current && !cmObject.current.hasFocus) {
+      setShowMarkdown(!hasOnlyWhitespace());
+    }
+    //else if (hasOnlyWhitespace()) {
+    //     if (showMarkdown) {
+    //         // If we are here, then we are reusing a notes field that previously showed markdown
+    //         // and now is empty. We want to prevent markdown being shown when a character is typed.
+    //         setShowMarkdown(false)
+    //     }
+    // } //else if (!showMarkdown && (notesRef.current !== document.activeElement)) {
+    //     // If we are here it means the change was initiated externally
+    //     _showMarkdown()
+    // }
   });
-  function getNotesField() {
-    return notesRef.current;
-  }
+  (0, _react.useEffect)(() => {
+    setShowMarkdown(!hasOnlyWhitespace());
+  }, [props.res_name, props.res_type]);
+
+  // function getNotesField() {
+  //     return notesRef.current
+  // }
+
   function hasOnlyWhitespace() {
-    return !props.notes || !props.notes.trim().length;
+    return !props.notesRef.current || !props.notesRef.current.trim().length;
   }
   function getMarkdownField() {
     return mdRef.current;
   }
   function focusNotes() {
-    getNotesField().focus();
-  }
-  function _notesRefHandler(the_ref) {
-    notesRef.current = the_ref;
+    setFocusFunc.current();
   }
   function _hideMarkdown() {
     if (props.readOnly) return;
@@ -366,6 +376,12 @@ function NotesField(props) {
       setShowMarkdown(true);
     }
   }
+  function _setCmObject(cmobject) {
+    cmObject.current = cmobject;
+  }
+  const registerSetFocusFunc = (0, _react.useCallback)(theFunc => {
+    setFocusFunc.current = theFunc;
+  }, []);
   let really_show_markdown = hasOnlyWhitespace() ? false : showMarkdown;
   let notes_style = {
     display: really_show_markdown ? "none" : "block",
@@ -379,21 +395,26 @@ function NotesField(props) {
   };
   var converted_markdown;
   if (really_show_markdown) {
-    converted_markdown = mdi.render(props.notes);
+    converted_markdown = mdi.render(props.notesRef.current);
   }
   let converted_dict = {
     __html: converted_markdown
   };
-  return /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement(_core.TextArea, {
-    rows: "20",
-    cols: "75",
-    inputRef: _notesRefHandler,
-    growVertically: false,
-    onBlur: _handleMyBlur,
-    onChange: props.handleChange,
-    value: props.notes,
-    disabled: props.readOnly,
-    style: notes_style
+  return /*#__PURE__*/_react.default.createElement(_react.Fragment, null, !really_show_markdown && /*#__PURE__*/_react.default.createElement(_reactCodemirror.ReactCodemirror6, {
+    handleChange: props.handleChange,
+    readOnly: props.readOnly,
+    setCMObject: _setCmObject
+    //handleFocus={_handleFocus}
+    ,
+    handleBlur: _handleMyBlur,
+    registerSetFocusFunc: registerSetFocusFunc,
+    show_line_numbers: false,
+    soft_wrap: true,
+    controlled: true,
+    mode: "markdown",
+    code_content: props.notesRef.current,
+    no_height: true,
+    saveMe: null
   }), /*#__PURE__*/_react.default.createElement("div", {
     ref: mdRef,
     style: md_style,
@@ -433,17 +454,20 @@ function IconSelector(_ref6) {
     icon_val,
     readOnly
   } = _ref6;
-  return /*#__PURE__*/_react.default.createElement(BpSelectAdvanced, {
+  let value = icon_entry_dict[icon_val] ? icon_entry_dict[icon_val] : icon_entry_dict["application"];
+  return /*#__PURE__*/_react.default.createElement(_error_boundary.ErrorBoundary, null, /*#__PURE__*/_react.default.createElement(BpSelectAdvanced, {
     options: icon_dlist,
     onChange: item => {
       handleSelectChange(item.val);
     },
     readOnly: readOnly,
     buttonIcon: icon_val,
-    value: icon_entry_dict[icon_val]
-  });
+    value: value
+  }));
 }
 IconSelector = /*#__PURE__*/(0, _react.memo)(IconSelector);
+const primary_mdata_fields = ["name", "created", "updated", "tags", "notes"];
+const ignore_fields = ["doc_type", "res_type"];
 function CombinedMetadata(props) {
   props = {
     expandWidth: true,
@@ -458,61 +482,165 @@ function CombinedMetadata(props) {
     handleNotesBlur: null,
     category: null,
     icon: null,
-    name: null,
+    res_name: null,
     updated: null,
     additional_metadata: null,
-    aux_pane: null,
     notes_buttons: null,
+    res_type: null,
+    is_repository: false,
+    useFixedData: false,
+    tsocket: null,
     ...props
   };
   const top_ref = (0, _react.useRef)();
-  const [auxIsOpen, setAuxIsOpen] = (0, _react.useState)(false);
-  const [tempNotes, setTempNotes] = (0, _react.useState)(null);
-  const [waiting, doUpdate] = (0, _utilities_react.useDebounce)(newval => {
-    props.handleChange({
-      "notes": newval
-    });
+  const [allTags, setAllTags] = (0, _react.useState)([]);
+  const [tags, setTags] = (0, _react.useState)(null);
+  const [created, setCreated] = (0, _react.useState)(null);
+  const [updated, setUpdated, updatedRef] = (0, _utilities_react.useStateAndRef)(null);
+  const [notes, setNotes, notesRef] = (0, _utilities_react.useStateAndRef)(null);
+  const [icon, setIcon] = (0, _react.useState)(null);
+  const [category, setCategory] = (0, _react.useState)(null);
+  const [additionalMdata, setAdditionalMdata] = (0, _react.useState)(null);
+  const [tempNotes, setTempNotes, tempNotesRef] = (0, _utilities_react.useStateAndRef)(null);
+  const updatedIdRef = (0, _react.useRef)(null);
+  const [waiting, doUpdate] = (0, _utilities_react.useDebounce)(state_stuff => {
+    postChanges(state_stuff).then(() => {});
   });
   const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(top_ref, props.tabSelectCounter, "CombinedMetadata");
-  function _handleNotesChange(event) {
-    doUpdate(event.target.value);
-    setTempNotes(event.target.value);
+  (0, _react.useEffect)(() => {
+    if (props.tsocket != null && !props.is_repository && !props.useFixedData) {
+      function handleExternalUpdate(data) {
+        if (data.res_type == props.res_type && data.res_name == props.res_name && data.mdata_uid != updatedIdRef.current) {
+          grabMetadata();
+        }
+      }
+      props.tsocket.attachListener("resource-updated", handleExternalUpdate);
+      return () => {
+        props.tsocket.detachListener("resource-updated");
+      };
+    }
+  }, [props.tsocket, props.res_name, props.res_type]);
+  (0, _react.useEffect)(() => {
+    grabMetadata();
+  }, [props.res_name, props.res_type]);
+  function grabMetadata() {
+    if (props.useFixedData || props.res_name == null || props.res_type == null) return;
+    if (!props.readOnly) {
+      let data_dict = {
+        pane_type: props.res_type,
+        is_repository: false,
+        show_hidden: true
+      };
+      (0, _communication_react.postAjaxPromise)("get_tag_list", data_dict).then(data => {
+        setAllTags(data.tag_list);
+      });
+    }
+    (0, _communication_react.postAjaxPromise)("grab_metadata", {
+      res_type: props.res_type,
+      res_name: props.res_name,
+      is_repository: props.is_repository
+    }).then(data => {
+      setTags(data.tags);
+      setNotes(data.notes);
+      setCreated(data.datestring);
+      setUpdated(data.additional_mdata.updated);
+      updatedIdRef.current = data.additional_mdata.mdata_uid;
+      setIcon(data.additional_mdata.icon ? data.additional_mdata.icon : null);
+      setCategory(data.additional_mdata.category ? data.additional_mdata.category : null);
+      let amdata = data.additional_mdata;
+      delete amdata.updated;
+      setAdditionalMdata(amdata);
+    }).catch(e => {
+      console.log("error getting metadata", e);
+    });
   }
-  function _handleTagsChange(tags) {
-    props.handleChange({
+  async function postChanges(state_stuff) {
+    const result_dict = {
+      "res_type": props.res_type,
+      "res_name": props.res_name,
+      "tags": "tags" in state_stuff ? state_stuff["tags"].join(" ") : tags,
+      "notes": "notes" in state_stuff ? state_stuff["notes"] : notes,
+      "icon": "icon" in state_stuff ? state_stuff["icon"] : icon,
+      "category": "category" in state_stuff ? state_stuff["category"] : category,
+      "mdata_uid": (0, _utilities_react.guid)()
+    };
+    try {
+      await (0, _communication_react.postAjaxPromise)("save_metadata", result_dict);
+      updatedIdRef.current = result_dict["mdata_uid"];
+    } catch (e) {
+      console.log("error saving metadata ", e);
+    }
+  }
+  async function _handleMetadataChange(state_stuff) {
+    let post_immediate = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+    for (let field in state_stuff) {
+      switch (field) {
+        case "tags":
+          setTags(state_stuff[field].join(" "));
+          break;
+        case "notes":
+          setNotes(state_stuff[field]);
+          break;
+        case "icon":
+          setIcon(state_stuff[field]);
+          break;
+        case "category":
+          setCategory(state_stuff[field]);
+          break;
+      }
+    }
+    if (post_immediate) {
+      await postChanges(state_stuff);
+    } else {
+      doUpdate(state_stuff);
+    }
+  }
+  async function _handleNotesChange(new_text) {
+    await _handleMetadataChange({
+      "notes": new_text
+    }, false);
+  }
+  async function _handleTagsChange(tags) {
+    await _handleMetadataChange({
       "tags": tags
     });
   }
-  function _handleTagsChangeNative(tags) {
-    props.handleChange({
+  async function _handleTagsChangeNative(tags) {
+    await _handleMetadataChange({
       "tags": tags
     });
   }
-  function _handleCategoryChange(event) {
-    props.handleChange({
+  async function _handleCategoryChange(event) {
+    await _handleMetadataChange({
       "category": event.target.value
     });
   }
-  function _handleIconChange(icon) {
-    props.handleChange({
+  async function _handleIconChange(icon) {
+    await _handleMetadataChange({
       "icon": icon
     });
-  }
-  function _toggleAuxVisibility() {
-    setAuxIsOpen(!auxIsOpen);
   }
   let addition_field_style = {
     fontSize: 14
   };
   let additional_items;
-  let current_notes;
-  if (props.useNotes) {
-    current_notes = waiting.current ? tempNotes : props.notes;
-  }
-  if (props.additional_metadata != null) {
+  if (props.useFixedData) {
     additional_items = [];
-    for (let field in props.additional_metadata) {
-      let md = props.additional_metadata[field];
+    for (let field in props.fixedData) {
+      let md = props.fixedData[field];
+      additional_items.push( /*#__PURE__*/_react.default.createElement(_core.FormGroup, {
+        label: field + ": ",
+        className: "metadata-form_group",
+        key: field,
+        inline: true
+      }, /*#__PURE__*/_react.default.createElement("span", {
+        className: "bp5-ui-text metadata-field"
+      }, String(md))));
+    }
+  } else if (additionalMdata != null) {
+    additional_items = [];
+    for (let field in additionalMdata) {
+      let md = additionalMdata[field];
       if (Array.isArray(md)) {
         md = md.join(", ");
       } else if (field == "collection_name") {
@@ -529,77 +657,66 @@ function CombinedMetadata(props) {
       }, String(md))));
     }
   }
-  let button_base = auxIsOpen ? "Hide" : "Show";
   let ostyle = props.outer_style ? _lodash.default.cloneDeep(props.outer_style) : {};
   if (props.expandWidth) {
     ostyle["width"] = "100%";
   } else {
     ostyle["width"] = usable_width;
   }
+  let split_tags = !tags || tags == "" ? [] : tags.split(" ");
   return /*#__PURE__*/_react.default.createElement(_core.Card, {
     ref: top_ref,
     elevation: props.elevation,
     className: "combined-metadata accent-bg",
     style: ostyle
-  }, props.name != null && /*#__PURE__*/_react.default.createElement(_core.H4, null, /*#__PURE__*/_react.default.createElement(_core.Icon, {
+  }, props.res_name != null && /*#__PURE__*/_react.default.createElement(_core.H4, null, /*#__PURE__*/_react.default.createElement(_core.Icon, {
     icon: icon_dict[props.res_type],
     style: {
       marginRight: 6,
       marginBottom: 2
     }
-  }), props.name), props.useTags && /*#__PURE__*/_react.default.createElement(_core.FormGroup, {
+  }), props.res_name), !props.useFixedData && props.useTags && tags != null && allTags.length > 0 && /*#__PURE__*/_react.default.createElement(_core.FormGroup, {
     label: "Tags"
   }, /*#__PURE__*/_react.default.createElement(NativeTags, {
-    tags: props.tags,
-    all_tags: props.all_tags,
+    tags: split_tags,
+    all_tags: allTags,
     readOnly: props.readOnly,
     handleChange: _handleTagsChange,
-    pane_type: props.pane_type
-  })), props.category != null && /*#__PURE__*/_react.default.createElement(_core.FormGroup, {
+    res_type: props.res_type
+  })), !props.useFixedData && category != null && /*#__PURE__*/_react.default.createElement(_core.FormGroup, {
     label: "Category"
   }, /*#__PURE__*/_react.default.createElement(_core.InputGroup, {
     onChange: _handleCategoryChange,
-    value: props.category
-  })), props.icon != null && /*#__PURE__*/_react.default.createElement(_core.FormGroup, {
+    value: category
+  })), icon != null && /*#__PURE__*/_react.default.createElement(_core.FormGroup, {
     label: "Icon"
   }, /*#__PURE__*/_react.default.createElement(IconSelector, {
-    icon_val: props.icon,
+    icon_val: icon,
     readOnly: props.readOnly,
     handleSelectChange: _handleIconChange
-  })), props.useNotes && /*#__PURE__*/_react.default.createElement(_core.FormGroup, {
+  })), !props.useFixedData && props.useNotes && notesRef.current != null && /*#__PURE__*/_react.default.createElement(_core.FormGroup, {
     label: "Notes"
   }, /*#__PURE__*/_react.default.createElement(NotesField, {
-    notes: current_notes,
+    notesRef: notesRef,
+    res_name: props.res_name,
+    res_type: props.res_type,
     readOnly: props.readOnly,
     handleChange: _handleNotesChange,
     show_markdown_initial: true,
     handleBlur: props.handleNotesBlur
-  }), props.notes_buttons && props.notes_buttons()), /*#__PURE__*/_react.default.createElement(_core.FormGroup, {
+  }), props.notes_buttons && props.notes_buttons()), created != null && /*#__PURE__*/_react.default.createElement(_core.FormGroup, {
     label: "Created: ",
     className: "metadata-form_group",
     inline: true
   }, /*#__PURE__*/_react.default.createElement("span", {
     className: "bp5-ui-text metadata-field"
-  }, props.created)), props.updated != null && /*#__PURE__*/_react.default.createElement(_core.FormGroup, {
+  }, created)), updated != null && /*#__PURE__*/_react.default.createElement(_core.FormGroup, {
     label: "Updated: ",
     className: "metadata-form_group",
     inline: true
   }, /*#__PURE__*/_react.default.createElement("span", {
     className: "bp5-ui-text metadata-field"
-  }, props.updated)), props.additional_metadata != null && additional_items, props.aux_pane != null && /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement("div", {
-    className: "d-flex flex-row justify-content-around",
-    style: {
-      marginTop: 20
-    }
-  }, /*#__PURE__*/_react.default.createElement(_core.Button, {
-    fill: false,
-    small: true,
-    minimal: false,
-    onClick: _toggleAuxVisibility
-  }, button_base + " " + props.aux_pane_title)), /*#__PURE__*/_react.default.createElement(_core.Collapse, {
-    isOpen: auxIsOpen,
-    keepChildrenMounted: true
-  }, props.aux_pane)), /*#__PURE__*/_react.default.createElement("div", {
+  }, updated)), additional_items && additional_items.length > 0 && additional_items, /*#__PURE__*/_react.default.createElement("div", {
     style: {
       height: 100
     }

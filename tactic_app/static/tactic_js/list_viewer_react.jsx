@@ -222,7 +222,7 @@ function ListViewerApp(props) {
         }
     }
 
-    function _handleMetadataChange(state_stuff) {
+    async function _handleMetadataChange(state_stuff) {
         for (let field in state_stuff) {
             switch (field) {
                 case "tags":
@@ -232,6 +232,18 @@ function ListViewerApp(props) {
                     set_notes(state_stuff[field]);
                     break;
             }
+        }
+        const result_dict = {
+            "res_type": "list",
+            "res_name": _cProp("resource_name"),
+            "tags": "tags" in state_stuff ? state_stuff["tags"].join(" ") : tags,
+            "notes": "notes" in state_stuff ? state_stuff["notes"] : notes
+        };
+        try {
+            await postAjaxPromise("save_metadata", result_dict)
+        }
+        catch(e) {
+            console.log("error saving metadata ", e)
         }
     }
 

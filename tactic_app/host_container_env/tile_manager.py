@@ -16,6 +16,7 @@ from docker_functions import create_container
 
 from js_source_management import js_source_dict, _develop, css_source
 from redis_tools import create_ready_block
+from tile_code_parser import TileParser
 
 import loaded_tile_management
 
@@ -73,13 +74,20 @@ class TileManager(LibraryResourceManager):
     def grab_metadata(self, res_name, user_obj=None):
         if user_obj is None:
             user_obj = current_user
-        doc = self.db[user_obj.tile_collection_name].find_one({self.name_field: res_name})
-        if doc is None:
+        tile_dict = self.db[user_obj.tile_collection_name].find_one({self.name_field: res_name})
+        if tile_dict is None:
             print("couldn't grab metadata for tile module " + str(res_name))
             return None
-        if "metadata" in doc:
-            mdata = doc["metadata"]
+        if "metadata" in tile_dict:
+            mdata = tile_dict["metadata"]
             mdata["icon"] = self.get_tile_icon_from_mdata(mdata)
+            if "category" not in mdata:
+                module_code = tile_dict["tile_module"]
+                tp = TileParser(module_code)
+                if hasattr(tp, "category"):
+                    mdata["category"] = tp.category
+                else:
+                    mdata["category"] = "basic"
         else:
             mdata = None
         return mdata
@@ -89,7 +97,7 @@ class TileManager(LibraryResourceManager):
         mdata = self.grab_metadata(module_name, user_obj)
         return self.get_tile_icon_from_mdata(mdata)
 
-    def save_metadata(self, res_name, tags, notes, icon=None):
+    def save_metadata(self, res_name, tags, notes, icon=None, uid=""):
         doc = self.db[current_user.tile_collection_name].find_one({"tile_module_name": res_name})
         if "metadata" in doc:
             mdata = doc["metadata"]
@@ -97,6 +105,7 @@ class TileManager(LibraryResourceManager):
             mdata = {}
         mdata["tags"] = tags
         mdata["notes"] = notes
+        mdata["mdata_uid"] = uid
         if icon is not None:
             mdata["icon"] = icon
         self.db[current_user.tile_collection_name].update_one({"tile_module_name": res_name},
@@ -345,6 +354,12 @@ class TileManager(LibraryResourceManager):
         template = mongo_dict["tile_module"]
 
         metadata = loaded_tile_management.create_initial_metadata()
+        if "Matplotlib" in template_name:
+            metadata["category"] = "plot"
+        elif "JSON" in template_name:
+            metadata["category"] = "js"
+        else:
+            metadata["category"] = "basic"
         metadata["type"] = ""
 
         data_dict = {"tile_module_name": new_tile_name, "tile_module": template, "metadata": metadata,

@@ -106,6 +106,7 @@ def show_tile_differ(module_name, second_module_name):
                            theme=user_obj.get_theme(),
                            version_string=tstring)
 
+tile_mdata_fields = ["tags", "notes", "icon", "category", "couple_save_attrs_and_exports"]
 
 @app.route('/update_module', methods=['post'])
 @login_required
@@ -122,17 +123,13 @@ def update_module():
         else:
             mdata = {}
         print("got mdata " + str(mdata))
-        if "tags" in data_dict:
-            mdata["tags"] = data_dict["tags"]
-        if "notes" in data_dict:
-            mdata["notes"] = data_dict["notes"]
-        if "icon" in data_dict:
-            mdata["icon"] = data_dict["icon"]
+        for field in tile_mdata_fields:
+            if field in data_dict:
+                mdata[field] = data_dict[field]
+
         mdata["updated"] = datetime.datetime.utcnow()
         mdata["last_viewer"] = last_saved
         mdata["type"] = ""
-        if "couple_save_attrs_and_exports" in data_dict:
-            mdata["couple_save_attrs_and_exports"] = data_dict["couple_save_attrs_and_exports"]
         db[current_user.tile_collection_name].update_one({"tile_module_name": module_name},
                                                          {'$set': {"tile_module": module_code, "metadata": mdata,
                                                                    "last_saved": last_saved}})

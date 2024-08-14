@@ -1,20 +1,22 @@
 import "../tactic_css/tactic_select.scss"
 
 import React from "react";
-import {Fragment, useState, useEffect, useRef, memo, useContext} from "react";
+import {Fragment, useState, useEffect, useRef, memo, useContext, useCallback} from "react";
 
 import {
-    PopoverPosition, Button, MenuDivider, MenuItem, TagInput, TextArea, FormGroup, InputGroup,
-    Card, Icon, Collapse, H4
+    PopoverPosition, Button, MenuDivider, MenuItem, TagInput, FormGroup, InputGroup,
+    Card, Icon, H4
 } from "@blueprintjs/core";
 import {Select, MultiSelect} from "@blueprintjs/select";
 import {SettingsContext} from "./settings";
 
 import hljs from 'highlight.js/lib/core';
 import javascript from 'highlight.js/lib/languages/javascript';
+
 hljs.registerLanguage('javascript', javascript);
 
 import python from 'highlight.js/lib/languages/python';
+
 hljs.registerLanguage('python', python);
 
 import markdownIt from 'markdown-it'
@@ -25,11 +27,12 @@ const mdi = markdownIt({
     html: true,
     highlight: function (str, lang) {
         if (lang && hljs.getLanguage(lang)) {
-          try {
-            return '<pre><code class="hljs">' +
-                   hljs.highlight(str, { language: lang, ignoreIllegals: true }).value +
-                   '</code></pre>';
-          } catch (__) {}
+            try {
+                return '<pre><code class="hljs">' +
+                    hljs.highlight(str, {language: lang, ignoreIllegals: true}).value +
+                    '</code></pre>';
+            } catch (__) {
+            }
         }
         return '<pre><code class="hljs">' + mdi.utils.escapeHtml(str) + '</code></pre>';
     }
@@ -38,10 +41,13 @@ const mdi = markdownIt({
 mdi.use(markdownItLatex);
 import _ from 'lodash';
 
-import {propsAreEqual, useDebounce} from "./utilities_react";
+import {propsAreEqual, useDebounce, useStateAndRef, guid} from "./utilities_react";
 import {tile_icon_dict} from "./icon_info";
 
 import {useSize} from "./sizing_tools";
+import {ErrorBoundary} from "./error_boundary";
+import {postAjaxPromise} from "./communication_react";
+import {ReactCodemirror6} from "./react-codemirror6";
 
 export {icon_dict};
 export {NotesField, CombinedMetadata, BpSelect, BpSelectAdvanced}
@@ -57,7 +63,6 @@ let icon_dict = {
     poolDir: "folder-close",
     poolFile: "document"
 };
-
 
 function SuggestionItemAdvanced({item, handleClick, modifiers}) {
     let display_text = "display_text" in item ? item.display_text : item.text;
@@ -115,21 +120,23 @@ function BpSelectAdvanced({options, value, onChange, buttonIcon = null, readOnly
     let display_text = "display_text" in value ? value.display_text : value.text;
 
     return (
-        <Select
-            activeItem={_getActiveItem(value)}
-            itemRenderer={renderSuggestionAdvanced}
-            itemPredicate={_filterSuggestion}
-            items={options}
-            disabled={readOnly}
-            onItemSelect={onChange}
-            popoverProps={{
-                minimal: true,
-                boundary: "window",
-                modifiers: {flip: false, preventOverflow: true},
-                position: PopoverPosition.BOTTOM_LEFT
-            }}>
-            <Button text={display_text} className="button-in-select" icon={buttonIcon}/>
-        </Select>
+        <ErrorBoundary>
+            <Select
+                activeItem={_getActiveItem(value)}
+                itemRenderer={renderSuggestionAdvanced}
+                itemPredicate={_filterSuggestion}
+                items={options}
+                disabled={readOnly}
+                onItemSelect={onChange}
+                popoverProps={{
+                    minimal: true,
+                    boundary: "window",
+                    modifiers: {flip: false, preventOverflow: true},
+                    position: PopoverPosition.BOTTOM_LEFT
+                }}>
+                <Button text={display_text} className="button-in-select" icon={buttonIcon}/>
+            </Select>
+        </ErrorBoundary>
     )
 }
 
@@ -296,6 +303,7 @@ function NativeTags(props) {
 NativeTags = memo(NativeTags);
 
 function NotesField(props) {
+    const setFocusFunc = useRef(null);
 
     const settingsContext = useContext(SettingsContext);
 
@@ -309,36 +317,43 @@ function NotesField(props) {
         ...props
     };
     const [mdHeight, setMdHeight] = useState(500);
-    const [showMarkdown, setShowMarkdown] = useState(() => {
-        return hasOnlyWhitespace() ? false : props.show_markdown_initial
-    });
+    const [showMarkdown, setShowMarkdown] = useState(hasOnlyWhitespace() ? false : props.show_markdown_initial);
     const awaitingFocus = useRef(false);
+    const cmObject = useRef(null);
 
     var mdRef = useRef(null);
-    var notesRef = useRef(null);
+    //var notesRef = useRef(null);
 
     useEffect(() => {
         if (awaitingFocus.current) {
             focusNotes();
             awaitingFocus.current = false
-        } else if (hasOnlyWhitespace()) {
-            if (showMarkdown) {
-                // If we are here, then we are reusing a notes field that previously showed markdown
-                // and now is empty. We want to prevent markdown being shown when a character is typed.
-                setShowMarkdown(false)
-            }
-        } else if (!showMarkdown && (notesRef.current !== document.activeElement)) {
-            // If we are here it means the change was initiated externally
-            _showMarkdown()
         }
+        if (cmObject.current && !cmObject.current.hasFocus) {
+            setShowMarkdown(!hasOnlyWhitespace());
+        }
+        //else if (hasOnlyWhitespace()) {
+        //     if (showMarkdown) {
+        //         // If we are here, then we are reusing a notes field that previously showed markdown
+        //         // and now is empty. We want to prevent markdown being shown when a character is typed.
+        //         setShowMarkdown(false)
+        //     }
+        // } //else if (!showMarkdown && (notesRef.current !== document.activeElement)) {
+        //     // If we are here it means the change was initiated externally
+        //     _showMarkdown()
+        // }
     });
 
-    function getNotesField() {
-        return notesRef.current
-    }
+    useEffect(()=>{
+        setShowMarkdown(!hasOnlyWhitespace());
+    }, [props.res_name, props.res_type]);
+
+    // function getNotesField() {
+    //     return notesRef.current
+    // }
 
     function hasOnlyWhitespace() {
-        return !props.notes || !props.notes.trim().length
+        return !props.notesRef.current || !props.notesRef.current.trim().length
     }
 
     function getMarkdownField() {
@@ -346,11 +361,7 @@ function NotesField(props) {
     }
 
     function focusNotes() {
-        getNotesField().focus()
-    }
-
-    function _notesRefHandler(the_ref) {
-        notesRef.current = the_ref
+        setFocusFunc.current()
     }
 
     function _hideMarkdown() {
@@ -372,6 +383,14 @@ function NotesField(props) {
         }
     }
 
+    function _setCmObject(cmobject) {
+        cmObject.current = cmobject
+    }
+
+     const registerSetFocusFunc = useCallback((theFunc) => {
+        setFocusFunc.current = theFunc;
+    }, []);
+
     let really_show_markdown = hasOnlyWhitespace() ? false : showMarkdown;
     let notes_style = {
         display: really_show_markdown ? "none" : "block",
@@ -385,23 +404,38 @@ function NotesField(props) {
     };
     var converted_markdown;
     if (really_show_markdown) {
-        converted_markdown = mdi.render(props.notes)
+        converted_markdown = mdi.render(props.notesRef.current)
     }
 
     let converted_dict = {__html: converted_markdown};
     return (
         <Fragment>
-            <TextArea
-                rows="20"
-                cols="75"
-                inputRef={_notesRefHandler}
-                growVertically={false}
-                onBlur={_handleMyBlur}
-                onChange={props.handleChange}
-                value={props.notes}
-                disabled={props.readOnly}
-                style={notes_style}
-            />
+            {!really_show_markdown &&
+            <ReactCodemirror6 handleChange={props.handleChange}
+                             readOnly={props.readOnly}
+                              setCMObject={_setCmObject}
+                             //handleFocus={_handleFocus}
+                              handleBlur={_handleMyBlur}
+                             registerSetFocusFunc={registerSetFocusFunc}
+                             show_line_numbers={false}
+                             soft_wrap={true}
+                              controlled={true}
+                             mode="markdown"
+                             code_content={props.notesRef.current}
+                             no_height={true}
+                             saveMe={null}/>
+            }
+            {/*<TextArea*/}
+            {/*    rows="20"*/}
+            {/*    cols="75"*/}
+            {/*    inputRef={_notesRefHandler}*/}
+            {/*    growVertically={false}*/}
+            {/*    onBlur={_handleMyBlur}*/}
+            {/*    onChange={props.handleChange}*/}
+            {/*    value={props.notes}*/}
+            {/*    disabled={props.readOnly}*/}
+            {/*    style={notes_style}*/}
+            {/*/>*/}
             <div ref={mdRef}
                  style={md_style}
                  onClick={_hideMarkdown}
@@ -454,18 +488,25 @@ for (let category of cat_order) {
 }
 
 function IconSelector({handleSelectChange, icon_val, readOnly}) {
+    let value = icon_entry_dict[icon_val] ? icon_entry_dict[icon_val] : icon_entry_dict["application"];
     return (
-        <BpSelectAdvanced options={icon_dlist}
-                          onChange={(item) => {
-                              handleSelectChange(item.val)
-                          }}
-                          readOnly={readOnly}
-                          buttonIcon={icon_val}
-                          value={icon_entry_dict[icon_val]}/>
+        <ErrorBoundary>
+            <BpSelectAdvanced options={icon_dlist}
+                              onChange={(item) => {
+                                  handleSelectChange(item.val)
+                              }}
+                              readOnly={readOnly}
+                              buttonIcon={icon_val}
+                              value={value}/>
+        </ErrorBoundary>
     )
 }
 
 IconSelector = memo(IconSelector);
+
+const primary_mdata_fields = ["name", "created",
+    "updated", "tags", "notes"];
+const ignore_fields = ["doc_type", "res_type"];
 
 function CombinedMetadata(props) {
     props = {
@@ -478,57 +519,173 @@ function CombinedMetadata(props) {
         handleNotesBlur: null,
         category: null,
         icon: null,
-        name: null,
+        res_name: null,
         updated: null,
         additional_metadata: null,
-        aux_pane: null,
         notes_buttons: null,
+        res_type: null,
+        is_repository: false,
+        useFixedData: false,
+        tsocket: null,
         ...props
     };
     const top_ref = useRef();
-    const [auxIsOpen, setAuxIsOpen] = useState(false);
-    const [tempNotes, setTempNotes] = useState(null);
-    const [waiting, doUpdate] = useDebounce((newval)=>{
-        props.handleChange({"notes": newval});
+
+    const [allTags, setAllTags] = useState([]);
+    const [tags, setTags] = useState(null);
+    const [created, setCreated] = useState(null);
+    const [updated, setUpdated, updatedRef] = useStateAndRef(null);
+    const [notes, setNotes, notesRef] = useStateAndRef(null);
+    const [icon, setIcon] = useState(null);
+    const [category, setCategory] = useState(null);
+    const [additionalMdata, setAdditionalMdata] = useState(null);
+
+    const [tempNotes, setTempNotes, tempNotesRef] = useStateAndRef(null);
+
+    const updatedIdRef = useRef(null);
+    const [waiting, doUpdate] = useDebounce((state_stuff) => {
+        postChanges(state_stuff)
+            .then(() => {
+            });
     });
 
     const [usable_width, usable_height, topX, topY] = useSize(top_ref, props.tabSelectCounter, "CombinedMetadata");
 
-    function _handleNotesChange(event) {
-        doUpdate(event.target.value);
-        setTempNotes(event.target.value);
+    useEffect(() => {
+        if (props.tsocket != null && !props.is_repository && !props.useFixedData) {
+            function handleExternalUpdate(data) {
+                if (data.res_type == props.res_type && data.res_name == props.res_name && data.mdata_uid != updatedIdRef.current) {
+                    grabMetadata()
+                }
+            }
+            props.tsocket.attachListener("resource-updated", handleExternalUpdate);
+            return () => {
+                props.tsocket.detachListener("resource-updated");
+            };
+        }
+    }, [props.tsocket, props.res_name, props.res_type]);
+
+    useEffect(() => {
+        grabMetadata()
+    }, [props.res_name, props.res_type]);
+
+    function grabMetadata() {
+        if (props.useFixedData || props.res_name == null || props.res_type == null) return;
+        if (!props.readOnly) {
+            let data_dict = {
+                pane_type: props.res_type,
+                is_repository: false,
+                show_hidden: true
+            };
+            postAjaxPromise("get_tag_list", data_dict)
+                .then(data => {
+                    setAllTags(data.tag_list)
+                })
+        }
+        postAjaxPromise("grab_metadata", {
+            res_type: props.res_type,
+            res_name: props.res_name,
+            is_repository: props.is_repository
+        })
+            .then(data => {
+                setTags(data.tags);
+                setNotes(data.notes);
+                setCreated(data.datestring);
+                setUpdated(data.additional_mdata.updated);
+                updatedIdRef.current = data.additional_mdata.mdata_uid;
+                setIcon(data.additional_mdata.icon ? data.additional_mdata.icon : null);
+                setCategory(data.additional_mdata.category ? data.additional_mdata.category : null);
+                let amdata = data.additional_mdata;
+                delete amdata.updated;
+                setAdditionalMdata(amdata);
+            })
+            .catch((e) => {
+                console.log("error getting metadata", e)
+            })
     }
 
-    function _handleTagsChange(tags) {
-        props.handleChange({"tags": tags})
+    async function postChanges(state_stuff) {
+        const result_dict = {
+            "res_type": props.res_type,
+            "res_name": props.res_name,
+            "tags": "tags" in state_stuff ? state_stuff["tags"].join(" ") : tags,
+            "notes": "notes" in state_stuff ? state_stuff["notes"] : notes,
+            "icon": "icon" in state_stuff ? state_stuff["icon"] : icon,
+            "category": "category" in state_stuff ? state_stuff["category"] : category,
+            "mdata_uid": guid()
+        };
+        try {
+            await postAjaxPromise("save_metadata", result_dict);
+            updatedIdRef.current = result_dict["mdata_uid"];
+        } catch (e) {
+            console.log("error saving metadata ", e)
+        }
     }
 
-    function _handleTagsChangeNative(tags) {
-        props.handleChange({"tags": tags})
+    async function _handleMetadataChange(state_stuff, post_immediate=true) {
+        for (let field in state_stuff) {
+            switch (field) {
+                case "tags":
+                    setTags(state_stuff[field].join(" "));
+                    break;
+                case "notes":
+                    setNotes(state_stuff[field]);
+                    break;
+                case "icon":
+                    setIcon(state_stuff[field]);
+                    break;
+                case "category":
+                    setCategory(state_stuff[field]);
+                    break;
+            }
+        }
+        if (post_immediate) {
+            await postChanges(state_stuff)
+        }
+        else {
+            doUpdate(state_stuff)
+        }
     }
 
-    function _handleCategoryChange(event) {
-        props.handleChange({"category": event.target.value})
+    async function _handleNotesChange(new_text) {
+        await _handleMetadataChange({"notes": new_text}, false);
     }
 
-    function _handleIconChange(icon) {
-        props.handleChange({"icon": icon})
+    async function _handleTagsChange(tags) {
+        await _handleMetadataChange({"tags": tags});
     }
 
-    function _toggleAuxVisibility() {
-        setAuxIsOpen(!auxIsOpen)
+    async function _handleTagsChangeNative(tags) {
+        await _handleMetadataChange({"tags": tags})
     }
+
+    async function _handleCategoryChange(event) {
+        await _handleMetadataChange({"category": event.target.value})
+    }
+
+    async function _handleIconChange(icon) {
+        await _handleMetadataChange({"icon": icon})
+    }
+
 
     let addition_field_style = {fontSize: 14};
     let additional_items;
-    let current_notes;
-    if (props.useNotes) {
-        current_notes = waiting.current ? tempNotes : props.notes;
-    }
-    if (props.additional_metadata != null) {
+
+    if (props.useFixedData) {
         additional_items = [];
-        for (let field in props.additional_metadata) {
-            let md = props.additional_metadata[field];
+        for (let field in props.fixedData) {
+            let md = props.fixedData[field];
+            additional_items.push(
+                <FormGroup label={field + ": "} className="metadata-form_group" key={field} inline={true}>
+                    <span className="bp5-ui-text metadata-field">{String(md)}</span>
+                </FormGroup>
+            )
+        }
+    }
+    else if (additionalMdata != null) {
+        additional_items = [];
+        for (let field in additionalMdata) {
+            let md = additionalMdata[field];
             if (Array.isArray(md)) {
                 md = md.join(", ")
             } else if (field == "collection_name") {
@@ -537,52 +694,52 @@ function CombinedMetadata(props) {
             }
             additional_items.push(
                 <FormGroup label={field + ": "} className="metadata-form_group" key={field} inline={true}>
-                    {/*<InputGroup disabled={true} value={md} fill={true}/>*/}
                     <span className="bp5-ui-text metadata-field">{String(md)}</span>
                 </FormGroup>
             )
         }
     }
-    let button_base = auxIsOpen ? "Hide" : "Show";
     let ostyle = props.outer_style ? _.cloneDeep(props.outer_style) : {};
     if (props.expandWidth) {
         ostyle["width"] = "100%";
-    }
-    else {
+    } else {
         ostyle["width"] = usable_width;
     }
+    let split_tags = !tags || tags == "" ? [] : tags.split(" ");
 
     return (
         <Card ref={top_ref} elevation={props.elevation} className="combined-metadata accent-bg" style={ostyle}>
-            {props.name != null &&
+            {props.res_name != null &&
                 <H4><Icon icon={icon_dict[props.res_type]}
-                          style={{marginRight: 6, marginBottom: 2}}/>{props.name}</H4>}
-            {props.useTags &&
+                          style={{marginRight: 6, marginBottom: 2}}/>{props.res_name}</H4>}
+            {!props.useFixedData && props.useTags && tags != null && allTags.length > 0 &&
                 <FormGroup label="Tags">
-                    <NativeTags tags={props.tags}
-                                all_tags={props.all_tags}
+                    <NativeTags tags={split_tags}
+                                all_tags={allTags}
                                 readOnly={props.readOnly}
                                 handleChange={_handleTagsChange}
-                                pane_type={props.pane_type}/>
+                                res_type={props.res_type}/>
                 </FormGroup>
             }
 
-            {props.category != null &&
+            {!props.useFixedData && category != null &&
                 <FormGroup label="Category">
                     <InputGroup onChange={_handleCategoryChange}
-                                value={props.category}/>
+                                value={category}/>
                 </FormGroup>
             }
-            {props.icon != null &&
+            {icon != null &&
                 <FormGroup label="Icon">
-                    <IconSelector icon_val={props.icon}
+                    <IconSelector icon_val={icon}
                                   readOnly={props.readOnly}
                                   handleSelectChange={_handleIconChange}/>
                 </FormGroup>
             }
-            {props.useNotes &&
+            {!props.useFixedData && props.useNotes && notesRef.current != null &&
                 <FormGroup label="Notes">
-                    <NotesField notes={current_notes}
+                    <NotesField notesRef={notesRef}
+                                res_name={props.res_name}
+                                res_type={props.res_type}
                                 readOnly={props.readOnly}
                                 handleChange={_handleNotesChange}
                                 show_markdown_initial={true}
@@ -591,31 +748,18 @@ function CombinedMetadata(props) {
                     {props.notes_buttons && props.notes_buttons()}
                 </FormGroup>
             }
-            <FormGroup label="Created: " className="metadata-form_group" inline={true}>
-                <span className="bp5-ui-text metadata-field">{props.created}</span>
-            </FormGroup>
-            {props.updated != null &&
-                <FormGroup label="Updated: " className="metadata-form_group" inline={true}>
-                    <span className="bp5-ui-text metadata-field">{props.updated}</span>
+            {created != null &&
+                <FormGroup label="Created: " className="metadata-form_group" inline={true}>
+                    <span className="bp5-ui-text metadata-field">{created}</span>
                 </FormGroup>
             }
-            {props.additional_metadata != null &&
-                additional_items
+            {updated != null &&
+                <FormGroup label="Updated: " className="metadata-form_group" inline={true}>
+                    <span className="bp5-ui-text metadata-field">{updated}</span>
+                </FormGroup>
             }
-            {props.aux_pane != null &&
-                <Fragment>
-                    <div className="d-flex flex-row justify-content-around" style={{marginTop: 20}}>
-                        <Button fill={false}
-                                small={true}
-                                minimal={false}
-                                onClick={_toggleAuxVisibility}>
-                            {button_base + " " + props.aux_pane_title}
-                        </Button>
-                    </div>
-                    <Collapse isOpen={auxIsOpen} keepChildrenMounted={true}>
-                        {props.aux_pane}
-                    </Collapse>
-                </Fragment>
+            {additional_items && additional_items.length > 0 &&
+                additional_items
             }
             <div style={{height: 100}}/>
         </Card>

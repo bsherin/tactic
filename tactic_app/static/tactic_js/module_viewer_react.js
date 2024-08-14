@@ -25,8 +25,6 @@ var _settings = require("./settings");
 var _modal_react = require("./modal_react");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
-// import {HotkeysProvider} from "@blueprintjs/core";
-
 function module_viewer_props(data, registerDirtyMethod, finalCallback) {
   let resource_viewer_id = (0, _utilities_react.guid)();
   if (!window.in_context) {
@@ -107,14 +105,6 @@ function ModuleViewerApp(props) {
       });
     }
   });
-  function cPropGetters() {
-    return {
-      resource_name: resource_name
-    };
-  }
-  function _cProp(pname) {
-    return props.controlled ? props[pname] : cPropGetters()[pname];
-  }
   function _update_search_state(nstate) {
     let callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
     set_current_search_number(0);
@@ -128,6 +118,14 @@ function ModuleViewerApp(props) {
           break;
       }
     }
+  }
+  function cPropGetters() {
+    return {
+      resource_name: resource_name
+    };
+  }
+  function _cProp(pname) {
+    return props.controlled ? props[pname] : cPropGetters()[pname];
   }
   function menu_specs() {
     let ms;
@@ -195,17 +193,12 @@ function ModuleViewerApp(props) {
         }]
       };
     }
-    for (const [menu_name, menu] of Object.entries(ms)) {
-      for (let but of menu) {
-        but.click_handler = but.click_handler.bind(this);
-      }
-    }
     return ms;
   }
   function _handleCodeChange(new_code) {
     set_code_content(new_code);
   }
-  function _handleMetadataChange(state_stuff) {
+  async function _handleMetadataChange(state_stuff) {
     for (let field in state_stuff) {
       switch (field) {
         case "tags":
@@ -219,6 +212,27 @@ function ModuleViewerApp(props) {
           break;
       }
     }
+    const result_dict = {
+      "res_type": "tile",
+      "res_name": _cProp("resource_name"),
+      "tags": "tags" in state_stuff ? state_stuff["tags"].join(" ") : tags,
+      "notes": "notes" in state_stuff ? state_stuff["notes"] : notes,
+      "icon": "icon" in state_stuff ? state_stuff["icon"] : icon
+    };
+    try {
+      await (0, _communication_react.postAjaxPromise)("save_metadata", result_dict);
+    } catch (e) {
+      console.log("error saving metadata ", e);
+    }
+  }
+  function _setResourceNameState(new_name) {
+    let callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+    if (props.controlled) {
+      props.changeResourceName(new_name, callback);
+    } else {
+      set_resource_name(new_name);
+      pushCallback(callback);
+    }
   }
   function handleResult(data, success_message, failure_tiltle) {
     if (!data.success) {
@@ -231,15 +245,6 @@ function ModuleViewerApp(props) {
     }
     statusFuncs.stopSpinner();
     statusFuncs.clearStatusMessage();
-  }
-  function _setResourceNameState(new_name) {
-    let callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-    if (props.controlled) {
-      props.changeResourceName(new_name, callback);
-    } else {
-      set_resource_name(new_name);
-      pushCallback(callback);
-    }
   }
   function _extraKeys() {
     const ekeys = {
@@ -486,7 +491,6 @@ function ModuleViewerApp(props) {
     onKeyUp: handleKeyUp
   }, /*#__PURE__*/_react.default.createElement(_resource_viewer_react_app.ResourceViewerApp, (0, _extends2.default)({}, my_props, {
     resource_viewer_id: my_props.resource_viewer_id,
-    setResourceNameState: _setResourceNameState,
     refreshTab: props.refreshTab,
     closeTab: props.closeTab,
     res_type: "tile",
@@ -497,10 +501,7 @@ function ModuleViewerApp(props) {
     notes: notes,
     tags: tags,
     mdata_icon: icon,
-    saveMe: _saveMe,
     show_search: false,
-    update_search_state: _update_search_state,
-    search_ref: search_ref,
     showErrorDrawerButton: true
   }), /*#__PURE__*/_react.default.createElement(_reactCodemirror.ReactCodemirror6, {
     code_content: code_content,

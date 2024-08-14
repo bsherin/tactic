@@ -1241,6 +1241,7 @@ function MainApp(props) {
                 </div>
                 <MetadataDrawer res_type="project"
                                 res_name={_cProp("resource_name")}
+                                tsocket={props.tsocket}
                                 readOnly={false}
                                 is_repository={false}
                                 show_drawer={mState.show_metadata}

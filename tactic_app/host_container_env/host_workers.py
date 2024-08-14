@@ -209,7 +209,8 @@ class HostWorker(QWorker):
                                                        "alert_type": "alert-warning"})
                 return
             print("load_source returned success")
-            category = res_dict["category"]
+            mdata = tile_manager.grab_metadata(res_dict["tile_name"], user_obj)
+            category = mdata["category"] if "category" in mdata else "basic"
 
             if "is_default" in data:
                 is_default = data["is_default"]
@@ -438,6 +439,12 @@ class HostWorker(QWorker):
                                            user_obj=user_obj, doc_id=str(_id))
             rdict["event_type"] = event_type
             manager.update_selector_row(rdict, user_obj)
+            socketio.emit("resource-updated", {
+                "user_id": user_obj.get_id(),
+                "res_type": res_type,
+                "res_name": doc_name,
+                "mdata_uid": mdata["mdata_uid"]
+            }, namespace='/main', room=user_obj.get_id())
             if username == "repository":
                 manager.update_repository_selector_row(rdict)
             user_id =  user_obj.get_id()

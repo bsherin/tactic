@@ -1172,6 +1172,7 @@ function MainApp(props) {
   }))), /*#__PURE__*/_react.default.createElement(_metadata_drawer.MetadataDrawer, {
     res_type: "project",
     res_name: _cProp("resource_name"),
+    tsocket: props.tsocket,
     readOnly: false,
     is_repository: false,
     show_drawer: mState.show_metadata,
