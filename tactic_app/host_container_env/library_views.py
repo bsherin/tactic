@@ -261,7 +261,6 @@ def send_to_repository():
 @app.route('/grab_metadata', methods=['POST'])
 @login_required
 def grab_metadata():
-    print("entering grab_metadata in host")
     try:
         res_type = request.json["res_type"]
         res_name = request.json["res_name"]
@@ -272,7 +271,6 @@ def grab_metadata():
             return jsonify({"success": False, "message": "No metadata found", "alert_type": "alert-warning"})
         else:
             result = current_user.process_metadata(mdata)
-            print("returning from grab_metadata in host with result " + str(result))
             result.update({"success": True, "res_name": res_name})
             return jsonify(result)
     except Exception as ex:
@@ -420,7 +418,9 @@ def save_metadata():
         uid = request.json["mdata_uid"] if "mdata_uid" in request.json else ""
         manager = get_manager_for_type(res_type)
         if res_type == "tile" and "icon" in request.json:
-            manager.save_metadata(res_name, tags, notes, request.json["icon"], uid)
+            icon = request.json["icon"] if "icon" in request.json else None
+            category = request.json["category"] if "category" in request.json else None
+            manager.save_metadata(res_name, tags, notes, icon, category, uid)
         else:
             manager.save_metadata(res_name, tags, notes, uid)
         res_tags = manager.get_tag_list()

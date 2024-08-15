@@ -10,6 +10,7 @@ $log-panel-font-color-dark: white;
 
 $darkest-bg: $dark-gray3;
 $dark-medium: $dark-gray4;
+$dark-field-background: #1114184d;
 
 // Colors for the resource-specific icons
 .light-theme {
@@ -388,7 +389,7 @@ $dark-medium: $dark-gray4;
   }
 
   .notes-field-markdown-output {
-    background-color: $darkest-bg;
+    background-color: $dark-field-background;
     color: $light-gray5;
 
     code {

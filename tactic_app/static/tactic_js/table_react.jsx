@@ -63,7 +63,7 @@ function FreeformBody(props) {
 
     function _handleBlur(new_data_text) {
         postWithCallback(props.main_id, "add_freeform_document",
-            { document_name: props.mState.table_spec.document_name, doc_text: new_data_text }, null)
+            {document_name: props.mState.table_spec.current_doc_name, doc_text: new_data_text}, null)
     }
 
     function _handleChange(new_data_text) {
@@ -74,15 +74,15 @@ function FreeformBody(props) {
     _doSearch();
     return (
         <div ref={top_ref}>
-            <ReactCodemirror6 handleBlur={_handleBlur}
-                             handleChange={null}
-                             code_content={props.mState.data_text}
-                             sync_to_prop={true}
-                             soft_wrap={props.mState.soft_wrap}
-                             mode="text"
+            <ReactCodemirror6 handleChange={null}
+                              handleBlur={_handleBlur}
+                              code_content={props.mState.data_text}
+                              sync_to_prop={true}
+                              soft_wrap={props.mState.soft_wrap}
+                              mode="text"
                               controlled={true}
-                             setCMObject={_setCMObject}
-                             readOnly={false}/>
+                              setCMObject={_setCMObject}
+                              readOnly={!props.mState.spreadsheet_mode}/>
         </div>
     )
 }

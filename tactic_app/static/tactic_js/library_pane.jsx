@@ -1337,11 +1337,14 @@ function LibraryPane(props) {
     }
 
     let new_button_groups;
+    let res_type = pStateRef.current.select_state.selected_resource.res_type;
+    let res_name = pStateRef.current.select_state.selected_resource.name;
     let right_pane = (
-        <CombinedMetadata elevation={0}
+        <CombinedMetadata key={`key=${res_type}-${res_name}-metadata`}
+                          elevation={0}
                           tsocket={props.tsocket}
-                          res_name={pStateRef.current.select_state.selected_resource.name}
-                          res_type={pStateRef.current.select_state.selected_resource.res_type}
+                          res_name={res_name}
+                          res_type={res_type}
                           outer_style={metadata_outer_style}
                           expandWidth={true}
                           readOnly={props.is_repository}

@@ -119,7 +119,6 @@ function ReactCodemirror6(props) {
         first_line_number: 1,
         show_line_numbers: true,
         show_fold_button: false,
-        soft_wrap: false,
         code_container_height: null,
         code_container_width: null,
         search_term: null,
@@ -148,11 +147,12 @@ function ReactCodemirror6(props) {
     const matches = useRef(null);
     const search_focus_info = useRef(null);
     const first_render = useRef(true);
-    const prevSoftWrap = useRef(null);
     const registeredHandlers = useRef([]);
     const themeCompartment = useRef(null);
     const completionCompartment = useRef(null);
     const lineNumberCompartment = useRef(null);
+    const readOnlyCompartment = useRef(new Compartment());
+    const readOnlyRef = useRef(props.readOnly);
     const theme = useRef(null);
     const highlightStyle = useRef(null);
     const autocompletionArgRef = useRef({});
@@ -193,6 +193,7 @@ function ReactCodemirror6(props) {
                     ...completionKeymap,
                     indentWithTab
                 ]),
+                readOnlyCompartment.current.of(EditorState.readOnly.of(props.readOnly)),
                 EditorView.updateListener.of((update) => {
                     if (update.docChanged) {
                         handleChange(update.state.doc.toString());
@@ -220,13 +221,13 @@ function ReactCodemirror6(props) {
     };
 
     useEffect(() => {
-        prevSoftWrap.current = props.soft_wrap;
         if (props.registerSetFocusFunc) {
             props.registerSetFocusFunc(setFocus);
         }
         themeCompartment.current = new Compartment();
         completionCompartment.current = new Compartment();
         lineNumberCompartment.current = new Compartment();
+
         //const activeLineExtension = props.highlight_active_line ? highlightActiveLineGutter : emptyExtension;
 
         const state = EditorState.create({
@@ -248,6 +249,15 @@ function ReactCodemirror6(props) {
         };
 
     }, []);
+
+    useEffect(() => {
+        if (editorView.current) {
+            editorView.current.dispatch({
+                effects: readOnlyCompartment.current.reconfigure(EditorState.readOnly.of(props.readOnly))
+            });
+            readOnlyRef.current = props.readOnly;
+        }
+    }, [props.readOnly]);
 
     const switchTheme = (themeName) => {
         if (!(themeList.includes(themeName))) {
@@ -281,11 +291,17 @@ function ReactCodemirror6(props) {
     }, [props.extraSelfCompletions]);
 
     useEffect(() =>{
+        // This controlled stuff never quite worked perfectly inside the CombinedMetadata notes field..
         if (props.controlled) {
             if (editorView.current) {
-                editorView.current.dispatch({
-                    changes: {from: 0, to: editorView.current.state.doc.length, insert: props.code_content}
+                const docLength = editorView.current.state.doc.length;
+                const anchor = Math.min(editorView.current.state.selection.main.anchor, docLength);
+                const head = Math.min(editorView.current.state.selection.main.head, docLength);
+                const transaction = editorView.current.state.update({
+                    changes: {from: 0, to: docLength, insert: props.code_content},
+                    selection: {anchor, head}
                 });
+                editorView.current.dispatch(transaction);
             }
         }
 
@@ -345,7 +361,7 @@ function ReactCodemirror6(props) {
     }
 
     function handleBlur() {
-        if (props.handleBlur) {
+        if (!readOnlyRef.current && props.handleBlur) {
             props.handleBlur(editorView.current.state.doc.toString());
         }
     }

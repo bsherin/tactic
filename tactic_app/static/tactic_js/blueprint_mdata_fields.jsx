@@ -312,12 +312,6 @@ function NotesField(props) {
     const settingsContext = useContext(SettingsContext);
 
     useEffect(() => {
-        if (props.notesRef.current.length == 0) {
-            console.log("got notes of zero length")
-        }
-        else {
-            console.log("Got new notes " + props.notesRef.current.slice(0, 100))
-        }
     }, [props.notesRef.current]);
 
     useEffect(() => {
@@ -420,30 +414,17 @@ function NotesField(props) {
         <Fragment>
             {!really_show_markdown &&
             <ReactCodemirror6 handleChange={props.handleChange}
-                             readOnly={props.readOnly}
+                              readOnly={props.readOnly}
                               setCMObject={_setCmObject}
-                             //handleFocus={_handleFocus}
                               handleBlur={_handleMyBlur}
-                             registerSetFocusFunc={registerSetFocusFunc}
-                             show_line_numbers={false}
-                             soft_wrap={true}
-                              controlled={true}
-                             mode="markdown"
-                             code_content={props.notesRef.current}
-                             no_height={true}
-                             saveMe={null}/>
+                              registerSetFocusFunc={registerSetFocusFunc}
+                              show_line_numbers={false}
+                              controlled={false}
+                              mode="markdown"
+                              code_content={props.notesRef.current}
+                              no_height={true}
+                              saveMe={null}/>
             }
-            {/*<TextArea*/}
-            {/*    rows="20"*/}
-            {/*    cols="75"*/}
-            {/*    inputRef={_notesRefHandler}*/}
-            {/*    growVertically={false}*/}
-            {/*    onBlur={_handleMyBlur}*/}
-            {/*    onChange={props.handleChange}*/}
-            {/*    value={props.notes}*/}
-            {/*    disabled={props.readOnly}*/}
-            {/*    style={notes_style}*/}
-            {/*/>*/}
             <div ref={mdRef}
                  style={md_style}
                  onClick={_hideMarkdown}
@@ -590,7 +571,6 @@ function CombinedMetadata(props) {
                     setAllTags(data.tag_list)
                 })
         }
-        console.log(`grabbing metadata for ${props.res_type} ${props.res_name}`)
         postAjaxPromise("grab_metadata", {
             res_type: props.res_type,
             res_name: props.res_name,
@@ -598,7 +578,6 @@ function CombinedMetadata(props) {
         })
             .then(data => {
                 setTags(data.tags);
-                console.log("length of data.notes is " + data.notes.length);
                 setNotes(data.notes);
                 setCreated(data.datestring);
                 setUpdated(data.additional_mdata.updated);
@@ -607,6 +586,9 @@ function CombinedMetadata(props) {
                 setCategory(data.additional_mdata.category ? data.additional_mdata.category : null);
                 let amdata = data.additional_mdata;
                 delete amdata.updated;
+                if (amdata.category) {
+                    delete amdata.category
+                }
                 setAdditionalMdata(amdata);
             })
             .catch((e) => {
@@ -625,10 +607,6 @@ function CombinedMetadata(props) {
             "category": "category" in state_stuff ? state_stuff["category"] : category,
             "mdata_uid": guid()
         };
-        if ("notes" in state_stuff) {
-            console.log("notes is in state_stuff")
-        }
-        console.log(`postingChanges ${props.res_type} ${props.res_name} with notes ${result_dict["notes"]}`)
         try {
             await postAjaxPromise("save_metadata", result_dict);
             updatedIdRef.current = result_dict["mdata_uid"];
@@ -723,62 +701,67 @@ function CombinedMetadata(props) {
     let split_tags = !tags || tags == "" ? [] : tags.split(" ");
 
     return (
-        <Card ref={top_ref} elevation={props.elevation} className="combined-metadata accent-bg" style={ostyle}>
-            {props.res_name != null &&
-                <H4><Icon icon={icon_dict[props.res_type]}
-                          style={{marginRight: 6, marginBottom: 2}}/>{props.res_name}</H4>}
-            {!props.useFixedData && props.useTags && tags != null && allTags.length > 0 &&
-                <FormGroup label="Tags">
-                    <NativeTags tags={split_tags}
-                                all_tags={allTags}
-                                readOnly={props.readOnly}
-                                handleChange={_handleTagsChange}
-                                res_type={props.res_type}/>
-                </FormGroup>
-            }
+        <ErrorBoundary>
+            <Card ref={top_ref}
+                  elevation={props.elevation} className="combined-metadata accent-bg" style={ostyle}>
+                {props.res_name != null &&
+                    <H4><Icon icon={icon_dict[props.res_type]}
+                              style={{marginRight: 6, marginBottom: 2}}/>{props.res_name}</H4>}
+                {!props.useFixedData && props.useTags && tags != null && allTags.length > 0 &&
+                    <FormGroup label="Tags">
+                        <NativeTags key={`${props.res_name}-${props.res_type}-tags`}
+                                    tags={split_tags}
+                                    all_tags={allTags}
+                                    readOnly={props.readOnly}
+                                    handleChange={_handleTagsChange}
+                                    res_type={props.res_type}/>
+                    </FormGroup>
+                }
 
-            {!props.useFixedData && category != null &&
-                <FormGroup label="Category">
-                    <InputGroup onChange={_handleCategoryChange}
-                                value={category}/>
-                </FormGroup>
-            }
-            {icon != null &&
-                <FormGroup label="Icon">
-                    <IconSelector icon_val={icon}
-                                  readOnly={props.readOnly}
-                                  handleSelectChange={_handleIconChange}/>
-                </FormGroup>
-            }
-            {!props.useFixedData && props.useNotes && notesRef.current != null &&
-                <FormGroup label="Notes">
-                    <NotesField key={`${props.res_name}-${props.res_type}`}
-                                notesRef={notesRef}
-                                res_name={props.res_name}
-                                res_type={props.res_type}
-                                readOnly={props.readOnly}
-                                handleChange={_handleNotesChange}
-                                show_markdown_initial={true}
-                                handleBlur={props.handleNotesBlur}
-                    />
-                    {props.notes_buttons && props.notes_buttons()}
-                </FormGroup>
-            }
-            {created != null &&
-                <FormGroup label="Created: " className="metadata-form_group" inline={true}>
-                    <span className="bp5-ui-text metadata-field">{created}</span>
-                </FormGroup>
-            }
-            {updated != null &&
-                <FormGroup label="Updated: " className="metadata-form_group" inline={true}>
-                    <span className="bp5-ui-text metadata-field">{updated}</span>
-                </FormGroup>
-            }
-            {additional_items && additional_items.length > 0 &&
-                additional_items
-            }
-            <div style={{height: 100}}/>
-        </Card>
+                {!props.useFixedData && category != null &&
+                    <FormGroup label="Category" key={`${props.res_name}-${props.res_type}-cagegory`}>
+                        <InputGroup onChange={_handleCategoryChange}
+                                    value={category}/>
+                    </FormGroup>
+                }
+                {icon != null &&
+                    <FormGroup label="Icon">
+                        <IconSelector key={`${props.res_name}-${props.res_type}-icon-selector`}
+                                      icon_val={icon}
+                                      readOnly={props.readOnly}
+                                      handleSelectChange={_handleIconChange}/>
+                    </FormGroup>
+                }
+                {!props.useFixedData && props.useNotes && notesRef.current != null &&
+                    <FormGroup label="Notes">
+                        <NotesField key={`${props.res_name}-${props.res_type}-notes`}
+                                    notesRef={notesRef}
+                                    res_name={props.res_name}
+                                    res_type={props.res_type}
+                                    readOnly={props.readOnly}
+                                    handleChange={_handleNotesChange}
+                                    show_markdown_initial={true}
+                                    handleBlur={props.handleNotesBlur}
+                        />
+                        {props.notes_buttons && props.notes_buttons()}
+                    </FormGroup>
+                }
+                {created != null &&
+                    <FormGroup label="Created: " className="metadata-form_group" inline={true}>
+                        <span className="bp5-ui-text metadata-field">{created}</span>
+                    </FormGroup>
+                }
+                {updated != null &&
+                    <FormGroup label="Updated: " className="metadata-form_group" inline={true}>
+                        <span className="bp5-ui-text metadata-field">{updated}</span>
+                    </FormGroup>
+                }
+                {additional_items && additional_items.length > 0 &&
+                    additional_items
+                }
+                <div style={{height: 100}}/>
+            </Card>
+        </ErrorBoundary>
     )
 }
 
