@@ -41,7 +41,7 @@ const mdi = markdownIt({
 mdi.use(markdownItLatex);
 import _ from 'lodash';
 
-import {propsAreEqual, useDebounce, useStateAndRef, guid} from "./utilities_react";
+import {propsAreEqual, useDebounce, guid, useImmerReducerAndRef, useCallbackStack} from "./utilities_react";
 import {tile_icon_dict} from "./icon_info";
 
 import {useSize} from "./sizing_tools";
@@ -312,7 +312,7 @@ function NotesField(props) {
     const settingsContext = useContext(SettingsContext);
 
     useEffect(() => {
-    }, [props.notesRef.current]);
+    }, [props.mStateRef.current.notes]);
 
     useEffect(() => {
         // console.log("theme changed")  // This is to force re-rendering because of highlight.js theme change
@@ -324,7 +324,6 @@ function NotesField(props) {
     const cmObject = useRef(null);
 
     var mdRef = useRef(null);
-    //var notesRef = useRef(null);
 
     useEffect(() => {
         if (awaitingFocus.current) {
@@ -334,28 +333,14 @@ function NotesField(props) {
         if (cmObject.current && !cmObject.current.hasFocus) {
             setShowMarkdown(!hasOnlyWhitespace());
         }
-        //else if (hasOnlyWhitespace()) {
-        //     if (showMarkdown) {
-        //         // If we are here, then we are reusing a notes field that previously showed markdown
-        //         // and now is empty. We want to prevent markdown being shown when a character is typed.
-        //         setShowMarkdown(false)
-        //     }
-        // } //else if (!showMarkdown && (notesRef.current !== document.activeElement)) {
-        //     // If we are here it means the change was initiated externally
-        //     _showMarkdown()
-        // }
     });
 
     useEffect(()=>{
         setShowMarkdown(!hasOnlyWhitespace());
     }, [props.res_name, props.res_type]);
 
-    // function getNotesField() {
-    //     return notesRef.current
-    // }
-
     function hasOnlyWhitespace() {
-        return !props.notesRef.current || !props.notesRef.current.trim().length
+        return !props.mStateRef.current.notes || !props.mStateRef.current.notes.trim().length
     }
 
     function getMarkdownField() {
@@ -406,7 +391,7 @@ function NotesField(props) {
     };
     var converted_markdown;
     if (really_show_markdown) {
-        converted_markdown = mdi.render(props.notesRef.current)
+        converted_markdown = mdi.render(props.mStateRef.current.notes)
     }
 
     let converted_dict = {__html: converted_markdown};
@@ -421,7 +406,7 @@ function NotesField(props) {
                               show_line_numbers={false}
                               controlled={false}
                               mode="markdown"
-                              code_content={props.notesRef.current}
+                              code_content={props.mStateRef.current.notes}
                               no_height={true}
                               saveMe={null}/>
             }
@@ -497,6 +482,56 @@ const primary_mdata_fields = ["name", "created",
     "updated", "tags", "notes"];
 const ignore_fields = ["doc_type", "res_type"];
 
+const initial_state = {
+    allTags: [],
+    tags: null,
+    created: null,
+    updated: null,
+    notes: null,
+    icon: null,
+    category: null,
+    additional_metadata: null
+};
+
+function metadataReducer(draft, action) {
+    switch (action.type) {
+        case "set_tags":
+            draft.tags = action.value;
+            break;
+        case "set_notes":
+            draft.notes = action.value;
+            break;
+        case "append_to_notes":
+            draft.notes = draft.notes + action.value;
+            break;
+        case "set_icon":
+            draft.icon = action.value;
+            break;
+        case "set_category":
+            draft.category = action.value;
+            break;
+        case "set_additional_metadata":
+            draft.additional_metadata = action.value;
+            break;
+        case "set_all_tags":
+            draft.allTags = action.value;
+            break;
+        case "set_created":
+            draft.created = action.value;
+            break;
+        case "set_updated":
+            draft.updated = action.value;
+            break;
+        case "multi_update":
+            for (let field in action.value) {
+                draft[field] = action.value[field]
+            }
+            break;
+        default:
+            break;
+    }
+}
+
 function CombinedMetadata(props) {
     props = {
         expandWidth: true,
@@ -520,16 +555,9 @@ function CombinedMetadata(props) {
     };
     const top_ref = useRef();
 
-    const [allTags, setAllTags] = useState([]);
-    const [tags, setTags] = useState(null);
-    const [created, setCreated] = useState(null);
-    const [updated, setUpdated, updatedRef] = useStateAndRef(null);
-    const [notes, setNotes, notesRef] = useStateAndRef(null);
-    const [icon, setIcon] = useState(null);
-    const [category, setCategory] = useState(null);
-    const [additionalMdata, setAdditionalMdata] = useState(null);
+    const [mState, mDispatch, mStateRef] = useImmerReducerAndRef(metadataReducer, initial_state);
 
-    const [tempNotes, setTempNotes, tempNotesRef] = useStateAndRef(null);
+    const pushCallback = useCallbackStack();
 
     const updatedIdRef = useRef(null);
     const [waiting, doUpdate] = useDebounce((state_stuff) => {
@@ -568,7 +596,7 @@ function CombinedMetadata(props) {
             };
             postAjaxPromise("get_tag_list", data_dict)
                 .then(data => {
-                    setAllTags(data.tag_list)
+                    mDispatch({"type": "set_all_tags", "value": data.tag_list})
                 })
         }
         postAjaxPromise("grab_metadata", {
@@ -577,19 +605,23 @@ function CombinedMetadata(props) {
             is_repository: props.is_repository
         })
             .then(data => {
-                setTags(data.tags);
-                setNotes(data.notes);
-                setCreated(data.datestring);
-                setUpdated(data.additional_mdata.updated);
-                updatedIdRef.current = data.additional_mdata.mdata_uid;
-                setIcon(data.additional_mdata.icon ? data.additional_mdata.icon : null);
-                setCategory(data.additional_mdata.category ? data.additional_mdata.category : null);
+                let updater ={
+                    "tags": data.tags,
+                    "notes": data.notes,
+                    "created": data.datestring,
+                    "updated": data.additional_mdata.updated
+                };
                 let amdata = data.additional_mdata;
                 delete amdata.updated;
-                if (amdata.category) {
+                if (data.additional_mdata.icon) {
+                    updater["icon"] = data.additional_mdata.icon
+                }
+                if (data.additional_mdata.category) {
+                    updater["category"] = data.additional_mdata.category;
                     delete amdata.category
                 }
-                setAdditionalMdata(amdata);
+                updater["additional_metadata"] = amdata;
+                mDispatch({type: "multi_update", value: updater})
             })
             .catch((e) => {
                 console.log("error getting metadata", e)
@@ -601,10 +633,10 @@ function CombinedMetadata(props) {
         const result_dict = {
             "res_type": props.res_type,
             "res_name": props.res_name,
-            "tags": "tags" in state_stuff ? state_stuff["tags"].join(" ") : tags,
-            "notes": "notes" in state_stuff ? state_stuff["notes"] : notes,
-            "icon": "icon" in state_stuff ? state_stuff["icon"] : icon,
-            "category": "category" in state_stuff ? state_stuff["category"] : category,
+            "tags": "tags" in state_stuff ? state_stuff["tags"] : mStateRef.current.tags,
+            "notes": "notes" in state_stuff ? state_stuff["notes"] : mStateRef.current.notes,
+            "icon": "icon" in state_stuff ? state_stuff["icon"] : mStateRef.current.icon,
+            "category": "category" in state_stuff ? state_stuff["category"] : mStateRef.current.category,
             "mdata_uid": guid()
         };
         try {
@@ -616,22 +648,7 @@ function CombinedMetadata(props) {
     }
 
     async function _handleMetadataChange(state_stuff, post_immediate=true) {
-        for (let field in state_stuff) {
-            switch (field) {
-                case "tags":
-                    setTags(state_stuff[field].join(" "));
-                    break;
-                case "notes":
-                    setNotes(state_stuff[field]);
-                    break;
-                case "icon":
-                    setIcon(state_stuff[field]);
-                    break;
-                case "category":
-                    setCategory(state_stuff[field]);
-                    break;
-            }
-        }
+        mDispatch({type: "multi_update", "value": state_stuff});
         if (post_immediate) {
             await postChanges(state_stuff)
         }
@@ -640,16 +657,19 @@ function CombinedMetadata(props) {
         }
     }
 
+    async function appendToNotes(text) {
+        mDispatch({type: "append_to_notes", "value": text});
+        pushCallback(async () => {
+            await postChanges({"notes": mStateRef.current.notes})
+        })
+    }
+
     async function _handleNotesChange(new_text) {
-        await _handleMetadataChange({"notes": new_text}, true);
+        await _handleMetadataChange({"notes": new_text}, false);
     }
 
-    async function _handleTagsChange(tags) {
-        await _handleMetadataChange({"tags": tags});
-    }
-
-    async function _handleTagsChangeNative(tags) {
-        await _handleMetadataChange({"tags": tags})
+    async function _handleTagsChange(tag_list) {
+        await _handleMetadataChange({"tags": tag_list.join(" ")});
     }
 
     async function _handleCategoryChange(event) {
@@ -659,7 +679,6 @@ function CombinedMetadata(props) {
     async function _handleIconChange(icon) {
         await _handleMetadataChange({"icon": icon})
     }
-
 
     let addition_field_style = {fontSize: 14};
     let additional_items;
@@ -675,10 +694,10 @@ function CombinedMetadata(props) {
             )
         }
     }
-    else if (additionalMdata != null) {
+    else if (mStateRef.current.additionalMdata != null) {
         additional_items = [];
-        for (let field in additionalMdata) {
-            let md = additionalMdata[field];
+        for (let field in mStateRef.current.additionalMdata) {
+            let md = mStateRef.current.additionalMdata[field];
             if (Array.isArray(md)) {
                 md = md.join(", ")
             } else if (field == "collection_name") {
@@ -698,8 +717,8 @@ function CombinedMetadata(props) {
     } else {
         ostyle["width"] = usable_width;
     }
-    let split_tags = !tags || tags == "" ? [] : tags.split(" ");
-
+    let split_tags = !mStateRef.current.tags || mStateRef.current.tags == "" ? [] : mStateRef.current.tags.split(" ");
+    const MetadataNotesButtons = props.notes_buttons;
     return (
         <ErrorBoundary>
             <Card ref={top_ref}
@@ -707,35 +726,35 @@ function CombinedMetadata(props) {
                 {props.res_name != null &&
                     <H4><Icon icon={icon_dict[props.res_type]}
                               style={{marginRight: 6, marginBottom: 2}}/>{props.res_name}</H4>}
-                {!props.useFixedData && props.useTags && tags != null && allTags.length > 0 &&
+                {!props.useFixedData && props.useTags && mStateRef.current.tags != null && mStateRef.current.allTags.length > 0 &&
                     <FormGroup label="Tags">
                         <NativeTags key={`${props.res_name}-${props.res_type}-tags`}
                                     tags={split_tags}
-                                    all_tags={allTags}
+                                    all_tags={mStateRef.current.allTags}
                                     readOnly={props.readOnly}
                                     handleChange={_handleTagsChange}
                                     res_type={props.res_type}/>
                     </FormGroup>
                 }
 
-                {!props.useFixedData && category != null &&
+                {!props.useFixedData && mStateRef.current.category != null &&
                     <FormGroup label="Category" key={`${props.res_name}-${props.res_type}-cagegory`}>
                         <InputGroup onChange={_handleCategoryChange}
-                                    value={category}/>
+                                    value={mStateRef.current.category}/>
                     </FormGroup>
                 }
-                {icon != null &&
+                {mStateRef.current.icon != null &&
                     <FormGroup label="Icon">
                         <IconSelector key={`${props.res_name}-${props.res_type}-icon-selector`}
-                                      icon_val={icon}
+                                      icon_val={mStateRef.current.icon}
                                       readOnly={props.readOnly}
                                       handleSelectChange={_handleIconChange}/>
                     </FormGroup>
                 }
-                {!props.useFixedData && props.useNotes && notesRef.current != null &&
+                {!props.useFixedData && props.useNotes && mStateRef.current.notes != null &&
                     <FormGroup label="Notes">
                         <NotesField key={`${props.res_name}-${props.res_type}-notes`}
-                                    notesRef={notesRef}
+                                    mStateRef={mStateRef}
                                     res_name={props.res_name}
                                     res_type={props.res_type}
                                     readOnly={props.readOnly}
@@ -743,17 +762,19 @@ function CombinedMetadata(props) {
                                     show_markdown_initial={true}
                                     handleBlur={props.handleNotesBlur}
                         />
-                        {props.notes_buttons && props.notes_buttons()}
+                        {props.notes_buttons &&
+                            <MetadataNotesButtons appendToNotes={appendToNotes}/>
+                        }
                     </FormGroup>
                 }
-                {created != null &&
+                {mStateRef.current.created != null &&
                     <FormGroup label="Created: " className="metadata-form_group" inline={true}>
-                        <span className="bp5-ui-text metadata-field">{created}</span>
+                        <span className="bp5-ui-text metadata-field">{mStateRef.current.created}</span>
                     </FormGroup>
                 }
-                {updated != null &&
+                {mStateRef.current.updated != null &&
                     <FormGroup label="Updated: " className="metadata-form_group" inline={true}>
-                        <span className="bp5-ui-text metadata-field">{updated}</span>
+                        <span className="bp5-ui-text metadata-field">{mStateRef.current.updated}</span>
                     </FormGroup>
                 }
                 {additional_items && additional_items.length > 0 &&

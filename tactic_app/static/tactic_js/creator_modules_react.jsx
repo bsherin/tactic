@@ -461,7 +461,6 @@ OptionModule.propTypes = {
     data_list: PropTypes.array,
     foregrounded: PropTypes.bool,
     handleChange: PropTypes.func,
-    handleNotesAppend: PropTypes.func,
     available_height: PropTypes.number
 };
 
@@ -650,7 +649,6 @@ ExportModule.propTypes = {
     couple_save_attrs_and_exports: PropTypes.bool,
     foregrounded: PropTypes.bool,
     handleChange: PropTypes.func,
-    handleNotesAppend: PropTypes.func,
     available_height: PropTypes.number
 };
 

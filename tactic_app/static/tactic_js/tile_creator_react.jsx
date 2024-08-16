@@ -757,27 +757,23 @@ function CreatorApp(props) {
         })
     }
 
-    function _handleNotesAppend(new_text) {
-        set_notes(notes_ref.current + new_text);
-    }
-
-    function _appendOptionText() {
+    function _appendOptionText(appendToNotes) {
         let res_string = "\n\noptions: \n\n";
         for (let opt of option_list_ref.current) {
             res_string += ` * \`${opt.name}\` (${opt.type}): \n`
         }
-        _handleNotesAppend(res_string);
+        appendToNotes(res_string);
     }
 
-    function _appendExportText() {
+    function _appendExportText(appendToNotes) {
         let res_string = "\n\nexports: \n\n";
         for (let exp of export_list_ref.current) {
             res_string += ` * \`${exp.name}\` : \n`
         }
-        _handleNotesAppend(res_string);
+        appendToNotes(res_string);
     }
 
-    function _metadataNotesButtons() {
+    function MetadataNotesButtons(props) {
         return (
             <ButtonGroup>
                 <Button style={{height: "fit-content", alignSelf: "start", marginTop: 10, fontSize: 12}}
@@ -788,7 +784,7 @@ function CreatorApp(props) {
                         icon="select"
                         onClick={e => {
                             e.preventDefault();
-                            _appendOptionText()
+                            _appendOptionText(props.appendToNotes)
                         }}/>
                 <Button style={{height: "fit-content", alignSelf: "start", marginTop: 10, fontSize: 12}}
                         text="Add Exports"
@@ -798,7 +794,7 @@ function CreatorApp(props) {
                         icon="export"
                         onClick={e => {
                             e.preventDefault();
-                            _appendExportText()
+                            _appendExportText(props.appendToNotes)
                         }}/>
             </ButtonGroup>
         )
@@ -974,6 +970,7 @@ function CreatorApp(props) {
 
     let mdata_panel = (
         <MetadataModule expandWidth={false}
+                        notes_buttons={MetadataNotesButtons}
                         tsocket={props.tsocket}
                         readOnly={props.readOnly}
                         res_name={_cProp("resource_name")}
@@ -986,7 +983,6 @@ function CreatorApp(props) {
         <OptionModule data_list_ref={option_list_ref}
                       foregrounded={foregrounded_panes["options"]}
                       optionDispatch={optionDispatch}
-                      handleNotesAppend={_handleNotesAppend}
                       tabSelectCounter={tabSelectCounter}
         />
     );
@@ -996,7 +992,6 @@ function CreatorApp(props) {
                       couple_save_attrs_and_exports={couple_save_attrs_and_exports_ref.current}
                       foregrounded={foregrounded_panes["exports"]}
                       handleChange={handleExportsStateChange}
-                      handleNotesAppend={_handleNotesAppend}
                       tabSelectCounter={tabSelectCounter}
         />
     );
