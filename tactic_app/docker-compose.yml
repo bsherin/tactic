@@ -203,6 +203,16 @@ services:
       - USERNAME=
       - TRUE_HOST_PERSIST_DIR=${ROOT_DIR}/persist
       - TRUE_HOST_RESOURCES_DIR=${ROOT_DIR}/tactic_app/resources
+    volumes:
+      - type: bind
+        source: ${ROOT_DIR}/persist
+        target: "/code/persist"
+      - type: bind
+        source: ${ROOT_DIR}/tactic_app/resources
+        target: "/root/resources"
+      - type: bind
+        source: ${ROOT_DIR}/tactic_app/resources/huggingface
+        target: "/root/.cache/huggingface"
     networks:
       - tactic-net
 
