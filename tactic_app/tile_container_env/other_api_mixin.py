@@ -5,7 +5,9 @@ import pandas as _pd
 try:
     import nltk
     nltk.data.path.append("/root/resources/nltk_data")
+    nltk_available = True
 except:
+    nltk_available = False
     print("*** nltk not available ***")
 from document_object import TacticDocument, TacticRow, DetachedTacticRow
 
@@ -102,7 +104,10 @@ class OtherAPIMIxin:
 
     # <editor-fold desc="Odd utility methods">
 
-    html_table_classes = [_pd.DataFrame, nltk.FreqDist, dict, _pd.Series, list, TacticDocument]
+    if nltk_available:
+        html_table_classes = [_pd.DataFrame, nltk.FreqDist, dict, _pd.Series, list, TacticDocument]
+    else:
+        html_table_classes = [_pd.DataFrame, dict, _pd.Series, list, TacticDocument]
 
     def dict_to_list(self, the_dict):
         result = []
