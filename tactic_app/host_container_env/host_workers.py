@@ -885,7 +885,7 @@ class HostWorker(QWorker):
             "childNodes": child_nodes,
             "isSelected": False
         }
-        base_dict.update(self.get_file_stats(path, user_obj))
+        base_dict.update(self.get_file_stats(path, user_obj, is_directory=True))
         return base_dict
 
     def file_dict(self, path, basename, user_obj):
@@ -898,7 +898,7 @@ class HostWorker(QWorker):
             "label": basename,
             "isSelected": False
         }
-        base_dict.update(self.get_file_stats(path, user_obj))
+        base_dict.update(self.get_file_stats(path, user_obj), is_directory=False)
         return base_dict
 
     def get_node(self, root, user_pool_dir, user_obj):
@@ -941,13 +941,27 @@ class HostWorker(QWorker):
             print(self.handle_exception(ex, "Error getting pooltree"))
         return {"dtree": dtree}
 
-    def get_file_stats(self, filepath, user_obj):
+    def get_folder_size(self, folder_path):
+        total_size = 0
+        for dirpath, dirnames, filenames in os.walk(folder_path):
+            for f in filenames:
+                fp = os.path.join(dirpath, f)
+                # Skip if it is a symbolic link
+                if not os.path.islink(fp):
+                    total_size += os.path.getsize(fp)
+        return total_size
+
+    @task_worthy
+    def get_file_stats(self, filepath, user_obj, is_directory=False):
         user_pool_dir = f"/pool/{user_obj.username}"
         if not os.path.exists(user_pool_dir):
             return {"stats": None}
         truepath = re.sub("/mydisk", user_pool_dir, filepath)
         fstat = os.stat(truepath)
-        raw_size = fstat.st_size
+        if is_directory:
+            raw_size = self.get_folder_size(truepath)
+        else:
+            raw_size = fstat.st_size
         if raw_size > 10**9:
             size_str = f"{round(raw_size / 10**9, 1)} GB"
         elif raw_size > 10 ** 6:
