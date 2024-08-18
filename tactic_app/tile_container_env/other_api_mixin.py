@@ -2,9 +2,13 @@
 from communication_utils import debinarize_python_object
 # noinspection PyPackageRequirements
 import pandas as _pd
-import nltk
+try:
+    import nltk
+    nltk.data.path.append("/root/resources/nltk_data")
+except:
+    print("*** nltk not available ***")
 from document_object import TacticDocument, TacticRow, DetachedTacticRow
-nltk.data.path.append("/root/resources/nltk_data")
+
 
 import collections
 import six
