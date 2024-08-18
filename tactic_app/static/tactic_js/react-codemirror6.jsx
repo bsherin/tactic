@@ -208,9 +208,9 @@ function ReactCodemirror6(props) {
                 }),
             ];
         if (props.show_line_numbers) {
-            extensions.concat([
-                lineNumberCompartment.current.of(customLineNumbers(props.first_line_number)),
-                foldGutter()
+            extensions = extensions.concat([
+                    lineNumberCompartment.current.of(customLineNumbers(props.first_line_number)),
+                    foldGutter()
                 ]
             );
         }
