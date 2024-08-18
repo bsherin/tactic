@@ -203,6 +203,7 @@ services:
       - USERNAME=
       - TRUE_HOST_PERSIST_DIR=${ROOT_DIR}/persist
       - TRUE_HOST_RESOURCES_DIR=${ROOT_DIR}/tactic_app/resources
+      - NLTK_DATA=/root/resources/nltk_data
     volumes:
       - type: bind
         source: ${ROOT_DIR}/persist

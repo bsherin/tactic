@@ -139,7 +139,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
 
     def create_tile_container(self, data):
         try:
-            environ = {"PPI": data["ppi"], "USE_WAIT_TASKS": "True"}
+            environ = {"PPI": data["ppi"], "USE_WAIT_TASKS": "True", "NLTK_DATA": "/root/resources/nltk_data"}
             user_host_persist_dir = true_host_persist_dir + "/tile_manager/" + self.username
             transformers_resource_dir = true_host_resources_dir + "/huggingface"
             tile_volume_dict = {}
