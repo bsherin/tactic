@@ -80,6 +80,30 @@ function PoolBrowser(props) {
     }
   }, [value]);
   function handlePoolEvent() {}
+  async function sendNewCell(path, main_id, read_as_dataframe) {
+    const ext = (0, _utilities_react.getFileExtension)(path);
+    let code = "";
+    if (read_as_dataframe) {
+      if (ext === "csv") {
+        code = `import pandas as pd\ndf = pd.read_csv("${path}")`;
+      } else if (ext === "parquet") {
+        code = `import pandas as pd\ndf = pd.read_parquet("${path}")`;
+      } else {
+        code = `import pandas as pd\ndf = pd.read_pickle("${path}")`;
+      }
+    } else {
+      if (ext == "pkl") {
+        code = `import pickle\nwith open("${path}", "rb") as f:\n    data = pickle.load(f)`;
+      } else {
+        code = `with open("${path}") as f:\n    txt = f.read()`;
+      }
+    }
+    await (0, _communication_react.postPromise)("host", "print_code_area_to_console", {
+      "console_text": code,
+      "user_id": window.user_id,
+      "main_id": main_id
+    }, props.main_id);
+  }
   async function openInNotebook() {
     let node = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
     if (!valueRef.current && !node) return;
@@ -88,16 +112,21 @@ function PoolBrowser(props) {
       if (node.isDirectory) return;
       let openResources = props.getOpenResources();
       let open_projects = [];
+      let open_projects_dict = {};
       for (let entry of openResources) {
         if (entry.res_type === "project" || entry.res_type === "collection") {
-          open_projects.push(entry.res_name);
+          open_projects.push(entry.resource_name);
+          open_projects_dict[entry.resource_name] = entry;
         }
       }
-      let [selectedPane, checkResults] = await dialogFuncs.showModalPromise("SelectDialog", {
+      let [selectedResource, checkResults] = await dialogFuncs.showModalPromise("SelectDialog", {
         title: "Open resources in notebook",
         checkboxes: [{
           "checkname": "create_new_notebook",
           "checktext": "Create new notebook"
+        }, {
+          "checkname": "read_as_dataframe",
+          "checktext": "Read as dataframe"
         }],
         select_label: "Project",
         cancel_text: "Cancel",
@@ -109,7 +138,7 @@ function PoolBrowser(props) {
       if (checkResults["create_new_notebook"]) {
         data = await (0, _communication_react.postAjaxPromise)("new_notebook_in_context", {});
         if (data.success) {
-          props.handleCreateViewer(data, sendNewCell(path, data.main_id));
+          props.handleCreateViewer(data, async () => await sendNewCell(path, data.main_id, checkResults["read_as_dataframe"]));
         } else {
           errorDrawerFuncs.addErrorDrawerEntry({
             title: "Error opening in notebook",
@@ -117,7 +146,8 @@ function PoolBrowser(props) {
           });
         }
       } else {
-        sendNewCell(path, selectedPane.main_id);
+        props.setSelectedTabId(open_projects_dict[selectedResource].id);
+        await sendNewCell(path, open_projects_dict[selectedResource].main_id, checkResults["read_as_dataframe"]);
       }
     } catch (e) {
       errorDrawerFuncs.addFromError(`Error opening in notebook`, e);
@@ -439,19 +469,25 @@ function PoolBrowser(props) {
         await setRootToBase(props.node);
       },
       text: "Go Home"
-    }), !props.node.isDirectory && /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
-      icon: "eye-open",
-      onClick: async () => {
-        await viewTextFile(props.node);
-      },
-      text: "View as Text"
     }), /*#__PURE__*/_react.default.createElement(_core.MenuDivider, null), /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
       icon: "clipboard",
       onClick: async () => {
         await _copy_func(props.node);
       },
       text: "Copy Path"
+    }), !props.node.isDirectory && /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
+      icon: "eye-open",
+      onClick: async () => {
+        await viewTextFile(props.node);
+      },
+      text: "View as Text"
     }), /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
+      icon: "code",
+      onClick: async () => {
+        await openInNotebook(props.node);
+      },
+      text: "Open in Notebook"
+    })), /*#__PURE__*/_react.default.createElement(_core.MenuDivider, null), /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
       icon: "edit",
       onClick: async () => {
         await _rename_func(props.node);
@@ -558,6 +594,7 @@ function PoolBrowser(props) {
     rename_func: _rename_func,
     delete_func: _delete_func,
     view_func: viewTextFile,
+    open_in_notebook_func: openInNotebook,
     add_directory: _add_directory,
     duplicate_file: _duplicate_file,
     move_resource: _move_resource,
@@ -664,16 +701,20 @@ function PoolMenubar(props) {
         },
         res_type: "poolDir"
       }],
-      View: [{
-        name_text: "View As Text File",
-        icon_name: "eye-open",
-        click_handler: props.view_func
-      }],
-      Edit: [{
+      Inspect: [{
         name_text: "Copy Path",
         icon_name: "clipboard",
         click_handler: props.copy_func
       }, {
+        name_text: "View As Text File",
+        icon_name: "eye-open",
+        click_handler: props.view_func
+      }, {
+        name_text: "Open in Notebook",
+        icon_name: "code",
+        click_handler: props.open_in_notebook_func
+      }],
+      Edit: [{
         name_text: "Rename Resource",
         icon_name: "edit",
         click_handler: props.rename_func

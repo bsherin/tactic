@@ -516,6 +516,7 @@ function ContextApp(props) {
       const entry = tab_panel_dict_ref.current[the_id];
       if (entry.panel != "spinner") {
         open_resources.push({
+          id: the_id,
           resource_name: entry.panel.resource_name,
           res_type: entry.res_type,
           main_id: entry.main_id
@@ -679,8 +680,10 @@ function ContextApp(props) {
       const entry = tab_panel_dict_ref.current[the_id];
       if (entry.panel != "spinner") {
         open_resources.push({
+          id: the_id,
           resource_name: entry.panel.resource_name,
-          res_type: entry.res_type
+          res_type: entry.res_type,
+          main_id: entry.panel.main_id
         });
       }
     }
@@ -797,6 +800,7 @@ function ContextApp(props) {
       am_selected: selectedTabIdRef.current == "pool",
       usable_width: usable_width,
       getOpenResources: _getOpenResources,
+      setSelectedTabId: setSelectedTabId,
       handleCreateViewer: _handleCreateViewer,
       usable_height: usable_height
     })));

@@ -11,6 +11,7 @@ exports.convertExtraKeys = void 0;
 exports.copyToClipboard = copyToClipboard;
 exports.debounce = debounce;
 exports.default = void 0;
+exports.getFileExtension = getFileExtension;
 exports.get_ppi = get_ppi;
 exports.guid = guid;
 exports.hasAnyKey = hasAnyKey;
@@ -377,4 +378,11 @@ function copyToClipboard(text) {
     }
     document.body.removeChild(textArea);
   }
+}
+function getFileExtension(filePath) {
+  const dotIndex = filePath.lastIndexOf('.');
+  if (dotIndex === -1) {
+    return ''; // No extension found
+  }
+  return filePath.substring(dotIndex + 1);
 }

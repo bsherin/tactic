@@ -9,12 +9,12 @@ import {LibraryMenubar} from "./library_menubars"
 import {CombinedMetadata, icon_dict} from "./blueprint_mdata_fields";
 import {PoolTree, getBasename, splitFilePath, getFileParentPath, PoolContext} from "./pool_tree";
 import {HorizontalPanes} from "./resizing_layouts2";
-import {getBlobPromise, postAjaxPromise} from "./communication_react";
+import {getBlobPromise, postAjaxPromise, postPromise} from "./communication_react";
 import {ErrorDrawerContext} from "./error_drawer";
 import {useSize} from "./sizing_tools";
 import {doFlash, StatusContext} from "./toaster";
 import {SettingsContext} from "./settings";
-import {copyToClipboard} from "./utilities_react";
+import {copyToClipboard, getFileExtension} from "./utilities_react";
 
 import {DialogContext} from "./modal_react";
 
@@ -84,6 +84,34 @@ function PoolBrowser(props) {
 
     }
 
+    async function sendNewCell(path, main_id, read_as_dataframe) {
+        const ext = getFileExtension(path);
+        let code = "";
+        if (read_as_dataframe) {
+            if (ext === "csv") {
+                code = `import pandas as pd\ndf = pd.read_csv("${path}")`
+            } else if (ext === "parquet") {
+                code = `import pandas as pd\ndf = pd.read_parquet("${path}")`
+            }
+            else {
+                code = `import pandas as pd\ndf = pd.read_pickle("${path}")`
+            }
+        }
+        else {
+            if (ext == "pkl") {
+                code = `import pickle\nwith open("${path}", "rb") as f:\n    data = pickle.load(f)`
+            }
+            else {
+                code = `with open("${path}") as f:\n    txt = f.read()`
+            }
+        }
+
+        await postPromise("host",
+                "print_code_area_to_console",
+                {"console_text": code, "user_id": window.user_id, "main_id": main_id},
+                props.main_id);
+    }
+
     async function openInNotebook(node = null) {
         if (!valueRef.current && !node) return;
         try {
@@ -91,14 +119,19 @@ function PoolBrowser(props) {
             if (node.isDirectory) return;
             let openResources = props.getOpenResources();
             let open_projects = [];
+            let open_projects_dict = {};
             for (let entry of openResources) {
                 if (entry.res_type === "project" || entry.res_type === "collection") {
-                    open_projects.push(entry.res_name)
+                    open_projects.push(entry.resource_name);
+                    open_projects_dict[entry.resource_name] = entry
                 }
             }
-            let [selectedPane, checkResults] = await dialogFuncs.showModalPromise("SelectDialog", {
+            let [selectedResource, checkResults] = await dialogFuncs.showModalPromise("SelectDialog", {
                     title: "Open resources in notebook",
-                    checkboxes: [{"checkname": "create_new_notebook", "checktext": "Create new notebook"}],
+                    checkboxes: [
+                        {"checkname": "create_new_notebook", "checktext": "Create new notebook"},
+                        {"checkname": "read_as_dataframe", "checktext": "Read as dataframe"},
+                    ],
                     select_label: "Project",
                     cancel_text: "Cancel",
                     submit_text: "Open",
@@ -109,7 +142,7 @@ function PoolBrowser(props) {
             if (checkResults["create_new_notebook"]) {
                 data = await postAjaxPromise("new_notebook_in_context", {});
                 if (data.success) {
-                    props.handleCreateViewer(data, sendNewCell(path, data.main_id))
+                    props.handleCreateViewer(data, async () => await sendNewCell(path, data.main_id, checkResults["read_as_dataframe"]))
                 } else {
                     errorDrawerFuncs.addErrorDrawerEntry({
                         title: "Error opening in notebook",
@@ -118,7 +151,8 @@ function PoolBrowser(props) {
                 }
             }
             else {
-                sendNewCell(path, selectedPane.main_id)
+                props.setSelectedTabId(open_projects_dict[selectedResource].id);
+                await sendNewCell(path, open_projects_dict[selectedResource].main_id, checkResults["read_as_dataframe"])
             }
 
         } catch (e) {
@@ -439,19 +473,28 @@ function PoolBrowser(props) {
                               await setRootToBase(props.node)
                           }}
                           text="Go Home"/>
+                <MenuDivider/>
+                <MenuItem icon="clipboard"
+                  onClick={async () => {
+                      await _copy_func(props.node)
+                  }}
+                  text="Copy Path"/>
                 {!props.node.isDirectory &&
+                    <Fragment>
                     <MenuItem icon="eye-open"
                               onClick={async () => {
                                   await viewTextFile(props.node)
                               }}
                               text="View as Text"/>
+                    <MenuItem icon="code"
+                              onClick={async () => {
+                                  await openInNotebook(props.node)
+                              }}
+                              text="Open in Notebook"/>
+
+                    </Fragment>
                 }
                 <MenuDivider/>
-                <MenuItem icon="clipboard"
-                          onClick={async () => {
-                              await _copy_func(props.node)
-                          }}
-                          text="Copy Path"/>
                 <MenuItem icon="edit"
                           onClick={async () => {
                               await _rename_func(props.node)
@@ -553,6 +596,7 @@ function PoolBrowser(props) {
                          rename_func={_rename_func}
                          delete_func={_delete_func}
                          view_func={viewTextFile}
+                         open_in_notebook_func={openInNotebook}
                          add_directory={_add_directory}
                          duplicate_file={_duplicate_file}
                          move_resource={_move_resource}
@@ -659,11 +703,12 @@ function PoolMenubar(props) {
                     }, res_type: "poolDir"
                 },
             ],
-            View: [
-                {name_text: "View As Text File", icon_name: "eye-open", click_handler: props.view_func}
+            Inspect: [
+                {name_text: "Copy Path", icon_name: "clipboard", click_handler: props.copy_func},
+                {name_text: "View As Text File", icon_name: "eye-open", click_handler: props.view_func},
+                {name_text: "Open in Notebook", icon_name: "code", click_handler: props.open_in_notebook_func}
             ],
             Edit: [
-                {name_text: "Copy Path", icon_name: "clipboard", click_handler: props.copy_func},
                 {name_text: "Rename Resource", icon_name: "edit", click_handler: props.rename_func},
                 {name_text: "Move Resource", icon_name: "inheritance", click_handler: props.move_resource},
                 {name_text: "Duplicate File", icon_name: "duplicate", click_handler: props.duplicate_file},

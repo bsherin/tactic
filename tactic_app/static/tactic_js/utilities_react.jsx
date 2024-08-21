@@ -10,7 +10,7 @@ import {Spinner, Text} from "@blueprintjs/core";
 
 import { useImmerReducer } from 'use-immer';
 
-export {propsAreEqual, arrayMove, arraysMatch, get_ppi, isInt, hasAnyKey, copyToClipboard};
+export {propsAreEqual, arrayMove, arraysMatch, get_ppi, isInt, hasAnyKey, copyToClipboard, getFileExtension};
 export {remove_duplicates, guid, scrollMeIntoView, renderSpinnerMessage};
 export {useConstructor, useCallbackStack, useStateAndRef, useReducerAndRef, useConnection,
     useStateAndRefAndCounter, useDidMount, useImmerReducerAndRef, useDeepCompareEffect};
@@ -380,4 +380,12 @@ function copyToClipboard(text) {
         }
         document.body.removeChild(textArea);
     }
+}
+
+function getFileExtension(filePath) {
+    const dotIndex = filePath.lastIndexOf('.');
+    if (dotIndex === -1) {
+        return ''; // No extension found
+    }
+    return filePath.substring(dotIndex + 1);
 }
