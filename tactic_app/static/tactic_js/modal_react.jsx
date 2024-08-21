@@ -471,29 +471,68 @@ function ReportDialog(props) {
 ReportDialog = memo(ReportDialog);
 
 function SelectDialog(props) {
+    props = {
+        checkboxes: null,
+        ...props
+    };
     const [show, set_show] = useState(false);
     const [value, set_value] = useState("");
+    const [checkbox_states, set_checkbox_states, checkbox_states_ref] = useStateAndRef({});
 
     const settingsContext = useContext(SettingsContext);
 
     useEffect(() => {
         set_show(true);
-        set_value(props.option_list[0])
+        set_value(props.option_list[0]);
+        if ((props.checkboxes != null) && (props.checkboxes.length != 0)) {
+            let checkbox_states = {};
+            for (let checkbox of props.checkboxes) {
+                checkbox_states[checkbox.checkname] = false
+            }
+            set_checkbox_states(checkbox_states)
+        }
     }, []);
 
     function _handleChange(val) {
         set_value(val)
     }
 
+    function _checkbox_change_handler(event) {
+        let val = event.target.checked;
+        let new_checkbox_states = Object.assign({}, checkbox_states);
+        new_checkbox_states[event.target.id] = event.target.checked;
+        set_checkbox_states(new_checkbox_states)
+    }
+
     function _submitHandler(event) {
         set_show(false);
-        props.handleSubmit(value);
+        if ((props.checkboxes != null) && (props.checkboxes.length != 0)) {
+                props.handleSubmit([value, checkbox_states]);
+        }
+        else {
+            props.handleSubmit(value);
+        }
         props.handleClose();
     }
 
     function _cancelHandler() {
         set_show(false);
         props.handleClose()
+    }
+
+    let checkbox_items = [];
+    if ((props.checkboxes != null) && (props.checkboxes.length != 0)) {
+        for (let checkbox of props.checkboxes) {
+            let new_item = (
+                <Checkbox checked={checkbox_states[checkbox.checkname]}
+                          label={checkbox.checktext}
+                          id={checkbox.checkname}
+                          key={checkbox.checkname}
+                          onChange={_checkbox_change_handler}
+                />
+            );
+            checkbox_items.push(new_item)
+        }
     }
 
     return (
@@ -506,6 +545,7 @@ function SelectDialog(props) {
                 <FormGroup title={props.select_label}>
                     <BpSelect options={props.option_list} onChange={_handleChange} value={value}/>
                 </FormGroup>
+                {(checkbox_items.length != 0) && checkbox_items}
             </div>
             <div className={Classes.DIALOG_FOOTER}>
                 <div className={Classes.DIALOG_FOOTER_ACTIONS}>
@@ -518,18 +558,6 @@ function SelectDialog(props) {
 }
 
 SelectDialog = memo(SelectDialog);
-
-SelectDialog.propTypes = {
-    handleSubmit: PropTypes.func,
-    handleClose: PropTypes.func,
-    handleCancel: PropTypes.func,
-    title: PropTypes.string,
-    select_label: PropTypes.string,
-    option_list: PropTypes.array,
-    submit_text: PropTypes.string,
-    cancel_text: PropTypes.string,
-
-};
 
 function SelectAddressDialog(props) {
     const [show, set_show] = useState(false);

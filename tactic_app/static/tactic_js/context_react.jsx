@@ -528,6 +528,22 @@ function ContextApp(props) {
         return -1
     }
 
+    function getOpenResources() {
+        let open_resources = [];
+        for (let the_id in tab_panel_dict_ref.current) {
+            const entry = tab_panel_dict_ref.current[the_id];
+            if (entry.panel != "spinner") {
+                open_resources.push({
+                    resource_name: entry.panel.resource_name,
+                    res_type: entry.res_type,
+                    main_id: entry.main_id
+                });
+            }
+
+        }
+        return open_resources
+    }
+
     function _showOpenOmnibar() {
         setShowOpenOmnibar(true)
     }
@@ -686,7 +702,7 @@ function ContextApp(props) {
         for (let the_id in tab_panel_dict_ref.current) {
             const entry = tab_panel_dict_ref.current[the_id];
             if (entry.panel != "spinner") {
-                open_resources.push(entry.panel.resource_name);
+                open_resources.push({resource_name: entry.panel.resource_name, res_type: entry.res_type});
             }
 
         }
@@ -790,6 +806,7 @@ function ContextApp(props) {
                     <PoolBrowser tsocket={tsocket}
                                  am_selected={selectedTabIdRef.current == "pool"}
                                  usable_width={usable_width}
+                                 getOpenResources={_getOpenResources}
                                  handleCreateViewer={_handleCreateViewer}
                                  usable_height={usable_height}/>
 

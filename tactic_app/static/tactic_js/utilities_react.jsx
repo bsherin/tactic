@@ -10,7 +10,7 @@ import {Spinner, Text} from "@blueprintjs/core";
 
 import { useImmerReducer } from 'use-immer';
 
-export {propsAreEqual, arrayMove, arraysMatch, get_ppi, isInt, hasAnyKey};
+export {propsAreEqual, arrayMove, arraysMatch, get_ppi, isInt, hasAnyKey, copyToClipboard};
 export {remove_duplicates, guid, scrollMeIntoView, renderSpinnerMessage};
 export {useConstructor, useCallbackStack, useStateAndRef, useReducerAndRef, useConnection,
     useStateAndRefAndCounter, useDidMount, useImmerReducerAndRef, useDeepCompareEffect};
@@ -358,4 +358,26 @@ function renderSpinnerMessage(msg, selector = "#main-root") {
             </Text>
         </div>)
     )
+}
+
+function copyToClipboard(text) {
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).then(function() {
+        }).catch(function(error) {
+            console.error('Failed to copy text: ', error);
+        });
+    } else {
+        // Fallback: Create a temporary text area for copying
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {
+            document.execCommand('copy');
+        } catch (err) {
+            console.error('Fallback: Oops, unable to copy', err);
+        }
+        document.body.removeChild(textArea);
+    }
 }

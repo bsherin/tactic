@@ -1,10 +1,11 @@
 "use strict";
 
-function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.PoolBrowser = PoolBrowser;
+var _extends2 = _interopRequireDefault(require("@babel/runtime/helpers/extends"));
 var _react = _interopRequireWildcard(require("react"));
 var _core = require("@blueprintjs/core");
 var _utilities_react = require("./utilities_react");
@@ -19,90 +20,44 @@ var _toaster = require("./toaster");
 var _settings = require("./settings");
 var _modal_react = require("./modal_react");
 var _library_home_react = require("./library_home_react");
-function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(e) { return e ? t : r; })(e); }
-function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != _typeof(e) && "function" != typeof e) return { "default": e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && {}.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n["default"] = e, t && t.set(e, n), n; }
-function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
-function _extends() { _extends = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
-function _regeneratorRuntime() { "use strict"; /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */ _regeneratorRuntime = function _regeneratorRuntime() { return e; }; var t, e = {}, r = Object.prototype, n = r.hasOwnProperty, o = Object.defineProperty || function (t, e, r) { t[e] = r.value; }, i = "function" == typeof Symbol ? Symbol : {}, a = i.iterator || "@@iterator", c = i.asyncIterator || "@@asyncIterator", u = i.toStringTag || "@@toStringTag"; function define(t, e, r) { return Object.defineProperty(t, e, { value: r, enumerable: !0, configurable: !0, writable: !0 }), t[e]; } try { define({}, ""); } catch (t) { define = function define(t, e, r) { return t[e] = r; }; } function wrap(t, e, r, n) { var i = e && e.prototype instanceof Generator ? e : Generator, a = Object.create(i.prototype), c = new Context(n || []); return o(a, "_invoke", { value: makeInvokeMethod(t, r, c) }), a; } function tryCatch(t, e, r) { try { return { type: "normal", arg: t.call(e, r) }; } catch (t) { return { type: "throw", arg: t }; } } e.wrap = wrap; var h = "suspendedStart", l = "suspendedYield", f = "executing", s = "completed", y = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} var p = {}; define(p, a, function () { return this; }); var d = Object.getPrototypeOf, v = d && d(d(values([]))); v && v !== r && n.call(v, a) && (p = v); var g = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(p); function defineIteratorMethods(t) { ["next", "throw", "return"].forEach(function (e) { define(t, e, function (t) { return this._invoke(e, t); }); }); } function AsyncIterator(t, e) { function invoke(r, o, i, a) { var c = tryCatch(t[r], t, o); if ("throw" !== c.type) { var u = c.arg, h = u.value; return h && "object" == _typeof(h) && n.call(h, "__await") ? e.resolve(h.__await).then(function (t) { invoke("next", t, i, a); }, function (t) { invoke("throw", t, i, a); }) : e.resolve(h).then(function (t) { u.value = t, i(u); }, function (t) { return invoke("throw", t, i, a); }); } a(c.arg); } var r; o(this, "_invoke", { value: function value(t, n) { function callInvokeWithMethodAndArg() { return new e(function (e, r) { invoke(t, n, e, r); }); } return r = r ? r.then(callInvokeWithMethodAndArg, callInvokeWithMethodAndArg) : callInvokeWithMethodAndArg(); } }); } function makeInvokeMethod(e, r, n) { var o = h; return function (i, a) { if (o === f) throw Error("Generator is already running"); if (o === s) { if ("throw" === i) throw a; return { value: t, done: !0 }; } for (n.method = i, n.arg = a;;) { var c = n.delegate; if (c) { var u = maybeInvokeDelegate(c, n); if (u) { if (u === y) continue; return u; } } if ("next" === n.method) n.sent = n._sent = n.arg;else if ("throw" === n.method) { if (o === h) throw o = s, n.arg; n.dispatchException(n.arg); } else "return" === n.method && n.abrupt("return", n.arg); o = f; var p = tryCatch(e, r, n); if ("normal" === p.type) { if (o = n.done ? s : l, p.arg === y) continue; return { value: p.arg, done: n.done }; } "throw" === p.type && (o = s, n.method = "throw", n.arg = p.arg); } }; } function maybeInvokeDelegate(e, r) { var n = r.method, o = e.iterator[n]; if (o === t) return r.delegate = null, "throw" === n && e.iterator["return"] && (r.method = "return", r.arg = t, maybeInvokeDelegate(e, r), "throw" === r.method) || "return" !== n && (r.method = "throw", r.arg = new TypeError("The iterator does not provide a '" + n + "' method")), y; var i = tryCatch(o, e.iterator, r.arg); if ("throw" === i.type) return r.method = "throw", r.arg = i.arg, r.delegate = null, y; var a = i.arg; return a ? a.done ? (r[e.resultName] = a.value, r.next = e.nextLoc, "return" !== r.method && (r.method = "next", r.arg = t), r.delegate = null, y) : a : (r.method = "throw", r.arg = new TypeError("iterator result is not an object"), r.delegate = null, y); } function pushTryEntry(t) { var e = { tryLoc: t[0] }; 1 in t && (e.catchLoc = t[1]), 2 in t && (e.finallyLoc = t[2], e.afterLoc = t[3]), this.tryEntries.push(e); } function resetTryEntry(t) { var e = t.completion || {}; e.type = "normal", delete e.arg, t.completion = e; } function Context(t) { this.tryEntries = [{ tryLoc: "root" }], t.forEach(pushTryEntry, this), this.reset(!0); } function values(e) { if (e || "" === e) { var r = e[a]; if (r) return r.call(e); if ("function" == typeof e.next) return e; if (!isNaN(e.length)) { var o = -1, i = function next() { for (; ++o < e.length;) if (n.call(e, o)) return next.value = e[o], next.done = !1, next; return next.value = t, next.done = !0, next; }; return i.next = i; } } throw new TypeError(_typeof(e) + " is not iterable"); } return GeneratorFunction.prototype = GeneratorFunctionPrototype, o(g, "constructor", { value: GeneratorFunctionPrototype, configurable: !0 }), o(GeneratorFunctionPrototype, "constructor", { value: GeneratorFunction, configurable: !0 }), GeneratorFunction.displayName = define(GeneratorFunctionPrototype, u, "GeneratorFunction"), e.isGeneratorFunction = function (t) { var e = "function" == typeof t && t.constructor; return !!e && (e === GeneratorFunction || "GeneratorFunction" === (e.displayName || e.name)); }, e.mark = function (t) { return Object.setPrototypeOf ? Object.setPrototypeOf(t, GeneratorFunctionPrototype) : (t.__proto__ = GeneratorFunctionPrototype, define(t, u, "GeneratorFunction")), t.prototype = Object.create(g), t; }, e.awrap = function (t) { return { __await: t }; }, defineIteratorMethods(AsyncIterator.prototype), define(AsyncIterator.prototype, c, function () { return this; }), e.AsyncIterator = AsyncIterator, e.async = function (t, r, n, o, i) { void 0 === i && (i = Promise); var a = new AsyncIterator(wrap(t, r, n, o), i); return e.isGeneratorFunction(r) ? a : a.next().then(function (t) { return t.done ? t.value : a.next(); }); }, defineIteratorMethods(g), define(g, u, "Generator"), define(g, a, function () { return this; }), define(g, "toString", function () { return "[object Generator]"; }), e.keys = function (t) { var e = Object(t), r = []; for (var n in e) r.push(n); return r.reverse(), function next() { for (; r.length;) { var t = r.pop(); if (t in e) return next.value = t, next.done = !1, next; } return next.done = !0, next; }; }, e.values = values, Context.prototype = { constructor: Context, reset: function reset(e) { if (this.prev = 0, this.next = 0, this.sent = this._sent = t, this.done = !1, this.delegate = null, this.method = "next", this.arg = t, this.tryEntries.forEach(resetTryEntry), !e) for (var r in this) "t" === r.charAt(0) && n.call(this, r) && !isNaN(+r.slice(1)) && (this[r] = t); }, stop: function stop() { this.done = !0; var t = this.tryEntries[0].completion; if ("throw" === t.type) throw t.arg; return this.rval; }, dispatchException: function dispatchException(e) { if (this.done) throw e; var r = this; function handle(n, o) { return a.type = "throw", a.arg = e, r.next = n, o && (r.method = "next", r.arg = t), !!o; } for (var o = this.tryEntries.length - 1; o >= 0; --o) { var i = this.tryEntries[o], a = i.completion; if ("root" === i.tryLoc) return handle("end"); if (i.tryLoc <= this.prev) { var c = n.call(i, "catchLoc"), u = n.call(i, "finallyLoc"); if (c && u) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } else if (c) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); } else { if (!u) throw Error("try statement without catch or finally"); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } } } }, abrupt: function abrupt(t, e) { for (var r = this.tryEntries.length - 1; r >= 0; --r) { var o = this.tryEntries[r]; if (o.tryLoc <= this.prev && n.call(o, "finallyLoc") && this.prev < o.finallyLoc) { var i = o; break; } } i && ("break" === t || "continue" === t) && i.tryLoc <= e && e <= i.finallyLoc && (i = null); var a = i ? i.completion : {}; return a.type = t, a.arg = e, i ? (this.method = "next", this.next = i.finallyLoc, y) : this.complete(a); }, complete: function complete(t, e) { if ("throw" === t.type) throw t.arg; return "break" === t.type || "continue" === t.type ? this.next = t.arg : "return" === t.type ? (this.rval = this.arg = t.arg, this.method = "return", this.next = "end") : "normal" === t.type && e && (this.next = e), y; }, finish: function finish(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.finallyLoc === t) return this.complete(r.completion, r.afterLoc), resetTryEntry(r), y; } }, "catch": function _catch(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.tryLoc === t) { var n = r.completion; if ("throw" === n.type) { var o = n.arg; resetTryEntry(r); } return o; } } throw Error("illegal catch attempt"); }, delegateYield: function delegateYield(e, r, n) { return this.delegate = { iterator: values(e), resultName: r, nextLoc: n }, "next" === this.method && (this.arg = t), y; } }, e; }
-function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
-function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
-function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
-function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
-function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
-function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
-var pool_browser_id = (0, _utilities_react.guid)();
+function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
+function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
+const pool_browser_id = (0, _utilities_react.guid)();
 function PoolBrowser(props) {
-  var top_ref = (0, _react.useRef)(null);
-  var resizing = (0, _react.useRef)(false);
-  var _useStateAndRef = (0, _utilities_react.useStateAndRef)({
-      name: "",
-      tags: "",
-      notes: "",
-      updated: "",
-      created: "",
-      size: "",
-      res_type: null
-    }),
-    _useStateAndRef2 = _slicedToArray(_useStateAndRef, 3),
-    selected_resource = _useStateAndRef2[0],
-    set_selected_resource = _useStateAndRef2[1],
-    selected_resource_ref = _useStateAndRef2[2];
-  var _useStateAndRef3 = (0, _utilities_react.useStateAndRef)("/mydisk"),
-    _useStateAndRef4 = _slicedToArray(_useStateAndRef3, 3),
-    currentRootPath = _useStateAndRef4[0],
-    setCurrentRootPath = _useStateAndRef4[1],
-    currentRootPathRef = _useStateAndRef4[2];
-  var _useStateAndRef5 = (0, _utilities_react.useStateAndRef)(null),
-    _useStateAndRef6 = _slicedToArray(_useStateAndRef5, 3),
-    value = _useStateAndRef6[0],
-    setValue = _useStateAndRef6[1],
-    valueRef = _useStateAndRef6[2];
-  var _useStateAndRef7 = (0, _utilities_react.useStateAndRef)(null),
-    _useStateAndRef8 = _slicedToArray(_useStateAndRef7, 3),
-    selectedNode = _useStateAndRef8[0],
-    setSelectedNode = _useStateAndRef8[1],
-    selectedNodeRef = _useStateAndRef8[2];
-  var _useStateAndRef9 = (0, _utilities_react.useStateAndRef)(false),
-    _useStateAndRef10 = _slicedToArray(_useStateAndRef9, 3),
-    multi_select = _useStateAndRef10[0],
-    set_multi_select = _useStateAndRef10[1],
-    multi_select_ref = _useStateAndRef10[2];
-  var _useStateAndRef11 = (0, _utilities_react.useStateAndRef)([]),
-    _useStateAndRef12 = _slicedToArray(_useStateAndRef11, 3),
-    list_of_selected = _useStateAndRef12[0],
-    set_list_of_selected = _useStateAndRef12[1],
-    list_of_selected_ref = _useStateAndRef12[2];
-  var _useState = (0, _react.useState)([]),
-    _useState2 = _slicedToArray(_useState, 2),
-    contextMenuItems = _useState2[0],
-    setContextMenuItems = _useState2[1];
-  var _useState3 = (0, _react.useState)(false),
-    _useState4 = _slicedToArray(_useState3, 2),
-    have_activated = _useState4[0],
-    set_have_activated = _useState4[1];
-  var settingsContext = (0, _react.useContext)(_settings.SettingsContext);
-  var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
-  var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
-  var statudFuncs = (0, _react.useContext)(_toaster.StatusContext);
-  var _useSize = (0, _sizing_tools.useSize)(top_ref, 0, "pool_browser"),
-    _useSize2 = _slicedToArray(_useSize, 4),
-    usable_width = _useSize2[0],
-    usable_height = _useSize2[1],
-    topX = _useSize2[2],
-    topY = _useSize2[3];
-  var treeRefreshFunc = (0, _react.useRef)(null);
+  const top_ref = (0, _react.useRef)(null);
+  const resizing = (0, _react.useRef)(false);
+  const [selected_resource, set_selected_resource, selected_resource_ref] = (0, _utilities_react.useStateAndRef)({
+    name: "",
+    tags: "",
+    notes: "",
+    updated: "",
+    created: "",
+    size: "",
+    res_type: null
+  });
+  const [currentRootPath, setCurrentRootPath, currentRootPathRef] = (0, _utilities_react.useStateAndRef)("/mydisk");
+  const [value, setValue, valueRef] = (0, _utilities_react.useStateAndRef)(null);
+  const [selectedNode, setSelectedNode, selectedNodeRef] = (0, _utilities_react.useStateAndRef)(null);
+  const [multi_select, set_multi_select, multi_select_ref] = (0, _utilities_react.useStateAndRef)(false);
+  const [list_of_selected, set_list_of_selected, list_of_selected_ref] = (0, _utilities_react.useStateAndRef)([]);
+  const [contextMenuItems, setContextMenuItems] = (0, _react.useState)([]);
+  const [have_activated, set_have_activated] = (0, _react.useState)(false);
+  const settingsContext = (0, _react.useContext)(_settings.SettingsContext);
+  const dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
+  const errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
+  const statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
+  const [usable_width, usable_height, topX, topY] = (0, _sizing_tools.useSize)(top_ref, 0, "pool_browser");
+  const treeRefreshFunc = (0, _react.useRef)(null);
   // Important note: The first mounting of the pool tree must happen after the pool pane
   // is first activated. Otherwise, I do GetPoolTree before everything is ready and I don't
   // get the callback for the post.
 
-  (0, _react.useEffect)(function () {
+  (0, _react.useEffect)(() => {
     if (props.am_selected && !have_activated) {
       set_have_activated(true);
     }
   }, [props.am_selected]);
-  (0, _react.useEffect)(function () {
+  (0, _react.useEffect)(() => {
     if (selectedNodeRef.current) {
       set_selected_resource({
         name: (0, _pool_tree.getBasename)(value),
@@ -125,511 +80,286 @@ function PoolBrowser(props) {
     }
   }, [value]);
   function handlePoolEvent() {}
-  function viewTextFile() {
-    return _viewTextFile.apply(this, arguments);
-  }
-  function _viewTextFile() {
-    _viewTextFile = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee11() {
-      var node,
-        data,
-        path,
-        _args11 = arguments;
-      return _regeneratorRuntime().wrap(function _callee11$(_context11) {
-        while (1) switch (_context11.prev = _context11.next) {
-          case 0:
-            node = _args11.length > 0 && _args11[0] !== undefined ? _args11[0] : null;
-            if (!(!valueRef.current && !node)) {
-              _context11.next = 3;
-              break;
-            }
-            return _context11.abrupt("return");
-          case 3:
-            _context11.prev = 3;
-            path = node && "isDirectory" in node ? node.fullpath : valueRef.current;
-            if (!node.isDirectory) {
-              _context11.next = 7;
-              break;
-            }
-            return _context11.abrupt("return");
-          case 7:
-            _context11.next = 9;
-            return (0, _communication_react.postAjaxPromise)("view_text_in_context", {
-              context_id: context_id,
-              file_path: path
-            });
-          case 9:
-            data = _context11.sent;
-            if (data.success) {
-              props.handleCreateViewer(data);
-            } else {
-              errorDrawerFuncs.addErrorDrawerEntry({
-                title: "Error viewing text file",
-                content: "message" in data ? data.message : ""
-              });
-            }
-            _context11.next = 16;
-            break;
-          case 13:
-            _context11.prev = 13;
-            _context11.t0 = _context11["catch"](3);
-            errorDrawerFuncs.addFromError("Error viewing text file", _context11.t0);
-          case 16:
-          case "end":
-            return _context11.stop();
+  async function openInNotebook() {
+    let node = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+    if (!valueRef.current && !node) return;
+    try {
+      const path = node && "isDirectory" in node ? node.fullpath : valueRef.current;
+      if (node.isDirectory) return;
+      let openResources = props.getOpenResources();
+      let open_projects = [];
+      for (let entry of openResources) {
+        if (entry.res_type === "project" || entry.res_type === "collection") {
+          open_projects.push(entry.res_name);
         }
-      }, _callee11, null, [[3, 13]]);
-    }));
-    return _viewTextFile.apply(this, arguments);
-  }
-  function _rename_func() {
-    return _rename_func2.apply(this, arguments);
-  }
-  function _rename_func2() {
-    _rename_func2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee12() {
-      var node,
-        path,
-        new_name,
-        the_data,
-        _args12 = arguments;
-      return _regeneratorRuntime().wrap(function _callee12$(_context12) {
-        while (1) switch (_context12.prev = _context12.next) {
-          case 0:
-            node = _args12.length > 0 && _args12[0] !== undefined ? _args12[0] : null;
-            if (!(!valueRef.current && !node)) {
-              _context12.next = 3;
-              break;
-            }
-            return _context12.abrupt("return");
-          case 3:
-            _context12.prev = 3;
-            path = node && "isDirectory" in node ? node.fullpath : valueRef.current;
-            _context12.next = 7;
-            return dialogFuncs.showModalPromise("ModalDialog", {
-              title: "Rename Pool Resource",
-              field_title: "New Name",
-              default_value: (0, _pool_tree.getBasename)(path),
-              existing_names: [],
-              checkboxes: [],
-              handleClose: dialogFuncs.hideModal
-            });
-          case 7:
-            new_name = _context12.sent;
-            the_data = {
-              new_name: new_name,
-              old_path: path
-            };
-            _context12.next = 11;
-            return (0, _communication_react.postAjaxPromise)("rename_pool_resource", the_data);
-          case 11:
-            _context12.next = 17;
-            break;
-          case 13:
-            _context12.prev = 13;
-            _context12.t0 = _context12["catch"](3);
-            if (_context12.t0 != "canceled") {
-              errorDrawerFuncs.addFromError("Error renaming", _context12.t0);
-            }
-            return _context12.abrupt("return");
-          case 17:
-          case "end":
-            return _context12.stop();
+      }
+      let [selectedPane, checkResults] = await dialogFuncs.showModalPromise("SelectDialog", {
+        title: "Open resources in notebook",
+        checkboxes: [{
+          "checkname": "create_new_notebook",
+          "checktext": "Create new notebook"
+        }],
+        select_label: "Project",
+        cancel_text: "Cancel",
+        submit_text: "Open",
+        option_list: open_projects,
+        handleClose: dialogFuncs.hideModal
+      });
+      let data;
+      if (checkResults["create_new_notebook"]) {
+        data = await (0, _communication_react.postAjaxPromise)("new_notebook_in_context", {});
+        if (data.success) {
+          props.handleCreateViewer(data, sendNewCell(path, data.main_id));
+        } else {
+          errorDrawerFuncs.addErrorDrawerEntry({
+            title: "Error opening in notebook",
+            content: "message" in data ? data.message : ""
+          });
         }
-      }, _callee12, null, [[3, 13]]);
-    }));
-    return _rename_func2.apply(this, arguments);
+      } else {
+        sendNewCell(path, selectedPane.main_id);
+      }
+    } catch (e) {
+      errorDrawerFuncs.addFromError(`Error opening in notebook`, e);
+    }
   }
-  function _add_directory() {
-    return _add_directory2.apply(this, arguments);
+  async function viewTextFile() {
+    let node = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+    if (!valueRef.current && !node) return;
+    let data;
+    try {
+      const path = node && "isDirectory" in node ? node.fullpath : valueRef.current;
+      if (node.isDirectory) return;
+      data = await (0, _communication_react.postAjaxPromise)("view_text_in_context", {
+        context_id: context_id,
+        file_path: path
+      });
+      if (data.success) {
+        props.handleCreateViewer(data);
+      } else {
+        errorDrawerFuncs.addErrorDrawerEntry({
+          title: "Error viewing text file",
+          content: "message" in data ? data.message : ""
+        });
+      }
+    } catch (e) {
+      errorDrawerFuncs.addFromError(`Error viewing text file`, e);
+    }
   }
-  function _add_directory2() {
-    _add_directory2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee13() {
-      var node,
-        sNode,
-        initial_address,
-        full_path,
-        the_data,
-        _args13 = arguments;
-      return _regeneratorRuntime().wrap(function _callee13$(_context13) {
-        while (1) switch (_context13.prev = _context13.next) {
-          case 0:
-            node = _args13.length > 0 && _args13[0] !== undefined ? _args13[0] : null;
-            if (!(!valueRef.current && !node)) {
-              _context13.next = 3;
-              break;
-            }
-            return _context13.abrupt("return");
-          case 3:
-            _context13.prev = 3;
-            sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
-            if (sNode.isDirectory) {
-              initial_address = sNode.fullpath;
-            } else {
-              initial_address = (0, _pool_tree.getFileParentPath)(sNode.fullpath);
-            }
-            _context13.next = 8;
-            return dialogFuncs.showModalPromise("SelectAddressDialog", {
-              title: "Add a Pool Directory",
-              selectType: "folder",
-              initial_address: initial_address,
-              initial_name: "New Directory",
-              showName: true,
-              handleClose: dialogFuncs.hideModal
-            });
-          case 8:
-            full_path = _context13.sent;
-            the_data = {
-              full_path: full_path
-            };
-            _context13.next = 12;
-            return (0, _communication_react.postAjaxPromise)("create_pool_directory", the_data);
-          case 12:
-            _context13.next = 18;
-            break;
-          case 14:
-            _context13.prev = 14;
-            _context13.t0 = _context13["catch"](3);
-            if (_context13.t0 != "canceled") {
-              errorDrawerFuncs.addFromError("Error adding directory", _context13.t0);
-            }
-            return _context13.abrupt("return");
-          case 18:
-          case "end":
-            return _context13.stop();
-        }
-      }, _callee13, null, [[3, 14]]);
-    }));
-    return _add_directory2.apply(this, arguments);
+  function _copy_func() {
+    let node = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+    if (!valueRef.current && !node) return;
+    const path = node && "isDirectory" in node ? node.fullpath : valueRef.current;
+    (0, _utilities_react.copyToClipboard)(path);
   }
-  function _duplicate_file() {
-    return _duplicate_file2.apply(this, arguments);
+  async function _rename_func() {
+    let node = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+    if (!valueRef.current && !node) return;
+    try {
+      const path = node && "isDirectory" in node ? node.fullpath : valueRef.current;
+      let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
+        title: "Rename Pool Resource",
+        field_title: "New Name",
+        default_value: (0, _pool_tree.getBasename)(path),
+        existing_names: [],
+        checkboxes: [],
+        handleClose: dialogFuncs.hideModal
+      });
+      const the_data = {
+        new_name: new_name,
+        old_path: path
+      };
+      await (0, _communication_react.postAjaxPromise)(`rename_pool_resource`, the_data);
+    } catch (e) {
+      if (e != "canceled") {
+        errorDrawerFuncs.addFromError(`Error renaming`, e);
+      }
+      return;
+    }
   }
-  function _duplicate_file2() {
-    _duplicate_file2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee14() {
-      var node,
-        sNode,
-        src,
-        _splitFilePath,
-        _splitFilePath2,
-        initial_address,
-        initial_name,
+  async function _add_directory() {
+    let node = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+    if (!valueRef.current && !node) return;
+    try {
+      const sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
+      let initial_address;
+      if (sNode.isDirectory) {
+        initial_address = sNode.fullpath;
+      } else {
+        initial_address = (0, _pool_tree.getFileParentPath)(sNode.fullpath);
+      }
+      let full_path = await dialogFuncs.showModalPromise("SelectAddressDialog", {
+        title: "Add a Pool Directory",
+        selectType: "folder",
+        initial_address: initial_address,
+        initial_name: "New Directory",
+        showName: true,
+        handleClose: dialogFuncs.hideModal
+      });
+      const the_data = {
+        full_path: full_path
+      };
+      await (0, _communication_react.postAjaxPromise)(`create_pool_directory`, the_data);
+    } catch (e) {
+      if (e != "canceled") {
+        errorDrawerFuncs.addFromError(`Error adding directory`, e);
+      }
+      return;
+    }
+  }
+  async function _duplicate_file() {
+    let node = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+    if (!valueRef.current && !node) return;
+    try {
+      const sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
+      if (sNode.isDirectory) {
+        (0, _toaster.doFlash)("You can't duplicate a directory");
+        return;
+      }
+      const src = sNode.fullpath;
+      const [initial_address, initial_name] = (0, _pool_tree.splitFilePath)(sNode.fullpath);
+      let dst = await dialogFuncs.showModalPromise("SelectAddressDialog", {
+        title: "Duplicate a file",
+        selectType: "folder",
+        initial_address: initial_address,
+        initial_name: initial_name,
+        showName: true,
+        handleClose: dialogFuncs.hideModal
+      });
+      const the_data = {
         dst,
-        the_data,
-        _args14 = arguments;
-      return _regeneratorRuntime().wrap(function _callee14$(_context14) {
-        while (1) switch (_context14.prev = _context14.next) {
-          case 0:
-            node = _args14.length > 0 && _args14[0] !== undefined ? _args14[0] : null;
-            if (!(!valueRef.current && !node)) {
-              _context14.next = 3;
-              break;
-            }
-            return _context14.abrupt("return");
-          case 3:
-            _context14.prev = 3;
-            sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
-            if (!sNode.isDirectory) {
-              _context14.next = 8;
-              break;
-            }
-            (0, _toaster.doFlash)("You can't duplicate a directory");
-            return _context14.abrupt("return");
-          case 8:
-            src = sNode.fullpath;
-            _splitFilePath = (0, _pool_tree.splitFilePath)(sNode.fullpath), _splitFilePath2 = _slicedToArray(_splitFilePath, 2), initial_address = _splitFilePath2[0], initial_name = _splitFilePath2[1];
-            _context14.next = 12;
-            return dialogFuncs.showModalPromise("SelectAddressDialog", {
-              title: "Duplicate a file",
-              selectType: "folder",
-              initial_address: initial_address,
-              initial_name: initial_name,
-              showName: true,
-              handleClose: dialogFuncs.hideModal
-            });
-          case 12:
-            dst = _context14.sent;
-            the_data = {
-              dst: dst,
-              src: src
-            };
-            _context14.next = 16;
-            return (0, _communication_react.postAjaxPromise)("duplicate_pool_file", the_data);
-          case 16:
-            _context14.next = 22;
-            break;
-          case 18:
-            _context14.prev = 18;
-            _context14.t0 = _context14["catch"](3);
-            if (_context14.t0 != "canceled") {
-              errorDrawerFuncs.addFromError("Error duplicating file", _context14.t0);
-            }
-            return _context14.abrupt("return");
-          case 22:
-          case "end":
-            return _context14.stop();
-        }
-      }, _callee14, null, [[3, 18]]);
-    }));
-    return _duplicate_file2.apply(this, arguments);
+        src
+      };
+      await (0, _communication_react.postAjaxPromise)(`duplicate_pool_file`, the_data);
+    } catch (e) {
+      if (e != "canceled") {
+        errorDrawerFuncs.addFromError(`Error duplicating file`, e);
+      }
+      return;
+    }
   }
-  function _downloadFile() {
-    return _downloadFile2.apply(this, arguments);
+  async function _downloadFile() {
+    let node = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+    if (!valueRef.current && !node) return;
+    try {
+      const sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
+      if (sNode.isDirectory) {
+        (0, _toaster.doFlash)("You can't download a directory");
+        return;
+      }
+      const src = sNode.fullpath;
+      console.log("Got source " + String(src));
+      let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
+        title: "Download File",
+        field_title: "New File Name",
+        default_value: (0, _pool_tree.getBasename)(src),
+        existing_names: [],
+        checkboxes: [],
+        handleClose: dialogFuncs.hideModal
+      });
+      const the_data = {
+        src
+      };
+      let [data, status, xhr] = await (0, _communication_react.getBlobPromise)("download_pool_file", the_data);
+      if (xhr.status === 200) {
+        // Create a download link and trigger the download
+        var blob = new Blob([data], {
+          type: 'application/octet-stream'
+        });
+        var url = window.URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = new_name; // Set the desired file name
+        // noinspection XHTMLIncompatabilitiesJS
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+      }
+    } catch (e) {
+      if (e != "canceled") {
+        errorDrawerFuncs.addFromError(`Error downloading from pool`, e);
+      }
+    }
   }
-  function _downloadFile2() {
-    _downloadFile2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee15() {
-      var node,
-        sNode,
-        src,
-        new_name,
-        the_data,
-        _yield$getBlobPromise,
-        _yield$getBlobPromise2,
-        data,
-        status,
-        xhr,
-        blob,
-        url,
-        a,
-        _args15 = arguments;
-      return _regeneratorRuntime().wrap(function _callee15$(_context15) {
-        while (1) switch (_context15.prev = _context15.next) {
-          case 0:
-            node = _args15.length > 0 && _args15[0] !== undefined ? _args15[0] : null;
-            if (!(!valueRef.current && !node)) {
-              _context15.next = 3;
-              break;
-            }
-            return _context15.abrupt("return");
-          case 3:
-            _context15.prev = 3;
-            sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
-            if (!sNode.isDirectory) {
-              _context15.next = 8;
-              break;
-            }
-            (0, _toaster.doFlash)("You can't download a directory");
-            return _context15.abrupt("return");
-          case 8:
-            src = sNode.fullpath;
-            console.log("Got source " + String(src));
-            _context15.next = 12;
-            return dialogFuncs.showModalPromise("ModalDialog", {
-              title: "Download File",
-              field_title: "New File Name",
-              default_value: (0, _pool_tree.getBasename)(src),
-              existing_names: [],
-              checkboxes: [],
-              handleClose: dialogFuncs.hideModal
-            });
-          case 12:
-            new_name = _context15.sent;
-            the_data = {
-              src: src
-            };
-            _context15.next = 16;
-            return (0, _communication_react.getBlobPromise)("download_pool_file", the_data);
-          case 16:
-            _yield$getBlobPromise = _context15.sent;
-            _yield$getBlobPromise2 = _slicedToArray(_yield$getBlobPromise, 3);
-            data = _yield$getBlobPromise2[0];
-            status = _yield$getBlobPromise2[1];
-            xhr = _yield$getBlobPromise2[2];
-            if (xhr.status === 200) {
-              // Create a download link and trigger the download
-              blob = new Blob([data], {
-                type: 'application/octet-stream'
-              });
-              url = window.URL.createObjectURL(blob);
-              a = document.createElement('a');
-              a.href = url;
-              a.download = new_name; // Set the desired file name
-              // noinspection XHTMLIncompatabilitiesJS
-              document.body.appendChild(a);
-              a.click();
-              window.URL.revokeObjectURL(url);
-            }
-            _context15.next = 27;
-            break;
-          case 24:
-            _context15.prev = 24;
-            _context15.t0 = _context15["catch"](3);
-            if (_context15.t0 != "canceled") {
-              errorDrawerFuncs.addFromError("Error downloading from pool", _context15.t0);
-            }
-          case 27:
-          case "end":
-            return _context15.stop();
-        }
-      }, _callee15, null, [[3, 24]]);
-    }));
-    return _downloadFile2.apply(this, arguments);
+  async function MoveResource(src, dst) {
+    if (src == dst) return;
+    try {
+      const the_data = {
+        dst: dst,
+        src: src
+      };
+      await (0, _communication_react.postAjaxPromise)(`move_pool_resource`, the_data);
+    } catch (e) {
+      errorDrawerFuncs.addFromError("Error moving resource", e);
+    }
   }
-  function MoveResource(_x, _x2) {
-    return _MoveResource.apply(this, arguments);
+  async function _move_resource() {
+    let node = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+    if (!valueRef.current && !node) return;
+    try {
+      const sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
+      const src = sNode.fullpath;
+      let initial_address;
+      if (sNode.isDirectory) {
+        initial_address = sNode.fullpath;
+      } else {
+        initial_address = (0, _pool_tree.getFileParentPath)(sNode.fullpath);
+      }
+      let dst = await dialogFuncs.showModalPromise("SelectAddressDialog", {
+        title: `Select a destination for ${(0, _pool_tree.getBasename)(src)}`,
+        selectType: "folder",
+        initial_address: initial_address,
+        initial_name: "",
+        showName: false,
+        handleClose: dialogFuncs.hideModal
+      });
+      await MoveResource(src, dst);
+    } catch (e) {
+      if (e != "canceled") {
+        errorDrawerFuncs.addFromError(`Error moving resource`, e);
+      }
+    }
   }
-  function _MoveResource() {
-    _MoveResource = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee16(src, dst) {
-      var the_data;
-      return _regeneratorRuntime().wrap(function _callee16$(_context16) {
-        while (1) switch (_context16.prev = _context16.next) {
-          case 0:
-            if (!(src == dst)) {
-              _context16.next = 2;
-              break;
-            }
-            return _context16.abrupt("return");
-          case 2:
-            _context16.prev = 2;
-            the_data = {
-              dst: dst,
-              src: src
-            };
-            _context16.next = 6;
-            return (0, _communication_react.postAjaxPromise)("move_pool_resource", the_data);
-          case 6:
-            _context16.next = 11;
-            break;
-          case 8:
-            _context16.prev = 8;
-            _context16.t0 = _context16["catch"](2);
-            errorDrawerFuncs.addFromError("Error moving resource", _context16.t0);
-          case 11:
-          case "end":
-            return _context16.stop();
-        }
-      }, _callee16, null, [[2, 8]]);
-    }));
-    return _MoveResource.apply(this, arguments);
-  }
-  function _move_resource() {
-    return _move_resource2.apply(this, arguments);
-  }
-  function _move_resource2() {
-    _move_resource2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee17() {
-      var node,
-        sNode,
-        src,
-        initial_address,
-        dst,
-        _args17 = arguments;
-      return _regeneratorRuntime().wrap(function _callee17$(_context17) {
-        while (1) switch (_context17.prev = _context17.next) {
-          case 0:
-            node = _args17.length > 0 && _args17[0] !== undefined ? _args17[0] : null;
-            if (!(!valueRef.current && !node)) {
-              _context17.next = 3;
-              break;
-            }
-            return _context17.abrupt("return");
-          case 3:
-            _context17.prev = 3;
-            sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
-            src = sNode.fullpath;
-            if (sNode.isDirectory) {
-              initial_address = sNode.fullpath;
-            } else {
-              initial_address = (0, _pool_tree.getFileParentPath)(sNode.fullpath);
-            }
-            _context17.next = 9;
-            return dialogFuncs.showModalPromise("SelectAddressDialog", {
-              title: "Select a destination for ".concat((0, _pool_tree.getBasename)(src)),
-              selectType: "folder",
-              initial_address: initial_address,
-              initial_name: "",
-              showName: false,
-              handleClose: dialogFuncs.hideModal
-            });
-          case 9:
-            dst = _context17.sent;
-            _context17.next = 12;
-            return MoveResource(src, dst);
-          case 12:
-            _context17.next = 17;
-            break;
-          case 14:
-            _context17.prev = 14;
-            _context17.t0 = _context17["catch"](3);
-            if (_context17.t0 != "canceled") {
-              errorDrawerFuncs.addFromError("Error moving resource", _context17.t0);
-            }
-          case 17:
-          case "end":
-            return _context17.stop();
-        }
-      }, _callee17, null, [[3, 14]]);
-    }));
-    return _move_resource2.apply(this, arguments);
-  }
-  function _delete_func() {
-    return _delete_func2.apply(this, arguments);
-  }
-  function _delete_func2() {
-    _delete_func2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee18() {
-      var node,
-        path,
-        sNode,
-        basename,
-        confirm_text,
-        _args18 = arguments;
-      return _regeneratorRuntime().wrap(function _callee18$(_context18) {
-        while (1) switch (_context18.prev = _context18.next) {
-          case 0:
-            node = _args18.length > 0 && _args18[0] !== undefined ? _args18[0] : null;
-            if (!(!valueRef.current && !node)) {
-              _context18.next = 3;
-              break;
-            }
-            return _context18.abrupt("return");
-          case 3:
-            _context18.prev = 3;
-            path = node && "isDirectory" in node ? node.fullpath : valueRef.current;
-            sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
-            basename = (0, _pool_tree.getBasename)(path);
-            if (sNode.isDirectory && sNode.childNodes.length > 0) {
-              confirm_text = "Are you sure that you want to delete the non-empty directory ".concat(basename, "?");
-            } else {
-              confirm_text = "Are you sure that you want to delete ".concat(basename, "?");
-            }
-            _context18.next = 10;
-            return dialogFuncs.showModalPromise("ConfirmDialog", {
-              title: "Delete resource",
-              text_body: confirm_text,
-              cancel_text: "do nothing",
-              submit_text: "delete",
-              handleClose: dialogFuncs.hideModal
-            });
-          case 10:
-            _context18.next = 12;
-            return (0, _communication_react.postAjaxPromise)("delete_pool_resource", {
-              full_path: path,
-              is_directory: sNode.isDirectory
-            });
-          case 12:
-            _context18.next = 17;
-            break;
-          case 14:
-            _context18.prev = 14;
-            _context18.t0 = _context18["catch"](3);
-            if (_context18.t0 != "canceled") {
-              errorDrawerFuncs.addFromError("Error deleting", _context18.t0);
-            }
-          case 17:
-          case "end":
-            return _context18.stop();
-        }
-      }, _callee18, null, [[3, 14]]);
-    }));
-    return _delete_func2.apply(this, arguments);
+  async function _delete_func() {
+    let node = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+    if (!valueRef.current && !node) return;
+    try {
+      const path = node && "isDirectory" in node ? node.fullpath : valueRef.current;
+      const sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
+      const basename = (0, _pool_tree.getBasename)(path);
+      let confirm_text;
+      if (sNode.isDirectory && sNode.childNodes.length > 0) {
+        confirm_text = `Are you sure that you want to delete the non-empty directory ${basename}?`;
+      } else {
+        confirm_text = `Are you sure that you want to delete ${basename}?`;
+      }
+      await dialogFuncs.showModalPromise("ConfirmDialog", {
+        title: "Delete resource",
+        text_body: confirm_text,
+        cancel_text: "do nothing",
+        submit_text: "delete",
+        handleClose: dialogFuncs.hideModal
+      });
+      await (0, _communication_react.postAjaxPromise)("delete_pool_resource", {
+        full_path: path,
+        is_directory: sNode.isDirectory
+      });
+    } catch (e) {
+      if (e != "canceled") {
+        errorDrawerFuncs.addFromError(`Error deleting`, e);
+      }
+    }
   }
   function _add_to_pool(myDropZone, setCurrentUrl, current_value) {
-    var new_url = "import_pool/".concat(_library_home_react.library_id);
+    let new_url = `import_pool/${_library_home_react.library_id}`;
     myDropZone.options.url = new_url;
     setCurrentUrl(new_url);
     myDropZone.processQueue();
   }
   function _showPoolImport() {
-    var node = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+    let node = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
     var initial_directory;
-    var sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
+    const sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
     if (sNode && sNode.isDirectory) {
       initial_directory = sNode.fullpath;
     } else {
@@ -653,55 +383,33 @@ function PoolBrowser(props) {
       handleCancel: null
     });
   }
-  function handleDrop(_x3, _x4) {
-    return _handleDrop.apply(this, arguments);
-  }
-  function _handleDrop() {
-    _handleDrop = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee19(e, dst) {
-      var files, src;
-      return _regeneratorRuntime().wrap(function _callee19$(_context19) {
-        while (1) switch (_context19.prev = _context19.next) {
-          case 0:
-            files = e.dataTransfer.files;
-            if (!(files.length != 0)) {
-              _context19.next = 5;
-              break;
-            }
-            dialogFuncs.showModal("FileImportDialog", {
-              res_type: "pool",
-              allowed_file_types: null,
-              checkboxes: [],
-              chunking: true,
-              chunkSize: 1024 * 1000 * 25,
-              forceChunking: true,
-              process_handler: _add_to_pool,
-              tsocket: props.tsocket,
-              combine: false,
-              show_csv_options: false,
-              after_upload: null,
-              show_address_selector: true,
-              initial_address: dst,
-              handleClose: dialogFuncs.hideModal,
-              handleCancel: null,
-              initialFiles: files
-            });
-            _context19.next = 9;
-            break;
-          case 5:
-            src = e.dataTransfer.getData("fullpath");
-            if (!src) {
-              _context19.next = 9;
-              break;
-            }
-            _context19.next = 9;
-            return MoveResource(src, dst);
-          case 9:
-          case "end":
-            return _context19.stop();
-        }
-      }, _callee19);
-    }));
-    return _handleDrop.apply(this, arguments);
+  async function handleDrop(e, dst) {
+    const files = e.dataTransfer.files;
+    if (files.length != 0) {
+      dialogFuncs.showModal("FileImportDialog", {
+        res_type: "pool",
+        allowed_file_types: null,
+        checkboxes: [],
+        chunking: true,
+        chunkSize: 1024 * 1000 * 25,
+        forceChunking: true,
+        process_handler: _add_to_pool,
+        tsocket: props.tsocket,
+        combine: false,
+        show_csv_options: false,
+        after_upload: null,
+        show_address_selector: true,
+        initial_address: dst,
+        handleClose: dialogFuncs.hideModal,
+        handleCancel: null,
+        initialFiles: files
+      });
+    } else {
+      let src = e.dataTransfer.getData("fullpath");
+      if (src) {
+        await MoveResource(src, dst);
+      }
+    }
   }
   function handleNodeClick(node, nodes) {
     setValue(node.fullpath);
@@ -709,7 +417,7 @@ function PoolBrowser(props) {
     return true;
   }
   function setRoot() {
-    var node = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+    let node = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
     if (!node) {
       node = selectedNodeRef.current;
     }
@@ -719,177 +427,93 @@ function PoolBrowser(props) {
     setCurrentRootPath("/mydisk");
   }
   function renderContextMenu(props) {
-    return /*#__PURE__*/_react["default"].createElement(_core.Menu, null, props.node.isDirectory && /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+    return /*#__PURE__*/_react.default.createElement(_core.Menu, null, props.node.isDirectory && /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
       icon: "folder-shared-open",
-      onClick: /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
-        return _regeneratorRuntime().wrap(function _callee$(_context) {
-          while (1) switch (_context.prev = _context.next) {
-            case 0:
-              _context.next = 2;
-              return setRoot(props.node);
-            case 2:
-            case "end":
-              return _context.stop();
-          }
-        }, _callee);
-      })),
+      onClick: async () => {
+        await setRoot(props.node);
+      },
       text: "Go To Folder"
-    }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+    }), /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
       icon: "home",
-      onClick: /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2() {
-        return _regeneratorRuntime().wrap(function _callee2$(_context2) {
-          while (1) switch (_context2.prev = _context2.next) {
-            case 0:
-              _context2.next = 2;
-              return setRootToBase(props.node);
-            case 2:
-            case "end":
-              return _context2.stop();
-          }
-        }, _callee2);
-      })),
+      onClick: async () => {
+        await setRootToBase(props.node);
+      },
       text: "Go Home"
-    }), !props.node.isDirectory && /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+    }), !props.node.isDirectory && /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
       icon: "eye-open",
-      onClick: /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee3() {
-        return _regeneratorRuntime().wrap(function _callee3$(_context3) {
-          while (1) switch (_context3.prev = _context3.next) {
-            case 0:
-              _context3.next = 2;
-              return viewTextFile(props.node);
-            case 2:
-            case "end":
-              return _context3.stop();
-          }
-        }, _callee3);
-      })),
+      onClick: async () => {
+        await viewTextFile(props.node);
+      },
       text: "View as Text"
-    }), /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+    }), /*#__PURE__*/_react.default.createElement(_core.MenuDivider, null), /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
+      icon: "clipboard",
+      onClick: async () => {
+        await _copy_func(props.node);
+      },
+      text: "Copy Path"
+    }), /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
       icon: "edit",
-      onClick: /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee4() {
-        return _regeneratorRuntime().wrap(function _callee4$(_context4) {
-          while (1) switch (_context4.prev = _context4.next) {
-            case 0:
-              _context4.next = 2;
-              return _rename_func(props.node);
-            case 2:
-            case "end":
-              return _context4.stop();
-          }
-        }, _callee4);
-      })),
+      onClick: async () => {
+        await _rename_func(props.node);
+      },
       text: "Rename Resource"
-    }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+    }), /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
       icon: "inheritance",
-      onClick: /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee5() {
-        return _regeneratorRuntime().wrap(function _callee5$(_context5) {
-          while (1) switch (_context5.prev = _context5.next) {
-            case 0:
-              _context5.next = 2;
-              return _move_resource(props.node);
-            case 2:
-            case "end":
-              return _context5.stop();
-          }
-        }, _callee5);
-      })),
+      onClick: async () => {
+        await _move_resource(props.node);
+      },
       text: "Move Resource"
-    }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+    }), /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
       icon: "duplicate",
-      onClick: /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee6() {
-        return _regeneratorRuntime().wrap(function _callee6$(_context6) {
-          while (1) switch (_context6.prev = _context6.next) {
-            case 0:
-              _context6.next = 2;
-              return _duplicate_file(props.node);
-            case 2:
-            case "end":
-              return _context6.stop();
-          }
-        }, _callee6);
-      })),
+      onClick: async () => {
+        await _duplicate_file(props.node);
+      },
       text: "Duplicate File"
-    }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+    }), /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
       icon: "folder-close",
-      onClick: /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee7() {
-        return _regeneratorRuntime().wrap(function _callee7$(_context7) {
-          while (1) switch (_context7.prev = _context7.next) {
-            case 0:
-              _context7.next = 2;
-              return _add_directory(props.node);
-            case 2:
-            case "end":
-              return _context7.stop();
-          }
-        }, _callee7);
-      })),
+      onClick: async () => {
+        await _add_directory(props.node);
+      },
       text: "Create Directory"
-    }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+    }), /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
       icon: "trash",
-      onClick: /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee8() {
-        return _regeneratorRuntime().wrap(function _callee8$(_context8) {
-          while (1) switch (_context8.prev = _context8.next) {
-            case 0:
-              _context8.next = 2;
-              return _delete_func(props.node);
-            case 2:
-            case "end":
-              return _context8.stop();
-          }
-        }, _callee8);
-      })),
+      onClick: async () => {
+        await _delete_func(props.node);
+      },
       intent: "danger",
       text: "Delete Resource"
-    }), /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+    }), /*#__PURE__*/_react.default.createElement(_core.MenuDivider, null), /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
       icon: "cloud-upload",
-      onClick: /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee9() {
-        return _regeneratorRuntime().wrap(function _callee9$(_context9) {
-          while (1) switch (_context9.prev = _context9.next) {
-            case 0:
-              _context9.next = 2;
-              return _showPoolImport(props.node);
-            case 2:
-            case "end":
-              return _context9.stop();
-          }
-        }, _callee9);
-      })),
+      onClick: async () => {
+        await _showPoolImport(props.node);
+      },
       text: "Import To Pool"
-    }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+    }), /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
       icon: "download",
-      onClick: /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee10() {
-        return _regeneratorRuntime().wrap(function _callee10$(_context10) {
-          while (1) switch (_context10.prev = _context10.next) {
-            case 0:
-              _context10.next = 2;
-              return _downloadFile(props.node);
-            case 2:
-            case "end":
-              return _context10.stop();
-          }
-        }, _callee10);
-      })),
+      onClick: async () => {
+        await _downloadFile(props.node);
+      },
       text: "Download from Pool"
     }));
   }
   function registerTreeRefreshFunc(func) {
     treeRefreshFunc.current = func;
   }
-  var outer_style = {
+  let outer_style = {
     marginTop: 0,
     marginLeft: 0,
     overflow: "auto",
     marginRight: 0,
     height: "100%"
   };
-  var res_type = null;
-  var fixed_data = {
+  let res_type = null;
+  let fixed_data = {
     created: selected_resource_ref.current.created,
     updated: selected_resource_ref.current.updated,
     size: selected_resource_ref.current.size,
     path: valueRef.current
   };
-  var right_pane = /*#__PURE__*/_react["default"].createElement(_blueprint_mdata_fields.CombinedMetadata, {
+  let right_pane = /*#__PURE__*/_react.default.createElement(_blueprint_mdata_fields.CombinedMetadata, {
     res_type: selected_resource_ref.current.res_type,
     res_name: selected_resource_ref.current.name,
     useFixedData: true,
@@ -898,7 +522,7 @@ function PoolBrowser(props) {
     outer_style: outer_style,
     readOnly: true
   });
-  var left_pane = /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
+  let left_pane = /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement("div", {
     className: "d-flex flex-column",
     style: {
       maxHeight: "100%",
@@ -906,15 +530,15 @@ function PoolBrowser(props) {
       overflow: "scroll",
       padding: 15
     }
-  }, (props.am_selected || have_activated) && /*#__PURE__*/_react["default"].createElement(_pool_tree.PoolContext.Provider, {
+  }, (props.am_selected || have_activated) && /*#__PURE__*/_react.default.createElement(_pool_tree.PoolContext.Provider, {
     value: {
       workingPath: null,
-      setWorkingPath: function setWorkingPath() {}
+      setWorkingPath: () => {}
     }
-  }, /*#__PURE__*/_react["default"].createElement(PoolBreadcrumbs, {
+  }, /*#__PURE__*/_react.default.createElement(PoolBreadcrumbs, {
     path: currentRootPathRef.current,
     setRoot: setRoot
-  }), /*#__PURE__*/_react["default"].createElement(_pool_tree.PoolTree, {
+  }), /*#__PURE__*/_react.default.createElement(_pool_tree.PoolTree, {
     value: valueRef.current,
     currentRootPath: currentRootPathRef.current,
     setRoot: setRoot,
@@ -927,9 +551,10 @@ function PoolBrowser(props) {
     showSecondaryLabel: true,
     handleNodeClick: handleNodeClick
   }))));
-  return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(PoolMenubar, _extends({
+  return /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement(PoolMenubar, (0, _extends2.default)({
     selected_resource: selected_resource_ref.current,
     connection_status: null,
+    copy_func: _copy_func,
     rename_func: _rename_func,
     delete_func: _delete_func,
     view_func: viewTextFile,
@@ -948,16 +573,16 @@ function PoolBrowser(props) {
     library_id: props.library_id,
     controlled: props.controlled,
     tsocket: props.tsocket
-  })), /*#__PURE__*/_react["default"].createElement("div", {
+  })), /*#__PURE__*/_react.default.createElement("div", {
     ref: top_ref,
     style: outer_style,
     className: "pool-browser"
-  }, /*#__PURE__*/_react["default"].createElement("div", {
+  }, /*#__PURE__*/_react.default.createElement("div", {
     style: {
       width: usable_width,
       height: usable_height
     }
-  }, /*#__PURE__*/_react["default"].createElement(_resizing_layouts.HorizontalPanes, {
+  }, /*#__PURE__*/_react.default.createElement(_resizing_layouts.HorizontalPanes, {
     outer_hp_style: {
       paddingBottom: "50px"
     },
@@ -974,7 +599,7 @@ function PoolBrowser(props) {
 }
 exports.PoolBrowser = PoolBrowser = /*#__PURE__*/(0, _react.memo)(PoolBrowser);
 function PoolBreadcrumb(props) {
-  return /*#__PURE__*/_react["default"].createElement(_core.Breadcrumb, {
+  return /*#__PURE__*/_react.default.createElement(_core.Breadcrumb, {
     className: "pool-breadcrumb",
     key: props.path,
     icon: props.icon,
@@ -983,56 +608,43 @@ function PoolBreadcrumb(props) {
 }
 function PoolBreadcrumbs(props) {
   function clickFunc(path) {
-    return function () {
+    return () => {
       props.setRoot({
         fullpath: path
       });
     };
   }
   function pathToCrumbs(path) {
-    var crumbs = [];
-    var parts = path.split("/");
-    var new_path = "";
-    var _iterator = _createForOfIteratorHelper(parts),
-      _step;
-    try {
-      for (_iterator.s(); !(_step = _iterator.n()).done;) {
-        var item = _step.value;
-        if (item === "") {
-          continue;
-        }
-        new_path += "/" + item;
-        crumbs.push({
-          name: item,
-          icon: "folder-close",
-          path: new_path,
-          onClick: clickFunc(new_path)
-        });
+    let crumbs = [];
+    let parts = path.split("/");
+    let new_path = "";
+    for (const item of parts) {
+      if (item === "") {
+        continue;
       }
-    } catch (err) {
-      _iterator.e(err);
-    } finally {
-      _iterator.f();
+      new_path += "/" + item;
+      crumbs.push({
+        name: item,
+        icon: "folder-close",
+        path: new_path,
+        onClick: clickFunc(new_path)
+      });
     }
     return crumbs;
   }
   function renderBreadcrumb(props) {
-    return /*#__PURE__*/_react["default"].createElement(PoolBreadcrumb, props);
+    return /*#__PURE__*/_react.default.createElement(PoolBreadcrumb, props);
   }
-  var crumbs = pathToCrumbs(props.path);
-  return /*#__PURE__*/_react["default"].createElement(_core.Breadcrumbs, {
+  const crumbs = pathToCrumbs(props.path);
+  return /*#__PURE__*/_react.default.createElement(_core.Breadcrumbs, {
     className: "pool-breadcrumbs",
     breadcrumbRenderer: renderBreadcrumb,
     items: crumbs
   });
 }
 function PoolMenubar(props) {
-  var _useStateAndRef13 = (0, _utilities_react.useStateAndRef)(props.selected_resource.res_type),
-    _useStateAndRef14 = _slicedToArray(_useStateAndRef13, 3),
-    selectedType = _useStateAndRef14[0],
-    setSelectedType = _useStateAndRef14[1],
-    selectedTypeRef = _useStateAndRef14[2];
-  (0, _react.useEffect)(function () {
+  const [selectedType, setSelectedType, selectedTypeRef] = (0, _utilities_react.useStateAndRef)(props.selected_resource.res_type);
+  (0, _react.useEffect)(() => {
     setSelectedType(props.selected_resource.res_type);
   }, [props.selected_resource]);
   function context_menu_items() {
@@ -1047,7 +659,7 @@ function PoolMenubar(props) {
       }, {
         name_text: "Go to Folder",
         icon_name: "folder-shared-open",
-        click_handler: function click_handler() {
+        click_handler: () => {
           props.setRoot();
         },
         res_type: "poolDir"
@@ -1058,6 +670,10 @@ function PoolMenubar(props) {
         click_handler: props.view_func
       }],
       Edit: [{
+        name_text: "Copy Path",
+        icon_name: "clipboard",
+        click_handler: props.copy_func
+      }, {
         name_text: "Rename Resource",
         icon_name: "edit",
         click_handler: props.rename_func
@@ -1089,7 +705,7 @@ function PoolMenubar(props) {
       }]
     };
   }
-  return /*#__PURE__*/_react["default"].createElement(_library_menubars.LibraryMenubar, {
+  return /*#__PURE__*/_react.default.createElement(_library_menubars.LibraryMenubar, {
     sendContextMenuItems: props.sendContextMenuItems,
     connection_status: props.connection_status,
     context_menu_items: context_menu_items(),
@@ -1110,30 +726,27 @@ function PoolMenubar(props) {
 }
 PoolMenubar = /*#__PURE__*/(0, _react.memo)(PoolMenubar);
 function FileDropWrapper(props) {
-  var _useState5 = (0, _react.useState)(false),
-    _useState6 = _slicedToArray(_useState5, 2),
-    isDragging = _useState6[0],
-    setIsDragging = _useState6[1];
-  var handleDragOver = function handleDragOver(e) {
+  const [isDragging, setIsDragging] = (0, _react.useState)(false);
+  const handleDragOver = e => {
     e.preventDefault();
     setIsDragging(true);
   };
-  var handleDragLeave = function handleDragLeave() {
+  const handleDragLeave = () => {
     setIsDragging(false);
   };
-  var handleDrop = function handleDrop(e) {
+  const handleDrop = e => {
     e.preventDefault();
     setIsDragging(false);
-    var files = e.dataTransfer.files;
+    const files = e.dataTransfer.files;
     if (files) {
       if (props.processFiles) {
         props.processFiles(files);
       }
     }
   };
-  return /*#__PURE__*/_react["default"].createElement("div", {
+  return /*#__PURE__*/_react.default.createElement("div", {
     id: "pool-drop-zone",
-    className: "drop-zone ".concat(isDragging ? 'drag-over' : ''),
+    className: `drop-zone ${isDragging ? 'drag-over' : ''}`,
     onDragOver: handleDragOver,
     onDragLeave: handleDragLeave,
     onDrop: handleDrop

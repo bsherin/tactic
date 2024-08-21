@@ -14,6 +14,7 @@ import {ErrorDrawerContext} from "./error_drawer";
 import {useSize} from "./sizing_tools";
 import {doFlash, StatusContext} from "./toaster";
 import {SettingsContext} from "./settings";
+import {copyToClipboard} from "./utilities_react";
 
 import {DialogContext} from "./modal_react";
 
@@ -46,7 +47,7 @@ function PoolBrowser(props) {
     const settingsContext = useContext(SettingsContext);
     const dialogFuncs = useContext(DialogContext);
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
-    const statudFuncs = useContext(StatusContext);
+    const statusFuncs = useContext(StatusContext);
 
     const [usable_width, usable_height, topX, topY] = useSize(top_ref, 0, "pool_browser");
 
@@ -83,6 +84,48 @@ function PoolBrowser(props) {
 
     }
 
+    async function openInNotebook(node = null) {
+        if (!valueRef.current && !node) return;
+        try {
+            const path = node && "isDirectory" in node ? node.fullpath : valueRef.current;
+            if (node.isDirectory) return;
+            let openResources = props.getOpenResources();
+            let open_projects = [];
+            for (let entry of openResources) {
+                if (entry.res_type === "project" || entry.res_type === "collection") {
+                    open_projects.push(entry.res_name)
+                }
+            }
+            let [selectedPane, checkResults] = await dialogFuncs.showModalPromise("SelectDialog", {
+                    title: "Open resources in notebook",
+                    checkboxes: [{"checkname": "create_new_notebook", "checktext": "Create new notebook"}],
+                    select_label: "Project",
+                    cancel_text: "Cancel",
+                    submit_text: "Open",
+                    option_list: open_projects,
+                    handleClose: dialogFuncs.hideModal,
+                });
+            let data;
+            if (checkResults["create_new_notebook"]) {
+                data = await postAjaxPromise("new_notebook_in_context", {});
+                if (data.success) {
+                    props.handleCreateViewer(data, sendNewCell(path, data.main_id))
+                } else {
+                    errorDrawerFuncs.addErrorDrawerEntry({
+                        title: "Error opening in notebook",
+                        content: "message" in data ? data.message : ""
+                    });
+                }
+            }
+            else {
+                sendNewCell(path, selectedPane.main_id)
+            }
+
+        } catch (e) {
+            errorDrawerFuncs.addFromError(`Error opening in notebook`, e)
+        }
+    }
+
     async function viewTextFile(node = null) {
         if (!valueRef.current && !node) return;
         let data;
@@ -104,6 +147,12 @@ function PoolBrowser(props) {
         } catch (e) {
             errorDrawerFuncs.addFromError(`Error viewing text file`, e)
         }
+    }
+
+    function _copy_func(node = null) {
+        if (!valueRef.current && !node) return;
+        const path = node && "isDirectory" in node ? node.fullpath : valueRef.current;
+        copyToClipboard(path);
     }
 
     async function _rename_func(node = null) {
@@ -398,6 +447,11 @@ function PoolBrowser(props) {
                               text="View as Text"/>
                 }
                 <MenuDivider/>
+                <MenuItem icon="clipboard"
+                          onClick={async () => {
+                              await _copy_func(props.node)
+                          }}
+                          text="Copy Path"/>
                 <MenuItem icon="edit"
                           onClick={async () => {
                               await _rename_func(props.node)
@@ -495,6 +549,7 @@ function PoolBrowser(props) {
         <Fragment>
             <PoolMenubar selected_resource={selected_resource_ref.current}
                          connection_status={null}
+                         copy_func={_copy_func}
                          rename_func={_rename_func}
                          delete_func={_delete_func}
                          view_func={viewTextFile}
@@ -608,6 +663,7 @@ function PoolMenubar(props) {
                 {name_text: "View As Text File", icon_name: "eye-open", click_handler: props.view_func}
             ],
             Edit: [
+                {name_text: "Copy Path", icon_name: "clipboard", click_handler: props.copy_func},
                 {name_text: "Rename Resource", icon_name: "edit", click_handler: props.rename_func},
                 {name_text: "Move Resource", icon_name: "inheritance", click_handler: props.move_resource},
                 {name_text: "Duplicate File", icon_name: "duplicate", click_handler: props.duplicate_file},
