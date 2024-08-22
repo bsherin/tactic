@@ -120,17 +120,24 @@ function PoolBrowser(props) {
             let openResources = props.getOpenResources();
             let open_projects = [];
             let open_projects_dict = {};
-            for (let entry of openResources) {
-                if (entry.res_type === "project" || entry.res_type === "collection") {
-                    open_projects.push(entry.resource_name);
-                    open_projects_dict[entry.resource_name] = entry
+            let requireNewNotebook;
+            if (openResources.length === 0) {
+                requireNewNotebook = true;
+            }
+            else {
+                requireNewNotebook = false;
+                for (let entry of openResources) {
+                    if (entry.res_type === "project" || entry.res_type === "collection") {
+                        open_projects.push(entry.resource_name);
+                        open_projects_dict[entry.resource_name] = entry
+                    }
                 }
             }
             let [selectedResource, checkResults] = await dialogFuncs.showModalPromise("SelectDialog", {
                     title: "Open resources in notebook",
                     checkboxes: [
-                        {"checkname": "create_new_notebook", "checktext": "Create new notebook"},
-                        {"checkname": "read_as_dataframe", "checktext": "Read as dataframe"},
+                        {"checkname": "create_new_notebook", "checktext": "Create new notebook", "checked": requireNewNotebook, "disabled": requireNewNotebook},
+                        {"checkname": "read_as_dataframe", "checktext": "Read as dataframe", "checked": false},
                     ],
                     select_label: "Project",
                     cancel_text: "Cancel",

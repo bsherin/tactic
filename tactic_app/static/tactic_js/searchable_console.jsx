@@ -109,7 +109,7 @@ function SearchableConsole(props, inner_ref) {
     }
 
     function _addToLog(new_line) {
-        set_log_content(log_content_ref.current + new_line)
+        set_log_content(prev_log_content => prev_log_content + new_line)
     }
 
     function _prepareText() {

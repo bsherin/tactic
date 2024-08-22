@@ -431,7 +431,11 @@ function SelectDialog(props) {
     if (props.checkboxes != null && props.checkboxes.length != 0) {
       let checkbox_states = {};
       for (let checkbox of props.checkboxes) {
-        checkbox_states[checkbox.checkname] = false;
+        if ("checked" in checkbox) {
+          checkbox_states[checkbox.checkname] = checkbox.checked;
+        } else {
+          checkbox_states[checkbox.checkname] = false;
+        }
       }
       set_checkbox_states(checkbox_states);
     }
@@ -466,7 +470,8 @@ function SelectDialog(props) {
         label: checkbox.checktext,
         id: checkbox.checkname,
         key: checkbox.checkname,
-        onChange: _checkbox_change_handler
+        onChange: _checkbox_change_handler,
+        disabled: checkbox.disabled
       });
       checkbox_items.push(new_item);
     }
@@ -479,7 +484,7 @@ function SelectDialog(props) {
     canEscapeKeyClose: true
   }, /*#__PURE__*/_react.default.createElement("div", {
     className: _core.Classes.DIALOG_BODY
-  }, /*#__PURE__*/_react.default.createElement(_core.FormGroup, {
+  }, props.option_list.length > 0 && /*#__PURE__*/_react.default.createElement(_core.FormGroup, {
     title: props.select_label
   }, /*#__PURE__*/_react.default.createElement(_blueprint_mdata_fields.BpSelect, {
     options: props.option_list,

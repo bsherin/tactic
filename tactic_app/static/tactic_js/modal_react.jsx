@@ -487,7 +487,12 @@ function SelectDialog(props) {
         if ((props.checkboxes != null) && (props.checkboxes.length != 0)) {
             let checkbox_states = {};
             for (let checkbox of props.checkboxes) {
-                checkbox_states[checkbox.checkname] = false
+                if ("checked" in checkbox) {
+                    checkbox_states[checkbox.checkname] = checkbox.checked
+                }
+                else {
+                    checkbox_states[checkbox.checkname] = false
+                }
             }
             set_checkbox_states(checkbox_states)
         }
@@ -529,6 +534,7 @@ function SelectDialog(props) {
                           id={checkbox.checkname}
                           key={checkbox.checkname}
                           onChange={_checkbox_change_handler}
+                          disabled={checkbox.disabled}
                 />
             );
             checkbox_items.push(new_item)
@@ -542,9 +548,11 @@ function SelectDialog(props) {
                 onClose={_cancelHandler}
                 canEscapeKeyClose={true}>
             <div className={Classes.DIALOG_BODY}>
-                <FormGroup title={props.select_label}>
-                    <BpSelect options={props.option_list} onChange={_handleChange} value={value}/>
-                </FormGroup>
+                {props.option_list.length > 0 &&
+                    <FormGroup title={props.select_label}>
+                        <BpSelect options={props.option_list} onChange={_handleChange} value={value}/>
+                    </FormGroup>
+                }
                 {(checkbox_items.length != 0) && checkbox_items}
             </div>
             <div className={Classes.DIALOG_FOOTER}>
