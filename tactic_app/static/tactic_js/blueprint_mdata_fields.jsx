@@ -511,7 +511,7 @@ function metadataReducer(draft, action) {
             draft.category = action.value;
             break;
         case "set_additional_metadata":
-            draft.additional_metadata = action.value;
+            draft.additionalMdata = action.value;
             break;
         case "set_all_tags":
             draft.allTags = action.value;
@@ -620,7 +620,10 @@ function CombinedMetadata(props) {
                     updater["category"] = data.additional_mdata.category;
                     delete amdata.category
                 }
-                updater["additional_metadata"] = amdata;
+                else if (props.res_type == "tile") {
+                    updater["category"] = "basic"
+                }
+                updater["additionalMdata"] = amdata;
                 mDispatch({type: "multi_update", value: updater})
             })
             .catch((e) => {
