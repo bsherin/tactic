@@ -1993,27 +1993,27 @@ function LogItem(props) {
                                      handleClick={_toggleShrink}/>
                     }
                 </div>
-                    <div className="d-flex flex-column">
+                <div className="d-flex flex-column">
                     <div className="log-panel-body d-flex flex-row">
                         {props.am_shrunk &&
                             <div ref={body_ref} style={body_shrunk_style}>
-                            <EditableText value={props.summary_text}
-                                          onChange={_handleSummaryTextChange}
-                                          className="log-panel-summary"/>
-                            </div>
-                        }{!props.am_shrunk &&
+                                <EditableText value={props.summary_text}
+                                              onChange={_handleSummaryTextChange}
+                                              className="log-panel-summary"/>
+                                </div>
+                        }
+                        {!props.am_shrunk &&
                             <div ref={body_ref} style={body_style}
                                  dangerouslySetInnerHTML={converted_dict}/>
                         }
-                            <div className="button-div d-flex flex-row">
-                                <GlyphButton handleClick={_deleteMe}
-                                             tooltip="Delete this item"
-                                             style={GlYPH_BUTTON_STYLE4}
-                                             icon="trash"/>
-                            </div>
+                        <div className="button-div d-flex flex-row">
+                            <GlyphButton handleClick={_deleteMe}
+                                         tooltip="Delete this item"
+                                         style={GlYPH_BUTTON_STYLE4}
+                                         icon="trash"/>
                         </div>
                     </div>
-                {/*}*/}
+                </div>
             </div>
         </ContextMenu>
     )
@@ -2156,7 +2156,7 @@ function BlobItem(props) {
     return (
         <ContextMenu content={renderContextMenu()}>
             <div className={panel_class + " d-flex flex-row"} onClick={_consoleItemClick}
-                 id={props.unique_id} style={{marginBottom: 10}}>
+                 id={props.unique_id} style={MB10_STYLE}>
                 <div className="button-div shrink-expand-div d-flex flex-row">
                     <Shandle dragHandleProps={props.dragHandleProps}/>
                     {!props.am_shrunk &&
@@ -2165,43 +2165,36 @@ function BlobItem(props) {
                     }
                     {props.am_shrunk &&
                         <GlyphButton icon="chevron-right"
-                                     style={{marginTop: 5}}
+                                     style={GLYPH_BUTTON_STYLE5}
                                      handleClick={_toggleShrink}/>
                     }
                 </div>
-                {props.am_shrunk &&
-                    <Fragment>
-                        <EditableText value={props.summary_text}
-                                      onChange={_handleSummaryTextChange}
-                                      className="log-panel-summary"/>
-                        <div className="button-div d-flex flex-row">
-                            <GlyphButton handleClick={_deleteMe}
-                                         intent="danger"
-                                         tooltip="Delete this item"
-                                         style={GlYPH_BUTTON_STYLE4}
-                                         icon="trash"/>
-                        </div>
-                    </Fragment>
-                }
-                {!props.am_shrunk &&
-                    <div className="d-flex flex-column">
-                        <div className="log-panel-body d-flex flex-row">
+                <div className="d-flex flex-column">
+                    <div className="log-panel-body d-flex flex-row">
+                        {props.am_shrunk &&
+                            <div ref={body_ref} style={body_shrunk_style}>
+                                <EditableText value={props.summary_text}
+                                              onChange={_handleSummaryTextChange}
+                                              className="log-panel-summary"/>
+                            </div>
+                        }
+                        {!props.am_shrunk &&
                             <div ref={body_ref} style={body_style}>
                                 {props.image_data_str && (
                                     <img src={props.image_data_str}
                                          alt="An Image" width={uwidth - 25}/>)
                                 }
                             </div>
-                            <div className="button-div d-flex flex-row">
-                                <GlyphButton handleClick={_deleteMe}
-                                             tooltip="Delete this item"
-                                             style={GlYPH_BUTTON_STYLE4}
-                                             intent="danger"
-                                             icon="trash"/>
-                            </div>
+                        }
+                        <div className="button-div d-flex flex-row">
+                            <GlyphButton handleClick={_deleteMe}
+                                         tooltip="Delete this item"
+                                         style={GlYPH_BUTTON_STYLE4}
+                                         intent="danger"
+                                         icon="trash"/>
                         </div>
                     </div>
-                }
+                </div>
             </div>
         </ContextMenu>
     )
