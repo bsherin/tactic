@@ -2131,6 +2131,12 @@ function BlobItem(props) {
       overflowY: "scroll"
     };
   }, [uwidth]);
+  const body_shrunk_style = (0, _react.useMemo)(() => {
+    return {
+      marginLeft: 30,
+      width: uwidth
+    };
+  }, [uwidth]);
   return /*#__PURE__*/_react.default.createElement(_core.ContextMenu, {
     content: renderContextMenu()
   }, /*#__PURE__*/_react.default.createElement("div", {

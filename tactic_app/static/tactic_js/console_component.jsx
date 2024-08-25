@@ -2153,6 +2153,11 @@ function BlobItem(props) {
         border: ".5px solid #c7c7c7",
         overflowY: "scroll"
     }}, [uwidth]);
+    const body_shrunk_style = useMemo(()=>{ return {
+        marginLeft: 30,
+        width: uwidth
+    }}, [uwidth]);
+
     return (
         <ContextMenu content={renderContextMenu()}>
             <div className={panel_class + " d-flex flex-row"} onClick={_consoleItemClick}
