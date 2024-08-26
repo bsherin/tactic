@@ -1,5 +1,6 @@
 
 import os, re, shutil, datetime
+import tarfile
 from flask_login import login_required, current_user
 from resource_manager import LibraryResourceManager
 from flask import jsonify, request, send_file
@@ -25,6 +26,8 @@ class PoolManager(LibraryResourceManager):
                          login_required(self.move_pool_resource), methods=['get', "post"])
         app.add_url_rule('/duplicate_pool_file', "duplicate_pool_file",
                          login_required(self.duplicate_pool_file), methods=['get', "post"])
+        app.add_url_rule('/compress_pool_resource', "compress_pool_resource",
+                         login_required(self.compress_pool_resource), methods=['get', "post"])
         app.add_url_rule('/download_pool_file', "download_pool_file",
                          login_required(self.download_pool_file), methods=['get', "post"])
 
@@ -180,6 +183,24 @@ class PoolManager(LibraryResourceManager):
             shutil.copy2(true_src, true_dst)
         except Exception as ex:
             emsg = self.get_traceback_message(ex, "error duplicating file")
+            print(emsg)
+            return jsonify({"success": False, "message": emsg})
+
+        return jsonify({"success": True})
+
+    def compress_pool_resource(self):
+        try:
+            data = request.json
+            full_path = data["full_path"]
+            true_path = self.user_to_true(full_path)
+            base_name = os.path.basename(true_path)
+            dir_name = os.path.dirname(true_path)
+            tar_name = os.path.join(dir_name, f"{base_name}.tar.gz")
+            with tarfile.open(tar_name, "w:gz") as tar:
+                tar.add(true_path, arcname=base_name)
+
+        except Exception as ex:
+            emsg = self.get_traceback_message(ex, "error compressing resource")
             print(emsg)
             return jsonify({"success": False, "message": emsg})
 

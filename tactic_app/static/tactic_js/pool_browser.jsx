@@ -276,6 +276,19 @@ function PoolBrowser(props) {
         }
     }
 
+    async function _compress_file(node = null) {
+        if (!valueRef.current && !node) return;
+        try {
+            const sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
+            const src = sNode.fullpath;
+
+            await postAjaxPromise(`compress_pool_resource`, {full_path: sNode.fullpath, is_directory: sNode.isDirectory});
+        }
+        catch (e) {
+            errorDrawerFuncs.addFromError(`Error compressing file or folder`, e)
+        }
+    }
+
     async function _downloadFile(node = null) {
         if (!valueRef.current && !node) return;
 
@@ -517,6 +530,11 @@ function PoolBrowser(props) {
                               await _duplicate_file(props.node)
                           }}
                           text="Duplicate File"/>
+                <MenuItem icon="archive"
+                          onClick={async () => {
+                              await _compress_file(props.node)
+                          }}
+                          text="Compress Resource"/>
                 <MenuItem icon="folder-close"
                           onClick={async () => {
                               await _add_directory(props.node)
@@ -606,6 +624,7 @@ function PoolBrowser(props) {
                          open_in_notebook_func={openInNotebook}
                          add_directory={_add_directory}
                          duplicate_file={_duplicate_file}
+                         compress_file={_compress_file}
                          move_resource={_move_resource}
                          download_file={_downloadFile}
                          refreshFunc={treeRefreshFunc.current}
@@ -719,6 +738,7 @@ function PoolMenubar(props) {
                 {name_text: "Rename Resource", icon_name: "edit", click_handler: props.rename_func},
                 {name_text: "Move Resource", icon_name: "inheritance", click_handler: props.move_resource},
                 {name_text: "Duplicate File", icon_name: "duplicate", click_handler: props.duplicate_file},
+                {name_text: "Compress Resource", icon_name: "archive", click_handler: props.compress_file},
                 {name_text: "Create Directory", icon_name: "folder-close", click_handler: props.add_directory},
                 {name_text: "Delete Resource", icon_name: "trash", click_handler: props.delete_func},
             ],
