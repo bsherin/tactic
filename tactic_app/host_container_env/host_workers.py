@@ -25,6 +25,7 @@ import copy
 import time
 import os
 import re
+from gevent import subprocess
 
 # inactive_container_time is the max time a tile can
 # go without making active contact with the megaplex.
@@ -84,6 +85,78 @@ class HostWorker(QWorker):
     @task_worthy
     def add_error_drawer_entry_task(self, data):
         socketio.emit("add-error-drawer-entry", data, namespace='/main', room=data["user_id"])
+
+    def user_to_true(self, user_path, user_obj):
+        return re.sub("/mydisk", user_obj.pool_dir, user_path)
+
+    def emit_status_msg(self, message, user_id, timeout=4):
+        data = {"message": message, "timeout": timeout}
+        socketio.emit('show-status-msg', data, namespace='/main', room=user_id)
+
+    def compress_file_in_place(self, source_file, user_id):
+        source_dir = os.path.dirname(source_file)
+        base_name = os.path.basename(source_file)
+        output_archive = os.path.join(source_dir, f"{base_name}.tar.gz")
+        command = ['tar', '-czf', output_archive, '-C', source_dir, base_name]
+        self.emit_status_msg(f"Started compression", user_id)
+        process = subprocess.Popen(command)
+        process.wait()
+        self.emit_status_msg(f"Finished compression", user_id)
+        return
+
+    def compress_directory_in_place(self, source_dir, user_id):
+        base_name = os.path.basename(source_dir.rstrip('/'))
+        parent_dir = os.path.dirname(source_dir.rstrip('/'))
+        output_archive = os.path.join(parent_dir, f"{base_name}.tar.gz")
+        command = ['tar', '-czf', output_archive, '-C', parent_dir, base_name]
+        self.emit_status_msg(f"Started compression", user_id)
+        process = subprocess.Popen(command)
+        process.wait()
+        self.emit_status_msg(f"Finished compression", user_id)
+        return
+
+    def decompress_archive_in_places(self, source_archive, user_id):
+        source_dir = os.path.dirname(source_archive)
+        base_name = os.path.basename(source_archive)
+        command = ['tar', '-xzf', source_archive, '-C', source_dir]
+        self.emit_status_msg(f"Started decompression", user_id)
+        process = subprocess.Popen(command)
+        process.wait()
+        self.emit_status_msg(f"Finished decompression", user_id)
+        return
+
+    @task_worthy
+    def compress_pool_resource(self, data):
+        try:
+            full_path = data["full_path"]
+            user_id = data["user_id"]
+            user_obj = load_user(user_id)
+            true_path = self.user_to_true(full_path, user_obj)
+            if os.path.isfile(true_path):
+                self.compress_file_in_place(true_path, user_id)
+            else:
+                self.compress_directory_in_place(true_path, user_id)
+        except Exception as ex:
+            emsg = self.get_traceback_message(ex, "error compressing resource")
+            print(emsg)
+            return {"success": False, "message": emsg}
+
+        return {"success": True}
+
+    @task_worthy
+    def decompress_archive(self, data):
+        try:
+            full_path = data["full_path"]
+            user_id = data["user_id"]
+            user_obj = load_user(user_id)
+            true_path = self.user_to_true(full_path, user_obj)
+            self.decompress_archive_in_places(true_path, user_id)
+        except Exception as ex:
+            emsg = self.get_traceback_message(ex, "error decompressing archive")
+            print(emsg)
+            return {"success": False, "message": emsg}
+
+        return {"success": True}
 
     @task_worthy
     def participant_ready(self, data):
@@ -995,9 +1068,12 @@ class HostWorker(QWorker):
         task_packet["status"] = "presend"
         task_packet["reply_to"] = "host"
         task_packet["client_post"] = "Yes"
-        if dest_id == "host" or dest_id == self.my_id:
+        task_data = task_packet["task_data"]
+        force_post = task_data["force_forward"] if "force_forward" in task_data else False
+        if not force_post and (dest_id == "host" or dest_id == self.my_id):
             super(HostWorker, self).handle_event(task_packet)
         else:
+            print("*** forwarding client post to " + dest_id)
             self.post_packet(dest_id, task_packet, reply_to="host", callback_id=task_packet["callback_id"])
         tactic_app.health_tracker.check_health()
         return

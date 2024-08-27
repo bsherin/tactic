@@ -283,12 +283,28 @@ function PoolBrowser(props) {
     try {
       const sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
       const src = sNode.fullpath;
-      await (0, _communication_react.postAjaxPromise)(`compress_pool_resource`, {
+      await (0, _communication_react.postPromise)("host", "compress_pool_resource", {
         full_path: sNode.fullpath,
-        is_directory: sNode.isDirectory
+        force_forward: true,
+        user_id: window.user_id
       });
     } catch (e) {
       errorDrawerFuncs.addFromError(`Error compressing file or folder`, e);
+    }
+  }
+  async function _decompress_archive() {
+    let node = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+    if (!valueRef.current && !node) return;
+    try {
+      const sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
+      const src = sNode.fullpath;
+      await (0, _communication_react.postPromise)("host", "decompress_archive", {
+        full_path: sNode.fullpath,
+        force_forward: true,
+        user_id: window.user_id
+      });
+    } catch (e) {
+      errorDrawerFuncs.addFromError(`Error decompressing archive`, e);
     }
   }
   async function _downloadFile() {
@@ -529,12 +545,6 @@ function PoolBrowser(props) {
       },
       text: "Duplicate File"
     }), /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
-      icon: "archive",
-      onClick: async () => {
-        await _compress_file(props.node);
-      },
-      text: "Compress Resource"
-    }), /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
       icon: "folder-close",
       onClick: async () => {
         await _add_directory(props.node);
@@ -547,6 +557,18 @@ function PoolBrowser(props) {
       },
       intent: "danger",
       text: "Delete Resource"
+    }), /*#__PURE__*/_react.default.createElement(_core.MenuDivider, null), /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
+      icon: "archive",
+      onClick: async () => {
+        await _compress_file(props.node);
+      },
+      text: "Compress Resource"
+    }), /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
+      icon: "unarchive",
+      onClick: async () => {
+        await _decompress_archive(props.node);
+      },
+      text: "Decompress archive"
     }), /*#__PURE__*/_react.default.createElement(_core.MenuDivider, null), /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
       icon: "cloud-upload",
       onClick: async () => {
@@ -627,6 +649,7 @@ function PoolBrowser(props) {
     add_directory: _add_directory,
     duplicate_file: _duplicate_file,
     compress_file: _compress_file,
+    decompress_archive: _decompress_archive,
     move_resource: _move_resource,
     download_file: _downloadFile,
     refreshFunc: treeRefreshFunc.current,
@@ -757,10 +780,6 @@ function PoolMenubar(props) {
         icon_name: "duplicate",
         click_handler: props.duplicate_file
       }, {
-        name_text: "Compress Resource",
-        icon_name: "archive",
-        click_handler: props.compress_file
-      }, {
         name_text: "Create Directory",
         icon_name: "folder-close",
         click_handler: props.add_directory
@@ -768,6 +787,15 @@ function PoolMenubar(props) {
         name_text: "Delete Resource",
         icon_name: "trash",
         click_handler: props.delete_func
+      }],
+      Archive: [{
+        name_text: "Compress Resource",
+        icon_name: "archive",
+        click_handler: props.compress_file
+      }, {
+        name_text: "Decompress Archive",
+        icon_name: "unarchive",
+        click_handler: props.decompress_archive
       }],
       Transfer: [{
         name_text: "Import To Pool",
