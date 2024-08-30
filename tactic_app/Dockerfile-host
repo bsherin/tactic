@@ -6,6 +6,6 @@ RUN pip install -r requirements.txt
 MAINTAINER "Bruce L Sherin"
 ADD  ./host_container_env /code
 ADD  ./volume_manager.py ./exception_mixin.py ./qworker.py ./redis_tools.py ./communication_utils.py \
-  ./docker_functions.py ./mongo_accesser.py ./loaded_tile_management.py ./rabbit_manage.py ./mongo_db_fs.py ./tile_code_parser.py /code/
+  ./docker_functions.py ./mongo_accesser.py ./loaded_tile_management.py ./rabbit_manage.py ./mongo_db_fs.py /code/
 EXPOSE 5000
 ENTRYPOINT ["/usr/local/bin/gunicorn", "-k", "geventwebsocket.gunicorn.workers.GeventWebSocketWorker", "--log-level", "debug", "-b", "0.0.0.0:5000", "host_main:app"]

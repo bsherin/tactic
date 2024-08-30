@@ -551,6 +551,7 @@ function CombinedMetadata(props) {
         is_repository: false,
         useFixedData: false,
         tsocket: null,
+        alt_category: null,
         ...props
     };
     const top_ref = useRef();
@@ -616,12 +617,16 @@ function CombinedMetadata(props) {
                 if (data.additional_mdata.icon) {
                     updater["icon"] = data.additional_mdata.icon
                 }
-                if (data.additional_mdata.category) {
-                    updater["category"] = data.additional_mdata.category;
-                    delete amdata.category
-                }
-                else if (props.res_type == "tile") {
-                    updater["category"] = "basic"
+                if (props.res_type == "tile") {
+                    if (data.additional_mdata.category) {
+                        updater["category"] = data.additional_mdata.category;
+                        delete amdata.category
+                    } else {
+                        updater["category"] = "nocat"
+                    }
+                    if (updater["category"] == "nocat" && props.alt_category) {
+                        updater["category"] = props.alt_category
+                    }
                 }
                 updater["additionalMdata"] = amdata;
                 mDispatch({type: "multi_update", value: updater})

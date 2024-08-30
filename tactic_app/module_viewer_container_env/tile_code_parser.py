@@ -1,4 +1,3 @@
-from __future__ import print_function
 import re
 import ast
 from collections import OrderedDict
@@ -129,7 +128,6 @@ class TileParser(object):
                     mdict[node.name]["last_line"] = self.cnode.body[i + 1].lineno - 2
                 else:
                     mdict[node.name]["last_line"] = None
-        # print(str(mdict))
         for i, method_name in enumerate(list(mdict)[:-1]):
             md = mdict[method_name]
             md["method_code"] = "\n".join(self.module_lines[md["start_line"]:md["last_line"] + 1])
@@ -141,7 +139,6 @@ class TileParser(object):
         mdict[last_method]["method_body"] = "\n".join(self.module_lines[mdict[last_method]["body_start"]:])
         mdict[last_method]["method_code_no_decs"] = "\n".join(self.module_lines[mdict[last_method]["start_line"] +
                                                                                 len(mdict[last_method]["node"].decorator_list):])
-        # print(str(mdict))
         return mdict
 
     def get_starting_line(self, method_name):
@@ -168,7 +165,6 @@ class TileParser(object):
             new_code += "\n" + self.methods["draw_plot"]["method_code"]
         if "render_content" in self.methods:
             new_code += "\n" + self.methods["render_content"]["method_code"]
-        print("done rebuilding")
         return new_code
 
     def get_assignments(self):
@@ -198,17 +194,12 @@ class TileParser(object):
         return adict
 
     def extract_save_attrs(self):
-        print("** in extract_save_attributes")
         inode = self.methods["__init__"]["node"]
         for al in inode.body:
             if hasattr(al, "target") and al.target.attr == "save_attrs":
-                print("** found save_attrs")
                 if hasattr(al, "value") and isinstance(al.value, ast.List):
                     val_list = [{"name": e.value} for e in al.value.elts]
-                    print("got val_list " + str(val_list))
                     return val_list
-                print("**save attrs weren't right")
-        print("didn't find save_attrs")
         return None
 
     def extract_defaults(self):

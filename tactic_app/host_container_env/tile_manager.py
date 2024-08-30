@@ -16,7 +16,6 @@ from docker_functions import create_container
 
 from js_source_management import js_source_dict, _develop, css_source
 from redis_tools import create_ready_block
-from tile_code_parser import TileParser
 
 import loaded_tile_management
 
@@ -82,12 +81,7 @@ class TileManager(LibraryResourceManager):
             mdata = tile_dict["metadata"]
             mdata["icon"] = self.get_tile_icon_from_mdata(mdata)
             if "category" not in mdata:
-                module_code = tile_dict["tile_module"]
-                tp = TileParser(module_code)
-                if hasattr(tp, "category"):
-                    mdata["category"] = tp.category
-                else:
-                    mdata["category"] = "basic"
+                mdata["category"] = "nocat"
         else:
             mdata = None
         return mdata

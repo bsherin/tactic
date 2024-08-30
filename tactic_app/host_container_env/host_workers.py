@@ -1073,7 +1073,6 @@ class HostWorker(QWorker):
         if not force_post and (dest_id == "host" or dest_id == self.my_id):
             super(HostWorker, self).handle_event(task_packet)
         else:
-            print("*** forwarding client post to " + dest_id)
             self.post_packet(dest_id, task_packet, reply_to="host", callback_id=task_packet["callback_id"])
         tactic_app.health_tracker.check_health()
         return

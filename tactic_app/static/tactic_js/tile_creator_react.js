@@ -151,7 +151,9 @@ function CreatorApp(props) {
   const [render_content_line_number, set_render_content_line_number, render_content_line_number_ref] = (0, _utilities_react.useStateAndRef)(props.render_content_line_number);
   const [draw_plot_line_number, set_draw_plot_line_number, draw_plot_line_number_ref] = (0, _utilities_react.useStateAndRef)(props.draw_plot_line_number);
   const [extra_methods_line_number, set_extra_methods_line_number, extra_methods_line_number_ref] = (0, _utilities_react.useStateAndRef)(props.extra_methods_line_number);
-  const [category, set_category, category_ref] = (0, _utilities_react.useStateAndRef)(props.category);
+
+  // const [category, set_category, category_ref] = useStateAndRef(props.category);
+
   const [additional_save_attrs, set_additional_save_attrs, additional_save_attrs_ref] = (0, _utilities_react.useStateAndRef)(props.additional_save_attrs || []);
   const [couple_save_attrs_and_exports, set_couple_save_attrs_and_exports, couple_save_attrs_and_exports_ref] = (0, _utilities_react.useStateAndRef)(props.couple_save_attrs_and_exports);
   const [selectedTabId, setSelectedTabId] = (0, _react.useState)("metadata");
@@ -945,6 +947,7 @@ function CreatorApp(props) {
   }
   let mdata_panel = /*#__PURE__*/_react.default.createElement(_creator_modules_react.MetadataModule, {
     expandWidth: false,
+    alt_category: props.category,
     notes_buttons: MetadataNotesButtons,
     tsocket: props.tsocket,
     readOnly: props.readOnly,

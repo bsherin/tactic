@@ -150,7 +150,7 @@ function CreatorApp(props) {
     const [draw_plot_line_number, set_draw_plot_line_number, draw_plot_line_number_ref] = useStateAndRef(props.draw_plot_line_number);
     const [extra_methods_line_number, set_extra_methods_line_number, extra_methods_line_number_ref] = useStateAndRef(props.extra_methods_line_number);
 
-    const [category, set_category, category_ref] = useStateAndRef(props.category);
+    // const [category, set_category, category_ref] = useStateAndRef(props.category);
 
     const [additional_save_attrs, set_additional_save_attrs, additional_save_attrs_ref] = useStateAndRef(props.additional_save_attrs || []);
     const [couple_save_attrs_and_exports, set_couple_save_attrs_and_exports, couple_save_attrs_and_exports_ref] = useStateAndRef(props.couple_save_attrs_and_exports);
@@ -970,6 +970,7 @@ function CreatorApp(props) {
 
     let mdata_panel = (
         <MetadataModule expandWidth={false}
+                        alt_category={props.category}
                         notes_buttons={MetadataNotesButtons}
                         tsocket={props.tsocket}
                         readOnly={props.readOnly}
