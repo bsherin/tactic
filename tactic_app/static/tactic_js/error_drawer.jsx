@@ -58,7 +58,7 @@ function withErrorDrawer(WrappedComponent, lposition = "right", error_drawer_siz
 
         const _toggle = useCallback((data) => {
             if (data == null || !("main_id" in data) || (data.main_id == local_id.current)) {
-                set_show_drawer(!show_drawer)
+                set_show_drawer((prev_show_drawer)=>!prev_show_drawer)
             }
         }, [local_id.current]);
 
@@ -266,8 +266,9 @@ function ErrorDrawer(props) {
             title={props.title}
             isOpen={props.show_drawer}
             position={props.position}
-            canOutsideClickClose={true}
+            canOutsideClickClose={false}
             onClose={props.onClose}
+            hasBackdrop={false}
             size={props.size}
         >
             <div className={Classes.DRAWER_BODY}>

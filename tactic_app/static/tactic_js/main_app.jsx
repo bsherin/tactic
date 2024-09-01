@@ -38,7 +38,7 @@ import {DialogContext, withDialogs} from "./modal_react";
 import {StatusContext} from "./toaster";
 import {ErrorDrawerContext} from "./error_drawer";
 import {SelectedPaneContext} from "./utilities_react";
-import {MetadataDrawer} from "./metadata_drawer";
+import {MetadataDrawer, MetadataContext} from "./metadata_drawer";
 
 export {MainApp}
 
@@ -885,6 +885,10 @@ function MainApp(props) {
         _setMainStateValue("show_metadata", false);
     }
 
+    function toggleMetadata() {
+        _setMainStateValue("show_metadata", !mState.show_metadata)
+    }
+
     function _setProjectName(new_project_name, callback = null) {
         if (props.controlled) {
             props.updatePanel({
@@ -1164,21 +1168,26 @@ function MainApp(props) {
                               page_id={props.main_id}
                 />
             }
-            <TacticMenubar connection_status={connection_status}
-                           menus={menus}
-                           showRefresh={true}
-                           showClose={true}
-                           refreshTab={props.refreshTab}
-                           closeTab={props.closeTab}
-                           resource_name={_cProp("resource_name")}
-                           showIconBar={true}
-                           showErrorDrawerButton={true}
-                           showMetadataDrawerButton={true}
-                           showAssistantDrawerButton={true}
-                           showSettingsDrawerButton={true}
-                           showMetadata={showMetadata}
-                           extraButtons={extra_menubar_buttons}
-            />
+            <MetadataContext.Provider value={{
+                showMetadata: showMetadata,
+                toggleMetadata: toggleMetadata,
+                hideMetadata: hideMetadata
+            }}>
+                <TacticMenubar connection_status={connection_status}
+                               menus={menus}
+                               showRefresh={true}
+                               showClose={true}
+                               refreshTab={props.refreshTab}
+                               closeTab={props.closeTab}
+                               resource_name={_cProp("resource_name")}
+                               showIconBar={true}
+                               showErrorDrawerButton={true}
+                               showMetadataDrawerButton={true}
+                               showAssistantDrawerButton={true}
+                               showSettingsDrawerButton={true}
+                               extraButtons={extra_menubar_buttons}
+                />
+            </MetadataContext.Provider>
             <ErrorBoundary>
                 <div className={`main-outer ${settingsContext.isDark() ? "bp5-dark" : "light-theme"}`}
                      ref={main_outer_ref}

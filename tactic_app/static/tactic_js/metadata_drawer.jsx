@@ -31,13 +31,12 @@ const mdi = markdownIt({
 });
 mdi.use(markdownItLatex);
 
-import {useState, useEffect, memo, useContext} from "react";
+import {useEffect, memo, useContext, createContext} from "react";
 import {Drawer} from "@blueprintjs/core";
-import {postAjaxPromise} from "./communication_react";
 import {SettingsContext} from "./settings";
 import {CombinedMetadata} from "./blueprint_mdata_fields";
 
-export {MetadataDrawer}
+export {MetadataDrawer, MetadataContext}
 
 function formatLatexEquations(text) {
     const displayRegex = /\$\$(.+?)\$\$/gs;
@@ -58,6 +57,8 @@ const icon_dict = {
     code: "code"
 };
 
+const MetadataContext = createContext(null);
+
 function MetadataDrawer(props) {
 
     const settingsContext = useContext(SettingsContext);
@@ -74,7 +75,7 @@ function MetadataDrawer(props) {
             title={props.res_name}
             isOpen={props.show_drawer}
             position={props.position}
-            canOutsideClickClose={true}
+            canOutsideClickClose={false}
             onClose={props.onClose}
             enforceFocus={true}
             hasBackdrop={false}

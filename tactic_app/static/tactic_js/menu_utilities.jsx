@@ -9,6 +9,7 @@ import {GlyphButton} from "./blueprint_react_widgets";
 import {SelectedPaneContext, useStateAndRef} from "./utilities_react";
 import {ErrorDrawerContext} from "./error_drawer";
 import {AssistantContext} from "./assistant";
+import {MetadataContext} from "./metadata_drawer";
 
 import {ICON_BAR_WIDTH} from "./sizing_tools";
 
@@ -120,8 +121,7 @@ function TacticMenubar(props) {
                 <IconBar showErrorDrawerButton={props.showErrorDrawerButton}
                          showAssistantDrawerButton={props.showAssistantDrawerButton}
                          showMetadataDrawerButton={props.showMetadataDrawerButton}
-                         showSettingsDrawerButton={props.showSettingsDrawerButton}
-                         showMetadata={props.showMetadata}/>
+                         showSettingsDrawerButton={props.showSettingsDrawerButton}/>
             }
         </Navbar>
     )
@@ -149,29 +149,49 @@ function ConnectionIndicator(props) {
 
 const IconBarStyle = {width: ICON_BAR_WIDTH};
 function IconBar(props) {
+
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
     const assistantDrawerFuncs = useContext(AssistantContext);
     const settingsContext = useContext(SettingsContext);
+    const metadataContext = useContext(MetadataContext);
     return (
     <div className="verticalIconBar" style={IconBarStyle}>
             {props.showSettingsDrawerButton &&
                 <IconBarButton icon="cog" onClick={() => {
-                    settingsContext.setShowSettingsDrawer(true)
+                    settingsContext.toggleSettingsDrawer();
+                    errorDrawerFuncs.closeErrorDrawer();
+                    if (props.showMetadataDrawerButton) {
+                        metadataContext.hideMetadata()
+                    }
+                    assistantDrawerFuncs.closeAssistantDrawer()
                 }}/>
             }
            {props.showErrorDrawerButton &&
                 <IconBarButton icon="bug" onClick={() => {
-                    errorDrawerFuncs.toggleErrorDrawer()
+                    errorDrawerFuncs.toggleErrorDrawer();
+                    if (props.showMetadataDrawerButton) {
+                        metadataContext.hideMetadata()
+                    }
+                    settingsContext.setShowSettingsDrawer(false);
+                    assistantDrawerFuncs.closeAssistantDrawer()
                 }}/>
             }
             {window.has_openapi_key && props.showAssistantDrawerButton && assistantDrawerFuncs && props.showAssistantDrawerButton &&
                 <IconBarButton icon="chat" onClick={() => {
-                    assistantDrawerFuncs.toggleAssistantDrawer()
+                    assistantDrawerFuncs.toggleAssistantDrawer();
+                    errorDrawerFuncs.closeErrorDrawer();
+                    if (props.showMetadataDrawerButton) {
+                        metadataContext.hideMetadata()
+                    }
+                    settingsContext.setShowSettingsDrawer(false);
                 }}/>
             }
             {props.showMetadataDrawerButton &&
                 <IconBarButton icon="list-columns" onClick={() => {
-                    props.showMetadata()
+                    metadataContext.toggleMetadata();
+                    errorDrawerFuncs.closeErrorDrawer();
+                    settingsContext.setShowSettingsDrawer(false);
+                    assistantDrawerFuncs.closeAssistantDrawer()
                 }}/>
             }
         </div>

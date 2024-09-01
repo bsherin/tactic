@@ -60,6 +60,10 @@ function withSettings(WrappedComponent, lposition = "right", settings_drawer_siz
             });
         }
 
+        function toggleSettingsDrawer() {
+            setShowSettingsDrawer(!showSettingsDrawer)
+        }
+
         const highlightTheme = "theme" in settingsRef.current ?
             HIGHLIGHT_THEMES[settingsRef.current.theme] : HIGHLIGHT_THEMES["dark"];
 
@@ -73,6 +77,7 @@ function withSettings(WrappedComponent, lposition = "right", settings_drawer_siz
                     settingsRef: settingsRef,
                     setSettings: setSettings,
                     setShowSettingsDrawer: setShowSettingsDrawer,
+                    toggleSettingsDrawer: toggleSettingsDrawer,
                     isDark: isDark}}>
                     <WrappedComponent {...props}/>
                 </SettingsContext.Provider>
@@ -195,8 +200,9 @@ function SettingsDrawer(props) {
             title={props.title}
             isOpen={props.showDrawer}
             position={props.position}
-            canOutsideClickClose={true}
+            canOutsideClickClose={false}
             onClose={props.onClose}
+            hasBackdrop={false}
             size={props.size}
         >
             <div className={Classes.DRAWER_BODY}>

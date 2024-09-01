@@ -29,6 +29,7 @@ function _login_main() {
             settings: null,
             setSettings: null,
             setShowSettingsDrawer: null,
+            toggleSettingsDrawer: null,
             isDark: ()=>{return false}}}>
             <LoginAppPlus tsocket={null} controlled={false}/>
         </SettingsContext.Provider>

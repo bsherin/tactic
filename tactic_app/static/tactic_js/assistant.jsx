@@ -226,9 +226,9 @@ function AssistantDrawer(props) {
             title={props.title}
             isOpen={props.show_drawer}
             position={props.position}
-            canOutsideClickClose={true}
+            canOutsideClickClose={false}
             onClose={props.onClose}
-            enforceFocus={true}
+            enforceFocus={false}
             hasBackdrop={false}
             size={props.size}
             >
