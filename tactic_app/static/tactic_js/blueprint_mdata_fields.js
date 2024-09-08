@@ -650,7 +650,7 @@ function CombinedMetadata(props) {
   async function _handleCategoryChange(event) {
     await _handleMetadataChange({
       "category": event.target.value
-    });
+    }, false);
   }
   async function _handleIconChange(icon) {
     await _handleMetadataChange({

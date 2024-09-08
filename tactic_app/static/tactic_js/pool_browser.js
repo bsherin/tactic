@@ -42,6 +42,7 @@ function PoolBrowser(props) {
   const [list_of_selected, set_list_of_selected, list_of_selected_ref] = (0, _utilities_react.useStateAndRef)([]);
   const [contextMenuItems, setContextMenuItems] = (0, _react.useState)([]);
   const [have_activated, set_have_activated] = (0, _react.useState)(false);
+  const [showHidden, setShowHidden] = (0, _react.useState)(false);
   const settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   const dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   const errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
@@ -622,12 +623,21 @@ function PoolBrowser(props) {
       workingPath: null,
       setWorkingPath: () => {}
     }
+  }, /*#__PURE__*/_react.default.createElement("div", {
+    className: "d-flex flex-row",
+    style: {
+      justifyContent: "space-between"
+    }
   }, /*#__PURE__*/_react.default.createElement(PoolBreadcrumbs, {
     path: currentRootPathRef.current,
     setRoot: setRoot
-  }), /*#__PURE__*/_react.default.createElement(_pool_tree.PoolTree, {
+  }), /*#__PURE__*/_react.default.createElement(PoolHiddenSwitch, {
+    showHidden: showHidden,
+    setShowHidden: setShowHidden
+  })), /*#__PURE__*/_react.default.createElement(_pool_tree.PoolTree, {
     value: valueRef.current,
     currentRootPath: currentRootPathRef.current,
+    showHidden: showHidden,
     setRoot: setRoot,
     renderContextMenu: renderContextMenu,
     select_type: "both",
@@ -695,6 +705,17 @@ function PoolBreadcrumb(props) {
     icon: props.icon,
     onClick: props.onClick
   }, props.name);
+}
+function PoolHiddenSwitch(props) {
+  function handleShowHiddenChange(event) {
+    props.setShowHidden(event.target.checked);
+  }
+  return /*#__PURE__*/_react.default.createElement(_core.Switch, {
+    label: "show hidden",
+    large: false,
+    checked: props.showHidden,
+    onChange: handleShowHiddenChange
+  });
 }
 function PoolBreadcrumbs(props) {
   function clickFunc(path) {

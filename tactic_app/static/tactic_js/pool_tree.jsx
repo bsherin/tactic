@@ -308,9 +308,19 @@ function PoolTree(props) {
 
     }, []);
 
+    useEffect(() => {
+        getTree().then(() => {
+            if (!props.value && pool_context.workingPath) {
+                exposeNode(pool_context.workingPath, false)
+            }
+        })
+    }, [props.showHidden]);
+
     async function getTree() {
         try {
-            let data = await postPromise("host", "GetPoolTree", {user_id: props.user_id});
+            let data = await postPromise("host", "GetPoolTree",
+                {user_id: props.user_id, show_hidden: props.showHidden}
+            );
             if (!data.dtree) {
                 doFlash("No pool storage available for this account.");
                 return
@@ -636,6 +646,7 @@ function PoolAddressSelector(props) {
     let tree_element = (
         <div style={{maxHeight: maxPopoverHeightRef.current, overflowY: "scroll"}}>
             <PoolTree value={props.value}
+                      showHidden={false}
                       currentRootPath={currentRootPathRef.current}
                       setRoot={null}
                       sortField="name"

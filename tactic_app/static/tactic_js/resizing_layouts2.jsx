@@ -41,6 +41,7 @@ function DragHandle({direction = "x", onDrag = null, dragStart = null, dragEnd =
             dragStart(e, ui, startX.current, startY.current);
         }
         e.preventDefault();
+        e.stopPropagation();
     }
 
     function _onDrag(e, ui) {
@@ -62,6 +63,7 @@ function DragHandle({direction = "x", onDrag = null, dragStart = null, dragEnd =
             onDrag(e, ui, lastX.current, lastY.current, dx, dy)
         }
         e.preventDefault();
+        e.stopPropagation();
     }
 
     function _dragEnd(e, ui) {
@@ -83,6 +85,12 @@ function DragHandle({direction = "x", onDrag = null, dragStart = null, dragEnd =
             dragEnd(e, ui, lastX.current, lastY.current, dx, dy);
         }
         e.preventDefault();
+        e.stopPropagation();
+    }
+
+    function _onMouseDown(e) {
+        e.preventDefault();
+        e.stopPropagation()
     }
 
     function getMouseX(e) {
@@ -140,6 +148,7 @@ function DragHandle({direction = "x", onDrag = null, dragStart = null, dragEnd =
             onStart={_dragStart}
             onStop={_dragEnd}
             onDrag={_onDrag}
+            onMouseDown={_onMouseDown}
             grid={[5, 5]}
             scale={1}>
             {wrappedElement}

@@ -974,13 +974,15 @@ class HostWorker(QWorker):
         base_dict.update(self.get_file_stats(path, user_obj), is_directory=False)
         return base_dict
 
-    def get_node(self, root, user_pool_dir, user_obj):
+    def get_node(self, root, user_pool_dir, user_obj, show_hidden=False):
         ammended_root = re.sub(user_pool_dir, "/mydisk", root)
         new_base_node = self.folder_dict(ammended_root, os.path.basename(root), user_obj)
         child_list = []
         for root, dirs, files in os.walk(root):
             for f in files:
                 fpath = f"{root}/{f}"
+                if not show_hidden and os.path.basename(fpath).startswith("."):
+                    continue
                 if not os.path.dirname(fpath) == root or fpath in self.pool_visited:
                     continue
                 self.pool_visited.append(fpath)
@@ -988,10 +990,12 @@ class HostWorker(QWorker):
                 child_list.append(self.file_dict(ammended_path, f, user_obj))
             for adir in dirs:
                 fpath = f"{root}/{adir}"
+                if not show_hidden and os.path.basename(fpath).startswith("."):
+                    continue
                 if not os.path.dirname(fpath) == root or fpath in self.pool_visited:
                     continue
                 self.pool_visited.append(fpath)
-                child_list.append(self.get_node(fpath, user_pool_dir, user_obj))
+                child_list.append(self.get_node(fpath, user_pool_dir, user_obj, show_hidden))
         new_base_node["childNodes"] = child_list
         return new_base_node
 
@@ -1000,11 +1004,12 @@ class HostWorker(QWorker):
         try:
             user_id = data["user_id"]
             user_obj = load_user(user_id)
+            show_hidden = data["show_hidden"]
             user_pool_dir = f"/pool/{user_obj.username}"
             if not os.path.exists(user_pool_dir):
                 return {"dtree": None}
             self.pool_visited = []
-            dtree = [self.get_node(user_pool_dir, user_pool_dir, user_obj)]
+            dtree = [self.get_node(user_pool_dir, user_pool_dir, user_obj, show_hidden)]
             dtree[0].update({
                 "path": "/mydisk",
                 "basename": "mydisk",

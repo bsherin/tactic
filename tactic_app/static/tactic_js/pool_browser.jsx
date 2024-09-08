@@ -2,7 +2,7 @@ import React from "react";
 
 import {Fragment, useState, useEffect, useRef, memo, useContext} from "react";
 
-import {Menu, MenuItem, MenuDivider, Breadcrumb, Breadcrumbs} from "@blueprintjs/core";
+import {Menu, MenuItem, MenuDivider, Breadcrumb, Breadcrumbs, Switch} from "@blueprintjs/core";
 
 import {guid, useStateAndRef} from "./utilities_react";
 import {LibraryMenubar} from "./library_menubars"
@@ -43,6 +43,7 @@ function PoolBrowser(props) {
     const [list_of_selected, set_list_of_selected, list_of_selected_ref] = useStateAndRef([]);
     const [contextMenuItems, setContextMenuItems] = useState([]);
     const [have_activated, set_have_activated] = useState(false);
+    const [showHidden, setShowHidden] = useState(false);
 
     const settingsContext = useContext(SettingsContext);
     const dialogFuncs = useContext(DialogContext);
@@ -619,9 +620,13 @@ function PoolBrowser(props) {
                         workingPath: null, setWorkingPath: () => {
                         }
                     }}>
-                        <PoolBreadcrumbs path={currentRootPathRef.current} setRoot={setRoot}/>
+                        <div className="d-flex flex-row" style={{justifyContent: "space-between"}}>
+                            <PoolBreadcrumbs path={currentRootPathRef.current} setRoot={setRoot}/>
+                            <PoolHiddenSwitch showHidden={showHidden} setShowHidden={setShowHidden}/>
+                        </div>
                         <PoolTree value={valueRef.current}
                                   currentRootPath={currentRootPathRef.current}
+                                  showHidden={showHidden}
                                   setRoot={setRoot}
                                   renderContextMenu={renderContextMenu}
                                   select_type="both"
@@ -690,6 +695,21 @@ function PoolBreadcrumb(props) {
         <Breadcrumb className="pool-breadcrumb" key={props.path} icon={props.icon} onClick={props.onClick}>
             {props.name}
         </Breadcrumb>
+    )
+}
+
+function PoolHiddenSwitch(props) {
+
+    function handleShowHiddenChange(event) {
+        props.setShowHidden(event.target.checked);
+    }
+
+    return (
+        <Switch label="show hidden"
+                large={false}
+                checked={props.showHidden}
+                onChange={handleShowHiddenChange}
+        />
     )
 }
 
