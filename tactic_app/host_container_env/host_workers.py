@@ -979,6 +979,8 @@ class HostWorker(QWorker):
         new_base_node = self.folder_dict(ammended_root, os.path.basename(root), user_obj)
         child_list = []
         for root, dirs, files in os.walk(root):
+            if not show_hidden and os.path.basename(root).startswith("."):
+                continue
             for f in files:
                 fpath = f"{root}/{f}"
                 if not show_hidden and os.path.basename(fpath).startswith("."):
