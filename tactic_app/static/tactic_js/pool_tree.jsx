@@ -8,6 +8,7 @@ import {useCallbackStack, useReducerAndRef, useStateAndRef} from "./utilities_re
 import {postPromise} from "./communication_react";
 import {SettingsContext} from "./settings";
 import {SearchForm} from "./library_widgets";
+import {ErrorDrawerContext} from "./error_drawer";
 
 export {PoolTree, PoolAddressSelector, getBasename, splitFilePath, getFileParentPath, withPool, PoolContext}
 
@@ -294,6 +295,7 @@ function PoolTree(props) {
     const pushCallback = useCallbackStack();
 
     const pool_context = useContext(PoolContext);
+    const errorDrawerFuncs = useContext(ErrorDrawerContext);
 
     useEffect(() => {
         initSocket();

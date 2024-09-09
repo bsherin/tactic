@@ -20,6 +20,7 @@ var _utilities_react = require("./utilities_react");
 var _communication_react = require("./communication_react");
 var _settings = require("./settings");
 var _library_widgets = require("./library_widgets");
+var _error_drawer = require("./error_drawer");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 const PoolContext = exports.PoolContext = /*#__PURE__*/(0, _react.createContext)({
@@ -292,6 +293,7 @@ function PoolTree(props) {
   const settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   const pushCallback = (0, _utilities_react.useCallbackStack)();
   const pool_context = (0, _react.useContext)(PoolContext);
+  const errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
   (0, _react.useEffect)(() => {
     initSocket();
     if (props.registerTreeRefreshFunc) {

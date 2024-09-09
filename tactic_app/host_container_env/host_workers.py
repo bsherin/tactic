@@ -117,7 +117,6 @@ class HostWorker(QWorker):
 
     def decompress_archive_in_places(self, source_archive, user_id):
         source_dir = os.path.dirname(source_archive)
-        base_name = os.path.basename(source_archive)
         command = ['tar', '-xzf', source_archive, '-C', source_dir]
         self.emit_status_msg(f"Started decompression", user_id)
         process = subprocess.Popen(command)
@@ -978,26 +977,15 @@ class HostWorker(QWorker):
         ammended_root = re.sub(user_pool_dir, "/mydisk", root)
         new_base_node = self.folder_dict(ammended_root, os.path.basename(root), user_obj)
         child_list = []
-        for root, dirs, files in os.walk(root):
-            if not show_hidden and os.path.basename(root).startswith("."):
+        for entry in os.listdir(root):
+            fpath = os.path.join(root, entry)
+            if not show_hidden and entry.startswith("."):
                 continue
-            for f in files:
-                fpath = f"{root}/{f}"
-                if not show_hidden and os.path.basename(fpath).startswith("."):
-                    continue
-                if not os.path.dirname(fpath) == root or fpath in self.pool_visited:
-                    continue
-                self.pool_visited.append(fpath)
-                ammended_path = re.sub(user_pool_dir, "/mydisk", fpath)
-                child_list.append(self.file_dict(ammended_path, f, user_obj))
-            for adir in dirs:
-                fpath = f"{root}/{adir}"
-                if not show_hidden and os.path.basename(fpath).startswith("."):
-                    continue
-                if not os.path.dirname(fpath) == root or fpath in self.pool_visited:
-                    continue
-                self.pool_visited.append(fpath)
+            if os.path.isdir(fpath):
                 child_list.append(self.get_node(fpath, user_pool_dir, user_obj, show_hidden))
+            else:
+                ammended_path = re.sub(user_pool_dir, "/mydisk", fpath)
+                child_list.append(self.file_dict(ammended_path, entry, user_obj))
         new_base_node["childNodes"] = child_list
         return new_base_node
 
@@ -1119,7 +1107,6 @@ class HostWorker(QWorker):
                                                                                             self.my_id)
             self.handle_exception(ex, special_string)
         return
-
 
 class HealthTracker:
     def __init__(self):
