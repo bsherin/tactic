@@ -511,11 +511,15 @@ class HostWorker(QWorker):
                                            user_obj=user_obj, doc_id=str(_id))
             rdict["event_type"] = event_type
             manager.update_selector_row(rdict, user_obj)
+            if "mdata_uid" in mdata:
+                mdata_uid = mdata["mdata_uid"]
+            else:
+                mdata_uid = ""
             socketio.emit("resource-updated", {
                 "user_id": user_obj.get_id(),
                 "res_type": res_type,
                 "res_name": doc_name,
-                "mdata_uid": mdata["mdata_uid"]
+                "mdata_uid": mdata_uid
             }, namespace='/main', room=user_obj.get_id())
             if username == "repository":
                 manager.update_repository_selector_row(rdict)

@@ -311,7 +311,7 @@ function BlueprintTable(props, passedRef) {
                    enableColumnReordering={true}
                    onColumnsReordered={_onColumnsReordered}
                    onSelection={_onSelection}
-                   selectedRegions={props.mState.selected_regions}
+                   selectedRegions={props.mState.selected_regions ? props.mState.selected_regions : [Regions.row(0)]}
                    onCompleteRender={_doScroll}
                    onColumnWidthChanged={_onColumnWidthChanged}
                    onFocusedCell={_onFocusedCell}
