@@ -1,7 +1,5 @@
 import sys
-# import nltk
-# import wordcloud
-# from sentiment_tools import vader_sentiment_analyzer, sentiwordnet, TacticVader
+import importlib
 import warnings
 import matplotlib
 from exception_mixin import generic_exception_handler
@@ -49,6 +47,16 @@ xh = escape_html
 def ds(txt):
     if Tile:
         Tile.display_status(txt)
+    return
+
+
+def tactic_import(code_name):
+    the_code = Library.codes[code_name].the_code
+    fname = f"{code_name}.py"
+    with open(fname, "w") as f:
+        f.write(the_code)
+    module = importlib.import_module(code_name)
+    globals()[code_name] = module
     return
 
 def user_tile(tclass):

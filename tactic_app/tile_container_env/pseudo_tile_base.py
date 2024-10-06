@@ -3,6 +3,7 @@ from io import StringIO
 import ast
 from bson.binary import Binary
 import os
+import importlib
 import re
 import types
 import pickle
@@ -36,6 +37,15 @@ Pipes = None
 
 def display(txt):
     sys.stdout.overwrite(txt)
+    return
+
+def tactic_import(code_name):
+    the_code = Library.codes[code_name].the_code
+    fname = f"{code_name}.py"
+    with open(fname, "w") as f:
+        f.write(the_code)
+    module = importlib.import_module(code_name)
+    globals()[code_name] = module
     return
 
 def escape_html(html):
