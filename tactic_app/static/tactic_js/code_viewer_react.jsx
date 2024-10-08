@@ -60,13 +60,9 @@ function CodeViewerApp(props) {
     const search_ref = useRef(null);
 
     const savedContent = useRef(props.the_content);
-    const savedTags = useRef(props.split_tags);
-    const savedNotes = useRef(props.notes);
 
     const [code_content, set_code_content, code_content_ref] = useStateAndRef(props.the_content);
     const [current_search_number, set_current_search_number, current_search_number_ref] = useStateAndRef(null);
-    const [notes, set_notes, notes_ref] = useStateAndRef(props.notes);
-    const [tags, set_tags, tags_ref] = useStateAndRef(props.split_tags);
     const [search_string, set_search_string] = useState("");
     const [regex, set_regex] = useState(false);
     const [search_matches, set_search_matches, search_matches_ref] = useStateAndRef(null);
@@ -94,29 +90,22 @@ function CodeViewerApp(props) {
         if (!am_selected()) {
             return false
         }
-        const new_code = code_content;
-        const tagstring = tags.join(" ");
-        const local_notes = notes;
-        const local_tags = tags;  // In case it's modified wile saving
+        const new_code = code_content_ref.current;
         const result_dict = {
             "code_name": _cProp("resource_name"),
             "new_code": new_code,
-            "tags": tagstring,
-            "notes": local_notes,
             "user_id": window.user_id
         };
         try {
             await postPromise("host", "update_code_task", result_dict, props.resource_viewer_id);
             savedContent.current = new_code;
-            savedTags.current = local_tags;
-            savedNotes.current = local_notes;
             statusFuncs.statusMessage(`Updated code resource ${_cProp("resource_name")}`, 7)
         } catch (e) {
             errorDrawerFuncs.addFromError("Error saving code", e)
 
         }
         return false
-    }, [code_content, tags, notes]);
+    }, [code_content]);
 
     const hotkeys = useMemo(
         () => [
@@ -215,32 +204,6 @@ function CodeViewerApp(props) {
 
     function _handleCodeChange(new_code) {
         set_code_content(new_code)
-    }
-
-    async function _handleMetadataChange(state_stuff) {
-        for (let field in state_stuff) {
-            switch (field) {
-                case "tags":
-                    set_tags(state_stuff[field]);
-                    break;
-                case "notes":
-                    set_notes(state_stuff[field]);
-                    break;
-            }
-        }
-        const result_dict = {
-            "res_type": "code",
-            "res_name": _cProp("resource_name"),
-            "tags": "tags" in state_stuff ? state_stuff["tags"].join(" ") : tags,
-            "notes": "notes" in state_stuff ? state_stuff["notes"] : notes,
-            "icon": "icon" in state_stuff ? state_stuff["icon"] : icon,
-        };
-        try {
-            await postAjaxPromise("save_metadata", result_dict)
-        }
-        catch(e) {
-            console.log("error saving metadata ", e)
-        }
     }
 
     function _setResourceNameState(new_name, callback = null) {
@@ -346,8 +309,7 @@ function CodeViewerApp(props) {
     }
 
     function _dirty() {
-        return !((code_content_ref.current == savedContent.current) &&
-            (tags_ref.current == savedTags.current) && (notes_ref.current == savedNotes.current))
+        return !(code_content_ref.current == savedContent.current)
     }
 
     let my_props = {...props};
@@ -384,10 +346,7 @@ function CodeViewerApp(props) {
                                    res_type="code"
                                    resource_name={my_props.resource_name}
                                    menu_specs={menu_specs}
-                                   handleStateChange={_handleMetadataChange}
                                    created={props.created}
-                                   notes={notes}
-                                   tags={tags}
                                    show_search={false}
                                    showErrorDrawerButton={true}
                 >

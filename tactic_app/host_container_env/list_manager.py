@@ -86,8 +86,6 @@ class ListManager(LibraryResourceManager):
                 mdata = doc["metadata"]
             else:
                 mdata = {}
-            mdata["tags"] = data_dict["tags"]
-            mdata["notes"] = data_dict["notes"]
             mdata["updated"] = datetime.datetime.utcnow()
 
             self.db[current_user.list_collection_name].update_one({"list_name": list_name},

@@ -59,15 +59,9 @@ function ModuleViewerApp(props) {
     const search_ref = useRef(null);
 
     const savedContent = useRef(props.the_content);
-    const savedTags = useRef(props.split_tags);
-    const savedNotes = useRef(props.notes);
-    const savedIcon = useRef(props.icon);
 
     const [code_content, set_code_content, code_content_ref] = useStateAndRef(props.the_content);
     const [current_search_number, set_current_search_number, current_search_number_ref] = useStateAndRef(null);
-    const [notes, set_notes, notes_ref] = useStateAndRef(props.notes);
-    const [tags, set_tags, tags_ref] = useStateAndRef(props.split_tags);
-    const [icon, set_icon, icon_ref] = useStateAndRef(props.icon);
     const [search_string, set_search_string] = useState("");
     const [regex, set_regex] = useState(false);
     const [search_matches, set_search_matches, search_matches_ref] = useStateAndRef(null);
@@ -213,36 +207,6 @@ function ModuleViewerApp(props) {
         set_code_content(new_code)
     }
 
-    async function _handleMetadataChange(state_stuff) {
-        for (let field in state_stuff) {
-            switch (field) {
-                case "tags":
-                    set_tags(state_stuff[field]);
-                    break;
-                case "notes":
-                    set_notes(state_stuff[field]);
-                    break;
-
-                case "icon":
-                    set_icon(state_stuff[field]);
-                    break;
-            }
-        }
-        const result_dict = {
-            "res_type": "tile",
-            "res_name": _cProp("resource_name"),
-            "tags": "tags" in state_stuff ? state_stuff["tags"].join(" ") : tags,
-            "notes": "notes" in state_stuff ? state_stuff["notes"] : notes,
-            "icon": "icon" in state_stuff ? state_stuff["icon"] : icon,
-        };
-        try {
-            await postAjaxPromise("save_metadata", result_dict)
-        }
-        catch(e) {
-            console.log("error saving metadata ", e)
-        }
-    }
-
     function _setResourceNameState(new_name, callback = null) {
         if (props.controlled) {
             props.changeResourceName(new_name, callback)
@@ -326,29 +290,16 @@ function ModuleViewerApp(props) {
 
     function doSavePromise() {
         return new Promise(async function (resolve, reject) {
-            const new_code = code_content;
-            const tagstring = tags.join(" ");
-            const local_notes = notes;
-            const local_tags = tags;  // In case it's modified wile saving
-            const local_icon = icon;
+            const new_code = code_content_ref.current;
             let result_dict;
-            let category;
-            category = null;
             result_dict = {
                 "module_name": _cProp("resource_name"),
-                "category": category,
-                "tags": tagstring,
-                "notes": local_notes,
-                "icon": local_icon,
                 "new_code": new_code,
                 "last_saved": "viewer"
             };
             try {
                 let data = await postAjaxPromise("update_module", result_dict);
                 savedContent.current = new_code;
-                savedTags.current = local_tags;
-                savedNotes.current = local_notes;
-                savedIcon.current = local_icon;
                 data.timeout = 2000;
                 resolve(data)
             } catch (e) {
@@ -461,8 +412,7 @@ function ModuleViewerApp(props) {
     }
 
     function _dirty() {
-        return !((code_content_ref.current == savedContent.current) && (icon_ref.current == savedIcon.current) &&
-            (tags_ref.current == savedTags.current) && (notes_ref.current == savedNotes.current))
+        return !(code_content_ref.current == savedContent.current)
     }
 
     function _setSearchMatches(nmatches) {
@@ -519,11 +469,7 @@ function ModuleViewerApp(props) {
                                    res_type="tile"
                                    resource_name={my_props.resource_name}
                                    menu_specs={menu_specs()}
-                                   handleStateChange={_handleMetadataChange}
                                    created={props.created}
-                                   notes={notes}
-                                   tags={tags}
-                                   mdata_icon={icon}
                                    show_search={false}
                                    showErrorDrawerButton={true}
                 >

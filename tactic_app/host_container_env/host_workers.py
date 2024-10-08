@@ -227,8 +227,6 @@ class HostWorker(QWorker):
                 mdata = doc["metadata"]
             else:
                 mdata = {}
-            mdata["tags"] = data_dict["tags"]
-            mdata["notes"] = data_dict["notes"]
             mdata["updated"] = datetime.datetime.utcnow()
 
             def get_result(load_result):

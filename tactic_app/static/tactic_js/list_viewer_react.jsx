@@ -102,12 +102,8 @@ function ListViewerApp(props) {
     const search_ref = useRef(null);
 
     const savedContent = useRef(props.the_content);
-    const savedTags = useRef(props.split_tags);
-    const savedNotes = useRef(props.notes);
 
     const [list_content, set_list_content, list_content_ref] = useStateAndRef(props.the_content);
-    const [notes, set_notes, notes_ref] = useStateAndRef(props.notes);
-    const [tags, set_tags, tags_ref] = useStateAndRef(props.split_tags);
 
     const [usable_width, usable_height, topX, topY] = useSize(top_ref, 0, "ListViewer");
 
@@ -222,31 +218,6 @@ function ListViewerApp(props) {
         }
     }
 
-    async function _handleMetadataChange(state_stuff) {
-        for (let field in state_stuff) {
-            switch (field) {
-                case "tags":
-                    set_tags(state_stuff[field]);
-                    break;
-                case "notes":
-                    set_notes(state_stuff[field]);
-                    break;
-            }
-        }
-        const result_dict = {
-            "res_type": "list",
-            "res_name": _cProp("resource_name"),
-            "tags": "tags" in state_stuff ? state_stuff["tags"].join(" ") : tags,
-            "notes": "notes" in state_stuff ? state_stuff["notes"] : notes
-        };
-        try {
-            await postAjaxPromise("save_metadata", result_dict)
-        }
-        catch(e) {
-            console.log("error saving metadata ", e)
-        }
-    }
-
     function _handleListChange(event) {
         set_list_content(event.target.value);
     }
@@ -259,22 +230,15 @@ function ListViewerApp(props) {
         if (!am_selected()) {
             return false
         }
-        const new_list_as_string = list_content;
-        const tagstring = tags.join(" ");
-        const local_notes = notes;
-        const local_tags = tags;  // In case it's modified wile saving
+        const new_list_as_string = list_content_ref.current;
         const result_dict = {
             "list_name": _cProp("resource_name"),
             "new_list_as_string": new_list_as_string,
-            "tags": tagstring,
-            "notes": notes
         };
 
         try {
             let data = await postAjaxPromise("update_list", result_dict);
             savedContent.current = new_list_as_string;
-            savedTags.current = local_tags;
-            savedNotes.current = local_notes;
             statusFuncs.statusMessage(`Saved list ${result_dict.list_name}`)
         }
         catch(e) {
@@ -316,8 +280,7 @@ function ListViewerApp(props) {
     }
 
     function _dirty() {
-        return !((list_content_ref.current == savedContent.current) &&
-            (tags_ref.current == savedTags.current) && (notes_ref.current == savedNotes.current))
+        return !(list_content_ref.current == savedContent.current)
     }
 
     let my_props = {...props};
@@ -355,10 +318,7 @@ function ListViewerApp(props) {
                                    res_type="list"
                                    resource_name={my_props.resource_name}
                                    menu_specs={menu_specs()}
-                                   handleStateChange={_handleMetadataChange}
                                    created={props.created}
-                                   notes={notes}
-                                   tags={tags}
                                    showErrorDrawerButton={false}
                                    saveMe={_saveMe}>
                     <ListEditor the_content={list_content}
