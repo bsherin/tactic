@@ -2,7 +2,7 @@ docker
 markdown
 gevent
 Werkzeug == 2.2.2
-Flask == 2.2.3
+Flask == 2.2.5
 Flask-SocketIO
 kombu
 beautifulsoup4
