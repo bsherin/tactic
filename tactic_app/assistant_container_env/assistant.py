@@ -87,7 +87,7 @@ class Assistant(QWorker, ExceptionMixin, AssistantEventHandler):
             self.chat_assistant = self.chat_client.beta.assistants.create(
                 name="Tactic Assistant",
                 instructions=instructions,
-                model="gpt-4-turbo",
+                model="gpt-4.1",
                 tools=[{"type": "code_interpreter"}, {"type": "file_search"}],
                 tool_resources={
                     "file_search": {

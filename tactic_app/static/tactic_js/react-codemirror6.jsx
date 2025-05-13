@@ -281,14 +281,14 @@ function ReactCodemirror6(props) {
 
     useEffect(()=>{
         autocompletionArgRef.current = props.mode == "python" ?
-            {override: [(context)=>{return combinedCompletions(context, props.extraSelfCompletions)}]} :
+            {override: [(context)=>{return combinedCompletions(context, props.aiRCText, props.extraSelfCompletions)}]} :
             {};
         if (editorView.current) {
             editorView.current.dispatch({
                 effects: completionCompartment.current.reconfigure(autocompletion(autocompletionArgRef.current))
             });
         }
-    }, [props.extraSelfCompletions]);
+    }, [props.extraSelfCompletions, props.aiRCText]);
 
     useEffect(() =>{
         // This controlled stuff never quite worked perfectly inside the CombinedMetadata notes field..

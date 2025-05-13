@@ -30,8 +30,7 @@ var _blueprint_navbar = require("./blueprint_navbar");
 var _error_boundary = require("./error_boundary");
 var _settings = require("./settings");
 var _modal_react = require("./modal_react");
-function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
-function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
+function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function (e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, default: e }; if (null === e || "object" != typeof e && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (const t in e) "default" !== t && {}.hasOwnProperty.call(e, t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, t)) && (i.get || i.set) ? o(f, t, i) : f[t] = e[t]); return f; })(e, t); }
 //comment
 
 const BOTTOM_MARGIN = 50;
@@ -130,6 +129,7 @@ function CreatorApp(props) {
   // properly if the component is unmounted before the codemirror area is activated.
   const [methodsHasActivated, setMethodsHasActivated] = (0, _react.useState)(false);
   const [globalsHasActivated, setGlobalsHasActivated] = (0, _react.useState)(false);
+  const [aiRCText, setAIRCText, aiRCTextRef] = (0, _utilities_react.useStateAndRef)(null);
   const [foregrounded_panes, set_foregrounded_panes] = (0, _react.useState)({
     "metadata": true,
     "options": false,
@@ -159,7 +159,6 @@ function CreatorApp(props) {
   const [selectedTabId, setSelectedTabId] = (0, _react.useState)("metadata");
   const [top_pane_fraction, set_top_pane_fraction] = (0, _react.useState)(props.is_mpl || props.is_d3 ? .5 : 1);
   const [left_pane_fraction, set_left_pane_fraction] = (0, _react.useState)(.5);
-  const [has_key, set_has_key] = (0, _react.useState)(false);
   const extraSelfCompletionsRef = (0, _react.useRef)([]);
   const settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   const dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
@@ -193,6 +192,7 @@ function CreatorApp(props) {
   const pushCallback = (0, _utilities_react.useCallbackStack)();
   const [resource_name, set_resource_name] = (0, _react.useState)(props.resource_name);
   const connection_status = (0, _utilities_react.useConnection)(props.tsocket, initSocket);
+  const [rc_waiting, doAIRCUpdate] = (0, _utilities_react.useDebounce)(getAIRCUpdate);
   (0, _react.useEffect)(() => {
     let data_dict = {
       pane_type: "tile",
@@ -203,15 +203,6 @@ function CreatorApp(props) {
     optionDispatch({
       type: "initialize",
       new_items: props.option_list
-    });
-    (0, _communication_react.postPromise)(props.module_viewer_id, "has_openai_key", {}).then(data => {
-      if (data.has_key) {
-        set_has_key(true);
-      } else {
-        set_has_key(false);
-      }
-    }).catch(e => {
-      set_has_key(false);
     });
   }, []);
   (0, _react.useEffect)(() => {
@@ -826,8 +817,31 @@ function CreatorApp(props) {
       set_jscript_code(new_code);
     }
   }
+  function getAIRCUpdate() {
+    console.log("in AIRC Update");
+    let code_str = render_content_code_ref.current;
+    const cursorPos = rcObject.current.state.selection.main.head;
+    (0, _communication_react.postPromise)(props.module_viewer_id, "update_ai_complete", {
+      "code_str": code_str,
+      "cursor_position": cursorPos
+    }).then(data => {
+      console.log("got airc result");
+      if (data.success) {
+        setAIRCText(data.suggestion);
+      } else {
+        setAIRCText(null);
+      }
+    }).catch(e => {
+      setAIRCText(null);
+    });
+  }
   function handleRenderContentChange(new_code) {
     set_render_content_code(new_code);
+    console.log("about to do doaircupdate");
+    if (window.has_openapi_key) {
+      console.log("have the key for the update");
+      doAIRCUpdate();
+    }
   }
   function _setResourceNameState(new_name) {
     let callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
@@ -915,6 +929,7 @@ function CreatorApp(props) {
     extraKeys: _extraKeys(),
     saveMe: _saveAndCheckpoint,
     setCMObject: _setRcObject,
+    aiRCText: aiRCTextRef.current,
     search_term: search_string,
     update_search_state: _updateSearchState,
     alt_clear_selections: _clearAllSelections,

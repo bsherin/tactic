@@ -233,7 +233,8 @@ class TileManager(LibraryResourceManager):
     def initialize_module_viewer_container(self, module_name):
         user_obj = current_user
         rb_id = str(uuid.uuid4())
-        environ = {"RB_ID": rb_id}
+        openai_api_key = user_obj.get_openai_api_key()
+        environ = {"RB_ID": rb_id, "OPENAI_API_KEY": openai_api_key}
         vol_dict = {}
         if "USE_REMOTE_DATABASE" in os.environ:
             environ["USE_REMOTE_DATABASE"] = os.environ.get("USE_REMOTE_DATABASE")

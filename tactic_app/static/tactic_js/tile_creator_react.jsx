@@ -26,7 +26,7 @@ import {withErrorDrawer} from "./error_drawer";
 import {renderSpinnerMessage, guid, arrayMove, convertExtraKeys} from "./utilities_react"
 import {TacticNavbar} from "./blueprint_navbar";
 import {ErrorBoundary} from "./error_boundary";
-import {useCallbackStack, useStateAndRef, useConnection} from "./utilities_react";
+import {useCallbackStack, useStateAndRef, useConnection, useDebounce} from "./utilities_react";
 import {SettingsContext, withSettings} from "./settings";
 import {DialogContext, withDialogs} from "./modal_react";
 import {ErrorDrawerContext} from "./error_drawer";
@@ -36,6 +36,7 @@ export {CreatorApp}
 
 const BOTTOM_MARGIN = 50;
 const MARGIN_SIZE = 17;
+
 
 function optionListReducer(option_list, action) {
     var new_items;
@@ -125,6 +126,7 @@ function CreatorApp(props) {
     // properly if the component is unmounted before the codemirror area is activated.
     const [methodsHasActivated, setMethodsHasActivated] = useState(false);
     const [globalsHasActivated, setGlobalsHasActivated] = useState(false);
+    const [aiRCText, setAIRCText, aiRCTextRef] = useStateAndRef(null);
 
     const [foregrounded_panes, set_foregrounded_panes] = useState({
         "metadata": true,
@@ -158,7 +160,6 @@ function CreatorApp(props) {
     const [selectedTabId, setSelectedTabId] = useState("metadata");
     const [top_pane_fraction, set_top_pane_fraction] = useState(props.is_mpl || props.is_d3 ? .5 : 1);
     const [left_pane_fraction, set_left_pane_fraction] = useState(.5);
-    const [has_key, set_has_key] = useState(false);
 
     const extraSelfCompletionsRef = useRef([]);
 
@@ -203,21 +204,12 @@ function CreatorApp(props) {
 
     const connection_status = useConnection(props.tsocket, initSocket);
 
+    const [rc_waiting, doAIRCUpdate] = useDebounce(getAIRCUpdate);
+
     useEffect(() => {
         let data_dict = {pane_type: "tile", is_repository: false, show_hidden: true};
         let data;
         optionDispatch({type: "initialize", new_items: props.option_list});
-        postPromise(props.module_viewer_id, "has_openai_key", {})
-            .then((data) => {
-                if (data.has_key) {
-                    set_has_key(true)
-                } else {
-                    set_has_key(false)
-                }
-            })
-            .catch((e) => {
-                set_has_key(false)
-            });
     }, []);
 
     useEffect(() => {
@@ -834,8 +826,32 @@ function CreatorApp(props) {
 
     }
 
+    function getAIRCUpdate() {
+        console.log("in AIRC Update");
+        let code_str = render_content_code_ref.current;
+        const cursorPos = rcObject.current.state.selection.main.head;
+        postPromise(props.module_viewer_id, "update_ai_complete", {"code_str": code_str, "cursor_position": cursorPos})
+            .then((data) => {
+                console.log("got airc result");
+                if (data.success) {
+                    setAIRCText(data.suggestion)
+                }
+                else {
+                    setAIRCText(null)
+                }
+            })
+            .catch((e) => {
+                setAIRCText(null)
+            })
+    }
+
     function handleRenderContentChange(new_code) {
-        set_render_content_code(new_code)
+        set_render_content_code(new_code);
+        console.log("about to do doaircupdate");
+        if (window.has_openapi_key) {
+            console.log("have the key for the update");
+            doAIRCUpdate()
+        }
     }
 
     function _setResourceNameState(new_name, callback = null) {
@@ -927,6 +943,7 @@ function CreatorApp(props) {
                               extraKeys={_extraKeys()}
                               saveMe={_saveAndCheckpoint}
                               setCMObject={_setRcObject}
+                              aiRCText={aiRCTextRef.current}
                               search_term={search_string}
                               update_search_state={_updateSearchState}
                               alt_clear_selections={_clearAllSelections}

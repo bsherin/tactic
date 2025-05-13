@@ -71,7 +71,7 @@ function periodCompletions(context) {
   };
 }
 
-function combinedCompletions(context, extraSelfCompletions=[]) {
+function combinedCompletions(context, aiRCText=null, extraSelfCompletions=[]) {
     const localCompletions = context.state.languageDataAt("autocomplete")[0];
     const languageCompletions = context.state.languageDataAt("autocomplete")[1];
 
@@ -87,6 +87,17 @@ function combinedCompletions(context, extraSelfCompletions=[]) {
     };
     const match = context.matchBefore(/\w*/);
     const from = match ? match.from : context.pos;
+    let ai_comp;
+    if (aiRCText != null) {
+        ai_comp = [{
+            label: aiRCText,
+            type: "suggestion",
+            detail: "AI"
+        }]
+    }
+    else {
+        ai_comp = []
+    }
     return {
         from: from,
         to: context.pos,
@@ -94,7 +105,8 @@ function combinedCompletions(context, extraSelfCompletions=[]) {
             ...filterCompletions(localCompletions),
             ...filterCompletions(languageCompletions),
             ...selfCompletions(context, extraSelfCompletions).options,
-            ...periodCompletions(context).options
+            ...periodCompletions(context).options,
+            ...ai_comp
         ],
         span: true
     };

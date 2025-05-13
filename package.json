@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@blueprintjs/core": "latest",
-    "@blueprintjs/icons": "latest",
+    "@blueprintjs/pwd": "latest",
     "@blueprintjs/popover2": "latest",
     "@blueprintjs/select": "latest",
     "@blueprintjs/table": "latest",
@@ -80,8 +80,8 @@
     "sass-loader": "latest",
     "style-loader": "latest",
     "terser-webpack-plugin": "latest",
-    "webpack": "latest",
+    "webpack": "^5.99.8",
     "webpack-bundle-analyzer": "latest",
-    "webpack-cli": "latest"
+    "webpack-cli": "^6.0.1"
   }
 }
