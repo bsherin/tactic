@@ -2,21 +2,19 @@
 import redis
 
 print("getting redis client")
+print("*** Using updated Redis config2 ***")
 redis_tm = redis.StrictRedis(host="tactic-redis",
                              port=6379,
-                             charset="utf-8",
                              db=1,
                              decode_responses=True)
 
 redis_ht = redis.StrictRedis(host="tactic-redis",
                              port=6379,
-                             charset="utf-8",
                              db=2,
                              decode_responses=True)
 
 redis_rb = redis.StrictRedis(host="tactic-redis",
                              port=6379,
-                             charset="utf-8",
                              db=3,
                              decode_responses=True)
 

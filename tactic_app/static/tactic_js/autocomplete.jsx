@@ -92,7 +92,7 @@ function combinedCompletions(context, aiRCText=null, extraSelfCompletions=[]) {
         ai_comp = [{
             label: aiRCText,
             type: "suggestion",
-            detail: "AI"
+            detail: aiRCText
         }]
     }
     else {
@@ -102,11 +102,11 @@ function combinedCompletions(context, aiRCText=null, extraSelfCompletions=[]) {
         from: from,
         to: context.pos,
         options: [
+            ...ai_comp,
             ...filterCompletions(localCompletions),
             ...filterCompletions(languageCompletions),
             ...selfCompletions(context, extraSelfCompletions).options,
-            ...periodCompletions(context).options,
-            ...ai_comp
+            ...periodCompletions(context).options
         ],
         span: true
     };

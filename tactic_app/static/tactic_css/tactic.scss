@@ -13,6 +13,12 @@ $search-highlight-color: $gold5;
 $sortable-table-header-background: #eee;
 $sortable-table-header-text-color: #666666;
 
+.cm-completionIcon-suggestion {
+    &:after {
+        content: "g"
+    }
+}
+
 html,body {
     height:100%;
 }
@@ -264,7 +270,7 @@ table {
 
 .res-viewer-resizer {
     display: inline-block;
-    vertical-align: top,
+    vertical-align: top
 }
 
 .CodeMirror {
