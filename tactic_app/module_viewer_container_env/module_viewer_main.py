@@ -174,10 +174,11 @@ class ModuleViewerWorker(QWorker, ExceptionMixin):
         print("got update_ai_complete task")
         code_str = data_dict["code_str"]
         cursor_position = data_dict["cursor_position"]
+        mode  = data_dict["mode"]
         context_code = self.extract_context(code_str, cursor_position)
         instructions = "You're a helpful coding assistant. "
         instructions += "Your job is to provide code completions. Just provide the code immediately following the provided user code. "
-        instructions += "The text you respond with should be valid Python code that can immdiately just be pasted into the code exactly as it is. "
+        instructions += f"The text you respond with should be valid {mode} code that can immdiately just be pasted into the code exactly as it is. "
         instructions += "That means you should not include any comments or explanations. "
         response = self.client.responses.create(
             model="gpt-4o",

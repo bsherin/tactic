@@ -29,8 +29,8 @@ function create_api() {
                 let arg_string = (entry["signature"].match(re) || [null])[0];
                 self_commands.push({
                     label: the_name,
-                    type: "method",
-                    detail: "tactic",
+                    type: "tactic",
+                    section: "Tactic",
                     info: entry["signature"]
                 })
             }
@@ -59,8 +59,8 @@ function periodCompletions(context) {
     for (let word of EXTRAWORDS_LIST) {
         periodCompletions.push({
         label: word,
-        type: "property",
-        detail: "tactic"
+        type: "tactic",
+        section: "Tactic",
         });
     }
 
@@ -71,7 +71,7 @@ function periodCompletions(context) {
   };
 }
 
-function combinedCompletions(context, aiRCText=null, extraSelfCompletions=[]) {
+function combinedCompletions(context, aiText=null, mode="python", extraSelfCompletions=[]) {
     const localCompletions = context.state.languageDataAt("autocomplete")[0];
     const languageCompletions = context.state.languageDataAt("autocomplete")[1];
 
@@ -88,28 +88,44 @@ function combinedCompletions(context, aiRCText=null, extraSelfCompletions=[]) {
     const match = context.matchBefore(/\w*/);
     const from = match ? match.from : context.pos;
     let ai_comp;
-    if (aiRCText != null) {
+    if (aiText != null) {
         ai_comp = [{
-            label: aiRCText,
+            label: aiText,
             type: "suggestion",
-            detail: aiRCText
+            info: aiText,
+            boost: 99,
+            section: "AI Suggestion"
         }]
     }
     else {
         ai_comp = []
     }
-    return {
-        from: from,
-        to: context.pos,
-        options: [
-            ...ai_comp,
-            ...filterCompletions(localCompletions),
-            ...filterCompletions(languageCompletions),
-            ...selfCompletions(context, extraSelfCompletions).options,
-            ...periodCompletions(context).options
-        ],
-        span: true
-    };
+    if (mode == "python") {
+        return {
+            from: from,
+            to: context.pos,
+            options: [
+                ...ai_comp,
+                ...filterCompletions(localCompletions),
+                ...filterCompletions(languageCompletions),
+                ...selfCompletions(context, extraSelfCompletions).options,
+                ...periodCompletions(context).options
+            ],
+            span: true
+        };
+    }
+    else {
+        return {
+            from: from,
+            to: context.pos,
+            options: [
+                ...ai_comp,
+                ...filterCompletions(localCompletions),
+                ...filterCompletions(languageCompletions)
+            ],
+            span: true
+        };
+    }
 }
 
 create_api();

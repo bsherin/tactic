@@ -26,7 +26,7 @@ import {withErrorDrawer} from "./error_drawer";
 import {renderSpinnerMessage, guid, arrayMove, convertExtraKeys} from "./utilities_react"
 import {TacticNavbar} from "./blueprint_navbar";
 import {ErrorBoundary} from "./error_boundary";
-import {useCallbackStack, useStateAndRef, useConnection, useDebounce} from "./utilities_react";
+import {useCallbackStack, useStateAndRef, useConnection} from "./utilities_react";
 import {SettingsContext, withSettings} from "./settings";
 import {DialogContext, withDialogs} from "./modal_react";
 import {ErrorDrawerContext} from "./error_drawer";
@@ -126,7 +126,6 @@ function CreatorApp(props) {
     // properly if the component is unmounted before the codemirror area is activated.
     const [methodsHasActivated, setMethodsHasActivated] = useState(false);
     const [globalsHasActivated, setGlobalsHasActivated] = useState(false);
-    const [aiRCText, setAIRCText, aiRCTextRef] = useStateAndRef(null);
 
     const [foregrounded_panes, set_foregrounded_panes] = useState({
         "metadata": true,
@@ -204,8 +203,6 @@ function CreatorApp(props) {
 
     const connection_status = useConnection(props.tsocket, initSocket);
 
-    const [rc_waiting, doAIRCUpdate] = useDebounce(getAIRCUpdate);
-
     useEffect(() => {
         let data_dict = {pane_type: "tile", is_repository: false, show_hidden: true};
         let data;
@@ -263,7 +260,7 @@ function CreatorApp(props) {
         extraSelfCompletionsRef.current = [];
         for (let oname of _getOptionNames()) {
             let the_text = "" + oname;
-            extraSelfCompletionsRef.current.push({label: the_text, type: "variable"});
+            extraSelfCompletionsRef.current.push({label: the_text, type: "variable", section: "Options"});
         }
         }, [option_list_ref.current]);
 
@@ -826,32 +823,8 @@ function CreatorApp(props) {
 
     }
 
-    function getAIRCUpdate() {
-        console.log("in AIRC Update");
-        let code_str = render_content_code_ref.current;
-        const cursorPos = rcObject.current.state.selection.main.head;
-        postPromise(props.module_viewer_id, "update_ai_complete", {"code_str": code_str, "cursor_position": cursorPos})
-            .then((data) => {
-                console.log("got airc result");
-                if (data.success) {
-                    setAIRCText(data.suggestion)
-                }
-                else {
-                    setAIRCText(null)
-                }
-            })
-            .catch((e) => {
-                setAIRCText(null)
-            })
-    }
-
     function handleRenderContentChange(new_code) {
         set_render_content_code(new_code);
-        console.log("about to do doaircupdate");
-        if (window.has_openapi_key) {
-            console.log("have the key for the update");
-            doAIRCUpdate()
-        }
     }
 
     function _setResourceNameState(new_name, callback = null) {
@@ -927,6 +900,7 @@ function CreatorApp(props) {
                               setSearchMatches={(num) => _setSearchMatches("tc", num)}
                               tsocket={props.tsocket}
                               extraSelfCompletions={mode == "python" ? extraSelfCompletionsRef.current : []}
+                              container_id={props.module_viewer_id}
                               highlight_active_line={true}/>
 
         )
@@ -943,7 +917,6 @@ function CreatorApp(props) {
                               extraKeys={_extraKeys()}
                               saveMe={_saveAndCheckpoint}
                               setCMObject={_setRcObject}
-                              aiRCText={aiRCTextRef.current}
                               search_term={search_string}
                               update_search_state={_updateSearchState}
                               alt_clear_selections={_clearAllSelections}
@@ -958,6 +931,7 @@ function CreatorApp(props) {
                               tsocket={props.tsocket}
                               extraSelfCompletions={extraSelfCompletionsRef.current }
                               highlight_active_line={true}
+                              container_id={props.module_viewer_id}
             />
         </div>
     );
@@ -1035,6 +1009,7 @@ function CreatorApp(props) {
                                   highlight_active_line={true}
                                   extraSelfCompletions={extraSelfCompletionsRef.current}
                                   iCounter={tabSelectCounter}
+                                  container_id={props.module_viewer_id}
                 />
             }
         </div>
@@ -1061,6 +1036,7 @@ function CreatorApp(props) {
                                   tsocket={props.tsocket}
                                   highlight_active_line={true}
                                   iCounter={tabSelectCounter}
+                                  container_id={props.module_viewer_id}
                 />
             }
         </div>
@@ -1175,6 +1151,8 @@ function tile_creator_main() {
             creator_props(data, null, gotProps, null)
         })
 }
+
+
 
 if (!window.in_context) {
     tile_creator_main();

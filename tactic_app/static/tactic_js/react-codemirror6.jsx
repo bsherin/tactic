@@ -1,7 +1,7 @@
 import React, {Fragment, useEffect, useRef, memo, useLayoutEffect, useContext} from "react";
 import {Button, ButtonGroup} from "@blueprintjs/core";
 import {useSize} from "./sizing_tools";
-import {propsAreEqual} from "./utilities_react";
+import {propsAreEqual, useStateAndRef} from "./utilities_react";
 import {SettingsContext} from "./settings";
 import {SelectedPaneContext} from "./utilities_react";
 import {ErrorDrawerContext} from "./error_drawer";
@@ -16,6 +16,7 @@ import {HighlightStyle, foldAll, unfoldAll} from "@codemirror/language"
 import {EditorView, Decoration} from "@codemirror/view";
 import {StateField, StateEffect, RangeSetBuilder, EditorSelection, Compartment} from "@codemirror/state";
 import {combinedCompletions} from "./autocomplete";
+import {useDebounce} from "./utilities_react";
 
 import {
     gutter, GutterMarker, highlightActiveLineGutter, highlightSpecialChars, drawSelection,
@@ -30,6 +31,7 @@ import {highlightSelectionMatches} from '@codemirror/search';
 import {closeBrackets, autocompletion, closeBracketsKeymap, completionKeymap} from '@codemirror/autocomplete';
 
 import {themeList, importTheme} from "./theme_support";
+import {postPromise} from "./communication_react";
 
 export {ReactCodemirror6};
 
@@ -138,6 +140,7 @@ function ReactCodemirror6(props) {
         highlight_active_line: false,
         extraSelfCompletions: [],
         controlled: false,
+        container_id: null,
         ...props
     };
 
@@ -156,6 +159,9 @@ function ReactCodemirror6(props) {
     const theme = useRef(null);
     const highlightStyle = useRef(null);
     const autocompletionArgRef = useRef({});
+
+    const [aiText, setAIText, aiTextRef] = useStateAndRef(null);
+    const [ai_waiting, doAIUpdate] = useDebounce(getAIUpdate, 2000);
 
     const settingsContext = useContext(SettingsContext);
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
@@ -197,6 +203,9 @@ function ReactCodemirror6(props) {
                 EditorView.updateListener.of((update) => {
                     if (update.docChanged) {
                         handleChange(update.state.doc.toString());
+                        if (window.has_openapi_key && props.container_id) {
+                            doAIUpdate(update.state.doc.toString())
+                        }
                     }
                     if (update.focusChanged) {
                         if (update.view.hasFocus) {
@@ -280,15 +289,14 @@ function ReactCodemirror6(props) {
     };
 
     useEffect(()=>{
-        autocompletionArgRef.current = props.mode == "python" ?
-            {override: [(context)=>{return combinedCompletions(context, props.aiRCText, props.extraSelfCompletions)}]} :
-            {};
+        autocompletionArgRef.current =
+            {override: [(context)=>{return combinedCompletions(context, aiTextRef.current, props.mode, props.extraSelfCompletions)}]};
         if (editorView.current) {
             editorView.current.dispatch({
                 effects: completionCompartment.current.reconfigure(autocompletion(autocompletionArgRef.current))
             });
         }
-    }, [props.extraSelfCompletions, props.aiRCText]);
+    }, [props.extraSelfCompletions, aiTextRef.current]);
 
     useEffect(() =>{
         // This controlled stuff never quite worked perfectly inside the CombinedMetadata notes field..
@@ -340,6 +348,23 @@ function ReactCodemirror6(props) {
     }, [props.search_term, props.current_search_number, props.regex_search]);
 
     const selectedPane = useContext(SelectedPaneContext);
+
+    function getAIUpdate(new_code) {
+        let code_str = new_code;
+        const cursorPos = editorView.current.state.selection.main.head;
+        postPromise(props.container_id, "update_ai_complete", {"code_str": code_str, "mode": props.mode, "cursor_position": cursorPos})
+            .then((data) => {
+                if (data.success) {
+                    setAIText(data.suggestion)
+                }
+                else {
+                    setAIText(null)
+                }
+            })
+            .catch((e) => {
+                setAIText(null)
+            })
+    }
 
     function isDark() {
         return settingsContext.settingsRef.current.theme === "dark";
