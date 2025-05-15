@@ -71,7 +71,7 @@ function periodCompletions(context) {
   };
 }
 
-function combinedCompletions(context, aiText=null, mode="python", extraSelfCompletions=[]) {
+function combinedCompletions(context, aiText=null, aiTextLabel=null, mode="python", extraSelfCompletions=[]) {
     const localCompletions = context.state.languageDataAt("autocomplete")[0];
     const languageCompletions = context.state.languageDataAt("autocomplete")[1];
 
@@ -91,10 +91,13 @@ function combinedCompletions(context, aiText=null, mode="python", extraSelfCompl
     if (aiText != null) {
         ai_comp = [{
             label: aiText,
+            displayLabel: aiTextLabel,
             type: "suggestion",
             info: aiText,
             boost: 99,
-            section: "AI Suggestion"
+            section: {
+                name:"AI Suggestion",
+                rank: -99}
         }]
     }
     else {

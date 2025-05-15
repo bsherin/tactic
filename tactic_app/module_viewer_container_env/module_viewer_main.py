@@ -186,8 +186,7 @@ class ModuleViewerWorker(QWorker, ExceptionMixin):
             input=f"Here is the code to complete:\n\n{context_code}"
         )
         suggestion = self.clean_openai_completion(response.output_text)
-        print("got")
-        return {"success": True, "suggestion": suggestion}
+        return {"success": True, "suggestion": suggestion, "display_label": suggestion.splitlines()[0]}
 
     @task_worthy
     def update_module(self, data_dict):

@@ -161,6 +161,7 @@ function ReactCodemirror6(props) {
     const autocompletionArgRef = useRef({});
 
     const [aiText, setAIText, aiTextRef] = useStateAndRef(null);
+    const [aiTextLable, setAITextLabel, aiTextLabelRef] = useStateAndRef(null);
     const [ai_waiting, doAIUpdate] = useDebounce(getAIUpdate, 2000);
 
     const settingsContext = useContext(SettingsContext);
@@ -290,7 +291,7 @@ function ReactCodemirror6(props) {
 
     useEffect(()=>{
         autocompletionArgRef.current =
-            {override: [(context)=>{return combinedCompletions(context, aiTextRef.current, props.mode, props.extraSelfCompletions)}]};
+            {override: [(context)=>{return combinedCompletions(context, aiTextRef.current, aiTextLabelRef.current, props.mode, props.extraSelfCompletions)}]};
         if (editorView.current) {
             editorView.current.dispatch({
                 effects: completionCompartment.current.reconfigure(autocompletion(autocompletionArgRef.current))
@@ -352,13 +353,17 @@ function ReactCodemirror6(props) {
     function getAIUpdate(new_code) {
         let code_str = new_code;
         const cursorPos = editorView.current.state.selection.main.head;
+        console.log("in getAIUpdate");
         postPromise(props.container_id, "update_ai_complete", {"code_str": code_str, "mode": props.mode, "cursor_position": cursorPos})
             .then((data) => {
+                console.log("got aiupdate result")
                 if (data.success) {
                     setAIText(data.suggestion)
+                    setAITextLabel(data.display_label)
                 }
                 else {
                     setAIText(null)
+                    setAITextLabel(null)
                 }
             })
             .catch((e) => {
