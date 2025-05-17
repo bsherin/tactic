@@ -133,7 +133,6 @@ def library():
                                version_string=tstring,
                                develop=str(_develop),
                                page_title="tactic admin",
-                               theme=current_user.get_theme(),
                                css_source=css_source("admin_home_react"),
                                module_source=js_source_dict["admin_home_react"])
     else:
@@ -144,7 +143,6 @@ def library():
                                has_openapi_key=current_user.has_openapi_key,
                                database_type=database_type,
                                version_string=tstring,
-                               theme=current_user.get_theme(),
                                page_title="tactic resources",
                                css_source=css_source("library_home_react"),
                                module_source=js_source_dict["library_home_react"])
@@ -157,7 +155,6 @@ def context():
                            database_type=database_type,
                            develop=str(_develop),
                            version_string=tstring,
-                           theme=current_user.get_theme(),
                            has_pool=current_user.has_pool,
                            has_openapi_key=current_user.has_openapi_key,
                            page_title="context",
@@ -176,7 +173,6 @@ def repository():
                            repository_type=repository_type,
                            develop=str(_develop),
                            library_style="tabbed",
-                           theme=current_user.get_theme(),
                            page_title="tactic repository",
                            css_source=css_source("repository_home_react"),
                            module_source=js_source_dict["repository_home_react"]

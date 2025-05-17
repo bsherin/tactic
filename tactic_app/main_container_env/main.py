@@ -24,6 +24,7 @@ from mongo_db_fs import get_dbs
 
 from doc_info import docInfo, FreeformDocInfo
 from qworker import debug_log
+from tactic_copilot_mixin import CopilotMixin
 
 # getting environment variables
 INITIAL_LEFT_FRACTION = .69
@@ -564,7 +565,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
             return result
         else:
             self.mworker.post_task(tile_id, '_get_property', {"property": prop_name}, callback)
-            return
+            return {}
 
     def update_pipe_dict(self, exports, tile_id, tile_name):
         if len(exports) == 0:

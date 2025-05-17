@@ -135,7 +135,8 @@ class ProjectManager(LibraryResourceManager):
         project_name = request.json["resource_name"]
 
         # noinspection PyTypeChecker
-        main_id, rb_id = main_container_info.create_main_container(project_name, user_id, user_obj.username)
+        main_id, rb_id = main_container_info.create_main_container(project_name, user_id, user_obj.username,
+                                                                   openai_api_key = user_obj.get_openai_api_key())
 
         save_dict = self.db[user_obj.project_collection_name].find_one({"project_name": project_name})
         mdata = save_dict["metadata"]

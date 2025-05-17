@@ -167,6 +167,9 @@ function SettingsDrawer(props) {
         let settings_items = [];
         for (let fdict of fields) {
             let new_item;
+            if (fdict.name == "use_ai_code_suggestions" && !window.has_openapi_key) {
+                continue;
+            }
             if (fdict.type == "text") {
                 new_item = (
                     <AccountTextField name={fdict.name}

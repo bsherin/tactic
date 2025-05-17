@@ -10,6 +10,7 @@ import re
 import pika
 import json
 import traceback
+
 forwarder_address = None
 forwarder_id = None
 sys.stdout = sys.stderr
@@ -110,7 +111,7 @@ def create_assistant_container(openai_api_key, parent, user_id, username):
 
 class MainContainerTracker(object):
 
-    def create_main_container(self, other_name, user_id, username):
+    def create_main_container(self, other_name, user_id, username, openai_api_key):
         main_volume_dict = {"/var/run/docker.sock": {"bind": "/var/run/docker.sock", "mode": "rw"}}
         user_host_persist_dir = true_host_persist_dir + "/tile_manager/" + username
         main_volume_dict[user_host_persist_dir] = {"bind": "/code/persist", "mode": "ro"}
@@ -119,6 +120,7 @@ class MainContainerTracker(object):
         environ = {
             "USE_WAIT_TASKS": "True",
             "RB_ID": rb_id,
+            "OPENAI_API_KEY": openai_api_key,
             "TRUE_HOST_PERSIST_DIR": true_host_persist_dir,
             "TRUE_HOST_RESOURCES_DIR": true_host_resources_dir,
             "TRUE_HOST_POOL_DIR": true_host_pool_dir,

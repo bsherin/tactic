@@ -30,6 +30,20 @@ import {history, defaultKeymap, historyKeymap} from '@codemirror/commands';
 import {highlightSelectionMatches} from '@codemirror/search';
 import {closeBrackets, autocompletion, closeBracketsKeymap, completionKeymap} from '@codemirror/autocomplete';
 
+import { startCompletion } from "@codemirror/autocomplete";
+
+// Custom keymap to trigger autocomplete on Ctrl-/
+const triggerAutocompleteKeymap = [
+  {
+    key: "Alt-/",
+    run: (view) => {
+      startCompletion(view);
+      return true; // ✅ Signal that we handled the key
+    },
+    preventDefault: true // ✅ Block browser/OS from inserting +
+  }
+];
+
 import {themeList, importTheme} from "./theme_support";
 import {postPromise} from "./communication_react";
 
@@ -198,14 +212,19 @@ function ReactCodemirror6(props) {
                     ...historyKeymap,
                     ...foldKeymap,
                     ...completionKeymap,
-                    indentWithTab
+                    indentWithTab,
+                    ...triggerAutocompleteKeymap
                 ]),
                 readOnlyCompartment.current.of(EditorState.readOnly.of(props.readOnly)),
                 EditorView.updateListener.of((update) => {
                     if (update.docChanged) {
                         handleChange(update.state.doc.toString());
-                        if (window.has_openapi_key && props.container_id) {
+                        if (window.has_openapi_key && (settingsContext.settingsRef.current.use_ai_code_suggestions == "yes") && props.container_id) {
                             doAIUpdate(update.state.doc.toString())
+                        }
+                        else {
+                            setAIText(null);
+                            setAITextLabel(null);
                         }
                     }
                     if (update.focusChanged) {
@@ -297,7 +316,7 @@ function ReactCodemirror6(props) {
                 effects: completionCompartment.current.reconfigure(autocompletion(autocompletionArgRef.current))
             });
         }
-    }, [props.extraSelfCompletions, aiTextRef.current]);
+    }, [props.extraSelfCompletions, aiText]);
 
     useEffect(() =>{
         // This controlled stuff never quite worked perfectly inside the CombinedMetadata notes field..
@@ -353,21 +372,21 @@ function ReactCodemirror6(props) {
     function getAIUpdate(new_code) {
         let code_str = new_code;
         const cursorPos = editorView.current.state.selection.main.head;
-        console.log("in getAIUpdate");
         postPromise(props.container_id, "update_ai_complete", {"code_str": code_str, "mode": props.mode, "cursor_position": cursorPos})
             .then((data) => {
-                console.log("got aiupdate result")
+                console.log("got aiupdate result");
                 if (data.success) {
-                    setAIText(data.suggestion)
+                    setAIText(data.suggestion);
                     setAITextLabel(data.display_label)
                 }
                 else {
-                    setAIText(null)
-                    setAITextLabel(null)
+                    setAIText(null);
+                    setAITextLabel(null);
                 }
             })
             .catch((e) => {
-                setAIText(null)
+                setAIText(null);
+                setAITextLabel(null);
             })
     }
 

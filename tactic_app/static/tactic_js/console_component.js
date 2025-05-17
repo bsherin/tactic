@@ -30,8 +30,7 @@ var _modal_react = require("./modal_react");
 var _sizing_tools = require("./sizing_tools");
 var _error_drawer = require("./error_drawer");
 var _assistant = require("./assistant");
-function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
-function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
+function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function (e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, default: e }; if (null === e || "object" != typeof e && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (const t in e) "default" !== t && {}.hasOwnProperty.call(e, t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, t)) && (i.get || i.set) ? o(f, t, i) : f[t] = e[t]); return f; })(e, t); }
 // noinspection JSConstructorReturnsPrimitive,JSUnusedAssignment
 
 _core2.default.registerLanguage('javascript', _javascript.default);
@@ -2475,6 +2474,7 @@ function ConsoleCodeItem(props) {
     search_term: props.search_string,
     no_height: true,
     tsocket: props.tsocket,
+    container_id: props.main_id,
     saveMe: null
   }), /*#__PURE__*/_react.default.createElement("div", {
     className: "button-div float-buttons d-flex flex-row"
@@ -2872,6 +2872,7 @@ function ConsoleTextItem(props) {
     search_term: props.search_string,
     no_height: true,
     tsocket: props.tsocket,
+    container_id: props.main_id,
     saveMe: null
   })), really_show_markdown && !hasOnlyWhitespace() && /*#__PURE__*/_react.default.createElement("div", {
     className: "text-panel-output markdown-heading-sizes",

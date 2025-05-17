@@ -2517,6 +2517,7 @@ function ConsoleCodeItem(props) {
                                                          search_term={props.search_string}
                                                          no_height={true}
                                                          tsocket={props.tsocket}
+                                                          container_id={props.main_id}
                                                          saveMe={null}/>
                                         <div className="button-div float-buttons d-flex flex-row">
                                             <GlyphButton handleClick={_deleteMe}
@@ -2936,6 +2937,7 @@ function ConsoleTextItem(props) {
                                                          search_term={props.search_string}
                                                          no_height={true}
                                                          tsocket={props.tsocket}
+                                                          container_id={props.main_id}
                                                          saveMe={null}/>
                                     </Fragment>
                                 }

@@ -249,7 +249,6 @@ def account_info():
     user_obj = current_user
     return render_template('account_react.html',
                            css_source=css_source("account_react"),
-                           theme=user_obj.get_theme(),
                            module_source=js_source_dict["account_react"], version_string=tstring)
 
 

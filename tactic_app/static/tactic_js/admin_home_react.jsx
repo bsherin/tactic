@@ -41,7 +41,7 @@ function _administer_home_main () {
     let AdministerHomeAppPlus = withSizeContext(withSettings(withDialogs(withErrorDrawer(withStatus(AdministerHomeApp)))));
     const domContainer = document.querySelector('#library-home-root');
     const root = createRoot(domContainer);
-    root.render(<AdministerHomeAppPlus tsocket={tsocket} initial_theme={window.theme}/>)
+    root.render(<AdministerHomeAppPlus tsocket={tsocket}/>)
 }
 
 var res_types = ["container", "user"];

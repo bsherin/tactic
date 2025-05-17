@@ -180,7 +180,6 @@ class TileManager(LibraryResourceManager):
         javascript_source = url_for('static', filename=js_source_dict["module_viewer_react"])
         return render_template("library/resource_viewer_react.html",
                                resource_name=module_name,
-                               theme=user_obj.get_theme(),
                                develop=str(_develop),
                                has_openapi_key=current_user.has_openapi_key,
                                css_source=css_source("module_viewer_react"),
@@ -264,7 +263,6 @@ class TileManager(LibraryResourceManager):
                                module_source=js_source_dict["tile_creator_react"],
                                develop=str(_develop),
                                has_openapi_key=current_user.has_openapi_key,
-                               theme=current_user.get_theme(),
                                version_string=tstring,)
 
     def view_in_creator_in_context(self):
@@ -425,7 +423,6 @@ class RepositoryTileManager(TileManager):
                                include_right=True,
                                include_above_main_area=False,
                                read_only=True,
-                               theme=user_obj.get_theme(),
                                is_repository=True,
                                develop=str(_develop),
                                css_source=css_source("module_viewer_react"),

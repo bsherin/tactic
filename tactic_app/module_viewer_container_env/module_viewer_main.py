@@ -1,4 +1,8 @@
-from gevent import monkey; monkey.patch_all()
+from gevent import monkey;
+
+from tactic_copilot_mixin import CopilotMixin
+
+monkey.patch_all()
 import datetime
 import re
 # noinspection PyUnresolvedReferences
@@ -8,8 +12,6 @@ from tile_code_parser import TileParser, remove_indents, insert_indents
 import exception_mixin
 from exception_mixin import ExceptionMixin
 from mongo_db_fs import get_dbs
-from openai import OpenAI
-import openai
 
 import sys, os
 sys.stdout = sys.stderr
@@ -23,11 +25,9 @@ else:
 mongo_uri = os.environ.get("MONGO_URI")
 
 rb_id = os.environ.get("RB_ID")
-openai_api_key = os.environ.get("OPENAI_API_KEY")
-print(f"got openai_api_key: {openai_api_key}")
 
 # noinspection PyUnusedLocal
-class ModuleViewerWorker(QWorker, ExceptionMixin):
+class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin):
     def __init__(self):
         QWorker.__init__(self)
         self.tp = None
@@ -38,13 +38,6 @@ class ModuleViewerWorker(QWorker, ExceptionMixin):
         self.tile_collection_name = None
         self.tile_instance = None
         self.generate_heartbeats = True
-        if openai_api_key is not None:
-            print(f"creating openai client with key {openai_api_key}")
-            self.client = OpenAI(
-                api_key=openai_api_key
-            )
-        else:
-            self.client = None
         return
 
     def ask_host(self, msg_type, task_data=None, callback_func=None):
@@ -147,46 +140,6 @@ class ModuleViewerWorker(QWorker, ExceptionMixin):
         return
 
     optional_mdata_fields = ["tags", "notes", "icon", "category"]
-
-    def extract_context(self, code_str, cursor_pos,
-                        before_lines=40, after_lines=0):
-        lines = code_str.splitlines()
-        running_len = 0
-        line_idx = 0
-        for i, line in enumerate(lines):
-            running_len += len(line) + 1  # +1 for '\n'
-            if running_len > cursor_pos:
-                line_idx = i
-                break
-
-        start_idx = max(0, line_idx - before_lines)
-        end_idx = min(len(lines), line_idx + after_lines + 1)
-        context_lines = lines[start_idx:end_idx]
-        return "\n".join(context_lines)
-
-    def clean_openai_completion(self, text):
-        text = re.sub(r"^```(?:python)?\s*", "", text.strip(), flags=re.IGNORECASE)
-        text = re.sub(r"\s*```$", "", text.strip())
-        return text.strip()
-
-    @task_worthy
-    def update_ai_complete(self, data_dict):
-        print("got update_ai_complete task")
-        code_str = data_dict["code_str"]
-        cursor_position = data_dict["cursor_position"]
-        mode  = data_dict["mode"]
-        context_code = self.extract_context(code_str, cursor_position)
-        instructions = "You're a helpful coding assistant. "
-        instructions += "Your job is to provide code completions. Just provide the code immediately following the provided user code. "
-        instructions += f"The text you respond with should be valid {mode} code that can immdiately just be pasted into the code exactly as it is. "
-        instructions += "That means you should not include any comments or explanations. "
-        response = self.client.responses.create(
-            model="gpt-4o",
-            instructions=instructions,
-            input=f"Here is the code to complete:\n\n{context_code}"
-        )
-        suggestion = self.clean_openai_completion(response.output_text)
-        return {"success": True, "suggestion": suggestion, "display_label": suggestion.splitlines()[0]}
 
     @task_worthy
     def update_module(self, data_dict):

@@ -90,12 +90,14 @@ class CollectionManager(LibraryResourceManager):
             temp_data_id = request.json["temp_data_id"]
             main_id, rb_id = main_container_info.create_main_container("new_notebook",
                                                                        user_obj.get_id(),
-                                                                       user_obj.username)
+                                                                       user_obj.username,
+                                                                       openai_api_key = user_obj.get_openai_api_key())
         else:
             temp_data_id = ""
             main_id, rb_id = main_container_info.create_main_container("new_notebook",
                                                                        user_obj.get_id(),
-                                                                       user_obj.username)
+                                                                       user_obj.username,
+                                                                       openai_api_key = user_obj.get_openai_api_key())
         create_ready_block(rb_id, user_obj.username, [main_id, "client"], main_id)
         data_dict = {"success": True,
                      "kind": "notebook-viewer",
@@ -128,7 +130,6 @@ class CollectionManager(LibraryResourceManager):
                                temp_data_id=temp_data_id,
                                develop=str(_develop),
                                has_openapi_key=current_user.has_openapi_key,
-                               theme=current_user.get_theme(),
                                is_jupyter="False",
                                version_string=tstring,
                                css_source=css_source("notebook_app"),
@@ -138,7 +139,8 @@ class CollectionManager(LibraryResourceManager):
         user_obj = current_user
         short_collection_name = request.json["resource_name"]
         main_id, rb_id = main_container_info.create_main_container(short_collection_name, user_obj.get_id(),
-                                                                   user_obj.username)
+                                                                   user_obj.username,
+                                                                   openai_api_key = user_obj.get_openai_api_key())
         create_ready_block(rb_id, user_obj.username, [main_id, "client"], main_id)
         doc_dict, doc_mddict, hl_dict, mdata = user_obj.get_all_collection_info(short_collection_name)
         if "_id" in mdata:
@@ -177,7 +179,6 @@ class CollectionManager(LibraryResourceManager):
                                window_title=collection_name,
                                project_name="",
                                is_new_notebook="False",
-                               theme=current_user.get_theme(),
                                develop=str(_develop),
                                has_openapi_key=current_user.has_openapi_key,
                                version_string=tstring,
@@ -187,7 +188,8 @@ class CollectionManager(LibraryResourceManager):
     def new_project_in_context(self):
         user_obj = current_user
         main_id, rb_id = main_container_info.create_main_container("", user_obj.get_id(),
-                                                                   user_obj.username)
+                                                                   user_obj.username,
+                                                                   openai_api_key = user_obj.get_openai_api_key())
         create_ready_block(rb_id, user_obj.username, [main_id, "client"], main_id)
         doc_type = "none"
         data = {
@@ -220,7 +222,6 @@ class CollectionManager(LibraryResourceManager):
                                project_name="",
                                is_new_notebook="False",
                                has_openapi_key=current_user.has_openapi_key,
-                               theme=current_user.get_theme(),
                                develop=str(_develop),
                                version_string=tstring,
                                css_source=css_source("main_app"),

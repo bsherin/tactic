@@ -12,6 +12,7 @@ import flask
 from flask import Flask
 import exception_mixin
 from exception_mixin import ExceptionMixin
+from tactic_copilot_mixin import CopilotMixin
 
 import json
 import copy
@@ -34,7 +35,7 @@ import os
 rb_id = os.environ.get("RB_ID")
 
 
-class MainWorker(QWorker, ExceptionMixin):
+class MainWorker(QWorker, ExceptionMixin, CopilotMixin):
     def __init__(self, ):
         QWorker.__init__(self)
         self.mwindow = None

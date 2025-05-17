@@ -108,7 +108,6 @@ class CodeManager(LibraryResourceManager):
         javascript_source = url_for('static', filename=js_source_dict["code_viewer_react"])
         return render_template("library/resource_viewer_react.html",
                                resource_name=code_name,
-                               theme=user_obj.get_theme(),
                                develop=str(_develop),
                                has_openapi_key=current_user.has_openapi_key,
                                javascript_source=javascript_source,
@@ -217,7 +216,6 @@ class RepositoryCodeManager(CodeManager):
                                include_metadata=True,
                                include_right=True,
                                include_above_main_area=False,
-                               theme=user_obj.get_theme(),
                                read_only=True,
                                develop=str(_develop),
                                is_repository=True,

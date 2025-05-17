@@ -74,7 +74,6 @@ def show_history_viewer(module_name):
                            css_source=css_source("history_viewer_react"),
                            javascript_source=javascript_source,
                            uses_codemirror="True",
-                           theme=user_obj.get_theme(),
                            version_string=tstring)
 
 
@@ -103,7 +102,6 @@ def show_tile_differ(module_name, second_module_name):
                            javascript_source=javascript_source,
                            css_source=css_source("tile_differ_react"),
                            uses_codemirror="True",
-                           theme=user_obj.get_theme(),
                            version_string=tstring)
 
 tile_mdata_fields = ["tags", "notes", "icon", "category", "couple_save_attrs_and_exports"]

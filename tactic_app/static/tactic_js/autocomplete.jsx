@@ -73,7 +73,9 @@ function periodCompletions(context) {
 
 function combinedCompletions(context, aiText=null, aiTextLabel=null, mode="python", extraSelfCompletions=[]) {
     const localCompletions = context.state.languageDataAt("autocomplete")[0];
-    const languageCompletions = context.state.languageDataAt("autocomplete")[1];
+    const autocompleteSources = context.state.languageDataAt("autocomplete");
+    // This next line is needed for the case with markdown and there isn't a source.
+    const languageCompletions = autocompleteSources?.[1] || (() => null);
 
     const filterCompletions = (completions) => {
         let comps = completions(context);
@@ -105,7 +107,7 @@ function combinedCompletions(context, aiText=null, aiTextLabel=null, mode="pytho
     }
     if (mode == "python") {
         return {
-            from: from,
+            from: context.pos,
             to: context.pos,
             options: [
                 ...ai_comp,
@@ -119,7 +121,7 @@ function combinedCompletions(context, aiText=null, aiTextLabel=null, mode="pytho
     }
     else {
         return {
-            from: from,
+            from: context.pos,
             to: context.pos,
             options: [
                 ...ai_comp,
