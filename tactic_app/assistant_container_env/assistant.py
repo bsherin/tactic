@@ -69,14 +69,14 @@ class Assistant(QWorker, ExceptionMixin, AssistantEventHandler):
             if self.openai_api_key is None:
                 return False
             self.chat_client = OpenAI(api_key=self.openai_api_key)
-            self.vector_store = self.chat_client.beta.vector_stores.create(name="Tactic Docs")
+            self.vector_store = self.chat_client.vector_stores.create(name="Tactic Docs")
             file_streams = []
             fnames = os.listdir("tactic_docs")
             for fname in fnames:
                 if fname.endswith(".html"):
                     stream = open(f"tactic_docs/{fname}", "rb")
                     file_streams.append(stream)
-            file_batch = self.chat_client.beta.vector_stores.file_batches.upload_and_poll(
+            file_batch = self.chat_client.vector_stores.file_batches.upload_and_poll(
                 vector_store_id=self.vector_store.id, files=file_streams
             )
             instructions = "You are helpful assistant that helps with writing python code for the Tactic environment. You give answers in markdown format. "
