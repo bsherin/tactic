@@ -9,6 +9,9 @@ import exception_mixin
 from exception_mixin import ExceptionMixin
 from threading import Lock
 from openai import OpenAI, AssistantEventHandler
+import openai
+print("Running OpenAI SDK version:", openai.__version__)
+print(openai.__file__)
 
 from qworker import task_worthy, task_worthy_manual_submit, QWorker
 
