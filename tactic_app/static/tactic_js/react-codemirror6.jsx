@@ -308,16 +308,25 @@ function ReactCodemirror6(props) {
     };
 
     useEffect(()=>{
-        autocompletionArgRef.current =
-            {
-                optionClass: (completion) => {return completion.type === "suggestion" ? "cm-completion-ai" : null},
-                override: [
+
+        let sources;
+        if (props.mode == "python") {
+            sources = [
                     aiCompletionSource(aiTextRef.current, aiTextLabelRef.current),
                     selfCompletionSource(props.extraSelfCompletions),
                     topLevelExtraCompletions,
                     dotAccessCompletions,
-                    generalCompletionSource(props.mode),
-                ],
+                    generalCompletionSource(),]
+        }
+        else {
+            sources = [
+                    aiCompletionSource(aiTextRef.current, aiTextLabelRef.current),
+                    generalCompletionSource(),]
+        }
+        autocompletionArgRef.current =
+            {
+                optionClass: (completion) => {return completion.type === "suggestion" ? "cm-completion-ai" : null},
+                override: sources,
                 closeOnBlur: false
             };
         if (editorView.current) {

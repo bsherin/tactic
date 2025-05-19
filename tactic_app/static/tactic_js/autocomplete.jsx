@@ -76,7 +76,7 @@ function selfCompletionSource(extraSelfCompletions) {
   };
 }
 
-function generalCompletionSource(mode) {
+function generalCompletionSource() {
   return (context) => {
     const autocompleteSources = context.state.languageDataAt("autocomplete") || [];
     const localCompletions = autocompleteSources[0];
