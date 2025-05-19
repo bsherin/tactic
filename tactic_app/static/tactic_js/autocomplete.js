@@ -3,9 +3,13 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.combinedCompletions = combinedCompletions;
+exports.aiCompletionSource = aiCompletionSource;
+exports.dotAccessCompletions = dotAccessCompletions;
+exports.generalCompletionSource = generalCompletionSource;
+exports.selfCompletionSource = selfCompletionSource;
+exports.topLevelExtraCompletions = topLevelExtraCompletions;
 var _communication_react = require("./communication_react");
-const EXTRAWORDS_LIST = ["global_import", "escape_html", "xh", "ds", "Collection", "Collection", "Collection.document_names", "Collection.current_docment", "Collection.column", "Collection.tokenize", "Collection.detach", "Collection.rewind", "Library", "Library.collections", "Library.lists", "Library.functions", "Library.classes", "Settings", "Settings.names", "Tiles", "Pipes"];
+const EXTRAWORDS_LIST = ["global_import", "escape_html", "xh", "ds", "Collection", "Collection", "Collection.document_names", "Collection.current_document", "Collection.column", "Collection.tokenize", "Collection.detach", "Collection.rewind", "Library", "Library.collections", "Library.lists", "Library.functions", "Library.classes", "Settings", "Settings.names", "Tiles", "Pipes"];
 var self_commands = [];
 function create_api() {
   let self = this;
@@ -30,9 +34,34 @@ function create_api() {
     self_commands = [...new Set(self_commands)];
   });
 }
+function aiCompletionSource(aiText, aiTextLabel) {
+  return context => {
+    if (!aiText) {
+      return {
+        from: context.pos,
+        to: context.pos,
+        options: []
+      };
+    }
+    return {
+      from: context.pos,
+      to: context.pos,
+      options: [{
+        label: aiText,
+        displayLabel: aiTextLabel,
+        type: "suggestion",
+        info: aiText,
+        boost: 999
+      }],
+      span: true
+    };
+  };
+}
 function selfCompletions(context, extraSelfCompletions) {
   let beforeCursor = context.matchBefore(/self\.\w*/);
   if (!beforeCursor || beforeCursor.from == beforeCursor.to && !context.explicit) return {
+    from: context.pos,
+    to: context.pos,
     options: []
   };
   return {
@@ -42,76 +71,66 @@ function selfCompletions(context, extraSelfCompletions) {
     validFor: /^[\w$]*$/
   };
 }
-function periodCompletions(context) {
-  let beforeCursor = context.matchBefore(/\b(\w+\.?\w*)$/);
-  if (!beforeCursor || beforeCursor.from == beforeCursor.to && !context.explicit) return {
-    options: []
+function selfCompletionSource(extraSelfCompletions) {
+  return context => {
+    return selfCompletions(context, extraSelfCompletions); // already returns from + options + validFor
   };
-  let periodCompletions = [];
-  for (let word of EXTRAWORDS_LIST) {
-    periodCompletions.push({
-      label: word,
-      type: "tactic",
-      section: "Tactic"
-    });
+}
+function generalCompletionSource(mode) {
+  return context => {
+    const autocompleteSources = context.state.languageDataAt("autocomplete") || [];
+    const localCompletions = autocompleteSources[0];
+    const languageCompletions = autocompleteSources[1] || (() => null);
+    const getOptions = source => source?.(context)?.options ?? [];
+    const match = context.matchBefore(/\w*/);
+    const from = match ? match.from : context.pos;
+    const options = [...getOptions(localCompletions), ...getOptions(languageCompletions)];
+    return {
+      from,
+      to: context.pos,
+      options,
+      span: true
+    };
+  };
+}
+function topLevelExtraCompletions(context) {
+  const match = context.matchBefore(/\w+/);
+  if (!match || match.from === match.to && !context.explicit) {
+    return {
+      from: context.pos,
+      to: context.pos,
+      options: []
+    };
   }
+  const prefix = context.state.sliceDoc(match.from, context.pos);
+  const options = EXTRAWORDS_LIST.filter(word => !word.includes('.') && word.startsWith(prefix)).map(word => ({
+    label: word,
+    type: "tactic"
+  }));
   return {
-    from: beforeCursor.from,
-    options: periodCompletions,
+    from: match.from,
+    options,
     validFor: /\w*$/
   };
 }
-function combinedCompletions(context) {
-  let aiText = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-  let aiTextLabel = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
-  let mode = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : "python";
-  let extraSelfCompletions = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : [];
-  const localCompletions = context.state.languageDataAt("autocomplete")[0];
-  const autocompleteSources = context.state.languageDataAt("autocomplete");
-  // This next line is needed for the case with markdown and there isn't a source.
-  const languageCompletions = autocompleteSources?.[1] || (() => null);
-  const filterCompletions = completions => {
-    let comps = completions(context);
-    if (!comps) {
-      return [];
-    }
-    return completions(context).options.filter(option => {
-      const match = context.matchBefore(/\w*/);
-      return match && option.label.startsWith(match.text);
-    });
+function dotAccessCompletions(context) {
+  const match = context.matchBefore(/\b\w+\.\w*$/);
+  if (!match || match.from === match.to && !context.explicit) {
+    return {
+      from: context.pos,
+      to: context.pos,
+      options: []
+    };
+  }
+  const prefix = context.state.sliceDoc(match.from, context.pos);
+  const options = EXTRAWORDS_LIST.filter(word => word.includes('.') && word.startsWith(prefix)).map(word => ({
+    label: word,
+    type: "tactic"
+  }));
+  return {
+    from: match.from,
+    options,
+    validFor: /\w*$/
   };
-  const match = context.matchBefore(/\w*/);
-  const from = match ? match.from : context.pos;
-  let ai_comp;
-  if (aiText != null) {
-    ai_comp = [{
-      label: aiText,
-      displayLabel: aiTextLabel,
-      type: "suggestion",
-      info: aiText,
-      boost: 99,
-      section: {
-        name: "AI Suggestion",
-        rank: -99
-      }
-    }];
-  } else {
-    ai_comp = [];
-  }
-  if (mode == "python") {
-    return {
-      from: context.pos,
-      to: context.pos,
-      options: [...ai_comp, ...filterCompletions(localCompletions), ...filterCompletions(languageCompletions), ...selfCompletions(context, extraSelfCompletions).options, ...periodCompletions(context).options],
-      span: true
-    };
-  } else {
-    return {
-      from: context.pos,
-      to: context.pos,
-      options: [...ai_comp, ...filterCompletions(localCompletions), ...filterCompletions(languageCompletions)],
-      span: true
-    };
-  }
 }
 create_api();

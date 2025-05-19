@@ -1,7 +1,16 @@
 import requests, markdown
 import re, os
 from docutils.core import publish_string
+import traceback
 
+def get_traceback_message(e, special_string=None):
+    if special_string is None:
+        template = "An exception of type {0} occured. Arguments:\n{1!r}\n"
+    else:
+        template = special_string + "\n" + "An exception of type {0} occurred. Arguments:\n{1!r}\n"
+    error_string = template.format(type(e).__name__, e.args)
+    error_string += traceback.format_exc()
+    return error_string
 
 def get_api_from_rst():
     # f = open("./docs_for_integrated_docs/Tile-Commands.rst")
@@ -120,10 +129,7 @@ try:
     ordered_object_categories, object_api_dict_by_category = get_object_api_from_rst()
 except Exception as ex:
     print("unable to get api")
-    eresult = type(ex).__name__
-    if len(ex.args) > 0:
-        eresult += " " + str(ex.args[0])
-    print(eresult)
+    print(get_traceback_message(ex))
     api_array = []
     api_dict_by_category = {}
     api_dict_by_name = {}

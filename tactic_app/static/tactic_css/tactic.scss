@@ -13,29 +13,6 @@ $search-highlight-color: $gold5;
 $sortable-table-header-background: #eee;
 $sortable-table-header-text-color: #666666;
 
-.cm-completionIcon-suggestion {
-    &:after {
-        content: "g"
-    }
-}
-
-.cm-completionIcon-tactic {
-    &:after {
-        content: "Tt"
-    }
-}
-
-completion-section {
-    margin-top: 6px;
-    font-size: 12px;
-    font-weight: bold;
-}
-
-
-html,body {
-    height:100%;
-}
-
 .focus-red:focus {
     border: 1px solid red;
 }
@@ -402,6 +379,32 @@ table {
 }
 
 
+// auto-complete
 
+.cm-completionIcon-suggestion {
+    &:after {
+        content: "Ai"
+    }
+}
+
+.cm-completionIcon-tactic {
+    &:after {
+        content: "Tt"
+    }
+}
+
+completion-section {
+    margin-top: 6px;
+    font-size: 12px;
+    font-weight: bold;
+}
+.cm-completion-ai {
+    font-style: italic;
+    opacity: 0.8;
+}
+
+html,body {
+    height:100%;
+}
 
 

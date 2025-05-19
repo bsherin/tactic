@@ -6,7 +6,6 @@ import {SettingsContext} from "./settings";
 import {SelectedPaneContext} from "./utilities_react";
 import {ErrorDrawerContext} from "./error_drawer";
 import {SearchForm} from "./library_widgets";
-//comment
 import {indentWithTab} from "@codemirror/commands"
 import {python} from "@codemirror/lang-python"
 import {javascript} from "@codemirror/lang-javascript"
@@ -15,7 +14,7 @@ import {indentUnit} from "@codemirror/language";
 import {HighlightStyle, foldAll, unfoldAll} from "@codemirror/language"
 import {EditorView, Decoration} from "@codemirror/view";
 import {StateField, StateEffect, RangeSetBuilder, EditorSelection, Compartment} from "@codemirror/state";
-import {combinedCompletions} from "./autocomplete";
+import {selfCompletionSource, generalCompletionSource, aiCompletionSource, topLevelExtraCompletions, dotAccessCompletions} from "./autocomplete";
 import {useDebounce} from "./utilities_react";
 
 import {
@@ -310,7 +309,17 @@ function ReactCodemirror6(props) {
 
     useEffect(()=>{
         autocompletionArgRef.current =
-            {override: [(context)=>{return combinedCompletions(context, aiTextRef.current, aiTextLabelRef.current, props.mode, props.extraSelfCompletions)}]};
+            {
+                optionClass: (completion) => {return completion.type === "suggestion" ? "cm-completion-ai" : null},
+                override: [
+                    aiCompletionSource(aiTextRef.current, aiTextLabelRef.current),
+                    selfCompletionSource(props.extraSelfCompletions),
+                    topLevelExtraCompletions,
+                    dotAccessCompletions,
+                    generalCompletionSource(props.mode),
+                ],
+                closeOnBlur: false
+            };
         if (editorView.current) {
             editorView.current.dispatch({
                 effects: completionCompartment.current.reconfigure(autocompletion(autocompletionArgRef.current))
