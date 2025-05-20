@@ -25,23 +25,12 @@ import {
 export {EditorView} from '@codemirror/view';
 import {EditorState} from '@codemirror/state';
 import {foldGutter, indentOnInput, syntaxHighlighting, bracketMatching, foldKeymap} from '@codemirror/language';
-import {history, defaultKeymap, historyKeymap} from '@codemirror/commands';
+import {history, defaultKeymap, historyKeymap, insertNewlineAndIndent} from '@codemirror/commands';
 import {highlightSelectionMatches} from '@codemirror/search';
-import {closeBrackets, autocompletion, closeBracketsKeymap, completionKeymap} from '@codemirror/autocomplete';
+import {closeBrackets, autocompletion, closeBracketsKeymap, completionKeymap, acceptCompletion, completionStatus} from '@codemirror/autocomplete';
 
 import { startCompletion } from "@codemirror/autocomplete";
 
-// Custom keymap to trigger autocomplete on Ctrl-/
-const triggerAutocompleteKeymap = [
-  {
-    key: "Alt-/",
-    run: (view) => {
-      startCompletion(view);
-      return true; // ✅ Signal that we handled the key
-    },
-    preventDefault: true // ✅ Block browser/OS from inserting +
-  }
-];
 
 import {themeList, importTheme} from "./theme_support";
 import {postPromise} from "./communication_react";
@@ -125,6 +114,46 @@ function customLineNumbers(startLine = 1) {
     });
 }
 
+const enterInsertsNewlineOnly = {
+  key: "Enter",
+  run: (view) => {
+    if (completionStatus(view.state) === "active") {
+      // If menu is active, explicitly do not accept completion
+      return insertNewlineAndIndent(view);
+    }
+    return insertNewlineAndIndent(view);
+  },
+  preventDefault: true
+};
+
+const triggerAutocompleteKeymap = [
+  {
+    key: "Alt-/",
+    run: (view) => {
+      startCompletion(view);
+      return true; // ✅ Signal that we handled the key
+    },
+    preventDefault: true // ✅ Block browser/OS from inserting +
+  }
+];
+
+const tabAcceptKeymap = [
+  {
+    key: "Tab",
+    run: (view) => {
+          const status = completionStatus(view.state);
+          if (status === "active") {
+            return acceptCompletion(view);
+          }
+          return indentWithTab.run(view);
+    },
+    preventDefault: true
+  }
+];
+
+const customCompletionKeymap = completionKeymap.filter(binding => binding.key !== "Enter");
+const strippedDefaultKeymap = defaultKeymap.filter(k => k.key !== "Enter");
+
 function ReactCodemirror6(props) {
     props = {
         iCounter: 0,
@@ -184,36 +213,34 @@ function ReactCodemirror6(props) {
 
     const getExtensions = () => {
         let extensions = [
+                completionCompartment.current.of(autocompletion({...autocompletionArgRef.current})),
+                keymap.of([
+                    ...customCompletionKeymap,
+                    ...props.extraKeys,
+                    ...closeBracketsKeymap,
+                    ...historyKeymap,
+                    ...foldKeymap,
+                    ...triggerAutocompleteKeymap,
+                    ...strippedDefaultKeymap,
+                    ...tabAcceptKeymap,
+                    enterInsertsNewlineOnly
+                ]),
                 mode_dict[props.mode](),
-                //lineNumberCompartment.current.of(customLineNumbers(props.first_line_number)),
                 themeCompartment.current.of([]),
                 history(),
-                //activeLineExtension(),
                 highlightSpecialChars(),
                 history(),
-                //foldGutter(),
                 drawSelection(),
                 dropCursor(),
                 EditorState.allowMultipleSelections.of(true),
                 indentOnInput(),
                 bracketMatching(),
                 closeBrackets(),
-                completionCompartment.current.of(autocompletion(autocompletionArgRef.current)),
                 rectangularSelection(),
                 crosshairCursor(),
                 highlightSelectionMatches(),
                 indentUnit.of("    "),
                 highlightField.init(),
-                keymap.of([
-                    ...props.extraKeys,
-                    ...closeBracketsKeymap,
-                    ...defaultKeymap,
-                    ...historyKeymap,
-                    ...foldKeymap,
-                    ...completionKeymap,
-                    indentWithTab,
-                    ...triggerAutocompleteKeymap
-                ]),
                 readOnlyCompartment.current.of(EditorState.readOnly.of(props.readOnly)),
                 EditorView.updateListener.of((update) => {
                     if (update.docChanged) {
@@ -233,7 +260,7 @@ function ReactCodemirror6(props) {
                             handleBlur();
                         }
                     }
-                }),
+                })
             ];
         if (props.show_line_numbers) {
             extensions = extensions.concat([
@@ -327,11 +354,12 @@ function ReactCodemirror6(props) {
             {
                 optionClass: (completion) => {return completion.type === "suggestion" ? "cm-completion-ai" : null},
                 override: sources,
-                closeOnBlur: false
+                closeOnBlur: true,
+                defaultKeymap: false
             };
         if (editorView.current) {
             editorView.current.dispatch({
-                effects: completionCompartment.current.reconfigure(autocompletion(autocompletionArgRef.current))
+                effects: completionCompartment.current.reconfigure(autocompletion({...autocompletionArgRef.current}))
             });
         }
     }, [props.extraSelfCompletions, aiText]);
