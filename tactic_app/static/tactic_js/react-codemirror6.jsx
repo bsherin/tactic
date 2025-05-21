@@ -6,7 +6,7 @@ import {SettingsContext} from "./settings";
 import {SelectedPaneContext} from "./utilities_react";
 import {ErrorDrawerContext} from "./error_drawer";
 import {SearchForm} from "./library_widgets";
-import {indentWithTab} from "@codemirror/commands"
+import {indentWithTab, indentLess} from "@codemirror/commands"
 import {python} from "@codemirror/lang-python"
 import {javascript} from "@codemirror/lang-javascript"
 import {markdown} from "@codemirror/lang-markdown"
@@ -148,7 +148,11 @@ const tabAcceptKeymap = [
           return indentWithTab.run(view);
     },
     preventDefault: true
-  }
+  },
+    {key: "Shift-Tab",
+    run: indentLess,
+    preventDefault: true
+  },
 ];
 
 const customCompletionKeymap = completionKeymap.filter(binding => binding.key !== "Enter");
