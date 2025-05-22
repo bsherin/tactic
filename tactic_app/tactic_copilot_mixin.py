@@ -63,4 +63,4 @@ class CopilotMixin(object):
         suggestion = self.clean_openai_completion(response.output_text)
         if len(suggestion) == 0:
             return {"success": False, "message": "No suggestion returned from OpenAI"}
-        return {"success": True, "suggestion": suggestion, "display_label": suggestion.splitlines()[0]}
+        return {"success": True, "suggestion": suggestion, "change_counter": data_dict["change_counter"], "display_label": suggestion.splitlines()[0]}

@@ -206,6 +206,8 @@ function ReactCodemirror6(props) {
     const highlightStyle = useRef(null);
     const autocompletionArgRef = useRef({});
 
+    const changeCounterRef = useRef(0);
+
     const [aiText, setAIText, aiTextRef] = useStateAndRef(null);
     const [aiTextLable, setAITextLabel, aiTextLabelRef] = useStateAndRef(null);
     const [ai_waiting, doAIUpdate] = useDebounce(getAIUpdate, 2000);
@@ -249,8 +251,11 @@ function ReactCodemirror6(props) {
                 EditorView.updateListener.of((update) => {
                     if (update.docChanged) {
                         handleChange(update.state.doc.toString());
+                        changeCounterRef.current = changeCounterRef.current + 1;
                         if (window.has_openapi_key && (settingsContext.settingsRef.current.use_ai_code_suggestions == "yes") && props.container_id) {
-                            doAIUpdate(update.state.doc.toString())
+                            setAIText(null);
+                            setAITextLabel(null);
+                            doAIUpdate(update.state.doc.toString(), changeCounterRef.current);
                         }
                         else {
                             setAIText(null);
@@ -419,15 +424,22 @@ function ReactCodemirror6(props) {
 
     const selectedPane = useContext(SelectedPaneContext);
 
-    function getAIUpdate(new_code) {
+    function getAIUpdate(new_code, change_counter) {
         let code_str = new_code;
         const cursorPos = editorView.current.state.selection.main.head;
-        postPromise(props.container_id, "update_ai_complete", {"code_str": code_str, "mode": props.mode, "cursor_position": cursorPos})
+        postPromise(props.container_id, "update_ai_complete",
+            {
+                "code_str": code_str,
+                "change_counter": change_counter,
+                "mode": props.mode,
+                "cursor_position": cursorPos})
             .then((data) => {
                 console.log("got aiupdate result");
                 if (data.success) {
-                    setAIText(data.suggestion);
-                    setAITextLabel(data.display_label)
+                    if (data.change_counter == changeCounterRef.current) {
+                        setAIText(data.suggestion);
+                        setAITextLabel(data.display_label)
+                    }
                 }
                 else {
                     setAIText(null);
