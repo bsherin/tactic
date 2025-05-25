@@ -5,6 +5,23 @@
 build_production="True"
 do_git="True"
 
+# Dynamically find ROOT_DIR (directory named 'tactic' above the current dir)
+PROJECT_DIR=$(cd "$(dirname "$0")" && pwd)
+while [[ "$PROJECT_DIR" != "/" && "$(basename "$PROJECT_DIR")" != "tactic" ]]; do
+  PROJECT_DIR=$(dirname "$PROJECT_DIR")
+done
+
+if [[ "$(basename "$PROJECT_DIR")" != "tactic" ]]; then
+  echo "Error: Could not find 'tactic' directory."
+  exit 1
+fi
+
+export ROOT_DIR="$PROJECT_DIR"
+echo "Using ROOT_DIR=$ROOT_DIR"
+
+# shellcheck disable=SC2164
+cd "$ROOT_DIR/tactic_app"
+
 
 while :; do
   case $1 in
@@ -34,5 +51,5 @@ if [ $do_git == "True" ] ; then
   git push
 fi
 
-ssh -i /Users/brucesherin/PycharmProjects/tactic/LightsailDefaultKey-us-east-2.pem centos@tactictext.net \
+ssh -i {$ROOT_DIR}/LightsailDefaultKey-us-east-2.pem centos@tactictext.net \
 '/srv/tactic/tactic_app/update_server_and_relaunch.sh'

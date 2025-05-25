@@ -14,7 +14,8 @@ import {indentUnit} from "@codemirror/language";
 import {HighlightStyle, foldAll, unfoldAll} from "@codemirror/language"
 import {EditorView, Decoration} from "@codemirror/view";
 import {StateField, StateEffect, RangeSetBuilder, EditorSelection, Compartment} from "@codemirror/state";
-import {selfCompletionSource, generalCompletionSource, aiCompletionSource, topLevelExtraCompletions, dotAccessCompletions} from "./autocomplete";
+import {selfCompletionSource, generalCompletionSource, aiCompletionSource, loadingSource,
+    topLevelExtraCompletions, dotAccessCompletions} from "./autocomplete";
 import {useDebounce} from "./utilities_react";
 
 import {
@@ -192,11 +193,8 @@ function ReactCodemirror6(props) {
 
     const localRef = useRef(null);
     const editorView = useRef(null);
-    const overlay = useRef(null);
     const matches = useRef(null);
-    const search_focus_info = useRef(null);
     const first_render = useRef(true);
-    const registeredHandlers = useRef([]);
     const themeCompartment = useRef(null);
     const completionCompartment = useRef(null);
     const lineNumberCompartment = useRef(null);
@@ -207,13 +205,13 @@ function ReactCodemirror6(props) {
     const autocompletionArgRef = useRef({});
 
     const changeCounterRef = useRef(0);
+    const awaitingSuggestionRef = useRef(true);
 
     const [aiText, setAIText, aiTextRef] = useStateAndRef(null);
-    const [aiTextLable, setAITextLabel, aiTextLabelRef] = useStateAndRef(null);
+    const [aiTextLabel, setAITextLabel, aiTextLabelRef] = useStateAndRef(null);
     const [ai_waiting, doAIUpdate] = useDebounce(getAIUpdate, 2000);
 
     const settingsContext = useContext(SettingsContext);
-    const errorDrawerFuncs = useContext(ErrorDrawerContext);
 
     const [usable_width, usable_height, topX, topY] = useSize(localRef, props.iCounter, "CodeMirror");
 
@@ -255,11 +253,13 @@ function ReactCodemirror6(props) {
                         if (window.has_openapi_key && (settingsContext.settingsRef.current.use_ai_code_suggestions == "yes") && props.container_id) {
                             setAIText(null);
                             setAITextLabel(null);
+                            awaitingSuggestionRef.current = true;
                             doAIUpdate(update.state.doc.toString(), changeCounterRef.current);
                         }
                         else {
                             setAIText(null);
                             setAITextLabel(null);
+                            awaitingSuggestionRef.current = true
                         }
                     }
                     if (update.focusChanged) {
@@ -346,9 +346,8 @@ function ReactCodemirror6(props) {
     useEffect(()=>{
 
         let sources;
-        if (props.mode == "python") {
+        if (props.mode === "python") {
             sources = [
-                    aiCompletionSource(aiTextRef.current, aiTextLabelRef.current),
                     selfCompletionSource(props.extraSelfCompletions),
                     topLevelExtraCompletions,
                     dotAccessCompletions,
@@ -359,6 +358,13 @@ function ReactCodemirror6(props) {
                     aiCompletionSource(aiTextRef.current, aiTextLabelRef.current),
                     generalCompletionSource(),]
         }
+        if (awaitingSuggestionRef.current) {
+            sources.unshift(loadingSource);
+        }
+        else {
+            sources.unshift(aiCompletionSource(aiTextRef.current, aiTextLabelRef.current))
+        }
+
         autocompletionArgRef.current =
             {
                 optionClass: (completion) => {return completion.type === "suggestion" ? "cm-completion-ai" : null},
@@ -436,9 +442,10 @@ function ReactCodemirror6(props) {
             .then((data) => {
                 console.log("got aiupdate result");
                 if (data.success) {
-                    if (data.change_counter == changeCounterRef.current) {
+                    if (data.change_counter === changeCounterRef.current) {
                         setAIText(data.suggestion);
-                        setAITextLabel(data.display_label)
+                        setAITextLabel(data.display_label);
+                        awaitingSuggestionRef.current = false
                     }
                 }
                 else {

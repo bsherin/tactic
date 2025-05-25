@@ -1,8 +1,13 @@
-
-
 import {postAjax} from "./communication_react";
 
-export {aiCompletionSource, selfCompletionSource, generalCompletionSource, topLevelExtraCompletions, dotAccessCompletions};
+export {
+    aiCompletionSource,
+    selfCompletionSource,
+    generalCompletionSource,
+    topLevelExtraCompletions,
+    dotAccessCompletions,
+    loadingSource
+};
 
 
 const EXTRAWORDS_LIST = ["global_import", "escape_html", "xh", "ds", "Collection",
@@ -39,95 +44,135 @@ function create_api() {
     })
 }
 
-function aiCompletionSource(aiText, aiTextLabel) {
-  return (context) => {
-    if (!aiText) {
-      return { from: context.pos, to: context.pos, options: [] };
-    }
-    // Get the first line of aiText
-    const firstLine = aiText.split('\n')[0];
+const aiCompletionSection = {
+    name: "AI",
+    rank: -Infinity
+}
 
-   
-    return {
-      from: context.pos,
-      to: context.pos,
-      options: [{
-            label: aiText,
-            displayLabel: aiTextLabel,
-            type: "suggestion",
-            info: aiText,
-            boost: 990
-          },
-          {
+function aiCompletionSource(aiText, aiTextLabel) {
+    return (context) => {
+        if (!aiText) {
+            return {from: context.pos, to: context.pos, options: []};
+        }
+        // Get the first line of aiText
+        let aiLines = aiText.split('\n');
+        const firstLine = aiLines[0];
+        let options = [{
             label: firstLine,
             type: "suggestion",
             info: firstLine,
-            boost: 999
-          }
-      ],
-      span: true
+            section: aiCompletionSection,
+            boost: 99
+        }];
+        if (aiLines.length > 1) {
+            options.push({
+                label: aiText,
+                displayLabel: aiTextLabel,
+                type: "suggestion",
+                info: aiText,
+                section: aiCompletionSection,
+                boost: 99
+            });
+        }
+
+        return {
+            from: context.pos,
+            to: context.pos,
+            options: options,
+            span: true
+        };
     };
-  };
 }
 
+const loadingCompletion = {
+    label: "Loading suggestions...",
+    type: "suggestion",
+    section: aiCompletionSection,
+    boost: 99,  // ensures it's always shown first
+    apply: () => {
+    },   // do nothing on apply
+};
+
+const loadingSource = (context) => {
+    return {
+        from: context.pos,
+        options: [loadingCompletion],
+        validFor: () => false,  // will auto-close when a real suggestion appears
+    };
+};
+
 function selfCompletions(context, extraSelfCompletions) {
-  let beforeCursor = context.matchBefore(/self\.\w*/);
-  if (!beforeCursor || (beforeCursor.from == beforeCursor.to && !context.explicit))
-    return { from: context.pos, to: context.pos, options:[]};
-  return {
-    from: beforeCursor.from + 5, // Skip "self."
-    options: self_commands.concat(extraSelfCompletions),
-    validFor: /^[\w$]*$/
-  };
+    let beforeCursor = context.matchBefore(/self\.\w*/);
+    if (!beforeCursor || (beforeCursor.from == beforeCursor.to && !context.explicit))
+        return {from: context.pos, to: context.pos, options: []};
+    return {
+        from: beforeCursor.from + 5, // Skip "self."
+        options: self_commands.concat(extraSelfCompletions),
+        validFor: /^[\w$]*$/
+    };
 }
 
 function selfCompletionSource(extraSelfCompletions) {
-  return (context) => {
-    return selfCompletions(context, extraSelfCompletions);  // already returns from + options + validFor
-  };
+    return (context) => {
+        return selfCompletions(context, extraSelfCompletions);  // already returns from + options + validFor
+    };
 }
 
 function generalCompletionSource() {
-  return (context) => {
-    const autocompleteSources = context.state.languageDataAt("autocomplete") || [];
-    const localCompletions = autocompleteSources[0];
-    const languageCompletions = autocompleteSources[1] || (() => null);
+    return (context) => {
+        const autocompleteSources = context.state.languageDataAt("autocomplete") || [];
+        const localCompletions = autocompleteSources[0];
+        const languageCompletions = autocompleteSources[1] || (() => null);
 
-    const getOptions = (source) => source?.(context)?.options ?? [];
-    const match = context.matchBefore(/\w*/);
-    const from = match ? match.from : context.pos;
+        const getOptions = (source) => source?.(context)?.options ?? [];
+        const match = context.matchBefore(/\w*/);
+        const from = match ? match.from : context.pos;
 
-    const options = [
-      ...getOptions(localCompletions),
-      ...getOptions(languageCompletions),
-    ];
+        let localOptions = getOptions(localCompletions);
+        // in every option in local_options, add a section "Local"
+        localOptions = localOptions.map(option => ({
+            ...option,
+            section: "Local"
+        }));
 
-    return {
-      from,
-      to: context.pos,
-      options,
-      span: true
+        let languageOptions = getOptions(languageCompletions);
+        // in every option in language_options, add a section "Language"
+        languageOptions = languageOptions.map(option => ({
+            ...option,
+            section: "Language"
+        }));
+
+        const options = [
+            ...localOptions,
+            ...languageOptions,
+        ];
+
+        return {
+            from,
+            to: context.pos,
+            options,
+            span: true
+        };
     };
-  };
 }
 
 function topLevelExtraCompletions(context) {
-  const match = context.matchBefore(/\w+/);
-  if (!match || (match.from === match.to && !context.explicit)) {
-    return { from: context.pos, to: context.pos, options: [] };
-  }
+    const match = context.matchBefore(/\w+/);
+    if (!match || (match.from === match.to && !context.explicit)) {
+        return {from: context.pos, to: context.pos, options: []};
+    }
 
-  const prefix = context.state.sliceDoc(match.from, context.pos);
+    const prefix = context.state.sliceDoc(match.from, context.pos);
 
-  const options = EXTRAWORDS_LIST
-    .filter(word => !word.includes('.') && word.startsWith(prefix))
-    .map(word => ({ label: word, type: "tactic" }));
+    const options = EXTRAWORDS_LIST
+        .filter(word => !word.includes('.') && word.startsWith(prefix))
+        .map(word => ({label: word, type: "tactic", section: "Tactic"}));
 
-  return {
-    from: match.from,
-    options,
-    validFor: /\w*$/
-  };
+    return {
+        from: match.from,
+        options,
+        validFor: /\w*$/
+    };
 }
 
 function dotAccessCompletions(context) {
@@ -142,7 +187,8 @@ function dotAccessCompletions(context) {
         .filter(word => word.includes('.') && word.startsWith(prefix))
         .map(word => ({
             label: word,
-            type: "tactic"
+            type: "tactic",
+            section: "Tactic",
         }));
 
     return {

@@ -1,11 +1,27 @@
 #!/bin/bash
-cd /Users/brucesherin/PycharmProjects/tactic/tactic_app
+
+# Dynamically find ROOT_DIR (directory named 'tactic' above the current dir)
+PROJECT_DIR=$(cd "$(dirname "$0")" && pwd)
+while [[ "$PROJECT_DIR" != "/" && "$(basename "$PROJECT_DIR")" != "tactic" ]]; do
+  PROJECT_DIR=$(dirname "$PROJECT_DIR")
+done
+
+if [[ "$(basename "$PROJECT_DIR")" != "tactic" ]]; then
+  echo "Error: Could not find 'tactic' directory."
+  exit 1
+fi
+
+export ROOT_DIR="$PROJECT_DIR"
+echo "Using ROOT_DIR=$ROOT_DIR"
+
+# shellcheck disable=SC2164
+cd "$ROOT_DIR/tactic_app"
+
+# Run docker compose based on argument
 if [ "$1" == "all" ] ; then
-	sudo docker compose --env-file develop.env --profile build_project build
+  sudo ROOT_DIR="$ROOT_DIR" docker compose --env-file develop.env --profile build_project build
+elif [ "$1" == "host" ] ; then
+  sudo ROOT_DIR="$ROOT_DIR" docker compose --env-file develop.env --profile build_project build "tactic_host1"
 else
-  if [ "$1" == "host" ] ; then
-    sudo docker compose --env-file develop.env --profile build_project build "tactic_host1"
-  else
-    sudo docker compose --env-file develop.env --profile build_project build "tactic_$1"
-  fi
+  sudo ROOT_DIR="$ROOT_DIR" docker compose --env-file develop.env --profile build_project build "tactic_$1"
 fi
