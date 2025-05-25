@@ -160,12 +160,6 @@ function TileContainer(props) {
         })
     }
 
-    function get_tile_entry(tile_id) {
-        let tindex = tileIndex(tile_id);
-        if (tindex == -1) return null;
-        return _.cloneDeep(props.tile_list.current[tileIndex(tile_id)])
-    }
-
     function tileIndex(tile_id) {
         let counter = 0;
         for (let entry of props.tile_list.current) {
@@ -516,8 +510,8 @@ function TileComponent(props) {
         props.setTileState(props.tile_id, {show_log: false, show_form: !props.show_form});
     }
 
-    function _setTileBack(show_form) {
-        props.setTileValue(props.tile_id, "show_form", show_form)
+    function _showTileBack() {
+        props.setTileState(props.tile_id, {show_log: false, show_form: true});
     }
 
     function _handleSubmitOptions() {
@@ -561,7 +555,7 @@ function TileComponent(props) {
             props.setTileValue(props.tile_id, "source_changed", false);
             if (data.options_changed || !resubmit) {
                 _stopSpinner();
-                _setTileBack(true)
+                _showTileBack()
             } else {
                 await spin_and_refresh()
             }

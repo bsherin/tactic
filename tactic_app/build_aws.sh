@@ -51,5 +51,5 @@ if [ $do_git == "True" ] ; then
   git push
 fi
 
-ssh -i {$ROOT_DIR}/LightsailDefaultKey-us-east-2.pem centos@tactictext.net \
+ssh -i "$ROOT_DIR/LightsailDefaultKey-us-east-2.pem" centos@tactictext.net \
 '/srv/tactic/tactic_app/update_server_and_relaunch.sh'
