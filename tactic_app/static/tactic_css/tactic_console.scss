@@ -1,5 +1,5 @@
 
-@import "blueprint_variables.scss";
+@use "blueprint_variables.scss";
 //
 
 $log-panel-border-style: 1px solid #c7c7c7;
@@ -9,7 +9,7 @@ $button-notclose-opacity: .9;
 $button-notclose-hover-opacity: .3;
 
 body {
-    background-color: $light-gray1
+    background-color: blueprint_variables.$light-gray1
 }
 
 /* console */
@@ -144,7 +144,7 @@ body {
 .bp5-dark {
     .link-button-group {
         .bp5-button-text {
-            color: $gray4
+            color: blueprint_variables.$gray4
         }
     }
     .CodeMirror {
@@ -191,8 +191,8 @@ body {
     }
 
     &.selected {
-        border-right: 3px solid $gray2;
-        border-left: 3px solid $gray2;
+        border-right: 3px solid blueprint_variables.$gray2;
+        border-left: 3px solid blueprint_variables.$gray2;
         margin-left: 5px;
         margin-right: 1px;
     }

@@ -1,15 +1,16 @@
-@import "blueprint_variables.scss";
-@import "bootstrap_reduced.scss";
+@use "sass:meta";
+@use "blueprint_variables.scss";
+@use "bootstrap_reduced.scss";
 @import "~@blueprintjs/core/lib/css/blueprint.css";
 @import "~@blueprintjs/popover2/lib/css/blueprint-popover2.css";
 @import "~@blueprintjs/icons/lib/css/blueprint-icons.css";
 @import "~@blueprintjs/select/lib/css/blueprint-select.css";
 @import 'markdown-it-latex/dist/index.css';
-@import "themeable.scss";
+@include meta.load-css("themeable.scss");
 
 /* main navbar */
 
-$search-highlight-color: $gold5;
+$search-highlight-color: blueprint_variables.$gold5;
 $sortable-table-header-background: #eee;
 $sortable-table-header-text-color: #666666;
 
@@ -41,7 +42,7 @@ body {
 }
 
 .CodeMirror-hints {
-    background: $light-gray2 !important;
+    background: blueprint_variables.$light-gray2 !important;
     max-width: 500px;
     overflow-x: hidden;
 }
@@ -52,11 +53,11 @@ body {
     padding-left: 20px !important;
 
     &.CodeMirror-hint-active {
-        background: $gray2;
+        background: blueprint_variables.$gray2;
     }
 
     &.CodeMirror-hint-active .option-hint{
-        background: $green2;
+        background: blueprint_variables.$green2;
         color: white;
     }
 
@@ -70,34 +71,34 @@ body {
 
     &.CodeMirror-hint-active .api-hint-name {
         color: white;
-        background: $dark-gray5;
+        background: blueprint_variables.$dark-gray5;
         font-weight: 900;
     }
 
     &.CodeMirror-hint-active.library-hint {
         color: white;
-        background: $dark-gray5;
+        background: blueprint_variables.$dark-gray5;
         font-weight: 900;
     }
 
     &.CodeMirror-hint-active .api-hint-args {
         color: white;
-        background: $dark-gray5;
+        background: blueprint_variables.$dark-gray5;
         font-weight: normal;
     }
 
     .api-hint-name {
-        color: $dark-gray5;
+        color: blueprint_variables.$dark-gray5;
         font-weight: 900;
     }
 
     &.library-hint {
-        color: $dark-gray5;
+        color: blueprint_variables.$dark-gray5;
         font-weight: 900;
     }
 
     .api-hint-args {
-        color: $dark-gray5;
+        color: blueprint_variables.$dark-gray5;
         font-weight: normal;
     }
 }
@@ -325,7 +326,7 @@ table {
     width: 10px;
     z-index: 1;
     &:hover {
-        background-color: $gray3;
+        background-color: blueprint_variables.$gray3;
         opacity: 50%;
     }
 }
@@ -336,7 +337,7 @@ table {
     height: 10px;
     z-index: 1;
     &:hover {
-        background-color: $gray3;
+        background-color: blueprint_variables.$gray3;
         opacity: 50%;
     }
 }
@@ -375,7 +376,7 @@ table {
 
 .drop-zone.drag-over {
   // border: 1px dashed $gray1;
-    background-color: $dark-gray5
+    background-color: blueprint_variables.$dark-gray5
 }
 
 

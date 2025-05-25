@@ -1,5 +1,5 @@
-@import "blueprint_variables.scss";
-@import "themeable.scss";
+@use "blueprint_variables.scss";
+@use "themeable.scss";
 
 #context-root {
   height: 100%;
@@ -9,8 +9,8 @@
   }
 }
 
-$context-highlight-color: $orange4;
-$context-repository-highlight-color: $orange3;
+$context-highlight-color: blueprint_variables.$orange4;
+$context-repository-highlight-color: blueprint_variables.$orange3;
 $light-context-highlight-color: #383e47;
 $light-highlight-weight: 600;
 
@@ -20,16 +20,16 @@ $light-highlight-weight: 600;
     .context-tab-list {
 
       > .bp5-tab-list {
-        background-color: $dark-gray2;
+        background-color: blueprint_variables.$dark-gray2;
         color: white;
-        border-right: 1px solid $light-gray4;
+        border-right: 1px solid blueprint_variables.$light-gray4;
       }
 
       .lib-tab-button {
         color: white;
 
         .bp5-icon {
-          color: $gray4
+          color: blueprint_variables.$gray4
         }
       }
 
@@ -57,12 +57,12 @@ $light-highlight-weight: 600;
       }
 
       .bp5-icon {
-        color: $gray4
+        color: blueprint_variables.$gray4
       }
 
 
       .context-close-button:hover {
-        color: $red5;
+        color: blueprint_variables.$red5;
       }
 
       &.selected-tab-button {
@@ -90,7 +90,7 @@ $light-highlight-weight: 600;
     .context-tab-list {
 
       > .bp5-tab-list {
-        background-color: $light-gray5;
+        background-color: blueprint_variables.$light-gray5;
         color: white;
         //-webkit-box-shadow: 0 0 0 1px rgba(17, 20, 24, 0.1), 0 1px 1px rgba(17, 20, 24, 0.2), 0 2px 6px rgba(17, 20, 24, 0.2);
         //box-shadow: 0 0 0 1px rgba(17, 20, 24, 0.1), 0 1px 1px rgba(17, 20, 24, 0.2), 0 2px 6px rgba(17, 20, 24, 0.2);
@@ -99,20 +99,20 @@ $light-highlight-weight: 600;
       }
 
       .lib-tab-button {
-        color: $dark-gray1;
+        color: blueprint_variables.$dark-gray1;
 
         .bp5-icon {
-          color: $dark-gray4
+          color: blueprint_variables.$dark-gray4
         }
       }
 
       .lib-tab-button.selected-lib-tab-button {
-        color: $pt-text-color;
+        color: blueprint_variables.$pt-text-color;
         font-weight: $light-highlight-weight;
       }
 
       .lib-tab-button.selected-rep-tab-button {
-        color: $pt-text-color;
+        color: blueprint_variables.$pt-text-color;
         font-weight: $light-highlight-weight;
       }
     }
@@ -122,21 +122,21 @@ $light-highlight-weight: 600;
     }
 
     .context-tab-button-content {
-      color: $dark-gray1;
+      color: blueprint_variables.$dark-gray1;
       opacity: .5;
 
       .context-library-title {
-        color: $dark-gray1;
+        color: blueprint_variables.$dark-gray1;
         font-size: 20px;
         font-weight: bold;
       }
 
       .bp5-icon {
-        color: $dark-gray4
+        color: blueprint_variables.$dark-gray4
       }
 
       .context-close-button:hover {
-        color: $red5;
+        color: blueprint_variables.$red5;
       }
 
       &.selected-tab-button {

@@ -6,28 +6,6 @@ import "../tactic_css/tactic_table.scss";
 import "../tactic_css/library_home.scss";
 import "../tactic_css/tile_creator.scss";
 
-// const originalWarn = console.warn;
-// const originalError = console.error;
-// console.warn = function (message, ...args) {
-//     const suppressWarnings = [
-//         "[Blueprint] useHotkeys() was used outside"
-//     ];
-//
-//     if (!suppressWarnings.some(warning => message.includes(warning))) {
-//         originalWarn.apply(console, [message, ...args]);
-//     }
-// };
-//
-// console.error = function (message, ...args) {
-//     const suppressErrors = [
-//         "findDOMNode is deprecated and will be removed"
-//     ];
-//
-//     if (!suppressErrors.some(error => message.includes(error))) {
-//         originalError.apply(console, [message, ...args]);
-//     }
-// };
-
 import React from "react";
 import { useState, useEffect, useRef, useContext, Fragment, useCallback, useMemo } from "react";
 import { createRoot } from 'react-dom/client';
@@ -72,7 +50,7 @@ import {
 } from "./sizing_tools";
 import {postAjaxPromise} from "./communication_react";
 import {DragHandle} from "./resizing_layouts2";
-import {useCallbackStack, useStateAndRef, useDebounce, useStateAndRefAndCounter} from "./utilities_react";
+import {useCallbackStack, useStateAndRef, useStateAndRefAndCounter} from "./utilities_react";
 import {SettingsContext, withSettings} from "./settings"
 
 import {withDialogs, DialogContext} from "./modal_react";
@@ -154,10 +132,10 @@ function ContextApp(props) {
     const [selectedTabId, setSelectedTabId, selectedTabIdRef, selectedTabIdCounter] = useStateAndRefAndCounter("library");
     const [saved_width, set_saved_width] = useState(INIT_CONTEXT_PANEL_WIDTH);
 
-    const [tab_panel_dict, set_tab_panel_dict, tab_panel_dict_ref] = useStateAndRef({});
-    const [tab_ids, set_tab_ids, tab_ids_ref] = useStateAndRef([]);
+    const [, set_tab_panel_dict, tab_panel_dict_ref] = useStateAndRef({});
+    const [, set_tab_ids, tab_ids_ref] = useStateAndRef([]);
 
-    const [open_resources, set_open_resources, open_resources_ref] = useStateAndRef([]);
+    const [, set_open_resources, open_resources_ref] = useStateAndRef([]);
     const [dirty_methods, set_dirty_methods] = useState({});
 
     const [lastSelectedTabId, setLastSelectedTabId] = useState(null);
@@ -170,7 +148,6 @@ function ContextApp(props) {
     const [paneX, setPaneX] = useState(170);
     const [paneY, setPaneY] = useState(USUAL_NAVBAR_HEIGHT);
     const [tabWidth, setTabWidth] = useState(INIT_CONTEXT_PANEL_WIDTH);
-    const [show_repository, set_show_repository] = useState(false);
     const [dragging_over, set_dragging_over] = useState(null);
     const [currently_dragging, set_currently_dragging] = useState(null);
     const [showOpenOmnibar, setShowOpenOmnibar] = useState(false);
@@ -233,10 +210,6 @@ function ContextApp(props) {
         })
     }, []);
 
-    const [waiting, doResize] = useDebounce(() => {
-        _update_window_dimensions(null)
-    }, 0);
-
     useEffect(() => {  // for mount
         window.addEventListener("resize", () => _update_window_dimensions(null));
         window.addEventListener("beforeunload", function (e) {
@@ -246,7 +219,7 @@ function ContextApp(props) {
 
         _update_window_dimensions(null);
         const tab_list_elem = document.querySelector("#context-container .context-tab-list > .bp5-tab-list");
-        const resizeObserver = new ResizeObserver(entries => {
+        const resizeObserver = new ResizeObserver(() => {
             _update_window_dimensions(null)
         });
         if (tab_list_elem) {
@@ -270,27 +243,27 @@ function ContextApp(props) {
         pushCallback(_update_window_dimensions)
     }
 
-    function _handleTabResize(e, ui, lastX, lastY, dx, dy) {
+    function _handleTabResize(e, ui, lastX) {
         let tab_elem = get_tab_list_elem();
         let w = lastX > window.innerWidth / 2 ? window.innerWidth / 2 : lastX;
         w = w <= MIN_CONTEXT_WIDTH ? MIN_CONTEXT_WIDTH : w;
         tab_elem.setAttribute("style", `width:${w}px`);
     }
 
-    function _handleTabResizeStart(e, ui, lastX, lastY, dx, dy) {
+    function _handleTabResizeStart() {
         let new_width = Math.max(tabWidth, MIN_CONTEXT_SAVED_WIDTH);
-        if (new_width != saved_width) {
+        if (new_width !== saved_width) {
             set_saved_width(new_width)
         }
     }
 
-    function _handleTabResizeEnd(e, ui, lastX, lastY, dx, dy) {
+    function _handleTabResizeEnd() {
         let tab_elem = get_tab_list_elem();
 
         let tab_rect = tab_elem.getBoundingClientRect();
         if (tab_rect.width > 45) {
             let new_width = Math.max(tab_rect.width, MIN_CONTEXT_SAVED_WIDTH);
-            if (new_width != saved_width) {
+            if (new_width !== saved_width) {
                 set_saved_width(new_width)
             }
         }
@@ -352,7 +325,7 @@ function ContextApp(props) {
     }
 
     async function _refreshTab(the_id) {
-        if (the_id == "library") {
+        if (the_id === "library") {
             return
         }
         try {
@@ -371,7 +344,7 @@ function ContextApp(props) {
             let resource_name = old_tab_panel.panel.resource_name;
             let res_type = old_tab_panel.res_type;
             let the_view;
-            if (old_tab_panel.kind == "notebook-viewer" && !old_tab_panel.panel.is_project) {
+            if (old_tab_panel.kind === "notebook-viewer" && !old_tab_panel.panel.is_project) {
                 the_view = "/new_notebook_in_context/"
             } else {
                 the_view = view_views()[res_type];
@@ -379,23 +352,23 @@ function ContextApp(props) {
                 the_view = the_view.replace(re, "_in_context");
             }
             const drmethod = (dmethod) => {
-                _registerDirtyMethod(the_id, dmethod)
+                _registerDirtyMethod(new_id, dmethod)
             };
             await _updatePanelPromise(the_id, {panel: "spinner"});
             let data = await postAjaxPromise($SCRIPT_ROOT + the_view, {context_id: window.context_id, resource_name: resource_name});
-            let new_panel = propDict[data.kind](data, drmethod, (new_panel) => {
+            propDict[data.kind](data, drmethod, (new_panel) => {
                 _updatePanel(the_id, {panel: new_panel, kind: data.kind});
             });
         }
         catch (e) {
-            if (e != "canceled") {
+            if (String(e) !== "canceled") {
                 errorDrawerFuncs.addFromError(`Error refreshing pane`, e)
             }
         }
     }
 
     async function _closeTab(the_id) {
-        if (the_id == "library") {
+        if (the_id === "library") {
             return
         }
         try {
@@ -427,7 +400,7 @@ function ContextApp(props) {
             }
 
             pushCallback(() => {
-                if (the_id == selectedTabIdRef.current) {
+                if (the_id === selectedTabIdRef.current) {
                     let newSelectedId;
                     if (lastSelectedTabId && copied_tab_ids.includes(lastSelectedTabId)) {
                         newSelectedId = lastSelectedTabId;
@@ -438,7 +411,7 @@ function ContextApp(props) {
                     setLastSelectedTabId("library");
                 } else {
                     setSelectedTabId(selectedTabId);
-                    if (lastSelectedTabId == the_id) {
+                    if (lastSelectedTabId === the_id) {
                         setLastSelectedTabId("library")
                     }
                 }
@@ -448,7 +421,7 @@ function ContextApp(props) {
             });
         }
         catch (e) {
-            if (e != "canceled") {
+            if (e !== "canceled") {
                 errorDrawerFuncs.addFromError(`Error closing tab`, e)
             }
         }
@@ -470,7 +443,7 @@ function ContextApp(props) {
         });
     }
     function _addPanelPromise(new_id, viewer_kind, res_type, title, new_panel, data = null) {
-        return new Promise (function (resolve, reject) {
+        return new Promise (function (resolve) {
             _addPanel(new_id, viewer_kind, res_type, title, new_panel, resolve, data)
         })
     }
@@ -478,15 +451,15 @@ function ContextApp(props) {
     function _updatePanel(the_id, new_panel, callback = null) {
         let new_tab_panel_dict = {...tab_panel_dict_ref.current};
         for (let k in new_panel) {
-            if (k != "panel") {
+            if (k !== "panel") {
                 new_tab_panel_dict[the_id][k] = new_panel[k]
             }
         }
 
         if ("panel" in new_panel) {
-            if (new_panel.panel == "spinner") {
+            if (new_panel.panel === "spinner") {
                 new_tab_panel_dict[the_id].panel = "spinner";
-            } else if (new_tab_panel_dict[the_id].panel != "spinner") {
+            } else if (new_tab_panel_dict[the_id].panel !== "spinner") {
                 for (let j in new_panel.panel) {
                     new_tab_panel_dict[the_id].panel[j] = new_panel.panel[j]
                 }
@@ -501,7 +474,7 @@ function ContextApp(props) {
     }
 
     function _updatePanelPromise(the_id, new_panel) {
-        return new Promise (function (resolve, reject) {
+        return new Promise (function (resolve) {
             _updatePanel(the_id, new_panel, resolve)
         })
     }
@@ -521,28 +494,11 @@ function ContextApp(props) {
     function _getResourceId(res_name, res_type) {
         for (let the_id of tab_ids_ref.current) {
             let the_panel = tab_panel_dict_ref.current[the_id];
-            if (the_panel.panel.resource_name == res_name && the_panel.res_type == res_type) {
+            if (the_panel.panel.resource_name === res_name && the_panel.res_type === res_type) {
                 return the_id
             }
         }
         return -1
-    }
-
-    function getOpenResources() {
-        let open_resources = [];
-        for (let the_id in tab_panel_dict_ref.current) {
-            const entry = tab_panel_dict_ref.current[the_id];
-            if (entry.panel != "spinner") {
-                open_resources.push({
-                    id: the_id,
-                    resource_name: entry.panel.resource_name,
-                    res_type: entry.res_type,
-                    main_id: entry.main_id
-                });
-            }
-
-        }
-        return open_resources
     }
 
     function _showOpenOmnibar() {
@@ -555,7 +511,7 @@ function ContextApp(props) {
 
     const _handleCreateViewer = useCallback(async (data, callback = null)=>{
         let existing_id = _getResourceId(data.resource_name, data.res_type);
-        if (existing_id != -1) {
+        if (existing_id !== -1) {
             setSelectedTabId(existing_id);
             pushCallback(callback);
             return
@@ -565,7 +521,7 @@ function ContextApp(props) {
             _registerDirtyMethod(new_id, dmethod)
         };
         await _addPanelPromise(new_id, data.kind, data.res_type, data.resource_name, "spinner");
-        let new_panel = propDict[data.kind](data, drmethod, (new_panel) => {
+       propDict[data.kind](data, drmethod, (new_panel) => {
             _updatePanel(new_id, {panel: new_panel}, callback);
         });
     }, []);
@@ -588,7 +544,7 @@ function ContextApp(props) {
         if (window.has_pool) templist.push("pool");
         templist = [...templist, ...tab_ids_ref.current];
         let tabIndex = templist.indexOf(selectedTabIdRef.current) - 1;
-        let newId = tabIndex == -1 ? templist.at(-1) : templist[tabIndex];
+        let newId = tabIndex === -1 ? templist.at(-1) : templist[tabIndex];
         _handleTabSelect(newId, selectedTabIdRef.current);
         if (e) {
             e.preventDefault();
@@ -607,7 +563,7 @@ function ContextApp(props) {
     async function _goToModule(module_name, line_number) {
         for (let tab_id in tab_panel_dict_ref.current) {
             let pdict = tab_panel_dict_ref.current[tab_id];
-            if (pdict.kind == "creator-viewer" && pdict.panel.resource_name == module_name) {
+            if (pdict.kind === "creator-viewer" && pdict.panel.resource_name === module_name) {
                 _handleTabSelect(tab_id, selectedTabIdRef.current, null, () => {
                     if ("line_setter" in pdict) {
                         pdict.line_setter(line_number)
@@ -627,16 +583,13 @@ function ContextApp(props) {
                 _registerDirtyMethod(new_id, dmethod)
             };
             await _addPanelPromise(new_id, data.kind, data.res_type, data.resource_name, "spinner");
-            let new_panel = propDict[data.kind](data, drmethod, (new_panel) => {
-                _updatePanel(new_id, {panel: new_panel}, () => {
-                    let pdict = tab_panel_dict_ref.current[new_id];
-                });
+            propDict[data.kind](data, drmethod, (new_panel) => {
+                _updatePanel(new_id, {panel: new_panel});
             });
         }
         catch(e) {
             errorDrawerFuncs.addFromError(`Error going to module ${module_name}`, e)
         }
-        return
     }
 
     function _registerLineSetter(tab_id, rfunc) {
@@ -657,17 +610,17 @@ function ContextApp(props) {
 
     function _nextTab(tab_id) {
         let tidx = tab_ids_ref.current.indexOf(tab_id);
-        if (tidx == -1) return null;
-        if (tidx == tab_ids_ref.current.length - 1) return "dummy";
+        if (tidx === -1) return null;
+        if (tidx === tab_ids_ref.current.length - 1) return "dummy";
         return tab_ids_ref.current[tidx + 1]
     }
 
     function _onDrop(event, target_id) {
-        if (currently_dragging == null || currently_dragging == target_id) return;
+        if (currently_dragging === null || currently_dragging === target_id) return;
         let current_index = tab_ids_ref.current.indexOf(currently_dragging);
         let new_tab_ids = [...tab_ids_ref.current];
         new_tab_ids.splice(current_index, 1);
-        if (target_id == "dummy") {
+        if (target_id === "dummy") {
             new_tab_ids.push(currently_dragging)
         } else {
             let target_index = new_tab_ids.indexOf(target_id);
@@ -678,13 +631,13 @@ function ContextApp(props) {
         event.stopPropagation()
     }
 
-    function _onDragOver(event, target_id) {
+    function _onDragOver(event) {
         event.stopPropagation();
         event.preventDefault();
     }
 
     function _onDragEnter(event, target_id) {
-        if (target_id == currently_dragging || target_id == _nextTab(currently_dragging)) {
+        if (target_id === currently_dragging || target_id === _nextTab(currently_dragging)) {
             set_dragging_over(null);
         } else {
             set_dragging_over(target_id)
@@ -693,7 +646,7 @@ function ContextApp(props) {
         event.preventDefault();
     }
 
-    function _onDragLeave(event, target_id) {
+    function _onDragLeave(event) {
         event.stopPropagation();
         event.preventDefault();
     }
@@ -702,7 +655,7 @@ function ContextApp(props) {
         let open_resources = [];
         for (let the_id in tab_panel_dict_ref.current) {
             const entry = tab_panel_dict_ref.current[the_id];
-            if (entry.panel != "spinner") {
+            if (entry.panel !== "spinner") {
                 open_resources.push({
                     id: the_id,
                     resource_name: entry.panel.resource_name,
@@ -751,7 +704,7 @@ function ContextApp(props) {
     }
 
     let bclass = "context-tab-button-content";
-    if (selectedTabIdRef.current == "library") {
+    if (selectedTabIdRef.current === "library") {
         bclass += " selected-tab-button"
     }
 
@@ -767,7 +720,7 @@ function ContextApp(props) {
                 <LibraryHomeApp tsocket={tsocket}
                                 library_style={window.library_style}
                                 controlled={true}
-                                am_selected={selectedTabIdRef.current == "library"}
+                                am_selected={selectedTabIdRef.current === "library"}
                                 open_resources_ref={open_resources_ref}
                                 handleCreateViewer={_handleCreateViewer}
                                 usable_width={usable_width}
@@ -797,7 +750,7 @@ function ContextApp(props) {
     let all_tabs = [ltab];
     if (window.has_pool) {
         let pclass = "context-tab-button-content";
-        if (selectedTabIdRef.current == "pool") {
+        if (selectedTabIdRef.current === "pool") {
             pclass += " selected-tab-button"
         }
 
@@ -810,7 +763,7 @@ function ContextApp(props) {
             }}>
                 <div id="pool-browser-root">
                     <PoolBrowser tsocket={tsocket}
-                                 am_selected={selectedTabIdRef.current == "pool"}
+                                 am_selected={selectedTabIdRef.current === "pool"}
                                  usable_width={usable_width}
                                  getOpenResources={_getOpenResources}
                                  setSelectedTabId={setSelectedTabId}
@@ -842,7 +795,7 @@ function ContextApp(props) {
     }
 
     function amSelected(ltab_id, lselectedTabIdRef) {
-        return !window.in_context || ltab_id == lselectedTabIdRef.current
+        return !window.in_context || ltab_id === lselectedTabIdRef.current
     }
 
     const _omni_view_func = useCallback(async (item) => {
@@ -860,7 +813,7 @@ function ContextApp(props) {
                 await _handleCreateViewer(data, statusFuncs.clearStatus);
             }
             catch(e) {
-                statusFuncs.clearstatus();
+                statusFuncs.clearStatus();
                 errorDrawerFuncs.addFromError(`Error following ${the_view}`, e)
 
             }
@@ -868,17 +821,17 @@ function ContextApp(props) {
             statusFuncs.clearStatus();
             window.open($SCRIPT_ROOT + the_view + item.name)
         }
-    });
+    }, []);
 
     for (let tab_id of tab_ids_ref.current) {
         let tab_entry = tab_panel_dict_ref.current[tab_id];
         let bclass = "context-tab-button-content";
-        if (selectedTabIdRef.current == tab_id) {
+        if (selectedTabIdRef.current === tab_id) {
             bclass += " selected-tab-button"
         }
         let visible_title = tab_entry.title;
         let wrapped_panel;
-        if (tab_entry.panel == "spinner") {
+        if (tab_entry.panel === "spinner") {
             wrapped_panel = spinner_panel
         } else {
             let TheClass = classDict[tab_entry.kind];
@@ -923,10 +876,10 @@ function ContextApp(props) {
             );
         }
         let icon_style = {verticalAlign: "middle", paddingLeft: 4};
-        if (tab_id == dragging_over) {
+        if (tab_id === dragging_over) {
             bclass += " hovering";
         }
-        if (tab_id == currently_dragging) {
+        if (tab_id === currently_dragging) {
             bclass += " currently-dragging"
         }
         let new_tab = (
@@ -980,7 +933,7 @@ function ContextApp(props) {
 
     // The purpose of the dummy tab is to make it possible to drag a tab to the bottom of the list
     bclass = "context-tab-button-content";
-    if (dragging_over == "dummy") {
+    if (dragging_over === "dummy") {
         bclass += " hovering";
     }
     let dummy_tab = (
@@ -1033,7 +986,7 @@ function ContextApp(props) {
             <TacticNavbar is_authenticated={window.is_authenticated}
                           selected={null}
                           show_api_links={false}
-                          extra_text={window.database_type == "Local" ? "" : window.database_type}
+                          extra_text={window.database_type === "Local" ? "" : window.database_type}
                           page_id={window.context_id}
                           user_name={window.username}/>
             <div className={outer_class} tabIndex="0" style={outer_style} ref={top_ref}

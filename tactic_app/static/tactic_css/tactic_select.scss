@@ -1,4 +1,5 @@
+@use "sass:meta";
 
 @import "~@blueprintjs/select/lib/css/blueprint-select.css";
-@import "blueprint_variables.scss";
+@include meta.load-css("blueprint_variables.scss");
 
