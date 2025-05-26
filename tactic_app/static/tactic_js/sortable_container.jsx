@@ -1,64 +1,95 @@
+import React, {useMemo} from "react";
+import {
+    DndContext,
+    closestCenter,
+    PointerSensor,
+    useSensor,
+    useSensors,
+} from "@dnd-kit/core";
+import {
+    SortableContext,
+    useSortable,
+    rectSortingStrategy,
+} from "@dnd-kit/sortable";
+import {CSS} from "@dnd-kit/utilities";
 
-import React from "react";
-// import _ from 'lodash';
-import {useMemo} from "react";
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
-
-export {SortableComponent}
+export {SortableComponent};
 
 function SortableComponent(props) {
     const WrappedComponent = props.ElementComponent;
-    const DraggableComponent = useMemo(()=>{ return (
-        getDraggableComponent(props, WrappedComponent)
-        )
+
+    const DraggableComponent = useMemo(() => {
+        return getDraggableComponent(props, WrappedComponent);
     }, []);
 
+    const sensors = useSensors(
+        useSensor(PointerSensor, {
+            activationConstraint: {distance: 5},
+        })
+    );
+
     return (
-      <DragDropContext onDragEnd={props.onDragEnd}
-                       onBeforeCapture={props.onBeforeCapture}>
-        <Droppable droppableId="droppable">
-          {(provided) => (
-            <div className={props.className} style={props.style} ref={provided.innerRef} {...provided.droppableProps}>
-              {props.item_list.map((entry, index) => (
-                  <DraggableComponent key={entry[props.key_field_name]}
-                                      index={index}
-                                      entry={entry}
-                                      extraProps={props.extraProps}
-                  />
-              ))}
-                {provided.placeholder}
-            </div>
-          )}
-        </Droppable>
-  </DragDropContext>
-    )
+        <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={(event) => {
+                const {active, over} = event;
+                if (active.id !== over?.id) {
+                    const oldIndex = props.item_list.findIndex(
+                        (item) => item[props.key_field_name] === active.id
+                    );
+                    const newIndex = props.item_list.findIndex(
+                        (item) => item[props.key_field_name] === over.id
+                    );
+                    props.onDragEnd(oldIndex, newIndex);
+                }
+            }}
+        >
+            <SortableContext
+                items={props.item_list.map((entry) => entry[props.key_field_name])}
+                strategy={rectSortingStrategy}
+            >
+                <div className={props.className} style={props.style}>
+                    {props.item_list.map((entry, index) => (
+                        <DraggableComponent
+                            key={entry[props.key_field_name]}
+                            index={index}
+                            entry={entry}
+                            extraProps={props.extraProps}
+                        />
+                    ))}
+                </div>
+            </SortableContext>
+        </DndContext>
+    );
 }
+
 SortableComponent = React.memo(SortableComponent);
 
-// The purpose of the manuever below is to create a new component that is memorized
-// And includes the outer <Draggable> component
-// This helped with preventing extra renders of the Draggable component
+// Helper to create a wrapped, sortable component
 function getDraggableComponent(initProps, WrappedComponent) {
     return React.memo((props) => {
-        return (
-          <Draggable
-              key={props.entry[initProps.key_field_name]}
-              index={props.index}
-              draggableId={props.entry[initProps.key_field_name]}>
-              {(provided, snapshot) => (
-                  <div ref={provided.innerRef}
-                       {...provided.draggableProps}>
-                      <WrappedComponent key={props.entry[initProps.key_field_name]}
-                                        index={props.index}
-                                        dragHandleProps={provided.dragHandleProps}
-                                        {...props.entry}
-                                        {...props.extraProps}
-                      />
+        const id = props.entry[initProps.key_field_name];
+        const {attributes, listeners, setNodeRef, transform, transition, isDragging} =
+            useSortable({id});
 
-                  </div>
-              )
-              }
-          </Draggable>
-        )
+        const style = {
+            zIndex: isDragging ? 9999 : "auto", // ✅ High enough to stay on top
+            opacity: isDragging ? 0.8 : 1,
+            transform: CSS.Translate.toString(transform),
+            transition,
+        };
+
+        return (
+            <div ref={setNodeRef} style={style} {...attributes} >
+                <WrappedComponent
+                    key={id}
+                    index={props.index}
+                    dragHandleProps={listeners}
+                    {...props.entry}
+                    {...props.extraProps}
+                />
+            </div>
+        );
     });
 }

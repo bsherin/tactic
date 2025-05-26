@@ -129,20 +129,14 @@ function TileContainer(props) {
         props.tsocket.attachListener('tile-source-change', _handleTileSourceChange);
     }
 
-    function _resortTiles({destination, source}) {
+    function _resortTiles(oldIndex, newIndex) {
 
         props.tileDispatch({
             type: "move_item",
-            oldIndex: source.index,
-            newIndex: destination.index
+            oldIndex: oldIndex,
+            newIndex: newIndex
         });
         setDragging(false);
-        if (props.table_is_shrunk) {
-            let elements = document.querySelectorAll('.tile-panel');
-            elements.forEach((element) => {
-                element.classList.add('tile-panel-float');
-            })
-        }
     }
 
     function _markSourceChange(tile_type) {
@@ -235,13 +229,6 @@ function TileContainer(props) {
         }
     }
     function beforeCapture(_, event) {
-        if (props.table_is_shrunk) {
-            // Need to do this manually because of how react-dnd works
-            let elements = document.querySelectorAll('.tile-panel.tile-panel-float');
-            elements.forEach((element) => {
-                element.classList.remove('tile-panel-float');
-            });
-        }
         setDragging(true)
     }
 
@@ -267,7 +254,7 @@ function TileContainer(props) {
 
     return (
         <div ref={tile_div_ref}>
-            <SortableComponent className="tile-div"
+            <SortableComponent className={props.table_is_shrunk ? "tile-div tile-container-float" : "tile-div"}
                                main_id={props.main_id}
                                style={outer_style}
                                helperClass={settingsContext.isDark() ? "bp5-dark" : "light-theme"}
@@ -777,7 +764,8 @@ function TileComponent(props) {
     let show_front = (!props.show_form) && (!props.show_log);
     let front_dict = {__html: props.front_content};
     compute_styles();
-    let tile_class = props.table_is_shrunk && !props.dragging ? "tile-panel tile-panel-float" : "tile-panel";
+    // let tile_class = props.table_is_shrunk && !props.dragging ? "tile-panel tile-panel-float" : "tile-panel";
+    const tile_class = "tile-panel"
     let tph_class = props.source_changed ? "tile-panel-heading tile-source-changed" : "tile-panel-heading";
     let draghandle_position_dict = {position: "absolute", bottom: 2, right: 1};
 

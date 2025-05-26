@@ -28,28 +28,27 @@ var _modal_react = require("./modal_react");
 var _sizing_tools = require("./sizing_tools");
 var _error_drawer = require("./error_drawer");
 var _assistant = require("./assistant");
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(e) { return e ? t : r; })(e); }
-function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != _typeof(e) && "function" != typeof e) return { "default": e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && {}.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n["default"] = e, t && t.set(e, n), n; }
+function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
+function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t in e) "default" !== _t && {}.hasOwnProperty.call(e, _t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t)) && (i.get || i.set) ? o(f, _t, i) : f[_t] = e[_t]); return f; })(e, t); }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
-function _extends() { _extends = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
-function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
-function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
+function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
+function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
+function _toConsumableArray(r) { return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread(); }
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
-function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
-function _regeneratorRuntime() { "use strict"; /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */ _regeneratorRuntime = function _regeneratorRuntime() { return e; }; var t, e = {}, r = Object.prototype, n = r.hasOwnProperty, o = Object.defineProperty || function (t, e, r) { t[e] = r.value; }, i = "function" == typeof Symbol ? Symbol : {}, a = i.iterator || "@@iterator", c = i.asyncIterator || "@@asyncIterator", u = i.toStringTag || "@@toStringTag"; function define(t, e, r) { return Object.defineProperty(t, e, { value: r, enumerable: !0, configurable: !0, writable: !0 }), t[e]; } try { define({}, ""); } catch (t) { define = function define(t, e, r) { return t[e] = r; }; } function wrap(t, e, r, n) { var i = e && e.prototype instanceof Generator ? e : Generator, a = Object.create(i.prototype), c = new Context(n || []); return o(a, "_invoke", { value: makeInvokeMethod(t, r, c) }), a; } function tryCatch(t, e, r) { try { return { type: "normal", arg: t.call(e, r) }; } catch (t) { return { type: "throw", arg: t }; } } e.wrap = wrap; var h = "suspendedStart", l = "suspendedYield", f = "executing", s = "completed", y = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} var p = {}; define(p, a, function () { return this; }); var d = Object.getPrototypeOf, v = d && d(d(values([]))); v && v !== r && n.call(v, a) && (p = v); var g = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(p); function defineIteratorMethods(t) { ["next", "throw", "return"].forEach(function (e) { define(t, e, function (t) { return this._invoke(e, t); }); }); } function AsyncIterator(t, e) { function invoke(r, o, i, a) { var c = tryCatch(t[r], t, o); if ("throw" !== c.type) { var u = c.arg, h = u.value; return h && "object" == _typeof(h) && n.call(h, "__await") ? e.resolve(h.__await).then(function (t) { invoke("next", t, i, a); }, function (t) { invoke("throw", t, i, a); }) : e.resolve(h).then(function (t) { u.value = t, i(u); }, function (t) { return invoke("throw", t, i, a); }); } a(c.arg); } var r; o(this, "_invoke", { value: function value(t, n) { function callInvokeWithMethodAndArg() { return new e(function (e, r) { invoke(t, n, e, r); }); } return r = r ? r.then(callInvokeWithMethodAndArg, callInvokeWithMethodAndArg) : callInvokeWithMethodAndArg(); } }); } function makeInvokeMethod(e, r, n) { var o = h; return function (i, a) { if (o === f) throw Error("Generator is already running"); if (o === s) { if ("throw" === i) throw a; return { value: t, done: !0 }; } for (n.method = i, n.arg = a;;) { var c = n.delegate; if (c) { var u = maybeInvokeDelegate(c, n); if (u) { if (u === y) continue; return u; } } if ("next" === n.method) n.sent = n._sent = n.arg;else if ("throw" === n.method) { if (o === h) throw o = s, n.arg; n.dispatchException(n.arg); } else "return" === n.method && n.abrupt("return", n.arg); o = f; var p = tryCatch(e, r, n); if ("normal" === p.type) { if (o = n.done ? s : l, p.arg === y) continue; return { value: p.arg, done: n.done }; } "throw" === p.type && (o = s, n.method = "throw", n.arg = p.arg); } }; } function maybeInvokeDelegate(e, r) { var n = r.method, o = e.iterator[n]; if (o === t) return r.delegate = null, "throw" === n && e.iterator["return"] && (r.method = "return", r.arg = t, maybeInvokeDelegate(e, r), "throw" === r.method) || "return" !== n && (r.method = "throw", r.arg = new TypeError("The iterator does not provide a '" + n + "' method")), y; var i = tryCatch(o, e.iterator, r.arg); if ("throw" === i.type) return r.method = "throw", r.arg = i.arg, r.delegate = null, y; var a = i.arg; return a ? a.done ? (r[e.resultName] = a.value, r.next = e.nextLoc, "return" !== r.method && (r.method = "next", r.arg = t), r.delegate = null, y) : a : (r.method = "throw", r.arg = new TypeError("iterator result is not an object"), r.delegate = null, y); } function pushTryEntry(t) { var e = { tryLoc: t[0] }; 1 in t && (e.catchLoc = t[1]), 2 in t && (e.finallyLoc = t[2], e.afterLoc = t[3]), this.tryEntries.push(e); } function resetTryEntry(t) { var e = t.completion || {}; e.type = "normal", delete e.arg, t.completion = e; } function Context(t) { this.tryEntries = [{ tryLoc: "root" }], t.forEach(pushTryEntry, this), this.reset(!0); } function values(e) { if (e || "" === e) { var r = e[a]; if (r) return r.call(e); if ("function" == typeof e.next) return e; if (!isNaN(e.length)) { var o = -1, i = function next() { for (; ++o < e.length;) if (n.call(e, o)) return next.value = e[o], next.done = !1, next; return next.value = t, next.done = !0, next; }; return i.next = i; } } throw new TypeError(_typeof(e) + " is not iterable"); } return GeneratorFunction.prototype = GeneratorFunctionPrototype, o(g, "constructor", { value: GeneratorFunctionPrototype, configurable: !0 }), o(GeneratorFunctionPrototype, "constructor", { value: GeneratorFunction, configurable: !0 }), GeneratorFunction.displayName = define(GeneratorFunctionPrototype, u, "GeneratorFunction"), e.isGeneratorFunction = function (t) { var e = "function" == typeof t && t.constructor; return !!e && (e === GeneratorFunction || "GeneratorFunction" === (e.displayName || e.name)); }, e.mark = function (t) { return Object.setPrototypeOf ? Object.setPrototypeOf(t, GeneratorFunctionPrototype) : (t.__proto__ = GeneratorFunctionPrototype, define(t, u, "GeneratorFunction")), t.prototype = Object.create(g), t; }, e.awrap = function (t) { return { __await: t }; }, defineIteratorMethods(AsyncIterator.prototype), define(AsyncIterator.prototype, c, function () { return this; }), e.AsyncIterator = AsyncIterator, e.async = function (t, r, n, o, i) { void 0 === i && (i = Promise); var a = new AsyncIterator(wrap(t, r, n, o), i); return e.isGeneratorFunction(r) ? a : a.next().then(function (t) { return t.done ? t.value : a.next(); }); }, defineIteratorMethods(g), define(g, u, "Generator"), define(g, a, function () { return this; }), define(g, "toString", function () { return "[object Generator]"; }), e.keys = function (t) { var e = Object(t), r = []; for (var n in e) r.push(n); return r.reverse(), function next() { for (; r.length;) { var t = r.pop(); if (t in e) return next.value = t, next.done = !1, next; } return next.done = !0, next; }; }, e.values = values, Context.prototype = { constructor: Context, reset: function reset(e) { if (this.prev = 0, this.next = 0, this.sent = this._sent = t, this.done = !1, this.delegate = null, this.method = "next", this.arg = t, this.tryEntries.forEach(resetTryEntry), !e) for (var r in this) "t" === r.charAt(0) && n.call(this, r) && !isNaN(+r.slice(1)) && (this[r] = t); }, stop: function stop() { this.done = !0; var t = this.tryEntries[0].completion; if ("throw" === t.type) throw t.arg; return this.rval; }, dispatchException: function dispatchException(e) { if (this.done) throw e; var r = this; function handle(n, o) { return a.type = "throw", a.arg = e, r.next = n, o && (r.method = "next", r.arg = t), !!o; } for (var o = this.tryEntries.length - 1; o >= 0; --o) { var i = this.tryEntries[o], a = i.completion; if ("root" === i.tryLoc) return handle("end"); if (i.tryLoc <= this.prev) { var c = n.call(i, "catchLoc"), u = n.call(i, "finallyLoc"); if (c && u) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } else if (c) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); } else { if (!u) throw Error("try statement without catch or finally"); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } } } }, abrupt: function abrupt(t, e) { for (var r = this.tryEntries.length - 1; r >= 0; --r) { var o = this.tryEntries[r]; if (o.tryLoc <= this.prev && n.call(o, "finallyLoc") && this.prev < o.finallyLoc) { var i = o; break; } } i && ("break" === t || "continue" === t) && i.tryLoc <= e && e <= i.finallyLoc && (i = null); var a = i ? i.completion : {}; return a.type = t, a.arg = e, i ? (this.method = "next", this.next = i.finallyLoc, y) : this.complete(a); }, complete: function complete(t, e) { if ("throw" === t.type) throw t.arg; return "break" === t.type || "continue" === t.type ? this.next = t.arg : "return" === t.type ? (this.rval = this.arg = t.arg, this.method = "return", this.next = "end") : "normal" === t.type && e && (this.next = e), y; }, finish: function finish(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.finallyLoc === t) return this.complete(r.completion, r.afterLoc), resetTryEntry(r), y; } }, "catch": function _catch(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.tryLoc === t) { var n = r.completion; if ("throw" === n.type) { var o = n.arg; resetTryEntry(r); } return o; } } throw Error("illegal catch attempt"); }, delegateYield: function delegateYield(e, r, n) { return this.delegate = { iterator: values(e), resultName: r, nextLoc: n }, "next" === this.method && (this.arg = t), y; } }, e; }
-function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
-function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
-function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
+function _iterableToArray(r) { if ("undefined" != typeof Symbol && null != r[Symbol.iterator] || null != r["@@iterator"]) return Array.from(r); }
+function _arrayWithoutHoles(r) { if (Array.isArray(r)) return _arrayLikeToArray(r); }
+function _regeneratorRuntime() { "use strict"; /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ _regeneratorRuntime = function _regeneratorRuntime() { return r; }; var t, r = {}, e = Object.prototype, n = e.hasOwnProperty, o = "function" == typeof Symbol ? Symbol : {}, i = o.iterator || "@@iterator", a = o.asyncIterator || "@@asyncIterator", u = o.toStringTag || "@@toStringTag"; function c(t, r, e, n) { return Object.defineProperty(t, r, { value: e, enumerable: !n, configurable: !n, writable: !n }); } try { c({}, ""); } catch (t) { c = function c(t, r, e) { return t[r] = e; }; } function h(r, e, n, o) { var i = e && e.prototype instanceof Generator ? e : Generator, a = Object.create(i.prototype); return c(a, "_invoke", function (r, e, n) { var o = 1; return function (i, a) { if (3 === o) throw Error("Generator is already running"); if (4 === o) { if ("throw" === i) throw a; return { value: t, done: !0 }; } for (n.method = i, n.arg = a;;) { var u = n.delegate; if (u) { var c = d(u, n); if (c) { if (c === f) continue; return c; } } if ("next" === n.method) n.sent = n._sent = n.arg;else if ("throw" === n.method) { if (1 === o) throw o = 4, n.arg; n.dispatchException(n.arg); } else "return" === n.method && n.abrupt("return", n.arg); o = 3; var h = s(r, e, n); if ("normal" === h.type) { if (o = n.done ? 4 : 2, h.arg === f) continue; return { value: h.arg, done: n.done }; } "throw" === h.type && (o = 4, n.method = "throw", n.arg = h.arg); } }; }(r, n, new Context(o || [])), !0), a; } function s(t, r, e) { try { return { type: "normal", arg: t.call(r, e) }; } catch (t) { return { type: "throw", arg: t }; } } r.wrap = h; var f = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} var l = {}; c(l, i, function () { return this; }); var p = Object.getPrototypeOf, y = p && p(p(x([]))); y && y !== e && n.call(y, i) && (l = y); var v = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(l); function g(t) { ["next", "throw", "return"].forEach(function (r) { c(t, r, function (t) { return this._invoke(r, t); }); }); } function AsyncIterator(t, r) { function e(o, i, a, u) { var c = s(t[o], t, i); if ("throw" !== c.type) { var h = c.arg, f = h.value; return f && "object" == _typeof(f) && n.call(f, "__await") ? r.resolve(f.__await).then(function (t) { e("next", t, a, u); }, function (t) { e("throw", t, a, u); }) : r.resolve(f).then(function (t) { h.value = t, a(h); }, function (t) { return e("throw", t, a, u); }); } u(c.arg); } var o; c(this, "_invoke", function (t, n) { function i() { return new r(function (r, o) { e(t, n, r, o); }); } return o = o ? o.then(i, i) : i(); }, !0); } function d(r, e) { var n = e.method, o = r.i[n]; if (o === t) return e.delegate = null, "throw" === n && r.i["return"] && (e.method = "return", e.arg = t, d(r, e), "throw" === e.method) || "return" !== n && (e.method = "throw", e.arg = new TypeError("The iterator does not provide a '" + n + "' method")), f; var i = s(o, r.i, e.arg); if ("throw" === i.type) return e.method = "throw", e.arg = i.arg, e.delegate = null, f; var a = i.arg; return a ? a.done ? (e[r.r] = a.value, e.next = r.n, "return" !== e.method && (e.method = "next", e.arg = t), e.delegate = null, f) : a : (e.method = "throw", e.arg = new TypeError("iterator result is not an object"), e.delegate = null, f); } function w(t) { this.tryEntries.push(t); } function m(r) { var e = r[4] || {}; e.type = "normal", e.arg = t, r[4] = e; } function Context(t) { this.tryEntries = [[-1]], t.forEach(w, this), this.reset(!0); } function x(r) { if (null != r) { var e = r[i]; if (e) return e.call(r); if ("function" == typeof r.next) return r; if (!isNaN(r.length)) { var o = -1, a = function e() { for (; ++o < r.length;) if (n.call(r, o)) return e.value = r[o], e.done = !1, e; return e.value = t, e.done = !0, e; }; return a.next = a; } } throw new TypeError(_typeof(r) + " is not iterable"); } return GeneratorFunction.prototype = GeneratorFunctionPrototype, c(v, "constructor", GeneratorFunctionPrototype), c(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = c(GeneratorFunctionPrototype, u, "GeneratorFunction"), r.isGeneratorFunction = function (t) { var r = "function" == typeof t && t.constructor; return !!r && (r === GeneratorFunction || "GeneratorFunction" === (r.displayName || r.name)); }, r.mark = function (t) { return Object.setPrototypeOf ? Object.setPrototypeOf(t, GeneratorFunctionPrototype) : (t.__proto__ = GeneratorFunctionPrototype, c(t, u, "GeneratorFunction")), t.prototype = Object.create(v), t; }, r.awrap = function (t) { return { __await: t }; }, g(AsyncIterator.prototype), c(AsyncIterator.prototype, a, function () { return this; }), r.AsyncIterator = AsyncIterator, r.async = function (t, e, n, o, i) { void 0 === i && (i = Promise); var a = new AsyncIterator(h(t, e, n, o), i); return r.isGeneratorFunction(e) ? a : a.next().then(function (t) { return t.done ? t.value : a.next(); }); }, g(v), c(v, u, "Generator"), c(v, i, function () { return this; }), c(v, "toString", function () { return "[object Generator]"; }), r.keys = function (t) { var r = Object(t), e = []; for (var n in r) e.unshift(n); return function t() { for (; e.length;) if ((n = e.pop()) in r) return t.value = n, t.done = !1, t; return t.done = !0, t; }; }, r.values = x, Context.prototype = { constructor: Context, reset: function reset(r) { if (this.prev = this.next = 0, this.sent = this._sent = t, this.done = !1, this.delegate = null, this.method = "next", this.arg = t, this.tryEntries.forEach(m), !r) for (var e in this) "t" === e.charAt(0) && n.call(this, e) && !isNaN(+e.slice(1)) && (this[e] = t); }, stop: function stop() { this.done = !0; var t = this.tryEntries[0][4]; if ("throw" === t.type) throw t.arg; return this.rval; }, dispatchException: function dispatchException(r) { if (this.done) throw r; var e = this; function n(t) { a.type = "throw", a.arg = r, e.next = t; } for (var o = e.tryEntries.length - 1; o >= 0; --o) { var i = this.tryEntries[o], a = i[4], u = this.prev, c = i[1], h = i[2]; if (-1 === i[0]) return n("end"), !1; if (!c && !h) throw Error("try statement without catch or finally"); if (null != i[0] && i[0] <= u) { if (u < c) return this.method = "next", this.arg = t, n(c), !0; if (u < h) return n(h), !1; } } }, abrupt: function abrupt(t, r) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var n = this.tryEntries[e]; if (n[0] > -1 && n[0] <= this.prev && this.prev < n[2]) { var o = n; break; } } o && ("break" === t || "continue" === t) && o[0] <= r && r <= o[2] && (o = null); var i = o ? o[4] : {}; return i.type = t, i.arg = r, o ? (this.method = "next", this.next = o[2], f) : this.complete(i); }, complete: function complete(t, r) { if ("throw" === t.type) throw t.arg; return "break" === t.type || "continue" === t.type ? this.next = t.arg : "return" === t.type ? (this.rval = this.arg = t.arg, this.method = "return", this.next = "end") : "normal" === t.type && r && (this.next = r), f; }, finish: function finish(t) { for (var r = this.tryEntries.length - 1; r >= 0; --r) { var e = this.tryEntries[r]; if (e[2] === t) return this.complete(e[4], e[3]), m(e), f; } }, "catch": function _catch(t) { for (var r = this.tryEntries.length - 1; r >= 0; --r) { var e = this.tryEntries[r]; if (e[0] === t) { var n = e[4]; if ("throw" === n.type) { var o = n.arg; m(e); } return o; } } throw Error("illegal catch attempt"); }, delegateYield: function delegateYield(r, e, n) { return this.delegate = { i: x(r), r: e, n: n }, "next" === this.method && (this.arg = t), f; } }, r; }
+function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
+function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
+function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
+function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
 function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
-function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
 function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
-function _defineProperty(obj, key, value) { key = _toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
 function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
 function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); } // noinspection JSConstructorReturnsPrimitive,JSUnusedAssignment
 _core2["default"].registerLanguage('javascript', _javascript["default"]);
@@ -72,7 +71,7 @@ mdi.use(_markdownItLatex["default"]);
 var MAX_CONSOLE_WIDTH = 1800;
 var BUTTON_CONSUMED_SPACE = 63;
 var SECTION_INDENT = 25; // This is also hard coded into the css file at the moment
-var MAX_OUTPUT_LENGTH = 500000;
+
 var GLYPH_BUTTON_STYLE = {
   marginLeft: 2
 };
@@ -105,9 +104,6 @@ var MB10_STYLE = {
 };
 var WIDTH_100 = {
   width: "100%"
-};
-var SHOW_DRAWER_FALSE = {
-  show_drawer: false
 };
 var empty_style = {};
 var trash_icon = /*#__PURE__*/_react["default"].createElement(_core.Icon, {
@@ -150,17 +146,17 @@ function ConsoleComponent(props) {
     search_helper_text = _useState8[0],
     set_search_helper_text = _useState8[1];
   var _useState9 = (0, _react.useState)(false),
-    _useState10 = _slicedToArray(_useState9, 2),
-    show_main_log = _useState10[0],
-    set_show_main_log = _useState10[1];
-  var _useState11 = (0, _react.useState)(false),
+    _useState0 = _slicedToArray(_useState9, 2),
+    show_main_log = _useState0[0],
+    set_show_main_log = _useState0[1];
+  var _useState1 = (0, _react.useState)(false),
+    _useState10 = _slicedToArray(_useState1, 2),
+    show_pseudo_log = _useState10[0],
+    set_show_pseudo_log = _useState10[1];
+  var _useState11 = (0, _react.useState)(null),
     _useState12 = _slicedToArray(_useState11, 2),
-    show_pseudo_log = _useState12[0],
-    set_show_pseudo_log = _useState12[1];
-  var _useState13 = (0, _react.useState)(null),
-    _useState14 = _slicedToArray(_useState13, 2),
-    pseudo_tile_id = _useState14[0],
-    set_pseudo_tile_id = _useState14[1];
+    pseudo_tile_id = _useState12[0],
+    set_pseudo_tile_id = _useState12[1];
   var settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   var pushCallback = (0, _utilities_react.useCallbackStack)();
@@ -195,8 +191,8 @@ function ConsoleComponent(props) {
   (0, _react.useEffect)(function () {
     //console.log("theme changed")  // This is to force re-rendering because of highlight.js theme change
   }, [settingsContext.settings.theme]);
-  var _addBlankCode = (0, _react.useCallback)( /*#__PURE__*/function () {
-    var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(e) {
+  var _addBlankCode = (0, _react.useCallback)(/*#__PURE__*/function () {
+    var _ref = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee(e) {
       return _regeneratorRuntime().wrap(function _callee$(_context) {
         while (1) switch (_context.prev = _context.next) {
           case 0:
@@ -218,7 +214,7 @@ function ConsoleComponent(props) {
       return _ref.apply(this, arguments);
     };
   }(), []);
-  var _addBlankText = (0, _react.useCallback)( /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2() {
+  var _addBlankText = (0, _react.useCallback)(/*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee2() {
     return _regeneratorRuntime().wrap(function _callee2$(_context2) {
       while (1) switch (_context2.prev = _context2.next) {
         case 0:
@@ -286,7 +282,7 @@ function ConsoleComponent(props) {
             return _addConsoleEntries(data.message, data.force_open, true);
           },
           createLink: function () {
-            var _createLink = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee3(data) {
+            var _createLink = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee3(data) {
               var unique_id;
               return _regeneratorRuntime().wrap(function _callee3$(_context3) {
                 while (1) switch (_context3.prev = _context3.next) {
@@ -334,49 +330,39 @@ function ConsoleComponent(props) {
       });
     }
   }
-  function _createTextEntry(unique_id, summary_text) {
-    return {
-      unique_id: unique_id,
-      type: "text",
-      am_shrunk: false,
-      summary_text: summary_text,
-      console_text: "",
-      show_markdown: false
-    };
-  }
   function _pasteImage() {
     return _pasteImage2.apply(this, arguments);
   }
   function _pasteImage2() {
-    _pasteImage2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee14() {
-      var clipboardContents, blob, _iterator14, _step14, item, gotBlob, _gotBlob;
-      return _regeneratorRuntime().wrap(function _callee14$(_context15) {
-        while (1) switch (_context15.prev = _context15.next) {
+    _pasteImage2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee12() {
+      var clipboardContents, blob, _iterator12, _step12, item, gotBlob, _gotBlob;
+      return _regeneratorRuntime().wrap(function _callee12$(_context13) {
+        while (1) switch (_context13.prev = _context13.next) {
           case 0:
             _gotBlob = function _gotBlob3() {
-              _gotBlob = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee13(blob) {
+              _gotBlob = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee11(blob) {
                 var formData;
-                return _regeneratorRuntime().wrap(function _callee13$(_context14) {
-                  while (1) switch (_context14.prev = _context14.next) {
+                return _regeneratorRuntime().wrap(function _callee11$(_context12) {
+                  while (1) switch (_context12.prev = _context12.next) {
                     case 0:
                       formData = new FormData();
                       formData.append('image', blob, 'image.png');
                       formData.append("main_id", props.main_id);
-                      _context14.prev = 3;
-                      _context14.next = 6;
+                      _context12.prev = 3;
+                      _context12.next = 6;
                       return (0, _communication_react.postFormDataPromise)("print_blob_area_to_console", formData);
                     case 6:
-                      _context14.next = 11;
+                      _context12.next = 11;
                       break;
                     case 8:
-                      _context14.prev = 8;
-                      _context14.t0 = _context14["catch"](3);
-                      console.log(_context14.t0);
+                      _context12.prev = 8;
+                      _context12.t0 = _context12["catch"](3);
+                      console.log(_context12.t0);
                     case 11:
                     case "end":
-                      return _context14.stop();
+                      return _context12.stop();
                   }
-                }, _callee13, null, [[3, 8]]);
+                }, _callee11, null, [[3, 8]]);
               }));
               return _gotBlob.apply(this, arguments);
             };
@@ -384,56 +370,56 @@ function ConsoleComponent(props) {
               return _gotBlob.apply(this, arguments);
             };
             blob = null;
-            _context15.next = 5;
+            _context13.next = 5;
             return navigator.clipboard.read();
           case 5:
-            clipboardContents = _context15.sent;
-            _iterator14 = _createForOfIteratorHelper(clipboardContents);
-            _context15.prev = 7;
-            _iterator14.s();
+            clipboardContents = _context13.sent;
+            _iterator12 = _createForOfIteratorHelper(clipboardContents);
+            _context13.prev = 7;
+            _iterator12.s();
           case 9:
-            if ((_step14 = _iterator14.n()).done) {
-              _context15.next = 22;
+            if ((_step12 = _iterator12.n()).done) {
+              _context13.next = 22;
               break;
             }
-            item = _step14.value;
+            item = _step12.value;
             if (!item.types.includes("image/png")) {
-              _context15.next = 20;
+              _context13.next = 20;
               break;
             }
-            _context15.next = 14;
+            _context13.next = 14;
             return item.getType("image/png");
           case 14:
-            blob = _context15.sent;
+            blob = _context13.sent;
             if (!(blob == null)) {
-              _context15.next = 17;
+              _context13.next = 17;
               break;
             }
-            return _context15.abrupt("return");
+            return _context13.abrupt("return");
           case 17:
-            _context15.next = 19;
+            _context13.next = 19;
             return gotBlob(blob);
           case 19:
-            return _context15.abrupt("break", 22);
+            return _context13.abrupt("break", 22);
           case 20:
-            _context15.next = 9;
+            _context13.next = 9;
             break;
           case 22:
-            _context15.next = 27;
+            _context13.next = 27;
             break;
           case 24:
-            _context15.prev = 24;
-            _context15.t0 = _context15["catch"](7);
-            _iterator14.e(_context15.t0);
+            _context13.prev = 24;
+            _context13.t0 = _context13["catch"](7);
+            _iterator12.e(_context13.t0);
           case 27:
-            _context15.prev = 27;
-            _iterator14.f();
-            return _context15.finish(27);
+            _context13.prev = 27;
+            _iterator12.f();
+            return _context13.finish(27);
           case 30:
           case "end":
-            return _context15.stop();
+            return _context13.stop();
         }
-      }, _callee14, null, [[7, 24, 27, 30]]);
+      }, _callee12, null, [[7, 24, 27, 30]]);
     }));
     return _pasteImage2.apply(this, arguments);
   }
@@ -441,15 +427,15 @@ function ConsoleComponent(props) {
     return _addConsoleText2.apply(this, arguments);
   }
   function _addConsoleText2() {
-    _addConsoleText2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee15(the_text) {
+    _addConsoleText2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee13(the_text) {
       var callback,
-        _args16 = arguments;
-      return _regeneratorRuntime().wrap(function _callee15$(_context16) {
-        while (1) switch (_context16.prev = _context16.next) {
+        _args14 = arguments;
+      return _regeneratorRuntime().wrap(function _callee13$(_context14) {
+        while (1) switch (_context14.prev = _context14.next) {
           case 0:
-            callback = _args16.length > 1 && _args16[1] !== undefined ? _args16[1] : null;
-            _context16.prev = 1;
-            _context16.next = 4;
+            callback = _args14.length > 1 && _args14[1] !== undefined ? _args14[1] : null;
+            _context14.prev = 1;
+            _context14.next = 4;
             return (0, _communication_react.postPromise)("host", "print_text_area_to_console", {
               "console_text": the_text,
               "user_id": window.user_id,
@@ -459,17 +445,17 @@ function ConsoleComponent(props) {
             if (callback != null) {
               callback();
             }
-            _context16.next = 10;
+            _context14.next = 10;
             break;
           case 7:
-            _context16.prev = 7;
-            _context16.t0 = _context16["catch"](1);
-            errorDrawerFuncs.addFromError("Error creating text area", _context16.t0);
+            _context14.prev = 7;
+            _context14.t0 = _context14["catch"](1);
+            errorDrawerFuncs.addFromError("Error creating text area", _context14.t0);
           case 10:
           case "end":
-            return _context16.stop();
+            return _context14.stop();
         }
-      }, _callee15, null, [[1, 7]]);
+      }, _callee13, null, [[1, 7]]);
     }));
     return _addConsoleText2.apply(this, arguments);
   }
@@ -480,15 +466,15 @@ function ConsoleComponent(props) {
     return _addConsoleDivider2.apply(this, arguments);
   }
   function _addConsoleDivider2() {
-    _addConsoleDivider2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee16(header_text) {
+    _addConsoleDivider2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee14(header_text) {
       var callback,
-        _args17 = arguments;
-      return _regeneratorRuntime().wrap(function _callee16$(_context17) {
-        while (1) switch (_context17.prev = _context17.next) {
+        _args15 = arguments;
+      return _regeneratorRuntime().wrap(function _callee14$(_context15) {
+        while (1) switch (_context15.prev = _context15.next) {
           case 0:
-            callback = _args17.length > 1 && _args17[1] !== undefined ? _args17[1] : null;
-            _context17.prev = 1;
-            _context17.next = 4;
+            callback = _args15.length > 1 && _args15[1] !== undefined ? _args15[1] : null;
+            _context15.prev = 1;
+            _context15.next = 4;
             return (0, _communication_react.postPromise)("host", "print_divider_area_to_console", {
               "header_text": header_text,
               "user_id": window.user_id,
@@ -498,21 +484,21 @@ function ConsoleComponent(props) {
             if (callback != null) {
               callback();
             }
-            _context17.next = 10;
+            _context15.next = 10;
             break;
           case 7:
-            _context17.prev = 7;
-            _context17.t0 = _context17["catch"](1);
-            errorDrawerFuncs.addFromError("Error creating divider", _context17.t0);
+            _context15.prev = 7;
+            _context15.t0 = _context15["catch"](1);
+            errorDrawerFuncs.addFromError("Error creating divider", _context15.t0);
           case 10:
           case "end":
-            return _context17.stop();
+            return _context15.stop();
         }
-      }, _callee16, null, [[1, 7]]);
+      }, _callee14, null, [[1, 7]]);
     }));
     return _addConsoleDivider2.apply(this, arguments);
   }
-  var _addBlankDivider = (0, _react.useCallback)( /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee4() {
+  var _addBlankDivider = (0, _react.useCallback)(/*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee4() {
     return _regeneratorRuntime().wrap(function _callee4$(_context4) {
       while (1) switch (_context4.prev = _context4.next) {
         case 0:
@@ -542,8 +528,8 @@ function ConsoleComponent(props) {
     }
     return id_list;
   }
-  var _deleteSection = (0, _react.useCallback)( /*#__PURE__*/function () {
-    var _ref4 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee5(unique_id) {
+  var _deleteSection = (0, _react.useCallback)(/*#__PURE__*/function () {
+    var _ref4 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee5(unique_id) {
       var centry, confirm_text, id_list, cindex, new_console_items;
       return _regeneratorRuntime().wrap(function _callee5$(_context5) {
         while (1) switch (_context5.prev = _context5.next) {
@@ -657,7 +643,7 @@ function ConsoleComponent(props) {
     };
     (0, _communication_react.postWithCallback)("host", "copy_console_cells", result_dict, null, null, props.main_id);
   }
-  var _pasteCell = (0, _react.useCallback)( /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee6() {
+  var _pasteCell = (0, _react.useCallback)(/*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee6() {
     var unique_id,
       data,
       _args6 = arguments;
@@ -689,15 +675,15 @@ function ConsoleComponent(props) {
     return _addConsoleTextLink2.apply(this, arguments);
   }
   function _addConsoleTextLink2() {
-    _addConsoleTextLink2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee17() {
+    _addConsoleTextLink2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee15() {
       var callback,
-        _args18 = arguments;
-      return _regeneratorRuntime().wrap(function _callee17$(_context18) {
-        while (1) switch (_context18.prev = _context18.next) {
+        _args16 = arguments;
+      return _regeneratorRuntime().wrap(function _callee15$(_context16) {
+        while (1) switch (_context16.prev = _context16.next) {
           case 0:
-            callback = _args18.length > 0 && _args18[0] !== undefined ? _args18[0] : null;
-            _context18.prev = 1;
-            _context18.next = 4;
+            callback = _args16.length > 0 && _args16[0] !== undefined ? _args16[0] : null;
+            _context16.prev = 1;
+            _context16.next = 4;
             return (0, _communication_react.postPromise)("host", "print_link_area_to_console", {
               "user_id": window.user_id,
               "main_id": props.main_id
@@ -706,17 +692,17 @@ function ConsoleComponent(props) {
             if (callback) {
               callback();
             }
-            _context18.next = 10;
+            _context16.next = 10;
             break;
           case 7:
-            _context18.prev = 7;
-            _context18.t0 = _context18["catch"](1);
-            errorDrawerFuncs.addFromError("Error creating link", _context18.t0);
+            _context16.prev = 7;
+            _context16.t0 = _context16["catch"](1);
+            errorDrawerFuncs.addFromError("Error creating link", _context16.t0);
           case 10:
           case "end":
-            return _context18.stop();
+            return _context16.stop();
         }
-      }, _callee17, null, [[1, 7]]);
+      }, _callee15, null, [[1, 7]]);
     }));
     return _addConsoleTextLink2.apply(this, arguments);
   }
@@ -727,7 +713,7 @@ function ConsoleComponent(props) {
       return _lodash["default"].last(props.console_selected_items_ref.current);
     }
   }
-  var _insertResourceLink = (0, _react.useCallback)( /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee7() {
+  var _insertResourceLink = (0, _react.useCallback)(/*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee7() {
     var entry;
     return _regeneratorRuntime().wrap(function _callee7$(_context7) {
       while (1) switch (_context7.prev = _context7.next) {
@@ -763,38 +749,38 @@ function ConsoleComponent(props) {
     return _insertLinkInItem2.apply(this, arguments);
   }
   function _insertLinkInItem2() {
-    _insertLinkInItem2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee18(unique_id) {
+    _insertLinkInItem2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee16(unique_id) {
       var entry, result, new_links;
-      return _regeneratorRuntime().wrap(function _callee18$(_context19) {
-        while (1) switch (_context19.prev = _context19.next) {
+      return _regeneratorRuntime().wrap(function _callee16$(_context17) {
+        while (1) switch (_context17.prev = _context17.next) {
           case 0:
-            _context19.prev = 0;
+            _context17.prev = 0;
             entry = get_console_item_entry(unique_id);
-            _context19.next = 4;
+            _context17.next = 4;
             return dialogFuncs.showModalPromise("SelectResourceDialog", {
               cancel_text: "cancel",
               submit_text: "insert link",
               handleClose: dialogFuncs.hideModal
             });
           case 4:
-            result = _context19.sent;
+            result = _context17.sent;
             new_links = "links" in entry ? _toConsumableArray(entry.links) : [];
             new_links.push({
               res_type: result.type,
               res_name: result.selected_resource
             });
             _setConsoleItemValue(entry.unique_id, "links", new_links);
-            _context19.next = 13;
+            _context17.next = 13;
             break;
           case 10:
-            _context19.prev = 10;
-            _context19.t0 = _context19["catch"](0);
-            errorDrawerFuncs.addFromError("Error inserting link", _context19.t0);
+            _context17.prev = 10;
+            _context17.t0 = _context17["catch"](0);
+            errorDrawerFuncs.addFromError("Error inserting link", _context17.t0);
           case 13:
           case "end":
-            return _context19.stop();
+            return _context17.stop();
         }
-      }, _callee18, null, [[0, 10]]);
+      }, _callee16, null, [[0, 10]]);
     }));
     return _insertLinkInItem2.apply(this, arguments);
   }
@@ -820,7 +806,7 @@ function ConsoleComponent(props) {
   function _stopAll() {
     (0, _communication_react.postWithCallback)(props.main_id, "stop_all_console_code", {}, null, null, props.main_id);
   }
-  var _clearConsole = (0, _react.useCallback)( /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee8() {
+  var _clearConsole = (0, _react.useCallback)(/*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee8() {
     var confirm_text;
     return _regeneratorRuntime().wrap(function _callee8$(_context8) {
       while (1) switch (_context8.prev = _context8.next) {
@@ -1169,11 +1155,7 @@ function ConsoleComponent(props) {
       pushCallback(callback);
     });
   }
-  var _resortConsoleItems = (0, _react.useCallback)(function (_ref9) {
-    var destination = _ref9.destination,
-      source = _ref9.source;
-    var oldIndex = source.index;
-    var newIndex = destination.index;
+  var _resortConsoleItems = (0, _react.useCallback)(function (oldIndex, newIndex) {
     filtered_items = filtered_items_ref.current;
     var callback = _showNonDividers;
     console.log("Got oldIndex ".concat(String(oldIndex), " newIndex ").concat(String(newIndex), " ").concat(filtered_items.length, " items"));
@@ -1210,11 +1192,11 @@ function ConsoleComponent(props) {
     var target_id = above_entry == null ? null : above_entry.unique_id;
     _moveEntryAfterEntry(move_entry.unique_id, target_id, callback);
   }, []);
-  var _goToNextCell = (0, _react.useCallback)( /*#__PURE__*/function () {
-    var _ref10 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee9(unique_id) {
+  var _goToNextCell = (0, _react.useCallback)(/*#__PURE__*/function () {
+    var _ref9 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee9(unique_id) {
       var next_index, _loop, _ret;
-      return _regeneratorRuntime().wrap(function _callee9$(_context10) {
-        while (1) switch (_context10.prev = _context10.next) {
+      return _regeneratorRuntime().wrap(function _callee9$(_context0) {
+        while (1) switch (_context0.prev = _context0.next) {
           case 0:
             next_index = _consoleItemIndex(unique_id) + 1;
             _loop = /*#__PURE__*/_regeneratorRuntime().mark(function _loop() {
@@ -1249,33 +1231,33 @@ function ConsoleComponent(props) {
             });
           case 2:
             if (!(next_index < props.console_items.current.length)) {
-              _context10.next = 9;
+              _context0.next = 9;
               break;
             }
-            return _context10.delegateYield(_loop(), "t0", 4);
+            return _context0.delegateYield(_loop(), "t0", 4);
           case 4:
-            _ret = _context10.t0;
+            _ret = _context0.t0;
             if (!_ret) {
-              _context10.next = 7;
+              _context0.next = 7;
               break;
             }
-            return _context10.abrupt("return", _ret.v);
+            return _context0.abrupt("return", _ret.v);
           case 7:
-            _context10.next = 2;
+            _context0.next = 2;
             break;
           case 9:
-            _context10.next = 11;
+            _context0.next = 11;
             return _addCodeArea("");
           case 11:
-            return _context10.abrupt("return");
+            return _context0.abrupt("return");
           case 12:
           case "end":
-            return _context10.stop();
+            return _context0.stop();
         }
       }, _callee9);
     }));
     return function (_x7) {
-      return _ref10.apply(this, arguments);
+      return _ref9.apply(this, arguments);
     };
   }(), []);
   function _isDividerSelected() {
@@ -1333,23 +1315,23 @@ function ConsoleComponent(props) {
     return _deleteSelected2.apply(this, arguments);
   }
   function _deleteSelected2() {
-    _deleteSelected2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee19() {
+    _deleteSelected2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee17() {
       var new_console_items, confirm_text;
-      return _regeneratorRuntime().wrap(function _callee19$(_context20) {
-        while (1) switch (_context20.prev = _context20.next) {
+      return _regeneratorRuntime().wrap(function _callee17$(_context18) {
+        while (1) switch (_context18.prev = _context18.next) {
           case 0:
             if (!_are_selected()) {
-              _context20.next = 13;
+              _context18.next = 13;
               break;
             }
             new_console_items = [];
-            _context20.prev = 2;
+            _context18.prev = 2;
             if (!_isDividerSelected()) {
-              _context20.next = 7;
+              _context18.next = 7;
               break;
             }
             confirm_text = "The selection includes section dividers. " + "The sections will be completed in their entirety. Do you want to continue";
-            _context20.next = 7;
+            _context18.next = 7;
             return dialogFuncs.showModalPromise("ConfirmDialog", {
               title: "Do Delete",
               text_body: confirm_text,
@@ -1359,19 +1341,19 @@ function ConsoleComponent(props) {
             });
           case 7:
             _doDeleteSelected();
-            _context20.next = 13;
+            _context18.next = 13;
             break;
           case 10:
-            _context20.prev = 10;
-            _context20.t0 = _context20["catch"](2);
-            if (_context20.t0 != "canceled") {
-              errorDrawerFuncs.addFromError("Error duplicating resource ".concat(res_name), _context20.t0);
+            _context18.prev = 10;
+            _context18.t0 = _context18["catch"](2);
+            if (_context18.t0 != "canceled") {
+              errorDrawerFuncs.addFromError("Error duplicating resource ".concat(res_name), _context18.t0);
             }
           case 13:
           case "end":
-            return _context20.stop();
+            return _context18.stop();
         }
-      }, _callee19, null, [[2, 10]]);
+      }, _callee17, null, [[2, 10]]);
     }));
     return _deleteSelected2.apply(this, arguments);
   }
@@ -1409,11 +1391,11 @@ function ConsoleComponent(props) {
   }
   function _isInSection(unique_id) {
     var idx = _consoleItemIndex(unique_id);
-    var _iterator10 = _createForOfIteratorHelper(props.console_items.current.slice(idx + 1)),
-      _step10;
+    var _iterator0 = _createForOfIteratorHelper(props.console_items.current.slice(idx + 1)),
+      _step0;
     try {
-      for (_iterator10.s(); !(_step10 = _iterator10.n()).done;) {
-        var entry = _step10.value;
+      for (_iterator0.s(); !(_step0 = _iterator0.n()).done;) {
+        var entry = _step0.value;
         if (entry.type == "divider") {
           return false;
         } else {
@@ -1423,9 +1405,9 @@ function ConsoleComponent(props) {
         }
       }
     } catch (err) {
-      _iterator10.e(err);
+      _iterator0.e(err);
     } finally {
-      _iterator10.f();
+      _iterator0.f();
     }
     return false;
   }
@@ -1436,19 +1418,19 @@ function ConsoleComponent(props) {
     var callback = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : null;
     _lodash["default"].last(new_entries).set_focus = set_focus;
     var inserting_divider = false;
-    var _iterator11 = _createForOfIteratorHelper(new_entries),
-      _step11;
+    var _iterator1 = _createForOfIteratorHelper(new_entries),
+      _step1;
     try {
-      for (_iterator11.s(); !(_step11 = _iterator11.n()).done;) {
-        var entry = _step11.value;
+      for (_iterator1.s(); !(_step1 = _iterator1.n()).done;) {
+        var entry = _step1.value;
         if (entry.type == "divider") {
           inserting_divider = true;
         }
       }
     } catch (err) {
-      _iterator11.e(err);
+      _iterator1.e(err);
     } finally {
-      _iterator11.f();
+      _iterator1.f();
     }
     var last_id = _lodash["default"].last(new_entries).unique_id;
     var insert_index;
@@ -1629,19 +1611,19 @@ function ConsoleComponent(props) {
     set_search_string(nval);
     pushCallback(function () {
       if (_are_selected()) {
-        var _iterator12 = _createForOfIteratorHelper(props.console_selected_items_ref.current),
-          _step12;
+        var _iterator10 = _createForOfIteratorHelper(props.console_selected_items_ref.current),
+          _step10;
         try {
-          for (_iterator12.s(); !(_step12 = _iterator12.n()).done;) {
-            var uid = _step12.value;
+          for (_iterator10.s(); !(_step10 = _iterator10.n()).done;) {
+            var uid = _step10.value;
             updates[uid] = {
               search_string: search_string_ref.current
             };
           }
         } catch (err) {
-          _iterator12.e(err);
+          _iterator10.e(err);
         } finally {
-          _iterator12.f();
+          _iterator10.f();
         }
         _multiple_console_item_updates(updates);
       }
@@ -1656,11 +1638,11 @@ function ConsoleComponent(props) {
   }
   function _handleFilter() {
     var updates = {};
-    var _iterator13 = _createForOfIteratorHelper(props.console_items.current),
-      _step13;
+    var _iterator11 = _createForOfIteratorHelper(props.console_items.current),
+      _step11;
     try {
-      for (_iterator13.s(); !(_step13 = _iterator13.n()).done;) {
-        var entry = _step13.value;
+      for (_iterator11.s(); !(_step11 = _iterator11.n()).done;) {
+        var entry = _step11.value;
         if (entry.type == "code" || entry.type == "text") {
           updates[entry.unique_id] = {
             show_on_filtered: entry.console_text.toLowerCase().includes(search_string_ref.current.toLowerCase())
@@ -1672,9 +1654,9 @@ function ConsoleComponent(props) {
         }
       }
     } catch (err) {
-      _iterator13.e(err);
+      _iterator11.e(err);
     } finally {
-      _iterator13.f();
+      _iterator11.f();
     }
     _multiple_console_item_updates(updates, function () {
       set_filter_console_items(true);
@@ -1804,17 +1786,17 @@ function ConsoleComponent(props) {
         name_text: "Paste Image",
         icon_name: "clipboard",
         click_handler: function () {
-          var _click_handler = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee10() {
-            return _regeneratorRuntime().wrap(function _callee10$(_context11) {
-              while (1) switch (_context11.prev = _context11.next) {
+          var _click_handler = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee0() {
+            return _regeneratorRuntime().wrap(function _callee0$(_context1) {
+              while (1) switch (_context1.prev = _context1.next) {
                 case 0:
-                  _context11.next = 2;
+                  _context1.next = 2;
                   return _pasteImage();
                 case 2:
                 case "end":
-                  return _context11.stop();
+                  return _context1.stop();
               }
-            }, _callee10);
+            }, _callee0);
           }));
           function click_handler() {
             return _click_handler.apply(this, arguments);
@@ -1825,17 +1807,17 @@ function ConsoleComponent(props) {
         name_text: "Delete Selected",
         icon_name: "trash",
         click_handler: function () {
-          var _click_handler2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee11() {
-            return _regeneratorRuntime().wrap(function _callee11$(_context12) {
-              while (1) switch (_context12.prev = _context12.next) {
+          var _click_handler2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee1() {
+            return _regeneratorRuntime().wrap(function _callee1$(_context10) {
+              while (1) switch (_context10.prev = _context10.next) {
                 case 0:
-                  _context12.next = 2;
+                  _context10.next = 2;
                   return _deleteSelected();
                 case 2:
                 case "end":
-                  return _context12.stop();
+                  return _context10.stop();
               }
-            }, _callee11);
+            }, _callee1);
           }));
           function click_handler() {
             return _click_handler2.apply(this, arguments);
@@ -1928,14 +1910,14 @@ function ConsoleComponent(props) {
   }
   var _runCodeItem = (0, _react.useCallback)(function (unique_id) {
     var go_to_next = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-    _clearCodeOutput(unique_id, /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee12() {
+    _clearCodeOutput(unique_id, /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee10() {
       var entry;
-      return _regeneratorRuntime().wrap(function _callee12$(_context13) {
-        while (1) switch (_context13.prev = _context13.next) {
+      return _regeneratorRuntime().wrap(function _callee10$(_context11) {
+        while (1) switch (_context11.prev = _context11.next) {
           case 0:
             _startSpinner(unique_id);
             entry = get_console_item_entry(unique_id);
-            _context13.next = 4;
+            _context11.next = 4;
             return (0, _communication_react.postPromise)(props.main_id, "exec_console_code", {
               "the_code": entry.console_text,
               "console_id": unique_id
@@ -1946,9 +1928,9 @@ function ConsoleComponent(props) {
             }
           case 5:
           case "end":
-            return _context13.stop();
+            return _context11.stop();
         }
-      }, _callee12);
+      }, _callee10);
     })));
   }, []);
   function _showTextItemMarkdown(unique_id) {
@@ -1964,9 +1946,9 @@ function ConsoleComponent(props) {
       opacity: "100%"
     });
   }
-  var _sortStart = (0, _react.useCallback)(function (_ref12) {
-    var draggableId = _ref12.draggableId,
-      mode = _ref12.mode;
+  var _sortStart = (0, _react.useCallback)(function (_ref1) {
+    var draggableId = _ref1.draggableId,
+      mode = _ref1.mode;
     var idx = _consoleItemIndex(draggableId);
     var entry = props.console_items.current[idx];
     if (entry.type == "divider") {
@@ -2452,19 +2434,19 @@ function LogItem(props) {
       // to avoid doubles of bokeh images
       last_output_text.current = props.output_text;
       var scripts = $("#" + props.unique_id + " .log-code-output script").toArray();
-      var _iterator15 = _createForOfIteratorHelper(scripts),
-        _step15;
+      var _iterator13 = _createForOfIteratorHelper(scripts),
+        _step13;
       try {
-        for (_iterator15.s(); !(_step15 = _iterator15.n()).done;) {
-          var script = _step15.value;
+        for (_iterator13.s(); !(_step13 = _iterator13.n()).done;) {
+          var script = _step13.value;
           try {
             window.eval(script.text);
           } catch (e) {}
         }
       } catch (err) {
-        _iterator15.e(err);
+        _iterator13.e(err);
       } finally {
-        _iterator15.f();
+        _iterator13.f();
       }
     }
   }
@@ -2637,19 +2619,19 @@ function BlobItem(props) {
       // to avoid doubles of bokeh images
       last_output_text.current = props.output_text;
       var scripts = $("#" + props.unique_id + " .log-code-output script").toArray();
-      var _iterator16 = _createForOfIteratorHelper(scripts),
-        _step16;
+      var _iterator14 = _createForOfIteratorHelper(scripts),
+        _step14;
       try {
-        for (_iterator16.s(); !(_step16 = _iterator16.n()).done;) {
-          var script = _step16.value;
+        for (_iterator14.s(); !(_step14 = _iterator14.n()).done;) {
+          var script = _step14.value;
           try {
             window.eval(script.text);
           } catch (e) {}
         }
       } catch (err) {
-        _iterator16.e(err);
+        _iterator14.e(err);
       } finally {
-        _iterator16.f();
+        _iterator14.f();
       }
     }
   }
@@ -2802,11 +2784,11 @@ function ConsoleCodeItem(props) {
   var am_selected_previous = (0, _react.useRef)(false);
   var setFocusFunc = (0, _react.useRef)(null);
   var _useSize9 = (0, _sizing_tools.useSize)(elRef, 0, "ConsoleCodeItem"),
-    _useSize10 = _slicedToArray(_useSize9, 4),
-    usable_width = _useSize10[0],
-    usable_height = _useSize10[1],
-    topX = _useSize10[2],
-    topY = _useSize10[3];
+    _useSize0 = _slicedToArray(_useSize9, 4),
+    usable_width = _useSize0[0],
+    usable_height = _useSize0[1],
+    topX = _useSize0[2],
+    topY = _useSize0[3];
   (0, _react.useEffect)(function () {
     if (props.am_selected && !am_selected_previous.current && elRef && elRef.current) {
       scrollMeIntoView();
@@ -2849,20 +2831,20 @@ function ConsoleCodeItem(props) {
   }
   function executeEmbeddedScripts() {
     var scripts = $("#" + props.unique_id + " .log-code-output script").toArray();
-    var _iterator17 = _createForOfIteratorHelper(scripts),
-      _step17;
+    var _iterator15 = _createForOfIteratorHelper(scripts),
+      _step15;
     try {
-      for (_iterator17.s(); !(_step17 = _iterator17.n()).done;) {
-        var script = _step17.value;
+      for (_iterator15.s(); !(_step15 = _iterator15.n()).done;) {
+        var script = _step15.value;
         // noinspection EmptyCatchBlockJS,UnusedCatchParameterJS
         try {
           window.eval(script.text);
         } catch (e) {}
       }
     } catch (err) {
-      _iterator17.e(err);
+      _iterator15.e(err);
     } finally {
-      _iterator17.f();
+      _iterator15.f();
     }
   }
 
@@ -3141,40 +3123,40 @@ function ResourceLinkButton(props) {
     return _goToLink2.apply(this, arguments);
   }
   function _goToLink2() {
-    _goToLink2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee20() {
+    _goToLink2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee18() {
       var data;
-      return _regeneratorRuntime().wrap(function _callee20$(_context21) {
-        while (1) switch (_context21.prev = _context21.next) {
+      return _regeneratorRuntime().wrap(function _callee18$(_context19) {
+        while (1) switch (_context19.prev = _context19.next) {
           case 0:
             if (!window.in_context) {
-              _context21.next = 13;
+              _context19.next = 13;
               break;
             }
-            _context21.prev = 1;
-            _context21.next = 4;
+            _context19.prev = 1;
+            _context19.next = 4;
             return (0, _communication_react.postAjaxPromise)(my_view.current, {
               context_id: window.context_id,
               resource_name: props.res_name
             });
           case 4:
-            data = _context21.sent;
+            data = _context19.sent;
             props.handleCreateViewer(data);
-            _context21.next = 11;
+            _context19.next = 11;
             break;
           case 8:
-            _context21.prev = 8;
-            _context21.t0 = _context21["catch"](1);
-            errorDrawerFuncs.addFromError("Error following link", _context21.t0);
+            _context19.prev = 8;
+            _context19.t0 = _context19["catch"](1);
+            errorDrawerFuncs.addFromError("Error following link", _context19.t0);
           case 11:
-            _context21.next = 14;
+            _context19.next = 14;
             break;
           case 13:
             window.open($SCRIPT_ROOT + my_view.current + props.res_name);
           case 14:
           case "end":
-            return _context21.stop();
+            return _context19.stop();
         }
-      }, _callee20, null, [[1, 8]]);
+      }, _callee18, null, [[1, 8]]);
     }));
     return _goToLink2.apply(this, arguments);
   }
@@ -3206,12 +3188,12 @@ function ConsoleTextItem(props) {
   var elRef = (0, _react.useRef)(null);
   var am_selected_previous = (0, _react.useRef)(false);
   var setFocusFunc = (0, _react.useRef)(null);
-  var _useSize11 = (0, _sizing_tools.useSize)(elRef, 0, "ConsoleTextItem"),
-    _useSize12 = _slicedToArray(_useSize11, 4),
-    usable_width = _useSize12[0],
-    usable_height = _useSize12[1],
-    topX = _useSize12[2],
-    topY = _useSize12[3];
+  var _useSize1 = (0, _sizing_tools.useSize)(elRef, 0, "ConsoleTextItem"),
+    _useSize10 = _slicedToArray(_useSize1, 4),
+    usable_width = _useSize10[0],
+    usable_height = _useSize10[1],
+    topX = _useSize10[2],
+    topY = _useSize10[3];
   (0, _react.useEffect)(function () {
     if (props.am_selected && !am_selected_previous.current && elRef && elRef.current) {
       scrollMeIntoView();
@@ -3304,40 +3286,40 @@ function ConsoleTextItem(props) {
     return _insertResourceLink2.apply(this, arguments);
   }
   function _insertResourceLink2() {
-    _insertResourceLink2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee21() {
+    _insertResourceLink2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee19() {
       var result, new_links;
-      return _regeneratorRuntime().wrap(function _callee21$(_context22) {
-        while (1) switch (_context22.prev = _context22.next) {
+      return _regeneratorRuntime().wrap(function _callee19$(_context20) {
+        while (1) switch (_context20.prev = _context20.next) {
           case 0:
-            _context22.prev = 0;
-            _context22.next = 3;
+            _context20.prev = 0;
+            _context20.next = 3;
             return dialogFuncs.showModalPromise("SelectResourceDialog", {
               cancel_text: "cancel",
               submit_text: "insert link",
               handleClose: dialogFuncs.hideModal
             });
           case 3:
-            result = _context22.sent;
+            result = _context20.sent;
             new_links = _toConsumableArray(props.links);
             new_links.push({
               res_type: result.type,
               res_name: result.selected_resource
             });
             props.setConsoleItemValue(props.unique_id, "links", new_links);
-            _context22.next = 13;
+            _context20.next = 13;
             break;
           case 9:
-            _context22.prev = 9;
-            _context22.t0 = _context22["catch"](0);
-            if (_context22.t0 != "canceled") {
-              errorDrawerFuncs.addFromError("Error duplicating resource ".concat(res_name), _context22.t0);
+            _context20.prev = 9;
+            _context20.t0 = _context20["catch"](0);
+            if (_context20.t0 != "canceled") {
+              errorDrawerFuncs.addFromError("Error duplicating resource ".concat(res_name), _context20.t0);
             }
-            return _context22.abrupt("return");
+            return _context20.abrupt("return");
           case 13:
           case "end":
-            return _context22.stop();
+            return _context20.stop();
         }
-      }, _callee21, null, [[0, 9]]);
+      }, _callee19, null, [[0, 9]]);
     }));
     return _insertResourceLink2.apply(this, arguments);
   }

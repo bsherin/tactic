@@ -132,6 +132,12 @@
     float: left;
 }
 
+.tile-container-float {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+}
+
 .jscript-target {
     height: 100%
 }

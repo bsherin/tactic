@@ -57,7 +57,6 @@ export {ConsoleComponent}
 const MAX_CONSOLE_WIDTH = 1800;
 const BUTTON_CONSUMED_SPACE = 63;
 const SECTION_INDENT = 25;  // This is also hard coded into the css file at the moment
-const MAX_OUTPUT_LENGTH = 500000;
 
 const GLYPH_BUTTON_STYLE = {marginLeft: 2};
 const GLYPH_BUTTON_STYLE2 = {marginRight: 5, marginTop: 2};
@@ -70,7 +69,6 @@ const SPINNER_STYLE = {marginTop: 10, marginRight: 22};
 const MB10_STYLE = {marginBottom: 10};
 const WIDTH_100 = {width: "100%"};
 
-const SHOW_DRAWER_FALSE = {show_drawer: false};
 const empty_style = {};
 const trash_icon = <Icon icon="trash" size={14} />;
 const clean_icon = <Icon icon="clean" size={14} />;
@@ -222,17 +220,6 @@ function initSocket() {
             postWithCallback(props.main_id, "get_pseudo_tile_id", {}, function (res) {
                 set_pseudo_tile_id(res.pseudo_tile_id)
             })
-        }
-    }
-
-    function _createTextEntry(unique_id, summary_text) {
-        return {
-            unique_id: unique_id,
-            type: "text",
-            am_shrunk: false,
-            summary_text: summary_text,
-            console_text: "",
-            show_markdown: false
         }
     }
 
@@ -772,9 +759,7 @@ function initSocket() {
         })
     }
 
-    const _resortConsoleItems = useCallback(({destination, source}) => {
-        const oldIndex = source.index;
-        const newIndex = destination.index;
+    const _resortConsoleItems = useCallback((oldIndex, newIndex) => {
         filtered_items = filtered_items_ref.current;
         const callback = _showNonDividers;
         console.log(`Got oldIndex ${String(oldIndex)} newIndex ${String(newIndex)} ${filtered_items.length} items`);

@@ -6,54 +6,83 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.SortableComponent = SortableComponent;
 var _react = _interopRequireWildcard(require("react"));
-var _reactBeautifulDnd = require("react-beautiful-dnd");
-function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(e) { return e ? t : r; })(e); }
-function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != _typeof(e) && "function" != typeof e) return { "default": e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && {}.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n["default"] = e, t && t.set(e, n), n; }
-function _extends() { _extends = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); } // import _ from 'lodash';
+var _core = require("@dnd-kit/core");
+var _sortable = require("@dnd-kit/sortable");
+var _utilities = require("@dnd-kit/utilities");
+function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t in e) "default" !== _t && {}.hasOwnProperty.call(e, _t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t)) && (i.get || i.set) ? o(f, _t, i) : f[_t] = e[_t]); return f; })(e, t); }
+function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
 function SortableComponent(props) {
   var WrappedComponent = props.ElementComponent;
   var DraggableComponent = (0, _react.useMemo)(function () {
     return getDraggableComponent(props, WrappedComponent);
   }, []);
-  return /*#__PURE__*/_react["default"].createElement(_reactBeautifulDnd.DragDropContext, {
-    onDragEnd: props.onDragEnd,
-    onBeforeCapture: props.onBeforeCapture
-  }, /*#__PURE__*/_react["default"].createElement(_reactBeautifulDnd.Droppable, {
-    droppableId: "droppable"
-  }, function (provided) {
-    return /*#__PURE__*/_react["default"].createElement("div", _extends({
-      className: props.className,
-      style: props.style,
-      ref: provided.innerRef
-    }, provided.droppableProps), props.item_list.map(function (entry, index) {
-      return /*#__PURE__*/_react["default"].createElement(DraggableComponent, {
-        key: entry[props.key_field_name],
-        index: index,
-        entry: entry,
-        extraProps: props.extraProps
-      });
-    }), provided.placeholder);
+  var sensors = (0, _core.useSensors)((0, _core.useSensor)(_core.PointerSensor, {
+    activationConstraint: {
+      distance: 5
+    }
   }));
+  return /*#__PURE__*/_react["default"].createElement(_core.DndContext, {
+    sensors: sensors,
+    collisionDetection: _core.closestCenter,
+    onDragEnd: function onDragEnd(event) {
+      var active = event.active,
+        over = event.over;
+      if (active.id !== (over === null || over === void 0 ? void 0 : over.id)) {
+        var oldIndex = props.item_list.findIndex(function (item) {
+          return item[props.key_field_name] === active.id;
+        });
+        var newIndex = props.item_list.findIndex(function (item) {
+          return item[props.key_field_name] === over.id;
+        });
+        props.onDragEnd(oldIndex, newIndex);
+      }
+    }
+  }, /*#__PURE__*/_react["default"].createElement(_sortable.SortableContext, {
+    items: props.item_list.map(function (entry) {
+      return entry[props.key_field_name];
+    }),
+    strategy: _sortable.rectSortingStrategy
+  }, /*#__PURE__*/_react["default"].createElement("div", {
+    className: props.className,
+    style: props.style
+  }, props.item_list.map(function (entry, index) {
+    return /*#__PURE__*/_react["default"].createElement(DraggableComponent, {
+      key: entry[props.key_field_name],
+      index: index,
+      entry: entry,
+      extraProps: props.extraProps
+    });
+  }))));
 }
 exports.SortableComponent = SortableComponent = /*#__PURE__*/_react["default"].memo(SortableComponent);
 
-// The purpose of the manuever below is to create a new component that is memorized
-// And includes the outer <Draggable> component
-// This helped with preventing extra renders of the Draggable component
+// Helper to create a wrapped, sortable component
 function getDraggableComponent(initProps, WrappedComponent) {
   return /*#__PURE__*/_react["default"].memo(function (props) {
-    return /*#__PURE__*/_react["default"].createElement(_reactBeautifulDnd.Draggable, {
-      key: props.entry[initProps.key_field_name],
+    var id = props.entry[initProps.key_field_name];
+    var _useSortable = (0, _sortable.useSortable)({
+        id: id
+      }),
+      attributes = _useSortable.attributes,
+      listeners = _useSortable.listeners,
+      setNodeRef = _useSortable.setNodeRef,
+      transform = _useSortable.transform,
+      transition = _useSortable.transition,
+      isDragging = _useSortable.isDragging;
+    var style = {
+      zIndex: isDragging ? 9999 : "auto",
+      // ✅ High enough to stay on top
+      opacity: isDragging ? 0.8 : 1,
+      transform: _utilities.CSS.Translate.toString(transform),
+      transition: transition
+    };
+    return /*#__PURE__*/_react["default"].createElement("div", _extends({
+      ref: setNodeRef,
+      style: style
+    }, attributes), /*#__PURE__*/_react["default"].createElement(WrappedComponent, _extends({
+      key: id,
       index: props.index,
-      draggableId: props.entry[initProps.key_field_name]
-    }, function (provided, snapshot) {
-      return /*#__PURE__*/_react["default"].createElement("div", _extends({
-        ref: provided.innerRef
-      }, provided.draggableProps), /*#__PURE__*/_react["default"].createElement(WrappedComponent, _extends({
-        key: props.entry[initProps.key_field_name],
-        index: props.index,
-        dragHandleProps: provided.dragHandleProps
-      }, props.entry, props.extraProps)));
-    });
+      dragHandleProps: listeners
+    }, props.entry, props.extraProps)));
   });
 }
