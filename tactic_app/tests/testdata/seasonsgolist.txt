@@ -1,4 +1,0 @@
-facing
-toward
-towards
-away
