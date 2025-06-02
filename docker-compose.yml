@@ -1,9 +1,7 @@
-version: '3.7'
-
 services:
 
   tactic-mongo:
-    image: mongo:latest
+    image: mongo:5.0
     hostname: ${MONGO_URI}
     container_name: ${MONGO_URI}
     command: --replSet "rs0"
@@ -59,7 +57,7 @@ services:
   tactic_base:
     build:
       context: .
-      dockerfile: Dockerfile-base${IMG_SUFFIX}
+      dockerfile: Dockerfile-base
     profiles:
       - build_project
     image: bsherin/tactic:base${IMG_SUFFIX}
@@ -332,7 +330,7 @@ services:
   tactic_tile:
     build:
       context: .
-      dockerfile: Dockerfile-tile${IMG_SUFFIX}
+      dockerfile: Dockerfile-tile
       args:
         BASE_IMAGE: ${BASE_IMAGE}
     image: bsherin/tactic:tile${IMG_SUFFIX}

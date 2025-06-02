@@ -1,4 +1,4 @@
-ARG BASE_IMAGE
+ARG BASE_IMAGE=bsherin/tactic:base
 FROM ${BASE_IMAGE}
 WORKDIR /code
 ADD ./tile_container_env/requirements.txt /code/requirements.txt
@@ -13,6 +13,6 @@ ADD ./tile_container_env/newer_requirements.txt /code/newer_requirements.txt
 RUN pip3 install --no-cache-dir -r newer_requirements.txt
 RUN pip3 install --no-cache-dir dask[complete]
 ADD ./tactic_dark.mplstyle /usr/local/lib/python3.11/site-packages/matplotlib/mpl-data/stylelib/
-ADD  ./tile_container_env ./volume_manager.py ./exception_mixin.py ./redis_tools.py ./rabbit_manage.py ./qworker.py ./communication_utils.py /code/
+ADD  ./tile_container_env ./shared_python/volume_manager.py ./shared_python/exception_mixin.py ./shared_python/redis_tools.py ./shared_python/qworker.py ./shared_python/qworker.py ./shared_python/communication_utils.py /code/
 
 CMD ["python", "-u", "tile_main.py"]

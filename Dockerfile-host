@@ -1,12 +1,12 @@
-ARG BASE_IMAGE
+ARG BASE_IMAGE=bsherin/tactic:base
 FROM ${BASE_IMAGE}
 WORKDIR /code
 ARG debug=False
 ADD ./host_container_env/requirements.txt /code/requirements.txt
 RUN pip install -r requirements.txt
-MAINTAINER "Bruce L Sherin"
+LABEL maintainer="Bruce L Sherin"
 ADD  ./host_container_env /code
-ADD  ./volume_manager.py ./exception_mixin.py ./qworker.py ./redis_tools.py ./communication_utils.py \
-  ./docker_functions.py ./mongo_accesser.py ./loaded_tile_management.py ./rabbit_manage.py ./mongo_db_fs.py /code/
+ADD  ./shared_python/volume_manager.py ./shared_python/exception_mixin.py ./shared_python/qworker.py ./shared_python/redis_tools.py ./shared_python/communication_utils.py \
+  ./shared_python/docker_functions.py ./shared_python/mongo_accesser.py ./shared_python/loaded_tile_management.py ./shared_python/qworker.py ./shared_python/mongo_db_fs.py /code/
 EXPOSE 5000
-ENTRYPOINT ["/usr/local/bin/gunicorn", "-k", "geventwebsocket.gunicorn.workers.GeventWebSocketWorker", "--log-level", "debug", "-b", "0.0.0.0:5000", "host_main:app"]
+ENTRYPOINT ["/usr/local/bin/gunicorn", "-k", "gevendbtwebsocket.gunicorn.workers.GeventWebSocketWorker", "--log-level", "debug", "-b", "0.0.0.0:5000", "host_main:app"]
