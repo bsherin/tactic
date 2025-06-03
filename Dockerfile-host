@@ -7,6 +7,6 @@ RUN pip install -r requirements.txt
 LABEL maintainer="Bruce L Sherin"
 ADD  ./host_container_env /code
 ADD  ./shared_python/volume_manager.py ./shared_python/exception_mixin.py ./shared_python/qworker.py ./shared_python/redis_tools.py ./shared_python/communication_utils.py \
-  ./shared_python/docker_functions.py ./shared_python/mongo_accesser.py ./shared_python/loaded_tile_management.py ./shared_python/qworker.py ./shared_python/mongo_db_fs.py /code/
+  ./shared_python/docker_functions.py ./shared_python/mongo_accesser.py ./shared_python/loaded_tile_management.py ./shared_python/rabbit_manage.py ./shared_python/mongo_db_fs.py /code/
 EXPOSE 5000
-ENTRYPOINT ["/usr/local/bin/gunicorn", "-k", "gevendbtwebsocket.gunicorn.workers.GeventWebSocketWorker", "--log-level", "debug", "-b", "0.0.0.0:5000", "host_main:app"]
+ENTRYPOINT ["/usr/local/bin/gunicorn", "-k", "geventwebsocket.gunicorn.workers.GeventWebSocketWorker", "--log-level", "debug", "-b", "0.0.0.0:5000", "host_main:app"]

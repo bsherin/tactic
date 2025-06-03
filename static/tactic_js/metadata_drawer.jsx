@@ -47,7 +47,7 @@ function formatLatexEquations(text) {
     return text;
 }
 
-const drawerStyle = {paddingLeft: 15, paddingRight: 15, paddingBottom: 15, paddingTop: 0};
+const drawerStyle = {paddingLeft: 0, paddingRight: 15, paddingBottom: 15, paddingTop: 0};
 
 const icon_dict = {
     collection: "database",
@@ -72,7 +72,7 @@ function MetadataDrawer(props) {
             icon={icon_dict[props.res_type]}
             className={settingsContext.isDark() ? "bp5-dark" : "light-theme"}
             style={drawerStyle}
-            title={props.res_name}
+            title="Metadata"
             isOpen={props.show_drawer}
             position={props.position}
             canOutsideClickClose={false}
@@ -83,8 +83,8 @@ function MetadataDrawer(props) {
         >
             <CombinedMetadata expandWidth={true}
                               outer_style={{
-                                  marginTop: 0, marginLeft: 0, overflow: "auto", padding: 15,
-                                  marginRight: 0, height: "100%"
+                                  marginTop: 0, marginLeft: 5, overflow: "auto", padding: 15,
+                                  marginRight: 0, height: "100%", border: "none", boxShadow: "none"
                               }}
                               res_name={props.res_name}
                               readOnly={props.readOnly}
