@@ -1,6 +1,7 @@
 import sys
 import re
 import time
+import subprocess
 # noinspection PyPackageRequirements
 from bson.binary import Binary
 # noinspection PyUnresolvedReferences
@@ -155,14 +156,23 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
     def os_command_exec(self, data):
         the_code = data["the_code"]
         print(">> " + the_code)
-        if the_code[:3] == "cd ":
+
+        if the_code.startswith("cd "):
+            path = the_code[3:].strip()
             try:
-                os.chdir(os.path.abspath(the_code[3:]))
+                os.chdir(os.path.abspath(path))
             except Exception:
-                print("cd: no such file or directory: {}".format(path))
+                print(f"cd: no such file or directory: {path}")
         else:
-            exec(f"os.system('{the_code}')")
-        return
+            try:
+                process = subprocess.Popen(the_code, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                           text=True)
+                for line in process.stdout:
+                    print(line, end="")
+                for line in process.stderr:
+                    print(line, end="", file=sys.stderr)
+            except Exception as e:
+                print(f"Error executing command: {e}")
 
     @_task_worthy
     def RefreshTile(self, data):
