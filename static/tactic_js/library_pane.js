@@ -16,7 +16,6 @@ var _communication_react = require("./communication_react");
 var _sizing_tools = require("./sizing_tools");
 var _toaster = require("./toaster");
 var _utilities_react = require("./utilities_react");
-var _settings = require("./settings");
 var _modal_react = require("./modal_react");
 var _error_drawer = require("./error_drawer");
 var _library_table_pane = require("./library_table_pane");
@@ -65,7 +64,6 @@ function view_views() {
   }
 }
 function duplicate_views() {
-  var is_repository = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
   return {
     collection: "/duplicate_collection",
     project: "/duplicate_project",
@@ -170,22 +168,17 @@ function LibraryPane(props) {
     pStateRef = _useImmerReducerAndRe2[2];
   var top_ref = (0, _react.useRef)(null);
   var previous_search_spec = (0, _react.useRef)(null);
-  var socket_counter = (0, _react.useRef)(null);
   var blank_selected_resource = (0, _react.useRef)({});
   var selectedTypeRef = (0, _react.useRef)(null);
   var _useSize = (0, _sizing_tools.useSize)(top_ref, 0, "LibraryPane"),
-    _useSize2 = _slicedToArray(_useSize, 4),
-    usable_width = _useSize2[0],
-    usable_height = _useSize2[1],
-    topX = _useSize2[2],
-    topY = _useSize2[3];
-  var settingsContext = (0, _react.useContext)(_settings.SettingsContext);
+    _useSize2 = _slicedToArray(_useSize, 3),
+    usable_height = _useSize2[1];
   var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
   var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
   var _handleArrowKeyPress = (0, _react.useCallback)(/*#__PURE__*/function () {
     var _ref = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee(key) {
-      var the_res, current_index, new_index, new_selected_res;
+      var the_res, current_index, new_index;
       return _regeneratorRuntime().wrap(function _callee$(_context) {
         while (1) switch (_context.prev = _context.next) {
           case 0:
@@ -260,7 +253,7 @@ function LibraryPane(props) {
         case 13:
           _context2.prev = 13;
           _context2.t0 = _context2["catch"](6);
-          statusFuncs.clearstatus();
+          statusFuncs.clearStatus();
           errorDrawerFuncs.addFromError("Error viewing with view ".concat(the_view), _context2.t0);
         case 17:
           _context2.next = 21;
@@ -416,9 +409,6 @@ function LibraryPane(props) {
       props.tsocket.attachListener("refresh-repository-selector", _refresh_func);
     }
   }
-  function _getSearchSpec() {
-    return pStateRef.current.search_state;
-  }
   function _renderBodyContextMenu(menu_context) {
     if (event) {
       event.preventDefault();
@@ -510,57 +500,78 @@ function LibraryPane(props) {
       type: "CLEAR_SELECTED"
     });
   }
+  function compactRowsToRegions(rowIndices) {
+    if (rowIndices.length === 0) return [];
+    var regions = [];
+    var start = rowIndices[0];
+    var end = rowIndices[0];
+    for (var i = 1; i < rowIndices.length; i++) {
+      var current = rowIndices[i];
+      if (current === end + 1) {
+        end = current;
+      } else {
+        regions.push({
+          rows: [start, end]
+        });
+        start = current;
+        end = current;
+      }
+    }
+    regions.push({
+      rows: [start, end]
+    });
+    return regions;
+  }
   function _onTableSelection(_x3) {
     return _onTableSelection2.apply(this, arguments);
   }
   function _onTableSelection2() {
     _onTableSelection2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee1(regions) {
-      var selected_rows, selected_row_indices, revised_regions, _iterator4, _step4, region, first_row, last_row, i;
+      var selected_rows, selected_row_indices, _iterator3, _step3, region, _region$rows, first_row, last_row, i, sortedIndices, revised_regions;
       return _regeneratorRuntime().wrap(function _callee1$(_context1) {
         while (1) switch (_context1.prev = _context1.next) {
           case 0:
-            if (!(regions.length == 0)) {
+            if (!(regions.length === 0)) {
               _context1.next = 2;
               break;
             }
             return _context1.abrupt("return");
           case 2:
-            // Without this get an error when clicking on a body cell
             selected_rows = [];
-            selected_row_indices = [];
-            revised_regions = [];
-            _iterator4 = _createForOfIteratorHelper(regions);
+            selected_row_indices = new Set();
+            _iterator3 = _createForOfIteratorHelper(regions);
             try {
-              for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
-                region = _step4.value;
+              for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+                region = _step3.value;
                 if (region.hasOwnProperty("rows")) {
-                  first_row = region["rows"][0];
-                  revised_regions.push(_table.Regions.row(first_row));
-                  last_row = region["rows"][1];
+                  _region$rows = _slicedToArray(region.rows, 2), first_row = _region$rows[0], last_row = _region$rows[1];
                   for (i = first_row; i <= last_row; ++i) {
-                    if (!selected_row_indices.includes(i)) {
-                      selected_row_indices.push(i);
+                    if (!selected_row_indices.has(i)) {
+                      selected_row_indices.add(i);
                       selected_rows.push(pStateRef.current.data_dict[i]);
-                      revised_regions.push(_table.Regions.row(i));
                     }
                   }
                 }
               }
             } catch (err) {
-              _iterator4.e(err);
+              _iterator3.e(err);
             } finally {
-              _iterator4.f();
+              _iterator3.f();
             }
-            _context1.next = 9;
+            sortedIndices = Array.from(selected_row_indices).sort(function (a, b) {
+              return a - b;
+            });
+            revised_regions = compactRowsToRegions(sortedIndices);
+            _context1.next = 10;
             return _handleRowSelection(selected_rows);
-          case 9:
+          case 10:
             pDispatch({
               type: "UPDATE_SELECT_STATE",
               select_state: {
                 selectedRegions: revised_regions
               }
             });
-          case 10:
+          case 11:
           case "end":
             return _context1.stop();
         }
@@ -581,7 +592,6 @@ function LibraryPane(props) {
         search_spec,
         args,
         data,
-        new_data_dict,
         _args10 = arguments;
       return _regeneratorRuntime().wrap(function _callee10$(_context10) {
         while (1) switch (_context10.prev = _context10.next) {
@@ -607,6 +617,7 @@ function LibraryPane(props) {
               row_number: row_index,
               is_repository: props.is_repository
             };
+            /** @type {{ chunk_dict: object, all_tags: array, num_rows: int }} */
             _context10.prev = 10;
             _context10.next = 13;
             return (0, _communication_react.postAjaxPromise)("grab_all_list_chunk", args);
@@ -659,7 +670,7 @@ function LibraryPane(props) {
   }
   function _handleRowUpdate2() {
     _handleRowUpdate2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee12(res_dict) {
-      var res_name, ind, _id, event_type, the_row, _the_row, is_last, selected_ind, is_selected_row, new_selected_ind;
+      var res_name, ind, _id, event_type, the_row, selected_ind, new_selected_ind;
       return _regeneratorRuntime().wrap(function _callee12$(_context12) {
         while (1) switch (_context12.prev = _context12.next) {
           case 0:
@@ -667,7 +678,7 @@ function LibraryPane(props) {
             event_type = res_dict.event_type;
             delete res_dict.event_type;
             _context12.t0 = event_type;
-            _context12.next = _context12.t0 === "update" ? 6 : _context12.t0 === "insert" ? 13 : _context12.t0 === "delete" ? 16 : 26;
+            _context12.next = _context12.t0 === "update" ? 6 : _context12.t0 === "insert" ? 12 : _context12.t0 === "delete" ? 15 : 23;
             break;
           case 6:
             if ("_id" in res_dict) {
@@ -685,7 +696,6 @@ function LibraryPane(props) {
             }
             return _context12.abrupt("return");
           case 9:
-            the_row = _objectSpread(_objectSpread({}, pStateRef.current.data_dict[ind]), res_dict);
             pDispatch({
               type: "UPDATE_ROW",
               index: ind,
@@ -702,32 +712,30 @@ function LibraryPane(props) {
             //     set_tag_list(all_tags);
             // }
             if (_id == pStateRef.current.select_state.selected_resource._id) {
-              _the_row = _objectSpread(_objectSpread({}, pStateRef.current.data_dict[ind]), res_dict);
+              the_row = _objectSpread(_objectSpread({}, pStateRef.current.data_dict[ind]), res_dict);
               pDispatch({
                 type: "UPDATE_SELECT_STATE",
                 select_state: {
-                  selected_resource: _the_row
+                  selected_resource: the_row
                 }
               });
             }
-            return _context12.abrupt("break", 27);
-          case 13:
-            _context12.next = 15;
+            return _context12.abrupt("break", 24);
+          case 12:
+            _context12.next = 14;
             return _grabNewChunkWithRow(0, true, null, false, res_name);
+          case 14:
+            return _context12.abrupt("break", 24);
           case 15:
-            return _context12.abrupt("break", 27);
-          case 16:
             if ("_id" in res_dict) {
               ind = parseInt((0, _library_pane_reducer.get_index_from_id)(res_dict._id, pStateRef.current.data_dict));
             } else {
               ind = parseInt((0, _library_pane_reducer.get_index)(res_name, res_dict.res_type, pStateRef.current.data_dict));
             }
-            is_last = ind == pStateRef.current.data_dict.length - 1;
             selected_ind = null;
             if ("_id" in pStateRef.current.select_state.selected_resource) {
               selected_ind = parseInt((0, _library_pane_reducer.get_index_from_id)(pStateRef.current.select_state.selected_resource._id, pStateRef.current.data_dict));
             }
-            is_selected_row = ind && ind == selected_ind;
             new_selected_ind = selected_ind;
             if (selected_ind > ind) {
               new_selected_ind = selected_ind - 1;
@@ -754,10 +762,10 @@ function LibraryPane(props) {
                 }
               }, _callee11);
             })));
-            return _context12.abrupt("break", 27);
-          case 26:
+            return _context12.abrupt("break", 24);
+          case 23:
             return _context12.abrupt("return");
-          case 27:
+          case 24:
           case "end":
             return _context12.stop();
         }
@@ -774,31 +782,12 @@ function LibraryPane(props) {
     }
     return null;
   }
-  function _extractNewTags(tstring) {
-    var tlist = tstring.split(" ");
-    var new_tags = [];
-    var _iterator2 = _createForOfIteratorHelper(tlist),
-      _step2;
-    try {
-      for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-        var tag = _step2.value;
-        if (!(tag.length == 0) && !(tag in pStateRef.current.tag_list)) {
-          new_tags.push(tag);
-        }
-      }
-    } catch (err) {
-      _iterator2.e(err);
-    } finally {
-      _iterator2.f();
-    }
-    return new_tags;
-  }
   function _saveFromSelectedResource() {
     return _saveFromSelectedResource2.apply(this, arguments);
   }
   function _saveFromSelectedResource2() {
     _saveFromSelectedResource2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee13() {
-      var result_dict, saved_selected_resource, saved_selected_rows, new_tags;
+      var result_dict;
       return _regeneratorRuntime().wrap(function _callee13$(_context13) {
         while (1) switch (_context13.prev = _context13.next) {
           case 0:
@@ -812,94 +801,23 @@ function LibraryPane(props) {
             if (pStateRef.current.select_state.selected_rows[0].res_type == "tile" && "icon" in pStateRef.current.select_state.selected_resource) {
               result_dict["icon"] = pStateRef.current.select_state.selected_resource["icon"];
             }
-            saved_selected_resource = Object.assign({}, pStateRef.current.select_state.selected_resource);
-            saved_selected_rows = _toConsumableArray(pStateRef.current.select_state.selected_rows);
-            new_tags = _extractNewTags(pStateRef.current.select_state.selected_resource.tags);
-            _context13.prev = 5;
-            _context13.next = 8;
+            _context13.prev = 2;
+            _context13.next = 5;
             return (0, _communication_react.postAjaxPromise)("save_metadata", result_dict);
-          case 8:
-            _context13.next = 13;
+          case 5:
+            _context13.next = 10;
             break;
-          case 10:
-            _context13.prev = 10;
-            _context13.t0 = _context13["catch"](5);
+          case 7:
+            _context13.prev = 7;
+            _context13.t0 = _context13["catch"](2);
             errorDrawerFuncs.addFromError("Error updating resource ".concat(result_dict.res_name), _context13.t0);
-          case 13:
+          case 10:
           case "end":
             return _context13.stop();
         }
-      }, _callee13, null, [[5, 10]]);
+      }, _callee13, null, [[2, 7]]);
     }));
     return _saveFromSelectedResource2.apply(this, arguments);
-  }
-  function _overwriteCommonTags() {
-    return _overwriteCommonTags2.apply(this, arguments);
-  }
-  function _overwriteCommonTags2() {
-    _overwriteCommonTags2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee14() {
-      var result_dict, new_tags;
-      return _regeneratorRuntime().wrap(function _callee14$(_context14) {
-        while (1) switch (_context14.prev = _context14.next) {
-          case 0:
-            result_dict = {
-              "selected_rows": pStateRef.current.select_state.selected_rows,
-              "tags": pStateRef.current.select_state.selected_resource.tags
-            };
-            new_tags = _extractNewTags(pStateRef.current.select_state.selected_resource.tags);
-            _context14.prev = 2;
-            _context14.next = 5;
-            return (0, _communication_react.postAjaxPromise)("overwrite_common_tags", result_dict);
-          case 5:
-            _context14.next = 10;
-            break;
-          case 7:
-            _context14.prev = 7;
-            _context14.t0 = _context14["catch"](2);
-            errorDrawerFuncs.addFromError("Error overwriting tags", _context14.t0);
-          case 10:
-          case "end":
-            return _context14.stop();
-        }
-      }, _callee14, null, [[2, 7]]);
-    }));
-    return _overwriteCommonTags2.apply(this, arguments);
-  }
-  function set_selected_resource(new_resource) {
-    pDispatch({
-      type: "UPDATE_SELECT_STATE",
-      select_state: {
-        selected_resource: new_resource
-      }
-    });
-  }
-  function _handleMetadataChange(changed_state_elements) {
-    if (!pStateRef.current.select_state.multi_select) {
-      var revised_selected_resource = Object.assign({}, pStateRef.current.select_state.selected_resource);
-      revised_selected_resource = Object.assign(revised_selected_resource, changed_state_elements);
-      if (Object.keys(changed_state_elements).includes("tags")) {
-        revised_selected_resource["tags"] = revised_selected_resource["tags"].join(" ");
-        set_selected_resource(revised_selected_resource);
-        pushCallback(_saveFromSelectedResource);
-      } else {
-        set_selected_resource(revised_selected_resource);
-        pushCallback(_saveFromSelectedResource);
-      }
-    } else {
-      var _revised_selected_resource = Object.assign({}, pStateRef.current.select_state.selected_resource);
-      _revised_selected_resource = Object.assign(_revised_selected_resource, changed_state_elements);
-      _revised_selected_resource["tags"] = _revised_selected_resource["tags"].join(" ");
-      set_selected_resource(_revised_selected_resource);
-      pushCallback(_overwriteCommonTags);
-    }
-  }
-  function set_multi_select(new_val) {
-    pDispatch({
-      type: "UPDATE_SELECT_STATE",
-      select_state: {
-        multi_select: new_val
-      }
-    });
   }
   function _handleRowDoubleClick(row_dict) {
     var view_view = view_views(props.is_repository)[row_dict.res_type];
@@ -968,51 +886,52 @@ function LibraryPane(props) {
     return _handleRowSelection2.apply(this, arguments);
   }
   function _handleRowSelection2() {
-    _handleRowSelection2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee15(selected_rows) {
-      var sres, common_tags, other_rows, _iterator5, _step5, row_dict, new_common_tags, new_tag_list, _iterator6, _step6, tag, multi_select_list, new_selected_resource, _row_dict;
-      return _regeneratorRuntime().wrap(function _callee15$(_context15) {
-        while (1) switch (_context15.prev = _context15.next) {
+    _handleRowSelection2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee14(selected_rows) {
+      var sres, common_tags, other_rows, _iterator4, _step4, row_dict, new_common_tags, new_tag_list, _iterator5, _step5, tag, multi_select_list, new_selected_resource, _row_dict;
+      return _regeneratorRuntime().wrap(function _callee14$(_context14) {
+        while (1) switch (_context14.prev = _context14.next) {
           case 0:
             if (pStateRef.current.select_state.multi_select) {
-              _context15.next = 5;
+              _context14.next = 5;
               break;
             }
             sres = pStateRef.current.select_state.selected_resource;
             if (!(sres.name != "" && get_data_dict_entry(sres.name, sres.res_type) && sres.notes != get_data_dict_entry(sres.name, sres.res_type).notes)) {
-              _context15.next = 5;
+              _context14.next = 5;
               break;
             }
-            _context15.next = 5;
+            _context14.next = 5;
             return _saveFromSelectedResource();
           case 5:
             if (selected_rows.length > 1) {
+              // I think the common_tags stuff doesn't currently do anything
               common_tags = selected_rows[0].tags.split(" ");
               other_rows = selected_rows.slice(1, selected_rows.length);
-              _iterator5 = _createForOfIteratorHelper(other_rows);
+              _iterator4 = _createForOfIteratorHelper(other_rows);
               try {
-                for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
-                  row_dict = _step5.value;
+                for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
+                  row_dict = _step4.value;
                   new_common_tags = [];
                   new_tag_list = row_dict.tags.split(" ");
-                  _iterator6 = _createForOfIteratorHelper(new_tag_list);
+                  _iterator5 = _createForOfIteratorHelper(new_tag_list);
                   try {
-                    for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
-                      tag = _step6.value;
+                    for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
+                      tag = _step5.value;
                       if (common_tags.includes(tag)) {
                         new_common_tags.push(tag);
                       }
                     }
                   } catch (err) {
-                    _iterator6.e(err);
+                    _iterator5.e(err);
                   } finally {
-                    _iterator6.f();
+                    _iterator5.f();
                   }
                   common_tags = new_common_tags;
                 }
               } catch (err) {
-                _iterator5.e(err);
+                _iterator4.e(err);
               } finally {
-                _iterator5.f();
+                _iterator4.f();
               }
               multi_select_list = selected_rows.map(function (row_dict) {
                 return row_dict.name;
@@ -1045,18 +964,11 @@ function LibraryPane(props) {
             }
           case 6:
           case "end":
-            return _context15.stop();
+            return _context14.stop();
         }
-      }, _callee15);
+      }, _callee14);
     }));
     return _handleRowSelection2.apply(this, arguments);
-  }
-  function _filter_func(resource_dict, search_string) {
-    try {
-      return resource_dict.name.toLowerCase().search(search_string) != -1;
-    } catch (e) {
-      return false;
-    }
   }
   function _update_search_state(new_state) {
     pDispatch({
@@ -1106,20 +1018,20 @@ function LibraryPane(props) {
     return _selectRow2.apply(this, arguments);
   }
   function _selectRow2() {
-    _selectRow2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee16(new_index) {
-      return _regeneratorRuntime().wrap(function _callee16$(_context16) {
-        while (1) switch (_context16.prev = _context16.next) {
+    _selectRow2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee15(new_index) {
+      return _regeneratorRuntime().wrap(function _callee15$(_context15) {
+        while (1) switch (_context15.prev = _context15.next) {
           case 0:
             if (Object.keys(pStateRef.current.data_dict).includes(String(new_index))) {
-              _context16.next = 5;
+              _context15.next = 5;
               break;
             }
-            _context16.next = 3;
+            _context15.next = 3;
             return _grabNewChunkWithRow(new_index, false, null, false, null, function () {
               _selectRow(new_index);
             });
           case 3:
-            _context16.next = 6;
+            _context15.next = 6;
             break;
           case 5:
             pDispatch({
@@ -1134,9 +1046,9 @@ function LibraryPane(props) {
             });
           case 6:
           case "end":
-            return _context16.stop();
+            return _context15.stop();
         }
-      }, _callee16);
+      }, _callee15);
     }));
     return _selectRow2.apply(this, arguments);
   }
@@ -1152,18 +1064,18 @@ function LibraryPane(props) {
     return _view_resource2.apply(this, arguments);
   }
   function _view_resource2() {
-    _view_resource2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee17(selected_resource) {
+    _view_resource2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee16(selected_resource) {
       var the_view,
         force_new_tab,
         resource_name,
         re,
         data,
-        _args17 = arguments;
-      return _regeneratorRuntime().wrap(function _callee17$(_context17) {
-        while (1) switch (_context17.prev = _context17.next) {
+        _args16 = arguments;
+      return _regeneratorRuntime().wrap(function _callee16$(_context16) {
+        while (1) switch (_context16.prev = _context16.next) {
           case 0:
-            the_view = _args17.length > 1 && _args17[1] !== undefined ? _args17[1] : null;
-            force_new_tab = _args17.length > 2 && _args17[2] !== undefined ? _args17[2] : false;
+            the_view = _args16.length > 1 && _args16[1] !== undefined ? _args16[1] : null;
+            force_new_tab = _args16.length > 2 && _args16[2] !== undefined ? _args16[2] : false;
             resource_name = selected_resource.name;
             if (the_view == null) {
               the_view = view_views(props.is_repository)[selected_resource.res_type];
@@ -1173,38 +1085,38 @@ function LibraryPane(props) {
               status_message: "Opening ..."
             });
             if (!(window.in_context && !force_new_tab)) {
-              _context17.next = 21;
+              _context16.next = 21;
               break;
             }
             re = new RegExp("/$");
             the_view = the_view.replace(re, "_in_context");
-            _context17.prev = 8;
-            _context17.next = 11;
+            _context16.prev = 8;
+            _context16.next = 11;
             return (0, _communication_react.postAjaxPromise)(the_view, {
               context_id: context_id,
               resource_name: resource_name
             });
           case 11:
-            data = _context17.sent;
+            data = _context16.sent;
             props.handleCreateViewer(data, statusFuncs.clearStatus);
-            _context17.next = 19;
+            _context16.next = 19;
             break;
           case 15:
-            _context17.prev = 15;
-            _context17.t0 = _context17["catch"](8);
-            statusFuncs.clearstatus();
-            errorDrawerFuncs.addFromError("Error viewing resource ".concat(resource_name), _context17.t0);
+            _context16.prev = 15;
+            _context16.t0 = _context16["catch"](8);
+            statusFuncs.clearStatus();
+            errorDrawerFuncs.addFromError("Error viewing resource ".concat(resource_name), _context16.t0);
           case 19:
-            _context17.next = 23;
+            _context16.next = 23;
             break;
           case 21:
             statusFuncs.clearStatus();
             window.open($SCRIPT_ROOT + the_view + resource_name);
           case 23:
           case "end":
-            return _context17.stop();
+            return _context16.stop();
         }
-      }, _callee17, null, [[8, 15]]);
+      }, _callee16, null, [[8, 15]]);
     }));
     return _view_resource2.apply(this, arguments);
   }
@@ -1212,7 +1124,7 @@ function LibraryPane(props) {
     return _duplicate_func2.apply(this, arguments);
   }
   function _duplicate_func2() {
-    _duplicate_func2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee18() {
+    _duplicate_func2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee17() {
       var row,
         the_row,
         res_name,
@@ -1221,20 +1133,20 @@ function LibraryPane(props) {
         new_name,
         duplicate_view,
         result_dict,
-        _args18 = arguments;
-      return _regeneratorRuntime().wrap(function _callee18$(_context18) {
-        while (1) switch (_context18.prev = _context18.next) {
+        _args17 = arguments;
+      return _regeneratorRuntime().wrap(function _callee17$(_context17) {
+        while (1) switch (_context17.prev = _context17.next) {
           case 0:
-            row = _args18.length > 0 && _args18[0] !== undefined ? _args18[0] : null;
+            row = _args17.length > 0 && _args17[0] !== undefined ? _args17[0] : null;
             the_row = row ? row : pStateRef.current.select_state.selected_resource;
             res_name = the_row.name;
             res_type = the_row.res_type;
-            _context18.prev = 4;
-            _context18.next = 7;
+            _context17.prev = 4;
+            _context17.next = 7;
             return (0, _communication_react.postAjaxPromise)("get_resource_names/" + res_type, {});
           case 7:
-            data = _context18.sent;
-            _context18.next = 10;
+            data = _context17.sent;
+            _context17.next = 10;
             return dialogFuncs.showModalPromise("ModalDialog", {
               title: "Duplicate ".concat(res_type),
               field_title: "New Name",
@@ -1244,7 +1156,7 @@ function LibraryPane(props) {
               handleClose: dialogFuncs.hideModal
             });
           case 10:
-            new_name = _context18.sent;
+            new_name = _context17.sent;
             duplicate_view = duplicate_views()[res_type];
             result_dict = {
               "new_res_name": new_name,
@@ -1252,23 +1164,22 @@ function LibraryPane(props) {
               "library_id": props.library_id,
               "is_repository": false
             };
-            _context18.next = 15;
+            _context17.next = 15;
             return (0, _communication_react.postAjaxPromise)(duplicate_view, result_dict);
           case 15:
-            _context18.next = 21;
+            _context17.next = 20;
             break;
           case 17:
-            _context18.prev = 17;
-            _context18.t0 = _context18["catch"](4);
-            if (_context18.t0 != "canceled") {
-              errorDrawerFuncs.addFromError("Error duplicating resource ".concat(res_name), _context18.t0);
+            _context17.prev = 17;
+            _context17.t0 = _context17["catch"](4);
+            if (_context17.t0 != "canceled") {
+              errorDrawerFuncs.addFromError("Error duplicating resource ".concat(res_name), _context17.t0);
             }
-            return _context18.abrupt("return");
-          case 21:
+          case 20:
           case "end":
-            return _context18.stop();
+            return _context17.stop();
         }
-      }, _callee18, null, [[4, 17]]);
+      }, _callee17, null, [[4, 17]]);
     }));
     return _duplicate_func2.apply(this, arguments);
   }
@@ -1276,10 +1187,10 @@ function LibraryPane(props) {
     return _delete_func2.apply(this, arguments);
   }
   function _delete_func2() {
-    _delete_func2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee19(resource) {
-      var res_list, confirm_text, _res_name, first_index, _iterator7, _step7, row, ind;
-      return _regeneratorRuntime().wrap(function _callee19$(_context19) {
-        while (1) switch (_context19.prev = _context19.next) {
+    _delete_func2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee18(resource) {
+      var res_list, confirm_text, _res_name, first_index, _iterator6, _step6, row, ind;
+      return _regeneratorRuntime().wrap(function _callee18$(_context18) {
+        while (1) switch (_context18.prev = _context18.next) {
           case 0:
             res_list = resource ? [resource] : pStateRef.current.select_state.selected_rows;
             if (res_list.length == 1) {
@@ -1289,22 +1200,22 @@ function LibraryPane(props) {
               confirm_text = "Are you sure that you want to delete multiple items?";
             }
             first_index = 99999;
-            _iterator7 = _createForOfIteratorHelper(pStateRef.current.select_state.selected_rows);
+            _iterator6 = _createForOfIteratorHelper(pStateRef.current.select_state.selected_rows);
             try {
-              for (_iterator7.s(); !(_step7 = _iterator7.n()).done;) {
-                row = _step7.value;
+              for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
+                row = _step6.value;
                 ind = parseInt((0, _library_pane_reducer.get_index)(row.name, row.res_type, pStateRef.current.data_dict));
                 if (ind < first_index) {
                   first_index = ind;
                 }
               }
             } catch (err) {
-              _iterator7.e(err);
+              _iterator6.e(err);
             } finally {
-              _iterator7.f();
+              _iterator6.f();
             }
-            _context19.prev = 5;
-            _context19.next = 8;
+            _context18.prev = 5;
+            _context18.next = 8;
             return dialogFuncs.showModalPromise("ConfirmDialog", {
               title: "Delete resources",
               text_body: confirm_text,
@@ -1313,25 +1224,24 @@ function LibraryPane(props) {
               handleClose: dialogFuncs.hideModal
             });
           case 8:
-            _context19.next = 10;
+            _context18.next = 10;
             return (0, _communication_react.postAjaxPromise)("delete_resource_list", {
               "resource_list": res_list
             });
           case 10:
-            _context19.next = 16;
+            _context18.next = 15;
             break;
           case 12:
-            _context19.prev = 12;
-            _context19.t0 = _context19["catch"](5);
-            if (_context19.t0 != "canceled") {
-              errorDrawerFuncs.addFromError("Error duplicating resource ".concat(res_name), _context19.t0);
+            _context18.prev = 12;
+            _context18.t0 = _context18["catch"](5);
+            if (_context18.t0 != "canceled") {
+              errorDrawerFuncs.addFromError("Error duplicating resource ".concat(res_name), _context18.t0);
             }
-            return _context19.abrupt("return");
-          case 16:
+          case 15:
           case "end":
-            return _context19.stop();
+            return _context18.stop();
         }
-      }, _callee19, null, [[5, 12]]);
+      }, _callee18, null, [[5, 12]]);
     }));
     return _delete_func2.apply(this, arguments);
   }
@@ -1339,7 +1249,7 @@ function LibraryPane(props) {
     return _rename_func2.apply(this, arguments);
   }
   function _rename_func2() {
-    _rename_func2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee20() {
+    _rename_func2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee19() {
       var row,
         res_type,
         res_name,
@@ -1348,11 +1258,11 @@ function LibraryPane(props) {
         index,
         new_name,
         the_data,
-        _args20 = arguments;
-      return _regeneratorRuntime().wrap(function _callee20$(_context20) {
-        while (1) switch (_context20.prev = _context20.next) {
+        _args19 = arguments;
+      return _regeneratorRuntime().wrap(function _callee19$(_context19) {
+        while (1) switch (_context19.prev = _context19.next) {
           case 0:
-            row = _args20.length > 0 && _args20[0] !== undefined ? _args20[0] : null;
+            row = _args19.length > 0 && _args19[0] !== undefined ? _args19[0] : null;
             if (!row) {
               res_type = pStateRef.current.select_state.selected_resource.res_type;
               res_name = pStateRef.current.select_state.selected_resource.name;
@@ -1360,17 +1270,17 @@ function LibraryPane(props) {
               res_type = row.res_type;
               res_name = row.name;
             }
-            _context20.prev = 2;
-            _context20.next = 5;
+            _context19.prev = 2;
+            _context19.next = 5;
             return (0, _communication_react.postAjaxPromise)("get_resource_names/" + res_type, {});
           case 5:
-            data = _context20.sent;
+            data = _context19.sent;
             res_names = data["resource_names"];
             index = res_names.indexOf(res_name);
             if (index >= 0) {
               res_names.splice(index, 1);
             }
-            _context20.next = 11;
+            _context19.next = 11;
             return dialogFuncs.showModalPromise("ModalDialog", {
               title: "Rename ".concat(res_type),
               field_title: "New Name",
@@ -1380,27 +1290,26 @@ function LibraryPane(props) {
               checkboxes: []
             });
           case 11:
-            new_name = _context20.sent;
+            new_name = _context19.sent;
             the_data = {
               "new_name": new_name
             };
-            _context20.next = 15;
+            _context19.next = 15;
             return (0, _communication_react.postAjaxPromise)("rename_resource/".concat(res_type, "/").concat(res_name), the_data);
           case 15:
-            _context20.next = 21;
+            _context19.next = 20;
             break;
           case 17:
-            _context20.prev = 17;
-            _context20.t0 = _context20["catch"](2);
-            if (_context20.t0 != "canceled") {
-              errorDrawerFuncs.addFromError("Error renaming resource ".concat(res_name), _context20.t0);
+            _context19.prev = 17;
+            _context19.t0 = _context19["catch"](2);
+            if (_context19.t0 != "canceled") {
+              errorDrawerFuncs.addFromError("Error renaming resource ".concat(res_name), _context19.t0);
             }
-            return _context20.abrupt("return");
-          case 21:
+          case 20:
           case "end":
-            return _context20.stop();
+            return _context19.stop();
         }
-      }, _callee20, null, [[2, 17]]);
+      }, _callee19, null, [[2, 17]]);
     }));
     return _rename_func2.apply(this, arguments);
   }
@@ -1408,23 +1317,23 @@ function LibraryPane(props) {
     return _repository_copy_func2.apply(this, arguments);
   }
   function _repository_copy_func2() {
-    _repository_copy_func2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee21() {
+    _repository_copy_func2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee20() {
       var res_type, res_name, data, new_name, result_dict, _result_dict;
-      return _regeneratorRuntime().wrap(function _callee21$(_context21) {
-        while (1) switch (_context21.prev = _context21.next) {
+      return _regeneratorRuntime().wrap(function _callee20$(_context20) {
+        while (1) switch (_context20.prev = _context20.next) {
           case 0:
             if (pStateRef.current.select_state.multi_select) {
-              _context21.next = 23;
+              _context20.next = 22;
               break;
             }
             res_type = pStateRef.current.select_state.selected_resource.res_type;
             res_name = pStateRef.current.select_state.selected_resource.name;
-            _context21.prev = 3;
-            _context21.next = 6;
+            _context20.prev = 3;
+            _context20.next = 6;
             return (0, _communication_react.postAjaxPromise)("get_resource_names/" + res_type, {});
           case 6:
-            data = _context21.sent;
-            _context21.next = 9;
+            data = _context20.sent;
+            _context20.next = 9;
             return dialogFuncs.showModalPromise("ModalDialog", {
               title: "Import ".concat(res_type),
               field_title: "New Name",
@@ -1434,49 +1343,48 @@ function LibraryPane(props) {
               handleClose: dialogFuncs.hideModal
             });
           case 9:
-            new_name = _context21.sent;
+            new_name = _context20.sent;
             result_dict = {
               "res_type": res_type,
               "res_name": res_name,
               "new_res_name": new_name
             };
-            _context21.next = 13;
+            _context20.next = 13;
             return (0, _communication_react.postAjaxPromise)("/copy_from_repository", result_dict);
           case 13:
             statusFuncs.statusMessage("Imported Resource ".concat(res_name));
-            return _context21.abrupt("return", res_name);
+            return _context20.abrupt("return", res_name);
           case 17:
-            _context21.prev = 17;
-            _context21.t0 = _context21["catch"](3);
-            if (_context21.t0 != "canceled") {
-              errorDrawerFuncs.addFromError("Error getting resources names", _context21.t0);
+            _context20.prev = 17;
+            _context20.t0 = _context20["catch"](3);
+            if (_context20.t0 != "canceled") {
+              errorDrawerFuncs.addFromError("Error getting resources names", _context20.t0);
             }
-            return _context21.abrupt("return");
-          case 21:
-            _context21.next = 34;
+          case 20:
+            _context20.next = 33;
             break;
-          case 23:
+          case 22:
             _result_dict = {
               "selected_rows": pStateRef.current.select_state.selected_rows
             };
-            _context21.prev = 24;
-            _context21.next = 27;
+            _context20.prev = 23;
+            _context20.next = 26;
             return (0, _communication_react.postAjaxPromise)("/copy_from_repository", _result_dict);
-          case 27:
+          case 26:
             statusFuncs.statusMessage("Imported Resources");
-            _context21.next = 33;
+            _context20.next = 32;
             break;
-          case 30:
-            _context21.prev = 30;
-            _context21.t1 = _context21["catch"](24);
-            errorDrawerFuncs.addFromError("Error importing resources", _context21.t1);
+          case 29:
+            _context20.prev = 29;
+            _context20.t1 = _context20["catch"](23);
+            errorDrawerFuncs.addFromError("Error importing resources", _context20.t1);
+          case 32:
+            return _context20.abrupt("return", "");
           case 33:
-            return _context21.abrupt("return", "");
-          case 34:
           case "end":
-            return _context21.stop();
+            return _context20.stop();
         }
-      }, _callee21, null, [[3, 17], [24, 30]]);
+      }, _callee20, null, [[3, 17], [23, 29]]);
     }));
     return _repository_copy_func2.apply(this, arguments);
   }
@@ -1484,24 +1392,24 @@ function LibraryPane(props) {
     return _send_repository_func2.apply(this, arguments);
   }
   function _send_repository_func2() {
-    _send_repository_func2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee22() {
+    _send_repository_func2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee21() {
       var pane_type, res_type, res_name, data, new_name, result_dict, _result_dict2;
-      return _regeneratorRuntime().wrap(function _callee22$(_context22) {
-        while (1) switch (_context22.prev = _context22.next) {
+      return _regeneratorRuntime().wrap(function _callee21$(_context21) {
+        while (1) switch (_context21.prev = _context21.next) {
           case 0:
             pane_type = props.pane_type;
             if (pStateRef.current.select_state.multi_select) {
-              _context22.next = 23;
+              _context21.next = 22;
               break;
             }
             res_type = pStateRef.current.select_state.selected_resource.res_type;
             res_name = pStateRef.current.select_state.selected_resource.name;
-            _context22.prev = 4;
-            _context22.next = 7;
+            _context21.prev = 4;
+            _context21.next = 7;
             return (0, _communication_react.postAjaxPromise)("get_repository_resource_names/" + res_type, {});
           case 7:
-            data = _context22.sent;
-            _context22.next = 10;
+            data = _context21.sent;
+            _context21.next = 10;
             return dialogFuncs.showModalPromise("ModalDialog", {
               title: "Share ".concat(res_type),
               field_title: "New ".concat(res_type, " Name"),
@@ -1511,52 +1419,51 @@ function LibraryPane(props) {
               handleClose: dialogFuncs.hideModal
             });
           case 10:
-            new_name = _context22.sent;
+            new_name = _context21.sent;
             result_dict = {
               "pane_type": pane_type,
               "res_type": res_type,
               "res_name": res_name,
               "new_res_name": new_name
             };
-            _context22.next = 14;
+            _context21.next = 14;
             return (0, _communication_react.postAjaxPromise)('/send_to_repository', result_dict);
           case 14:
             statusFuncs.statusMessage("Shared resource ".concat(res_name));
-            _context22.next = 21;
+            _context21.next = 20;
             break;
           case 17:
-            _context22.prev = 17;
-            _context22.t0 = _context22["catch"](4);
-            if (_context22.t0 != "canceled") {
-              errorDrawerFuncs.addFromError("Error sharing resource ".concat(res_name), _context22.t0);
+            _context21.prev = 17;
+            _context21.t0 = _context21["catch"](4);
+            if (_context21.t0 != "canceled") {
+              errorDrawerFuncs.addFromError("Error sharing resource ".concat(res_name), _context21.t0);
             }
-            return _context22.abrupt("return");
-          case 21:
-            _context22.next = 34;
+          case 20:
+            _context21.next = 33;
             break;
-          case 23:
+          case 22:
             _result_dict2 = {
               "pane_type": pane_type,
               "selected_rows": pStateRef.current.select_state.selected_rows
             };
-            _context22.prev = 24;
-            _context22.next = 27;
+            _context21.prev = 23;
+            _context21.next = 26;
             return (0, _communication_react.postAjaxPromise)('/send_to_repository', _result_dict2);
-          case 27:
+          case 26:
             statusFuncs.statusMessage("Shared resources");
-            _context22.next = 33;
+            _context21.next = 32;
             break;
-          case 30:
-            _context22.prev = 30;
-            _context22.t1 = _context22["catch"](24);
-            errorDrawerFuncs.addFromError("Error sharing resources", _context22.t1);
+          case 29:
+            _context21.prev = 29;
+            _context21.t1 = _context21["catch"](23);
+            errorDrawerFuncs.addFromError("Error sharing resources", _context21.t1);
+          case 32:
+            return _context21.abrupt("return", "");
           case 33:
-            return _context22.abrupt("return", "");
-          case 34:
           case "end":
-            return _context22.stop();
+            return _context21.stop();
         }
-      }, _callee22, null, [[4, 17], [24, 30]]);
+      }, _callee21, null, [[4, 17], [23, 29]]);
     }));
     return _send_repository_func2.apply(this, arguments);
   }
@@ -1564,20 +1471,20 @@ function LibraryPane(props) {
     return _refresh_func2.apply(this, arguments);
   }
   function _refresh_func2() {
-    _refresh_func2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee23() {
+    _refresh_func2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee22() {
       var callback,
-        _args23 = arguments;
-      return _regeneratorRuntime().wrap(function _callee23$(_context23) {
-        while (1) switch (_context23.prev = _context23.next) {
+        _args22 = arguments;
+      return _regeneratorRuntime().wrap(function _callee22$(_context22) {
+        while (1) switch (_context22.prev = _context22.next) {
           case 0:
-            callback = _args23.length > 0 && _args23[0] !== undefined ? _args23[0] : null;
-            _context23.next = 3;
+            callback = _args22.length > 0 && _args22[0] !== undefined ? _args22[0] : null;
+            _context22.next = 3;
             return _grabNewChunkWithRow(0, true, null, true, callback);
           case 3:
           case "end":
-            return _context23.stop();
+            return _context22.stop();
         }
-      }, _callee23);
+      }, _callee22);
     }));
     return _refresh_func2.apply(this, arguments);
   }
@@ -1585,7 +1492,48 @@ function LibraryPane(props) {
     return _new_notebook2.apply(this, arguments);
   }
   function _new_notebook2() {
-    _new_notebook2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee24() {
+    _new_notebook2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee23() {
+      var the_view, data;
+      return _regeneratorRuntime().wrap(function _callee23$(_context23) {
+        while (1) switch (_context23.prev = _context23.next) {
+          case 0:
+            if (!window.in_context) {
+              _context23.next = 14;
+              break;
+            }
+            _context23.prev = 1;
+            the_view = "new_notebook_in_context";
+            _context23.next = 5;
+            return (0, _communication_react.postAjaxPromise)(the_view, {
+              resource_name: ""
+            });
+          case 5:
+            data = _context23.sent;
+            props.handleCreateViewer(data);
+            _context23.next = 12;
+            break;
+          case 9:
+            _context23.prev = 9;
+            _context23.t0 = _context23["catch"](1);
+            errorDrawerFuncs.addFromError("Error creating new notebook", _context23.t0);
+          case 12:
+            _context23.next = 15;
+            break;
+          case 14:
+            window.open("".concat($SCRIPT_ROOT, "/new_notebook"));
+          case 15:
+          case "end":
+            return _context23.stop();
+        }
+      }, _callee23, null, [[1, 9]]);
+    }));
+    return _new_notebook2.apply(this, arguments);
+  }
+  function _new_project() {
+    return _new_project2.apply(this, arguments);
+  }
+  function _new_project2() {
+    _new_project2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee24() {
       var the_view, data;
       return _regeneratorRuntime().wrap(function _callee24$(_context24) {
         while (1) switch (_context24.prev = _context24.next) {
@@ -1595,7 +1543,7 @@ function LibraryPane(props) {
               break;
             }
             _context24.prev = 1;
-            the_view = "new_notebook_in_context";
+            the_view = "new_project_in_context";
             _context24.next = 5;
             return (0, _communication_react.postAjaxPromise)(the_view, {
               resource_name: ""
@@ -1608,58 +1556,17 @@ function LibraryPane(props) {
           case 9:
             _context24.prev = 9;
             _context24.t0 = _context24["catch"](1);
-            errorDrawerFuncs.addFromError("Error creating new notebook", _context24.t0);
+            errorDrawerFuncs.addFromError("Error creating new project", _context24.t0);
           case 12:
             _context24.next = 15;
-            break;
-          case 14:
-            window.open("".concat($SCRIPT_ROOT, "/new_notebook"));
-          case 15:
-          case "end":
-            return _context24.stop();
-        }
-      }, _callee24, null, [[1, 9]]);
-    }));
-    return _new_notebook2.apply(this, arguments);
-  }
-  function _new_project() {
-    return _new_project2.apply(this, arguments);
-  }
-  function _new_project2() {
-    _new_project2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee25() {
-      var the_view, data;
-      return _regeneratorRuntime().wrap(function _callee25$(_context25) {
-        while (1) switch (_context25.prev = _context25.next) {
-          case 0:
-            if (!window.in_context) {
-              _context25.next = 14;
-              break;
-            }
-            _context25.prev = 1;
-            the_view = "new_project_in_context";
-            _context25.next = 5;
-            return (0, _communication_react.postAjaxPromise)(the_view, {
-              resource_name: ""
-            });
-          case 5:
-            data = _context25.sent;
-            props.handleCreateViewer(data);
-            _context25.next = 12;
-            break;
-          case 9:
-            _context25.prev = 9;
-            _context25.t0 = _context25["catch"](1);
-            errorDrawerFuncs.addFromError("Error creating new project", _context25.t0);
-          case 12:
-            _context25.next = 15;
             break;
           case 14:
             window.open("".concat($SCRIPT_ROOT, "/new_project"));
           case 15:
           case "end":
-            return _context25.stop();
+            return _context24.stop();
         }
-      }, _callee25, null, [[1, 9]]);
+      }, _callee24, null, [[1, 9]]);
     }));
     return _new_project2.apply(this, arguments);
   }
@@ -1667,14 +1574,14 @@ function LibraryPane(props) {
     return _downloadJupyter2.apply(this, arguments);
   }
   function _downloadJupyter2() {
-    _downloadJupyter2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee26() {
+    _downloadJupyter2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee25() {
       var res_name, new_name;
-      return _regeneratorRuntime().wrap(function _callee26$(_context26) {
-        while (1) switch (_context26.prev = _context26.next) {
+      return _regeneratorRuntime().wrap(function _callee25$(_context25) {
+        while (1) switch (_context25.prev = _context25.next) {
           case 0:
             res_name = pStateRef.current.select_state.selected_resource.name;
-            _context26.prev = 1;
-            _context26.next = 4;
+            _context25.prev = 1;
+            _context25.next = 4;
             return dialogFuncs.showModalPromise("ModalDialog", {
               title: "Download Notebook as Jupyter Notebook",
               field_title: "New File Name",
@@ -1684,19 +1591,19 @@ function LibraryPane(props) {
               handleClose: dialogFuncs.hideModal
             });
           case 4:
-            new_name = _context26.sent;
+            new_name = _context25.sent;
             window.open("".concat($SCRIPT_ROOT, "/download_jupyter/") + res_name + "/" + new_name);
-            _context26.next = 11;
+            _context25.next = 11;
             break;
           case 8:
-            _context26.prev = 8;
-            _context26.t0 = _context26["catch"](1);
-            errorDrawerFuncs.addFromError("Error downloading jupyter notebook", _context26.t0);
+            _context25.prev = 8;
+            _context25.t0 = _context25["catch"](1);
+            errorDrawerFuncs.addFromError("Error downloading jupyter notebook", _context25.t0);
           case 11:
           case "end":
-            return _context26.stop();
+            return _context25.stop();
         }
-      }, _callee26, null, [[1, 8]]);
+      }, _callee25, null, [[1, 8]]);
     }));
     return _downloadJupyter2.apply(this, arguments);
   }
@@ -1729,22 +1636,22 @@ function LibraryPane(props) {
     return _combineCollections2.apply(this, arguments);
   }
   function _combineCollections2() {
-    _combineCollections2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee27() {
+    _combineCollections2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee26() {
       var res_name, data, other_name, target, _data, new_name;
-      return _regeneratorRuntime().wrap(function _callee27$(_context27) {
-        while (1) switch (_context27.prev = _context27.next) {
+      return _regeneratorRuntime().wrap(function _callee26$(_context26) {
+        while (1) switch (_context26.prev = _context26.next) {
           case 0:
             res_name = pStateRef.current.select_state.selected_resource.name;
             if (pStateRef.current.select_state.multi_select) {
-              _context27.next = 24;
+              _context26.next = 23;
               break;
             }
-            _context27.prev = 2;
-            _context27.next = 5;
+            _context26.prev = 2;
+            _context26.next = 5;
             return (0, _communication_react.postAjaxPromise)("get_resource_names/collection", {});
           case 5:
-            data = _context27.sent;
-            _context27.next = 8;
+            data = _context26.sent;
+            _context26.next = 8;
             return dialogFuncs.showModalPromise("SelectDialog", {
               title: "Select a new collection to combine with " + res_name,
               select_label: "Collection to Combine",
@@ -1754,34 +1661,33 @@ function LibraryPane(props) {
               handleClose: dialogFuncs.hideModal
             });
           case 8:
-            other_name = _context27.sent;
+            other_name = _context26.sent;
             statusFuncs.startSpinner(true);
             target = "combine_collections/".concat(res_name, "/").concat(other_name);
-            _context27.next = 13;
+            _context26.next = 13;
             return (0, _communication_react.postAjaxPromise)(target, {});
           case 13:
             statusFuncs.stopSpinner();
             statusFuncs.statusMessage("Combined Collections");
-            _context27.next = 22;
+            _context26.next = 21;
             break;
           case 17:
-            _context27.prev = 17;
-            _context27.t0 = _context27["catch"](2);
-            if (_context27.t0 != "canceled") {
-              errorDrawerFuncs.addFromError("Error combining collections", _context27.t0);
+            _context26.prev = 17;
+            _context26.t0 = _context26["catch"](2);
+            if (_context26.t0 != "canceled") {
+              errorDrawerFuncs.addFromError("Error combining collections", _context26.t0);
             }
             statusFuncs.stopSpinner();
-            return _context27.abrupt("return");
-          case 22:
-            _context27.next = 40;
+          case 21:
+            _context26.next = 38;
             break;
-          case 24:
-            _context27.prev = 24;
-            _context27.next = 27;
+          case 23:
+            _context26.prev = 23;
+            _context26.next = 26;
             return (0, _communication_react.postAjaxPromise)("get_resource_names/collection", {});
-          case 27:
-            _data = _context27.sent;
-            _context27.next = 30;
+          case 26:
+            _data = _context26.sent;
+            _context26.next = 29;
             return dialogFuncs.showModalPromise("ModalDialog", {
               title: "Combine Collections",
               field_title: "Name for combined collection",
@@ -1790,29 +1696,28 @@ function LibraryPane(props) {
               checkboxes: [],
               handleClose: dialogFuncs.hideModal
             });
-          case 30:
-            new_name = _context27.sent;
-            _context27.next = 33;
+          case 29:
+            new_name = _context26.sent;
+            _context26.next = 32;
             return (0, _communication_react.postAjaxPromise)("combine_to_new_collection", {
               "original_collections": pStateRef.current.select_state.list_of_selected,
               "new_name": new_name
             });
-          case 33:
-            _context27.next = 40;
+          case 32:
+            _context26.next = 38;
             break;
-          case 35:
-            _context27.prev = 35;
-            _context27.t1 = _context27["catch"](24);
-            if (_context27.t1 != "canceled") {
-              errorDrawerFuncs.addFromError("Error combining collections", _context27.t1);
+          case 34:
+            _context26.prev = 34;
+            _context26.t1 = _context26["catch"](23);
+            if (_context26.t1 != "canceled") {
+              errorDrawerFuncs.addFromError("Error combining collections", _context26.t1);
             }
             statusFuncs.stopSpinner();
-            return _context27.abrupt("return");
-          case 40:
+          case 38:
           case "end":
-            return _context27.stop();
+            return _context26.stop();
         }
-      }, _callee27, null, [[2, 17], [24, 35]]);
+      }, _callee26, null, [[2, 17], [23, 34]]);
     }));
     return _combineCollections2.apply(this, arguments);
   }
@@ -1820,18 +1725,18 @@ function LibraryPane(props) {
     return _downloadCollection2.apply(this, arguments);
   }
   function _downloadCollection2() {
-    _downloadCollection2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee28() {
+    _downloadCollection2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee27() {
       var resource_name,
         res_name,
         new_name,
-        _args28 = arguments;
-      return _regeneratorRuntime().wrap(function _callee28$(_context28) {
-        while (1) switch (_context28.prev = _context28.next) {
+        _args27 = arguments;
+      return _regeneratorRuntime().wrap(function _callee27$(_context27) {
+        while (1) switch (_context27.prev = _context27.next) {
           case 0:
-            resource_name = _args28.length > 0 && _args28[0] !== undefined ? _args28[0] : null;
+            resource_name = _args27.length > 0 && _args27[0] !== undefined ? _args27[0] : null;
             res_name = resource_name ? resource_name : pStateRef.current.select_state.selected_resource.name;
-            _context28.prev = 2;
-            _context28.next = 5;
+            _context27.prev = 2;
+            _context27.next = 5;
             return dialogFuncs.showModalPromise("ModalDialog", {
               title: "Download Collection",
               field_title: "New File Name",
@@ -1841,42 +1746,23 @@ function LibraryPane(props) {
               handleClose: dialogFuncs.hideModal
             });
           case 5:
-            new_name = _context28.sent;
+            new_name = _context27.sent;
             window.open("".concat($SCRIPT_ROOT, "/download_collection/") + res_name + "/" + new_name);
-            _context28.next = 13;
+            _context27.next = 12;
             break;
           case 9:
-            _context28.prev = 9;
-            _context28.t0 = _context28["catch"](2);
-            if (_context28.t0 != "canceled") {
-              errorDrawerFuncs.addFromError("Error combing collections", _context28.t0);
+            _context27.prev = 9;
+            _context27.t0 = _context27["catch"](2);
+            if (_context27.t0 != "canceled") {
+              errorDrawerFuncs.addFromError("Error combing collections", _context27.t0);
             }
-            return _context28.abrupt("return");
-          case 13:
+          case 12:
           case "end":
-            return _context28.stop();
+            return _context27.stop();
         }
-      }, _callee28, null, [[2, 9]]);
+      }, _callee27, null, [[2, 9]]);
     }));
     return _downloadCollection2.apply(this, arguments);
-  }
-  function _displayImportResults(data) {
-    var title = "Collection Created";
-    var message = "";
-    var number_of_errors;
-    if (data.file_decoding_errors == null) {
-      statusFuncs.statusMessage("No import errors");
-    } else {
-      message = "<b>Decoding errors were enountered</b>";
-      for (var filename in data.file_decoding_errors) {
-        number_of_errors = String(data.file_decoding_errors[filename].length);
-        message = message + "<br>".concat(filename, ": ").concat(number_of_errors, " errors");
-      }
-      errorDrawerFuncs.addErrorDrawerEntry({
-        title: title,
-        content: message
-      });
-    }
   }
   function _showCollectionImport() {
     dialogFuncs.showModal("FileImportDialog", {
@@ -1904,18 +1790,18 @@ function LibraryPane(props) {
     return _import_collection2.apply(this, arguments);
   }
   function _import_collection2() {
-    _import_collection2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee29(myDropZone, setCurrentUrl, new_name, check_results) {
+    _import_collection2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee28(myDropZone, setCurrentUrl, new_name, check_results) {
       var csv_options,
         doc_type,
         new_url,
-        _args29 = arguments;
-      return _regeneratorRuntime().wrap(function _callee29$(_context29) {
-        while (1) switch (_context29.prev = _context29.next) {
+        _args28 = arguments;
+      return _regeneratorRuntime().wrap(function _callee28$(_context28) {
+        while (1) switch (_context28.prev = _context28.next) {
           case 0:
-            csv_options = _args29.length > 4 && _args29[4] !== undefined ? _args29[4] : null;
+            csv_options = _args28.length > 4 && _args28[4] !== undefined ? _args28[4] : null;
             doc_type = check_results["import_as_freeform"] ? "freeform" : "table";
-            _context29.prev = 2;
-            _context29.next = 5;
+            _context28.prev = 2;
+            _context28.next = 5;
             return (0, _communication_react.postAjaxPromise)("create_empty_collection", {
               "collection_name": new_name,
               "doc_type": doc_type,
@@ -1927,17 +1813,17 @@ function LibraryPane(props) {
             myDropZone.options.url = new_url;
             setCurrentUrl(new_url);
             myDropZone.processQueue();
-            _context29.next = 14;
+            _context28.next = 14;
             break;
           case 11:
-            _context29.prev = 11;
-            _context29.t0 = _context29["catch"](2);
-            errorDrawerFuncs.addFromError("Error importing document", _context29.t0);
+            _context28.prev = 11;
+            _context28.t0 = _context28["catch"](2);
+            errorDrawerFuncs.addFromError("Error importing document", _context28.t0);
           case 14:
           case "end":
-            return _context29.stop();
+            return _context28.stop();
         }
-      }, _callee29, null, [[2, 11]]);
+      }, _callee28, null, [[2, 11]]);
     }));
     return _import_collection2.apply(this, arguments);
   }
@@ -1945,17 +1831,17 @@ function LibraryPane(props) {
     return _tile_view2.apply(this, arguments);
   }
   function _tile_view2() {
-    _tile_view2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee30() {
-      return _regeneratorRuntime().wrap(function _callee30$(_context30) {
-        while (1) switch (_context30.prev = _context30.next) {
+    _tile_view2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee29() {
+      return _regeneratorRuntime().wrap(function _callee29$(_context29) {
+        while (1) switch (_context29.prev = _context29.next) {
           case 0:
-            _context30.next = 2;
+            _context29.next = 2;
             return _view_func("/view_module/");
           case 2:
           case "end":
-            return _context30.stop();
+            return _context29.stop();
         }
-      }, _callee30);
+      }, _callee29);
     }));
     return _tile_view2.apply(this, arguments);
   }
@@ -1963,7 +1849,31 @@ function LibraryPane(props) {
     return _view_named_tile2.apply(this, arguments);
   }
   function _view_named_tile2() {
-    _view_named_tile2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee31(res) {
+    _view_named_tile2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee30(res) {
+      var in_new_tab,
+        _args30 = arguments;
+      return _regeneratorRuntime().wrap(function _callee30$(_context30) {
+        while (1) switch (_context30.prev = _context30.next) {
+          case 0:
+            in_new_tab = _args30.length > 1 && _args30[1] !== undefined ? _args30[1] : false;
+            _context30.next = 3;
+            return _view_resource({
+              name: res.name,
+              res_type: "tile"
+            }, "/view_module/", in_new_tab);
+          case 3:
+          case "end":
+            return _context30.stop();
+        }
+      }, _callee30);
+    }));
+    return _view_named_tile2.apply(this, arguments);
+  }
+  function _creator_view_named_tile(_x13) {
+    return _creator_view_named_tile2.apply(this, arguments);
+  }
+  function _creator_view_named_tile2() {
+    _creator_view_named_tile2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee31(res) {
       var in_new_tab,
         _args31 = arguments;
       return _regeneratorRuntime().wrap(function _callee31$(_context31) {
@@ -1972,38 +1882,14 @@ function LibraryPane(props) {
             in_new_tab = _args31.length > 1 && _args31[1] !== undefined ? _args31[1] : false;
             _context31.next = 3;
             return _view_resource({
-              name: res.name,
-              res_type: "tile"
-            }, "/view_module/", in_new_tab);
-          case 3:
-          case "end":
-            return _context31.stop();
-        }
-      }, _callee31);
-    }));
-    return _view_named_tile2.apply(this, arguments);
-  }
-  function _creator_view_named_tile(_x13) {
-    return _creator_view_named_tile2.apply(this, arguments);
-  }
-  function _creator_view_named_tile2() {
-    _creator_view_named_tile2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee32(res) {
-      var in_new_tab,
-        _args32 = arguments;
-      return _regeneratorRuntime().wrap(function _callee32$(_context32) {
-        while (1) switch (_context32.prev = _context32.next) {
-          case 0:
-            in_new_tab = _args32.length > 1 && _args32[1] !== undefined ? _args32[1] : false;
-            _context32.next = 3;
-            return _view_resource({
               name: res.tile,
               res_type: "tile"
             }, "/view_in_creator/", in_new_tab);
           case 3:
           case "end":
-            return _context32.stop();
+            return _context31.stop();
         }
-      }, _callee32);
+      }, _callee31);
     }));
     return _creator_view_named_tile2.apply(this, arguments);
   }
@@ -2011,17 +1897,17 @@ function LibraryPane(props) {
     return _creator_view2.apply(this, arguments);
   }
   function _creator_view2() {
-    _creator_view2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee33() {
-      return _regeneratorRuntime().wrap(function _callee33$(_context33) {
-        while (1) switch (_context33.prev = _context33.next) {
+    _creator_view2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee32() {
+      return _regeneratorRuntime().wrap(function _callee32$(_context32) {
+        while (1) switch (_context32.prev = _context32.next) {
           case 0:
-            _context33.next = 2;
+            _context32.next = 2;
             return _view_func("/view_in_creator/");
           case 2:
           case "end":
-            return _context33.stop();
+            return _context32.stop();
         }
-      }, _callee33);
+      }, _callee32);
     }));
     return _creator_view2.apply(this, arguments);
   }
@@ -2046,7 +1932,42 @@ function LibraryPane(props) {
     return _load_tile2.apply(this, arguments);
   }
   function _load_tile2() {
-    _load_tile2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee34() {
+    _load_tile2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee33() {
+      var resource,
+        res_name,
+        _args33 = arguments;
+      return _regeneratorRuntime().wrap(function _callee33$(_context33) {
+        while (1) switch (_context33.prev = _context33.next) {
+          case 0:
+            resource = _args33.length > 0 && _args33[0] !== undefined ? _args33[0] : null;
+            res_name = resource ? resource.name : pStateRef.current.select_state.selected_resource.name;
+            _context33.prev = 2;
+            _context33.next = 5;
+            return (0, _communication_react.postPromise)("host", "load_tile_module_task", {
+              "tile_module_name": res_name,
+              "user_id": window.user_id
+            });
+          case 5:
+            statusFuncs.statusMessage("Loaded tile ".concat(res_name));
+            _context33.next = 11;
+            break;
+          case 8:
+            _context33.prev = 8;
+            _context33.t0 = _context33["catch"](2);
+            errorDrawerFuncs.addFromError("Error loading tile", _context33.t0);
+          case 11:
+          case "end":
+            return _context33.stop();
+        }
+      }, _callee33, null, [[2, 8]]);
+    }));
+    return _load_tile2.apply(this, arguments);
+  }
+  function _unload_module() {
+    return _unload_module2.apply(this, arguments);
+  }
+  function _unload_module2() {
+    _unload_module2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee34() {
       var resource,
         res_name,
         _args34 = arguments;
@@ -2057,55 +1978,20 @@ function LibraryPane(props) {
             res_name = resource ? resource.name : pStateRef.current.select_state.selected_resource.name;
             _context34.prev = 2;
             _context34.next = 5;
-            return (0, _communication_react.postPromise)("host", "load_tile_module_task", {
-              "tile_module_name": res_name,
-              "user_id": window.user_id
-            });
+            return (0, _communication_react.postAjaxPromise)("unload_one_module/".concat(res_name), {});
           case 5:
-            statusFuncs.statusMessage("Loaded tile ".concat(res_name));
+            statusFuncs.statusMessage("Tile unloaded");
             _context34.next = 11;
             break;
           case 8:
             _context34.prev = 8;
             _context34.t0 = _context34["catch"](2);
-            errorDrawerFuncs.addFromError("Error loading tile", _context34.t0);
+            errorDrawerFuncs.addFromError("Error unloading tile", _context34.t0);
           case 11:
           case "end":
             return _context34.stop();
         }
       }, _callee34, null, [[2, 8]]);
-    }));
-    return _load_tile2.apply(this, arguments);
-  }
-  function _unload_module() {
-    return _unload_module2.apply(this, arguments);
-  }
-  function _unload_module2() {
-    _unload_module2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee35() {
-      var resource,
-        res_name,
-        _args35 = arguments;
-      return _regeneratorRuntime().wrap(function _callee35$(_context35) {
-        while (1) switch (_context35.prev = _context35.next) {
-          case 0:
-            resource = _args35.length > 0 && _args35[0] !== undefined ? _args35[0] : null;
-            res_name = resource ? resource.name : pStateRef.current.select_state.selected_resource.name;
-            _context35.prev = 2;
-            _context35.next = 5;
-            return (0, _communication_react.postAjaxPromise)("unload_one_module/".concat(res_name), {});
-          case 5:
-            statusFuncs.statusMessage("Tile unloaded");
-            _context35.next = 11;
-            break;
-          case 8:
-            _context35.prev = 8;
-            _context35.t0 = _context35["catch"](2);
-            errorDrawerFuncs.addFromError("Error unloading tile", _context35.t0);
-          case 11:
-          case "end":
-            return _context35.stop();
-        }
-      }, _callee35, null, [[2, 8]]);
     }));
     return _unload_module2.apply(this, arguments);
   }
@@ -2113,155 +1999,99 @@ function LibraryPane(props) {
     return _unload_all_tiles2.apply(this, arguments);
   }
   function _unload_all_tiles2() {
-    _unload_all_tiles2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee36() {
+    _unload_all_tiles2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee35() {
+      return _regeneratorRuntime().wrap(function _callee35$(_context35) {
+        while (1) switch (_context35.prev = _context35.next) {
+          case 0:
+            _context35.prev = 0;
+            _context35.next = 3;
+            return (0, _communication_react.postAjaxPromise)("unload_all_tiles", {});
+          case 3:
+            statusFuncs.statusMessage("Unloaded all tiles");
+            _context35.next = 9;
+            break;
+          case 6:
+            _context35.prev = 6;
+            _context35.t0 = _context35["catch"](0);
+            errorDrawerFuncs.addFromError("Error unloading tiles", _context35.t0);
+          case 9:
+          case "end":
+            return _context35.stop();
+        }
+      }, _callee35, null, [[0, 6]]);
+    }));
+    return _unload_all_tiles2.apply(this, arguments);
+  }
+  function _new_in_creator(_x14) {
+    return _new_in_creator2.apply(this, arguments);
+  }
+  function _new_in_creator2() {
+    _new_in_creator2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee36(template_name) {
+      var data, new_name, result_dict;
       return _regeneratorRuntime().wrap(function _callee36$(_context36) {
         while (1) switch (_context36.prev = _context36.next) {
           case 0:
             _context36.prev = 0;
             _context36.next = 3;
-            return (0, _communication_react.postAjaxPromise)("unload_all_tiles", {});
+            return (0, _communication_react.postAjaxPromise)("get_resource_names/tile", {});
           case 3:
-            statusFuncs.statusMessage("Unloaded all tiles");
-            _context36.next = 9;
-            break;
+            data = _context36.sent;
+            _context36.next = 6;
+            return dialogFuncs.showModalPromise("ModalDialog", {
+              title: "New Tile",
+              field_title: "New Tile Name",
+              default_value: "NewTileModule",
+              existing_names: data.resource_names,
+              checkboxes: [],
+              handleClose: dialogFuncs.hideModal
+            });
           case 6:
-            _context36.prev = 6;
+            new_name = _context36.sent;
+            result_dict = {
+              "template_name": template_name,
+              "new_res_name": new_name,
+              "last_saved": "creator"
+            };
+            _context36.next = 10;
+            return (0, _communication_react.postAjaxPromise)("/create_tile_module", result_dict);
+          case 10:
+            _context36.next = 12;
+            return _view_resource({
+              name: String(new_name),
+              res_type: "tile"
+            }, "/view_in_creator/");
+          case 12:
+            _context36.next = 17;
+            break;
+          case 14:
+            _context36.prev = 14;
             _context36.t0 = _context36["catch"](0);
-            errorDrawerFuncs.addFromError("Error unloading tiles", _context36.t0);
-          case 9:
+            if (_context36.t0 != "canceled") {
+              errorDrawerFuncs.addFromError("Error creating tile module", _context36.t0);
+            }
+          case 17:
           case "end":
             return _context36.stop();
         }
-      }, _callee36, null, [[0, 6]]);
+      }, _callee36, null, [[0, 14]]);
     }));
-    return _unload_all_tiles2.apply(this, arguments);
+    return _new_in_creator2.apply(this, arguments);
   }
-  function _new_tile(_x14) {
-    return _new_tile2.apply(this, arguments);
+  function _new_list(_x15) {
+    return _new_list2.apply(this, arguments);
   }
-  function _new_tile2() {
-    _new_tile2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee37(template_name) {
+  function _new_list2() {
+    _new_list2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee37(template_name) {
       var data, new_name, result_dict;
       return _regeneratorRuntime().wrap(function _callee37$(_context37) {
         while (1) switch (_context37.prev = _context37.next) {
           case 0:
             _context37.prev = 0;
             _context37.next = 3;
-            return (0, _communication_react.postAjaxPromise)("get_resource_names/tile", {});
+            return (0, _communication_react.postAjaxPromise)("get_resource_names/list", {});
           case 3:
             data = _context37.sent;
             _context37.next = 6;
-            return dialogFuncs.showModalPromise("ModalDialog", {
-              title: "New Tile",
-              field_title: "New Tile Name",
-              default_value: "NewTileModule",
-              existing_names: data.resource_names,
-              checkboxes: [],
-              handleClose: dialogFuncs.hideModal
-            });
-          case 6:
-            new_name = _context37.sent;
-            result_dict = {
-              "template_name": template_name,
-              "new_res_name": new_name,
-              "last_saved": "viewer"
-            };
-            _context37.next = 10;
-            return (0, _communication_react.postAjaxPromise)("/create_tile_module", result_dict);
-          case 10:
-            _context37.next = 12;
-            return _view_resource({
-              name: new_name,
-              res_type: "tile"
-            }, "/view_module/");
-          case 12:
-            _context37.next = 18;
-            break;
-          case 14:
-            _context37.prev = 14;
-            _context37.t0 = _context37["catch"](0);
-            if (_context37.t0 != "canceled") {
-              errorDrawerFuncs.addFromError("Error creating tile module", _context37.t0);
-            }
-            return _context37.abrupt("return");
-          case 18:
-          case "end":
-            return _context37.stop();
-        }
-      }, _callee37, null, [[0, 14]]);
-    }));
-    return _new_tile2.apply(this, arguments);
-  }
-  function _new_in_creator(_x15) {
-    return _new_in_creator2.apply(this, arguments);
-  }
-  function _new_in_creator2() {
-    _new_in_creator2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee38(template_name) {
-      var data, new_name, result_dict;
-      return _regeneratorRuntime().wrap(function _callee38$(_context38) {
-        while (1) switch (_context38.prev = _context38.next) {
-          case 0:
-            _context38.prev = 0;
-            _context38.next = 3;
-            return (0, _communication_react.postAjaxPromise)("get_resource_names/tile", {});
-          case 3:
-            data = _context38.sent;
-            _context38.next = 6;
-            return dialogFuncs.showModalPromise("ModalDialog", {
-              title: "New Tile",
-              field_title: "New Tile Name",
-              default_value: "NewTileModule",
-              existing_names: data.resource_names,
-              checkboxes: [],
-              handleClose: dialogFuncs.hideModal
-            });
-          case 6:
-            new_name = _context38.sent;
-            result_dict = {
-              "template_name": template_name,
-              "new_res_name": new_name,
-              "last_saved": "creator"
-            };
-            _context38.next = 10;
-            return (0, _communication_react.postAjaxPromise)("/create_tile_module", result_dict);
-          case 10:
-            _context38.next = 12;
-            return _view_resource({
-              name: String(new_name),
-              res_type: "tile"
-            }, "/view_in_creator/");
-          case 12:
-            _context38.next = 17;
-            break;
-          case 14:
-            _context38.prev = 14;
-            _context38.t0 = _context38["catch"](0);
-            if (_context38.t0 != "canceled") {
-              errorDrawerFuncs.addFromError("Error creating tile module", _context38.t0);
-            }
-          case 17:
-          case "end":
-            return _context38.stop();
-        }
-      }, _callee38, null, [[0, 14]]);
-    }));
-    return _new_in_creator2.apply(this, arguments);
-  }
-  function _new_list(_x16) {
-    return _new_list2.apply(this, arguments);
-  }
-  function _new_list2() {
-    _new_list2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee39(template_name) {
-      var data, new_name, result_dict;
-      return _regeneratorRuntime().wrap(function _callee39$(_context39) {
-        while (1) switch (_context39.prev = _context39.next) {
-          case 0:
-            _context39.prev = 0;
-            _context39.next = 3;
-            return (0, _communication_react.postAjaxPromise)("get_resource_names/list", {});
-          case 3:
-            data = _context39.sent;
-            _context39.next = 6;
             return dialogFuncs.showModalPromise("ModalDialog", {
               title: "New List Resource",
               field_title: "New List Name",
@@ -2271,33 +2101,33 @@ function LibraryPane(props) {
               handleClose: dialogFuncs.hideModal
             });
           case 6:
-            new_name = _context39.sent;
+            new_name = _context37.sent;
             result_dict = {
               "template_name": template_name,
               "new_res_name": new_name
             };
-            _context39.next = 10;
+            _context37.next = 10;
             return (0, _communication_react.postAjaxPromise)("/create_list", result_dict);
           case 10:
-            _context39.next = 12;
+            _context37.next = 12;
             return _view_resource({
               name: String(new_name),
               res_type: "list"
             }, "/view_list/");
           case 12:
-            _context39.next = 17;
+            _context37.next = 17;
             break;
           case 14:
-            _context39.prev = 14;
-            _context39.t0 = _context39["catch"](0);
-            if (_context39.t0 != "canceled") {
-              errorDrawerFuncs.addFromError("Error creating list resource", _context39.t0);
+            _context37.prev = 14;
+            _context37.t0 = _context37["catch"](0);
+            if (_context37.t0 != "canceled") {
+              errorDrawerFuncs.addFromError("Error creating list resource", _context37.t0);
             }
           case 17:
           case "end":
-            return _context39.stop();
+            return _context37.stop();
         }
-      }, _callee39, null, [[0, 14]]);
+      }, _callee37, null, [[0, 14]]);
     }));
     return _new_list2.apply(this, arguments);
   }
@@ -2326,27 +2156,21 @@ function LibraryPane(props) {
       handleCancel: null
     });
   }
-  function _add_to_pool(myDropZone, setCurrentUrl, current_value) {
-    var new_url = "import_pool/".concat(props.library_id);
-    myDropZone.options.url = new_url;
-    setCurrentUrl(new_url);
-    myDropZone.processQueue();
-  }
-  function _new_code(_x17) {
+  function _new_code(_x16) {
     return _new_code2.apply(this, arguments);
   }
   function _new_code2() {
-    _new_code2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee40(template_name) {
+    _new_code2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee38(template_name) {
       var data, new_name, result_dict;
-      return _regeneratorRuntime().wrap(function _callee40$(_context40) {
-        while (1) switch (_context40.prev = _context40.next) {
+      return _regeneratorRuntime().wrap(function _callee38$(_context38) {
+        while (1) switch (_context38.prev = _context38.next) {
           case 0:
-            _context40.prev = 0;
-            _context40.next = 3;
+            _context38.prev = 0;
+            _context38.next = 3;
             return (0, _communication_react.postAjaxPromise)("get_resource_names/code", {});
           case 3:
-            data = _context40.sent;
-            _context40.next = 6;
+            data = _context38.sent;
+            _context38.next = 6;
             return dialogFuncs.showModalPromise("ModalDialog", {
               title: "New code Resource",
               field_title: "New Code Resource Name",
@@ -2356,33 +2180,33 @@ function LibraryPane(props) {
               handleClose: dialogFuncs.hideModal
             });
           case 6:
-            new_name = _context40.sent;
+            new_name = _context38.sent;
             result_dict = {
               "template_name": template_name,
               "new_res_name": new_name
             };
-            _context40.next = 10;
+            _context38.next = 10;
             return (0, _communication_react.postAjaxPromise)("/create_code", result_dict);
           case 10:
-            _context40.next = 12;
+            _context38.next = 12;
             return _view_resource({
               name: String(new_name),
               res_type: "code"
             }, "/view_code/");
           case 12:
-            _context40.next = 17;
+            _context38.next = 17;
             break;
           case 14:
-            _context40.prev = 14;
-            _context40.t0 = _context40["catch"](0);
-            if (_context40.t0 != "canceled") {
-              errorDrawerFuncs.addFromError("Error creating code resource", _context40.t0);
+            _context38.prev = 14;
+            _context38.t0 = _context38["catch"](0);
+            if (_context38.t0 != "canceled") {
+              errorDrawerFuncs.addFromError("Error creating code resource", _context38.t0);
             }
           case 17:
           case "end":
-            return _context40.stop();
+            return _context38.stop();
         }
-      }, _callee40, null, [[0, 14]]);
+      }, _callee38, null, [[0, 14]]);
     }));
     return _new_code2.apply(this, arguments);
   }
@@ -2423,7 +2247,6 @@ function LibraryPane(props) {
       new_code: _new_code
     };
   }
-  var new_button_groups;
   var res_type = pStateRef.current.select_state.selected_resource.res_type;
   var res_name = pStateRef.current.select_state.selected_resource.name;
   var right_pane = /*#__PURE__*/_react["default"].createElement(_blueprint_mdata_fields.CombinedMetadata, {
@@ -2436,22 +2259,13 @@ function LibraryPane(props) {
     expandWidth: true,
     readOnly: props.is_repository
   });
-  var th_style = {
-    "display": "inline-block",
-    "verticalAlign": "top",
-    "maxHeight": "100%",
-    "overflowY": "scroll",
-    "overflowX": "scroll",
-    "lineHeight": 1,
-    "whiteSpace": "nowrap"
-  };
   var MenubarClass = props.MenubarClass;
   var filter_buttons = [];
-  var _iterator3 = _createForOfIteratorHelper(["all"].concat(res_types)),
-    _step3;
+  var _iterator2 = _createForOfIteratorHelper(["all"].concat(res_types)),
+    _step2;
   try {
     var _loop = function _loop() {
-      var rtype = _step3.value;
+      var rtype = _step2.value;
       filter_buttons.push(/*#__PURE__*/_react["default"].createElement(_popover.Tooltip2, {
         content: rtype,
         key: rtype,
@@ -2460,29 +2274,29 @@ function LibraryPane(props) {
         intent: "warning"
       }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
         icon: _blueprint_mdata_fields.icon_dict[rtype],
-        minimal: true,
+        variant: "minimal",
         active: rtype == pState.search_state.filterType,
-        onClick: /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee41() {
-          return _regeneratorRuntime().wrap(function _callee41$(_context41) {
-            while (1) switch (_context41.prev = _context41.next) {
+        onClick: /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee39() {
+          return _regeneratorRuntime().wrap(function _callee39$(_context39) {
+            while (1) switch (_context39.prev = _context39.next) {
               case 0:
-                _context41.next = 2;
+                _context39.next = 2;
                 return _setFilterType(rtype);
               case 2:
               case "end":
-                return _context41.stop();
+                return _context39.stop();
             }
-          }, _callee41);
+          }, _callee39);
         }))
       })));
     };
-    for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+    for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
       _loop();
     }
   } catch (err) {
-    _iterator3.e(err);
+    _iterator2.e(err);
   } finally {
-    _iterator3.f();
+    _iterator2.f();
   }
   var left_pane = /*#__PURE__*/_react["default"].createElement(_library_table_pane.LibraryTablePane, _extends({}, props, {
     pStateRef: pStateRef,

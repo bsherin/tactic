@@ -194,7 +194,7 @@ function BpSelect(props) {
             }}>
             <Button className="button-in-select"
                     style={props.buttonStyle}
-                    small={props.small}
+                    size={props.small ? "small" : "medium"}
                     text={props.buttonTextObject ? props.buttonTextObject : props.value}
                     icon={props.buttonIcon}/>
         </Select>
@@ -234,7 +234,6 @@ function renderSuggestion(item, {modifiers, handleClick, index}) {
 }
 
 const renderCreateNewTag = (query, active, handleClick) => {
-    let hclick = handleClick;
     return (
         <MenuItem
             icon="add"
@@ -248,7 +247,6 @@ const renderCreateNewTag = (query, active, handleClick) => {
 };
 
 function NativeTags(props) {
-    const [query, setQuery] = useState("");
 
     function renderTag(item) {
         return item
@@ -318,7 +316,7 @@ function NotesField(props) {
         // console.log("theme changed")  // This is to force re-rendering because of highlight.js theme change
     }, [settingsContext.settings.theme]);
 
-    const [mdHeight, setMdHeight] = useState(500);
+    const [mdHeight, ] = useState(500);
     const [showMarkdown, setShowMarkdown] = useState(hasOnlyWhitespace() ? false : props.show_markdown_initial);
     const awaitingFocus = useRef(false);
     const cmObject = useRef(null);
@@ -341,10 +339,6 @@ function NotesField(props) {
 
     function hasOnlyWhitespace() {
         return !props.mStateRef.current.notes || !props.mStateRef.current.notes.trim().length
-    }
-
-    function getMarkdownField() {
-        return mdRef.current
     }
 
     function focusNotes() {
@@ -379,11 +373,6 @@ function NotesField(props) {
     }, []);
 
     let really_show_markdown = hasOnlyWhitespace() ? false : showMarkdown;
-    let notes_style = {
-        display: really_show_markdown ? "none" : "block",
-        fontSize: 13,
-        resize: "both"
-    };
     let md_style = {
         display: really_show_markdown ? "block" : "none",
         maxHeight: mdHeight,
@@ -420,24 +409,6 @@ function NotesField(props) {
 }
 
 NotesField = memo(NotesField);
-
-const icon_list = ["application", "code",
-    "timeline-line-chart", "heatmap", "graph", "heat-grid", "chart", "pie-chart", "regression-chart",
-    "grid", "numerical", "font", "array", "array-numeric", "array-string", "data-lineage", "function", "variable",
-    "build", "group-objects", "ungroup-objects", "inner-join", "filter",
-    "sort-asc", "sort-alphabetical", "sort-numerical", "random",
-    "layout", "layout-auto", "layout-balloon",
-    "changes", "comparison",
-    "exchange", "derive_column",
-    "list-columns", "delta",
-    "edit", "fork", "numbered-list", "path-search", "search",
-    "plus", "repeat", "reset", "resolve",
-    "widget-button",
-    "star", "time", "settings", "properties", "cog", "key-command",
-    "ip-address", "download", "cloud", "globe",
-    "tag", "label",
-    "history", "predictive-analysis", "calculator", "pulse", "warning-sign", "cube", "wrench"
-];
 
 var icon_dlist = [];
 var icon_entry_dict = {};
@@ -478,8 +449,6 @@ function IconSelector({handleSelectChange, icon_val, readOnly}) {
 
 IconSelector = memo(IconSelector);
 
-const primary_mdata_fields = ["name", "created",
-    "updated", "tags", "notes"];
 const ignore_fields = ["doc_type", "res_type"];
 
 const initial_state = {
@@ -556,18 +525,18 @@ function CombinedMetadata(props) {
     };
     const top_ref = useRef();
 
-    const [mState, mDispatch, mStateRef] = useImmerReducerAndRef(metadataReducer, initial_state);
+    const [, mDispatch, mStateRef] = useImmerReducerAndRef(metadataReducer, initial_state);
 
     const pushCallback = useCallbackStack();
 
     const updatedIdRef = useRef(null);
-    const [waiting, doUpdate] = useDebounce((state_stuff) => {
+    const [, doUpdate] = useDebounce((state_stuff) => {
         postChanges(state_stuff)
             .then(() => {
             });
     });
 
-    const [usable_width, usable_height, topX, topY] = useSize(top_ref, props.tabSelectCounter, "CombinedMetadata");
+    const [usable_width, , , ] = useSize(top_ref, props.tabSelectCounter, "CombinedMetadata");
 
     useEffect(() => {
         if (props.tsocket != null && !props.is_repository && !props.useFixedData) {
@@ -688,7 +657,6 @@ function CombinedMetadata(props) {
         await _handleMetadataChange({"icon": icon})
     }
 
-    let addition_field_style = {fontSize: 14};
     let additional_items;
 
     if (props.useFixedData) {

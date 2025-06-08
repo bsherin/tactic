@@ -90,9 +90,6 @@ function SearchForm(props) {
       "regex": event.target.checked
     });
   }
-  function _handleSubmit(event) {
-    event.preventDefault();
-  }
   var match_text;
   if (props.number_matches != null && props.search_string && props.search_string != "") {
     switch (props.number_matches) {
@@ -423,7 +420,7 @@ function BpSelectorTable(props) {
     enableRowHeader: false,
     columnWidths: columnWidthsRef.current,
     onCompleteRender: _onCompleteRender,
-    selectionModes: [_table.RegionCardinality.FULL_ROWS, _table.RegionCardinality.CELLS],
+    selectionModes: _table.SelectionModes.ALL,
     onSelection: function onSelection(regions) {
       return props.onSelection(regions);
     }

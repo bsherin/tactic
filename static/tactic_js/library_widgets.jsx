@@ -14,7 +14,7 @@ import {
     Button,
     ButtonGroup
 } from "@blueprintjs/core";
-import {Cell, Column, Table2, ColumnHeaderCell, RegionCardinality, TruncatedFormat, Regions} from "@blueprintjs/table";
+import {Cell, Column, Table2, ColumnHeaderCell, SelectionModes, RegionCardinality, TruncatedFormat, Regions} from "@blueprintjs/table";
 import _ from 'lodash';
 
 import { useCallbackStack, useStateAndRef, useDebounce } from "./utilities_react";
@@ -71,10 +71,6 @@ function SearchForm(props) {
 
     function _handleRegexChange(event) {
         props.update_search_state({"regex": event.target.checked});
-    }
-
-    function _handleSubmit(event) {
-        event.preventDefault()
     }
 
     let match_text;
@@ -356,7 +352,7 @@ function BpSelectorTable(props) {
                 enableRowHeader={false}
                 columnWidths={columnWidthsRef.current}
                 onCompleteRender={_onCompleteRender}
-                selectionModes={[RegionCardinality.FULL_ROWS, RegionCardinality.CELLS]}
+                selectionModes={SelectionModes.ALL}
                 onSelection={(regions) => props.onSelection(regions)}
         >
             {columns}

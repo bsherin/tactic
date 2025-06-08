@@ -14,7 +14,6 @@ import {useSize} from "./sizing_tools";
 
 import {doFlash} from "./toaster"
 import {useCallbackStack, useConstructor, useImmerReducerAndRef} from "./utilities_react";
-import {SettingsContext} from "./settings";
 
 import {DialogContext} from "./modal_react";
 import {StatusContext} from "./toaster"
@@ -47,7 +46,7 @@ function view_views(is_repository = false) {
     }
 }
 
-function duplicate_views(is_repository = false) {
+function duplicate_views() {
     return {
         collection: "/duplicate_collection",
         project: "/duplicate_project",
@@ -139,14 +138,12 @@ function LibraryPane(props) {
 
     const top_ref = useRef(null);
     const previous_search_spec = useRef(null);
-    const socket_counter = useRef(null);
     const blank_selected_resource = useRef({});
     
     const selectedTypeRef = useRef(null);
 
-    const [usable_width, usable_height, topX, topY] = useSize(top_ref, 0, "LibraryPane");
+    const [, usable_height, , ] = useSize(top_ref, 0, "LibraryPane");
 
-    const settingsContext = useContext(SettingsContext);
     const dialogFuncs = useContext(DialogContext);
     const statusFuncs = useContext(StatusContext);
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
@@ -156,7 +153,6 @@ function LibraryPane(props) {
         let the_res = pStateRef.current.select_state.selected_resource;
         let current_index = parseInt(get_index(the_res.name, the_res.res_type, pStateRef.current.data_dict));
         let new_index;
-        let new_selected_res;
         if (key == "ArrowDown") {
             new_index = current_index + 1;
         } else {
@@ -182,7 +178,7 @@ function LibraryPane(props) {
                 });
                 props.handleCreateViewer(data, statusFuncs.clearStatus)
             } catch (e) {
-                statusFuncs.clearstatus();
+                statusFuncs.clearStatus();
                 errorDrawerFuncs.addFromError(`Error viewing with view ${the_view}`, e)
             }
         } else {
@@ -263,10 +259,6 @@ function LibraryPane(props) {
         }
     }
 
-    function _getSearchSpec() {
-        return pStateRef.current.search_state
-    }
-
     function _renderBodyContextMenu(menu_context) {
         if (event) {
             event.preventDefault();
@@ -309,25 +301,47 @@ function LibraryPane(props) {
         pDispatch({type: "CLEAR_SELECTED"});
     }
 
+    function compactRowsToRegions(rowIndices) {
+        if (rowIndices.length === 0) return [];
+
+        const regions = [];
+        let start = rowIndices[0];
+        let end = rowIndices[0];
+
+        for (let i = 1; i < rowIndices.length; i++) {
+            const current = rowIndices[i];
+            if (current === end + 1) {
+                end = current;
+            } else {
+                regions.push({ rows: [start, end] });
+                start = current;
+                end = current;
+            }
+        }
+        regions.push({ rows: [start, end] });
+
+        return regions;
+    }
+
     async function _onTableSelection(regions) {
-        if (regions.length == 0) return;  // Without this get an error when clicking on a body cell
+        // This was modified, with help from chatGPT, so that I don't get over emphasis of selected rows on
+        // multi select.
+        if (regions.length === 0) return;
         let selected_rows = [];
-        let selected_row_indices = [];
-        let revised_regions = [];
+        let selected_row_indices = new Set();
         for (let region of regions) {
             if (region.hasOwnProperty("rows")) {
-                let first_row = region["rows"][0];
-                revised_regions.push(Regions.row(first_row));
-                let last_row = region["rows"][1];
+                const [first_row, last_row] = region.rows;
                 for (let i = first_row; i <= last_row; ++i) {
-                    if (!selected_row_indices.includes(i)) {
-                        selected_row_indices.push(i);
+                    if (!selected_row_indices.has(i)) {
+                        selected_row_indices.add(i);
                         selected_rows.push(pStateRef.current.data_dict[i]);
-                        revised_regions.push(Regions.row(i));
                     }
                 }
             }
         }
+        const sortedIndices = Array.from(selected_row_indices).sort((a, b) => a - b);
+        const revised_regions = compactRowsToRegions(sortedIndices);
         await _handleRowSelection(selected_rows);
         pDispatch({type: "UPDATE_SELECT_STATE", select_state: {selectedRegions: revised_regions}});
     }
@@ -349,10 +363,12 @@ function LibraryPane(props) {
             row_number: row_index,
             is_repository: props.is_repository
         };
+
+
+        /** @type {{ chunk_dict: object, all_tags: array, num_rows: int }} */
         let data;
         try {
             data = await postAjaxPromise("grab_all_list_chunk", args);
-            let new_data_dict;
             if (flush) {
                 pDispatch({type: "INIT_DATA_DICT", data_dict: data.chunk_dict, num_rows: data.num_rows});
             } else {
@@ -396,7 +412,6 @@ function LibraryPane(props) {
                     }
                 }
                 if (!ind) return;
-                let the_row = {...pStateRef.current.data_dict[ind], ...res_dict};
                 pDispatch({type: "UPDATE_ROW", index: ind, res_dict: res_dict});
                 // if ("tags" in res_dict) {
                 //     let data_dict = {
@@ -422,14 +437,12 @@ function LibraryPane(props) {
                 } else {
                     ind = parseInt(get_index(res_name, res_dict.res_type, pStateRef.current.data_dict));
                 }
-                let is_last = ind == pStateRef.current.data_dict.length - 1;
 
                 let selected_ind = null;
                 if ("_id" in pStateRef.current.select_state.selected_resource) {
                     selected_ind = parseInt(get_index_from_id(pStateRef.current.select_state.selected_resource._id,
                         pStateRef.current.data_dict));
                 }
-                let is_selected_row = ind && ind == selected_ind;
                 let new_selected_ind = selected_ind;
                 if (selected_ind > ind) {
                     new_selected_ind = selected_ind - 1;
@@ -460,17 +473,6 @@ function LibraryPane(props) {
         return null
     }
 
-    function _extractNewTags(tstring) {
-        let tlist = tstring.split(" ");
-        let new_tags = [];
-        for (let tag of tlist) {
-            if (!(tag.length == 0) && !(tag in pStateRef.current.tag_list)) {
-                new_tags.push(tag)
-            }
-        }
-        return new_tags
-    }
-
     async function _saveFromSelectedResource() {
         // This will only be called when there is a single row selected
         const result_dict = {
@@ -482,56 +484,11 @@ function LibraryPane(props) {
         if (pStateRef.current.select_state.selected_rows[0].res_type == "tile" && "icon" in pStateRef.current.select_state.selected_resource) {
             result_dict["icon"] = pStateRef.current.select_state.selected_resource["icon"]
         }
-        let saved_selected_resource = Object.assign({}, pStateRef.current.select_state.selected_resource);
-        let saved_selected_rows = [...pStateRef.current.select_state.selected_rows];
-        let new_tags = _extractNewTags(pStateRef.current.select_state.selected_resource.tags);
         try {
             await postAjaxPromise("save_metadata", result_dict)
         } catch (e) {
             errorDrawerFuncs.addFromError(`Error updating resource ${result_dict.res_name}`, e)
         }
-    }
-
-    async function _overwriteCommonTags() {
-        const result_dict = {
-            "selected_rows": pStateRef.current.select_state.selected_rows,
-            "tags": pStateRef.current.select_state.selected_resource.tags,
-        };
-        let new_tags = _extractNewTags(pStateRef.current.select_state.selected_resource.tags);
-        try {
-            await postAjaxPromise("overwrite_common_tags", result_dict)
-        } catch (e) {
-            errorDrawerFuncs.addFromError("Error overwriting tags", e)
-        }
-    }
-
-    function set_selected_resource(new_resource) {
-        pDispatch({type: "UPDATE_SELECT_STATE", select_state: {selected_resource: new_resource}});
-    }
-
-    function _handleMetadataChange(changed_state_elements) {
-        if (!pStateRef.current.select_state.multi_select) {
-            let revised_selected_resource = Object.assign({}, pStateRef.current.select_state.selected_resource);
-            revised_selected_resource = Object.assign(revised_selected_resource, changed_state_elements);
-            if (Object.keys(changed_state_elements).includes("tags")) {
-                revised_selected_resource["tags"] = revised_selected_resource["tags"].join(" ");
-                set_selected_resource(revised_selected_resource);
-                pushCallback(_saveFromSelectedResource);
-            } else {
-                set_selected_resource(revised_selected_resource);
-                pushCallback(_saveFromSelectedResource);
-            }
-        } else {
-            let revised_selected_resource = Object.assign({}, pStateRef.current.select_state.selected_resource);
-            revised_selected_resource = Object.assign(revised_selected_resource, changed_state_elements);
-            revised_selected_resource["tags"] = revised_selected_resource["tags"].join(" ");
-            set_selected_resource(revised_selected_resource);
-            pushCallback(_overwriteCommonTags)
-        }
-    }
-
-    function set_multi_select(new_val) {
-        pDispatch({type: "UPDATE_SELECT_STATE", select_state: {multi_select: new_val}});
     }
 
     function _handleRowDoubleClick(row_dict) {
@@ -585,6 +542,7 @@ function LibraryPane(props) {
             }
         }
         if (selected_rows.length > 1) {
+            // I think the common_tags stuff doesn't currently do anything
             let common_tags = selected_rows[0].tags.split(" ");
             let other_rows = selected_rows.slice(1, selected_rows.length);
             for (let row_dict of other_rows) {
@@ -622,14 +580,6 @@ function LibraryPane(props) {
                 }
 
             });
-        }
-    }
-
-    function _filter_func(resource_dict, search_string) {
-        try {
-            return resource_dict.name.toLowerCase().search(search_string) != -1
-        } catch (e) {
-            return false
         }
     }
 
@@ -706,7 +656,7 @@ function LibraryPane(props) {
                 let data = await postAjaxPromise(the_view, {context_id: context_id, resource_name: resource_name});
                 props.handleCreateViewer(data, statusFuncs.clearStatus);
             } catch (e) {
-                statusFuncs.clearstatus();
+                statusFuncs.clearStatus();
                 errorDrawerFuncs.addFromError(`Error viewing resource ${resource_name}`, e)
 
             }
@@ -744,7 +694,6 @@ function LibraryPane(props) {
             if (e != "canceled") {
                 errorDrawerFuncs.addFromError(`Error duplicating resource ${res_name}`, e)
             }
-            return
         }
     }
 
@@ -777,7 +726,6 @@ function LibraryPane(props) {
             if (e != "canceled") {
                 errorDrawerFuncs.addFromError(`Error duplicating resource ${res_name}`, e)
             }
-            return
         }
     }
 
@@ -812,7 +760,6 @@ function LibraryPane(props) {
             if (e != "canceled") {
                 errorDrawerFuncs.addFromError(`Error renaming resource ${res_name}`, e)
             }
-            return
         }
     }
 
@@ -842,7 +789,6 @@ function LibraryPane(props) {
                 if (e != "canceled") {
                     errorDrawerFuncs.addFromError("Error getting resources names", e)
                 }
-                return
             }
         } else {
             const result_dict = {
@@ -885,7 +831,6 @@ function LibraryPane(props) {
                 if (e != "canceled") {
                     errorDrawerFuncs.addFromError(`Error sharing resource ${res_name}`, e)
                 }
-                return
             }
         } else {
             const result_dict = {
@@ -1002,7 +947,6 @@ function LibraryPane(props) {
                     errorDrawerFuncs.addFromError(`Error combining collections`, e)
                 }
                 statusFuncs.stopSpinner();
-                return
             }
         } else {
             try {
@@ -1022,7 +966,6 @@ function LibraryPane(props) {
                     errorDrawerFuncs.addFromError(`Error combining collections`, e)
                 }
                 statusFuncs.stopSpinner();
-                return
             }
         }
     }
@@ -1043,23 +986,6 @@ function LibraryPane(props) {
             if (e != "canceled") {
                 errorDrawerFuncs.addFromError(`Error combing collections`, e)
             }
-            return
-        }
-    }
-
-    function _displayImportResults(data) {
-        let title = "Collection Created";
-        let message = "";
-        let number_of_errors;
-        if (data.file_decoding_errors == null) {
-            statusFuncs.statusMessage("No import errors");
-        } else {
-            message = "<b>Decoding errors were enountered</b>";
-            for (let filename in data.file_decoding_errors) {
-                number_of_errors = String(data.file_decoding_errors[filename].length);
-                message = message + `<br>${filename}: ${number_of_errors} errors`;
-            }
-            errorDrawerFuncs.addErrorDrawerEntry({title: title, content: message});
         }
     }
 
@@ -1167,32 +1093,6 @@ function LibraryPane(props) {
         }
     }
 
-    async function _new_tile(template_name) {
-        try {
-            let data = await postAjaxPromise(`get_resource_names/tile`, {});
-            let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
-                title: "New Tile",
-                field_title: "New Tile Name",
-                default_value: "NewTileModule",
-                existing_names: data.resource_names,
-                checkboxes: [],
-                handleClose: dialogFuncs.hideModal
-            });
-            const result_dict = {
-                "template_name": template_name,
-                "new_res_name": new_name,
-                "last_saved": "viewer"
-            };
-            await postAjaxPromise("/create_tile_module", result_dict);
-            await _view_resource({name: new_name, res_type: "tile"}, "/view_module/");
-        } catch (e) {
-            if (e != "canceled") {
-                errorDrawerFuncs.addFromError("Error creating tile module", e)
-            }
-            return
-        }
-    }
-
     async function _new_in_creator(template_name) {
         try {
             let data = await postAjaxPromise(`get_resource_names/tile`, {});
@@ -1269,13 +1169,6 @@ function LibraryPane(props) {
         });
     }
 
-    function _add_to_pool(myDropZone, setCurrentUrl, current_value) {
-        let new_url = `import_pool/${props.library_id}`;
-        myDropZone.options.url = new_url;
-        setCurrentUrl(new_url);
-        myDropZone.processQueue();
-    }
-
     async function _new_code(template_name) {
         try {
             let data = await postAjaxPromise(`get_resource_names/code`, {});
@@ -1336,7 +1229,6 @@ function LibraryPane(props) {
         }
     }
 
-    let new_button_groups;
     let res_type = pStateRef.current.select_state.selected_resource.res_type;
     let res_name = pStateRef.current.select_state.selected_resource.name;
     let right_pane = (
@@ -1351,16 +1243,6 @@ function LibraryPane(props) {
         />
     );
 
-    let th_style = {
-        "display": "inline-block",
-        "verticalAlign": "top",
-        "maxHeight": "100%",
-        "overflowY": "scroll",
-        "overflowX": "scroll",
-        "lineHeight": 1,
-        "whiteSpace": "nowrap",
-    };
-
     let MenubarClass = props.MenubarClass;
 
     let filter_buttons = [];
@@ -1372,7 +1254,7 @@ function LibraryPane(props) {
                       hoverOpenDelay={700}
                       intent="warning">
                 <Button icon={icon_dict[rtype]}
-                        minimal={true}
+                        variant="minimal"
                         active={rtype == pState.search_state.filterType}
                         onClick={async () => {
                             await _setFilterType(rtype)
