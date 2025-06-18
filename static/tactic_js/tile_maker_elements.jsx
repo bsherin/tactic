@@ -15,24 +15,28 @@ const INDENT = 25;
 function SignatureHeader(props) {
     props = {
         funcName: "",
-        funcArgString: "",
+        argString: "",
         handleNameChange: () => {},
-        handleArgchange: () => {},
+        handleArgChange: () => {},
         allowNameChange: true,
         allowArgChange: true,
         ...props
     }
     return (
-        <div className="d-flex flex-row" style={{marginTop: 5, marginBottom: 5}}>
-            <FormGroup label="Method Name">
+        <div className="d-flex flex-row" style={{marginTop: 5, marginBottom: 5, alignSelf: "self-end"}}>
+            <FormGroup label="Method Name" style={{fontSize: 12, marginBottom: 0}}>
                 <InputGroup type="text"
+                            size="small"
+                            readOnly={props.allowNameChange}
                             onChange={(event) => props.handleNameChange(event.target.value)}
                             value={props.funcName} />
             </FormGroup>
-            <FormGroup label="Arguments">
+            <FormGroup label="Arguments" style={{fontSize: 12, marginBottom: 0}}>
                 <InputGroup type="text"
-                            onChange={(event) => props.handleArghange(event.target.value)}
-                            value={props.funcArgString} />
+                            size="small"
+                            readOnly={props.allowArgChange}
+                            onChange={(event) => props.handleArgChange(event.target.value)}
+                            value={props.argString} />
             </FormGroup>
         </div>
     )
@@ -43,7 +47,8 @@ function CmElement(props) {
         cmState: null,
         cmDispatch: null,
         cmObjectRef: null,
-        title_label: "",
+        funcName: "",
+        argString: "",
         identifier: "",
         extraKeys: null,
         saveAndCheckpoint: null,
@@ -61,6 +66,12 @@ function CmElement(props) {
     };
     function handleCodeChange(new_code) {
         props.cmDispatch({type: "SET_CODE_TEXT", payload: new_code, identifier: props.identifier});
+    }
+    function handleNameChange(new_name) {
+        props.cmDispatch({type: "SET_FUNC_NAME", payload: new_name, identifier: props.identifier});
+    }
+    function handleArgChange(new_args) {
+        props.cmDispatch({type: "SET_ARG_STRING", payload: new_args, identifier: props.identifier});
     }
     function setCmObject(cmObject) {
         if (props.cmObjectRef && props.cmObjectRef.current) {
@@ -88,12 +99,22 @@ function CmElement(props) {
         props.searchDispatch({type: "SET_SEARCH_MATCHES", payload: {"identifier": props.identifier, "num": num}});
     }
 
+    let header_left = (
+        <SignatureHeader funcName={props.funcName}
+                 argString={props.argString}
+                 allowNameChange={props.allowNameChange}
+                 allowArgChange={props.allowArgChange}
+                 handleNameChange={handleNameChange}
+                 handleArgChange={handleArgChange}
+            />
+    )
+
     return (
         <div>
-            <SignatureHeader funcName={props.cmState} />
             <ReactCodemirror6 code_content={props.cmState.codeText}
-                              title_label={props.title_label}
+                              title_label={null}
                               show_search={true}
+                              header_left={header_left}
                               mode={props.cmState.mode}
                               extraKeys={props.extraKeys()}
                               current_search_number={props.searchState.current_search_cm == props.identifier ?
@@ -134,7 +155,7 @@ function MakerNavigator(props) {
     let option_name_list = props.option_list.map((option) => {return {title: option.name, identifier: null, onClick: ()=>{}}});
     let export_name_list = props.export_list.map((export_item) => {return {title: export_item.name, identifier: null, onClick: ()=>{}}});
     let um_item_list = props.umList.map((um) => {
-        return {title: um.name, identifier: um.method_id, onClick: () => props.handleTabSelect(um.method_id)}
+        return {title: um.funcName, identifier: um.method_id, onClick: () => props.handleTabSelect(um.method_id)}
     });
     let code_sub_items = [
         {identifier: "render_content", title: "render_content", onClick: () => props.handleTabSelect("render_content"), icon: "play", item_list: []},

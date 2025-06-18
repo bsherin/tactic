@@ -110,7 +110,8 @@ function SearchForm(props) {
   return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
     helperText: match_text,
     style: {
-      marginBottom: 0
+      marginBottom: 0,
+      alignSelf: "self-end"
     }
   }, /*#__PURE__*/_react["default"].createElement("div", {
     className: "d-flex flex-row",

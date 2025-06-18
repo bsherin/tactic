@@ -85,7 +85,7 @@ class TileParser(object):
     def get_user_methods_list(self):
         method_list = []
         for k, entry in self.extra_methods.items():
-            method_list.append({"name": k, "code": entry["method_code"], "starting_line": self.get_starting_line(k)})
+            method_list.append({"name": k, "method_body": entry["method_body"], "arg_string": entry["arg_string"], "starting_line": self.get_starting_line(k)})
         return method_list
 
     def get_options_dict(self):
@@ -129,7 +129,10 @@ class TileParser(object):
             if isinstance(node, ast.FunctionDef):
                 mdict[node.name] = {"node": node,
                                     "start_line": node.lineno - 1,
-                                    "body_start": node.body[0].lineno - 1}
+                                    "body_start": node.body[0].lineno - 1,
+                                    "args": node.args,
+                                    "arg_string": ast.unparse(node.args),
+                                    }
                 if i < last_element:
                     mdict[node.name]["last_line"] = self.cnode.body[i + 1].lineno - 2
                 else:

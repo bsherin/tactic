@@ -180,6 +180,7 @@ function ReactCodemirror6(props) {
         no_width: false,
         no_height: false,
         show_search: false,
+        header_left: null,
         first_line_number: 1,
         show_line_numbers: true,
         show_fold_button: false,
@@ -672,15 +673,17 @@ function ReactCodemirror6(props) {
                     marginRight: 10,
                     width: "100%",
                     marginTop: 5,
-                    height: SEARCH_HEIGHT,
+                    height: props.header_left ? SEARCH_HEIGHT + 10 : SEARCH_HEIGHT,
                 }}>
-                    <span className="bp5-ui-text"
+                    { props.header_left && props.header_left}
+                    { title_label !== "" && <span className="bp5-ui-text"
                           style={{
                               display: "flex",
                               paddingLeft: 5,
                               paddingBottom: 2,
                               alignItems: "self-end"
-                          }}>{title_label}</span>
+                          }}>{title_label}</span> }
+
                     <SearchForm update_search_state={props.updateSearchState}
                                 search_string={props.search_term}
                                 regex={props.regex_search}
@@ -712,6 +715,7 @@ function ReactCodemirror6(props) {
                     <Button size="small" icon="expand-all" text="unfold" onClick={_unfoldAll}/>
                 </ButtonGroup>
             }
+            { props.header_left && props.header_left}
             {props.title_label &&
                 <span className="bp5-ui-text"
                       style={TITLE_STYLE}>{props.title_label}</span>

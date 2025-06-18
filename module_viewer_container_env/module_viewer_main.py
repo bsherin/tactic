@@ -211,7 +211,9 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin):
         user_methods_list = self.tp.get_user_methods_list()
 
         user_methods_list = [{"name": func["name"],
-                                 "code": remove_indents(func["code"], 1),
+                                 # "code": remove_indents(func["code"], 1),
+                                  "code": remove_indents(func["method_body"], 2),
+                                 "arg_string": func["arg_string"],
                                  "mode": "python",
                                  "starting_line": func["starting_line"]} for func in user_methods_list]
 

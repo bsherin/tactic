@@ -57,16 +57,14 @@ function CreatorApp(props) {
 
     const [visibleTab, setVisibleTab] = useState("metadata");
 
-    const [globalsState, globalsDispatch, , globalsCmObjectRef] = useCmData(props.globals_code, 1, false);
+    const [globalsState, globalsDispatch, , globalsCmObjectRef] = useCmData(props.globals_code, 1, false, null, null);
     const [rcState, rcDispatch, , rcCmObjectRef] = useCmData(props.render_content_code,
-        props.render_content_line_number, false);
+        props.render_content_line_number, false, "render_content", "", false);
     const [dpState, dpDispatch, , dpCmObjectRef] = useCmData(
         props.is_mpl ? props.draw_plot_code : null,
         props.is_mpl ? props.draw_plot_line_number + 1 : 1,
-        false);
-    const [jsState, jsDispatch, , jsCmObjectRef] = useCmData(
-        props.is_d3 ? props.jscript_code : null, 1, false, "javascript"
-    )
+        false, "draw_plot", "", false);
+    const [jsState, jsDispatch, , jsCmObjectRef] = useCmData(props.is_d3 ? props.jscript_code : null, 1, false, null, null, false, "javascript");
 
     const [, umDispatch, umListRef] = useReducerAndRef(userMethodsReducer, []);
 
@@ -693,8 +691,11 @@ function CreatorApp(props) {
                 <CmElement cmState={dpState}
                            cmDispatch={dpDispatch}
                            cmObjectRef={dpCmObjectRef}
-                           title_label="draw_plot"
+                           funcName="draw_plot"
                            identifier="draw_plot"
+                           argString=""
+                            allowNameChange={false}
+                            allowArgChange={false}
                            extraKeys={_extraKeys}
                            saveAndCheckpoint={_saveAndCheckpoint}
                            searchState={searchState}
@@ -716,8 +717,11 @@ function CreatorApp(props) {
                  <CmElement cmState={jsState}
                             cmDispatch={jsDispatch}
                             cmObjectRef={jsCmObjectRef}
-                            title_label="javascript"
+                            funcName="javascript"
                             identifier="javascript"
+                            argString=""
+                            allowNameChange={false}
+                            allowArgChange={false}
                             extraKeys={_extraKeys}
                             saveAndCheckpoint={_saveAndCheckpoint}
                             searchState={searchState}
@@ -740,8 +744,11 @@ function CreatorApp(props) {
             <CmElement cmState={rcState}
                        cmDispatch={rcDispatch}
                        cmObjectRef={rcCmObjectRef}
-                       title_label="render_content"
+                       funcName="render_content"
                        identifier="render_content"
+                       argString=""
+                        allowNameChange={false}
+                        allowArgChange={false}
                        extraKeys={_extraKeys}
                        saveAndCheckpoint={_saveAndCheckpoint}
                        searchState={searchState}
@@ -763,8 +770,11 @@ function CreatorApp(props) {
         <CmElement cmState={globalsState}
                    cmDispatch={globalsDispatch}
                    cmObjectRef={globalsCmObjectRef}
-                   title_label="globals"
+                   funcName="globals"
                    identifier="globals"
+                   argString=""
+                   allowNameChange={false}
+                   allowArgChange={false}
                    extraKeys={_extraKeys}
                    saveAndCheckpoint={_saveAndCheckpoint}
                    searchState={searchState}
@@ -783,10 +793,11 @@ function CreatorApp(props) {
             return (
                 <CmElement cmState={um}
                            showSignatureHeader={true}
-                           methodName={um.name}
+                           methodName={um.funcName}
+                           argString={um.argString}
                            cmDispatch={umDispatch}
                            cmObjectRef={null}
-                           title_label={um.name}
+                           funcName={um.funcName}
                            identifier={um.method_id}
                            extraKeys={_extraKeys}
                            saveAndCheckpoint={_saveAndCheckpoint}

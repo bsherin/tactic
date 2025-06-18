@@ -13,19 +13,27 @@ function cmDataReducer(draft, action) {
             return {...draft, codeText: action.payload};
         case 'SET_HAS_ACTIVATED':
             return {...draft, hasActivated: action.payload};
+        case 'SET_FUNC_NAME':
+            return {...draft, funcName: action.payload};
+        case 'SET_ARG_STRING':
+            return {...draft, argString: action.payload};
         default:
             return draft;
     }
 }
 // This hasActivated machinery is necessary because cleanup of codemirror areas doesn't work
 // properly if the component is unmounted before the codemirror area is activated.
-function useCmData(initialCode, initialLineNumber, initialHasActivated, mode="python") {
+function useCmData(initialCode, initialLineNumber, initialHasActivated,
+                   initialFuncName, initialArgString, signatureIsEditable=false, mode="python") {
     const elemRef = useRef(null);
     const cmObjectRef = useRef(null);
     const iState = {
         firstLineNumber: initialLineNumber || 1,
         codeText: initialCode || '',
         hasActivated: initialHasActivated || false,
+        funcName: initialFuncName || '',
+        argString: initialArgString || '',
+        signatureIsEditable: signatureIsEditable,
         mode: mode,
     };
     const [value, customDispatch] = useReducer(cmDataReducer, iState);
@@ -187,7 +195,8 @@ function userMethodsReducer(user_methods, action) {
         case "initialize":
             new_items = action.new_items.map(t => {
                 let new_t = {};
-                new_t.name = t.name;
+                new_t.funcName = t.name;
+                new_t.argString = t.arg_string;
                 new_t.codeText = t.code;
                 new_t.mode = t.mode;
                 new_t.firstLineNumber = t.starting_line;
@@ -215,6 +224,26 @@ function userMethodsReducer(user_methods, action) {
             new_items = user_methods.map(t => {
                 if (t.method_id == method_id_ct) {
                     return {...t, codeText: action.payload};
+                } else {
+                    return t;
+                }
+            });
+            break;
+        case 'SET_FUNC_NAME':
+            const method_id_fn = action.identifier;
+            new_items = user_methods.map(t => {
+                if (t.method_id == method_id_fn) {
+                    return {...t, funcName: action.payload};
+                } else {
+                    return t;
+                }
+            });
+            break;
+        case 'SET_ARG_STRING':
+            const method_id_as = action.identifier;
+            new_items = user_methods.map(t => {
+                if (t.method_id == method_id_as) {
+                    return {...t, argString: action.payload};
                 } else {
                     return t;
                 }
