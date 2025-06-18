@@ -188,10 +188,10 @@ function useReducerAndRef(reducer, initial) {
   var _useReducer = (0, _react.useReducer)(reducer, initial),
     _useReducer2 = _slicedToArray(_useReducer, 2),
     value = _useReducer2[0],
-    dispatch = _useReducer2[1];
+    customDispatch = _useReducer2[1];
   var valueRef = (0, _react.useRef)(value);
   valueRef.current = value;
-  return [value, dispatch, valueRef];
+  return [value, customDispatch, valueRef];
 }
 function useImmerReducerAndRef(reducer, initial) {
   var _useImmerReducer = (0, _useImmer.useImmerReducer)(reducer, initial),

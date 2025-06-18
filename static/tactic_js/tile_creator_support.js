@@ -39,7 +39,7 @@ function creator_props(data, registerDirtyMethod, finalCallback) {
     }));
     return _readyListener.apply(this, arguments);
   }
-  var tsocket = new _tactic_socket.TacticSocket("main", 5000, "creator", module_viewer_id, function (response) {
+  var tsocket = new _tactic_socket.TacticSocket("main", 5000, "creator", module_viewer_id, function () {
     tsocket.socket.on("remove-ready-block", readyListener);
     tsocket.socket.emit('client-ready', {
       "room": data.module_viewer_id,
@@ -55,7 +55,7 @@ function creator_props(data, registerDirtyMethod, finalCallback) {
   }
   function _everyone_ready_in_context2() {
     _everyone_ready_in_context2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee2(finalCallback) {
-      var the_content, data_object, parsed_data, category, result_dict, odict, initial_line_number, couple_save_attrs_and_exports;
+      var the_content, data_object, parsed_data, category, initial_line_number, couple_save_attrs_and_exports;
       return _regeneratorRuntime().wrap(function _callee2$(_context2) {
         while (1) switch (_context2.prev = _context2.next) {
           case 0:
@@ -82,12 +82,6 @@ function creator_props(data, registerDirtyMethod, finalCallback) {
             tsocket.socket.off("remove-ready-block", readyListener);
             parsed_data = data_object.the_content;
             category = parsed_data.category ? parsed_data.category : "basic";
-            result_dict = {
-              "res_type": "tile",
-              "res_name": module_name,
-              "is_repository": false
-            };
-            odict = parsed_data.option_dict;
             initial_line_number = !window.in_context && window.line_number ? window.line_number : null;
             couple_save_attrs_and_exports = !("couple_save_attrs_and_exports" in mdata.additional_mdata) || mdata.additional_mdata.couple_save_attrs_and_exports;
             finalCallback({
@@ -103,7 +97,7 @@ function creator_props(data, registerDirtyMethod, finalCallback) {
               draw_plot_line_number: parsed_data.draw_plot_line_number,
               initial_line_number: initial_line_number,
               category: category,
-              extra_functions: parsed_data.extra_functions,
+              user_methods_list: parsed_data.user_methods_list,
               draw_plot_code: parsed_data.draw_plot_code,
               jscript_code: parsed_data.jscript_code,
               globals_code: parsed_data.globals_code,
@@ -117,7 +111,7 @@ function creator_props(data, registerDirtyMethod, finalCallback) {
               created: mdata.datestring,
               registerDirtyMethod: registerDirtyMethod
             });
-          case 15:
+          case 13:
           case "end":
             return _context2.stop();
         }

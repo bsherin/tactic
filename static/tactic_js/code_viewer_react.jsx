@@ -58,6 +58,7 @@ function CodeViewerApp(props) {
 
     const top_ref = useRef(null);
     const search_ref = useRef(null);
+    const cmObjectRef = useRef(null);
 
     const savedContent = useRef(props.the_content);
 
@@ -82,6 +83,18 @@ function CodeViewerApp(props) {
         if (props.controlled) {
             props.registerDirtyMethod(_dirty)
         }
+        return (() => {
+            cmObjectRef.current = null;
+            set_code_content(null)
+            if (!props.controlled) {
+                window.removeEventListener("beforeunload", function (e) {
+                    if (_dirty()) {
+                        e.preventDefault();
+                        e.returnValue = ''
+                    }
+                })
+            }
+        })
     }, []);
 
     const pushCallback = useCallbackStack("code_viewer");
@@ -129,6 +142,7 @@ function CodeViewerApp(props) {
                     e.returnValue = ''
                 }
             })
+
         }
     });
 
@@ -236,6 +250,10 @@ function CodeViewerApp(props) {
         if (current_search_number_ref.current > 0) {
             set_current_search_number(current_search_number_ref.current - 1);
         }
+    }
+
+    function _setCmObject(cm) {
+        cmObjectRef.current = cm;
     }
 
     function _extraKeys() {
@@ -358,6 +376,7 @@ function CodeViewerApp(props) {
                                       handleChange={_handleCodeChange}
                                       saveMe={_saveMe}
                                       show_search={true}
+                                      setCMObject={_setCmObject}
                                       search_term={search_string}
                                       search_ref={search_ref}
                                       search_matches={search_matches}

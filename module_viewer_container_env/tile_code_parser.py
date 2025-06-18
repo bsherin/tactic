@@ -82,6 +82,12 @@ class TileParser(object):
                 new_code += "\n" + entry["method_code"]
         return new_code
 
+    def get_user_methods_list(self):
+        method_list = []
+        for k, entry in self.extra_methods.items():
+            method_list.append({"name": k, "code": entry["method_code"], "starting_line": self.get_starting_line(k)})
+        return method_list
+
     def get_options_dict(self):
         opt_code = self.methods["options"]["method_code"]
         opt_code = remove_indents(opt_code, 1)

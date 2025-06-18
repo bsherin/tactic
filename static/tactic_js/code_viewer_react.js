@@ -69,6 +69,7 @@ function CodeViewerApp(props) {
   }, props);
   var top_ref = (0, _react.useRef)(null);
   var search_ref = (0, _react.useRef)(null);
+  var cmObjectRef = (0, _react.useRef)(null);
   var savedContent = (0, _react.useRef)(props.the_content);
   var _useStateAndRef = (0, _utilities_react.useStateAndRef)(props.the_content),
     _useStateAndRef2 = _slicedToArray(_useStateAndRef, 3),
@@ -113,6 +114,18 @@ function CodeViewerApp(props) {
     if (props.controlled) {
       props.registerDirtyMethod(_dirty);
     }
+    return function () {
+      cmObjectRef.current = null;
+      set_code_content(null);
+      if (!props.controlled) {
+        window.removeEventListener("beforeunload", function (e) {
+          if (_dirty()) {
+            e.preventDefault();
+            e.returnValue = '';
+          }
+        });
+      }
+    };
   }, []);
   var pushCallback = (0, _utilities_react.useCallbackStack)("code_viewer");
   var _saveMe = (0, _react.useCallback)(/*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
@@ -310,6 +323,9 @@ function CodeViewerApp(props) {
       set_current_search_number(current_search_number_ref.current - 1);
     }
   }
+  function _setCmObject(cm) {
+    cmObjectRef.current = cm;
+  }
   function _extraKeys() {
     return [{
       key: 'Ctrl-s',
@@ -471,6 +487,7 @@ function CodeViewerApp(props) {
     handleChange: _handleCodeChange,
     saveMe: _saveMe,
     show_search: true,
+    setCMObject: _setCmObject,
     search_term: search_string,
     search_ref: search_ref,
     search_matches: search_matches,

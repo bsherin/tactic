@@ -152,10 +152,10 @@ function useStateAndRefAndCounter(initial) {
 }
 
 function useReducerAndRef(reducer, initial) {
-    const [value, dispatch] = useReducer(reducer, initial);
+    const [value, customDispatch] = useReducer(reducer, initial);
     const valueRef = useRef(value);
     valueRef.current = value;
-    return [value, dispatch, valueRef]
+    return [value, customDispatch, valueRef]
 }
 
 function useImmerReducerAndRef(reducer, initial) {

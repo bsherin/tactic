@@ -30,7 +30,7 @@ import {withPool} from "./pool_tree";
 import {view_views} from "./library_pane";
 import {guid} from "./utilities_react";
 import {module_viewer_props, ModuleViewerApp} from "./module_viewer_react";
-import {CreatorApp} from "./tile_creator_react";
+import {CreatorApp} from "./tile_maker_react";
 import {creator_props} from "./tile_creator_support"
 import {MainApp} from "./main_app"
 import {main_props} from "./main_support";

@@ -22,7 +22,7 @@ var _pool_browser = require("./pool_browser");
 var _pool_tree = require("./pool_tree");
 var _library_pane = require("./library_pane");
 var _module_viewer_react = require("./module_viewer_react");
-var _tile_creator_react = require("./tile_creator_react");
+var _tile_maker_react = require("./tile_maker_react");
 var _tile_creator_support = require("./tile_creator_support");
 var _main_app = require("./main_app");
 var _main_support = require("./main_support");
@@ -115,7 +115,7 @@ var classDict = {
   "module-viewer": _module_viewer_react.ModuleViewerApp,
   "code-viewer": _code_viewer_react.CodeViewerApp,
   "list-viewer": _list_viewer_react.ListViewerApp,
-  "creator-viewer": _tile_creator_react.CreatorApp,
+  "creator-viewer": _tile_maker_react.CreatorApp,
   "main-viewer": _main_app.MainApp,
   "notebook-viewer": _notebook_app.NotebookApp,
   "text-viewer": _text_viewer_react.TextViewerApp

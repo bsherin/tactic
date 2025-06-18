@@ -4,7 +4,6 @@ function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.CommandsModule = CommandsModule;
 exports.ExportModule = ExportModule;
 exports.MetadataModule = MetadataModule;
 exports.OptionModule = OptionModule;
@@ -13,14 +12,11 @@ var _react = _interopRequireWildcard(require("react"));
 var _propTypes = _interopRequireDefault(require("prop-types"));
 var _core = require("@blueprintjs/core");
 var _table = require("@blueprintjs/table");
-var _communication_react = require("./communication_react");
-var _library_widgets = require("./library_widgets");
 var _blueprint_react_widgets = require("./blueprint_react_widgets");
-var _toaster = require("./toaster");
 var _lodash = _interopRequireDefault(require("lodash"));
 var _utilities_react = require("./utilities_react");
-var _blueprint_mdata_fields = require("./blueprint_mdata_fields");
 var _sizing_tools = require("./sizing_tools");
+var _blueprint_mdata_fields = require("./blueprint_mdata_fields");
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t in e) "default" !== _t && {}.hasOwnProperty.call(e, _t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t)) && (i.get || i.set) ? o(f, _t, i) : f[_t] = e[_t]); return f; })(e, t); }
 function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
@@ -388,15 +384,11 @@ function OptionModule(props) {
     set_active_row = _useState2[1];
   var _useStateAndRef = (0, _utilities_react.useStateAndRef)(_objectSpread({}, blank_form)),
     _useStateAndRef2 = _slicedToArray(_useStateAndRef, 3),
-    form_state = _useStateAndRef2[0],
     set_form_state = _useStateAndRef2[1],
     form_state_ref = _useStateAndRef2[2];
   var _useSize = (0, _sizing_tools.useSize)(top_ref, props.tabSelectCounter, "OptionModule"),
-    _useSize2 = _slicedToArray(_useSize, 4),
-    usable_width = _useSize2[0],
-    usable_height = _useSize2[1],
-    topX = _useSize2[2],
-    topY = _useSize2[3];
+    _useSize2 = _slicedToArray(_useSize, 3),
+    usable_height = _useSize2[1];
   var pushCallback = (0, _utilities_react.useCallbackStack)();
   function _delete_option() {
     var old_active_row = active_row;
@@ -666,11 +658,8 @@ function ExportModule(props) {
     active_save_row = _useState0[0],
     set_active_save_row = _useState0[1];
   var _useSize3 = (0, _sizing_tools.useSize)(top_ref, props.tabSelectCounter, "ExportModule"),
-    _useSize4 = _slicedToArray(_useSize3, 4),
-    usable_width = _useSize4[0],
-    usable_height = _useSize4[1],
-    topX = _useSize4[2],
-    topY = _useSize4[3];
+    _useSize4 = _slicedToArray(_useSize3, 3),
+    usable_height = _useSize4[1];
   function _delete_export() {
     var new_data_list = props.export_list;
     new_data_list.splice(active_export_row, 1);
@@ -772,7 +761,7 @@ function ExportModule(props) {
   }, "Save Attrs"), /*#__PURE__*/_react["default"].createElement(_core.Switch, {
     label: "Couple save_attrs and exports",
     className: "ml-2 mb-0 mt-1",
-    large: false,
+    size: "medium",
     checked: props.couple_save_attrs_and_exports,
     onChange: _handleCoupleChange
   })), props.foregrounded && !props.couple_save_attrs_and_exports && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.BpOrderableTable, {
@@ -799,13 +788,14 @@ ExportModule.propTypes = {
   available_height: _propTypes["default"].number
 };
 function MetadataModule(props) {
+  props = _objectSpread({
+    "tabSelectCounter": 0,
+    "foregrounded": false
+  }, props);
   var top_ref = /*#__PURE__*/_react["default"].createRef();
   var _useSize5 = (0, _sizing_tools.useSize)(top_ref, props.tabSelectCounter, "CreatorModule"),
-    _useSize6 = _slicedToArray(_useSize5, 4),
-    usable_width = _useSize6[0],
-    usable_height = _useSize6[1],
-    topX = _useSize6[2],
-    topY = _useSize6[3];
+    _useSize6 = _slicedToArray(_useSize5, 3),
+    usable_height = _useSize6[1];
   var md_style = {
     height: "100%"
   };
@@ -815,391 +805,8 @@ function MetadataModule(props) {
       marginLeft: 10,
       height: usable_height
     }
-  }, /*#__PURE__*/_react["default"].createElement(_blueprint_mdata_fields.CombinedMetadata, _extends({}, props, {
+  }, props.foregrounded && /*#__PURE__*/_react["default"].createElement(_blueprint_mdata_fields.CombinedMetadata, _extends({}, props, {
     outer_style: md_style
   })));
 }
 exports.MetadataModule = MetadataModule = /*#__PURE__*/(0, _react.memo)(MetadataModule);
-function CommandsModule(props) {
-  var top_ref = /*#__PURE__*/_react["default"].createRef();
-  var commandsRef = (0, _react.useRef)(null);
-  var _useState1 = (0, _react.useState)(""),
-    _useState10 = _slicedToArray(_useState1, 2),
-    search_string = _useState10[0],
-    set_search_string = _useState10[1];
-  var _useState11 = (0, _react.useState)({}),
-    _useState12 = _slicedToArray(_useState11, 2),
-    api_dict = _useState12[0],
-    set_api_dict = _useState12[1];
-  var _useState13 = (0, _react.useState)([]),
-    _useState14 = _slicedToArray(_useState13, 2),
-    ordered_categories = _useState14[0],
-    set_ordered_categories = _useState14[1];
-  var _useState15 = (0, _react.useState)({}),
-    _useState16 = _slicedToArray(_useState15, 2),
-    object_api_dict = _useState16[0],
-    set_object_api_dict = _useState16[1];
-  var _useState17 = (0, _react.useState)([]),
-    _useState18 = _slicedToArray(_useState17, 2),
-    ordered_object_categories = _useState18[0],
-    set_ordered_object_categories = _useState18[1];
-  var _useSize7 = (0, _sizing_tools.useSize)(top_ref, props.tabSelectCounter, "CommandModule"),
-    _useSize8 = _slicedToArray(_useSize7, 4),
-    usable_width = _useSize8[0],
-    usable_height = _useSize8[1],
-    topX = _useSize8[2],
-    topY = _useSize8[3];
-  (0, _react.useEffect)(function () {
-    (0, _communication_react.postAjax)("get_api_dict", {}, function (data) {
-      set_api_dict(data.api_dict_by_category);
-      set_object_api_dict(data.object_api_dict_by_category);
-      set_ordered_object_categories(data.ordered_object_categories);
-      set_ordered_categories(data.ordered_api_categories);
-    });
-  }, []);
-  function _updateSearchState(new_state) {
-    set_search_string(new_state["search_string"]);
-  }
-  var object_items = [];
-  var _iterator7 = _createForOfIteratorHelper(ordered_object_categories),
-    _step7;
-  try {
-    for (_iterator7.s(); !(_step7 = _iterator7.n()).done;) {
-      var category = _step7.value;
-      var res = /*#__PURE__*/_react["default"].createElement(ObjectCategoryEntry, {
-        category_name: category,
-        key: category,
-        search_string: search_string,
-        class_list: object_api_dict[category]
-      });
-      object_items.push(res);
-    }
-  } catch (err) {
-    _iterator7.e(err);
-  } finally {
-    _iterator7.f();
-  }
-  var command_items = [];
-  var _iterator8 = _createForOfIteratorHelper(ordered_categories),
-    _step8;
-  try {
-    for (_iterator8.s(); !(_step8 = _iterator8.n()).done;) {
-      var _category = _step8.value;
-      var _res = /*#__PURE__*/_react["default"].createElement(CategoryEntry, {
-        category_name: _category,
-        key: _category,
-        search_string: search_string,
-        command_list: api_dict[_category]
-      });
-      command_items.push(_res);
-    }
-  } catch (err) {
-    _iterator8.e(err);
-  } finally {
-    _iterator8.f();
-  }
-  var commands_pane_style = {
-    "marginTop": 10,
-    "marginLeft": 10,
-    "marginRight": 10,
-    "paddingTop": 10,
-    height: usable_height
-  };
-  return /*#__PURE__*/_react["default"].createElement(_core.Card, {
-    ref: top_ref,
-    elevation: 1,
-    id: "commands-pane",
-    className: "d-flex flex-column",
-    style: commands_pane_style
-  }, /*#__PURE__*/_react["default"].createElement("div", {
-    style: {
-      display: "flex",
-      justifyContent: "flex-end",
-      marginRight: 25
-    }
-  }, /*#__PURE__*/_react["default"].createElement(_library_widgets.SearchForm, {
-    update_search_state: _updateSearchState,
-    search_string: search_string
-  })), /*#__PURE__*/_react["default"].createElement("div", {
-    ref: commandsRef,
-    style: {
-      fontSize: 13,
-      overflow: "auto"
-    }
-  }, /*#__PURE__*/_react["default"].createElement("h4", null, "Object api"), object_items, /*#__PURE__*/_react["default"].createElement("h4", {
-    style: {
-      marginTop: 20
-    }
-  }, "TileBase methods (accessed with self)"), command_items));
-}
-exports.CommandsModule = CommandsModule = /*#__PURE__*/(0, _react.memo)(CommandsModule);
-function stringIncludes(str1, str2) {
-  return str1.toLowerCase().includes(str2.toLowerCase());
-}
-function ObjectCategoryEntry(props) {
-  var classes = [];
-  var show_whole_category = false;
-  var show_category = false;
-  if (props.search_string == "" || stringIncludes(props.category_name, props.search_string)) {
-    show_whole_category = true;
-    show_category = true;
-  }
-  var index = 0;
-  var _iterator9 = _createForOfIteratorHelper(props.class_list),
-    _step9;
-  try {
-    for (_iterator9.s(); !(_step9 = _iterator9.n()).done;) {
-      var class_entry = _step9.value;
-      var entries = [];
-      var show_class = false;
-      if (class_entry[2] == "class") {
-        var show_whole_class = false;
-        if (show_whole_category || stringIncludes(class_entry[0], props.search_string)) {
-          show_whole_class = true;
-          show_category = true;
-          show_class = true;
-        }
-        var _iterator0 = _createForOfIteratorHelper(class_entry[1]),
-          _step0;
-        try {
-          for (_iterator0.s(); !(_step0 = _iterator0.n()).done;) {
-            var entry = _step0.value;
-            entry["kind"] = "class_" + entry["kind"];
-            var show_entry = false;
-            if (show_whole_class || stringIncludes(entry.signature, props.search_string)) {
-              entries.push(/*#__PURE__*/_react["default"].createElement(CommandEntry, _extends({
-                key: "entry_".concat(index)
-              }, entry)));
-              index += 1;
-              show_class = true;
-              show_category = true;
-            }
-          }
-        } catch (err) {
-          _iterator0.e(err);
-        } finally {
-          _iterator0.f();
-        }
-        if (show_class) {
-          classes.push(/*#__PURE__*/_react["default"].createElement(_react.Fragment, {
-            key: "class_".concat(index)
-          }, /*#__PURE__*/_react["default"].createElement("h6", {
-            style: {
-              fontStyle: "italic",
-              marginTop: 20,
-              fontFamily: "monospace"
-            }
-          }, "class" + class_entry[0]), entries));
-          index += 1;
-        }
-      } else {
-        var _entry = class_entry[1];
-        if (show_whole_category || stringIncludes(_entry.signature, props.search_string)) {
-          entries.push(/*#__PURE__*/_react["default"].createElement(CommandEntry, _extends({
-            key: "entry_".concat(index)
-          }, _entry)));
-          index += 1;
-          show_category = true;
-        }
-      }
-    }
-  } catch (err) {
-    _iterator9.e(err);
-  } finally {
-    _iterator9.f();
-  }
-  if (show_category) {
-    return /*#__PURE__*/_react["default"].createElement(_react.Fragment, {
-      key: props.category_name
-    }, /*#__PURE__*/_react["default"].createElement("h5", {
-      style: {
-        marginTop: 20
-      }
-    }, props.category_name), classes, /*#__PURE__*/_react["default"].createElement(_core.Divider, null));
-  } else {
-    return false;
-  }
-}
-ObjectCategoryEntry = /*#__PURE__*/(0, _react.memo)(ObjectCategoryEntry);
-ObjectCategoryEntry.propTypes = {
-  category_name: _propTypes["default"].string,
-  class_list: _propTypes["default"].array,
-  search_string: _propTypes["default"].string
-};
-function CategoryEntry(props) {
-  var show_whole_category = false;
-  var show_category = false;
-  if (props.search_string == "" || stringIncludes(props.category_name, props.search_string)) {
-    show_whole_category = true;
-    show_category = true;
-  }
-  var entries = [];
-  var index = 0;
-  var _iterator1 = _createForOfIteratorHelper(props.command_list),
-    _step1;
-  try {
-    for (_iterator1.s(); !(_step1 = _iterator1.n()).done;) {
-      var entry = _step1.value;
-      if (show_whole_category || stringIncludes(entry.signature, props.search_string)) {
-        show_category = true;
-        entries.push(/*#__PURE__*/_react["default"].createElement(CommandEntry, _extends({
-          key: index
-        }, entry)));
-        index += 1;
-      }
-    }
-  } catch (err) {
-    _iterator1.e(err);
-  } finally {
-    _iterator1.f();
-  }
-  if (show_category) {
-    return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement("h5", {
-      style: {
-        marginTop: 20
-      }
-    }, props.category_name), entries, /*#__PURE__*/_react["default"].createElement(_core.Divider, null));
-  } else {
-    return null;
-  }
-}
-CategoryEntry = /*#__PURE__*/(0, _react.memo)(CategoryEntry);
-CategoryEntry.propTypes = {
-  category_name: _propTypes["default"].string,
-  command_list: _propTypes["default"].array,
-  search_string: _propTypes["default"].string
-};
-function CommandEntry(props) {
-  var _useState19 = (0, _react.useState)(false),
-    _useState20 = _slicedToArray(_useState19, 2),
-    isOpen = _useState20[0],
-    setIsOpen = _useState20[1];
-  var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
-  function _handleClick() {
-    setIsOpen(!isOpen);
-  }
-  function _doCopy() {
-    if (navigator.clipboard && window.isSecureContext) {
-      if (props.kind == "method" || props.kind == "attribute") {
-        void navigator.clipboard.writeText("self." + props.signature);
-      } else {
-        void navigator.clipboard.writeText(props.signature);
-      }
-      statusFuncs.statusMessage("command copied");
-    }
-  }
-  var md_style = {
-    "display": "block",
-    "fontSize": 13
-  };
-  var re = new RegExp("^([^(]*)");
-  var bolded_command = props.signature.replace(re, function (matched) {
-    return "<span class='command-name'>" + matched + "</span>";
-  });
-  return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_core.Button, {
-    minimal: true,
-    outlined: isOpen,
-    className: "bp5-monospace-text",
-    onClick: _handleClick
-  }, /*#__PURE__*/_react["default"].createElement("span", {
-    dangerouslySetInnerHTML: {
-      __html: bolded_command
-    }
-  })), /*#__PURE__*/_react["default"].createElement(_core.Collapse, {
-    isOpen: isOpen
-  }, /*#__PURE__*/_react["default"].createElement("div", {
-    style: {
-      maxWidth: 700,
-      position: "relative"
-    }
-  }, /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
-    style: {
-      position: "absolute",
-      right: 5,
-      top: 5,
-      marginTop: 0
-    },
-    icon: "clipboard",
-    small: true,
-    handleClick: _doCopy
-  }), /*#__PURE__*/_react["default"].createElement("div", {
-    style: md_style,
-    className: "notes-field-markdown-output bp5-button bp5-outlined",
-    dangerouslySetInnerHTML: {
-      __html: props.body
-    }
-  }))));
-}
-CommandEntry = /*#__PURE__*/(0, _react.memo)(CommandEntry);
-CommandEntry.propTypes = {
-  name: _propTypes["default"].string,
-  signature: _propTypes["default"].string,
-  body: _propTypes["default"].string,
-  kind: _propTypes["default"].string
-};
-function ApiMenu(props) {
-  var _useState21 = (0, _react.useState)(null),
-    _useState22 = _slicedToArray(_useState21, 2),
-    currently_selected = _useState22[0],
-    set_currently_selected = _useState22[1];
-  var _useState23 = (0, _react.useState)(null),
-    _useState24 = _slicedToArray(_useState23, 2),
-    menu_created = _useState24[0],
-    set_menu_created = _useState24[1];
-  (0, _react.useEffect)(function () {
-    if (!menu_created && props.item_list.length > 0) {
-      set_current_selected(props.item_list[0].name);
-      set_menu_created(true);
-    }
-  });
-  function _buildMenu() {
-    var choices = [];
-    var _iterator10 = _createForOfIteratorHelper(props.item_list),
-      _step10;
-    try {
-      for (_iterator10.s(); !(_step10 = _iterator10.n()).done;) {
-        var item = _step10.value;
-        if (item.kind == "header") {
-          choices.push(/*#__PURE__*/_react["default"].createElement(_core.MenuDivider, {
-            title: item.name
-          }));
-        } else {
-          choices.push(/*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-            text: item.name
-          }));
-        }
-      }
-    } catch (err) {
-      _iterator10.e(err);
-    } finally {
-      _iterator10.f();
-    }
-    return /*#__PURE__*/_react["default"].createElement(_core.Menu, null, choices);
-  }
-  function _handleChange(value) {
-    set_currently_selected(value);
-  }
-  var option_list = [];
-  var _iterator11 = _createForOfIteratorHelper(props.item_list),
-    _step11;
-  try {
-    for (_iterator11.s(); !(_step11 = _iterator11.n()).done;) {
-      var item = _step11.value;
-      option_list.push(item.name);
-    }
-  } catch (err) {
-    _iterator11.e(err);
-  } finally {
-    _iterator11.f();
-  }
-  return /*#__PURE__*/_react["default"].createElement(_blueprint_mdata_fields.BpSelect, {
-    options: option_list,
-    onChange: _handleChange,
-    buttonIcon: "application",
-    value: currently_selected
-  });
-}
-ApiMenu = /*#__PURE__*/(0, _react.memo)(ApiMenu);
-ApiMenu.propTypes = {
-  item_list: _propTypes["default"].array
-};

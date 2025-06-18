@@ -23,7 +23,7 @@ function creator_props(data, registerDirtyMethod, finalCallback) {
         await _everyone_ready_in_context(finalCallback);
     }
 
-    var tsocket = new TacticSocket("main", 5000, "creator", module_viewer_id, function (response) {
+    var tsocket = new TacticSocket("main", 5000, "creator", module_viewer_id, function () {
         tsocket.socket.on("remove-ready-block", readyListener);
         tsocket.socket.emit('client-ready', {
             "room": data.module_viewer_id, "user_id": window.user_id, "participant": "client",
@@ -58,8 +58,6 @@ function creator_props(data, registerDirtyMethod, finalCallback) {
         tsocket.socket.off("remove-ready-block", readyListener);
         let parsed_data = data_object.the_content;
         let category = parsed_data.category ? parsed_data.category : "basic";
-        let result_dict = {"res_type": "tile", "res_name": module_name, "is_repository": false};
-        let odict = parsed_data.option_dict;
         let initial_line_number = !window.in_context && window.line_number ? window.line_number : null;
         let couple_save_attrs_and_exports =
             !("couple_save_attrs_and_exports" in mdata.additional_mdata) || mdata.additional_mdata.couple_save_attrs_and_exports;
@@ -78,7 +76,7 @@ function creator_props(data, registerDirtyMethod, finalCallback) {
                 draw_plot_line_number: parsed_data.draw_plot_line_number,
                 initial_line_number: initial_line_number,
                 category: category,
-                extra_functions: parsed_data.extra_functions,
+                user_methods_list: parsed_data.user_methods_list,
                 draw_plot_code: parsed_data.draw_plot_code,
                 jscript_code: parsed_data.jscript_code,
                 globals_code: parsed_data.globals_code,

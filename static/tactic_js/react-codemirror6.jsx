@@ -4,7 +4,6 @@ import {useSize} from "./sizing_tools";
 import {propsAreEqual, useStateAndRef} from "./utilities_react";
 import {SettingsContext} from "./settings";
 import {SelectedPaneContext} from "./utilities_react";
-import {ErrorDrawerContext} from "./error_drawer";
 import {SearchForm} from "./library_widgets";
 import {indentWithTab, indentLess} from "@codemirror/commands"
 import {python} from "@codemirror/lang-python"
@@ -12,10 +11,19 @@ import {javascript} from "@codemirror/lang-javascript"
 import {markdown} from "@codemirror/lang-markdown"
 import {indentUnit} from "@codemirror/language";
 import {HighlightStyle, foldAll, unfoldAll} from "@codemirror/language"
-import {EditorView, Decoration} from "@codemirror/view";
-import {StateField, StateEffect, RangeSetBuilder, EditorSelection, Compartment} from "@codemirror/state";
-import {selfCompletionSource, generalCompletionSource, aiCompletionSource, loadingSource,
-    topLevelExtraCompletions, dotAccessCompletions} from "./autocomplete";
+import {EditorView, Decoration, ViewPlugin} from "@codemirror/view";
+import {
+    StateField,
+    StateEffect,
+    RangeSetBuilder,
+    EditorSelection,
+    Compartment,
+    EditorState,
+} from "@codemirror/state";
+import {
+    selfCompletionSource, generalCompletionSource, aiCompletionSource, loadingSource,
+    topLevelExtraCompletions, dotAccessCompletions
+} from "./autocomplete";
 import {useDebounce} from "./utilities_react";
 
 import {
@@ -24,13 +32,19 @@ import {
 } from '@codemirror/view';
 
 export {EditorView} from '@codemirror/view';
-import {EditorState} from '@codemirror/state';
 import {foldGutter, indentOnInput, syntaxHighlighting, bracketMatching, foldKeymap} from '@codemirror/language';
 import {history, defaultKeymap, historyKeymap, insertNewlineAndIndent} from '@codemirror/commands';
 import {highlightSelectionMatches} from '@codemirror/search';
-import {closeBrackets, autocompletion, closeBracketsKeymap, completionKeymap, acceptCompletion, completionStatus} from '@codemirror/autocomplete';
+import {
+    closeBrackets,
+    autocompletion,
+    closeBracketsKeymap,
+    completionKeymap,
+    acceptCompletion,
+    completionStatus
+} from '@codemirror/autocomplete';
 
-import { startCompletion } from "@codemirror/autocomplete";
+import {startCompletion} from "@codemirror/autocomplete";
 
 
 import {themeList, importTheme} from "./theme_support";
@@ -116,44 +130,45 @@ function customLineNumbers(startLine = 1) {
 }
 
 const enterInsertsNewlineOnly = {
-  key: "Enter",
-  run: (view) => {
-    if (completionStatus(view.state) === "active") {
-      // If menu is active, explicitly do not accept completion
-      return insertNewlineAndIndent(view);
-    }
-    return insertNewlineAndIndent(view);
-  },
-  preventDefault: true
+    key: "Enter",
+    run: (view) => {
+        if (completionStatus(view.state) === "active") {
+            // If menu is active, explicitly do not accept completion
+            return insertNewlineAndIndent(view);
+        }
+        return insertNewlineAndIndent(view);
+    },
+    preventDefault: true
 };
 
 const triggerAutocompleteKeymap = [
-  {
-    key: "Alt-/",
-    run: (view) => {
-      startCompletion(view);
-      return true; // ✅ Signal that we handled the key
-    },
-    preventDefault: true // ✅ Block browser/OS from inserting +
-  }
+    {
+        key: "Alt-/",
+        run: (view) => {
+            startCompletion(view);
+            return true; // ✅ Signal that we handled the key
+        },
+        preventDefault: true // ✅ Block browser/OS from inserting +
+    }
 ];
 
 const tabAcceptKeymap = [
-  {
-    key: "Tab",
-    run: (view) => {
-          const status = completionStatus(view.state);
-          if (status === "active") {
-            return acceptCompletion(view);
-          }
-          return indentWithTab.run(view);
+    {
+        key: "Tab",
+        run: (view) => {
+            const status = completionStatus(view.state);
+            if (status === "active") {
+                return acceptCompletion(view);
+            }
+            return indentWithTab.run(view);
+        },
+        preventDefault: true
     },
-    preventDefault: true
-  },
-    {key: "Shift-Tab",
-    run: indentLess,
-    preventDefault: true
-  },
+    {
+        key: "Shift-Tab",
+        run: indentLess,
+        preventDefault: true
+    },
 ];
 
 const customCompletionKeymap = completionKeymap.filter(binding => binding.key !== "Enter");
@@ -208,8 +223,8 @@ function ReactCodemirror6(props) {
     const awaitingSuggestionRef = useRef(true);
 
     const [aiText, setAIText, aiTextRef] = useStateAndRef(null);
-    const [aiTextLabel, setAITextLabel, aiTextLabelRef] = useStateAndRef(null);
-    const [ai_waiting, doAIUpdate] = useDebounce(getAIUpdate, 2000);
+    const [, setAITextLabel, aiTextLabelRef] = useStateAndRef(null);
+    const [, doAIUpdate] = useDebounce(getAIUpdate, 2000);
 
     const settingsContext = useContext(SettingsContext);
 
@@ -217,60 +232,59 @@ function ReactCodemirror6(props) {
 
     const getExtensions = () => {
         let extensions = [
-                completionCompartment.current.of(autocompletion({...autocompletionArgRef.current})),
-                keymap.of([
-                    ...customCompletionKeymap,
-                    ...props.extraKeys,
-                    ...closeBracketsKeymap,
-                    ...historyKeymap,
-                    ...foldKeymap,
-                    ...triggerAutocompleteKeymap,
-                    ...strippedDefaultKeymap,
-                    ...tabAcceptKeymap,
-                    enterInsertsNewlineOnly
-                ]),
-                mode_dict[props.mode](),
-                themeCompartment.current.of([]),
-                history(),
-                highlightSpecialChars(),
-                history(),
-                drawSelection(),
-                dropCursor(),
-                EditorState.allowMultipleSelections.of(true),
-                indentOnInput(),
-                bracketMatching(),
-                closeBrackets(),
-                rectangularSelection(),
-                crosshairCursor(),
-                highlightSelectionMatches(),
-                indentUnit.of("    "),
-                highlightField.init(),
-                readOnlyCompartment.current.of(EditorState.readOnly.of(props.readOnly)),
-                EditorView.updateListener.of((update) => {
-                    if (update.docChanged) {
-                        handleChange(update.state.doc.toString());
-                        changeCounterRef.current = changeCounterRef.current + 1;
-                        if (window.has_openapi_key && (settingsContext.settingsRef.current.use_ai_code_suggestions == "yes") && props.container_id) {
-                            setAIText(null);
-                            setAITextLabel(null);
-                            awaitingSuggestionRef.current = true;
-                            doAIUpdate(update.state.doc.toString(), changeCounterRef.current);
-                        }
-                        else {
-                            setAIText(null);
-                            setAITextLabel(null);
-                            awaitingSuggestionRef.current = true
-                        }
+            completionCompartment.current.of(autocompletion({...autocompletionArgRef.current})),
+            keymap.of([
+                ...customCompletionKeymap,
+                ...props.extraKeys,
+                ...closeBracketsKeymap,
+                ...historyKeymap,
+                ...foldKeymap,
+                ...triggerAutocompleteKeymap,
+                ...strippedDefaultKeymap,
+                ...tabAcceptKeymap,
+                enterInsertsNewlineOnly
+            ]),
+            mode_dict[props.mode](),
+            themeCompartment.current.of([]),
+            history(),
+            highlightSpecialChars(),
+            history(),
+            drawSelection(),
+            dropCursor(),
+            EditorState.allowMultipleSelections.of(true),
+            indentOnInput(),
+            bracketMatching(),
+            closeBrackets(),
+            rectangularSelection(),
+            crosshairCursor(),
+            highlightSelectionMatches(),
+            indentUnit.of("    "),
+            highlightField.init(),
+            readOnlyCompartment.current.of(EditorState.readOnly.of(props.readOnly)),
+            EditorView.updateListener.of((update) => {
+                if (update.docChanged) {
+                    handleChange(update.state.doc.toString());
+                    changeCounterRef.current = changeCounterRef.current + 1;
+                    if (window.has_openapi_key && (settingsContext.settingsRef.current.use_ai_code_suggestions == "yes") && props.container_id) {
+                        setAIText(null);
+                        setAITextLabel(null);
+                        awaitingSuggestionRef.current = true;
+                        doAIUpdate(update.state.doc.toString(), changeCounterRef.current);
+                    } else {
+                        setAIText(null);
+                        setAITextLabel(null);
+                        awaitingSuggestionRef.current = true
                     }
-                    if (update.focusChanged) {
-                        if (update.view.hasFocus) {
-                            handleFocus();
-                        } else {
-                            handleBlur();
-                        }
+                }
+                if (update.focusChanged) {
+                    if (update.view.hasFocus) {
+                        handleFocus();
+                    } else {
+                        handleBlur();
                     }
-                })
-            ];
+                }
+            })
+        ];
         if (props.show_line_numbers) {
             extensions = extensions.concat([
                     lineNumberCompartment.current.of(customLineNumbers(props.first_line_number)),
@@ -343,31 +357,30 @@ function ReactCodemirror6(props) {
             })
     };
 
-    useEffect(()=>{
-
+    useEffect(() => {
         let sources;
         if (props.mode === "python") {
             sources = [
-                    selfCompletionSource(props.extraSelfCompletions),
-                    topLevelExtraCompletions,
-                    dotAccessCompletions,
-                    generalCompletionSource(),]
-        }
-        else {
+                selfCompletionSource(props.extraSelfCompletions),
+                topLevelExtraCompletions,
+                dotAccessCompletions,
+                generalCompletionSource(),]
+        } else {
             sources = [
-                    aiCompletionSource(aiTextRef.current, aiTextLabelRef.current),
-                    generalCompletionSource(),]
+                aiCompletionSource(aiTextRef.current, aiTextLabelRef.current),
+                generalCompletionSource(),]
         }
         if (awaitingSuggestionRef.current) {
             sources.unshift(loadingSource);
-        }
-        else {
+        } else {
             sources.unshift(aiCompletionSource(aiTextRef.current, aiTextLabelRef.current))
         }
 
         autocompletionArgRef.current =
             {
-                optionClass: (completion) => {return completion.type === "suggestion" ? "cm-completion-ai" : null},
+                optionClass: (completion) => {
+                    return completion.type === "suggestion" ? "cm-completion-ai" : null
+                },
                 override: sources,
                 closeOnBlur: true,
                 defaultKeymap: false
@@ -379,7 +392,7 @@ function ReactCodemirror6(props) {
         }
     }, [props.extraSelfCompletions, aiText]);
 
-    useEffect(() =>{
+    useEffect(() => {
         // This controlled stuff never quite worked perfectly inside the CombinedMetadata notes field..
         if (props.controlled) {
             if (editorView.current) {
@@ -402,7 +415,7 @@ function ReactCodemirror6(props) {
 
     }, [settingsContext.settings.theme, settingsContext.settings.preferred_dark_theme, settingsContext.settings.preferred_light_theme]);
 
-    useEffect(()=> {
+    useEffect(() => {
         if (editorView.current && props.show_line_numbers) {
             editorView.current.dispatch({
                 effects: lineNumberCompartment.current.reconfigure(customLineNumbers(props.first_line_number))
@@ -428,8 +441,6 @@ function ReactCodemirror6(props) {
         _doHighlight();
     }, [props.search_term, props.current_search_number, props.regex_search]);
 
-    const selectedPane = useContext(SelectedPaneContext);
-
     function getAIUpdate(new_code, change_counter) {
         let code_str = new_code;
         const cursorPos = editorView.current.state.selection.main.head;
@@ -438,7 +449,8 @@ function ReactCodemirror6(props) {
                 "code_str": code_str,
                 "change_counter": change_counter,
                 "mode": props.mode,
-                "cursor_position": cursorPos})
+                "cursor_position": cursorPos
+            })
             .then((data) => {
                 console.log("got aiupdate result");
                 if (data.success) {
@@ -447,13 +459,12 @@ function ReactCodemirror6(props) {
                         setAITextLabel(data.display_label);
                         awaitingSuggestionRef.current = false
                     }
-                }
-                else {
+                } else {
                     setAIText(null);
                     setAITextLabel(null);
                 }
             })
-            .catch((e) => {
+            .catch(() => {
                 setAIText(null);
                 setAITextLabel(null);
             })
@@ -652,7 +663,6 @@ function ReactCodemirror6(props) {
             }
         }
     }
-    const tTheme = settingsContext.settingsRef.current.theme;
     if (props.show_search) {
         let title_label = props.title_label ? props.title_label : "";
         return (
@@ -684,9 +694,9 @@ function ReactCodemirror6(props) {
                     />
                 </div>
                 {props.show_fold_button && bgstyle &&
-                    <ButtonGroup minimal={false} style={bgstyle}>
-                        <Button small={true} icon="collapse-all" text="fold" onClick={_foldAll}/>
-                        <Button small={true} icon="expand-all" text="unfold" onClick={_unfoldAll}/>
+                    <ButtonGroup variant="minimal" style={bgstyle}>
+                        <Button size="small" icon="collapse-all" text="fold" onClick={_foldAll}/>
+                        <Button size="small" icon="expand-all" text="unfold" onClick={_unfoldAll}/>
                     </ButtonGroup>
                 }
                 <div className="code-container" style={ccstyle} ref={localRef}></div>
@@ -697,9 +707,9 @@ function ReactCodemirror6(props) {
     return (
         <Fragment>
             {props.show_fold_button && bgstyle &&
-                <ButtonGroup minimal={false} style={bgstyle}>
-                    <Button small={true} icon="collapse-all" text="fold" onClick={_foldAll}/>
-                    <Button small={true} icon="expand-all" text="unfold" onClick={_unfoldAll}/>
+                <ButtonGroup variant="minimal" style={bgstyle}>
+                    <Button size="small" icon="collapse-all" text="fold" onClick={_foldAll}/>
+                    <Button size="small" icon="expand-all" text="unfold" onClick={_unfoldAll}/>
                 </ButtonGroup>
             }
             {props.title_label &&

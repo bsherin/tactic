@@ -15,7 +15,11 @@ class ErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       if (!("fallback" in this.props) || (this.props.fallback == null)) {
+
         let the_message = `${this.state.message}\n${this.state.stack})`;
+        if (this.props.hasOwnProperty("custom_message") && this.props.custom_message) {
+          the_message = this.props.custom_message + "\n" + the_message;
+        }
         return <div style={{margin: 50}}><pre>{the_message}</pre></div>
       }
       else {

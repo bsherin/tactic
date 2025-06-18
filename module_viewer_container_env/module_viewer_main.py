@@ -149,13 +149,8 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin):
             self.tp.reparse(module_code)
             render_content_line_number = self.tp.get_starting_line("render_content")
             draw_plot_line_number = self.tp.get_starting_line("draw_plot")
-            if len(self.tp.extra_methods.keys()) == 0:
-                if draw_plot_line_number is None:
-                    extra_methods_line_number = render_content_line_number - 1
-                else:
-                    extra_methods_line_number = draw_plot_line_number - 1
-            else:
-                extra_methods_line_number = self.tp.get_starting_line(list(self.tp.extra_methods)[0])
+            user_methods_list = self.tp.get_user_methods_list()
+            user_methods_line_numbers = {func["name"]: func["starting_line"] for func in user_methods_list}
             doc = self.db[self.tile_collection_name].find_one({"tile_module_name": module_name})
             if doc and "metadata" in doc:
                 mdata = doc["metadata"]
@@ -182,7 +177,7 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin):
             return {"success": True, "message": "Module Successfully Saved",
                     "alert_type": "alert-success", "render_content_line_number": render_content_line_number,
                     "draw_plot_line_number": draw_plot_line_number,
-                    "extra_methods_line_number": extra_methods_line_number}
+                    "user_methods_line_numbers": extra_methods_line_numbers}
         except Exception as ex:
             return self.get_traceback_exception_dict(ex, "Error saving module")
 
@@ -213,22 +208,20 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin):
 
         globals_code = self.tp.globals_code
 
-        extra_functions = remove_indents(self.tp.get_extra_methods_string(), 1)
+        user_methods_list = self.tp.get_user_methods_list()
+
+        user_methods_list = [{"name": func["name"],
+                                 "code": remove_indents(func["code"], 1),
+                                 "mode": "python",
+                                 "starting_line": func["starting_line"]} for func in user_methods_list]
+
 
         render_content_line_number = self.tp.get_starting_line("render_content")
         draw_plot_line_number = self.tp.get_starting_line("draw_plot")
-        if len(self.tp.extra_methods.keys()) == 0:
-            if draw_plot_line_number is None:
-                extra_methods_line_number = render_content_line_number - 1
-            else:
-                extra_methods_line_number = draw_plot_line_number - 1
-        else:
-            extra_methods_line_number = self.tp.get_starting_line(list(self.tp.extra_methods)[0])
-
         parsed_data = {"option_dict": self.tp.options, "export_list": self.tp.exports,
                        "additional_save_attrs": self.tp.additional_save_attrs,
                        "render_content_code": render_content_code,
-                       "extra_functions": extra_functions,
+                       "user_methods_list": user_methods_list,
                        "category": self.tp.category,
                        "is_mpl": is_mpl,
                        "is_d3": is_d3,
@@ -236,9 +229,62 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin):
                        "jscript_code": jscript_code,
                        "globals_code": globals_code,
                        "render_content_line_number": render_content_line_number,
-                       "draw_plot_line_number": draw_plot_line_number,
-                       "extra_methods_line_number": extra_methods_line_number}
+                       "draw_plot_line_number": draw_plot_line_number}
         return parsed_data
+
+    # def assemble_parse_information_old(self):
+    #     for option in self.tp.options:
+    #         if option["name"] in self.tp.defaults:
+    #             option["default"] = self.tp.defaults[option["name"]]
+    #
+    #     func_dict = self.tp.methods
+    #     if "render_content" in func_dict:
+    #         render_content_code = func_dict["render_content"]["method_body"]
+    #         render_content_code = remove_indents(render_content_code, 2)
+    #     else:
+    #         render_content_code = ""
+    #
+    #     is_mpl = self.tp.is_mpl
+    #     is_d3 = self.tp.is_d3
+    #
+    #     if is_mpl and "draw_plot" in func_dict:
+    #         draw_plot_code = func_dict["draw_plot"]["method_body"]
+    #         draw_plot_code = remove_indents(draw_plot_code, 2)
+    #     else:
+    #         draw_plot_code = ""
+    #     if is_d3 and "jscript" in self.tp.defaults:
+    #         jscript_code = self.tp.defaults["jscript"]
+    #     else:
+    #         jscript_code = ""
+    #
+    #     globals_code = self.tp.globals_code
+    #
+    #     extra_functions = remove_indents(self.tp.get_extra_methods_string(), 1)
+    #
+    #     render_content_line_number = self.tp.get_starting_line("render_content")
+    #     draw_plot_line_number = self.tp.get_starting_line("draw_plot")
+    #     if len(self.tp.extra_methods.keys()) == 0:
+    #         if draw_plot_line_number is None:
+    #             extra_methods_line_number = render_content_line_number - 1
+    #         else:
+    #             extra_methods_line_number = draw_plot_line_number - 1
+    #     else:
+    #         extra_methods_line_number = self.tp.get_starting_line(list(self.tp.extra_methods)[0])
+    #
+    #     parsed_data = {"option_dict": self.tp.options, "export_list": self.tp.exports,
+    #                    "additional_save_attrs": self.tp.additional_save_attrs,
+    #                    "render_content_code": render_content_code,
+    #                    "extra_functions": extra_functions,
+    #                    "category": self.tp.category,
+    #                    "is_mpl": is_mpl,
+    #                    "is_d3": is_d3,
+    #                    "draw_plot_code": draw_plot_code,
+    #                    "jscript_code": jscript_code,
+    #                    "globals_code": globals_code,
+    #                    "render_content_line_number": render_content_line_number,
+    #                    "draw_plot_line_number": draw_plot_line_number,
+    #                    "extra_methods_line_number": extra_methods_line_number}
+    #     return parsed_data
 
     @task_worthy
     def get_options(self, data_dict):

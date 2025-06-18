@@ -35,7 +35,6 @@ import {SelectedPaneContext, useReducerAndRef} from "./utilities_react";
 export {CreatorApp}
 
 const BOTTOM_MARGIN = 50;
-const MARGIN_SIZE = 17;
 
 
 function optionListReducer(option_list, action) {
@@ -97,11 +96,9 @@ function CreatorApp(props) {
         ...props
     };
     const top_ref = useRef(null);
-    const rc_span_ref = useRef(null);
     const vp_ref = useRef(null);
 
     const methods_ref = useRef(null);
-    const commands_ref = useRef(null);
     const search_ref = useRef(null);
     const globals_ref = useRef(null);
     const last_save = useRef({});
@@ -137,28 +134,26 @@ function CreatorApp(props) {
     const [current_search_number, set_current_search_number, current_search_number_ref] = useStateAndRef(null);
     const [current_search_cm, set_current_search_cm, current_search_cm_ref] = useStateAndRef(cm_list.current[0]);
     const [regex, set_regex] = useState(false);
-    const [search_matches, set_search_matches, search_matches_ref] = useStateAndRef(null);
+    const [search_matches, set_search_matches, ] = useStateAndRef(null);
 
-    const [render_content_code, set_render_content_code, render_content_code_ref] = useStateAndRef(props.render_content_code);
-    const [draw_plot_code, set_draw_plot_code, draw_plot_code_ref] = useStateAndRef(props.draw_plot_code);
-    const [jscript_code, set_jscript_code, jscript_code_ref] = useStateAndRef(props.jscript_code);
-    const [extra_functions, set_extra_functions, extra_functions_ref] = useStateAndRef(props.extra_functions);
-    const [globals_code, set_globals_code, globals_code_ref] = useStateAndRef(props.globals_code);
-    const [option_list, optionDispatch, option_list_ref] = useReducerAndRef(optionListReducer, []);
-    const [export_list, set_export_list, export_list_ref] = useStateAndRef(props.export_list);
+    const [, set_render_content_code, render_content_code_ref] = useStateAndRef(props.render_content_code);
+    const [, set_draw_plot_code, draw_plot_code_ref] = useStateAndRef(props.draw_plot_code);
+    const [, set_jscript_code, jscript_code_ref] = useStateAndRef(props.jscript_code);
+    const [, set_extra_functions, extra_functions_ref] = useStateAndRef(props.extra_functions);
+    const [, set_globals_code, globals_code_ref] = useStateAndRef(props.globals_code);
+    const [, optionDispatch, option_list_ref] = useReducerAndRef(optionListReducer, []);
+    const [, set_export_list, export_list_ref] = useStateAndRef(props.export_list);
 
-    const [render_content_line_number, set_render_content_line_number, render_content_line_number_ref] = useStateAndRef(props.render_content_line_number);
-    const [draw_plot_line_number, set_draw_plot_line_number, draw_plot_line_number_ref] = useStateAndRef(props.draw_plot_line_number);
-    const [extra_methods_line_number, set_extra_methods_line_number, extra_methods_line_number_ref] = useStateAndRef(props.extra_methods_line_number);
+    const [, set_render_content_line_number, render_content_line_number_ref] = useStateAndRef(props.render_content_line_number);
+    const [, set_draw_plot_line_number, draw_plot_line_number_ref] = useStateAndRef(props.draw_plot_line_number);
+    const [, set_extra_methods_line_number, extra_methods_line_number_ref] = useStateAndRef(props.extra_methods_line_number);
 
     // const [category, set_category, category_ref] = useStateAndRef(props.category);
 
-    const [additional_save_attrs, set_additional_save_attrs, additional_save_attrs_ref] = useStateAndRef(props.additional_save_attrs || []);
-    const [couple_save_attrs_and_exports, set_couple_save_attrs_and_exports, couple_save_attrs_and_exports_ref] = useStateAndRef(props.couple_save_attrs_and_exports);
+    const [, set_additional_save_attrs, additional_save_attrs_ref] = useStateAndRef(props.additional_save_attrs || []);
+    const [, set_couple_save_attrs_and_exports, couple_save_attrs_and_exports_ref] = useStateAndRef(props.couple_save_attrs_and_exports);
 
     const [selectedTabId, setSelectedTabId] = useState("metadata");
-    const [top_pane_fraction, set_top_pane_fraction] = useState(props.is_mpl || props.is_d3 ? .5 : 1);
-    const [left_pane_fraction, set_left_pane_fraction] = useState(.5);
 
     const extraSelfCompletionsRef = useRef([]);
 
@@ -204,8 +199,6 @@ function CreatorApp(props) {
     const connection_status = useConnection(props.tsocket, initSocket);
 
     useEffect(() => {
-        let data_dict = {pane_type: "tile", is_repository: false, show_hidden: true};
-        let data;
         optionDispatch({type: "initialize", new_items: props.option_list});
     }, []);
 
@@ -425,7 +418,7 @@ function CreatorApp(props) {
         }
     }
 
-    function _updateSearchState(new_state, callback = null) {
+    function _updateSearchState(new_state) {
         set_current_search_cm(cm_list.current[0]);
         set_current_search_number(0);
         for (let field in new_state) {
@@ -446,19 +439,6 @@ function CreatorApp(props) {
             _handleTabSelect("globals");
         }
         _handleTabSelect(currentTab);
-    }
-
-    function _noSearchResults() {
-        if (search_string == "" || search_string == null) {
-            return true
-        } else {
-            for (let cm of cm_list.current) {
-                if (search_match_numbers.current[cm]) {
-                    return false
-                }
-            }
-            return true
-        }
     }
 
     function _showHistoryViewer() {
@@ -499,7 +479,6 @@ function CreatorApp(props) {
             return false
         }
         statusFuncs.startSpinner();
-        let data;
         try {
             await doSavePromise();
             statusFuncs.statusMessage("Loading Module");
@@ -597,7 +576,6 @@ function CreatorApp(props) {
         }
         statusFuncs.startSpinner();
         statusFuncs.statusMessage("Checkpointing");
-        let data;
         try {
             await doSavePromise();
             await doCheckpointPromise();
@@ -608,15 +586,6 @@ function CreatorApp(props) {
         }
         return false
 
-    }
-
-    function get_tags_string() {
-        let taglist = tags_ref.current;
-        let local_tags = "";
-        for (let tag of taglist) {
-            local_tags = local_tags + tag + " "
-        }
-        return local_tags.trim();
     }
 
     function _getSaveDict() {
@@ -692,15 +661,11 @@ function CreatorApp(props) {
                         _selectLine(emObject.current, rline_number.current - extra_methods_line_number_ref.current);
                         rline_number.current = null
 
-                    } else {
-                        return
                     }
                 } else if (rline_number.current < render_content_line_number_ref.current) {
                     if (dpObject.current) {
                         _selectLine(dpObject.current, rline_number.current - draw_plot_line_number_ref.current - 1);
                         rline_number.current = null
-                    } else {
-                        return
                     }
                 } else if (rcObject.current) {
                     _selectLine(rcObject.current, rline_number.current - render_content_line_number_ref.current - 1);
@@ -712,8 +677,6 @@ function CreatorApp(props) {
                         _handleTabSelect("methods");
                         _selectLine(emObject.current, rline_number.current - extra_methods_line_number_ref.current);
                         rline_number.current = null
-                    } else {
-                        return
                     }
                 } else {
                     if (rcObject.current) {
@@ -730,7 +693,7 @@ function CreatorApp(props) {
         postAjax("/delete_container_on_unload", {"container_id": props.module_viewer_id, "notify": false});
     }
 
-    function _handleTabSelect(newTabId, prevTabid, event) {
+    function _handleTabSelect(newTabId) {
         let new_fg = Object.assign({}, foregrounded_panes);
         new_fg[newTabId] = true;
         setSelectedTabId(newTabId);
@@ -767,8 +730,8 @@ function CreatorApp(props) {
             <ButtonGroup>
                 <Button style={{height: "fit-content", alignSelf: "start", marginTop: 10, fontSize: 12}}
                         text="Add Options"
-                        small={true}
-                        minimal={true}
+                        size="small"
+                        variant="minimal"
                         intent="primary"
                         icon="select"
                         onClick={e => {
@@ -777,8 +740,8 @@ function CreatorApp(props) {
                         }}/>
                 <Button style={{height: "fit-content", alignSelf: "start", marginTop: 10, fontSize: 12}}
                         text="Add Exports"
-                        small={true}
-                        minimal={true}
+                        size="small"
+                        variant="minimal"
                         intent="primary"
                         icon="export"
                         onClick={e => {
@@ -1051,7 +1014,7 @@ function CreatorApp(props) {
         <Fragment>
             <div id="creator-resources" className="d-block">
                 <Tabs id="resource_tabs" selectedTabId={selectedTabId}
-                      large={false} onChange={_handleTabSelect}>
+                      size="large" onChange={_handleTabSelect}>
                     <Tab id="metadata" title={<span><Icon size={12} icon="manually-entered-data"/> metadata</span>}
                          panel={mdata_panel}/>
                     <Tab id="options" title={<span><Icon size={12} icon="select"/> options</span>}

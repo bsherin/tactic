@@ -37,6 +37,9 @@ var ErrorBoundary = exports.ErrorBoundary = /*#__PURE__*/function (_React$Compon
       if (this.state.hasError) {
         if (!("fallback" in this.props) || this.props.fallback == null) {
           var the_message = "".concat(this.state.message, "\n").concat(this.state.stack, ")");
+          if (this.props.hasOwnProperty("custom_message") && this.props.custom_message) {
+            the_message = this.props.custom_message + "\n" + the_message;
+          }
           return /*#__PURE__*/_react["default"].createElement("div", {
             style: {
               margin: 50

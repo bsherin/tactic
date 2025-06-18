@@ -1,30 +1,26 @@
 // noinspection JSConstructorReturnsPrimitive
 
 import React from "react";
-import {Fragment, useState, useEffect, memo, useContext, useRef} from "react";
+import {Fragment, useState, memo,} from "react";
 import PropTypes from 'prop-types';
 
-import {Button, Collapse, Divider, Menu, MenuItem, MenuDivider, Switch, FormGroup} from "@blueprintjs/core";
+import {Button, Divider, Switch, FormGroup} from "@blueprintjs/core";
 import {Card} from "@blueprintjs/core";
 import {RegionCardinality} from "@blueprintjs/table";
 
-import {postAjax} from "./communication_react";
-import {SearchForm} from "./library_widgets";
 import {
     LabeledSelectList,
     LabeledFormField,
     LabeledTextArea,
     BpOrderableTable,
-    GlyphButton
 } from "./blueprint_react_widgets";
-import {StatusContext} from "./toaster";
 import _ from 'lodash';
 import {isInt} from "./utilities_react";
-import {BpSelect, CombinedMetadata} from "./blueprint_mdata_fields";
 import {useCallbackStack, useStateAndRef} from "./utilities_react";
 import {useSize} from "./sizing_tools";
+import {CombinedMetadata} from "./blueprint_mdata_fields";
 
-export {OptionModule, ExportModule, CommandsModule, MetadataModule, correctOptionListTypes}
+export {OptionModule, ExportModule, MetadataModule, correctOptionListTypes}
 
 function correctType(type, val, error_flag = "__ERROR__") {
     let result;
@@ -301,9 +297,9 @@ function OptionModule(props) {
 
     const top_ref = React.createRef();
     const [active_row, set_active_row] = useState(null);
-    const [form_state, set_form_state, form_state_ref] = useStateAndRef({...blank_form});
+    const [, set_form_state, form_state_ref] = useStateAndRef({...blank_form});
 
-    const [usable_width, usable_height, topX, topY] = useSize(top_ref, props.tabSelectCounter, "OptionModule");
+    const [, usable_height, , ] = useSize(top_ref, props.tabSelectCounter, "OptionModule");
 
     const pushCallback = useCallbackStack();
 
@@ -529,7 +525,7 @@ function ExportModule(props) {
     const [active_export_row, set_active_export_row] = useState(0);
     const [active_save_row, set_active_save_row] = useState(0);
 
-    const [usable_width, usable_height, topX, topY] = useSize(top_ref, props.tabSelectCounter, "ExportModule");
+    const [, usable_height, , ] = useSize(top_ref, props.tabSelectCounter, "ExportModule");
 
     function _delete_export() {
         let new_data_list = props.export_list;
@@ -620,7 +616,7 @@ function ExportModule(props) {
                 <h4 className="bp5-heading">Save Attrs</h4>
                 <Switch label="Couple save_attrs and exports"
                         className="ml-2 mb-0 mt-1"
-                        large={false}
+                        size="medium"
                         checked={props.couple_save_attrs_and_exports}
                         onChange={_handleCoupleChange}/>
             </div>
@@ -653,322 +649,25 @@ ExportModule.propTypes = {
 };
 
 function MetadataModule(props) {
+    props = {
+        "tabSelectCounter": 0,
+        "foregrounded": false,
+        ...props
+    }
     const top_ref = React.createRef();
-    const [usable_width, usable_height, topX, topY] = useSize(top_ref, props.tabSelectCounter, "CreatorModule");
+    const [, usable_height, , ] = useSize(top_ref, props.tabSelectCounter, "CreatorModule");
 
     let md_style = {height: "100%"};
     return (
         <div ref={top_ref} style={{marginLeft: 10, height: usable_height}}>
-            <CombinedMetadata {...props}
-                outer_style={md_style}
-            />
+            { props.foregrounded &&
+                <CombinedMetadata {...props}
+                    outer_style={md_style}
+                />
+            }
         </div>
     )
 
 }
 
 MetadataModule = memo(MetadataModule);
-
-function CommandsModule(props) {
-    const top_ref = React.createRef();
-    const commandsRef = useRef(null);
-    const [search_string, set_search_string] = useState("");
-    const [api_dict, set_api_dict] = useState({});
-    const [ordered_categories, set_ordered_categories] = useState([]);
-    const [object_api_dict, set_object_api_dict] = useState({});
-    const [ordered_object_categories, set_ordered_object_categories] = useState([]);
-
-    const [usable_width, usable_height, topX, topY] = useSize(top_ref, props.tabSelectCounter, "CommandModule");
-
-    useEffect(() => {
-        postAjax("get_api_dict", {}, function (data) {
-            set_api_dict(data.api_dict_by_category);
-            set_object_api_dict(data.object_api_dict_by_category);
-            set_ordered_object_categories(data.ordered_object_categories);
-            set_ordered_categories(data.ordered_api_categories);
-        })
-    }, []);
-
-    function _updateSearchState(new_state) {
-        set_search_string(new_state["search_string"])
-    }
-
-    let object_items = [];
-    for (let category of ordered_object_categories) {
-        let res = <ObjectCategoryEntry category_name={category}
-                                       key={category}
-                                       search_string={search_string}
-                                       class_list={object_api_dict[category]}/>;
-        object_items.push(res)
-    }
-    let command_items = [];
-    for (let category of ordered_categories) {
-        let res = <CategoryEntry category_name={category}
-                                 key={category}
-                                 search_string={search_string}
-                                 command_list={api_dict[category]}/>;
-        command_items.push(res)
-    }
-
-    const commands_pane_style = {
-        "marginTop": 10,
-        "marginLeft": 10,
-        "marginRight": 10,
-        "paddingTop": 10,
-        height: usable_height
-    };
-
-    return (
-
-        <Card ref={top_ref} elevation={1} id="commands-pane" className="d-flex flex-column" style={commands_pane_style}>
-            <div style={{display: "flex", justifyContent: "flex-end", marginRight: 25}}>
-                <SearchForm update_search_state={_updateSearchState}
-                            search_string={search_string}/>
-            </div>
-            <div ref={commandsRef} style={{fontSize: 13, overflow: "auto"}}>
-                <h4>Object api</h4>
-                {object_items}
-                <h4 style={{marginTop: 20}}>TileBase methods (accessed with self)</h4>
-                {command_items}
-            </div>
-        </Card>
-    )
-}
-
-CommandsModule = memo(CommandsModule);
-
-function stringIncludes(str1, str2) {
-    return str1.toLowerCase().includes(str2.toLowerCase())
-}
-
-function ObjectCategoryEntry(props) {
-    let classes = [];
-    let show_whole_category = false;
-    let show_category = false;
-    if (props.search_string == "" || stringIncludes(props.category_name, props.search_string)) {
-        show_whole_category = true;
-        show_category = true
-    }
-    let index = 0;
-    for (let class_entry of props.class_list) {
-        let entries = [];
-        let show_class = false;
-        if (class_entry[2] == "class") {
-            let show_whole_class = false;
-            if (show_whole_category || stringIncludes(class_entry[0], props.search_string)) {
-                show_whole_class = true;
-                show_category = true;
-                show_class = true
-            }
-            for (let entry of class_entry[1]) {
-                entry["kind"] = "class_" + entry["kind"];
-                let show_entry = false;
-                if (show_whole_class || stringIncludes(entry.signature, props.search_string)) {
-                    entries.push(<CommandEntry key={`entry_${index}`} {...entry}/>);
-                    index += 1;
-                    show_class = true;
-                    show_category = true;
-
-                }
-            }
-            if (show_class) {
-                classes.push(
-                    <Fragment key={`class_${index}`}>
-                        <h6 style={{
-                            fontStyle: "italic",
-                            marginTop: 20,
-                            fontFamily: "monospace"
-                        }}>{"class" + class_entry[0]}</h6>
-                        {entries}
-                    </Fragment>
-                );
-                index += 1;
-            }
-
-
-        } else {
-            let entry = class_entry[1];
-            if (show_whole_category || stringIncludes(entry.signature, props.search_string)) {
-                entries.push(<CommandEntry key={`entry_${index}`} {...entry}/>);
-                index += 1;
-                show_category = true
-            }
-        }
-
-    }
-
-    if (show_category) {
-        return (
-            <Fragment key={props.category_name}>
-                <h5 style={{marginTop: 20}}>
-                    {props.category_name}
-                </h5>
-                {classes}
-                <Divider/>
-            </Fragment>
-        )
-    } else {
-        return false
-    }
-}
-
-ObjectCategoryEntry = memo(ObjectCategoryEntry);
-
-ObjectCategoryEntry.propTypes = {
-    category_name: PropTypes.string,
-    class_list: PropTypes.array,
-    search_string: PropTypes.string,
-};
-
-function CategoryEntry(props) {
-    let show_whole_category = false;
-    let show_category = false;
-    if (props.search_string == "" || stringIncludes(props.category_name, props.search_string)) {
-        show_whole_category = true;
-        show_category = true
-    }
-    let entries = [];
-    let index = 0;
-    for (let entry of props.command_list) {
-        if (show_whole_category || stringIncludes(entry.signature, props.search_string)) {
-            show_category = true;
-            entries.push(<CommandEntry key={index} {...entry}/>);
-            index += 1;
-        }
-
-    }
-    if (show_category) {
-        return (
-            <Fragment>
-                <h5 style={{marginTop: 20}}>
-                    {props.category_name}
-                </h5>
-                {entries}
-                <Divider/>
-            </Fragment>
-        )
-    } else {
-        return null
-    }
-}
-
-CategoryEntry = memo(CategoryEntry);
-
-CategoryEntry.propTypes = {
-    category_name: PropTypes.string,
-    command_list: PropTypes.array,
-    search_string: PropTypes.string
-};
-
-function CommandEntry(props) {
-    const [isOpen, setIsOpen] = useState(false);
-
-    const statusFuncs = useContext(StatusContext);
-
-    function _handleClick() {
-        setIsOpen(!isOpen);
-    }
-
-    function _doCopy() {
-        if (navigator.clipboard && window.isSecureContext) {
-            if (props.kind == "method" || props.kind == "attribute") {
-                void navigator.clipboard.writeText("self." + props.signature)
-            } else {
-                void navigator.clipboard.writeText(props.signature)
-            }
-
-            statusFuncs.statusMessage("command copied");
-        }
-    }
-
-    let md_style = {
-        "display": "block",
-        "fontSize": 13
-    };
-    let re = new RegExp("^([^(]*)");
-    let bolded_command = props.signature.replace(re, function (matched) {
-            return "<span class='command-name'>" + matched + "</span>"
-        }
-    );
-
-    return (
-        <Fragment>
-            <Button minimal={true} outlined={isOpen} className="bp5-monospace-text"
-                    onClick={_handleClick}>
-                <span dangerouslySetInnerHTML={{__html: bolded_command}}/>
-            </Button>
-            <Collapse isOpen={isOpen}>
-                <div style={{maxWidth: 700, position: "relative"}}>
-                    <GlyphButton style={{position: "absolute", right: 5, top: 5, marginTop: 0}}
-                                 icon="clipboard"
-                                 small={true}
-                                 handleClick={_doCopy}
-                    />
-                    <div style={md_style}
-                         className="notes-field-markdown-output bp5-button bp5-outlined"
-                         dangerouslySetInnerHTML={{__html: props.body}}/>
-                </div>
-            </Collapse>
-        </Fragment>
-    )
-}
-
-CommandEntry = memo(CommandEntry);
-
-CommandEntry.propTypes = {
-    name: PropTypes.string,
-    signature: PropTypes.string,
-    body: PropTypes.string,
-    kind: PropTypes.string
-
-};
-
-function ApiMenu(props) {
-    const [currently_selected, set_currently_selected] = useState(null);
-    const [menu_created, set_menu_created] = useState(null);
-
-    useEffect(() => {
-        if (!menu_created && props.item_list.length > 0) {
-            set_current_selected(props.item_list[0].name);
-            set_menu_created(true)
-        }
-    });
-
-    function _buildMenu() {
-        let choices = [];
-        for (let item of props.item_list) {
-            if (item.kind == "header") {
-                choices.push(<MenuDivider title={item.name}/>)
-            } else {
-                choices.push(<MenuItem text={item.name}/>)
-            }
-        }
-
-        return (
-            <Menu>
-                {choices}
-            </Menu>
-        )
-    }
-
-    function _handleChange(value) {
-        set_currently_selected(value)
-    }
-
-    let option_list = [];
-    for (let item of props.item_list) {
-        option_list.push(item.name)
-    }
-    return (
-        <BpSelect options={option_list}
-                  onChange={_handleChange}
-                  buttonIcon="application"
-                  value={currently_selected}/>
-    )
-}
-
-ApiMenu = memo(ApiMenu);
-
-ApiMenu.propTypes = {
-    item_list: PropTypes.array
-};

@@ -51,7 +51,6 @@ function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object
 function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
 function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); } //comment
 var BOTTOM_MARGIN = 50;
-var MARGIN_SIZE = 17;
 function optionListReducer(option_list, action) {
   var new_items;
   switch (action.type) {
@@ -113,10 +112,8 @@ function CreatorApp(props) {
     updatePanel: null
   }, props);
   var top_ref = (0, _react.useRef)(null);
-  var rc_span_ref = (0, _react.useRef)(null);
   var vp_ref = (0, _react.useRef)(null);
   var methods_ref = (0, _react.useRef)(null);
-  var commands_ref = (0, _react.useRef)(null);
   var search_ref = (0, _react.useRef)(null);
   var globals_ref = (0, _react.useRef)(null);
   var last_save = (0, _react.useRef)({});
@@ -181,58 +178,47 @@ function CreatorApp(props) {
     regex = _useState10[0],
     set_regex = _useState10[1];
   var _useStateAndRef5 = (0, _utilities_react.useStateAndRef)(null),
-    _useStateAndRef6 = _slicedToArray(_useStateAndRef5, 3),
+    _useStateAndRef6 = _slicedToArray(_useStateAndRef5, 2),
     search_matches = _useStateAndRef6[0],
-    set_search_matches = _useStateAndRef6[1],
-    search_matches_ref = _useStateAndRef6[2];
+    set_search_matches = _useStateAndRef6[1];
   var _useStateAndRef7 = (0, _utilities_react.useStateAndRef)(props.render_content_code),
     _useStateAndRef8 = _slicedToArray(_useStateAndRef7, 3),
-    render_content_code = _useStateAndRef8[0],
     set_render_content_code = _useStateAndRef8[1],
     render_content_code_ref = _useStateAndRef8[2];
   var _useStateAndRef9 = (0, _utilities_react.useStateAndRef)(props.draw_plot_code),
     _useStateAndRef0 = _slicedToArray(_useStateAndRef9, 3),
-    draw_plot_code = _useStateAndRef0[0],
     set_draw_plot_code = _useStateAndRef0[1],
     draw_plot_code_ref = _useStateAndRef0[2];
   var _useStateAndRef1 = (0, _utilities_react.useStateAndRef)(props.jscript_code),
     _useStateAndRef10 = _slicedToArray(_useStateAndRef1, 3),
-    jscript_code = _useStateAndRef10[0],
     set_jscript_code = _useStateAndRef10[1],
     jscript_code_ref = _useStateAndRef10[2];
   var _useStateAndRef11 = (0, _utilities_react.useStateAndRef)(props.extra_functions),
     _useStateAndRef12 = _slicedToArray(_useStateAndRef11, 3),
-    extra_functions = _useStateAndRef12[0],
     set_extra_functions = _useStateAndRef12[1],
     extra_functions_ref = _useStateAndRef12[2];
   var _useStateAndRef13 = (0, _utilities_react.useStateAndRef)(props.globals_code),
     _useStateAndRef14 = _slicedToArray(_useStateAndRef13, 3),
-    globals_code = _useStateAndRef14[0],
     set_globals_code = _useStateAndRef14[1],
     globals_code_ref = _useStateAndRef14[2];
   var _useReducerAndRef = (0, _utilities_react.useReducerAndRef)(optionListReducer, []),
     _useReducerAndRef2 = _slicedToArray(_useReducerAndRef, 3),
-    option_list = _useReducerAndRef2[0],
     optionDispatch = _useReducerAndRef2[1],
     option_list_ref = _useReducerAndRef2[2];
   var _useStateAndRef15 = (0, _utilities_react.useStateAndRef)(props.export_list),
     _useStateAndRef16 = _slicedToArray(_useStateAndRef15, 3),
-    export_list = _useStateAndRef16[0],
     set_export_list = _useStateAndRef16[1],
     export_list_ref = _useStateAndRef16[2];
   var _useStateAndRef17 = (0, _utilities_react.useStateAndRef)(props.render_content_line_number),
     _useStateAndRef18 = _slicedToArray(_useStateAndRef17, 3),
-    render_content_line_number = _useStateAndRef18[0],
     set_render_content_line_number = _useStateAndRef18[1],
     render_content_line_number_ref = _useStateAndRef18[2];
   var _useStateAndRef19 = (0, _utilities_react.useStateAndRef)(props.draw_plot_line_number),
     _useStateAndRef20 = _slicedToArray(_useStateAndRef19, 3),
-    draw_plot_line_number = _useStateAndRef20[0],
     set_draw_plot_line_number = _useStateAndRef20[1],
     draw_plot_line_number_ref = _useStateAndRef20[2];
   var _useStateAndRef21 = (0, _utilities_react.useStateAndRef)(props.extra_methods_line_number),
     _useStateAndRef22 = _slicedToArray(_useStateAndRef21, 3),
-    extra_methods_line_number = _useStateAndRef22[0],
     set_extra_methods_line_number = _useStateAndRef22[1],
     extra_methods_line_number_ref = _useStateAndRef22[2];
 
@@ -240,26 +226,16 @@ function CreatorApp(props) {
 
   var _useStateAndRef23 = (0, _utilities_react.useStateAndRef)(props.additional_save_attrs || []),
     _useStateAndRef24 = _slicedToArray(_useStateAndRef23, 3),
-    additional_save_attrs = _useStateAndRef24[0],
     set_additional_save_attrs = _useStateAndRef24[1],
     additional_save_attrs_ref = _useStateAndRef24[2];
   var _useStateAndRef25 = (0, _utilities_react.useStateAndRef)(props.couple_save_attrs_and_exports),
     _useStateAndRef26 = _slicedToArray(_useStateAndRef25, 3),
-    couple_save_attrs_and_exports = _useStateAndRef26[0],
     set_couple_save_attrs_and_exports = _useStateAndRef26[1],
     couple_save_attrs_and_exports_ref = _useStateAndRef26[2];
   var _useState11 = (0, _react.useState)("metadata"),
     _useState12 = _slicedToArray(_useState11, 2),
     selectedTabId = _useState12[0],
     setSelectedTabId = _useState12[1];
-  var _useState13 = (0, _react.useState)(props.is_mpl || props.is_d3 ? .5 : 1),
-    _useState14 = _slicedToArray(_useState13, 2),
-    top_pane_fraction = _useState14[0],
-    set_top_pane_fraction = _useState14[1];
-  var _useState15 = (0, _react.useState)(.5),
-    _useState16 = _slicedToArray(_useState15, 2),
-    left_pane_fraction = _useState16[0],
-    set_left_pane_fraction = _useState16[1];
   var extraSelfCompletionsRef = (0, _react.useRef)([]);
   var settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
@@ -292,18 +268,12 @@ function CreatorApp(props) {
     handleKeyDown = _useHotkeys.handleKeyDown,
     handleKeyUp = _useHotkeys.handleKeyUp;
   var pushCallback = (0, _utilities_react.useCallbackStack)();
-  var _useState17 = (0, _react.useState)(props.resource_name),
-    _useState18 = _slicedToArray(_useState17, 2),
-    resource_name = _useState18[0],
-    set_resource_name = _useState18[1];
+  var _useState13 = (0, _react.useState)(props.resource_name),
+    _useState14 = _slicedToArray(_useState13, 2),
+    resource_name = _useState14[0],
+    set_resource_name = _useState14[1];
   var connection_status = (0, _utilities_react.useConnection)(props.tsocket, initSocket);
   (0, _react.useEffect)(function () {
-    var data_dict = {
-      pane_type: "tile",
-      is_repository: false,
-      show_hidden: true
-    };
-    var data;
     optionDispatch({
       type: "initialize",
       new_items: props.option_list
@@ -585,7 +555,6 @@ function CreatorApp(props) {
     }
   }
   function _updateSearchState(new_state) {
-    var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
     set_current_search_cm(cm_list.current[0]);
     set_current_search_number(0);
     for (var field in new_state) {
@@ -606,27 +575,6 @@ function CreatorApp(props) {
       _handleTabSelect("globals");
     }
     _handleTabSelect(currentTab);
-  }
-  function _noSearchResults() {
-    if (search_string == "" || search_string == null) {
-      return true;
-    } else {
-      var _iterator4 = _createForOfIteratorHelper(cm_list.current),
-        _step4;
-      try {
-        for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
-          var cm = _step4.value;
-          if (search_match_numbers.current[cm]) {
-            return false;
-          }
-        }
-      } catch (err) {
-        _iterator4.e(err);
-      } finally {
-        _iterator4.f();
-      }
-      return true;
-    }
   }
   function _showHistoryViewer() {
     window.open("".concat($SCRIPT_ROOT, "/show_history_viewer/").concat(_cProp("resource_name")));
@@ -665,7 +613,6 @@ function CreatorApp(props) {
   }
   function _saveAndLoadModule2() {
     _saveAndLoadModule2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee3() {
-      var data;
       return _regeneratorRuntime().wrap(function _callee3$(_context3) {
         while (1) switch (_context3.prev = _context3.next) {
           case 0:
@@ -867,7 +814,6 @@ function CreatorApp(props) {
   }
   function _saveAndCheckpoint2() {
     _saveAndCheckpoint2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee8() {
-      var data;
       return _regeneratorRuntime().wrap(function _callee8$(_context8) {
         while (1) switch (_context8.prev = _context8.next) {
           case 0:
@@ -903,23 +849,6 @@ function CreatorApp(props) {
       }, _callee8, null, [[4, 13]]);
     }));
     return _saveAndCheckpoint2.apply(this, arguments);
-  }
-  function get_tags_string() {
-    var taglist = tags_ref.current;
-    var local_tags = "";
-    var _iterator5 = _createForOfIteratorHelper(taglist),
-      _step5;
-    try {
-      for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
-        var tag = _step5.value;
-        local_tags = local_tags + tag + " ";
-      }
-    } catch (err) {
-      _iterator5.e(err);
-    } finally {
-      _iterator5.f();
-    }
-    return local_tags.trim();
   }
   function _getSaveDict() {
     return {
@@ -1006,15 +935,11 @@ function CreatorApp(props) {
             _handleTabSelect("methods");
             _selectLine(emObject.current, rline_number.current - extra_methods_line_number_ref.current);
             rline_number.current = null;
-          } else {
-            return;
           }
         } else if (rline_number.current < render_content_line_number_ref.current) {
           if (dpObject.current) {
             _selectLine(dpObject.current, rline_number.current - draw_plot_line_number_ref.current - 1);
             rline_number.current = null;
-          } else {
-            return;
           }
         } else if (rcObject.current) {
           _selectLine(rcObject.current, rline_number.current - render_content_line_number_ref.current - 1);
@@ -1026,8 +951,6 @@ function CreatorApp(props) {
             _handleTabSelect("methods");
             _selectLine(emObject.current, rline_number.current - extra_methods_line_number_ref.current);
             rline_number.current = null;
-          } else {
-            return;
           }
         } else {
           if (rcObject.current) {
@@ -1044,7 +967,7 @@ function CreatorApp(props) {
       "notify": false
     });
   }
-  function _handleTabSelect(newTabId, prevTabid, event) {
+  function _handleTabSelect(newTabId) {
     var new_fg = Object.assign({}, foregrounded_panes);
     new_fg[newTabId] = true;
     setSelectedTabId(newTabId);
@@ -1061,33 +984,33 @@ function CreatorApp(props) {
   }
   function _appendOptionText(appendToNotes) {
     var res_string = "\n\noptions: \n\n";
-    var _iterator6 = _createForOfIteratorHelper(option_list_ref.current),
-      _step6;
+    var _iterator4 = _createForOfIteratorHelper(option_list_ref.current),
+      _step4;
     try {
-      for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
-        var opt = _step6.value;
+      for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
+        var opt = _step4.value;
         res_string += " * `".concat(opt.name, "` (").concat(opt.type, "): \n");
       }
     } catch (err) {
-      _iterator6.e(err);
+      _iterator4.e(err);
     } finally {
-      _iterator6.f();
+      _iterator4.f();
     }
     appendToNotes(res_string);
   }
   function _appendExportText(appendToNotes) {
     var res_string = "\n\nexports: \n\n";
-    var _iterator7 = _createForOfIteratorHelper(export_list_ref.current),
-      _step7;
+    var _iterator5 = _createForOfIteratorHelper(export_list_ref.current),
+      _step5;
     try {
-      for (_iterator7.s(); !(_step7 = _iterator7.n()).done;) {
-        var exp = _step7.value;
+      for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
+        var exp = _step5.value;
         res_string += " * `".concat(exp.name, "` : \n");
       }
     } catch (err) {
-      _iterator7.e(err);
+      _iterator5.e(err);
     } finally {
-      _iterator7.f();
+      _iterator5.f();
     }
     appendToNotes(res_string);
   }
@@ -1100,8 +1023,8 @@ function CreatorApp(props) {
         fontSize: 12
       },
       text: "Add Options",
-      small: true,
-      minimal: true,
+      size: "small",
+      variant: "minimal",
       intent: "primary",
       icon: "select",
       onClick: function onClick(e) {
@@ -1116,8 +1039,8 @@ function CreatorApp(props) {
         fontSize: 12
       },
       text: "Add Exports",
-      small: true,
-      minimal: true,
+      size: "small",
+      variant: "minimal",
       intent: "primary",
       icon: "export",
       onClick: function onClick(e) {
@@ -1367,7 +1290,7 @@ function CreatorApp(props) {
   }, /*#__PURE__*/_react["default"].createElement(_core.Tabs, {
     id: "resource_tabs",
     selectedTabId: selectedTabId,
-    large: false,
+    size: "large",
     onChange: _handleTabSelect
   }, /*#__PURE__*/_react["default"].createElement(_core.Tab, {
     id: "metadata",
