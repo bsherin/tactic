@@ -15,7 +15,6 @@ import {EditorSelection} from "@codemirror/state";
 import {creator_props} from "./tile_creator_support";
 import {TacticMenubar} from "./menu_utilities"
 import {sendToRepository} from "./resource_viewer_react_app";
-import {OptionModule, ExportModule, MetadataModule} from "./creator_modules_react";
 import {HorizontalPanes} from "./resizing_layouts2";
 import {postAjax, postAjaxPromise, postPromise} from "./communication_react"
 import {withStatus, doFlash, StatusContext} from "./toaster"
@@ -31,8 +30,10 @@ import {DialogContext, withDialogs} from "./modal_react";
 import {ErrorDrawerContext} from "./error_drawer";
 import {SelectedPaneContext, useReducerAndRef} from "./utilities_react";
 
-import {useCmData, optionListReducer, useSearch, userMethodsReducer, MakerPaneContext} from "./tile_maker_support";
-import {CmElement, MakerNavigator} from "./tile_maker_elements";
+import {
+    useCmData, useSearch, userMethodsReducer, MakerPaneContext, usePropertyList
+} from "./tile_maker_support";
+import {CmElement, MakerNavigator, OptionModuleForm, ExportModuleForm, MetadataModule} from "./tile_maker_elements";
 
 export {CreatorApp}
 
@@ -76,9 +77,14 @@ function CreatorApp(props) {
 
     const [usable_width, usable_height, topX, topY] = useSize(top_ref, 0, "TileMaker");
 
-    const [, optionDispatch, option_list_ref] = useReducerAndRef(optionListReducer, []);
-    const [, set_export_list, export_list_ref] = useStateAndRef(props.export_list);
-    const [, set_additional_save_attrs, additional_save_attrs_ref] = useStateAndRef(props.additional_save_attrs || []);
+    // const [, optionDispatch, option_list_ref] = useReducerAndRef(optionListReducer, []);
+    // const [, exportDispatch, export_list_ref] = useReducerAndRef(exportListReducer, []);
+    // const [, saveDispatch, save_list_ref] = useReducerAndRef(saveListReducer, []);
+
+    const [, optionDispatch, option_list_ref] = usePropertyList(props.option_list);
+    const [, exportDispatch, export_list_ref] = usePropertyList(props.export_list);
+    const [, saveDispatch, save_list_ref] = usePropertyList(props.additional_save_attrs ? props.additional_save_attrs : []);
+
     const [, set_couple_save_attrs_and_exports, couple_save_attrs_and_exports_ref] = useStateAndRef(props.couple_save_attrs_and_exports);
 
     const extraSelfCompletionsRef = useRef([]);
@@ -131,7 +137,6 @@ function CreatorApp(props) {
     const connection_status = useConnection(props.tsocket, initSocket);
 
     useEffect(() => {
-        optionDispatch({type: "initialize", new_items: props.option_list});
         umDispatch({type: "initialize", new_items: props.user_methods_list});
     }, []);
 
@@ -452,17 +457,16 @@ function CreatorApp(props) {
             _logErrorStopSpinner("Error in save and checkpoint", e)
         }
         return false
-
     }
 
     function _getSaveDict() {
         return {
             "module_name": _cProp("resource_name"),
             "exports": export_list_ref.current,
-            "additional_save_attrs": additional_save_attrs_ref.current,
+            "additional_save_attrs": save_list_ref.current,
             "couple_save_attrs_and_exports": couple_save_attrs_and_exports_ref.current,
             "options": option_list_ref.current,
-            //"extra_methods": umState.codeText,
+            "user_methods": umListRef.current,
             "globals_code": globalsState.codeText,
             "render_content_body": rcState.codeText,
             "is_mpl": props.is_mpl,
@@ -650,24 +654,6 @@ function CreatorApp(props) {
         )
     }
 
-    function handleExportsStateChange(state_stuff) {
-        for (let field in state_stuff) {
-            switch (field) {
-                case "export_list":
-                    set_export_list([...state_stuff[field]]);
-                    break;
-                case "additional_save_attrs":
-                    set_additional_save_attrs([...state_stuff[field]]);
-                    break;
-
-                case "couple_save_attrs_and_exports":
-                    set_couple_save_attrs_and_exports(state_stuff[field]);
-                    break;
-            }
-        }
-    }
-
-
     function _setResourceNameState(new_name, callback = null) {
         if (props.controlled) {
             props.changeResourceName(new_name, callback)
@@ -681,8 +667,6 @@ function CreatorApp(props) {
     if (!props.controlled) {
         my_props.resource_name = resource_name;
     }
-
-    let ch_style = {"width": "100%"};
 
     let codeElemDict = {};
     if (my_props.is_mpl) {
@@ -789,16 +773,18 @@ function CreatorApp(props) {
         />
     )};
     for (let um of umListRef.current) {
-        codeElemDict[um.method_id] = () => {
+        codeElemDict[um.identifier] = () => {
             return (
                 <CmElement cmState={um}
                            showSignatureHeader={true}
+                           allowNameChange={true}
+                            allowArgChange={true}
                            methodName={um.funcName}
                            argString={um.argString}
                            cmDispatch={umDispatch}
                            cmObjectRef={null}
                            funcName={um.funcName}
-                           identifier={um.method_id}
+                           identifier={um.identifier}
                            extraKeys={_extraKeys}
                            saveAndCheckpoint={_saveAndCheckpoint}
                            searchState={searchState}
@@ -814,13 +800,49 @@ function CreatorApp(props) {
         }
     }
 
+    let optionElemDict = {};
+    for (let opt of option_list_ref.current) {
+        optionElemDict[opt.identifier] = () => {
+            return (
+                <OptionModuleForm optionItem={opt}
+                                  dispatch={optionDispatch}/>
+            )
+        }
+    }
+
+    let exportElemDict = {};
+    for (let exp of export_list_ref.current) {
+        exportElemDict[exp.identifier] = () => {
+            return (
+                <ExportModuleForm exportItem={exp}
+                                  dispatch={exportDispatch}/>
+            )
+        }
+    }
+
+    let saveElemDict = {};
+    if (!couple_save_attrs_and_exports_ref.current) {
+        for (let exp of save_list_ref.current) {
+            saveElemDict[exp.identifier] = () => {
+                return (
+                    <ExportModuleForm exportItem={exp}
+                                      dispatch={saveDispatch}/>
+                )
+            }
+        }
+    }
+
+
     let left_pane = (
         <Fragment>
-            <div ref={nav_ref}>
+            <div ref={nav_ref} style={{overflow: "auto", height: "100%"}}>
                 <MakerNavigator handleTabSelect={_handleTabSelect}
                                 is_mpl={my_props.is_mpl}
                                 is_d3={my_props.is_d3}
                                 umList={umListRef.current}
+                                umDispatch={umDispatch}
+                                pushCallback={pushCallback}
+                                save_list={save_list_ref.current}
                                 export_list={export_list_ref.current}
                                 option_list={option_list_ref.current}/>
             </div>
@@ -836,34 +858,37 @@ function CreatorApp(props) {
                         readOnly={props.readOnly}
                         res_name={_cProp("resource_name")}
                         res_type="tile"
+                        couple_save_attrs_and_exports={couple_save_attrs_and_exports_ref.current}
+                        set_couple_save_attrs_and_exports={set_couple_save_attrs_and_exports}
         />
     );
-
-    let option_panel = (
-        <OptionModule data_list_ref={option_list_ref}
-                      foregrounded={foregrounded_panes["options"]}
-                      optionDispatch={optionDispatch}
-        />
-    );
-    let export_panel = (
-        <ExportModule export_list={export_list_ref.current}
-                      save_list={additional_save_attrs_ref.current}
-                      couple_save_attrs_and_exports={couple_save_attrs_and_exports_ref.current}
-                      foregrounded={foregrounded_panes["options"]}
-                      handleChange={handleExportsStateChange}
-        />
-    );
-
-
-
 
     let right_pane;
-    if (["metadata", "options", "exports"].includes(visibleTab)) {
+    if (["metadata"].includes(visibleTab)) {
         right_pane = (
             <div id="creator-resources" className="d-block">
                 {visibleTab === "metadata" && mdata_panel}
-                {visibleTab === "options" && option_panel}
-                {visibleTab === "exports" && export_panel}
+            </div>
+        )
+    }
+    else if (Object.keys(optionElemDict).includes(visibleTab)) {
+        right_pane = (
+            <div id="creator-resources" className="d-block" key={visibleTab}>
+                {optionElemDict[visibleTab]?.()}
+            </div>
+        )
+    }
+    else if (Object.keys(exportElemDict).includes(visibleTab)) {
+        right_pane = (
+            <div id="creator-resources" className="d-block" key={visibleTab}>
+                {exportElemDict[visibleTab]?.()}
+            </div>
+        )
+    }
+     else if (Object.keys(saveElemDict).includes(visibleTab)) {
+        right_pane = (
+            <div id="creator-resources" className="d-block" key={visibleTab}>
+                {saveElemDict[visibleTab]?.()}
             </div>
         )
     }
@@ -917,6 +942,7 @@ function CreatorApp(props) {
 
                 <MakerPaneContext.Provider value={{
                     visibleTab: visibleTab,
+                    setVisibleTab: setVisibleTab,
                 }}>
                     <div className={outer_class} ref={top_ref} style={outer_style}
                          tabIndex="0" onKeyDown={handleKeyDown} onKeyUp={handleKeyUp}>

@@ -91,7 +91,9 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin):
         couple_save_attrs_and_exports = data_dict["couple_save_attrs_and_exports"]
         export_list_of_dicts = [{"name": exp["name"], "tags": exp["tags"]} for exp in
                                 export_list]  # tactic_todo what does this accomplish?
-        extra_methods = insert_indents(data_dict["extra_methods"], 1)
+        user_methods_list_of_dicts = [{"name": m["funcName"],
+                                      "arg_string": m["argString"],
+                                      "method_body": insert_indents(m["codeText"], 2)} for m in data_dict["user_methods"]]
         render_content_body = insert_indents(data_dict["render_content_body"], 2)
         if data_dict["is_mpl"]:
             draw_plot_body = insert_indents(data_dict["draw_plot_body"], 2)
@@ -121,7 +123,7 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin):
                                         is_d3=data_dict["is_d3"],
                                         jscript_code=data_dict["jscript_body"],
                                         globals_code=globals_code,
-                                        extra_methods=extra_methods,
+                                        user_methods=user_methods_list_of_dicts,
                                         render_content_body=render_content_body,
                                         draw_plot_body=draw_plot_body,
                                         version_string=self.tstring)
@@ -146,6 +148,8 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin):
         try:
             module_name = data_dict["module_name"]
             module_code = self.build_code(data_dict)
+            print("******")
+            print(module_code)
             self.tp.reparse(module_code)
             render_content_line_number = self.tp.get_starting_line("render_content")
             draw_plot_line_number = self.tp.get_starting_line("draw_plot")
@@ -177,7 +181,7 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin):
             return {"success": True, "message": "Module Successfully Saved",
                     "alert_type": "alert-success", "render_content_line_number": render_content_line_number,
                     "draw_plot_line_number": draw_plot_line_number,
-                    "user_methods_line_numbers": extra_methods_line_numbers}
+                    "user_methods_line_numbers": user_methods_line_numbers}
         except Exception as ex:
             return self.get_traceback_exception_dict(ex, "Error saving module")
 
