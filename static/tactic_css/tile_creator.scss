@@ -10,6 +10,23 @@
 
 }
 
+.sortable-nav-item {
+  .show-on-hover {
+    opacity: 0
+  }
+
+  &:hover {
+    .show-on-hover {
+      opacity: 100
+    }
+  }
+}
+
+.creator-code-header {
+  .cm-editor {
+    border: none
+  }
+}
 
 #creator-root, .creator-root {
   //margin-right: 25px;

@@ -412,7 +412,7 @@ function ContextApp(props) {
               the_view = the_view.replace(re, "_in_context");
             }
             drmethod = function drmethod(dmethod) {
-              _registerDirtyMethod(new_id, dmethod);
+              _registerDirtyMethod(the_id, dmethod);
             };
             _context4.next = 15;
             return _updatePanelPromise(the_id, {

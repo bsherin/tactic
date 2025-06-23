@@ -1,3 +1,5 @@
+import ast
+
 from gevent import monkey;
 
 from tactic_copilot_mixin import CopilotMixin
@@ -14,6 +16,7 @@ from exception_mixin import ExceptionMixin
 from mongo_db_fs import get_dbs
 
 import sys, os
+
 sys.stdout = sys.stderr
 import time
 
@@ -25,6 +28,7 @@ else:
 mongo_uri = os.environ.get("MONGO_URI")
 
 rb_id = os.environ.get("RB_ID")
+
 
 # noinspection PyUnusedLocal
 class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin):
@@ -91,14 +95,32 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin):
         couple_save_attrs_and_exports = data_dict["couple_save_attrs_and_exports"]
         export_list_of_dicts = [{"name": exp["name"], "tags": exp["tags"]} for exp in
                                 export_list]  # tactic_todo what does this accomplish?
-        user_methods_list_of_dicts = [{"name": m["funcName"],
-                                      "arg_string": m["argString"],
-                                      "method_body": insert_indents(m["codeText"], 2)} for m in data_dict["user_methods"]]
-        render_content_body = insert_indents(data_dict["render_content_body"], 2)
-        if data_dict["is_mpl"]:
-            draw_plot_body = insert_indents(data_dict["draw_plot_body"], 2)
-        else:
-            draw_plot_body = ""
+        user_methods_list_of_dicts = []
+        for m in data_dict["user_methods"]:
+            arg_string = m["argString"]
+            if len(arg_string) > 0:
+                arg_string = ", " + arg_string
+            user_methods_list_of_dicts.append({"name": m["name"],
+                                               "arg_string":arg_string,
+                                               "method_body": insert_indents(m["codeText"], 2)})
+
+        jscript_body = ""
+        globals_code = ""
+        standard_methods_list_of_dicts = []
+        for m in data_dict["standard_methods"]:
+            if m["name"] == "javascript":
+                jscript_body = m["codeText"]
+            elif m["name"] == "globals":
+                globals_code = m["codeText"]
+            else:
+                arg_string = m["argString"]
+                if len(arg_string) > 0:
+                    arg_string = ", " + arg_string
+                standard_methods_list_of_dicts.append(
+                    {"name": m["name"],
+                     "arg_string": arg_string,
+                     "method_body": insert_indents(m["codeText"], 2)})
+
         options = data_dict["options"]
         for opt_dict in options:
             if "default" not in opt_dict:
@@ -108,7 +130,6 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin):
             opt_dict["default"] = str(opt_dict["default"])
             if "special_list" in opt_dict:
                 opt_dict["special_list"] = str(opt_dict["special_list"])
-        globals_code = data_dict["globals_code"]
         if len(globals_code) > 0 and globals_code[-1] == "\n":
             globals_code = globals_code[:-1]
         with app.test_request_context():
@@ -121,11 +142,10 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin):
                                         options=data_dict["options"],
                                         is_mpl=data_dict["is_mpl"],
                                         is_d3=data_dict["is_d3"],
-                                        jscript_code=data_dict["jscript_body"],
+                                        jscript_code=jscript_body,
                                         globals_code=globals_code,
                                         user_methods=user_methods_list_of_dicts,
-                                        render_content_body=render_content_body,
-                                        draw_plot_body=draw_plot_body,
+                                        standard_methods=standard_methods_list_of_dicts,
                                         version_string=self.tstring)
         return full_code
 
@@ -153,6 +173,9 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin):
             self.tp.reparse(module_code)
             render_content_line_number = self.tp.get_starting_line("render_content")
             draw_plot_line_number = self.tp.get_starting_line("draw_plot")
+            standard_methods_line_numbers = [{"render_content": render_content_line_number}]
+            if draw_plot_line_number is not None:
+                standard_methods_line_numbers.append({"draw_plot": draw_plot_line_number})
             user_methods_list = self.tp.get_user_methods_list()
             user_methods_line_numbers = {func["name"]: func["starting_line"] for func in user_methods_list}
             doc = self.db[self.tile_collection_name].find_one({"tile_module_name": module_name})
@@ -180,7 +203,7 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin):
             self.create_recent_checkpoint(module_name)
             return {"success": True, "message": "Module Successfully Saved",
                     "alert_type": "alert-success", "render_content_line_number": render_content_line_number,
-                    "draw_plot_line_number": draw_plot_line_number,
+                    "standard_methods_line_numbers": standard_methods_line_numbers,
                     "user_methods_line_numbers": user_methods_line_numbers}
         except Exception as ex:
             return self.get_traceback_exception_dict(ex, "Error saving module")
@@ -190,12 +213,18 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin):
             if option["name"] in self.tp.defaults:
                 option["default"] = self.tp.defaults[option["name"]]
 
+        standard_methods_list = []
         func_dict = self.tp.methods
         if "render_content" in func_dict:
             render_content_code = func_dict["render_content"]["method_body"]
             render_content_code = remove_indents(render_content_code, 2)
         else:
             render_content_code = ""
+        standard_methods_list.append({"name": "render_content",
+                                      "codeText": render_content_code,
+                                      "argString": "",
+                                      "mode": "python",
+                                      "firstLineNumber": self.tp.get_starting_line("render_content")})
 
         is_mpl = self.tp.is_mpl
         is_d3 = self.tp.is_d3
@@ -203,94 +232,44 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin):
         if is_mpl and "draw_plot" in func_dict:
             draw_plot_code = func_dict["draw_plot"]["method_body"]
             draw_plot_code = remove_indents(draw_plot_code, 2)
-        else:
-            draw_plot_code = ""
+            standard_methods_list.append({"name": "draw_plot",
+                                          "codeText": draw_plot_code,
+                                          "argString": "",
+                                          "mode": "python",
+                                          "firstLineNumber": self.tp.get_starting_line("draw_plot")})
         if is_d3 and "jscript" in self.tp.defaults:
             jscript_code = self.tp.defaults["jscript"]
-        else:
-            jscript_code = ""
+            standard_methods_list.append({"name": "javascript",
+                                          "codeText": jscript_code,
+                                          "argString": "",
+                                          "mode": "javascript",
+                                          "firstLineNumber": 1})
 
         globals_code = self.tp.globals_code
+        standard_methods_list.append({"name": "globals",
+                                      "codeText": globals_code,
+                                      "argString": "",
+                                      "mode": "python",
+                                      "firstLineNumber": 1})
 
         user_methods_list = self.tp.get_user_methods_list()
 
         user_methods_list = [{"name": func["name"],
-                                 # "code": remove_indents(func["code"], 1),
-                                  "code": remove_indents(func["method_body"], 2),
-                                 "arg_string": func["arg_string"],
-                                 "mode": "python",
-                                 "starting_line": func["starting_line"]} for func in user_methods_list]
+                              "codeText": remove_indents(func["method_body"], 2),
+                              "argString": func["arg_string"],
+                              "mode": "python",
+                              "firstLineNumber": func["starting_line"]} for func in user_methods_list]
 
-
-        render_content_line_number = self.tp.get_starting_line("render_content")
-        draw_plot_line_number = self.tp.get_starting_line("draw_plot")
         parsed_data = {"option_dict": self.tp.options, "export_list": self.tp.exports,
                        "additional_save_attrs": self.tp.additional_save_attrs,
                        "render_content_code": render_content_code,
                        "user_methods_list": user_methods_list,
+                       "standard_methods_list": standard_methods_list,
                        "category": self.tp.category,
                        "is_mpl": is_mpl,
                        "is_d3": is_d3,
-                       "draw_plot_code": draw_plot_code,
-                       "jscript_code": jscript_code,
-                       "globals_code": globals_code,
-                       "render_content_line_number": render_content_line_number,
-                       "draw_plot_line_number": draw_plot_line_number}
+                       "globals_code": globals_code}
         return parsed_data
-
-    # def assemble_parse_information_old(self):
-    #     for option in self.tp.options:
-    #         if option["name"] in self.tp.defaults:
-    #             option["default"] = self.tp.defaults[option["name"]]
-    #
-    #     func_dict = self.tp.methods
-    #     if "render_content" in func_dict:
-    #         render_content_code = func_dict["render_content"]["method_body"]
-    #         render_content_code = remove_indents(render_content_code, 2)
-    #     else:
-    #         render_content_code = ""
-    #
-    #     is_mpl = self.tp.is_mpl
-    #     is_d3 = self.tp.is_d3
-    #
-    #     if is_mpl and "draw_plot" in func_dict:
-    #         draw_plot_code = func_dict["draw_plot"]["method_body"]
-    #         draw_plot_code = remove_indents(draw_plot_code, 2)
-    #     else:
-    #         draw_plot_code = ""
-    #     if is_d3 and "jscript" in self.tp.defaults:
-    #         jscript_code = self.tp.defaults["jscript"]
-    #     else:
-    #         jscript_code = ""
-    #
-    #     globals_code = self.tp.globals_code
-    #
-    #     extra_functions = remove_indents(self.tp.get_extra_methods_string(), 1)
-    #
-    #     render_content_line_number = self.tp.get_starting_line("render_content")
-    #     draw_plot_line_number = self.tp.get_starting_line("draw_plot")
-    #     if len(self.tp.extra_methods.keys()) == 0:
-    #         if draw_plot_line_number is None:
-    #             extra_methods_line_number = render_content_line_number - 1
-    #         else:
-    #             extra_methods_line_number = draw_plot_line_number - 1
-    #     else:
-    #         extra_methods_line_number = self.tp.get_starting_line(list(self.tp.extra_methods)[0])
-    #
-    #     parsed_data = {"option_dict": self.tp.options, "export_list": self.tp.exports,
-    #                    "additional_save_attrs": self.tp.additional_save_attrs,
-    #                    "render_content_code": render_content_code,
-    #                    "extra_functions": extra_functions,
-    #                    "category": self.tp.category,
-    #                    "is_mpl": is_mpl,
-    #                    "is_d3": is_d3,
-    #                    "draw_plot_code": draw_plot_code,
-    #                    "jscript_code": jscript_code,
-    #                    "globals_code": globals_code,
-    #                    "render_content_line_number": render_content_line_number,
-    #                    "draw_plot_line_number": draw_plot_line_number,
-    #                    "extra_methods_line_number": extra_methods_line_number}
-    #     return parsed_data
 
     @task_worthy
     def get_options(self, data_dict):
@@ -315,7 +294,7 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin):
 
     def ready(self):
         self.ask_host("participant_ready", {"rb_id": rb_id, "user_id": os.environ.get("OWNER"),
-                     "participant": self.my_id, "main_id": self.my_id})
+                                            "participant": self.my_id, "main_id": self.my_id})
         return
 
 

@@ -352,7 +352,7 @@ function ContextApp(props) {
                 the_view = the_view.replace(re, "_in_context");
             }
             const drmethod = (dmethod) => {
-                _registerDirtyMethod(new_id, dmethod)
+                _registerDirtyMethod(the_id, dmethod)
             };
             await _updatePanelPromise(the_id, {panel: "spinner"});
             let data = await postAjaxPromise($SCRIPT_ROOT + the_view, {context_id: window.context_id, resource_name: resource_name});

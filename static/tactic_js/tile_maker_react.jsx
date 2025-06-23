@@ -3,10 +3,10 @@ import "../tactic_css/tactic_table.scss";
 import "../tactic_css/tile_creator.scss";
 
 import React from "react";
-import {Fragment, useState, useEffect, useRef, memo, useMemo, useContext, createContext} from "react";
+import {Fragment, useState, useEffect, useRef, memo, useMemo, useContext} from "react";
 import {createRoot} from 'react-dom/client';
 
-import {Button, ButtonGroup} from "@blueprintjs/core";
+import {Button, ButtonGroup, Card} from "@blueprintjs/core";
 import {useHotkeys} from "@blueprintjs/core";
 
 import {EditorView} from "@codemirror/view";
@@ -28,12 +28,12 @@ import {useCallbackStack, useStateAndRef, useConnection} from "./utilities_react
 import {SettingsContext, withSettings} from "./settings";
 import {DialogContext, withDialogs} from "./modal_react";
 import {ErrorDrawerContext} from "./error_drawer";
-import {SelectedPaneContext, useReducerAndRef} from "./utilities_react";
+import {SelectedPaneContext} from "./utilities_react";
 
-import {
-    useCmData, useSearch, userMethodsReducer, MakerPaneContext, usePropertyList
+import {useSearch, MakerPaneContext, usePropertyList
 } from "./tile_maker_support";
-import {CmElement, MakerNavigator, OptionModuleForm, ExportModuleForm, MetadataModule} from "./tile_maker_elements";
+import {CmElement, MakerNavigator, OptionModuleForm, ExportModuleForm, MetadataModule, option_icons, standard_method_icons} from "./tile_maker_elements";
+import {ReactCodemirror6} from "./react-codemirror6";
 
 export {CreatorApp}
 
@@ -58,17 +58,6 @@ function CreatorApp(props) {
 
     const [visibleTab, setVisibleTab] = useState("metadata");
 
-    const [globalsState, globalsDispatch, , globalsCmObjectRef] = useCmData(props.globals_code, 1, false, null, null);
-    const [rcState, rcDispatch, , rcCmObjectRef] = useCmData(props.render_content_code,
-        props.render_content_line_number, false, "render_content", "", false);
-    const [dpState, dpDispatch, , dpCmObjectRef] = useCmData(
-        props.is_mpl ? props.draw_plot_code : null,
-        props.is_mpl ? props.draw_plot_line_number + 1 : 1,
-        false, "draw_plot", "", false);
-    const [jsState, jsDispatch, , jsCmObjectRef] = useCmData(props.is_d3 ? props.jscript_code : null, 1, false, null, null, false, "javascript");
-
-    const [, umDispatch, umListRef] = useReducerAndRef(userMethodsReducer, []);
-
     const [searchState, searchDispatch, searchStateRef] = useSearch(props.is_mpl, props.is_d3);
 
 
@@ -77,13 +66,11 @@ function CreatorApp(props) {
 
     const [usable_width, usable_height, topX, topY] = useSize(top_ref, 0, "TileMaker");
 
-    // const [, optionDispatch, option_list_ref] = useReducerAndRef(optionListReducer, []);
-    // const [, exportDispatch, export_list_ref] = useReducerAndRef(exportListReducer, []);
-    // const [, saveDispatch, save_list_ref] = useReducerAndRef(saveListReducer, []);
-
     const [, optionDispatch, option_list_ref] = usePropertyList(props.option_list);
     const [, exportDispatch, export_list_ref] = usePropertyList(props.export_list);
     const [, saveDispatch, save_list_ref] = usePropertyList(props.additional_save_attrs ? props.additional_save_attrs : []);
+    const [, standardDispatch, standardListRef] = usePropertyList(props.standard_methods_list);
+    const [, umDispatch, umListRef] = usePropertyList(props.user_methods_list);
 
     const [, set_couple_save_attrs_and_exports, couple_save_attrs_and_exports_ref] = useStateAndRef(props.couple_save_attrs_and_exports);
 
@@ -96,12 +83,6 @@ function CreatorApp(props) {
     const sizeInfo = useContext(SizeContext);
 
     const selectedPane = useContext(SelectedPaneContext);
-
-    const [foregrounded_panes, set_foregrounded_panes] = useState({
-            "metadata": true,
-            "options": false,
-            "exports": false,
-    });
 
     const hotkeys = useMemo(
         () => [
@@ -137,10 +118,6 @@ function CreatorApp(props) {
     const connection_status = useConnection(props.tsocket, initSocket);
 
     useEffect(() => {
-        umDispatch({type: "initialize", new_items: props.user_methods_list});
-    }, []);
-
-    useEffect(() => {
         if (props.controlled) {
             props.registerDirtyMethod(_dirty);
             props.registerLineSetter(_selectLineNumber);
@@ -165,10 +142,6 @@ function CreatorApp(props) {
         window.addEventListener("unload", sendRemove);
         statusFuncs.stopSpinner();
         return (() => {
-            globalsCmObjectRef.current = null;
-            rcCmObjectRef.current = null;
-            dpCmObjectRef.current = null;
-            jsCmObjectRef.current = null;
             delete_my_container();
             window.removeEventListener("unload", sendRemove);
             errorDrawerFuncs.setGoToLineNumber(null);
@@ -467,12 +440,9 @@ function CreatorApp(props) {
             "couple_save_attrs_and_exports": couple_save_attrs_and_exports_ref.current,
             "options": option_list_ref.current,
             "user_methods": umListRef.current,
-            "globals_code": globalsState.codeText,
-            "render_content_body": rcState.codeText,
+            "standard_methods": standardListRef.current,
             "is_mpl": props.is_mpl,
             "is_d3": props.is_d3,
-            "draw_plot_body": dpState.codeText,
-            "jscript_body": jsState.codeText,
             "last_saved": "maker"
         };
     }
@@ -495,11 +465,18 @@ function CreatorApp(props) {
         return postAjaxPromise("checkpoint_module", {"module_name": _cProp("resource_name")});
     }
 
+    function setFirstLineNumber(line_number, identifier, dispatch) {
+        dispatch({type: "update_item", identifier: identifier, new_item: {firstLineNumber: line_number}});
+    }
+
     function save_success(data) {
-        rcDispatch({type: "SET_FIRST_LINE_NUMBER", payload: data.render_content_line_number});
-        umDispatch({type: "SET_FIRST_LINE_NUMBER", payload: data.extra_methods_line_number});
-        if (props.is_mpl) {
-            dpDispatch({type: "SET_FIRST_LINE_NUMBER", payload: data.draw_plot_line_number + 1});
+        const stLineNumbers = data["standard_methods_line_numbers"];
+        for (let identifier of Object.keys(stLineNumbers)) {
+            setFirstLineNumber(stLineNumbers[identifier], identifier, standardDispatch);
+        }
+        const umLineNumbers = data["user_methods_line_numbers"];
+        for (let identifier of Object.keys(umLineNumbers)) {
+            setFirstLineNumber(umLineNumbers[identifier], identifier, umDispatch);
         }
         _update_saved_state();
     }
@@ -571,43 +548,6 @@ function CreatorApp(props) {
     }
 
     function _handleTabSelect(newTabIdentifier) {
-        if (newTabIdentifier in foregrounded_panes) {
-            let new_fg = Object.assign({}, foregrounded_panes);
-            new_fg[newTabIdentifier] = true;
-            set_foregrounded_panes(new_fg);
-        }
-        else {
-            switch (newTabIdentifier) {
-                case "user_methods":
-                    umDispatch({type: "SET_HAS_ACTIVATED", payload: true});
-                    break;
-                case "globals":
-                    globalsDispatch({type: "SET_HAS_ACTIVATED", payload: true});
-                    break;
-                case "render_content":
-                    rcDispatch({type: "SET_HAS_ACTIVATED", payload: true});
-                    break;
-                case "draw_plot":
-                    dpDispatch({type: "SET_HAS_ACTIVATED", payload: true});
-                    break;
-                case "javascript":
-                    jsDispatch({type: "SET_HAS_ACTIVATED", payload: true});
-                    break;
-            }
-        }
-        // let new_fg = Object.assign({}, foregrounded_panes);
-        // new_fg[newTabId] = true;
-        // setSelectedTabId(newTabId);
-        // if (newTabId == "methods" && !methodsHasActivated) {
-        //     setMethodsHasActivated(true)
-        // }
-        // if (newTabId == "globals" && !globalsHasActivated) {
-        //     setGlobalsHasActivated(true)
-        // }
-        // set_foregrounded_panes(new_fg);
-        // pushCallback(() => {
-        //     setTabSelectCounter(tabSelectCounter + 1);
-        // })
         setVisibleTab(newTabIdentifier)
     }
 
@@ -663,115 +603,49 @@ function CreatorApp(props) {
         }
     }
 
+    function getListItemFromidentifier(identifier, item_list) {
+        for (let item of item_list) {
+            if (item.identifier === identifier) {
+                return item
+            }
+        }
+        return null
+    }
+
     let my_props = {...props};
     if (!props.controlled) {
         my_props.resource_name = resource_name;
     }
 
     let codeElemDict = {};
-    if (my_props.is_mpl) {
-        codeElemDict["draw_plot"] = () => {
-            return (
-                <CmElement cmState={dpState}
-                           cmDispatch={dpDispatch}
-                           cmObjectRef={dpCmObjectRef}
-                           funcName="draw_plot"
-                           identifier="draw_plot"
-                           argString=""
-                            allowNameChange={false}
-                            allowArgChange={false}
-                           extraKeys={_extraKeys}
-                           saveAndCheckpoint={_saveAndCheckpoint}
-                           searchState={searchState}
-                           searchDispatch={searchDispatch}
-                           search_ref={search_ref}
-                           handleTabSelect={_handleTabSelect}
-                           pushCallback={pushCallback}
-                           tsocket={props.tsocket}
-                           extraSelfCompletions={extraSelfCompletionsRef.current}
-                           module_viewer_id={props.module_viewer_id}
-                           show_search={true}
-                />
-            )
-        }
-    }
-    if (my_props.is_d3) {
-         codeElemDict["javascript"] = () => {
-             return (
-                 <CmElement cmState={jsState}
-                            cmDispatch={jsDispatch}
-                            cmObjectRef={jsCmObjectRef}
-                            funcName="javascript"
-                            identifier="javascript"
-                            argString=""
-                            allowNameChange={false}
-                            allowArgChange={false}
-                            extraKeys={_extraKeys}
-                            saveAndCheckpoint={_saveAndCheckpoint}
-                            searchState={searchState}
-                            searchDispatch={searchDispatch}
-                            search_ref={search_ref}
-                            handleTabSelect={_handleTabSelect}
-                            pushCallback={pushCallback}
-                            tsocket={props.tsocket}
-                            extraSelfCompletions={[]}
-                            module_viewer_id={props.module_viewer_id}
-                            show_search={true}
-                 />
-             )
-         }
+        for (let st of standardListRef.current) {
+            codeElemDict[st.identifier] = () => {
+                return (
+                    <CmElement cmState={st}
+                               no_height={true}
+                               showSignatureHeader={true}
+                               allowNameChange={true}
+                               allowArgChange={true}
+                               argString={st.argString}
+                               cmDispatch={standardDispatch}
+                               cmObjectRef={null}
+                               name={st.name}
+                               identifier={st.identifier}
+                               extraKeys={_extraKeys}
+                               saveAndCheckpoint={_saveAndCheckpoint}
+                               searchState={searchState}
+                               searchDispatch={searchDispatch}
+                               search_ref={search_ref}
+                               handleTabSelect={_handleTabSelect}
+                               pushCallback={pushCallback}
+                               tsocket={props.tsocket}
+                               extraSelfCompletions={st.mode == "python" ? extraSelfCompletionsRef.current : []}
+                               module_viewer_id={props.module_viewer_id}
+                               show_search={false}/>
+                )
+            }
     }
 
-    codeElemDict["render_content"] = () => {
-        return (
-            // <div key="rccode" id="rccode" style={ch_style} className="d-flex flex-column align-items-baseline code-holder">
-            <CmElement cmState={rcState}
-                       cmDispatch={rcDispatch}
-                       cmObjectRef={rcCmObjectRef}
-                       funcName="render_content"
-                       identifier="render_content"
-                       argString=""
-                        allowNameChange={false}
-                        allowArgChange={false}
-                       extraKeys={_extraKeys}
-                       saveAndCheckpoint={_saveAndCheckpoint}
-                       searchState={searchState}
-                       searchDispatch={searchDispatch}
-                       search_ref={search_ref}
-                       handleTabSelect={_handleTabSelect}
-                       pushCallback={pushCallback}
-                       tsocket={props.tsocket}
-                       extraSelfCompletions={extraSelfCompletionsRef.current}
-                       module_viewer_id={props.module_viewer_id}
-                       show_search={!(my_props.is_mpl || my_props.is_d3)}
-            />
-            //</div>
-        )
-    };
-
-    codeElemDict["globals"] = () => {
-             return (
-        <CmElement cmState={globalsState}
-                   cmDispatch={globalsDispatch}
-                   cmObjectRef={globalsCmObjectRef}
-                   funcName="globals"
-                   identifier="globals"
-                   argString=""
-                   allowNameChange={false}
-                   allowArgChange={false}
-                   extraKeys={_extraKeys}
-                   saveAndCheckpoint={_saveAndCheckpoint}
-                   searchState={searchState}
-                   searchDispatch={searchDispatch}
-                   search_ref={search_ref}
-                   handleTabSelect={_handleTabSelect}
-                   pushCallback={pushCallback}
-                   tsocket={props.tsocket}
-                   extraSelfCompletions={extraSelfCompletionsRef.current}
-                   module_viewer_id={props.module_viewer_id}
-                   show_search={true}
-        />
-    )};
     for (let um of umListRef.current) {
         codeElemDict[um.identifier] = () => {
             return (
@@ -779,11 +653,11 @@ function CreatorApp(props) {
                            showSignatureHeader={true}
                            allowNameChange={true}
                             allowArgChange={true}
-                           methodName={um.funcName}
                            argString={um.argString}
                            cmDispatch={umDispatch}
                            cmObjectRef={null}
-                           funcName={um.funcName}
+                           name={um.name}
+                           no_height={true}
                            identifier={um.identifier}
                            extraKeys={_extraKeys}
                            saveAndCheckpoint={_saveAndCheckpoint}
@@ -833,18 +707,40 @@ function CreatorApp(props) {
     }
 
 
+    const sections = [{
+        title: "PROPERTIES",
+        visible: true,
+        icon: "properties",
+        editable: false,
+        dispatch: ()=>{},
+        sub_items: [
+            {
+                identifier: "metadata",
+                name: "Metadata",
+                icon: "manually-entered-data",
+                start_open: true,
+                item_list: []
+            },
+        ]
+    },
+        {title: "OPTIONS", visible: true, editable: true, icon: "select", icon_dict: option_icons, icon_field: "type",
+            sub_items: option_list_ref.current, dispatch: optionDispatch},
+        {title: "EXPORTS", visible: true,editable: true, icon: "select", sub_items: export_list_ref.current, dispatch: exportDispatch},
+        {title: "SAVE_ATTRS", visible: !couple_save_attrs_and_exports_ref.current,
+            editable: true, icon: "select", sub_items: save_list_ref.current, dispatch: saveDispatch},
+        {title: "STANDARD METHODS", visible: true, editable: false, icon: "code", icon_dict: standard_method_icons, icon_field: "name",
+            sub_items: standardListRef.current, dispatch: standardDispatch},
+        {title: "USER METHODS", visible: true, editable: true, icon: "code", sub_items: umListRef.current, dispatch: umDispatch}
+    ]
+
     let left_pane = (
         <Fragment>
             <div ref={nav_ref} style={{overflow: "auto", height: "100%"}}>
                 <MakerNavigator handleTabSelect={_handleTabSelect}
                                 is_mpl={my_props.is_mpl}
                                 is_d3={my_props.is_d3}
-                                umList={umListRef.current}
-                                umDispatch={umDispatch}
-                                pushCallback={pushCallback}
-                                save_list={save_list_ref.current}
-                                export_list={export_list_ref.current}
-                                option_list={option_list_ref.current}/>
+                                sections={sections}
+                                umList={umListRef.current}/>
             </div>
 
         </Fragment>
@@ -853,7 +749,6 @@ function CreatorApp(props) {
         <MetadataModule expandWidth={false}
                         alt_category={props.category}
                         notes_buttons={MetadataNotesButtons}
-                        foregrounded={foregrounded_panes["metadata"]}
                         tsocket={props.tsocket}
                         readOnly={props.readOnly}
                         res_name={_cProp("resource_name")}
@@ -879,26 +774,42 @@ function CreatorApp(props) {
         )
     }
     else if (Object.keys(exportElemDict).includes(visibleTab)) {
+        const item = getListItemFromidentifier(visibleTab, export_list_ref.current);
         right_pane = (
-            <div id="creator-resources" className="d-block" key={visibleTab}>
+            <Card key={visibleTab}>
+                <h5>Export: <b>{item.name}</b></h5>
                 {exportElemDict[visibleTab]?.()}
-            </div>
+            </Card>
         )
     }
      else if (Object.keys(saveElemDict).includes(visibleTab)) {
+         const item = getListItemFromidentifier(visibleTab, save_list_ref.current)
         right_pane = (
-            <div id="creator-resources" className="d-block" key={visibleTab}>
+            <Card key={visibleTab}>
+                <h5>Save Attribute: <b>{item.name}</b></h5>
                 {saveElemDict[visibleTab]?.()}
-            </div>
+            </Card>
         )
     }
     else {
+        let item = getListItemFromidentifier(visibleTab, standardListRef.current)
+        if (!item) {
+            item = getListItemFromidentifier(visibleTab, umListRef.current)
+        }
         right_pane = (
-            <div id="creator-resources" className="d-block" key={visibleTab}>
+            <Card key={visibleTab} elevation={2}>
+                <ReactCodemirror6 readOnly={true}
+                                  show_line_numbers={false}
+                                  no_height={true}
+                                  controlled={true}
+                                  className="creator-code-header"
+                                  code_content={`def ${item.name}(self, ${item.argString}):`}/>
                 {codeElemDict[visibleTab]?.()}
-        </div>)
+        </Card>
+        )
 
-    };
+    }
+
     let outer_style = {
         width: "100%",
         height: sizeInfo.availableHeight,
@@ -943,6 +854,7 @@ function CreatorApp(props) {
                 <MakerPaneContext.Provider value={{
                     visibleTab: visibleTab,
                     setVisibleTab: setVisibleTab,
+                    pushCallback: pushCallback
                 }}>
                     <div className={outer_class} ref={top_ref} style={outer_style}
                          tabIndex="0" onKeyDown={handleKeyDown} onKeyUp={handleKeyUp}>

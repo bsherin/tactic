@@ -1,7 +1,7 @@
 import React, {createContext, useEffect, useReducer, useRef} from "react";
 import {arrayMove, guid, useReducerAndRef} from "./utilities_react";
 
-export {useCmData, optionListReducer, usePropertyList, userMethodsReducer, useSearch, MakerPaneContext}
+export {useCmData, usePropertyList, useSearch, MakerPaneContext}
 
 const MakerPaneContext = createContext(null);
 
@@ -9,13 +9,13 @@ function cmDataReducer(draft, action) {
     switch (action.type) {
         case 'SET_FIRST_LINE_NUMBER':
             return {...draft, firstLineNumber: action.payload};
-        case 'SET_CODE_TEXT':
+        case 'set_code_text':
             return {...draft, codeText: action.payload};
         case 'SET_HAS_ACTIVATED':
             return {...draft, hasActivated: action.payload};
-        case 'SET_FUNC_NAME':
-            return {...draft, funcName: action.payload};
-        case 'SET_ARG_STRING':
+        case 'set_func_name':
+            return {...draft, name: action.payload};
+        case 'set_arg_string':
             return {...draft, argString: action.payload};
         default:
             return draft;
@@ -31,7 +31,7 @@ function useCmData(initialCode, initialLineNumber, initialHasActivated,
         firstLineNumber: initialLineNumber || 1,
         codeText: initialCode || '',
         hasActivated: initialHasActivated || false,
-        funcName: initialFuncName || '',
+        name: initialFuncName || '',
         argString: initialArgString || '',
         signatureIsEditable: signatureIsEditable,
         mode: mode,
@@ -179,13 +179,17 @@ function propertyListReducer(prop_list, action) {
         case "add_at_index":
             new_items = [...prop_list];
             let new_t = {...action.new_item};
-            new_t.option_id = guid();
+            new_t.identifier = guid();
             new_items.splice(action.insert_index, 0, new_t);
             break;
-        case "clear_highlights":
-            new_items = prop_list.map(t => {
-                return {...t, className: ""}
-            });
+        case "add_at_end":
+            new_items = [...prop_list];
+            let new_te = {...action.new_item};
+            //check if new_te has property "identifier"
+            if (!new_te.hasOwnProperty("identifier")) {
+                new_te.identifier = guid();
+            }
+            new_items.push(new_te);
             break;
         default:
             console.log("Got Unknown action: " + action.type);
@@ -205,228 +209,4 @@ function usePropertyList(initial) {
     }, []);
 
     return [propList, propListDispatch, propListRef]
-}
-
-function saveListReducer(save_list, action) {
-    var new_items;
-    switch (action.type) {
-        case "initialize":
-            if (save_list == null || save_list.length === 0) {
-                new_items = [];
-            }
-            else {
-                new_items = action.new_items.map(t => {
-                    let new_t = {...t};
-                    new_t.identifier = guid();
-                    return new_t
-                });
-            }
-            break;
-        case "delete_item":
-            new_items = save_list.filter(t => t.identifier !== action.identifier);
-            break;
-        case "update_item":
-            const identifier = action.identifier;
-            new_items = save_list.map(t => {
-                if (t.identifier == identifier) {
-                    const update_dict = action.new_item;
-                    return {...t, ...update_dict};
-                } else {
-                    return t;
-                }
-            });
-            break;
-        case "move_item":
-            let old_list = [...save_list];
-            new_items = arrayMove(export_list, action.oldIndex, action.newIndex);
-            break;
-        case "add_at_index":
-            new_items = [...save_list];
-            let new_t = {...action.new_item};
-            new_t.option_id = guid();
-            new_items.splice(action.insert_index, 0, new_t);
-            break;
-        case "clear_highlights":
-            new_items = save_list.map(t => {
-                return {...t, className: ""}
-            });
-            break;
-        default:
-            console.log("Got Unknown action: " + action.type);
-            return [...save_list]
-    }
-    return new_items;
-}
-
-function exportListReducer(export_list, action) {
-    var new_items;
-    switch (action.type) {
-        case "initialize":
-            new_items = action.new_items.map(t => {
-                let new_t = {...t};
-                new_t.identifier = guid();
-                return new_t
-            });
-            break;
-        case "delete_item":
-            new_items = export_list.filter(t => t.identifier !== action.identifier);
-            break;
-        case "update_item":
-            const identifier = action.identifier;
-            new_items = export_list.map(t => {
-                if (t.identifier == identifier) {
-                    const update_dict = action.new_item;
-                    return {...t, ...update_dict};
-                } else {
-                    return t;
-                }
-            });
-            break;
-        case "move_item":
-            let old_list = [...export_list];
-            new_items = arrayMove(export_list, action.oldIndex, action.newIndex);
-            break;
-        case "add_at_index":
-            new_items = [...export_list];
-            let new_t = {...action.new_item};
-            new_t.option_id = guid();
-            new_items.splice(action.insert_index, 0, new_t);
-            break;
-        case "clear_highlights":
-            new_items = export_list.map(t => {
-                return {...t, className: ""}
-            });
-            break;
-        default:
-            console.log("Got Unknown action: " + action.type);
-            return [...export_list]
-    }
-    return new_items;
-}
-
-function optionListReducer(option_list, action) {
-    var new_items;
-    switch (action.type) {
-        case "initialize":
-            new_items = action.new_items.map(t => {
-                let new_t = {...t};
-                new_t.identifier = guid();
-                return new_t
-            });
-            break;
-        case "delete_item":
-            new_items = option_list.filter(t => t.identifier !== action.identifier);
-            break;
-        case "update_item":
-            const identifier = action.identifier;
-            new_items = option_list.map(t => {
-                if (t.identifier == identifier) {
-                    const update_dict = action.new_item;
-                    return {...t, ...update_dict};
-                } else {
-                    return t;
-                }
-            });
-            break;
-        case "move_item":
-            let old_list = [...option_list];
-            new_items = arrayMove(old_list, action.oldIndex, action.newIndex);
-            break;
-        case "add_at_index":
-            new_items = [...option_list];
-            let new_t = {...action.new_item};
-            new_t.option_id = guid();
-            new_items.splice(action.insert_index, 0, new_t);
-            break;
-        case "clear_highlights":
-            new_items = option_list.map(t => {
-                return {...t, className: ""}
-            });
-            break;
-        default:
-            console.log("Got Unknown action: " + action.type);
-            return [...option_list]
-    }
-    return new_items;
-}
-
-function userMethodsReducer(user_methods, action) {
-    var new_items;
-    switch (action.type) {
-        case "initialize":
-            new_items = action.new_items.map(t => {
-                let new_t = {};
-                new_t.funcName = t.name;
-                new_t.argString = t.arg_string;
-                new_t.codeText = t.code;
-                new_t.mode = t.mode;
-                new_t.firstLineNumber = t.starting_line;
-                new_t.hasActivated = false;
-                new_t.identifier = guid();
-                return new_t
-            });
-            break;
-        case "ADD_METHOD":
-            new_items = [...user_methods, {funcName: "new_method", argString: "", codeText: "",
-                mode: "python", firstLineNumber: 1, hasActivated: false, method_id: action.uid}]
-            break
-        case "delete_item":
-            new_items = user_methods.filter(t => t.identifier !== action.identifier);
-            break;
-        case "update_item":
-            const identifier = action.new_item.identifier;
-            new_items = user_methods.map(t => {
-                if (t.identifier == identifier) {
-                    const update_dict = action.new_item;
-                    return {...t, ...update_dict};
-                } else {
-                    return t;
-                }
-            });
-            break;
-        case 'SET_CODE_TEXT':
-            const identifier_ct = action.identifier;
-            new_items = user_methods.map(t => {
-                if (t.identifier == identifier_ct) {
-                    return {...t, codeText: action.payload};
-                } else {
-                    return t;
-                }
-            });
-            break;
-        case 'SET_FUNC_NAME':
-            const identifier_fn = action.identifier;
-            new_items = user_methods.map(t => {
-                if (t.identifier == identifier_fn) {
-                    return {...t, funcName: action.payload};
-                } else {
-                    return t;
-                }
-            });
-            break;
-        case 'SET_ARG_STRING':
-            const identifier_as = action.identifier;
-            new_items = user_methods.map(t => {
-                if (t.identifier == identifier_as) {
-                    return {...t, argString: action.payload};
-                } else {
-                    return t;
-                }
-            });
-            break;
-        case "MOVE_ITEM":
-            let old_list = [...user_methods];
-            new_items = arrayMove(old_list, action.oldIndex, action.newIndex);
-            break;
-        case "add_at_index":
-            new_items = [...user_methods];
-            let new_t = {...action.new_item};
-            new_t.identifier = guid();
-            new_items.splice(action.insert_index, 0, new_t);
-            break;
-        default:
-            console.log("Got Unknown action: " + action.type);
-            return [...user_methods]
-    }
-    return new_items;
 }

@@ -204,6 +204,7 @@ function ReactCodemirror6(props) {
         extraSelfCompletions: [],
         controlled: false,
         container_id: null,
+        className: "",
         ...props
     };
 
@@ -702,7 +703,7 @@ function ReactCodemirror6(props) {
                         <Button size="small" icon="expand-all" text="unfold" onClick={_unfoldAll}/>
                     </ButtonGroup>
                 }
-                <div className="code-container" style={ccstyle} ref={localRef}></div>
+                <div className={`code-container ${props.className}`} style={ccstyle} ref={localRef}></div>
             </Fragment>
         );
     }
@@ -720,7 +721,7 @@ function ReactCodemirror6(props) {
                 <span className="bp5-ui-text"
                       style={TITLE_STYLE}>{props.title_label}</span>
             }
-            <div className="code-container" style={ccstyle} ref={localRef}></div>
+            <div className={`code-container ${props.className}`} style={ccstyle} ref={localRef}></div>
         </Fragment>
     );
 }

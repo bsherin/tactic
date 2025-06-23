@@ -1,6 +1,16 @@
-import React, {memo, useContext, useState} from "react";
+import React, {memo, useContext, useMemo} from "react";
 import {Fragment} from "react";
-import {Button, Collapse, ControlGroup, FormGroup, InputGroup, ButtonGroup, Switch} from "@blueprintjs/core";
+import {
+    Button,
+    Collapse,
+    ControlGroup,
+    FormGroup,
+    InputGroup,
+    ButtonGroup,
+    Switch,
+    Icon,
+    Menu, MenuItem, ContextMenu
+} from "@blueprintjs/core";
 import {
     DndContext,
     closestCenter,
@@ -12,7 +22,6 @@ import {
     SortableContext,
     useSortable,
     verticalListSortingStrategy,
-    arrayMove,
 } from '@dnd-kit/sortable';
 import {CSS} from '@dnd-kit/utilities';
 
@@ -22,14 +31,14 @@ import {ErrorBoundary} from "./error_boundary";
 import {ReactCodemirror6} from "./react-codemirror6";
 import {guid, isInt} from "./utilities_react"
 import {MakerPaneContext} from "./tile_maker_support";
-import _ from "lodash";
 import {LabeledFormField, LabeledSelectList, LabeledTextArea} from "./blueprint_react_widgets";
 import {useSize} from "./sizing_tools";
 import {CombinedMetadata} from "./blueprint_mdata_fields";
 
-export {CmElement, MakerNavigator, OptionModuleForm, ExportModuleForm, MetadataModule}
+export {CmElement, MakerNavigator, OptionModuleForm, ExportModuleForm, MetadataModule, option_icons, standard_method_icons}
 
 const INDENT = 25;
+const SECTION_TOP_MARGIN = 15;
 
 function textRowsToArray(tstring) {
     let slist = [];
@@ -149,6 +158,34 @@ const option_types = ['text', 'int', 'float', 'boolean', 'textarea', 'codearea',
     'class_select', 'tile_select', 'divider', 'pool_select'];
 const taggable_types = ["class_select", "function_select", "pipe_select", "list_select", "collection_select"];
 
+const option_icons = {
+    text: "label",
+    int: "numerical",
+    float: "numerical",
+    boolean: "switch",
+    textarea: "text-highlight",
+    codearea: "code",
+    column_select: "column-layout",
+    document_select: "document",
+    list_select: "list",
+    collection_select: "folder-shared",
+    palette_select: "color-fill",
+    pipe_select: "flow-branch",
+    custom_list: "list-detail-view",
+    function_select: "function",
+    class_select: "curly-braces",
+    tile_select: "application",
+    divider: "minus",
+    pool_select: "folder-open"
+}
+
+const standard_method_icons = {
+    render_content: "play",
+    globals: "globe",
+    draw_plot: "scatter-plot",
+    javascript: "timeline-area-chart",
+}
+
 function OptionModuleForm(props) {
     props = {
         optionItem: null,
@@ -246,7 +283,7 @@ OptionModuleForm = memo(OptionModuleForm);
 
 function SignatureHeader(props) {
     props = {
-        funcName: "",
+        name: "",
         argString: "",
         handleNameChange: () => {
         },
@@ -260,14 +297,15 @@ function SignatureHeader(props) {
         <div className="d-flex flex-row" style={{marginTop: 5, marginBottom: 5, alignSelf: "self-end"}}>
             <FormGroup label="Method Name" style={{fontSize: 12, marginBottom: 0}}>
                 <InputGroup type="text"
-                            size="small"
+                            size="medium"
                             readOnly={!props.allowNameChange}
                             onChange={(event) => props.handleNameChange(event.target.value)}
-                            value={props.funcName}/>
+                            value={props.name}/>
             </FormGroup>
             <FormGroup label="Arguments" style={{fontSize: 12, marginBottom: 0}}>
                 <InputGroup type="text"
-                            size="small"
+                            size="medium"
+                            width={300}
                             readOnly={!props.allowArgChange}
                             onChange={(event) => props.handleArgChange(event.target.value)}
                             value={props.argString}/>
@@ -281,7 +319,7 @@ function CmElement(props) {
         cmState: null,
         cmDispatch: null,
         cmObjectRef: null,
-        funcName: "",
+        name: "",
         argString: "",
         identifier: "",
         extraKeys: null,
@@ -296,19 +334,20 @@ function CmElement(props) {
         extraSelfCompletions: null,
         module_viewer_id: null,
         show_search: true,
+        no_height: false,
         ...props
     };
 
     function handleCodeChange(new_code) {
-        props.cmDispatch({type: "SET_CODE_TEXT", payload: new_code, identifier: props.identifier});
+        props.cmDispatch({type: "update_item", new_item: {codeText: new_code}, identifier: props.identifier});
     }
 
     function handleNameChange(new_name) {
-        props.cmDispatch({type: "SET_FUNC_NAME", payload: new_name, identifier: props.identifier});
+        props.cmDispatch({type: "update_item", new_item: {name: new_name}, identifier: props.identifier});
     }
 
     function handleArgChange(new_args) {
-        props.cmDispatch({type: "SET_ARG_STRING", payload: new_args, identifier: props.identifier});
+        props.cmDispatch({type: "update_item", new_item: {argString: new_args}, identifier: props.identifier});
     }
 
     function setCmObject(cmObject) {
@@ -340,7 +379,7 @@ function CmElement(props) {
     }
 
     let header_left = (
-        <SignatureHeader funcName={props.funcName}
+        <SignatureHeader name={props.name}
                          argString={props.argString}
                          allowNameChange={props.allowNameChange}
                          allowArgChange={props.allowArgChange}
@@ -352,6 +391,7 @@ function CmElement(props) {
     return (
         <div>
             <ReactCodemirror6 code_content={props.cmState.codeText}
+                              no_height={props.no_height}
                               title_label={null}
                               show_search={true}
                               header_left={header_left}
@@ -385,140 +425,23 @@ function MakerNavigator(props) {
     props = {
         handleTabSelect: () => {
         },
-        selectedTab: "metadata",
-        option_list: [],
-        export_list: [],
-        umList: [],
-        is_mpl: false,
-        is_d3: false,
-        umDispatch: () => {
-        },
-        pushCallback: () => {
-        },
+        sections: [],
+        icon_dict: null,
+        icon_field: null,
         ...props
     }
-
-    const mpContext = useContext(MakerPaneContext);
-
-    function createMethod() {
-        const uid = guid();
-        props.umDispatch({type: "ADD_METHOD", uid: uid})
-        props.pushCallback(() => {
-            mpContext.setVisibleTab(uid);
-        });
-    }
-
-    let method_create_button = (
-        <Button icon="plus" variant="minimal" onClick={createMethod}/>
-    )
-
-    let option_name_list = props.option_list.map((option) => {
-        return {
-            title: option.name, identifier: null, onClick: () => {
-            }
-        }
-    });
-
-    let um_sub_items = props.umList.map((um) => {
-        return {
-            title: um.funcName,
-            identifier: um.identifier,
-            onClick: () => props.handleTabSelect(um.identifier),
-            item_list: []
-        }
-    });
-    let option_sub_items = props.option_list.map((opt) => {
-        return {
-            title: opt.name,
-            identifier: opt.identifier,
-            onClick: () => props.handleTabSelect(opt.identifier),
-            item_list: []
-        }
-    });
-    let export_sub_items = props.export_list.map((opt) => {
-        return {
-            title: opt.name,
-            identifier: opt.identifier,
-            onClick: () => props.handleTabSelect(opt.identifier),
-            item_list: []
-        }
-    });
-    let save_sub_items = props.save_list.map((opt) => {
-        return {
-            title: opt.name,
-            identifier: opt.identifier,
-            onClick: () => props.handleTabSelect(opt.identifier),
-            item_list: []
-        }
-    });
-    let code_sub_items = [
-        {
-            identifier: "render_content",
-            title: "render_content",
-            onClick: () => props.handleTabSelect("render_content"),
-            icon: "play",
-            item_list: []
-        },
-        {
-            identifier: "globals",
-            title: "globals",
-            onClick: () => props.handleTabSelect("globals"),
-            icon: "globe",
-            item_list: []
-        },
-    ]
-
-    if (props.is_mpl) {
-        code_sub_items.unshift({
-            identifier: "draw_plot",
-            title: "draw_plot",
-            onClick: () => props.handleTabSelect("draw_plot"),
-            icon: "graph",
-            item_list: []
-        });
-    }
-    if (props.is_d3) {
-        code_sub_items.unshift({
-            identifier: "javascript",
-            title: "javascript",
-            onClick: () => props.handleTabSelect("javascript"),
-            icon: "code",
-            item_list: []
-        });
-    }
-    const sections = [{
-        title: "PROPERTIES",
-        icon: "properties",
-        sortable: false,
-        sub_items: [
-            {
-                identifier: "metadata",
-                title: "Metadata",
-                onClick: () => props.handleTabSelect("metadata"),
-                icon: "manually-entered-data",
-                start_open: true,
-                item_list: []
-            },
-        ]
-    },
-        {title: "OPTIONS", sortable: true, icon: "select", sub_items: option_sub_items},
-        {title: "EXPORTS", sortable: true, icon: "select", sub_items: export_sub_items},
-        {title: "SAVE_ATTRS", sortable: true, icon: "select", sub_items: save_sub_items},
-        {title: "STANDARD METHODS", sortable: false, icon: "code", sub_items: code_sub_items},
-        {title: "USER METHODS", sortable: true, icon: "code", sub_items: um_sub_items, right_button: method_create_button}
-    ]
-
+    const sections = props.sections.filter(section => section.visible === true)
     return (
         <ErrorBoundary custom_message="There was an error in the Maker Navigator">
             <div style={{overflow: "hidden"}}>
                 {sections.map((section, index) => (
-                    section.sortable ?
-                        <SortableNavSection key={index} title={section.title} umDispatch={props.umDispatch}
-                                right_button={section.right_button ? section.right_button : null}
-                                sub_items={section.sub_items} icon={section.icon}/> :
-                    <NavSection key={index} title={section.title} umDispatch={props.umDispatch}
-                                right_button={section.right_button ? section.right_button : null}
-                                sub_items={section.sub_items} icon={section.icon}/>
+                    section.editable ?
+                        <SortableNavSection key={index} title={section.title} dispatch={section.dispatch}
+                                            sub_items={section.sub_items} icon={section.icon}
+                                            icon_dict={section.icon_dict} icon_field={section.icon_field}/> :
+                    <NavSection key={index} title={section.title} dispatch={section.dispatch}
+                                sub_items={section.sub_items} icon={section.icon}
+                                icon_dict={section.icon_dict} icon_field={section.icon_field}/>
                 ))}
             </div>
         </ErrorBoundary>
@@ -531,23 +454,28 @@ function NavSection(props) {
         "sub_items": [],
         "start_open": true,
         "right_button": null,
+        icon_dict: null,
+        icon_field: null,
         ...props
     }
     const [isOpen, setIsOpen] = React.useState(props.start_open);
 
     return (
-        <div>
+        <div style={{marginTop: SECTION_TOP_MARGIN}}>
             <ButtonGroup>
-                <Button variant="minimal" icon={props.icon} size="large" onClick={() => setIsOpen(!isOpen)}>
+                <Button variant="minimal" style={{paddingRight: 2}} icon={props.icon} size="medium" onClick={() => setIsOpen(!isOpen)}>
                     {props.title}
                 </Button>
                 {props.right_button != null && props.right_button}
             </ButtonGroup>
             <Collapse className="nav-section-class" isOpen={isOpen}>
-                {props.sub_items.map((item, index) => (
-                    <NavItem key={index} identifier={item.identifier} title={item.title} icon={item.icon}
-                             onClick={item.onClick} item_list={item.item_list}/>
-                ))}
+                {props.sub_items.map((item, index) => {
+                    let icon = props.icon_dict ? <Icon icon={props.icon_dict[item[props.icon_field]]} size={12}/> : null;
+                    return (
+                        <NavItem key={index} identifier={item.identifier} title={item.name} icon={icon}
+                                 item_list={item.item_list}/>
+                    )})
+                }
             </Collapse>
         </div>
     );
@@ -555,11 +483,13 @@ function NavSection(props) {
 
 function SortableNavSection(props) {
     props = {
-        "title": "",
-        "sub_items": [],
-        "start_open": true,
-        "right_button": null,
-        umDispatch: props.umDispatch,
+        title: "",
+        sub_items: [],
+        start_open: true,
+        right_button: null,
+        icon_dict: null,
+        icon_field: null,
+        dispatch: () => {},
         ...props
     }
     const [isOpen, setIsOpen] = React.useState(props.start_open);
@@ -574,34 +504,65 @@ function SortableNavSection(props) {
         const newIndex = props.sub_items.findIndex((i) => i.identifier === over.id);
 
         if (oldIndex !== -1 && newIndex !== -1) {
-            props.umDispatch({
-                type: "MOVE_ITEM",
+            props.dispatch({
+                type: "move_item",
                 oldIndex,
                 newIndex
             });
         }
     };
 
+    const mpContext = useContext(MakerPaneContext);
+
+    function createItem() {
+        const uid = guid();
+        const new_entry = {
+            name: "new_item",
+            argString: "",
+            codeText: "",
+            mode: "python", firstLineNumber: 1,
+            identifier: uid}
+        props.dispatch({type: "add_at_end", new_item: new_entry});
+        mpContext.pushCallback(() => {
+            mpContext.setVisibleTab(uid);
+        });
+    }
+
+    const contextMenu = useMemo(() => {
+        return (
+            <Menu>
+                <MenuItem icon="plus"
+                          onClick={createItem}
+                          intent="primary"
+                          text="Create Item"/>
+            </Menu>
+        );
+    }, []);
     return (
-        <div>
+        <ContextMenu content={contextMenu}>
+        <div style={{marginTop: SECTION_TOP_MARGIN}}>
             <ButtonGroup>
-                <Button variant="minimal" icon={props.icon} size="large" onClick={() => setIsOpen(!isOpen)}>
+                <Button style={{paddingRight: 2}} variant="minimal" icon={props.icon} size="medium" onClick={() => setIsOpen(!isOpen)}>
                     {props.title}
                 </Button>
-                {props.right_button != null && props.right_button}
+                <Button icon="plus"size="small" variant="minimal" onClick={createItem}/>
             </ButtonGroup>
             <Collapse className="nav-section-class" isOpen={isOpen}>
                 <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                     <SortableContext items={props.sub_items.map((i) => i.identifier)}
                                      strategy={verticalListSortingStrategy}>
-                        {props.sub_items.map((item, index) => (
-                            <SortableNavItem key={item.identifier} identifier={item.identifier} title={item.title} icon={item.icon}
-                                     onClick={item.onClick} item_list={item.item_list}/>
-                        ))}
+                        {props.sub_items.map((item, ) => {
+                            let icon = props.icon_dict ? <Icon icon={props.icon_dict[item[props.icon_field]]} size={12}/> : null;
+                            return (
+                                <SortableNavItem key={item.identifier} identifier={item.identifier} title={item.name}
+                                                 icon={icon} item_list={item.item_list} dispatch={props.dispatch}/>
+                            )
+                        })}
                     </SortableContext>
                 </DndContext>
             </Collapse>
         </div>
+        </ContextMenu>
     );
 }
 
@@ -619,18 +580,40 @@ function SortableNavItem({identifier, ...props}) {
         transition
     };
 
+    function _deleteMe() {
+        props.dispatch({type: "delete_item", identifier: identifier})
+    }
+
+    const delete_icon = <Icon icon="delete" size={12} />;
+
+    const contextMenu = useMemo(() => {
+        return (
+            <Menu>
+                <MenuItem icon="delete"
+                          onClick={_deleteMe}
+                          intent="danger"
+                          text="Delete Item"/>
+            </Menu>
+        );
+    }, []);
+
     return (
-        <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-            <NavItem {...props} />
-        </div>
+        <ContextMenu content={contextMenu}>
+            <div ref={setNodeRef} style={style} {...attributes} {...listeners} className="sortable-nav-item">
+                <ButtonGroup>
+                    <NavItem identifier={identifier} {...props} />
+                    <Button icon={delete_icon} size="small" variant="minimal" className="show-on-hover"
+                          tabIndex={-1} onClick={_deleteMe}/>
+                </ButtonGroup>
+            </div>
+        </ContextMenu>
     );
 }
+
 
 function NavItem(props) {
     props = {
         title: "",
-        onClick: () => {
-        },
         item_list: [],
         identifier: "",
         ...props
@@ -640,18 +623,15 @@ function NavItem(props) {
     return (
         <Fragment>
             <ControlGroup>
-                <Button style={{marginLeft: INDENT}}
+                <Button style={{marginLeft: INDENT, paddingRight: 2}}
                         icon={props.icon}
                         intent={mpContext.visibleTab == props.identifier ? "primary" : "none"}
                         size="medium"
                         variant="minimal"
-                        onClick={props.onClick}>
+                        onClick={()=>{mpContext.setVisibleTab(props.identifier)}}>
                     {props.title}
                 </Button>
             </ControlGroup>
-            {props.item_list.map((item, index) => (
-                <NavListItem key={index} title={item.title} onClick={item.onClick}/>
-            ))}
         </Fragment>
     );
 }

@@ -127,7 +127,7 @@ class TileParser(object):
         last_element = len(self.cnode.body) - 1
         for i, node in enumerate(self.cnode.body):
             if isinstance(node, ast.FunctionDef):
-                arg_string = re.sub(r"self", "", ast.unparse(node.args))
+                arg_string = re.sub(r"self\s*,?\s*", "", ast.unparse(node.args))
                 mdict[node.name] = {"node": node,
                                     "start_line": node.lineno - 1,
                                     "body_start": node.body[0].lineno - 1,
