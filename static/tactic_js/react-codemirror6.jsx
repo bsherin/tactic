@@ -11,7 +11,7 @@ import {javascript} from "@codemirror/lang-javascript"
 import {markdown} from "@codemirror/lang-markdown"
 import {indentUnit} from "@codemirror/language";
 import {HighlightStyle, foldAll, unfoldAll} from "@codemirror/language"
-import {EditorView, Decoration, ViewPlugin} from "@codemirror/view";
+import {EditorView, Decoration, ViewPlugin, DecorationSet} from "@codemirror/view";
 import {
     StateField,
     StateEffect,
@@ -171,6 +171,56 @@ const tabAcceptKeymap = [
     },
 ];
 
+function restrictEditsToRange(editableRanges = []) {
+  return EditorState.transactionFilter.of(tr => {
+      if (tr.annotation(ExternalUpdate)) {
+      // Allow external (controlled) updates unconditionally
+      return tr;
+    }
+    let blocked = false;
+
+    tr.changes.iterChanges((fromA, toA) => {
+      const overlap = editableRanges.some(region => {
+        return fromA >= region.from && toA <= region.to;
+      });
+      if (!overlap) blocked = true;
+    });
+
+    return blocked ? [] : tr;
+  });
+}
+
+function highlightEditableRanges(ranges) {
+  return ViewPlugin.fromClass(class {
+    constructor(view) {
+      this.decorations = this.buildDecorations(view);
+    }
+
+    update(update) {
+      if (update.docChanged || update.viewportChanged) {
+        this.decorations = this.buildDecorations(update.view);
+      }
+    }
+
+    buildDecorations(view) {
+      const builder = new RangeSetBuilder();
+      for (let { from, to } of ranges) {
+        builder.add(from, to, Decoration.mark({ class: "cm-editable" }));
+      }
+      return builder.finish();
+    }
+
+    destroy() {}
+
+  }, {
+    decorations: v => v.decorations
+  });
+}
+
+import { Annotation } from "@codemirror/state";
+
+const ExternalUpdate = Annotation.define();
+
 const customCompletionKeymap = completionKeymap.filter(binding => binding.key !== "Enter");
 const strippedDefaultKeymap = defaultKeymap.filter(k => k.key !== "Enter");
 
@@ -205,6 +255,8 @@ function ReactCodemirror6(props) {
         controlled: false,
         container_id: null,
         className: "",
+        restrict_edtits_to_range: false,
+        getEditableRanges: null,
         ...props
     };
 
@@ -216,6 +268,7 @@ function ReactCodemirror6(props) {
     const completionCompartment = useRef(null);
     const lineNumberCompartment = useRef(null);
     const readOnlyCompartment = useRef(new Compartment());
+    const restrictComparment = useRef(new Compartment());
     const readOnlyRef = useRef(props.readOnly);
     const theme = useRef(null);
     const highlightStyle = useRef(null);
@@ -277,6 +330,16 @@ function ReactCodemirror6(props) {
                         setAITextLabel(null);
                         awaitingSuggestionRef.current = true
                     }
+                    if (props.restrict_edits_to_range) {
+                        const line = update.state.doc.toString();
+                        const ranges = props.getEditableRanges(line)
+                        update.view.dispatch({
+                            effects: restrictComparment.current.reconfigure([
+                                restrictEditsToRange(ranges),
+                                highlightEditableRanges(ranges)]
+                            )
+                        });
+                    }
                 }
                 if (update.focusChanged) {
                     if (update.view.hasFocus) {
@@ -296,6 +359,13 @@ function ReactCodemirror6(props) {
         }
         if (props.highlight_active_line) {
             extensions.push(highlightActiveLineGutter());
+        }
+        if (props.restrict_edits_to_range) {
+            let ranges = props.getEditableRanges(props.code_content);
+            extensions.push(restrictComparment.current.of([
+                 restrictEditsToRange(ranges),
+                 highlightEditableRanges(ranges)
+            ]));
         }
         return extensions
     };
@@ -395,15 +465,21 @@ function ReactCodemirror6(props) {
     }, [props.extraSelfCompletions, aiText]);
 
     useEffect(() => {
-        // This controlled stuff never quite worked perfectly inside the CombinedMetadata notes field..
+        // This controlled stuff never quite worked perfectly inside the CombinedMetadata notes field
         if (props.controlled) {
             if (editorView.current) {
-                const docLength = editorView.current.state.doc.length;
-                const anchor = Math.min(editorView.current.state.selection.main.anchor, docLength);
-                const head = Math.min(editorView.current.state.selection.main.head, docLength);
+                const oldDoc = editorView.current.state.doc;
+                const oldLength = oldDoc.length;
+                const newText = props.code_content;
+                let anchor = editorView.current.state.selection.main.anchor;
+                let head = editorView.current.state.selection.main.head;
+                const newLength = newText.length;
+                anchor = Math.min(anchor, newLength);
+                head = Math.min(head, newLength);
                 const transaction = editorView.current.state.update({
-                    changes: {from: 0, to: docLength, insert: props.code_content},
-                    selection: {anchor, head}
+                    changes: {from: 0, to: oldLength, insert: newText},
+                    selection: {anchor, head},
+                    annotations: ExternalUpdate.of(true)
                 });
                 editorView.current.dispatch(transaction);
             }

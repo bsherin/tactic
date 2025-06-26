@@ -23,7 +23,7 @@ var _pool_tree = require("./pool_tree");
 var _library_pane = require("./library_pane");
 var _module_viewer_react = require("./module_viewer_react");
 var _tile_maker_react = require("./tile_maker_react");
-var _tile_creator_support = require("./tile_creator_support");
+var _tile_maker_support = require("./tile_maker_support");
 var _main_app = require("./main_app");
 var _main_support = require("./main_support");
 var _notebook_app = require("./notebook_app");
@@ -95,7 +95,7 @@ var propDict = {
   "code-viewer": _code_viewer_react.code_viewer_props,
   "list-viewer": _list_viewer_react.list_viewer_props,
   "text-viewer": _text_viewer_react.text_viewer_props,
-  "creator-viewer": _tile_creator_support.creator_props,
+  "creator-viewer": _tile_maker_support.creator_props,
   "main-viewer": _main_support.main_props,
   "notebook-viewer": _notebook_support.notebook_props
 };

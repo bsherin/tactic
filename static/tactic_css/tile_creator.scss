@@ -28,6 +28,23 @@
   }
 }
 
+.light-theme {
+  .cm-signature {
+    .cm-editor {
+      background-color: blueprint_variables.$white
+    }
+  }
+}
+
+
+.bp5-dark {
+  .cm-signature {
+    .cm-editor {
+      background-color: blueprint_variables.$dark-gray2
+    }
+  }
+}
+
 #creator-root, .creator-root {
   //margin-right: 25px;
   vertical-align: top;
@@ -35,6 +52,17 @@
   .code-holder {
     height: 100%;
 
+  }
+
+  .cm-signature {
+    .cm-content {
+      align-content: end;
+    }
+  }
+
+  .cm-editable {
+    border-bottom: 1px solid #007acc;
+    padding-bottom: 1px;
   }
 
   .bp5-tab:focus {
@@ -55,11 +83,11 @@
   //}
 }
 
-  #creator-root, .creator-root {
-    .bp5-large > .bp5-tab {
-      margin-top: 0px
-    }
+#creator-root, .creator-root {
+  .bp5-large > .bp5-tab {
+    margin-top: 0px
   }
+}
 
 #creator-resources {
   height: 100%;
@@ -82,46 +110,48 @@
   }
 
   .tab-content {
-      height: 100%;
-      padding-bottom: 25px
+    height: 100%;
+    padding-bottom: 25px
   }
 
   .nav-tabs {
-      border-bottom: none;
+    border-bottom: none;
   }
 
   .form-inline label {
-      margin-bottom: 0;
-      margin-left: 4px
+    margin-bottom: 0;
+    margin-left: 4px
   }
 
   .indent-row {
-      margin-bottom: 10px
+    margin-bottom: 10px
   }
 
   .resource-module {
-      margin: 0;
+    margin: 0;
   }
 
   input {
-      width: 150px;
+    width: 150px;
   }
 
   .form-row {
-      button {
-          align-self: flex-end;
-          margin: 7px;
-      }
+    button {
+      align-self: flex-end;
+      margin: 7px;
+    }
   }
 
   #commands-pane {
     blockquote, dd {
       margin-inline-start: 0
     }
+
     .notes-field-markdown-output {
       padding: 15px 25px 5px 15px;
       border-top-left-radius: 0
     }
+
     button {
       margin-top: 10px;
       border-bottom: 0;
@@ -132,16 +162,19 @@
 
     .docutils.literal, cite {
       color: #e83e8c;
-	  word-break: break-word;
+      word-break: break-word;
       font-family: monospace;
       font-style: normal
     }
+
     h4 {
       color: blueprint_variables.$blue3;
     }
+
     h5 {
       color: blueprint_variables.$orange3
     }
+
     h6 {
       color: blueprint_variables.$forest2
     }

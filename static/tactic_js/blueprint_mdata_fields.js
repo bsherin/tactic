@@ -6,6 +6,8 @@ Object.defineProperty(exports, "__esModule", {
 exports.BpSelect = BpSelect;
 exports.BpSelectAdvanced = BpSelectAdvanced;
 exports.CombinedMetadata = CombinedMetadata;
+exports.IconSelector = IconSelector;
+exports.NativeTags = NativeTags;
 exports.NotesField = NotesField;
 exports.icon_dict = void 0;
 require("../tactic_css/tactic_select.scss");
@@ -286,6 +288,9 @@ var renderCreateNewTag = function renderCreateNewTag(query, active, handleClick)
   });
 };
 function NativeTags(props) {
+  props = _objectSpread({
+    all_tags: []
+  }, props);
   function renderTag(item) {
     return item;
   }
@@ -324,7 +329,7 @@ function NativeTags(props) {
     itemRenderer: renderSuggestion,
     selectedItems: props.tags,
     allowNew: true,
-    items: props.all_tags,
+    items: props.all_tags ? props.all_tags : [],
     itemPredicate: _filterSuggestion,
     tagRenderer: renderTag,
     tagInputProps: {
@@ -333,7 +338,7 @@ function NativeTags(props) {
     onItemSelect: _handleAddition
   });
 }
-NativeTags = /*#__PURE__*/(0, _react.memo)(NativeTags);
+exports.NativeTags = NativeTags = /*#__PURE__*/(0, _react.memo)(NativeTags);
 function NotesField(props) {
   props = _objectSpread({
     handleBlur: null
@@ -476,7 +481,7 @@ function IconSelector(_ref6) {
     value: value
   }));
 }
-IconSelector = /*#__PURE__*/(0, _react.memo)(IconSelector);
+exports.IconSelector = IconSelector = /*#__PURE__*/(0, _react.memo)(IconSelector);
 var ignore_fields = ["doc_type", "res_type"];
 var initial_state = {
   allTags: [],

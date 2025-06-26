@@ -168,6 +168,17 @@ class User(UserMixin, MongoAccess):
     def dt_to_sortstring(self, dt):
         return dt.strftime("%Y%m%d%H%M%S")
 
+    def simple_process_metadata(self, mdata):
+        if "datetime" in mdata:
+            datestring = self.get_timestrings(mdata["datetime"])[0]
+            del mdata["datetime"]
+            mdata["created"] = datestring
+        if "updated" in mdata:
+            updatestring = self.get_timestrings(mdata["updated"])[0]
+            del mdata["updated"]
+            mdata["updated"] = updatestring
+        return mdata
+
     def process_metadata(self, mdata):
         if "datetime" in mdata:
             datestring = self.get_timestrings(mdata["datetime"])[0]

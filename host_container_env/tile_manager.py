@@ -275,7 +275,7 @@ class TileManager(LibraryResourceManager):
                            id_info["module_viewer_id"])
         mdata = self.grab_metadata(module_name)
 
-        mdata = user_obj.process_metadata(mdata)
+        mdata = user_obj.simple_process_metadata(mdata)
         data = {
             "success": True,
             "kind": "creator-viewer",

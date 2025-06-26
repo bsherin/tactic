@@ -50,7 +50,7 @@ import {postAjaxPromise} from "./communication_react";
 import {ReactCodemirror6} from "./react-codemirror6";
 
 export {icon_dict};
-export {NotesField, CombinedMetadata, BpSelect, BpSelectAdvanced}
+export {NotesField, CombinedMetadata, BpSelect, BpSelectAdvanced, NativeTags, IconSelector};
 
 let icon_dict = {
     all: "cube",
@@ -247,6 +247,10 @@ const renderCreateNewTag = (query, active, handleClick) => {
 };
 
 function NativeTags(props) {
+    props = {
+        all_tags: [],
+        ...props
+    }
 
     function renderTag(item) {
         return item
@@ -290,7 +294,7 @@ function NativeTags(props) {
             itemRenderer={renderSuggestion}
             selectedItems={props.tags}
             allowNew={true}
-            items={props.all_tags}
+            items={props.all_tags ? props.all_tags : []}
             itemPredicate={_filterSuggestion}
             tagRenderer={renderTag}
             tagInputProps={{onRemove: _handleDelete}}

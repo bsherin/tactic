@@ -1,15 +1,13 @@
-import React, {memo, useContext, useMemo} from "react";
+import React, {memo, useContext, useEffect, useMemo, useRef} from "react";
 import {Fragment} from "react";
 import {
     Button,
     Collapse,
     ControlGroup,
-    FormGroup,
-    InputGroup,
     ButtonGroup,
     Switch,
     Icon,
-    Menu, MenuItem, ContextMenu
+    Menu, MenuItem, ContextMenu, Card, FormGroup, InputGroup
 } from "@blueprintjs/core";
 import {
     DndContext,
@@ -33,9 +31,13 @@ import {guid, isInt} from "./utilities_react"
 import {MakerPaneContext} from "./tile_maker_support";
 import {LabeledFormField, LabeledSelectList, LabeledTextArea} from "./blueprint_react_widgets";
 import {useSize} from "./sizing_tools";
-import {CombinedMetadata} from "./blueprint_mdata_fields";
+import {CombinedMetadata, NativeTags, IconSelector, NotesField} from "./blueprint_mdata_fields";
+import {postAjaxPromise} from "./communication_react";
 
-export {CmElement, MakerNavigator, OptionModuleForm, ExportModuleForm, MetadataModule, option_icons, standard_method_icons}
+export {
+    CmElement, PaneElement, MakerNavigator, OptionModuleForm, ExportModuleForm,
+    MetadataModule, option_icons, standard_method_icons
+}
 
 const INDENT = 25;
 const SECTION_TOP_MARGIN = 15;
@@ -103,25 +105,221 @@ function correctType(type, val, error_flag = "__ERROR__") {
     return result
 }
 
-function MetadataModule(props) {
+function PaneElement(props) {
+    props = {
+        identifier: null,
+        dispatch: () => {
+        },
+        allowDelete: false,
+        children: null,
+        ...props,
+    }
+
+    function _deleteMe() {
+        props.dispatch({type: "delete_item", identifier: props.identifier})
+    }
+
+    const mpContext = useContext(MakerPaneContext);
+
+    return (
+        <Card key={props.identifier} elevation={2}>
+            <div style={{display: "flex", flexDirection: "row", justifyContent: "space-between"}}>
+                <Button variant="minimal" size="small" icon="cross"
+                        onClick={() => {
+                            mpContext.toggleVisibleTab(props.identifier)
+                        }}/>
+                {props.allowDelete &&
+                    <Button variant="minimal" intent="danger" size="small" icon="trash"
+                            onClick={_deleteMe}/>
+                }
+            </div>
+            {props.children}
+        </Card>
+    )
+}
+
+function MetadataModuleOld(props) {
     const top_ref = React.createRef();
-    const [, usable_height, , ] = useSize(top_ref, props.tabSelectCounter, "CreatorModule");
+    const [, usable_height, ,] = useSize(top_ref, props.tabSelectCounter, "CreatorModule");
 
     let md_style = {height: "100%"};
+
     function handleCoupleChange(event) {
         props.set_couple_save_attrs_and_exports(event.target.checked)
     }
+
     return (
         <div ref={top_ref} style={{marginLeft: 10, height: usable_height}}>
             <CombinedMetadata {...props} outer_style={md_style}/>
-                <Switch label="Couple save_attrs and exports"
-                        className="ml-2 mb-0 mt-1"
-                        size="medium"
-                        checked={props.couple_save_attrs_and_exports}
-                        onChange={handleCoupleChange}/>
+            <Switch label="Couple save_attrs and exports"
+                    className="ml-2 mb-0 mt-1"
+                    size="medium"
+                    checked={props.couple_save_attrs_and_exports}
+                    onChange={handleCoupleChange}/>
         </div>
     )
 
+}
+
+function MetadataModule(props) {
+    props = {
+        metadataRef: null,
+        mdata: null,
+        option_list_ref: null,
+        export_list_ref: null,
+        readOnly: false,
+        res_name: null,
+        res_type: "tile",
+        metadataDispatch: () => {
+        },
+        ...props
+    }
+
+    useEffect(() => {
+        get_all_tags()
+    }, []);
+
+
+    function get_all_tags() {
+        let data_dict = {
+            pane_type: "tile",
+            is_repository: false,
+            show_hidden: true
+        };
+        postAjaxPromise("get_tag_list", data_dict)
+            .then(data => {
+                props.metadataDispatch({"type": "set_all_tags", "value": data.tag_list})
+            })
+    }
+
+    function handleTagsChange(new_tags) {
+        let tags = new_tags.join(" ");
+        if (tags.length > 0 && tags[tags.length - 1] == " ") {
+            tags = tags.slice(0, -1);
+        }
+        props.metadataDispatch({"type": "set_tags", "value": tags});
+    }
+
+    function handleCategoryChange(event) {
+        props.metadataDispatch({"type": "set_category", "value": event.target.value})
+    }
+
+    function handleIconChange(new_icon) {
+        props.metadataDispatch({"type": "set_icon", value: new_icon});
+    }
+
+    function handleNotesChange(new_notes) {
+        props.metadataDispatch({"type": "set_notes", "value": new_notes});
+    }
+
+    function handleCoupleChange(event) {
+        props.metadataDispatch({"type": "set_couple", "value": event.target.value});
+    }
+
+    function appendToNotes(new_text) {
+        props.metadataDispatch({"type": "append_to_notes", "value": new_text});
+    }
+
+
+    function appendOptionText() {
+        let res_string = "\n\noptions: \n\n";
+        for (let opt of props.option_list_ref.current) {
+            res_string += ` * \`${opt.name}\` (${opt.type}): \n`
+        }
+        appendToNotes(res_string);
+    }
+
+    function appendExportText() {
+        let res_string = "\n\nexports: \n\n";
+        for (let exp of props.export_list_ref.current) {
+            res_string += ` * \`${exp.name}\` : \n`
+        }
+        appendToNotes(res_string);
+    }
+
+    function MetadataNotesButtons(props) {
+        return (
+            <ButtonGroup>
+                <Button style={{height: "fit-content", alignSelf: "start", marginTop: 10, fontSize: 12}}
+                        text="Add Options"
+                        size="small"
+                        variant="minimal"
+                        intent="primary"
+                        icon="select"
+                        onClick={e => {
+                            e.preventDefault();
+                            appendOptionText(props.appendToNotes)
+                        }}/>
+                <Button style={{height: "fit-content", alignSelf: "start", marginTop: 10, fontSize: 12}}
+                        text="Add Exports"
+                        size="small"
+                        variant="minimal"
+                        intent="primary"
+                        icon="export"
+                        onClick={e => {
+                            e.preventDefault();
+                            appendExportText(props.appendToNotes)
+                        }}/>
+            </ButtonGroup>
+        )
+    }
+
+    const split_tags = props.metadataRef.current.tags.split(" ");
+    return (
+        <div>
+            <ErrorBoundary custom_message="Error in NativeTags">
+            <FormGroup label="Tags">
+                <NativeTags key={`${props.res_name}-${props.res_type}-tags`}
+                            tags={split_tags}
+                            all_tags={props.mdata.allTags}
+                            readOnly={props.readOnly}
+                            handleChange={handleTagsChange}
+                            res_type="tile"/>
+            </FormGroup>
+            </ErrorBoundary>
+            <ErrorBoundary custom_message="Error in Category">
+            <FormGroup label="Category" key="Category">
+                <InputGroup onChange={handleCategoryChange}
+                            value={props.metadataRef.current.category}/>
+            </FormGroup>
+            </ErrorBoundary>
+            <ErrorBoundary custom_message="Error in Icon">
+            <FormGroup label="Icon">
+                <IconSelector key={`${props.res_name}-${props.res_type}-icon-selector`}
+                              icon_val={props.metadataRef.current.icon}
+                              readOnly={props.readOnly}
+                              handleSelectChange={handleIconChange}/>
+            </FormGroup>
+            </ErrorBoundary>
+            <ErrorBoundary custom_message="Error in Notes">
+            <FormGroup label="Notes">
+                <NotesField key={`${props.res_name}-${props.res_type}-notes`}
+                            mStateRef={props.metadataRef}
+                            res_name={props.res_name}
+                            res_type={props.res_type}
+                            readOnly={props.readOnly}
+                            handleChange={handleNotesChange}
+                            show_markdown_initial={true}
+                            handleBlur={null}
+                />
+                <MetadataNotesButtons/>
+            </FormGroup>
+            </ErrorBoundary>
+            <ErrorBoundary custom_message="Error in bottom stuff">
+            <Switch label="Couple save_attrs and exports"
+                    className="ml-2 mb-0 mt-1"
+                    size="medium"
+                    checked={props.metadataRef.current.couple_save_attrs_and_exports}
+                    onChange={handleCoupleChange}/>
+            <FormGroup label="Created: " className="metadata-form_group" inline={true}>
+                <span className="bp5-ui-text metadata-field">{props.metadataRef.current.created}</span>
+            </FormGroup>
+            <FormGroup label="Updated: " className="metadata-form_group" inline={true}>
+                <span className="bp5-ui-text metadata-field">{props.metadataRef.current.updated}</span>
+            </FormGroup>
+            </ErrorBoundary>
+        </div>
+    )
 }
 
 MetadataModule = memo(MetadataModule);
@@ -129,16 +327,25 @@ MetadataModule = memo(MetadataModule);
 function ExportModuleForm(props) {
     props = {
         exportItem: null,
-        dispatch: ()=>{},
+        dispatch: () => {
+        },
         ...props
     }
 
     function handleNameChange(event) {
-        props.dispatch({type: "update_item", new_item: {name: event.target.value}, identifier: props.exportItem.identifier});
+        props.dispatch({
+            type: "update_item",
+            new_item: {name: event.target.value},
+            identifier: props.exportItem.identifier
+        });
     }
 
     function handleTagChange(event) {
-        props.dispatch({type: "update_item", new_item: {tags: event.target.value}, identifier: props.optionItem.identifier});
+        props.dispatch({
+            type: "update_item",
+            new_item: {tags: event.target.value},
+            identifier: props.optionItem.identifier
+        });
     }
 
     return (
@@ -189,38 +396,63 @@ const standard_method_icons = {
 function OptionModuleForm(props) {
     props = {
         optionItem: null,
-        dispatch: () => {},
+        dispatch: () => {
+        },
         ...props
     }
 
     function handleNameChange(event) {
-        props.dispatch({type: "update_item", new_item: {name: event.target.value}, identifier: props.optionItem.identifier});
+        props.dispatch({
+            type: "update_item",
+            new_item: {name: event.target.value},
+            identifier: props.optionItem.identifier
+        });
     }
 
     function handleDisplayTextChange(event) {
-        props.dispatch({type: "update_item", new_item: {display_text: event.target.value}, identifier: props.optionItem.identifier});
+        props.dispatch({
+            type: "update_item",
+            new_item: {display_text: event.target.value},
+            identifier: props.optionItem.identifier
+        });
     }
 
     function handleDefaultChange(event) {
         let val = props.form_state.type == "boolean" ? event.target.checked : event.target.value;
         let fixed_val = correctType(props.optionItem.type, val);
         if (fixed_val == "__ERROR__") {
-            props.dispatch({type: "update_item", new_item: {default_warning_text: "Invalid value"}, identifier: props.optionItem.identifier});
+            props.dispatch({
+                type: "update_item",
+                new_item: {default_warning_text: "Invalid value"},
+                identifier: props.optionItem.identifier
+            });
         } else {
             props.dispatch({type: "update_item", new_item: {default: val}, identifier: props.optionItem.identifier});
         }
     }
 
     function handleTagChange(event) {
-        props.dispatch({type: "update_item", new_item: {tags: event.target.value}, identifier: props.optionItem.identifier});
+        props.dispatch({
+            type: "update_item",
+            new_item: {tags: event.target.value},
+            identifier: props.optionItem.identifier
+        });
     }
 
     function handleSpecialListChange(event) {
-        props.dispatch({type: "update_item", new_item: {special_list: textRowsToArray(event.target.value)}, identifier: props.optionItem.identifier});
+        props.dispatch({
+            type: "update_item",
+            new_item: {special_list: textRowsToArray(event.target.value)},
+            identifier: props.optionItem.identifier
+        });
     }
 
     function handlePoolTypeChange(event) {
-        props.dispatch({type: "update_item", new_item: {pool_select_type: event.currentTarget.value}, identifier: props.optionItem.identifier});
+        props.dispatch({
+            type: "update_item",
+            new_item: {pool_select_type: event.currentTarget.value},
+            identifier: props.optionItem.identifier
+        });
     }
 
     function handleTypeChange(event) {
@@ -289,27 +521,97 @@ function SignatureHeader(props) {
         },
         handleArgChange: () => {
         },
-        allowNameChange: true,
-        allowArgChange: true,
+        allowSignatureChange: false,
         ...props
     }
+
+    const lastNameRef = useRef(props.name);
+    const lastArgStringRef = useRef(props.argString);
+
+    function getEditableRanges(lineText) {
+        const match = lineText.match(/^def\s+(\w+)\s*\(([^)]*)\):/);
+        if (!match) return [];
+
+        const [, funcName, argsStr] = match;
+
+        // Find function name range
+        const funcNameStart = lineText.indexOf(funcName);
+        const funcNameEnd = funcNameStart + funcName.length;
+
+        // Compute where the argument list starts and ends
+        const openParenIndex = lineText.indexOf("(");
+        const closeParenIndex = lineText.indexOf(")", openParenIndex);
+        if (openParenIndex === -1 || closeParenIndex === -1) return [];
+
+        // Determine start of editable args: after 'self,' or after '(' if no 'self'
+        let editableStart = openParenIndex + 1;
+
+        const selfMatch = argsStr.match(/^\s*self\s*(,)?/);
+        if (selfMatch) {
+            // Skip past 'self' and optional comma
+            editableStart = lineText.indexOf("self") + "self".length;
+            if (selfMatch[1]) {
+                editableStart = lineText.indexOf(",", editableStart) + 1;
+            }
+        }
+
+        // Trim leading whitespace
+        while (lineText[editableStart] === " " || lineText[editableStart] === ",") {
+            editableStart++;
+        }
+
+        return [
+            {from: funcNameStart, to: funcNameEnd},
+            {from: editableStart, to: closeParenIndex}
+        ];
+    }
+
+    function handleSignatureChange(new_signature) {
+        // Extract the function name and arguments from the new signature
+        let match = new_signature.match(/^def\s+(\w+)\s*\(([^)]*)\):/);
+        let funcName;
+        let argsStr;
+        if (!match) {
+            match = new_signature.match(/^def\s+\s*\(([^)]*)\):/);
+            if (!match) {
+                funcName = lastNameRef.current;
+                argsStr = lastArgStringRef.current + "*";
+            } else {
+                [, argsStr] = match;
+                funcName = "method";
+            }
+        } else {
+            [, funcName, argsStr] = match;
+        }
+
+        // remove "self," from the argsStr if it exists
+        const selfMatch = argsStr.match(/^\s*self\s*(,)?/);
+        if (selfMatch) {
+            // Remove 'self' and optional comma
+            argsStr = argsStr.replace(/^\s*self\s*(,)?/, "").trim();
+            if (argsStr.startsWith(",")) {
+                argsStr = argsStr.slice(1).trim(); // Remove leading comma if present
+            }
+        }
+
+        // Update the name and argString props
+        lastNameRef.current = funcName;
+        lastArgStringRef.current = argsStr;
+        props.handleNameChange(funcName);
+        props.handleArgChange(argsStr);
+    }
+
     return (
-        <div className="d-flex flex-row" style={{marginTop: 5, marginBottom: 5, alignSelf: "self-end"}}>
-            <FormGroup label="Method Name" style={{fontSize: 12, marginBottom: 0}}>
-                <InputGroup type="text"
-                            size="medium"
-                            readOnly={!props.allowNameChange}
-                            onChange={(event) => props.handleNameChange(event.target.value)}
-                            value={props.name}/>
-            </FormGroup>
-            <FormGroup label="Arguments" style={{fontSize: 12, marginBottom: 0}}>
-                <InputGroup type="text"
-                            size="medium"
-                            width={300}
-                            readOnly={!props.allowArgChange}
-                            onChange={(event) => props.handleArgChange(event.target.value)}
-                            value={props.argString}/>
-            </FormGroup>
+        <div className="d-flex flex-row cm-signature" style={{justifyContent: "space-between"}}>
+            <ReactCodemirror6 readOnly={!props.allowSignatureChange}
+                              show_line_numbers={false}
+                              no_height={true}
+                              controlled={true}
+                              getEditableRanges={getEditableRanges}
+                              restrict_edits_to_range={props.allowSignatureChange}
+                              className="creator-code-header"
+                              handleChange={props.allowSignatureChange ? handleSignatureChange : null}
+                              code_content={`def ${props.name}(self, ${props.argString}):`}/>
         </div>
     )
 }
@@ -317,6 +619,7 @@ function SignatureHeader(props) {
 function CmElement(props) {
     props = {
         cmState: null,
+        code_content: "",
         cmDispatch: null,
         cmObjectRef: null,
         name: "",
@@ -335,6 +638,7 @@ function CmElement(props) {
         module_viewer_id: null,
         show_search: true,
         no_height: false,
+        allowSignatureChange: true,
         ...props
     };
 
@@ -378,23 +682,18 @@ function CmElement(props) {
         props.searchDispatch({type: "SET_SEARCH_MATCHES", payload: {"identifier": props.identifier, "num": num}});
     }
 
-    let header_left = (
-        <SignatureHeader name={props.name}
-                         argString={props.argString}
-                         allowNameChange={props.allowNameChange}
-                         allowArgChange={props.allowArgChange}
-                         handleNameChange={handleNameChange}
-                         handleArgChange={handleArgChange}
-        />
-    )
-
     return (
         <div>
+            <SignatureHeader name={props.name}
+                             argString={props.argString}
+                             allowSignatureChange={props.allowSignatureChange}
+                             handleNameChange={handleNameChange}
+                             handleArgChange={handleArgChange}/>
             <ReactCodemirror6 code_content={props.cmState.codeText}
+                              controlled={true}
                               no_height={props.no_height}
                               title_label={null}
-                              show_search={true}
-                              header_left={header_left}
+                              show_search={false}
                               mode={props.cmState.mode}
                               extraKeys={props.extraKeys()}
                               current_search_number={props.searchState.current_search_cm == props.identifier ?
@@ -439,9 +738,9 @@ function MakerNavigator(props) {
                         <SortableNavSection key={index} title={section.title} dispatch={section.dispatch}
                                             sub_items={section.sub_items} icon={section.icon}
                                             icon_dict={section.icon_dict} icon_field={section.icon_field}/> :
-                    <NavSection key={index} title={section.title} dispatch={section.dispatch}
-                                sub_items={section.sub_items} icon={section.icon}
-                                icon_dict={section.icon_dict} icon_field={section.icon_field}/>
+                        <NavSection key={index} title={section.title} dispatch={section.dispatch}
+                                    sub_items={section.sub_items} icon={section.icon}
+                                    icon_dict={section.icon_dict} icon_field={section.icon_field}/>
                 ))}
             </div>
         </ErrorBoundary>
@@ -463,18 +762,21 @@ function NavSection(props) {
     return (
         <div style={{marginTop: SECTION_TOP_MARGIN}}>
             <ButtonGroup>
-                <Button variant="minimal" style={{paddingRight: 2}} icon={props.icon} size="medium" onClick={() => setIsOpen(!isOpen)}>
+                <Button variant="minimal" style={{paddingRight: 2}} icon={props.icon} size="medium"
+                        onClick={() => setIsOpen(!isOpen)}>
                     {props.title}
                 </Button>
                 {props.right_button != null && props.right_button}
             </ButtonGroup>
             <Collapse className="nav-section-class" isOpen={isOpen}>
                 {props.sub_items.map((item, index) => {
-                    let icon = props.icon_dict ? <Icon icon={props.icon_dict[item[props.icon_field]]} size={12}/> : null;
+                    let icon = props.icon_dict ?
+                        <Icon icon={props.icon_dict[item[props.icon_field]]} size={12}/> : null;
                     return (
                         <NavItem key={index} identifier={item.identifier} title={item.name} icon={icon}
                                  item_list={item.item_list}/>
-                    )})
+                    )
+                })
                 }
             </Collapse>
         </div>
@@ -489,7 +791,8 @@ function SortableNavSection(props) {
         right_button: null,
         icon_dict: null,
         icon_field: null,
-        dispatch: () => {},
+        dispatch: () => {
+        },
         ...props
     }
     const [isOpen, setIsOpen] = React.useState(props.start_open);
@@ -497,7 +800,7 @@ function SortableNavSection(props) {
     const sensors = useSensors(useSensor(PointerSensor, {activationConstraint: {distance: 5}}));
 
     const handleDragEnd = (event) => {
-        const { active, over } = event;
+        const {active, over} = event;
         if (!over || active.id === over.id) return;
 
         const oldIndex = props.sub_items.findIndex((i) => i.identifier === active.id);
@@ -521,10 +824,11 @@ function SortableNavSection(props) {
             argString: "",
             codeText: "",
             mode: "python", firstLineNumber: 1,
-            identifier: uid}
+            identifier: uid
+        }
         props.dispatch({type: "add_at_end", new_item: new_entry});
         mpContext.pushCallback(() => {
-            mpContext.setVisibleTab(uid);
+            mpContext.toggleVisibleTab(uid);
         });
     }
 
@@ -540,28 +844,31 @@ function SortableNavSection(props) {
     }, []);
     return (
         <ContextMenu content={contextMenu}>
-        <div style={{marginTop: SECTION_TOP_MARGIN}}>
-            <ButtonGroup>
-                <Button style={{paddingRight: 2}} variant="minimal" icon={props.icon} size="medium" onClick={() => setIsOpen(!isOpen)}>
-                    {props.title}
-                </Button>
-                <Button icon="plus"size="small" variant="minimal" onClick={createItem}/>
-            </ButtonGroup>
-            <Collapse className="nav-section-class" isOpen={isOpen}>
-                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                    <SortableContext items={props.sub_items.map((i) => i.identifier)}
-                                     strategy={verticalListSortingStrategy}>
-                        {props.sub_items.map((item, ) => {
-                            let icon = props.icon_dict ? <Icon icon={props.icon_dict[item[props.icon_field]]} size={12}/> : null;
-                            return (
-                                <SortableNavItem key={item.identifier} identifier={item.identifier} title={item.name}
-                                                 icon={icon} item_list={item.item_list} dispatch={props.dispatch}/>
-                            )
-                        })}
-                    </SortableContext>
-                </DndContext>
-            </Collapse>
-        </div>
+            <div style={{marginTop: SECTION_TOP_MARGIN}}>
+                <ButtonGroup>
+                    <Button style={{paddingRight: 2}} variant="minimal" icon={props.icon} size="medium"
+                            onClick={() => setIsOpen(!isOpen)}>
+                        {props.title}
+                    </Button>
+                    <Button icon="plus" size="small" variant="minimal" onClick={createItem}/>
+                </ButtonGroup>
+                <Collapse className="nav-section-class" isOpen={isOpen}>
+                    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                        <SortableContext items={props.sub_items.map((i) => i.identifier)}
+                                         strategy={verticalListSortingStrategy}>
+                            {props.sub_items.map((item,) => {
+                                let icon = props.icon_dict ?
+                                    <Icon icon={props.icon_dict[item[props.icon_field]]} size={12}/> : null;
+                                return (
+                                    <SortableNavItem key={item.identifier} identifier={item.identifier}
+                                                     title={item.name}
+                                                     icon={icon} item_list={item.item_list} dispatch={props.dispatch}/>
+                                )
+                            })}
+                        </SortableContext>
+                    </DndContext>
+                </Collapse>
+            </div>
         </ContextMenu>
     );
 }
@@ -584,7 +891,7 @@ function SortableNavItem({identifier, ...props}) {
         props.dispatch({type: "delete_item", identifier: identifier})
     }
 
-    const delete_icon = <Icon icon="delete" size={12} />;
+    const delete_icon = <Icon icon="delete" size={12}/>;
 
     const contextMenu = useMemo(() => {
         return (
@@ -603,7 +910,7 @@ function SortableNavItem({identifier, ...props}) {
                 <ButtonGroup>
                     <NavItem identifier={identifier} {...props} />
                     <Button icon={delete_icon} size="small" variant="minimal" className="show-on-hover"
-                          tabIndex={-1} onClick={_deleteMe}/>
+                            tabIndex={-1} onClick={_deleteMe}/>
                 </ButtonGroup>
             </div>
         </ContextMenu>
@@ -625,10 +932,12 @@ function NavItem(props) {
             <ControlGroup>
                 <Button style={{marginLeft: INDENT, paddingRight: 2}}
                         icon={props.icon}
-                        intent={mpContext.visibleTab == props.identifier ? "primary" : "none"}
+                        intent={mpContext.visibleTabList.includes(props.identifier) ? "primary" : "none"}
                         size="medium"
                         variant="minimal"
-                        onClick={()=>{mpContext.setVisibleTab(props.identifier)}}>
+                        onClick={() => {
+                            mpContext.toggleVisibleTab(props.identifier)
+                        }}>
                     {props.title}
                 </Button>
             </ControlGroup>

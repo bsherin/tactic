@@ -6,13 +6,13 @@ import React from "react";
 import {Fragment, useState, useEffect, useRef, memo, useMemo, useContext} from "react";
 import {createRoot} from 'react-dom/client';
 
-import {Button, ButtonGroup, Card} from "@blueprintjs/core";
+import {Button, ButtonGroup} from "@blueprintjs/core";
 import {useHotkeys} from "@blueprintjs/core";
 
 import {EditorView} from "@codemirror/view";
 import {EditorSelection} from "@codemirror/state";
 
-import {creator_props} from "./tile_creator_support";
+import {creator_props} from "./tile_maker_support";
 import {TacticMenubar} from "./menu_utilities"
 import {sendToRepository} from "./resource_viewer_react_app";
 import {HorizontalPanes} from "./resizing_layouts2";
@@ -30,10 +30,12 @@ import {DialogContext, withDialogs} from "./modal_react";
 import {ErrorDrawerContext} from "./error_drawer";
 import {SelectedPaneContext} from "./utilities_react";
 
-import {useSearch, MakerPaneContext, usePropertyList
-} from "./tile_maker_support";
-import {CmElement, MakerNavigator, OptionModuleForm, ExportModuleForm, MetadataModule, option_icons, standard_method_icons} from "./tile_maker_elements";
-import {ReactCodemirror6} from "./react-codemirror6";
+import {usePropertyList, makeUndoableDispatch} from "./property_list"
+import {useSearch} from "./search_reducer"
+import {MakerPaneContext} from "./tile_maker_support";
+import {CmElement, PaneElement, MakerNavigator, OptionModuleForm, ExportModuleForm, MetadataModule,
+    option_icons, standard_method_icons} from "./tile_maker_elements";
+import {useMetadata} from "./metadata_reducer";
 
 export {CreatorApp}
 
@@ -56,7 +58,7 @@ function CreatorApp(props) {
     const nav_ref = useRef(null);
     const search_ref = useRef(null);
 
-    const [visibleTab, setVisibleTab] = useState("metadata");
+    const [visibleTabList, setVisibleTabList] = useState(["metadata"]);
 
     const [searchState, searchDispatch, searchStateRef] = useSearch(props.is_mpl, props.is_d3);
 
@@ -66,11 +68,21 @@ function CreatorApp(props) {
 
     const [usable_width, usable_height, topX, topY] = useSize(top_ref, 0, "TileMaker");
 
-    const [, optionDispatch, option_list_ref] = usePropertyList(props.option_list);
-    const [, exportDispatch, export_list_ref] = usePropertyList(props.export_list);
-    const [, saveDispatch, save_list_ref] = usePropertyList(props.additional_save_attrs ? props.additional_save_attrs : []);
-    const [, standardDispatch, standardListRef] = usePropertyList(props.standard_methods_list);
-    const [, umDispatch, umListRef] = usePropertyList(props.user_methods_list);
+    const [, optionDispatchBase, option_list_ref] = usePropertyList(props.option_list);
+    const [, exportDispatchBase, export_list_ref] = usePropertyList(props.export_list);
+    const [, saveDispatchBase, save_list_ref] = usePropertyList(props.additional_save_attrs ? props.additional_save_attrs : []);
+    const [, standardDispatchBase, standardListRef] = usePropertyList(props.standard_methods_list);
+    const [, umDispatchBase, umListRef] = usePropertyList(props.user_methods_list);
+
+    const [metadata, metadataDispatch, metadataRef] = useMetadata(props.mdata);
+
+    const undoStackRef = useRef([]);
+
+    const optionDispatch = makeUndoableDispatch(optionDispatchBase, option_list_ref, "Options", undoStackRef);
+    const exportDispatch = makeUndoableDispatch(exportDispatchBase, export_list_ref, "Exports", undoStackRef);
+    const saveDispatch = makeUndoableDispatch(saveDispatchBase, save_list_ref, "Saves", undoStackRef);
+    const standardDispatch = makeUndoableDispatch(standardDispatchBase, standardListRef, "Standard", undoStackRef);
+    const umDispatch = makeUndoableDispatch(umDispatchBase, umListRef, "UserMethods", undoStackRef);
 
     const [, set_couple_save_attrs_and_exports, couple_save_attrs_and_exports_ref] = useStateAndRef(props.couple_save_attrs_and_exports);
 
@@ -107,6 +119,20 @@ function CreatorApp(props) {
                 label: "Save and Checkpoint",
                 onKeyDown: _saveAndCheckpoint
             },
+            {
+                combo: "Ctrl+Z",
+                global: false,
+                group: "Tile Creator",
+                label: "Undo",
+                onKeyDown: handleUndo
+            },
+            {
+                combo: "Cmd+Z",
+                global: false,
+                group: "Tile Creator",
+                label: "Undo",
+                onKeyDown: handleUndo
+            }
         ], [_saveMe, _saveAndLoadModule, _saveAndCheckpoint]
     );
     const {handleKeyDown, handleKeyUp} = useHotkeys(hotkeys);
@@ -125,10 +151,9 @@ function CreatorApp(props) {
             window.addEventListener("beforeunload", function (e) {
                 if (_dirty()) {
                     e.preventDefault();
-                    e.returnValue = ''
                 }
             });
-            document.title = resource_name;
+            document.title = String(resource_name);
         }
         _goToLineNumber();
         _update_saved_state();
@@ -156,7 +181,7 @@ function CreatorApp(props) {
         function _getOptionNames() {
             let onames = [];
             for (let entry of option_list_ref.current) {
-                onames.push(entry.name)
+                onames.push(entry["name"]);
             }
             return onames
         }
@@ -197,7 +222,8 @@ function CreatorApp(props) {
     }
 
     function menu_specs() {
-        let ms = {
+        return {
+            Edit: [{name_text: "Undo", icon_name: "undo", click_handler: handleUndo, key_bindings: ['Ctrl+Z', 'Cmd+Z']}],
             Save: [{name_text: "Save", icon_name: "saved", click_handler: _saveMe, key_bindings: ['Ctrl+S']},
                 {name_text: "Save As...", icon_name: "floppy-disk", click_handler: _saveModuleAs},
                 {
@@ -223,14 +249,15 @@ function CreatorApp(props) {
                     }
                 }
             ]
-        };
-
-        for (let menu in ms) {
-            for (let but of ms[menu]) {
-                but.click_handler = but.click_handler.bind(this)
-            }
         }
-        return ms
+    }
+
+    function handleUndo() {
+        const stack = undoStackRef.current;
+        if (stack.length > 0) {
+            const { dispatch, undoAction } = stack.pop();
+            dispatch(undoAction);
+        }
     }
 
     function _extraKeys() {
@@ -244,7 +271,6 @@ function CreatorApp(props) {
             'Cmd-f': () => {
                 search_ref.current.focus()
             }
-
         };
         let convertedKeys = convertExtraKeys(ekeys);
         let moreKeys = [
@@ -267,7 +293,18 @@ function CreatorApp(props) {
                 key: 'Cmd-Shift-g', run: () => {
                     _searchPrev();
                 }, preventDefault: true
+            },
+            {
+                key: 'Ctrl-z', run: () => {
+                    handleUndo();
+                }, preventDefault: true
+            },
+            {
+                key: 'Cmd-z', run: () => {
+                    handleUndo();
+                }, preventDefault: true
             }
+
         ];
         return [...convertedKeys, ...moreKeys]
     }
@@ -366,7 +403,7 @@ function CreatorApp(props) {
                 field_title: "New Module Name",
                 handleSubmit: CreateNewModule,
                 default_value: "NewModule",
-                existing_names: data.tile_names,
+                existing_names: data["tile_names"],
                 checkboxes: [],
                 handleCancel: doCancel,
                 handleClose: dialogFuncs.hideModal
@@ -548,50 +585,14 @@ function CreatorApp(props) {
     }
 
     function _handleTabSelect(newTabIdentifier) {
-        setVisibleTab(newTabIdentifier)
-    }
-
-    function _appendOptionText(appendToNotes) {
-        let res_string = "\n\noptions: \n\n";
-        for (let opt of option_list_ref.current) {
-            res_string += ` * \`${opt.name}\` (${opt.type}): \n`
+        let new_tab_list = [...visibleTabList];
+        if (!new_tab_list.includes(newTabIdentifier)) {
+            new_tab_list.push(newTabIdentifier);
         }
-        appendToNotes(res_string);
-    }
-
-    function _appendExportText(appendToNotes) {
-        let res_string = "\n\nexports: \n\n";
-        for (let exp of export_list_ref.current) {
-            res_string += ` * \`${exp.name}\` : \n`
+        else {
+            new_tab_list = new_tab_list.filter(tab => tab !== newTabIdentifier);
         }
-        appendToNotes(res_string);
-    }
-
-    function MetadataNotesButtons(props) {
-        return (
-            <ButtonGroup>
-                <Button style={{height: "fit-content", alignSelf: "start", marginTop: 10, fontSize: 12}}
-                        text="Add Options"
-                        size="small"
-                        variant="minimal"
-                        intent="primary"
-                        icon="select"
-                        onClick={e => {
-                            e.preventDefault();
-                            _appendOptionText(props.appendToNotes)
-                        }}/>
-                <Button style={{height: "fit-content", alignSelf: "start", marginTop: 10, fontSize: 12}}
-                        text="Add Exports"
-                        size="small"
-                        variant="minimal"
-                        intent="primary"
-                        icon="export"
-                        onClick={e => {
-                            e.preventDefault();
-                            _appendExportText(props.appendToNotes)
-                        }}/>
-            </ButtonGroup>
-        )
+        setVisibleTabList(new_tab_list)
     }
 
     function _setResourceNameState(new_name, callback = null) {
@@ -619,18 +620,16 @@ function CreatorApp(props) {
 
     let codeElemDict = {};
         for (let st of standardListRef.current) {
-            codeElemDict[st.identifier] = () => {
+            codeElemDict[st["identifier"]] = () => {
                 return (
                     <CmElement cmState={st}
                                no_height={true}
-                               showSignatureHeader={true}
-                               allowNameChange={true}
-                               allowArgChange={true}
-                               argString={st.argString}
+                               allowSignatureChange={false}
+                               argString={st["argString"]}
                                cmDispatch={standardDispatch}
                                cmObjectRef={null}
-                               name={st.name}
-                               identifier={st.identifier}
+                               name={st["name"]}
+                               identifier={st["identifier"]}
                                extraKeys={_extraKeys}
                                saveAndCheckpoint={_saveAndCheckpoint}
                                searchState={searchState}
@@ -639,7 +638,7 @@ function CreatorApp(props) {
                                handleTabSelect={_handleTabSelect}
                                pushCallback={pushCallback}
                                tsocket={props.tsocket}
-                               extraSelfCompletions={st.mode == "python" ? extraSelfCompletionsRef.current : []}
+                               extraSelfCompletions={st["mode"] == "python" ? extraSelfCompletionsRef.current : []}
                                module_viewer_id={props.module_viewer_id}
                                show_search={false}/>
                 )
@@ -647,18 +646,17 @@ function CreatorApp(props) {
     }
 
     for (let um of umListRef.current) {
-        codeElemDict[um.identifier] = () => {
+        codeElemDict[um["identifier"]] = () => {
             return (
                 <CmElement cmState={um}
                            showSignatureHeader={true}
-                           allowNameChange={true}
-                            allowArgChange={true}
-                           argString={um.argString}
+                           allowSignatureChange={true}
+                           argString={um["argString"]}
                            cmDispatch={umDispatch}
                            cmObjectRef={null}
-                           name={um.name}
+                           name={um["name"]}
                            no_height={true}
-                           identifier={um.identifier}
+                           identifier={um["identifier"]}
                            extraKeys={_extraKeys}
                            saveAndCheckpoint={_saveAndCheckpoint}
                            searchState={searchState}
@@ -676,7 +674,7 @@ function CreatorApp(props) {
 
     let optionElemDict = {};
     for (let opt of option_list_ref.current) {
-        optionElemDict[opt.identifier] = () => {
+        optionElemDict[opt["identifier"]] = () => {
             return (
                 <OptionModuleForm optionItem={opt}
                                   dispatch={optionDispatch}/>
@@ -686,7 +684,7 @@ function CreatorApp(props) {
 
     let exportElemDict = {};
     for (let exp of export_list_ref.current) {
-        exportElemDict[exp.identifier] = () => {
+        exportElemDict[exp["identifier"]] = () => {
             return (
                 <ExportModuleForm exportItem={exp}
                                   dispatch={exportDispatch}/>
@@ -697,7 +695,7 @@ function CreatorApp(props) {
     let saveElemDict = {};
     if (!couple_save_attrs_and_exports_ref.current) {
         for (let exp of save_list_ref.current) {
-            saveElemDict[exp.identifier] = () => {
+            saveElemDict[exp["identifier"]] = () => {
                 return (
                     <ExportModuleForm exportItem={exp}
                                       dispatch={saveDispatch}/>
@@ -746,69 +744,81 @@ function CreatorApp(props) {
         </Fragment>
     );
     let mdata_panel = (
-        <MetadataModule expandWidth={false}
-                        alt_category={props.category}
-                        notes_buttons={MetadataNotesButtons}
-                        tsocket={props.tsocket}
-                        readOnly={props.readOnly}
-                        res_name={_cProp("resource_name")}
+        <MetadataModule res_name={_cProp("resource_name")}
                         res_type="tile"
-                        couple_save_attrs_and_exports={couple_save_attrs_and_exports_ref.current}
-                        set_couple_save_attrs_and_exports={set_couple_save_attrs_and_exports}
+                        metadataRef={metadataRef}
+                        mdata={metadataRef.current}
+                        metadataDispatch={metadataDispatch}
+                        option_list_ref={option_list_ref}
+                        export_list_ref={export_list_ref}
         />
     );
 
-    let right_pane;
-    if (["metadata"].includes(visibleTab)) {
-        right_pane = (
-            <div id="creator-resources" className="d-block">
-                {visibleTab === "metadata" && mdata_panel}
-            </div>
+    let right_pane_list = [];
+
+    if (visibleTabList.includes("metadata")) {
+        right_pane_list.push(
+            <PaneElement identifier="metadata" key="metadata">
+                {mdata_panel}
+            </PaneElement>
         )
     }
-    else if (Object.keys(optionElemDict).includes(visibleTab)) {
-        right_pane = (
-            <div id="creator-resources" className="d-block" key={visibleTab}>
-                {optionElemDict[visibleTab]?.()}
-            </div>
-        )
-    }
-    else if (Object.keys(exportElemDict).includes(visibleTab)) {
-        const item = getListItemFromidentifier(visibleTab, export_list_ref.current);
-        right_pane = (
-            <Card key={visibleTab}>
-                <h5>Export: <b>{item.name}</b></h5>
-                {exportElemDict[visibleTab]?.()}
-            </Card>
-        )
-    }
-     else if (Object.keys(saveElemDict).includes(visibleTab)) {
-         const item = getListItemFromidentifier(visibleTab, save_list_ref.current)
-        right_pane = (
-            <Card key={visibleTab}>
-                <h5>Save Attribute: <b>{item.name}</b></h5>
-                {saveElemDict[visibleTab]?.()}
-            </Card>
-        )
-    }
-    else {
-        let item = getListItemFromidentifier(visibleTab, standardListRef.current)
-        if (!item) {
-            item = getListItemFromidentifier(visibleTab, umListRef.current)
+    for (let key of Object.keys(optionElemDict)) {
+        if (visibleTabList.includes(key)) {
+            right_pane_list.push(
+                <PaneElement identifier={key} key={key} allowDelete={true} dispatch={optionDispatch}>
+                    {optionElemDict[key]?.()}
+                </PaneElement>
+            )
         }
-        right_pane = (
-            <Card key={visibleTab} elevation={2}>
-                <ReactCodemirror6 readOnly={true}
-                                  show_line_numbers={false}
-                                  no_height={true}
-                                  controlled={true}
-                                  className="creator-code-header"
-                                  code_content={`def ${item.name}(self, ${item.argString}):`}/>
-                {codeElemDict[visibleTab]?.()}
-        </Card>
-        )
+    }
+    for (let key of Object.keys(exportElemDict)) {
+        if (visibleTabList.includes(key)) {
+            const item = getListItemFromidentifier(key, export_list_ref.current);
+            right_pane_list.push(
+            <PaneElement identifier={key} key={key} allowDelete={true} dispatch={exportDispatch}>
+                <h5>Export: <b>{item.name}</b></h5>
+                {exportElemDict[key]?.()}
+            </PaneElement>
+            )
+        }
+    }
+    for (let key of Object.keys(saveElemDict)) {
+        if (visibleTabList.includes(key)) {
+            const item = getListItemFromidentifier(key, save_list_ref.current);
+            right_pane_list.push(
+                <PaneElement key={key} identifier={key} allowDelete={true} dispatch={saveDispatch}>
+                    <h5>Save Attribute: <b>{item.name}</b></h5>
+                    {saveElemDict[key]?.()}
+                </PaneElement>
+            )
+        }
 
     }
+    for (let item of standardListRef.current) {
+        if (visibleTabList.includes(item["identifier"])) {
+            right_pane_list.push(
+                <PaneElement key={item["identifier"]} identifier={item["identifier"]}>
+                    {codeElemDict[item["identifier"]]?.()}
+                </PaneElement>
+            )
+        }
+    }
+    for (let item of umListRef.current) {
+        if (visibleTabList.includes(item["identifier"])) {
+            right_pane_list.push(
+                <PaneElement key={item["identifier"]} identifier={item["identifier"]}  allowDelete={true} dispatch={umDispatch}>
+                    {codeElemDict[item["identifier"]]?.()}
+                </PaneElement>
+            )
+        }
+    }
+
+    let right_pane = (
+        <div style={{overflow: "auto", height: "100%"}}>
+            {right_pane_list}
+        </div>
+    )
 
     let outer_style = {
         width: "100%",
@@ -852,8 +862,9 @@ function CreatorApp(props) {
             <ErrorBoundary custom_message="Error outside context provider">
 
                 <MakerPaneContext.Provider value={{
-                    visibleTab: visibleTab,
-                    setVisibleTab: setVisibleTab,
+                    visibleTabList: visibleTabList,
+                    setVisibleTabList: setVisibleTabList,
+                    toggleVisibleTab: _handleTabSelect,
                     pushCallback: pushCallback
                 }}>
                     <div className={outer_class} ref={top_ref} style={outer_style}
