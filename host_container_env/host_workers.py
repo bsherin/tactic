@@ -125,6 +125,13 @@ class HostWorker(QWorker):
         return
 
     @task_worthy
+    def get_handler_methods(self, data):
+        print("*** in get_handler_methods ***")
+        from tactic_app import handler_methods
+        print(str(handler_methods))
+        return {"success": True, "handler_methods": handler_methods}
+
+    @task_worthy
     def compress_pool_resource(self, data):
         try:
             full_path = data["full_path"]

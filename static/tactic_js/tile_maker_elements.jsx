@@ -1,3 +1,5 @@
+// noinspection JSValidateTypes
+
 import React, {memo, useContext, useEffect, useMemo, useRef, useState} from "react";
 import {Fragment} from "react";
 import {
@@ -28,6 +30,7 @@ import {CSS} from '@dnd-kit/utilities';
 
 import {ErrorBoundary} from "./error_boundary";
 
+import {BpSelectAdvanced} from "./blueprint_mdata_fields";
 import {ReactCodemirror6} from "./react-codemirror6";
 import {guid, isInt} from "./utilities_react"
 import {MakerPaneContext} from "./tile_maker_support";
@@ -39,9 +42,10 @@ import {DragHandle} from "./resizing_layouts2";
 
 export {
     CmElement, PaneElement, MakerNavigator, OptionModuleForm, ExportModuleForm,
-    MetadataModule, option_icons, standard_method_icons
+    MetadataModule, option_icons, standard_method_icons, INITIAL_CODE_PANE_HEIGHT
 }
 
+const INITIAL_CODE_PANE_HEIGHT = 330
 const INDENT = 25;
 const SECTION_TOP_MARGIN = 15;
 
@@ -111,64 +115,6 @@ function correctType(type, val, error_flag = "__ERROR__") {
 
 let draghandle_position_dict = {position: "absolute", bottom: 2, right: 1};
 
-function PaneHeader(props) {
-    props = {
-        identifier: null,
-        titleElem: null,
-        dispatch: () => {
-        },
-        allowDelete: false,
-        ...props
-    }
-
-    const mpContext = useContext(MakerPaneContext);
-
-    function _deleteMe() {
-        props.dispatch({type: "delete_item", identifier: props.identifier})
-    }
-
-    return (
-        <div style={{display: "flex", flexDirection: "row", justifyContent: "space-between",
-            marginBottom: 10, alignItems: "anchor-center"}}>
-            <div style={{display: "flex", flexDirection: "row", justifyContent: "flex-start"}}>
-                <Button variant="minimal" size="small" icon="cross"
-                        style={{padding: 0, position: "absolute", left: 5, top: 5, zIndex: 100}}
-                        onClick={() => {
-                            mpContext.toggleVisibleTab(props.identifier)
-                        }}/>
-                {props.titleElem}
-            </div>
-            {props.allowDelete &&
-                <Button variant="minimal" intent="danger" size="small" icon="trash"
-                        style={{padding: 0, position: "absolute", left: 5, right: 5, zIndex: 100}}
-                        onClick={_deleteMe}/>
-            }
-        </div>
-    )
-}
-
-function SimplePaneTitlOlde(props) {
-    props = {
-        title: "",
-        subTitle: null,
-        ...props
-    }
-
-    if (!props.subTitle)
-        return (
-            <Fragment>
-                <div style={{fontSize: 16, margin: 10}}><b>{props.title}</b></div>
-            </Fragment>
-        )
-    else {
-        return (
-            <Fragment>
-                <div style={{fontSize: 16, margin: 10}}><b>{props.title}</b>: {props.subTitle}</div>
-            </Fragment>
-        )
-    }
-}
-
 function SimplePaneTitle(props) {
     props = {
         title: "",
@@ -199,7 +145,7 @@ function PaneElement(props) {
     }
     const top_ref = useRef(null);
 
-    const [usable_width, usable_height, topX, topY] = useSize(top_ref, 0);
+    const [usable_width, , topX, topY] = useSize(top_ref, 0);
 
     const mpContext = useContext(MakerPaneContext);
 
@@ -208,7 +154,7 @@ function PaneElement(props) {
     const [dheight, set_dheight] = useState(0);
 
 
-    function _startResize(e, ui, startX, startY) {
+    function _startResize() {
         set_resizing(true);
         set_dwidth(0);
         set_dheight(0);
@@ -242,7 +188,8 @@ function PaneElement(props) {
     }
 
     return (
-        <Card ref={top_ref} key={props.identifier} elevation={2} style={{height: current_height, position: "relative"}}>
+        <Card ref={top_ref} key={props.identifier} elevation={2}
+              style={{height: current_height, position: "relative", marginBottom: 5}}>
             <Button variant="minimal" size="small" icon="cross"
                         style={{padding: 0, position: "absolute", left: 10, top: 10, zIndex: 100}}
                         onClick={() => {
@@ -834,7 +781,7 @@ function CmElement(props) {
                                   updateSearchState={updateSearchState}
                                   alt_clear_selections={props.clearAllSelections}
                                   first_line_number={props.cmState.firstLineNumber}
-                                  readOnly={props.read_only}
+                                  readOnly={false}
                                   regex_search={props.searchState.use_regex}
                                   search_ref={props.search_ref}
                                   searchPrev={searchPrev}
@@ -867,6 +814,8 @@ function MakerNavigator(props) {
                     section.editable ?
                         <SortableNavSection key={section.title} title={section.title} dispatch={section.dispatch}
                                             sub_items={section.sub_items} icon={section.icon}
+                                            createFromList={section.createFromList ? section.createFromList : false}
+                                            choiceDict={section.choiceDict ? section.choiceDict : null}
                                             icon_dict={section.icon_dict} icon_field={section.icon_field}/> :
                         <NavSection key={section.title} title={section.title} dispatch={section.dispatch}
                                     sub_items={section.sub_items} icon={section.icon}
@@ -876,6 +825,7 @@ function MakerNavigator(props) {
         </ErrorBoundary>
     )
 }
+
 
 function NavSection(props) {
     props = {
@@ -889,6 +839,7 @@ function NavSection(props) {
     }
     const [isOpen, setIsOpen] = React.useState(props.start_open);
 
+    // noinspection JSValidateTypes
     return (
         <div style={{marginTop: SECTION_TOP_MARGIN}}>
             <ButtonGroup>
@@ -899,7 +850,7 @@ function NavSection(props) {
                 {props.right_button != null && props.right_button}
             </ButtonGroup>
             <Collapse className="nav-section-class" isOpen={isOpen}>
-                {props.sub_items.map((item, index) => {
+                {props.sub_items.map((item, ) => {
                     let icon = props.icon_dict ?
                         <Icon icon={props.icon_dict[item[props.icon_field]]} size={12}/> : null;
                     return (
@@ -921,6 +872,10 @@ function SortableNavSection(props) {
         right_button: null,
         icon_dict: null,
         icon_field: null,
+        createFromList: false,
+        choiceDict: null,
+        selectedChoice: null,
+        setSelectedChoice: null,
         dispatch: () => {
         },
         ...props
@@ -954,7 +909,8 @@ function SortableNavSection(props) {
             argString: "",
             codeText: "",
             mode: "python", firstLineNumber: 1,
-            identifier: uid
+            identifier: uid,
+            pane_height: INITIAL_CODE_PANE_HEIGHT
         }
         props.dispatch({type: "add_at_end", new_item: new_entry});
         mpContext.pushCallback(() => {
@@ -974,14 +930,28 @@ function SortableNavSection(props) {
     }, []);
     return (
         <ContextMenu content={contextMenu}>
-            <div style={{marginTop: SECTION_TOP_MARGIN}}>
-                <ButtonGroup>
-                    <Button style={{paddingRight: 2, fontSize:13, fontWeight: 600}} variant="minimal" icon={props.icon} size="medium"
+            <div style={{marginTop: SECTION_TOP_MARGIN}} className="sortable-nav-section">
+                { props.createFromList &&
+                    <ControlGroup vertical={true} style={{alignItems: "self-start"}}>
+                        <Button style={{paddingRight: 2, fontSize:13, fontWeight: 600}} variant="minimal" icon={props.icon} size="medium"
                             onClick={() => setIsOpen(!isOpen)}>
                         {props.title}
-                    </Button>
-                    <Button icon="plus" size="small" variant="minimal" onClick={createItem}/>
-                </ButtonGroup>
+                        </Button>
+                        {isOpen &&
+                            <HandlerCreator choiceDict={props.choiceDict} dispatch={props.dispatch}/>
+                        }
+                    </ControlGroup>
+                }
+                {!props.createFromList &&
+                    <ButtonGroup>
+                        <Button style={{paddingRight: 2, fontSize:13, fontWeight: 600}} variant="minimal" icon={props.icon} size="medium"
+                                onClick={() => setIsOpen(!isOpen)}>
+                            {props.title}
+                        </Button>
+                        <Button icon="plus" size="small" variant="minimal" onClick={createItem}/>
+                    </ButtonGroup>
+                }
+
                 <Collapse className="nav-section-class" isOpen={isOpen}>
                     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                         <SortableContext items={props.sub_items.map((i) => i.identifier)}
@@ -1002,6 +972,57 @@ function SortableNavSection(props) {
         </ContextMenu>
     );
 }
+
+function HandlerCreator(props) {
+    props = {
+        choiceDict: null,
+        dispatch: null,
+        ...props
+    }
+
+    const [selectedChoice, setSelectedChoice] = useState({
+        text: Object.keys(props.choiceDict)[0],
+        value: Object.keys(props.choiceDict)[0],
+        isgroup: false
+    });
+
+    const mpContext = useContext(MakerPaneContext);
+
+    const fullChoiceList = useMemo(() => {
+        return Object.keys(props.choiceDict).map(choice => ({
+            text: choice,
+            value: choice,
+            isgroup: false
+        }));
+    })
+
+    function createItemFromChoiceDict() {
+        const uid = guid();
+        const new_entry = {
+            name: selectedChoice.value,
+            argString: props.choiceDict[selectedChoice.value],
+            codeText: "",
+            mode: "python", firstLineNumber: 1,
+            identifier: uid,
+            pane_height: INITIAL_CODE_PANE_HEIGHT
+        }
+        props.dispatch({type: "add_at_end", new_item: new_entry});
+            mpContext.pushCallback(() => {
+            mpContext.toggleVisibleTab(uid);
+        });
+    }
+
+    return (
+            <InputGroup
+                size="small"
+                leftElement={<BpSelectAdvanced options={fullChoiceList}
+                                                       value={selectedChoice}
+                                                       onChange={setSelectedChoice}/>}
+                rightElement={<Button icon="plus" size="small" variant="minimal" onClick={createItemFromChoiceDict}/>}
+                />
+    )
+}
+
 
 function SortableNavItem({identifier, ...props}) {
     const {
@@ -1072,17 +1093,5 @@ function NavItem(props) {
                 </Button>
             </ControlGroup>
         </Fragment>
-    );
-}
-
-function NavListItem(props) {
-    props = {
-        title: "",
-        ...props
-    }
-    return (
-        <Button style={{marginLeft: INDENT * 2, fontSize: 13}} size="small" variant="minimal" onClick={props.onClick}>
-            {props.title}
-        </Button>
     );
 }

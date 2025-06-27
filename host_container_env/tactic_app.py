@@ -19,7 +19,7 @@ import docker_functions as docker_functions
 from mongo_db_fs import get_dbs
 import communication_utils
 from communication_utils import send_request_to_container
-# from integrated_docs import api_array
+from integrated_docs import handler_methods
 from docker_functions import db_name, mongo_uri
 from rabbit_manage import sleep_until_rabbit_alive
 import exception_mixin as exception_mixin

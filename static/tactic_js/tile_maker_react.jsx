@@ -23,7 +23,7 @@ import {withErrorDrawer} from "./error_drawer";
 import {renderSpinnerMessage, convertExtraKeys} from "./utilities_react"
 import {TacticNavbar} from "./blueprint_navbar";
 import {ErrorBoundary} from "./error_boundary";
-import {useCallbackStack, useStateAndRef, useConnection} from "./utilities_react";
+import {useCallbackStack, useConnection} from "./utilities_react";
 import {SettingsContext, withSettings} from "./settings";
 import {DialogContext, withDialogs} from "./modal_react";
 import {ErrorDrawerContext} from "./error_drawer";
@@ -33,7 +33,7 @@ import {usePropertyList, makeUndoableDispatch} from "./property_list"
 import {useSearch} from "./search_reducer"
 import {MakerPaneContext} from "./tile_maker_support";
 import {CmElement, PaneElement, MakerNavigator, OptionModuleForm, ExportModuleForm, MetadataModule,
-    option_icons, standard_method_icons} from "./tile_maker_elements";
+    option_icons, standard_method_icons, INITIAL_CODE_PANE_HEIGHT} from "./tile_maker_elements";
 import {useMetadata} from "./metadata_reducer";
 
 export {CreatorApp}
@@ -70,10 +70,11 @@ function CreatorApp(props) {
     const [, optionDispatchBase, option_list_ref] = usePropertyList(props.option_list, 141);
     const [, exportDispatchBase, export_list_ref] = usePropertyList(props.export_list, 141);
     const [, saveDispatchBase, save_list_ref] = usePropertyList(props.additional_save_attrs ? props.additional_save_attrs : [], 141);
-    const [, standardDispatchBase, standardListRef] = usePropertyList(props.standard_methods_list, 330);
-    const [, umDispatchBase, umListRef] = usePropertyList(props.user_methods_list, 330);
+    const [, standardDispatchBase, standardListRef] = usePropertyList(props.standard_methods_list, INITIAL_CODE_PANE_HEIGHT);
+    const [, umDispatchBase, umListRef] = usePropertyList(props.user_methods_list, INITIAL_CODE_PANE_HEIGHT);
+    const [, hmDispatchBase, hmListRef] = usePropertyList(props.used_handler_methods_list, INITIAL_CODE_PANE_HEIGHT);
 
-    const [metadata, metadataDispatch, metadataRef] = useMetadata(props.mdata);
+    const [, metadataDispatch, metadataRef] = useMetadata(props.mdata);
 
     const undoStackRef = useRef([]);
 
@@ -82,8 +83,7 @@ function CreatorApp(props) {
     const saveDispatch = makeUndoableDispatch(saveDispatchBase, save_list_ref, "Saves", undoStackRef);
     const standardDispatch = makeUndoableDispatch(standardDispatchBase, standardListRef, "Standard", undoStackRef);
     const umDispatch = makeUndoableDispatch(umDispatchBase, umListRef, "UserMethods", undoStackRef);
-
-    const [, set_couple_save_attrs_and_exports, couple_save_attrs_and_exports_ref] = useStateAndRef(props.couple_save_attrs_and_exports);
+    const hmDispatch = makeUndoableDispatch(hmDispatchBase, hmListRef, "HandlerMethods", undoStackRef);
 
     const extraSelfCompletionsRef = useRef([]);
 
@@ -154,6 +154,7 @@ function CreatorApp(props) {
             });
             document.title = String(resource_name);
         }
+
         _goToLineNumber();
         _update_saved_state();
         errorDrawerFuncs.setGoToLineNumber(_selectLineNumber);
@@ -222,7 +223,6 @@ function CreatorApp(props) {
 
     function menu_specs() {
         return {
-            Edit: [{name_text: "Undo", icon_name: "undo", click_handler: handleUndo, key_bindings: ['Ctrl+Z', 'Cmd+Z']}],
             Save: [{name_text: "Save", icon_name: "saved", click_handler: _saveMe, key_bindings: ['Ctrl+S']},
                 {name_text: "Save As...", icon_name: "floppy-disk", click_handler: _saveModuleAs},
                 {
@@ -231,6 +231,7 @@ function CreatorApp(props) {
                     click_handler: _saveAndCheckpoint,
                     key_bindings: ['Ctrl+M']
                 }],
+            Edit: [{name_text: "Undo", icon_name: "undo", click_handler: handleUndo, key_bindings: ['Ctrl+Z', 'Cmd+Z']}],
             Load: [{
                 name_text: "Save and Load",
                 icon_name: "upload",
@@ -471,15 +472,16 @@ function CreatorApp(props) {
     function _getSaveDict() {
         return {
             "module_name": _cProp("resource_name"),
+            "mdata": metadataRef.current,
             "exports": export_list_ref.current,
             "additional_save_attrs": save_list_ref.current,
-            "couple_save_attrs_and_exports": couple_save_attrs_and_exports_ref.current,
             "options": option_list_ref.current,
             "user_methods": umListRef.current,
+            "used_handler_methods": hmListRef.current,
             "standard_methods": standardListRef.current,
             "is_mpl": props.is_mpl,
             "is_d3": props.is_d3,
-            "last_saved": "maker"
+            "last_viewer": "creator"
         };
     }
 
@@ -672,7 +674,33 @@ function CreatorApp(props) {
             )
         }
     }
-
+    for (let hm of hmListRef.current) {
+        codeElemDict[hm["identifier"]] = () => {
+            return (
+                <CmElement cmState={hm}
+                           allowDelete={true}
+                           showSignatureHeader={true}
+                           allowSignatureChange={false}
+                           argString={hm["argString"]}
+                           cmDispatch={hmDispatch}
+                           cmObjectRef={null}
+                           name={hm["name"]}
+                           no_height={false}
+                           identifier={hm["identifier"]}
+                           extraKeys={_extraKeys}
+                           saveAndCheckpoint={_saveAndCheckpoint}
+                           searchState={searchState}
+                           searchDispatch={searchDispatch}
+                           search_ref={search_ref}
+                           handleTabSelect={_handleTabSelect}
+                           pushCallback={pushCallback}
+                           tsocket={props.tsocket}
+                           extraSelfCompletions={extraSelfCompletionsRef.current}
+                           module_viewer_id={props.module_viewer_id}
+                           show_search={false}/>
+            )
+        }
+    }
     let optionElemDict = {};
     for (let opt of option_list_ref.current) {
         optionElemDict[opt["identifier"]] = () => {
@@ -694,7 +722,7 @@ function CreatorApp(props) {
     }
 
     let saveElemDict = {};
-    if (!couple_save_attrs_and_exports_ref.current) {
+    if (!metadataRef.current.couple_save_attrs_and_exports) {
         for (let exp of save_list_ref.current) {
             saveElemDict[exp["identifier"]] = () => {
                 return (
@@ -725,11 +753,13 @@ function CreatorApp(props) {
         {title: "OPTIONS", visible: true, editable: true, icon: "select", icon_dict: option_icons, icon_field: "type",
             sub_items: option_list_ref.current, dispatch: optionDispatch},
         {title: "EXPORTS", visible: true,editable: true, icon: "select", sub_items: export_list_ref.current, dispatch: exportDispatch},
-        {title: "SAVE_ATTRS", visible: !couple_save_attrs_and_exports_ref.current,
+        {title: "SAVE_ATTRS", visible: !metadataRef.current.couple_save_attrs_and_exports,
             editable: true, icon: "select", sub_items: save_list_ref.current, dispatch: saveDispatch},
         {title: "STANDARD METHODS", visible: true, editable: false, icon: "code", icon_dict: standard_method_icons, icon_field: "name",
             sub_items: standardListRef.current, dispatch: standardDispatch},
-        {title: "USER METHODS", visible: true, editable: true, icon: "code", sub_items: umListRef.current, dispatch: umDispatch}
+        {title: "USER METHODS", visible: true, editable: true, icon: "code", sub_items: umListRef.current, dispatch: umDispatch},
+        {title: "HANDLER METHODS", visible: true, editable: true, icon: "code", sub_items: hmListRef.current,
+            createFromList: true, choiceDict: props.all_handler_methods, dispatch: hmDispatch},
     ]
 
     let left_pane = (
@@ -804,6 +834,17 @@ function CreatorApp(props) {
         if (visibleTabList.includes(item["identifier"])) {
             right_pane_list.push(
                 <PaneElement key={item["identifier"]} el={item} dispatch={standardDispatch} pane_height={item.pane_height}
+                             identifier={item["identifier"]} pushCallback={pushCallback}>
+                    {codeElemDict[item["identifier"]]?.()}
+                </PaneElement>
+            )
+        }
+    }
+    for (let item of hmListRef.current) {
+        if (visibleTabList.includes(item["identifier"])) {
+            right_pane_list.push(
+                <PaneElement key={item["identifier"]} el={item} dispatch={hmDispatch} pane_height={item.pane_height}
+                             allowDelete={true}
                              identifier={item["identifier"]} pushCallback={pushCallback}>
                     {codeElemDict[item["identifier"]]?.()}
                 </PaneElement>

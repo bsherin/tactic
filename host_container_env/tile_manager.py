@@ -215,6 +215,7 @@ class TileManager(LibraryResourceManager):
     def last_saved_view_in_context(self):
         module_name = request.json["resource_name"]
         tile_dict = current_user.get_tile_dict(module_name)
+
         if "last_saved" in tile_dict and tile_dict["last_saved"] == "creator":
             result = self.view_in_creator_in_context()
         else:
@@ -288,6 +289,7 @@ class TileManager(LibraryResourceManager):
         }
 
         return jsonify(data)
+
 
     def unload_all_tiles(self):
         try:

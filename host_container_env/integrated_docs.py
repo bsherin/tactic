@@ -36,6 +36,22 @@ def get_api_from_rst():
         newres.append([catname, mlist])
     return newres
 
+def get_handlers_from_rst():
+    url = 'https://raw.githubusercontent.com/bsherin/tacticdocs/main/docs/Handler-Methods.rst'
+    response = requests.get(url)
+    if response.status_code == 200:
+        txt = response.content.decode('utf-8')
+    else:
+        print(f"*** Failed to retrieve Handler_Methodss.rst. Status code: {response.status_code} ***")
+        return
+
+    # modify the next line so that it matches for the case where there is just (self) as well as self, args
+    hm_list = re.findall(r"py:method:: ([\s\S]*?)\(self(?:, (.*?))?\)", txt)
+    # hm_list = re.findall(r"py:method:: ([\s\S]*?)\(self, (.*?)\)", txt)
+    hm_dict = {}
+    for hm in hm_list:
+        hm_dict[hm[0]] = hm[1]
+    return hm_dict
 
 def get_object_api_from_rst():
     # f = open("./docs_for_integrated_docs/Object-Oriented-API.rst")
@@ -127,6 +143,7 @@ try:
     api_dict_by_category, ordered_api_categories = create_api_dict_by_category(api_array)
     api_dict_by_name = create_api_dict_by_name(api_dict_by_category)
     ordered_object_categories, object_api_dict_by_category = get_object_api_from_rst()
+    handler_methods = get_handlers_from_rst()
 except Exception as ex:
     print("unable to get api")
     print(get_traceback_message(ex))

@@ -121,9 +121,6 @@ def update_module():
         else:
             mdata = {}
         print("got mdata " + str(mdata))
-        for field in tile_mdata_fields:
-            if field in data_dict:
-                mdata[field] = data_dict[field]
 
         mdata["updated"] = datetime.datetime.utcnow()
         mdata["last_viewer"] = last_saved

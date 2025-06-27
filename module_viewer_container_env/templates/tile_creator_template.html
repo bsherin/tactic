@@ -35,6 +35,10 @@ class {{class_name}}({% if is_d3 %}D3Tile{% else %}TileBase{% if is_mpl %}, MplF
     def {{um.name}}(self{{ um.arg_string|safe }}):
 {{um.method_body|safe}}
     {% endfor -%}
+    {% for uh in used_handler_methods -%}
+    def {{uh.name}}(self{{ uh.arg_string|safe }}):
+{{uh.method_body|safe}}
+    {% endfor -%}
     {% for st in standard_methods -%}
     def {{st.name}}(self{{ st.arg_string|safe }}):
 {{st.method_body|safe}}

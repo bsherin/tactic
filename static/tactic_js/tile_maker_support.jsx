@@ -59,6 +59,7 @@ function creator_props(data, registerDirtyMethod, finalCallback) {
 
         tsocket.socket.off("remove-ready-block", readyListener);
         let parsed_data = data_object.the_content;
+        let all_handler_methods = data_object.all_handler_methods;
         let initial_line_number = !window.in_context && window.line_number ? window.line_number : null;
 
         finalCallback(
@@ -72,10 +73,12 @@ function creator_props(data, registerDirtyMethod, finalCallback) {
                 initial_line_number: initial_line_number,
                 standard_methods_list: parsed_data.standard_methods_list,
                 user_methods_list: parsed_data.user_methods_list,
+                used_handler_methods_list: parsed_data.used_handler_methods_list,
                 mdata: mdata,
                 option_list: correctOptionListTypes(parsed_data.option_dict),
                 export_list: parsed_data.export_list,
                 additional_save_attrs: parsed_data.additional_save_attrs,
+                all_handler_methods: all_handler_methods,
                 registerDirtyMethod: registerDirtyMethod,
             }
         );

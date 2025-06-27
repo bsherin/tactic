@@ -21,8 +21,9 @@ def insert_indents(the_str, number_indents):
 
 # noinspection PyTypeChecker
 class TileParser(object):
-    def __init__(self, module_code):
+    def __init__(self, module_code, handler_methods):
         self.module_code = module_code
+        self.handler_methods = handler_methods
         self.module_lines = self.module_code.splitlines()
         self.cnode = self.get_class_node()
         self.class_name = self.cnode.name
@@ -85,8 +86,17 @@ class TileParser(object):
     def get_user_methods_list(self):
         method_list = []
         for k, entry in self.extra_methods.items():
-            method_list.append({"name": k, "method_body": entry["method_body"], "arg_string": entry["arg_string"], "starting_line": self.get_starting_line(k)})
+            if k not in self.handler_methods:
+                method_list.append({"name": k, "method_body": entry["method_body"], "arg_string": entry["arg_string"], "starting_line": self.get_starting_line(k)})
         return method_list
+
+    def get_used_handler_methods_list(self):
+        used_handler_methods = []
+        for k, entry in self.extra_methods.items():
+            if k in self.handler_methods:
+                used_handler_methods.append({"name": k, "method_body": entry["method_body"],
+                                             "arg_string": self.handler_methods[k], "starting_line": self.get_starting_line(k)})
+        return used_handler_methods
 
     def get_options_dict(self):
         opt_code = self.methods["options"]["method_code"]

@@ -8,7 +8,7 @@ monkey.patch_all()
 import datetime
 import re
 # noinspection PyUnresolvedReferences
-from qworker import QWorker, task_worthy
+from qworker import QWorker, task_worthy, task_worthy_manual_submit
 from flask import render_template, Flask
 from tile_code_parser import TileParser, remove_indents, insert_indents
 import exception_mixin
@@ -54,8 +54,9 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin):
         data["message"] = message
         self.ask_host("emit_to_client", data)
 
-    @task_worthy
-    def initialize_parser(self, data_dict):
+    @task_worthy_manual_submit
+    def initialize_parser(self, data_dict, task_packet):
+        local_task_packet = task_packet
         print("in initialize_parser with data_dict " + str(data_dict))
         self.tstring = data_dict["version_string"]
         self.module_name = data_dict["module_name"]
@@ -74,10 +75,24 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin):
         module_code = tile_dict["tile_module"]
         print("got the tile_dict")
         self.user_id = os.environ.get("OWNER")
-        self.tp = TileParser(module_code)
-        self.tp.reparse(self.tp.rebuild_in_canonical_form())
+
+        def do_the_parse(handler_result):
+            print("in do_the_parse")
+            self.handler_methods = []
+            try:
+                self.handler_methods = handler_result["handler_methods"]
+            except Exception as nex:
+                print(self.extract_short_error_message(nex, "error getting handler methods"))
+            print("about to parse")
+            self.tp = TileParser(module_code, self.handler_methods)
+            self.tp.reparse(self.tp.rebuild_in_canonical_form())
+            result = {"success": True, "the_content": self.assemble_parse_information(),
+                      "all_handler_methods": self.handler_methods}
+            self.submit_response(local_task_packet, result)
+
+        self.ask_host("get_handler_methods", {"user_id": self.user_id, "main_id": self.my_id}, do_the_parse),
         print("about to return")
-        return {"success": True, "the_content": self.assemble_parse_information()}
+        return
 
     @task_worthy
     def hello(self, data_dict):
@@ -92,7 +107,7 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin):
     def build_code(self, data_dict):
         export_list = data_dict["exports"]
         additional_save_attrs = [sattr["name"] for sattr in data_dict["additional_save_attrs"]]
-        couple_save_attrs_and_exports = data_dict["couple_save_attrs_and_exports"]
+        couple_save_attrs_and_exports = data_dict["mdata"]["couple_save_attrs_and_exports"]
         export_list_of_dicts = [{"name": exp["name"], "tags": exp["tags"]} for exp in
                                 export_list]  # tactic_todo what does this accomplish?
         user_methods_list_of_dicts = []
@@ -101,7 +116,13 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin):
             if len(arg_string) > 0:
                 arg_string = ", " + arg_string
             user_methods_list_of_dicts.append({"name": m["name"],
-                                               "arg_string":arg_string,
+                                               "arg_string": arg_string,
+                                               "method_body": insert_indents(m["codeText"], 2)})
+        used_handler_methods_list_of_dicts = []
+        for m in data_dict["used_handler_methods"]:
+            arg_string = m["argString"]
+            used_handler_methods_list_of_dicts.append({"name": m["name"],
+                                               "arg_string": self.handler_methods[m["name"]],
                                                "method_body": insert_indents(m["codeText"], 2)})
 
         jscript_body = ""
@@ -145,6 +166,7 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin):
                                         jscript_code=jscript_body,
                                         globals_code=globals_code,
                                         user_methods=user_methods_list_of_dicts,
+                                        used_handler_methods=used_handler_methods_list_of_dicts,
                                         standard_methods=standard_methods_list_of_dicts,
                                         version_string=self.tstring)
         return full_code
@@ -178,18 +200,17 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin):
                 standard_methods_line_numbers.append({"draw_plot": draw_plot_line_number})
             user_methods_list = self.tp.get_user_methods_list()
             user_methods_line_numbers = {func["name"]: func["starting_line"] for func in user_methods_list}
+            used_handler_methods_list = self.tp.get_used_handler_methods_list()
+            used_handler_methods_line_numbers = {func["name"]: func["starting_line"] for func in used_handler_methods_list}
             doc = self.db[self.tile_collection_name].find_one({"tile_module_name": module_name})
             if doc and "metadata" in doc:
                 mdata = doc["metadata"]
             else:
                 mdata = {}
-            for field in self.optional_mdata_fields:
-                if field in data_dict:
-                    mdata[field] = data_dict[field]
+
+            mdata.update(data_dict["mdata"])
 
             mdata["updated"] = datetime.datetime.utcnow()
-            mdata["last_viewer"] = data_dict["last_saved"]
-            mdata["couple_save_attrs_and_exports"] = data_dict["couple_save_attrs_and_exports"]
             if data_dict["is_mpl"]:
                 mdata["type"] = "matplotlib"
             elif data_dict["is_d3"]:
@@ -204,6 +225,7 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin):
             return {"success": True, "message": "Module Successfully Saved",
                     "alert_type": "alert-success", "render_content_line_number": render_content_line_number,
                     "standard_methods_line_numbers": standard_methods_line_numbers,
+                    "used_handler_methods_line_numbers": used_handler_methods_line_numbers,
                     "user_methods_line_numbers": user_methods_line_numbers}
         except Exception as ex:
             return self.get_traceback_exception_dict(ex, "Error saving module")
@@ -260,10 +282,19 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin):
                               "mode": "python",
                               "firstLineNumber": func["starting_line"]} for func in user_methods_list]
 
+        used_handler_methods_list = self.tp.get_used_handler_methods_list()
+
+        used_handler_methods_list = [{"name": func["name"],
+                                      "codeText": remove_indents(func["method_body"], 2),
+                                      "argString": func["arg_string"],
+                                      "mode": "python",
+                                      "firstLineNumber": func["starting_line"]} for func in used_handler_methods_list]
+
         parsed_data = {"option_dict": self.tp.options, "export_list": self.tp.exports,
                        "additional_save_attrs": self.tp.additional_save_attrs,
                        "render_content_code": render_content_code,
                        "user_methods_list": user_methods_list,
+                       "used_handler_methods_list": used_handler_methods_list,
                        "standard_methods_list": standard_methods_list,
                        "category": self.tp.category,
                        "is_mpl": is_mpl,
