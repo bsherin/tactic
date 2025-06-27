@@ -3,16 +3,7 @@ import {useImmerReducer} from "use-immer";
 
 export {useMetadata}
 
-const initial_state = {
-    allTags: [],
-    tags: null,
-    created: null,
-    updated: null,
-    notes: null,
-    icon: null,
-    category: null,
-    additional_metadata: null
-};
+const INITIAL_PANE_HEIGHT = 400
 
 function metadataReducer(draft, action) {
     switch (action.type) {
@@ -43,9 +34,9 @@ function metadataReducer(draft, action) {
         case "set_couple":
             draft.couple_save_attrs_and_exports = action.value;
             break;
-        case "multi_update":
-            for (let field in action.value) {
-                draft[field] = action.value[field]
+        case "update_item":
+            for (let field in action.new_item) {
+                draft[field] = action.new_item[field]
             }
             break;
         default:
@@ -54,13 +45,12 @@ function metadataReducer(draft, action) {
 }
 
 function useMetadata(initial) {
-
+    if (!initial.hasOwnProperty("pane_height")) {
+        initial.pane_height = 424;
+    }
     const [metadata, metadataDispatch] = useImmerReducer(metadataReducer, initial);
     const metadataRef = useRef(metadata);
     metadataRef.current = metadata;
-    useEffect(() => {
-        metadataDispatch({type: "initialize", new_items: initial});
-    }, []);
 
     return [metadata, metadataDispatch, metadataRef]
 }

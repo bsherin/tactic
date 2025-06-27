@@ -6,7 +6,6 @@ import React from "react";
 import {Fragment, useState, useEffect, useRef, memo, useMemo, useContext} from "react";
 import {createRoot} from 'react-dom/client';
 
-import {Button, ButtonGroup} from "@blueprintjs/core";
 import {useHotkeys} from "@blueprintjs/core";
 
 import {EditorView} from "@codemirror/view";
@@ -68,11 +67,11 @@ function CreatorApp(props) {
 
     const [usable_width, usable_height, topX, topY] = useSize(top_ref, 0, "TileMaker");
 
-    const [, optionDispatchBase, option_list_ref] = usePropertyList(props.option_list);
-    const [, exportDispatchBase, export_list_ref] = usePropertyList(props.export_list);
-    const [, saveDispatchBase, save_list_ref] = usePropertyList(props.additional_save_attrs ? props.additional_save_attrs : []);
-    const [, standardDispatchBase, standardListRef] = usePropertyList(props.standard_methods_list);
-    const [, umDispatchBase, umListRef] = usePropertyList(props.user_methods_list);
+    const [, optionDispatchBase, option_list_ref] = usePropertyList(props.option_list, 141);
+    const [, exportDispatchBase, export_list_ref] = usePropertyList(props.export_list, 141);
+    const [, saveDispatchBase, save_list_ref] = usePropertyList(props.additional_save_attrs ? props.additional_save_attrs : [], 141);
+    const [, standardDispatchBase, standardListRef] = usePropertyList(props.standard_methods_list, 330);
+    const [, umDispatchBase, umListRef] = usePropertyList(props.user_methods_list, 330);
 
     const [metadata, metadataDispatch, metadataRef] = useMetadata(props.mdata);
 
@@ -623,8 +622,9 @@ function CreatorApp(props) {
             codeElemDict[st["identifier"]] = () => {
                 return (
                     <CmElement cmState={st}
-                               no_height={true}
+                               no_height={false}
                                allowSignatureChange={false}
+                               allowDelete={false}
                                argString={st["argString"]}
                                cmDispatch={standardDispatch}
                                cmObjectRef={null}
@@ -649,13 +649,14 @@ function CreatorApp(props) {
         codeElemDict[um["identifier"]] = () => {
             return (
                 <CmElement cmState={um}
+                           allowDelete={true}
                            showSignatureHeader={true}
                            allowSignatureChange={true}
                            argString={um["argString"]}
                            cmDispatch={umDispatch}
                            cmObjectRef={null}
                            name={um["name"]}
-                           no_height={true}
+                           no_height={false}
                            identifier={um["identifier"]}
                            extraKeys={_extraKeys}
                            saveAndCheckpoint={_saveAndCheckpoint}
@@ -758,15 +759,18 @@ function CreatorApp(props) {
 
     if (visibleTabList.includes("metadata")) {
         right_pane_list.push(
-            <PaneElement identifier="metadata" key="metadata">
+            <PaneElement identifier="metadata" key="metadata" dispatch={metadataDispatch} pushCallback={pushCallback}
+                         ushCallback={pushCallback} el={metadataRef.current} pane_height={metadataRef.current.pane_height}>
                 {mdata_panel}
             </PaneElement>
         )
     }
     for (let key of Object.keys(optionElemDict)) {
         if (visibleTabList.includes(key)) {
+            const item = getListItemFromidentifier(key, option_list_ref.current);
             right_pane_list.push(
-                <PaneElement identifier={key} key={key} allowDelete={true} dispatch={optionDispatch}>
+                <PaneElement identifier={key} key={key} el={item} pane_height={item.pane_height}
+                             allowDelete={true} dispatch={optionDispatch} pushCallback={pushCallback}>
                     {optionElemDict[key]?.()}
                 </PaneElement>
             )
@@ -776,8 +780,8 @@ function CreatorApp(props) {
         if (visibleTabList.includes(key)) {
             const item = getListItemFromidentifier(key, export_list_ref.current);
             right_pane_list.push(
-            <PaneElement identifier={key} key={key} allowDelete={true} dispatch={exportDispatch}>
-                <h5>Export: <b>{item.name}</b></h5>
+            <PaneElement identifier={key} key={key} el={item} pane_height={item.pane_height}
+                         allowDelete={true} dispatch={exportDispatch} pushCallback={pushCallback}>
                 {exportElemDict[key]?.()}
             </PaneElement>
             )
@@ -787,8 +791,9 @@ function CreatorApp(props) {
         if (visibleTabList.includes(key)) {
             const item = getListItemFromidentifier(key, save_list_ref.current);
             right_pane_list.push(
-                <PaneElement key={key} identifier={key} allowDelete={true} dispatch={saveDispatch}>
-                    <h5>Save Attribute: <b>{item.name}</b></h5>
+                <PaneElement key={key} identifier={key} el={item} pane_height={item.pane_height}
+                             allowDelete={true} dispatch={saveDispatch} pushCallback={pushCallback}>
+                    <h6>Save Attribute: <b>{item.name}</b></h6>
                     {saveElemDict[key]?.()}
                 </PaneElement>
             )
@@ -798,7 +803,8 @@ function CreatorApp(props) {
     for (let item of standardListRef.current) {
         if (visibleTabList.includes(item["identifier"])) {
             right_pane_list.push(
-                <PaneElement key={item["identifier"]} identifier={item["identifier"]}>
+                <PaneElement key={item["identifier"]} el={item} dispatch={standardDispatch} pane_height={item.pane_height}
+                             identifier={item["identifier"]} pushCallback={pushCallback}>
                     {codeElemDict[item["identifier"]]?.()}
                 </PaneElement>
             )
@@ -807,7 +813,8 @@ function CreatorApp(props) {
     for (let item of umListRef.current) {
         if (visibleTabList.includes(item["identifier"])) {
             right_pane_list.push(
-                <PaneElement key={item["identifier"]} identifier={item["identifier"]}  allowDelete={true} dispatch={umDispatch}>
+                <PaneElement key={item["identifier"]} el={item} pane_height={item.pane_height}
+                             identifier={item["identifier"]}  allowDelete={true} dispatch={umDispatch} pushCallback={pushCallback}>
                     {codeElemDict[item["identifier"]]?.()}
                 </PaneElement>
             )
@@ -824,7 +831,7 @@ function CreatorApp(props) {
         width: "100%",
         height: sizeInfo.availableHeight,
         paddingLeft: props.controlled ? 5 : SIDE_MARGIN,
-        paddingTop: 15
+        paddingTop: 15,
     };
     let outer_class = "resource-viewer-holder pane-holder";
     if (!window.in_context) {

@@ -1,8 +1,4 @@
 import {createContext} from "react";
-import {useReducerAndRef} from "./utilities_react";
-
-
-
 import {TacticSocket} from "./tactic_socket";
 import {renderSpinnerMessage} from "./utilities_react";
 import {handleCallback, postPromise} from "./communication_react";
@@ -13,9 +9,6 @@ export {creator_props}
 export {MakerPaneContext}
 
 const MakerPaneContext = createContext(null);
-
-
-
 
 function creator_props(data, registerDirtyMethod, finalCallback) {
 

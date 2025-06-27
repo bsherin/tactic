@@ -14,6 +14,9 @@ function propertyListReducer(prop_list, action) {
                 new_items = action.new_items.map(t => {
                     let new_t = {...t};
                     new_t.identifier = guid();
+                    if (!new_t.hasOwnProperty("pane_height")) {
+                        new_t.pane_height = action.initial_pane_height;
+                    }
                     return new_t
                 });
             }
@@ -59,13 +62,13 @@ function propertyListReducer(prop_list, action) {
 }
 
 
-function usePropertyList(initial) {
+function usePropertyList(initial, initial_pane_height = 330) {
 
     const [propList, propListDispatch] = useReducer(propertyListReducer, initial);
     const propListRef = useRef(propList);
     propListRef.current = propList;
     useEffect(() => {
-        propListDispatch({type: "initialize", new_items: initial});
+        propListDispatch({type: "initialize", new_items: initial, initial_pane_height});
     }, []);
 
     return [propList, propListDispatch, propListRef]

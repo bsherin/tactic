@@ -1,4 +1,4 @@
-import React, {memo, useContext, useEffect, useMemo, useRef} from "react";
+import React, {memo, useContext, useEffect, useMemo, useRef, useState} from "react";
 import {Fragment} from "react";
 import {
     Button,
@@ -7,6 +7,8 @@ import {
     ButtonGroup,
     Switch,
     Icon,
+    EntityTitle,
+    H6,
     Menu, MenuItem, ContextMenu, Card, FormGroup, InputGroup
 } from "@blueprintjs/core";
 import {
@@ -30,9 +32,10 @@ import {ReactCodemirror6} from "./react-codemirror6";
 import {guid, isInt} from "./utilities_react"
 import {MakerPaneContext} from "./tile_maker_support";
 import {LabeledFormField, LabeledSelectList, LabeledTextArea} from "./blueprint_react_widgets";
-import {useSize} from "./sizing_tools";
-import {CombinedMetadata, NativeTags, IconSelector, NotesField} from "./blueprint_mdata_fields";
+import {NativeTags, IconSelector, NotesField} from "./blueprint_mdata_fields";
 import {postAjaxPromise} from "./communication_react";
+import {SizeContext, useSize} from "./sizing_tools"
+import {DragHandle} from "./resizing_layouts2";
 
 export {
     CmElement, PaneElement, MakerNavigator, OptionModuleForm, ExportModuleForm,
@@ -105,6 +108,84 @@ function correctType(type, val, error_flag = "__ERROR__") {
     return result
 }
 
+
+let draghandle_position_dict = {position: "absolute", bottom: 2, right: 1};
+
+function PaneHeader(props) {
+    props = {
+        identifier: null,
+        titleElem: null,
+        dispatch: () => {
+        },
+        allowDelete: false,
+        ...props
+    }
+
+    const mpContext = useContext(MakerPaneContext);
+
+    function _deleteMe() {
+        props.dispatch({type: "delete_item", identifier: props.identifier})
+    }
+
+    return (
+        <div style={{display: "flex", flexDirection: "row", justifyContent: "space-between",
+            marginBottom: 10, alignItems: "anchor-center"}}>
+            <div style={{display: "flex", flexDirection: "row", justifyContent: "flex-start"}}>
+                <Button variant="minimal" size="small" icon="cross"
+                        style={{padding: 0, position: "absolute", left: 5, top: 5, zIndex: 100}}
+                        onClick={() => {
+                            mpContext.toggleVisibleTab(props.identifier)
+                        }}/>
+                {props.titleElem}
+            </div>
+            {props.allowDelete &&
+                <Button variant="minimal" intent="danger" size="small" icon="trash"
+                        style={{padding: 0, position: "absolute", left: 5, right: 5, zIndex: 100}}
+                        onClick={_deleteMe}/>
+            }
+        </div>
+    )
+}
+
+function SimplePaneTitlOlde(props) {
+    props = {
+        title: "",
+        subTitle: null,
+        ...props
+    }
+
+    if (!props.subTitle)
+        return (
+            <Fragment>
+                <div style={{fontSize: 16, margin: 10}}><b>{props.title}</b></div>
+            </Fragment>
+        )
+    else {
+        return (
+            <Fragment>
+                <div style={{fontSize: 16, margin: 10}}><b>{props.title}</b>: {props.subTitle}</div>
+            </Fragment>
+        )
+    }
+}
+
+function SimplePaneTitle(props) {
+    props = {
+        title: "",
+        subtitle: null,
+        icon: null,
+        ...props
+    }
+
+    let theIcon = <Icon icon={props.icon} size={13} />
+
+    return (
+        <div style={{position: "absolute", left: 40, top: 20}}>
+            <EntityTitle title={props.title} heading={H6} subtitle={props.subtitle} icon={theIcon} />
+        </div>
+    )
+}
+
 function PaneElement(props) {
     props = {
         identifier: null,
@@ -112,53 +193,82 @@ function PaneElement(props) {
         },
         allowDelete: false,
         children: null,
+        el: null,
+        pane_height: 0,
         ...props,
     }
+    const top_ref = useRef(null);
+
+    const [usable_width, usable_height, topX, topY] = useSize(top_ref, 0);
+
+    const mpContext = useContext(MakerPaneContext);
+
+    const [, set_resizing] = useState(false);
+    const [, set_dwidth] = useState(0);
+    const [dheight, set_dheight] = useState(0);
+
+
+    function _startResize(e, ui, startX, startY) {
+        set_resizing(true);
+        set_dwidth(0);
+        set_dheight(0);
+    }
+
+    function _onResize(e, ui, x, y, dx, dy) {
+        set_dwidth(dx);
+        set_dheight(dy);
+    }
+
+    function _stopResize(e, ui, x, y, dx, dy) {
+        set_resizing(false);
+        set_dwidth(0);
+        set_dheight(0);
+        resize_pane(dx, dy)
+    }
+
+    function resize_pane(dx, dy) {
+        props.dispatch({
+                type: "update_item",
+                identifier: props.identifier,
+                new_item: {pane_height: props.pane_height + dy}
+            }
+        )
+    }
+
+    const current_height = props.pane_height + dheight;
 
     function _deleteMe() {
         props.dispatch({type: "delete_item", identifier: props.identifier})
     }
 
-    const mpContext = useContext(MakerPaneContext);
-
     return (
-        <Card key={props.identifier} elevation={2}>
-            <div style={{display: "flex", flexDirection: "row", justifyContent: "space-between"}}>
-                <Button variant="minimal" size="small" icon="cross"
+        <Card ref={top_ref} key={props.identifier} elevation={2} style={{height: current_height, position: "relative"}}>
+            <Button variant="minimal" size="small" icon="cross"
+                        style={{padding: 0, position: "absolute", left: 10, top: 10, zIndex: 100}}
                         onClick={() => {
                             mpContext.toggleVisibleTab(props.identifier)
                         }}/>
-                {props.allowDelete &&
-                    <Button variant="minimal" intent="danger" size="small" icon="trash"
-                            onClick={_deleteMe}/>
-                }
-            </div>
-            {props.children}
+            {props.allowDelete &&
+                <Button variant="minimal" intent="danger" size="small" icon="trash"
+                        style={{padding: 0, position: "absolute", right: 10, top: 10, zIndex: 100}}
+                        onClick={_deleteMe}/>
+            }
+            <SizeContext.Provider value={{
+                availableWidth: usable_width,
+                availableHeight: current_height - 30,
+                topX: topX,
+                topY: topY
+            }}>
+
+                {props.children}
+            </SizeContext.Provider>
+            <DragHandle position_dict={draghandle_position_dict}
+                        dragStart={_startResize}
+                        onDrag={_onResize}
+                        dragEnd={_stopResize}
+                        direction="both"/>
         </Card>
     )
-}
-
-function MetadataModuleOld(props) {
-    const top_ref = React.createRef();
-    const [, usable_height, ,] = useSize(top_ref, props.tabSelectCounter, "CreatorModule");
-
-    let md_style = {height: "100%"};
-
-    function handleCoupleChange(event) {
-        props.set_couple_save_attrs_and_exports(event.target.checked)
-    }
-
-    return (
-        <div ref={top_ref} style={{marginLeft: 10, height: usable_height}}>
-            <CombinedMetadata {...props} outer_style={md_style}/>
-            <Switch label="Couple save_attrs and exports"
-                    className="ml-2 mb-0 mt-1"
-                    size="medium"
-                    checked={props.couple_save_attrs_and_exports}
-                    onChange={handleCoupleChange}/>
-        </div>
-    )
-
 }
 
 function MetadataModule(props) {
@@ -213,7 +323,7 @@ function MetadataModule(props) {
     }
 
     function handleCoupleChange(event) {
-        props.metadataDispatch({"type": "set_couple", "value": event.target.value});
+        props.metadataDispatch({"type": "set_couple", "value": event.target.checked});
     }
 
     function appendToNotes(new_text) {
@@ -267,57 +377,54 @@ function MetadataModule(props) {
     const split_tags = props.metadataRef.current.tags.split(" ");
     return (
         <div>
+            <SimplePaneTitle title="Metadata" icon="properties"/>
+            <div style={{marginTop: 30}}>
             <ErrorBoundary custom_message="Error in NativeTags">
-            <FormGroup label="Tags">
-                <NativeTags key={`${props.res_name}-${props.res_type}-tags`}
-                            tags={split_tags}
-                            all_tags={props.mdata.allTags}
-                            readOnly={props.readOnly}
-                            handleChange={handleTagsChange}
-                            res_type="tile"/>
-            </FormGroup>
+                <FormGroup label="Tags">
+                    <NativeTags key={`${props.res_name}-${props.res_type}-tags`}
+                                tags={split_tags}
+                                all_tags={props.mdata.allTags}
+                                readOnly={props.readOnly}
+                                handleChange={handleTagsChange}
+                                res_type="tile"/>
+                </FormGroup>
             </ErrorBoundary>
             <ErrorBoundary custom_message="Error in Category">
-            <FormGroup label="Category" key="Category">
-                <InputGroup onChange={handleCategoryChange}
-                            value={props.metadataRef.current.category}/>
-            </FormGroup>
+                <FormGroup label="Category" key="Category">
+                    <InputGroup onChange={handleCategoryChange}
+                                value={props.metadataRef.current.category}/>
+                </FormGroup>
             </ErrorBoundary>
             <ErrorBoundary custom_message="Error in Icon">
-            <FormGroup label="Icon">
-                <IconSelector key={`${props.res_name}-${props.res_type}-icon-selector`}
-                              icon_val={props.metadataRef.current.icon}
-                              readOnly={props.readOnly}
-                              handleSelectChange={handleIconChange}/>
-            </FormGroup>
+                <FormGroup label="Icon">
+                    <IconSelector key={`${props.res_name}-${props.res_type}-icon-selector`}
+                                  icon_val={props.metadataRef.current.icon}
+                                  readOnly={props.readOnly}
+                                  handleSelectChange={handleIconChange}/>
+                </FormGroup>
             </ErrorBoundary>
             <ErrorBoundary custom_message="Error in Notes">
-            <FormGroup label="Notes">
-                <NotesField key={`${props.res_name}-${props.res_type}-notes`}
-                            mStateRef={props.metadataRef}
-                            res_name={props.res_name}
-                            res_type={props.res_type}
-                            readOnly={props.readOnly}
-                            handleChange={handleNotesChange}
-                            show_markdown_initial={true}
-                            handleBlur={null}
-                />
-                <MetadataNotesButtons/>
-            </FormGroup>
+                <FormGroup label="Notes">
+                    <NotesField key={`${props.res_name}-${props.res_type}-notes`}
+                                mStateRef={props.metadataRef}
+                                res_name={props.res_name}
+                                res_type={props.res_type}
+                                readOnly={props.readOnly}
+                                handleChange={handleNotesChange}
+                                show_markdown_initial={true}
+                                handleBlur={null}
+                    />
+                    <MetadataNotesButtons/>
+                </FormGroup>
             </ErrorBoundary>
             <ErrorBoundary custom_message="Error in bottom stuff">
-            <Switch label="Couple save_attrs and exports"
-                    className="ml-2 mb-0 mt-1"
-                    size="medium"
-                    checked={props.metadataRef.current.couple_save_attrs_and_exports}
-                    onChange={handleCoupleChange}/>
-            <FormGroup label="Created: " className="metadata-form_group" inline={true}>
-                <span className="bp5-ui-text metadata-field">{props.metadataRef.current.created}</span>
-            </FormGroup>
-            <FormGroup label="Updated: " className="metadata-form_group" inline={true}>
-                <span className="bp5-ui-text metadata-field">{props.metadataRef.current.updated}</span>
-            </FormGroup>
+                <Switch label="Couple save_attrs and exports"
+                        className="ml-2 mb-0 mt-1"
+                        size="medium"
+                        checked={props.metadataRef.current.couple_save_attrs_and_exports}
+                        onChange={handleCoupleChange}/>
             </ErrorBoundary>
+            </div>
         </div>
     )
 }
@@ -349,12 +456,17 @@ function ExportModuleForm(props) {
     }
 
     return (
-        <form>
-            <div style={{display: "flex", flexWrap: "wrap", flexDirection: "row"}}>
-                <LabeledFormField label="Name" onChange={handleNameChange} the_value={props.exportItem.name}/>
-                <LabeledFormField label="Tags" onChange={handleTagChange} the_value={props.exportItem.tags}/>
+        <Fragment>
+            <SimplePaneTitle icon="export" title={props.exportItem.name}/>
+            <div style={{marginTop: 30}}>
+            <form>
+                <div style={{display: "flex", flexWrap: "wrap", flexDirection: "row"}}>
+                    <LabeledFormField label="Name" onChange={handleNameChange} the_value={props.exportItem.name}/>
+                    <LabeledFormField label="Tags" onChange={handleTagChange} the_value={props.exportItem.tags}/>
+                </div>
+            </form>
             </div>
-        </form>
+        </Fragment>
     )
 }
 
@@ -474,40 +586,45 @@ function OptionModuleForm(props) {
     }
 
     return (
-        <form>
-            <div style={{display: "flex", flexDirection: "column", padding: 25}}>
-                <div style={{display: "flex", flexWrap: "wrap", flexDirection: "row"}}>
-                    <LabeledFormField label="Name" onChange={handleNameChange} the_value={props.optionItem.name}
-                                      helperText={props.optionItem.name_warning_text}
-                    />
-                    <LabeledSelectList label="Type" option_list={option_types} onChange={handleTypeChange}
-                                       the_value={props.optionItem.type}/>
-                    <LabeledFormField label="Display Text" onChange={handleDisplayTextChange}
-                                      the_value={props.optionItem.display_text}
-                    />
-                    {props.optionItem.type != "divider" &&
-                        <LabeledFormField label="Default" onChange={handleDefaultChange}
-                                          the_value={props.optionItem.default}
-                                          isBool={props.optionItem.type == "boolean"}
-                                          helperText={props.optionItem.default_warning_text}
+        <Fragment>
+            <SimplePaneTitle icon="select" title={props.optionItem.name}/>
+            <div style={{marginTop: 30}}>
+            <form>
+                <div style={{display: "flex", flexDirection: "column"}}>
+                    <div style={{display: "flex", flexWrap: "wrap", flexDirection: "row"}}>
+                        <LabeledFormField label="Name" onChange={handleNameChange} the_value={props.optionItem.name}
+                                          helperText={props.optionItem.name_warning_text}
                         />
-                    }
-                    {props.optionItem.type == "custom_list" &&
-                        <LabeledTextArea label="Special List"
-                                         onChange={handleSpecialListChange}
-                                         the_value={arrayToTextRows(props.optionItem.special_list)}/>}
-                    {taggable_types.includes(props.optionItem.type) &&
-                        <LabeledFormField label="Tag" onChange={handleTagChange} the_value={props.optionItem.tags}/>
-                    }
-                    {props.optionItem.type == "pool_select" &&
-                        <LabeledSelectList label="Type" option_list={["file", "folder", "both"]}
-                                           onChange={handlePoolTypeChange}
-                                           the_value={props.optionItem.pool_select_type}/>
-                    }
+                        <LabeledSelectList label="Type" option_list={option_types} onChange={handleTypeChange}
+                                           the_value={props.optionItem.type}/>
+                        <LabeledFormField label="Display Text" onChange={handleDisplayTextChange}
+                                          the_value={props.optionItem.display_text}
+                        />
+                        {props.optionItem.type != "divider" &&
+                            <LabeledFormField label="Default" onChange={handleDefaultChange}
+                                              the_value={props.optionItem.default}
+                                              isBool={props.optionItem.type == "boolean"}
+                                              helperText={props.optionItem.default_warning_text}
+                            />
+                        }
+                        {props.optionItem.type == "custom_list" &&
+                            <LabeledTextArea label="Special List"
+                                             onChange={handleSpecialListChange}
+                                             the_value={arrayToTextRows(props.optionItem.special_list)}/>}
+                        {taggable_types.includes(props.optionItem.type) &&
+                            <LabeledFormField label="Tag" onChange={handleTagChange} the_value={props.optionItem.tags}/>
+                        }
+                        {props.optionItem.type == "pool_select" &&
+                            <LabeledSelectList label="Type" option_list={["file", "folder", "both"]}
+                                               onChange={handlePoolTypeChange}
+                                               the_value={props.optionItem.pool_select_type}/>
+                        }
+                    </div>
                 </div>
-            </div>
 
-        </form>
+            </form>
+            </div>
+        </Fragment>
     )
 }
 
@@ -619,6 +736,7 @@ function SignatureHeader(props) {
 function CmElement(props) {
     props = {
         cmState: null,
+        allowDelete: false,
         code_content: "",
         cmDispatch: null,
         cmObjectRef: null,
@@ -641,6 +759,7 @@ function CmElement(props) {
         allowSignatureChange: true,
         ...props
     };
+
 
     function handleCodeChange(new_code) {
         props.cmDispatch({type: "update_item", new_item: {codeText: new_code}, identifier: props.identifier});
@@ -682,41 +801,52 @@ function CmElement(props) {
         props.searchDispatch({type: "SET_SEARCH_MATCHES", payload: {"identifier": props.identifier, "num": num}});
     }
 
+    const sizeInfo = useContext(SizeContext)
+
+    let outer_style = {
+        width: "100%",
+        height: sizeInfo.availableHeight,
+        paddingLeft: 0,
+        position: "relative"
+    };
+
     return (
-        <div>
-            <SignatureHeader name={props.name}
-                             argString={props.argString}
-                             allowSignatureChange={props.allowSignatureChange}
-                             handleNameChange={handleNameChange}
-                             handleArgChange={handleArgChange}/>
-            <ReactCodemirror6 code_content={props.cmState.codeText}
-                              controlled={true}
-                              no_height={props.no_height}
-                              title_label={null}
-                              show_search={false}
-                              mode={props.cmState.mode}
-                              extraKeys={props.extraKeys()}
-                              current_search_number={props.searchState.current_search_cm == props.identifier ?
-                                  props.searchState.current_search_number : null}
-                              handleChange={handleCodeChange}
-                              saveMe={props.saveAndCheckpoint}
-                              setCMObject={setCmObject}
-                              search_term={props.searchState.search_string}
-                              updateSearchState={updateSearchState}
-                              alt_clear_selections={props.clearAllSelections}
-                              first_line_number={props.cmState.firstLineNumber}
-                              readOnly={props.read_only}
-                              regex_search={props.searchState.use_regex}
-                              search_ref={props.search_ref}
-                              searchPrev={searchPrev}
-                              searchNext={searchNext}
-                              search_matches={props.searchState.search_matches}
-                              setSearchMatches={setSearchMatches}
-                              tsocket={props.tsocket}
-                              extraSelfCompletions={props.mode == "python" ? props.extraSelfCompletions : []}
-                              container_id={props.module_viewer_id}
-                              highlight_active_line={true}/>
-        </div>
+        <Fragment>
+            <div style={outer_style}>
+                    <SignatureHeader name={props.name}
+                         argString={props.argString}
+                         allowSignatureChange={props.allowSignatureChange}
+                         handleNameChange={handleNameChange}
+                         handleArgChange={handleArgChange}/>
+                <ReactCodemirror6 code_content={props.cmState.codeText}
+                                  controlled={true}
+                                  no_height={props.no_height}
+                                  title_label={null}
+                                  show_search={false}
+                                  mode={props.cmState.mode}
+                                  extraKeys={props.extraKeys()}
+                                  current_search_number={props.searchState.current_search_cm == props.identifier ?
+                                      props.searchState.current_search_number : null}
+                                  handleChange={handleCodeChange}
+                                  saveMe={props.saveAndCheckpoint}
+                                  setCMObject={setCmObject}
+                                  search_term={props.searchState.search_string}
+                                  updateSearchState={updateSearchState}
+                                  alt_clear_selections={props.clearAllSelections}
+                                  first_line_number={props.cmState.firstLineNumber}
+                                  readOnly={props.read_only}
+                                  regex_search={props.searchState.use_regex}
+                                  search_ref={props.search_ref}
+                                  searchPrev={searchPrev}
+                                  searchNext={searchNext}
+                                  search_matches={props.searchState.search_matches}
+                                  setSearchMatches={setSearchMatches}
+                                  tsocket={props.tsocket}
+                                  extraSelfCompletions={props.mode == "python" ? props.extraSelfCompletions : []}
+                                  container_id={props.module_viewer_id}
+                                  highlight_active_line={true}/>
+            </div>
+        </Fragment>
     )
 }
 
@@ -733,12 +863,12 @@ function MakerNavigator(props) {
     return (
         <ErrorBoundary custom_message="There was an error in the Maker Navigator">
             <div style={{overflow: "hidden"}}>
-                {sections.map((section, index) => (
+                {sections.map((section, ) => (
                     section.editable ?
-                        <SortableNavSection key={index} title={section.title} dispatch={section.dispatch}
+                        <SortableNavSection key={section.title} title={section.title} dispatch={section.dispatch}
                                             sub_items={section.sub_items} icon={section.icon}
                                             icon_dict={section.icon_dict} icon_field={section.icon_field}/> :
-                        <NavSection key={index} title={section.title} dispatch={section.dispatch}
+                        <NavSection key={section.title} title={section.title} dispatch={section.dispatch}
                                     sub_items={section.sub_items} icon={section.icon}
                                     icon_dict={section.icon_dict} icon_field={section.icon_field}/>
                 ))}
@@ -762,7 +892,7 @@ function NavSection(props) {
     return (
         <div style={{marginTop: SECTION_TOP_MARGIN}}>
             <ButtonGroup>
-                <Button variant="minimal" style={{paddingRight: 2}} icon={props.icon} size="medium"
+                <Button variant="minimal" style={{paddingRight: 2, fontSize:13, fontWeight: 600}} icon={props.icon} size="medium"
                         onClick={() => setIsOpen(!isOpen)}>
                     {props.title}
                 </Button>
@@ -773,7 +903,7 @@ function NavSection(props) {
                     let icon = props.icon_dict ?
                         <Icon icon={props.icon_dict[item[props.icon_field]]} size={12}/> : null;
                     return (
-                        <NavItem key={index} identifier={item.identifier} title={item.name} icon={icon}
+                        <NavItem key={item.identifier} identifier={item.identifier} title={item.name} icon={icon}
                                  item_list={item.item_list}/>
                     )
                 })
@@ -846,7 +976,7 @@ function SortableNavSection(props) {
         <ContextMenu content={contextMenu}>
             <div style={{marginTop: SECTION_TOP_MARGIN}}>
                 <ButtonGroup>
-                    <Button style={{paddingRight: 2}} variant="minimal" icon={props.icon} size="medium"
+                    <Button style={{paddingRight: 2, fontSize:13, fontWeight: 600}} variant="minimal" icon={props.icon} size="medium"
                             onClick={() => setIsOpen(!isOpen)}>
                         {props.title}
                     </Button>

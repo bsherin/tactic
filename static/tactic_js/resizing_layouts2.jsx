@@ -119,8 +119,8 @@ function DragHandle({direction = "x", onDrag = null, dragStart = null, dragEnd =
         both: "se-resize"
     };
 
-    let style = props.position_dict;
-    style.cursor = cursor_dict[direction];
+    let style = {...props.position_dict};
+    style["cursor"] = cursor_dict[direction];
     if (direction == "both") {
         style.transform = "rotate(45deg)"
     }
