@@ -13,7 +13,9 @@ function propertyListReducer(prop_list, action) {
             } else {
                 new_items = action.new_items.map(t => {
                     let new_t = {...t};
-                    new_t.identifier = guid();
+                    if (!new_t.hasOwnProperty("identifier")) {
+                        new_t.identifier = guid();
+                    }
                     if (!new_t.hasOwnProperty("pane_height")) {
                         new_t.pane_height = action.initial_pane_height;
                     }

@@ -3,7 +3,6 @@ import {Button, ButtonGroup} from "@blueprintjs/core";
 import {useSize} from "./sizing_tools";
 import {propsAreEqual, useStateAndRef} from "./utilities_react";
 import {SettingsContext} from "./settings";
-import {SelectedPaneContext} from "./utilities_react";
 import {SearchForm} from "./library_widgets";
 import {indentWithTab, indentLess} from "@codemirror/commands"
 import {python} from "@codemirror/lang-python"
@@ -11,7 +10,7 @@ import {javascript} from "@codemirror/lang-javascript"
 import {markdown} from "@codemirror/lang-markdown"
 import {indentUnit} from "@codemirror/language";
 import {HighlightStyle, foldAll, unfoldAll} from "@codemirror/language"
-import {EditorView, Decoration, ViewPlugin, DecorationSet} from "@codemirror/view";
+import {EditorView, Decoration, ViewPlugin} from "@codemirror/view";
 import {
     StateField,
     StateEffect,
@@ -121,6 +120,7 @@ function customLineNumbers(startLine = 1) {
         lineMarker: (view, line) => {
             const lineNumber = startLine + view.state.doc.lineAt(line.from).number - 1;
             return new class extends GutterMarker {
+                // noinspection JSUnusedGlobalSymbols
                 toDOM() {
                     return document.createTextNode(lineNumber);
                 }
@@ -191,7 +191,8 @@ function restrictEditsToRange(editableRanges = []) {
 }
 
 function highlightEditableRanges(ranges) {
-  return ViewPlugin.fromClass(class {
+    // noinspection JSUnusedGlobalSymbols,JSUnresolvedReference
+    return ViewPlugin.fromClass(class {
     constructor(view) {
       this.decorations = this.buildDecorations(view);
     }
@@ -202,7 +203,7 @@ function highlightEditableRanges(ranges) {
       }
     }
 
-    buildDecorations(view) {
+    buildDecorations() {
       const builder = new RangeSetBuilder();
       for (let { from, to } of ranges) {
         builder.add(from, to, Decoration.mark({ class: "cm-editable" }));
@@ -229,17 +230,19 @@ function ReactCodemirror6(props) {
         iCounter: 0,
         no_width: false,
         no_height: false,
+        controlled_height: null,
         show_search: false,
+        search_term: null,
+        setSearchMatches: null,
+        current_search_number: null,
+        update_search_state: null,
         header_left: null,
         first_line_number: 1,
         show_line_numbers: true,
         show_fold_button: false,
         code_container_height: null,
         code_container_width: null,
-        search_term: null,
-        update_search_state: null,
         alt_clear_selections: null,
-        regex_search: false,
         handleChange: null,
         handleBlur: null,
         handleFocus: null,
@@ -248,8 +251,6 @@ function ReactCodemirror6(props) {
         extraKeys: [],
         setCMObject: null,
         code_container_ref: null,
-        setSearchMatches: null,
-        current_search_number: null,
         highlight_active_line: false,
         extraSelfCompletions: [],
         controlled: false,
@@ -273,6 +274,8 @@ function ReactCodemirror6(props) {
     const theme = useRef(null);
     const highlightStyle = useRef(null);
     const autocompletionArgRef = useRef({});
+
+    const lastUserDocRef = useRef(props.code_content);
 
     const changeCounterRef = useRef(0);
     const awaitingSuggestionRef = useRef(true);
@@ -318,9 +321,11 @@ function ReactCodemirror6(props) {
             readOnlyCompartment.current.of(EditorState.readOnly.of(props.readOnly)),
             EditorView.updateListener.of((update) => {
                 if (update.docChanged) {
-                    handleChange(update.state.doc.toString());
+                    const newDoc = update.state.doc.toString();
+                    lastUserDocRef.current = newDoc;
+                    handleChange(newDoc);
                     changeCounterRef.current = changeCounterRef.current + 1;
-                    if (window.has_openapi_key && (settingsContext.settingsRef.current.use_ai_code_suggestions == "yes") && props.container_id) {
+                    if (window.has_openapi_key && (settingsContext.settingsRef.current["use_ai_code_suggestions"] == "yes") && props.container_id) {
                         setAIText(null);
                         setAITextLabel(null);
                         awaitingSuggestionRef.current = true;
@@ -448,6 +453,7 @@ function ReactCodemirror6(props) {
             sources.unshift(aiCompletionSource(aiTextRef.current, aiTextLabelRef.current))
         }
 
+        // noinspection JSUnusedGlobalSymbols
         autocompletionArgRef.current =
             {
                 optionClass: (completion) => {
@@ -468,20 +474,23 @@ function ReactCodemirror6(props) {
         // This controlled stuff never quite worked perfectly inside the CombinedMetadata notes field
         if (props.controlled) {
             if (editorView.current) {
-                const oldDoc = editorView.current.state.doc;
-                const oldLength = oldDoc.length;
+                // const oldDoc = editorView.current.state.doc;
+
                 const newText = props.code_content;
-                let anchor = editorView.current.state.selection.main.anchor;
-                let head = editorView.current.state.selection.main.head;
-                const newLength = newText.length;
-                anchor = Math.min(anchor, newLength);
-                head = Math.min(head, newLength);
-                const transaction = editorView.current.state.update({
-                    changes: {from: 0, to: oldLength, insert: newText},
-                    selection: {anchor, head},
-                    annotations: ExternalUpdate.of(true)
-                });
-                editorView.current.dispatch(transaction);
+                const editorText = editorView.current.state.doc.toString();
+                if (editorText !== newText && newText !== lastUserDocRef.current) {
+                    let anchor = editorView.current.state.selection.main.anchor;
+                    let head = editorView.current.state.selection.main.head;
+                    const newLength = newText.length;
+                    anchor = Math.min(anchor, newLength);
+                    head = Math.min(head, newLength);
+                    const transaction = editorView.current.state.update({
+                        changes: {from: 0, to: editorText.length, insert: newText},
+                        selection: {anchor, head},
+                        annotations: ExternalUpdate.of(true)
+                    });
+                    editorView.current.dispatch(transaction);
+                }
             }
         }
 
@@ -533,8 +542,8 @@ function ReactCodemirror6(props) {
                 console.log("got aiupdate result");
                 if (data.success) {
                     if (data.change_counter === changeCounterRef.current) {
-                        setAIText(data.suggestion);
-                        setAITextLabel(data.display_label);
+                        setAIText(data["suggestion"]);
+                        setAITextLabel(data["display_label"]);
                         awaitingSuggestionRef.current = false
                     }
                 } else {
@@ -633,13 +642,13 @@ function ReactCodemirror6(props) {
     function _doHighlight() {
         try {
             if (!editorView.current) return;
-            let prev_matches = matches.current;
-            var searchTerm = props.search_term;
+            const prev_matches = matches.current;
+            let searchTerm = props.search_term;
             if (!searchTerm) {
                 searchTerm = ""
             }
 
-            var reg = _searchMatcher(searchTerm, true);
+            const reg = _searchMatcher(searchTerm, true);
             if (!reg) {
                 matches.current = 0
             } else {
@@ -684,15 +693,6 @@ function ReactCodemirror6(props) {
 
     }
 
-    function scrollToLine(lineNumber) {
-        const line = editorView.current.state.doc.line(lineNumber);
-        editorView.current.dispatch({
-            effects: EditorView.scrollIntoView(line.from, {
-                y: "center"  // Center the line in the view
-            })
-        });
-    }
-
     function _foldAll() {
         foldAll(editorView.current);
     }
@@ -701,24 +701,13 @@ function ReactCodemirror6(props) {
         unfoldAll(editorView.current);
     }
 
-    function clearSelections() {
-        if (props.alt_clear_selections) {
-            props.alt_clear_selections();
-        } else {
-            const {to} = editorView.current.state.selection.main;
-            editorView.current.dispatch({
-                selection: {anchor: to, head: to}
-            });
-        }
-        if (props.update_search_state) {
-            props.update_search_state({search_string: ""});
-        }
-    }
-
     let ccstyle = {
         lineHeight: "21px",
     };
-    if (!props.no_height) {
+    if (props.controlled_height) {
+        ccstyle.height = props.controlled_height;
+    }
+    else if (!props.no_height) {
         ccstyle.height = usable_height;
     }
 

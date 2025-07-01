@@ -87,15 +87,14 @@ class TileParser(object):
         method_list = []
         for k, entry in self.extra_methods.items():
             if k not in self.handler_methods:
-                method_list.append({"name": k, "method_body": entry["method_body"], "arg_string": entry["arg_string"], "starting_line": self.get_starting_line(k)})
+                method_list.append(entry)
         return method_list
 
     def get_used_handler_methods_list(self):
         used_handler_methods = []
         for k, entry in self.extra_methods.items():
             if k in self.handler_methods:
-                used_handler_methods.append({"name": k, "method_body": entry["method_body"],
-                                             "arg_string": self.handler_methods[k], "starting_line": self.get_starting_line(k)})
+                used_handler_methods.append(entry)
         return used_handler_methods
 
     def get_options_dict(self):
@@ -134,36 +133,32 @@ class TileParser(object):
 
     def get_methods(self):
         mdict = OrderedDict()
-        last_element = len(self.cnode.body) - 1
         for i, node in enumerate(self.cnode.body):
             if isinstance(node, ast.FunctionDef):
                 arg_string = re.sub(r"self\s*,?\s*", "", ast.unparse(node.args))
                 mdict[node.name] = {"node": node,
-                                    "start_line": node.lineno - 1,
-                                    "body_start": node.body[0].lineno - 1,
+                                    "name": node.name,
+                                    "start_line": node.lineno,
+                                    "body_start": node.body[0].lineno,
+                                    "last_line": node.end_lineno,
                                     "args": node.args,
                                     "arg_string": arg_string
                                     }
-                if i < last_element:
-                    mdict[node.name]["last_line"] = self.cnode.body[i + 1].lineno - 2
-                else:
-                    mdict[node.name]["last_line"] = None
-        for i, method_name in enumerate(list(mdict)[:-1]):
+        for i, method_name in enumerate(list(mdict)):
             md = mdict[method_name]
-            md["method_code"] = "\n".join(self.module_lines[md["start_line"]:md["last_line"] + 1])
-            md["method_body"] = "\n".join(self.module_lines[md["body_start"]:md["last_line"] + 1])
-            md["method_code_no_decs"] = "\n".join(self.module_lines[md["start_line"] +
-                                                                    len(md["node"].decorator_list):md["last_line"] + 1])
-        last_method = list(mdict)[-1]
-        mdict[last_method]["method_code"] = "\n".join(self.module_lines[mdict[last_method]["start_line"]:])
-        mdict[last_method]["method_body"] = "\n".join(self.module_lines[mdict[last_method]["body_start"]:])
-        mdict[last_method]["method_code_no_decs"] = "\n".join(self.module_lines[mdict[last_method]["start_line"] +
-                                                                                len(mdict[last_method]["node"].decorator_list):])
+            md["method_code"] = "\n".join(self.module_lines[md["start_line"] - 1:md["last_line"]])
+            md["method_body"] = "\n".join(self.module_lines[md["body_start"] - 1:md["last_line"]])
         return mdict
 
     def get_starting_line(self, method_name):
         if method_name in self.methods:
-            return self.methods[method_name]["start_line"] + 1
+            return self.methods[method_name]["body_start"]
+        else:
+            return None
+
+    def get_last_line(self, method_name):
+        if method_name in self.methods:
+            return self.methods[method_name]["last_line"]
         else:
             return None
 

@@ -40,6 +40,8 @@ function SearchForm(props) {
         search_ref: null,
         number_matches: null,
         update_delay: 500,
+        update_search_state: null,
+        search_string: "",
         ...props
     };
     const [temp_text, set_temp_text] = useState(null);
@@ -92,7 +94,7 @@ function SearchForm(props) {
     let current_text = waiting.current ? temp_text : props.search_string;
     return (
         <Fragment>
-            <FormGroup helperText={match_text} style={{marginBottom: 0, alignSelf: "self-end"}}>
+            <FormGroup helperText={match_text} style={{marginBottom: 0}}>
                 <div className="d-flex flex-row" style={{marginTop: 5, marginBottom: 5}}>
                     <InputGroup type="search"
                                 className="search-input"

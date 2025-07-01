@@ -274,18 +274,6 @@ function ModuleViewerApp(props) {
       pushCallback(callback);
     }
   }
-  function handleResult(data, success_message, failure_tiltle) {
-    if (!data.success) {
-      errorDrawerFuncs.addErrorDrawerEntry({
-        title: failur_title,
-        content: "message" in data ? data.message : ""
-      });
-    } else {
-      statusFuncs.statusMessage(success_message);
-    }
-    statusFuncs.stopSpinner();
-    statusFuncs.clearStatusMessage();
-  }
   function _extraKeys() {
     var ekeys = {
       'Ctrl-s': _saveMe,

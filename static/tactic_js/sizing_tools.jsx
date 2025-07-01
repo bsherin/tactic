@@ -4,7 +4,7 @@ import {useState, useEffect, memo, useContext, useMemo} from "react";
 import {SelectedPaneContext} from "./utilities_react";
 
 export {getUsableDimensions, SIDE_MARGIN, USUAL_NAVBAR_HEIGHT, TOP_MARGIN, ICON_BAR_WIDTH, useSize,
-    BOTTOM_MARGIN, INIT_CONTEXT_PANEL_WIDTH, SizeContext, withSizeContext, SizeProvider}
+    BOTTOM_MARGIN, INIT_CONTEXT_PANEL_WIDTH, SizeContext, withSizeContext, SizeProvider, useElementSize}
 
 
 const SIDE_MARGIN = 15;
@@ -26,6 +26,7 @@ function getUsableDimensions() {
 
 const SizeContext = React.createContext({topX:0, topY: 0, availableWidth: 500, availableHeight: 500});
 
+const MIN_HEIGHT = 30;
 function useSize(top_ref=null, iCounter=0, name="noname") {
     const [usable_width, set_usable_width] = useState(window.innerWidth);
     const [usable_height, set_usable_height] = useState(window.innerHeight);
@@ -42,17 +43,24 @@ function useSize(top_ref=null, iCounter=0, name="noname") {
         if (top_ref && top_ref.current) {
             let rect = top_ref.current.getBoundingClientRect();
             awidth = awidth - rect.left + sizeInfo.topX;
-            aheight = aheight - rect.top + sizeInfo.topY;
+            const relativeTop = rect.top - sizeInfo.topY;
+            aheight = sizeInfo.availableHeight - relativeTop;
             setTopX(top_ref.current ? rect.left : sizeInfo.topX);
             setTopY(top_ref.current ? rect.top : sizeInfo.topY);
+            if (name == "CmElement") {
+                console.log(`[${name}] rect.top = ${rect.top}, sizeInfo.topY = ${sizeInfo.topY}, relativeTop = ${relativeTop}, usableHeight = ${aheight}`);
+            }
         } else {
             setTopX(sizeInfo.topX);
             setTopY(sizeInfo.topY);
         }
         set_usable_width(awidth);
-        set_usable_height(aheight);
+        if (aheight > MIN_HEIGHT) {
+            set_usable_height(aheight);
+        }
 
-    }, [sizeInfo.availableWidth, sizeInfo.availableHeight, top_ref.current, selectedPane.selectedTabIdRef.current, iCounter]);
+
+    }, [sizeInfo.availableWidth, sizeInfo.availableHeight, sizeInfo.topX, sizeInfo.topY, top_ref.current, selectedPane.selectedTabIdRef.current, iCounter]);
 
     return [usable_width, usable_height, topX, topY]
 }
@@ -100,3 +108,24 @@ function SizeProvider({value, children}) {
 }
 
 SizeProvider = memo(SizeProvider);
+
+function useElementSize(ref) {
+    const [size, setSize] = useState([0, 0, 0, 0]);
+
+    useEffect(() => {
+        const update = () => {
+            if (ref.current) {
+                const rect = ref.current.getBoundingClientRect();
+                setSize([rect.width, rect.height, rect.top, rect.left]);
+            }
+        };
+
+        update(); // Run once
+        const observer = new ResizeObserver(() => update());
+        observer.observe(ref.current);
+
+        return () => observer.disconnect();
+    }, [ref]);
+
+    return size;
+}

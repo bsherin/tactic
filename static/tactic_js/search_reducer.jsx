@@ -1,11 +1,78 @@
 import {useReducerAndRef} from "./utilities_react";
 
-export {useSearch};
+export {useSearch, countOccurrences, _searchMatcher, isRegex};
+
+const REGEXTYPE = Object.getPrototypeOf(new RegExp("that"));
+
+   function countOccurrences(query, the_text) {
+        if (isRegex(query)) {
+            const split_text = the_text.split(/\r?\n/);
+            let total = 0;
+            for (let str of split_text) {
+                total += (str.match(query) || []).length;
+            }
+            return total;
+        } else {
+            return the_text.split(query).length - 1;
+        }
+    }
+
+    function isRegex(ob) {
+        return Object.getPrototypeOf(ob) === REGEXTYPE;
+    }
+
+     function _searchMatcher(term, global = false, use_regex = false, ignore_case = true) {
+        let regex;
+        let flags = "";
+        if (global) {
+            flags += "g"
+        }
+        if (ignore_case) {
+            flags += "i"
+        }
+        try {
+            if (!use_regex) {
+                // Escape special characters for literal search
+                const escapedSearchTerm = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                regex = new RegExp(escapedSearchTerm, flags);
+            } else {
+                try {
+                    regex = new RegExp(term, flags)
+                } catch (e) {
+                    console.log("Error creating regex, trying escaping");
+                    const escapedSearchTerm = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                    regex = new RegExp(escapedSearchTerm, flags);
+                }
+                return regex
+            }
+        } catch (e) {
+            console.log("Error creating regex", e);
+            return null
+        }
+        return regex
+    }
+
 
 function searchReducer(draft, action) {
     switch (action.type) {
         case 'SET_SEARCH_STRING':
-            return {...draft, search_string: action.payload};
+            return {...draft,
+                search_string: action.payload,
+                search_match_numbers: {},
+                current_search_number: 0,
+                current_search_cm: draft.id_list[0],
+                search_matches: 0
+            };
+        case 'SET_REGEX':
+            return {...draft,
+                use_regex: action.payload,
+                search_match_numbers: {},
+                current_search_number: 0,
+                current_search_cm: draft.id_list[0],
+                search_matches: 0
+        };
+        case 'SET_TEMP_SEARCH_STRING':
+            return {...draft, temp_search_string: action.payload};
         case 'SET_SEARCH_NUMBER':
             return {...draft, current_search_number: action.payload};
         case 'SET_SEARCH_MATCH_NUMBERS':
@@ -22,84 +89,85 @@ function searchReducer(draft, action) {
             return {...draft, use_regex: action.payload};
         case 'SET_SEARCH_MATCHES':
             return {...draft, search_matches: action.payload};
+        case 'SET_ID_LIST':
+            let new_state = {
+                id_list: action.payload,
+            }
+            if (!action.payload.includes(draft.current_search_cm)) {
+                if (action.payload.length > 0) {
+                    new_state.current_search_cm = action.payload[0];
+                } else {
+                    new_state.current_search_cm = null
+                    new_state.search_matches = 0
+                    new_state.search_match_numbers = {}
+                }
+            }
+            return {...draft, ...new_state};
         case 'SEARCH_NEXT':
             if (draft.current_search_number >= draft.search_match_numbers[draft.current_search_cm] - 1) {
-                let next_cm;
-                switch (draft.current_search_cm) {
-                    case "rc":
-                        next_cm = "em";
-                        break;
-                    case "tc":
-                        next_cm = "rc";
-                        break;
-                    case "em":
-                        next_cm = "gp";
-                        break;
-                    default:
-                        if (props.is_mpl || props.is_d3) {
-                            next_cm = "tc"
-                        } else {
-                            next_cm = "rc"
+                let index = draft.id_list.indexOf(draft.current_search_cm);
+                let start_index = index;
+                let next_cm = null;
+                let next_id;
+                while (next_cm == null) {
+                    index += 1;
+                    if (index == start_index) {
+                        return {...draft}
+                    }
+                    next_id = draft.id_list[(index) % draft.id_list.length]
+                    if (next_id in draft.search_match_numbers) {
+                        if (draft.search_match_numbers[next_id] > 0) {
+                            next_cm = next_id;
                         }
-                        break
+                    }
                 }
-                return {...draft, currentsearch_cm: next_cm, current_search_number: 0};
+                return {...draft, current_search_cm: next_cm, current_search_number: 0};
 
             } else {
                 return {...draft, current_search_number: draft.current_search_number + 1};
             }
+
         case 'SEARCH_PREVIOUS':
-            let next_cm;
-            let next_search_number;
             if (draft.current_search_number <= 0) {
-                if (draft.current_search_cm == "em") {
-                    next_cm = "rc";
-                    next_search_number = drat.search_match_numbers["rc"] - 1
-                } else if (draft.current_search_cm_ref == "tc") {
-                    next_cm = "em";
-                    next_search_number = draft.search_match_numbers["em"] - 1
-                } else {
-                    if (props.is_mpl || props.is_d3) {
-                        next_cm = "tc";
-                        next_search_number = draft.search_match_numbers["tc"] - 1
-                    } else {
-                        next_cm = "em";
-                        next_search_number = draft.search_match_numbers["em"] - 1
+                let pindex = draft.id_list.indexOf(draft.current_search_cm);
+                let start_index = pindex;
+                let next_cm = null;
+                let next_id;
+                while (next_cm == null) {
+                    pindex -= 1;
+                    if (pindex == start_index) {
+                        return {...draft}
+                    }
+                    next_id = draft.id_list[(pindex + draft.id_list.length) % draft.id_list.length]
+                    if (next_id in draft.search_match_numbers) {
+                        if (draft.search_match_numbers[next_id] > 0) {
+                            next_cm = next_id;
+                        }
                     }
                 }
-                if (next_search_number < 0) {
-                    next_search_number = 0
-                }
-                return {...draft, currentsearch_cm: next_cm, current_search_number: next_search_number};
+                let next_search_number = draft.search_match_numbers[next_id] - 1;
+                return {...draft,  current_search_cm: next_cm, current_search_number: next_search_number}
             } else {
-                return {...draft, curent_search_number: draft.current_search_number - 1};
+                return {...draft, current_search_number: draft.current_search_number - 1};
             }
         case 'UPDATE_STATE':
-            return {...draft, ...action.new_state, current_search_cm: draft.cm_list[0], current_search_number: 0};
+            return {...draft, ...action.new_state, current_search_cm: draft.id_list[0], current_search_number: 0};
         default:
             return draft;
     }
 }
 
-function useSearch(is_mpl, is_d3) {
-    let cm_list = ["render_content", "user_methods", "globals"]
-    if (is_mpl) {
-        cm_list.unshift("draw_plot");
-    } else if (is_d3) {
-        cm_list.unshift("jscript");
-    }
-    let sm_numbers = {};
-    cm_list.forEach(cm => {
-        sm_numbers[cm] = 0;
-    });
+function useSearch(initIdList) {
+
     const searchState = {
-        cm_list: cm_list,
-        search_match_numbers: sm_numbers,
+        id_list: initIdList,
+        search_match_numbers: {},
+        temp_search_string: "",
         search_string: "",
-        current_search_number: null,
-        current_search_cm: cm_list[0],
+        current_search_number: 0,
+        current_search_cm: initIdList[0],
         use_regex: false,
-        search_matches: null
+        search_matches: 0
     };
     const [value, customDispatch, valueRef] = useReducerAndRef(searchReducer, searchState);
     return [value, customDispatch, valueRef];

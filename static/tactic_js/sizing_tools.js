@@ -8,6 +8,7 @@ exports.SizeContext = exports.SIDE_MARGIN = exports.INIT_CONTEXT_PANEL_WIDTH = e
 exports.SizeProvider = SizeProvider;
 exports.USUAL_NAVBAR_HEIGHT = exports.TOP_MARGIN = void 0;
 exports.getUsableDimensions = getUsableDimensions;
+exports.useElementSize = useElementSize;
 exports.useSize = useSize;
 exports.withSizeContext = withSizeContext;
 var _react = _interopRequireWildcard(require("react"));
@@ -45,6 +46,7 @@ var SizeContext = exports.SizeContext = /*#__PURE__*/_react["default"].createCon
   availableWidth: 500,
   availableHeight: 500
 });
+var MIN_HEIGHT = 30;
 function useSize() {
   var top_ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
   var iCounter = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
@@ -73,16 +75,22 @@ function useSize() {
     if (top_ref && top_ref.current) {
       var rect = top_ref.current.getBoundingClientRect();
       awidth = awidth - rect.left + sizeInfo.topX;
-      aheight = aheight - rect.top + sizeInfo.topY;
+      var relativeTop = rect.top - sizeInfo.topY;
+      aheight = sizeInfo.availableHeight - relativeTop;
       setTopX(top_ref.current ? rect.left : sizeInfo.topX);
       setTopY(top_ref.current ? rect.top : sizeInfo.topY);
+      if (name == "CmElement") {
+        console.log("[".concat(name, "] rect.top = ").concat(rect.top, ", sizeInfo.topY = ").concat(sizeInfo.topY, ", relativeTop = ").concat(relativeTop, ", usableHeight = ").concat(aheight));
+      }
     } else {
       setTopX(sizeInfo.topX);
       setTopY(sizeInfo.topY);
     }
     set_usable_width(awidth);
-    set_usable_height(aheight);
-  }, [sizeInfo.availableWidth, sizeInfo.availableHeight, top_ref.current, selectedPane.selectedTabIdRef.current, iCounter]);
+    if (aheight > MIN_HEIGHT) {
+      set_usable_height(aheight);
+    }
+  }, [sizeInfo.availableWidth, sizeInfo.availableHeight, sizeInfo.topX, sizeInfo.topY, top_ref.current, selectedPane.selectedTabIdRef.current, iCounter]);
   return [usable_width, usable_height, topX, topY];
 }
 function withSizeContext(WrappedComponent) {
@@ -128,3 +136,26 @@ function SizeProvider(_ref) {
   }, children);
 }
 exports.SizeProvider = SizeProvider = /*#__PURE__*/(0, _react.memo)(SizeProvider);
+function useElementSize(ref) {
+  var _useState11 = (0, _react.useState)([0, 0, 0, 0]),
+    _useState12 = _slicedToArray(_useState11, 2),
+    size = _useState12[0],
+    setSize = _useState12[1];
+  (0, _react.useEffect)(function () {
+    var update = function update() {
+      if (ref.current) {
+        var rect = ref.current.getBoundingClientRect();
+        setSize([rect.width, rect.height, rect.top, rect.left]);
+      }
+    };
+    update(); // Run once
+    var observer = new ResizeObserver(function () {
+      return update();
+    });
+    observer.observe(ref.current);
+    return function () {
+      return observer.disconnect();
+    };
+  }, [ref]);
+  return size;
+}

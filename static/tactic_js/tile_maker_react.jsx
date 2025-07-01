@@ -20,21 +20,22 @@ import {withStatus, doFlash, StatusContext} from "./toaster"
 import {withAssistant} from "./assistant";
 import {SIDE_MARGIN, SizeContext, useSize, withSizeContext} from "./sizing_tools";
 import {withErrorDrawer} from "./error_drawer";
-import {renderSpinnerMessage, convertExtraKeys} from "./utilities_react"
+import {renderSpinnerMessage, convertExtraKeys, useStateAndRef} from "./utilities_react"
 import {TacticNavbar} from "./blueprint_navbar";
 import {ErrorBoundary} from "./error_boundary";
-import {useCallbackStack, useConnection} from "./utilities_react";
+import {useCallbackStack, useConnection, arraysMatch} from "./utilities_react";
 import {SettingsContext, withSettings} from "./settings";
 import {DialogContext, withDialogs} from "./modal_react";
 import {ErrorDrawerContext} from "./error_drawer";
 import {SelectedPaneContext} from "./utilities_react";
 
 import {usePropertyList, makeUndoableDispatch} from "./property_list"
-import {useSearch} from "./search_reducer"
+import {useSearch, _searchMatcher, countOccurrences} from "./search_reducer"
 import {MakerPaneContext} from "./tile_maker_support";
 import {CmElement, PaneElement, MakerNavigator, OptionModuleForm, ExportModuleForm, MetadataModule,
-    option_icons, standard_method_icons, INITIAL_CODE_PANE_HEIGHT} from "./tile_maker_elements";
+    option_icons, standard_method_icons, INITIAL_CODE_PANE_HEIGHT, INITIAL_FORM_PANE_HEIGHT} from "./tile_maker_elements";
 import {useMetadata} from "./metadata_reducer";
+import {TileMakerSearchForm} from "./tile_maker_search_form";
 
 export {CreatorApp}
 
@@ -57,19 +58,21 @@ function CreatorApp(props) {
     const nav_ref = useRef(null);
     const search_ref = useRef(null);
 
-    const [visibleTabList, setVisibleTabList] = useState(["metadata"]);
+    const [, setVisibleTabList, visibleTabListRef] = useStateAndRef([]);
 
-    const [searchState, searchDispatch, searchStateRef] = useSearch(props.is_mpl, props.is_d3);
 
 
     const last_save = useRef({});
     const rline_number = useRef(props.initial_line_number);
 
+    const [, setMethodsToOpen, methodsToOpenRef] = useStateAndRef(props.interface_state != null && "visibleMethodList" in props.interface_state ?
+    props.interface_state.visibleMethodList : ["render_content"]);
+
     const [usable_width, usable_height, topX, topY] = useSize(top_ref, 0, "TileMaker");
 
-    const [, optionDispatchBase, option_list_ref] = usePropertyList(props.option_list, 141);
-    const [, exportDispatchBase, export_list_ref] = usePropertyList(props.export_list, 141);
-    const [, saveDispatchBase, save_list_ref] = usePropertyList(props.additional_save_attrs ? props.additional_save_attrs : [], 141);
+    const [, optionDispatchBase, option_list_ref] = usePropertyList(props.option_list, INITIAL_FORM_PANE_HEIGHT);
+    const [, exportDispatchBase, export_list_ref] = usePropertyList(props.export_list, INITIAL_FORM_PANE_HEIGHT);
+    const [, saveDispatchBase, save_list_ref] = usePropertyList(props.additional_save_attrs ? props.additional_save_attrs : [], INITIAL_FORM_PANE_HEIGHT);
     const [, standardDispatchBase, standardListRef] = usePropertyList(props.standard_methods_list, INITIAL_CODE_PANE_HEIGHT);
     const [, umDispatchBase, umListRef] = usePropertyList(props.user_methods_list, INITIAL_CODE_PANE_HEIGHT);
     const [, hmDispatchBase, hmListRef] = usePropertyList(props.used_handler_methods_list, INITIAL_CODE_PANE_HEIGHT);
@@ -84,6 +87,23 @@ function CreatorApp(props) {
     const standardDispatch = makeUndoableDispatch(standardDispatchBase, standardListRef, "Standard", undoStackRef);
     const umDispatch = makeUndoableDispatch(umDispatchBase, umListRef, "UserMethods", undoStackRef);
     const hmDispatch = makeUndoableDispatch(hmDispatchBase, hmListRef, "HandlerMethods", undoStackRef);
+
+    function getIds() {
+        let ids = [];
+        for (let item of standardListRef.current) {
+            ids.push(item["identifier"]);
+        }
+        for (let item of umListRef.current) {
+            ids.push(item["identifier"]);
+        }
+        for (let item of hmListRef.current) {
+            ids.push(item["identifier"]);
+        }
+        return ids;
+    }
+
+    const [searchState, searchDispatch, searchStateRef] = useSearch([]);
+
 
     const extraSelfCompletionsRef = useRef([]);
 
@@ -175,12 +195,39 @@ function CreatorApp(props) {
 
     useEffect(() => {
         _goToLineNumber();
+         if (methodsToOpenRef.current) {
+            let newMethodsToOpen = methodsToOpenRef.current;
+            let identifier;
+            let identifiersToAdd = [];
+            for (let name of methodsToOpenRef.current) {
+                identifier = getIdentifierFromName(name);
+                if (identifier != null) {
+                    identifiersToAdd.push(identifier);
+                    newMethodsToOpen = newMethodsToOpen.filter((item) => item !== name);
+                }
+            }
+            showTabs(identifiersToAdd); // Must be done in a batch or they don't all show
+            if (newMethodsToOpen.length <= 0) {
+                setMethodsToOpen(null);
+            }
+            else if (newMethodsToOpen.length < methodsToOpenRef.current.length) {
+                setMethodsToOpen(newMethodsToOpen);
+            }
+        }
     });
+
+    useEffect(() => {
+        const currentIds = getIds();
+        if (!arraysMatch(currentIds, searchStateRef.current.id_list)) {
+            searchDispatch({type: "SET_ID_LIST", payload: getIds()});
+        }
+    }, [standardListRef.current, umListRef.current, hmListRef.current]);
 
     useEffect(() => {
         function _getOptionNames() {
             let onames = [];
             for (let entry of option_list_ref.current) {
+                // noinspection JSUnresolvedReference
                 onames.push(entry["name"]);
             }
             return onames
@@ -192,6 +239,33 @@ function CreatorApp(props) {
             extraSelfCompletionsRef.current.push({label: the_text, type: "variable", section: "Options"});
         }
     }, [option_list_ref.current]);
+
+    useEffect(()=>{
+        getAllSearchMatches()
+
+    }, [searchStateRef.current.search_string])
+
+    function setSearchMatches(item, reg) {
+        let matches;
+        if (!reg || !item.codeText) {
+            matches = 0
+        } else {
+            matches = countOccurrences(reg, item.codeText);
+        }
+        searchDispatch({type: "SET_SEARCH_MATCH_NUMBERS", payload: {"identifier": item.identifier, "num": matches}});
+    }
+    function getAllSearchMatches() {
+        const reg = _searchMatcher(searchStateRef.current.search_string, true, searchStateRef.current.use_regex);
+        for (let item of standardListRef.current) {
+            setSearchMatches(item, reg)
+        }
+        for (let item of umListRef.current) {
+             setSearchMatches(item, reg)
+        }
+        for (let item of hmListRef.current) {
+             setSearchMatches(item, reg)
+        }
+    }
 
     function initSocket() {
         props.tsocket.attachListener('focus-me', (data) => {
@@ -261,6 +335,19 @@ function CreatorApp(props) {
     }
 
     function _extraKeys() {
+        function _searchNext() {
+                searchDispatch({type: "SEARCH_NEXT"});
+                pushCallback(() => {
+                    showTab(searchStateRef.current.current_search_cm);
+                })
+            }
+
+        function _searchPrev() {
+            searchDispatch({type: "SEARCH_PREVIOUS"});
+            pushCallback(() => {
+                showTab(props.searchStateRef.current.current_search_cm);
+            })
+        }
         const ekeys = {
             'Ctrl-s': _saveMe,
             'Ctrl-l': _saveAndLoadModule,
@@ -307,20 +394,6 @@ function CreatorApp(props) {
 
         ];
         return [...convertedKeys, ...moreKeys]
-    }
-
-    function _searchNext() {
-        searchDispatch({type: "SEARCH_NEXT"});
-        pushCallback(() => {
-            _handleTabSelect(searchStateRef.current.current_search_cm);
-        })
-    }
-
-    function _searchPrev() {
-        searchDispatch({type: "SEARCH_PREVIOUS"});
-        pushCallback(() => {
-            _handleTabSelect(searchStateRef.current.current_search_cm);
-        })
     }
 
     function _showHistoryViewer() {
@@ -469,19 +542,34 @@ function CreatorApp(props) {
         return false
     }
 
+    function removeCmObjects(listRef) {
+        return listRef.current.map((item) => {
+            delete item.cmObject;
+            return item}
+        );
+    }
+
     function _getSaveDict() {
+        let mdata = {...metadataRef.current};
+        delete mdata.allTags;
+        const visibleMethods = visibleTabListRef.current.map((identifier) => {
+            return getNameFromIdentifier(identifier)
+        });
+        mdata["interface_state"] = {
+            "visibleMethodList": visibleMethods,
+        }
         return {
             "module_name": _cProp("resource_name"),
-            "mdata": metadataRef.current,
+            "mdata": mdata,
             "exports": export_list_ref.current,
             "additional_save_attrs": save_list_ref.current,
             "options": option_list_ref.current,
-            "user_methods": umListRef.current,
-            "used_handler_methods": hmListRef.current,
-            "standard_methods": standardListRef.current,
+            "user_methods": removeCmObjects(umListRef),
+            "used_handler_methods": removeCmObjects(hmListRef),
+            "standard_methods": removeCmObjects(standardListRef),
             "is_mpl": props.is_mpl,
             "is_d3": props.is_d3,
-            "last_viewer": "creator"
+            "last_viewer": "creator",
         };
     }
 
@@ -503,18 +591,85 @@ function CreatorApp(props) {
         return postAjaxPromise("checkpoint_module", {"module_name": _cProp("resource_name")});
     }
 
-    function setFirstLineNumber(line_number, identifier, dispatch) {
-        dispatch({type: "update_item", identifier: identifier, new_item: {firstLineNumber: line_number}});
+    function setLineNumbers(line_number_dict, identifier, dispatch) {
+        if (!identifier) return;
+        dispatch({type: "update_item", identifier: identifier, new_item: line_number_dict});
+    }
+
+    function getIdentifierFromName(name) {
+        for (let listRef of [standardListRef, umListRef, hmListRef]) {
+            const identifier = getIdentifierFromNameInLIst(listRef, name);
+            if (identifier) {
+                return identifier;
+            }
+        }
+        return null;
+    }
+
+    function getIdentifierFromNameInLIst(listRef, name) {
+        for (let item of listRef.current) {
+            if (item.name === name) {
+                return item.identifier;
+            }
+        }
+        return null
+    }
+
+    function getNameFromIdentifier(identifier) {
+        for (let listRef of [standardListRef, umListRef, hmListRef]) {
+            const name = getNameFromIdentifierInList(listRef, identifier);
+            if (name) {
+                return name;
+            }
+        }
+        return null
+    }
+
+    function getNameFromIdentifierInList(listRef, identifier) {
+        for (let item of listRef.current) {
+            if (item.identifier === identifier) {
+                return item.name;
+            }
+        }
+        return null
+    }
+
+    function getItemFromIdentifier(identifier) {
+        for (let listRef of [standardListRef, umListRef, hmListRef]) {
+            const item = getListItemFromidentifier(identifier, listRef.current);
+            if (item) {
+                return item;
+            }
+        }
+        return null
+    }
+
+    function setItem(identifier, item){
+        for (let [listRef, dispatch] of [[standardListRef, standardDispatch], [umListRef, umDispatch], [hmListRef, hmDispatch]]) {
+            const existingItem = getListItemFromidentifier(identifier, listRef.current);
+            if (existingItem) {
+                dispatch({type: "update_item", identifier: identifier, new_item: item});
+                return;
+            }
+        }
     }
 
     function save_success(data) {
         const stLineNumbers = data["standard_methods_line_numbers"];
-        for (let identifier of Object.keys(stLineNumbers)) {
-            setFirstLineNumber(stLineNumbers[identifier], identifier, standardDispatch);
+        let identifier;
+        for (let name of Object.keys(stLineNumbers)) {
+            identifier = getIdentifierFromNameInLIst(standardListRef, name);
+            setLineNumbers(stLineNumbers[name], identifier, standardDispatch);
         }
         const umLineNumbers = data["user_methods_line_numbers"];
-        for (let identifier of Object.keys(umLineNumbers)) {
-            setFirstLineNumber(umLineNumbers[identifier], identifier, umDispatch);
+        for (let name of Object.keys(umLineNumbers)) {
+            identifier = getIdentifierFromNameInLIst(umListRef, name);
+            setLineNumbers(umLineNumbers[name], identifier, umDispatch);
+        }
+        const hmLineNumbers = data["used_handler_methods_line_numbers"];
+        for (let identifier of Object.keys(hmLineNumbers)) {
+            identifier = getIdentifierFromNameInLIst(hmListRef, name);
+            setLineNumbers(hmLineNumbers[name], identifier, hmDispatch);
         }
         _update_saved_state();
     }
@@ -523,9 +678,15 @@ function CreatorApp(props) {
         last_save.current = _getSaveDict();
     }
 
-    function _selectLine(cm, lnumber) {
+    function _highlightLine(listRef, identifier, lnumber) {
         try {
-            const line = cm.state.doc.line(lnumber + 1);
+            const item = getListItemFromidentifier(identifier, listRef.current);
+            if (item == null || !item.cmObject) {
+                return
+            }
+            rline_number.current = null
+            const cm = item.cmObject;
+            const line = cm.state.doc.line(lnumber + 1 - item.firstLineNumber);
             cm.dispatch({
                 selection: EditorSelection.single(line.from, line.to),
                 effects: EditorView.scrollIntoView(line.from, {
@@ -537,44 +698,20 @@ function CreatorApp(props) {
         }
 
     }
-
-    function _gotoUserMethodLineNumber(rline_numaber) {
-
-    }
-
     function _goToLineNumber() {
         if (rline_number.current) {
+            const local_number = rline_number.current
             errorDrawerFuncs.closeErrorDrawer();
-            if (props.is_mpl || props.is_d3) {
-                if (rline_number.current < dpState.firstLineNumber) {
-                    //if (umCmObjectRef.current) {
-                        // _handleTabSelect("methods");
-                        // _selectLine(umCmObjectRef.current, rline_number.current - umState.firstLineNumber);
-                        _gotoUserMethodLineNumber(rline_number.current);
-                        rline_number.current = null
+            for (let listRef of [standardListRef, umListRef, hmListRef]) {
+                for (let item of listRef.current) {
+                    if (local_number >= item["firstLineNumber"] && local_number <= item["lastLineNumber"]) {
+                        showTab(item["identifier"]);
+                        pushCallback(()=>{
+                            _highlightLine(listRef, item["identifier"], local_number);
+                        })
+                        break;
+                    }
 
-                } else if (rline_number.current < rcState.firstLineNumber) {
-                    if (dpCmObjectRef.current) {
-                        _selectLine(dpCmObjectRef.current, rline_number.current - dpState.firstLineNumber - 1);
-                        rline_number.current = null
-                    }
-                } else if (rcCmObjectRef.current) {
-                    _selectLine(rcCmObjectRef.current, rline_number.current - rcState.firstLineNumber - 1);
-                    rline_number.current = null
-                }
-            } else {
-                if (rline_number.current < props.render_content_line_number) {
-                    //if (umCmObjectRef.current) {
-                    //     _handleTabSelect("methods");
-                    //     _selectLine(umCmObjectRef.current, rline_number.current - umState.firstLineNumber);
-                        _gotoUserMethodLineNumber(rline_number.current);
-                        rline_number.current = null
-                    //}
-                } else {
-                    if (rcCmObjectRef.current) {
-                        _selectLine(rcCmObjectRef.current, rline_number.current - rcState.firstLineNumber - 1);
-                        rline_number.current = null
-                    }
                 }
             }
         }
@@ -586,14 +723,39 @@ function CreatorApp(props) {
     }
 
     function _handleTabSelect(newTabIdentifier) {
-        let new_tab_list = [...visibleTabList];
+        let new_tab_list = [...visibleTabListRef.current];
         if (!new_tab_list.includes(newTabIdentifier)) {
             new_tab_list.push(newTabIdentifier);
         }
         else {
+            let existingItem = getItemFromIdentifier(newTabIdentifier);
+            if (existingItem) {
+                const cm = existingItem.cmObject;
+                const scrollTop = cm.scrollDOM.scrollTop;
+
+                setItem(newTabIdentifier, {scrollTop: scrollTop});
+            }
             new_tab_list = new_tab_list.filter(tab => tab !== newTabIdentifier);
         }
         setVisibleTabList(new_tab_list)
+    }
+
+    function showTab(newTabIdentifier) {
+        if (!visibleTabListRef.current.includes(newTabIdentifier)) {
+            let new_tab_list = [...visibleTabListRef.current];
+            new_tab_list.push(newTabIdentifier);
+            setVisibleTabList(new_tab_list);
+        }
+
+    }
+
+    function showTabs(id_list) {
+        let tabsToAdd = id_list.filter((id)=> !visibleTabListRef.current.includes(id));
+        if (tabsToAdd.length > 0) {
+            let new_tab_list = [...visibleTabListRef.current, ...tabsToAdd];
+            setVisibleTabList(new_tab_list);
+        }
+
     }
 
     function _setResourceNameState(new_name, callback = null) {
@@ -636,8 +798,7 @@ function CreatorApp(props) {
                                saveAndCheckpoint={_saveAndCheckpoint}
                                searchState={searchState}
                                searchDispatch={searchDispatch}
-                               search_ref={search_ref}
-                               handleTabSelect={_handleTabSelect}
+                               search_ref={null}
                                pushCallback={pushCallback}
                                tsocket={props.tsocket}
                                extraSelfCompletions={st["mode"] == "python" ? extraSelfCompletionsRef.current : []}
@@ -664,8 +825,7 @@ function CreatorApp(props) {
                            saveAndCheckpoint={_saveAndCheckpoint}
                            searchState={searchState}
                            searchDispatch={searchDispatch}
-                           search_ref={search_ref}
-                           handleTabSelect={_handleTabSelect}
+                           search_ref={null}
                            pushCallback={pushCallback}
                            tsocket={props.tsocket}
                            extraSelfCompletions={extraSelfCompletionsRef.current}
@@ -691,8 +851,7 @@ function CreatorApp(props) {
                            saveAndCheckpoint={_saveAndCheckpoint}
                            searchState={searchState}
                            searchDispatch={searchDispatch}
-                           search_ref={search_ref}
-                           handleTabSelect={_handleTabSelect}
+                           search_ref={null}
                            pushCallback={pushCallback}
                            tsocket={props.tsocket}
                            extraSelfCompletions={extraSelfCompletionsRef.current}
@@ -787,19 +946,20 @@ function CreatorApp(props) {
 
     let right_pane_list = [];
 
-    if (visibleTabList.includes("metadata")) {
+    if (visibleTabListRef.current.includes("metadata")) {
         right_pane_list.push(
             <PaneElement identifier="metadata" key="metadata" dispatch={metadataDispatch} pushCallback={pushCallback}
-                         ushCallback={pushCallback} el={metadataRef.current} pane_height={metadataRef.current.pane_height}>
+                         el={metadataRef.current} pane_height={metadataRef.current.pane_height}>
                 {mdata_panel}
             </PaneElement>
         )
     }
     for (let key of Object.keys(optionElemDict)) {
-        if (visibleTabList.includes(key)) {
+        if (visibleTabListRef.current.includes(key)) {
             const item = getListItemFromidentifier(key, option_list_ref.current);
             right_pane_list.push(
                 <PaneElement identifier={key} key={key} el={item} pane_height={item.pane_height}
+                             className="form-pane"
                              allowDelete={true} dispatch={optionDispatch} pushCallback={pushCallback}>
                     {optionElemDict[key]?.()}
                 </PaneElement>
@@ -807,10 +967,11 @@ function CreatorApp(props) {
         }
     }
     for (let key of Object.keys(exportElemDict)) {
-        if (visibleTabList.includes(key)) {
+        if (visibleTabListRef.current.includes(key)) {
             const item = getListItemFromidentifier(key, export_list_ref.current);
             right_pane_list.push(
             <PaneElement identifier={key} key={key} el={item} pane_height={item.pane_height}
+                         className="form-pane"
                          allowDelete={true} dispatch={exportDispatch} pushCallback={pushCallback}>
                 {exportElemDict[key]?.()}
             </PaneElement>
@@ -818,10 +979,11 @@ function CreatorApp(props) {
         }
     }
     for (let key of Object.keys(saveElemDict)) {
-        if (visibleTabList.includes(key)) {
+        if (visibleTabListRef.current.includes(key)) {
             const item = getListItemFromidentifier(key, save_list_ref.current);
             right_pane_list.push(
                 <PaneElement key={key} identifier={key} el={item} pane_height={item.pane_height}
+                              className="form-pane"
                              allowDelete={true} dispatch={saveDispatch} pushCallback={pushCallback}>
                     <h6>Save Attribute: <b>{item.name}</b></h6>
                     {saveElemDict[key]?.()}
@@ -831,7 +993,7 @@ function CreatorApp(props) {
 
     }
     for (let item of standardListRef.current) {
-        if (visibleTabList.includes(item["identifier"])) {
+        if (visibleTabListRef.current.includes(item["identifier"])) {
             right_pane_list.push(
                 <PaneElement key={item["identifier"]} el={item} dispatch={standardDispatch} pane_height={item.pane_height}
                              identifier={item["identifier"]} pushCallback={pushCallback}>
@@ -841,7 +1003,7 @@ function CreatorApp(props) {
         }
     }
     for (let item of hmListRef.current) {
-        if (visibleTabList.includes(item["identifier"])) {
+        if (visibleTabListRef.current.includes(item["identifier"])) {
             right_pane_list.push(
                 <PaneElement key={item["identifier"]} el={item} dispatch={hmDispatch} pane_height={item.pane_height}
                              allowDelete={true}
@@ -852,7 +1014,7 @@ function CreatorApp(props) {
         }
     }
     for (let item of umListRef.current) {
-        if (visibleTabList.includes(item["identifier"])) {
+        if (visibleTabListRef.current.includes(item["identifier"])) {
             right_pane_list.push(
                 <PaneElement key={item["identifier"]} el={item} pane_height={item.pane_height}
                              identifier={item["identifier"]}  allowDelete={true} dispatch={umDispatch} pushCallback={pushCallback}>
@@ -863,9 +1025,25 @@ function CreatorApp(props) {
     }
 
     let right_pane = (
-        <div style={{overflow: "auto", height: "100%"}}>
-            {right_pane_list}
+        <Fragment>
+            <div style={{paddingBottom: 20, height: "100%"}}>
+            <TileMakerSearchForm
+                regex={false}
+                allow_regex={true}
+                field_width={200}
+                include_search_jumper={true}
+                searchDispatch={searchDispatch}
+                searchStateRef={searchStateRef}
+                searchState={searchStateRef.current}
+                search_ref={search_ref}
+                pushCallback={pushCallback}
+                showTab={showTab}
+                    />
+            <div style={{overflow: "auto", height: "100%"}}>
+                {right_pane_list}
+            </div>
         </div>
+        </Fragment>
     )
 
     let outer_style = {
@@ -910,7 +1088,7 @@ function CreatorApp(props) {
             <ErrorBoundary custom_message="Error outside context provider">
 
                 <MakerPaneContext.Provider value={{
-                    visibleTabList: visibleTabList,
+                    visibleTabList: visibleTabListRef.current,
                     setVisibleTabList: setVisibleTabList,
                     toggleVisibleTab: _handleTabSelect,
                     pushCallback: pushCallback

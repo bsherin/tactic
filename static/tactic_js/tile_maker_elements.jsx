@@ -37,15 +37,16 @@ import {MakerPaneContext} from "./tile_maker_support";
 import {LabeledFormField, LabeledSelectList, LabeledTextArea} from "./blueprint_react_widgets";
 import {NativeTags, IconSelector, NotesField} from "./blueprint_mdata_fields";
 import {postAjaxPromise} from "./communication_react";
-import {SizeContext, useSize} from "./sizing_tools"
+import {SizeContext, useSize, SizeProvider, useElementSize} from "./sizing_tools"
 import {DragHandle} from "./resizing_layouts2";
 
 export {
     CmElement, PaneElement, MakerNavigator, OptionModuleForm, ExportModuleForm,
-    MetadataModule, option_icons, standard_method_icons, INITIAL_CODE_PANE_HEIGHT
+    MetadataModule, option_icons, standard_method_icons, INITIAL_CODE_PANE_HEIGHT, INITIAL_FORM_PANE_HEIGHT
 }
 
 const INITIAL_CODE_PANE_HEIGHT = 330
+const INITIAL_FORM_PANE_HEIGHT = 125;
 const INDENT = 25;
 const SECTION_TOP_MARGIN = 15;
 
@@ -126,7 +127,7 @@ function SimplePaneTitle(props) {
     let theIcon = <Icon icon={props.icon} size={13} />
 
     return (
-        <div style={{position: "absolute", left: 40, top: 20}}>
+        <div style={{position: "absolute", left: 40, top: 13}}>
             <EntityTitle title={props.title} heading={H6} subtitle={props.subtitle} icon={theIcon} />
         </div>
     )
@@ -141,15 +142,17 @@ function PaneElement(props) {
         children: null,
         el: null,
         pane_height: 0,
+        className: "",
         ...props,
     }
     const top_ref = useRef(null);
+    const height_ref = useRef(props.pane_height)
 
     const [usable_width, , topX, topY] = useSize(top_ref, 0);
 
     const mpContext = useContext(MakerPaneContext);
 
-    const [, set_resizing] = useState(false);
+    const [resizing, set_resizing] = useState(false);
     const [, set_dwidth] = useState(0);
     const [dheight, set_dheight] = useState(0);
 
@@ -158,6 +161,10 @@ function PaneElement(props) {
         set_resizing(true);
         set_dwidth(0);
         set_dheight(0);
+        if (top_ref.current) {
+            const rect = top_ref.current.getBoundingClientRect();
+            height_ref.current = rect.height;
+        }
     }
 
     function _onResize(e, ui, x, y, dx, dy) {
@@ -166,50 +173,52 @@ function PaneElement(props) {
     }
 
     function _stopResize(e, ui, x, y, dx, dy) {
+        resize_pane(dx, dy)
         set_resizing(false);
         set_dwidth(0);
         set_dheight(0);
-        resize_pane(dx, dy)
     }
 
     function resize_pane(dx, dy) {
         props.dispatch({
                 type: "update_item",
                 identifier: props.identifier,
-                new_item: {pane_height: props.pane_height + dy}
+                new_item: {pane_height: height_ref.current + dy}
             }
         )
     }
 
-    const current_height = props.pane_height + dheight;
+    const current_height = resizing
+        ? height_ref.current + dheight
+        : props.pane_height;
 
     function _deleteMe() {
         props.dispatch({type: "delete_item", identifier: props.identifier})
     }
 
     return (
-        <Card ref={top_ref} key={props.identifier} elevation={2}
-              style={{height: current_height, position: "relative", marginBottom: 5}}>
+        <Card ref={top_ref} key={props.identifier} elevation={0} className={`maker-pane ${props.className}`}
+              style={{height: current_height, position: "relative"}}>
             <Button variant="minimal" size="small" icon="cross"
-                        style={{padding: 0, position: "absolute", left: 10, top: 10, zIndex: 100}}
+                        style={{padding: 0, position: "absolute", left: 10, top: 10, zIndex: 20}}
                         onClick={() => {
                             mpContext.toggleVisibleTab(props.identifier)
                         }}/>
             {props.allowDelete &&
                 <Button variant="minimal" intent="danger" size="small" icon="trash"
-                        style={{padding: 0, position: "absolute", right: 10, top: 10, zIndex: 100}}
+                        style={{padding: 0, position: "absolute", right: 10, top: 10, zIndex: 20}}
                         onClick={_deleteMe}/>
             }
-            <SizeContext.Provider value={{
-                availableWidth: usable_width,
-                availableHeight: current_height - 30,
+            <SizeProvider value={{
+                availableWidth: usable_width - 20, // for padding for separation from scrollbar
+                availableHeight: current_height - 5, // for margin bottom,
                 topX: topX,
                 topY: topY
             }}>
-
                 {props.children}
-            </SizeContext.Provider>
+            </SizeProvider>
             <DragHandle position_dict={draghandle_position_dict}
+                        iconSize={20}
                         dragStart={_startResize}
                         onDrag={_onResize}
                         dragEnd={_stopResize}
@@ -231,6 +240,10 @@ function MetadataModule(props) {
         },
         ...props
     }
+
+    const top_ref = useRef(null);
+
+    const [, usable_height, , ] = useSize(top_ref, 0);
 
     useEffect(() => {
         get_all_tags()
@@ -321,9 +334,16 @@ function MetadataModule(props) {
         )
     }
 
+    let outer_style = {
+        width: "100%",
+        height: usable_height,
+        overflow: "auto",
+        paddingTop: 15
+    };
+
     const split_tags = props.metadataRef.current.tags.split(" ");
     return (
-        <div>
+        <div className="metadata-outer" ref={top_ref} style={outer_style} >
             <SimplePaneTitle title="Metadata" icon="properties"/>
             <div style={{marginTop: 30}}>
             <ErrorBoundary custom_message="Error in NativeTags">
@@ -405,8 +425,8 @@ function ExportModuleForm(props) {
     return (
         <Fragment>
             <SimplePaneTitle icon="export" title={props.exportItem.name}/>
-            <div style={{marginTop: 30}}>
-            <form>
+            <div>
+            <form className="maker-form-container">
                 <div style={{display: "flex", flexWrap: "wrap", flexDirection: "row"}}>
                     <LabeledFormField label="Name" onChange={handleNameChange} the_value={props.exportItem.name}/>
                     <LabeledFormField label="Tags" onChange={handleTagChange} the_value={props.exportItem.tags}/>
@@ -535,8 +555,8 @@ function OptionModuleForm(props) {
     return (
         <Fragment>
             <SimplePaneTitle icon="select" title={props.optionItem.name}/>
-            <div style={{marginTop: 30}}>
-            <form>
+            <div>
+            <form className="maker-form-container">
                 <div style={{display: "flex", flexDirection: "column"}}>
                     <div style={{display: "flex", flexWrap: "wrap", flexDirection: "row"}}>
                         <LabeledFormField label="Name" onChange={handleNameChange} the_value={props.optionItem.name}
@@ -581,6 +601,7 @@ function SignatureHeader(props) {
     props = {
         name: "",
         argString: "",
+        mode: "mode",
         handleNameChange: () => {
         },
         handleArgChange: () => {
@@ -664,10 +685,32 @@ function SignatureHeader(props) {
         props.handleNameChange(funcName);
         props.handleArgChange(argsStr);
     }
-
+    let code_content;
+    if (props.mode == "javascript") {
+        code_content = "(selector, w, h, arg_dict, resizing) =>";
+    }
+    else if (props.name == "globals") {
+        code_content = "# globals"
+    }
+    else {
+        code_content = `def ${props.name}(self, ${props.argString}):`;
+    }
     return (
-        <div className="d-flex flex-row cm-signature" style={{justifyContent: "space-between"}}>
+        <div className="d-flex flex-row cm-signature"
+             style={{justifyContent: "space-between", marginLeft: 10, paddingTop: 10}}>
+            {props.mode == "javascipt" ?
+                <ReactCodemirror6 readOnly={!props.allowSignatureChange}
+                                mode="javascript"
+                              show_line_numbers={false}
+                              no_height={true}
+                              controlled={true}
+                              getEditableRanges={getEditableRanges}
+                              restrict_edits_to_range={props.allowSignatureChange}
+                              className="creator-code-header"
+                              handleChange={null}
+                              code_content={code_content}/> :
             <ReactCodemirror6 readOnly={!props.allowSignatureChange}
+                              mode={props.mode}
                               show_line_numbers={false}
                               no_height={true}
                               controlled={true}
@@ -675,7 +718,8 @@ function SignatureHeader(props) {
                               restrict_edits_to_range={props.allowSignatureChange}
                               className="creator-code-header"
                               handleChange={props.allowSignatureChange ? handleSignatureChange : null}
-                              code_content={`def ${props.name}(self, ${props.argString}):`}/>
+                              code_content={code_content}/>
+            }
         </div>
     )
 }
@@ -696,7 +740,6 @@ function CmElement(props) {
         searchDispatch: null,
         clearAllSelections: null,
         search_ref: null,
-        handleTabSelect: null,
         pushCallback: null,
         tsocket: null,
         extraSelfCompletions: null,
@@ -707,6 +750,10 @@ function CmElement(props) {
         ...props
     };
 
+    const top_ref = useRef();
+
+    const sizeInfo = useContext(SizeContext);
+    const [doScroll, setDoScroll] = useState(props.cmState.scrollTop != null);
 
     function handleCodeChange(new_code) {
         props.cmDispatch({type: "update_item", new_item: {codeText: new_code}, identifier: props.identifier});
@@ -721,73 +768,59 @@ function CmElement(props) {
     }
 
     function setCmObject(cmObject) {
-        if (props.cmObjectRef && props.cmObjectRef.current) {
-            props.cmObjectRef.current = cmObject;
+        props.cmDispatch({type: "update_item", new_item: {cmObject: cmObject}, identifier: props.identifier});
+        if (doScroll) {
+            setDoScroll(false)
+            requestAnimationFrame(() => {
+            // The timeout below is necessary because I can't do this until the cmObject is fully initialized
+            setTimeout(() => {
+                    cmObject.scrollDOM.scrollTop = props.cmState.scrollTop;
+                }, 100)
+            });
         }
     }
 
-    function updateSearchState(new_state) {
-        props.searchDispatch({type: "UPDATE_STATE", new_state: new_state, identifier: props.identifier});
-    }
-
-    function searchNext() {
-        props.searchDispatch({type: "SEARCH_NEXT"});
-        props.pushCallback(() => {
-            props.handleTabSelect(props.searchState.current_search_cm);
-        })
-    }
-
-    function searchPrev() {
-        props.searchDispatch({type: "SEARCH_PREVIOUS"});
-        props.pushCallback(() => {
-            props.handleTabSelect(props.searchState.current_search_cm);
-        })
-    }
-
-    function setSearchMatches(num) {
-        props.searchDispatch({type: "SET_SEARCH_MATCHES", payload: {"identifier": props.identifier, "num": num}});
-    }
-
-    const sizeInfo = useContext(SizeContext)
-
+    let usable_height = sizeInfo.availableHeight; // for header
     let outer_style = {
         width: "100%",
-        height: sizeInfo.availableHeight,
+        height: usable_height,
         paddingLeft: 0,
         position: "relative"
     };
 
     return (
         <Fragment>
-            <div style={outer_style}>
-                    <SignatureHeader name={props.name}
+            <div style={outer_style} ref={top_ref} className="cm-element-container">
+                <SignatureHeader name={props.name}
                          argString={props.argString}
+                                     mode={props.cmState.mode}
                          allowSignatureChange={props.allowSignatureChange}
                          handleNameChange={handleNameChange}
                          handleArgChange={handleArgChange}/>
                 <ReactCodemirror6 code_content={props.cmState.codeText}
                                   controlled={true}
+                                  controlled_height={usable_height - 50} // 50 for header
                                   no_height={props.no_height}
                                   title_label={null}
                                   show_search={false}
                                   mode={props.cmState.mode}
                                   extraKeys={props.extraKeys()}
-                                  current_search_number={props.searchState.current_search_cm == props.identifier ?
-                                      props.searchState.current_search_number : null}
                                   handleChange={handleCodeChange}
                                   saveMe={props.saveAndCheckpoint}
                                   setCMObject={setCmObject}
-                                  search_term={props.searchState.search_string}
-                                  updateSearchState={updateSearchState}
                                   alt_clear_selections={props.clearAllSelections}
                                   first_line_number={props.cmState.firstLineNumber}
                                   readOnly={false}
+                                  current_search_number={props.searchState.current_search_cm == props.identifier ?
+                                      props.searchState.current_search_number : null}
+                                  search_term={props.searchState.search_string}
+                                  updateSearchState={null}
                                   regex_search={props.searchState.use_regex}
-                                  search_ref={props.search_ref}
-                                  searchPrev={searchPrev}
-                                  searchNext={searchNext}
-                                  search_matches={props.searchState.search_matches}
-                                  setSearchMatches={setSearchMatches}
+                                  search_ref={null}
+                                  searchPrev={null}
+                                  searchNext={null}
+                                  search_matches={null}
+                                  setSearchMatches={null}
                                   tsocket={props.tsocket}
                                   extraSelfCompletions={props.mode == "python" ? props.extraSelfCompletions : []}
                                   container_id={props.module_viewer_id}
@@ -842,19 +875,19 @@ function NavSection(props) {
     // noinspection JSValidateTypes
     return (
         <div style={{marginTop: SECTION_TOP_MARGIN}}>
-            <ButtonGroup>
+            <ButtonGroup key="button-group">
                 <Button variant="minimal" style={{paddingRight: 2, fontSize:13, fontWeight: 600}} icon={props.icon} size="medium"
                         onClick={() => setIsOpen(!isOpen)}>
                     {props.title}
                 </Button>
                 {props.right_button != null && props.right_button}
             </ButtonGroup>
-            <Collapse className="nav-section-class" isOpen={isOpen}>
-                {props.sub_items.map((item, ) => {
+            <Collapse key="collapse" className="nav-section-class" isOpen={isOpen}>
+                {props.sub_items.map((item, idx) => {
                     let icon = props.icon_dict ?
                         <Icon icon={props.icon_dict[item[props.icon_field]]} size={12}/> : null;
                     return (
-                        <NavItem key={item.identifier} identifier={item.identifier} title={item.name} icon={icon}
+                        <NavItem key={idx} identifier={item.identifier} title={item.name} icon={icon}
                                  item_list={item.item_list}/>
                     )
                 })
@@ -956,11 +989,11 @@ function SortableNavSection(props) {
                     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                         <SortableContext items={props.sub_items.map((i) => i.identifier)}
                                          strategy={verticalListSortingStrategy}>
-                            {props.sub_items.map((item,) => {
+                            {props.sub_items.map((item, idx) => {
                                 let icon = props.icon_dict ?
                                     <Icon icon={props.icon_dict[item[props.icon_field]]} size={12}/> : null;
                                 return (
-                                    <SortableNavItem key={item.identifier} identifier={item.identifier}
+                                    <SortableNavItem key={idx} identifier={item.identifier}
                                                      title={item.name}
                                                      icon={icon} item_list={item.item_list} dispatch={props.dispatch}/>
                                 )
@@ -1079,19 +1112,18 @@ function NavItem(props) {
     const mpContext = useContext(MakerPaneContext);
 
     return (
-        <Fragment>
-            <ControlGroup>
-                <Button style={{marginLeft: INDENT, paddingRight: 2}}
-                        icon={props.icon}
-                        intent={mpContext.visibleTabList.includes(props.identifier) ? "primary" : "none"}
-                        size="medium"
-                        variant="minimal"
-                        onClick={() => {
-                            mpContext.toggleVisibleTab(props.identifier)
-                        }}>
-                    {props.title}
-                </Button>
-            </ControlGroup>
-        </Fragment>
+        <ControlGroup>
+            <Button style={{marginLeft: INDENT, paddingRight: 2}}
+                    icon={props.icon}
+                    intent={mpContext.visibleTabList.includes(props.identifier) ? "primary" : "none"}
+                    size="medium"
+                    variant="minimal"
+                    onClick={() => {
+                        mpContext.toggleVisibleTab(props.identifier)
+                    }}>
+                {props.title}
+            </Button>
+        </ControlGroup>
     );
 }
+

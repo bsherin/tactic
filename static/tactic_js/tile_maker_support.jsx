@@ -61,6 +61,11 @@ function creator_props(data, registerDirtyMethod, finalCallback) {
         let parsed_data = data_object.the_content;
         let all_handler_methods = data_object.all_handler_methods;
         let initial_line_number = !window.in_context && window.line_number ? window.line_number : null;
+        let interface_state = null;
+        if ("interface_state" in mdata) {
+            interface_state = mdata.interface_state;
+            delete mdata.interface_state;
+        }
 
         finalCallback(
             {
@@ -80,6 +85,7 @@ function creator_props(data, registerDirtyMethod, finalCallback) {
                 additional_save_attrs: parsed_data.additional_save_attrs,
                 all_handler_methods: all_handler_methods,
                 registerDirtyMethod: registerDirtyMethod,
+                interface_state: interface_state,
             }
         );
     }
