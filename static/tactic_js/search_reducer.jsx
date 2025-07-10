@@ -1,4 +1,5 @@
-import {useReducerAndRef} from "./utilities_react";
+import {arraysMatch, useReducerAndRef} from "./utilities_react";
+import {useEffect} from "react";
 
 export {useSearch, countOccurrences, _searchMatcher, isRegex};
 
@@ -157,7 +158,7 @@ function searchReducer(draft, action) {
     }
 }
 
-function useSearch(initIdList) {
+function useSearch(initIdList, listRefs) {
 
     const searchState = {
         id_list: initIdList,
@@ -169,6 +170,50 @@ function useSearch(initIdList) {
         use_regex: false,
         search_matches: 0
     };
+
     const [value, customDispatch, valueRef] = useReducerAndRef(searchReducer, searchState);
+
+    useEffect(()=>{
+        getAllSearchMatches()
+
+    }, [valueRef.current.search_string])
+
+    useEffect(() => {
+        const currentIds = getIds();
+        if (!arraysMatch(currentIds, valueRef.current.id_list)) {
+            customDispatch({type: "SET_ID_LIST", payload: getIds()});
+        }
+    }, [listRefs[0].current, listRefs[1].current, listRefs[2].current]);
+
+
+    function getIds() {
+        let ids = [];
+        for (let listRef of listRefs) {
+            for (let item of listRef.current) {
+                ids.push(item["identifier"]);
+            }
+        }
+        return ids;
+    }
+
+    function getAllSearchMatches() {
+        const reg = _searchMatcher(valueRef.current.search_string, true, valueRef.current.use_regex);
+        for (let listRef of listRefs) {
+            for (let item of listRef.current) {
+                setSearchMatches(item, reg);
+            }
+        }
+    }
+
+    function setSearchMatches(item, reg) {
+        let matches;
+        if (!reg || !item.codeText) {
+            matches = 0
+        } else {
+            matches = countOccurrences(reg, item.codeText);
+        }
+        customDispatch({type: "SET_SEARCH_MATCH_NUMBERS", payload: {"identifier": item.identifier, "num": matches}});
+    }
+
     return [value, customDispatch, valueRef];
 }

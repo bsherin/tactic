@@ -325,7 +325,8 @@ function NotesField(props) {
     const awaitingFocus = useRef(false);
     const cmObject = useRef(null);
 
-    var mdRef = useRef(null);
+    const mdRef = useRef(null);
+    const localRefRef = useRef(null);
 
     useEffect(() => {
         if (awaitingFocus.current) {
@@ -337,6 +338,18 @@ function NotesField(props) {
         }
     });
 
+
+    useEffect(() => {
+        return () => {
+            console.log("Unmounting notesfield");
+            cmObject.current.destroy()
+            cmObject.current = null;
+            setFocusFunc.current = null;
+
+         };
+    }, []);
+
+
     useEffect(()=>{
         setShowMarkdown(!hasOnlyWhitespace());
     }, [props.res_name, props.res_type]);
@@ -346,7 +359,9 @@ function NotesField(props) {
     }
 
     function focusNotes() {
-        setFocusFunc.current()
+        if (setFocusFunc.current) {
+            setFocusFunc.current()
+        }
     }
 
     function _hideMarkdown() {
@@ -372,6 +387,10 @@ function NotesField(props) {
         cmObject.current = cmobject
     }
 
+    function registerLocalRef(localRef) {
+        localRefRef.current = localRef;
+    }
+
      const registerSetFocusFunc = useCallback((theFunc) => {
         setFocusFunc.current = theFunc;
     }, []);
@@ -390,19 +409,22 @@ function NotesField(props) {
     let converted_dict = {__html: converted_markdown};
     return (
         <Fragment>
-            {!really_show_markdown &&
-            <ReactCodemirror6 handleChange={props.handleChange}
-                              readOnly={props.readOnly}
-                              setCMObject={_setCmObject}
-                              handleBlur={_handleMyBlur}
-                              registerSetFocusFunc={registerSetFocusFunc}
-                              show_line_numbers={false}
-                              controlled={false}
-                              mode="markdown"
-                              code_content={props.mStateRef.current.notes}
-                              no_height={true}
-                              saveMe={null}/>
-            }
+            <div style={{ display: really_show_markdown ? "none" : "block" }}>
+                <ReactCodemirror6
+                    handleChange={props.handleChange}
+                    className="notes-field"
+                    readOnly={props.readOnly}
+                    setCMObject={_setCmObject}
+                    handleBlur={_handleMyBlur}
+                    registerSetFocusFunc={registerSetFocusFunc}
+                    show_line_numbers={false}
+                    controlled={false}
+                    mode="markdown"
+                    code_content={props.mStateRef.current.notes}
+                    no_height={true}
+                    saveMe={null}
+                />
+            </div>
             <div ref={mdRef}
                  style={md_style}
                  onClick={_hideMarkdown}
@@ -559,6 +581,7 @@ function CombinedMetadata(props) {
     useEffect(() => {
         grabMetadata()
     }, [props.res_name, props.res_type]);
+
 
     function grabMetadata() {
         if (props.useFixedData || props.res_name == null || props.res_type == null) return;

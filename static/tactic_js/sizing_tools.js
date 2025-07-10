@@ -30,7 +30,7 @@ var BOTTOM_MARGIN = exports.BOTTOM_MARGIN = 35;
 var TOP_MARGIN = exports.TOP_MARGIN = 25;
 var INITIAL_DECREMENT = 50;
 var USUAL_NAVBAR_HEIGHT = exports.USUAL_NAVBAR_HEIGHT = 50;
-var INIT_CONTEXT_PANEL_WIDTH = exports.INIT_CONTEXT_PANEL_WIDTH = 150;
+var INIT_CONTEXT_PANEL_WIDTH = exports.INIT_CONTEXT_PANEL_WIDTH = 250;
 var ICON_BAR_WIDTH = exports.ICON_BAR_WIDTH = 40;
 function getUsableDimensions() {
   return {
@@ -90,7 +90,13 @@ function useSize() {
     if (aheight > MIN_HEIGHT) {
       set_usable_height(aheight);
     }
-  }, [sizeInfo.availableWidth, sizeInfo.availableHeight, sizeInfo.topX, sizeInfo.topY, top_ref.current, selectedPane.selectedTabIdRef.current, iCounter]);
+    return function () {
+      set_usable_width(0);
+      set_usable_height(0);
+      setTopX(0);
+      setTopY(0);
+    };
+  }, [sizeInfo.availableWidth, sizeInfo.availableHeight, sizeInfo.topX, sizeInfo.topY, selectedPane.selectedTabIdRef.current, iCounter]);
   return [usable_width, usable_height, topX, topY];
 }
 function withSizeContext(WrappedComponent) {

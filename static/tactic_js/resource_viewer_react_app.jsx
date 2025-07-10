@@ -6,7 +6,7 @@ import {HorizontalPanes} from "./resizing_layouts2";
 import {handleCallback} from "./communication_react"
 import {TacticMenubar} from "./menu_utilities"
 import {doFlash, StatusContext} from "./toaster";
-import {BOTTOM_MARGIN, SIDE_MARGIN, SizeContext, useSize} from "./sizing_tools"
+import {BOTTOM_MARGIN, SIDE_MARGIN, useSize} from "./sizing_tools"
 import {SearchForm} from "./library_widgets";
 import {useConnection} from "./utilities_react";
 import {postAjaxPromise} from "./communication_react";
@@ -88,15 +88,13 @@ function ResourceViewerApp(props) {
     };
 
     const top_ref = useRef(null);
-    const savedContent = useRef(props.the_content);
 
     const statusFuncs = useContext(StatusContext);
-    const sizeInfo = useContext(SizeContext);
 
     // Only used when not in context
     const connection_status = useConnection(props.tsocket, initSocket);
 
-    const [usable_width, usable_height, topX, topY] = useSize(top_ref, 0, "ResourceViewer");
+    const [usable_width, usable_height, , ] = useSize(top_ref, 0, "ResourceViewer");
 
     useEffect(() => {
         statusFuncs.stopSpinner();

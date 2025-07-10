@@ -60,6 +60,16 @@ $light-highlight-weight: 600;
         color: blueprint_variables.$gray4
       }
 
+      .show-on-hover {
+        opacity: 0;
+      }
+
+      &:hover {
+        .show-on-hover {
+          opacity: 100;
+        }
+      }
+
 
       .context-close-button:hover {
         color: blueprint_variables.$red5;
@@ -239,7 +249,7 @@ $light-highlight-weight: 600;
 
     .context-tab-button-content {
       padding-left: 5px;
-      font-size: 14px;
+      font-size: 16px;
 
       &.hovering {
         margin-top: 40px;

@@ -24,7 +24,7 @@ module.exports = (env, argv) => {
             library_home_react: './static/tactic_js/library_home_react.js',
             repository_home_react: './static/tactic_js/repository_home_react.js',
             admin_home_react: "./static/tactic_js/admin_home_react.js",
-            tile_creator_react: './static/tactic_js/tile_creator_react.js',
+            tile_creator_react: './static/tactic_js/tile_maker_react.js',
             code_viewer_react: './static/tactic_js/code_viewer_react.js',
             list_viewer_react: './static/tactic_js/list_viewer_react.js',
             module_viewer_react: './static/tactic_js/module_viewer_react.js',

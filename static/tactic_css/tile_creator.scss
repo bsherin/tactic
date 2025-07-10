@@ -20,14 +20,14 @@
   }
 }
 
-.sortable-nav-item {
+.bp5-button-group {
   .show-on-hover {
-    opacity: 0
+    opacity: 0 !important;
   }
 
   &:hover {
     .show-on-hover {
-      opacity: 100
+      opacity: 100 !important;
     }
   }
 }
@@ -53,9 +53,14 @@
   .maker-pane {
     background-color: transparent !important;
     margin-bottom: 5px;
+    margin-left: 5px;
     padding-top: 0;
     padding-bottom: 0;
     margin-right: 20px; // for separation from scrollbar
+    // add margin-top of 10px if first child
+    &:first-child {
+      margin-top: 5px;
+    }
     &.form-pane {
           overflow: auto;
     }

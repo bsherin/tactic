@@ -359,6 +359,7 @@ function NotesField(props) {
   var awaitingFocus = (0, _react.useRef)(false);
   var cmObject = (0, _react.useRef)(null);
   var mdRef = (0, _react.useRef)(null);
+  var localRefRef = (0, _react.useRef)(null);
   (0, _react.useEffect)(function () {
     if (awaitingFocus.current) {
       focusNotes();
@@ -369,13 +370,23 @@ function NotesField(props) {
     }
   });
   (0, _react.useEffect)(function () {
+    return function () {
+      console.log("Unmounting notesfield");
+      cmObject.current.destroy();
+      cmObject.current = null;
+      setFocusFunc.current = null;
+    };
+  }, []);
+  (0, _react.useEffect)(function () {
     setShowMarkdown(!hasOnlyWhitespace());
   }, [props.res_name, props.res_type]);
   function hasOnlyWhitespace() {
     return !props.mStateRef.current.notes || !props.mStateRef.current.notes.trim().length;
   }
   function focusNotes() {
-    setFocusFunc.current();
+    if (setFocusFunc.current) {
+      setFocusFunc.current();
+    }
   }
   function _hideMarkdown() {
     if (props.readOnly) return;
@@ -396,6 +407,9 @@ function NotesField(props) {
   function _setCmObject(cmobject) {
     cmObject.current = cmobject;
   }
+  function registerLocalRef(localRef) {
+    localRefRef.current = localRef;
+  }
   var registerSetFocusFunc = (0, _react.useCallback)(function (theFunc) {
     setFocusFunc.current = theFunc;
   }, []);
@@ -412,8 +426,13 @@ function NotesField(props) {
   var converted_dict = {
     __html: converted_markdown
   };
-  return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, !really_show_markdown && /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror6, {
+  return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
+    style: {
+      display: really_show_markdown ? "none" : "block"
+    }
+  }, /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror6, {
     handleChange: props.handleChange,
+    className: "notes-field",
     readOnly: props.readOnly,
     setCMObject: _setCmObject,
     handleBlur: _handleMyBlur,
@@ -424,7 +443,7 @@ function NotesField(props) {
     code_content: props.mStateRef.current.notes,
     no_height: true,
     saveMe: null
-  }), /*#__PURE__*/_react["default"].createElement("div", {
+  })), /*#__PURE__*/_react["default"].createElement("div", {
     ref: mdRef,
     style: md_style,
     onClick: _hideMarkdown,

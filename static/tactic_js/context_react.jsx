@@ -7,11 +7,11 @@ import "../tactic_css/library_home.scss";
 import "../tactic_css/tile_creator.scss";
 
 import React from "react";
-import { useState, useEffect, useRef, useContext, Fragment, useCallback, useMemo } from "react";
-import { createRoot } from 'react-dom/client';
+import {useState, useEffect, useRef, useContext, Fragment, useCallback, useMemo} from "react";
+import {createRoot} from 'react-dom/client';
 
-import { Tab, Tabs, Button, Icon, Spinner, useHotkeys } from "@blueprintjs/core";
-//import { HotkeysProvider } from "@blueprintjs/core";
+import {Tab, Tabs, Button, Icon, Spinner, useHotkeys} from "@blueprintjs/core";
+// import { HotkeysProvider } from "@blueprintjs/core";
 import {FocusStyleManager} from "@blueprintjs/core";
 
 FocusStyleManager.onlyShowFocusOnTabs();
@@ -123,10 +123,11 @@ function _context_main() {
     const root = createRoot(domContainer);
     root.render(
         //<HotkeysProvider>
-            <ContextAppPlus tsocket={tsocket}/>
+        <ContextAppPlus tsocket={tsocket}/>
         //</HotkeysProvider>
     )
 }
+
 
 function ContextApp(props) {
     const [selectedTabId, setSelectedTabId, selectedTabIdRef, selectedTabIdCounter] = useStateAndRefAndCounter("library");
@@ -194,7 +195,7 @@ function ContextApp(props) {
         ], [_goToNextPane, _goToPreviousPane, _showOpenOmnibar, _closeTab, selectedTabIdRef.current],
     );
 
-    const { handleKeyDown, handleKeyUp } = useHotkeys(hotkeys);
+    const {handleKeyDown, handleKeyUp} = useHotkeys(hotkeys);
     const pushCallback = useCallbackStack("context");
 
     useEffect(() => {
@@ -338,7 +339,7 @@ function ContextApp(props) {
                     cancel_text: "do nothing",
                     submit_text: "reload",
                     handleClose: dialogFuncs.hideModal,
-                    });
+                });
             }
             let old_tab_panel = {...tab_panel_dict_ref.current[the_id]};
             let resource_name = old_tab_panel.panel.resource_name;
@@ -355,12 +356,14 @@ function ContextApp(props) {
                 _registerDirtyMethod(the_id, dmethod)
             };
             await _updatePanelPromise(the_id, {panel: "spinner"});
-            let data = await postAjaxPromise($SCRIPT_ROOT + the_view, {context_id: window.context_id, resource_name: resource_name});
+            let data = await postAjaxPromise($SCRIPT_ROOT + the_view, {
+                context_id: window.context_id,
+                resource_name: resource_name
+            });
             propDict[data.kind](data, drmethod, (new_panel) => {
                 _updatePanel(the_id, {panel: new_panel, kind: data.kind});
             });
-        }
-        catch (e) {
+        } catch (e) {
             if (String(e) !== "canceled") {
                 errorDrawerFuncs.addFromError(`Error refreshing pane`, e)
             }
@@ -419,8 +422,7 @@ function ContextApp(props) {
                     _updateOpenResources(() => _update_window_dimensions())
                 })
             });
-        }
-        catch (e) {
+        } catch (e) {
             if (e !== "canceled") {
                 errorDrawerFuncs.addFromError(`Error closing tab`, e)
             }
@@ -442,8 +444,9 @@ function ContextApp(props) {
             _updateOpenResources(callback);
         });
     }
+
     function _addPanelPromise(new_id, viewer_kind, res_type, title, new_panel, data = null) {
-        return new Promise (function (resolve) {
+        return new Promise(function (resolve) {
             _addPanel(new_id, viewer_kind, res_type, title, new_panel, resolve, data)
         })
     }
@@ -474,7 +477,7 @@ function ContextApp(props) {
     }
 
     function _updatePanelPromise(the_id, new_panel) {
-        return new Promise (function (resolve) {
+        return new Promise(function (resolve) {
             _updatePanel(the_id, new_panel, resolve)
         })
     }
@@ -509,7 +512,7 @@ function ContextApp(props) {
         setShowOpenOmnibar(false)
     }
 
-    const _handleCreateViewer = useCallback(async (data, callback = null)=>{
+    const _handleCreateViewer = useCallback(async (data, callback = null) => {
         let existing_id = _getResourceId(data.resource_name, data.res_type);
         if (existing_id !== -1) {
             setSelectedTabId(existing_id);
@@ -521,7 +524,7 @@ function ContextApp(props) {
             _registerDirtyMethod(new_id, dmethod)
         };
         await _addPanelPromise(new_id, data.kind, data.res_type, data.resource_name, "spinner");
-       propDict[data.kind](data, drmethod, (new_panel) => {
+        propDict[data.kind](data, drmethod, (new_panel) => {
             _updatePanel(new_id, {panel: new_panel}, callback);
         });
     }, []);
@@ -586,8 +589,7 @@ function ContextApp(props) {
             propDict[data.kind](data, drmethod, (new_panel) => {
                 _updatePanel(new_id, {panel: new_panel});
             });
-        }
-        catch(e) {
+        } catch (e) {
             errorDrawerFuncs.addFromError(`Error going to module ${module_name}`, e)
         }
     }
@@ -673,7 +675,7 @@ function ContextApp(props) {
         pushCallback(callback);
     }
 
-    function _addOmniItems(tid, items)  {
+    function _addOmniItems(tid, items) {
         if (!(tid in omniItemsRef.current)) {
             omniItemsRef.current[tid] = []
         }
@@ -714,7 +716,9 @@ function ContextApp(props) {
             selectedTabIdRef,
             amSelected,
             counter: selectedTabIdCounter,
-            addOmniItems: (items)=>{_addOmniItems("library", items)}
+            addOmniItems: (items) => {
+                _addOmniItems("library", items)
+            }
         }}>
             <div id="library-home-root">
                 <LibraryHomeApp tsocket={tsocket}
@@ -735,17 +739,17 @@ function ContextApp(props) {
              panelClassName="context-tab" title="" panel={library_panel}>
             <div className={bclass + " open-resource-tab"}
                  style={{display: "flex", flexDirection: "row", width: "100%", justifyContent: "space-between"}}>
-                    <div style={{
-                        display: "table-cell", flexDirection: "row", justifyContent: "flex-start",
-                        textOverflow: "ellipsis", overflow: "hidden"
-                    }}>
-                        <Icon icon={libIconDict["all"]}
-                              style={{verticalAlign: "middle", marginRight: 5}}
-                              size={16} tabIndex={-1}/>
-                        <span>Library</span>
-                    </div>
+                <div style={{
+                    display: "table-cell", flexDirection: "row", justifyContent: "flex-start",
+                    textOverflow: "ellipsis", overflow: "hidden"
+                }}>
+                    <Icon icon={libIconDict["all"]}
+                          style={{verticalAlign: "middle", marginRight: 5}}
+                          size={16} tabIndex={-1}/>
+                    <span>Library</span>
                 </div>
-            </Tab>
+            </div>
+        </Tab>
     );
     let all_tabs = [ltab];
     if (window.has_pool) {
@@ -759,7 +763,9 @@ function ContextApp(props) {
                 tab_id: "pool",
                 selectedTabIdRef, amSelected,
                 counter: selectedTabIdCounter,
-                addOmniItems: (items)=>{_addOmniItems("pool", items)}
+                addOmniItems: (items) => {
+                    _addOmniItems("pool", items)
+                }
             }}>
                 <div id="pool-browser-root">
                     <PoolBrowser tsocket={tsocket}
@@ -811,8 +817,7 @@ function ContextApp(props) {
                     resource_name: item.name
                 });
                 await _handleCreateViewer(data, statusFuncs.clearStatus);
-            }
-            catch(e) {
+            } catch (e) {
                 statusFuncs.clearStatus();
                 errorDrawerFuncs.addFromError(`Error following ${the_view}`, e)
 
@@ -841,32 +846,34 @@ function ContextApp(props) {
                     selectedTabIdRef,
                     amSelected,
                     counter: selectedTabIdCounter,
-                    addOmniItems: (items)=>{_addOmniItems(tab_id, items)}
+                    addOmniItems: (items) => {
+                        _addOmniItems(tab_id, items)
+                    }
                 }}>
                     <TheClass {...tab_entry.panel}
-                                          controlled={true}
-                                          handleCreateViewer={_handleCreateViewer}
-                                          tab_id={tab_id}
-                                          selectedTabIdRef={selectedTabIdRef}
-                                          changeResourceName={(new_name, callback = null, change_title = true) => {
-                                              _changeResourceName(tab_id, new_name, change_title, callback)
-                                          }}
-                                          updatePanel={(new_panel, callback = null) => {
-                                              _updatePanel(tab_id, new_panel, callback)
-                                          }}
-                                          goToModule={_goToModule}
-                                          registerLineSetter={(rfunc) => _registerLineSetter(tab_id, rfunc)}
-                                          refreshTab={async () => {
-                                              await _refreshTab(tab_id)
-                                          }}
-                                          closeTab={async () => {
-                                              await _closeTab(tab_id)
-                                          }}
-                                          tsocket={tab_entry.panel.tsocket}
-                                          usable_width={usable_width}
-                                          usable_height={usable_height}
-                />
-            </SelectedPaneContext.Provider>;
+                              controlled={true}
+                              handleCreateViewer={_handleCreateViewer}
+                              tab_id={tab_id}
+                              selectedTabIdRef={selectedTabIdRef}
+                              changeResourceName={(new_name, callback = null, change_title = true) => {
+                                  _changeResourceName(tab_id, new_name, change_title, callback)
+                              }}
+                              updatePanel={(new_panel, callback = null) => {
+                                  _updatePanel(tab_id, new_panel, callback)
+                              }}
+                              goToModule={_goToModule}
+                              registerLineSetter={(rfunc) => _registerLineSetter(tab_id, rfunc)}
+                              refreshTab={async () => {
+                                  await _refreshTab(tab_id)
+                              }}
+                              closeTab={async () => {
+                                  await _closeTab(tab_id)
+                              }}
+                              tsocket={tab_entry.panel.tsocket}
+                              usable_width={usable_width}
+                              usable_height={usable_height}
+                    />
+                </SelectedPaneContext.Provider>
             wrapped_panel = (
                 <ErrorBoundary>
                     <div id={`${tab_id}-holder`} className={panelRootDict[tab_panel_dict_ref.current[tab_id].kind]}>
@@ -916,11 +923,11 @@ function ContextApp(props) {
                         <span>{visible_title}</span>
                     </div>
                     <div>
-                        <Icon icon="reset" style={icon_style} size={13} className="context-close-button"
+                        <Icon icon="reset" style={icon_style} size={13} className="context-close-button show-on-hover"
                               tabIndex={-1} onClick={async () => {
                             await _refreshTab(tab_id)
                         }}/>
-                        <Icon icon="delete" style={icon_style} size={13} className="context-close-button"
+                        <Icon icon="delete" style={icon_style} size={13} className="context-close-button show-on-hover"
                               tabIndex={-1} onClick={async () => {
                             await _closeTab(tab_id)
                         }}/>
@@ -982,7 +989,6 @@ function ContextApp(props) {
     }
     return (
         <Fragment>
-
             <TacticNavbar is_authenticated={window.is_authenticated}
                           selected={null}
                           show_api_links={false}

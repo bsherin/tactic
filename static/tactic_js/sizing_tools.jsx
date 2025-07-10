@@ -12,7 +12,7 @@ const BOTTOM_MARGIN = 35;
 const TOP_MARGIN = 25;
 const INITIAL_DECREMENT = 50;
 const USUAL_NAVBAR_HEIGHT = 50;
-const INIT_CONTEXT_PANEL_WIDTH = 150;
+const INIT_CONTEXT_PANEL_WIDTH = 250;
 const ICON_BAR_WIDTH = 40;
 
 function getUsableDimensions() {
@@ -58,9 +58,13 @@ function useSize(top_ref=null, iCounter=0, name="noname") {
         if (aheight > MIN_HEIGHT) {
             set_usable_height(aheight);
         }
-
-
-    }, [sizeInfo.availableWidth, sizeInfo.availableHeight, sizeInfo.topX, sizeInfo.topY, top_ref.current, selectedPane.selectedTabIdRef.current, iCounter]);
+        return () => {
+          set_usable_width(0);
+          set_usable_height(0);
+          setTopX(0);
+          setTopY(0);
+        };
+    }, [sizeInfo.availableWidth, sizeInfo.availableHeight, sizeInfo.topX, sizeInfo.topY, selectedPane.selectedTabIdRef.current, iCounter]);
 
     return [usable_width, usable_height, topX, topY]
 }

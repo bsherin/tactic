@@ -9,7 +9,6 @@ exports.ToolMenu = ToolMenu;
 exports.TopLeftButtons = TopLeftButtons;
 var _react = _interopRequireWildcard(require("react"));
 var _core = require("@blueprintjs/core");
-var _popover = require("@blueprintjs/popover2");
 var _settings = require("./settings");
 var _blueprint_react_widgets = require("./blueprint_react_widgets");
 var _utilities_react = require("./utilities_react");
@@ -495,7 +494,7 @@ function MenuComponent(props) {
     if (opt_name in props.binding_dict) {
       label = _bindingsToString(props.binding_dict[opt_name]);
     }
-    return /*#__PURE__*/_react["default"].createElement(_popover.MenuItem2, {
+    return /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
       disabled: props.disable_all || props.disabled_items.includes(opt_name),
       onClick: props.option_dict[opt_name],
       icon: icon,
@@ -510,14 +509,14 @@ function MenuComponent(props) {
   }, choices);
   if (props.alt_button) {
     var AltButton = props.alt_button;
-    return /*#__PURE__*/_react["default"].createElement(_popover.Popover2, {
+    return /*#__PURE__*/_react["default"].createElement(_core.Popover, {
       minimal: true,
       content: the_menu,
       transitionDuration: 150,
       position: props.position
     }, /*#__PURE__*/_react["default"].createElement(AltButton, null));
   } else {
-    return /*#__PURE__*/_react["default"].createElement(_popover.Popover2, {
+    return /*#__PURE__*/_react["default"].createElement(_core.Popover, {
       minimal: true,
       content: the_menu,
       transitionDuration: 150,

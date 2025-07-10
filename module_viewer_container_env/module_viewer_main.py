@@ -1,6 +1,6 @@
 import ast
 
-from gevent import monkey;
+from gevent import monkey
 
 from tactic_copilot_mixin import CopilotMixin
 
@@ -79,14 +79,9 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin):
                 self.handler_methods = handler_result["handler_methods"]
             except Exception as nex:
                 print(self.extract_short_error_message(nex, "error getting handler methods"))
-            print("about to do TileParser")
             self.tp = TileParser(module_code, self.handler_methods)
-            # print("TileParser done")
-            # self.tp.reparse(module_code)
-            print("TileParser reparse done")
             result = {"success": True, "the_content": self.assemble_parse_information(),
                       "all_handler_methods": self.handler_methods}
-            print("Assembled parse information")
             self.submit_response(local_task_packet, result)
 
         self.ask_host("get_handler_methods", {"user_id": self.user_id, "main_id": self.my_id}, do_the_parse),
@@ -239,11 +234,9 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin):
             return self.get_traceback_exception_dict(ex, "Error saving module")
 
     def assemble_parse_information(self):
-        print("assembling parse information")
         for option in self.tp.options:
             if option["name"] in self.tp.defaults:
                 option["default"] = self.tp.defaults[option["name"]]
-        print("options assembled")
         standard_methods_list = []
         func_dict = self.tp.methods
         if "render_content" in func_dict:
@@ -258,7 +251,6 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin):
                                       "firstLineNumber": func_dict["render_content"]["body_start"],
                                       "lastLineNumber": func_dict["render_content"]["last_line"]
                                       })
-        print("standard methods assembled")
         is_mpl = self.tp.is_mpl
         is_d3 = self.tp.is_d3
 
@@ -290,10 +282,8 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin):
                                       "firstLineNumber": 1,
                                         "lastLineNumber": len(globals_code.splitlines())
                                       })
-        print("about to get user methods list")
         user_methods_list = self.tp.get_user_methods_list()
 
-        print("got raw user methods")
         try:
             user_methods_list = [{"name": func["name"],
                                   "codeText": remove_indents(func["method_body"], 2),
@@ -306,7 +296,6 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin):
         except Exception as ex:
             print(self.extract_short_error_message(ex, "*** Error assembling user methods list  ***"))
             user_methods_list = []
-        print("user methods list assmebled")
         used_handler_methods_list = self.tp.get_used_handler_methods_list()
         used_handler_methods_list = [{"name": func["name"],
                                       "codeText": remove_indents(func["method_body"], 2),
@@ -315,7 +304,6 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin):
                                       "firstLineNumber": func["body_start"],
                                         "lastLineNumber": func["last_line"]
                                       } for func in used_handler_methods_list]
-        print("used handler methods list assmebled")
         parsed_data = {"option_dict": self.tp.options, "export_list": self.tp.exports,
                        "additional_save_attrs": self.tp.additional_save_attrs,
                        "render_content_code": render_content_code,
@@ -326,7 +314,6 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin):
                        "is_mpl": is_mpl,
                        "is_d3": is_d3,
                        "globals_code": globals_code}
-        print("parsed data")
         return parsed_data
 
     @task_worthy

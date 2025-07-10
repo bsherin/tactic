@@ -15,10 +15,10 @@ import {
 } from "@blueprintjs/core";
 import {
     DndContext,
-    closestCenter,
     useSensor,
     useSensors,
     PointerSensor,
+    rectIntersection
 } from '@dnd-kit/core';
 import {
     SortableContext,
@@ -37,7 +37,7 @@ import {MakerPaneContext} from "./tile_maker_support";
 import {LabeledFormField, LabeledSelectList, LabeledTextArea} from "./blueprint_react_widgets";
 import {NativeTags, IconSelector, NotesField} from "./blueprint_mdata_fields";
 import {postAjaxPromise} from "./communication_react";
-import {SizeContext, useSize, SizeProvider, useElementSize} from "./sizing_tools"
+import {SizeContext, useSize, SizeProvider} from "./sizing_tools"
 import {DragHandle} from "./resizing_layouts2";
 
 export {
@@ -48,7 +48,8 @@ export {
 const INITIAL_CODE_PANE_HEIGHT = 330
 const INITIAL_FORM_PANE_HEIGHT = 125;
 const INDENT = 25;
-const SECTION_TOP_MARGIN = 15;
+const SECTION_TOP_MARGIN = 0;
+const SECTION_BOTTOM_MARGIN = 30;
 
 function textRowsToArray(tstring) {
     let slist = [];
@@ -124,11 +125,11 @@ function SimplePaneTitle(props) {
         ...props
     }
 
-    let theIcon = <Icon icon={props.icon} size={13} />
+    let theIcon = <Icon icon={props.icon} size={13}/>
 
     return (
         <div style={{position: "absolute", left: 40, top: 13}}>
-            <EntityTitle title={props.title} heading={H6} subtitle={props.subtitle} icon={theIcon} />
+            <EntityTitle title={props.title} heading={H6} subtitle={props.subtitle} icon={theIcon}/>
         </div>
     )
 }
@@ -200,10 +201,10 @@ function PaneElement(props) {
         <Card ref={top_ref} key={props.identifier} elevation={0} className={`maker-pane ${props.className}`}
               style={{height: current_height, position: "relative"}}>
             <Button variant="minimal" size="small" icon="cross"
-                        style={{padding: 0, position: "absolute", left: 10, top: 10, zIndex: 20}}
-                        onClick={() => {
-                            mpContext.toggleVisibleTab(props.identifier)
-                        }}/>
+                    style={{padding: 0, position: "absolute", left: 10, top: 10, zIndex: 20}}
+                    onClick={() => {
+                        mpContext.toggleVisibleTab(props.identifier)
+                    }}/>
             {props.allowDelete &&
                 <Button variant="minimal" intent="danger" size="small" icon="trash"
                         style={{padding: 0, position: "absolute", right: 10, top: 10, zIndex: 20}}
@@ -243,7 +244,7 @@ function MetadataModule(props) {
 
     const top_ref = useRef(null);
 
-    const [, usable_height, , ] = useSize(top_ref, 0);
+    const [, usable_height, ,] = useSize(top_ref, 0);
 
     useEffect(() => {
         get_all_tags()
@@ -343,54 +344,54 @@ function MetadataModule(props) {
 
     const split_tags = props.metadataRef.current.tags.split(" ");
     return (
-        <div className="metadata-outer" ref={top_ref} style={outer_style} >
+        <div className="metadata-outer" ref={top_ref} style={outer_style}>
             <SimplePaneTitle title="Metadata" icon="properties"/>
             <div style={{marginTop: 30}}>
-            <ErrorBoundary custom_message="Error in NativeTags">
-                <FormGroup label="Tags">
-                    <NativeTags key={`${props.res_name}-${props.res_type}-tags`}
-                                tags={split_tags}
-                                all_tags={props.mdata.allTags}
-                                readOnly={props.readOnly}
-                                handleChange={handleTagsChange}
-                                res_type="tile"/>
-                </FormGroup>
-            </ErrorBoundary>
-            <ErrorBoundary custom_message="Error in Category">
-                <FormGroup label="Category" key="Category">
-                    <InputGroup onChange={handleCategoryChange}
-                                value={props.metadataRef.current.category}/>
-                </FormGroup>
-            </ErrorBoundary>
-            <ErrorBoundary custom_message="Error in Icon">
-                <FormGroup label="Icon">
-                    <IconSelector key={`${props.res_name}-${props.res_type}-icon-selector`}
-                                  icon_val={props.metadataRef.current.icon}
-                                  readOnly={props.readOnly}
-                                  handleSelectChange={handleIconChange}/>
-                </FormGroup>
-            </ErrorBoundary>
-            <ErrorBoundary custom_message="Error in Notes">
-                <FormGroup label="Notes">
-                    <NotesField key={`${props.res_name}-${props.res_type}-notes`}
-                                mStateRef={props.metadataRef}
-                                res_name={props.res_name}
-                                res_type={props.res_type}
-                                readOnly={props.readOnly}
-                                handleChange={handleNotesChange}
-                                show_markdown_initial={true}
-                                handleBlur={null}
-                    />
-                    <MetadataNotesButtons/>
-                </FormGroup>
-            </ErrorBoundary>
-            <ErrorBoundary custom_message="Error in bottom stuff">
-                <Switch label="Couple save_attrs and exports"
-                        className="ml-2 mb-0 mt-1"
-                        size="medium"
-                        checked={props.metadataRef.current.couple_save_attrs_and_exports}
-                        onChange={handleCoupleChange}/>
-            </ErrorBoundary>
+                <ErrorBoundary custom_message="Error in NativeTags">
+                    <FormGroup label="Tags">
+                        <NativeTags key={`${props.res_name}-${props.res_type}-tags`}
+                                    tags={split_tags}
+                                    all_tags={props.mdata.allTags}
+                                    readOnly={props.readOnly}
+                                    handleChange={handleTagsChange}
+                                    res_type="tile"/>
+                    </FormGroup>
+                </ErrorBoundary>
+                <ErrorBoundary custom_message="Error in Category">
+                    <FormGroup label="Category" key="Category">
+                        <InputGroup onChange={handleCategoryChange}
+                                    value={props.metadataRef.current.category}/>
+                    </FormGroup>
+                </ErrorBoundary>
+                <ErrorBoundary custom_message="Error in Icon">
+                    <FormGroup label="Icon">
+                        <IconSelector key={`${props.res_name}-${props.res_type}-icon-selector`}
+                                      icon_val={props.metadataRef.current.icon}
+                                      readOnly={props.readOnly}
+                                      handleSelectChange={handleIconChange}/>
+                    </FormGroup>
+                </ErrorBoundary>
+                <ErrorBoundary custom_message="Error in Notes">
+                    <FormGroup label="Notes">
+                        <NotesField key={`${props.res_name}-${props.res_type}-notes`}
+                                    mStateRef={props.metadataRef}
+                                    res_name={props.res_name}
+                                    res_type={props.res_type}
+                                    readOnly={props.readOnly}
+                                    handleChange={handleNotesChange}
+                                    show_markdown_initial={true}
+                                    handleBlur={null}
+                        />
+                        <MetadataNotesButtons/>
+                    </FormGroup>
+                </ErrorBoundary>
+                <ErrorBoundary custom_message="Error in bottom stuff">
+                    <Switch label="Couple save_attrs and exports"
+                            className="ml-2 mb-0 mt-1"
+                            size="medium"
+                            checked={props.metadataRef.current.couple_save_attrs_and_exports}
+                            onChange={handleCoupleChange}/>
+                </ErrorBoundary>
             </div>
         </div>
     )
@@ -426,12 +427,12 @@ function ExportModuleForm(props) {
         <Fragment>
             <SimplePaneTitle icon="export" title={props.exportItem.name}/>
             <div>
-            <form className="maker-form-container">
-                <div style={{display: "flex", flexWrap: "wrap", flexDirection: "row"}}>
-                    <LabeledFormField label="Name" onChange={handleNameChange} the_value={props.exportItem.name}/>
-                    <LabeledFormField label="Tags" onChange={handleTagChange} the_value={props.exportItem.tags}/>
-                </div>
-            </form>
+                <form className="maker-form-container">
+                    <div style={{display: "flex", flexWrap: "wrap", flexDirection: "row"}}>
+                        <LabeledFormField label="Name" onChange={handleNameChange} the_value={props.exportItem.name}/>
+                        <LabeledFormField label="Tags" onChange={handleTagChange} the_value={props.exportItem.tags}/>
+                    </div>
+                </form>
             </div>
         </Fragment>
     )
@@ -556,40 +557,41 @@ function OptionModuleForm(props) {
         <Fragment>
             <SimplePaneTitle icon="select" title={props.optionItem.name}/>
             <div>
-            <form className="maker-form-container">
-                <div style={{display: "flex", flexDirection: "column"}}>
-                    <div style={{display: "flex", flexWrap: "wrap", flexDirection: "row"}}>
-                        <LabeledFormField label="Name" onChange={handleNameChange} the_value={props.optionItem.name}
-                                          helperText={props.optionItem.name_warning_text}
-                        />
-                        <LabeledSelectList label="Type" option_list={option_types} onChange={handleTypeChange}
-                                           the_value={props.optionItem.type}/>
-                        <LabeledFormField label="Display Text" onChange={handleDisplayTextChange}
-                                          the_value={props.optionItem.display_text}
-                        />
-                        {props.optionItem.type != "divider" &&
-                            <LabeledFormField label="Default" onChange={handleDefaultChange}
-                                              the_value={props.optionItem.default}
-                                              isBool={props.optionItem.type == "boolean"}
-                                              helperText={props.optionItem.default_warning_text}
+                <form className="maker-form-container">
+                    <div style={{display: "flex", flexDirection: "column"}}>
+                        <div style={{display: "flex", flexWrap: "wrap", flexDirection: "row"}}>
+                            <LabeledFormField label="Name" onChange={handleNameChange} the_value={props.optionItem.name}
+                                              helperText={props.optionItem.name_warning_text}
                             />
-                        }
-                        {props.optionItem.type == "custom_list" &&
-                            <LabeledTextArea label="Special List"
-                                             onChange={handleSpecialListChange}
-                                             the_value={arrayToTextRows(props.optionItem.special_list)}/>}
-                        {taggable_types.includes(props.optionItem.type) &&
-                            <LabeledFormField label="Tag" onChange={handleTagChange} the_value={props.optionItem.tags}/>
-                        }
-                        {props.optionItem.type == "pool_select" &&
-                            <LabeledSelectList label="Type" option_list={["file", "folder", "both"]}
-                                               onChange={handlePoolTypeChange}
-                                               the_value={props.optionItem.pool_select_type}/>
-                        }
+                            <LabeledSelectList label="Type" option_list={option_types} onChange={handleTypeChange}
+                                               the_value={props.optionItem.type}/>
+                            <LabeledFormField label="Display Text" onChange={handleDisplayTextChange}
+                                              the_value={props.optionItem.display_text}
+                            />
+                            {props.optionItem.type != "divider" &&
+                                <LabeledFormField label="Default" onChange={handleDefaultChange}
+                                                  the_value={props.optionItem.default}
+                                                  isBool={props.optionItem.type == "boolean"}
+                                                  helperText={props.optionItem.default_warning_text}
+                                />
+                            }
+                            {props.optionItem.type == "custom_list" &&
+                                <LabeledTextArea label="Special List"
+                                                 onChange={handleSpecialListChange}
+                                                 the_value={arrayToTextRows(props.optionItem.special_list)}/>}
+                            {taggable_types.includes(props.optionItem.type) &&
+                                <LabeledFormField label="Tag" onChange={handleTagChange}
+                                                  the_value={props.optionItem.tags}/>
+                            }
+                            {props.optionItem.type == "pool_select" &&
+                                <LabeledSelectList label="Type" option_list={["file", "folder", "both"]}
+                                                   onChange={handlePoolTypeChange}
+                                                   the_value={props.optionItem.pool_select_type}/>
+                            }
+                        </div>
                     </div>
-                </div>
 
-            </form>
+                </form>
             </div>
         </Fragment>
     )
@@ -685,14 +687,13 @@ function SignatureHeader(props) {
         props.handleNameChange(funcName);
         props.handleArgChange(argsStr);
     }
+
     let code_content;
     if (props.mode == "javascript") {
         code_content = "(selector, w, h, arg_dict, resizing) =>";
-    }
-    else if (props.name == "globals") {
+    } else if (props.name == "globals") {
         code_content = "# globals"
-    }
-    else {
+    } else {
         code_content = `def ${props.name}(self, ${props.argString}):`;
     }
     return (
@@ -700,25 +701,25 @@ function SignatureHeader(props) {
              style={{justifyContent: "space-between", marginLeft: 10, paddingTop: 10}}>
             {props.mode == "javascipt" ?
                 <ReactCodemirror6 readOnly={!props.allowSignatureChange}
-                                mode="javascript"
-                              show_line_numbers={false}
-                              no_height={true}
-                              controlled={true}
-                              getEditableRanges={getEditableRanges}
-                              restrict_edits_to_range={props.allowSignatureChange}
-                              className="creator-code-header"
-                              handleChange={null}
-                              code_content={code_content}/> :
-            <ReactCodemirror6 readOnly={!props.allowSignatureChange}
-                              mode={props.mode}
-                              show_line_numbers={false}
-                              no_height={true}
-                              controlled={true}
-                              getEditableRanges={getEditableRanges}
-                              restrict_edits_to_range={props.allowSignatureChange}
-                              className="creator-code-header"
-                              handleChange={props.allowSignatureChange ? handleSignatureChange : null}
-                              code_content={code_content}/>
+                                  mode="javascript"
+                                  show_line_numbers={false}
+                                  no_height={true}
+                                  controlled={true}
+                                  getEditableRanges={getEditableRanges}
+                                  restrict_edits_to_range={props.allowSignatureChange}
+                                  className="creator-code-header"
+                                  handleChange={null}
+                                  code_content={code_content}/> :
+                <ReactCodemirror6 readOnly={!props.allowSignatureChange}
+                                  mode={props.mode}
+                                  show_line_numbers={false}
+                                  no_height={true}
+                                  controlled={true}
+                                  getEditableRanges={getEditableRanges}
+                                  restrict_edits_to_range={props.allowSignatureChange}
+                                  className="creator-code-header"
+                                  handleChange={props.allowSignatureChange ? handleSignatureChange : null}
+                                  code_content={code_content}/>
             }
         </div>
     )
@@ -772,15 +773,15 @@ function CmElement(props) {
         if (doScroll) {
             setDoScroll(false)
             requestAnimationFrame(() => {
-            // The timeout below is necessary because I can't do this until the cmObject is fully initialized
-            setTimeout(() => {
+                // The timeout below is necessary because I can't do this until the cmObject is fully initialized
+                setTimeout(() => {
                     cmObject.scrollDOM.scrollTop = props.cmState.scrollTop;
                 }, 100)
             });
         }
     }
 
-    let usable_height = sizeInfo.availableHeight; // for header
+    let usable_height = sizeInfo.availableHeight;
     let outer_style = {
         width: "100%",
         height: usable_height,
@@ -792,14 +793,15 @@ function CmElement(props) {
         <Fragment>
             <div style={outer_style} ref={top_ref} className="cm-element-container">
                 <SignatureHeader name={props.name}
-                         argString={props.argString}
-                                     mode={props.cmState.mode}
-                         allowSignatureChange={props.allowSignatureChange}
-                         handleNameChange={handleNameChange}
-                         handleArgChange={handleArgChange}/>
+                                 argString={props.argString}
+                                 mode={props.cmState.mode}
+                                 allowSignatureChange={props.allowSignatureChange}
+                                 handleNameChange={handleNameChange}
+                                 handleArgChange={handleArgChange}/>
                 <ReactCodemirror6 code_content={props.cmState.codeText}
                                   controlled={true}
-                                  controlled_height={usable_height - 50} // 50 for header
+                    // need to pass height through manually otherwise resizing doesn't reliably
+                                  controlled_height={usable_height - 50}
                                   no_height={props.no_height}
                                   title_label={null}
                                   show_search={false}
@@ -837,16 +839,18 @@ function MakerNavigator(props) {
         sections: [],
         icon_dict: null,
         icon_field: null,
+        pushCallback: () => {},
         ...props
     }
     const sections = props.sections.filter(section => section.visible === true)
     return (
         <ErrorBoundary custom_message="There was an error in the Maker Navigator">
             <div style={{overflow: "hidden"}}>
-                {sections.map((section, ) => (
+                {sections.map((section,) => (
                     section.editable ?
                         <SortableNavSection key={section.title} title={section.title} dispatch={section.dispatch}
                                             sub_items={section.sub_items} icon={section.icon}
+                                            pushCallback={props.pushCallback}
                                             createFromList={section.createFromList ? section.createFromList : false}
                                             choiceDict={section.choiceDict ? section.choiceDict : null}
                                             icon_dict={section.icon_dict} icon_field={section.icon_field}/> :
@@ -874,20 +878,21 @@ function NavSection(props) {
 
     // noinspection JSValidateTypes
     return (
-        <div style={{marginTop: SECTION_TOP_MARGIN}}>
+        <div style={{marginTop: SECTION_TOP_MARGIN, marginBottom: SECTION_BOTTOM_MARGIN}}>
             <ButtonGroup key="button-group">
-                <Button variant="minimal" style={{paddingRight: 2, fontSize:13, fontWeight: 600}} icon={props.icon} size="medium"
+                <Button variant="minimal" style={{paddingRight: 2, fontSize: 13, fontWeight: 600}} icon={props.icon}
+                        size="medium"
                         onClick={() => setIsOpen(!isOpen)}>
                     {props.title}
                 </Button>
                 {props.right_button != null && props.right_button}
             </ButtonGroup>
             <Collapse key="collapse" className="nav-section-class" isOpen={isOpen}>
-                {props.sub_items.map((item, idx) => {
+                {props.sub_items.map((item, ) => {
                     let icon = props.icon_dict ?
                         <Icon icon={props.icon_dict[item[props.icon_field]]} size={12}/> : null;
                     return (
-                        <NavItem key={idx} identifier={item.identifier} title={item.name} icon={icon}
+                        <NavItem key={item.identifier} identifier={item.identifier} title={item.name} icon={icon}
                                  item_list={item.item_list}/>
                     )
                 })
@@ -897,114 +902,6 @@ function NavSection(props) {
     );
 }
 
-function SortableNavSection(props) {
-    props = {
-        title: "",
-        sub_items: [],
-        start_open: true,
-        right_button: null,
-        icon_dict: null,
-        icon_field: null,
-        createFromList: false,
-        choiceDict: null,
-        selectedChoice: null,
-        setSelectedChoice: null,
-        dispatch: () => {
-        },
-        ...props
-    }
-    const [isOpen, setIsOpen] = React.useState(props.start_open);
-
-    const sensors = useSensors(useSensor(PointerSensor, {activationConstraint: {distance: 5}}));
-
-    const handleDragEnd = (event) => {
-        const {active, over} = event;
-        if (!over || active.id === over.id) return;
-
-        const oldIndex = props.sub_items.findIndex((i) => i.identifier === active.id);
-        const newIndex = props.sub_items.findIndex((i) => i.identifier === over.id);
-
-        if (oldIndex !== -1 && newIndex !== -1) {
-            props.dispatch({
-                type: "move_item",
-                oldIndex,
-                newIndex
-            });
-        }
-    };
-
-    const mpContext = useContext(MakerPaneContext);
-
-    function createItem() {
-        const uid = guid();
-        const new_entry = {
-            name: "new_item",
-            argString: "",
-            codeText: "",
-            mode: "python", firstLineNumber: 1,
-            identifier: uid,
-            pane_height: INITIAL_CODE_PANE_HEIGHT
-        }
-        props.dispatch({type: "add_at_end", new_item: new_entry});
-        mpContext.pushCallback(() => {
-            mpContext.toggleVisibleTab(uid);
-        });
-    }
-
-    const contextMenu = useMemo(() => {
-        return (
-            <Menu>
-                <MenuItem icon="plus"
-                          onClick={createItem}
-                          intent="primary"
-                          text="Create Item"/>
-            </Menu>
-        );
-    }, []);
-    return (
-        <ContextMenu content={contextMenu}>
-            <div style={{marginTop: SECTION_TOP_MARGIN}} className="sortable-nav-section">
-                { props.createFromList &&
-                    <ControlGroup vertical={true} style={{alignItems: "self-start"}}>
-                        <Button style={{paddingRight: 2, fontSize:13, fontWeight: 600}} variant="minimal" icon={props.icon} size="medium"
-                            onClick={() => setIsOpen(!isOpen)}>
-                        {props.title}
-                        </Button>
-                        {isOpen &&
-                            <HandlerCreator choiceDict={props.choiceDict} dispatch={props.dispatch}/>
-                        }
-                    </ControlGroup>
-                }
-                {!props.createFromList &&
-                    <ButtonGroup>
-                        <Button style={{paddingRight: 2, fontSize:13, fontWeight: 600}} variant="minimal" icon={props.icon} size="medium"
-                                onClick={() => setIsOpen(!isOpen)}>
-                            {props.title}
-                        </Button>
-                        <Button icon="plus" size="small" variant="minimal" onClick={createItem}/>
-                    </ButtonGroup>
-                }
-
-                <Collapse className="nav-section-class" isOpen={isOpen}>
-                    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                        <SortableContext items={props.sub_items.map((i) => i.identifier)}
-                                         strategy={verticalListSortingStrategy}>
-                            {props.sub_items.map((item, idx) => {
-                                let icon = props.icon_dict ?
-                                    <Icon icon={props.icon_dict[item[props.icon_field]]} size={12}/> : null;
-                                return (
-                                    <SortableNavItem key={idx} identifier={item.identifier}
-                                                     title={item.name}
-                                                     icon={icon} item_list={item.item_list} dispatch={props.dispatch}/>
-                                )
-                            })}
-                        </SortableContext>
-                    </DndContext>
-                </Collapse>
-            </div>
-        </ContextMenu>
-    );
-}
 
 function HandlerCreator(props) {
     props = {
@@ -1040,39 +937,173 @@ function HandlerCreator(props) {
             pane_height: INITIAL_CODE_PANE_HEIGHT
         }
         props.dispatch({type: "add_at_end", new_item: new_entry});
-            mpContext.pushCallback(() => {
+        mpContext.pushCallback(() => {
             mpContext.toggleVisibleTab(uid);
         });
     }
 
     return (
-            <InputGroup
-                size="small"
-                leftElement={<BpSelectAdvanced options={fullChoiceList}
-                                                       value={selectedChoice}
-                                                       onChange={setSelectedChoice}/>}
-                rightElement={<Button icon="plus" size="small" variant="minimal" onClick={createItemFromChoiceDict}/>}
-                />
+        <InputGroup
+            size="small"
+            leftElement={<BpSelectAdvanced options={fullChoiceList}
+                                           value={selectedChoice}
+                                           onChange={setSelectedChoice}/>}
+            rightElement={<Button icon="plus" size="small" variant="minimal" onClick={createItemFromChoiceDict}/>}
+        />
     )
 }
 
+function SortableNavSection(props) {
+    props = {
+        title: "",
+        sub_items: [],
+        start_open: true,
+        right_button: null,
+        icon_dict: null,
+        icon_field: null,
+        createFromList: false,
+        choiceDict: null,
+        selectedChoice: null,
+        setSelectedChoice: null,
+        pushCallback: () => {
+        },
+        dispatch: () => {
+        },
+        ...props
+    }
 
-function SortableNavItem({identifier, ...props}) {
+    const [activeId, setActiveId] = React.useState(null);
+    const [isOpen, setIsOpen] = React.useState(props.start_open);
+
+    const sensors = useSensors(useSensor(PointerSensor, {activationConstraint: {distance: 5}}));
+
+    const handleDragEnd = (event) => {
+        const {active, over} = event;
+        if (!over || active.id === over.id) return;
+
+        const oldIndex = props.sub_items.findIndex((i) => i.identifier === active.id);
+          const newIndex = over.id === '__drop_spacer__'
+            ? props.sub_items.length
+            : props.sub_items.findIndex(i => i.identifier === over.id);
+
+        if (oldIndex !== -1 && newIndex !== -1) {
+            setActiveId(active.id);
+            props.dispatch({
+                type: "move_item",
+                oldIndex,
+                newIndex
+            });
+        }
+        props.pushCallback(() => {
+            setActiveId(null);
+        })
+    };
+
+    const mpContext = useContext(MakerPaneContext);
+
+    function createItem() {
+        const uid = guid();
+        const new_entry = {
+            name: "new_item",
+            argString: "",
+            codeText: "",
+            mode: "python", firstLineNumber: 1,
+            identifier: uid,
+            pane_height: INITIAL_CODE_PANE_HEIGHT
+        }
+        props.dispatch({type: "add_at_end", new_item: new_entry});
+        mpContext.pushCallback(() => {
+            mpContext.toggleVisibleTab(uid);
+        });
+    }
+
+    const contextMenu = useMemo(() => {
+        return (
+            <Menu>
+                <MenuItem icon="plus"
+                          onClick={createItem}
+                          intent="primary"
+                          text="Create Item"/>
+            </Menu>
+        );
+    }, []);
+
+    return (
+        <ContextMenu content={contextMenu}>
+            <div style={{marginTop: SECTION_TOP_MARGIN}} className="sortable-nav-section">
+                {props.createFromList &&
+                    <ControlGroup vertical={true} style={{alignItems: "self-start"}}>
+                        <Button style={{paddingRight: 2, fontSize:13, fontWeight: 600}} variant="minimal" icon={props.icon} size="medium"
+                            onClick={() => setIsOpen(!isOpen)}>
+                        {props.title}
+                        </Button>
+                        {isOpen &&
+                            <HandlerCreator choiceDict={props.choiceDict} dispatch={props.dispatch}/>
+                        }
+                    </ControlGroup>
+                }
+                {!props.createFromList &&
+                    <ButtonGroup>
+                        <Button style={{paddingRight: 2, fontSize:13, fontWeight: 600}} variant="minimal" icon={props.icon} size="medium"
+                                onClick={() => setIsOpen(!isOpen)}>
+                            {props.title}
+                        </Button>
+                        <Button icon="plus" size="small" variant="minimal" onClick={createItem}/>
+                    </ButtonGroup>
+                }
+                <Collapse className="nav-section-class" isOpen={isOpen}>
+                    <DndContext sensors={sensors} collisionDetection={rectIntersection} onDragEnd={handleDragEnd}>
+                        <SortableContext items={[...props.sub_items.map(i => i.identifier), '__drop_spacer__']}
+                                         strategy={verticalListSortingStrategy}>
+                            {props.sub_items.map((item, ) => {
+                                if (item.identifier === activeId) {
+                                    return null; // Don't render the item being dragged
+                                }
+                                let icon = props.icon_dict ?
+                                    <Icon icon={props.icon_dict[item[props.icon_field]]} size={12}/> : null;
+                                return (
+                                    <SortableNavItem key={item.identifier} identifier={item.identifier}
+                                                     title={item.name}
+                                                     activeId={activeId}
+                                                     icon={icon} item_list={item.item_list} dispatch={props.dispatch}/>
+                                )
+                            })}
+                            <SortableNavItem
+                                  key="__drop_spacer__"
+                                  identifier="__drop_spacer__"
+                                  activeId={activeId}
+                                  isSpacer={true}
+                                />
+                            </SortableContext>
+                    </DndContext>
+                </Collapse>
+            </div>
+        </ContextMenu>
+    );
+}
+
+function SortableNavItem(props) {
+    props = {
+        identifier: null,
+        activeId: null,
+        isSpacer: false,
+        ...props
+    }
     const {
         attributes,
         listeners,
         setNodeRef,
         transform,
         transition,
-    } = useSortable({id: identifier});
+    } = useSortable({id: props.identifier});
 
     const style = {
         transform: CSS.Transform.toString(transform),
-        transition
+        transition: props.isSpacer ? 'none' : (props.activeId ? 'none' : transition),
     };
 
     function _deleteMe() {
-        props.dispatch({type: "delete_item", identifier: identifier})
+        props.dispatch({type: "delete_item", identifier: props.identifier})
     }
 
     const delete_icon = <Icon icon="delete" size={12}/>;
@@ -1092,9 +1123,11 @@ function SortableNavItem({identifier, ...props}) {
         <ContextMenu content={contextMenu}>
             <div ref={setNodeRef} style={style} {...attributes} {...listeners} className="sortable-nav-item">
                 <ButtonGroup>
-                    <NavItem identifier={identifier} {...props} />
-                    <Button icon={delete_icon} size="small" variant="minimal" className="show-on-hover"
-                            tabIndex={-1} onClick={_deleteMe}/>
+                    <NavItem {...props} />
+                    {props.isSpacer ? null :
+                        <Button icon={delete_icon} size="small" variant="minimal" className="show-on-hover"
+                                tabIndex={-1} onClick={_deleteMe}/>
+                    }
                 </ButtonGroup>
             </div>
         </ContextMenu>
@@ -1110,6 +1143,19 @@ function NavItem(props) {
         ...props
     }
     const mpContext = useContext(MakerPaneContext);
+
+    if (props.isSpacer) {
+        return (<ControlGroup>
+            <Button style={{marginLeft: INDENT, paddingRight: 2, width: 175, opacity: 0.5}}
+                    icon={null}
+                    intent="none"
+                    size="medium"
+                    variant="minimal"
+                    onClick={() => {
+                    }}>
+            </Button>
+        </ControlGroup>)
+    }
 
     return (
         <ControlGroup>

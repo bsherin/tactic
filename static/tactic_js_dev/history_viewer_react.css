@@ -396,6 +396,14 @@ span.bp5-icon:empty.bp5-icon-large{
   content:"\f138";
 }
 
+.bp5-icon-branch-locked::before{
+  content:"\f3a6";
+}
+
+.bp5-icon-branch-unlocked::before{
+  content:"\f3a7";
+}
+
 .bp5-icon-briefcase::before{
   content:"\f139";
 }
@@ -2202,6 +2210,10 @@ span.bp5-icon:empty.bp5-icon-large{
 
 .bp5-icon-selection-box-edit::before{
   content:"\f39b";
+}
+
+.bp5-icon-selection-box-remove::before{
+  content:"\f3a8";
 }
 
 .bp5-icon-send-backward::before{
@@ -8686,6 +8698,14 @@ span.bp5-icon:empty.bp5-icon-large{
   content:"\f138";
 }
 
+.bp5-icon-branch-locked::before{
+  content:"\f3a6";
+}
+
+.bp5-icon-branch-unlocked::before{
+  content:"\f3a7";
+}
+
 .bp5-icon-briefcase::before{
   content:"\f139";
 }
@@ -10492,6 +10512,10 @@ span.bp5-icon:empty.bp5-icon-large{
 
 .bp5-icon-selection-box-edit::before{
   content:"\f39b";
+}
+
+.bp5-icon-selection-box-remove::before{
+  content:"\f3a8";
 }
 
 .bp5-icon-send-backward::before{
@@ -15182,10 +15206,6 @@ a > .bp5-dark .bp5-tooltip .bp5-running-text code{
 .bp5-dark .bp5-tree-node.bp5-tree-node-selected > .bp5-tree-node-content .bp5-icon, .bp5-dark .bp5-tree-node.bp5-tree-node-selected > .bp5-tree-node-content .bp5-icon-standard, .bp5-dark .bp5-tree-node.bp5-tree-node-selected > .bp5-tree-node-content .bp5-icon-large{
   color:#ffffff;
 }
-/*!*********************************************************************************************************************!*\
-  !*** css ./node_modules/css-loader/dist/cjs.js!./node_modules/@blueprintjs/popover2/lib/css/blueprint-popover2.css ***!
-  \*********************************************************************************************************************/
-
 /*!***************************************************************************************************************!*\
   !*** css ./node_modules/css-loader/dist/cjs.js!./node_modules/@blueprintjs/icons/lib/css/blueprint-icons.css ***!
   \***************************************************************************************************************/

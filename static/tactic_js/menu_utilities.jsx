@@ -1,8 +1,7 @@
 import React from "react";
 import {Fragment, useEffect, memo, useContext} from "react";
 
-import {Icon, MenuDivider, Menu, Navbar, Button, PopoverPosition, Classes, ButtonGroup} from "@blueprintjs/core";
-import {Popover2, MenuItem2} from "@blueprintjs/popover2";
+import {Icon, MenuDivider, Menu, MenuItem, Popover, Navbar, Button, PopoverPosition, Classes, ButtonGroup} from "@blueprintjs/core";
 
 import {SettingsContext} from "./settings"
 import {GlyphButton} from "./blueprint_react_widgets";
@@ -461,7 +460,7 @@ function MenuComponent(props) {
                 label = _bindingsToString(props.binding_dict[opt_name])
             }
             return (
-                <MenuItem2 disabled={props.disable_all || props.disabled_items.includes(opt_name)}
+                <MenuItem disabled={props.disable_all || props.disabled_items.includes(opt_name)}
                            onClick={props.option_dict[opt_name]}
                            icon={icon}
                            labelElement={label}
@@ -469,7 +468,7 @@ function MenuComponent(props) {
                            text={opt_name}
                            className={props.item_class}
                 >
-                </MenuItem2>
+                </MenuItem>
             )
         }
     );
@@ -480,20 +479,20 @@ function MenuComponent(props) {
     );
     if (props.alt_button) {
         let AltButton = props.alt_button;
-        return (<Popover2 minimal={true}
+        return (<Popover minimal={true}
                           content={the_menu}
                           transitionDuration={150}
                           position={props.position}>
             <AltButton/>
-        </Popover2>)
+        </Popover>)
     } else {
         return (
-            <Popover2 minimal={true}
+            <Popover minimal={true}
                       content={the_menu}
                       transitionDuration={150}
                       position={props.position}>
                 <Button text={props.menu_name} small={true} minimal={true}/>
-            </Popover2>
+            </Popover>
         )
     }
 }

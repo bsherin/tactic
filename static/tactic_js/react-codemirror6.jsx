@@ -1,4 +1,4 @@
-import React, {Fragment, useEffect, useRef, memo, useLayoutEffect, useContext} from "react";
+import React, {Fragment, useEffect, useRef, memo, useContext} from "react";
 import {Button, ButtonGroup} from "@blueprintjs/core";
 import {useSize} from "./sizing_tools";
 import {propsAreEqual, useStateAndRef} from "./utilities_react";
@@ -44,8 +44,6 @@ import {
 } from '@codemirror/autocomplete';
 
 import {startCompletion} from "@codemirror/autocomplete";
-
-
 import {themeList, importTheme} from "./theme_support";
 import {postPromise} from "./communication_react";
 
@@ -172,53 +170,54 @@ const tabAcceptKeymap = [
 ];
 
 function restrictEditsToRange(editableRanges = []) {
-  return EditorState.transactionFilter.of(tr => {
-      if (tr.annotation(ExternalUpdate)) {
-      // Allow external (controlled) updates unconditionally
-      return tr;
-    }
-    let blocked = false;
+    return EditorState.transactionFilter.of(tr => {
+        if (tr.annotation(ExternalUpdate)) {
+            // Allow external (controlled) updates unconditionally
+            return tr;
+        }
+        let blocked = false;
 
-    tr.changes.iterChanges((fromA, toA) => {
-      const overlap = editableRanges.some(region => {
-        return fromA >= region.from && toA <= region.to;
-      });
-      if (!overlap) blocked = true;
+        tr.changes.iterChanges((fromA, toA) => {
+            const overlap = editableRanges.some(region => {
+                return fromA >= region.from && toA <= region.to;
+            });
+            if (!overlap) blocked = true;
+        });
+
+        return blocked ? [] : tr;
     });
-
-    return blocked ? [] : tr;
-  });
 }
 
 function highlightEditableRanges(ranges) {
     // noinspection JSUnusedGlobalSymbols,JSUnresolvedReference
     return ViewPlugin.fromClass(class {
-    constructor(view) {
-      this.decorations = this.buildDecorations(view);
-    }
+        constructor(view) {
+            this.decorations = this.buildDecorations(view);
+        }
 
-    update(update) {
-      if (update.docChanged || update.viewportChanged) {
-        this.decorations = this.buildDecorations(update.view);
-      }
-    }
+        update(update) {
+            if (update.docChanged || update.viewportChanged) {
+                this.decorations = this.buildDecorations(update.view);
+            }
+        }
 
-    buildDecorations() {
-      const builder = new RangeSetBuilder();
-      for (let { from, to } of ranges) {
-        builder.add(from, to, Decoration.mark({ class: "cm-editable" }));
-      }
-      return builder.finish();
-    }
+        buildDecorations() {
+            const builder = new RangeSetBuilder();
+            for (let {from, to} of ranges) {
+                builder.add(from, to, Decoration.mark({class: "cm-editable"}));
+            }
+            return builder.finish();
+        }
 
-    destroy() {}
+        destroy() {
+        }
 
-  }, {
-    decorations: v => v.decorations
-  });
+    }, {
+        decorations: v => v.decorations
+    });
 }
 
-import { Annotation } from "@codemirror/state";
+import {Annotation} from "@codemirror/state";
 
 const ExternalUpdate = Annotation.define();
 
@@ -256,12 +255,13 @@ function ReactCodemirror6(props) {
         controlled: false,
         container_id: null,
         className: "",
-        restrict_edtits_to_range: false,
+        restrict_edits_to_range: false,
         getEditableRanges: null,
         ...props
     };
 
     const localRef = useRef(null);
+    const containerNodeRef = useRef(null);
     const editorView = useRef(null);
     const matches = useRef(null);
     const first_render = useRef(true);
@@ -269,7 +269,7 @@ function ReactCodemirror6(props) {
     const completionCompartment = useRef(null);
     const lineNumberCompartment = useRef(null);
     const readOnlyCompartment = useRef(new Compartment());
-    const restrictComparment = useRef(new Compartment());
+    const restrictCompartment = useRef(new Compartment());
     const readOnlyRef = useRef(props.readOnly);
     const theme = useRef(null);
     const highlightStyle = useRef(null);
@@ -288,8 +288,51 @@ function ReactCodemirror6(props) {
 
     const [usable_width, usable_height, topX, topY] = useSize(localRef, props.iCounter, "CodeMirror");
 
-    const getExtensions = () => {
-        let extensions = [
+    useEffect(() => {
+        if (props.registerSetFocusFunc) {
+            props.registerSetFocusFunc(setFocus);
+        }
+        themeCompartment.current = new Compartment();
+        completionCompartment.current = new Compartment();
+        lineNumberCompartment.current = new Compartment();
+
+        const updateListener = EditorView.updateListener.of((update) => {
+            if (update.docChanged) {
+                const newDoc = update.state.doc.toString();
+                lastUserDocRef.current = newDoc;
+                handleChange(newDoc);
+                changeCounterRef.current = changeCounterRef.current + 1;
+                if (window.has_openapi_key && (settingsContext.settingsRef.current["use_ai_code_suggestions"] == "yes") && props.container_id) {
+                    setAIText(null);
+                    setAITextLabel(null);
+                    awaitingSuggestionRef.current = true;
+                    doAIUpdate(update.state.doc.toString(), changeCounterRef.current);
+                } else {
+                    setAIText(null);
+                    setAITextLabel(null);
+                    awaitingSuggestionRef.current = true
+                }
+                if (props.restrict_edits_to_range) {
+                    const line = update.state.doc.toString();
+                    const ranges = props.getEditableRanges(line)
+                    update.view.dispatch({
+                        effects: restrictCompartment.current.reconfigure([
+                            restrictEditsToRange(ranges),
+                            highlightEditableRanges(ranges)]
+                        )
+                    });
+                }
+            }
+            if (update.focusChanged) {
+                if (update.view.hasFocus) {
+                    handleFocus();
+                } else {
+                    handleBlur();
+                }
+            }
+        });
+       let extensions = [
+            updateListener,
             completionCompartment.current.of(autocompletion({...autocompletionArgRef.current})),
             keymap.of([
                 ...customCompletionKeymap,
@@ -319,41 +362,6 @@ function ReactCodemirror6(props) {
             indentUnit.of("    "),
             highlightField.init(),
             readOnlyCompartment.current.of(EditorState.readOnly.of(props.readOnly)),
-            EditorView.updateListener.of((update) => {
-                if (update.docChanged) {
-                    const newDoc = update.state.doc.toString();
-                    lastUserDocRef.current = newDoc;
-                    handleChange(newDoc);
-                    changeCounterRef.current = changeCounterRef.current + 1;
-                    if (window.has_openapi_key && (settingsContext.settingsRef.current["use_ai_code_suggestions"] == "yes") && props.container_id) {
-                        setAIText(null);
-                        setAITextLabel(null);
-                        awaitingSuggestionRef.current = true;
-                        doAIUpdate(update.state.doc.toString(), changeCounterRef.current);
-                    } else {
-                        setAIText(null);
-                        setAITextLabel(null);
-                        awaitingSuggestionRef.current = true
-                    }
-                    if (props.restrict_edits_to_range) {
-                        const line = update.state.doc.toString();
-                        const ranges = props.getEditableRanges(line)
-                        update.view.dispatch({
-                            effects: restrictComparment.current.reconfigure([
-                                restrictEditsToRange(ranges),
-                                highlightEditableRanges(ranges)]
-                            )
-                        });
-                    }
-                }
-                if (update.focusChanged) {
-                    if (update.view.hasFocus) {
-                        handleFocus();
-                    } else {
-                        handleBlur();
-                    }
-                }
-            })
         ];
         if (props.show_line_numbers) {
             extensions = extensions.concat([
@@ -367,27 +375,15 @@ function ReactCodemirror6(props) {
         }
         if (props.restrict_edits_to_range) {
             let ranges = props.getEditableRanges(props.code_content);
-            extensions.push(restrictComparment.current.of([
+            extensions.push(restrictCompartment.current.of([
                  restrictEditsToRange(ranges),
                  highlightEditableRanges(ranges)
             ]));
         }
-        return extensions
-    };
-
-    useEffect(() => {
-        if (props.registerSetFocusFunc) {
-            props.registerSetFocusFunc(setFocus);
-        }
-        themeCompartment.current = new Compartment();
-        completionCompartment.current = new Compartment();
-        lineNumberCompartment.current = new Compartment();
-
-        //const activeLineExtension = props.highlight_active_line ? highlightActiveLineGutter : emptyExtension;
 
         const state = EditorState.create({
             doc: props.code_content,
-            extensions: getExtensions()
+            extensions: extensions
         });
         editorView.current = new EditorView({
             state,
@@ -396,13 +392,51 @@ function ReactCodemirror6(props) {
         if (props.setCMObject != null) {
             props.setCMObject(editorView.current);
         }
-        return () => {
-            if (editorView.current) {
-                editorView.current.destroy();
-                editorView.current = null;
-            }
-        };
+    }, []);
 
+    useEffect(() => {
+        return () => {
+            console.log("Unmounting ReactCodemirror6");
+
+            const view = editorView.current;
+
+            // 1. Reconfigure compartments
+            for (let comp of [themeCompartment, completionCompartment, lineNumberCompartment, readOnlyCompartment, restrictCompartment]) {
+                if (comp.current) {
+                    view?.dispatch({
+                        effects: comp.current.reconfigure([])
+                    });
+                }
+            }
+
+            // 2. Unregister external refs
+            if (props.setCMObject) props.setCMObject(null);
+            if (props.registerSetFocusFunc) props.registerSetFocusFunc(null);
+
+            // 3. Destroy editor
+            try {
+                if (view && typeof view.destroy === "function") {
+                    view.destroy();
+                }
+            } catch (e) {
+                console.warn("Error during editorView destroy:", e);
+            }
+
+            // 4. Null local refs
+            editorView.current = null;
+            if (containerNodeRef.current) {
+                containerNodeRef.current.innerHTML = "";
+                containerNodeRef.current = null;
+            }
+
+            themeCompartment.current = null;
+            completionCompartment.current = null;
+            lineNumberCompartment.current = null;
+            readOnlyCompartment.current = null;
+            restrictCompartment.current = null;
+            highlightStyle.current = null;
+            autocompletionArgRef.current = null;
+        };
     }, []);
 
     useEffect(() => {
@@ -474,8 +508,6 @@ function ReactCodemirror6(props) {
         // This controlled stuff never quite worked perfectly inside the CombinedMetadata notes field
         if (props.controlled) {
             if (editorView.current) {
-                // const oldDoc = editorView.current.state.doc;
-
                 const newText = props.code_content;
                 const editorText = editorView.current.state.doc.toString();
                 if (editorText !== newText && newText !== lastUserDocRef.current) {
@@ -515,17 +547,43 @@ function ReactCodemirror6(props) {
             settingsContext.settingsRef.current.preferred_light_theme;
     }
 
-    useLayoutEffect(() => {
-        return () => {
-            if (editorView.current) {
-                editorView.current.destroy();
-                editorView.current = null;
-            }
-        };
-    }, []);
-
     useEffect(() => {
-        _doHighlight();
+        try {
+            if (!editorView.current) return;
+            const prev_matches = matches.current;
+            let searchTerm = props.search_term;
+            if (!searchTerm) {
+                searchTerm = ""
+            }
+
+            const reg = _searchMatcher(searchTerm, true);
+            if (!reg) {
+                matches.current = 0
+            } else {
+                matches.current = countOccurrences(reg, props.code_content);
+            }
+            if (props.setSearchMatches && matches.current != prev_matches) {
+                props.setSearchMatches(matches.current)
+            }
+            if (!reg || searchTerm === "") {
+                editorView.current.dispatch({
+                    effects: setHighlights.of(Decoration.none)
+                });
+            } else {
+                const current_search_number = props.current_search_number ? props.current_search_number : 0;
+                let line_info = _lineNumberFromSearchNumber(reg, current_search_number);
+                if (line_info) {
+                    _scrollToAndSelectLine(line_info.line);
+                }
+                const deco = createHighlightDeco(editorView.current, reg,
+                    props.current_search_number);
+                editorView.current.dispatch({
+                    effects: setHighlights.of(deco)
+                });
+            }
+        } catch (e) {
+            console.log("Error in _doHighlight", e);
+        }
     }, [props.search_term, props.current_search_number, props.regex_search]);
 
     function getAIUpdate(new_code, change_counter) {
@@ -638,46 +696,6 @@ function ReactCodemirror6(props) {
         return null
     }
 
-
-    function _doHighlight() {
-        try {
-            if (!editorView.current) return;
-            const prev_matches = matches.current;
-            let searchTerm = props.search_term;
-            if (!searchTerm) {
-                searchTerm = ""
-            }
-
-            const reg = _searchMatcher(searchTerm, true);
-            if (!reg) {
-                matches.current = 0
-            } else {
-                matches.current = countOccurrences(reg, props.code_content);
-            }
-            if (props.setSearchMatches && matches.current != prev_matches) {
-                props.setSearchMatches(matches.current)
-            }
-            if (!reg || searchTerm === "") {
-                editorView.current.dispatch({
-                    effects: setHighlights.of(Decoration.none)
-                });
-            } else {
-                const current_search_number = props.current_search_number ? props.current_search_number : 0;
-                let line_info = _lineNumberFromSearchNumber(reg, current_search_number);
-                if (line_info) {
-                    _scrollToAndSelectLine(line_info.line);
-                }
-                const deco = createHighlightDeco(editorView.current, reg,
-                    props.current_search_number);
-                editorView.current.dispatch({
-                    effects: setHighlights.of(deco)
-                });
-            }
-        } catch (e) {
-            console.log("Error in _doHighlight", e);
-        }
-    }
-
     function _scrollToAndSelectLine(lineNumber) {
         try {
             const line = editorView.current.state.doc.line(lineNumber);
@@ -706,8 +724,7 @@ function ReactCodemirror6(props) {
     };
     if (props.controlled_height) {
         ccstyle.height = props.controlled_height;
-    }
-    else if (!props.no_height) {
+    } else if (!props.no_height) {
         ccstyle.height = usable_height;
     }
 
@@ -741,14 +758,14 @@ function ReactCodemirror6(props) {
                     marginTop: 5,
                     height: props.header_left ? SEARCH_HEIGHT + 10 : SEARCH_HEIGHT,
                 }}>
-                    { props.header_left && props.header_left}
-                    { title_label !== "" && <span className="bp5-ui-text"
-                          style={{
-                              display: "flex",
-                              paddingLeft: 5,
-                              paddingBottom: 2,
-                              alignItems: "self-end"
-                          }}>{title_label}</span> }
+                    {props.header_left && props.header_left}
+                    {title_label !== "" && <span className="bp5-ui-text"
+                                                 style={{
+                                                     display: "flex",
+                                                     paddingLeft: 5,
+                                                     paddingBottom: 2,
+                                                     alignItems: "self-end"
+                                                 }}>{title_label}</span>}
 
                     <SearchForm update_search_state={props.updateSearchState}
                                 search_string={props.search_term}
@@ -781,7 +798,7 @@ function ReactCodemirror6(props) {
                     <Button size="small" icon="expand-all" text="unfold" onClick={_unfoldAll}/>
                 </ButtonGroup>
             }
-            { props.header_left && props.header_left}
+            {props.header_left && props.header_left}
             {props.title_label &&
                 <span className="bp5-ui-text"
                       style={TITLE_STYLE}>{props.title_label}</span>

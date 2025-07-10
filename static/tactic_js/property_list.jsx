@@ -8,7 +8,7 @@ function propertyListReducer(prop_list, action) {
     var new_items;
     switch (action.type) {
         case "initialize":
-            if (prop_list == null || prop_list.length === 0) {
+            if (action.new_items == null || action.new_items.length === 0) {
                 new_items = [];
             } else {
                 new_items = action.new_items.map(t => {
@@ -37,8 +37,19 @@ function propertyListReducer(prop_list, action) {
                 }
             });
             break;
+        case "move_item_over":
+            const active_id = action["active_identifier"];
+            const over_id = action["over_identifier"];
+            const oldIndex = prop_list.findIndex((i) => i.identifier === active_id);
+            const newIndex = prop_list.findIndex((i) => i.identifier === over_id);
+            if (oldIndex !== -1 && newIndex !== -1) {
+                new_items = arrayMove([...prop_list], oldIndex, newIndex);
+            }
+            else {
+                return [...prop_list]
+            }
+            break;
         case "move_item":
-
             new_items = arrayMove(prop_list, action.oldIndex, action.newIndex);
             break;
         case "add_at_index":
@@ -50,7 +61,6 @@ function propertyListReducer(prop_list, action) {
         case "add_at_end":
             new_items = [...prop_list];
             let new_te = {...action.new_item};
-            //check if new_te has property "identifier"
             if (!new_te.hasOwnProperty("identifier")) {
                 new_te.identifier = guid();
             }
@@ -66,7 +76,7 @@ function propertyListReducer(prop_list, action) {
 
 function usePropertyList(initial, initial_pane_height = 330) {
 
-    const [propList, propListDispatch] = useReducer(propertyListReducer, initial);
+    const [propList, propListDispatch] = useReducer(propertyListReducer, []);
     const propListRef = useRef(propList);
     propListRef.current = propList;
     useEffect(() => {

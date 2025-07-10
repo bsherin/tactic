@@ -23,14 +23,14 @@ import {withErrorDrawer} from "./error_drawer";
 import {renderSpinnerMessage, convertExtraKeys, useStateAndRef} from "./utilities_react"
 import {TacticNavbar} from "./blueprint_navbar";
 import {ErrorBoundary} from "./error_boundary";
-import {useCallbackStack, useConnection, arraysMatch} from "./utilities_react";
+import {useCallbackStack, useConnection} from "./utilities_react";
 import {SettingsContext, withSettings} from "./settings";
 import {DialogContext, withDialogs} from "./modal_react";
 import {ErrorDrawerContext} from "./error_drawer";
 import {SelectedPaneContext} from "./utilities_react";
 
 import {usePropertyList, makeUndoableDispatch} from "./property_list"
-import {useSearch, _searchMatcher, countOccurrences} from "./search_reducer"
+import {useSearch} from "./search_reducer"
 import {MakerPaneContext} from "./tile_maker_support";
 import {CmElement, PaneElement, MakerNavigator, OptionModuleForm, ExportModuleForm, MetadataModule,
     option_icons, standard_method_icons, INITIAL_CODE_PANE_HEIGHT, INITIAL_FORM_PANE_HEIGHT} from "./tile_maker_elements";
@@ -57,16 +57,12 @@ function CreatorApp(props) {
     const top_ref = useRef(null);
     const nav_ref = useRef(null);
     const search_ref = useRef(null);
-
-    const [, setVisibleTabList, visibleTabListRef] = useStateAndRef([]);
-
-
-
     const last_save = useRef({});
     const rline_number = useRef(props.initial_line_number);
 
+    const [, setVisibleTabList, visibleTabListRef] = useStateAndRef([]);
     const [, setMethodsToOpen, methodsToOpenRef] = useStateAndRef(props.interface_state != null && "visibleMethodList" in props.interface_state ?
-    props.interface_state.visibleMethodList : ["render_content"]);
+        props.interface_state.visibleMethodList : ["render_content"]);
 
     const [usable_width, usable_height, topX, topY] = useSize(top_ref, 0, "TileMaker");
 
@@ -88,22 +84,7 @@ function CreatorApp(props) {
     const umDispatch = makeUndoableDispatch(umDispatchBase, umListRef, "UserMethods", undoStackRef);
     const hmDispatch = makeUndoableDispatch(hmDispatchBase, hmListRef, "HandlerMethods", undoStackRef);
 
-    function getIds() {
-        let ids = [];
-        for (let item of standardListRef.current) {
-            ids.push(item["identifier"]);
-        }
-        for (let item of umListRef.current) {
-            ids.push(item["identifier"]);
-        }
-        for (let item of hmListRef.current) {
-            ids.push(item["identifier"]);
-        }
-        return ids;
-    }
-
-    const [searchState, searchDispatch, searchStateRef] = useSearch([]);
-
+    const [searchState, searchDispatch, searchStateRef] = useSearch([], [standardListRef, umListRef, hmListRef]);
 
     const extraSelfCompletionsRef = useRef([]);
 
@@ -206,7 +187,7 @@ function CreatorApp(props) {
                     newMethodsToOpen = newMethodsToOpen.filter((item) => item !== name);
                 }
             }
-            showTabs(identifiersToAdd); // Must be done in a batch or they don't all show
+            showTabs(identifiersToAdd); // Must be done in a batch, or they don't all show
             if (newMethodsToOpen.length <= 0) {
                 setMethodsToOpen(null);
             }
@@ -215,13 +196,6 @@ function CreatorApp(props) {
             }
         }
     });
-
-    useEffect(() => {
-        const currentIds = getIds();
-        if (!arraysMatch(currentIds, searchStateRef.current.id_list)) {
-            searchDispatch({type: "SET_ID_LIST", payload: getIds()});
-        }
-    }, [standardListRef.current, umListRef.current, hmListRef.current]);
 
     useEffect(() => {
         function _getOptionNames() {
@@ -239,33 +213,6 @@ function CreatorApp(props) {
             extraSelfCompletionsRef.current.push({label: the_text, type: "variable", section: "Options"});
         }
     }, [option_list_ref.current]);
-
-    useEffect(()=>{
-        getAllSearchMatches()
-
-    }, [searchStateRef.current.search_string])
-
-    function setSearchMatches(item, reg) {
-        let matches;
-        if (!reg || !item.codeText) {
-            matches = 0
-        } else {
-            matches = countOccurrences(reg, item.codeText);
-        }
-        searchDispatch({type: "SET_SEARCH_MATCH_NUMBERS", payload: {"identifier": item.identifier, "num": matches}});
-    }
-    function getAllSearchMatches() {
-        const reg = _searchMatcher(searchStateRef.current.search_string, true, searchStateRef.current.use_regex);
-        for (let item of standardListRef.current) {
-            setSearchMatches(item, reg)
-        }
-        for (let item of umListRef.current) {
-             setSearchMatches(item, reg)
-        }
-        for (let item of hmListRef.current) {
-             setSearchMatches(item, reg)
-        }
-    }
 
     function initSocket() {
         props.tsocket.attachListener('focus-me', (data) => {
@@ -334,20 +281,21 @@ function CreatorApp(props) {
         }
     }
 
-    function _extraKeys() {
-        function _searchNext() {
-                searchDispatch({type: "SEARCH_NEXT"});
-                pushCallback(() => {
-                    showTab(searchStateRef.current.current_search_cm);
-                })
-            }
+    function _searchNext() {
+        searchDispatch({type: "SEARCH_NEXT"});
+        pushCallback(() => {
+            showTab(searchStateRef.current.current_search_cm);
+        })
+    }
 
-        function _searchPrev() {
-            searchDispatch({type: "SEARCH_PREVIOUS"});
-            pushCallback(() => {
-                showTab(props.searchStateRef.current.current_search_cm);
-            })
-        }
+    function _searchPrev() {
+        searchDispatch({type: "SEARCH_PREVIOUS"});
+        pushCallback(() => {
+            showTab(searchStateRef.current.current_search_cm);
+        })
+    }
+
+    function _extraKeys() {
         const ekeys = {
             'Ctrl-s': _saveMe,
             'Ctrl-l': _saveAndLoadModule,
@@ -717,7 +665,6 @@ function CreatorApp(props) {
         }
     }
 
-
     function delete_my_container() {
         postAjax("/delete_container_on_unload", {"container_id": props.module_viewer_id, "notify": false});
     }
@@ -746,7 +693,6 @@ function CreatorApp(props) {
             new_tab_list.push(newTabIdentifier);
             setVisibleTabList(new_tab_list);
         }
-
     }
 
     function showTabs(id_list) {
@@ -892,7 +838,6 @@ function CreatorApp(props) {
         }
     }
 
-
     const sections = [{
         title: "PROPERTIES",
         visible: true,
@@ -925,6 +870,7 @@ function CreatorApp(props) {
         <Fragment>
             <div ref={nav_ref} style={{overflow: "auto", height: "100%"}}>
                 <MakerNavigator handleTabSelect={_handleTabSelect}
+                                pushCallback={pushCallback}
                                 is_mpl={my_props.is_mpl}
                                 is_d3={my_props.is_d3}
                                 sections={sections}
@@ -995,7 +941,7 @@ function CreatorApp(props) {
     for (let item of standardListRef.current) {
         if (visibleTabListRef.current.includes(item["identifier"])) {
             right_pane_list.push(
-                <PaneElement key={item["identifier"]} el={item} dispatch={standardDispatch} pane_height={item.pane_height}
+                <PaneElement key={item["identifier"]} el={item} dispatch={standardDispatch} pane_height={item["pane_height"]}
                              identifier={item["identifier"]} pushCallback={pushCallback}>
                     {codeElemDict[item["identifier"]]?.()}
                 </PaneElement>
@@ -1005,7 +951,7 @@ function CreatorApp(props) {
     for (let item of hmListRef.current) {
         if (visibleTabListRef.current.includes(item["identifier"])) {
             right_pane_list.push(
-                <PaneElement key={item["identifier"]} el={item} dispatch={hmDispatch} pane_height={item.pane_height}
+                <PaneElement key={item["identifier"]} el={item} dispatch={hmDispatch} pane_height={item["pane_height"]}
                              allowDelete={true}
                              identifier={item["identifier"]} pushCallback={pushCallback}>
                     {codeElemDict[item["identifier"]]?.()}
@@ -1016,7 +962,7 @@ function CreatorApp(props) {
     for (let item of umListRef.current) {
         if (visibleTabListRef.current.includes(item["identifier"])) {
             right_pane_list.push(
-                <PaneElement key={item["identifier"]} el={item} pane_height={item.pane_height}
+                <PaneElement key={item["identifier"]} el={item} pane_height={item["pane_height"]}
                              identifier={item["identifier"]}  allowDelete={true} dispatch={umDispatch} pushCallback={pushCallback}>
                     {codeElemDict[item["identifier"]]?.()}
                 </PaneElement>
@@ -1034,11 +980,11 @@ function CreatorApp(props) {
                 include_search_jumper={true}
                 searchDispatch={searchDispatch}
                 searchStateRef={searchStateRef}
+                searchNext={_searchNext}
+                searchPrev={_searchPrev}
                 searchState={searchStateRef.current}
                 search_ref={search_ref}
-                pushCallback={pushCallback}
-                showTab={showTab}
-                    />
+            />
             <div style={{overflow: "auto", height: "100%"}}>
                 {right_pane_list}
             </div>

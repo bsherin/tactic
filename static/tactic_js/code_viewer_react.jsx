@@ -19,7 +19,7 @@ import {SettingsContext, withSettings} from "./settings"
 import {withAssistant} from "./assistant";
 import {DialogContext, withDialogs} from "./modal_react";
 import {ErrorDrawerContext} from "./error_drawer";
-import {SizeContext, useSize, withSizeContext} from "./sizing_tools";
+import {SizeContext, withSizeContext} from "./sizing_tools";
 
 export {code_viewer_props, CodeViewerApp}
 
@@ -29,18 +29,18 @@ function code_viewer_props(data, registerDirtyMethod, finalCallback) {
     if (!window.in_context) {
         window.main_id = resource_viewer_id;
     }
-    var tsocket = new TacticSocket("main", 5000, "code_viewer", resource_viewer_id);
+    const tsocket = new TacticSocket("main", 5000, "code_viewer", resource_viewer_id);
 
     finalCallback({
         resource_viewer_id: resource_viewer_id,
         main_id: resource_viewer_id,
         tsocket: tsocket,
         split_tags: data.mdata.tags == "" ? [] : data.mdata.tags.split(" "),
-        created: data.mdata.datestring,
+        created: data.mdata["datestring"],
         resource_name: data.resource_name,
         the_content: data.the_content,
         notes: data.mdata.notes,
-        readOnly: data.read_only,
+        readOnly: data["read_only"],
         is_repository: data.is_repository,
         registerDirtyMethod: registerDirtyMethod,
     })
@@ -68,8 +68,6 @@ function CodeViewerApp(props) {
     const [regex, set_regex] = useState(false);
     const [search_matches, set_search_matches, search_matches_ref] = useStateAndRef(null);
 
-    const [usable_width, usable_height, topX, topY] = useSize(top_ref, 0, "CodeViewer");
-
     const [resource_name, set_resource_name] = useState(props.resource_name);
 
     const settingsContext = useContext(SettingsContext);
@@ -90,7 +88,6 @@ function CodeViewerApp(props) {
                 window.removeEventListener("beforeunload", function (e) {
                     if (_dirty()) {
                         e.preventDefault();
-                        e.returnValue = ''
                     }
                 })
             }
@@ -139,7 +136,6 @@ function CodeViewerApp(props) {
             window.addEventListener("beforeunload", function (e) {
                 if (_dirty()) {
                     e.preventDefault();
-                    e.returnValue = ''
                 }
             })
 
@@ -148,7 +144,7 @@ function CodeViewerApp(props) {
 
     const selectedPane = useContext(SelectedPaneContext);
 
-    function _update_search_state(nstate, callback = null) {
+    function _update_search_state(nstate) {
         set_current_search_number(0);
         for (let field in nstate) {
             switch (field) {
@@ -173,7 +169,7 @@ function CodeViewerApp(props) {
     }
 
     const menu_specs = useMemo(() => {
-        var ms;
+        let ms;
         if (props.is_repository) {
             ms = {
                 Transfer: [{
@@ -230,7 +226,7 @@ function CodeViewerApp(props) {
     }
 
     async function _setResourceNameStatePromise(new_name) {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             _setResourceNameState(new_name, resolve)
         })
     }
@@ -296,7 +292,7 @@ function CodeViewerApp(props) {
         return selectedPane.amSelected(selectedPane.tab_id, selectedPane.selectedTabIdRef)
     }
 
-    async function _saveMeAs(e) {
+    async function _saveMeAs() {
         if (!am_selected()) {
             return false
         }
@@ -307,7 +303,7 @@ function CodeViewerApp(props) {
                 title: "Save Code As",
                 field_title: "New Code Name",
                 default_value: "NewCode",
-                existing_names: data.code_names,
+                existing_names: data["code_names"],
                 checkboxes: [],
                 handleClose: dialogFuncs.hideModal,
             });

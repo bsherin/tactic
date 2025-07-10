@@ -3,8 +3,7 @@
 import React from "react";
 import {Fragment, useRef, useEffect, memo, useContext, useMemo, useCallback} from "react";
 
-import {Menu, MenuItem, MenuDivider, Button, useHotkeys} from "@blueprintjs/core";
-import {Tooltip2} from "@blueprintjs/popover2"
+import {Menu, MenuItem, MenuDivider, Button, Tooltip, useHotkeys} from "@blueprintjs/core";
 import {Regions} from "@blueprintjs/table";
 
 import {CombinedMetadata, icon_dict} from "./blueprint_mdata_fields";
@@ -284,6 +283,7 @@ function LibraryPane(props) {
 
     async function _setFilterType(rtype) {
         if (rtype == pStateRef.current.search_state.filterType) return;
+
         if (!pStateRef.current.search_state.multi_select) {
             let sres = pStateRef.current.select_state.selected_resource;
             if (sres.name != "" && (sres.notes != get_data_dict_entry(sres.name, sres.res_type).notes)) {
@@ -1248,7 +1248,7 @@ function LibraryPane(props) {
     let filter_buttons = [];
     for (let rtype of ["all"].concat(res_types)) {
         filter_buttons.push(
-            <Tooltip2 content={rtype}
+            <Tooltip content={rtype}
                       key={rtype}
                       placement="top"
                       hoverOpenDelay={700}
@@ -1259,7 +1259,7 @@ function LibraryPane(props) {
                         onClick={async () => {
                             await _setFilterType(rtype)
                         }}/>
-            </Tooltip2>
+            </Tooltip>
         )
     }
 

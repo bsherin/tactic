@@ -17,8 +17,8 @@ function TileMakerSearchForm(props) {
         searchState: null,
         searchStateRef: null,
         searchDispatch: null,
-        showTab: null,
-        pushCallback: null,
+        searchNext: null,
+        searchPrev: null,
         ...props
     };
     const [, doUpdate] = useDebounce((newval)=>{
@@ -33,20 +33,6 @@ function TileMakerSearchForm(props) {
 
     function _handleRegexChange(event) {
         props.searchDispatch({type: "SET_REGEX", payload: event.target.checked});
-    }
-
-    function _searchNext() {
-        props.searchDispatch({type: "SEARCH_NEXT"});
-        props.pushCallback(() => {
-            props.showTab(props.searchStateRef.current.current_search_cm);
-        })
-    }
-
-    function _searchPrev() {
-        props.searchDispatch({type: "SEARCH_PREVIOUS"});
-        props.pushCallback(() => {
-            props.showTab(props.searchStateRef.current.current_search_cm);
-        })
     }
 
     let match_text;
@@ -91,8 +77,8 @@ function TileMakerSearchForm(props) {
                     }
                     {props.include_search_jumper &&
                         <ButtonGroup style={{marginLeft: 5, padding: 2}}>
-                            <Button onClick={_searchNext} icon="caret-down" text={undefined} size="small" />
-                            <Button onClick={_searchPrev} icon="caret-up" text={undefined} size="small" />
+                            <Button onClick={props.searchNext} icon="caret-down" text={undefined} size="small" />
+                            <Button onClick={props.searchPrev} icon="caret-up" text={undefined} size="small" />
                         </ButtonGroup>
 
                     }
