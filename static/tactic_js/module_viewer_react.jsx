@@ -432,7 +432,7 @@ function ModuleViewerApp(props) {
     let outer_class = "resource-viewer-holder";
     if (!props.controlled) {
         if (settingsContext.isDark()) {
-            outer_class = outer_class + " bp5-dark";
+            outer_class = outer_class + " bp6-dark";
         } else {
             outer_class = outer_class + " light-theme"
         }

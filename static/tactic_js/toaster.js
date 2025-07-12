@@ -233,7 +233,7 @@ function Status(props) {
   var elRef = (0, _react.useRef)(null);
   var settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   var cname = "d-flex flex-row";
-  var outer_cname = settingsContext.isDark() ? "status-holder bp5-dark" : "status-holder light-theme";
+  var outer_cname = settingsContext.isDark() ? "status-holder bp6-dark" : "status-holder light-theme";
   var left = elRef && elRef.current && elRef.current.parentNode ? elRef.current.parentNode.offsetLeft : 25;
   return /*#__PURE__*/_react["default"].createElement("div", {
     ref: elRef,
@@ -257,7 +257,7 @@ function Status(props) {
     size: 20
   }), props.show_close && (props.show_spiner || props.status_message) && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
     handleClick: props.handleClose,
-    small: true,
+    size: "small",
     icon: "cross"
   }), props.status_message && /*#__PURE__*/_react["default"].createElement("div", {
     className: "d-flex flex-column justify-content-around",
@@ -266,7 +266,7 @@ function Status(props) {
     }
   }, /*#__PURE__*/_react["default"].createElement("div", {
     id: "status-msg-area",
-    className: "bp5-ui-text",
+    className: "bp6-ui-text",
     style: {
       fontSize: 12
     }

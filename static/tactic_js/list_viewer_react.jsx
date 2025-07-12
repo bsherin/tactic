@@ -294,7 +294,7 @@ function ListViewerApp(props) {
     if (!props.controlled) {
         my_props.resource_name = resource_name;
         if (settingsContext.isDark()) {
-            outer_class = outer_class + " bp5-dark";
+            outer_class = outer_class + " bp6-dark";
         } else {
             outer_class = outer_class + " light-theme"
         }

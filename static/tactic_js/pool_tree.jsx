@@ -555,14 +555,14 @@ function PoolTree(props) {
                                 onChange={(event) => {
                                     setSortBy(event.target.value)
                                 }}
-                                minimal={true}
+                                variant="minimal"
                                 value={sortBy}/>
                     <HTMLSelect options={["ascending", "descending"]}
                                 className="tree-sort-select"
                                 onChange={(event) => {
                                     setSortDirection(event.target.value)
                                 }}
-                                minimal={true}
+                                variant="minimal"
                                 value={sortDirection}/>
                 </div>
             </div>
@@ -677,7 +677,7 @@ function PoolAddressSelector(props) {
             }
             }
             position="bottom-left"
-            minimal={true}
+            variant="minimal"
             modifiers={{
                 flip: {enabled: false},
                 preventOverflow: {enabled: false}
@@ -810,7 +810,7 @@ function CustomTree(props) {
             }
         });
 
-        return <ul className={`bp5-tree-node-list ${props.className}`}>{nodeItems}</ul>;
+        return <ul className={`bp6-tree-node-list ${props.className}`}>{nodeItems}</ul>;
     }
 
     function getNodeFromPath(fullpath, nodes) {
@@ -833,7 +833,7 @@ function CustomTree(props) {
     let nodes_to_render = !rootNode ? null : [rootNode];
 
     return (
-        <div className="bp5-tree" style={{width: "100%"}}>
+        <div className="bp6-tree" style={{width: "100%"}}>
             {renderNodes(nodes_to_render, [], Classes.TREE_ROOT)}
         </div>
     );

@@ -78,7 +78,7 @@ function RegisterApp(props) {
             <InputGroup type="text"
                         onChange={(event) => _onFieldChange(field_name, event.target.value)}
                         style={{width: 250}}
-                        large={true}
+                        size="large"
                         fill={false}
                         placeholder={field_name}
                         value={fields_ref.current[field_name]}
@@ -107,7 +107,7 @@ function RegisterApp(props) {
                 }}>
                     {field_items}
                     <div className="d-flex flex-row">
-                        <Button icon="log-in" large={true} text="Submit" onClick={_submit_register_info}/>
+                        <Button icon="log-in" size="large" text="Submit" onClick={_submit_register_info}/>
                     </div>
                 </form>
             </div>

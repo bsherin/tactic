@@ -89,7 +89,7 @@ function TacticMenubar(props) {
                                      handleClick={sg.handleClick}
                                      icon={sg.icon}/>)
     }
-    const theme_class = settingsContext.isDark() ? "bp5-dark" : "light-theme";
+    const theme_class = settingsContext.isDark() ? "bp6-dark" : "light-theme";
 
     return (
         <Navbar style={{paddingLeft: 3, height: 30, display: "flex"}} className={theme_class + " menu-bar"}>
@@ -107,7 +107,7 @@ function TacticMenubar(props) {
             {props.resource_name &&
                 <div style={name_style}>{props.resource_name}</div>
             }
-            <div style={{height: 30}} className="bp5-navbar-group bp5-align-left">
+            <div style={{height: 30}} className="bp6-navbar-group bp6-align-left">
                 <Fragment>
                     {menus}
                     {sug_glyphs}
@@ -202,7 +202,7 @@ IconBar = memo(IconBar);
 function IconBarButton(props) {
     return (
         <Button icon={<Icon icon={props.icon} size={18}/>}
-                minimal={true} large={true} className="iconBarButton" onClick={props.onClick}/>
+                variant="minimal" size="large" className="iconBarButton" onClick={props.onClick}/>
     )
 }
 
@@ -231,7 +231,7 @@ function DrawerButtonGroup(props) {
 
     return (
         <ButtonGroup className={`floating-button-group ${visible ? 'visible' : ''}`}
-                     large={true}
+                     size="large"
                      alignText={"left"}
                      vertical={false}>
             {props.showErrorDrawerButton &&
@@ -255,9 +255,7 @@ function ErrorDrawerButton(props) {
         // <div style={top_icon_style}>
         <Button icon={<Icon icon="bug" size={18}/>}
             //style={{paddingLeft: 4, paddingRight: 0}}
-                minimal={false}
                 className="context-close-button"
-                small={false}
                 text="Errors"
                 tabIndex={-1}
                 onClick={() => {
@@ -279,7 +277,6 @@ function AssistantDrawerButton(props) {
                 minimal={false}
                 className="context-close-button"
                 text={"Assistant"}
-                small={false}
                 tabIndex={-1}
                 onClick={() => {
                     assistantDrawerFuncs.toggleAssistantDrawer()
@@ -296,9 +293,7 @@ function MetadataDrawerButton(props) {
         //<div style={top_icon_style}>
         <Button icon={<Icon icon="list-columns" size={18}/>}
             //style={{paddingLeft: 4, paddingRight: 0}}
-                minimal={false}
                 className="context-close-button"
-                small={false}
                 text={"Metadata"}
                 tabIndex={-1}
                 onClick={() => {
@@ -329,9 +324,9 @@ function TopLeftButtons(props) {
             ebuttons.push(
                 <Button icon={<Icon icon={but_info.icon} size={14}/>}
                         style={{paddingLeft: 8}}
-                        minimal={true}
+                        variant="minimal"
                         className="context-close-button"
-                        small={true}
+                        size="small"
                         key={index}
                         tabIndex={-1}
                         onClick={() => {
@@ -346,9 +341,9 @@ function TopLeftButtons(props) {
             {props.showClose &&
                 <Button icon={<Icon icon="delete" size={14}/>}
                         style={{paddingLeft: 4, paddingRight: 0}}
-                        minimal={true}
+                        variant="minimal"
                         className="context-close-button"
-                        small={true}
+                        size="small"
                         tabIndex={-1}
                         intent="danger"
                         onClick={() => {
@@ -358,9 +353,9 @@ function TopLeftButtons(props) {
             {props.showRefresh &&
                 <Button icon={<Icon icon="reset" size={14}/>}
                         style={{paddingLeft: 8}}
-                        minimal={true}
+                        variant="minimal"
                         className="context-close-button"
-                        small={true}
+                        size="small"
                         tabIndex={-1} intent="danger"
                         onClick={() => {
                             props.refreshTab()
@@ -479,7 +474,7 @@ function MenuComponent(props) {
     );
     if (props.alt_button) {
         let AltButton = props.alt_button;
-        return (<Popover minimal={true}
+        return (<Popover variant="minimal"
                           content={the_menu}
                           transitionDuration={150}
                           position={props.position}>
@@ -487,11 +482,11 @@ function MenuComponent(props) {
         </Popover>)
     } else {
         return (
-            <Popover minimal={true}
+            <Popover variant="minimal"
                       content={the_menu}
                       transitionDuration={150}
                       position={props.position}>
-                <Button text={props.menu_name} small={true} minimal={true}/>
+                <Button text={props.menu_name} size="small" variant="minimal"/>
             </Popover>
         )
     }

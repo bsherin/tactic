@@ -15,69 +15,69 @@ $dark-field-background: #1114184d;
 // Colors for the resource-specific icons
 .light-theme {
   .lib-tab-button, .context-tab-button-content, .menu-bar, .combined-metadata, .all-pane {
-    .bp5-icon-cube {
+    .bp6-icon-cube {
       color: blueprint_variables.$dark-gray4 ! important
     }
 
-    .bp5-icon-folder-close {
+    .bp6-icon-folder-close {
       color: blueprint_variables.$dark-gray4 ! important
     }
 
-    .bp5-icon-database, .bp5-icon-th, .bp5-icon-freeform, .bp5-icon-align-left {
+    .bp6-icon-database, .bp6-icon-th, .bp6-icon-freeform, .bp6-icon-align-left {
       color: blueprint_variables.$dark-gray4 !important;
     }
 
-    .bp5-icon-projects, .bp5-icon-console, .bp5-icon-globe-network {
+    .bp6-icon-projects, .bp6-icon-console, .bp6-icon-globe-network {
       color: blueprint_variables.$dark-gray4 !important;
     }
 
-    .bp5-icon-application, .bp5-icon-timeline-line-chart, .bp5-icon-timeline-area-chart {
+    .bp6-icon-application, .bp6-icon-timeline-line-chart, .bp6-icon-timeline-area-chart {
       color: blueprint_variables.$dark-gray4 !important;
     }
 
-    .bp5-icon-list {
+    .bp6-icon-list {
       color: blueprint_variables.$dark-gray4 !important;
     }
 
-    .bp5-icon-code {
+    .bp6-icon-code {
       color: blueprint_variables.$dark-gray4 !important;
     }
   }
 }
 
 // Colors for the resource-specific icons
-.bp5-dark {
+.bp6-dark {
   .floating-button-group {
     button {
       background-color: blueprint_variables.$dark-gray5;
     }
   }
   .lib-tab-button, .context-tab-button-content, .menu-bar, .combined-metadata, .all-pane {
-    .bp5-icon-cube {
+    .bp6-icon-cube {
       color: blueprint_variables.$orange5 ! important
     }
 
-    .bp5-icon-folder-close {
+    .bp6-icon-folder-close {
       color: blueprint_variables.$orange5 ! important
     }
 
-    .bp5-icon-database, .bp5-icon-th, .bp5-icon-freeform, .bp5-icon-align-left {
+    .bp6-icon-database, .bp6-icon-th, .bp6-icon-freeform, .bp6-icon-align-left {
       color: blueprint_variables.$blue5 !important;
     }
 
-    .bp5-icon-projects, .bp5-icon-console, .bp5-icon-globe-network {
+    .bp6-icon-projects, .bp6-icon-console, .bp6-icon-globe-network {
       color: blueprint_variables.$green5 !important;
     }
 
-    .bp5-icon-application, .bp5-icon-timeline-line-chart, .bp5-icon-timeline-area-chart {
+    .bp6-icon-application, .bp6-icon-timeline-line-chart, .bp6-icon-timeline-area-chart {
       color: blueprint_variables.$indigo5 !important;
     }
 
-    .bp5-icon-list {
+    .bp6-icon-list {
       color: blueprint_variables.$rose5 !important;
     }
 
-    .bp5-icon-code {
+    .bp6-icon-code {
       color: blueprint_variables.$lime5 !important;
     }
   }
@@ -92,7 +92,7 @@ $dark-field-background: #1114184d;
 
 .light-theme {
 
-  &.bp5-navbar {
+  &.bp6-navbar {
     box-shadow: none;
 }
 
@@ -139,7 +139,7 @@ $dark-field-background: #1114184d;
   }
 
   .combined-metadata {
-    .bp5-input:disabled {
+    .bp6-input:disabled {
       color: #5f6b7c !important;
     }
   }
@@ -161,14 +161,14 @@ $dark-field-background: #1114184d;
   }
 
   .tactic-tag-button-list {
-    .bp5-tree-node-selected {
-      .bp5-tree-node-content {
+    .bp6-tree-node-selected {
+      .bp6-tree-node-content {
         background-color: white;
         color: blueprint_variables.$blue3;
         font-weight: 900
       }
 
-      .bp5-icon {
+      .bp6-icon {
         background-color: white;
         color: blueprint_variables.$blue3 !important;
         font-weight: 900
@@ -213,7 +213,7 @@ $dark-field-background: #1114184d;
   }
 
   .tile-form-divider {
-    .bp5-divider {
+    .bp6-divider {
       border-bottom: 2px solid #5c7080;
       width: 50%;
       min-width: 200px
@@ -221,8 +221,8 @@ $dark-field-background: #1114184d;
   }
 
   .chat-module {
-    .bp5-card-list {
-      .bp5-card {
+    .bp6-card-list {
+      .bp6-card {
         background-color: blueprint_variables.$light-gray5;
       }
     }
@@ -326,7 +326,7 @@ $dark-field-background: #1114184d;
 
 ///// Dark theme
 
-.bp5-dark {
+.bp6-dark {
 
   .verticalIconBar {
     bottom: 0;
@@ -335,7 +335,7 @@ $dark-field-background: #1114184d;
   }
 
   .iconBarButton {
-    .bp5-icon {
+    .bp6-icon {
       color: white !important
     }
   }
@@ -406,14 +406,14 @@ $dark-field-background: #1114184d;
   }
 
   .tactic-tag-button-list {
-    .bp5-tree-node-selected {
-      .bp5-tree-node-content {
+    .bp6-tree-node-selected {
+      .bp6-tree-node-content {
         background-color: $darkest-bg;
         color: blueprint_variables.$blue5;
         font-weight: 900
       }
 
-      .bp5-icon {
+      .bp6-icon {
         background-color: $darkest-bg;
         color: blueprint_variables.$blue5 !important;
         font-weight: 900
@@ -470,7 +470,7 @@ $dark-field-background: #1114184d;
   }
 
   .tile-form-divider {
-    .bp5-divider {
+    .bp6-divider {
       border-color: white;
       width: 50%;
       min-width: 200px
@@ -544,7 +544,7 @@ $dark-field-background: #1114184d;
     background-color: transparent;
   }
 
-  &.bp5-dark {
+  &.bp6-dark {
     background-color: transparent;
 
     &.light-dark {

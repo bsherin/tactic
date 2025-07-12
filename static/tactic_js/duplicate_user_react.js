@@ -105,7 +105,7 @@ function DuplicateApp(props) {
       style: {
         width: 250
       },
-      large: true,
+      size: "large",
       fill: false,
       placeholder: field_name,
       value: fields_ref.current[field_name]
@@ -129,7 +129,7 @@ function DuplicateApp(props) {
     className: "d-flex flex-row"
   }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
     icon: "log-in",
-    large: true,
+    size: "large",
     text: "Submit",
     onClick: _submit_duplicate_info
   })))));

@@ -304,7 +304,7 @@ function NotebookApp(props) {
                                showSettingsDrawerButton={true}
                 />
             </MetadataContext.Provider>
-            <div className={`main-outer ${settingsContext.isDark() ? "bp5-dark" : "light-theme"}`}
+            <div className={`main-outer ${settingsContext.isDark() ? "bp6-dark" : "light-theme"}`}
                  ref={main_outer_ref}
                  style={outer_style}>
                 <SizeProvider value={{

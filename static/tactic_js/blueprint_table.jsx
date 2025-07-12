@@ -4,7 +4,7 @@ import React from "react";
 import {useState, useEffect, useRef, memo} from "react";
 import PropTypes from 'prop-types';
 
-import {Cell, EditableCell2, RowHeaderCell, Column, Table2, Regions, RegionCardinality} from "@blueprintjs/table";
+import {Cell, EditableCell2, RowHeaderCell, Column, Table, Regions, RegionCardinality} from "@blueprintjs/table";
 import hash from "object-hash"
 
 import {useCallbackStack} from "./utilities_react";
@@ -305,7 +305,7 @@ function BlueprintTable(props, passedRef) {
     };
     return (
         <div id="table-area" ref={top_ref} style={style}>
-            <Table2 ref={table_ref}
+            <Table ref={table_ref}
                    key={hash_value()}  // kludge: Having this prevents partial row rendering
                    numRows={props.mState.total_rows}
                    enableColumnReordering={true}
@@ -324,7 +324,7 @@ function BlueprintTable(props, passedRef) {
                    rowHeaderCellRenderer={_rowHeaderCellRenderer}
             >
                 {columns}
-            </Table2>
+            </Table>
         </div>
     );
 }
@@ -376,7 +376,7 @@ EnhancedEditableCell = memo(EnhancedEditableCell);
 
 function compute_added_column_width(header_text) {
     const max_field_width = MAX_INITIAL_CELL_WIDTH;
-    const elements = document.querySelectorAll(".bp5-table-truncated-text");
+    const elements = document.querySelectorAll(".bp6-table-truncated-text");
     let added_header_width = 40;
 
     if (elements.length > 0) {
@@ -398,7 +398,7 @@ function compute_initial_column_widths(header_list, data_row_dict) {
 
     // Get sample header and body cells
     // set up a canvas so that we can use it to compute the width of text
-    const elements = document.querySelectorAll(".bp5-table-truncated-text");
+    const elements = document.querySelectorAll(".bp6-table-truncated-text");
     let body_font;
     if (elements.length > 0) {
         body_font = window.getComputedStyle(elements[0]).font;

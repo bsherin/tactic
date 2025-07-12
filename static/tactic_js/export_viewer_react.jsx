@@ -16,7 +16,7 @@ const FOOTING_HEIGHT = 23;
 function TextIcon(props) {
     return (
             <Fragment>
-                <span className="bp5-icon" style={{fontWeight: 500}}>
+                <span className="bp6-icon" style={{fontWeight: 500}}>
                     {props.the_text}
                 </span>
             </Fragment>
@@ -56,9 +56,9 @@ function ExportButtonListButton(props) {
         props.buttonPress(props.fullname)
     }
     return (
-        <Button className="export-button" icon={export_icon_dict[props.type]} minimal={false}
+        <Button className="export-button" icon={export_icon_dict[props.type]}
                 onClick={_onPressed} key={props.fullname}
-                active={props.active} small={true} value={props.fullname} text={props.shortname}/>
+                active={props.active} size="small" value={props.fullname} text={props.shortname}/>
     )
 }
 
@@ -110,7 +110,7 @@ function ExportButtonList(props) {
             if (group == "__log__") {
                 groups.unshift(
                     <FormGroup key={group} inline={false} label={null} className="export-label">
-                        <ButtonGroup minimal={false} vertical={true} alignText="left" key={group} >
+                        <ButtonGroup vertical={true} alignText="left" key={group} >
                             {group_items}
                         </ButtonGroup>
                     </FormGroup>
@@ -119,7 +119,7 @@ function ExportButtonList(props) {
             else {
                 groups.push(
                     <FormGroup key={group} inline={false} label={group} className="export-label">
-                        <ButtonGroup minimal={false} vertical={true} alignText="left" key={group} >
+                        <ButtonGroup vertical={true} alignText="left" key={group} >
                             {group_items}
                         </ButtonGroup>
                     </FormGroup>
@@ -370,11 +370,11 @@ function ExportsViewer(props) {
                                {key_list && <SelectList option_list={key_list}
                                                          onChange={_handleKeyListChange}
                                                          the_value={key_list_value}
-                                                         minimal={true}
+                                                         variant="minimal"
                                                          fontSize={11}/>
                                 }
                              <InputGroup type="text"
-                                         small={true}
+                                         size="small"
                                          onChange={_handleTailChange}
                                          onSubmit={_eval}
                                          value={tail_value}
@@ -411,7 +411,7 @@ function ExportsViewer(props) {
                                  <SelectList option_list={[25, 100, 250, 500]}
                                              onChange={_handleMaxRowsChange}
                                              the_value={max_rows_ref.current}
-                                             minimal={true}
+                                             variant="minimal"
                                              fontSize={11}/>
                              </FormGroup>
                          </div>

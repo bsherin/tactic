@@ -451,7 +451,7 @@ function ReactCodemirror(props) {
                     marginRight: 10,
                     width: "100%"
                 }}>
-                    <span className="bp5-ui-text"
+                    <span className="bp6-ui-text"
                           style={{
                               display: "flex",
                               paddingLeft: 5,
@@ -472,8 +472,8 @@ function ReactCodemirror(props) {
                 </div>
                 {props.show_fold_button && bgstyle &&
                     <ButtonGroup minimal={false} style={bgstyle}>
-                        <Button small={true} icon="collapse-all" text="fold" onClick={_foldAll}/>
-                        <Button small={true} icon="expand-all" text="unfold" onClick={_unfoldAll}/>
+                        <Button size="small" icon="collapse-all" text="fold" onClick={_foldAll}/>
+                        <Button size="small" icon="expand-all" text="unfold" onClick={_unfoldAll}/>
                     </ButtonGroup>
                 }
                 <div className="code-container" style={ccstyle} ref={localRef}>
@@ -491,13 +491,13 @@ function ReactCodemirror(props) {
             </Helmet>
             {props.show_fold_button && bgstyle &&
                 <ButtonGroup minimal={false} style={bgstyle}>
-                    <Button small={true} icon="collapse-all" text="fold" onClick={_foldAll}/>
-                    <Button small={true} icon="expand-all" text="unfold" onClick={_unfoldAll}/>
+                    <Button size="small" icon="collapse-all" text="fold" onClick={_foldAll}/>
+                    <Button size="small" icon="expand-all" text="unfold" onClick={_unfoldAll}/>
                 </ButtonGroup>
 
             }
             {props.title_label &&
-                <span className="bp5-ui-text"
+                <span className="bp6-ui-text"
                       style={TITLE_STYLE}>{props.title_label}</span>
             }
             <div className="code-container" style={ccstyle} ref={localRef}>

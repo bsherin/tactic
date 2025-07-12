@@ -149,7 +149,7 @@ function BpSelect(props) {
         popoverPosition: PopoverPosition.BOTTOM_LEFT,
         buttonTextObject: null,
         filterable: true,
-        small: undefined,
+        size: "medium",
         ...props
     };
 
@@ -194,7 +194,7 @@ function BpSelect(props) {
             }}>
             <Button className="button-in-select"
                     style={props.buttonStyle}
-                    size={props.small ? "small" : "medium"}
+                    size={props.size}
                     text={props.buttonTextObject ? props.buttonTextObject : props.value}
                     icon={props.buttonIcon}/>
         </Select>
@@ -692,7 +692,7 @@ function CombinedMetadata(props) {
             let md = props.fixedData[field];
             additional_items.push(
                 <FormGroup label={field + ": "} className="metadata-form_group" key={field} inline={true}>
-                    <span className="bp5-ui-text metadata-field">{String(md)}</span>
+                    <span className="bp6-ui-text metadata-field">{String(md)}</span>
                 </FormGroup>
             )
         }
@@ -709,7 +709,7 @@ function CombinedMetadata(props) {
             }
             additional_items.push(
                 <FormGroup label={field + ": "} className="metadata-form_group" key={field} inline={true}>
-                    <span className="bp5-ui-text metadata-field">{String(md)}</span>
+                    <span className="bp6-ui-text metadata-field">{String(md)}</span>
                 </FormGroup>
             )
         }
@@ -772,12 +772,12 @@ function CombinedMetadata(props) {
                 }
                 {mStateRef.current.created != null &&
                     <FormGroup label="Created: " className="metadata-form_group" inline={true}>
-                        <span className="bp5-ui-text metadata-field">{mStateRef.current.created}</span>
+                        <span className="bp6-ui-text metadata-field">{mStateRef.current.created}</span>
                     </FormGroup>
                 }
                 {mStateRef.current.updated != null &&
                     <FormGroup label="Updated: " className="metadata-form_group" inline={true}>
-                        <span className="bp5-ui-text metadata-field">{mStateRef.current.updated}</span>
+                        <span className="bp6-ui-text metadata-field">{mStateRef.current.updated}</span>
                     </FormGroup>
                 }
                 {additional_items && additional_items.length > 0 &&

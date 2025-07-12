@@ -116,7 +116,7 @@ function RepositoryHomeApp(props) {
   };
   var outer_class = "library-pane-holder  ";
   if (settingsContext.isDark()) {
-    outer_class = "".concat(outer_class, " bp5-dark");
+    outer_class = "".concat(outer_class, " bp6-dark");
   } else {
     outer_class = "".concat(outer_class, " light-theme");
   }

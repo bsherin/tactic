@@ -306,7 +306,7 @@ function NotebookApp(props) {
     showAssistantDrawerButton: true,
     showSettingsDrawerButton: true
   })), /*#__PURE__*/_react["default"].createElement("div", {
-    className: "main-outer ".concat(settingsContext.isDark() ? "bp5-dark" : "light-theme"),
+    className: "main-outer ".concat(settingsContext.isDark() ? "bp6-dark" : "light-theme"),
     ref: main_outer_ref,
     style: outer_style
   }, /*#__PURE__*/_react["default"].createElement(_sizing_tools.SizeProvider, {

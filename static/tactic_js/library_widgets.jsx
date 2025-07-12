@@ -14,7 +14,7 @@ import {
     Button,
     ButtonGroup
 } from "@blueprintjs/core";
-import {Cell, Column, Table2, ColumnHeaderCell, SelectionModes, RegionCardinality, TruncatedFormat, Regions} from "@blueprintjs/table";
+import {Cell, Column, Table, ColumnHeaderCell, SelectionModes, RegionCardinality, TruncatedFormat, Regions} from "@blueprintjs/table";
 import _ from 'lodash';
 
 import { useCallbackStack, useStateAndRef, useDebounce } from "./utilities_react";
@@ -105,7 +105,7 @@ function SearchForm(props) {
                                 style={{"width": props.field_width}}
                                 autoCapitalize="none"
                                 autoCorrect="off"
-                                small={true}
+                                size="small"
                                 inputRef={props.search_ref}
                     />
                     {props.allow_regex &&
@@ -142,8 +142,8 @@ function SearchForm(props) {
                     }
                     {props.include_search_jumper &&
                         <ButtonGroup style={{marginLeft: 5, padding: 2}}>
-                            <Button onClick={props.searchNext} icon="caret-down" text={undefined} small={true}/>
-                            <Button onClick={props.searchPrev} icon="caret-up" text={undefined} small={true}/>
+                            <Button onClick={props.searchNext} icon="caret-down" text={undefined} size="small"/>
+                            <Button onClick={props.searchPrev} icon="caret-up" text={undefined} size="small"/>
                         </ButtonGroup>
 
                     }
@@ -311,7 +311,7 @@ function BpSelectorTable(props) {
             the_text = the_text.replace(/(^icon:)/gi, "");
             the_body = <Icon icon={the_text} size={14}/>
         } else {
-            the_body = <div className="bp5-table-truncated-text">{the_text}</div>
+            the_body = <div className="bp6-table-truncated-text">{the_text}</div>
         }
         return the_body
     }
@@ -341,7 +341,7 @@ function BpSelectorTable(props) {
         dependencies = [props.data_dict]
     }
     return (
-        <Table2 numRows={props.num_rows}
+        <Table numRows={props.num_rows}
                 ref={table_ref}
                 cellRendererDependencies={dependencies}
                 bodyContextMenuRenderer={props.renderBodyContextMenu}
@@ -358,7 +358,7 @@ function BpSelectorTable(props) {
                 onSelection={(regions) => props.onSelection(regions)}
         >
             {columns}
-        </Table2>
+        </Table>
     )
 }
 
@@ -374,11 +374,11 @@ function compute_initial_column_widths(header_list, data_list) {
     // Get sample header and body cells
 
     // set up a canvas so that we can use it to compute the width of text
-    // let body_font = $($(".bp5-table-truncated-text")[0]).css("font");
-    const element = document.querySelector(".bp5-table-truncated-text");
+    // let body_font = $($(".bp6-table-truncated-text")[0]).css("font");
+    const element = document.querySelector(".bp6-table-truncated-text");
     const body_font = window.getComputedStyle(element).getPropertyValue("font");
-    //let header_font = $($(".bp5-table-column-name-text")[0]).css("font");
-    const header_element = document.querySelector(".bp5-table-column-name-text");
+    //let header_font = $($(".bp6-table-column-name-text")[0]).css("font");
+    const header_element = document.querySelector(".bp6-table-column-name-text");
     const header_font = window.getComputedStyle(header_element).getPropertyValue("font");
     let canvas_element = document.getElementById("measure-canvas");
     let ctx = canvas_element.getContext("2d");

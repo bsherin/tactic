@@ -182,7 +182,7 @@ function ModalDialog(props) {
     }
     return (
         <Dialog isOpen={props.isOpen}
-                className={settingsContext.isDark() ? "bp5-dark" : ""}
+                className={settingsContext.isDark() ? "bp6-dark" : ""}
                 title={props.title}
                 onClose={_cancelHandler}
                 onOpened={() => {
@@ -290,7 +290,7 @@ function PresentationDialog(props) {
 
     return (
         <Dialog isOpen={show}
-                className={settingsContext.isDark() ? "bp5-dark" : ""}
+                className={settingsContext.isDark() ? "bp6-dark" : ""}
                 title="Create Presentation"
                 onClose={_cancelHandler}
                 canEscapeKeyClose={true}>
@@ -419,7 +419,7 @@ function ReportDialog(props) {
 
     return (
         <Dialog isOpen={show}
-                className={settingsContext.isDark() ? "bp5-dark" : ""}
+                className={settingsContext.isDark() ? "bp6-dark" : ""}
                 title="Create Report"
                 onClose={_cancelHandler}
                 canEscapeKeyClose={true}>
@@ -543,7 +543,7 @@ function SelectDialog(props) {
 
     return (
         <Dialog isOpen={show}
-                className={settingsContext.isDark() ? "bp5-dark" : ""}
+                className={settingsContext.isDark() ? "bp6-dark" : ""}
                 title={props.title}
                 onClose={_cancelHandler}
                 canEscapeKeyClose={true}>
@@ -602,7 +602,7 @@ function SelectAddressDialog(props) {
 
     return (
         <Dialog isOpen={show}
-                className={settingsContext.isDark() ? "bp5-dark" : ""}
+                className={settingsContext.isDark() ? "bp6-dark" : ""}
                 title={props.title}
                 onClose={_cancelHandler}
                 canEscapeKeyClose={true}>
@@ -683,7 +683,7 @@ function SelectResourceDialog(props) {
 
     return (
         <Dialog isOpen={show}
-                className={settingsContext.isDark() ? "bp5-dark" : ""}
+                className={settingsContext.isDark() ? "bp6-dark" : ""}
                 title="Select a library resource"
                 onClose={_cancelHandler}
                 canEscapeKeyClose={true}>
@@ -745,7 +745,7 @@ function ConfirmDialog(props) {
 
     return (
         <Dialog isOpen={show}
-                className={settingsContext.isDark() ? "bp5-dark" : ""}
+                className={settingsContext.isDark() ? "bp6-dark" : ""}
                 title={props.title}
                 onClose={_cancelHandler}
                 autoFocus={true}

@@ -28,10 +28,11 @@ var _blueprint_navbar = require("./blueprint_navbar");
 var _error_boundary = require("./error_boundary");
 var _settings = require("./settings");
 var _modal_react = require("./modal_react");
-function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t in e) "default" !== _t && {}.hasOwnProperty.call(e, _t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t)) && (i.get || i.set) ? o(f, _t, i) : f[_t] = e[_t]); return f; })(e, t); }
+function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t8 in e) "default" !== _t8 && {}.hasOwnProperty.call(e, _t8) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t8)) && (i.get || i.set) ? o(f, _t8, i) : f[_t8] = e[_t8]); return f; })(e, t); }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
-function _regeneratorRuntime() { "use strict"; /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ _regeneratorRuntime = function _regeneratorRuntime() { return r; }; var t, r = {}, e = Object.prototype, n = e.hasOwnProperty, o = "function" == typeof Symbol ? Symbol : {}, i = o.iterator || "@@iterator", a = o.asyncIterator || "@@asyncIterator", u = o.toStringTag || "@@toStringTag"; function c(t, r, e, n) { return Object.defineProperty(t, r, { value: e, enumerable: !n, configurable: !n, writable: !n }); } try { c({}, ""); } catch (t) { c = function c(t, r, e) { return t[r] = e; }; } function h(r, e, n, o) { var i = e && e.prototype instanceof Generator ? e : Generator, a = Object.create(i.prototype); return c(a, "_invoke", function (r, e, n) { var o = 1; return function (i, a) { if (3 === o) throw Error("Generator is already running"); if (4 === o) { if ("throw" === i) throw a; return { value: t, done: !0 }; } for (n.method = i, n.arg = a;;) { var u = n.delegate; if (u) { var c = d(u, n); if (c) { if (c === f) continue; return c; } } if ("next" === n.method) n.sent = n._sent = n.arg;else if ("throw" === n.method) { if (1 === o) throw o = 4, n.arg; n.dispatchException(n.arg); } else "return" === n.method && n.abrupt("return", n.arg); o = 3; var h = s(r, e, n); if ("normal" === h.type) { if (o = n.done ? 4 : 2, h.arg === f) continue; return { value: h.arg, done: n.done }; } "throw" === h.type && (o = 4, n.method = "throw", n.arg = h.arg); } }; }(r, n, new Context(o || [])), !0), a; } function s(t, r, e) { try { return { type: "normal", arg: t.call(r, e) }; } catch (t) { return { type: "throw", arg: t }; } } r.wrap = h; var f = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} var l = {}; c(l, i, function () { return this; }); var p = Object.getPrototypeOf, y = p && p(p(x([]))); y && y !== e && n.call(y, i) && (l = y); var v = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(l); function g(t) { ["next", "throw", "return"].forEach(function (r) { c(t, r, function (t) { return this._invoke(r, t); }); }); } function AsyncIterator(t, r) { function e(o, i, a, u) { var c = s(t[o], t, i); if ("throw" !== c.type) { var h = c.arg, f = h.value; return f && "object" == _typeof(f) && n.call(f, "__await") ? r.resolve(f.__await).then(function (t) { e("next", t, a, u); }, function (t) { e("throw", t, a, u); }) : r.resolve(f).then(function (t) { h.value = t, a(h); }, function (t) { return e("throw", t, a, u); }); } u(c.arg); } var o; c(this, "_invoke", function (t, n) { function i() { return new r(function (r, o) { e(t, n, r, o); }); } return o = o ? o.then(i, i) : i(); }, !0); } function d(r, e) { var n = e.method, o = r.i[n]; if (o === t) return e.delegate = null, "throw" === n && r.i["return"] && (e.method = "return", e.arg = t, d(r, e), "throw" === e.method) || "return" !== n && (e.method = "throw", e.arg = new TypeError("The iterator does not provide a '" + n + "' method")), f; var i = s(o, r.i, e.arg); if ("throw" === i.type) return e.method = "throw", e.arg = i.arg, e.delegate = null, f; var a = i.arg; return a ? a.done ? (e[r.r] = a.value, e.next = r.n, "return" !== e.method && (e.method = "next", e.arg = t), e.delegate = null, f) : a : (e.method = "throw", e.arg = new TypeError("iterator result is not an object"), e.delegate = null, f); } function w(t) { this.tryEntries.push(t); } function m(r) { var e = r[4] || {}; e.type = "normal", e.arg = t, r[4] = e; } function Context(t) { this.tryEntries = [[-1]], t.forEach(w, this), this.reset(!0); } function x(r) { if (null != r) { var e = r[i]; if (e) return e.call(r); if ("function" == typeof r.next) return r; if (!isNaN(r.length)) { var o = -1, a = function e() { for (; ++o < r.length;) if (n.call(r, o)) return e.value = r[o], e.done = !1, e; return e.value = t, e.done = !0, e; }; return a.next = a; } } throw new TypeError(_typeof(r) + " is not iterable"); } return GeneratorFunction.prototype = GeneratorFunctionPrototype, c(v, "constructor", GeneratorFunctionPrototype), c(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = c(GeneratorFunctionPrototype, u, "GeneratorFunction"), r.isGeneratorFunction = function (t) { var r = "function" == typeof t && t.constructor; return !!r && (r === GeneratorFunction || "GeneratorFunction" === (r.displayName || r.name)); }, r.mark = function (t) { return Object.setPrototypeOf ? Object.setPrototypeOf(t, GeneratorFunctionPrototype) : (t.__proto__ = GeneratorFunctionPrototype, c(t, u, "GeneratorFunction")), t.prototype = Object.create(v), t; }, r.awrap = function (t) { return { __await: t }; }, g(AsyncIterator.prototype), c(AsyncIterator.prototype, a, function () { return this; }), r.AsyncIterator = AsyncIterator, r.async = function (t, e, n, o, i) { void 0 === i && (i = Promise); var a = new AsyncIterator(h(t, e, n, o), i); return r.isGeneratorFunction(e) ? a : a.next().then(function (t) { return t.done ? t.value : a.next(); }); }, g(v), c(v, u, "Generator"), c(v, i, function () { return this; }), c(v, "toString", function () { return "[object Generator]"; }), r.keys = function (t) { var r = Object(t), e = []; for (var n in r) e.unshift(n); return function t() { for (; e.length;) if ((n = e.pop()) in r) return t.value = n, t.done = !1, t; return t.done = !0, t; }; }, r.values = x, Context.prototype = { constructor: Context, reset: function reset(r) { if (this.prev = this.next = 0, this.sent = this._sent = t, this.done = !1, this.delegate = null, this.method = "next", this.arg = t, this.tryEntries.forEach(m), !r) for (var e in this) "t" === e.charAt(0) && n.call(this, e) && !isNaN(+e.slice(1)) && (this[e] = t); }, stop: function stop() { this.done = !0; var t = this.tryEntries[0][4]; if ("throw" === t.type) throw t.arg; return this.rval; }, dispatchException: function dispatchException(r) { if (this.done) throw r; var e = this; function n(t) { a.type = "throw", a.arg = r, e.next = t; } for (var o = e.tryEntries.length - 1; o >= 0; --o) { var i = this.tryEntries[o], a = i[4], u = this.prev, c = i[1], h = i[2]; if (-1 === i[0]) return n("end"), !1; if (!c && !h) throw Error("try statement without catch or finally"); if (null != i[0] && i[0] <= u) { if (u < c) return this.method = "next", this.arg = t, n(c), !0; if (u < h) return n(h), !1; } } }, abrupt: function abrupt(t, r) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var n = this.tryEntries[e]; if (n[0] > -1 && n[0] <= this.prev && this.prev < n[2]) { var o = n; break; } } o && ("break" === t || "continue" === t) && o[0] <= r && r <= o[2] && (o = null); var i = o ? o[4] : {}; return i.type = t, i.arg = r, o ? (this.method = "next", this.next = o[2], f) : this.complete(i); }, complete: function complete(t, r) { if ("throw" === t.type) throw t.arg; return "break" === t.type || "continue" === t.type ? this.next = t.arg : "return" === t.type ? (this.rval = this.arg = t.arg, this.method = "return", this.next = "end") : "normal" === t.type && r && (this.next = r), f; }, finish: function finish(t) { for (var r = this.tryEntries.length - 1; r >= 0; --r) { var e = this.tryEntries[r]; if (e[2] === t) return this.complete(e[4], e[3]), m(e), f; } }, "catch": function _catch(t) { for (var r = this.tryEntries.length - 1; r >= 0; --r) { var e = this.tryEntries[r]; if (e[0] === t) { var n = e[4]; if ("throw" === n.type) { var o = n.arg; m(e); } return o; } } throw Error("illegal catch attempt"); }, delegateYield: function delegateYield(r, e, n) { return this.delegate = { i: x(r), r: e, n: n }, "next" === this.method && (this.arg = t), f; } }, r; }
+function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, "_invoke", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError("Generator is already running"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = "next"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i["return"]) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine2(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, "Generator"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, "toString", function () { return "[object Generator]"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }
+function _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, "", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { if (r) i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n;else { var o = function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); }; o("next", 0), o("throw", 1), o("return", 2); } }, _regeneratorDefine2(e, r, n, t); }
 function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
 function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
 function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
@@ -416,15 +417,14 @@ function CreatorApp(props) {
         name_text: "Share",
         icon_name: "share",
         click_handler: function () {
-          var _click_handler = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
-            return _regeneratorRuntime().wrap(function _callee$(_context) {
-              while (1) switch (_context.prev = _context.next) {
+          var _click_handler = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee() {
+            return _regenerator().w(function (_context) {
+              while (1) switch (_context.n) {
                 case 0:
-                  _context.next = 2;
+                  _context.n = 1;
                   return (0, _resource_viewer_react_app.sendToRepository)("tile", _cProp("resource_name"), dialogFuncs, statusFuncs, errorDrawerFuncs);
-                case 2:
-                case "end":
-                  return _context.stop();
+                case 1:
+                  return _context.a(2);
               }
             }, _callee);
           }));
@@ -612,41 +612,41 @@ function CreatorApp(props) {
     return _saveAndLoadModule2.apply(this, arguments);
   }
   function _saveAndLoadModule2() {
-    _saveAndLoadModule2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee3() {
-      return _regeneratorRuntime().wrap(function _callee3$(_context3) {
-        while (1) switch (_context3.prev = _context3.next) {
+    _saveAndLoadModule2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3() {
+      var _t2;
+      return _regenerator().w(function (_context3) {
+        while (1) switch (_context3.n) {
           case 0:
             if (am_selected()) {
-              _context3.next = 2;
+              _context3.n = 1;
               break;
             }
-            return _context3.abrupt("return", false);
-          case 2:
+            return _context3.a(2, false);
+          case 1:
             statusFuncs.startSpinner();
-            _context3.prev = 3;
-            _context3.next = 6;
+            _context3.p = 2;
+            _context3.n = 3;
             return doSavePromise();
-          case 6:
+          case 3:
             statusFuncs.statusMessage("Loading Module");
-            _context3.next = 9;
+            _context3.n = 4;
             return (0, _communication_react.postPromise)("host", "load_tile_module_task", {
               "tile_module_name": _cProp("resource_name"),
               "user_id": window.user_id
             }, props.module_viewer_id);
-          case 9:
+          case 4:
             statusFuncs.statusMessage("Loaded successfully");
             statusFuncs.stopSpinner();
-            _context3.next = 16;
+            _context3.n = 6;
             break;
-          case 13:
-            _context3.prev = 13;
-            _context3.t0 = _context3["catch"](3);
-            _logErrorStopSpinner("Error saving and loading module", _context3.t0);
-          case 16:
-          case "end":
-            return _context3.stop();
+          case 5:
+            _context3.p = 5;
+            _t2 = _context3.v;
+            _logErrorStopSpinner("Error saving and loading module", _t2);
+          case 6:
+            return _context3.a(2);
         }
-      }, _callee3, null, [[3, 13]]);
+      }, _callee3, null, [[2, 5]]);
     }));
     return _saveAndLoadModule2.apply(this, arguments);
   }
@@ -654,38 +654,38 @@ function CreatorApp(props) {
     return _loadModule2.apply(this, arguments);
   }
   function _loadModule2() {
-    _loadModule2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee4() {
-      return _regeneratorRuntime().wrap(function _callee4$(_context4) {
-        while (1) switch (_context4.prev = _context4.next) {
+    _loadModule2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee4() {
+      var _t3;
+      return _regenerator().w(function (_context4) {
+        while (1) switch (_context4.n) {
           case 0:
             if (am_selected()) {
-              _context4.next = 2;
+              _context4.n = 1;
               break;
             }
-            return _context4.abrupt("return", false);
-          case 2:
+            return _context4.a(2, false);
+          case 1:
             statusFuncs.startSpinner();
             statusFuncs.statusMessage("Loading module...");
-            _context4.prev = 4;
-            _context4.next = 7;
+            _context4.p = 2;
+            _context4.n = 3;
             return (0, _communication_react.postPromise)("host", "load_tile_module_task", {
               "tile_module_name": _cProp("resource_name"),
               "user_id": window.user_id
             }, props.module_viewer_id);
-          case 7:
+          case 3:
             statusFuncs.statusMessage("Loaded successfully");
             statusFuncs.stopSpinner();
-            _context4.next = 14;
+            _context4.n = 5;
             break;
-          case 11:
-            _context4.prev = 11;
-            _context4.t0 = _context4["catch"](4);
-            _logErrorStopSpinner("Error saving and loading module", _context4.t0);
-          case 14:
-          case "end":
-            return _context4.stop();
+          case 4:
+            _context4.p = 4;
+            _t3 = _context4.v;
+            _logErrorStopSpinner("Error saving and loading module", _t3);
+          case 5:
+            return _context4.a(2);
         }
-      }, _callee4, null, [[4, 11]]);
+      }, _callee4, null, [[2, 4]]);
     }));
     return _loadModule2.apply(this, arguments);
   }
@@ -693,40 +693,39 @@ function CreatorApp(props) {
     return _saveModuleAs2.apply(this, arguments);
   }
   function _saveModuleAs2() {
-    _saveModuleAs2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee6() {
-      var data, doCancel, CreateNewModule, _CreateNewModule;
-      return _regeneratorRuntime().wrap(function _callee6$(_context6) {
-        while (1) switch (_context6.prev = _context6.next) {
+    _saveModuleAs2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6() {
+      var data, doCancel, CreateNewModule, _CreateNewModule, _t5;
+      return _regenerator().w(function (_context6) {
+        while (1) switch (_context6.n) {
           case 0:
             _CreateNewModule = function _CreateNewModule3() {
-              _CreateNewModule = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee5(new_name) {
-                var result_dict;
-                return _regeneratorRuntime().wrap(function _callee5$(_context5) {
-                  while (1) switch (_context5.prev = _context5.next) {
+              _CreateNewModule = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5(new_name) {
+                var result_dict, _t4;
+                return _regenerator().w(function (_context5) {
+                  while (1) switch (_context5.n) {
                     case 0:
                       result_dict = {
                         "new_res_name": new_name,
                         "res_to_copy": _cProp("resource_name")
                       };
-                      _context5.prev = 1;
-                      _context5.next = 4;
+                      _context5.p = 1;
+                      _context5.n = 2;
                       return (0, _communication_react.postAjaxPromise)('/create_duplicate_tile', result_dict);
-                    case 4:
-                      data = _context5.sent;
+                    case 2:
+                      data = _context5.v;
                       _setResourceNameState(new_name, function () {
                         _saveMe();
                       });
-                      _context5.next = 11;
+                      _context5.n = 4;
                       break;
-                    case 8:
-                      _context5.prev = 8;
-                      _context5.t0 = _context5["catch"](1);
-                      _logErrorStopSpinner("Error saving module", _context5.t0);
-                    case 11:
-                    case "end":
-                      return _context5.stop();
+                    case 3:
+                      _context5.p = 3;
+                      _t4 = _context5.v;
+                      _logErrorStopSpinner("Error saving module", _t4);
+                    case 4:
+                      return _context5.a(2);
                   }
-                }, _callee5, null, [[1, 8]]);
+                }, _callee5, null, [[1, 3]]);
               }));
               return _CreateNewModule.apply(this, arguments);
             };
@@ -737,13 +736,13 @@ function CreatorApp(props) {
               statusFuncs.stopSpinner();
             };
             statusFuncs.startSpinner();
-            _context6.prev = 4;
-            _context6.next = 7;
+            _context6.p = 1;
+            _context6.n = 2;
             return (0, _communication_react.postPromise)("host", "get_tile_names", {
               "user_id": window.user_id
             }, props.main_id);
-          case 7:
-            data = _context6.sent;
+          case 2:
+            data = _context6.v;
             dialogFuncs.showModal("ModalDialog", {
               title: "Save Module As",
               field_title: "New Module Name",
@@ -754,17 +753,16 @@ function CreatorApp(props) {
               handleCancel: doCancel,
               handleClose: dialogFuncs.hideModal
             });
-            _context6.next = 14;
+            _context6.n = 4;
             break;
-          case 11:
-            _context6.prev = 11;
-            _context6.t0 = _context6["catch"](4);
-            _logErrorStopSpinner("Error saving module", _context6.t0);
-          case 14:
-          case "end":
-            return _context6.stop();
+          case 3:
+            _context6.p = 3;
+            _t5 = _context6.v;
+            _logErrorStopSpinner("Error saving module", _t5);
+          case 4:
+            return _context6.a(2);
         }
-      }, _callee6, null, [[4, 11]]);
+      }, _callee6, null, [[1, 3]]);
     }));
     return _saveModuleAs2.apply(this, arguments);
   }
@@ -775,37 +773,35 @@ function CreatorApp(props) {
     return _saveMe2.apply(this, arguments);
   }
   function _saveMe2() {
-    _saveMe2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee7() {
-      return _regeneratorRuntime().wrap(function _callee7$(_context7) {
-        while (1) switch (_context7.prev = _context7.next) {
+    _saveMe2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee7() {
+      var _t6;
+      return _regenerator().w(function (_context7) {
+        while (1) switch (_context7.n) {
           case 0:
             if (am_selected()) {
-              _context7.next = 2;
+              _context7.n = 1;
               break;
             }
-            return _context7.abrupt("return", false);
-          case 2:
+            return _context7.a(2, false);
+          case 1:
             statusFuncs.startSpinner();
             statusFuncs.statusMessage("Saving module...");
-            _context7.prev = 4;
-            _context7.next = 7;
+            _context7.p = 2;
+            _context7.n = 3;
             return doSavePromise();
-          case 7:
+          case 3:
             statusFuncs.statusMessage("Saved module");
             statusFuncs.stopSpinner();
-            _context7.next = 14;
+            _context7.n = 5;
             break;
-          case 11:
-            _context7.prev = 11;
-            _context7.t0 = _context7["catch"](4);
-            _logErrorStopSpinner("Error saving module", _context7.t0);
-          case 14:
-            return _context7.abrupt("return", false);
-          case 15:
-          case "end":
-            return _context7.stop();
+          case 4:
+            _context7.p = 4;
+            _t6 = _context7.v;
+            _logErrorStopSpinner("Error saving module", _t6);
+          case 5:
+            return _context7.a(2, false);
         }
-      }, _callee7, null, [[4, 11]]);
+      }, _callee7, null, [[2, 4]]);
     }));
     return _saveMe2.apply(this, arguments);
   }
@@ -813,40 +809,38 @@ function CreatorApp(props) {
     return _saveAndCheckpoint2.apply(this, arguments);
   }
   function _saveAndCheckpoint2() {
-    _saveAndCheckpoint2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee8() {
-      return _regeneratorRuntime().wrap(function _callee8$(_context8) {
-        while (1) switch (_context8.prev = _context8.next) {
+    _saveAndCheckpoint2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee8() {
+      var _t7;
+      return _regenerator().w(function (_context8) {
+        while (1) switch (_context8.n) {
           case 0:
             if (am_selected()) {
-              _context8.next = 2;
+              _context8.n = 1;
               break;
             }
-            return _context8.abrupt("return", false);
-          case 2:
+            return _context8.a(2, false);
+          case 1:
             statusFuncs.startSpinner();
             statusFuncs.statusMessage("Checkpointing");
-            _context8.prev = 4;
-            _context8.next = 7;
+            _context8.p = 2;
+            _context8.n = 3;
             return doSavePromise();
-          case 7:
-            _context8.next = 9;
+          case 3:
+            _context8.n = 4;
             return doCheckpointPromise();
-          case 9:
+          case 4:
             statusFuncs.statusMessage("Saved and checkpointed");
             statusFuncs.stopSpinner();
-            _context8.next = 16;
+            _context8.n = 6;
             break;
-          case 13:
-            _context8.prev = 13;
-            _context8.t0 = _context8["catch"](4);
-            _logErrorStopSpinner("Error in save and checkpoint", _context8.t0);
-          case 16:
-            return _context8.abrupt("return", false);
-          case 17:
-          case "end":
-            return _context8.stop();
+          case 5:
+            _context8.p = 5;
+            _t7 = _context8.v;
+            _logErrorStopSpinner("Error in save and checkpoint", _t7);
+          case 6:
+            return _context8.a(2, false);
         }
-      }, _callee8, null, [[4, 13]]);
+      }, _callee8, null, [[2, 5]]);
     }));
     return _saveAndCheckpoint2.apply(this, arguments);
   }
@@ -869,30 +863,29 @@ function CreatorApp(props) {
   }
   function doSavePromise() {
     return new Promise(/*#__PURE__*/function () {
-      var _ref = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee2(resolve, reject) {
-        var result_dict, data;
-        return _regeneratorRuntime().wrap(function _callee2$(_context2) {
-          while (1) switch (_context2.prev = _context2.next) {
+      var _ref = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2(resolve, reject) {
+        var result_dict, data, _t;
+        return _regenerator().w(function (_context2) {
+          while (1) switch (_context2.n) {
             case 0:
               result_dict = _getSaveDict();
-              _context2.prev = 1;
-              _context2.next = 4;
+              _context2.p = 1;
+              _context2.n = 2;
               return (0, _communication_react.postPromise)(props.module_viewer_id, "update_module", result_dict, props.module_viewer_id);
-            case 4:
-              data = _context2.sent;
+            case 2:
+              data = _context2.v;
               save_success(data);
               resolve(data);
-              _context2.next = 12;
+              _context2.n = 4;
               break;
-            case 9:
-              _context2.prev = 9;
-              _context2.t0 = _context2["catch"](1);
-              reject(_context2.t0);
-            case 12:
-            case "end":
-              return _context2.stop();
+            case 3:
+              _context2.p = 3;
+              _t = _context2.v;
+              reject(_t);
+            case 4:
+              return _context2.a(2);
           }
-        }, _callee2, null, [[1, 9]]);
+        }, _callee2, null, [[1, 3]]);
       }));
       return function (_x, _x2) {
         return _ref.apply(this, arguments);
@@ -1337,7 +1330,7 @@ function CreatorApp(props) {
   var outer_class = "resource-viewer-holder pane-holder";
   if (!window.in_context) {
     if (settingsContext.isDark()) {
-      outer_class = outer_class + " bp5-dark";
+      outer_class = outer_class + " bp6-dark";
     } else {
       outer_class = outer_class + " light-theme";
     }

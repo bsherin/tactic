@@ -257,7 +257,7 @@ function TileContainer(props) {
             <SortableComponent className={props.table_is_shrunk ? "tile-div tile-container-float" : "tile-div"}
                                main_id={props.main_id}
                                style={outer_style}
-                               helperClass={settingsContext.isDark() ? "bp5-dark" : "light-theme"}
+                               helperClass={settingsContext.isDark() ? "bp6-dark" : "light-theme"}
                                ElementComponent={TailoredTileComponent}
                                key_field_name="tile_name"
                                item_list={_.cloneDeep(props.tile_list.current)}
@@ -303,8 +303,8 @@ const menu_icons = {
     "Delete me": "trash"
 };
 
-const menu_button = (<Button minimal={true}
-                           small={true}
+const menu_button = (<Button variant="minimal"
+                           size="small"
                            icon="more"/>);
 
 const alt_button = () => (menu_button);

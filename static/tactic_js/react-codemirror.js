@@ -466,7 +466,7 @@ function ReactCodemirror(props) {
         width: "100%"
       }
     }, /*#__PURE__*/_react["default"].createElement("span", {
-      className: "bp5-ui-text",
+      className: "bp6-ui-text",
       style: {
         display: "flex",
         paddingLeft: 5,
@@ -488,12 +488,12 @@ function ReactCodemirror(props) {
       minimal: false,
       style: bgstyle
     }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
-      small: true,
+      size: "small",
       icon: "collapse-all",
       text: "fold",
       onClick: _foldAll
     }), /*#__PURE__*/_react["default"].createElement(_core.Button, {
-      small: true,
+      size: "small",
       icon: "expand-all",
       text: "unfold",
       onClick: _unfoldAll
@@ -511,17 +511,17 @@ function ReactCodemirror(props) {
     minimal: false,
     style: bgstyle
   }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
-    small: true,
+    size: "small",
     icon: "collapse-all",
     text: "fold",
     onClick: _foldAll
   }), /*#__PURE__*/_react["default"].createElement(_core.Button, {
-    small: true,
+    size: "small",
     icon: "expand-all",
     text: "unfold",
     onClick: _unfoldAll
   })), props.title_label && /*#__PURE__*/_react["default"].createElement("span", {
-    className: "bp5-ui-text",
+    className: "bp6-ui-text",
     style: TITLE_STYLE
   }, props.title_label), /*#__PURE__*/_react["default"].createElement("div", {
     className: "code-container",

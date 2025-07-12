@@ -9,7 +9,7 @@ import {
     Checkbox, Dialog, FormGroup, Classes, Button, InputGroup, ButtonGroup,
     Intent, Collapse, Divider, Alignment
 } from "@blueprintjs/core";
-import {BpSelect} from "./blueprint_mdata_fields.js";
+import {BpSelect} from "./blueprint_mdata_fields";
 import {useConstructor, useStateAndRef} from "./utilities_react";
 import {renderToStaticMarkup} from "react-dom/server";
 import {ErrorDrawerContext, ErrorItem} from "./error_drawer";
@@ -329,7 +329,7 @@ function FileImportDialog(props) {
     }
     return (
         <Dialog isOpen={show}
-                className={settingsContext.isDark() ? "import-dialog bp5-dark" : "import-dialog light-theme"}
+                className={settingsContext.isDark() ? "import-dialog bp6-dark" : "import-dialog light-theme"}
                 title={props.title}
                 onClose={_closeHandler}
                 canOutsideClickClose={true}
@@ -356,8 +356,8 @@ function FileImportDialog(props) {
                             {props.show_csv_options &&
                                 <div>
                                     <Divider/>
-                                    <Button onClick={_toggleCSVOptions} minimal={true} intent="primary"
-                                            large={true}>
+                                    <Button onClick={_toggleCSVOptions} variant="minimal" intent="primary"
+                                            size="large">
                                         csv options: {csv_options_open ? "manual" : "auto"}
                                     </Button>
                                     <Collapse isOpen={csv_options_open}>
@@ -368,7 +368,7 @@ function FileImportDialog(props) {
                                             <BpSelect onChange={set_quoting}
                                                       value={quoting}
                                                       filterable={false}
-                                                      small={true}
+                                                      size="small"
                                                       options={["QUOTE_MINIMAL", "QUOTE_ALL",
                                                           "QUOTE_NONNUMERIC", "QUOTE_NONE"]}/>
                                         </FormGroup>
@@ -418,7 +418,7 @@ function FileImportDialog(props) {
                     </Button>
                 </ButtonGroup>
                 <Collapse isOpen={log_open}>
-                    <div className="bp5-dialog-body">
+                    <div className="bp6-dialog-body">
                         {log_items}
                     </div>
                 </Collapse>

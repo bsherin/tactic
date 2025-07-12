@@ -15,11 +15,11 @@ $light-context-highlight-color: #383e47;
 $light-highlight-weight: 600;
 
 
-.bp5-dark {
+.bp6-dark {
   #context-container {
     .context-tab-list {
 
-      > .bp5-tab-list {
+      > .bp6-tab-list {
         background-color: blueprint_variables.$dark-gray2;
         color: white;
         border-right: 1px solid blueprint_variables.$light-gray4;
@@ -28,7 +28,7 @@ $light-highlight-weight: 600;
       .lib-tab-button {
         color: white;
 
-        .bp5-icon {
+        .bp6-icon {
           color: blueprint_variables.$gray4
         }
       }
@@ -56,7 +56,7 @@ $light-highlight-weight: 600;
         font-weight: bold;
       }
 
-      .bp5-icon {
+      .bp6-icon {
         color: blueprint_variables.$gray4
       }
 
@@ -85,7 +85,7 @@ $light-highlight-weight: 600;
           color: $context-repository-highlight-color
         }
 
-        .context-close-button .bp5-icon {
+        .context-close-button .bp6-icon {
           color: $context-highlight-color;
 
         }
@@ -99,7 +99,7 @@ $light-highlight-weight: 600;
   #context-container {
     .context-tab-list {
 
-      > .bp5-tab-list {
+      > .bp6-tab-list {
         background-color: blueprint_variables.$light-gray5;
         color: white;
         //-webkit-box-shadow: 0 0 0 1px rgba(17, 20, 24, 0.1), 0 1px 1px rgba(17, 20, 24, 0.2), 0 2px 6px rgba(17, 20, 24, 0.2);
@@ -111,7 +111,7 @@ $light-highlight-weight: 600;
       .lib-tab-button {
         color: blueprint_variables.$dark-gray1;
 
-        .bp5-icon {
+        .bp6-icon {
           color: blueprint_variables.$dark-gray4
         }
       }
@@ -141,7 +141,7 @@ $light-highlight-weight: 600;
         font-weight: bold;
       }
 
-      .bp5-icon {
+      .bp6-icon {
         color: blueprint_variables.$dark-gray4
       }
 
@@ -160,7 +160,7 @@ $light-highlight-weight: 600;
           color: $context-repository-highlight-color
         }
 
-        .context-close-button .bp5-icon {
+        .context-close-button .bp6-icon {
           color: $light-context-highlight-color;
 
         }
@@ -174,7 +174,7 @@ $light-highlight-weight: 600;
   height: 100%;
 
   #library-home-root {
-    .bp5-tab-list {
+    .bp6-tab-list {
       display: none
     }
 
@@ -184,7 +184,7 @@ $light-highlight-weight: 600;
   .context-tab-list {
     height: 100%;
 
-    .bp5-tab-indicator-wrapper {
+    .bp6-tab-indicator-wrapper {
 
     }
 
@@ -215,12 +215,12 @@ $light-highlight-weight: 600;
       }
     }
 
-    > .bp5-tab-panel {
+    > .bp6-tab-panel {
       padding-left: 2px;
     }
 
 
-    > .bp5-tab-list {
+    > .bp6-tab-list {
       margin-top: unset;
       padding-top: 100px;
       padding-left: 2px;
@@ -232,14 +232,14 @@ $light-highlight-weight: 600;
         overflow-y: auto
       }
 
-      .bp5-tab {
+      .bp6-tab {
         outline: none
       }
 
-      > .bp5-tab-indicator-wrapper {
+      > .bp6-tab-indicator-wrapper {
         display: none;
 
-        > .bp5-tab-indicator {
+        > .bp6-tab-indicator {
           background-color: #48aff09e;
           border-radius: 0;
           width: 46px
@@ -262,6 +262,6 @@ $light-highlight-weight: 600;
   }
 }
 
-.context-tab.bp5-tab-panel {
+.context-tab.bp6-tab-panel {
   width: 100%
 }

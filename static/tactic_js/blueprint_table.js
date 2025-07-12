@@ -341,7 +341,7 @@ function BlueprintTable(props, passedRef) {
     id: "table-area",
     ref: top_ref,
     style: style
-  }, /*#__PURE__*/_react["default"].createElement(_table.Table2, {
+  }, /*#__PURE__*/_react["default"].createElement(_table.Table, {
     ref: table_ref,
     key: hash_value() // kludge: Having this prevents partial row rendering
     ,
@@ -408,7 +408,7 @@ function EnhancedEditableCell(props) {
 EnhancedEditableCell = /*#__PURE__*/(0, _react.memo)(EnhancedEditableCell);
 function compute_added_column_width(header_text) {
   var max_field_width = MAX_INITIAL_CELL_WIDTH;
-  var elements = document.querySelectorAll(".bp5-table-truncated-text");
+  var elements = document.querySelectorAll(".bp6-table-truncated-text");
   var added_header_width = 40;
   if (elements.length > 0) {
     var header_font = window.getComputedStyle(elements[0]).font;
@@ -427,7 +427,7 @@ function compute_initial_column_widths(header_list, data_row_dict) {
 
   // Get sample header and body cells
   // set up a canvas so that we can use it to compute the width of text
-  var elements = document.querySelectorAll(".bp5-table-truncated-text");
+  var elements = document.querySelectorAll(".bp6-table-truncated-text");
   var body_font;
   if (elements.length > 0) {
     body_font = window.getComputedStyle(elements[0]).font;

@@ -199,7 +199,7 @@ function SettingsDrawer(props) {
     return (
         <Drawer
             icon="cog"
-            className={props.settings.theme == "dark" ? "bp5-dark" : "light-theme"}
+            className={props.settings.theme == "dark" ? "bp6-dark" : "light-theme"}
             title={props.title}
             isOpen={props.showDrawer}
             position={props.position}

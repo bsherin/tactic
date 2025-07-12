@@ -737,7 +737,7 @@ function ExportModule(props) {
     className: "d-flex flex-column",
     style: exports_pane_style
   }, props.foregrounded && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement("h4", {
-    className: "bp5-heading"
+    className: "bp6-heading"
   }, "Exports"), /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.BpOrderableTable, {
     columns: cols,
     data_array: props.export_list,
@@ -757,7 +757,7 @@ function ExportModule(props) {
       marginTop: 15
     }
   }, /*#__PURE__*/_react["default"].createElement("h4", {
-    className: "bp5-heading"
+    className: "bp6-heading"
   }, "Save Attrs"), /*#__PURE__*/_react["default"].createElement(_core.Switch, {
     label: "Couple save_attrs and exports",
     className: "ml-2 mb-0 mt-1",

@@ -478,15 +478,15 @@ function ReactCodemirror6(props) {
                 generalCompletionSource(),]
         } else {
             sources = [
-                aiCompletionSource(aiTextRef.current, aiTextLabelRef.current),
                 generalCompletionSource(),]
         }
-        if (awaitingSuggestionRef.current) {
-            sources.unshift(loadingSource);
-        } else {
-            sources.unshift(aiCompletionSource(aiTextRef.current, aiTextLabelRef.current))
+        if (settingsContext.settingsRef.current["use_ai_code_suggestions"] == "yes") {
+            if (awaitingSuggestionRef.current) {
+                sources.unshift(loadingSource);
+            } else {
+                sources.unshift(aiCompletionSource(aiTextRef.current, aiTextLabelRef.current))
+            }
         }
-
         // noinspection JSUnusedGlobalSymbols
         autocompletionArgRef.current =
             {
@@ -502,7 +502,7 @@ function ReactCodemirror6(props) {
                 effects: completionCompartment.current.reconfigure(autocompletion({...autocompletionArgRef.current}))
             });
         }
-    }, [props.extraSelfCompletions, aiText]);
+    }, [props.extraSelfCompletions, aiText, settingsContext.settingsRef.current["use_ai_code_suggestions"]]);
 
     useEffect(() => {
         // This controlled stuff never quite worked perfectly inside the CombinedMetadata notes field
@@ -759,7 +759,7 @@ function ReactCodemirror6(props) {
                     height: props.header_left ? SEARCH_HEIGHT + 10 : SEARCH_HEIGHT,
                 }}>
                     {props.header_left && props.header_left}
-                    {title_label !== "" && <span className="bp5-ui-text"
+                    {title_label !== "" && <span className="bp6-ui-text"
                                                  style={{
                                                      display: "flex",
                                                      paddingLeft: 5,
@@ -800,7 +800,7 @@ function ReactCodemirror6(props) {
             }
             {props.header_left && props.header_left}
             {props.title_label &&
-                <span className="bp5-ui-text"
+                <span className="bp6-ui-text"
                       style={TITLE_STYLE}>{props.title_label}</span>
             }
             <div className={`code-container ${props.className}`} style={ccstyle} ref={localRef}></div>

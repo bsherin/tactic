@@ -111,7 +111,7 @@ function TacticMenubar(props) {
   } finally {
     _iterator.f();
   }
-  var theme_class = settingsContext.isDark() ? "bp5-dark" : "light-theme";
+  var theme_class = settingsContext.isDark() ? "bp6-dark" : "light-theme";
   return /*#__PURE__*/_react["default"].createElement(_core.Navbar, {
     style: {
       paddingLeft: 3,
@@ -138,7 +138,7 @@ function TacticMenubar(props) {
     style: {
       height: 30
     },
-    className: "bp5-navbar-group bp5-align-left"
+    className: "bp6-navbar-group bp6-align-left"
   }, /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, menus, sug_glyphs)), props.connection_status && /*#__PURE__*/_react["default"].createElement(ConnectionIndicator, {
     connection_status: props.connection_status
   }), props.showIconBar && /*#__PURE__*/_react["default"].createElement(IconBar, {
@@ -224,8 +224,8 @@ function IconBarButton(props) {
       icon: props.icon,
       size: 18
     }),
-    minimal: true,
-    large: true,
+    variant: "minimal",
+    size: "large",
     className: "iconBarButton",
     onClick: props.onClick
   });
@@ -255,7 +255,7 @@ function DrawerButtonGroup(props) {
   }, []);
   return /*#__PURE__*/_react["default"].createElement(_core.ButtonGroup, {
     className: "floating-button-group ".concat(visible ? 'visible' : ''),
-    large: true,
+    size: "large",
     alignText: "left",
     vertical: false
   }, props.showErrorDrawerButton && /*#__PURE__*/_react["default"].createElement(ErrorDrawerButton, null), assistantDrawerFuncs && assistantDrawerFuncs.showAssistantDrawerButton && /*#__PURE__*/_react["default"].createElement(AssistantDrawerButton, null), props.showMetadataDrawerButton && /*#__PURE__*/_react["default"].createElement(MetadataDrawerButton, {
@@ -274,9 +274,7 @@ function ErrorDrawerButton(props) {
       })
       //style={{paddingLeft: 4, paddingRight: 0}}
       ,
-      minimal: false,
       className: "context-close-button",
-      small: false,
       text: "Errors",
       tabIndex: -1,
       onClick: function onClick() {
@@ -302,7 +300,6 @@ function AssistantDrawerButton(props) {
       minimal: false,
       className: "context-close-button",
       text: "Assistant",
-      small: false,
       tabIndex: -1,
       onClick: function onClick() {
         assistantDrawerFuncs.toggleAssistantDrawer();
@@ -323,9 +320,7 @@ function MetadataDrawerButton(props) {
       })
       //style={{paddingLeft: 4, paddingRight: 0}}
       ,
-      minimal: false,
       className: "context-close-button",
-      small: false,
       text: "Metadata",
       tabIndex: -1,
       onClick: function onClick() {
@@ -358,9 +353,9 @@ function TopLeftButtons(props) {
         style: {
           paddingLeft: 8
         },
-        minimal: true,
+        variant: "minimal",
         className: "context-close-button",
-        small: true,
+        size: "small",
         key: index,
         tabIndex: -1,
         onClick: function onClick() {
@@ -380,9 +375,9 @@ function TopLeftButtons(props) {
       paddingLeft: 4,
       paddingRight: 0
     },
-    minimal: true,
+    variant: "minimal",
     className: "context-close-button",
-    small: true,
+    size: "small",
     tabIndex: -1,
     intent: "danger",
     onClick: function onClick() {
@@ -396,9 +391,9 @@ function TopLeftButtons(props) {
     style: {
       paddingLeft: 8
     },
-    minimal: true,
+    variant: "minimal",
     className: "context-close-button",
-    small: true,
+    size: "small",
     tabIndex: -1,
     intent: "danger",
     onClick: function onClick() {
@@ -510,21 +505,21 @@ function MenuComponent(props) {
   if (props.alt_button) {
     var AltButton = props.alt_button;
     return /*#__PURE__*/_react["default"].createElement(_core.Popover, {
-      minimal: true,
+      variant: "minimal",
       content: the_menu,
       transitionDuration: 150,
       position: props.position
     }, /*#__PURE__*/_react["default"].createElement(AltButton, null));
   } else {
     return /*#__PURE__*/_react["default"].createElement(_core.Popover, {
-      minimal: true,
+      variant: "minimal",
       content: the_menu,
       transitionDuration: 150,
       position: props.position
     }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
       text: props.menu_name,
-      small: true,
-      minimal: true
+      size: "small",
+      variant: "minimal"
     }));
   }
 }

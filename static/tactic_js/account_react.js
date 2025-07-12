@@ -213,7 +213,7 @@ function AccountApp(props) {
   var field_items = _getFieldItems();
   var outer_class = "account-settings";
   if (settingsContext.isDark()) {
-    outer_class = outer_class + " bp5-dark";
+    outer_class = outer_class + " bp6-dark";
   } else {
     outer_class = outer_class + " light-theme";
   }
@@ -233,11 +233,11 @@ function AccountApp(props) {
       overflowY: "scroll"
     }
   }, /*#__PURE__*/_react["default"].createElement("div", {
-    className: "account-pane bp5-card"
+    className: "account-pane bp6-card"
   }, /*#__PURE__*/_react["default"].createElement("h6", null, "User Info"), field_items[0]), /*#__PURE__*/_react["default"].createElement("div", {
-    className: "account-pane bp5-card"
+    className: "account-pane bp6-card"
   }, /*#__PURE__*/_react["default"].createElement("h6", null, "User Settings"), field_items[1])), /*#__PURE__*/_react["default"].createElement("div", {
-    className: "account-pane bp5-card"
+    className: "account-pane bp6-card"
   }, /*#__PURE__*/_react["default"].createElement("h6", null, "Change Password"), /*#__PURE__*/_react["default"].createElement(_account_fields.AccountTextField, {
     name: "password",
     key: "password",
@@ -252,7 +252,7 @@ function AccountApp(props) {
     onFieldChange: _onFieldChange
   }), /*#__PURE__*/_react["default"].createElement(_core.Button, {
     icon: "log-in",
-    large: true,
+    size: "large",
     text: "Update Password",
     onClick: _submitPassword
   }))));

@@ -1,5 +1,7 @@
 torch
 torchtext
+transformers
+tensorflow
 pmaw
 praw
 rabbitmq-admin

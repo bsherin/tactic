@@ -4,7 +4,7 @@ import {memo, useCallback, useMemo} from "react";
 import {
     Tooltip, Button, FormGroup, InputGroup, HTMLSelect, Switch, TextArea
 } from "@blueprintjs/core";
-import {EditableCell2, Cell, RowHeaderCell, Column, Table2, RegionCardinality} from "@blueprintjs/table";
+import {EditableCell2, Cell, RowHeaderCell, Column, Table, RegionCardinality} from "@blueprintjs/table";
 
 export {
     LabeledSelectList, LabeledFormField, LabeledTextArea, SelectList,
@@ -33,9 +33,9 @@ function GlyphButton(props) {
         style: null,
         className: "",
         extra_glyph_text: null,
-        minimal: true,
+        variant: "minimal",
         intent: "none",
-        small: true,
+        size: "small",
         ...props
     };
 
@@ -54,8 +54,8 @@ function GlyphButton(props) {
 
     return (
         <Button type="button"
-                minimal={props.minimal}
-                small={props.small}
+                variant={props.variant}
+                size={props.size}
                 style={style}
                 className={props.className}
                 onMouseDown={pDef}
@@ -74,7 +74,7 @@ GlyphButton = memo(GlyphButton);
 function LabeledTextArea(props) {
     return (
         <FormGroup label={props.label} style={{marginRight: 5}} helperText={props.helperText}>
-            <TextArea onChange={props.onChange} style={{resize: "none"}} growVertically={true}
+            <TextArea onChange={props.onChange} style={{resize: "none"}} autoResize={true}
                       value={props.the_value}/>
         </FormGroup>
     )
@@ -247,7 +247,7 @@ function BpOrderableTable(props, passedRef) {
                        name={column_name}/>
     });
     return (
-        <Table2 enableFocusedCell={false}
+        <Table enableFocusedCell={false}
                 cellRendererDependencies={[props.data_array]}
                 numRows={props.data_array.length}
                 enableColumnReordering={false}
@@ -258,7 +258,7 @@ function BpOrderableTable(props, passedRef) {
                 enableMultipleSelection={false}
         >
             {columns}
-        </Table2>
+        </Table>
     )
 }
 

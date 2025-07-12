@@ -212,7 +212,7 @@ function ErrorItem(props) {
                          style={{position: "absolute", right: 5, top: 5}}
                          icon="cross"/>
             <div style={{fontSize: 13, overflow: "auto"}} dangerouslySetInnerHTML={content_dict}/>
-            {props.has_link && <Button text="show" icon="eye-open" small={true} onClick={_openError}/>
+            {props.has_link && <Button text="show" icon="eye-open" size="small" onClick={_openError}/>
             }
 
         </Card>
@@ -262,7 +262,7 @@ function ErrorDrawer(props) {
     return (
         <Drawer
             icon="console"
-            className={settingsContext.isDark() ? "bp5-dark" : "light-theme"}
+            className={settingsContext.isDark() ? "bp6-dark" : "light-theme"}
             title={props.title}
             isOpen={props.show_drawer}
             position={props.position}

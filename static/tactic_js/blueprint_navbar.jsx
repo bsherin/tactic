@@ -85,7 +85,7 @@ function TacticNavbar({extra_text = null, menus = null, selected = null, show_ap
 
     function renderNav(item) {
         return (
-            <Button icon={item.icon} key={item.text} minimal={true} style={{minWidth: "fit-content"}}
+            <Button icon={item.icon} key={item.text} variant="minimal" style={{minWidth: "fit-content"}}
                     text={item.text} intent={item.intent} onClick={item.onClick}/>
         )
     }
@@ -164,7 +164,7 @@ function TacticNavbar({extra_text = null, menus = null, selected = null, show_ap
         }
         return (
             <MenuComponent
-                alt_button={() => (<span className="bp5-breadcrumbs-collapsed" style={{marginTop: 5}}></span>)}
+                alt_button={() => (<span className="bp6-breadcrumbs-collapsed" style={{marginTop: 5}}></span>)}
                 option_dict={opt_dict}
                 binding_dict={{}}
                 icon_dict={icon_dict}/>
@@ -202,7 +202,7 @@ function TacticNavbar({extra_text = null, menus = null, selected = null, show_ap
     let right_width = _getRightWidth();
     let right_style = {width: right_width};
     right_style.justifyContent = "flex-end";
-    let theme_class = settingsContext.isDark() ? "bp5-dark" : "light-theme";
+    let theme_class = settingsContext.isDark() ? "bp6-dark" : "light-theme";
     let name_string = "Tactic";
     if (extra_text != null) {
         name_string += " " + extra_text
@@ -210,7 +210,7 @@ function TacticNavbar({extra_text = null, menus = null, selected = null, show_ap
 
     return (
         <Navbar style={{paddingLeft: 10}} className={theme_class}>
-            <div className="bp5-navbar-group bp5-align-left" ref={lg_ref}>
+            <div className="bp6-navbar-group bp6-align-left" ref={lg_ref}>
                 <NavbarHeading className="d-flex align-items-center">
                     <img className="mr-2" src={window.tactic_img_url} alt="" width="32 " height="32"/>
                     {name_string}

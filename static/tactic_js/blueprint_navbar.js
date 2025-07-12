@@ -100,7 +100,7 @@ function TacticNavbar(_ref) {
     return /*#__PURE__*/_react["default"].createElement(_core.Button, {
       icon: item.icon,
       key: item.text,
-      minimal: true,
+      variant: "minimal",
       style: {
         minWidth: "fit-content"
       },
@@ -188,7 +188,7 @@ function TacticNavbar(_ref) {
     return /*#__PURE__*/_react["default"].createElement(_main_menus_react.MenuComponent, {
       alt_button: function alt_button() {
         return /*#__PURE__*/_react["default"].createElement("span", {
-          className: "bp5-breadcrumbs-collapsed",
+          className: "bp6-breadcrumbs-collapsed",
           style: {
             marginTop: 5
           }
@@ -236,7 +236,7 @@ function TacticNavbar(_ref) {
     width: right_width
   };
   right_style.justifyContent = "flex-end";
-  var theme_class = settingsContext.isDark() ? "bp5-dark" : "light-theme";
+  var theme_class = settingsContext.isDark() ? "bp6-dark" : "light-theme";
   var name_string = "Tactic";
   if (extra_text != null) {
     name_string += " " + extra_text;
@@ -247,7 +247,7 @@ function TacticNavbar(_ref) {
     },
     className: theme_class
   }, /*#__PURE__*/_react["default"].createElement("div", {
-    className: "bp5-navbar-group bp5-align-left",
+    className: "bp6-navbar-group bp6-align-left",
     ref: lg_ref
   }, /*#__PURE__*/_react["default"].createElement(_core.NavbarHeading, {
     className: "d-flex align-items-center"

@@ -144,6 +144,7 @@ function PaneElement(props) {
         el: null,
         pane_height: 0,
         className: "",
+        icon: null,
         ...props,
     }
     const top_ref = useRef(null);
@@ -209,6 +210,10 @@ function PaneElement(props) {
                 <Button variant="minimal" intent="danger" size="small" icon="trash"
                         style={{padding: 0, position: "absolute", right: 10, top: 10, zIndex: 20}}
                         onClick={_deleteMe}/>
+            }
+            {!props.allowDelete && props.icon &&
+                <Icon icon={props.icon} size={20} intent="primary"
+                    style={{padding: 0, position: "absolute", right: 15, top: 10, zIndex: 20}}/>
             }
             <SizeProvider value={{
                 availableWidth: usable_width - 20, // for padding for separation from scrollbar
@@ -419,7 +424,7 @@ function ExportModuleForm(props) {
         props.dispatch({
             type: "update_item",
             new_item: {tags: event.target.value},
-            identifier: props.optionItem.identifier
+            identifier: props.exportItem.identifier
         });
     }
 
@@ -498,7 +503,7 @@ function OptionModuleForm(props) {
     }
 
     function handleDefaultChange(event) {
-        let val = props.form_state.type == "boolean" ? event.target.checked : event.target.value;
+        let val = props.optionItem.type == "boolean" ? event.target.checked : event.target.value;
         let fixed_val = correctType(props.optionItem.type, val);
         if (fixed_val == "__ERROR__") {
             props.dispatch({
@@ -539,7 +544,7 @@ function OptionModuleForm(props) {
         let new_type = event.currentTarget.value;
         let updater = {"type": new_type};
         if (new_type != "custom_list") {
-            updater["special_list"] = ""
+            updater["special_list"] = []
         }
         if (!taggable_types.includes(new_type)) {
             updater["tags"] = ""
@@ -578,7 +583,9 @@ function OptionModuleForm(props) {
                             {props.optionItem.type == "custom_list" &&
                                 <LabeledTextArea label="Special List"
                                                  onChange={handleSpecialListChange}
-                                                 the_value={arrayToTextRows(props.optionItem.special_list)}/>}
+                                                 the_value={arrayToTextRows(props.optionItem.hasOwnProperty("special_list") ?
+                                                        props.optionItem.special_list : [])}
+                                                 />}
                             {taggable_types.includes(props.optionItem.type) &&
                                 <LabeledFormField label="Tag" onChange={handleTagChange}
                                                   the_value={props.optionItem.tags}/>
@@ -824,7 +831,7 @@ function CmElement(props) {
                                   search_matches={null}
                                   setSearchMatches={null}
                                   tsocket={props.tsocket}
-                                  extraSelfCompletions={props.mode == "python" ? props.extraSelfCompletions : []}
+                                  extraSelfCompletions={props.cmState.mode == "python" ? props.extraSelfCompletions : []}
                                   container_id={props.module_viewer_id}
                                   highlight_active_line={true}/>
             </div>
@@ -934,7 +941,6 @@ function HandlerCreator(props) {
             codeText: "",
             mode: "python", firstLineNumber: 1,
             identifier: uid,
-            pane_height: INITIAL_CODE_PANE_HEIGHT
         }
         props.dispatch({type: "add_at_end", new_item: new_entry});
         mpContext.pushCallback(() => {
@@ -1009,7 +1015,6 @@ function SortableNavSection(props) {
             codeText: "",
             mode: "python", firstLineNumber: 1,
             identifier: uid,
-            pane_height: INITIAL_CODE_PANE_HEIGHT
         }
         props.dispatch({type: "add_at_end", new_item: new_entry});
         mpContext.pushCallback(() => {

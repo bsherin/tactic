@@ -263,8 +263,8 @@ function TextOption(props) {
     let val_to_show = current_timer.current ? temp_text : props.value;
     return (
         <FormGroup label={label}>
-            <InputGroup asyncControl={false} type="text" small={false} leftIcon={props.leftIcon}
-                        onChange={_updateMe} value={val_to_show}/>
+            <InputGroup asyncControl={false} type="text"  leftIcon={props.leftIcon}
+                        onChange={_updateMe} value={String(val_to_show)}/>
         </FormGroup>
     )
 }
@@ -402,7 +402,7 @@ function TextAreaOption(props) {
         <FormGroup label={label}>
             <TextArea onChange={_updateMe}
                       inputRef={inputRef}
-                      small={false} value={props.value}/>
+                      value={props.value}/>
         </FormGroup>
     )
 }

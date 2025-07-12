@@ -222,7 +222,7 @@ function AssistantDrawer(props) {
     return (
         <Drawer
             icon="chat"
-            className={settingsContext.isDark() ? "bp5-dark" : "light-theme"}
+            className={settingsContext.isDark() ? "bp6-dark" : "light-theme"}
             title={props.title}
             isOpen={props.show_drawer}
             position={props.position}
@@ -462,14 +462,14 @@ function ChatModule(props) {
                           vertical={false}
                           style={input_style}>
                 <Button icon={assistantDrawerFuncs.chat_status_ref.current == "idle" ? "send-message" : "stop"}
-                        minimal={true}
-                        large={true}
+                        variant="minimal"
+                        size="large"
                         onClick={_handleButton}/>
                 <TextArea type="text"
                           autoResize={true}
                           style={{width: "100%"}}
                           onChange={_onInputChange}
-                          large={true}
+                          size="large"
                           fill={true}
                           onKeyDown={handleKeyDown}
                           value={props.assistant_prompt_value_ref.current}
@@ -530,7 +530,7 @@ function ResponseInProgress(props) {
         <Card className="bp-skeleton" interactive={false}>
             <div style={chat_item_style}>
                 <h6>ChatBot</h6>
-                <div style={{height: 100}} className="chat-response markdown-heading-sizes bp5-skeleton"
+                <div style={{height: 100}} className="chat-response markdown-heading-sizes bp6-skeleton"
                      dangerouslySetInnerHTML={converted_dict}/>
             </div>
         </Card>

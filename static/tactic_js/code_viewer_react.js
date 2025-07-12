@@ -433,7 +433,7 @@ function CodeViewerApp(props) {
   if (!props.controlled) {
     my_props.resource_name = resource_name;
     if (settingsContext.isDark()) {
-      outer_class = outer_class + " bp5-dark";
+      outer_class = outer_class + " bp6-dark";
     } else {
       outer_class = outer_class + " light-theme";
     }
@@ -493,7 +493,11 @@ function code_viewer_main() {
     }));
     var domContainer = document.querySelector('#root');
     var root = (0, _client.createRoot)(domContainer);
-    root.render(the_element);
+    root.render(
+    // <BlueprintProvider>
+    the_element
+    //</BlueprintProvider>
+    );
   }
   var target = window.is_repository ? "repository_view_code_in_context" : "view_code_in_context";
   (0, _communication_react.postAjaxPromise)(target, {

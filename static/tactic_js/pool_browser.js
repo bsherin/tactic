@@ -19,10 +19,11 @@ var _toaster = require("./toaster");
 var _settings = require("./settings");
 var _modal_react = require("./modal_react");
 var _library_home_react = require("./library_home_react");
-function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t in e) "default" !== _t && {}.hasOwnProperty.call(e, _t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t)) && (i.get || i.set) ? o(f, _t, i) : f[_t] = e[_t]); return f; })(e, t); }
+function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t10 in e) "default" !== _t10 && {}.hasOwnProperty.call(e, _t10) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t10)) && (i.get || i.set) ? o(f, _t10, i) : f[_t10] = e[_t10]); return f; })(e, t); }
 function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
 function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
-function _regeneratorRuntime() { "use strict"; /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ _regeneratorRuntime = function _regeneratorRuntime() { return r; }; var t, r = {}, e = Object.prototype, n = e.hasOwnProperty, o = "function" == typeof Symbol ? Symbol : {}, i = o.iterator || "@@iterator", a = o.asyncIterator || "@@asyncIterator", u = o.toStringTag || "@@toStringTag"; function c(t, r, e, n) { return Object.defineProperty(t, r, { value: e, enumerable: !n, configurable: !n, writable: !n }); } try { c({}, ""); } catch (t) { c = function c(t, r, e) { return t[r] = e; }; } function h(r, e, n, o) { var i = e && e.prototype instanceof Generator ? e : Generator, a = Object.create(i.prototype); return c(a, "_invoke", function (r, e, n) { var o = 1; return function (i, a) { if (3 === o) throw Error("Generator is already running"); if (4 === o) { if ("throw" === i) throw a; return { value: t, done: !0 }; } for (n.method = i, n.arg = a;;) { var u = n.delegate; if (u) { var c = d(u, n); if (c) { if (c === f) continue; return c; } } if ("next" === n.method) n.sent = n._sent = n.arg;else if ("throw" === n.method) { if (1 === o) throw o = 4, n.arg; n.dispatchException(n.arg); } else "return" === n.method && n.abrupt("return", n.arg); o = 3; var h = s(r, e, n); if ("normal" === h.type) { if (o = n.done ? 4 : 2, h.arg === f) continue; return { value: h.arg, done: n.done }; } "throw" === h.type && (o = 4, n.method = "throw", n.arg = h.arg); } }; }(r, n, new Context(o || [])), !0), a; } function s(t, r, e) { try { return { type: "normal", arg: t.call(r, e) }; } catch (t) { return { type: "throw", arg: t }; } } r.wrap = h; var f = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} var l = {}; c(l, i, function () { return this; }); var p = Object.getPrototypeOf, y = p && p(p(x([]))); y && y !== e && n.call(y, i) && (l = y); var v = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(l); function g(t) { ["next", "throw", "return"].forEach(function (r) { c(t, r, function (t) { return this._invoke(r, t); }); }); } function AsyncIterator(t, r) { function e(o, i, a, u) { var c = s(t[o], t, i); if ("throw" !== c.type) { var h = c.arg, f = h.value; return f && "object" == _typeof(f) && n.call(f, "__await") ? r.resolve(f.__await).then(function (t) { e("next", t, a, u); }, function (t) { e("throw", t, a, u); }) : r.resolve(f).then(function (t) { h.value = t, a(h); }, function (t) { return e("throw", t, a, u); }); } u(c.arg); } var o; c(this, "_invoke", function (t, n) { function i() { return new r(function (r, o) { e(t, n, r, o); }); } return o = o ? o.then(i, i) : i(); }, !0); } function d(r, e) { var n = e.method, o = r.i[n]; if (o === t) return e.delegate = null, "throw" === n && r.i["return"] && (e.method = "return", e.arg = t, d(r, e), "throw" === e.method) || "return" !== n && (e.method = "throw", e.arg = new TypeError("The iterator does not provide a '" + n + "' method")), f; var i = s(o, r.i, e.arg); if ("throw" === i.type) return e.method = "throw", e.arg = i.arg, e.delegate = null, f; var a = i.arg; return a ? a.done ? (e[r.r] = a.value, e.next = r.n, "return" !== e.method && (e.method = "next", e.arg = t), e.delegate = null, f) : a : (e.method = "throw", e.arg = new TypeError("iterator result is not an object"), e.delegate = null, f); } function w(t) { this.tryEntries.push(t); } function m(r) { var e = r[4] || {}; e.type = "normal", e.arg = t, r[4] = e; } function Context(t) { this.tryEntries = [[-1]], t.forEach(w, this), this.reset(!0); } function x(r) { if (null != r) { var e = r[i]; if (e) return e.call(r); if ("function" == typeof r.next) return r; if (!isNaN(r.length)) { var o = -1, a = function e() { for (; ++o < r.length;) if (n.call(r, o)) return e.value = r[o], e.done = !1, e; return e.value = t, e.done = !0, e; }; return a.next = a; } } throw new TypeError(_typeof(r) + " is not iterable"); } return GeneratorFunction.prototype = GeneratorFunctionPrototype, c(v, "constructor", GeneratorFunctionPrototype), c(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = c(GeneratorFunctionPrototype, u, "GeneratorFunction"), r.isGeneratorFunction = function (t) { var r = "function" == typeof t && t.constructor; return !!r && (r === GeneratorFunction || "GeneratorFunction" === (r.displayName || r.name)); }, r.mark = function (t) { return Object.setPrototypeOf ? Object.setPrototypeOf(t, GeneratorFunctionPrototype) : (t.__proto__ = GeneratorFunctionPrototype, c(t, u, "GeneratorFunction")), t.prototype = Object.create(v), t; }, r.awrap = function (t) { return { __await: t }; }, g(AsyncIterator.prototype), c(AsyncIterator.prototype, a, function () { return this; }), r.AsyncIterator = AsyncIterator, r.async = function (t, e, n, o, i) { void 0 === i && (i = Promise); var a = new AsyncIterator(h(t, e, n, o), i); return r.isGeneratorFunction(e) ? a : a.next().then(function (t) { return t.done ? t.value : a.next(); }); }, g(v), c(v, u, "Generator"), c(v, i, function () { return this; }), c(v, "toString", function () { return "[object Generator]"; }), r.keys = function (t) { var r = Object(t), e = []; for (var n in r) e.unshift(n); return function t() { for (; e.length;) if ((n = e.pop()) in r) return t.value = n, t.done = !1, t; return t.done = !0, t; }; }, r.values = x, Context.prototype = { constructor: Context, reset: function reset(r) { if (this.prev = this.next = 0, this.sent = this._sent = t, this.done = !1, this.delegate = null, this.method = "next", this.arg = t, this.tryEntries.forEach(m), !r) for (var e in this) "t" === e.charAt(0) && n.call(this, e) && !isNaN(+e.slice(1)) && (this[e] = t); }, stop: function stop() { this.done = !0; var t = this.tryEntries[0][4]; if ("throw" === t.type) throw t.arg; return this.rval; }, dispatchException: function dispatchException(r) { if (this.done) throw r; var e = this; function n(t) { a.type = "throw", a.arg = r, e.next = t; } for (var o = e.tryEntries.length - 1; o >= 0; --o) { var i = this.tryEntries[o], a = i[4], u = this.prev, c = i[1], h = i[2]; if (-1 === i[0]) return n("end"), !1; if (!c && !h) throw Error("try statement without catch or finally"); if (null != i[0] && i[0] <= u) { if (u < c) return this.method = "next", this.arg = t, n(c), !0; if (u < h) return n(h), !1; } } }, abrupt: function abrupt(t, r) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var n = this.tryEntries[e]; if (n[0] > -1 && n[0] <= this.prev && this.prev < n[2]) { var o = n; break; } } o && ("break" === t || "continue" === t) && o[0] <= r && r <= o[2] && (o = null); var i = o ? o[4] : {}; return i.type = t, i.arg = r, o ? (this.method = "next", this.next = o[2], f) : this.complete(i); }, complete: function complete(t, r) { if ("throw" === t.type) throw t.arg; return "break" === t.type || "continue" === t.type ? this.next = t.arg : "return" === t.type ? (this.rval = this.arg = t.arg, this.method = "return", this.next = "end") : "normal" === t.type && r && (this.next = r), f; }, finish: function finish(t) { for (var r = this.tryEntries.length - 1; r >= 0; --r) { var e = this.tryEntries[r]; if (e[2] === t) return this.complete(e[4], e[3]), m(e), f; } }, "catch": function _catch(t) { for (var r = this.tryEntries.length - 1; r >= 0; --r) { var e = this.tryEntries[r]; if (e[0] === t) { var n = e[4]; if ("throw" === n.type) { var o = n.arg; m(e); } return o; } } throw Error("illegal catch attempt"); }, delegateYield: function delegateYield(r, e, n) { return this.delegate = { i: x(r), r: e, n: n }, "next" === this.method && (this.arg = t), f; } }, r; }
+function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, "_invoke", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError("Generator is already running"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = "next"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i["return"]) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine2(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, "Generator"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, "toString", function () { return "[object Generator]"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }
+function _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, "", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { if (r) i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n;else { var o = function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); }; o("next", 0), o("throw", 1), o("return", 2); } }, _regeneratorDefine2(e, r, n, t); }
 function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
 function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
 function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
@@ -132,10 +133,10 @@ function PoolBrowser(props) {
     return _sendNewCell.apply(this, arguments);
   }
   function _sendNewCell() {
-    _sendNewCell = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee13(path, main_id, read_as_dataframe) {
+    _sendNewCell = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee13(path, main_id, read_as_dataframe) {
       var ext, code;
-      return _regeneratorRuntime().wrap(function _callee13$(_context13) {
-        while (1) switch (_context13.prev = _context13.next) {
+      return _regenerator().w(function (_context13) {
+        while (1) switch (_context13.n) {
           case 0:
             ext = (0, _utilities_react.getFileExtension)(path);
             code = "";
@@ -154,15 +155,14 @@ function PoolBrowser(props) {
                 code = "with open(\"".concat(path, "\") as f:\n    txt = f.read()");
               }
             }
-            _context13.next = 5;
+            _context13.n = 1;
             return (0, _communication_react.postPromise)("host", "print_code_area_to_console", {
               "console_text": code,
               "user_id": window.user_id,
               "main_id": main_id
             }, props.main_id);
-          case 5:
-          case "end":
-            return _context13.stop();
+          case 1:
+            return _context13.a(2);
         }
       }, _callee13);
     }));
@@ -172,7 +172,7 @@ function PoolBrowser(props) {
     return _openInNotebook.apply(this, arguments);
   }
   function _openInNotebook() {
-    _openInNotebook = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee15() {
+    _openInNotebook = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee15() {
       var node,
         path,
         openResources,
@@ -187,25 +187,26 @@ function PoolBrowser(props) {
         selectedResource,
         checkResults,
         data,
-        _args15 = arguments;
-      return _regeneratorRuntime().wrap(function _callee15$(_context15) {
-        while (1) switch (_context15.prev = _context15.next) {
+        _args15 = arguments,
+        _t;
+      return _regenerator().w(function (_context15) {
+        while (1) switch (_context15.n) {
           case 0:
             node = _args15.length > 0 && _args15[0] !== undefined ? _args15[0] : null;
             if (!(!valueRef.current && !node)) {
-              _context15.next = 3;
+              _context15.n = 1;
               break;
             }
-            return _context15.abrupt("return");
-          case 3:
-            _context15.prev = 3;
+            return _context15.a(2);
+          case 1:
+            _context15.p = 1;
             path = node && "isDirectory" in node ? node.fullpath : valueRef.current;
             if (!node.isDirectory) {
-              _context15.next = 7;
+              _context15.n = 2;
               break;
             }
-            return _context15.abrupt("return");
-          case 7:
+            return _context15.a(2);
+          case 2:
             openResources = props.getOpenResources();
             open_projects = [];
             open_projects_dict = {};
@@ -228,7 +229,7 @@ function PoolBrowser(props) {
                 _iterator.f();
               }
             }
-            _context15.next = 13;
+            _context15.n = 3;
             return dialogFuncs.showModalPromise("SelectDialog", {
               title: "Open resources in notebook",
               checkboxes: [{
@@ -247,31 +248,28 @@ function PoolBrowser(props) {
               option_list: open_projects,
               handleClose: dialogFuncs.hideModal
             });
-          case 13:
-            _yield$dialogFuncs$sh = _context15.sent;
+          case 3:
+            _yield$dialogFuncs$sh = _context15.v;
             _yield$dialogFuncs$sh2 = _slicedToArray(_yield$dialogFuncs$sh, 2);
             selectedResource = _yield$dialogFuncs$sh2[0];
             checkResults = _yield$dialogFuncs$sh2[1];
             if (!checkResults["create_new_notebook"]) {
-              _context15.next = 24;
+              _context15.n = 5;
               break;
             }
-            _context15.next = 20;
+            _context15.n = 4;
             return (0, _communication_react.postAjaxPromise)("new_notebook_in_context", {});
-          case 20:
-            data = _context15.sent;
+          case 4:
+            data = _context15.v;
             if (data.success) {
-              props.handleCreateViewer(data, /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee14() {
-                return _regeneratorRuntime().wrap(function _callee14$(_context14) {
-                  while (1) switch (_context14.prev = _context14.next) {
+              props.handleCreateViewer(data, /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee14() {
+                return _regenerator().w(function (_context14) {
+                  while (1) switch (_context14.n) {
                     case 0:
-                      _context14.next = 2;
+                      _context14.n = 1;
                       return sendNewCell(path, data.main_id, checkResults["read_as_dataframe"]);
-                    case 2:
-                      return _context14.abrupt("return", _context14.sent);
-                    case 3:
-                    case "end":
-                      return _context14.stop();
+                    case 1:
+                      return _context14.a(2, _context14.v);
                   }
                 }, _callee14);
               })));
@@ -281,24 +279,23 @@ function PoolBrowser(props) {
                 content: "message" in data ? data.message : ""
               });
             }
-            _context15.next = 27;
+            _context15.n = 6;
             break;
-          case 24:
+          case 5:
             props.setSelectedTabId(open_projects_dict[selectedResource].id);
-            _context15.next = 27;
+            _context15.n = 6;
             return sendNewCell(path, open_projects_dict[selectedResource].main_id, checkResults["read_as_dataframe"]);
-          case 27:
-            _context15.next = 32;
+          case 6:
+            _context15.n = 8;
             break;
-          case 29:
-            _context15.prev = 29;
-            _context15.t0 = _context15["catch"](3);
-            errorDrawerFuncs.addFromError("Error opening in notebook", _context15.t0);
-          case 32:
-          case "end":
-            return _context15.stop();
+          case 7:
+            _context15.p = 7;
+            _t = _context15.v;
+            errorDrawerFuncs.addFromError("Error opening in notebook", _t);
+          case 8:
+            return _context15.a(2);
         }
-      }, _callee15, null, [[3, 29]]);
+      }, _callee15, null, [[1, 7]]);
     }));
     return _openInNotebook.apply(this, arguments);
   }
@@ -306,36 +303,37 @@ function PoolBrowser(props) {
     return _viewTextFile.apply(this, arguments);
   }
   function _viewTextFile() {
-    _viewTextFile = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee16() {
+    _viewTextFile = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee16() {
       var node,
         data,
         path,
-        _args16 = arguments;
-      return _regeneratorRuntime().wrap(function _callee16$(_context16) {
-        while (1) switch (_context16.prev = _context16.next) {
+        _args16 = arguments,
+        _t2;
+      return _regenerator().w(function (_context16) {
+        while (1) switch (_context16.n) {
           case 0:
             node = _args16.length > 0 && _args16[0] !== undefined ? _args16[0] : null;
             if (!(!valueRef.current && !node)) {
-              _context16.next = 3;
+              _context16.n = 1;
               break;
             }
-            return _context16.abrupt("return");
-          case 3:
-            _context16.prev = 3;
+            return _context16.a(2);
+          case 1:
+            _context16.p = 1;
             path = node && "isDirectory" in node ? node.fullpath : valueRef.current;
             if (!node.isDirectory) {
-              _context16.next = 7;
+              _context16.n = 2;
               break;
             }
-            return _context16.abrupt("return");
-          case 7:
-            _context16.next = 9;
+            return _context16.a(2);
+          case 2:
+            _context16.n = 3;
             return (0, _communication_react.postAjaxPromise)("view_text_in_context", {
               context_id: context_id,
               file_path: path
             });
-          case 9:
-            data = _context16.sent;
+          case 3:
+            data = _context16.v;
             if (data.success) {
               props.handleCreateViewer(data);
             } else {
@@ -344,17 +342,16 @@ function PoolBrowser(props) {
                 content: "message" in data ? data.message : ""
               });
             }
-            _context16.next = 16;
+            _context16.n = 5;
             break;
-          case 13:
-            _context16.prev = 13;
-            _context16.t0 = _context16["catch"](3);
-            errorDrawerFuncs.addFromError("Error viewing text file", _context16.t0);
-          case 16:
-          case "end":
-            return _context16.stop();
+          case 4:
+            _context16.p = 4;
+            _t2 = _context16.v;
+            errorDrawerFuncs.addFromError("Error viewing text file", _t2);
+          case 5:
+            return _context16.a(2);
         }
-      }, _callee16, null, [[3, 13]]);
+      }, _callee16, null, [[1, 4]]);
     }));
     return _viewTextFile.apply(this, arguments);
   }
@@ -368,25 +365,26 @@ function PoolBrowser(props) {
     return _rename_func2.apply(this, arguments);
   }
   function _rename_func2() {
-    _rename_func2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee17() {
+    _rename_func2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee17() {
       var node,
         path,
         new_name,
         the_data,
-        _args17 = arguments;
-      return _regeneratorRuntime().wrap(function _callee17$(_context17) {
-        while (1) switch (_context17.prev = _context17.next) {
+        _args17 = arguments,
+        _t3;
+      return _regenerator().w(function (_context17) {
+        while (1) switch (_context17.n) {
           case 0:
             node = _args17.length > 0 && _args17[0] !== undefined ? _args17[0] : null;
             if (!(!valueRef.current && !node)) {
-              _context17.next = 3;
+              _context17.n = 1;
               break;
             }
-            return _context17.abrupt("return");
-          case 3:
-            _context17.prev = 3;
+            return _context17.a(2);
+          case 1:
+            _context17.p = 1;
             path = node && "isDirectory" in node ? node.fullpath : valueRef.current;
-            _context17.next = 7;
+            _context17.n = 2;
             return dialogFuncs.showModalPromise("ModalDialog", {
               title: "Rename Pool Resource",
               field_title: "New Name",
@@ -395,29 +393,28 @@ function PoolBrowser(props) {
               checkboxes: [],
               handleClose: dialogFuncs.hideModal
             });
-          case 7:
-            new_name = _context17.sent;
+          case 2:
+            new_name = _context17.v;
             the_data = {
               new_name: new_name,
               old_path: path
             };
-            _context17.next = 11;
+            _context17.n = 3;
             return (0, _communication_react.postAjaxPromise)("rename_pool_resource", the_data);
-          case 11:
-            _context17.next = 17;
+          case 3:
+            _context17.n = 5;
             break;
-          case 13:
-            _context17.prev = 13;
-            _context17.t0 = _context17["catch"](3);
-            if (_context17.t0 != "canceled") {
-              errorDrawerFuncs.addFromError("Error renaming", _context17.t0);
+          case 4:
+            _context17.p = 4;
+            _t3 = _context17.v;
+            if (_t3 != "canceled") {
+              errorDrawerFuncs.addFromError("Error renaming", _t3);
             }
-            return _context17.abrupt("return");
-          case 17:
-          case "end":
-            return _context17.stop();
+            return _context17.a(2);
+          case 5:
+            return _context17.a(2);
         }
-      }, _callee17, null, [[3, 13]]);
+      }, _callee17, null, [[1, 4]]);
     }));
     return _rename_func2.apply(this, arguments);
   }
@@ -425,31 +422,32 @@ function PoolBrowser(props) {
     return _add_directory2.apply(this, arguments);
   }
   function _add_directory2() {
-    _add_directory2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee18() {
+    _add_directory2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee18() {
       var node,
         sNode,
         initial_address,
         full_path,
         the_data,
-        _args18 = arguments;
-      return _regeneratorRuntime().wrap(function _callee18$(_context18) {
-        while (1) switch (_context18.prev = _context18.next) {
+        _args18 = arguments,
+        _t4;
+      return _regenerator().w(function (_context18) {
+        while (1) switch (_context18.n) {
           case 0:
             node = _args18.length > 0 && _args18[0] !== undefined ? _args18[0] : null;
             if (!(!valueRef.current && !node)) {
-              _context18.next = 3;
+              _context18.n = 1;
               break;
             }
-            return _context18.abrupt("return");
-          case 3:
-            _context18.prev = 3;
+            return _context18.a(2);
+          case 1:
+            _context18.p = 1;
             sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
             if (sNode.isDirectory) {
               initial_address = sNode.fullpath;
             } else {
               initial_address = (0, _pool_tree.getFileParentPath)(sNode.fullpath);
             }
-            _context18.next = 8;
+            _context18.n = 2;
             return dialogFuncs.showModalPromise("SelectAddressDialog", {
               title: "Add a Pool Directory",
               selectType: "folder",
@@ -458,28 +456,27 @@ function PoolBrowser(props) {
               showName: true,
               handleClose: dialogFuncs.hideModal
             });
-          case 8:
-            full_path = _context18.sent;
+          case 2:
+            full_path = _context18.v;
             the_data = {
               full_path: full_path
             };
-            _context18.next = 12;
+            _context18.n = 3;
             return (0, _communication_react.postAjaxPromise)("create_pool_directory", the_data);
-          case 12:
-            _context18.next = 18;
+          case 3:
+            _context18.n = 5;
             break;
-          case 14:
-            _context18.prev = 14;
-            _context18.t0 = _context18["catch"](3);
-            if (_context18.t0 != "canceled") {
-              errorDrawerFuncs.addFromError("Error adding directory", _context18.t0);
+          case 4:
+            _context18.p = 4;
+            _t4 = _context18.v;
+            if (_t4 != "canceled") {
+              errorDrawerFuncs.addFromError("Error adding directory", _t4);
             }
-            return _context18.abrupt("return");
-          case 18:
-          case "end":
-            return _context18.stop();
+            return _context18.a(2);
+          case 5:
+            return _context18.a(2);
         }
-      }, _callee18, null, [[3, 14]]);
+      }, _callee18, null, [[1, 4]]);
     }));
     return _add_directory2.apply(this, arguments);
   }
@@ -487,7 +484,7 @@ function PoolBrowser(props) {
     return _duplicate_file2.apply(this, arguments);
   }
   function _duplicate_file2() {
-    _duplicate_file2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee19() {
+    _duplicate_file2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee19() {
       var node,
         sNode,
         src,
@@ -497,29 +494,30 @@ function PoolBrowser(props) {
         initial_name,
         dst,
         the_data,
-        _args19 = arguments;
-      return _regeneratorRuntime().wrap(function _callee19$(_context19) {
-        while (1) switch (_context19.prev = _context19.next) {
+        _args19 = arguments,
+        _t5;
+      return _regenerator().w(function (_context19) {
+        while (1) switch (_context19.n) {
           case 0:
             node = _args19.length > 0 && _args19[0] !== undefined ? _args19[0] : null;
             if (!(!valueRef.current && !node)) {
-              _context19.next = 3;
+              _context19.n = 1;
               break;
             }
-            return _context19.abrupt("return");
-          case 3:
-            _context19.prev = 3;
+            return _context19.a(2);
+          case 1:
+            _context19.p = 1;
             sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
             if (!sNode.isDirectory) {
-              _context19.next = 8;
+              _context19.n = 2;
               break;
             }
             (0, _toaster.doFlash)("You can't duplicate a directory");
-            return _context19.abrupt("return");
-          case 8:
+            return _context19.a(2);
+          case 2:
             src = sNode.fullpath;
             _splitFilePath = (0, _pool_tree.splitFilePath)(sNode.fullpath), _splitFilePath2 = _slicedToArray(_splitFilePath, 2), initial_address = _splitFilePath2[0], initial_name = _splitFilePath2[1];
-            _context19.next = 12;
+            _context19.n = 3;
             return dialogFuncs.showModalPromise("SelectAddressDialog", {
               title: "Duplicate a file",
               selectType: "folder",
@@ -528,29 +526,28 @@ function PoolBrowser(props) {
               showName: true,
               handleClose: dialogFuncs.hideModal
             });
-          case 12:
-            dst = _context19.sent;
+          case 3:
+            dst = _context19.v;
             the_data = {
               dst: dst,
               src: src
             };
-            _context19.next = 16;
+            _context19.n = 4;
             return (0, _communication_react.postAjaxPromise)("duplicate_pool_file", the_data);
-          case 16:
-            _context19.next = 22;
+          case 4:
+            _context19.n = 6;
             break;
-          case 18:
-            _context19.prev = 18;
-            _context19.t0 = _context19["catch"](3);
-            if (_context19.t0 != "canceled") {
-              errorDrawerFuncs.addFromError("Error duplicating file", _context19.t0);
+          case 5:
+            _context19.p = 5;
+            _t5 = _context19.v;
+            if (_t5 != "canceled") {
+              errorDrawerFuncs.addFromError("Error duplicating file", _t5);
             }
-            return _context19.abrupt("return");
-          case 22:
-          case "end":
-            return _context19.stop();
+            return _context19.a(2);
+          case 6:
+            return _context19.a(2);
         }
-      }, _callee19, null, [[3, 18]]);
+      }, _callee19, null, [[1, 5]]);
     }));
     return _duplicate_file2.apply(this, arguments);
   }
@@ -558,42 +555,42 @@ function PoolBrowser(props) {
     return _compress_file2.apply(this, arguments);
   }
   function _compress_file2() {
-    _compress_file2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee20() {
+    _compress_file2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee20() {
       var node,
         sNode,
         src,
-        _args20 = arguments;
-      return _regeneratorRuntime().wrap(function _callee20$(_context20) {
-        while (1) switch (_context20.prev = _context20.next) {
+        _args20 = arguments,
+        _t6;
+      return _regenerator().w(function (_context20) {
+        while (1) switch (_context20.n) {
           case 0:
             node = _args20.length > 0 && _args20[0] !== undefined ? _args20[0] : null;
             if (!(!valueRef.current && !node)) {
-              _context20.next = 3;
+              _context20.n = 1;
               break;
             }
-            return _context20.abrupt("return");
-          case 3:
-            _context20.prev = 3;
+            return _context20.a(2);
+          case 1:
+            _context20.p = 1;
             sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
             src = sNode.fullpath;
-            _context20.next = 8;
+            _context20.n = 2;
             return (0, _communication_react.postPromise)("host", "compress_pool_resource", {
               full_path: sNode.fullpath,
               force_forward: true,
               user_id: window.user_id
             });
-          case 8:
-            _context20.next = 13;
+          case 2:
+            _context20.n = 4;
             break;
-          case 10:
-            _context20.prev = 10;
-            _context20.t0 = _context20["catch"](3);
-            errorDrawerFuncs.addFromError("Error compressing file or folder", _context20.t0);
-          case 13:
-          case "end":
-            return _context20.stop();
+          case 3:
+            _context20.p = 3;
+            _t6 = _context20.v;
+            errorDrawerFuncs.addFromError("Error compressing file or folder", _t6);
+          case 4:
+            return _context20.a(2);
         }
-      }, _callee20, null, [[3, 10]]);
+      }, _callee20, null, [[1, 3]]);
     }));
     return _compress_file2.apply(this, arguments);
   }
@@ -601,42 +598,42 @@ function PoolBrowser(props) {
     return _decompress_archive2.apply(this, arguments);
   }
   function _decompress_archive2() {
-    _decompress_archive2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee21() {
+    _decompress_archive2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee21() {
       var node,
         sNode,
         src,
-        _args21 = arguments;
-      return _regeneratorRuntime().wrap(function _callee21$(_context21) {
-        while (1) switch (_context21.prev = _context21.next) {
+        _args21 = arguments,
+        _t7;
+      return _regenerator().w(function (_context21) {
+        while (1) switch (_context21.n) {
           case 0:
             node = _args21.length > 0 && _args21[0] !== undefined ? _args21[0] : null;
             if (!(!valueRef.current && !node)) {
-              _context21.next = 3;
+              _context21.n = 1;
               break;
             }
-            return _context21.abrupt("return");
-          case 3:
-            _context21.prev = 3;
+            return _context21.a(2);
+          case 1:
+            _context21.p = 1;
             sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
             src = sNode.fullpath;
-            _context21.next = 8;
+            _context21.n = 2;
             return (0, _communication_react.postPromise)("host", "decompress_archive", {
               full_path: sNode.fullpath,
               force_forward: true,
               user_id: window.user_id
             });
-          case 8:
-            _context21.next = 13;
+          case 2:
+            _context21.n = 4;
             break;
-          case 10:
-            _context21.prev = 10;
-            _context21.t0 = _context21["catch"](3);
-            errorDrawerFuncs.addFromError("Error decompressing archive", _context21.t0);
-          case 13:
-          case "end":
-            return _context21.stop();
+          case 3:
+            _context21.p = 3;
+            _t7 = _context21.v;
+            errorDrawerFuncs.addFromError("Error decompressing archive", _t7);
+          case 4:
+            return _context21.a(2);
         }
-      }, _callee21, null, [[3, 10]]);
+      }, _callee21, null, [[1, 3]]);
     }));
     return _decompress_archive2.apply(this, arguments);
   }
@@ -644,7 +641,7 @@ function PoolBrowser(props) {
     return _downloadFile2.apply(this, arguments);
   }
   function _downloadFile2() {
-    _downloadFile2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee22() {
+    _downloadFile2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee22() {
       var node,
         sNode,
         src,
@@ -658,29 +655,30 @@ function PoolBrowser(props) {
         blob,
         url,
         a,
-        _args22 = arguments;
-      return _regeneratorRuntime().wrap(function _callee22$(_context22) {
-        while (1) switch (_context22.prev = _context22.next) {
+        _args22 = arguments,
+        _t8;
+      return _regenerator().w(function (_context22) {
+        while (1) switch (_context22.n) {
           case 0:
             node = _args22.length > 0 && _args22[0] !== undefined ? _args22[0] : null;
             if (!(!valueRef.current && !node)) {
-              _context22.next = 3;
+              _context22.n = 1;
               break;
             }
-            return _context22.abrupt("return");
-          case 3:
-            _context22.prev = 3;
+            return _context22.a(2);
+          case 1:
+            _context22.p = 1;
             sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
             if (!sNode.isDirectory) {
-              _context22.next = 8;
+              _context22.n = 2;
               break;
             }
             (0, _toaster.doFlash)("You can't download a directory");
-            return _context22.abrupt("return");
-          case 8:
+            return _context22.a(2);
+          case 2:
             src = sNode.fullpath;
             console.log("Got source " + String(src));
-            _context22.next = 12;
+            _context22.n = 3;
             return dialogFuncs.showModalPromise("ModalDialog", {
               title: "Download File",
               field_title: "New File Name",
@@ -689,15 +687,15 @@ function PoolBrowser(props) {
               checkboxes: [],
               handleClose: dialogFuncs.hideModal
             });
-          case 12:
-            new_name = _context22.sent;
+          case 3:
+            new_name = _context22.v;
             the_data = {
               src: src
             };
-            _context22.next = 16;
+            _context22.n = 4;
             return (0, _communication_react.getBlobPromise)("download_pool_file", the_data);
-          case 16:
-            _yield$getBlobPromise = _context22.sent;
+          case 4:
+            _yield$getBlobPromise = _context22.v;
             _yield$getBlobPromise2 = _slicedToArray(_yield$getBlobPromise, 3);
             data = _yield$getBlobPromise2[0];
             status = _yield$getBlobPromise2[1];
@@ -716,19 +714,18 @@ function PoolBrowser(props) {
               a.click();
               window.URL.revokeObjectURL(url);
             }
-            _context22.next = 27;
+            _context22.n = 6;
             break;
-          case 24:
-            _context22.prev = 24;
-            _context22.t0 = _context22["catch"](3);
-            if (_context22.t0 != "canceled") {
-              errorDrawerFuncs.addFromError("Error downloading from pool", _context22.t0);
+          case 5:
+            _context22.p = 5;
+            _t8 = _context22.v;
+            if (_t8 != "canceled") {
+              errorDrawerFuncs.addFromError("Error downloading from pool", _t8);
             }
-          case 27:
-          case "end":
-            return _context22.stop();
+          case 6:
+            return _context22.a(2);
         }
-      }, _callee22, null, [[3, 24]]);
+      }, _callee22, null, [[1, 5]]);
     }));
     return _downloadFile2.apply(this, arguments);
   }
@@ -736,36 +733,35 @@ function PoolBrowser(props) {
     return _MoveResource.apply(this, arguments);
   }
   function _MoveResource() {
-    _MoveResource = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee23(src, dst) {
-      var the_data;
-      return _regeneratorRuntime().wrap(function _callee23$(_context23) {
-        while (1) switch (_context23.prev = _context23.next) {
+    _MoveResource = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee23(src, dst) {
+      var the_data, _t9;
+      return _regenerator().w(function (_context23) {
+        while (1) switch (_context23.n) {
           case 0:
             if (!(src == dst)) {
-              _context23.next = 2;
+              _context23.n = 1;
               break;
             }
-            return _context23.abrupt("return");
-          case 2:
-            _context23.prev = 2;
+            return _context23.a(2);
+          case 1:
+            _context23.p = 1;
             the_data = {
               dst: dst,
               src: src
             };
-            _context23.next = 6;
+            _context23.n = 2;
             return (0, _communication_react.postAjaxPromise)("move_pool_resource", the_data);
-          case 6:
-            _context23.next = 11;
+          case 2:
+            _context23.n = 4;
             break;
-          case 8:
-            _context23.prev = 8;
-            _context23.t0 = _context23["catch"](2);
-            errorDrawerFuncs.addFromError("Error moving resource", _context23.t0);
-          case 11:
-          case "end":
-            return _context23.stop();
+          case 3:
+            _context23.p = 3;
+            _t9 = _context23.v;
+            errorDrawerFuncs.addFromError("Error moving resource", _t9);
+          case 4:
+            return _context23.a(2);
         }
-      }, _callee23, null, [[2, 8]]);
+      }, _callee23, null, [[1, 3]]);
     }));
     return _MoveResource.apply(this, arguments);
   }
@@ -773,24 +769,25 @@ function PoolBrowser(props) {
     return _move_resource2.apply(this, arguments);
   }
   function _move_resource2() {
-    _move_resource2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee24() {
+    _move_resource2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee24() {
       var node,
         sNode,
         src,
         initial_address,
         dst,
-        _args24 = arguments;
-      return _regeneratorRuntime().wrap(function _callee24$(_context24) {
-        while (1) switch (_context24.prev = _context24.next) {
+        _args24 = arguments,
+        _t0;
+      return _regenerator().w(function (_context24) {
+        while (1) switch (_context24.n) {
           case 0:
             node = _args24.length > 0 && _args24[0] !== undefined ? _args24[0] : null;
             if (!(!valueRef.current && !node)) {
-              _context24.next = 3;
+              _context24.n = 1;
               break;
             }
-            return _context24.abrupt("return");
-          case 3:
-            _context24.prev = 3;
+            return _context24.a(2);
+          case 1:
+            _context24.p = 1;
             sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
             src = sNode.fullpath;
             if (sNode.isDirectory) {
@@ -798,7 +795,7 @@ function PoolBrowser(props) {
             } else {
               initial_address = (0, _pool_tree.getFileParentPath)(sNode.fullpath);
             }
-            _context24.next = 9;
+            _context24.n = 2;
             return dialogFuncs.showModalPromise("SelectAddressDialog", {
               title: "Select a destination for ".concat((0, _pool_tree.getBasename)(src)),
               selectType: "folder",
@@ -807,24 +804,23 @@ function PoolBrowser(props) {
               showName: false,
               handleClose: dialogFuncs.hideModal
             });
-          case 9:
-            dst = _context24.sent;
-            _context24.next = 12;
+          case 2:
+            dst = _context24.v;
+            _context24.n = 3;
             return MoveResource(src, dst);
-          case 12:
-            _context24.next = 17;
+          case 3:
+            _context24.n = 5;
             break;
-          case 14:
-            _context24.prev = 14;
-            _context24.t0 = _context24["catch"](3);
-            if (_context24.t0 != "canceled") {
-              errorDrawerFuncs.addFromError("Error moving resource", _context24.t0);
+          case 4:
+            _context24.p = 4;
+            _t0 = _context24.v;
+            if (_t0 != "canceled") {
+              errorDrawerFuncs.addFromError("Error moving resource", _t0);
             }
-          case 17:
-          case "end":
-            return _context24.stop();
+          case 5:
+            return _context24.a(2);
         }
-      }, _callee24, null, [[3, 14]]);
+      }, _callee24, null, [[1, 4]]);
     }));
     return _move_resource2.apply(this, arguments);
   }
@@ -832,24 +828,25 @@ function PoolBrowser(props) {
     return _delete_func2.apply(this, arguments);
   }
   function _delete_func2() {
-    _delete_func2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee25() {
+    _delete_func2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee25() {
       var node,
         path,
         sNode,
         basename,
         confirm_text,
-        _args25 = arguments;
-      return _regeneratorRuntime().wrap(function _callee25$(_context25) {
-        while (1) switch (_context25.prev = _context25.next) {
+        _args25 = arguments,
+        _t1;
+      return _regenerator().w(function (_context25) {
+        while (1) switch (_context25.n) {
           case 0:
             node = _args25.length > 0 && _args25[0] !== undefined ? _args25[0] : null;
             if (!(!valueRef.current && !node)) {
-              _context25.next = 3;
+              _context25.n = 1;
               break;
             }
-            return _context25.abrupt("return");
-          case 3:
-            _context25.prev = 3;
+            return _context25.a(2);
+          case 1:
+            _context25.p = 1;
             path = node && "isDirectory" in node ? node.fullpath : valueRef.current;
             sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
             basename = (0, _pool_tree.getBasename)(path);
@@ -858,7 +855,7 @@ function PoolBrowser(props) {
             } else {
               confirm_text = "Are you sure that you want to delete ".concat(basename, "?");
             }
-            _context25.next = 10;
+            _context25.n = 2;
             return dialogFuncs.showModalPromise("ConfirmDialog", {
               title: "Delete resource",
               text_body: confirm_text,
@@ -866,26 +863,25 @@ function PoolBrowser(props) {
               submit_text: "delete",
               handleClose: dialogFuncs.hideModal
             });
-          case 10:
-            _context25.next = 12;
+          case 2:
+            _context25.n = 3;
             return (0, _communication_react.postAjaxPromise)("delete_pool_resource", {
               full_path: path,
               is_directory: sNode.isDirectory
             });
-          case 12:
-            _context25.next = 17;
+          case 3:
+            _context25.n = 5;
             break;
-          case 14:
-            _context25.prev = 14;
-            _context25.t0 = _context25["catch"](3);
-            if (_context25.t0 != "canceled") {
-              errorDrawerFuncs.addFromError("Error deleting", _context25.t0);
+          case 4:
+            _context25.p = 4;
+            _t1 = _context25.v;
+            if (_t1 != "canceled") {
+              errorDrawerFuncs.addFromError("Error deleting", _t1);
             }
-          case 17:
-          case "end":
-            return _context25.stop();
+          case 5:
+            return _context25.a(2);
         }
-      }, _callee25, null, [[3, 14]]);
+      }, _callee25, null, [[1, 4]]);
     }));
     return _delete_func2.apply(this, arguments);
   }
@@ -926,14 +922,14 @@ function PoolBrowser(props) {
     return _handleDrop.apply(this, arguments);
   }
   function _handleDrop() {
-    _handleDrop = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee26(e, dst) {
+    _handleDrop = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee26(e, dst) {
       var files, src;
-      return _regeneratorRuntime().wrap(function _callee26$(_context26) {
-        while (1) switch (_context26.prev = _context26.next) {
+      return _regenerator().w(function (_context26) {
+        while (1) switch (_context26.n) {
           case 0:
             files = e.dataTransfer.files;
             if (!(files.length != 0)) {
-              _context26.next = 5;
+              _context26.n = 1;
               break;
             }
             dialogFuncs.showModal("FileImportDialog", {
@@ -954,19 +950,18 @@ function PoolBrowser(props) {
               handleCancel: null,
               initialFiles: files
             });
-            _context26.next = 9;
+            _context26.n = 2;
             break;
-          case 5:
+          case 1:
             src = e.dataTransfer.getData("fullpath");
             if (!src) {
-              _context26.next = 9;
+              _context26.n = 2;
               break;
             }
-            _context26.next = 9;
+            _context26.n = 2;
             return MoveResource(src, dst);
-          case 9:
-          case "end":
-            return _context26.stop();
+          case 2:
+            return _context26.a(2);
         }
       }, _callee26);
     }));
@@ -990,150 +985,140 @@ function PoolBrowser(props) {
   function renderContextMenu(props) {
     return /*#__PURE__*/_react["default"].createElement(_core.Menu, null, props.node.isDirectory && /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
       icon: "folder-shared-open",
-      onClick: /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
-        return _regeneratorRuntime().wrap(function _callee$(_context) {
-          while (1) switch (_context.prev = _context.next) {
+      onClick: /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee() {
+        return _regenerator().w(function (_context) {
+          while (1) switch (_context.n) {
             case 0:
-              _context.next = 2;
+              _context.n = 1;
               return setRoot(props.node);
-            case 2:
-            case "end":
-              return _context.stop();
+            case 1:
+              return _context.a(2);
           }
         }, _callee);
       })),
       text: "Go To Folder"
     }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
       icon: "home",
-      onClick: /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee2() {
-        return _regeneratorRuntime().wrap(function _callee2$(_context2) {
-          while (1) switch (_context2.prev = _context2.next) {
+      onClick: /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2() {
+        return _regenerator().w(function (_context2) {
+          while (1) switch (_context2.n) {
             case 0:
-              _context2.next = 2;
+              _context2.n = 1;
               return setRootToBase(props.node);
-            case 2:
-            case "end":
-              return _context2.stop();
+            case 1:
+              return _context2.a(2);
           }
         }, _callee2);
       })),
       text: "Go Home"
     }), /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
       icon: "clipboard",
-      onClick: /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee3() {
-        return _regeneratorRuntime().wrap(function _callee3$(_context3) {
-          while (1) switch (_context3.prev = _context3.next) {
+      onClick: /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3() {
+        return _regenerator().w(function (_context3) {
+          while (1) switch (_context3.n) {
             case 0:
-              _context3.next = 2;
+              _context3.n = 1;
               return _copy_func(props.node);
-            case 2:
-            case "end":
-              return _context3.stop();
+            case 1:
+              return _context3.a(2);
           }
         }, _callee3);
       })),
       text: "Copy Path"
     }), !props.node.isDirectory && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
       icon: "eye-open",
-      onClick: /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee4() {
-        return _regeneratorRuntime().wrap(function _callee4$(_context4) {
-          while (1) switch (_context4.prev = _context4.next) {
+      onClick: /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee4() {
+        return _regenerator().w(function (_context4) {
+          while (1) switch (_context4.n) {
             case 0:
-              _context4.next = 2;
+              _context4.n = 1;
               return viewTextFile(props.node);
-            case 2:
-            case "end":
-              return _context4.stop();
+            case 1:
+              return _context4.a(2);
           }
         }, _callee4);
       })),
       text: "View as Text"
     }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
       icon: "code",
-      onClick: /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee5() {
-        return _regeneratorRuntime().wrap(function _callee5$(_context5) {
-          while (1) switch (_context5.prev = _context5.next) {
+      onClick: /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5() {
+        return _regenerator().w(function (_context5) {
+          while (1) switch (_context5.n) {
             case 0:
-              _context5.next = 2;
+              _context5.n = 1;
               return openInNotebook(props.node);
-            case 2:
-            case "end":
-              return _context5.stop();
+            case 1:
+              return _context5.a(2);
           }
         }, _callee5);
       })),
       text: "Open in Notebook"
     })), /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
       icon: "edit",
-      onClick: /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee6() {
-        return _regeneratorRuntime().wrap(function _callee6$(_context6) {
-          while (1) switch (_context6.prev = _context6.next) {
+      onClick: /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6() {
+        return _regenerator().w(function (_context6) {
+          while (1) switch (_context6.n) {
             case 0:
-              _context6.next = 2;
+              _context6.n = 1;
               return _rename_func(props.node);
-            case 2:
-            case "end":
-              return _context6.stop();
+            case 1:
+              return _context6.a(2);
           }
         }, _callee6);
       })),
       text: "Rename Resource"
     }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
       icon: "inheritance",
-      onClick: /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee7() {
-        return _regeneratorRuntime().wrap(function _callee7$(_context7) {
-          while (1) switch (_context7.prev = _context7.next) {
+      onClick: /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee7() {
+        return _regenerator().w(function (_context7) {
+          while (1) switch (_context7.n) {
             case 0:
-              _context7.next = 2;
+              _context7.n = 1;
               return _move_resource(props.node);
-            case 2:
-            case "end":
-              return _context7.stop();
+            case 1:
+              return _context7.a(2);
           }
         }, _callee7);
       })),
       text: "Move Resource"
     }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
       icon: "duplicate",
-      onClick: /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee8() {
-        return _regeneratorRuntime().wrap(function _callee8$(_context8) {
-          while (1) switch (_context8.prev = _context8.next) {
+      onClick: /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee8() {
+        return _regenerator().w(function (_context8) {
+          while (1) switch (_context8.n) {
             case 0:
-              _context8.next = 2;
+              _context8.n = 1;
               return _duplicate_file(props.node);
-            case 2:
-            case "end":
-              return _context8.stop();
+            case 1:
+              return _context8.a(2);
           }
         }, _callee8);
       })),
       text: "Duplicate File"
     }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
       icon: "folder-close",
-      onClick: /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee9() {
-        return _regeneratorRuntime().wrap(function _callee9$(_context9) {
-          while (1) switch (_context9.prev = _context9.next) {
+      onClick: /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee9() {
+        return _regenerator().w(function (_context9) {
+          while (1) switch (_context9.n) {
             case 0:
-              _context9.next = 2;
+              _context9.n = 1;
               return _add_directory(props.node);
-            case 2:
-            case "end":
-              return _context9.stop();
+            case 1:
+              return _context9.a(2);
           }
         }, _callee9);
       })),
       text: "Create Directory"
     }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
       icon: "trash",
-      onClick: /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee0() {
-        return _regeneratorRuntime().wrap(function _callee0$(_context0) {
-          while (1) switch (_context0.prev = _context0.next) {
+      onClick: /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee0() {
+        return _regenerator().w(function (_context0) {
+          while (1) switch (_context0.n) {
             case 0:
-              _context0.next = 2;
+              _context0.n = 1;
               return _delete_func(props.node);
-            case 2:
-            case "end":
-              return _context0.stop();
+            case 1:
+              return _context0.a(2);
           }
         }, _callee0);
       })),
@@ -1141,60 +1126,56 @@ function PoolBrowser(props) {
       text: "Delete Resource"
     }), /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
       icon: "archive",
-      onClick: /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee1() {
-        return _regeneratorRuntime().wrap(function _callee1$(_context1) {
-          while (1) switch (_context1.prev = _context1.next) {
+      onClick: /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee1() {
+        return _regenerator().w(function (_context1) {
+          while (1) switch (_context1.n) {
             case 0:
-              _context1.next = 2;
+              _context1.n = 1;
               return _compress_file(props.node);
-            case 2:
-            case "end":
-              return _context1.stop();
+            case 1:
+              return _context1.a(2);
           }
         }, _callee1);
       })),
       text: "Compress Resource"
     }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
       icon: "unarchive",
-      onClick: /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee10() {
-        return _regeneratorRuntime().wrap(function _callee10$(_context10) {
-          while (1) switch (_context10.prev = _context10.next) {
+      onClick: /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee10() {
+        return _regenerator().w(function (_context10) {
+          while (1) switch (_context10.n) {
             case 0:
-              _context10.next = 2;
+              _context10.n = 1;
               return _decompress_archive(props.node);
-            case 2:
-            case "end":
-              return _context10.stop();
+            case 1:
+              return _context10.a(2);
           }
         }, _callee10);
       })),
       text: "Decompress archive"
     }), /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
       icon: "cloud-upload",
-      onClick: /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee11() {
-        return _regeneratorRuntime().wrap(function _callee11$(_context11) {
-          while (1) switch (_context11.prev = _context11.next) {
+      onClick: /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee11() {
+        return _regenerator().w(function (_context11) {
+          while (1) switch (_context11.n) {
             case 0:
-              _context11.next = 2;
+              _context11.n = 1;
               return _showPoolImport(props.node);
-            case 2:
-            case "end":
-              return _context11.stop();
+            case 1:
+              return _context11.a(2);
           }
         }, _callee11);
       })),
       text: "Import To Pool"
     }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
       icon: "download",
-      onClick: /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee12() {
-        return _regeneratorRuntime().wrap(function _callee12$(_context12) {
-          while (1) switch (_context12.prev = _context12.next) {
+      onClick: /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee12() {
+        return _regenerator().w(function (_context12) {
+          while (1) switch (_context12.n) {
             case 0:
-              _context12.next = 2;
+              _context12.n = 1;
               return _downloadFile(props.node);
-            case 2:
-            case "end":
-              return _context12.stop();
+            case 1:
+              return _context12.a(2);
           }
         }, _callee12);
       })),
@@ -1308,7 +1289,7 @@ function PoolBrowser(props) {
     right_pane: right_pane,
     right_pane_overflow: "auto",
     initial_width_fraction: .75,
-    scrollAdjustSelectors: [".bp5-table-quadrant-scroll-container"],
+    scrollAdjustSelectors: [".bp6-table-quadrant-scroll-container"],
     handleSplitUpdate: null,
     handleResizeStart: null,
     handleResizeEnd: null

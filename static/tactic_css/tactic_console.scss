@@ -53,14 +53,14 @@ body {
     border-bottom: 1px solid #10161a26;
     height: 32px;
 
-    .bp5-icon {
+    .bp6-icon {
         margin-right: 3px
     }
 }
 
-#console-header-left .bp5-navbar {
+#console-header-left .bp6-navbar {
     box-shadow: none;
-    &.light-theme, &.bp5-dark {
+    &.light-theme, &.bp6-dark {
         background-color: transparent;
     }
 }
@@ -125,7 +125,7 @@ body {
     //border: 1px solid #c7c7c7
 }
 
-//.bp5-dark {
+//.bp6-dark {
 //    .text-panel-output {
 //        background-color: $dark-de-accent-bg-color;
 //        color: $dark-text-color
@@ -141,9 +141,9 @@ body {
         white-space: nowrap
     }
 
-.bp5-dark {
+.bp6-dark {
     .link-button-group {
-        .bp5-button-text {
+        .bp6-button-text {
             color: blueprint_variables.$gray4
         }
     }
@@ -217,7 +217,7 @@ body {
             margin-top: 5px;
             padding-left: 6px;
 
-            .bp5-button {
+            .bp6-button {
                 margin-top: 6px;
                 padding-left: 0;
                 padding-right: 0;
@@ -263,7 +263,7 @@ body {
 }
 
 .log-panel {
-    .bp5-editable-text:hover::before {
+    .bp6-editable-text:hover::before {
         outline: none;
         box-shadow: none;
     }
@@ -272,7 +272,7 @@ body {
 .log-panel-body {
     padding: 0;
 
-    .bp5-input:focus {
+    .bp6-input:focus {
         outline: none;
         box-shadow: none;
     }
@@ -335,7 +335,7 @@ body {
     border-bottom: 1px solid #10161a26;
     height: 32px;
 
-    .bp5-icon {
+    .bp6-icon {
         margin-right: 3px
     }
 }
@@ -357,7 +357,7 @@ body {
         font-size: 11px
     }
 
-    .bp5-icon {
+    .bp6-icon {
         margin-right: 3px;
         height: 20px;
         top: 2px
@@ -388,7 +388,7 @@ body {
 }
 
 
-#exports-button-list .bp5-button-group.bp5-vertical {
+#exports-button-list .bp6-button-group.bp6-vertical {
     max-width: 100%
 }
 
@@ -408,7 +408,7 @@ body {
     span {
         margin-right: 3px
     }
-    .bp5-button-text {
+    .bp6-button-text {
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -426,7 +426,7 @@ body {
     white-space: nowrap;
 }
 
-.show-exports-but .bp5-icon{
+.show-exports-but .bp6-icon{
     margin-top: 2px
 }
 

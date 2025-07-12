@@ -61,7 +61,7 @@ function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) 
 function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
 function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
 function _arrayWithHoles(r) { if (Array.isArray(r)) return r; } // noinspection XmlDeprecatedElement,JSXUnresolvedComponent
-// import { HotkeysProvider } from "@blueprintjs/core";
+//import { HotkeysProvider } from "@blueprintjs/core";
 _core.FocusStyleManager.onlyShowFocusOnTabs();
 var spinner_panel = /*#__PURE__*/_react["default"].createElement("div", {
   style: {
@@ -260,7 +260,7 @@ function ContextApp(props) {
     initSocket();
     _addContextOmniItems();
     errorDrawerFuncs.registerGoToModule(_goToModule);
-    var tab_list_elem = document.querySelector("#context-container .context-tab-list > .bp5-tab-list");
+    var tab_list_elem = document.querySelector("#context-container .context-tab-list > .bp6-tab-list");
     if (tab_list_elem) {
       tab_list_elem.setAttribute("style", "width:".concat(_sizing_tools.INIT_CONTEXT_PANEL_WIDTH, "px"));
     }
@@ -278,7 +278,7 @@ function ContextApp(props) {
       e.returnValue = 'Are you sure you want to close? All changes will be lost.';
     });
     _update_window_dimensions(null);
-    var tab_list_elem = document.querySelector("#context-container .context-tab-list > .bp5-tab-list");
+    var tab_list_elem = document.querySelector("#context-container .context-tab-list > .bp6-tab-list");
     var resizeObserver = new ResizeObserver(function () {
       _update_window_dimensions(null);
     });
@@ -290,7 +290,7 @@ function ContextApp(props) {
     _update_window_dimensions(null);
   }, [selectedTabId]);
   function get_tab_list_elem() {
-    return document.querySelector("#context-container .context-tab-list > .bp5-tab-list");
+    return document.querySelector("#context-container .context-tab-list > .bp6-tab-list");
   }
   function _togglePane(pane_closed) {
     var w = pane_closed ? saved_width : MIN_CONTEXT_WIDTH;
@@ -1283,7 +1283,7 @@ function ContextApp(props) {
   all_tabs.push(dummy_tab);
   var outer_class = "pane-holder ";
   if (settingsContext.isDark()) {
-    outer_class = "".concat(outer_class, " bp5-dark");
+    outer_class = "".concat(outer_class, " bp6-dark");
   } else {
     outer_class = "".concat(outer_class, " light-theme");
   }
@@ -1332,9 +1332,9 @@ function ContextApp(props) {
       bottom: 10,
       zIndex: 1
     },
-    minimal: true,
+    variant: "minimal",
     className: "context-close-button",
-    small: true,
+    size: "small",
     tabIndex: -1,
     onClick: function onClick() {
       _togglePane(pane_closed);

@@ -233,7 +233,7 @@ function Status(props) {
     const settingsContext = useContext(SettingsContext);
 
     let cname = "d-flex flex-row";
-    let outer_cname = settingsContext.isDark() ? "status-holder bp5-dark" : "status-holder light-theme";
+    let outer_cname = settingsContext.isDark() ? "status-holder bp6-dark" : "status-holder light-theme";
     let left = elRef && elRef.current && elRef.current.parentNode ? elRef.current.parentNode.offsetLeft : 25;
 
     return (
@@ -245,11 +245,11 @@ function Status(props) {
                     <Spinner size={20}/>}
                 {props.show_close && (props.show_spiner || props.status_message) &&
                     <GlyphButton handleClick={props.handleClose}
-                                 small={true}
+                                 size="small"
                                  icon="cross"/>}
                 {props.status_message &&
                     <div className="d-flex flex-column justify-content-around" style={{marginLeft: 8}}>
-                        <div id="status-msg-area" className="bp5-ui-text" style={{fontSize: 12}}>{props.status_message}</div>
+                        <div id="status-msg-area" className="bp6-ui-text" style={{fontSize: 12}}>{props.status_message}</div>
                     </div>
                 }
             </div>

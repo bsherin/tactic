@@ -45,9 +45,9 @@ function GlyphButton(props) {
     style: null,
     className: "",
     extra_glyph_text: null,
-    minimal: true,
+    variant: "minimal",
     intent: "none",
-    small: true
+    size: "small"
   }, props);
   var _handleClick = (0, _react.useCallback)(function (e) {
     props.handleClick(e);
@@ -64,8 +64,8 @@ function GlyphButton(props) {
   }, [props.style]);
   return /*#__PURE__*/_react["default"].createElement(_core.Button, {
     type: "button",
-    minimal: props.minimal,
-    small: props.small,
+    variant: props.variant,
+    size: props.size,
     style: style,
     className: props.className,
     onMouseDown: pDef,
@@ -89,7 +89,7 @@ function LabeledTextArea(props) {
     style: {
       resize: "none"
     },
-    growVertically: true,
+    autoResize: true,
     value: props.the_value
   }));
 }
@@ -258,7 +258,7 @@ function BpOrderableTable(props, passedRef) {
       name: column_name
     });
   });
-  return /*#__PURE__*/_react["default"].createElement(_table.Table2, {
+  return /*#__PURE__*/_react["default"].createElement(_table.Table, {
     enableFocusedCell: false,
     cellRendererDependencies: [props.data_array],
     numRows: props.data_array.length,

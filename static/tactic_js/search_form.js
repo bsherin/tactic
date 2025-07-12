@@ -29,7 +29,7 @@ function FilterSearchForm(props) {
   return /*#__PURE__*/_react["default"].createElement("form", {
     onSubmit: _handleSubmit,
     id: "console-search-form",
-    className: "d-flex flex-row bp5-form-group",
+    className: "d-flex flex-row bp6-form-group",
     style: {
       justifyContent: "flex-end",
       marginRight: props.margin_right,
@@ -44,7 +44,7 @@ function FilterSearchForm(props) {
     type: "search",
     leftIcon: "search",
     placeholder: "Search",
-    small: true,
+    size: "small",
     value: !props.search_string ? "" : props.search_string,
     onChange: props.handleSearchFieldChange,
     autoCapitalize: "none",
@@ -52,22 +52,22 @@ function FilterSearchForm(props) {
     className: "mr-2"
   }), /*#__PURE__*/_react["default"].createElement(_core.ButtonGroup, null, props.handleFilter && /*#__PURE__*/_react["default"].createElement(_core.Button, {
     onClick: props.handleFilter,
-    small: true
+    size: "small"
   }, "Filter"), props.handleUnFilter && /*#__PURE__*/_react["default"].createElement(_core.Button, {
     onClick: props.handleUnFilter,
-    small: true
+    size: "small"
   }, "Clear"), props.searchNext && /*#__PURE__*/_react["default"].createElement(_core.Button, {
     onClick: props.searchNext,
     icon: "caret-down",
     text: undefined,
-    small: true
+    size: "small"
   }), props.searchPrevious && /*#__PURE__*/_react["default"].createElement(_core.Button, {
     onClick: props.searchPrevious,
     icon: "caret-up",
     text: undefined,
-    small: true
+    size: "small"
   }))), /*#__PURE__*/_react["default"].createElement("div", {
-    className: "bp5-form-helper-text",
+    className: "bp6-form-helper-text",
     style: {
       marginLeft: 10
     }

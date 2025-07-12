@@ -1036,7 +1036,7 @@ function CreatorApp(props) {
     let outer_class = "resource-viewer-holder pane-holder";
     if (!window.in_context) {
         if (settingsContext.isDark()) {
-            outer_class = outer_class + " bp5-dark";
+            outer_class = outer_class + " bp6-dark";
         } else {
             outer_class = outer_class + " light-theme"
         }

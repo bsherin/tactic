@@ -596,7 +596,7 @@ function ExportModule(props) {
         <Card ref={top_ref} elevation={1} id="exports-pane" className="d-flex flex-column" style={exports_pane_style}>
             {props.foregrounded &&
                 <Fragment>
-                    <h4 className="bp5-heading">Exports</h4>
+                    <h4 className="bp6-heading">Exports</h4>
                     <BpOrderableTable columns={cols}
                                       data_array={props.export_list}
                                       active_row={active_export_row}
@@ -613,7 +613,7 @@ function ExportModule(props) {
             />
             <Divider/>
             <div style={{display: "flex", justifyContent: "space-between", marginTop: 15}}>
-                <h4 className="bp5-heading">Save Attrs</h4>
+                <h4 className="bp6-heading">Save Attrs</h4>
                 <Switch label="Couple save_attrs and exports"
                         className="ml-2 mb-0 mt-1"
                         size="medium"

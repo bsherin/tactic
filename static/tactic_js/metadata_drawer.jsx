@@ -70,7 +70,7 @@ function MetadataDrawer(props) {
     return (
         <Drawer
             icon={icon_dict[props.res_type]}
-            className={settingsContext.isDark() ? "bp5-dark" : "light-theme"}
+            className={settingsContext.isDark() ? "bp6-dark" : "light-theme"}
             style={drawerStyle}
             title="Metadata"
             isOpen={props.show_drawer}

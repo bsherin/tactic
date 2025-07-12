@@ -11,7 +11,7 @@ import {useState, useEffect, useRef, useContext, Fragment, useCallback, useMemo}
 import {createRoot} from 'react-dom/client';
 
 import {Tab, Tabs, Button, Icon, Spinner, useHotkeys} from "@blueprintjs/core";
-// import { HotkeysProvider } from "@blueprintjs/core";
+//import { HotkeysProvider } from "@blueprintjs/core";
 import {FocusStyleManager} from "@blueprintjs/core";
 
 FocusStyleManager.onlyShowFocusOnTabs();
@@ -202,7 +202,7 @@ function ContextApp(props) {
         initSocket();
         _addContextOmniItems();
         errorDrawerFuncs.registerGoToModule(_goToModule);
-        const tab_list_elem = document.querySelector("#context-container .context-tab-list > .bp5-tab-list");
+        const tab_list_elem = document.querySelector("#context-container .context-tab-list > .bp6-tab-list");
         if (tab_list_elem) {
             tab_list_elem.setAttribute("style", `width:${INIT_CONTEXT_PANEL_WIDTH}px`)
         }
@@ -219,7 +219,7 @@ function ContextApp(props) {
         });
 
         _update_window_dimensions(null);
-        const tab_list_elem = document.querySelector("#context-container .context-tab-list > .bp5-tab-list");
+        const tab_list_elem = document.querySelector("#context-container .context-tab-list > .bp6-tab-list");
         const resizeObserver = new ResizeObserver(() => {
             _update_window_dimensions(null)
         });
@@ -234,7 +234,7 @@ function ContextApp(props) {
     }, [selectedTabId]);
 
     function get_tab_list_elem() {
-        return document.querySelector("#context-container .context-tab-list > .bp5-tab-list");
+        return document.querySelector("#context-container .context-tab-list > .bp6-tab-list");
     }
 
     function _togglePane(pane_closed) {
@@ -968,7 +968,7 @@ function ContextApp(props) {
 
     let outer_class = "pane-holder ";
     if (settingsContext.isDark()) {
-        outer_class = `${outer_class} bp5-dark`;
+        outer_class = `${outer_class} bp6-dark`;
     } else {
         outer_class = `${outer_class} light-theme`;
     }
@@ -1005,9 +1005,9 @@ function ContextApp(props) {
                                 position: "fixed", left: tabWidth - 30, bottom: 10,
                                 zIndex: 1
                             }}
-                            minimal={true}
+                            variant="minimal"
                             className="context-close-button"
-                            small={true}
+                            size="small"
                             tabIndex={-1}
                             onClick={() => {
                                 _togglePane(pane_closed)

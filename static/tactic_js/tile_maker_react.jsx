@@ -66,8 +66,8 @@ function CreatorApp(props) {
 
     const [usable_width, usable_height, topX, topY] = useSize(top_ref, 0, "TileMaker");
 
-    const [, optionDispatchBase, option_list_ref] = usePropertyList(props.option_list, INITIAL_FORM_PANE_HEIGHT);
-    const [, exportDispatchBase, export_list_ref] = usePropertyList(props.export_list, INITIAL_FORM_PANE_HEIGHT);
+    const [, optionDispatchBase, option_list_ref] = usePropertyList(props.option_list, INITIAL_FORM_PANE_HEIGHT, {special_list: []});
+    const [, exportDispatchBase, export_list_ref] = usePropertyList(props.export_list, INITIAL_FORM_PANE_HEIGHT, {tags: ""});
     const [, saveDispatchBase, save_list_ref] = usePropertyList(props.additional_save_attrs ? props.additional_save_attrs : [], INITIAL_FORM_PANE_HEIGHT);
     const [, standardDispatchBase, standardListRef] = usePropertyList(props.standard_methods_list, INITIAL_CODE_PANE_HEIGHT);
     const [, umDispatchBase, umListRef] = usePropertyList(props.user_methods_list, INITIAL_CODE_PANE_HEIGHT);
@@ -212,7 +212,17 @@ function CreatorApp(props) {
             let the_text = "" + oname;
             extraSelfCompletionsRef.current.push({label: the_text, type: "variable", section: "Options"});
         }
-    }, [option_list_ref.current]);
+        for (let um of umListRef.current){
+            // noinspection JSUnresolvedReference
+            extraSelfCompletionsRef.current.push({
+                label: um["name"],
+                info: `${um["name"]}(${um["argString"]})`,
+                type: "function",
+                section: "Local"
+            });
+        }
+
+    }, [option_list_ref.current, umListRef.current]);
 
     function initSocket() {
         props.tsocket.attachListener('focus-me', (data) => {
@@ -649,6 +659,7 @@ function CreatorApp(props) {
     function _goToLineNumber() {
         if (rline_number.current) {
             const local_number = rline_number.current
+            rline_number.current = null
             errorDrawerFuncs.closeErrorDrawer();
             for (let listRef of [standardListRef, umListRef, hmListRef]) {
                 for (let item of listRef.current) {
@@ -942,6 +953,7 @@ function CreatorApp(props) {
         if (visibleTabListRef.current.includes(item["identifier"])) {
             right_pane_list.push(
                 <PaneElement key={item["identifier"]} el={item} dispatch={standardDispatch} pane_height={item["pane_height"]}
+                             icon={standard_method_icons[item["name"]]}
                              identifier={item["identifier"]} pushCallback={pushCallback}>
                     {codeElemDict[item["identifier"]]?.()}
                 </PaneElement>
@@ -1001,7 +1013,7 @@ function CreatorApp(props) {
     let outer_class = "resource-viewer-holder pane-holder";
     if (!window.in_context) {
         if (settingsContext.isDark()) {
-            outer_class = outer_class + " bp5-dark";
+            outer_class = outer_class + " bp6-dark";
         } else {
             outer_class = outer_class + " light-theme"
         }

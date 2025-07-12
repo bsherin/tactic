@@ -8,7 +8,7 @@
     margin-left: 0.5rem;
     .main-heading{
 
-        .button-in-select .bp5-button-text {
+        .button-in-select .bp6-button-text {
             max-width: 100%
         }
     }
@@ -27,7 +27,7 @@
 
 .tile-menu-item {
     padding-bottom: 2px;
-    .bp5-fill.bp5-text-overflow-ellipsis {
+    .bp6-fill.bp6-text-overflow-ellipsis {
         font-size: small
     }
 }
@@ -76,13 +76,13 @@
 
 .pool-select-tree {
     padding: 5px;
-    .bp5-tree-node-label, .bp5-tree-node-secondary-label {
+    .bp6-tree-node-label, .bp6-tree-node-secondary-label {
         font-size: 12px
     }
-    .bp5-tree-node-secondary-label {
+    .bp6-tree-node-secondary-label {
         white-space: pre-wrap;
     }
-    .bp5-tree-node-icon svg {
+    .bp6-tree-node-icon svg {
         height: 14px;
         width: 14px;
     }
@@ -97,12 +97,12 @@
 }
 
 .tile-form-menu-item {
-    &.bp5-menu-item {
+    &.bp6-menu-item {
         font-size: 13px;
         line-height: 15px;
     }
-    &.bp5-menu-header {
-        h6.bp5-heading {
+    &.bp6-menu-header {
+        h6.bp6-heading {
             font-size: 13px
         }
     }

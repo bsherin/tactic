@@ -127,7 +127,7 @@ function LoginApp(props) {
                         >
                             <InputGroup type="text"
                                            onChange={_onUsernameChange}
-                                           large={true}
+                                           size="large"
                                            fill={false}
                                            placeholder="Username"
                                            autoCapitalize="none"
@@ -140,7 +140,7 @@ function LoginApp(props) {
                         >
                             <InputGroup type="password"
                                            onChange={_onPasswordChange}
-                                           large={true}
+                                           size="large"
                                            fill={false}
                                            placeholder="Password"
                                            autoCapitalize="none"
@@ -148,7 +148,7 @@ function LoginApp(props) {
                            />
                         </FormGroup>
                          <div className="d-flex flex-row justify-content-around">
-                            <Button icon="log-in" large={true} type="submit" text="Sign in"/>
+                            <Button icon="log-in" size="large" type="submit" text="Sign in"/>
                          </div>
                     </form>
                 </div>

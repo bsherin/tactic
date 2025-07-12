@@ -1474,7 +1474,7 @@ function initSocket() {
                          className="d-flex flex-row">
                         <GlyphButton extra_glyph_text={_glif_text(show_glif_text, "exports")}
                                      tooltip="Show export browser"
-                                     small={true}
+                                     size="small"
                                      className="show-exports-but"
                                      style={GLYPH_BUTTON_STYLE2}
                                      handleClick={_toggleExports}
@@ -1553,7 +1553,7 @@ function initSocket() {
                                                ElementComponent={TailoredSuperItem}
                                                key_field_name="unique_id"
                                                item_list={filtered_items}
-                                               helperClass={settingsContext.isDark() ? "bp5-dark" : "light-theme"}
+                                               helperClass={settingsContext.isDark() ? "bp6-dark" : "light-theme"}
                                                handle=".console-sorter"
                                                onBeforeCapture={_sortStart}
                                                onDragEnd={_resortConsoleItems}
@@ -1808,7 +1808,7 @@ function SectionEndItem(props) {
         <ContextMenu content={contextMenu}>
             <div className={panel_class + " d-flex flex-row"} onClick={_consoleItemClick}
                  id={props.unique_id} style={{marginBottom: 10}}>
-                <ButtonGroup minimal={true} vertical={true} style={{width: "100%"}}>
+                <ButtonGroup variant="minimal" vertical={true} style={{width: "100%"}}>
                     <span {...props.dragHandleProps}/>
                     <Divider style={line_style}/>
                 </ButtonGroup>
@@ -2568,14 +2568,14 @@ function ResourceLinkButton(props) {
 
     return (
         <ButtonGroup className="link-button-group">
-            <Button small={true}
+            <Button size="small"
                     text={props.res_name}
                     icon={icon_dict[props.res_type]}
-                    minimal={true}
+                    variant="minimal"
                     onClick={_goToLink}/>
-            <Button small={true}
+            <Button size="small"
                     icon="small-cross"
-                    minimal={true}
+                    variant="minimal"
                     onClick={(e) => {
                         props.deleteMe(props.my_index);
                         e.stopPropagation()

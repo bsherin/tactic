@@ -61,7 +61,6 @@ xh = escape_html
 # noinspection PyTypeChecker
 MAX_SINGLE_WRITE = 1000000
 
-
 class ConsoleStringIO(StringIO):
     def __init__(self, tile, data, old_stdout):
         self.my_tile = tile

@@ -191,7 +191,7 @@ function AccountApp(props) {
         let field_items = _getFieldItems();
         let outer_class = "account-settings";
         if (settingsContext.isDark()) {
-            outer_class = outer_class + " bp5-dark";
+            outer_class = outer_class + " bp6-dark";
         }
         else {
             outer_class = outer_class + " light-theme"
@@ -206,16 +206,16 @@ function AccountApp(props) {
                               user_name={window.username}/>
                 <div className={outer_class}>
                     <div style={{display: "flex", flexDirection: "column", overflowY: "scroll"}}>
-                        <div className="account-pane bp5-card">
+                        <div className="account-pane bp6-card">
                             <h6>User Info</h6>
                             {field_items[0]}
                         </div>
-                        <div className="account-pane bp5-card">
+                        <div className="account-pane bp6-card">
                             <h6>User Settings</h6>
                             {field_items[1]}
                         </div>
                     </div>
-                    <div className="account-pane bp5-card">
+                    <div className="account-pane bp6-card">
                         <h6>Change Password</h6>
                         <AccountTextField name="password"
                                           key="password"
@@ -227,7 +227,7 @@ function AccountApp(props) {
                                       value={confirm_password}
                                       helper_text={password_helper}
                                       onFieldChange={_onFieldChange}/>
-                        <Button icon="log-in" large={true} text="Update Password" onClick={_submitPassword}/>
+                        <Button icon="log-in" size="large" text="Update Password" onClick={_submitPassword}/>
                     </div>
                 </div>
             </Fragment>

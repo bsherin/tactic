@@ -48,6 +48,9 @@ function useMetadata(initial) {
     if (!initial.hasOwnProperty("pane_height")) {
         initial.pane_height = 424;
     }
+    if (!initial.hasOwnProperty("couple_save_attrs_and_exports")) {
+        initial.couple_save_attrs_and_exports = true;
+    }
     const [metadata, metadataDispatch] = useImmerReducer(metadataReducer, initial);
     const metadataRef = useRef(metadata);
     metadataRef.current = metadata;

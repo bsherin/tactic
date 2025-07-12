@@ -23,7 +23,7 @@ function FilterSearchForm(props) {
 
     return (
         <form onSubmit={_handleSubmit} id="console-search-form"
-              className="d-flex flex-row bp5-form-group" style={{
+              className="d-flex flex-row bp6-form-group" style={{
             justifyContent: "flex-end", marginRight: props.margin_right,
             marginBottom: 6, marginTop: 12
         }}>
@@ -32,7 +32,7 @@ function FilterSearchForm(props) {
                     <InputGroup type="search"
                                 leftIcon="search"
                                 placeholder="Search"
-                                small={true}
+                                size="small"
                                 value={!props.search_string ? "" : props.search_string}
                                 onChange={props.handleSearchFieldChange}
                                 autoCapitalize="none"
@@ -40,26 +40,26 @@ function FilterSearchForm(props) {
                                 className="mr-2"/>
                     <ButtonGroup>
                         {props.handleFilter &&
-                            <Button onClick={props.handleFilter} small={true}>
+                            <Button onClick={props.handleFilter} size="small">
                                 Filter
                             </Button>
                         }
 
                         {props.handleUnFilter &&
-                            <Button onClick={props.handleUnFilter} small={true}>
+                            <Button onClick={props.handleUnFilter} size="small">
                                 Clear
                             </Button>
                         }
                         {props.searchNext &&
-                            <Button onClick={props.searchNext} icon="caret-down" text={undefined} small={true}/>
+                            <Button onClick={props.searchNext} icon="caret-down" text={undefined} size="small"/>
                         }
                         {props.searchPrevious &&
                             <Button onClick={props.searchPrevious} icon="caret-up" text={undefined}
-                                 small={true}/>
+                                 size="small"/>
                         }
                     </ButtonGroup>
                 </div>
-                <div className="bp5-form-helper-text" style={{marginLeft: 10}}>{props.search_helper_text}</div>
+                <div className="bp6-form-helper-text" style={{marginLeft: 10}}>{props.search_helper_text}</div>
             </div>
         </form>
     )

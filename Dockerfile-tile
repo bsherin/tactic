@@ -7,8 +7,6 @@ RUN apt-get update && apt-get -y install default-jre
 ADD ./Mallet /opt/mallet
 ADD ./tile_container_env/new_requirements.txt /code/new_requirements.txt
 RUN pip3 install --no-cache-dir -r new_requirements.txt
-ADD ./tile_container_env/transformers_requirements.txt /code/transformers_requirements.txt
-RUN pip3 install --no-cache-dir -r transformers_requirements.txt
 ADD ./tile_container_env/newer_requirements.txt /code/newer_requirements.txt
 RUN pip3 install --no-cache-dir -r newer_requirements.txt
 RUN pip3 install --no-cache-dir dask[complete]

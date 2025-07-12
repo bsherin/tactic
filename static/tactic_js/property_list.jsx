@@ -4,15 +4,18 @@ import debounce from "lodash/debounce";
 
 export {usePropertyList, propertyListReducer, makeUndoableDispatch};
 
-function propertyListReducer(prop_list, action) {
-    var new_items;
+function propertyListReducer(state, action) {
+    const prop_list = state.items;
+    const defaults = state.default_values || {};
+    let new_items;
     switch (action.type) {
         case "initialize":
+            const initDefaults = action["default_values"] || defaults;
             if (action.new_items == null || action.new_items.length === 0) {
                 new_items = [];
             } else {
                 new_items = action.new_items.map(t => {
-                    let new_t = {...t};
+                    let new_t = {...initDefaults, ...t};
                     if (!new_t.hasOwnProperty("identifier")) {
                         new_t.identifier = guid();
                     }
@@ -22,10 +25,10 @@ function propertyListReducer(prop_list, action) {
                     return new_t
                 });
             }
-            break;
+            return { items: new_items, default_values: initDefaults };
         case "delete_item":
             new_items = prop_list.filter(t => t.identifier !== action.identifier);
-            break;
+            return { ...state, items: new_items }
         case "update_item":
             const identifier = action.identifier;
             new_items = prop_list.map(t => {
@@ -36,7 +39,7 @@ function propertyListReducer(prop_list, action) {
                     return t;
                 }
             });
-            break;
+            return { ...state, items: new_items }
         case "move_item_over":
             const active_id = action["active_identifier"];
             const over_id = action["over_identifier"];
@@ -44,46 +47,50 @@ function propertyListReducer(prop_list, action) {
             const newIndex = prop_list.findIndex((i) => i.identifier === over_id);
             if (oldIndex !== -1 && newIndex !== -1) {
                 new_items = arrayMove([...prop_list], oldIndex, newIndex);
+                return { ...state, items: new_items };
             }
-            else {
-                return [...prop_list]
-            }
-            break;
+            return state
         case "move_item":
             new_items = arrayMove(prop_list, action.oldIndex, action.newIndex);
-            break;
+            return { ...state, items: new_items };
         case "add_at_index":
             new_items = [...prop_list];
-            let new_t = {...action.new_item};
-            new_t.identifier = guid();
-            new_items.splice(action.insert_index, 0, new_t);
-            break;
+            let new_item_at_index = { ...defaults, ...action.new_item };
+            new_item_at_index.identifier = guid();
+            new_items.splice(action.insert_index, 0, new_item_at_index);
+            return { ...state, items: new_items };
         case "add_at_end":
             new_items = [...prop_list];
-            let new_te = {...action.new_item};
-            if (!new_te.hasOwnProperty("identifier")) {
-                new_te.identifier = guid();
+            let new_item_at_end = { ...defaults, ...action.new_item };
+            if (!new_item_at_end.hasOwnProperty("identifier")) {
+                new_item_at_end.identifier = guid();
             }
-            new_items.push(new_te);
-            break;
+            new_items.push(new_item_at_end);
+            return { ...state, items: new_items };
         default:
             console.log("Got Unknown action: " + action.type);
-            return [...prop_list]
+            return state
     }
-    return new_items;
 }
 
 
-function usePropertyList(initial, initial_pane_height = 330) {
+function usePropertyList(initial, initial_pane_height = 330, default_values = {}) {
 
-    const [propList, propListDispatch] = useReducer(propertyListReducer, []);
-    const propListRef = useRef(propList);
-    propListRef.current = propList;
+    const [state, propListDispatch] = useReducer(propertyListReducer,
+        { items: [], defaults: default_values }
+    );
+    const propListRef = useRef(state.items);
+    propListRef.current = state.items;
+    default_values["pane_height"] = initial_pane_height;
     useEffect(() => {
-        propListDispatch({type: "initialize", new_items: initial, initial_pane_height});
+        propListDispatch({
+            type: "initialize",
+            new_items: initial,
+            initial_pane_height,
+            default_values});
     }, []);
 
-    return [propList, propListDispatch, propListRef]
+    return [state.items, propListDispatch, propListRef]
 }
 
 function makeUndoableDispatch(dispatch, listRef, listName, undoStackRef) {
@@ -98,27 +105,26 @@ function makeUndoableDispatch(dispatch, listRef, listName, undoStackRef) {
 
     const scheduleCommit = debounce(commitUndoEntry, 1000);  // 1s idle = finalize
 
-
     return function (action) {
-        const listBefore = [...listRef.current];
+        const listBefore = [...listRef.current]; // <— now accessing `.items`
         let undoEntry = null;
 
         switch (action.type) {
             case "update_item": {
-                let oldItem = listBefore.find(t => t.identifier === action.identifier);
+                const oldItem = listBefore.find(t => t.identifier === action.identifier);
                 if (oldItem && !stagedUndoEntry) {
                     undoEntry = {
                         dispatch,
                         undoAction: {
                             type: "update_item",
                             identifier: action.identifier,
-                            new_item: {...oldItem}
+                            new_item: { ...oldItem }
                         },
                         description: `${listName}: Undo item update`
                     };
                     stagedUndoEntry = undoEntry;
                 }
-                scheduleCommit()
+                scheduleCommit();
                 break;
             }
 
@@ -129,7 +135,7 @@ function makeUndoableDispatch(dispatch, listRef, listName, undoStackRef) {
                         dispatch,
                         undoAction: {
                             type: "add_at_end",
-                            new_item: {...deletedItem}
+                            new_item: { ...deletedItem }
                         },
                         description: `${listName}: Undo delete`
                     };

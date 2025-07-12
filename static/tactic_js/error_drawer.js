@@ -242,7 +242,7 @@ function ErrorItem(props) {
   }), props.has_link && /*#__PURE__*/_react["default"].createElement(_core.Button, {
     text: "show",
     icon: "eye-open",
-    small: true,
+    size: "small",
     onClick: _openError
   }));
 }
@@ -288,7 +288,7 @@ function ErrorDrawer(props) {
   });
   return /*#__PURE__*/_react["default"].createElement(_core.Drawer, {
     icon: "console",
-    className: settingsContext.isDark() ? "bp5-dark" : "light-theme",
+    className: settingsContext.isDark() ? "bp6-dark" : "light-theme",
     title: props.title,
     isOpen: props.show_drawer,
     position: props.position,

@@ -11,10 +11,10 @@
     "preinstall": "npx npm-force-resolutions"
   },
   "dependencies": {
-    "@blueprintjs/core": "^5.8.2",
-    "@blueprintjs/icons": "5.22.0",
-    "@blueprintjs/select": "5.3.4",
-    "@blueprintjs/table": "5.3.15",
+    "@blueprintjs/core": "^6",
+    "@blueprintjs/icons": "^6",
+    "@blueprintjs/select": "^6",
+    "@blueprintjs/table": "^6",
     "@codemirror/autocomplete": "^6.18.6",
     "@codemirror/commands": "^6.8.1",
     "@codemirror/lang-javascript": "^6.2.4",

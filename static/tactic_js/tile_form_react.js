@@ -293,10 +293,9 @@ function TextOption(props) {
   }, /*#__PURE__*/_react["default"].createElement(_core.InputGroup, {
     asyncControl: false,
     type: "text",
-    small: false,
     leftIcon: props.leftIcon,
     onChange: _updateMe,
-    value: val_to_show
+    value: String(val_to_show)
   }));
 }
 TextOption = /*#__PURE__*/(0, _react.memo)(TextOption);
@@ -415,7 +414,6 @@ function TextAreaOption(props) {
   }, /*#__PURE__*/_react["default"].createElement(_core.TextArea, {
     onChange: _updateMe,
     inputRef: inputRef,
-    small: false,
     value: props.value
   }));
 }

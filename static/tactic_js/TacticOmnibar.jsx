@@ -161,7 +161,7 @@ function OpenOmnibar(props) {
                 <div className={`${Classes.OMNIBAR} ${listProps.className}`} {...handlers}>
                     <InputGroup
                         autoFocus={true}
-                        large={true}
+                        size="large"
                         leftIcon="cube"
                         placeholder="Search resources..."
                         onChange={listProps.handleQueryChange}
@@ -239,7 +239,7 @@ function OpenOmnibar(props) {
 
     return (
         <QueryList items={item_list}
-                   className={settingsContext.isDark() ? "bp5-dark" : ""}
+                   className={settingsContext.isDark() ? "bp6-dark" : ""}
                    isOpen={props.showOmnibar}
                    onItemSelect={_onItemSelect}
                    itemRenderer={openItemRenderer}

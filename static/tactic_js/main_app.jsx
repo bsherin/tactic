@@ -7,7 +7,7 @@ import "../tactic_css/tactic_select.scss"
 import React from "react";
 import {Fragment, useEffect, useRef, memo, useContext, useReducer, useCallback} from "react";
 import { createRoot } from 'react-dom/client';
-// import { HotkeysProvider } from "@blueprintjs/core";
+//import { BlueprintProvider } from "@blueprintjs/core";
 import {NavbarDivider} from "@blueprintjs/core";
 import {Regions} from "@blueprintjs/table"
 import _ from 'lodash';
@@ -37,17 +37,13 @@ import {withAssistant} from "./assistant";
 import {DialogContext, withDialogs} from "./modal_react";
 import {StatusContext} from "./toaster";
 import {ErrorDrawerContext} from "./error_drawer";
-import {SelectedPaneContext} from "./utilities_react";
 import {MetadataDrawer, MetadataContext} from "./metadata_drawer";
 
 export {MainApp}
 
-const MARGIN_SIZE = 0;
+
 const BOTTOM_MARGIN = 30;  // includes space for status messages at bottom
-const MARGIN_ADJUSTMENT = 8; // This is the amount at the top of both the table and the console
 const CONSOLE_HEADER_HEIGHT = 35;
-const EXTRA_TABLE_AREA_SPACE = 500;
-const MENU_BAR_HEIGHT = 30; // will only appear when in context
 const TABLE_CONSOLE_GAP = 20; // handle width plus margin
 
 const iStateDefaults = {
@@ -89,14 +85,13 @@ function MainApp(props) {
     const main_outer_ref = useRef(null);
     const set_table_scroll = useRef(null);
 
-    const [console_selected_items, set_console_selected_items, console_selected_items_ref] = useStateAndRef([]);
+    const [, set_console_selected_items, console_selected_items_ref] = useStateAndRef([]);
     const [console_items, dispatch, console_items_ref] = useReducerAndRef(consoleItemsReducer, []);
     const [tile_list, tileDispatch, tile_list_ref] = useReducerAndRef(tilesReducer, iStateOrDefault("tile_list"));
 
     const settingsContext = useContext(SettingsContext);
     const dialogFuncs = useContext(DialogContext);
     const statusFuncs = useContext(StatusContext);
-    const selectedPane = useContext(SelectedPaneContext);
 
     const [mState, mDispatch] = useReducer(mainReducer, {
         table_is_shrunk: props.doc_type == "none" || iStateOrDefault("table_is_shrunk"),
@@ -155,7 +150,6 @@ function MainApp(props) {
             window.addEventListener("beforeunload", function (e) {
                 if (_dirty()) {
                     e.preventDefault();
-                    e.returnValue = ''
                 }
             });
         }
@@ -191,10 +185,6 @@ function MainApp(props) {
 
     function _cProp(pname) {
         return props.controlled ? props[pname] : mState[pname]
-    }
-
-    function am_selected() {
-        return selectedPane.amSelected(selectedPane.tab_id, selectedPane.selectedTabIdRef)
     }
 
     const save_state = {
@@ -556,11 +546,12 @@ function MainApp(props) {
 
     function _handleTableMessage(data) {
         if (data.main_id == props.main_id) {
+            // noinspection JSUnusedGlobalSymbols
             let handlerDict = {
                 refill_table: _refill_table,
-                dehighlightAllText: (data) => _handleSearchFieldChange(null),
+                dehighlightAllText: () => _handleSearchFieldChange(null),
                 highlightTxtInDocument: (data) => _setAltSearchText(data.text_to_find),
-                updateNumberRows: (data) => _updateNumberRows(data.doc_name, data.number_rows),
+                //updateNumberRows: (data) => _updateNumberRows(data.doc_name, data.number_rows),
                 setCellContent: (data) => _setCellContent(data.row, data.column_header, data.new_content),
                 colorTxtInCell: (data) => _colorTextInCell(data.row_id, data.column_header, data.token_text, data.color_dict),
                 setFreeformContent: (data) => _setFreeformDoc(data.doc_name, data.new_content),
@@ -584,7 +575,7 @@ function MainApp(props) {
         }
     }, []);
 
-    function _setCellBackgroundColor(row_id, column_header, color) {
+    function _setCellBackgroundColor(row_id, column_header) {
         mDispatch({
             type: "set_cell_background",
             row_id: row_id,
@@ -739,7 +730,6 @@ function MainApp(props) {
             if (e != "canceled") {
                 errorDrawerFuncs.addFromError(`Error adding column`, e)
             }
-            return
         }
     }
 
@@ -1144,7 +1134,7 @@ function MainApp(props) {
                 <HorizontalPanes left_pane={table_pane}
                                  right_pane={tile_pane}
                                  show_handle={true}
-                                 scrollAdjustSelectors={[".bp5-table-quadrant-scroll-container", ".tile-div"]}
+                                 scrollAdjustSelectors={[".bp6-table-quadrant-scroll-container", ".tile-div"]}
                                  initial_width_fraction={mState.horizontal_fraction}
                                  dragIconSize={15}
                                  handleSplitUpdate={_handleHorizontalFractionChange}
@@ -1189,7 +1179,7 @@ function MainApp(props) {
                 />
             </MetadataContext.Provider>
             <ErrorBoundary>
-                <div className={`main-outer ${settingsContext.isDark() ? "bp5-dark" : "light-theme"}`}
+                <div className={`main-outer ${settingsContext.isDark() ? "bp6-dark" : "light-theme"}`}
                      ref={main_outer_ref}
                      style={{width: "100%", height: usable_height}}>
                     {mState.console_is_zoomed &&
@@ -1239,7 +1229,7 @@ function MainApp(props) {
                                            show_handle={true}
                                            initial_height_fraction={mState.height_fraction}
                                            dragIconSize={15}
-                                           scrollAdjustSelectors={[".bp5-table-quadrant-scroll-container", ".tile-div"]}
+                                           scrollAdjustSelectors={[".bp6-table-quadrant-scroll-container", ".tile-div"]}
                                            handleSplitUpdate={_handleVerticalSplitUpdate}
                                            handleResizeStart={_handleResizeStart}
                                            handleResizeEnd={_handleResizeEnd}
@@ -1275,9 +1265,7 @@ function main_main() {
         const domContainer = document.querySelector('#main-root');
         const root = createRoot(domContainer);
         root.render(
-            // <HotkeysProvider>
                 the_element
-            // </HotkeysProvider>
         )
     }
 

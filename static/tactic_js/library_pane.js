@@ -2313,7 +2313,7 @@ function LibraryPane(props) {
     right_pane: right_pane,
     right_pane_overflow: "auto",
     initial_width_fraction: .75,
-    scrollAdjustSelectors: [".bp5-table-quadrant-scroll-container"],
+    scrollAdjustSelectors: [".bp6-table-quadrant-scroll-container"],
     handleSplitUpdate: null,
     handleResizeStart: null,
     handleResizeEnd: null

@@ -235,10 +235,10 @@ function SearchableConsole(props, inner_ref) {
                               style={{marginLeft: 15, marginTop: 10}}>
                     <Button onClick={_setLogSince}
                             style={{height: 30}}
-                            minimal={true} small={true} icon="trash"/>
+                            variant="minimal" size="small" icon="trash"/>
                     <HTMLSelect onChange={_setMaxConsoleLines}
                                 large={false}
-                                minimal={true}
+                                variant="minimal"
                                 value={max_console_lines_ref.current}
                                 options={[100, 250, 500, 1000, 2000]}
                     />
@@ -266,9 +266,9 @@ function SearchableConsole(props, inner_ref) {
                 <form onSubmit={_commandSubmit} style={{position: "relative", bottom: 8, margin: 10}}>
 
                     <InputGroup type="text"
-                                className="bp5-monospace-text"
+                                className="bp6-monospace-text"
                                 onChange={_onInputChange}
-                                small={true}
+                                size="small"
                                 large={false}
                                 leftIcon="chevron-right"
                                 fill={true}

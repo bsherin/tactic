@@ -184,7 +184,7 @@ function AdministerHomeApp(props) {
     };
     let outer_class = "pane-holder";
     if (settingsContext.isDark()) {
-        outer_class = `${outer_class} bp5-dark`;
+        outer_class = `${outer_class} bp6-dark`;
     } else {
         outer_class = `${outer_class} light-theme`;
     }
@@ -201,7 +201,7 @@ function AdministerHomeApp(props) {
                     <Tabs id="the_container" style={{marginTop: 100}}
                              selectedTabId={selected_tab_id}
                              renderActiveTabPanelOnly={true}
-                             vertical={true} large={true} onChange={_handleTabChange}>
+                             vertical={true} size="large" onChange={_handleTabChange}>
                         <Tab id="containers-pane" panel={container_pane}>
                             <Tooltip content="Containers" position={Position.RIGHT}>
                                 <Icon icon="box" size={20} tabIndex={-1} color={getIconColor("collections-pane")}/>

@@ -35,11 +35,11 @@ $regular: #5c7080;
         }
     }
 
-    .bp5-button.bp5-intent-danger {
+    .bp6-button.bp6-intent-danger {
         //background-color: $light-gray5;
         //color: $danger !important;
         //
-        //.bp5-icon {
+        //.bp6-icon {
         //    color: $danger !important
         //}
     }
@@ -48,43 +48,43 @@ $regular: #5c7080;
         color: gray;
     }
 
-    .bp5-button.bp5-intent-warning {
+    .bp6-button.bp6-intent-warning {
         background-color: blueprint_variables.$light-gray5;
         color: $warning !important;
 
-        .bp5-icon {
+        .bp6-icon {
             color: $warning !important
         }
     }
 
-    .bp5-button.bp5-intent-success {
+    .bp6-button.bp6-intent-success {
         background-color: blueprint_variables.$light-gray5;
         color: $success !important;
 
-        .bp5-icon {
+        .bp6-icon {
             color: $success !important
         }
     }
 
-    .bp5-button.bp5-intent-primary {
+    .bp6-button.bp6-intent-primary {
         background-color: blueprint_variables.$light-gray5;
         color: $primary !important;
 
-        .bp5-icon {
+        .bp6-icon {
             color: $primary !important
         }
     }
 
-    .bp5-button.bp5-intent-regular {
+    .bp6-button.bp6-intent-regular {
         background-color: blueprint_variables.$light-gray5;
         color: $regular !important;
 
-        .bp5-icon {
+        .bp6-icon {
             color: $regular !important
         }
     }
 
-    .bp5-table-quadrant-scroll-container {
+    .bp6-table-quadrant-scroll-container {
         overflow: hidden;
 
         &:hover {
@@ -139,16 +139,16 @@ $regular: #5c7080;
         border-left: .4em solid transparent;
     }
 
-    .bp5-tabs.bp5-vertical {
+    .bp6-tabs.bp6-vertical {
         height: 100%
     }
 
-    .bp5-tabs.bp5-vertical > .bp5-tab-list .bp5-tab {
+    .bp6-tabs.bp6-vertical > .bp6-tab-list .bp6-tab {
         padding: 0 12px;
         margin: 0;
     }
 
-    .bp5-tab-list {
+    .bp6-tab-list {
         margin-top: unset;
         padding-top: 100px;
         padding-left: 2px;
@@ -156,38 +156,38 @@ $regular: #5c7080;
         background-color: themeable.$dark-medium;
     }
 
-    .bp5-tab-indicator {
+    .bp6-tab-indicator {
         background-color: #48aff09e;
         border-radius: 0;
         width: 46px
     }
 
-    .bp5-table-column-headers .bp5-table-header {
+    .bp6-table-column-headers .bp6-table-header {
         font-weight: 600
     }
 
-    .bp5-tab:focus {
+    .bp6-tab:focus {
         outline: none
     }
 
-    .bp5-large > .bp5-tab {
+    .bp6-large > .bp6-tab {
         //font-size: 16px;
         //margin-left: 30px;
         //margin-right: 0
     }
 
-    .bp5-tabs.bp5-vertical > .bp5-tab-panel {
+    .bp6-tabs.bp6-vertical > .bp6-tab-panel {
         padding-left: 0 !important;
         //background-color: #f5f8fa;
         //border-left: 1px solid #CED9E0;
         margin-left: 0px
     }
 
-    .bp5-checkbox .bp5-control-indicator:focus {
+    .bp6-checkbox .bp6-control-indicator:focus {
         outline: none
     }
 
-    .bp5-table-cell {
+    .bp6-table-cell {
         font-size: 13px;
         line-height: 27px
     }
@@ -247,7 +247,7 @@ $regular: #5c7080;
 }
 
 #repository_container  {
-    .bp5-tabs.bp5-vertical > .bp5-tab-list .bp5-tab-indicator-wrapper .bp5-tab-indicator {
+    .bp6-tabs.bp6-vertical > .bp6-tab-list .bp6-tab-indicator-wrapper .bp6-tab-indicator {
         background-color: #e648f09e
     }
 }
@@ -274,10 +274,10 @@ $regular: #5c7080;
     &:hover {
         overflow-y: auto;
     }
-    .bp5-tree-node-content {
+    .bp6-tree-node-content {
         font-size: 12px;
         height: 25px;
-        .bp5-tree-node-icon {
+        .bp6-tree-node-icon {
             svg {
                 width: 14px;
                 height: 14px
@@ -286,7 +286,7 @@ $regular: #5c7080;
     }
     .hidden-tag {
         opacity: .5;
-        .bp5-tree-node-label {
+        .bp6-tree-node-label {
             font-style: italic
         }
     }
