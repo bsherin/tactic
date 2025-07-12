@@ -4,3 +4,4 @@ zstandard
 pymongo
 kaleido
 paramiko
+tf-keras
