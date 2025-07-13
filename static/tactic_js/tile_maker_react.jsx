@@ -502,9 +502,10 @@ function CreatorApp(props) {
 
     function removeCmObjects(listRef) {
         return listRef.current.map((item) => {
-            delete item.cmObject;
-            return item}
-        );
+            const newItem = { ...item };  // shallow copy
+            delete newItem.cmObject;
+            return newItem;
+        });
     }
 
     function _getSaveDict() {
