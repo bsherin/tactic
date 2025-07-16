@@ -1,6 +1,5 @@
 @use "sass:meta";
-@use "blueprint_variables.scss";
-@use "bootstrap_reduced.scss";
+@use "blueprint_variables.scss"; @use "bootstrap_reduced.scss";
 @import "~@blueprintjs/core/lib/css/blueprint.css";
 @import "~@blueprintjs/icons/lib/css/blueprint-icons.css";
 @import "~@blueprintjs/select/lib/css/blueprint-select.css";
@@ -209,7 +208,6 @@ table {
     &:focus {
         outline: none
     }
-    //background-color: white !important
 }
 
 .bp6-button:focus {

@@ -2,325 +2,363 @@
 
 $table-border-color: #ddd;
 $table-border-thickness: 1px;
-$table-border-style: $table-border-thickness solid $table-border-color;
-$dark-table-border-style: $table-border-thickness none;
 
 $log-panel-font-color: #616161;
 $log-panel-font-color-dark: white;
 
-$darkest-bg: blueprint_variables.$dark-gray3;
-$dark-medium: blueprint_variables.$dark-gray4;
+$context-repository-highlight-color: blueprint_variables.$orange3;
+
+// For dark mode
+$dark-framing-bg: blueprint_variables.$dark-gray2;
+$dark-pane-bg: blueprint_variables.$dark-gray4;
+$darker-pane-bg: blueprint_variables.$dark-gray3;
+
+$dark-code-bg: blueprint_variables.$dark-gray2;
+
+$dark-main-table-heading: blueprint_variables.$dark-gray3;
+$dark-table-border-style: $table-border-thickness none;
+
+$dark-tile-panel-heading: blueprint_variables.$dark-gray3;
+$dark-tile-bg: blueprint_variables.$dark-gray4;
+
+$dark-console-exports-bg: blueprint_variables.$dark-gray3;
+$dark-console-exports-heading: blueprint_variables.$dark-gray4;
+
+$dark-account-pane-bg: blueprint_variables.$dark-gray4;
+
+$dark-text-panel-background: blueprint_variables.$dark-gray4;
+
 $dark-field-background: #1114184d;
+$dark-app-backdrop: blueprint_variables.$gray1;
+
+$context-highlight-color: blueprint_variables.$orange4;
+
+// for light mode
+$light-framing-bg: blueprint_variables.$light-gray5;
+$light-pane-bg: blueprint_variables.$white;
+$light-pane-darker-bg: blueprint_variables.$light-gray5;
+
+$light-code-bg: blueprint_variables.$light-gray2;
+
+$light-main-table-heading: blueprint_variables.$light-gray5;
+$table-border-style: $table-border-thickness solid $table-border-color;
+
+$light-tile-panel-heading: blueprint_variables.$light-gray5;
+$light-tile-bg: blueprint_variables.$white;
+
+$light-console-exports-bg: blueprint_variables.$white;
+$light-console-exports-heading: blueprint_variables.$light-gray4;
+$light-console-exports-body-bg: blueprint_variables.$white;
+
+$light-account-pane-bg: blueprint_variables.$light-gray4;
+$light-text-panel-background: blueprint_variables.$light-gray5;
+
+$light-app-backdrop: blueprint_variables.$light-gray1;
+
+$light-context-highlight-color: #383e47;
+$light-highlight-weight: 600;
 
 // Colors for the resource-specific icons
-.light-theme {
-  .lib-tab-button, .context-tab-button-content, .menu-bar, .combined-metadata, .all-pane {
-    .bp6-icon-cube {
-      color: blueprint_variables.$dark-gray4 ! important
+.bp6-dark, .light-theme {
+    .floating-button-group {
+        button {
+            background-color: blueprint_variables.$dark-gray5;
+        }
     }
 
-    .bp6-icon-folder-close {
-      color: blueprint_variables.$dark-gray4 ! important
-    }
+    .context-tab-button-content, .menu-bar, .combined-metadata, .all-pane {
+        .bp6-icon-cube {
+            color: blueprint_variables.$orange5 ! important
+        }
 
-    .bp6-icon-database, .bp6-icon-th, .bp6-icon-freeform, .bp6-icon-align-left {
-      color: blueprint_variables.$dark-gray4 !important;
-    }
+        .bp6-icon-folder-close {
+            color: blueprint_variables.$orange5 ! important
+        }
 
-    .bp6-icon-projects, .bp6-icon-console, .bp6-icon-globe-network {
-      color: blueprint_variables.$dark-gray4 !important;
-    }
+        .bp6-icon-database, .bp6-icon-th, .bp6-icon-freeform, .bp6-icon-align-left {
+            color: blueprint_variables.$blue5 !important;
+        }
 
-    .bp6-icon-application, .bp6-icon-timeline-line-chart, .bp6-icon-timeline-area-chart {
-      color: blueprint_variables.$dark-gray4 !important;
-    }
+        .bp6-icon-projects, .bp6-icon-console, .bp6-icon-globe-network {
+            color: blueprint_variables.$green5 !important;
+        }
 
-    .bp6-icon-list {
-      color: blueprint_variables.$dark-gray4 !important;
-    }
+        .bp6-icon-application, .bp6-icon-timeline-line-chart, .bp6-icon-timeline-area-chart {
+            color: blueprint_variables.$indigo5 !important;
+        }
 
-    .bp6-icon-code {
-      color: blueprint_variables.$dark-gray4 !important;
-    }
-  }
-}
+        .bp6-icon-list {
+            color: blueprint_variables.$rose5 !important;
+        }
 
-// Colors for the resource-specific icons
-.bp6-dark {
-  .floating-button-group {
-    button {
-      background-color: blueprint_variables.$dark-gray5;
+        .bp6-icon-code {
+            color: blueprint_variables.$lime5 !important;
+        }
     }
-  }
-  .lib-tab-button, .context-tab-button-content, .menu-bar, .combined-metadata, .all-pane {
-    .bp6-icon-cube {
-      color: blueprint_variables.$orange5 ! important
-    }
-
-    .bp6-icon-folder-close {
-      color: blueprint_variables.$orange5 ! important
-    }
-
-    .bp6-icon-database, .bp6-icon-th, .bp6-icon-freeform, .bp6-icon-align-left {
-      color: blueprint_variables.$blue5 !important;
-    }
-
-    .bp6-icon-projects, .bp6-icon-console, .bp6-icon-globe-network {
-      color: blueprint_variables.$green5 !important;
-    }
-
-    .bp6-icon-application, .bp6-icon-timeline-line-chart, .bp6-icon-timeline-area-chart {
-      color: blueprint_variables.$indigo5 !important;
-    }
-
-    .bp6-icon-list {
-      color: blueprint_variables.$rose5 !important;
-    }
-
-    .bp6-icon-code {
-      color: blueprint_variables.$lime5 !important;
-    }
-  }
-}
-
-.option-row-highlight {
-  color: blueprint_variables.$orange3 !important;
-  font-weight: bold !important
 }
 
 /// light theme
 
 .light-theme {
 
-  &.bp6-navbar {
-    box-shadow: none;
-}
-
-  &.main-outer {
-    background-color: blueprint_variables.$light-gray1
-  }
-
-  #main-panel {
-    .main-heading {
-      color: blueprint_variables.$gray1;
-      background-color: #f6f8fa;
-      border-bottom: 1px solid #10161a26;
-    }
-  }
-
-  #table-area {
-    border-right: $table-border-style;
-
-    mark {
-      background-color: #cebde6
-    }
-  }
-
-  &.menu-bar {
-    box-shadow: none;
-    border-top: 0.75px solid #c5cbd3;
-    border-bottom: 0.75px solid #c5cbd3;
-  }
-
-  &.resource-viewer-holder, &.merge-viewer-outer &.login-body {
-    background-color: white
-  }
-
-  &.account-settings {
-    background-color: white
-  }
-
-  &.pane-holder, &.library-pane-holder {
-    background-color: white
-  }
-
-  .combined-metadata, div.filepicker {
-    background-color: blueprint_variables.$light-gray5
-  }
-
-  .combined-metadata {
-    .bp6-input:disabled {
-      color: #5f6b7c !important;
-    }
-  }
-
-  .notes-field-markdown-output {
-    background: rgba(255, 255, 255, 0.7);
-    color: blueprint_variables.$gray1;
-    code {
-      background-color: blueprint_variables.$light-gray2;
-      color: blueprint_variables.$dark-gray4;
-      padding-left: 2px;
-      padding-right: 2px;
-    }
-    pre {
-      background-color: blueprint_variables.$light-gray2;
-      color: blueprint_variables.$dark-gray4;
-      padding: 4px;
-    }
-  }
-
-  .tactic-tag-button-list {
-    .bp6-tree-node-selected {
-      .bp6-tree-node-content {
-        background-color: white;
-        color: blueprint_variables.$blue3;
-        font-weight: 900
-      }
-
-      .bp6-icon {
-        background-color: white;
-        color: blueprint_variables.$blue3 !important;
-        font-weight: 900
-      }
-    }
-  }
-
-  .cm-matchhighlight {
-    background-color: lightgreen;
-  }
-
-  .cm-searchhighlight {
-    background-color: blueprint_variables.$light-gray2;
-  }
-
-  .cm-focussearchhighlight {
-    background-color: blueprint_variables.$orange5;
-  }
-
-  #creator-root, creator-root {
-    .light-theme {
-      .CodeMirror-gutters {
-        background-color: blueprint_variables.$light-gray5;
-      }
-    }
-  }
-
-  .searchable-console {
-    mark {
-      background-color: #cebde6
-    }
-  }
-
-  .tile-panel-heading {
-    color: blueprint_variables.$gray1;
-    background-color: #f6f8fa;
-    border-bottom: 1px solid #10161a26;
-  }
-
-  .tile-panel {
-    background-color: white !important;
-  }
-
-  .tile-form-divider {
-    .bp6-divider {
-      border-bottom: 2px solid #5c7080;
-      width: 50%;
-      min-width: 200px
-    }
-  }
-
-  .chat-module {
-    .bp6-card-list {
-      .bp6-card {
-        background-color: blueprint_variables.$light-gray5;
-      }
-    }
-  }
-
-  .chat-response, .text-panel-output {
-    background-color: blueprint_variables.$light-gray4;
-    code {
-      background-color: blueprint_variables.$light-gray2;
-      color: inherit;
-      padding-left: 2px;
-      padding-right: 2px;
-    }
-    pre {
-      padding: 10px;
-      background-color: blueprint_variables.$light-gray2;
-      overflow: scroll
-    }
-  }
-
-  #commands-pane {
-    .command-name {
-      font-weight: 900;
-      color: blueprint_variables.$dark-gray5
-    }
-  }
-
-  .divider-option {
-    color: blueprint_variables.$blue3 !important;
-    font-weight: bold !important;
-    background-color: blueprint_variables.$light-gray5 !important;
-  }
-
-
-  #console, #exports-panel {
-    background-color: white;
-  }
-
-  #console-search-form {
-    background-color: white
-  }
-
-  .console-text {
-    background-color: blueprint_variables.$light-gray5 !important;
-    border: 1px solid #c7c7c7 !important;
-  }
-
-  #console-heading, #exports-heading, #exports-footing {
-    background-color: blueprint_variables.$light-gray4 !important;
-  }
-
-  #exports-body {
-    background-color: white;
-  }
-
-  #selected-export {
-    color: blueprint_variables.$gray1;
-  }
-
-  .export-header-text {
-    color: #6c757d;
-  }
-
-  .log-panel-body {
-    color: $log-panel-font-color !important;
-  }
-
-  .cm-editor {
-      border: 1px solid #c7c7c7 !important;
+    .verticalIconBar {
+        bottom: 0;
+        background-color: $light-framing-bg;
     }
 
-  .log-panel {
-
-    .CodeMirror, .cm-editor {
-      border: 1px solid #c7c7c7 !important;
+    &.bp6-navbar {
+        box-shadow: none;
     }
 
-    .CodeMirror-lines {
-      background-color: blueprint_variables.$light-gray5 !important;
+    &.main-outer {
+        background-color: $light-app-backdrop
     }
 
-    .CodeMirror-gutters {
-      background-color: blueprint_variables.$light-gray5;
+    #context-container {
+        .context-tab-list {
+            > .bp6-tab-list {
+                background-color: $light-framing-bg;
+                color: white;
+                border-top: .75px solid #c5cbd3;
+            }
+        }
+
+        .context-tab-button-content {
+            color: blueprint_variables.$dark-gray1;
+            background-color: blueprint_variables.$gray5;
+
+            .bp6-icon {
+                color: blueprint_variables.$dark-gray4
+            }
+
+            .context-close-button:hover {
+                color: blueprint_variables.$red5;
+            }
+
+            &.selected-tab-button {
+                color: $light-context-highlight-color !important;
+                font-weight: $light-highlight-weight;
+
+                .repository-highlight {
+                    color: $context-repository-highlight-color
+                }
+
+                .context-close-button .bp6-icon {
+                    color: $light-context-highlight-color;
+
+                }
+            }
+        }
+
     }
-  }
 
-  .CodeMirror {
-    border: 1.5px solid #80808063;
-    border-radius: 3px;
-  }
+    #main-panel {
+        .main-heading {
+            color: blueprint_variables.$gray1;
+            background-color: #f6f8fa;
+            border-bottom: 1px solid #10161a26;
+        }
+    }
 
-  caption {
-    color: #6c757d;
-  }
+    #table-area {
+        border-right: $table-border-style;
 
-  .account-pane {
-    background-color: blueprint_variables.$light-gray4;
-  }
+        mark {
+            background-color: #cebde6
+        }
+    }
+
+    &.menu-bar {
+        box-shadow: none;
+        border-top: 0.75px solid #c5cbd3;
+        border-bottom: 0.75px solid #c5cbd3;
+    }
+
+    &.resource-viewer-holder, &.merge-viewer-outer &.login-body {
+        background-color: $light-pane-bg;
+    }
+
+    &.account-settings {
+        background-color: $light-pane-bg;
+    }
+
+    &.pane-holder, &.library-pane-holder {
+        background-color: $light-pane-bg;
+    }
+
+    .combined-metadata, div.filepicker {
+        background-color: $light-pane-darker-bg
+    }
+
+    .combined-metadata {
+        .bp6-input:disabled {
+            color: #5f6b7c !important;
+        }
+    }
+
+    .notes-field-markdown-output {
+        background: rgba(255, 255, 255, 0.7);
+        color: blueprint_variables.$gray1;
+
+        code {
+            background-color: blueprint_variables.$light-gray2;
+            color: blueprint_variables.$dark-gray4;
+            padding-left: 2px;
+            padding-right: 2px;
+        }
+
+        pre {
+            background-color: blueprint_variables.$light-gray2;
+            color: blueprint_variables.$dark-gray4;
+            padding: 4px;
+        }
+    }
+
+    .tactic-tag-button-list {
+        .bp6-tree-node-selected {
+            .bp6-tree-node-content {
+                background-color: $light-pane-bg;
+                color: blueprint_variables.$blue3;
+                font-weight: 900
+            }
+
+            .bp6-icon {
+                background-color: $light-pane-bg;
+                color: blueprint_variables.$blue3 !important;
+                font-weight: 900
+            }
+        }
+    }
+
+    .cm-matchhighlight {
+        background-color: lightgreen;
+    }
+
+    .cm-searchhighlight {
+        background-color: blueprint_variables.$light-gray2;
+    }
+
+    .cm-focussearchhighlight {
+        background-color: blueprint_variables.$orange5;
+    }
+
+    #creator-root {
+        .light-theme {
+            .CodeMirror-gutters {
+                background-color: $light-pane-darker-bg;
+            }
+        }
+    }
+
+    .searchable-console {
+        mark {
+            background-color: #cebde6
+        }
+    }
+
+    .tile-panel-heading {
+        color: blueprint_variables.$gray1;
+        background-color: $light-tile-panel-heading;
+        border-bottom: 1px solid #10161a26;
+    }
+
+    .tile-panel {
+        background-color: $light-tile-bg !important;
+    }
+
+    .tile-form-divider {
+        .bp6-divider {
+            border-bottom: 2px solid #5c7080;
+            width: 50%;
+            min-width: 200px
+        }
+    }
+
+    .chat-module {
+        .bp6-card-list {
+            .bp6-card {
+                background-color: $light-pane-darker-bg;
+            }
+        }
+    }
+
+    .chat-response, .text-panel-output {
+        background-color: $light-text-panel-background;
+
+        code {
+            background-color: $light-code-bg;
+            color: inherit;
+            padding-left: 2px;
+            padding-right: 2px;
+        }
+
+        pre {
+            padding: 10px;
+            background-color: $light-code-bg;
+            overflow: scroll
+        }
+    }
+
+
+    #console, #exports-panel {
+        background-color: $light-console-exports-bg;
+    }
+
+    #console-search-form {
+        background-color: $light-console-exports-bg
+    }
+
+    #console-heading, #exports-heading, #exports-footing {
+        background-color: $light-console-exports-heading !important;
+    }
+
+    #exports-body {
+        background-color: $light-console-exports-body-bg;
+    }
+
+    #selected-export {
+        color: blueprint_variables.$gray1;
+    }
+
+    .export-header-text {
+        color: #6c757d;
+    }
+
+    .log-panel-body {
+        color: $log-panel-font-color !important;
+    }
+
+    .cm-editor {
+        border: 1px solid #c7c7c7 !important;
+    }
+
+    .log-panel {
+
+        .CodeMirror, .cm-editor {
+            border: 1px solid #c7c7c7 !important;
+        }
+
+        .CodeMirror-lines {
+            background-color: $light-pane-darker-bg !important;
+        }
+
+        .CodeMirror-gutters {
+            background-color: $light-pane-darker-bg !important;
+        }
+    }
+
+    .CodeMirror {
+        border: 1.5px solid #80808063;
+        border-radius: 3px;
+    }
+
+    caption {
+        color: #6c757d;
+    }
+
+    .account-pane {
+        background-color: $light-account-pane-bg;
+    }
 
 }
 
@@ -328,233 +366,234 @@ $dark-field-background: #1114184d;
 
 .bp6-dark {
 
-  .verticalIconBar {
-    bottom: 0;
-    background-color: blueprint_variables.$dark-gray2;
-    border-left: 1px solid #fff3;
-  }
-
-  .iconBarButton {
-    .bp6-icon {
-      color: white !important
+    .verticalIconBar {
+        bottom: 0;
+        background-color: $dark-framing-bg;
+        border-left: 1px solid #fff3;
     }
-  }
 
 
-  &.main-outer {
-    background-color: blueprint_variables.$gray1
-  }
-
-  #main-panel {
-    .main-heading {
-      background-color: blueprint_variables.$dark-gray3;
-      border-bottom: 1px solid #10161a26;
+    &.main-outer {
+        background-color: $dark-app-backdrop;
     }
-  }
 
-  #table-area {
-    border-right: $dark-table-border-style;
+    #context-container {
+        .context-tab-list {
+            > .bp6-tab-list {
+                background-color: $dark-framing-bg;
+                color: white;
+                border-right: 1px solid blueprint_variables.$light-gray4;
+            }
+        }
 
-    mark {
-      background-color: #cebde6
+        .context-tab-button-content {
+            color: white;
+            background-color: $light-context-highlight-color;
+
+            .context-close-button:hover {
+                color: blueprint_variables.$red5;
+            }
+
+            &.selected-tab-button {
+                color: $context-highlight-color !important;
+
+                .repository-highlight {
+                    color: $context-repository-highlight-color
+                }
+
+                .context-close-button .bp6-icon {
+                    color: $context-highlight-color;
+
+                }
+            }
+        }
     }
-  }
 
-  &.resource-viewer-holder, &.merge-viewer-outer, &.login-body {
-    background-color: $darkest-bg
-  }
 
-  &.menu-bar {
-    box-shadow: inset 0 0 0 1px #ffffff33, 0 1px 1px 0 #11141866;
-  }
-
-  &.account-settings {
-    background-color: $darkest-bg
-  }
-
-  &.pane-holder {
-    background-color: $dark-medium
-  }
-
-  &.library-pane-holder {
-    background-color: $darkest-bg
-  }
-
-  .combined-metadata, div.filepicker, #options-pane, #exports-pane {
-    background-color: $darkest-bg;
-  }
-
-  div.filepicker {
-    background-color: $dark-medium
-  }
-
-  .notes-field-markdown-output {
-    background-color: $dark-field-background;
-    color: blueprint_variables.$light-gray5;
-
-    code {
-      background-color: blueprint_variables.$dark-gray2;
-      color: blueprint_variables.$light-gray1;
-      padding-left: 2px;
-      padding-right: 2px;
+    #main-panel {
+        .main-heading {
+            background-color: $dark-main-table-heading;
+            border-bottom: 1px solid #10161a26;
+        }
     }
-    pre {
-      background-color: blueprint_variables.$dark-gray2;
-      color: blueprint_variables.$light-gray1;
-      padding: 4px;
+
+    #table-area {
+        border-right: $dark-table-border-style;
+
+        mark {
+            background-color: #cebde6
+        }
     }
-  }
 
-  .tactic-tag-button-list {
-    .bp6-tree-node-selected {
-      .bp6-tree-node-content {
-        background-color: $darkest-bg;
-        color: blueprint_variables.$blue5;
-        font-weight: 900
-      }
-
-      .bp6-icon {
-        background-color: $darkest-bg;
-        color: blueprint_variables.$blue5 !important;
-        font-weight: 900
-      }
+    &.resource-viewer-holder, &.merge-viewer-outer, &.login-body {
+        background-color: $darker-pane-bg
     }
-  }
 
-  .log-panel-body {
-    color: $log-panel-font-color-dark !important;
-  }
-
-  .cm-matchhighlight {
-    background-color: lightgreen;
-    color: black !important
-  }
-
-  .cm-searchhighlight {
-    background-color: #6aaed8;
-    color: black !important
-  }
-
-  .cm-focussearchhighlight {
-    background-color: yellow;
-    color: black !important;
-  }
-
-  .CodeMirror-merge-gap {
-    background: blueprint_variables.$gray1;
-  }
-
-  .CodeMirror-merge-r-chunk {
-    background: $darkest-bg;
-  }
-
-  .CodeMirror-merge-r-connect {
-    fill: $darkest-bg;
-  }
-
-  .searchable-console {
-    mark {
-      background-color: #cebde6
+    &.menu-bar {
+        box-shadow: inset 0 0 0 1px #ffffff33, 0 1px 1px 0 #11141866;
     }
-  }
 
-  .tile-panel-heading {
-    background-color: blueprint_variables.$dark-gray3;
-    border-bottom: 1px solid #10161a26;
-    margin-right: 2px;
-    margin-left: 2px;
-  }
-
-  .tile-panel {
-    background-color: $dark-medium !important;
-  }
-
-  .tile-form-divider {
-    .bp6-divider {
-      border-color: white;
-      width: 50%;
-      min-width: 200px
+    &.account-settings {
+        background-color: $darker-pane-bg
     }
-  }
 
-  .chat-response, .text-panel-output {
-    background-color: blueprint_variables.$dark-gray4;
-    code {
-      background-color: blueprint_variables.$dark-gray2;
-      color: inherit;
-      padding-left: 2px;
-      padding-right: 2px;
+    &.pane-holder {
+        background-color: $dark-pane-bg
     }
-    pre{
-      padding: 10px;
-      background-color: blueprint_variables.$dark-gray2;
-      overflow: scroll
+
+    &.library-pane-holder {
+        background-color: $darker-pane-bg
     }
-  }
 
-  #commands-pane {
-    .command-name {
-      font-weight: bold;
-      color: blueprint_variables.$gray3
+    .combined-metadata, div.filepicker, #options-pane, #exports-pane {
+        background-color: $darker-pane-bg;
     }
-  }
 
-  .divider-option {
-    color: blueprint_variables.$blue5 !important;
-    font-weight: bold !important;
-    background-color: blueprint_variables.$dark-gray4 !important;
-  }
+    div.filepicker {
+        background-color: $dark-pane-bg;
+    }
 
-  #console, #exports {
-    background-color: $darkest-bg;
-    margin-left: 2px;
-    margin-right: 2px;
-  }
+    .notes-field-markdown-output {
+        background-color: $dark-field-background;
+        color: blueprint_variables.$light-gray5;
 
-  #console-search-form, #console-panel {
-    background-color: $darkest-bg;
-  }
+        code {
+            background-color: $dark-code-bg;
+            color: $dark-app-backdrop;
+            padding-left: 2px;
+            padding-right: 2px;
+        }
 
-  #console-heading, #exports-heading, #exports-footing {
-    background-color: $dark-medium !important;
-    margin-left: 2px;
-    margin-right: 2px;
-  }
+        pre {
+            background-color: $dark-code-bg;
+            color: $dark-app-backdrop;
+            padding: 4px;
+        }
+    }
 
-  .export-header-text {
-    color: blueprint_variables.$gray5;
-  }
+    .tactic-tag-button-list {
+        .bp6-tree-node-selected {
+            .bp6-tree-node-content {
+                background-color: $darker-pane-bg;
+                color: blueprint_variables.$blue5;
+                font-weight: 900
+            }
 
-  .console-text {
-    border: 1px solid #c7c7c7 !important;
-  }
+            .bp6-icon {
+                background-color: $dark-pane-bg;
+                color: blueprint_variables.$blue5 !important;
+                font-weight: 900
+            }
+        }
+    }
 
-  caption {
-    color: blueprint_variables.$light-gray1;
-  }
+    .cm-matchhighlight {
+        background-color: lightgreen;
+        color: black !important
+    }
 
-  .account-pane {
-    background-color: $dark-medium;
-  }
+    .cm-searchhighlight {
+        background-color: #6aaed8;
+        color: black !important
+    }
+
+    .cm-focussearchhighlight {
+        background-color: yellow;
+        color: black !important;
+    }
+
+    .CodeMirror-merge-gap {
+        background: blueprint_variables.$gray1;
+    }
+
+    .CodeMirror-merge-r-chunk {
+        background: $darker-pane-bg;
+    }
+
+    .CodeMirror-merge-r-connect {
+        fill: $darker-pane-bg;
+    }
+
+    .searchable-console {
+        mark {
+            background-color: #cebde6
+        }
+    }
+
+    .tile-panel-heading {
+        background-color: $dark-tile-panel-heading;
+        border-bottom: 1px solid #10161a26;
+        margin-right: 2px;
+        margin-left: 2px;
+    }
+
+    .tile-panel {
+        background-color: $dark-tile-bg;
+    }
+
+    .tile-form-divider {
+        .bp6-divider {
+            border-color: white;
+            width: 50%;
+            min-width: 200px
+        }
+    }
+
+    .chat-response, .text-panel-output {
+        background-color: $dark-text-panel-background;
+
+        code {
+            background-color: $dark-code-bg;
+            color: inherit;
+            padding-left: 2px;
+            padding-right: 2px;
+        }
+
+        pre {
+            padding: 10px;
+            background-color: $dark-code-bg;
+            overflow: scroll
+        }
+    }
+
+    #console, #exports-panel {
+        background-color: $dark-console-exports-bg;
+        margin-left: 2px;
+        margin-right: 2px;
+    }
+
+    #console-search-form, #console-panel {
+        background-color: $dark-console-exports-bg;
+    }
+
+    #console-heading, #exports-heading, #exports-footing {
+        background-color: $dark-console-exports-heading !important;
+        margin-left: 2px;
+        margin-right: 2px;
+    }
+
+    caption {
+        color: blueprint_variables.$light-gray1;
+    }
+
+    .account-pane {
+        background-color: $dark-account-pane-bg;
+    }
 }
 
 
 .status-holder {
-  &.light-theme {
-    background-color: transparent;
-  }
-
-  &.bp6-dark {
-    background-color: transparent;
-
-    &.light-dark {
-      background-color: blueprint_variables.$gray1;
+    &.light-theme {
+        background-color: transparent;
     }
-  }
+
+    &.bp6-dark {
+        background-color: transparent;
+    }
 }
 
 #main-root {
-  .status-holder.light-theme {
-    background-color: blueprint_variables.$light-gray1;
-  }
+    .status-holder.light-theme {
+        background-color: blueprint_variables.$light-gray1;
+    }
 }

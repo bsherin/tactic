@@ -2219,7 +2219,7 @@ function LibraryPane(props) {
   var res_type = pStateRef.current.select_state.selected_resource.res_type;
   var res_name = pStateRef.current.select_state.selected_resource.name;
   var right_pane = /*#__PURE__*/_react["default"].createElement(_blueprint_mdata_fields.CombinedMetadata, {
-    key: "key=".concat(res_type, "-").concat(res_name, "-metadata"),
+    key: "combined-metadata-library",
     elevation: 0,
     tsocket: props.tsocket,
     res_name: res_name,

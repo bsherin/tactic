@@ -9,166 +9,18 @@
   }
 }
 
-$context-highlight-color: blueprint_variables.$orange4;
-$context-repository-highlight-color: blueprint_variables.$orange3;
+#context-container {
+  .context-tab-button-content {
+    opacity: .5;
+
+    &.selected-tab-button {
+      opacity: 1;
+    }
+  }
+}
+
 $light-context-highlight-color: #383e47;
 $light-highlight-weight: 600;
-
-
-.bp6-dark {
-  #context-container {
-    .context-tab-list {
-
-      > .bp6-tab-list {
-        background-color: blueprint_variables.$dark-gray2;
-        color: white;
-        border-right: 1px solid blueprint_variables.$light-gray4;
-      }
-
-      .lib-tab-button {
-        color: white;
-
-        .bp6-icon {
-          color: blueprint_variables.$gray4
-        }
-      }
-
-      .lib-tab-button.selected-lib-tab-button {
-        color: white;
-      }
-
-      .lib-tab-button.selected-rep-tab-button {
-        color: white
-      }
-    }
-
-    .context-pane-closed .context-tab-button-content {
-      opacity: 0 !important;
-    }
-
-    .context-tab-button-content {
-      color: white;
-      opacity: .5;
-
-      .context-library-title {
-        color: white;
-        font-size: 20px;
-        font-weight: bold;
-      }
-
-      .bp6-icon {
-        color: blueprint_variables.$gray4
-      }
-
-      .show-on-hover {
-        opacity: 0;
-      }
-
-      &:hover {
-        .show-on-hover {
-          opacity: 100;
-        }
-      }
-
-
-      .context-close-button:hover {
-        color: blueprint_variables.$red5;
-      }
-
-      &.selected-tab-button {
-        opacity: 1;
-        color: $context-highlight-color !important;
-        //border-top: 1px solid $context-highlight-color;
-        //border-bottom: 1px solid $context-highlight-color;
-
-        .repository-highlight {
-          color: $context-repository-highlight-color
-        }
-
-        .context-close-button .bp6-icon {
-          color: $context-highlight-color;
-
-        }
-      }
-    }
-
-  }
-}
-
-.light-theme {
-  #context-container {
-    .context-tab-list {
-
-      > .bp6-tab-list {
-        background-color: blueprint_variables.$light-gray5;
-        color: white;
-        //-webkit-box-shadow: 0 0 0 1px rgba(17, 20, 24, 0.1), 0 1px 1px rgba(17, 20, 24, 0.2), 0 2px 6px rgba(17, 20, 24, 0.2);
-        //box-shadow: 0 0 0 1px rgba(17, 20, 24, 0.1), 0 1px 1px rgba(17, 20, 24, 0.2), 0 2px 6px rgba(17, 20, 24, 0.2);
-        // border-right: .75px solid #c5cbd3;
-        border-top: .75px solid #c5cbd3;
-      }
-
-      .lib-tab-button {
-        color: blueprint_variables.$dark-gray1;
-
-        .bp6-icon {
-          color: blueprint_variables.$dark-gray4
-        }
-      }
-
-      .lib-tab-button.selected-lib-tab-button {
-        color: blueprint_variables.$pt-text-color;
-        font-weight: $light-highlight-weight;
-      }
-
-      .lib-tab-button.selected-rep-tab-button {
-        color: blueprint_variables.$pt-text-color;
-        font-weight: $light-highlight-weight;
-      }
-    }
-
-    .context-pane-closed .context-tab-button-content {
-      opacity: 0 !important;
-    }
-
-    .context-tab-button-content {
-      color: blueprint_variables.$dark-gray1;
-      opacity: .5;
-
-      .context-library-title {
-        color: blueprint_variables.$dark-gray1;
-        font-size: 20px;
-        font-weight: bold;
-      }
-
-      .bp6-icon {
-        color: blueprint_variables.$dark-gray4
-      }
-
-      .context-close-button:hover {
-        color: blueprint_variables.$red5;
-      }
-
-      &.selected-tab-button {
-        opacity: 1;
-        color: $light-context-highlight-color !important;
-        //border-top: 2px solid $gray1;
-        //border-bottom: 2px solid $gray1;
-        font-weight: $light-highlight-weight;
-
-        .repository-highlight {
-          color: $context-repository-highlight-color
-        }
-
-        .context-close-button .bp6-icon {
-          color: $light-context-highlight-color;
-
-        }
-      }
-    }
-
-  }
-}
 
 #context-container {
   height: 100%;
@@ -190,7 +42,7 @@ $light-highlight-weight: 600;
 
     [data-tab-id="library"] {
       margin-bottom: 10px;
-      padding: 0
+      //padding: 0
     }
 
     &.unified {
@@ -247,9 +99,29 @@ $light-highlight-weight: 600;
       }
     }
 
+    .context-tab-button-content-divider {
+      width: 100%;
+      margin-top: 10px;
+      margin-bottom: 10px;
+    }
+
     .context-tab-button-content {
-      padding-left: 5px;
+      padding-left: 8px;
       font-size: 16px;
+      padding-top: 2px;
+      padding-bottom: 2px;
+      border-radius: 8px;
+      margin-bottom: 2px;
+
+      .show-on-hover {
+        opacity: 0;
+      }
+
+      &:hover {
+        .show-on-hover {
+          opacity: 100;
+        }
+      }
 
       &.hovering {
         margin-top: 40px;

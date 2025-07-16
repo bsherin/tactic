@@ -2524,7 +2524,7 @@ function ConsoleCodeItem(props) {
                                         </div>
                                     }
                                 </div>
-                                < div className='log-code-output' dangerouslySetInnerHTML={output_dict}/>
+                                < div className='log-code-output' style={{maxWidth: uwidth - 50}} dangerouslySetInnerHTML={output_dict}/>
                             </div>
 
                         </Fragment>

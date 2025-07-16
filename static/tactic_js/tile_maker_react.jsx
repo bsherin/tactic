@@ -76,6 +76,7 @@ function CreatorApp(props) {
     const [, metadataDispatch, metadataRef] = useMetadata(props.mdata);
 
     const undoStackRef = useRef([]);
+    const otherCmObjects = useRef([]);
 
     const optionDispatch = makeUndoableDispatch(optionDispatchBase, option_list_ref, "Options", undoStackRef);
     const exportDispatch = makeUndoableDispatch(exportDispatchBase, export_list_ref, "Exports", undoStackRef);
@@ -168,9 +169,28 @@ function CreatorApp(props) {
         window.addEventListener("unload", sendRemove);
         statusFuncs.stopSpinner();
         return (() => {
+            for (let listRef of [standardListRef, umListRef, hmListRef]) {
+                destroyCmObjects(listRef);
+            }
+            for (let cm of otherCmObjects.current) {
+                if (cm) {
+                    cm.destroy();
+                }
+            }
+            otherCmObjects.current = [];
+
             delete_my_container();
             window.removeEventListener("unload", sendRemove);
             errorDrawerFuncs.setGoToLineNumber(null);
+            visibleTabListRef.current = null;
+            methodsToOpenRef.current = null;
+            if (props.controlled) {
+                props.registerDirtyMethod(null);
+            }
+            metadataRef.current = null;
+            undoStackRef.current = [];
+            searchStateRef.current = [];
+            extraSelfCompletionsRef.current = [];
         })
     }, []);
 
@@ -250,6 +270,10 @@ function CreatorApp(props) {
 
     function _cProp(pname) {
         return props.controlled ? props[pname] : cPropGetters()[pname]
+    }
+
+    function registerCmObject(cmObject) {
+        otherCmObjects.current.push(cmObject);
     }
 
     function menu_specs() {
@@ -508,6 +532,16 @@ function CreatorApp(props) {
         });
     }
 
+    function destroyCmObjects(listRef) {
+        for (let item of listRef.current) {
+            if (item.cmObject) {
+                item.cmObject.destroy();
+                item.cmObject = null;
+            }
+        }
+        listRef.current = [];
+    }
+
     function _getSaveDict() {
         let mdata = {...metadataRef.current};
         delete mdata.allTags;
@@ -751,6 +785,7 @@ function CreatorApp(props) {
                                cmDispatch={standardDispatch}
                                cmObjectRef={null}
                                name={st["name"]}
+                               registerCmObject={registerCmObject}
                                identifier={st["identifier"]}
                                extraKeys={_extraKeys}
                                saveAndCheckpoint={_saveAndCheckpoint}
@@ -778,6 +813,7 @@ function CreatorApp(props) {
                            cmObjectRef={null}
                            name={um["name"]}
                            no_height={false}
+                           registerCmObject={registerCmObject}
                            identifier={um["identifier"]}
                            extraKeys={_extraKeys}
                            saveAndCheckpoint={_saveAndCheckpoint}
@@ -802,6 +838,7 @@ function CreatorApp(props) {
                            argString={hm["argString"]}
                            cmDispatch={hmDispatch}
                            cmObjectRef={null}
+                           registerCmObject={registerCmObject}
                            name={hm["name"]}
                            no_height={false}
                            identifier={hm["identifier"]}
@@ -856,6 +893,7 @@ function CreatorApp(props) {
         icon: "properties",
         editable: false,
         dispatch: ()=>{},
+        start_expanded: false,
         sub_items: [
             {
                 identifier: "metadata",
@@ -867,14 +905,21 @@ function CreatorApp(props) {
         ]
     },
         {title: "OPTIONS", visible: true, editable: true, icon: "select", icon_dict: option_icons, icon_field: "type",
+            start_expanded: false,
             sub_items: option_list_ref.current, dispatch: optionDispatch},
-        {title: "EXPORTS", visible: true,editable: true, icon: "select", sub_items: export_list_ref.current, dispatch: exportDispatch},
+        {title: "EXPORTS", visible: true, editable: true, icon: "select",
+            start_expanded: false,
+            sub_items: export_list_ref.current, dispatch: exportDispatch},
         {title: "SAVE_ATTRS", visible: !metadataRef.current.couple_save_attrs_and_exports,
+            start_expanded: false,
             editable: true, icon: "select", sub_items: save_list_ref.current, dispatch: saveDispatch},
         {title: "STANDARD METHODS", visible: true, editable: false, icon: "code", icon_dict: standard_method_icons, icon_field: "name",
+            start_expanded: true,
             sub_items: standardListRef.current, dispatch: standardDispatch},
-        {title: "USER METHODS", visible: true, editable: true, icon: "code", sub_items: umListRef.current, dispatch: umDispatch},
+        {title: "USER METHODS", visible: true, editable: true, icon: "code",
+            start_expanded: false, sub_items: umListRef.current, dispatch: umDispatch},
         {title: "HANDLER METHODS", visible: true, editable: true, icon: "code", sub_items: hmListRef.current,
+            start_expanded: false,
             createFromList: true, choiceDict: props.all_handler_methods, dispatch: hmDispatch},
     ]
 
@@ -894,6 +939,7 @@ function CreatorApp(props) {
     let mdata_panel = (
         <MetadataModule res_name={_cProp("resource_name")}
                         res_type="tile"
+                        registerCmObject={registerCmObject}
                         metadataRef={metadataRef}
                         mdata={metadataRef.current}
                         metadataDispatch={metadataDispatch}
@@ -903,84 +949,69 @@ function CreatorApp(props) {
     );
 
     let right_pane_list = [];
-
-    if (visibleTabListRef.current.includes("metadata")) {
+    right_pane_list.push(
+        <PaneElement identifier="metadata" key="metadata" dispatch={metadataDispatch} pushCallback={pushCallback}
+                     visible={visibleTabListRef.current.includes("metadata")}
+                     el={metadataRef.current} pane_height={metadataRef.current.pane_height}>
+            {mdata_panel}
+        </PaneElement>
+    )
+    for (let key of Object.keys(optionElemDict)) {
+        const item = getListItemFromidentifier(key, option_list_ref.current);
         right_pane_list.push(
-            <PaneElement identifier="metadata" key="metadata" dispatch={metadataDispatch} pushCallback={pushCallback}
-                         el={metadataRef.current} pane_height={metadataRef.current.pane_height}>
-                {mdata_panel}
+            <PaneElement identifier={key} key={key} el={item} pane_height={item.pane_height}
+                         className="form-pane" visible={visibleTabListRef.current.includes(key)}
+                         allowDelete={true} dispatch={optionDispatch} pushCallback={pushCallback}>
+                {optionElemDict[key]?.()}
             </PaneElement>
         )
     }
-    for (let key of Object.keys(optionElemDict)) {
-        if (visibleTabListRef.current.includes(key)) {
-            const item = getListItemFromidentifier(key, option_list_ref.current);
-            right_pane_list.push(
-                <PaneElement identifier={key} key={key} el={item} pane_height={item.pane_height}
-                             className="form-pane"
-                             allowDelete={true} dispatch={optionDispatch} pushCallback={pushCallback}>
-                    {optionElemDict[key]?.()}
-                </PaneElement>
-            )
-        }
-    }
     for (let key of Object.keys(exportElemDict)) {
-        if (visibleTabListRef.current.includes(key)) {
-            const item = getListItemFromidentifier(key, export_list_ref.current);
-            right_pane_list.push(
+        const item = getListItemFromidentifier(key, export_list_ref.current);
+        right_pane_list.push(
             <PaneElement identifier={key} key={key} el={item} pane_height={item.pane_height}
-                         className="form-pane"
+                         className="form-pane" visible={visibleTabListRef.current.includes(key)}
                          allowDelete={true} dispatch={exportDispatch} pushCallback={pushCallback}>
                 {exportElemDict[key]?.()}
             </PaneElement>
-            )
-        }
+        )
     }
     for (let key of Object.keys(saveElemDict)) {
-        if (visibleTabListRef.current.includes(key)) {
-            const item = getListItemFromidentifier(key, save_list_ref.current);
-            right_pane_list.push(
-                <PaneElement key={key} identifier={key} el={item} pane_height={item.pane_height}
-                              className="form-pane"
-                             allowDelete={true} dispatch={saveDispatch} pushCallback={pushCallback}>
-                    <h6>Save Attribute: <b>{item.name}</b></h6>
-                    {saveElemDict[key]?.()}
-                </PaneElement>
-            )
-        }
-
+        const item = getListItemFromidentifier(key, save_list_ref.current);
+        right_pane_list.push(
+            <PaneElement key={key} identifier={key} el={item} pane_height={item.pane_height}
+                          className="form-pane" visible={visibleTabListRef.current.includes(key)}
+                         allowDelete={true} dispatch={saveDispatch} pushCallback={pushCallback}>
+                {saveElemDict[key]?.()}
+            </PaneElement>
+        )
     }
     for (let item of standardListRef.current) {
-        if (visibleTabListRef.current.includes(item["identifier"])) {
-            right_pane_list.push(
-                <PaneElement key={item["identifier"]} el={item} dispatch={standardDispatch} pane_height={item["pane_height"]}
-                             icon={standard_method_icons[item["name"]]}
-                             identifier={item["identifier"]} pushCallback={pushCallback}>
-                    {codeElemDict[item["identifier"]]?.()}
-                </PaneElement>
-            )
-        }
+        right_pane_list.push(
+            <PaneElement key={item["identifier"]} el={item} dispatch={standardDispatch} pane_height={item["pane_height"]}
+                         icon={standard_method_icons[item["name"]]} visible={visibleTabListRef.current.includes(item["identifier"])}
+                         identifier={item["identifier"]} pushCallback={pushCallback}>
+                {codeElemDict[item["identifier"]]?.()}
+            </PaneElement>
+        )
     }
     for (let item of hmListRef.current) {
-        if (visibleTabListRef.current.includes(item["identifier"])) {
-            right_pane_list.push(
-                <PaneElement key={item["identifier"]} el={item} dispatch={hmDispatch} pane_height={item["pane_height"]}
-                             allowDelete={true}
-                             identifier={item["identifier"]} pushCallback={pushCallback}>
-                    {codeElemDict[item["identifier"]]?.()}
-                </PaneElement>
-            )
-        }
+        right_pane_list.push(
+            <PaneElement key={item["identifier"]} el={item} dispatch={hmDispatch} pane_height={item["pane_height"]}
+                         allowDelete={true} visible={visibleTabListRef.current.includes(item["identifier"])}
+                         identifier={item["identifier"]} pushCallback={pushCallback}>
+                {codeElemDict[item["identifier"]]?.()}
+            </PaneElement>
+        )
     }
     for (let item of umListRef.current) {
-        if (visibleTabListRef.current.includes(item["identifier"])) {
-            right_pane_list.push(
-                <PaneElement key={item["identifier"]} el={item} pane_height={item["pane_height"]}
-                             identifier={item["identifier"]}  allowDelete={true} dispatch={umDispatch} pushCallback={pushCallback}>
-                    {codeElemDict[item["identifier"]]?.()}
-                </PaneElement>
-            )
-        }
+        right_pane_list.push(
+            <PaneElement key={item["identifier"]} el={item} pane_height={item["pane_height"]}
+                         visible={visibleTabListRef.current.includes(item["identifier"])}
+                         identifier={item["identifier"]}  allowDelete={true} dispatch={umDispatch} pushCallback={pushCallback}>
+                {codeElemDict[item["identifier"]]?.()}
+            </PaneElement>
+        )
     }
 
     let right_pane = (

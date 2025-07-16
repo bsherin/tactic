@@ -27,7 +27,7 @@ import {
 } from '@dnd-kit/sortable';
 import {CSS} from '@dnd-kit/utilities';
 
-
+import { CSSTransition } from 'react-transition-group';
 import {ErrorBoundary} from "./error_boundary";
 
 import {BpSelectAdvanced} from "./blueprint_mdata_fields";
@@ -49,7 +49,7 @@ const INITIAL_CODE_PANE_HEIGHT = 330
 const INITIAL_FORM_PANE_HEIGHT = 125;
 const INDENT = 25;
 const SECTION_TOP_MARGIN = 0;
-const SECTION_BOTTOM_MARGIN = 30;
+const SECTION_BOTTOM_MARGIN = 0;
 
 function textRowsToArray(tstring) {
     let slist = [];
@@ -115,7 +115,7 @@ function correctType(type, val, error_flag = "__ERROR__") {
 }
 
 
-let draghandle_position_dict = {position: "absolute", bottom: 2, right: 1};
+let draghandle_position_dict = {position: "absolute", bottom: 2, left: 0};
 
 function SimplePaneTitle(props) {
     props = {
@@ -134,6 +134,20 @@ function SimplePaneTitle(props) {
     )
 }
 
+function AnimatedItem({ visible, children }) {
+  return (
+    <CSSTransition
+      in={visible}
+      timeout={300}
+      classNames="fade"
+      unmountOnExit
+      mountOnEnter
+    >
+      <div className="fade-container">{children}</div>
+    </CSSTransition>
+  );
+}
+
 function PaneElement(props) {
     props = {
         identifier: null,
@@ -145,6 +159,7 @@ function PaneElement(props) {
         pane_height: 0,
         className: "",
         icon: null,
+        visible: false,
         ...props,
     }
     const top_ref = useRef(null);
@@ -199,8 +214,9 @@ function PaneElement(props) {
     }
 
     return (
+        <AnimatedItem visible={props.visible}>
         <Card ref={top_ref} key={props.identifier} elevation={0} className={`maker-pane ${props.className}`}
-              style={{height: current_height, position: "relative"}}>
+              style={{height: current_height, position: "relative", paddingBottom: 10}}>
             <Button variant="minimal" size="small" icon="cross"
                     style={{padding: 0, position: "absolute", left: 10, top: 10, zIndex: 20}}
                     onClick={() => {
@@ -225,11 +241,13 @@ function PaneElement(props) {
             </SizeProvider>
             <DragHandle position_dict={draghandle_position_dict}
                         iconSize={20}
+                        useThinBar={true}
                         dragStart={_startResize}
                         onDrag={_onResize}
                         dragEnd={_stopResize}
-                        direction="both"/>
+                        direction="y"/>
         </Card>
+        </AnimatedItem>
     )
 }
 
@@ -242,6 +260,7 @@ function MetadataModule(props) {
         readOnly: false,
         res_name: null,
         res_type: "tile",
+        registerCmObject: null,
         metadataDispatch: () => {
         },
         ...props
@@ -342,7 +361,7 @@ function MetadataModule(props) {
 
     let outer_style = {
         width: "100%",
-        height: usable_height,
+        height: "100%",
         overflow: "auto",
         paddingTop: 15
     };
@@ -383,6 +402,7 @@ function MetadataModule(props) {
                                     res_name={props.res_name}
                                     res_type={props.res_type}
                                     readOnly={props.readOnly}
+                                    setCMObject={props.registerCmObject}
                                     handleChange={handleNotesChange}
                                     show_markdown_initial={true}
                                     handleBlur={null}
@@ -616,6 +636,7 @@ function SignatureHeader(props) {
         handleArgChange: () => {
         },
         allowSignatureChange: false,
+        registerCmObject: null,
         ...props
     }
 
@@ -712,6 +733,7 @@ function SignatureHeader(props) {
                                   show_line_numbers={false}
                                   no_height={true}
                                   controlled={true}
+                                  setCMObject={props.registerCmObject}
                                   getEditableRanges={getEditableRanges}
                                   restrict_edits_to_range={props.allowSignatureChange}
                                   className="creator-code-header"
@@ -722,6 +744,7 @@ function SignatureHeader(props) {
                                   show_line_numbers={false}
                                   no_height={true}
                                   controlled={true}
+                                  setCMObject={props.registerCmObject}
                                   getEditableRanges={getEditableRanges}
                                   restrict_edits_to_range={props.allowSignatureChange}
                                   className="creator-code-header"
@@ -755,6 +778,7 @@ function CmElement(props) {
         show_search: true,
         no_height: false,
         allowSignatureChange: true,
+        registerCmObject: null,
         ...props
     };
 
@@ -802,6 +826,7 @@ function CmElement(props) {
                 <SignatureHeader name={props.name}
                                  argString={props.argString}
                                  mode={props.cmState.mode}
+                                 registerCmObject={props.registerCmObject}
                                  allowSignatureChange={props.allowSignatureChange}
                                  handleNameChange={handleNameChange}
                                  handleArgChange={handleArgChange}/>
@@ -815,7 +840,7 @@ function CmElement(props) {
                                   mode={props.cmState.mode}
                                   extraKeys={props.extraKeys()}
                                   handleChange={handleCodeChange}
-                                  saveMe={props.saveAndCheckpoint}
+                                  // saveMe={props.saveAndCheckpoint}
                                   setCMObject={setCmObject}
                                   alt_clear_selections={props.clearAllSelections}
                                   first_line_number={props.cmState.firstLineNumber}
@@ -857,12 +882,13 @@ function MakerNavigator(props) {
                     section.editable ?
                         <SortableNavSection key={section.title} title={section.title} dispatch={section.dispatch}
                                             sub_items={section.sub_items} icon={section.icon}
-                                            pushCallback={props.pushCallback}
+                                            pushCallback={props.pushCallback} startExpaneded={section.start_expanded}
                                             createFromList={section.createFromList ? section.createFromList : false}
                                             choiceDict={section.choiceDict ? section.choiceDict : null}
                                             icon_dict={section.icon_dict} icon_field={section.icon_field}/> :
                         <NavSection key={section.title} title={section.title} dispatch={section.dispatch}
                                     sub_items={section.sub_items} icon={section.icon}
+                                    startExpaneded={section.start_expanded}
                                     icon_dict={section.icon_dict} icon_field={section.icon_field}/>
                 ))}
             </div>
@@ -875,13 +901,13 @@ function NavSection(props) {
     props = {
         "title": "",
         "sub_items": [],
-        "start_open": true,
+        "startExpanded": true,
         "right_button": null,
         icon_dict: null,
         icon_field: null,
         ...props
     }
-    const [isOpen, setIsOpen] = React.useState(props.start_open);
+    const [isOpen, setIsOpen] = React.useState(props.startExpanded);
 
     // noinspection JSValidateTypes
     return (
@@ -898,8 +924,9 @@ function NavSection(props) {
                 {props.sub_items.map((item, ) => {
                     let icon = props.icon_dict ?
                         <Icon icon={props.icon_dict[item[props.icon_field]]} size={12}/> : null;
+                    let isDivider = props.icon_dict && item[props.icon_field] === "divider";
                     return (
-                        <NavItem key={item.identifier} identifier={item.identifier} title={item.name} icon={icon}
+                        <NavItem key={item.identifier} isDivider={isDivider} identifier={item.identifier} title={item.name} icon={icon}
                                  item_list={item.item_list}/>
                     )
                 })
@@ -963,7 +990,6 @@ function SortableNavSection(props) {
     props = {
         title: "",
         sub_items: [],
-        start_open: true,
         right_button: null,
         icon_dict: null,
         icon_field: null,
@@ -971,6 +997,7 @@ function SortableNavSection(props) {
         choiceDict: null,
         selectedChoice: null,
         setSelectedChoice: null,
+        startExpanded: false,
         pushCallback: () => {
         },
         dispatch: () => {
@@ -979,7 +1006,7 @@ function SortableNavSection(props) {
     }
 
     const [activeId, setActiveId] = React.useState(null);
-    const [isOpen, setIsOpen] = React.useState(props.start_open);
+    const [isOpen, setIsOpen] = React.useState(props.startExpanded);
 
     const sensors = useSensors(useSensor(PointerSensor, {activationConstraint: {distance: 5}}));
 
@@ -1017,6 +1044,7 @@ function SortableNavSection(props) {
             identifier: uid,
         }
         props.dispatch({type: "add_at_end", new_item: new_entry});
+        setIsOpen(true);
         mpContext.pushCallback(() => {
             mpContext.toggleVisibleTab(uid);
         });
@@ -1066,10 +1094,12 @@ function SortableNavSection(props) {
                                 }
                                 let icon = props.icon_dict ?
                                     <Icon icon={props.icon_dict[item[props.icon_field]]} size={12}/> : null;
+                                let isDivider = props.icon_dict && item[props.icon_field] === "divider";
                                 return (
                                     <SortableNavItem key={item.identifier} identifier={item.identifier}
                                                      title={item.name}
                                                      activeId={activeId}
+                                                     isDivider={isDivider}
                                                      icon={icon} item_list={item.item_list} dispatch={props.dispatch}/>
                                 )
                             })}
@@ -1092,6 +1122,7 @@ function SortableNavItem(props) {
         identifier: null,
         activeId: null,
         isSpacer: false,
+        isDivider: false,
         ...props
     }
     const {
@@ -1104,8 +1135,11 @@ function SortableNavItem(props) {
 
     const style = {
         transform: CSS.Transform.toString(transform),
-        transition: props.isSpacer ? 'none' : (props.activeId ? 'none' : transition),
+        transition: props.isSpacer ? 'none' : (props.activeId ? 'none' : transition)
     };
+    if (props.isSpacer) {
+        style.height = 18;
+    }
 
     function _deleteMe() {
         props.dispatch({type: "delete_item", identifier: props.identifier})
@@ -1145,6 +1179,7 @@ function NavItem(props) {
         title: "",
         item_list: [],
         identifier: "",
+        isDivider: false,
         ...props
     }
     const mpContext = useContext(MakerPaneContext);
@@ -1161,10 +1196,17 @@ function NavItem(props) {
             </Button>
         </ControlGroup>)
     }
+    let style;
+    if (props.isDivider) {
+        style = {marginLeft: INDENT, paddingRight: 2, fontWeight: "bold", color: "#ec9a3c"}
+    }
+    else{
+        style = {marginLeft: INDENT, paddingRight: 2}
+    }
 
     return (
         <ControlGroup>
-            <Button style={{marginLeft: INDENT, paddingRight: 2}}
+            <Button style={style}
                     icon={props.icon}
                     intent={mpContext.visibleTabList.includes(props.identifier) ? "primary" : "none"}
                     size="medium"

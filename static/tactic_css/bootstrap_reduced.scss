@@ -39,8 +39,7 @@ ul ol {
   margin-bottom: 0;
 }
 
-b,
-strong {
+b {
   font-weight: bolder;
 }
 
@@ -56,85 +55,6 @@ caption {
 
 th {
   text-align: inherit;
-}
-
-label {
-  display: inline-block;
-  margin-bottom: 0.5rem;
-}
-
-button {
-  border-radius: 0;
-}
-
-button:focus {
-  outline: 1px dotted;
-  outline: 5px auto -webkit-focus-ring-color;
-}
-
-input,
-button,
-select,
-optgroup,
-textarea {
-  margin: 0;
-  font-family: inherit;
-  font-size: inherit;
-  line-height: inherit;
-}
-
-button,
-input {
-  overflow: visible;
-}
-
-button,
-select {
-  text-transform: none;
-}
-
-select {
-  word-wrap: normal;
-}
-
-button,
-[type="button"],
-[type="reset"],
-[type="submit"] {
-  -webkit-appearance: button;
-}
-
-button:not(:disabled),
-[type="button"]:not(:disabled),
-[type="reset"]:not(:disabled),
-[type="submit"]:not(:disabled) {
-  cursor: pointer;
-}
-
-button::-moz-focus-inner,
-[type="button"]::-moz-focus-inner,
-[type="reset"]::-moz-focus-inner,
-[type="submit"]::-moz-focus-inner {
-  padding: 0;
-  border-style: none;
-}
-
-input[type="radio"],
-input[type="checkbox"] {
-  box-sizing: border-box;
-  padding: 0;
-}
-
-input[type="date"],
-input[type="time"],
-input[type="datetime-local"],
-input[type="month"] {
-  -webkit-appearance: listbox;
-}
-
-textarea {
-  overflow: auto;
-  resize: vertical;
 }
 
 h1, h2, h3, h4, h5, h6,
@@ -175,12 +95,6 @@ hr {
   border-top: 1px solid rgba(0, 0, 0, 0.1);
 }
 
-small,
-.small {
-  font-size: 80%;
-  font-weight: 400;
-}
-
 mark,
 .mark {
   padding: 0.2em;
@@ -200,8 +114,6 @@ a > code {
 
 pre {
   display: block;
-  //font-size: 87.5%;
-  //color: #212529;
 }
 
 pre code {
@@ -249,41 +161,6 @@ pre code {
   border-top: 2px solid #dee2e6;
 }
 
-.table-sm th,
-.table-sm td {
-  padding: 0.3rem;
-}
-
-.table-bordered {
-  border: 1px solid #dee2e6;
-}
-
-.table-bordered th,
-.table-bordered td {
-  border: 1px solid #dee2e6;
-}
-
-.table-bordered thead th,
-.table-bordered thead td {
-  border-bottom-width: 2px;
-}
-
-.table-borderless th,
-.table-borderless td,
-.table-borderless thead th,
-.table-borderless tbody + tbody {
-  border: 0;
-}
-
-.table-striped tbody tr:nth-of-type(odd) {
-  background-color: rgba(0, 0, 0, 0.05);
-}
-
-.table-hover tbody tr:hover {
-  color: #212529;
-  background-color: rgba(0, 0, 0, 0.075);
-}
-
 .btn-outline-secondary {
   color: #6c757d;
   border-color: #6c757d;
@@ -319,12 +196,6 @@ pre code {
 
 
 /**/
-
-.clearfix::after {
-  display: block;
-  clear: both;
-  content: "";
-}
 
 .d-none {
   display: none !important;
@@ -568,11 +439,6 @@ pre code {
 
 .position-fixed {
   position: fixed !important;
-}
-
-.position-sticky {
-  position: -webkit-sticky !important;
-  position: sticky !important;
 }
 
 .fixed-top {

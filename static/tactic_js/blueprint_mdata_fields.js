@@ -342,7 +342,9 @@ function NativeTags(props) {
 exports.NativeTags = NativeTags = /*#__PURE__*/(0, _react.memo)(NativeTags);
 function NotesField(props) {
   props = _objectSpread({
-    handleBlur: null
+    handleBlur: null,
+    setCMObject: null,
+    handleChange: null
   }, props);
   var setFocusFunc = (0, _react.useRef)(null);
   var settingsContext = (0, _react.useContext)(_settings.SettingsContext);
@@ -360,7 +362,6 @@ function NotesField(props) {
   var awaitingFocus = (0, _react.useRef)(false);
   var cmObject = (0, _react.useRef)(null);
   var mdRef = (0, _react.useRef)(null);
-  var localRefRef = (0, _react.useRef)(null);
   (0, _react.useEffect)(function () {
     if (awaitingFocus.current) {
       focusNotes();
@@ -372,9 +373,10 @@ function NotesField(props) {
   });
   (0, _react.useEffect)(function () {
     return function () {
-      console.log("Unmounting notesfield");
-      cmObject.current.destroy();
-      cmObject.current = null;
+      if (cmObject.current) {
+        cmObject.current.destroy();
+        cmObject.current = null;
+      }
       setFocusFunc.current = null;
     };
   }, []);
@@ -406,10 +408,11 @@ function NotesField(props) {
     }
   }
   function _setCmObject(cmobject) {
-    cmObject.current = cmobject;
-  }
-  function registerLocalRef(localRef) {
-    localRefRef.current = localRef;
+    if (props.setCMObject) {
+      props.setCMObject(cmobject);
+    } else {
+      cmObject.current = cmobject;
+    }
   }
   var registerSetFocusFunc = (0, _react.useCallback)(function (theFunc) {
     setFocusFunc.current = theFunc;
@@ -439,7 +442,7 @@ function NotesField(props) {
     handleBlur: _handleMyBlur,
     registerSetFocusFunc: registerSetFocusFunc,
     show_line_numbers: false,
-    controlled: false,
+    controlled: true,
     mode: "markdown",
     code_content: props.mStateRef.current.notes,
     no_height: true,
@@ -573,9 +576,11 @@ function CombinedMetadata(props) {
     is_repository: false,
     useFixedData: false,
     tsocket: null,
-    alt_category: null
+    alt_category: null,
+    setCMObject: null
   }, props);
   var top_ref = (0, _react.useRef)();
+  var listenderAttachedRef = (0, _react.useRef)(false);
   var _useImmerReducerAndRe = (0, _utilities_react.useImmerReducerAndRef)(metadataReducer, initial_state),
     _useImmerReducerAndRe2 = _slicedToArray(_useImmerReducerAndRe, 3),
     mDispatch = _useImmerReducerAndRe2[1],
@@ -590,22 +595,33 @@ function CombinedMetadata(props) {
   var _useSize = (0, _sizing_tools.useSize)(top_ref, props.tabSelectCounter, "CombinedMetadata"),
     _useSize2 = _slicedToArray(_useSize, 3),
     usable_width = _useSize2[0];
+  var latestPropsRef = (0, _react.useRef)(props);
   (0, _react.useEffect)(function () {
-    if (props.tsocket != null && !props.is_repository && !props.useFixedData) {
-      var handleExternalUpdate = function handleExternalUpdate(data) {
-        if (data.res_type == props.res_type && data.res_name == props.res_name && data.mdata_uid != updatedIdRef.current) {
-          grabMetadata();
-        }
-      };
+    latestPropsRef.current = props;
+  }, [props]);
+  (0, _react.useEffect)(function () {
+    if (props.tsocket) {
       props.tsocket.attachListener("resource-updated", handleExternalUpdate);
-      return function () {
-        props.tsocket.detachListener("resource-updated");
-      };
+      listenderAttachedRef.current = true;
     }
-  }, [props.tsocket, props.res_name, props.res_type]);
+    return function () {
+      props.tsocket.detachListener("resource-updated");
+    };
+  }, []);
+  (0, _react.useEffect)(function () {
+    if (props.tsocket && !listenderAttachedRef.current) {
+      props.tsocket.attachListener("resource-updated", handleExternalUpdate);
+      listenderAttachedRef.current = true;
+    }
+  }, [props.tsocket]);
   (0, _react.useEffect)(function () {
     grabMetadata();
   }, [props.res_name, props.res_type]);
+  function handleExternalUpdate(data) {
+    if (data.res_type == props.res_type && data.res_name == props.res_name && data.mdata_uid != updatedIdRef.current) {
+      grabMetadata();
+    }
+  }
   function grabMetadata() {
     if (props.useFixedData || props.res_name == null || props.res_type == null) return;
     if (!props.readOnly) {
@@ -667,8 +683,8 @@ function CombinedMetadata(props) {
         while (1) switch (_context.n) {
           case 0:
             result_dict = {
-              "res_type": props.res_type,
-              "res_name": props.res_name,
+              "res_type": latestPropsRef.current.res_type,
+              "res_name": latestPropsRef.current.res_name,
               "tags": "tags" in state_stuff ? state_stuff["tags"] : mStateRef.current.tags,
               "notes": "notes" in state_stuff ? state_stuff["notes"] : mStateRef.current.notes,
               "icon": "icon" in state_stuff ? state_stuff["icon"] : mStateRef.current.icon,
@@ -807,7 +823,7 @@ function CombinedMetadata(props) {
             _context7.n = 1;
             return _handleMetadataChange({
               "category": event.target.value
-            }, false);
+            });
           case 1:
             return _context7.a(2);
         }
@@ -912,13 +928,15 @@ function CombinedMetadata(props) {
   })), !props.useFixedData && props.useNotes && mStateRef.current.notes != null && /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
     label: "Notes"
   }, /*#__PURE__*/_react["default"].createElement(NotesField, {
-    key: "".concat(props.res_name, "-").concat(props.res_type, "-notes"),
+    key: "metadata-notes",
     mStateRef: mStateRef,
+    currentNotes: mStateRef.current.notes,
     res_name: props.res_name,
     res_type: props.res_type,
     readOnly: props.readOnly,
     handleChange: _handleNotesChange,
     show_markdown_initial: true,
+    setCMObject: props.setCMObject,
     handleBlur: props.handleNotesBlur
   }), props.notes_buttons && /*#__PURE__*/_react["default"].createElement(MetadataNotesButtons, {
     appendToNotes: appendToNotes

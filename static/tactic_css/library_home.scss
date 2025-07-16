@@ -20,30 +20,8 @@ $regular: #5c7080;
         height: 100%;
 
     }
-    .selector-button {
-        td {
-            border: white;
-            padding-bottom: 2px !important;
-        }
-    }
 
-    .selector-button.active {
-        td {
-            background-color: rgba(19, 124, 189, 0.2) !important;
-            color: #106ba3;
-            font-weight: 900
-        }
-    }
-
-    .bp6-button.bp6-intent-danger {
-        //background-color: $light-gray5;
-        //color: $danger !important;
-        //
-        //.bp6-icon {
-        //    color: $danger !important
-        //}
-    }
-
+    // does this do anything?
     .open-selector-row {
         color: gray;
     }
@@ -153,7 +131,7 @@ $regular: #5c7080;
         padding-top: 100px;
         padding-left: 2px;
         padding-right: 2px;
-        background-color: themeable.$dark-medium;
+        //background-color: themeable.$dark-medium;
     }
 
     .bp6-tab-indicator {

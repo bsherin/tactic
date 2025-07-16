@@ -58,6 +58,12 @@ def escape_html(html):
     )
 xh = escape_html
 
+import pandas as pd
+def custom_df_repr(self):
+    return Tile.html_table(self, sticky_header=True)
+
+pd.DataFrame.__repr__ = custom_df_repr
+
 # noinspection PyTypeChecker
 MAX_SINGLE_WRITE = 1000000
 
@@ -340,7 +346,8 @@ class PseudoTileClass(TileBase, MplFigure):
                 if use_html_table:
                     the_html = self.html_table(eval_result, title=eval_type_info["info_string"],
                                                header_style="font-size:12px",
-                                               body_style="font-size:12px",
+                                               body_style="font-size:11px",
+                                               sticky_header=True,
                                                max_rows=data["max_rows"])
                 else:
                     max_chars = data["max_rows"] * ROUGH_CHARS_PER_EVAL_ROW

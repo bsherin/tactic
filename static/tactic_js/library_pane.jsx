@@ -1232,7 +1232,7 @@ function LibraryPane(props) {
     let res_type = pStateRef.current.select_state.selected_resource.res_type;
     let res_name = pStateRef.current.select_state.selected_resource.name;
     let right_pane = (
-        <CombinedMetadata key={`key=${res_type}-${res_name}-metadata`}
+        <CombinedMetadata key="combined-metadata-library"
                           elevation={0}
                           tsocket={props.tsocket}
                           res_name={res_name}

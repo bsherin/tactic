@@ -10,7 +10,7 @@ import React from "react";
 import {useState, useEffect, useRef, useContext, Fragment, useCallback, useMemo} from "react";
 import {createRoot} from 'react-dom/client';
 
-import {Tab, Tabs, Button, Icon, Spinner, useHotkeys} from "@blueprintjs/core";
+import {Tab, Tabs, Button, Icon, Spinner, useHotkeys, Divider} from "@blueprintjs/core";
 //import { HotkeysProvider } from "@blueprintjs/core";
 import {FocusStyleManager} from "@blueprintjs/core";
 
@@ -800,6 +800,16 @@ function ContextApp(props) {
         all_tabs.push(ptab)
     }
 
+    bclass = "context-tab-button-content-divider";
+    let separator_tab = (
+        <Tab id="divider" draggable="false"
+             disabled={true}
+             tabIndex={-1} key="divider" panelClassName="context-tab" title="" panel={null}>
+            <Divider className={bclass} />
+        </Tab>
+    );
+    all_tabs.push(separator_tab);
+
     function amSelected(ltab_id, lselectedTabIdRef) {
         return !window.in_context || ltab_id === lselectedTabIdRef.current
     }
@@ -922,7 +932,7 @@ function ContextApp(props) {
                               size={16} tabIndex={-1}/>
                         <span>{visible_title}</span>
                     </div>
-                    <div>
+                    <div style={{marginRight: 5}}>
                         <Icon icon="reset" style={icon_style} size={13} className="context-close-button show-on-hover"
                               tabIndex={-1} onClick={async () => {
                             await _refreshTab(tab_id)
@@ -960,7 +970,7 @@ function ContextApp(props) {
              }}
              tabIndex={-1} key="dummy" panelClassName="context-tab" title="" panel={null}>
             <div className={bclass}
-                 style={{height: 30, display: "flex", flexDirection: "row", justifyContent: "space-between"}}>
+                 style={{height: 30, opacity: 0, display: "flex", flexDirection: "row", justifyContent: "space-between"}}>
             </div>
         </Tab>
     );

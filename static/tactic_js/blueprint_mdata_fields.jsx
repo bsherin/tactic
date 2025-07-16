@@ -307,6 +307,8 @@ NativeTags = memo(NativeTags);
 function NotesField(props) {
     props = {
         handleBlur: null,
+        setCMObject: null,
+        handleChange: null,
         ...props
     };
     const setFocusFunc = useRef(null);
@@ -326,7 +328,6 @@ function NotesField(props) {
     const cmObject = useRef(null);
 
     const mdRef = useRef(null);
-    const localRefRef = useRef(null);
 
     useEffect(() => {
         if (awaitingFocus.current) {
@@ -341,9 +342,10 @@ function NotesField(props) {
 
     useEffect(() => {
         return () => {
-            console.log("Unmounting notesfield");
-            cmObject.current.destroy()
-            cmObject.current = null;
+            if (cmObject.current) {
+                cmObject.current.destroy()
+                cmObject.current = null;
+            }
             setFocusFunc.current = null;
 
          };
@@ -384,11 +386,12 @@ function NotesField(props) {
     }
 
     function _setCmObject(cmobject) {
-        cmObject.current = cmobject
-    }
-
-    function registerLocalRef(localRef) {
-        localRefRef.current = localRef;
+        if (props.setCMObject) {
+            props.setCMObject(cmobject);
+        }
+        else {
+            cmObject.current = cmobject
+        }
     }
 
      const registerSetFocusFunc = useCallback((theFunc) => {
@@ -418,7 +421,7 @@ function NotesField(props) {
                     handleBlur={_handleMyBlur}
                     registerSetFocusFunc={registerSetFocusFunc}
                     show_line_numbers={false}
-                    controlled={false}
+                    controlled={true}
                     mode="markdown"
                     code_content={props.mStateRef.current.notes}
                     no_height={true}
@@ -547,9 +550,11 @@ function CombinedMetadata(props) {
         useFixedData: false,
         tsocket: null,
         alt_category: null,
+        setCMObject: null,
         ...props
     };
     const top_ref = useRef();
+    const listenderAttachedRef = useRef(false);
 
     const [, mDispatch, mStateRef] = useImmerReducerAndRef(metadataReducer, initial_state);
 
@@ -564,25 +569,38 @@ function CombinedMetadata(props) {
 
     const [usable_width, , , ] = useSize(top_ref, props.tabSelectCounter, "CombinedMetadata");
 
+    const latestPropsRef = useRef(props);
+        useEffect(() => {
+            latestPropsRef.current = props;
+    }, [props]);
+
     useEffect(() => {
-        if (props.tsocket != null && !props.is_repository && !props.useFixedData) {
-            function handleExternalUpdate(data) {
-                if (data.res_type == props.res_type && data.res_name == props.res_name && data.mdata_uid != updatedIdRef.current) {
-                    grabMetadata()
-                }
-            }
+        if (props.tsocket) {
             props.tsocket.attachListener("resource-updated", handleExternalUpdate);
-            return () => {
-                props.tsocket.detachListener("resource-updated");
-            };
+            listenderAttachedRef.current = true;
         }
-    }, [props.tsocket, props.res_name, props.res_type]);
+        return () => {
+            props.tsocket.detachListener("resource-updated");
+        }
+    }, []);
+
+    useEffect(() => {
+        if (props.tsocket && !listenderAttachedRef.current) {
+            props.tsocket.attachListener("resource-updated", handleExternalUpdate);
+            listenderAttachedRef.current = true;
+        }
+    }, [props.tsocket]);
 
     useEffect(() => {
         grabMetadata()
     }, [props.res_name, props.res_type]);
 
 
+    function handleExternalUpdate(data) {
+        if (data.res_type == props.res_type && data.res_name == props.res_name && data.mdata_uid != updatedIdRef.current) {
+            grabMetadata()
+        }
+    }
     function grabMetadata() {
         if (props.useFixedData || props.res_name == null || props.res_type == null) return;
         if (!props.readOnly) {
@@ -635,8 +653,8 @@ function CombinedMetadata(props) {
     async function postChanges(state_stuff) {
 
         const result_dict = {
-            "res_type": props.res_type,
-            "res_name": props.res_name,
+            "res_type": latestPropsRef.current.res_type,
+            "res_name": latestPropsRef.current.res_name,
             "tags": "tags" in state_stuff ? state_stuff["tags"] : mStateRef.current.tags,
             "notes": "notes" in state_stuff ? state_stuff["notes"] : mStateRef.current.notes,
             "icon": "icon" in state_stuff ? state_stuff["icon"] : mStateRef.current.icon,
@@ -677,7 +695,7 @@ function CombinedMetadata(props) {
     }
 
     async function _handleCategoryChange(event) {
-        await _handleMetadataChange({"category": event.target.value}, false)
+        await _handleMetadataChange({"category": event.target.value})
     }
 
     async function _handleIconChange(icon) {
@@ -756,13 +774,15 @@ function CombinedMetadata(props) {
                 }
                 {!props.useFixedData && props.useNotes && mStateRef.current.notes != null &&
                     <FormGroup label="Notes">
-                        <NotesField key={`${props.res_name}-${props.res_type}-notes`}
+                        <NotesField key="metadata-notes"
                                     mStateRef={mStateRef}
+                                    currentNotes={mStateRef.current.notes}
                                     res_name={props.res_name}
                                     res_type={props.res_type}
                                     readOnly={props.readOnly}
                                     handleChange={_handleNotesChange}
                                     show_markdown_initial={true}
+                                    setCMObject={props.setCMObject}
                                     handleBlur={props.handleNotesBlur}
                         />
                         {props.notes_buttons &&

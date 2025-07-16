@@ -1011,6 +1011,20 @@ function ContextApp(props) {
     }), /*#__PURE__*/_react["default"].createElement("span", null, "Pool"))));
     all_tabs.push(ptab);
   }
+  bclass = "context-tab-button-content-divider";
+  var separator_tab = /*#__PURE__*/_react["default"].createElement(_core.Tab, {
+    id: "divider",
+    draggable: "false",
+    disabled: true,
+    tabIndex: -1,
+    key: "divider",
+    panelClassName: "context-tab",
+    title: "",
+    panel: null
+  }, /*#__PURE__*/_react["default"].createElement(_core.Divider, {
+    className: bclass
+  }));
+  all_tabs.push(separator_tab);
   function amSelected(ltab_id, lselectedTabIdRef) {
     return !window.in_context || ltab_id === lselectedTabIdRef.current;
   }
@@ -1199,7 +1213,11 @@ function ContextApp(props) {
         },
         size: 16,
         tabIndex: -1
-      }), /*#__PURE__*/_react["default"].createElement("span", null, visible_title)), /*#__PURE__*/_react["default"].createElement("div", null, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
+      }), /*#__PURE__*/_react["default"].createElement("span", null, visible_title)), /*#__PURE__*/_react["default"].createElement("div", {
+        style: {
+          marginRight: 5
+        }
+      }, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
         icon: "reset",
         style: icon_style,
         size: 13,
@@ -1275,6 +1293,7 @@ function ContextApp(props) {
     className: bclass,
     style: {
       height: 30,
+      opacity: 0,
       display: "flex",
       flexDirection: "row",
       justifyContent: "space-between"

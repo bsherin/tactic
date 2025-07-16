@@ -1,6 +1,29 @@
 @use "blueprint_variables.scss";
 @use "themeable.scss";
 
+.fade-enter {
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+}
+
+.fade-enter-active {
+  opacity: 1;
+  max-height: 500px;
+  transition: opacity 300ms ease, max-height 300ms ease;
+}
+
+.fade-exit {
+  opacity: 1;
+  max-height: 500px;
+}
+
+.fade-exit-active {
+  opacity: 0;
+  max-height: 0;
+  transition: opacity 300ms ease, max-height 300ms ease;
+}
+
 .nav-section-class {
   .bp6-collapse-body {
     display: flex;

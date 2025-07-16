@@ -67,6 +67,8 @@ function propertyListReducer(state, action) {
             }
             new_items.push(new_item_at_end);
             return { ...state, items: new_items };
+        case "clear_all":
+            return { ...state, items: [] };
         default:
             console.log("Got Unknown action: " + action.type);
             return state

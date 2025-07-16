@@ -396,8 +396,6 @@ function ReactCodemirror6(props) {
 
     useEffect(() => {
         return () => {
-            console.log("Unmounting ReactCodemirror6");
-
             const view = editorView.current;
 
             // 1. Reconfigure compartments

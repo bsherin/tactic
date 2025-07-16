@@ -176,7 +176,8 @@ class OtherAPIMIxin:
 
     def html_table(self, data, title=None, click_type="word-clickable", sortable=True,
                    sidebyside=False, has_header=True, max_rows=100, header_style=None, body_style=None,
-                   column_order=None, include_row_labels=True, outer_border=False):
+                   column_order=None, include_row_labels=True, outer_border=False, sticky_header=False,
+                   sticky_first_column=False):
         self._save_stdout()
         show_header = has_header
         if isinstance(data, list) and (isinstance(data[0], TacticRow) or isinstance(data[0], DetachedTacticRow)):
@@ -225,28 +226,38 @@ class OtherAPIMIxin:
             dlist = data
         self._restore_stdout()
         return self.build_html_table_from_data_list(dlist, title, click_type, sortable, sidebyside,
-                                                    show_header, header_style, body_style, outer_border, max_rows=max_rows)
+                                                    show_header, header_style, body_style, outer_border,
+                                                    max_rows=max_rows, sticky_header=sticky_header,
+                                                    sticky_first_column=sticky_first_column)
 
     def bht(self, data_list, title=None, click_type="word-clickable",
-            sortable=True, sidebyside=False, has_header=True, header_style=None, body_style=None, outer_border=False):
+            sortable=True, sidebyside=False, has_header=True, header_style=None, body_style=None, outer_border=False,
+            max_rows=100, sticky_header=False, sticky_first_column=False):
         return self.build_html_table_from_data_list(data_list, title, click_type,
                                                     sortable, sidebyside, has_header,
-                                                    header_style, body_style, outer_border, max_rows=100)
+                                                    header_style, body_style, outer_border, max_rows,
+                                                    sticky_header, sticky_first_column)
 
     def build_html_table_from_data_list(self, data_list, title=None, click_type="word-clickable",
                                         sortable=True, sidebyside=False, has_header=True,
-                                        header_style=None, body_style=None, outer_border=False, max_rows=100):
+                                        header_style=None, body_style=None, outer_border=False, max_rows=100,
+                                        sticky_header=False, sticky_first_column=False):
         self._save_stdout()
         # base_class_string = "tile-table table table-striped table-bordered table-sm"
         base_class_string = "bp6-html-table bp6-html-table-bordered bp6-html-table-condensed bp6-html-table-striped bp6-small html-table"
         if outer_border:
             base_class_string += " html-table-bordered"
         if header_style is None:
-            hstyle = "{}"
+            header_style = "font-size: 12px; border-spacing: 0;"
+        if sticky_header:
+            hstyle = "position:sticky; top:0; z-index:2; {}".format(header_style)
         else:
             hstyle = header_style
+
         if body_style is None:
-            bstyle = "font-size:13px"
+            body_style = "font-size:11px"
+        if sticky_first_column:
+            bstyle = "position:sticky; left:0; z-index:2; {}".format(body_style)
         else:
             bstyle = body_style
         if sortable:
@@ -306,24 +317,4 @@ class OtherAPIMIxin:
         self._restore_stdout()
         return the_html
 
-    def _build_html_table_for_exports(self, data_list, has_header=False, title=None):
-        the_html = u"<table class='tile-table table sortable table-striped table-bordered table-sm'>"
-        if title is not None:
-            the_html += u"<caption>{0}</caption>".format(title)
-        if has_header:
-            the_html += u"<thead><tr>"
-            for c in data_list[0]:
-                the_html += u"<th>{0}</th>".format(c)
-            the_html += u"</tr><tbody>"
-            start = 1
-        else:
-            start = 0
-        for r in data_list[start:]:
-            the_html += "<tr>".format()
-            for c in r:
-                the_html += "<td>{0}</td>".format(str(c))
-            the_html += "</tr>"
-
-        the_html += "</tbody></table>"
-        return the_html
     # </editor-fold>

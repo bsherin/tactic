@@ -3090,6 +3090,9 @@ function ConsoleCodeItem(props) {
     value: spinner_val
   }))), /*#__PURE__*/_react["default"].createElement("div", {
     className: "log-code-output",
+    style: {
+      maxWidth: uwidth - 50
+    },
     dangerouslySetInnerHTML: output_dict
   }))))));
 }
