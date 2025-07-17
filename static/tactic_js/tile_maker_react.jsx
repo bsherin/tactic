@@ -6,6 +6,8 @@ import React from "react";
 import {Fragment, useState, useEffect, useRef, memo, useMemo, useContext} from "react";
 import {createRoot} from 'react-dom/client';
 
+import _ from 'lodash';
+
 import {useHotkeys} from "@blueprintjs/core";
 
 import {EditorView} from "@codemirror/view";
@@ -158,7 +160,8 @@ function CreatorApp(props) {
         }
 
         _goToLineNumber();
-        _update_saved_state();
+
+
         errorDrawerFuncs.setGoToLineNumber(_selectLineNumber);
 
         function sendRemove() {
@@ -168,6 +171,13 @@ function CreatorApp(props) {
 
         window.addEventListener("unload", sendRemove);
         statusFuncs.stopSpinner();
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    _update_saved_state();
+                })
+            })
+        });
         return (() => {
             for (let listRef of [standardListRef, umListRef, hmListRef]) {
                 destroyCmObjects(listRef);
@@ -404,7 +414,7 @@ function CreatorApp(props) {
     function _dirty() {
         let current_state = _getSaveDict();
         for (let k in current_state) {
-            if (current_state[k] != last_save.current[k]) {
+            if (!_.isEqual(current_state[k], last_save.current[k])) {
                 return true
             }
         }
@@ -528,6 +538,7 @@ function CreatorApp(props) {
         return listRef.current.map((item) => {
             const newItem = { ...item };  // shallow copy
             delete newItem.cmObject;
+            delete newItem.scrollTop;
             return newItem;
         });
     }
@@ -747,7 +758,6 @@ function CreatorApp(props) {
             let new_tab_list = [...visibleTabListRef.current, ...tabsToAdd];
             setVisibleTabList(new_tab_list);
         }
-
     }
 
     function _setResourceNameState(new_name, callback = null) {

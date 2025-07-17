@@ -122,9 +122,7 @@ function _context_main() {
     const domContainer = document.querySelector('#context-root');
     const root = createRoot(domContainer);
     root.render(
-        //<HotkeysProvider>
         <ContextAppPlus tsocket={tsocket}/>
-        //</HotkeysProvider>
     )
 }
 

@@ -127,14 +127,9 @@ function _context_main() {
   var ContextAppPlus = (0, _pool_tree.withPool)((0, _settings.withSettings)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)((0, _assistant.withAssistant)(ContextApp))))));
   var domContainer = document.querySelector('#context-root');
   var root = (0, _client.createRoot)(domContainer);
-  root.render(
-  /*#__PURE__*/
-  //<HotkeysProvider>
-  _react["default"].createElement(ContextAppPlus, {
+  root.render(/*#__PURE__*/_react["default"].createElement(ContextAppPlus, {
     tsocket: tsocket
-  })
-  //</HotkeysProvider>
-  );
+  }));
 }
 function ContextApp(props) {
   var _useStateAndRefAndCou = (0, _utilities_react.useStateAndRefAndCounter)("library"),
