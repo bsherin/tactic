@@ -2,7 +2,16 @@ import {arrayMove, guid} from "./utilities_react";
 import {useEffect, useReducer, useRef} from "react";
 import debounce from "lodash/debounce";
 
-export {usePropertyList, propertyListReducer, makeUndoableDispatch};
+export {usePropertyList, propertyListReducer, makeUndoableDispatch, getListItemFromidentifier};
+
+function getListItemFromidentifier(identifier, item_list) {
+        for (let item of item_list) {
+            if (item.identifier === identifier) {
+                return item
+            }
+        }
+        return null
+    }
 
 function propertyListReducer(state, action) {
     const prop_list = state.items;

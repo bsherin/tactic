@@ -31,11 +31,13 @@ import {DialogContext, withDialogs} from "./modal_react";
 import {ErrorDrawerContext} from "./error_drawer";
 import {SelectedPaneContext} from "./utilities_react";
 
-import {usePropertyList, makeUndoableDispatch} from "./property_list"
+import {usePropertyList, makeUndoableDispatch, getListItemFromidentifier} from "./property_list"
 import {useSearch} from "./search_reducer"
 import {MakerPaneContext} from "./tile_maker_support";
-import {CmElement, PaneElement, MakerNavigator, OptionModuleForm, ExportModuleForm, MetadataModule,
-    option_icons, standard_method_icons, INITIAL_CODE_PANE_HEIGHT, INITIAL_FORM_PANE_HEIGHT} from "./tile_maker_elements";
+import {
+    CmElement, PaneElement, MakerNavigator, OptionModuleForm, ExportModuleForm, MetadataModule,
+    option_icons, standard_method_icons, INITIAL_CODE_PANE_HEIGHT, INITIAL_FORM_PANE_HEIGHT
+} from "./tile_maker_elements";
 import {useMetadata} from "./metadata_reducer";
 import {TileMakerSearchForm} from "./tile_maker_search_form";
 
@@ -61,6 +63,7 @@ function CreatorApp(props) {
     const search_ref = useRef(null);
     const last_save = useRef({});
     const rline_number = useRef(props.initial_line_number);
+    const pane_scroll_ref = useRef(null);
 
     const [, setVisibleTabList, visibleTabListRef] = useStateAndRef([]);
     const [, setMethodsToOpen, methodsToOpenRef] = useStateAndRef(props.interface_state != null && "visibleMethodList" in props.interface_state ?
@@ -188,6 +191,7 @@ function CreatorApp(props) {
                 }
             }
             otherCmObjects.current = [];
+            clearUndoStack(undoStackRef);
 
             delete_my_container();
             window.removeEventListener("unload", sendRemove);
@@ -206,7 +210,7 @@ function CreatorApp(props) {
 
     useEffect(() => {
         _goToLineNumber();
-         if (methodsToOpenRef.current) {
+        if (methodsToOpenRef.current) {
             let newMethodsToOpen = methodsToOpenRef.current;
             let identifier;
             let identifiersToAdd = [];
@@ -220,8 +224,7 @@ function CreatorApp(props) {
             showTabs(identifiersToAdd); // Must be done in a batch, or they don't all show
             if (newMethodsToOpen.length <= 0) {
                 setMethodsToOpen(null);
-            }
-            else if (newMethodsToOpen.length < methodsToOpenRef.current.length) {
+            } else if (newMethodsToOpen.length < methodsToOpenRef.current.length) {
                 setMethodsToOpen(newMethodsToOpen);
             }
         }
@@ -242,7 +245,7 @@ function CreatorApp(props) {
             let the_text = "" + oname;
             extraSelfCompletionsRef.current.push({label: the_text, type: "variable", section: "Options"});
         }
-        for (let um of umListRef.current){
+        for (let um of umListRef.current) {
             // noinspection JSUnresolvedReference
             extraSelfCompletionsRef.current.push({
                 label: um["name"],
@@ -296,7 +299,12 @@ function CreatorApp(props) {
                     click_handler: _saveAndCheckpoint,
                     key_bindings: ['Ctrl+M']
                 }],
-            Edit: [{name_text: "Undo", icon_name: "undo", click_handler: handleUndo, key_bindings: ['Ctrl+Z', 'Cmd+Z']}],
+            Edit: [{
+                name_text: "Undo",
+                icon_name: "undo",
+                click_handler: handleUndo,
+                key_bindings: ['Ctrl+Z', 'Cmd+Z']
+            }],
             Load: [{
                 name_text: "Save and Load",
                 icon_name: "upload",
@@ -320,7 +328,7 @@ function CreatorApp(props) {
     function handleUndo() {
         const stack = undoStackRef.current;
         if (stack.length > 0) {
-            const { dispatch, undoAction } = stack.pop();
+            const {dispatch, undoAction} = stack.pop();
             dispatch(undoAction);
         }
     }
@@ -534,13 +542,26 @@ function CreatorApp(props) {
         return false
     }
 
-    function removeCmObjects(listRef) {
+    function removeNotSavedThings(listRef) {
         return listRef.current.map((item) => {
-            const newItem = { ...item };  // shallow copy
+            const newItem = {...item};  // shallow copy
             delete newItem.cmObject;
             delete newItem.scrollTop;
             return newItem;
         });
+    }
+
+    function clearUndoStack(undoStackRef) {
+        if (undoStackRef.current) {
+            for (let entry of undoStackRef.current) {
+                if (entry) {
+                    if (entry.cmObject) {
+                        entry.cmObject.destroy();
+                        entry.cmObject = null;
+                    }
+                }
+            }
+        }
     }
 
     function destroyCmObjects(listRef) {
@@ -565,12 +586,12 @@ function CreatorApp(props) {
         return {
             "module_name": _cProp("resource_name"),
             "mdata": mdata,
-            "exports": export_list_ref.current,
-            "additional_save_attrs": save_list_ref.current,
-            "options": option_list_ref.current,
-            "user_methods": removeCmObjects(umListRef),
-            "used_handler_methods": removeCmObjects(hmListRef),
-            "standard_methods": removeCmObjects(standardListRef),
+            "exports": removeNotSavedThings(export_list_ref),
+            "additional_save_attrs": removeNotSavedThings(save_list_ref),
+            "options": removeNotSavedThings(option_list_ref),
+            "user_methods": removeNotSavedThings(umListRef),
+            "used_handler_methods": removeNotSavedThings(hmListRef),
+            "standard_methods": removeNotSavedThings(standardListRef),
             "is_mpl": props.is_mpl,
             "is_d3": props.is_d3,
             "last_viewer": "creator",
@@ -639,7 +660,7 @@ function CreatorApp(props) {
     }
 
     function getItemFromIdentifier(identifier) {
-        for (let listRef of [standardListRef, umListRef, hmListRef]) {
+        for (let listRef of [option_list_ref, export_list_ref, save_list_ref, standardListRef, umListRef, hmListRef]) {
             const item = getListItemFromidentifier(identifier, listRef.current);
             if (item) {
                 return item;
@@ -648,7 +669,7 @@ function CreatorApp(props) {
         return null
     }
 
-    function setItem(identifier, item){
+    function setItem(identifier, item) {
         for (let [listRef, dispatch] of [[standardListRef, standardDispatch], [umListRef, umDispatch], [hmListRef, hmDispatch]]) {
             const existingItem = getListItemFromidentifier(identifier, listRef.current);
             if (existingItem) {
@@ -702,6 +723,7 @@ function CreatorApp(props) {
         }
 
     }
+
     function _goToLineNumber() {
         if (rline_number.current) {
             const local_number = rline_number.current
@@ -711,7 +733,7 @@ function CreatorApp(props) {
                 for (let item of listRef.current) {
                     if (local_number >= item["firstLineNumber"] && local_number <= item["lastLineNumber"]) {
                         showTab(item["identifier"]);
-                        pushCallback(()=>{
+                        pushCallback(() => {
                             _highlightLine(listRef, item["identifier"], local_number);
                         })
                         break;
@@ -726,14 +748,18 @@ function CreatorApp(props) {
         postAjax("/delete_container_on_unload", {"container_id": props.module_viewer_id, "notify": false});
     }
 
+    function scrollToPane(itemIdentifier) {
+        pane_scroll_ref.current = itemIdentifier;
+    }
+
     function _handleTabSelect(newTabIdentifier) {
         let new_tab_list = [...visibleTabListRef.current];
         if (!new_tab_list.includes(newTabIdentifier)) {
             new_tab_list.push(newTabIdentifier);
-        }
-        else {
+            scrollToPane(newTabIdentifier);
+        } else {
             let existingItem = getItemFromIdentifier(newTabIdentifier);
-            if (existingItem) {
+            if (existingItem && existingItem.cmObject) {
                 const cm = existingItem.cmObject;
                 const scrollTop = cm.scrollDOM.scrollTop;
 
@@ -749,11 +775,12 @@ function CreatorApp(props) {
             let new_tab_list = [...visibleTabListRef.current];
             new_tab_list.push(newTabIdentifier);
             setVisibleTabList(new_tab_list);
+            scrollToPane(newTabIdentifier);
         }
     }
 
     function showTabs(id_list) {
-        let tabsToAdd = id_list.filter((id)=> !visibleTabListRef.current.includes(id));
+        let tabsToAdd = id_list.filter((id) => !visibleTabListRef.current.includes(id));
         if (tabsToAdd.length > 0) {
             let new_tab_list = [...visibleTabListRef.current, ...tabsToAdd];
             setVisibleTabList(new_tab_list);
@@ -769,46 +796,37 @@ function CreatorApp(props) {
         }
     }
 
-    function getListItemFromidentifier(identifier, item_list) {
-        for (let item of item_list) {
-            if (item.identifier === identifier) {
-                return item
-            }
-        }
-        return null
-    }
-
     let my_props = {...props};
     if (!props.controlled) {
         my_props.resource_name = resource_name;
     }
 
     let codeElemDict = {};
-        for (let st of standardListRef.current) {
-            codeElemDict[st["identifier"]] = () => {
-                return (
-                    <CmElement cmState={st}
-                               no_height={false}
-                               allowSignatureChange={false}
-                               allowDelete={false}
-                               argString={st["argString"]}
-                               cmDispatch={standardDispatch}
-                               cmObjectRef={null}
-                               name={st["name"]}
-                               registerCmObject={registerCmObject}
-                               identifier={st["identifier"]}
-                               extraKeys={_extraKeys}
-                               saveAndCheckpoint={_saveAndCheckpoint}
-                               searchState={searchState}
-                               searchDispatch={searchDispatch}
-                               search_ref={null}
-                               pushCallback={pushCallback}
-                               tsocket={props.tsocket}
-                               extraSelfCompletions={st["mode"] == "python" ? extraSelfCompletionsRef.current : []}
-                               module_viewer_id={props.module_viewer_id}
-                               show_search={false}/>
-                )
-            }
+    for (let st of standardListRef.current) {
+        codeElemDict[st["identifier"]] = () => {
+            return (
+                <CmElement cmState={st}
+                           no_height={false}
+                           allowSignatureChange={false}
+                           allowDelete={false}
+                           argString={st["argString"]}
+                           cmDispatch={standardDispatch}
+                           cmObjectRef={null}
+                           name={st["name"]}
+                           registerCmObject={registerCmObject}
+                           identifier={st["identifier"]}
+                           extraKeys={_extraKeys}
+                           saveAndCheckpoint={_saveAndCheckpoint}
+                           searchState={searchState}
+                           searchDispatch={searchDispatch}
+                           search_ref={null}
+                           pushCallback={pushCallback}
+                           tsocket={props.tsocket}
+                           extraSelfCompletions={st["mode"] == "python" ? extraSelfCompletionsRef.current : []}
+                           module_viewer_id={props.module_viewer_id}
+                           show_search={false}/>
+            )
+        }
     }
 
     for (let um of umListRef.current) {
@@ -902,7 +920,8 @@ function CreatorApp(props) {
         visible: true,
         icon: "properties",
         editable: false,
-        dispatch: ()=>{},
+        dispatch: () => {
+        },
         start_expanded: false,
         sub_items: [
             {
@@ -914,23 +933,47 @@ function CreatorApp(props) {
             },
         ]
     },
-        {title: "OPTIONS", visible: true, editable: true, icon: "select", icon_dict: option_icons, icon_field: "type",
+        {
+            title: "OPTIONS",
+            visible: true,
+            editable: true,
+            icon: "select",
+            icon_dict: option_icons,
+            icon_field: "type",
             start_expanded: false,
-            sub_items: option_list_ref.current, dispatch: optionDispatch},
-        {title: "EXPORTS", visible: true, editable: true, icon: "select",
+            sub_items: option_list_ref.current,
+            dispatch: optionDispatch
+        },
+        {
+            title: "EXPORTS", visible: true, editable: true, icon: "select",
             start_expanded: false,
-            sub_items: export_list_ref.current, dispatch: exportDispatch},
-        {title: "SAVE_ATTRS", visible: !metadataRef.current.couple_save_attrs_and_exports,
+            sub_items: export_list_ref.current, dispatch: exportDispatch
+        },
+        {
+            title: "SAVE_ATTRS", visible: !metadataRef.current.couple_save_attrs_and_exports,
             start_expanded: false,
-            editable: true, icon: "select", sub_items: save_list_ref.current, dispatch: saveDispatch},
-        {title: "STANDARD METHODS", visible: true, editable: false, icon: "code", icon_dict: standard_method_icons, icon_field: "name",
+            editable: true, icon: "select", sub_items: save_list_ref.current, dispatch: saveDispatch
+        },
+        {
+            title: "STANDARD METHODS",
+            visible: true,
+            editable: false,
+            icon: "code",
+            icon_dict: standard_method_icons,
+            icon_field: "name",
             start_expanded: true,
-            sub_items: standardListRef.current, dispatch: standardDispatch},
-        {title: "USER METHODS", visible: true, editable: true, icon: "code",
-            start_expanded: false, sub_items: umListRef.current, dispatch: umDispatch},
-        {title: "HANDLER METHODS", visible: true, editable: true, icon: "code", sub_items: hmListRef.current,
+            sub_items: standardListRef.current,
+            dispatch: standardDispatch
+        },
+        {
+            title: "USER METHODS", visible: true, editable: true, icon: "code",
+            start_expanded: false, sub_items: umListRef.current, dispatch: umDispatch
+        },
+        {
+            title: "HANDLER METHODS", visible: true, editable: true, icon: "code", sub_items: hmListRef.current,
             start_expanded: false,
-            createFromList: true, choiceDict: props.all_handler_methods, dispatch: hmDispatch},
+            createFromList: true, choiceDict: props.all_handler_methods, dispatch: hmDispatch
+        },
     ]
 
     let left_pane = (
@@ -962,14 +1005,16 @@ function CreatorApp(props) {
     right_pane_list.push(
         <PaneElement identifier="metadata" key="metadata" dispatch={metadataDispatch} pushCallback={pushCallback}
                      visible={visibleTabListRef.current.includes("metadata")}
-                     el={metadataRef.current} pane_height={metadataRef.current.pane_height}>
+                     pane_scroll_ref={pane_scroll_ref}
+                     pane_height={metadataRef.current.pane_height}>
             {mdata_panel}
         </PaneElement>
     )
     for (let key of Object.keys(optionElemDict)) {
         const item = getListItemFromidentifier(key, option_list_ref.current);
         right_pane_list.push(
-            <PaneElement identifier={key} key={key} el={item} pane_height={item.pane_height}
+            <PaneElement identifier={key} key={key} pane_height={item.pane_height}
+                         pane_scroll_ref={pane_scroll_ref}
                          className="form-pane" visible={visibleTabListRef.current.includes(key)}
                          allowDelete={true} dispatch={optionDispatch} pushCallback={pushCallback}>
                 {optionElemDict[key]?.()}
@@ -980,6 +1025,7 @@ function CreatorApp(props) {
         const item = getListItemFromidentifier(key, export_list_ref.current);
         right_pane_list.push(
             <PaneElement identifier={key} key={key} el={item} pane_height={item.pane_height}
+                         pane_scroll_ref={pane_scroll_ref}
                          className="form-pane" visible={visibleTabListRef.current.includes(key)}
                          allowDelete={true} dispatch={exportDispatch} pushCallback={pushCallback}>
                 {exportElemDict[key]?.()}
@@ -990,7 +1036,8 @@ function CreatorApp(props) {
         const item = getListItemFromidentifier(key, save_list_ref.current);
         right_pane_list.push(
             <PaneElement key={key} identifier={key} el={item} pane_height={item.pane_height}
-                          className="form-pane" visible={visibleTabListRef.current.includes(key)}
+                         pane_scroll_ref={pane_scroll_ref}
+                         className="form-pane" visible={visibleTabListRef.current.includes(key)}
                          allowDelete={true} dispatch={saveDispatch} pushCallback={pushCallback}>
                 {saveElemDict[key]?.()}
             </PaneElement>
@@ -998,8 +1045,11 @@ function CreatorApp(props) {
     }
     for (let item of standardListRef.current) {
         right_pane_list.push(
-            <PaneElement key={item["identifier"]} el={item} dispatch={standardDispatch} pane_height={item["pane_height"]}
-                         icon={standard_method_icons[item["name"]]} visible={visibleTabListRef.current.includes(item["identifier"])}
+            <PaneElement key={item["identifier"]} el={item} dispatch={standardDispatch}
+                         pane_height={item["pane_height"]}
+                         pane_scroll_ref={pane_scroll_ref}
+                         icon={standard_method_icons[item["name"]]}
+                         visible={visibleTabListRef.current.includes(item["identifier"])}
                          identifier={item["identifier"]} pushCallback={pushCallback}>
                 {codeElemDict[item["identifier"]]?.()}
             </PaneElement>
@@ -1008,6 +1058,7 @@ function CreatorApp(props) {
     for (let item of hmListRef.current) {
         right_pane_list.push(
             <PaneElement key={item["identifier"]} el={item} dispatch={hmDispatch} pane_height={item["pane_height"]}
+                         pane_scroll_ref={pane_scroll_ref}
                          allowDelete={true} visible={visibleTabListRef.current.includes(item["identifier"])}
                          identifier={item["identifier"]} pushCallback={pushCallback}>
                 {codeElemDict[item["identifier"]]?.()}
@@ -1017,8 +1068,10 @@ function CreatorApp(props) {
     for (let item of umListRef.current) {
         right_pane_list.push(
             <PaneElement key={item["identifier"]} el={item} pane_height={item["pane_height"]}
+                         pane_scroll_ref={pane_scroll_ref}
                          visible={visibleTabListRef.current.includes(item["identifier"])}
-                         identifier={item["identifier"]}  allowDelete={true} dispatch={umDispatch} pushCallback={pushCallback}>
+                         identifier={item["identifier"]} allowDelete={true} dispatch={umDispatch}
+                         pushCallback={pushCallback}>
                 {codeElemDict[item["identifier"]]?.()}
             </PaneElement>
         )
@@ -1027,22 +1080,22 @@ function CreatorApp(props) {
     let right_pane = (
         <Fragment>
             <div style={{paddingBottom: 20, height: "100%"}}>
-            <TileMakerSearchForm
-                regex={false}
-                allow_regex={true}
-                field_width={200}
-                include_search_jumper={true}
-                searchDispatch={searchDispatch}
-                searchStateRef={searchStateRef}
-                searchNext={_searchNext}
-                searchPrev={_searchPrev}
-                searchState={searchStateRef.current}
-                search_ref={search_ref}
-            />
-            <div style={{overflow: "auto", height: "100%"}}>
-                {right_pane_list}
+                <TileMakerSearchForm
+                    regex={false}
+                    allow_regex={true}
+                    field_width={200}
+                    include_search_jumper={true}
+                    searchDispatch={searchDispatch}
+                    searchStateRef={searchStateRef}
+                    searchNext={_searchNext}
+                    searchPrev={_searchPrev}
+                    searchState={searchStateRef.current}
+                    search_ref={search_ref}
+                />
+                <div style={{overflow: "auto", height: "100%", paddingBottom: 200}}>
+                    {right_pane_list}
+                </div>
             </div>
-        </div>
         </Fragment>
     )
 
@@ -1101,16 +1154,16 @@ function CreatorApp(props) {
                             topX: topX,
                             topY: topY
                         }}>
-                        <ErrorBoundary custom_message="Error in HorizontalPanes">
-                            <HorizontalPanes left_pane={left_pane}
-                                             right_pane={right_pane}
-                                             show_handle={true}
-                                             initial_width_fraction={.2}
-                                             handleSplitUpdate={null}
-                                             bottom_margin={BOTTOM_MARGIN}
-                                             right_margin={SIDE_MARGIN}
-                            />
-                        </ErrorBoundary>
+                            <ErrorBoundary custom_message="Error in HorizontalPanes">
+                                <HorizontalPanes left_pane={left_pane}
+                                                 right_pane={right_pane}
+                                                 show_handle={true}
+                                                 initial_width_fraction={.2}
+                                                 handleSplitUpdate={null}
+                                                 bottom_margin={BOTTOM_MARGIN}
+                                                 right_margin={SIDE_MARGIN}
+                                />
+                            </ErrorBoundary>
                         </SizeContext.Provider>
                     </div>
                 </MakerPaneContext.Provider>
