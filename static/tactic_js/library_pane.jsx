@@ -7,7 +7,8 @@ import {Menu, MenuItem, MenuDivider, Button, Tooltip, useHotkeys} from "@bluepri
 import {Regions} from "@blueprintjs/table";
 
 import {CombinedMetadata, icon_dict} from "./blueprint_mdata_fields";
-import {HorizontalPanes} from "./resizing_layouts2";
+import {HorizontalPanes} from "./resizing_allotment";
+// import {HorizontalPanes} from "./resizing_layouts2";
 import {postAjaxPromise, postPromise} from "./communication_react"
 import {useSize} from "./sizing_tools";
 
@@ -19,8 +20,10 @@ import {StatusContext} from "./toaster"
 import {ErrorDrawerContext} from "./error_drawer";
 import {LibraryTablePane} from "./library_table_pane";
 import {paneReducer, get_index, get_index_from_id} from "./library_pane_reducer";
+import {ICON_BAR_WIDTH} from "./sizing_tools";
 
 export {LibraryPane, view_views, res_types}
+
 
 const res_types = ["collection", "project", "tile", "list", "code"];
 
@@ -1301,21 +1304,18 @@ function LibraryPane(props) {
                           tsocket={props.tsocket}
             />
             {/*tabIndex is needed to allow the div to get focus so that key events can be captured*/}
-            <div ref={top_ref} tabIndex="0" className="d-flex flex-column" onKeyDown={handleKeyDown} onKeyUp={handleKeyUp}>
-                <div style={{width: "100%", height: usable_height}}>
-                        <HorizontalPanes
-                            show_handle={true}
-                            left_pane={left_pane}
-                            right_pane={right_pane}
-                            right_pane_overflow="auto"
-                            initial_width_fraction={.75}
-                            scrollAdjustSelectors={[".bp6-table-quadrant-scroll-container"]}
-                            handleSplitUpdate={null}
-                            handleResizeStart={null}
-                            handleResizeEnd={null}
-                        />
-                </div>
-
+            <div ref={top_ref} style={{width: `calc(100% - ${ICON_BAR_WIDTH}px)`, height: usable_height}} tabIndex="0" className="d-flex flex-column" onKeyDown={handleKeyDown} onKeyUp={handleKeyUp}>
+                    <HorizontalPanes
+                        show_handle={true}
+                        left_pane={left_pane}
+                        right_pane={right_pane}
+                        right_pane_overflow="auto"
+                        initial_width_fraction={.75}
+                        scrollAdjustSelectors={[".bp6-table-quadrant-scroll-container"]}
+                        handleSplitUpdate={null}
+                        handleResizeStart={null}
+                        handleResizeEnd={null}
+                    />
             </div>
         </Fragment>
     )

@@ -1,10 +1,11 @@
-
 import React from "react";
 import {useState, useEffect, memo, useContext, useMemo} from "react";
 import {SelectedPaneContext} from "./utilities_react";
 
-export {getUsableDimensions, SIDE_MARGIN, USUAL_NAVBAR_HEIGHT, TOP_MARGIN, ICON_BAR_WIDTH, useSize,
-    BOTTOM_MARGIN, INIT_CONTEXT_PANEL_WIDTH, SizeContext, withSizeContext, SizeProvider, useElementSize}
+export {
+    getUsableDimensions, SIDE_MARGIN, USUAL_NAVBAR_HEIGHT, TOP_MARGIN, ICON_BAR_WIDTH, useSize,
+    BOTTOM_MARGIN, INIT_CONTEXT_PANEL_WIDTH, SizeContext, withSizeContext, SizeProvider, useElementSize
+}
 
 
 const SIDE_MARGIN = 15;
@@ -24,10 +25,11 @@ function getUsableDimensions() {
     }
 }
 
-const SizeContext = React.createContext({topX:0, topY: 0, availableWidth: 500, availableHeight: 500});
+const SizeContext = React.createContext({topX: 0, topY: 0, availableWidth: 500, availableHeight: 500});
 
 const MIN_HEIGHT = 30;
-function useSize(top_ref=null, iCounter=0, name="noname") {
+
+function useSize(top_ref = null, iCounter = 0, name = null) {
     const [usable_width, set_usable_width] = useState(window.innerWidth);
     const [usable_height, set_usable_height] = useState(window.innerHeight);
     const [topX, setTopX] = useState(0);
@@ -47,8 +49,9 @@ function useSize(top_ref=null, iCounter=0, name="noname") {
             aheight = sizeInfo.availableHeight - relativeTop;
             setTopX(top_ref.current ? rect.left : sizeInfo.topX);
             setTopY(top_ref.current ? rect.top : sizeInfo.topY);
-            if (name == "CmElement") {
-                console.log(`[${name}] rect.top = ${rect.top}, sizeInfo.topY = ${sizeInfo.topY}, relativeTop = ${relativeTop}, usableHeight = ${aheight}`);
+            if (name) {
+                console.log(`[${name}] rect.top: ${rect.top}, sizeInfo.topY: ${sizeInfo.topY}, usableHeight = ${aheight}`);
+                console.log(`[${name}] rect.left: ${rect.left}, sizeInfo.topX = ${sizeInfo.topX} usableWidth = ${awidth}`);
             }
         } else {
             setTopX(sizeInfo.topX);
@@ -58,11 +61,12 @@ function useSize(top_ref=null, iCounter=0, name="noname") {
         if (aheight > MIN_HEIGHT) {
             set_usable_height(aheight);
         }
+
         return () => {
-          set_usable_width(0);
-          set_usable_height(0);
-          setTopX(0);
-          setTopY(0);
+            set_usable_width(0);
+            set_usable_height(0);
+            setTopX(0);
+            setTopY(0);
         };
     }, [sizeInfo.availableWidth, sizeInfo.availableHeight, sizeInfo.topX, sizeInfo.topY, selectedPane.selectedTabIdRef.current, iCounter]);
 
@@ -86,6 +90,7 @@ function withSizeContext(WrappedComponent) {
             set_usable_width(window.innerWidth - ICON_BAR_WIDTH);
             set_usable_height(window.innerHeight);
         }
+
         return (
             <SizeContext.Provider value={{
                 availableWidth: usable_width,
@@ -97,13 +102,16 @@ function withSizeContext(WrappedComponent) {
             </SizeContext.Provider>
         )
     }
+
     return memo(newFunc)
 }
 
 function SizeProvider({value, children}) {
-    const newValue = useMemo(() => {return {
+    const newValue = useMemo(() => {
+        return {
             ...value
-    }}, [value.availableWidth, value.availableHeight, value.topX, value.topY]);
+        }
+    }, [value.availableWidth, value.availableHeight, value.topX, value.topY]);
     return (
         <SizeContext.Provider value={newValue}>
             {children}
@@ -114,22 +122,40 @@ function SizeProvider({value, children}) {
 SizeProvider = memo(SizeProvider);
 
 function useElementSize(ref) {
-    const [size, setSize] = useState([0, 0, 0, 0]);
+    const [size, setSize] = useState({
+        width: 0,
+        height: 0,
+        top: 0,
+        left: 0
+    });
 
     useEffect(() => {
+        if (!ref.current) return;
+
         const update = () => {
             if (ref.current) {
                 const rect = ref.current.getBoundingClientRect();
-                setSize([rect.width, rect.height, rect.top, rect.left]);
+                console.log("ResizeObserver fired:", rect.width);
+                setSize({
+                    width: rect.width,
+                    height: rect.height,
+                    top: rect.top,
+                    left: rect.left
+                });
             }
         };
 
-        update(); // Run once
-        const observer = new ResizeObserver(() => update());
+        const observer = new ResizeObserver(update);
         observer.observe(ref.current);
 
-        return () => observer.disconnect();
-    }, [ref]);
+        // Run once after ref is set
+        update();
 
-    return size;
+        return () => {
+            if (ref.current) observer.unobserve(ref.current);
+            observer.disconnect();
+        };
+    }, [ref.current])
+
+    return [size.width, size.height, size.top, size.left]
 }

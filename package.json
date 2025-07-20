@@ -33,6 +33,7 @@
     "@dnd-kit/utilities": "^3.2.2",
     "@lezer/highlight": "^1.2.0",
     "@uiw/codemirror-themes-all": "^4.23.0",
+    "allotment": "^1.20.4",
     "codemirror": "^6.0.1",
     "codemirror-readonly-ranges": "^0.1.0-alpha.2",
     "d3": "^7.9.0",

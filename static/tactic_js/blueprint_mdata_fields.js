@@ -15,6 +15,7 @@ var _react = _interopRequireWildcard(require("react"));
 var _core = require("@blueprintjs/core");
 var _select = require("@blueprintjs/select");
 var _settings = require("./settings");
+var _sizing_tools = require("./sizing_tools");
 var _core2 = _interopRequireDefault(require("highlight.js/lib/core"));
 var _javascript = _interopRequireDefault(require("highlight.js/lib/languages/javascript"));
 var _python = _interopRequireDefault(require("highlight.js/lib/languages/python"));
@@ -24,7 +25,6 @@ var _markdownItLatex = _interopRequireDefault(require("markdown-it-latex"));
 var _lodash = _interopRequireDefault(require("lodash"));
 var _utilities_react = require("./utilities_react");
 var _icon_info = require("./icon_info");
-var _sizing_tools = require("./sizing_tools");
 var _error_boundary = require("./error_boundary");
 var _communication_react = require("./communication_react");
 var _reactCodemirror = require("./react-codemirror6");
@@ -593,8 +593,11 @@ function CombinedMetadata(props) {
     _useDebounce2 = _slicedToArray(_useDebounce, 2),
     doUpdate = _useDebounce2[1];
   var _useSize = (0, _sizing_tools.useSize)(top_ref, props.tabSelectCounter, "CombinedMetadata"),
-    _useSize2 = _slicedToArray(_useSize, 3),
-    usable_width = _useSize2[0];
+    _useSize2 = _slicedToArray(_useSize, 4),
+    usable_width = _useSize2[0],
+    usable_height = _useSize2[1],
+    topX = _useSize2[2],
+    topY = _useSize2[3];
   var latestPropsRef = (0, _react.useRef)(props);
   (0, _react.useEffect)(function () {
     latestPropsRef.current = props;
@@ -925,7 +928,15 @@ function CombinedMetadata(props) {
     icon_val: mStateRef.current.icon,
     readOnly: props.readOnly,
     handleSelectChange: _handleIconChange
-  })), !props.useFixedData && props.useNotes && mStateRef.current.notes != null && /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
+  })), !props.useFixedData && props.useNotes && mStateRef.current.notes != null && /*#__PURE__*/_react["default"].createElement(_sizing_tools.SizeContext.Provider, {
+    value: {
+      topX: topX,
+      topY: topY,
+      availableWidth: usable_width - 25,
+      // 25 is the amount of the right padding
+      availableHeight: usable_height
+    }
+  }, /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
     label: "Notes"
   }, /*#__PURE__*/_react["default"].createElement(NotesField, {
     key: "metadata-notes",
@@ -940,7 +951,7 @@ function CombinedMetadata(props) {
     handleBlur: props.handleNotesBlur
   }), props.notes_buttons && /*#__PURE__*/_react["default"].createElement(MetadataNotesButtons, {
     appendToNotes: appendToNotes
-  })), mStateRef.current.created != null && /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
+  }))), mStateRef.current.created != null && /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
     label: "Created: ",
     className: "metadata-form_group",
     inline: true

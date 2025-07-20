@@ -9,6 +9,7 @@ import {
 } from "@blueprintjs/core";
 import {Select, MultiSelect} from "@blueprintjs/select";
 import {SettingsContext} from "./settings";
+import {SizeContext} from "./sizing_tools";
 
 import hljs from 'highlight.js/lib/core';
 import javascript from 'highlight.js/lib/languages/javascript';
@@ -44,7 +45,7 @@ import _ from 'lodash';
 import {propsAreEqual, useDebounce, guid, useImmerReducerAndRef, useCallbackStack} from "./utilities_react";
 import {tile_icon_dict} from "./icon_info";
 
-import {useSize} from "./sizing_tools";
+import {BOTTOM_MARGIN, useSize} from "./sizing_tools";
 import {ErrorBoundary} from "./error_boundary";
 import {postAjaxPromise} from "./communication_react";
 import {ReactCodemirror6} from "./react-codemirror6";
@@ -567,7 +568,7 @@ function CombinedMetadata(props) {
             });
     });
 
-    const [usable_width, , , ] = useSize(top_ref, props.tabSelectCounter, "CombinedMetadata");
+    const [usable_width, usable_height, topX, topY] = useSize(top_ref, props.tabSelectCounter, "CombinedMetadata");
 
     const latestPropsRef = useRef(props);
         useEffect(() => {
@@ -773,6 +774,12 @@ function CombinedMetadata(props) {
                     </FormGroup>
                 }
                 {!props.useFixedData && props.useNotes && mStateRef.current.notes != null &&
+                    <SizeContext.Provider value={{
+                        topX: topX,
+                        topY: topY,
+                        availableWidth: usable_width - 25, // 25 is the amount of the right padding
+                        availableHeight: usable_height
+                    }}>
                     <FormGroup label="Notes">
                         <NotesField key="metadata-notes"
                                     mStateRef={mStateRef}
@@ -789,6 +796,7 @@ function CombinedMetadata(props) {
                             <MetadataNotesButtons appendToNotes={appendToNotes}/>
                         }
                     </FormGroup>
+                    </SizeContext.Provider>
                 }
                 {mStateRef.current.created != null &&
                     <FormGroup label="Created: " className="metadata-form_group" inline={true}>

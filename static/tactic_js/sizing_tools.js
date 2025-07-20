@@ -50,7 +50,7 @@ var MIN_HEIGHT = 30;
 function useSize() {
   var top_ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
   var iCounter = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
-  var name = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : "noname";
+  var name = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
   var _useState = (0, _react.useState)(window.innerWidth),
     _useState2 = _slicedToArray(_useState, 2),
     usable_width = _useState2[0],
@@ -79,8 +79,9 @@ function useSize() {
       aheight = sizeInfo.availableHeight - relativeTop;
       setTopX(top_ref.current ? rect.left : sizeInfo.topX);
       setTopY(top_ref.current ? rect.top : sizeInfo.topY);
-      if (name == "CmElement") {
-        console.log("[".concat(name, "] rect.top = ").concat(rect.top, ", sizeInfo.topY = ").concat(sizeInfo.topY, ", relativeTop = ").concat(relativeTop, ", usableHeight = ").concat(aheight));
+      if (name) {
+        console.log("[".concat(name, "] rect.top: ").concat(rect.top, ", sizeInfo.topY: ").concat(sizeInfo.topY, ", usableHeight = ").concat(aheight));
+        console.log("[".concat(name, "] rect.left: ").concat(rect.left, ", sizeInfo.topX = ").concat(sizeInfo.topX, " usableWidth = ").concat(awidth));
       }
     } else {
       setTopX(sizeInfo.topX);
@@ -143,25 +144,38 @@ function SizeProvider(_ref) {
 }
 exports.SizeProvider = SizeProvider = /*#__PURE__*/(0, _react.memo)(SizeProvider);
 function useElementSize(ref) {
-  var _useState11 = (0, _react.useState)([0, 0, 0, 0]),
+  var _useState11 = (0, _react.useState)({
+      width: 0,
+      height: 0,
+      top: 0,
+      left: 0
+    }),
     _useState12 = _slicedToArray(_useState11, 2),
     size = _useState12[0],
     setSize = _useState12[1];
   (0, _react.useEffect)(function () {
+    if (!ref.current) return;
     var update = function update() {
       if (ref.current) {
         var rect = ref.current.getBoundingClientRect();
-        setSize([rect.width, rect.height, rect.top, rect.left]);
+        console.log("ResizeObserver fired:", rect.width);
+        setSize({
+          width: rect.width,
+          height: rect.height,
+          top: rect.top,
+          left: rect.left
+        });
       }
     };
-    update(); // Run once
-    var observer = new ResizeObserver(function () {
-      return update();
-    });
+    var observer = new ResizeObserver(update);
     observer.observe(ref.current);
+
+    // Run once after ref is set
+    update();
     return function () {
-      return observer.disconnect();
+      if (ref.current) observer.unobserve(ref.current);
+      observer.disconnect();
     };
-  }, [ref]);
-  return size;
+  }, [ref.current]);
+  return [size.width, size.height, size.top, size.left];
 }

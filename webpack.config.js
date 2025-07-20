@@ -54,7 +54,8 @@ module.exports = (env, argv) => {
                         path.resolve(__dirname, 'static/tactic_css'),
                         path.resolve(__dirname, 'node_modules/codemirror'),
                         path.resolve(__dirname, 'node_modules/markdown-it-latex'),
-                        path.resolve(__dirname, 'node_modules/highlight.js')
+                        path.resolve(__dirname, 'node_modules/highlight.js'),
+                        path.resolve(__dirname, 'node_modules/allotment')
                         ],
                     use: [
                         MiniCssExtractPlugin.loader,

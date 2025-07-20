@@ -10,7 +10,7 @@ var _react = _interopRequireWildcard(require("react"));
 var _core = require("@blueprintjs/core");
 var _table = require("@blueprintjs/table");
 var _blueprint_mdata_fields = require("./blueprint_mdata_fields");
-var _resizing_layouts = require("./resizing_layouts2");
+var _resizing_allotment = require("./resizing_allotment");
 var _communication_react = require("./communication_react");
 var _sizing_tools = require("./sizing_tools");
 var _toaster = require("./toaster");
@@ -42,6 +42,7 @@ function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t =
 function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
 function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
 function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); } // noinspection JSValidateTypes,JSDeprecatedSymbols
+// import {HorizontalPanes} from "./resizing_layouts2";
 var res_types = exports.res_types = ["collection", "project", "tile", "list", "code"];
 function view_views() {
   var is_repository = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
@@ -2298,16 +2299,15 @@ function LibraryPane(props) {
     tsocket: props.tsocket
   })), /*#__PURE__*/_react["default"].createElement("div", {
     ref: top_ref,
+    style: {
+      width: "calc(100% - ".concat(_sizing_tools.ICON_BAR_WIDTH, "px)"),
+      height: usable_height
+    },
     tabIndex: "0",
     className: "d-flex flex-column",
     onKeyDown: handleKeyDown,
     onKeyUp: handleKeyUp
-  }, /*#__PURE__*/_react["default"].createElement("div", {
-    style: {
-      width: "100%",
-      height: usable_height
-    }
-  }, /*#__PURE__*/_react["default"].createElement(_resizing_layouts.HorizontalPanes, {
+  }, /*#__PURE__*/_react["default"].createElement(_resizing_allotment.HorizontalPanes, {
     show_handle: true,
     left_pane: left_pane,
     right_pane: right_pane,
@@ -2317,6 +2317,6 @@ function LibraryPane(props) {
     handleSplitUpdate: null,
     handleResizeStart: null,
     handleResizeEnd: null
-  }))));
+  })));
 }
 exports.LibraryPane = LibraryPane = /*#__PURE__*/(0, _react.memo)(LibraryPane);
