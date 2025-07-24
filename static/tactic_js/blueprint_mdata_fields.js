@@ -446,6 +446,7 @@ function NotesField(props) {
     mode: "markdown",
     code_content: props.mStateRef.current.notes,
     no_height: true,
+    no_width: true,
     saveMe: null
   })), /*#__PURE__*/_react["default"].createElement("div", {
     ref: mdRef,

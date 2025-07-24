@@ -11,7 +11,7 @@ var _reactTransitionGroup = require("react-transition-group");
 var _lodash = _interopRequireDefault(require("lodash"));
 var _tile_form_react = require("./tile_form_react");
 var _blueprint_react_widgets = require("./blueprint_react_widgets");
-var _resizing_layouts = require("./resizing_layouts2");
+var _drag_handle = require("./drag_handle");
 var _sortable_container = require("./sortable_container");
 var _communication_react = require("./communication_react");
 var _utilities_react = require("./utilities_react");
@@ -1119,7 +1119,7 @@ function TileComponent(props) {
       ref: tda_ref,
       dangerouslySetInnerHTML: front_dict
     }));
-  })))), /*#__PURE__*/_react["default"].createElement(_resizing_layouts.DragHandle, {
+  })))), /*#__PURE__*/_react["default"].createElement(_drag_handle.DragHandle, {
     position_dict: draghandle_position_dict,
     dragStart: _startResize,
     onDrag: _onResize,

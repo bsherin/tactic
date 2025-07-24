@@ -25,7 +25,6 @@ var _search_form = require("./search_form");
 var _searchable_console = require("./searchable_console");
 var _settings = require("./settings");
 var _modal_react = require("./modal_react");
-var _sizing_tools = require("./sizing_tools");
 var _error_drawer = require("./error_drawer");
 var _assistant = require("./assistant");
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
@@ -70,10 +69,6 @@ var mdi = (0, _markdownIt["default"])({
   }
 });
 mdi.use(_markdownItLatex["default"]);
-var MAX_CONSOLE_WIDTH = 1800;
-var BUTTON_CONSUMED_SPACE = 63;
-var SECTION_INDENT = 25; // This is also hard coded into the css file at the moment
-
 var GLYPH_BUTTON_STYLE = {
   marginLeft: 2
 };
@@ -93,19 +88,12 @@ var GlYPH_BUTTON_STYLE4 = {
 var GLYPH_BUTTON_STYLE5 = {
   marginTop: 5
 };
-var GLYPH_BUTTON_STYLE6 = {
-  marginLeft: 10,
-  marginRight: 0
-};
 var SPINNER_STYLE = {
   marginTop: 10,
   marginRight: 22
 };
 var MB10_STYLE = {
   marginBottom: 10
-};
-var WIDTH_100 = {
-  width: "100%"
 };
 var empty_style = {};
 var trash_icon = /*#__PURE__*/_react["default"].createElement(_core.Icon, {
@@ -124,19 +112,15 @@ function ConsoleComponent(props) {
   }, props);
   var header_ref = (0, _react.useRef)(null);
   var body_ref = (0, _react.useRef)(null);
-  var temporarily_closed_items = (0, _react.useRef)([]);
   var filtered_items_ref = (0, _react.useRef)([]);
   var _useState = (0, _react.useState)(null),
     _useState2 = _slicedToArray(_useState, 2),
-    console_item_with_focus = _useState2[0],
     set_console_item_with_focus = _useState2[1];
   var _useState3 = (0, _react.useState)(null),
     _useState4 = _slicedToArray(_useState3, 2),
-    console_item_saved_focus = _useState4[0],
     set_console_item_saved_focus = _useState4[1];
   var _useStateAndRef = (0, _utilities_react.useStateAndRef)(null),
     _useStateAndRef2 = _slicedToArray(_useStateAndRef, 3),
-    search_string = _useStateAndRef2[0],
     set_search_string = _useStateAndRef2[1],
     search_string_ref = _useStateAndRef2[2];
   var _useState5 = (0, _react.useState)(false),
@@ -164,18 +148,6 @@ function ConsoleComponent(props) {
   var pushCallback = (0, _utilities_react.useCallbackStack)();
   var selectedPane = (0, _react.useContext)(_utilities_react.SelectedPaneContext);
   var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
-  var _useSize = (0, _sizing_tools.useSize)(header_ref, 0, "HConsoleComponent"),
-    _useSize2 = _slicedToArray(_useSize, 4),
-    header_usable_width = _useSize2[0],
-    header_usable_height = _useSize2[1],
-    header_topX = _useSize2[2],
-    header_topY = _useSize2[3];
-  var _useSize3 = (0, _sizing_tools.useSize)(body_ref, 0, "ConsoleComponent"),
-    _useSize4 = _slicedToArray(_useSize3, 4),
-    usable_width = _useSize4[0],
-    usable_height = _useSize4[1],
-    topX = _useSize4[2],
-    topY = _useSize4[3];
   (0, _react.useEffect)(function () {
     initSocket();
     _requestPseudoTileId();
@@ -193,28 +165,23 @@ function ConsoleComponent(props) {
   (0, _react.useEffect)(function () {
     //console.log("theme changed")  // This is to force re-rendering because of highlight.js theme change
   }, [settingsContext.settings.theme]);
-  var _addBlankCode = (0, _react.useCallback)(/*#__PURE__*/function () {
-    var _ref = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee(e) {
-      return _regenerator().w(function (_context) {
-        while (1) switch (_context.n) {
-          case 0:
-            if (!(window.in_context && !am_selected())) {
-              _context.n = 1;
-              break;
-            }
-            return _context.a(2);
-          case 1:
-            _context.n = 2;
-            return _addCodeArea("");
-          case 2:
-            return _context.a(2);
-        }
-      }, _callee);
-    }));
-    return function (_x) {
-      return _ref.apply(this, arguments);
-    };
-  }(), []);
+  var _addBlankCode = (0, _react.useCallback)(/*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee() {
+    return _regenerator().w(function (_context) {
+      while (1) switch (_context.n) {
+        case 0:
+          if (!(window.in_context && !am_selected())) {
+            _context.n = 1;
+            break;
+          }
+          return _context.a(2);
+        case 1:
+          _context.n = 2;
+          return _addCodeArea("");
+        case 2:
+          return _context.a(2);
+      }
+    }, _callee);
+  })), []);
   var _addBlankText = (0, _react.useCallback)(/*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2() {
     return _regenerator().w(function (_context2) {
       while (1) switch (_context2.n) {
@@ -297,7 +264,7 @@ function ConsoleComponent(props) {
                 }
               }, _callee3);
             }));
-            function createLink(_x2) {
+            function createLink(_x) {
               return _createLink.apply(this, arguments);
             }
             return createLink;
@@ -334,7 +301,7 @@ function ConsoleComponent(props) {
   }
   function _pasteImage2() {
     _pasteImage2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee12() {
-      var clipboardContents, blob, _iterator12, _step12, item, gotBlob, _gotBlob, _t5;
+      var clipboardContents, blob, _iterator1, _step1, item, gotBlob, _gotBlob, _t5;
       return _regenerator().w(function (_context13) {
         while (1) switch (_context13.n) {
           case 0:
@@ -364,7 +331,7 @@ function ConsoleComponent(props) {
               }));
               return _gotBlob.apply(this, arguments);
             };
-            gotBlob = function _gotBlob2(_x8) {
+            gotBlob = function _gotBlob2(_x7) {
               return _gotBlob.apply(this, arguments);
             };
             blob = null;
@@ -372,15 +339,15 @@ function ConsoleComponent(props) {
             return navigator.clipboard.read();
           case 1:
             clipboardContents = _context13.v;
-            _iterator12 = _createForOfIteratorHelper(clipboardContents);
+            _iterator1 = _createForOfIteratorHelper(clipboardContents);
             _context13.p = 2;
-            _iterator12.s();
+            _iterator1.s();
           case 3:
-            if ((_step12 = _iterator12.n()).done) {
+            if ((_step1 = _iterator1.n()).done) {
               _context13.n = 8;
               break;
             }
-            item = _step12.value;
+            item = _step1.value;
             if (!item.types.includes("image/png")) {
               _context13.n = 7;
               break;
@@ -408,10 +375,10 @@ function ConsoleComponent(props) {
           case 9:
             _context13.p = 9;
             _t5 = _context13.v;
-            _iterator12.e(_t5);
+            _iterator1.e(_t5);
           case 10:
             _context13.p = 10;
-            _iterator12.f();
+            _iterator1.f();
             return _context13.f(10);
           case 11:
             return _context13.a(2);
@@ -420,7 +387,7 @@ function ConsoleComponent(props) {
     }));
     return _pasteImage2.apply(this, arguments);
   }
-  function _addConsoleText(_x3) {
+  function _addConsoleText(_x2) {
     return _addConsoleText2.apply(this, arguments);
   }
   function _addConsoleText2() {
@@ -459,7 +426,7 @@ function ConsoleComponent(props) {
   function am_selected() {
     return selectedPane.amSelected(selectedPane.tab_id, selectedPane.selectedTabIdRef);
   }
-  function _addConsoleDivider(_x4) {
+  function _addConsoleDivider(_x3) {
     return _addConsoleDivider2.apply(this, arguments);
   }
   function _addConsoleDivider2() {
@@ -564,7 +531,7 @@ function ConsoleComponent(props) {
         }
       }, _callee5, null, [[1, 3]]);
     }));
-    return function (_x5) {
+    return function (_x4) {
       return _ref4.apply(this, arguments);
     };
   }(), []);
@@ -739,7 +706,7 @@ function ConsoleComponent(props) {
       }
     }, _callee7);
   })), []);
-  function _insertLinkInItem(_x6) {
+  function _insertLinkInItem(_x5) {
     return _insertLinkInItem2.apply(this, arguments);
   }
   function _insertLinkInItem2() {
@@ -876,36 +843,6 @@ function ConsoleComponent(props) {
     });
     pushCallback(callback);
   }, []);
-  function _reOpenClosedDividers() {
-    if (temporarily_closed_items.current.length == 0) {
-      return;
-    }
-    props.dispatch({
-      type: "open_listed_dividers",
-      divider_list: temporarily_closed_items.current
-    });
-  }
-  function _closeAllDividers() {
-    var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-    var _iterator2 = _createForOfIteratorHelper(console_items.current),
-      _step2;
-    try {
-      for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-        var entry = _step2.value;
-        if (entry.type == "divider") {
-          if (!entry.am_shrunk) {
-            entry.am_shrunk = true;
-            temporarily_closed_items.current.push(entry.unique_id);
-          }
-        }
-      }
-    } catch (err) {
-      _iterator2.e(err);
-    } finally {
-      _iterator2.f();
-    }
-    props.dispatch("close_all_divider");
-  }
   function _multiple_console_item_updates(updates) {
     var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
     props.dispatch({
@@ -923,35 +860,6 @@ function ConsoleComponent(props) {
       });
     });
     pushCallback(callback);
-  }
-  function _reduce_to_last_selected() {
-    var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-    if (props.console_selected_items_ref.current.length <= 1) {
-      if (callback) {
-        callback();
-      }
-      return;
-    }
-    var updates = {};
-    var _iterator3 = _createForOfIteratorHelper(props.console_selected_items_ref.current.slice(0, -1)),
-      _step3;
-    try {
-      for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-        var uid = _step3.value;
-        updates[uid] = {
-          am_selected: false,
-          search_string: null
-        };
-      }
-    } catch (err) {
-      _iterator3.e(err);
-    } finally {
-      _iterator3.f();
-    }
-    _multiple_console_item_updates(updates, function () {
-      props.set_console_selected_items(props.console_selected_items_ref.current.slice(-1));
-      pushCallback(callback);
-    });
   }
   function get_console_item_entry(unique_id) {
     return _lodash["default"].cloneDeep(props.console_items.current[_consoleItemIndex(unique_id)]);
@@ -983,11 +891,11 @@ function ConsoleComponent(props) {
     var updates = {};
     var shift_down = event != null && event.shiftKey;
     if (!shift_down) {
-      var _iterator4 = _createForOfIteratorHelper(props.console_selected_items_ref.current),
-        _step4;
+      var _iterator2 = _createForOfIteratorHelper(props.console_selected_items_ref.current),
+        _step2;
       try {
-        for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
-          var uid = _step4.value;
+        for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+          var uid = _step2.value;
           if (uid != unique_id) {
             updates[uid] = {
               am_selected: false,
@@ -996,9 +904,9 @@ function ConsoleComponent(props) {
           }
         }
       } catch (err) {
-        _iterator4.e(err);
+        _iterator2.e(err);
       } finally {
-        _iterator4.f();
+        _iterator2.f();
       }
       updates[unique_id] = {
         am_selected: true,
@@ -1032,48 +940,26 @@ function ConsoleComponent(props) {
     });
     return sitems;
   }
-  function _clearSelectedItem() {
-    var updates = {};
-    var _iterator5 = _createForOfIteratorHelper(props.console_selected_items_ref.current),
-      _step5;
-    try {
-      for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
-        var uid = _step5.value;
-        updates[unique_id] = {
-          am_selected: false,
-          search_string: null
-        };
-      }
-    } catch (err) {
-      _iterator5.e(err);
-    } finally {
-      _iterator5.f();
-    }
-    _multiple_console_item_updates(updates, function () {
-      props.set_console_selected_items({});
-      set_console_item_with_focus(null);
-    });
-  }
   function _consoleItemIndex(unique_id) {
     var console_items = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
     var counter = 0;
     if (console_items == null) {
       console_items = props.console_items.current;
     }
-    var _iterator6 = _createForOfIteratorHelper(console_items),
-      _step6;
+    var _iterator3 = _createForOfIteratorHelper(console_items),
+      _step3;
     try {
-      for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
-        var entry = _step6.value;
+      for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+        var entry = _step3.value;
         if (entry.unique_id == unique_id) {
           return counter;
         }
         ++counter;
       }
     } catch (err) {
-      _iterator6.e(err);
+      _iterator3.e(err);
     } finally {
-      _iterator6.f();
+      _iterator3.f();
     }
     return -1;
   }
@@ -1126,7 +1012,6 @@ function ConsoleComponent(props) {
   }
   function _moveEntryAfterEntry(move_id, above_id) {
     var callback = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
-    var new_console_items = _toConsumableArray(props.console_items.current);
     var move_entry = _lodash["default"].cloneDeep(get_console_item_entry(move_id));
     props.dispatch({
       type: "delete_item",
@@ -1163,8 +1048,6 @@ function ConsoleComponent(props) {
       }, filtered_items, callback);
       return;
     }
-    var trueOldIndex = _consoleItemIndex(move_entry.unique_id);
-    var trueNewIndex;
     var above_entry;
     if (newIndex == 0) {
       above_entry = null;
@@ -1244,37 +1127,36 @@ function ConsoleComponent(props) {
         }
       }, _callee9);
     }));
-    return function (_x7) {
+    return function (_x6) {
       return _ref9.apply(this, arguments);
     };
   }(), []);
   function _isDividerSelected() {
-    var _iterator7 = _createForOfIteratorHelper(props.console_selected_items_ref.current),
-      _step7;
+    var _iterator4 = _createForOfIteratorHelper(props.console_selected_items_ref.current),
+      _step4;
     try {
-      for (_iterator7.s(); !(_step7 = _iterator7.n()).done;) {
-        var uid = _step7.value;
+      for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
+        var uid = _step4.value;
         var centry = get_console_item_entry(uid);
         if (centry.type == "divider") {
           return true;
         }
       }
     } catch (err) {
-      _iterator7.e(err);
+      _iterator4.e(err);
     } finally {
-      _iterator7.f();
+      _iterator4.f();
     }
     return false;
   }
   function _doDeleteSelected() {
-    var new_console_items = [];
     var in_section = false;
     var to_delete = [];
-    var _iterator8 = _createForOfIteratorHelper(props.console_items.current),
-      _step8;
+    var _iterator5 = _createForOfIteratorHelper(props.console_items.current),
+      _step5;
     try {
-      for (_iterator8.s(); !(_step8 = _iterator8.n()).done;) {
-        var entry = _step8.value;
+      for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
+        var entry = _step5.value;
         if (in_section) {
           to_delete.push(entry.unique_id);
           in_section = entry.type != "section-end";
@@ -1288,9 +1170,9 @@ function ConsoleComponent(props) {
         }
       }
     } catch (err) {
-      _iterator8.e(err);
+      _iterator5.e(err);
     } finally {
-      _iterator8.f();
+      _iterator5.f();
     }
     _clear_all_selected_items(function () {
       props.dispatch({
@@ -1304,7 +1186,7 @@ function ConsoleComponent(props) {
   }
   function _deleteSelected2() {
     _deleteSelected2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee17() {
-      var new_console_items, confirm_text, _t0;
+      var confirm_text, _t0;
       return _regenerator().w(function (_context18) {
         while (1) switch (_context18.n) {
           case 0:
@@ -1312,7 +1194,6 @@ function ConsoleComponent(props) {
               _context18.n = 4;
               break;
             }
-            new_console_items = [];
             _context18.p = 1;
             if (!_isDividerSelected()) {
               _context18.n = 2;
@@ -1345,7 +1226,6 @@ function ConsoleComponent(props) {
     return _deleteSelected2.apply(this, arguments);
   }
   var _closeConsoleItem = (0, _react.useCallback)(function (unique_id) {
-    var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
     var centry = get_console_item_entry(unique_id);
     if (centry.type == "divider") {
       _deleteSection(unique_id);
@@ -1360,29 +1240,29 @@ function ConsoleComponent(props) {
   }, []);
   function _getNextEndIndex(start_id) {
     var start_index = _consoleItemIndex(start_id);
-    var _iterator9 = _createForOfIteratorHelper(props.console_items.current.slice(start_index)),
-      _step9;
+    var _iterator6 = _createForOfIteratorHelper(props.console_items.current.slice(start_index)),
+      _step6;
     try {
-      for (_iterator9.s(); !(_step9 = _iterator9.n()).done;) {
-        var entry = _step9.value;
+      for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
+        var entry = _step6.value;
         if (entry.type == "section-end") {
           return _consoleItemIndex(entry.unique_id);
         }
       }
     } catch (err) {
-      _iterator9.e(err);
+      _iterator6.e(err);
     } finally {
-      _iterator9.f();
+      _iterator6.f();
     }
     return props.console_items.current.length;
   }
   function _isInSection(unique_id) {
     var idx = _consoleItemIndex(unique_id);
-    var _iterator0 = _createForOfIteratorHelper(props.console_items.current.slice(idx + 1)),
-      _step0;
+    var _iterator7 = _createForOfIteratorHelper(props.console_items.current.slice(idx + 1)),
+      _step7;
     try {
-      for (_iterator0.s(); !(_step0 = _iterator0.n()).done;) {
-        var entry = _step0.value;
+      for (_iterator7.s(); !(_step7 = _iterator7.n()).done;) {
+        var entry = _step7.value;
         if (entry.type == "divider") {
           return false;
         } else {
@@ -1392,9 +1272,9 @@ function ConsoleComponent(props) {
         }
       }
     } catch (err) {
-      _iterator0.e(err);
+      _iterator7.e(err);
     } finally {
-      _iterator0.f();
+      _iterator7.f();
     }
     return false;
   }
@@ -1405,19 +1285,19 @@ function ConsoleComponent(props) {
     var callback = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : null;
     _lodash["default"].last(new_entries).set_focus = set_focus;
     var inserting_divider = false;
-    var _iterator1 = _createForOfIteratorHelper(new_entries),
-      _step1;
+    var _iterator8 = _createForOfIteratorHelper(new_entries),
+      _step8;
     try {
-      for (_iterator1.s(); !(_step1 = _iterator1.n()).done;) {
-        var entry = _step1.value;
+      for (_iterator8.s(); !(_step8 = _iterator8.n()).done;) {
+        var entry = _step8.value;
         if (entry.type == "divider") {
           inserting_divider = true;
         }
       }
     } catch (err) {
-      _iterator1.e(err);
+      _iterator8.e(err);
     } finally {
-      _iterator1.f();
+      _iterator8.f();
     }
     var last_id = _lodash["default"].last(new_entries).unique_id;
     var insert_index;
@@ -1525,50 +1405,7 @@ function ConsoleComponent(props) {
       unique_id: data.console_id,
       new_value: current
     });
-    //_setConsoleItemValue(data.console_id, "output_dict", current)
   }
-  function _addToLog(new_line) {
-    var log_content = console_error_log_text_ref.current;
-    var log_list = log_content.split(/\r?\n/);
-    var mlines = max_console_lines;
-    if (log_list.length >= mlines) {
-      log_list = log_list.slice(-1 * mlines + 1);
-      log_content = log_list.join("\n");
-    }
-    set_console_error_log_text(log_content + new_line);
-  }
-  var renderContextMenu = (0, _react.useMemo)(function () {
-    // return a single element, or nothing to use default browser behavior
-    return /*#__PURE__*/_react["default"].createElement(_core.Menu, null, /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-      icon: "new-text-box",
-      onClick: _addBlankText,
-      text: "New Text Cell"
-    }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-      icon: "code",
-      onClick: _addBlankCode,
-      text: "New Code Cell"
-    }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-      icon: "header",
-      onClick: _addBlankDivider,
-      text: "New Section"
-    }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-      icon: "clipboard",
-      onClick: function onClick() {
-        _pasteCell();
-      },
-      text: "Paste Cells"
-    }), /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-      icon: "reset",
-      onClick: _resetConsole,
-      intent: "warning",
-      text: "Clear output and reset"
-    }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-      icon: "trash",
-      onClick: _clearConsole,
-      intent: "danger",
-      text: "Erase everything"
-    }));
-  }, []);
   function _glif_text(show_glif_text, txt) {
     if (show_glif_text) {
       return txt;
@@ -1598,19 +1435,19 @@ function ConsoleComponent(props) {
     set_search_string(nval);
     pushCallback(function () {
       if (_are_selected()) {
-        var _iterator10 = _createForOfIteratorHelper(props.console_selected_items_ref.current),
-          _step10;
+        var _iterator9 = _createForOfIteratorHelper(props.console_selected_items_ref.current),
+          _step9;
         try {
-          for (_iterator10.s(); !(_step10 = _iterator10.n()).done;) {
-            var uid = _step10.value;
+          for (_iterator9.s(); !(_step9 = _iterator9.n()).done;) {
+            var uid = _step9.value;
             updates[uid] = {
               search_string: search_string_ref.current
             };
           }
         } catch (err) {
-          _iterator10.e(err);
+          _iterator9.e(err);
         } finally {
-          _iterator10.f();
+          _iterator9.f();
         }
         _multiple_console_item_updates(updates);
       }
@@ -1625,11 +1462,11 @@ function ConsoleComponent(props) {
   }
   function _handleFilter() {
     var updates = {};
-    var _iterator11 = _createForOfIteratorHelper(props.console_items.current),
-      _step11;
+    var _iterator0 = _createForOfIteratorHelper(props.console_items.current),
+      _step0;
     try {
-      for (_iterator11.s(); !(_step11 = _iterator11.n()).done;) {
-        var entry = _step11.value;
+      for (_iterator0.s(); !(_step0 = _iterator0.n()).done;) {
+        var entry = _step0.value;
         if (entry.type == "code" || entry.type == "text") {
           updates[entry.unique_id] = {
             show_on_filtered: entry.console_text.toLowerCase().includes(search_string_ref.current.toLowerCase())
@@ -1641,9 +1478,9 @@ function ConsoleComponent(props) {
         }
       }
     } catch (err) {
-      _iterator11.e(err);
+      _iterator0.e(err);
     } finally {
-      _iterator11.f();
+      _iterator0.f();
     }
     _multiple_console_item_updates(updates, function () {
       set_filter_console_items(true);
@@ -1722,13 +1559,6 @@ function ConsoleComponent(props) {
       if (_ret3) return _ret3.v;
     }
     set_search_helper_text("No more results");
-  }
-  function _handleSubmit(e) {
-    _searchNext();
-    e.preventDefault();
-  }
-  function _shouldCancelSortStart() {
-    return filter_console_items;
   }
   var menu_specs = (0, _react.useMemo)(function () {
     var ms = {
@@ -1860,8 +1690,8 @@ function ConsoleComponent(props) {
       items.push("Delete Section");
     }
     if (props.console_selected_items_ref.current.length == 1) {
-      var _unique_id = props.console_selected_items_ref.current[0];
-      var entry = get_console_item_entry(_unique_id);
+      var unique_id = props.console_selected_items_ref.current[0];
+      var entry = get_console_item_entry(unique_id);
       if (!entry) {
         return [];
       }
@@ -1931,8 +1761,7 @@ function ConsoleComponent(props) {
     });
   }
   var _sortStart = (0, _react.useCallback)(function (_ref1) {
-    var draggableId = _ref1.draggableId,
-      mode = _ref1.mode;
+    var draggableId = _ref1.draggableId;
     var idx = _consoleItemIndex(draggableId);
     var entry = props.console_items.current[idx];
     if (entry.type == "divider") {
@@ -1964,24 +1793,19 @@ function ConsoleComponent(props) {
       handleCreateViewer: props.handleCreateViewer
     });
   }, []);
-  var gbstyle = {
-    marginLeft: 1,
-    marginTop: 2
-  };
   var console_class = props.mState.console_is_shrunk ? "am-shrunk" : "not-shrunk";
   if (props.mState.console_is_zoomed) {
     console_class = "am-zoomed";
   }
-  var true_usable_width = props.mState.console_is_shrunk ? header_usable_width : usable_width;
-  true_usable_width = true_usable_width > MAX_CONSOLE_WIDTH ? MAX_CONSOLE_WIDTH : true_usable_width;
-  var outer_style = (0, _react.useMemo)(function () {
-    var newStyle = {};
-    if (props.style) {
-      newStyle = Object.assign({}, props.style);
-    }
-    newStyle.width = true_usable_width;
-    return newStyle;
-  }, [true_usable_width]);
+  var outer_style = {
+    width: "100%",
+    height: "100%",
+    flexGrow: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    paddingLeft: 0,
+    position: "relative"
+  };
   var header_style = (0, _react.useMemo)(function () {
     var newStyle = {};
     if (!props.shrinkable) {
@@ -2089,6 +1913,8 @@ function ConsoleComponent(props) {
     handleUnFilter: _handleUnFilter,
     searchNext: _searchNext,
     searchPrevious: _searchPrevious,
+    marginLeft: 2,
+    marginRight: 20,
     search_helper_text: search_helper_text
   }), !props.mState.console_is_shrunk && show_main_log && /*#__PURE__*/_react["default"].createElement(_searchable_console.SearchableConsole, {
     main_id: props.main_id,
@@ -2098,7 +1924,7 @@ function ConsoleComponent(props) {
     outer_style: {
       overflowX: "auto",
       overflowY: "auto",
-      height: usable_height,
+      flexGrow: 1,
       marginLeft: 20,
       marginRight: 20
     },
@@ -2111,7 +1937,7 @@ function ConsoleComponent(props) {
     outer_style: {
       overflowX: "auto",
       overflowY: "auto",
-      height: usable_height,
+      flexGrow: 1,
       marginLeft: 20,
       marginRight: 20
     },
@@ -2122,14 +1948,10 @@ function ConsoleComponent(props) {
     className: "contingent-scroll",
     onClick: _clickConsoleBody,
     style: {
-      height: usable_height
-    }
-  }, /*#__PURE__*/_react["default"].createElement(_sizing_tools.SizeProvider, {
-    value: {
-      availableWidth: true_usable_width,
-      availableHeight: usable_height,
-      topX: topX,
-      topY: topY
+      flexGrow: 1,
+      width: "100%",
+      position: "relative",
+      overflow: "auto"
     }
   }, /*#__PURE__*/_react["default"].createElement(_sortable_container.SortableComponent, {
     className: "console-items-div",
@@ -2147,7 +1969,7 @@ function ConsoleComponent(props) {
     axis: "y",
     tsocket: props.tsocket,
     extraProps: extraProps
-  })), /*#__PURE__*/_react["default"].createElement("div", {
+  }), /*#__PURE__*/_react["default"].createElement("div", {
     id: "padding-div",
     style: {
       height: 500
@@ -2187,7 +2009,6 @@ function SuperItem(props) {
   }
 }
 SuperItem = /*#__PURE__*/(0, _react.memo)(SuperItem);
-var divider_item_update_props = ["am_shrunk", "am_selected", "header_text", "console_available_width"];
 function DividerItem(props) {
   var _toggleShrink = (0, _react.useCallback)(function () {
     props.setConsoleItemValue(props.unique_id, "am_shrunk", !props.am_shrunk);
@@ -2200,12 +2021,6 @@ function DividerItem(props) {
   }, []);
   function _copyMe() {
     props.copyCell(props.unique_id);
-  }
-  function _copySection() {
-    props.copySection(props.unique_id);
-  }
-  function _deleteSection() {
-    props.deleteSection(props.unique_id);
   }
   function _pasteCell() {
     props.pasteCell(props.unique_id);
@@ -2221,9 +2036,8 @@ function DividerItem(props) {
     });
   }
   function _addBlankDivider() {
-    var self = this;
     _selectMe(null, function () {
-      props.addNewDividerItem();
+      props.addNewDivider();
     });
   }
   function _addBlankCode() {
@@ -2264,9 +2078,6 @@ function DividerItem(props) {
     _selectMe(e);
     e.stopPropagation();
   }
-  var converted_dict = {
-    __html: props.console_text
-  };
   var panel_class = props.am_shrunk ? "log-panel in-section divider-log-panel log-panel-invisible fixed-log-panel" : "log-panel divider-log-panel log-panel-visible fixed-log-panel";
   if (props.am_selected) {
     panel_class += " selected";
@@ -2297,6 +2108,10 @@ function DividerItem(props) {
   })), /*#__PURE__*/_react["default"].createElement(_core.EditableText, {
     value: props.header_text,
     onChange: _handleHeaderTextChange,
+    style: {
+      flex: "1 1 0",
+      "overflow": "auto"
+    },
     className: "console-divider-text"
   }), /*#__PURE__*/_react["default"].createElement("div", {
     className: "button-div d-flex flex-row"
@@ -2309,7 +2124,6 @@ function DividerItem(props) {
   }))));
 }
 DividerItem = /*#__PURE__*/(0, _react.memo)(DividerItem);
-var section_end_item_update_props = ["am_selected", "console_available_width"];
 function SectionEndItem(props) {
   function _pasteCell() {
     props.pasteCell(props.unique_id);
@@ -2326,7 +2140,7 @@ function SectionEndItem(props) {
   }
   function _addBlankDivider() {
     _selectMe(null, function () {
-      props.addNewDividerItem();
+      props.addNewDivider();
     });
   }
   function _addBlankCode() {
@@ -2390,16 +2204,9 @@ function SectionEndItem(props) {
   })));
 }
 SectionEndItem = /*#__PURE__*/(0, _react.memo)(SectionEndItem);
-var log_item_update_props = ["is_error", "am_shrunk", "am_selected", "in_section", "summary_text", "console_text", "console_available_width"];
 function LogItem(props) {
   var last_output_text = (0, _react.useRef)("");
   var body_ref = (0, _react.useRef)(null);
-  var _useSize5 = (0, _sizing_tools.useSize)(body_ref, 0, "LogItem"),
-    _useSize6 = _slicedToArray(_useSize5, 4),
-    usable_width = _useSize6[0],
-    usable_height = _useSize6[1],
-    topX = _useSize6[2],
-    topY = _useSize6[3];
   (0, _react.useEffect)(function () {
     executeEmbeddedScripts();
     // makeTablesSortable()
@@ -2418,19 +2225,19 @@ function LogItem(props) {
       // to avoid doubles of bokeh images
       last_output_text.current = props.output_text;
       var scripts = $("#" + props.unique_id + " .log-code-output script").toArray();
-      var _iterator13 = _createForOfIteratorHelper(scripts),
-        _step13;
+      var _iterator10 = _createForOfIteratorHelper(scripts),
+        _step10;
       try {
-        for (_iterator13.s(); !(_step13 = _iterator13.n()).done;) {
-          var script = _step13.value;
+        for (_iterator10.s(); !(_step10 = _iterator10.n()).done;) {
+          var script = _step10.value;
           try {
             window.eval(script.text);
           } catch (e) {}
         }
       } catch (err) {
-        _iterator13.e(err);
+        _iterator10.e(err);
       } finally {
-        _iterator13.f();
+        _iterator10.f();
       }
     }
   }
@@ -2460,7 +2267,7 @@ function LogItem(props) {
   }
   function _addBlankDivider() {
     _selectMe(null, function () {
-      props.addNewDividerItem();
+      props.addNewDivider();
     });
   }
   function _addBlankCode() {
@@ -2514,24 +2321,24 @@ function LogItem(props) {
   if (props.is_error) {
     panel_class += " error-log-panel";
   }
-  var uwidth = props.in_section ? usable_width - SECTION_INDENT / 2 : usable_width;
-  uwidth -= BUTTON_CONSUMED_SPACE;
   var body_style = (0, _react.useMemo)(function () {
     return {
       marginTop: 10,
       marginLeft: 30,
       padding: 8,
-      width: uwidth,
+      flex: "1 1 0",
+      minWidth: 0,
       border: ".5px solid #c7c7c7",
       overflowY: "scroll"
     };
-  }, [uwidth]);
+  }, []);
   var body_shrunk_style = (0, _react.useMemo)(function () {
     return {
       marginLeft: 30,
-      width: uwidth
+      flexGrow: 1,
+      position: "relative"
     };
-  }, [uwidth]);
+  }, []);
   return /*#__PURE__*/_react["default"].createElement(_core.ContextMenu, {
     content: renderContextMenu()
   }, /*#__PURE__*/_react["default"].createElement("div", {
@@ -2551,7 +2358,12 @@ function LogItem(props) {
     style: GLYPH_BUTTON_STYLE5,
     handleClick: _toggleShrink
   })), /*#__PURE__*/_react["default"].createElement("div", {
-    className: "d-flex flex-column"
+    className: "d-flex flex-column",
+    style: {
+      flex: "1 1 0",
+      minWidth: 0,
+      overflow: "auto"
+    }
   }, /*#__PURE__*/_react["default"].createElement("div", {
     className: "log-panel-body d-flex flex-row"
   }, props.am_shrunk && /*#__PURE__*/_react["default"].createElement("div", {
@@ -2575,16 +2387,9 @@ function LogItem(props) {
   }))))));
 }
 LogItem = /*#__PURE__*/(0, _react.memo)(LogItem);
-var blob_item_update_props = ["is_error", "am_shrunk", "am_selected", "in_section", "summary_text", "image_data_str", "console_available_width"];
 function BlobItem(props) {
   var last_output_text = (0, _react.useRef)("");
   var body_ref = (0, _react.useRef)(null);
-  var _useSize7 = (0, _sizing_tools.useSize)(body_ref, 0, "BlobItem"),
-    _useSize8 = _slicedToArray(_useSize7, 4),
-    usable_width = _useSize8[0],
-    usable_height = _useSize8[1],
-    topX = _useSize8[2],
-    topY = _useSize8[3];
   (0, _react.useEffect)(function () {
     executeEmbeddedScripts();
     // makeTablesSortable()
@@ -2603,19 +2408,19 @@ function BlobItem(props) {
       // to avoid doubles of bokeh images
       last_output_text.current = props.output_text;
       var scripts = $("#" + props.unique_id + " .log-code-output script").toArray();
-      var _iterator14 = _createForOfIteratorHelper(scripts),
-        _step14;
+      var _iterator11 = _createForOfIteratorHelper(scripts),
+        _step11;
       try {
-        for (_iterator14.s(); !(_step14 = _iterator14.n()).done;) {
-          var script = _step14.value;
+        for (_iterator11.s(); !(_step11 = _iterator11.n()).done;) {
+          var script = _step11.value;
           try {
             window.eval(script.text);
           } catch (e) {}
         }
       } catch (err) {
-        _iterator14.e(err);
+        _iterator11.e(err);
       } finally {
-        _iterator14.f();
+        _iterator11.f();
       }
     }
   }
@@ -2645,11 +2450,10 @@ function BlobItem(props) {
   }
   function _addBlankDivider() {
     _selectMe(null, function () {
-      props.addNewDividerItem();
+      props.addNewDivider();
     });
   }
   function _addBlankCode() {
-    var self = this;
     _selectMe(null, function () {
       props.addNewCodeItem();
     });
@@ -2694,24 +2498,25 @@ function BlobItem(props) {
   if (props.am_selected) {
     panel_class += " selected";
   }
-  var uwidth = props.in_section ? usable_width - SECTION_INDENT / 2 : usable_width;
-  uwidth -= BUTTON_CONSUMED_SPACE;
   var body_style = (0, _react.useMemo)(function () {
     return {
       marginTop: 10,
       marginLeft: 30,
       padding: 8,
-      width: uwidth,
+      flex: "1 1 0",
+      minWidth: 0,
+      position: 'relative',
       border: ".5px solid #c7c7c7",
       overflowY: "scroll"
     };
-  }, [uwidth]);
+  }, []);
   var body_shrunk_style = (0, _react.useMemo)(function () {
     return {
       marginLeft: 30,
-      width: uwidth
+      flexGrow: 1,
+      position: "relative"
     };
-  }, [uwidth]);
+  }, []);
   return /*#__PURE__*/_react["default"].createElement(_core.ContextMenu, {
     content: renderContextMenu()
   }, /*#__PURE__*/_react["default"].createElement("div", {
@@ -2731,7 +2536,12 @@ function BlobItem(props) {
     style: GLYPH_BUTTON_STYLE5,
     handleClick: _toggleShrink
   })), /*#__PURE__*/_react["default"].createElement("div", {
-    className: "d-flex flex-column"
+    className: "d-flex flex-column",
+    style: {
+      flex: "1 1 0",
+      minWidth: 0,
+      overflow: "auto"
+    }
   }, /*#__PURE__*/_react["default"].createElement("div", {
     className: "log-panel-body d-flex flex-row"
   }, props.am_shrunk && /*#__PURE__*/_react["default"].createElement("div", {
@@ -2746,8 +2556,7 @@ function BlobItem(props) {
     style: body_style
   }, props.image_data_str && /*#__PURE__*/_react["default"].createElement("img", {
     src: props.image_data_str,
-    alt: "An Image",
-    width: uwidth - 25
+    alt: "An Image"
   })), /*#__PURE__*/_react["default"].createElement("div", {
     className: "button-div d-flex flex-row"
   }, /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
@@ -2759,7 +2568,6 @@ function BlobItem(props) {
   }))))));
 }
 BlobItem = /*#__PURE__*/(0, _react.memo)(BlobItem);
-var code_item_update_props = ["am_shrunk", "set_focus", "am_selected", "search_string", "summary_text", "console_text", "in_section", "show_spinner", "execution_count", "output_dict", "console_available_width", "dark_theme"];
 function ConsoleCodeItem(props) {
   props = _objectSpread({
     summary_text: null
@@ -2767,12 +2575,6 @@ function ConsoleCodeItem(props) {
   var elRef = (0, _react.useRef)(null);
   var am_selected_previous = (0, _react.useRef)(false);
   var setFocusFunc = (0, _react.useRef)(null);
-  var _useSize9 = (0, _sizing_tools.useSize)(elRef, 0, "ConsoleCodeItem"),
-    _useSize0 = _slicedToArray(_useSize9, 4),
-    usable_width = _useSize0[0],
-    usable_height = _useSize0[1],
-    topX = _useSize0[2],
-    topY = _useSize0[3];
   (0, _react.useEffect)(function () {
     if (props.am_selected && !am_selected_previous.current && elRef && elRef.current) {
       scrollMeIntoView();
@@ -2813,24 +2615,18 @@ function ConsoleCodeItem(props) {
       outer_element.scrollTop -= _distance_to_move;
     }
   }
-  function executeEmbeddedScripts() {
-    var scripts = $("#" + props.unique_id + " .log-code-output script").toArray();
-    var _iterator15 = _createForOfIteratorHelper(scripts),
-      _step15;
-    try {
-      for (_iterator15.s(); !(_step15 = _iterator15.n()).done;) {
-        var script = _step15.value;
-        // noinspection EmptyCatchBlockJS,UnusedCatchParameterJS
-        try {
-          window.eval(script.text);
-        } catch (e) {}
-      }
-    } catch (err) {
-      _iterator15.e(err);
-    } finally {
-      _iterator15.f();
-    }
-  }
+
+  // function executeEmbeddedScripts() {
+  //     let scripts = $("#" + props.unique_id + " .log-code-output script").toArray();
+  //     for (let script of scripts) {
+  //         // noinspection EmptyCatchBlockJS,UnusedCatchParameterJS
+  //         try {
+  //             window.eval(script.text)
+  //         } catch (e) {
+  //
+  //         }
+  //     }
+  // }
 
   // function makeTablesSortable() {
   //     let tables = $("#" + props.unique_id + " table.sortable").toArray();
@@ -2845,10 +2641,6 @@ function ConsoleCodeItem(props) {
       "console_id": props.unique_id
     }, null, null, props.main_id);
   }, []);
-  function _showMySpinner() {
-    var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-    props.setConsoleItemValue(props.unique_id, "show_spinner", true, callback);
-  }
   function _stopMySpinner() {
     props.setConsoleItemValue(props.unique_id, "show_spinner", false);
   }
@@ -2915,7 +2707,7 @@ function ConsoleCodeItem(props) {
   }, []);
   var _addBlankDivider = (0, _react.useCallback)(function () {
     _selectMe(null, function () {
-      props.addNewDividerItem();
+      props.addNewDivider();
     });
   }, []);
   var _addBlankCode = (0, _react.useCallback)(function () {
@@ -2979,36 +2771,29 @@ function ConsoleCodeItem(props) {
       _selectMe();
     }
   }, []);
-  var panel_style = props.am_shrunk ? "log-panel log-panel-invisible" : "log-panel log-panel-visible";
+  var panel_clase = props.am_shrunk ? "log-panel log-panel-invisible" : "log-panel log-panel-visible";
   if (props.am_selected) {
-    panel_style += " selected";
+    panel_clase += " selected";
   }
   if (props.in_section) {
-    panel_style += " in-section";
+    panel_clase += " in-section";
   }
   var output_dict = {
     __html: props.output_text
   };
   var spinner_val = props.running ? null : 0;
-  var uwidth = props.in_section ? usable_width - SECTION_INDENT / 2 : usable_width;
-  uwidth -= BUTTON_CONSUMED_SPACE;
   var body_shrunk_style = (0, _react.useMemo)(function () {
     return {
       marginLeft: 30,
-      width: uwidth - 80
+      flexGrow: 1,
+      position: "relative"
     };
-  }, [uwidth]);
+  }, []);
+  // noinspection JSValidateTypes
   return /*#__PURE__*/_react["default"].createElement(_core.ContextMenu, {
     content: cm
-  }, /*#__PURE__*/_react["default"].createElement(_sizing_tools.SizeProvider, {
-    value: {
-      availableWidth: uwidth,
-      availableHeight: usable_height,
-      topX: topX,
-      topY: topY
-    }
   }, /*#__PURE__*/_react["default"].createElement("div", {
-    className: panel_style + " d-flex flex-row",
+    className: panel_clase + " d-flex flex-row",
     ref: elRef,
     onClick: _consoleItemClick,
     id: props.unique_id
@@ -3039,11 +2824,19 @@ function ConsoleCodeItem(props) {
     icon: trash_icon
   }))), !props.am_shrunk && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
     className: "d-flex flex-column",
-    style: WIDTH_100
+    style: {
+      flex: "1 1 0",
+      minWidth: 0,
+      overflow: "hidden"
+    }
   }, /*#__PURE__*/_react["default"].createElement("div", {
     className: "d-flex flex-row"
   }, /*#__PURE__*/_react["default"].createElement("div", {
-    className: "log-panel-body d-flex flex-row console-code"
+    className: "log-panel-body d-flex flex-row console-code",
+    style: {
+      minWidth: 0,
+      overflow: "hidden"
+    }
   }, /*#__PURE__*/_react["default"].createElement("div", {
     className: "button-div d-flex pr-1"
   }, !props.show_spinner && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
@@ -3065,7 +2858,8 @@ function ConsoleCodeItem(props) {
     code_content: props.console_text,
     extraKeys: _extraKeys,
     search_term: props.search_string,
-    no_height: true,
+    flex_height: true,
+    no_width: true,
     tsocket: props.tsocket,
     container_id: props.main_id,
     saveMe: null
@@ -3091,10 +2885,10 @@ function ConsoleCodeItem(props) {
   }))), /*#__PURE__*/_react["default"].createElement("div", {
     className: "log-code-output",
     style: {
-      maxWidth: uwidth - 50
+      width: "100%"
     },
     dangerouslySetInnerHTML: output_dict
-  }))))));
+  })))));
 }
 ConsoleCodeItem = /*#__PURE__*/(0, _react.memo)(ConsoleCodeItem);
 function ResourceLinkButton(props) {
@@ -3165,7 +2959,6 @@ function ResourceLinkButton(props) {
   }));
 }
 ResourceLinkButton = /*#__PURE__*/(0, _react.memo)(ResourceLinkButton);
-var text_item_update_props = ["am_shrunk", "set_focus", "serach_string", "am_selected", "show_markdown", "in_section", "summary_text", "console_text", "console_available_width", "links"];
 function ConsoleTextItem(props) {
   props = _objectSpread({
     summary_text: null,
@@ -3174,12 +2967,6 @@ function ConsoleTextItem(props) {
   var elRef = (0, _react.useRef)(null);
   var am_selected_previous = (0, _react.useRef)(false);
   var setFocusFunc = (0, _react.useRef)(null);
-  var _useSize1 = (0, _sizing_tools.useSize)(elRef, 0, "ConsoleTextItem"),
-    _useSize10 = _slicedToArray(_useSize1, 4),
-    usable_width = _useSize10[0],
-    usable_height = _useSize10[1],
-    topX = _useSize10[2],
-    topY = _useSize10[3];
   (0, _react.useEffect)(function () {
     if (props.am_selected && !am_selected_previous.current && elRef && elRef.current) {
       scrollMeIntoView();
@@ -3239,12 +3026,6 @@ function ConsoleTextItem(props) {
   var _deleteMe = (0, _react.useCallback)(function () {
     props.handleDelete(props.unique_id);
   }, []);
-  function _handleKeyDown(event) {
-    if (event.key == "Tab") {
-      props.goToNextCell(props.unique_id);
-      event.preventDefault();
-    }
-  }
   function _gotEnter() {
     props.goToNextCell(props.unique_id);
     _showMarkdown();
@@ -3300,7 +3081,6 @@ function ConsoleTextItem(props) {
             if (_t10 != "canceled") {
               errorDrawerFuncs.addFromError("Error duplicating resource ".concat(res_name), _t10);
             }
-            return _context20.a(2);
           case 3:
             return _context20.a(2);
         }
@@ -3311,7 +3091,6 @@ function ConsoleTextItem(props) {
   function _deleteLinkButton(index) {
     var new_links = _lodash["default"].cloneDeep(props.links);
     new_links.splice(index, 1);
-    var self = this;
     props.setConsoleItemValue(props.unique_id, "links", new_links, function () {
       console.log("i am here with nlinks " + String(props.links.length));
     });
@@ -3323,7 +3102,7 @@ function ConsoleTextItem(props) {
   }
   function _addBlankDivider() {
     _selectMe(null, function () {
-      props.addNewDividerItem();
+      props.addNewDivider();
     });
   }
   function _addBlankCode() {
@@ -3377,25 +3156,6 @@ function ConsoleTextItem(props) {
       _selectMe();
     }
   }, []);
-  function _setCMObject(cmobject) {
-    cmobject.current = cmobject;
-    if (props.set_focus) {
-      cmobject.current.focus();
-      cmobject.current.setCursor({
-        line: 0,
-        ch: 0
-      });
-      props.setConsoleItemValue(props.unique_id, "set_focus", false, _selectMe);
-    }
-    if (cmobject.current != null) {
-      cmobject.current.on("focus", function () {
-        props.setFocus(props.unique_id, _selectMe);
-      });
-      cmobject.current.on("blur", function () {
-        props.setFocus(null);
-      });
-    }
-  }
   var _extraKeys = (0, _react.useMemo)(function () {
     return [{
       key: 'Ctrl-Enter',
@@ -3430,9 +3190,6 @@ function ConsoleTextItem(props) {
   if (props.in_section) {
     panel_class += " in-section";
   }
-  var gbstyle = {
-    marginLeft: 1
-  };
   var link_buttons = props.links.map(function (link, index) {
     return /*#__PURE__*/_react["default"].createElement(ResourceLinkButton, {
       key: index,
@@ -3443,24 +3200,16 @@ function ConsoleTextItem(props) {
       res_name: link.res_name
     });
   });
-  var uwidth = props.in_section ? usable_width - SECTION_INDENT / 2 : usable_width;
-  uwidth -= BUTTON_CONSUMED_SPACE;
   var body_shrunk_style = (0, _react.useMemo)(function () {
     return {
       marginLeft: 30,
-      width: uwidth - 80
+      flexGrow: 1,
+      position: "relative"
     };
-  }, [uwidth]);
-  // noinspection JSUnusedAssignment
+  }, []);
+  // noinspection JSUnusedAssignment,JSValidateTypes
   return /*#__PURE__*/_react["default"].createElement(_core.ContextMenu, {
     content: contextMenu
-  }, /*#__PURE__*/_react["default"].createElement(_sizing_tools.SizeProvider, {
-    value: {
-      availableWidth: uwidth,
-      availableHeight: usable_height,
-      topX: topX,
-      topY: topY
-    }
   }, /*#__PURE__*/_react["default"].createElement("div", {
     className: panel_class + " d-flex flex-row",
     onClick: _consoleItemClick,
@@ -3497,19 +3246,31 @@ function ConsoleTextItem(props) {
   }))), !props.am_shrunk && /*#__PURE__*/_react["default"].createElement("div", {
     className: "d-flex flex-column",
     style: {
-      width: "100%"
+      flex: "1 1 0",
+      minWidth: 0,
+      overflow: "hidden"
     }
   }, /*#__PURE__*/_react["default"].createElement("div", {
-    className: "log-panel-body text-box d-flex flex-row"
+    className: "log-panel-body console-code d-flex flex-row",
+    style: {
+      minWidth: 0,
+      overflow: "hidden"
+    }
   }, /*#__PURE__*/_react["default"].createElement("div", {
-    className: "button-div d-inline-flex pr-1"
+    className: "button-div d-flex pr-1"
   }, /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
     handleClick: _toggleMarkdown,
     intent: "success",
     tooltip: "Convert to/from markdown",
     icon: "paragraph"
   })), /*#__PURE__*/_react["default"].createElement("div", {
-    className: "d-flex flex-column"
+    className: "d-flex flex-column",
+    style: {
+      flex: "1 1 0",
+      minWidth: 0,
+      position: "relative",
+      overflow: "hidden"
+    }
   }, !really_show_markdown && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror6, {
     handleChange: _handleChange,
     readOnly: false,
@@ -3521,7 +3282,8 @@ function ConsoleTextItem(props) {
     code_content: props.console_text,
     extraKeys: _extraKeys,
     search_term: props.search_string,
-    no_height: true,
+    flex_height: true,
+    no_width: true,
     tsocket: props.tsocket,
     container_id: props.main_id,
     saveMe: null
@@ -3529,17 +3291,20 @@ function ConsoleTextItem(props) {
     className: "text-panel-output markdown-heading-sizes",
     onDoubleClick: _hideMarkdown,
     style: {
-      width: uwidth - 81,
       padding: 9
     },
     dangerouslySetInnerHTML: converted_dict
   }), link_buttons), /*#__PURE__*/_react["default"].createElement("div", {
+    style: {
+      width: 37
+    }
+  }), /*#__PURE__*/_react["default"].createElement("div", {
     className: "button-div float-buttons d-flex flex-row"
   }, /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
     handleClick: _deleteMe,
     tooltip: "Delete this item",
     style: empty_style,
     icon: trash_icon
-  })))))));
+  }))))));
 }
 ConsoleTextItem = /*#__PURE__*/(0, _react.memo)(ConsoleTextItem);

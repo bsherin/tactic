@@ -5,10 +5,10 @@ import _ from 'lodash';
 
 import { Icon } from "@blueprintjs/core";
 import { DraggableCore } from "react-draggable"
-import { guid } from "./utilities_react.js";
+import { guid } from "../tactic_js/utilities_react.js";
 
-import { SizeContext } from "./sizing_tools";
-import {SelectedPaneContext} from "./utilities_react";
+import { SizeContext } from "../tactic_js/sizing_tools";
+import {SelectedPaneContext} from "../tactic_js/utilities_react";
 
 export {HorizontalPanes, VerticalPanes, HANDLE_WIDTH, DragHandle}
 

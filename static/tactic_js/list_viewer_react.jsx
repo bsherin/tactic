@@ -25,6 +25,7 @@ import {DialogContext, withDialogs} from "./modal_react";
 import {StatusContext} from "./toaster";
 import {SelectedPaneContext} from "./utilities_react";
 import {SizeContext, useSize, withSizeContext} from "./sizing_tools";
+import {ICON_BAR_WIDTH} from "./sizing_tools";
 
 export {list_viewer_props, ListViewerApp}
 
@@ -57,17 +58,17 @@ const LIST_PADDING_TOP = 20;
 
 function ListEditor(props) {
     const top_ref = useRef(null);
-    const [usable_width, usable_height, topX, topY] = useSize(top_ref, 0, "ListEditor");
 
     let tastyle = {
         resize: "horizontal",
         margin: 2,
-        height: usable_height - LIST_PADDING_TOP - 4
+        flexGrow: 1
+        //height: usable_height - LIST_PADDING_TOP - 4
     };
     return (
         <div id="listarea-container"
              ref={top_ref}
-             style={{margin: 2, paddingTop: LIST_PADDING_TOP}}>
+             style={{display: "flex", margin: 2, paddingTop: LIST_PADDING_TOP}}>
             <TextArea
                 cols="50"
                 style={tastyle}
@@ -99,13 +100,10 @@ function ListViewerApp(props) {
         ...props
     };
     const top_ref = useRef(null);
-    const search_ref = useRef(null);
 
     const savedContent = useRef(props.the_content);
 
     const [list_content, set_list_content, list_content_ref] = useStateAndRef(props.the_content);
-
-    const [usable_width, usable_height, topX, topY] = useSize(top_ref, 0, "ListViewer");
 
     const [resource_name, set_resource_name] = useState(props.resource_name);
 
@@ -285,8 +283,10 @@ function ListViewerApp(props) {
 
     let my_props = {...props};
     let outer_style = {
-        width: "100%",
-        height: sizeInfo.availableHeight,
+        width: `calc(100% - ${ICON_BAR_WIDTH}px)`,
+        flexGrow: 1,
+        display: 'flex',
+        flexDirection: 'column',
         paddingLeft: 0,
         position: "relative"
     };
@@ -344,9 +344,12 @@ async function list_viewer_main() {
         const domContainer = document.querySelector('#root');
         const root = createRoot(domContainer);
         root.render(
-            // <HotkeysProvider>
-                the_element
-            // </HotkeysProvider>
+                <div style={{display: "flex", flexDirection: "column",
+                                position: "relative",
+                                height: "100%",
+                                width: "100%"}}>
+                {the_element}
+            </div>
         )
     }
 

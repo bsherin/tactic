@@ -148,12 +148,12 @@ table {
 .verticalIconBar {
     position: fixed;
     right: 0;
-    top: 80px;
+    top: 50px;
     bottom: 0;
     display: flex;
+    padding-top: 30px;
     flex-direction: column;
     align-items: center;
-    padding: 10px 0;
   }
 
   .iconBarButton {

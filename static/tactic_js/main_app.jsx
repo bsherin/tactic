@@ -17,7 +17,7 @@ import {TacticNavbar} from "./blueprint_navbar";
 import {TacticMenubar} from "./menu_utilities";
 import {MainTableCard, MainTableCardHeader, FreeformBody} from "./table_react";
 import {BlueprintTable, compute_added_column_width} from "./blueprint_table";
-import {HorizontalPanes, VerticalPanes} from "./resizing_layouts2";
+import {HorizontalPanes, VerticalPanes} from "./resizing_allotment";
 import {ProjectMenu, DocumentMenu, ColumnMenu, RowMenu, ViewMenu, MenuComponent} from "./main_menus_react";
 import {TileContainer, tilesReducer} from "./tile_react";
 import {ExportsViewer} from "./export_viewer_react";
@@ -28,7 +28,7 @@ import {doFlash} from "./toaster"
 import {withStatus} from "./toaster";
 import {withErrorDrawer} from "./error_drawer";
 import {renderSpinnerMessage, useConnection, useConstructor, useStateAndRef} from "./utilities_react";
-import {useSize, withSizeContext, SizeContext} from "./sizing_tools";
+import {useSize, withSizeContext, SizeContext, ICON_BAR_WIDTH} from "./sizing_tools";
 import {ErrorBoundary} from "./error_boundary";
 import {useCallbackStack, useReducerAndRef} from "./utilities_react";
 import {SettingsContext, withSettings} from "./settings";
@@ -1097,10 +1097,10 @@ function MainApp(props) {
     let bottom_pane = (
         <HorizontalPanes left_pane={console_pane}
                          right_pane={exports_pane}
+                         separatorPadding={5}
                          show_handle={true}
                          fixed_height={mState.console_is_shrunk}
                          initial_width_fraction={mState.console_width_fraction}
-                         dragIconSize={15}
                          outer_style={outer_hp_style}
                          handleSplitUpdate={_handleConsoleFractionChange}
         />
@@ -1125,7 +1125,7 @@ function MainApp(props) {
                 <div style={{paddingLeft: 10}}>
                     {tile_pane}
                 </div>
-                {mState.console_is_shrunk && bottom_pane}
+                {/*{mState.console_is_shrunk && bottom_pane}*/}
             </Fragment>
         )
     } else {
@@ -1136,7 +1136,7 @@ function MainApp(props) {
                                  show_handle={true}
                                  scrollAdjustSelectors={[".bp6-table-quadrant-scroll-container", ".tile-div"]}
                                  initial_width_fraction={mState.horizontal_fraction}
-                                 dragIconSize={15}
+                                 separatorPadding={8}
                                  handleSplitUpdate={_handleHorizontalFractionChange}
                                  handleResizeStart={_handleResizeStart}
                                  handleResizeEnd={_handleResizeEnd}
@@ -1183,59 +1183,46 @@ function MainApp(props) {
                      ref={main_outer_ref}
                      style={{width: "100%", height: usable_height}}>
                     {mState.console_is_zoomed &&
-                        <SizeContext.Provider value={{
-                            availableWidth: usable_width,
-                            availableHeight: usable_height - BOTTOM_MARGIN,
-                            topX: topX,
-                            topY: topY
-                        }}>
-                        <HorizontalPanes left_pane={console_pane}
-                         right_pane={exports_pane}
-                         show_handle={true}
-                         fixed_height={mState.console_is_shrunk}
-                         initial_width_fraction={mState.console_width_fraction}
-                         dragIconSize={15}
-                         outer_style={outer_hp_style}
-                         handleSplitUpdate={_handleConsoleFractionChange}
-                        />
-                        </SizeContext.Provider>
+                        <div style={{width: `calc(100% - ${ICON_BAR_WIDTH}px)`,
+                            height: usable_height - BOTTOM_MARGIN}}>
+                            <HorizontalPanes left_pane={console_pane}
+                                             right_pane={exports_pane}
+                                             separatorPadding={5}
+                                             show_handle={true}
+                                             fixed_height={mState.console_is_shrunk}
+                                             initial_width_fraction={mState.console_width_fraction}
+                                             outer_style={outer_hp_style}
+                                             handleSplitUpdate={_handleConsoleFractionChange}
+                            />
+                        </div>
                     }
                     {!mState.console_is_zoomed && mState.console_is_shrunk &&
-                        <SizeContext.Provider value={{
-                            availableWidth: usable_width,
-                            availableHeight: usable_height - CONSOLE_HEADER_HEIGHT - BOTTOM_MARGIN - 20,
-                            topX: topX,
-                            topY: topY
-                        }}>
-                            {top_pane}
-                            <SizeContext.Provider value={{
-                                topX: topX,
-                                topY: topY,
-                                availableWidth: usable_width,
-                                availableHeight: CONSOLE_HEADER_HEIGHT}}>
+                        <div style={{width: `calc(100% - ${ICON_BAR_WIDTH}px)`}}>
+                            <div style={{
+                                height: usable_height - BOTTOM_MARGIN - CONSOLE_HEADER_HEIGHT - 20,
+                                overflow: "auto"
+                            }}>
+                                {top_pane}
+                            </div>
+                            <div style={{height: CONSOLE_HEADER_HEIGHT}}>
                                 {bottom_pane}
-                            </SizeContext.Provider>
-                        </SizeContext.Provider>
+                            </div>
+                        </div>
                     }
                     {!mState.console_is_zoomed && !mState.console_is_shrunk &&
-                        <SizeContext.Provider value={{
-                            availableWidth: usable_width,
-                            availableHeight: usable_height - BOTTOM_MARGIN,
-                            topX: topX,
-                            topY: topY
-                        }}>
+                            <div style={{width: `calc(100% - ${ICON_BAR_WIDTH}px)`, height: usable_height - BOTTOM_MARGIN}}>
                             <VerticalPanes top_pane={top_pane}
                                            bottom_pane={bottom_pane}
                                            show_handle={true}
                                            initial_height_fraction={mState.height_fraction}
-                                           dragIconSize={15}
                                            scrollAdjustSelectors={[".bp6-table-quadrant-scroll-container", ".tile-div"]}
                                            handleSplitUpdate={_handleVerticalSplitUpdate}
                                            handleResizeStart={_handleResizeStart}
                                            handleResizeEnd={_handleResizeEnd}
+                                           separatorPadding={10}
                                            overflow="hidden"
                             />
-                        </SizeContext.Provider>
+                        </div>
                     }
                 </div>
                 <MetadataDrawer res_type="project"

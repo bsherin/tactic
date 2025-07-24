@@ -12,7 +12,9 @@ import {SettingsContext} from "./settings"
 
 const StatusContext = createContext(null);
 
-export {doFlash, withStatus, StatusContext, messageOrError}
+const STATUS_BAR_HEIGHT = 25
+
+export {doFlash, withStatus, StatusContext, messageOrError, STATUS_BAR_HEIGHT}
 
 const DEFAULT_TIMEOUT = 20000;
 
@@ -201,11 +203,14 @@ function withStatus(WrappedComponent) {
         }, []);
 
         return (
-            <Fragment>
-                <StatusContext.Provider value={statusFuncsRef.current}>
-                    <WrappedComponent {...props}
-                    />
+            <div style={{display: "flex", flexDirection: "column",
+                position: "relative", width: "100%", height: "100%"}}>
+                 <StatusContext.Provider value={statusFuncsRef.current}>
+                    <div style={{display: "flex", flexDirection: "column", position: "relative", flexGrow: 1}}>
+                        <WrappedComponent {...props}/>
+                    </div>
                 </StatusContext.Provider>
+
                 <Status show_spinner={show_spinner}
                         status_message={status_message}
                         spinner_size={spinner_size}
@@ -214,7 +219,7 @@ function withStatus(WrappedComponent) {
                         handleClose={() => {
                             _clearStatus(null)
                         }}/>
-            </Fragment>
+            </div>
         )
     }
     return memo(newFunc)
@@ -238,7 +243,7 @@ function Status(props) {
 
     return (
         <div ref={elRef}
-             style={{height: 35, width: "100%", position: "absolute", "left": left, "bottom": 0}}
+             style={{height: STATUS_BAR_HEIGHT, width: "100%", "left": left, "bottom": 0}}
              className={outer_cname}>
             <div className={cname} style={{position: "absolute", bottom: 5, left: props.leftEdge, marginLeft: 15}}>
                 {props.show_spinner &&
@@ -246,10 +251,14 @@ function Status(props) {
                 {props.show_close && (props.show_spiner || props.status_message) &&
                     <GlyphButton handleClick={props.handleClose}
                                  size="small"
+                                 style={{paddingTop: 5}}
                                  icon="cross"/>}
                 {props.status_message &&
                     <div className="d-flex flex-column justify-content-around" style={{marginLeft: 8}}>
-                        <div id="status-msg-area" className="bp6-ui-text" style={{fontSize: 12}}>{props.status_message}</div>
+                        <div id="status-msg-area" className="bp6-ui-text"
+                             style={{fontSize: 10, paddingTop: 5}}>
+                            {props.status_message}
+                        </div>
                     </div>
                 }
             </div>

@@ -401,7 +401,6 @@ function BpSelectorTable(props) {
     cwidths: columnWidths,
     nrows: props.num_rows
   };
-  var hsh = (0, _objectHash["default"])(obj);
   var dependencies;
   if (props.open_resources_ref && props.open_resources_ref.current) {
     dependencies = [props.data_dict, props.open_resources_ref.current];

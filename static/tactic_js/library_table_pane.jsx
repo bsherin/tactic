@@ -35,8 +35,6 @@ function LibraryTablePane(props) {
         }
     }
     return (
-
-
         <Fragment>
             <div className="d-flex flex-row" style={{maxHeight: "100%", position: "relative"}}>
                 <div className="d-flex justify-content-around"

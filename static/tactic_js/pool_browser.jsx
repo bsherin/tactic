@@ -8,7 +8,7 @@ import {guid, useStateAndRef} from "./utilities_react";
 import {LibraryMenubar} from "./library_menubars"
 import {CombinedMetadata, icon_dict} from "./blueprint_mdata_fields";
 import {PoolTree, getBasename, splitFilePath, getFileParentPath, PoolContext} from "./pool_tree";
-import {HorizontalPanes} from "./resizing_layouts2";
+import {HorizontalPanes} from "./resizing_allotment";
 import {getBlobPromise, postAjaxPromise, postPromise} from "./communication_react";
 import {ErrorDrawerContext} from "./error_drawer";
 import {useSize} from "./sizing_tools";

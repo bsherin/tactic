@@ -8,7 +8,6 @@ import {Regions} from "@blueprintjs/table";
 
 import {CombinedMetadata, icon_dict} from "./blueprint_mdata_fields";
 import {HorizontalPanes} from "./resizing_allotment";
-// import {HorizontalPanes} from "./resizing_layouts2";
 import {postAjaxPromise, postPromise} from "./communication_react"
 import {useSize} from "./sizing_tools";
 
@@ -1304,7 +1303,14 @@ function LibraryPane(props) {
                           tsocket={props.tsocket}
             />
             {/*tabIndex is needed to allow the div to get focus so that key events can be captured*/}
-            <div ref={top_ref} style={{width: `calc(100% - ${ICON_BAR_WIDTH}px)`, height: usable_height}} tabIndex="0" className="d-flex flex-column" onKeyDown={handleKeyDown} onKeyUp={handleKeyUp}>
+            <div ref={top_ref}
+                 style={{
+                     display: "flex",
+                     flexGrow: 1,
+                     width: "100%",
+                     marginLeft: 15, marginTop: 0,
+                     position: "relative",}}
+                 tabIndex="0" className="d-flex flex-column" onKeyDown={handleKeyDown} onKeyUp={handleKeyUp}>
                     <HorizontalPanes
                         show_handle={true}
                         left_pane={left_pane}

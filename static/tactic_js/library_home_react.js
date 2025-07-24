@@ -116,8 +116,12 @@ function LibraryHomeApp(props) {
     library_id: library_id
   }));
   var outer_style = {
-    width: "100%",
-    paddingLeft: 0
+    width: "calc(100% - ".concat(_sizing_tools.ICON_BAR_WIDTH, "px)"),
+    flexGrow: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    paddingLeft: 0,
+    position: "relative"
   };
   var outer_class = "";
   if (!window.in_context) {
@@ -155,15 +159,18 @@ function _library_home_main() {
   var LibraryHomeAppPlus = (0, _sizing_tools.withSizeContext)((0, _settings.withSettings)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster2.withStatus)((0, _assistant.withAssistant)(LibraryHomeApp))))));
   var domContainer = document.querySelector('#library-home-root');
   var root = (0, _client.createRoot)(domContainer);
-  root.render(
-  /*#__PURE__*/
-  //<HotkeysProvider>
-  _react["default"].createElement(LibraryHomeAppPlus, {
+  root.render(/*#__PURE__*/_react["default"].createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      position: "relative",
+      height: "100%",
+      width: "100%"
+    }
+  }, /*#__PURE__*/_react["default"].createElement(LibraryHomeAppPlus, {
     tsocket: tsocket,
     controlled: false
-  })
-  //</HotkeysProvider>
-  );
+  })));
 }
 if (!window.in_context) {
   _library_home_main();

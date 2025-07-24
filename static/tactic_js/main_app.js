@@ -19,7 +19,7 @@ var _blueprint_navbar = require("./blueprint_navbar");
 var _menu_utilities = require("./menu_utilities");
 var _table_react = require("./table_react");
 var _blueprint_table = require("./blueprint_table");
-var _resizing_layouts = require("./resizing_layouts2");
+var _resizing_allotment = require("./resizing_allotment");
 var _main_menus_react = require("./main_menus_react");
 var _tile_react = require("./tile_react");
 var _export_viewer_react = require("./export_viewer_react");
@@ -1446,13 +1446,13 @@ function MainApp(props) {
       marginTop: TABLE_CONSOLE_GAP
     };
   }
-  var bottom_pane = /*#__PURE__*/_react["default"].createElement(_resizing_layouts.HorizontalPanes, {
+  var bottom_pane = /*#__PURE__*/_react["default"].createElement(_resizing_allotment.HorizontalPanes, {
     left_pane: console_pane,
     right_pane: exports_pane,
+    separatorPadding: 5,
     show_handle: true,
     fixed_height: mState.console_is_shrunk,
     initial_width_fraction: mState.console_width_fraction,
-    dragIconSize: 15,
     outer_style: outer_hp_style,
     handleSplitUpdate: _handleConsoleFractionChange
   });
@@ -1471,15 +1471,15 @@ function MainApp(props) {
       style: {
         paddingLeft: 10
       }
-    }, tile_pane), mState.console_is_shrunk && bottom_pane);
+    }, tile_pane));
   } else {
-    top_pane = /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_resizing_layouts.HorizontalPanes, {
+    top_pane = /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_resizing_allotment.HorizontalPanes, {
       left_pane: table_pane,
       right_pane: tile_pane,
       show_handle: true,
       scrollAdjustSelectors: [".bp6-table-quadrant-scroll-container", ".tile-div"],
       initial_width_fraction: mState.horizontal_fraction,
-      dragIconSize: 15,
+      separatorPadding: 8,
       handleSplitUpdate: _handleHorizontalFractionChange,
       handleResizeStart: _handleResizeStart,
       handleResizeEnd: _handleResizeEnd
@@ -1524,53 +1524,48 @@ function MainApp(props) {
       width: "100%",
       height: usable_height
     }
-  }, mState.console_is_zoomed && /*#__PURE__*/_react["default"].createElement(_sizing_tools.SizeContext.Provider, {
-    value: {
-      availableWidth: usable_width,
-      availableHeight: usable_height - BOTTOM_MARGIN,
-      topX: topX,
-      topY: topY
+  }, mState.console_is_zoomed && /*#__PURE__*/_react["default"].createElement("div", {
+    style: {
+      width: "calc(100% - ".concat(_sizing_tools.ICON_BAR_WIDTH, "px)"),
+      height: usable_height - BOTTOM_MARGIN
     }
-  }, /*#__PURE__*/_react["default"].createElement(_resizing_layouts.HorizontalPanes, {
+  }, /*#__PURE__*/_react["default"].createElement(_resizing_allotment.HorizontalPanes, {
     left_pane: console_pane,
     right_pane: exports_pane,
+    separatorPadding: 5,
     show_handle: true,
     fixed_height: mState.console_is_shrunk,
     initial_width_fraction: mState.console_width_fraction,
-    dragIconSize: 15,
     outer_style: outer_hp_style,
     handleSplitUpdate: _handleConsoleFractionChange
-  })), !mState.console_is_zoomed && mState.console_is_shrunk && /*#__PURE__*/_react["default"].createElement(_sizing_tools.SizeContext.Provider, {
-    value: {
-      availableWidth: usable_width,
-      availableHeight: usable_height - CONSOLE_HEADER_HEIGHT - BOTTOM_MARGIN - 20,
-      topX: topX,
-      topY: topY
+  })), !mState.console_is_zoomed && mState.console_is_shrunk && /*#__PURE__*/_react["default"].createElement("div", {
+    style: {
+      width: "calc(100% - ".concat(_sizing_tools.ICON_BAR_WIDTH, "px)")
     }
-  }, top_pane, /*#__PURE__*/_react["default"].createElement(_sizing_tools.SizeContext.Provider, {
-    value: {
-      topX: topX,
-      topY: topY,
-      availableWidth: usable_width,
-      availableHeight: CONSOLE_HEADER_HEIGHT
+  }, /*#__PURE__*/_react["default"].createElement("div", {
+    style: {
+      height: usable_height - BOTTOM_MARGIN - CONSOLE_HEADER_HEIGHT - 20,
+      overflow: "auto"
     }
-  }, bottom_pane)), !mState.console_is_zoomed && !mState.console_is_shrunk && /*#__PURE__*/_react["default"].createElement(_sizing_tools.SizeContext.Provider, {
-    value: {
-      availableWidth: usable_width,
-      availableHeight: usable_height - BOTTOM_MARGIN,
-      topX: topX,
-      topY: topY
+  }, top_pane), /*#__PURE__*/_react["default"].createElement("div", {
+    style: {
+      height: CONSOLE_HEADER_HEIGHT
     }
-  }, /*#__PURE__*/_react["default"].createElement(_resizing_layouts.VerticalPanes, {
+  }, bottom_pane)), !mState.console_is_zoomed && !mState.console_is_shrunk && /*#__PURE__*/_react["default"].createElement("div", {
+    style: {
+      width: "calc(100% - ".concat(_sizing_tools.ICON_BAR_WIDTH, "px)"),
+      height: usable_height - BOTTOM_MARGIN
+    }
+  }, /*#__PURE__*/_react["default"].createElement(_resizing_allotment.VerticalPanes, {
     top_pane: top_pane,
     bottom_pane: bottom_pane,
     show_handle: true,
     initial_height_fraction: mState.height_fraction,
-    dragIconSize: 15,
     scrollAdjustSelectors: [".bp6-table-quadrant-scroll-container", ".tile-div"],
     handleSplitUpdate: _handleVerticalSplitUpdate,
     handleResizeStart: _handleResizeStart,
     handleResizeEnd: _handleResizeEnd,
+    separatorPadding: 10,
     overflow: "hidden"
   }))), /*#__PURE__*/_react["default"].createElement(_metadata_drawer.MetadataDrawer, {
     res_type: "project",

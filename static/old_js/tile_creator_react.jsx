@@ -12,25 +12,25 @@ import {useHotkeys} from "@blueprintjs/core";
 import { EditorView } from "@codemirror/view";
 import { EditorSelection } from "@codemirror/state";
 
-import {creator_props} from "./tile_creator_support";
-import {TacticMenubar} from "./menu_utilities"
-import {sendToRepository} from "./resource_viewer_react_app";
-import {ReactCodemirror6} from "./react-codemirror6";
-import {OptionModule, ExportModule, MetadataModule} from "./creator_modules_react";
+import {creator_props} from "../tactic_js/tile_creator_support";
+import {TacticMenubar} from "../tactic_js/menu_utilities"
+import {sendToRepository} from "../tactic_js/resource_viewer_react_app";
+import {ReactCodemirror6} from "../tactic_js/react-codemirror6";
+import {OptionModule, ExportModule, MetadataModule} from "../tactic_js/creator_modules_react";
 import {HorizontalPanes, VerticalPanes} from "./resizing_layouts2";
-import {postAjax, postAjaxPromise, postPromise} from "./communication_react"
-import {withStatus, doFlash, StatusContext} from "./toaster"
-import {withAssistant} from "./assistant";
-import {SIDE_MARGIN, SizeContext, useSize, withSizeContext} from "./sizing_tools";
-import {withErrorDrawer} from "./error_drawer";
-import {renderSpinnerMessage, guid, arrayMove, convertExtraKeys} from "./utilities_react"
-import {TacticNavbar} from "./blueprint_navbar";
-import {ErrorBoundary} from "./error_boundary";
-import {useCallbackStack, useStateAndRef, useConnection} from "./utilities_react";
-import {SettingsContext, withSettings} from "./settings";
-import {DialogContext, withDialogs} from "./modal_react";
-import {ErrorDrawerContext} from "./error_drawer";
-import {SelectedPaneContext, useReducerAndRef} from "./utilities_react";
+import {postAjax, postAjaxPromise, postPromise} from "../tactic_js/communication_react"
+import {withStatus, doFlash, StatusContext} from "../tactic_js/toaster"
+import {withAssistant} from "../tactic_js/assistant";
+import {SIDE_MARGIN, SizeContext, useSize, withSizeContext} from "../tactic_js/sizing_tools";
+import {withErrorDrawer} from "../tactic_js/error_drawer";
+import {renderSpinnerMessage, guid, arrayMove, convertExtraKeys} from "../tactic_js/utilities_react"
+import {TacticNavbar} from "../tactic_js/blueprint_navbar";
+import {ErrorBoundary} from "../tactic_js/error_boundary";
+import {useCallbackStack, useStateAndRef, useConnection} from "../tactic_js/utilities_react";
+import {SettingsContext, withSettings} from "../tactic_js/settings";
+import {DialogContext, withDialogs} from "../tactic_js/modal_react";
+import {ErrorDrawerContext} from "../tactic_js/error_drawer";
+import {SelectedPaneContext, useReducerAndRef} from "../tactic_js/utilities_react";
 
 export {CreatorApp}
 

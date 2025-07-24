@@ -230,6 +230,7 @@ function ReactCodemirror6(props) {
         no_width: false,
         no_height: false,
         controlled_height: null,
+        flex_height: false,
         show_search: false,
         search_term: null,
         setSearchMatches: null,
@@ -722,6 +723,11 @@ function ReactCodemirror6(props) {
     };
     if (props.controlled_height) {
         ccstyle.height = props.controlled_height;
+    }
+    else if (props.flex_height) {
+        ccstyle.flexGrow = 1;
+        ccstyle.overflow = "auto";
+
     } else if (!props.no_height) {
         ccstyle.height = usable_height;
     }

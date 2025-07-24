@@ -9,11 +9,11 @@ require("../tactic_css/tile_creator.scss");
 var _react = _interopRequireWildcard(require("react"));
 var _client = require("react-dom/client");
 var _core = require("@blueprintjs/core");
+var _toaster = require("./toaster");
 var _utilities_react = require("./utilities_react");
 var _tactic_socket = require("./tactic_socket");
 var _TacticOmnibar = require("./TacticOmnibar");
 var _communication_react = require("./communication_react");
-var _toaster = require("./toaster");
 var _blueprint_navbar = require("./blueprint_navbar");
 var _error_boundary = require("./error_boundary");
 var _blueprint_mdata_fields = require("./blueprint_mdata_fields");
@@ -34,7 +34,7 @@ var _text_viewer_react = require("./text_viewer_react");
 var _error_drawer = require("./error_drawer");
 var _assistant = require("./assistant");
 var _sizing_tools = require("./sizing_tools");
-var _resizing_layouts = require("./resizing_layouts2");
+var _drag_handle = require("./drag_handle");
 var _settings = require("./settings");
 var _modal_react = require("./modal_react");
 function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t7 in e) "default" !== _t7 && {}.hasOwnProperty.call(e, _t7) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t7)) && (i.get || i.set) ? o(f, _t7, i) : f[_t7] = e[_t7]); return f; })(e, t); }
@@ -127,9 +127,17 @@ function _context_main() {
   var ContextAppPlus = (0, _pool_tree.withPool)((0, _settings.withSettings)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)((0, _assistant.withAssistant)(ContextApp))))));
   var domContainer = document.querySelector('#context-root');
   var root = (0, _client.createRoot)(domContainer);
-  root.render(/*#__PURE__*/_react["default"].createElement(ContextAppPlus, {
+  root.render(/*#__PURE__*/_react["default"].createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      position: "relative",
+      height: "100%",
+      width: "100%"
+    }
+  }, /*#__PURE__*/_react["default"].createElement(ContextAppPlus, {
     tsocket: tsocket
-  }));
+  })));
 }
 function ContextApp(props) {
   var _useStateAndRefAndCou = (0, _utilities_react.useStateAndRefAndCounter)("library"),
@@ -894,7 +902,14 @@ function ContextApp(props) {
       }
     }
   }, /*#__PURE__*/_react["default"].createElement("div", {
-    id: "library-home-root"
+    id: "library-home-root",
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      position: "relative",
+      height: "100%",
+      width: "100%"
+    }
   }, /*#__PURE__*/_react["default"].createElement(_library_home_react.LibraryHomeApp, {
     tsocket: tsocket,
     library_style: window.library_style,
@@ -1145,6 +1160,13 @@ function ContextApp(props) {
         })));
         wrapped_panel = /*#__PURE__*/_react["default"].createElement(_error_boundary.ErrorBoundary, null, /*#__PURE__*/_react["default"].createElement("div", {
           id: "".concat(tab_id, "-holder"),
+          style: {
+            display: "flex",
+            flexDirection: "column",
+            position: "relative",
+            height: "100%",
+            width: "100%"
+          },
           className: panelRootDict[tab_panel_dict_ref.current[tab_id].kind]
         }, the_panel));
       }
@@ -1303,8 +1325,11 @@ function ContextApp(props) {
   }
   var outer_style = {
     width: "100%",
-    height: usable_height,
-    paddingLeft: 0
+    flexGrow: 1,
+    display: 'flex',
+    flexDirection: 'row',
+    paddingLeft: 0,
+    position: "relative"
   };
   var tlclass = "context-tab-list";
   var pane_closed = tabWidth <= MIN_CONTEXT_WIDTH;
@@ -1332,7 +1357,12 @@ function ContextApp(props) {
     onKeyUp: handleKeyUp
   }, /*#__PURE__*/_react["default"].createElement("div", {
     id: "context-container",
-    style: outer_style
+    style: {
+      display: "flex",
+      flexDirection: "row",
+      width: "100%",
+      position: "relative"
+    }
   }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
     icon: /*#__PURE__*/_react["default"].createElement(_core.Icon, {
       icon: pane_closed ? "drawer-left-filled" : "drawer-right-filled",
@@ -1343,7 +1373,7 @@ function ContextApp(props) {
       paddingRight: 0,
       position: "fixed",
       left: tabWidth - 30,
-      bottom: 10,
+      bottom: _toaster.STATUS_BAR_HEIGHT + 5,
       zIndex: 1
     },
     variant: "minimal",
@@ -1353,7 +1383,7 @@ function ContextApp(props) {
     onClick: function onClick() {
       _togglePane(pane_closed);
     }
-  }), /*#__PURE__*/_react["default"].createElement(_resizing_layouts.DragHandle, {
+  }), /*#__PURE__*/_react["default"].createElement(_drag_handle.DragHandle, {
     position_dict: {
       position: "fixed",
       left: tabWidth - 5
@@ -1375,6 +1405,7 @@ function ContextApp(props) {
     id: "context-tabs",
     selectedTabId: selectedTabIdRef.current,
     className: tlclass,
+    style: {},
     vertical: true,
     onChange: _handleTabSelect
   }, all_tabs))), /*#__PURE__*/_react["default"].createElement(_utilities_react.SelectedPaneContext.Provider, {

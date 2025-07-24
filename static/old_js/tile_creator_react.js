@@ -1,9 +1,17 @@
 "use strict";
 
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
+var _typeof = require("@babel/runtime/helpers/typeof");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.CreatorApp = CreatorApp;
+var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
+var _extends2 = _interopRequireDefault(require("@babel/runtime/helpers/extends"));
+var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
+var _slicedToArray2 = _interopRequireDefault(require("@babel/runtime/helpers/slicedToArray"));
+var _toConsumableArray2 = _interopRequireDefault(require("@babel/runtime/helpers/toConsumableArray"));
+var _defineProperty2 = _interopRequireDefault(require("@babel/runtime/helpers/defineProperty"));
 require("../tactic_css/tactic.scss");
 require("../tactic_css/tactic_table.scss");
 require("../tactic_css/tile_creator.scss");
@@ -12,45 +20,28 @@ var _client = require("react-dom/client");
 var _core = require("@blueprintjs/core");
 var _view = require("@codemirror/view");
 var _state = require("@codemirror/state");
-var _tile_creator_support = require("./tile_creator_support");
-var _menu_utilities = require("./menu_utilities");
-var _resource_viewer_react_app = require("./resource_viewer_react_app");
-var _reactCodemirror = require("./react-codemirror6");
-var _creator_modules_react = require("./creator_modules_react");
+var _tile_creator_support = require("../tactic_js/tile_creator_support");
+var _menu_utilities = require("../tactic_js/menu_utilities");
+var _resource_viewer_react_app = require("../tactic_js/resource_viewer_react_app");
+var _reactCodemirror = require("../tactic_js/react-codemirror6");
+var _creator_modules_react = require("../tactic_js/creator_modules_react");
 var _resizing_layouts = require("./resizing_layouts2");
-var _communication_react = require("./communication_react");
-var _toaster = require("./toaster");
-var _assistant = require("./assistant");
-var _sizing_tools = require("./sizing_tools");
-var _error_drawer = require("./error_drawer");
-var _utilities_react = require("./utilities_react");
-var _blueprint_navbar = require("./blueprint_navbar");
-var _error_boundary = require("./error_boundary");
-var _settings = require("./settings");
-var _modal_react = require("./modal_react");
+var _communication_react = require("../tactic_js/communication_react");
+var _toaster = require("../tactic_js/toaster");
+var _assistant = require("../tactic_js/assistant");
+var _sizing_tools = require("../tactic_js/sizing_tools");
+var _error_drawer = require("../tactic_js/error_drawer");
+var _utilities_react = require("../tactic_js/utilities_react");
+var _blueprint_navbar = require("../tactic_js/blueprint_navbar");
+var _error_boundary = require("../tactic_js/error_boundary");
+var _settings = require("../tactic_js/settings");
+var _modal_react = require("../tactic_js/modal_react");
 function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t8 in e) "default" !== _t8 && {}.hasOwnProperty.call(e, _t8) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t8)) && (i.get || i.set) ? o(f, _t8, i) : f[_t8] = e[_t8]); return f; })(e, t); }
-function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
-function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
-function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, "_invoke", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError("Generator is already running"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = "next"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i["return"]) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine2(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, "Generator"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, "toString", function () { return "[object Generator]"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }
-function _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, "", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { if (r) i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n;else { var o = function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); }; o("next", 0), o("throw", 1), o("return", 2); } }, _regeneratorDefine2(e, r, n, t); }
-function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
-function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
 function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
-function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
-function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
-function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
-function _toConsumableArray(r) { return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread(); }
-function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
-function _iterableToArray(r) { if ("undefined" != typeof Symbol && null != r[Symbol.iterator] || null != r["@@iterator"]) return Array.from(r); }
-function _arrayWithoutHoles(r) { if (Array.isArray(r)) return _arrayLikeToArray(r); }
 function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
-function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
-function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
-function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
-function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); } //comment
+function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { (0, _defineProperty2["default"])(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; } //comment
 var BOTTOM_MARGIN = 50;
 function optionListReducer(option_list, action) {
   var new_items;
@@ -79,11 +70,11 @@ function optionListReducer(option_list, action) {
       });
       break;
     case "move_item":
-      var old_list = _toConsumableArray(option_list);
+      var old_list = (0, _toConsumableArray2["default"])(option_list);
       new_items = (0, _utilities_react.arrayMove)(old_list, action.oldIndex, action.newIndex);
       break;
     case "add_at_index":
-      new_items = _toConsumableArray(option_list);
+      new_items = (0, _toConsumableArray2["default"])(option_list);
       var new_t = _objectSpread({}, action.new_item);
       new_t.option_id = (0, _utilities_react.guid)();
       new_items.splice(action.insert_index, 0, new_t);
@@ -97,7 +88,7 @@ function optionListReducer(option_list, action) {
       break;
     default:
       console.log("Got Unknown action: " + action.type);
-      return _toConsumableArray(option_list);
+      return (0, _toConsumableArray2["default"])(option_list);
   }
   return new_items;
 }
@@ -131,24 +122,24 @@ function CreatorApp(props) {
     gp: 0
   });
   var _useSize = (0, _sizing_tools.useSize)(top_ref, 0, "TileCreator"),
-    _useSize2 = _slicedToArray(_useSize, 4),
+    _useSize2 = (0, _slicedToArray2["default"])(_useSize, 4),
     usable_width = _useSize2[0],
     usable_height = _useSize2[1],
     topX = _useSize2[2],
     topY = _useSize2[3];
   var _useState = (0, _react.useState)(0),
-    _useState2 = _slicedToArray(_useState, 2),
+    _useState2 = (0, _slicedToArray2["default"])(_useState, 2),
     tabSelectCounter = _useState2[0],
     setTabSelectCounter = _useState2[1];
 
   // This hasActivated machinery is necessary because cleanup of codemirror areas doesn't work
   // properly if the component is unmounted before the codemirror area is activated.
   var _useState3 = (0, _react.useState)(false),
-    _useState4 = _slicedToArray(_useState3, 2),
+    _useState4 = (0, _slicedToArray2["default"])(_useState3, 2),
     methodsHasActivated = _useState4[0],
     setMethodsHasActivated = _useState4[1];
   var _useState5 = (0, _react.useState)(false),
-    _useState6 = _slicedToArray(_useState5, 2),
+    _useState6 = (0, _slicedToArray2["default"])(_useState5, 2),
     globalsHasActivated = _useState6[0],
     setGlobalsHasActivated = _useState6[1];
   var _useState7 = (0, _react.useState)({
@@ -157,84 +148,84 @@ function CreatorApp(props) {
       "exports": false,
       "methods": false
     }),
-    _useState8 = _slicedToArray(_useState7, 2),
+    _useState8 = (0, _slicedToArray2["default"])(_useState7, 2),
     foregrounded_panes = _useState8[0],
     set_foregrounded_panes = _useState8[1];
   var _useState9 = (0, _react.useState)(""),
-    _useState0 = _slicedToArray(_useState9, 2),
+    _useState0 = (0, _slicedToArray2["default"])(_useState9, 2),
     search_string = _useState0[0],
     set_search_string = _useState0[1];
   var _useStateAndRef = (0, _utilities_react.useStateAndRef)(null),
-    _useStateAndRef2 = _slicedToArray(_useStateAndRef, 3),
+    _useStateAndRef2 = (0, _slicedToArray2["default"])(_useStateAndRef, 3),
     current_search_number = _useStateAndRef2[0],
     set_current_search_number = _useStateAndRef2[1],
     current_search_number_ref = _useStateAndRef2[2];
   var _useStateAndRef3 = (0, _utilities_react.useStateAndRef)(cm_list.current[0]),
-    _useStateAndRef4 = _slicedToArray(_useStateAndRef3, 3),
+    _useStateAndRef4 = (0, _slicedToArray2["default"])(_useStateAndRef3, 3),
     current_search_cm = _useStateAndRef4[0],
     set_current_search_cm = _useStateAndRef4[1],
     current_search_cm_ref = _useStateAndRef4[2];
   var _useState1 = (0, _react.useState)(false),
-    _useState10 = _slicedToArray(_useState1, 2),
+    _useState10 = (0, _slicedToArray2["default"])(_useState1, 2),
     regex = _useState10[0],
     set_regex = _useState10[1];
   var _useStateAndRef5 = (0, _utilities_react.useStateAndRef)(null),
-    _useStateAndRef6 = _slicedToArray(_useStateAndRef5, 2),
+    _useStateAndRef6 = (0, _slicedToArray2["default"])(_useStateAndRef5, 2),
     search_matches = _useStateAndRef6[0],
     set_search_matches = _useStateAndRef6[1];
   var _useStateAndRef7 = (0, _utilities_react.useStateAndRef)(props.render_content_code),
-    _useStateAndRef8 = _slicedToArray(_useStateAndRef7, 3),
+    _useStateAndRef8 = (0, _slicedToArray2["default"])(_useStateAndRef7, 3),
     set_render_content_code = _useStateAndRef8[1],
     render_content_code_ref = _useStateAndRef8[2];
   var _useStateAndRef9 = (0, _utilities_react.useStateAndRef)(props.draw_plot_code),
-    _useStateAndRef0 = _slicedToArray(_useStateAndRef9, 3),
+    _useStateAndRef0 = (0, _slicedToArray2["default"])(_useStateAndRef9, 3),
     set_draw_plot_code = _useStateAndRef0[1],
     draw_plot_code_ref = _useStateAndRef0[2];
   var _useStateAndRef1 = (0, _utilities_react.useStateAndRef)(props.jscript_code),
-    _useStateAndRef10 = _slicedToArray(_useStateAndRef1, 3),
+    _useStateAndRef10 = (0, _slicedToArray2["default"])(_useStateAndRef1, 3),
     set_jscript_code = _useStateAndRef10[1],
     jscript_code_ref = _useStateAndRef10[2];
   var _useStateAndRef11 = (0, _utilities_react.useStateAndRef)(props.extra_functions),
-    _useStateAndRef12 = _slicedToArray(_useStateAndRef11, 3),
+    _useStateAndRef12 = (0, _slicedToArray2["default"])(_useStateAndRef11, 3),
     set_extra_functions = _useStateAndRef12[1],
     extra_functions_ref = _useStateAndRef12[2];
   var _useStateAndRef13 = (0, _utilities_react.useStateAndRef)(props.globals_code),
-    _useStateAndRef14 = _slicedToArray(_useStateAndRef13, 3),
+    _useStateAndRef14 = (0, _slicedToArray2["default"])(_useStateAndRef13, 3),
     set_globals_code = _useStateAndRef14[1],
     globals_code_ref = _useStateAndRef14[2];
   var _useReducerAndRef = (0, _utilities_react.useReducerAndRef)(optionListReducer, []),
-    _useReducerAndRef2 = _slicedToArray(_useReducerAndRef, 3),
+    _useReducerAndRef2 = (0, _slicedToArray2["default"])(_useReducerAndRef, 3),
     optionDispatch = _useReducerAndRef2[1],
     option_list_ref = _useReducerAndRef2[2];
   var _useStateAndRef15 = (0, _utilities_react.useStateAndRef)(props.export_list),
-    _useStateAndRef16 = _slicedToArray(_useStateAndRef15, 3),
+    _useStateAndRef16 = (0, _slicedToArray2["default"])(_useStateAndRef15, 3),
     set_export_list = _useStateAndRef16[1],
     export_list_ref = _useStateAndRef16[2];
   var _useStateAndRef17 = (0, _utilities_react.useStateAndRef)(props.render_content_line_number),
-    _useStateAndRef18 = _slicedToArray(_useStateAndRef17, 3),
+    _useStateAndRef18 = (0, _slicedToArray2["default"])(_useStateAndRef17, 3),
     set_render_content_line_number = _useStateAndRef18[1],
     render_content_line_number_ref = _useStateAndRef18[2];
   var _useStateAndRef19 = (0, _utilities_react.useStateAndRef)(props.draw_plot_line_number),
-    _useStateAndRef20 = _slicedToArray(_useStateAndRef19, 3),
+    _useStateAndRef20 = (0, _slicedToArray2["default"])(_useStateAndRef19, 3),
     set_draw_plot_line_number = _useStateAndRef20[1],
     draw_plot_line_number_ref = _useStateAndRef20[2];
   var _useStateAndRef21 = (0, _utilities_react.useStateAndRef)(props.extra_methods_line_number),
-    _useStateAndRef22 = _slicedToArray(_useStateAndRef21, 3),
+    _useStateAndRef22 = (0, _slicedToArray2["default"])(_useStateAndRef21, 3),
     set_extra_methods_line_number = _useStateAndRef22[1],
     extra_methods_line_number_ref = _useStateAndRef22[2];
 
   // const [category, set_category, category_ref] = useStateAndRef(props.category);
 
   var _useStateAndRef23 = (0, _utilities_react.useStateAndRef)(props.additional_save_attrs || []),
-    _useStateAndRef24 = _slicedToArray(_useStateAndRef23, 3),
+    _useStateAndRef24 = (0, _slicedToArray2["default"])(_useStateAndRef23, 3),
     set_additional_save_attrs = _useStateAndRef24[1],
     additional_save_attrs_ref = _useStateAndRef24[2];
   var _useStateAndRef25 = (0, _utilities_react.useStateAndRef)(props.couple_save_attrs_and_exports),
-    _useStateAndRef26 = _slicedToArray(_useStateAndRef25, 3),
+    _useStateAndRef26 = (0, _slicedToArray2["default"])(_useStateAndRef25, 3),
     set_couple_save_attrs_and_exports = _useStateAndRef26[1],
     couple_save_attrs_and_exports_ref = _useStateAndRef26[2];
   var _useState11 = (0, _react.useState)("metadata"),
-    _useState12 = _slicedToArray(_useState11, 2),
+    _useState12 = (0, _slicedToArray2["default"])(_useState11, 2),
     selectedTabId = _useState12[0],
     setSelectedTabId = _useState12[1];
   var extraSelfCompletionsRef = (0, _react.useRef)([]);
@@ -270,7 +261,7 @@ function CreatorApp(props) {
     handleKeyUp = _useHotkeys.handleKeyUp;
   var pushCallback = (0, _utilities_react.useCallbackStack)();
   var _useState13 = (0, _react.useState)(props.resource_name),
-    _useState14 = _slicedToArray(_useState13, 2),
+    _useState14 = (0, _slicedToArray2["default"])(_useState13, 2),
     resource_name = _useState14[0],
     set_resource_name = _useState14[1];
   var connection_status = (0, _utilities_react.useConnection)(props.tsocket, initSocket);
@@ -417,14 +408,15 @@ function CreatorApp(props) {
         name_text: "Share",
         icon_name: "share",
         click_handler: function () {
-          var _click_handler = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee() {
-            return _regenerator().w(function (_context) {
-              while (1) switch (_context.n) {
+          var _click_handler = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee() {
+            return _regenerator["default"].wrap(function (_context) {
+              while (1) switch (_context.prev = _context.next) {
                 case 0:
-                  _context.n = 1;
+                  _context.next = 1;
                   return (0, _resource_viewer_react_app.sendToRepository)("tile", _cProp("resource_name"), dialogFuncs, statusFuncs, errorDrawerFuncs);
                 case 1:
-                  return _context.a(2);
+                case "end":
+                  return _context.stop();
               }
             }, _callee);
           }));
@@ -489,7 +481,7 @@ function CreatorApp(props) {
       },
       preventDefault: true
     }];
-    return [].concat(_toConsumableArray(convertedKeys), moreKeys);
+    return [].concat((0, _toConsumableArray2["default"])(convertedKeys), moreKeys);
   }
   function _searchNext() {
     if (current_search_number_ref.current >= search_match_numbers.current[current_search_cm] - 1) {
@@ -612,24 +604,24 @@ function CreatorApp(props) {
     return _saveAndLoadModule2.apply(this, arguments);
   }
   function _saveAndLoadModule2() {
-    _saveAndLoadModule2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3() {
+    _saveAndLoadModule2 = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee3() {
       var _t2;
-      return _regenerator().w(function (_context3) {
-        while (1) switch (_context3.n) {
+      return _regenerator["default"].wrap(function (_context3) {
+        while (1) switch (_context3.prev = _context3.next) {
           case 0:
             if (am_selected()) {
-              _context3.n = 1;
+              _context3.next = 1;
               break;
             }
-            return _context3.a(2, false);
+            return _context3.abrupt("return", false);
           case 1:
             statusFuncs.startSpinner();
-            _context3.p = 2;
-            _context3.n = 3;
+            _context3.prev = 2;
+            _context3.next = 3;
             return doSavePromise();
           case 3:
             statusFuncs.statusMessage("Loading Module");
-            _context3.n = 4;
+            _context3.next = 4;
             return (0, _communication_react.postPromise)("host", "load_tile_module_task", {
               "tile_module_name": _cProp("resource_name"),
               "user_id": window.user_id
@@ -637,14 +629,15 @@ function CreatorApp(props) {
           case 4:
             statusFuncs.statusMessage("Loaded successfully");
             statusFuncs.stopSpinner();
-            _context3.n = 6;
+            _context3.next = 6;
             break;
           case 5:
-            _context3.p = 5;
-            _t2 = _context3.v;
+            _context3.prev = 5;
+            _t2 = _context3["catch"](2);
             _logErrorStopSpinner("Error saving and loading module", _t2);
           case 6:
-            return _context3.a(2);
+          case "end":
+            return _context3.stop();
         }
       }, _callee3, null, [[2, 5]]);
     }));
@@ -654,21 +647,21 @@ function CreatorApp(props) {
     return _loadModule2.apply(this, arguments);
   }
   function _loadModule2() {
-    _loadModule2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee4() {
+    _loadModule2 = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee4() {
       var _t3;
-      return _regenerator().w(function (_context4) {
-        while (1) switch (_context4.n) {
+      return _regenerator["default"].wrap(function (_context4) {
+        while (1) switch (_context4.prev = _context4.next) {
           case 0:
             if (am_selected()) {
-              _context4.n = 1;
+              _context4.next = 1;
               break;
             }
-            return _context4.a(2, false);
+            return _context4.abrupt("return", false);
           case 1:
             statusFuncs.startSpinner();
             statusFuncs.statusMessage("Loading module...");
-            _context4.p = 2;
-            _context4.n = 3;
+            _context4.prev = 2;
+            _context4.next = 3;
             return (0, _communication_react.postPromise)("host", "load_tile_module_task", {
               "tile_module_name": _cProp("resource_name"),
               "user_id": window.user_id
@@ -676,14 +669,15 @@ function CreatorApp(props) {
           case 3:
             statusFuncs.statusMessage("Loaded successfully");
             statusFuncs.stopSpinner();
-            _context4.n = 5;
+            _context4.next = 5;
             break;
           case 4:
-            _context4.p = 4;
-            _t3 = _context4.v;
+            _context4.prev = 4;
+            _t3 = _context4["catch"](2);
             _logErrorStopSpinner("Error saving and loading module", _t3);
           case 5:
-            return _context4.a(2);
+          case "end":
+            return _context4.stop();
         }
       }, _callee4, null, [[2, 4]]);
     }));
@@ -693,37 +687,38 @@ function CreatorApp(props) {
     return _saveModuleAs2.apply(this, arguments);
   }
   function _saveModuleAs2() {
-    _saveModuleAs2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6() {
+    _saveModuleAs2 = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee6() {
       var data, doCancel, CreateNewModule, _CreateNewModule, _t5;
-      return _regenerator().w(function (_context6) {
-        while (1) switch (_context6.n) {
+      return _regenerator["default"].wrap(function (_context6) {
+        while (1) switch (_context6.prev = _context6.next) {
           case 0:
             _CreateNewModule = function _CreateNewModule3() {
-              _CreateNewModule = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5(new_name) {
+              _CreateNewModule = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee5(new_name) {
                 var result_dict, _t4;
-                return _regenerator().w(function (_context5) {
-                  while (1) switch (_context5.n) {
+                return _regenerator["default"].wrap(function (_context5) {
+                  while (1) switch (_context5.prev = _context5.next) {
                     case 0:
                       result_dict = {
                         "new_res_name": new_name,
                         "res_to_copy": _cProp("resource_name")
                       };
-                      _context5.p = 1;
-                      _context5.n = 2;
+                      _context5.prev = 1;
+                      _context5.next = 2;
                       return (0, _communication_react.postAjaxPromise)('/create_duplicate_tile', result_dict);
                     case 2:
-                      data = _context5.v;
+                      data = _context5.sent;
                       _setResourceNameState(new_name, function () {
                         _saveMe();
                       });
-                      _context5.n = 4;
+                      _context5.next = 4;
                       break;
                     case 3:
-                      _context5.p = 3;
-                      _t4 = _context5.v;
+                      _context5.prev = 3;
+                      _t4 = _context5["catch"](1);
                       _logErrorStopSpinner("Error saving module", _t4);
                     case 4:
-                      return _context5.a(2);
+                    case "end":
+                      return _context5.stop();
                   }
                 }, _callee5, null, [[1, 3]]);
               }));
@@ -736,13 +731,13 @@ function CreatorApp(props) {
               statusFuncs.stopSpinner();
             };
             statusFuncs.startSpinner();
-            _context6.p = 1;
-            _context6.n = 2;
+            _context6.prev = 1;
+            _context6.next = 2;
             return (0, _communication_react.postPromise)("host", "get_tile_names", {
               "user_id": window.user_id
             }, props.main_id);
           case 2:
-            data = _context6.v;
+            data = _context6.sent;
             dialogFuncs.showModal("ModalDialog", {
               title: "Save Module As",
               field_title: "New Module Name",
@@ -753,14 +748,15 @@ function CreatorApp(props) {
               handleCancel: doCancel,
               handleClose: dialogFuncs.hideModal
             });
-            _context6.n = 4;
+            _context6.next = 4;
             break;
           case 3:
-            _context6.p = 3;
-            _t5 = _context6.v;
+            _context6.prev = 3;
+            _t5 = _context6["catch"](1);
             _logErrorStopSpinner("Error saving module", _t5);
           case 4:
-            return _context6.a(2);
+          case "end":
+            return _context6.stop();
         }
       }, _callee6, null, [[1, 3]]);
     }));
@@ -773,33 +769,36 @@ function CreatorApp(props) {
     return _saveMe2.apply(this, arguments);
   }
   function _saveMe2() {
-    _saveMe2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee7() {
+    _saveMe2 = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee7() {
       var _t6;
-      return _regenerator().w(function (_context7) {
-        while (1) switch (_context7.n) {
+      return _regenerator["default"].wrap(function (_context7) {
+        while (1) switch (_context7.prev = _context7.next) {
           case 0:
             if (am_selected()) {
-              _context7.n = 1;
+              _context7.next = 1;
               break;
             }
-            return _context7.a(2, false);
+            return _context7.abrupt("return", false);
           case 1:
             statusFuncs.startSpinner();
             statusFuncs.statusMessage("Saving module...");
-            _context7.p = 2;
-            _context7.n = 3;
+            _context7.prev = 2;
+            _context7.next = 3;
             return doSavePromise();
           case 3:
             statusFuncs.statusMessage("Saved module");
             statusFuncs.stopSpinner();
-            _context7.n = 5;
+            _context7.next = 5;
             break;
           case 4:
-            _context7.p = 4;
-            _t6 = _context7.v;
+            _context7.prev = 4;
+            _t6 = _context7["catch"](2);
             _logErrorStopSpinner("Error saving module", _t6);
           case 5:
-            return _context7.a(2, false);
+            return _context7.abrupt("return", false);
+          case 6:
+          case "end":
+            return _context7.stop();
         }
       }, _callee7, null, [[2, 4]]);
     }));
@@ -809,36 +808,39 @@ function CreatorApp(props) {
     return _saveAndCheckpoint2.apply(this, arguments);
   }
   function _saveAndCheckpoint2() {
-    _saveAndCheckpoint2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee8() {
+    _saveAndCheckpoint2 = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee8() {
       var _t7;
-      return _regenerator().w(function (_context8) {
-        while (1) switch (_context8.n) {
+      return _regenerator["default"].wrap(function (_context8) {
+        while (1) switch (_context8.prev = _context8.next) {
           case 0:
             if (am_selected()) {
-              _context8.n = 1;
+              _context8.next = 1;
               break;
             }
-            return _context8.a(2, false);
+            return _context8.abrupt("return", false);
           case 1:
             statusFuncs.startSpinner();
             statusFuncs.statusMessage("Checkpointing");
-            _context8.p = 2;
-            _context8.n = 3;
+            _context8.prev = 2;
+            _context8.next = 3;
             return doSavePromise();
           case 3:
-            _context8.n = 4;
+            _context8.next = 4;
             return doCheckpointPromise();
           case 4:
             statusFuncs.statusMessage("Saved and checkpointed");
             statusFuncs.stopSpinner();
-            _context8.n = 6;
+            _context8.next = 6;
             break;
           case 5:
-            _context8.p = 5;
-            _t7 = _context8.v;
+            _context8.prev = 5;
+            _t7 = _context8["catch"](2);
             _logErrorStopSpinner("Error in save and checkpoint", _t7);
           case 6:
-            return _context8.a(2, false);
+            return _context8.abrupt("return", false);
+          case 7:
+          case "end":
+            return _context8.stop();
         }
       }, _callee8, null, [[2, 5]]);
     }));
@@ -863,27 +865,28 @@ function CreatorApp(props) {
   }
   function doSavePromise() {
     return new Promise(/*#__PURE__*/function () {
-      var _ref = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2(resolve, reject) {
+      var _ref = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee2(resolve, reject) {
         var result_dict, data, _t;
-        return _regenerator().w(function (_context2) {
-          while (1) switch (_context2.n) {
+        return _regenerator["default"].wrap(function (_context2) {
+          while (1) switch (_context2.prev = _context2.next) {
             case 0:
               result_dict = _getSaveDict();
-              _context2.p = 1;
-              _context2.n = 2;
+              _context2.prev = 1;
+              _context2.next = 2;
               return (0, _communication_react.postPromise)(props.module_viewer_id, "update_module", result_dict, props.module_viewer_id);
             case 2:
-              data = _context2.v;
+              data = _context2.sent;
               save_success(data);
               resolve(data);
-              _context2.n = 4;
+              _context2.next = 4;
               break;
             case 3:
-              _context2.p = 3;
-              _t = _context2.v;
+              _context2.prev = 3;
+              _t = _context2["catch"](1);
               reject(_t);
             case 4:
-              return _context2.a(2);
+            case "end":
+              return _context2.stop();
           }
         }, _callee2, null, [[1, 3]]);
       }));
@@ -1046,10 +1049,10 @@ function CreatorApp(props) {
     for (var field in state_stuff) {
       switch (field) {
         case "export_list":
-          set_export_list(_toConsumableArray(state_stuff[field]));
+          set_export_list((0, _toConsumableArray2["default"])(state_stuff[field]));
           break;
         case "additional_save_attrs":
-          set_additional_save_attrs(_toConsumableArray(state_stuff[field]));
+          set_additional_save_attrs((0, _toConsumableArray2["default"])(state_stuff[field]));
           break;
         case "couple_save_attrs_and_exports":
           set_couple_save_attrs_and_exports(state_stuff[field]);
@@ -1384,7 +1387,7 @@ exports.CreatorApp = CreatorApp = /*#__PURE__*/(0, _react.memo)(CreatorApp);
 function tile_creator_main() {
   function gotProps(the_props) {
     var CreatorAppPlus = (0, _sizing_tools.withSizeContext)((0, _settings.withSettings)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)((0, _assistant.withAssistant)(CreatorApp))))));
-    var the_element = /*#__PURE__*/_react["default"].createElement(CreatorAppPlus, _extends({}, the_props, {
+    var the_element = /*#__PURE__*/_react["default"].createElement(CreatorAppPlus, (0, _extends2["default"])({}, the_props, {
       controlled: false,
       changeName: null
     }));

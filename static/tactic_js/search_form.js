@@ -20,7 +20,9 @@ function FilterSearchForm(props) {
     searchNext: null,
     searchPrevious: null,
     search_helper_text: null,
-    margin_right: 116
+    margin_right: 116,
+    marginLeft: 0,
+    marginRight: 0
   }, props);
   function _handleSubmit(e) {
     props.searchNext();
@@ -32,7 +34,8 @@ function FilterSearchForm(props) {
     className: "d-flex flex-row bp6-form-group",
     style: {
       justifyContent: "flex-end",
-      marginRight: props.margin_right,
+      marginRight: props.marginRight,
+      marginLeft: props.marginLeft,
       marginBottom: 6,
       marginTop: 12
     }

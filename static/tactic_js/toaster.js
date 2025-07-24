@@ -4,7 +4,7 @@ function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.StatusContext = void 0;
+exports.StatusContext = exports.STATUS_BAR_HEIGHT = void 0;
 exports.doFlash = doFlash;
 exports.messageOrError = messageOrError;
 exports.withStatus = withStatus;
@@ -27,6 +27,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
 function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
 function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
 var StatusContext = exports.StatusContext = /*#__PURE__*/(0, _react.createContext)(null);
+var STATUS_BAR_HEIGHT = exports.STATUS_BAR_HEIGHT = 25;
 var DEFAULT_TIMEOUT = 20000;
 var disconnect_toast_id = null;
 var reconnect_toast_id = null;
@@ -207,9 +208,24 @@ function withStatus(WrappedComponent) {
       setStatus: _setStatus,
       setLeftEdge: setLeftEdge
     }, []);
-    return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(StatusContext.Provider, {
+    return /*#__PURE__*/_react["default"].createElement("div", {
+      style: {
+        display: "flex",
+        flexDirection: "column",
+        position: "relative",
+        width: "100%",
+        height: "100%"
+      }
+    }, /*#__PURE__*/_react["default"].createElement(StatusContext.Provider, {
       value: statusFuncsRef.current
-    }, /*#__PURE__*/_react["default"].createElement(WrappedComponent, props)), /*#__PURE__*/_react["default"].createElement(Status, {
+    }, /*#__PURE__*/_react["default"].createElement("div", {
+      style: {
+        display: "flex",
+        flexDirection: "column",
+        position: "relative",
+        flexGrow: 1
+      }
+    }, /*#__PURE__*/_react["default"].createElement(WrappedComponent, props))), /*#__PURE__*/_react["default"].createElement(Status, {
       show_spinner: show_spinner,
       status_message: status_message,
       spinner_size: spinner_size,
@@ -238,9 +254,8 @@ function Status(props) {
   return /*#__PURE__*/_react["default"].createElement("div", {
     ref: elRef,
     style: {
-      height: 35,
+      height: STATUS_BAR_HEIGHT,
       width: "100%",
-      position: "absolute",
       "left": left,
       "bottom": 0
     },
@@ -258,6 +273,9 @@ function Status(props) {
   }), props.show_close && (props.show_spiner || props.status_message) && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
     handleClick: props.handleClose,
     size: "small",
+    style: {
+      paddingTop: 5
+    },
     icon: "cross"
   }), props.status_message && /*#__PURE__*/_react["default"].createElement("div", {
     className: "d-flex flex-column justify-content-around",
@@ -268,7 +286,8 @@ function Status(props) {
     id: "status-msg-area",
     className: "bp6-ui-text",
     style: {
-      fontSize: 12
+      fontSize: 10,
+      paddingTop: 5
     }
   }, props.status_message))));
 }

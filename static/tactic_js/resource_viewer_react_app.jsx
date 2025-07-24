@@ -2,16 +2,18 @@ import React from "react";
 import {Fragment, useEffect, useRef, memo, useContext} from 'react';
 
 import {CombinedMetadata} from "./blueprint_mdata_fields";
-import {HorizontalPanes} from "./resizing_layouts2";
+import {HorizontalPanes} from "./resizing_allotment";
 import {handleCallback} from "./communication_react"
 import {TacticMenubar} from "./menu_utilities"
 import {doFlash, StatusContext} from "./toaster";
-import {BOTTOM_MARGIN, SIDE_MARGIN, useSize} from "./sizing_tools"
+import {BOTTOM_MARGIN, SIDE_MARGIN, STATUS_BAR_HEIGHT, useSize} from "./sizing_tools"
 import {SearchForm} from "./library_widgets";
 import {useConnection} from "./utilities_react";
 import {postAjaxPromise} from "./communication_react";
 
 export {ResourceViewerApp, copyToLibrary, sendToRepository}
+
+const PADDING = 20
 
 async function copyToLibrary(res_type, resource_name, dialogFuncs, statusFuncs, errorDrawerFuncs) {
     try {
@@ -94,7 +96,7 @@ function ResourceViewerApp(props) {
     // Only used when not in context
     const connection_status = useConnection(props.tsocket, initSocket);
 
-    const [usable_width, usable_height, , ] = useSize(top_ref, 0, "ResourceViewer");
+    const [usable_width, usable_height, topY, topX] = useSize(top_ref, 0, "ResourceViewer");
 
     useEffect(() => {
         statusFuncs.stopSpinner();
@@ -119,19 +121,10 @@ function ResourceViewerApp(props) {
 
     let left_pane = (
         <Fragment>
-            {props.show_search &&
-                <div style={{display: "flex", justifyContent: "flex-end", marginBottom: 5, marginTop: 15}}>
-                    <SearchForm
-                        update_search_state={props.update_search_state}
-                        search_string={props.search_string}
-                        regex={props.regex}
-                        search_ref={props.search_ref}
-                        allow_regex={props.allow_regex_search}
-                        number_matches={props.search_matches}
-                    />
-                </div>
-            }
-            {props.children}
+            <div style={{paddingRight: PADDING, height: "100%", width: "100%",
+                overflow: "auto", display: "flex", flexDirection: "column"}}>
+                {props.children}
+            </div>
         </Fragment>
     );
 
@@ -162,9 +155,12 @@ function ResourceViewerApp(props) {
                            showSettingsDrawerButton={true}
             />
             <div ref={top_ref}
+                 className="resource-viewer-hp-holder"
                  style={{
-                     width: usable_width,
-                     height: usable_height,
+                     display: "flex",
+                     flexGrow: 1,
+                     width: "100%",
+                     position: "relative",
                      marginLeft: 15, marginTop: 0}}>
                 <HorizontalPanes left_pane={left_pane}
                                  show_handle={true}

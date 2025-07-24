@@ -9,7 +9,7 @@ exports.copyToLibrary = copyToLibrary;
 exports.sendToRepository = sendToRepository;
 var _react = _interopRequireWildcard(require("react"));
 var _blueprint_mdata_fields = require("./blueprint_mdata_fields");
-var _resizing_layouts = require("./resizing_layouts2");
+var _resizing_allotment = require("./resizing_allotment");
 var _communication_react = require("./communication_react");
 var _menu_utilities = require("./menu_utilities");
 var _toaster = require("./toaster");
@@ -32,6 +32,7 @@ function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" 
 function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
 function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
 function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
+var PADDING = 20;
 function copyToLibrary(_x, _x2, _x3, _x4, _x5) {
   return _copyToLibrary.apply(this, arguments);
 }
@@ -159,9 +160,11 @@ function ResourceViewerApp(props) {
   // Only used when not in context
   var connection_status = (0, _utilities_react.useConnection)(props.tsocket, initSocket);
   var _useSize = (0, _sizing_tools.useSize)(top_ref, 0, "ResourceViewer"),
-    _useSize2 = _slicedToArray(_useSize, 3),
+    _useSize2 = _slicedToArray(_useSize, 4),
     usable_width = _useSize2[0],
-    usable_height = _useSize2[1];
+    usable_height = _useSize2[1],
+    topY = _useSize2[2],
+    topX = _useSize2[3];
   (0, _react.useEffect)(function () {
     statusFuncs.stopSpinner();
   }, []);
@@ -180,21 +183,16 @@ function ResourceViewerApp(props) {
       });
     }
   }
-  var left_pane = /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, props.show_search && /*#__PURE__*/_react["default"].createElement("div", {
+  var left_pane = /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
     style: {
+      paddingRight: PADDING,
+      height: "100%",
+      width: "100%",
+      overflow: "auto",
       display: "flex",
-      justifyContent: "flex-end",
-      marginBottom: 5,
-      marginTop: 15
+      flexDirection: "column"
     }
-  }, /*#__PURE__*/_react["default"].createElement(_library_widgets.SearchForm, {
-    update_search_state: props.update_search_state,
-    search_string: props.search_string,
-    regex: props.regex,
-    search_ref: props.search_ref,
-    allow_regex: props.allow_regex_search,
-    number_matches: props.search_matches
-  })), props.children);
+  }, props.children));
   var right_pane = /*#__PURE__*/_react["default"].createElement(_blueprint_mdata_fields.CombinedMetadata, {
     expandWidth: true,
     tsocket: props.tsocket,
@@ -220,13 +218,16 @@ function ResourceViewerApp(props) {
     showSettingsDrawerButton: true
   }), /*#__PURE__*/_react["default"].createElement("div", {
     ref: top_ref,
+    className: "resource-viewer-hp-holder",
     style: {
-      width: usable_width,
-      height: usable_height,
+      display: "flex",
+      flexGrow: 1,
+      width: "100%",
+      position: "relative",
       marginLeft: 15,
       marginTop: 0
     }
-  }, /*#__PURE__*/_react["default"].createElement(_resizing_layouts.HorizontalPanes, {
+  }, /*#__PURE__*/_react["default"].createElement(_resizing_allotment.HorizontalPanes, {
     left_pane: left_pane,
     show_handle: true,
     right_pane: right_pane,

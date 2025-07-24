@@ -12,7 +12,7 @@ import {ErrorDrawerContext, withErrorDrawer} from "./error_drawer";
 import {withStatus, StatusContext} from "./toaster";
 import {withAssistant} from "./assistant";
 
-import {withSizeContext, SizeContext, useSize} from "./sizing_tools";
+import {withSizeContext, SizeContext, ICON_BAR_WIDTH} from "./sizing_tools";
 import {guid} from "./utilities_react";
 import {TacticNavbar} from "./blueprint_navbar";
 import {useCallbackStack, useConstructor, useStateAndRef} from "./utilities_react";
@@ -75,8 +75,6 @@ function ModuleViewerApp(props) {
     const [resource_name, set_resource_name] = useState(props.resource_name);
 
     const selectedPane = useContext(SelectedPaneContext);
-
-    const [usable_width, usable_height, topX, topY] = useSize(top_ref, 0, "ModuleViewer");
 
     useEffect(() => {
         statusFuncs.stopSpinner();
@@ -322,7 +320,7 @@ function ModuleViewerApp(props) {
             if (e != "canceled") {
                 errorDrawerFuncs.addFromError(`Error saving module`, e)
             }
-            return
+
         }
     }
 
@@ -343,7 +341,7 @@ function ModuleViewerApp(props) {
             errorDrawerFuncs.addFromError("Error saving and loading module", e);
             statusFuncs.clearStatusMessage();
             statusFuncs.stopSpinner();
-            return
+
         }
     }
 
@@ -382,7 +380,7 @@ function ModuleViewerApp(props) {
             errorDrawerFuncs.addFromError("Error saving and checkpointing", e);
             statusFuncs.clearStatusMessage();
             statusFuncs.stopSpinner();
-            return
+
         }
     }
 
@@ -423,8 +421,10 @@ function ModuleViewerApp(props) {
         my_props.resource_name = resource_name;
     }
     let outer_style = {
-        width: "100%",
-        height: sizeInfo.availableHeight,
+        width: `calc(100% - ${ICON_BAR_WIDTH}px)`,
+        flexGrow: 1,
+        display: 'flex',
+        flexDirection: 'column',
         paddingLeft: 0,
         position: "relative"
     };
@@ -463,6 +463,7 @@ function ModuleViewerApp(props) {
                     <ReactCodemirror6 code_content={code_content}
                                       show_fold_button={true}
                                       no_width={true}
+                                      flex_height={true}
                                       extraKeys={_extraKeys()}
                                       readOnly={props.readOnly}
                                       handleChange={_handleCodeChange}
@@ -489,7 +490,7 @@ ModuleViewerApp = memo(ModuleViewerApp);
 
 function module_viewer_main() {
     function gotProps(the_props) {
-        let ModuleViewerAppPlus = withSizeContext(withSettings(withDialogs(withErrorDrawer(withStatus(withAssistant(ModuleViewerApp))))));
+        let ModuleViewerAppPlus = withSettings(withDialogs(withErrorDrawer(withStatus(withAssistant(ModuleViewerApp)))));
         let the_element = <ModuleViewerAppPlus {...the_props}
                                                controlled={false}
                                                changeName={null}
@@ -497,7 +498,16 @@ function module_viewer_main() {
         let domContainer = document.querySelector('#root');
         const root = createRoot(domContainer);
         root.render(
-            the_element
+            <div style={{
+                display: "flex", flexDirection: "column",
+                position: "relative",
+                height: "100%",
+                width: "100%"
+            }}>
+                {
+                    the_element
+                }
+            </div>
         )
     }
 

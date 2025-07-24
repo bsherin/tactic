@@ -103,7 +103,6 @@ function CodeViewerApp(props) {
   var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
   var errorDrawerFuncs = (0, _react.useContext)(_error_drawer2.ErrorDrawerContext);
-  var sizeInfo = (0, _react.useContext)(_sizing_tools.SizeContext);
   (0, _react.useEffect)(function () {
     statusFuncs.stopSpinner();
     if (props.controlled) {
@@ -424,8 +423,10 @@ function CodeViewerApp(props) {
   }
   var my_props = _objectSpread({}, props);
   var outer_style = {
-    width: "100%",
-    height: sizeInfo.availableHeight,
+    width: "calc(100% - ".concat(_sizing_tools.ICON_BAR_WIDTH, "px)"),
+    flexGrow: 1,
+    display: 'flex',
+    flexDirection: 'column',
     paddingLeft: 0,
     position: "relative"
   };
@@ -465,6 +466,7 @@ function CodeViewerApp(props) {
     code_content: code_content,
     show_fold_button: true,
     no_width: true,
+    flex_height: true,
     extraKeys: _extraKeys(),
     readOnly: props.readOnly,
     handleChange: _handleCodeChange,
@@ -486,18 +488,22 @@ function CodeViewerApp(props) {
 exports.CodeViewerApp = CodeViewerApp = /*#__PURE__*/(0, _react.memo)(CodeViewerApp);
 function code_viewer_main() {
   function gotProps(the_props) {
-    var CodeViewerAppPlus = (0, _sizing_tools.withSizeContext)((0, _settings.withSettings)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)((0, _assistant.withAssistant)(CodeViewerApp))))));
+    var CodeViewerAppPlus = (0, _settings.withSettings)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)((0, _assistant.withAssistant)(CodeViewerApp)))));
     var the_element = /*#__PURE__*/_react["default"].createElement(CodeViewerAppPlus, _extends({}, the_props, {
       controlled: false,
       changeName: null
     }));
     var domContainer = document.querySelector('#root');
     var root = (0, _client.createRoot)(domContainer);
-    root.render(
-    // <BlueprintProvider>
-    the_element
-    //</BlueprintProvider>
-    );
+    root.render(/*#__PURE__*/_react["default"].createElement("div", {
+      style: {
+        display: "flex",
+        flexDirection: "column",
+        position: "relative",
+        height: "100%",
+        width: "100%"
+      }
+    }, the_element));
   }
   var target = window.is_repository ? "repository_view_code_in_context" : "view_code_in_context";
   (0, _communication_react.postAjaxPromise)(target, {

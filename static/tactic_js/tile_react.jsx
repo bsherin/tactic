@@ -9,7 +9,7 @@ import _ from 'lodash';
 
 import {TileForm} from "./tile_form_react";
 import {GlyphButton} from "./blueprint_react_widgets";
-import {DragHandle} from "./resizing_layouts2"
+import {DragHandle} from "./drag_handle"
 
 import {SortableComponent} from "./sortable_container";
 import {postWithCallback, postPromise} from "./communication_react"

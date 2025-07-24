@@ -4,7 +4,7 @@ function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.SizeContext = exports.SIDE_MARGIN = exports.INIT_CONTEXT_PANEL_WIDTH = exports.ICON_BAR_WIDTH = exports.BOTTOM_MARGIN = void 0;
+exports.SizeContext = exports.STATUS_BAR_HEIGHT = exports.SIDE_MARGIN = exports.MENU_BAR_HEIGHT = exports.INIT_CONTEXT_PANEL_WIDTH = exports.ICON_BAR_WIDTH = exports.BOTTOM_MARGIN = void 0;
 exports.SizeProvider = SizeProvider;
 exports.USUAL_NAVBAR_HEIGHT = exports.TOP_MARGIN = void 0;
 exports.getUsableDimensions = getUsableDimensions;
@@ -27,11 +27,13 @@ function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" !=
 function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
 var SIDE_MARGIN = exports.SIDE_MARGIN = 15;
 var BOTTOM_MARGIN = exports.BOTTOM_MARGIN = 35;
+var STATUS_BAR_HEIGHT = exports.STATUS_BAR_HEIGHT = 35;
 var TOP_MARGIN = exports.TOP_MARGIN = 25;
 var INITIAL_DECREMENT = 50;
 var USUAL_NAVBAR_HEIGHT = exports.USUAL_NAVBAR_HEIGHT = 50;
 var INIT_CONTEXT_PANEL_WIDTH = exports.INIT_CONTEXT_PANEL_WIDTH = 250;
 var ICON_BAR_WIDTH = exports.ICON_BAR_WIDTH = 40;
+var MENU_BAR_HEIGHT = exports.MENU_BAR_HEIGHT = 50;
 function getUsableDimensions() {
   return {
     usable_width: window.innerWidth - 2 * SIDE_MARGIN,

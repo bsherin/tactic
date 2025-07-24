@@ -13,13 +13,14 @@ import {ConsoleComponent} from "./console_component";
 import {consoleItemsReducer} from "./console_support";
 import {doFlash, StatusContext} from "./toaster"
 import {withStatus} from "./toaster";
-import {renderSpinnerMessage, SelectedPaneContext, useConnection, useStateAndRef} from "./utilities_react";
+import {renderSpinnerMessage, useConnection, useStateAndRef} from "./utilities_react";
+import {BOTTOM_MARGIN, ICON_BAR_WIDTH} from "./sizing_tools";
 
 import {postAjaxPromise, postAjax} from "./communication_react"
 import {ExportsViewer} from "./export_viewer_react";
-import {HorizontalPanes} from "./resizing_layouts2";
-import {ErrorDrawerContext, withErrorDrawer} from "./error_drawer";
-import {withSizeContext, useSize, SizeProvider} from "./sizing_tools";
+import {HorizontalPanes} from "./resizing_allotment";
+import {withErrorDrawer} from "./error_drawer";
+import {withSizeContext, useSize} from "./sizing_tools";
 import {MetadataContext} from "./metadata_drawer";
 import {withAssistant} from "./assistant";
 import {useCallbackStack, useConstructor, useReducerAndRef} from "./utilities_react";
@@ -31,9 +32,6 @@ import {MetadataDrawer} from "./metadata_drawer";
 
 
 const MARGIN_SIZE = 10;
-const BOTTOM_MARGIN = 35;
-const MARGIN_ADJUSTMENT = 8; // This is the amount at the top of both the table and the conso
-const MENU_BAR_HEIGHT = 30; // will only appear when in context
 
 const cc_style = {marginTop: MARGIN_SIZE};
 
@@ -50,7 +48,7 @@ function NotebookApp(props) {
     const main_outer_ref = useRef(null);
     const updateExportsList = useRef(null);
     const connection_status = useConnection(props.tsocket, initSocket);
-    const [console_selected_items, set_console_selected_items, console_selected_items_ref] = useStateAndRef([]);
+    const [, set_console_selected_items, console_selected_items_ref] = useStateAndRef([]);
 
     const [console_items, dispatch, console_items_ref] = useReducerAndRef(consoleItemsReducer, []);
     const [mState, mDispatch] = useReducer(notebookReducer, {
@@ -66,11 +64,8 @@ function NotebookApp(props) {
     });
     const settingsContext = useContext(SettingsContext);
     const statusFuncs = useContext(StatusContext);
-    const errorDrawerFuncs = useContext(ErrorDrawerContext);
 
     const pushCallback = useCallbackStack();
-    const selectedPane = useContext(SelectedPaneContext);
-    const [usable_width, usable_height, topX, topY] = useSize(main_outer_ref, 0, "NotebookApp");
 
     useConstructor(()=>{
         dispatch({
@@ -107,10 +102,6 @@ function NotebookApp(props) {
             window.removeEventListener("unload", sendRemove);
         })
     }, []);
-
-    function am_selected() {
-        return selectedPane.amSelected(selectedPane.tab_id, selectedPane.selectedTabIdRef)
-    }
 
     function _cProp(pname) {
         return props.controlled ? props[pname] : mState[pname]
@@ -271,9 +262,14 @@ function NotebookApp(props) {
         exports_pane = <div></div>
     }
 
-    const outer_style = useMemo(()=>{
-        return {width: "100%", height: usable_height}
-    }, [usable_height]);
+    let outer_style = {
+        width: `calc(100% - ${ICON_BAR_WIDTH}px)`,
+        flexGrow: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        paddingLeft: 0,
+        position: "relative"
+    };
 
     return (
         <Fragment>
@@ -307,21 +303,14 @@ function NotebookApp(props) {
             <div className={`main-outer ${settingsContext.isDark() ? "bp6-dark" : "light-theme"}`}
                  ref={main_outer_ref}
                  style={outer_style}>
-                <SizeProvider value={{
-                    availableWidth: usable_width,
-                    availableHeight: usable_height - BOTTOM_MARGIN,
-                    topX: topX,
-                    topY: topY
-                }}>
-                <HorizontalPanes left_pane={console_pane}
-                                 right_pane={exports_pane}
-                                 show_handle={true}
-                                 initial_width_fraction={mState.console_width_fraction}
-                                 controlled={true}
-                                 dragIconSize={15}
-                                 handleSplitUpdate={_handleConsoleFractionChange}
-                />
-            </SizeProvider>
+                    <HorizontalPanes left_pane={console_pane}
+                                     right_pane={exports_pane}
+                                     show_handle={true}
+                                     initial_width_fraction={mState.console_width_fraction}
+                                     controlled={true}
+                                     separatorPadding={5}
+                                     handleSplitUpdate={_handleConsoleFractionChange}
+                    />
             </div>
             <MetadataDrawer res_type="project"
                             res_name={project_name}
@@ -349,9 +338,12 @@ function main_main() {
         const domContainer = document.querySelector('#main-root');
         const root = createRoot(domContainer);
         root.render(
-            //<HotkeysProvider>
-                the_element
-            //</HotkeysProvider>
+            <div style={{display: "flex", flexDirection: "column",
+                position: "relative",
+                height: "100%",
+                width: "100%"}}>
+                {the_element}
+            </div>
         )
     }
 

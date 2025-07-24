@@ -11,7 +11,7 @@ var _utilities_react = require("./utilities_react");
 var _library_menubars = require("./library_menubars");
 var _blueprint_mdata_fields = require("./blueprint_mdata_fields");
 var _pool_tree = require("./pool_tree");
-var _resizing_layouts = require("./resizing_layouts2");
+var _resizing_allotment = require("./resizing_allotment");
 var _communication_react = require("./communication_react");
 var _error_drawer = require("./error_drawer");
 var _sizing_tools = require("./sizing_tools");
@@ -1280,7 +1280,7 @@ function PoolBrowser(props) {
       width: usable_width,
       height: usable_height
     }
-  }, /*#__PURE__*/_react["default"].createElement(_resizing_layouts.HorizontalPanes, {
+  }, /*#__PURE__*/_react["default"].createElement(_resizing_allotment.HorizontalPanes, {
     outer_hp_style: {
       paddingBottom: "50px"
     },

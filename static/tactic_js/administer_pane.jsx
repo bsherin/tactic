@@ -5,7 +5,7 @@ import {Fragment, useState, useRef, useEffect, memo, useContext} from "react";
 import {Regions} from "@blueprintjs/table";
 
 import {SearchForm, BpSelectorTable} from "./library_widgets";
-import {HorizontalPanes} from "./resizing_layouts2";
+import {HorizontalPanes} from "./resizing_allotment";
 
 import {useSize, BOTTOM_MARGIN} from "./sizing_tools";
 import {useCallbackStack, useStateAndRef} from "./utilities_react";

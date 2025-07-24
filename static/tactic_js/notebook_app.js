@@ -16,11 +16,11 @@ var _console_component = require("./console_component");
 var _console_support = require("./console_support");
 var _toaster = require("./toaster");
 var _utilities_react = require("./utilities_react");
+var _sizing_tools = require("./sizing_tools");
 var _communication_react = require("./communication_react");
 var _export_viewer_react = require("./export_viewer_react");
-var _resizing_layouts = require("./resizing_layouts2");
+var _resizing_allotment = require("./resizing_allotment");
 var _error_drawer = require("./error_drawer");
-var _sizing_tools = require("./sizing_tools");
 var _metadata_drawer = require("./metadata_drawer");
 var _assistant = require("./assistant");
 var _notebook_support = require("./notebook_support");
@@ -41,10 +41,6 @@ function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object
 function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
 function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
 var MARGIN_SIZE = 10;
-var BOTTOM_MARGIN = 35;
-var MARGIN_ADJUSTMENT = 8; // This is the amount at the top of both the table and the conso
-var MENU_BAR_HEIGHT = 30; // will only appear when in context
-
 var cc_style = {
   marginTop: MARGIN_SIZE
 };
@@ -59,7 +55,6 @@ function NotebookApp(props) {
   var connection_status = (0, _utilities_react.useConnection)(props.tsocket, initSocket);
   var _useStateAndRef = (0, _utilities_react.useStateAndRef)([]),
     _useStateAndRef2 = _slicedToArray(_useStateAndRef, 3),
-    console_selected_items = _useStateAndRef2[0],
     set_console_selected_items = _useStateAndRef2[1],
     console_selected_items_ref = _useStateAndRef2[2];
   var _useReducerAndRef = (0, _utilities_react.useReducerAndRef)(_console_support.consoleItemsReducer, []),
@@ -81,15 +76,7 @@ function NotebookApp(props) {
     mDispatch = _useReducer2[1];
   var settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
-  var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
   var pushCallback = (0, _utilities_react.useCallbackStack)();
-  var selectedPane = (0, _react.useContext)(_utilities_react.SelectedPaneContext);
-  var _useSize = (0, _sizing_tools.useSize)(main_outer_ref, 0, "NotebookApp"),
-    _useSize2 = _slicedToArray(_useSize, 4),
-    usable_width = _useSize2[0],
-    usable_height = _useSize2[1],
-    topX = _useSize2[2],
-    topY = _useSize2[3];
   (0, _utilities_react.useConstructor)(function () {
     dispatch({
       type: "initialize",
@@ -124,9 +111,6 @@ function NotebookApp(props) {
       window.removeEventListener("unload", sendRemove);
     };
   }, []);
-  function am_selected() {
-    return selectedPane.amSelected(selectedPane.tab_id, selectedPane.selectedTabIdRef);
-  }
   function _cProp(pname) {
     return props.controlled ? props[pname] : mState[pname];
   }
@@ -274,12 +258,14 @@ function NotebookApp(props) {
   } else {
     exports_pane = /*#__PURE__*/_react["default"].createElement("div", null);
   }
-  var outer_style = (0, _react.useMemo)(function () {
-    return {
-      width: "100%",
-      height: usable_height
-    };
-  }, [usable_height]);
+  var outer_style = {
+    width: "calc(100% - ".concat(_sizing_tools.ICON_BAR_WIDTH, "px)"),
+    flexGrow: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    paddingLeft: 0,
+    position: "relative"
+  };
   return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, !window.in_context && /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
     is_authenticated: window.is_authenticated,
     user_name: window.username,
@@ -309,22 +295,15 @@ function NotebookApp(props) {
     className: "main-outer ".concat(settingsContext.isDark() ? "bp6-dark" : "light-theme"),
     ref: main_outer_ref,
     style: outer_style
-  }, /*#__PURE__*/_react["default"].createElement(_sizing_tools.SizeProvider, {
-    value: {
-      availableWidth: usable_width,
-      availableHeight: usable_height - BOTTOM_MARGIN,
-      topX: topX,
-      topY: topY
-    }
-  }, /*#__PURE__*/_react["default"].createElement(_resizing_layouts.HorizontalPanes, {
+  }, /*#__PURE__*/_react["default"].createElement(_resizing_allotment.HorizontalPanes, {
     left_pane: console_pane,
     right_pane: exports_pane,
     show_handle: true,
     initial_width_fraction: mState.console_width_fraction,
     controlled: true,
-    dragIconSize: 15,
+    separatorPadding: 5,
     handleSplitUpdate: _handleConsoleFractionChange
-  }))), /*#__PURE__*/_react["default"].createElement(_metadata_drawer.MetadataDrawer, {
+  })), /*#__PURE__*/_react["default"].createElement(_metadata_drawer.MetadataDrawer, {
     res_type: "project",
     res_name: project_name,
     tsocket: props.tsocket,
@@ -346,11 +325,15 @@ function main_main() {
     }));
     var domContainer = document.querySelector('#main-root');
     var root = (0, _client.createRoot)(domContainer);
-    root.render(
-    //<HotkeysProvider>
-    the_element
-    //</HotkeysProvider>
-    );
+    root.render(/*#__PURE__*/_react["default"].createElement("div", {
+      style: {
+        display: "flex",
+        flexDirection: "column",
+        position: "relative",
+        height: "100%",
+        width: "100%"
+      }
+    }, the_element));
   }
   (0, _utilities_react.renderSpinnerMessage)("Starting up ...");
   var target = window.is_new_notebook ? "new_notebook_in_context" : "main_project_in_context";

@@ -19,7 +19,7 @@ import {SettingsContext, withSettings} from "./settings"
 import {withAssistant} from "./assistant";
 import {DialogContext, withDialogs} from "./modal_react";
 import {ErrorDrawerContext} from "./error_drawer";
-import {SizeContext, withSizeContext} from "./sizing_tools";
+import {ICON_BAR_WIDTH} from "./sizing_tools";
 
 export {code_viewer_props, CodeViewerApp}
 
@@ -74,7 +74,6 @@ function CodeViewerApp(props) {
     const dialogFuncs = useContext(DialogContext);
     const statusFuncs = useContext(StatusContext);
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
-    const sizeInfo = useContext(SizeContext);
 
     useEffect(() => {
         statusFuncs.stopSpinner();
@@ -328,8 +327,10 @@ function CodeViewerApp(props) {
 
     let my_props = {...props};
     let outer_style = {
-        width: "100%",
-        height: sizeInfo.availableHeight,
+        width: `calc(100% - ${ICON_BAR_WIDTH}px)`,
+        flexGrow: 1,
+        display: 'flex',
+        flexDirection: 'column',
         paddingLeft: 0,
         position: "relative"
     };
@@ -367,6 +368,7 @@ function CodeViewerApp(props) {
                     <ReactCodemirror6 code_content={code_content}
                                       show_fold_button={true}
                                       no_width={true}
+                                      flex_height={true}
                                       extraKeys={_extraKeys()}
                                       readOnly={props.readOnly}
                                       handleChange={_handleCodeChange}
@@ -394,7 +396,7 @@ CodeViewerApp = memo(CodeViewerApp);
 
 function code_viewer_main() {
     function gotProps(the_props) {
-        let CodeViewerAppPlus = withSizeContext(withSettings(withDialogs(withErrorDrawer(withStatus(withAssistant(CodeViewerApp))))));
+        let CodeViewerAppPlus = withSettings(withDialogs(withErrorDrawer(withStatus(withAssistant(CodeViewerApp)))));
         let the_element = <CodeViewerAppPlus {...the_props}
                                              controlled={false}
                                              changeName={null}
@@ -402,9 +404,12 @@ function code_viewer_main() {
         const domContainer = document.querySelector('#root');
         const root = createRoot(domContainer);
         root.render(
-            // <BlueprintProvider>
-                the_element
-            //</BlueprintProvider>
+            <div style={{display: "flex", flexDirection: "column",
+                position: "relative",
+                height: "100%",
+                width: "100%"}}>
+                {the_element}
+            </div>
         )
     }
 

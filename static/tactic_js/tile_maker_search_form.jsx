@@ -53,7 +53,8 @@ function TileMakerSearchForm(props) {
     }
     return (
         <Fragment>
-            <FormGroup helperText={match_text} style={{marginBottom: 15}}>
+            <FormGroup helperText={match_text}
+                       style={{marginBottom: 0, paddingLeft: 5}}>
                 <div className="d-flex flex-row" style={{marginTop: 5, marginBottom: 5}}>
                     <InputGroup type="search"
                                 className="search-input"
@@ -70,7 +71,7 @@ function TileMakerSearchForm(props) {
                     {props.allow_regex &&
                         <Switch label="regexp"
                                 className="ml-3 mb-0 mt-1"
-                                large={false}
+                                size="medium"
                                 checked={props.searchStateRef.current.use_regex}
                                 onChange={_handleRegexChange}
                         />

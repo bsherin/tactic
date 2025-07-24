@@ -46,7 +46,6 @@ import {FilterSearchForm} from "./search_form";
 import {SearchableConsole} from "./searchable_console";
 import {SettingsContext} from "./settings";
 import {DialogContext} from "./modal_react"
-import {SizeProvider, useSize} from "./sizing_tools";
 
 import {useCallbackStack, useStateAndRef, useConstructor} from "./utilities_react";
 import {ErrorDrawerContext} from "./error_drawer";
@@ -54,20 +53,14 @@ import {AssistantContext} from "./assistant";
 
 export {ConsoleComponent}
 
-const MAX_CONSOLE_WIDTH = 1800;
-const BUTTON_CONSUMED_SPACE = 63;
-const SECTION_INDENT = 25;  // This is also hard coded into the css file at the moment
-
 const GLYPH_BUTTON_STYLE = {marginLeft: 2};
 const GLYPH_BUTTON_STYLE2 = {marginRight: 5, marginTop: 2};
 const GLYPH_BUTTON_STYLE3 = {marginLeft: 10, marginRight: 66, minHeight: 0};
 const GlYPH_BUTTON_STYLE4 = {marginLeft: 10, marginRight: 66};
 const GLYPH_BUTTON_STYLE5 = {marginTop: 5};
-const GLYPH_BUTTON_STYLE6 = {marginLeft: 10, marginRight: 0};
 
 const SPINNER_STYLE = {marginTop: 10, marginRight: 22};
 const MB10_STYLE = {marginBottom: 10};
-const WIDTH_100 = {width: "100%"};
 
 const empty_style = {};
 const trash_icon = <Icon icon="trash" size={14} />;
@@ -82,13 +75,12 @@ function ConsoleComponent(props) {
     };
     const header_ref = useRef(null);
     const body_ref = useRef(null);
-    const temporarily_closed_items = useRef([]);
     const filtered_items_ref = useRef([]);
 
-    const [console_item_with_focus, set_console_item_with_focus] = useState(null);
-    const [console_item_saved_focus, set_console_item_saved_focus] = useState(null);
+    const [, set_console_item_with_focus] = useState(null);
+    const [, set_console_item_saved_focus] = useState(null);
 
-    const [search_string, set_search_string, search_string_ref] = useStateAndRef(null);
+    const [, set_search_string, search_string_ref] = useStateAndRef(null);
     const [filter_console_items, set_filter_console_items] = useState(false);
     const [search_helper_text, set_search_helper_text] = useState(null);
 
@@ -103,9 +95,6 @@ function ConsoleComponent(props) {
 
     const selectedPane = useContext(SelectedPaneContext);
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
-
-    const [header_usable_width, header_usable_height, header_topX, header_topY] = useSize(header_ref, 0, "HConsoleComponent");
-    const [usable_width, usable_height, topX, topY] = useSize(body_ref, 0, "ConsoleComponent");
 
     useEffect(() => {
         initSocket();
@@ -127,7 +116,7 @@ function ConsoleComponent(props) {
     }, [settingsContext.settings.theme]);
 
 
-    const _addBlankCode = useCallback(async (e) => {
+    const _addBlankCode = useCallback(async () => {
         if (window.in_context && !am_selected()) {
             return
         }
@@ -544,28 +533,6 @@ function initSocket() {
         pushCallback(callback)
     }, []);
 
-    function _reOpenClosedDividers() {
-        if (temporarily_closed_items.current.length == 0) {
-            return
-        }
-        props.dispatch({
-            type: "open_listed_dividers",
-            divider_list: temporarily_closed_items.current
-        })
-    }
-
-    function _closeAllDividers(callback = null) {
-        for (let entry of console_items.current) {
-            if (entry.type == "divider") {
-                if (!entry.am_shrunk) {
-                    entry.am_shrunk = true;
-                    temporarily_closed_items.current.push(entry.unique_id)
-                }
-            }
-        }
-        props.dispatch("close_all_divider")
-    }
-
     function _multiple_console_item_updates(updates, callback = null) {
         props.dispatch({
             type: "update_items",
@@ -581,23 +548,6 @@ function initSocket() {
             props.dispatch({type: "clear_all_selected"})
         });
         pushCallback(callback)
-    }
-
-    function _reduce_to_last_selected(callback = null) {
-        if (props.console_selected_items_ref.current.length <= 1) {
-            if (callback) {
-                callback()
-            }
-            return
-        }
-        let updates = {};
-        for (let uid of props.console_selected_items_ref.current.slice(0, -1)) {
-            updates[uid] = {am_selected: false, search_string: null};
-        }
-        _multiple_console_item_updates(updates, () => {
-            props.set_console_selected_items(props.console_selected_items_ref.current.slice(-1,));
-            pushCallback(callback)
-        })
     }
 
     function get_console_item_entry(unique_id) {
@@ -660,18 +610,6 @@ function initSocket() {
             return _consoleItemIndex(firstEl) < _consoleItemIndex(secondEl) ? -1 : 1;
         });
         return sitems
-    }
-
-    function _clearSelectedItem() {
-        let updates = {};
-        for (let uid of props.console_selected_items_ref.current) {
-            updates[unique_id] = {am_selected: false, search_string: null};
-
-        }
-        _multiple_console_item_updates(updates, () => {
-            props.set_console_selected_items({});
-            set_console_item_with_focus(null)
-        })
     }
 
     function _consoleItemIndex(unique_id, console_items = null) {
@@ -737,7 +675,6 @@ function initSocket() {
     }
 
     function _moveEntryAfterEntry(move_id, above_id, callback = null) {
-        let new_console_items = [...props.console_items.current];
         let move_entry = _.cloneDeep(get_console_item_entry(move_id));
         props.dispatch({
             type: "delete_item",
@@ -772,8 +709,6 @@ function initSocket() {
             _moveSection({oldIndex, newIndex}, filtered_items, callback);
             return
         }
-        let trueOldIndex = _consoleItemIndex(move_entry.unique_id);
-        let trueNewIndex;
         let above_entry;
         if (newIndex == 0) {
             above_entry = null
@@ -815,7 +750,6 @@ function initSocket() {
             next_index += 1;
         }
         await _addCodeArea("");
-        return
     }, []);
 
     function _isDividerSelected() {
@@ -829,7 +763,6 @@ function initSocket() {
     }
 
     function _doDeleteSelected() {
-        let new_console_items = [];
         let in_section = false;
         let to_delete = [];
         for (let entry of props.console_items.current) {
@@ -855,7 +788,6 @@ function initSocket() {
 
    async function _deleteSelected() {
         if (_are_selected()) {
-            let new_console_items = [];
             try {
                 if (_isDividerSelected()) {
                     const confirm_text = "The selection includes section dividers. " +
@@ -878,7 +810,7 @@ function initSocket() {
         }
     }
 
-    const _closeConsoleItem = useCallback((unique_id, callback = null) => {
+    const _closeConsoleItem = useCallback((unique_id) => {
         let centry = get_console_item_entry(unique_id);
         if (centry.type == "divider") {
             _deleteSection(unique_id)
@@ -1030,50 +962,7 @@ function initSocket() {
             unique_id: data.console_id,
             new_value: current
         });
-        //_setConsoleItemValue(data.console_id, "output_dict", current)
     }
-
-    function _addToLog(new_line) {
-        let log_content = console_error_log_text_ref.current;
-        let log_list = log_content.split(/\r?\n/);
-        let mlines = max_console_lines;
-        if (log_list.length >= mlines) {
-            log_list = log_list.slice(-1 * mlines + 1);
-            log_content = log_list.join("\n")
-        }
-        set_console_error_log_text(log_content + new_line)
-    }
-
-    const renderContextMenu = useMemo(() => {
-        // return a single element, or nothing to use default browser behavior
-        return (
-            <Menu>
-                <MenuItem icon="new-text-box"
-                          onClick={_addBlankText}
-                          text="New Text Cell"/>
-                <MenuItem icon="code"
-                          onClick={_addBlankCode}
-                          text="New Code Cell"/>
-                <MenuItem icon="header"
-                          onClick={_addBlankDivider}
-                          text="New Section"/>
-                <MenuItem icon="clipboard"
-                          onClick={() => {
-                              _pasteCell()
-                          }}
-                          text="Paste Cells"/>
-                <MenuDivider/>
-                <MenuItem icon="reset"
-                          onClick={_resetConsole}
-                          intent="warning"
-                          text="Clear output and reset"/>
-                <MenuItem icon="trash"
-                          onClick={_clearConsole}
-                          intent="danger"
-                          text="Erase everything"/>
-            </Menu>
-        );
-    }, []);
 
     function _glif_text(show_glif_text, txt) {
         if (show_glif_text) {
@@ -1206,15 +1095,6 @@ function initSocket() {
         set_search_helper_text("No more results");
     }
 
-    function _handleSubmit(e) {
-        _searchNext();
-        e.preventDefault();
-    }
-
-    function _shouldCancelSortStart() {
-        return filter_console_items
-    }
-
     const menu_specs = useMemo(() => {
         let ms = {
             Insert: [{
@@ -1344,7 +1224,7 @@ function initSocket() {
         $(".in-section:not(.divider-log-panel)").css({opacity: "100%"})
     }
 
-    const _sortStart = useCallback(({draggableId, mode}) => {
+    const _sortStart = useCallback(({draggableId}) => {
         let idx = _consoleItemIndex(draggableId);
         let entry = props.console_items.current[idx];
         if (entry.type == "divider") {
@@ -1380,21 +1260,19 @@ function initSocket() {
         })
     }, []);
 
-    let gbstyle = {marginLeft: 1, marginTop: 2};
     let console_class = props.mState.console_is_shrunk ? "am-shrunk" : "not-shrunk";
     if (props.mState.console_is_zoomed) {
         console_class = "am-zoomed"
     }
-    let true_usable_width = props.mState.console_is_shrunk ? header_usable_width : usable_width;
-    true_usable_width = true_usable_width > MAX_CONSOLE_WIDTH ? MAX_CONSOLE_WIDTH : true_usable_width;
-    const outer_style = useMemo(()=>{
-        let newStyle = {};
-        if (props.style) {
-            newStyle = Object.assign({}, props.style);
-        }
-        newStyle.width = true_usable_width;
-        return newStyle
-    }, [true_usable_width]);
+    let outer_style = {
+        width: "100%",
+        height: "100%",
+        flexGrow: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        paddingLeft: 0,
+        position: "relative"
+    };
 
     const header_style = useMemo(()=>{
         let newStyle = {};
@@ -1499,6 +1377,8 @@ function initSocket() {
                     handleUnFilter={_handleUnFilter}
                     searchNext={_searchNext}
                     searchPrevious={_searchPrevious}
+                    marginLeft={2}
+                    marginRight={20}
                     search_helper_text={search_helper_text}
                 />
             }
@@ -1510,7 +1390,7 @@ function initSocket() {
                                    outer_style={{
                                        overflowX: "auto",
                                        overflowY: "auto",
-                                       height: usable_height,
+                                       flexGrow: 1,
                                        marginLeft: 20,
                                        marginRight: 20
                                    }}
@@ -1525,7 +1405,7 @@ function initSocket() {
                                    outer_style={{
                                        overflowX: "auto",
                                        overflowY: "auto",
-                                       height: usable_height,
+                                       flexGrow: 1,
                                        marginLeft: 20,
                                        marginRight: 20
                                    }}
@@ -1538,14 +1418,7 @@ function initSocket() {
                      ref={body_ref}
                      className="contingent-scroll"
                      onClick={_clickConsoleBody}
-                     style={{height:usable_height}}>
-                    <SizeProvider value={{
-                        availableWidth: true_usable_width,
-                        availableHeight: usable_height,
-                        topX: topX,
-                        topY: topY
-                    }}>
-                        {/*<ContextMenu content={renderContextMenu}>*/}
+                     style={{flexGrow: 1, width: "100%", position: "relative", overflow: "auto"}}>
                             <SortableComponent className="console-items-div"
                                                direction="vertical"
                                                style={empty_style}
@@ -1562,8 +1435,6 @@ function initSocket() {
                                                tsocket={props.tsocket}
                                                extraProps={extraProps}
                             />
-                        {/*</ContextMenu>*/}
-                    </SizeProvider>
                     <div id="padding-div" style={{height: 500}}></div>
                 </div>
             }
@@ -1608,8 +1479,6 @@ function SuperItem(props) {
 
 SuperItem = memo(SuperItem);
 
-const divider_item_update_props = ["am_shrunk", "am_selected", "header_text", "console_available_width"];
-
 function DividerItem(props) {
     const _toggleShrink = useCallback(() => {
         props.setConsoleItemValue(props.unique_id, "am_shrunk", !props.am_shrunk);
@@ -1627,14 +1496,6 @@ function DividerItem(props) {
         props.copyCell(props.unique_id)
     }
 
-    function _copySection() {
-        props.copySection(props.unique_id)
-    }
-
-    function _deleteSection() {
-        props.deleteSection(props.unique_id)
-    }
-
     function _pasteCell() {
         props.pasteCell(props.unique_id)
     }
@@ -1650,9 +1511,8 @@ function DividerItem(props) {
     }
 
     function _addBlankDivider() {
-        let self = this;
         _selectMe(null, () => {
-            props.addNewDividerItem()
+            props.addNewDivider()
         })
     }
 
@@ -1696,7 +1556,6 @@ function DividerItem(props) {
         e.stopPropagation()
     }
 
-    let converted_dict = {__html: props.console_text};
     let panel_class = props.am_shrunk ? "log-panel in-section divider-log-panel log-panel-invisible fixed-log-panel" : "log-panel divider-log-panel log-panel-visible fixed-log-panel";
     if (props.am_selected) {
         panel_class += " selected"
@@ -1722,6 +1581,7 @@ function DividerItem(props) {
                 </div>
                 <EditableText value={props.header_text}
                               onChange={_handleHeaderTextChange}
+                              style={{flex: "1 1 0", "overflow": "auto"}}
                               className="console-divider-text"/>
                 <div className="button-div d-flex flex-row">
                     <GlyphButton handleClick={_deleteMe}
@@ -1736,8 +1596,6 @@ function DividerItem(props) {
 }
 
 DividerItem = memo(DividerItem);
-
-const section_end_item_update_props = ["am_selected", "console_available_width"];
 
 function SectionEndItem(props) {
     function _pasteCell() {
@@ -1756,7 +1614,7 @@ function SectionEndItem(props) {
 
     function _addBlankDivider() {
         _selectMe(null, () => {
-            props.addNewDividerItem()
+            props.addNewDivider()
         })
     }
 
@@ -1821,14 +1679,9 @@ function SectionEndItem(props) {
 
 SectionEndItem = memo(SectionEndItem);
 
-const log_item_update_props = ["is_error", "am_shrunk", "am_selected",
-    "in_section", "summary_text", "console_text", "console_available_width"];
-
 function LogItem(props) {
     const last_output_text = useRef("");
     const body_ref = useRef(null);
-
-    const [usable_width, usable_height, topX, topY] = useSize(body_ref, 0, "LogItem");
 
     useEffect(() => {
         executeEmbeddedScripts();
@@ -1888,7 +1741,7 @@ function LogItem(props) {
 
     function _addBlankDivider() {
         _selectMe(null, () => {
-            props.addNewDividerItem()
+            props.addNewDivider()
         })
     }
 
@@ -1945,22 +1798,21 @@ function LogItem(props) {
         panel_class += " error-log-panel"
     }
 
-    let uwidth =  props.in_section ? usable_width - SECTION_INDENT / 2 : usable_width;
-    uwidth -= BUTTON_CONSUMED_SPACE;
-
     const body_style = useMemo(()=>{ return {
         marginTop: 10,
         marginLeft: 30,
         padding: 8,
-        width: uwidth,
+        flex: "1 1 0",
+        minWidth: 0,
         border: ".5px solid #c7c7c7",
         overflowY: "scroll"
-    }}, [uwidth]);
+    }}, []);
 
     const body_shrunk_style = useMemo(()=>{ return {
         marginLeft: 30,
-        width: uwidth
-    }}, [uwidth]);
+        flexGrow: 1,
+        position: "relative"
+    }}, []);
 
     return (
         <ContextMenu content={renderContextMenu()}>
@@ -1978,7 +1830,7 @@ function LogItem(props) {
                                      handleClick={_toggleShrink}/>
                     }
                 </div>
-                <div className="d-flex flex-column">
+                <div className="d-flex flex-column" style={{flex: "1 1 0", minWidth: 0, overflow: "auto"}}>
                     <div className="log-panel-body d-flex flex-row">
                         {props.am_shrunk &&
                             <div ref={body_ref} style={body_shrunk_style}>
@@ -2006,14 +1858,9 @@ function LogItem(props) {
 
 LogItem = memo(LogItem);
 
-const blob_item_update_props = ["is_error", "am_shrunk", "am_selected",
-    "in_section", "summary_text", "image_data_str", "console_available_width"];
-
 function BlobItem(props) {
     const last_output_text = useRef("");
     const body_ref = useRef(null);
-
-    const [usable_width, usable_height, topX, topY] = useSize(body_ref, 0, "BlobItem");
 
     useEffect(() => {
         executeEmbeddedScripts();
@@ -2073,12 +1920,11 @@ function BlobItem(props) {
 
     function _addBlankDivider() {
         _selectMe(null, () => {
-            props.addNewDividerItem()
+            props.addNewDivider()
         })
     }
 
     function _addBlankCode() {
-        let self = this;
         _selectMe(null, () => {
             props.addNewCodeItem()
         })
@@ -2128,20 +1974,22 @@ function BlobItem(props) {
         panel_class += " selected"
     }
 
-    let uwidth =  props.in_section ? usable_width - SECTION_INDENT / 2 : usable_width;
-    uwidth -= BUTTON_CONSUMED_SPACE;
+
     const body_style = useMemo(()=>{ return {
         marginTop: 10,
         marginLeft: 30,
         padding: 8,
-        width: uwidth,
+        flex: "1 1 0",
+        minWidth: 0,
+        position: 'relative',
         border: ".5px solid #c7c7c7",
         overflowY: "scroll"
-    }}, [uwidth]);
+    }}, []);
     const body_shrunk_style = useMemo(()=>{ return {
         marginLeft: 30,
-        width: uwidth
-    }}, [uwidth]);
+        flexGrow: 1,
+        position: "relative"
+    }}, []);
 
     return (
         <ContextMenu content={renderContextMenu()}>
@@ -2159,7 +2007,7 @@ function BlobItem(props) {
                                      handleClick={_toggleShrink}/>
                     }
                 </div>
-                <div className="d-flex flex-column">
+                <div className="d-flex flex-column" style={{flex: "1 1 0", minWidth: 0, overflow: "auto"}}>
                     <div className="log-panel-body d-flex flex-row">
                         {props.am_shrunk &&
                             <div ref={body_ref} style={body_shrunk_style}>
@@ -2172,7 +2020,7 @@ function BlobItem(props) {
                             <div ref={body_ref} style={body_style}>
                                 {props.image_data_str && (
                                     <img src={props.image_data_str}
-                                         alt="An Image" width={uwidth - 25}/>)
+                                         alt="An Image" />)
                                 }
                             </div>
                         }
@@ -2193,9 +2041,6 @@ function BlobItem(props) {
 
 BlobItem = memo(BlobItem);
 
-const code_item_update_props = ["am_shrunk", "set_focus", "am_selected", "search_string", "summary_text", "console_text",
-    "in_section", "show_spinner", "execution_count", "output_dict", "console_available_width", "dark_theme"];
-
 function ConsoleCodeItem(props) {
     props = {
         summary_text: null,
@@ -2204,9 +2049,6 @@ function ConsoleCodeItem(props) {
     const elRef = useRef(null);
     const am_selected_previous = useRef(false);
     const setFocusFunc = useRef(null);
-
-
-    const [usable_width, usable_height, topX, topY] = useSize(elRef, 0, "ConsoleCodeItem");
 
     useEffect(() => {
         if (props.am_selected && !am_selected_previous.current && elRef && elRef.current) {
@@ -2253,17 +2095,17 @@ function ConsoleCodeItem(props) {
         }
     }
 
-    function executeEmbeddedScripts() {
-        let scripts = $("#" + props.unique_id + " .log-code-output script").toArray();
-        for (let script of scripts) {
-            // noinspection EmptyCatchBlockJS,UnusedCatchParameterJS
-            try {
-                window.eval(script.text)
-            } catch (e) {
-
-            }
-        }
-    }
+    // function executeEmbeddedScripts() {
+    //     let scripts = $("#" + props.unique_id + " .log-code-output script").toArray();
+    //     for (let script of scripts) {
+    //         // noinspection EmptyCatchBlockJS,UnusedCatchParameterJS
+    //         try {
+    //             window.eval(script.text)
+    //         } catch (e) {
+    //
+    //         }
+    //     }
+    // }
 
     // function makeTablesSortable() {
     //     let tables = $("#" + props.unique_id + " table.sortable").toArray();
@@ -2276,10 +2118,6 @@ function ConsoleCodeItem(props) {
         _stopMySpinner();
         postWithCallback(props.main_id, "stop_console_code", {"console_id": props.unique_id}, null, null, props.main_id)
     }, []);
-
-    function _showMySpinner(callback = null) {
-        props.setConsoleItemValue(props.unique_id, "show_spinner", true, callback)
-    }
 
     function _stopMySpinner() {
         props.setConsoleItemValue(props.unique_id, "show_spinner", false)
@@ -2346,7 +2184,7 @@ function ConsoleCodeItem(props) {
 
     const _addBlankDivider = useCallback(()=> {
         _selectMe(null, () => {
-            props.addNewDividerItem()
+            props.addNewDivider()
         })
     }, []);
 
@@ -2417,32 +2255,25 @@ function ConsoleCodeItem(props) {
         }
     }, []);
 
-    let panel_style = props.am_shrunk ? "log-panel log-panel-invisible" : "log-panel log-panel-visible";
+    let panel_clase = props.am_shrunk ? "log-panel log-panel-invisible" : "log-panel log-panel-visible";
     if (props.am_selected) {
-        panel_style += " selected"
+        panel_clase += " selected"
     }
     if (props.in_section) {
-        panel_style += " in-section"
+        panel_clase += " in-section"
     }
     let output_dict = {__html: props.output_text};
     let spinner_val = props.running ? null : 0;
 
-    let uwidth =  props.in_section ? usable_width - SECTION_INDENT / 2 : usable_width;
-    uwidth -= BUTTON_CONSUMED_SPACE;
-
     const body_shrunk_style = useMemo(()=>{ return {
         marginLeft: 30,
-        width: uwidth - 80
-    }}, [uwidth]);
+        flexGrow: 1,
+        position: "relative"
+    }}, []);
+    // noinspection JSValidateTypes
     return (
         <ContextMenu content={cm}>
-            <SizeProvider value={{
-                availableWidth: uwidth,
-                availableHeight: usable_height,
-                topX: topX,
-                topY: topY
-            }}>
-                <div className={panel_style + " d-flex flex-row"}
+                <div className={panel_clase + " d-flex flex-row"}
                      ref={elRef}
                      onClick={_consoleItemClick}
                      id={props.unique_id}>
@@ -2475,9 +2306,12 @@ function ConsoleCodeItem(props) {
                     }
                     {!props.am_shrunk &&
                         <Fragment>
-                            <div className="d-flex flex-column" style={WIDTH_100}>
+                            <div className="d-flex flex-column"
+                                 style={{flex: "1 1 0", minWidth: 0, overflow: "hidden"}}>
                                 <div className="d-flex flex-row">
-                                    <div className="log-panel-body d-flex flex-row console-code">
+                                    <div className="log-panel-body d-flex flex-row console-code"
+                                         style={{minWidth: 0, overflow: "hidden"}}
+                                    >
                                         <div className="button-div d-flex pr-1">
                                             {!props.show_spinner &&
                                                 <GlyphButton handleClick={_codeRunner}
@@ -2500,7 +2334,8 @@ function ConsoleCodeItem(props) {
                                                          code_content={props.console_text}
                                                          extraKeys={_extraKeys}
                                                          search_term={props.search_string}
-                                                         no_height={true}
+                                                         flex_height={true}
+                                                          no_width={true}
                                                          tsocket={props.tsocket}
                                                           container_id={props.main_id}
                                                          saveMe={null}/>
@@ -2524,13 +2359,12 @@ function ConsoleCodeItem(props) {
                                         </div>
                                     }
                                 </div>
-                                < div className='log-code-output' style={{maxWidth: uwidth - 50}} dangerouslySetInnerHTML={output_dict}/>
+                                < div className='log-code-output' style={{width: "100%"}} dangerouslySetInnerHTML={output_dict}/>
                             </div>
 
                         </Fragment>
                     }
                 </div>
-            </SizeProvider>
         </ContextMenu>
     )
 }
@@ -2587,9 +2421,6 @@ function ResourceLinkButton(props) {
 
 ResourceLinkButton = memo(ResourceLinkButton);
 
-const text_item_update_props = ["am_shrunk", "set_focus", "serach_string", "am_selected", "show_markdown",
-    "in_section", "summary_text", "console_text", "console_available_width", "links"];
-
 function ConsoleTextItem(props) {
     props = {
         summary_text: null,
@@ -2599,7 +2430,6 @@ function ConsoleTextItem(props) {
     const elRef = useRef(null);
     const am_selected_previous = useRef(false);
     const setFocusFunc = useRef(null);
-    const [usable_width, usable_height, topX, topY] = useSize(elRef, 0, "ConsoleTextItem");
 
     useEffect(() => {
         if (props.am_selected && !am_selected_previous.current && elRef && elRef.current) {
@@ -2672,13 +2502,6 @@ function ConsoleTextItem(props) {
         props.handleDelete(props.unique_id)
     }, []);
 
-    function _handleKeyDown(event) {
-        if (event.key == "Tab") {
-            props.goToNextCell(props.unique_id);
-            event.preventDefault()
-        }
-    }
-
     function _gotEnter() {
         props.goToNextCell(props.unique_id);
         _showMarkdown();
@@ -2721,7 +2544,6 @@ function ConsoleTextItem(props) {
             if (e != "canceled") {
                 errorDrawerFuncs.addFromError(`Error duplicating resource ${res_name}`, e)
             }
-            return
         }
 
     }
@@ -2729,7 +2551,6 @@ function ConsoleTextItem(props) {
     function _deleteLinkButton(index) {
         let new_links = _.cloneDeep(props.links);
         new_links.splice(index, 1);
-        let self = this;
         props.setConsoleItemValue(props.unique_id, "links", new_links, () => {
             console.log("i am here with nlinks " + String(props.links.length))
         });
@@ -2744,7 +2565,7 @@ function ConsoleTextItem(props) {
 
     function _addBlankDivider() {
         _selectMe(null, () => {
-            props.addNewDividerItem()
+            props.addNewDivider()
         })
     }
 
@@ -2801,24 +2622,6 @@ function ConsoleTextItem(props) {
         }
     }, []);
 
-    function _setCMObject(cmobject) {
-        cmobject.current = cmobject;
-        if (props.set_focus) {
-            cmobject.current.focus();
-            cmobject.current.setCursor({line: 0, ch: 0});
-            props.setConsoleItemValue(props.unique_id, "set_focus", false, _selectMe)
-        }
-        if (cmobject.current != null) {
-            cmobject.current.on("focus", () => {
-                    props.setFocus(props.unique_id, _selectMe)
-                }
-            );
-            cmobject.current.on("blur", () => {
-                props.setFocus(null)
-            })
-        }
-    }
-
     const _extraKeys = useMemo(() => {
         return [
             {key: 'Ctrl-Enter', run: () => _gotEnter()},
@@ -2842,7 +2645,6 @@ function ConsoleTextItem(props) {
     if (props.in_section) {
         panel_class += " in-section"
     }
-    let gbstyle = {marginLeft: 1};
 
     let link_buttons = props.links.map((link, index) =>
         <ResourceLinkButton key={index}
@@ -2852,21 +2654,14 @@ function ConsoleTextItem(props) {
                             res_type={link.res_type}
                             res_name={link.res_name}/>
     );
-    let uwidth =  props.in_section ? usable_width - SECTION_INDENT / 2 : usable_width;
-    uwidth -= BUTTON_CONSUMED_SPACE;
     const body_shrunk_style = useMemo(()=>{ return {
         marginLeft: 30,
-        width: uwidth - 80
-    }}, [uwidth]);
-    // noinspection JSUnusedAssignment
+        flexGrow: 1,
+        position: "relative"
+    }}, []);
+    // noinspection JSUnusedAssignment,JSValidateTypes
     return (
         <ContextMenu content={contextMenu}>
-            <SizeProvider value={{
-                availableWidth: uwidth,
-                availableHeight: usable_height,
-                topX: topX,
-                topY: topY
-            }}>
             <div className={panel_class + " d-flex flex-row"}
                  onClick={_consoleItemClick}
                  ref={elRef}
@@ -2899,15 +2694,18 @@ function ConsoleTextItem(props) {
                     </div>
                 }
                 {!props.am_shrunk &&
-                    <div className="d-flex flex-column" style={{width: "100%"}}>
-                        <div className="log-panel-body text-box d-flex flex-row">
-                            <div className="button-div d-inline-flex pr-1">
+                    <div className="d-flex flex-column"
+                         style={{flex: "1 1 0", minWidth: 0, overflow: "hidden"}}>
+                        <div className="log-panel-body console-code d-flex flex-row"
+                             style={{minWidth: 0, overflow: "hidden"}}>
+                            <div className="button-div d-flex pr-1">
                                 <GlyphButton handleClick={_toggleMarkdown}
                                              intent="success"
                                              tooltip="Convert to/from markdown"
                                              icon="paragraph"/>
                             </div>
-                            <div className="d-flex flex-column">
+                            <div className="d-flex flex-column" style={{flex: "1 1 0", minWidth: 0,
+                                position: "relative", overflow: "hidden"}}>
                                 {!really_show_markdown &&
                                     <Fragment>
                                         <ReactCodemirror6 handleChange={_handleChange}
@@ -2920,7 +2718,8 @@ function ConsoleTextItem(props) {
                                                          code_content={props.console_text}
                                                          extraKeys={_extraKeys}
                                                          search_term={props.search_string}
-                                                         no_height={true}
+                                                         flex_height={true}
+                                                          no_width={true}
                                                          tsocket={props.tsocket}
                                                           container_id={props.main_id}
                                                          saveMe={null}/>
@@ -2929,11 +2728,12 @@ function ConsoleTextItem(props) {
                                 {really_show_markdown && !hasOnlyWhitespace() &&
                                     <div className="text-panel-output markdown-heading-sizes"
                                          onDoubleClick={_hideMarkdown}
-                                         style={{width: uwidth - 81, padding: 9}}
+                                         style={{padding: 9}}
                                          dangerouslySetInnerHTML={converted_dict}/>
                                 }
                                 {link_buttons}
                             </div>
+                            <div style={{width: 37}}/>
 
                             <div className="button-div float-buttons d-flex flex-row">
                                 <GlyphButton handleClick={_deleteMe}
@@ -2945,7 +2745,6 @@ function ConsoleTextItem(props) {
                     </div>
                 }
             </div>
-            </SizeProvider>
         </ContextMenu>
     )
 }

@@ -3,18 +3,22 @@ import {useState, useEffect, memo, useContext, useMemo} from "react";
 import {SelectedPaneContext} from "./utilities_react";
 
 export {
-    getUsableDimensions, SIDE_MARGIN, USUAL_NAVBAR_HEIGHT, TOP_MARGIN, ICON_BAR_WIDTH, useSize,
+    getUsableDimensions, SIDE_MARGIN, USUAL_NAVBAR_HEIGHT, TOP_MARGIN, ICON_BAR_WIDTH, STATUS_BAR_HEIGHT,
+    MENU_BAR_HEIGHT,
+    useSize,
     BOTTOM_MARGIN, INIT_CONTEXT_PANEL_WIDTH, SizeContext, withSizeContext, SizeProvider, useElementSize
 }
 
 
 const SIDE_MARGIN = 15;
 const BOTTOM_MARGIN = 35;
+const STATUS_BAR_HEIGHT = 35;
 const TOP_MARGIN = 25;
 const INITIAL_DECREMENT = 50;
 const USUAL_NAVBAR_HEIGHT = 50;
 const INIT_CONTEXT_PANEL_WIDTH = 250;
 const ICON_BAR_WIDTH = 40;
+const MENU_BAR_HEIGHT = 50;
 
 function getUsableDimensions() {
     return {

@@ -15,13 +15,14 @@ export function HorizontalPanes({
                                     show_handle = true,
                                     left_margin = null,
                                     outer_style = {},
+                                    separatorPadding = 0,
                                     hide_me = false,
                                 }) {
     const leftRef = useRef(null);
     const rightRef = useRef(null);
 
-    const [leftWidth, leftHeight] = useElementSize(leftRef);
-    const [rightWidth, rightHeight] = useElementSize(rightRef);
+    const [leftWidth, leftHeight, leftTopY, leftTopX] = useElementSize(leftRef);
+    const [rightWidth, rightHeight, rightTopY, rightTopX] = useElementSize(rightRef);
 
     const outerStyle = {
         ...outer_style,
@@ -67,11 +68,13 @@ export function HorizontalPanes({
                 }}
             >
                 <Allotment.Pane>
-                    <div ref={leftRef} style={{height: "100%", width: "100%", overflow: "hidden"}}>
+                    <div ref={leftRef}
+                         style={{height: "100%", width: "100%", paddingRight: separatorPadding / 2,
+                             overflow: "hidden"}}>
                         <SizeContext.Provider
                             value={{
-                                topX: 0,
-                                topY: 0,
+                                topX: leftTopX,
+                                topY: leftTopY,
                                 availableWidth: leftWidth,
                                 availableHeight: leftHeight,
                             }}
@@ -82,16 +85,98 @@ export function HorizontalPanes({
                 </Allotment.Pane>
 
                 <Allotment.Pane>
-                    <div ref={rightRef} style={{height: "100%", width: "100%", overflow: "hidden"}}>
+                    <div ref={rightRef} style={{height: "100%", width: "100%",
+                        paddingLeft: separatorPadding / 2,
+                        overflow: "hidden"}}>
                         <SizeContext.Provider
                             value={{
-                                topX: leftWidth,
-                                topY: 0,
+                                topX: rightTopX,
+                                topY: rightTopY,
                                 availableWidth: rightWidth,
                                 availableHeight: rightHeight,
                             }}
                         >
                             {right_pane}
+                        </SizeContext.Provider>
+                    </div>
+                </Allotment.Pane>
+            </Allotment>
+        </div>
+    );
+}
+
+export function VerticalPanes({
+                                  top_pane,
+                                  bottom_pane,
+                                  initial_height_fraction = 0.5,
+                                  adjust_bottom_height = 0, // optional correction (e.g., fixed footer)
+                                  handleSplitUpdate = null,
+                                  handleResizeStart = null,
+                                  handleResizeEnd = null,
+    separatorPadding = 0,
+                                  show_handle = true,
+                                  outer_style = {},
+                                  hide_top = false,
+                              }) {
+    const topRef = useRef(null);
+    const bottomRef = useRef(null);
+
+    const [topWidth, topHeight, topTopY, topTopX] = useElementSize(topRef);
+    const [bottomWidth, bottomHeight, bottomTopY, bottomTopX] = useElementSize(bottomRef);
+
+    const defaultSizes = useMemo(() => {
+        const top = initial_height_fraction * 100;
+        const bottom = 100 - top;
+        return [top, bottom];
+    }, [initial_height_fraction]);
+
+    const wrapperStyle = {
+        ...outer_style,
+        width: "100%",
+        height: "100%",
+        display: hide_top ? "none" : undefined,
+    };
+
+    const handleChange = (sizes) => {
+        const top = sizes[0];
+        const bottom = sizes[1];
+        const total = top + bottom;
+        const frac = total > 0 ? top / total : 0.5;
+
+        if (handleSplitUpdate) handleSplitUpdate(top, bottom, frac);
+        if (handleResizeEnd) handleResizeEnd(frac);
+    };
+
+    return (
+        <div style={wrapperStyle}>
+            <Allotment vertical defaultSizes={defaultSizes} onChange={handleChange} onDragStart={handleResizeStart}>
+                <Allotment.Pane>
+                    <div ref={topRef}
+                         style={{width: "100%", height: "100%", paddingBottom: separatorPadding / 2}}>
+                        <SizeContext.Provider
+                            value={{
+                                topX: topTopX,
+                                topY: topTopY,
+                                availableWidth: topWidth,
+                                availableHeight: topHeight,
+                            }}
+                        >
+                            {top_pane}
+                        </SizeContext.Provider>
+                    </div>
+                </Allotment.Pane>
+
+                <Allotment.Pane>
+                    <div ref={bottomRef} style={{width: "100%", height: "100%", paddingTop: separatorPadding / 2}}>
+                        <SizeContext.Provider
+                            value={{
+                                topX: bottomTopX,
+                                topY: bottomTopY,
+                                availableWidth: bottomWidth,
+                                availableHeight: Math.max(bottomHeight - adjust_bottom_height, 0),
+                            }}
+                        >
+                            {bottom_pane}
                         </SizeContext.Provider>
                     </div>
                 </Allotment.Pane>

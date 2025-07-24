@@ -37,7 +37,7 @@ import {LabeledFormField, LabeledSelectList, LabeledTextArea} from "./blueprint_
 import {NativeTags, IconSelector, NotesField} from "./blueprint_mdata_fields";
 import {postAjaxPromise} from "./communication_react";
 import {SizeContext, useSize, SizeProvider} from "./sizing_tools"
-import {DragHandle} from "./resizing_layouts2";
+import {DragHandle} from "./drag_handle";
 
 export {
     CmElement, PaneElement, MakerNavigator, OptionModuleForm, ExportModuleForm,
@@ -746,6 +746,7 @@ function SignatureHeader(props) {
                                   restrict_edits_to_range={props.allowSignatureChange}
                                   className="creator-code-header"
                                   handleChange={null}
+                                  no_width={true}
                                   code_content={code_content}/> :
                 <ReactCodemirror6 readOnly={!props.allowSignatureChange}
                                   mode={props.mode}
@@ -756,6 +757,7 @@ function SignatureHeader(props) {
                                   getEditableRanges={getEditableRanges}
                                   restrict_edits_to_range={props.allowSignatureChange}
                                   className="creator-code-header"
+                                  no_width={true}
                                   handleChange={props.allowSignatureChange ? handleSignatureChange : null}
                                   code_content={code_content}/>
             }
@@ -837,7 +839,7 @@ function CmElement(props) {
                              handleArgChange={handleArgChange}/>
             <ReactCodemirror6 code_content={props.cmState.codeText}
                               controlled={true}
-                // need to pass height through manually otherwise resizing doesn't reliably
+                              // need to pass height through manually otherwise resizing doesn't reliably
                               controlled_height={usable_height - 50}
                               no_height={props.no_height}
                               title_label={null}
@@ -845,7 +847,6 @@ function CmElement(props) {
                               mode={props.cmState.mode}
                               extraKeys={props.extraKeys()}
                               handleChange={handleCodeChange}
-                // saveMe={props.saveAndCheckpoint}
                               setCMObject={setCmObject}
                               alt_clear_selections={props.clearAllSelections}
                               first_line_number={props.cmState.firstLineNumber}
@@ -861,6 +862,7 @@ function CmElement(props) {
                               search_matches={null}
                               setSearchMatches={null}
                               tsocket={props.tsocket}
+                              no_width={true}
                               extraSelfCompletions={props.cmState.mode == "python" ? props.extraSelfCompletions : []}
                               container_id={props.module_viewer_id}
                               highlight_active_line={true}/>

@@ -16,11 +16,11 @@ import {EditorSelection} from "@codemirror/state";
 import {creator_props} from "./tile_maker_support";
 import {TacticMenubar} from "./menu_utilities"
 import {sendToRepository} from "./resource_viewer_react_app";
-import {HorizontalPanes} from "./resizing_layouts2";
+import {HorizontalPanes} from "./resizing_allotment";
 import {postAjax, postAjaxPromise, postPromise} from "./communication_react"
 import {withStatus, doFlash, StatusContext} from "./toaster"
 import {withAssistant} from "./assistant";
-import {SIDE_MARGIN, SizeContext, useSize, withSizeContext} from "./sizing_tools";
+import {ICON_BAR_WIDTH, SIDE_MARGIN} from "./sizing_tools";
 import {withErrorDrawer} from "./error_drawer";
 import {renderSpinnerMessage, convertExtraKeys, useStateAndRef} from "./utilities_react"
 import {TacticNavbar} from "./blueprint_navbar";
@@ -69,8 +69,6 @@ function CreatorApp(props) {
     const [, setMethodsToOpen, methodsToOpenRef] = useStateAndRef(props.interface_state != null && "visibleMethodList" in props.interface_state ?
         props.interface_state.visibleMethodList : ["render_content"]);
 
-    const [usable_width, usable_height, topX, topY] = useSize(top_ref, 0, "TileMaker");
-
     const [, optionDispatchBase, option_list_ref] = usePropertyList(props.option_list, INITIAL_FORM_PANE_HEIGHT, {special_list: []});
     const [, exportDispatchBase, export_list_ref] = usePropertyList(props.export_list, INITIAL_FORM_PANE_HEIGHT, {tags: ""});
     const [, saveDispatchBase, save_list_ref] = usePropertyList(props.additional_save_attrs ? props.additional_save_attrs : [], INITIAL_FORM_PANE_HEIGHT);
@@ -98,7 +96,6 @@ function CreatorApp(props) {
     const dialogFuncs = useContext(DialogContext);
     const statusFuncs = useContext(StatusContext);
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
-    const sizeInfo = useContext(SizeContext);
 
     const selectedPane = useContext(SelectedPaneContext);
 
@@ -978,7 +975,11 @@ function CreatorApp(props) {
 
     let left_pane = (
         <Fragment>
-            <div ref={nav_ref} style={{overflow: "auto", height: "100%"}}>
+            <div ref={nav_ref}
+                 style={{overflow: "auto",
+                     paddingTop: 35,
+                     paddingLeft: 15,
+                     height: "100%"}}>
                 <MakerNavigator handleTabSelect={_handleTabSelect}
                                 pushCallback={pushCallback}
                                 is_mpl={my_props.is_mpl}
@@ -1078,8 +1079,8 @@ function CreatorApp(props) {
     }
 
     let right_pane = (
-        <Fragment>
-            <div style={{paddingBottom: 20, height: "100%"}}>
+        <div style={{width: "100%", height: "100%"}}>
+            <div style={{display: "flex", flexDirection: "column", paddingBottom: 5, width: "100%", height: "100%", paddingLeft: 20, paddingTop: 25}}>
                 <TileMakerSearchForm
                     regex={false}
                     allow_regex={true}
@@ -1092,18 +1093,20 @@ function CreatorApp(props) {
                     searchState={searchStateRef.current}
                     search_ref={search_ref}
                 />
-                <div style={{overflow: "auto", height: "100%", paddingBottom: 200}}>
+                <div style={{overflow: "auto", flex: "1 1 0", minWidth: 0, paddingBottom: 200}}>
                     {right_pane_list}
                 </div>
             </div>
-        </Fragment>
+        </div>
     )
 
     let outer_style = {
-        width: "100%",
-        height: sizeInfo.availableHeight,
-        paddingLeft: props.controlled ? 5 : SIDE_MARGIN,
-        paddingTop: 15,
+        width: `calc(100% - ${ICON_BAR_WIDTH}px)`,
+        flexGrow: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        paddingLeft: 0,
+        position: "relative"
     };
     let outer_class = "resource-viewer-holder pane-holder";
     if (!window.in_context) {
@@ -1114,7 +1117,6 @@ function CreatorApp(props) {
         }
     }
 
-    let uwidth = usable_width - 2 * SIDE_MARGIN;
     return (
         <ErrorBoundary custom_message="Error at top level">
             {!window.in_context &&
@@ -1148,12 +1150,6 @@ function CreatorApp(props) {
                 }}>
                     <div className={outer_class} ref={top_ref} style={outer_style}
                          tabIndex="0" onKeyDown={handleKeyDown} onKeyUp={handleKeyUp}>
-                        <SizeContext.Provider value={{
-                            availableWidth: uwidth,
-                            availableHeight: usable_height,
-                            topX: topX,
-                            topY: topY
-                        }}>
                             <ErrorBoundary custom_message="Error in HorizontalPanes">
                                 <HorizontalPanes left_pane={left_pane}
                                                  right_pane={right_pane}
@@ -1164,7 +1160,6 @@ function CreatorApp(props) {
                                                  right_margin={SIDE_MARGIN}
                                 />
                             </ErrorBoundary>
-                        </SizeContext.Provider>
                     </div>
                 </MakerPaneContext.Provider>
             </ErrorBoundary>
@@ -1176,7 +1171,7 @@ CreatorApp = memo(CreatorApp);
 
 function tile_creator_main() {
     function gotProps(the_props) {
-        let CreatorAppPlus = withSizeContext(withSettings(withDialogs(withErrorDrawer(withStatus(withAssistant(CreatorApp))))));
+        let CreatorAppPlus = withSettings(withDialogs(withErrorDrawer(withStatus(withAssistant(CreatorApp)))));
         let the_element = <CreatorAppPlus {...the_props}
                                           controlled={false}
                                           changeName={null}
@@ -1184,9 +1179,12 @@ function tile_creator_main() {
         const domContainer = document.querySelector('#creator-root');
         const root = createRoot(domContainer);
         root.render(
-            //<HotkeysProvider>
-            the_element
-            //</HotkeysProvider>
+            <div style={{display: "flex", flexDirection: "column",
+                position: "relative",
+                height: "100%",
+                width: "100%"}}>
+                {the_element}
+            </div>
         )
     }
 

@@ -45,7 +45,7 @@ import _ from 'lodash';
 import {propsAreEqual, useDebounce, guid, useImmerReducerAndRef, useCallbackStack} from "./utilities_react";
 import {tile_icon_dict} from "./icon_info";
 
-import {BOTTOM_MARGIN, useSize} from "./sizing_tools";
+import {useSize} from "./sizing_tools";
 import {ErrorBoundary} from "./error_boundary";
 import {postAjaxPromise} from "./communication_react";
 import {ReactCodemirror6} from "./react-codemirror6";
@@ -426,6 +426,7 @@ function NotesField(props) {
                     mode="markdown"
                     code_content={props.mStateRef.current.notes}
                     no_height={true}
+                    no_width={true}
                     saveMe={null}
                 />
             </div>

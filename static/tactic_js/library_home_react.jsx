@@ -19,7 +19,7 @@ import {guid, useCallbackStack, useConnection } from "./utilities_react";
 import {TacticNavbar} from "./blueprint_navbar";
 import {AllMenubar} from "./library_menubars"
 import {SettingsContext, withSettings} from "./settings";
-import {BOTTOM_MARGIN, SizeContext, useSize, withSizeContext} from "./sizing_tools";
+import {BOTTOM_MARGIN, ICON_BAR_WIDTH, SizeContext, useSize, withSizeContext} from "./sizing_tools";
 import {withDialogs} from "./modal_react";
 import {StatusContext} from "./toaster"
 import {withAssistant} from "./assistant";
@@ -95,9 +95,13 @@ function LibraryHomeApp(props) {
         />
     );
 
-    let outer_style = {
-        width: "100%",
-        paddingLeft: 0
+   let outer_style = {
+       width: `calc(100% - ${ICON_BAR_WIDTH}px)`,
+        flexGrow: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        paddingLeft: 0,
+        position: "relative"
     };
     let outer_class = "";
     if (!window.in_context) {
@@ -142,10 +146,13 @@ function _library_home_main() {
     const domContainer = document.querySelector('#library-home-root');
     const root = createRoot(domContainer);
     root.render(
-        //<HotkeysProvider>
+        <div style={{display: "flex", flexDirection: "column",
+                position: "relative",
+                height: "100%",
+                width: "100%"}}>
             <LibraryHomeAppPlus tsocket={tsocket}
                                 controlled={false}/>
-        //</HotkeysProvider>
+        </div>
     )
 }
 

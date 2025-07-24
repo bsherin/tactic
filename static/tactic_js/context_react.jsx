@@ -15,6 +15,7 @@ import {Tab, Tabs, Button, Icon, Spinner, useHotkeys, Divider} from "@blueprintj
 import {FocusStyleManager} from "@blueprintjs/core";
 
 FocusStyleManager.onlyShowFocusOnTabs();
+import {STATUS_BAR_HEIGHT} from "./toaster";
 
 import {SelectedPaneContext} from "./utilities_react";
 import {TacticSocket} from "./tactic_socket";
@@ -49,7 +50,7 @@ import {
     ICON_BAR_WIDTH
 } from "./sizing_tools";
 import {postAjaxPromise} from "./communication_react";
-import {DragHandle} from "./resizing_layouts2";
+import {DragHandle} from "./drag_handle";
 import {useCallbackStack, useStateAndRef, useStateAndRefAndCounter} from "./utilities_react";
 import {SettingsContext, withSettings} from "./settings"
 
@@ -122,7 +123,12 @@ function _context_main() {
     const domContainer = document.querySelector('#context-root');
     const root = createRoot(domContainer);
     root.render(
-        <ContextAppPlus tsocket={tsocket}/>
+        <div style={{display: "flex", flexDirection: "column",
+            position: "relative",
+            height: "100%",
+            width: "100%"}}>
+            <ContextAppPlus tsocket={tsocket}/>
+        </div>
     )
 }
 
@@ -718,7 +724,11 @@ function ContextApp(props) {
                 _addOmniItems("library", items)
             }
         }}>
-            <div id="library-home-root">
+            <div id="library-home-root"
+                style={{display: "flex", flexDirection: "column",
+                    position: "relative",
+                    height: "100%",
+                    width: "100%"}}>
                 <LibraryHomeApp tsocket={tsocket}
                                 library_style={window.library_style}
                                 controlled={true}
@@ -884,7 +894,12 @@ function ContextApp(props) {
                 </SelectedPaneContext.Provider>
             wrapped_panel = (
                 <ErrorBoundary>
-                    <div id={`${tab_id}-holder`} className={panelRootDict[tab_panel_dict_ref.current[tab_id].kind]}>
+                    <div id={`${tab_id}-holder`}
+                         style={{display: "flex", flexDirection: "column",
+                            position: "relative",
+                            height: "100%",
+                            width: "100%"}}
+                            className={panelRootDict[tab_panel_dict_ref.current[tab_id].kind]}>
                         {the_panel}
                     </div>
                 </ErrorBoundary>
@@ -982,8 +997,11 @@ function ContextApp(props) {
     }
     let outer_style = {
         width: "100%",
-        height: usable_height,
-        paddingLeft: 0
+        flexGrow: 1,
+        display: 'flex',
+        flexDirection: 'row',
+        paddingLeft: 0,
+        position: "relative"
     };
     let tlclass = "context-tab-list";
     let pane_closed = tabWidth <= MIN_CONTEXT_WIDTH;
@@ -1005,12 +1023,20 @@ function ContextApp(props) {
                           user_name={window.username}/>
             <div className={outer_class} tabIndex="0" style={outer_style} ref={top_ref}
                  onKeyDown={handleKeyDown} onKeyUp={handleKeyUp}>
-                <div id="context-container" style={outer_style}>
+                <div id="context-container"
+                     style={{
+                         display: "flex",
+                         flexDirection: "row",
+                         width: "100%",
+                         position: "relative",
+                     }}
+                >
                     <Button icon={<Icon icon={pane_closed ? "drawer-left-filled" : "drawer-right-filled"}
                                         size={18}/>}
                             style={{
                                 paddingLeft: 4, paddingRight: 0,
-                                position: "fixed", left: tabWidth - 30, bottom: 10,
+                                position: "fixed", left: tabWidth - 30,
+                                bottom: STATUS_BAR_HEIGHT + 5,
                                 zIndex: 1
                             }}
                             variant="minimal"
@@ -1036,6 +1062,9 @@ function ContextApp(props) {
                     }}>
                         <Tabs id="context-tabs" selectedTabId={selectedTabIdRef.current}
                               className={tlclass}
+                              style={{
+
+                              }}
                               vertical={true}
                               onChange={_handleTabSelect}>
                             {all_tabs}

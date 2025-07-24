@@ -108,12 +108,6 @@ function ModuleViewerApp(props) {
     resource_name = _useState6[0],
     set_resource_name = _useState6[1];
   var selectedPane = (0, _react.useContext)(_utilities_react.SelectedPaneContext);
-  var _useSize = (0, _sizing_tools.useSize)(top_ref, 0, "ModuleViewer"),
-    _useSize2 = _slicedToArray(_useSize, 4),
-    usable_width = _useSize2[0],
-    usable_height = _useSize2[1],
-    topX = _useSize2[2],
-    topY = _useSize2[3];
   (0, _react.useEffect)(function () {
     statusFuncs.stopSpinner();
     if (props.controlled) {
@@ -439,7 +433,6 @@ function ModuleViewerApp(props) {
             if (_t3 != "canceled") {
               errorDrawerFuncs.addFromError("Error saving module", _t3);
             }
-            return _context5.a(2);
           case 6:
             return _context5.a(2);
         }
@@ -485,7 +478,6 @@ function ModuleViewerApp(props) {
             errorDrawerFuncs.addFromError("Error saving and loading module", _t4);
             statusFuncs.clearStatusMessage();
             statusFuncs.stopSpinner();
-            return _context6.a(2);
           case 6:
             return _context6.a(2);
         }
@@ -569,7 +561,6 @@ function ModuleViewerApp(props) {
             errorDrawerFuncs.addFromError("Error saving and checkpointing", _t6);
             statusFuncs.clearStatusMessage();
             statusFuncs.stopSpinner();
-            return _context8.a(2);
           case 5:
             return _context8.a(2);
         }
@@ -609,8 +600,10 @@ function ModuleViewerApp(props) {
     my_props.resource_name = resource_name;
   }
   var outer_style = {
-    width: "100%",
-    height: sizeInfo.availableHeight,
+    width: "calc(100% - ".concat(_sizing_tools.ICON_BAR_WIDTH, "px)"),
+    flexGrow: 1,
+    display: 'flex',
+    flexDirection: 'column',
     paddingLeft: 0,
     position: "relative"
   };
@@ -650,6 +643,7 @@ function ModuleViewerApp(props) {
     code_content: code_content,
     show_fold_button: true,
     no_width: true,
+    flex_height: true,
     extraKeys: _extraKeys(),
     readOnly: props.readOnly,
     handleChange: _handleCodeChange,
@@ -670,14 +664,22 @@ function ModuleViewerApp(props) {
 exports.ModuleViewerApp = ModuleViewerApp = /*#__PURE__*/(0, _react.memo)(ModuleViewerApp);
 function module_viewer_main() {
   function gotProps(the_props) {
-    var ModuleViewerAppPlus = (0, _sizing_tools.withSizeContext)((0, _settings.withSettings)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)((0, _assistant.withAssistant)(ModuleViewerApp))))));
+    var ModuleViewerAppPlus = (0, _settings.withSettings)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)((0, _assistant.withAssistant)(ModuleViewerApp)))));
     var the_element = /*#__PURE__*/_react["default"].createElement(ModuleViewerAppPlus, _extends({}, the_props, {
       controlled: false,
       changeName: null
     }));
     var domContainer = document.querySelector('#root');
     var root = (0, _client.createRoot)(domContainer);
-    root.render(the_element);
+    root.render(/*#__PURE__*/_react["default"].createElement("div", {
+      style: {
+        display: "flex",
+        flexDirection: "column",
+        position: "relative",
+        height: "100%",
+        width: "100%"
+      }
+    }, the_element));
   }
   var target = window.is_repository ? "repository_view_module_in_context" : "view_module_in_context";
   (0, _communication_react.postAjaxPromise)(target, {
