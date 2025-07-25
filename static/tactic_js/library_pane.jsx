@@ -9,7 +9,6 @@ import {Regions} from "@blueprintjs/table";
 import {CombinedMetadata, icon_dict} from "./blueprint_mdata_fields";
 import {HorizontalPanes} from "./resizing_allotment";
 import {postAjaxPromise, postPromise} from "./communication_react"
-import {useSize} from "./sizing_tools";
 
 import {doFlash} from "./toaster"
 import {useCallbackStack, useConstructor, useImmerReducerAndRef} from "./utilities_react";
@@ -19,7 +18,6 @@ import {StatusContext} from "./toaster"
 import {ErrorDrawerContext} from "./error_drawer";
 import {LibraryTablePane} from "./library_table_pane";
 import {paneReducer, get_index, get_index_from_id} from "./library_pane_reducer";
-import {ICON_BAR_WIDTH} from "./sizing_tools";
 
 export {LibraryPane, view_views, res_types}
 
@@ -142,8 +140,6 @@ function LibraryPane(props) {
     const blank_selected_resource = useRef({});
     
     const selectedTypeRef = useRef(null);
-
-    const [, usable_height, , ] = useSize(top_ref, 0, "LibraryPane");
 
     const dialogFuncs = useContext(DialogContext);
     const statusFuncs = useContext(StatusContext);
@@ -1309,7 +1305,8 @@ function LibraryPane(props) {
                      flexGrow: 1,
                      width: "100%",
                      marginLeft: 15, marginTop: 0,
-                     position: "relative",}}
+                     position: "relative"
+                 }}
                  tabIndex="0" className="d-flex flex-column" onKeyDown={handleKeyDown} onKeyUp={handleKeyUp}>
                     <HorizontalPanes
                         show_handle={true}

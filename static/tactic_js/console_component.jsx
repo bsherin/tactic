@@ -957,6 +957,7 @@ function initSocket() {
         // if (current.length > MAX_OUTPUT_LENGTH) {
         //     current = current.slice(-1 * MAX_OUTPUT_LENGTH,)
         // }
+
         props.dispatch({
             type: "change_code_output",
             unique_id: data.console_id,
@@ -1265,14 +1266,15 @@ function initSocket() {
         console_class = "am-zoomed"
     }
     let outer_style = {
-        width: "100%",
-        height: "100%",
-        flexGrow: 1,
         display: 'flex',
         flexDirection: 'column',
+        flex: "1 1 0",
         paddingLeft: 0,
         position: "relative"
     };
+    if (!props.mState.console_is_shrunk) {
+        outer_style.height = "100%";
+    }
 
     const header_style = useMemo(()=>{
         let newStyle = {};
@@ -1316,9 +1318,11 @@ function initSocket() {
     const extraProps = useMemo(()=>{return {main_id: props.main_id}});
 
     return (
-        <Card id="console-panel" className={console_class} elevation={2} style={outer_style}
+        <Card id="console-panel" className={console_class}
+              elevation={props.mState.console_is_shrunk ? 0 : 2}
+              style={outer_style}
                tabIndex="0" onKeyDown={handleKeyDown} onKeyUp={handleKeyUp}>
-            <div className="d-flex flex-column justify-content-around">
+            <div className="d-flex flex-column justify-content-around ">
                 <div id="console-heading"
                      ref={header_ref}
                      style={header_style}
@@ -1388,9 +1392,6 @@ function initSocket() {
                                    container_id={props.main_id}
                                    ref={body_ref}
                                    outer_style={{
-                                       overflowX: "auto",
-                                       overflowY: "auto",
-                                       flexGrow: 1,
                                        marginLeft: 20,
                                        marginRight: 20
                                    }}
@@ -1403,11 +1404,8 @@ function initSocket() {
                                    container_id={pseudo_tile_id}
                                    ref={body_ref}
                                    outer_style={{
-                                       overflowX: "auto",
-                                       overflowY: "auto",
-                                       flexGrow: 1,
                                        marginLeft: 20,
-                                       marginRight: 20
+                                       marginRight: 20,
                                    }}
                                    showCommandField={true}
                 />
@@ -1419,22 +1417,22 @@ function initSocket() {
                      className="contingent-scroll"
                      onClick={_clickConsoleBody}
                      style={{flexGrow: 1, width: "100%", position: "relative", overflow: "auto"}}>
-                            <SortableComponent className="console-items-div"
-                                               direction="vertical"
-                                               style={empty_style}
-                                               main_id={props.main_id}
-                                               ElementComponent={TailoredSuperItem}
-                                               key_field_name="unique_id"
-                                               item_list={filtered_items}
-                                               helperClass={settingsContext.isDark() ? "bp6-dark" : "light-theme"}
-                                               handle=".console-sorter"
-                                               onBeforeCapture={_sortStart}
-                                               onDragEnd={_resortConsoleItems}
-                                               useDragHandle={false}
-                                               axis="y"
-                                               tsocket={props.tsocket}
-                                               extraProps={extraProps}
-                            />
+                    <SortableComponent className="console-items-div"
+                                       direction="vertical"
+                                       style={empty_style}
+                                       main_id={props.main_id}
+                                       ElementComponent={TailoredSuperItem}
+                                       key_field_name="unique_id"
+                                       item_list={filtered_items}
+                                       helperClass={settingsContext.isDark() ? "bp6-dark" : "light-theme"}
+                                       handle=".console-sorter"
+                                       onBeforeCapture={_sortStart}
+                                       onDragEnd={_resortConsoleItems}
+                                       useDragHandle={false}
+                                       axis="y"
+                                       tsocket={props.tsocket}
+                                       extraProps={extraProps}
+                    />
                     <div id="padding-div" style={{height: 500}}></div>
                 </div>
             }
@@ -1556,11 +1554,11 @@ function DividerItem(props) {
         e.stopPropagation()
     }
 
-    let panel_class = props.am_shrunk ? "log-panel in-section divider-log-panel log-panel-invisible fixed-log-panel" : "log-panel divider-log-panel log-panel-visible fixed-log-panel";
+    let panel_class = props["am_shrunk"] ? "log-panel in-section divider-log-panel log-panel-invisible fixed-log-panel" : "log-panel divider-log-panel log-panel-visible fixed-log-panel";
     if (props.am_selected) {
         panel_class += " selected"
     }
-    if (props.is_error) {
+    if (props["is_error"]) {
         panel_class += " error-log-panel"
     }
     return (
@@ -1569,11 +1567,11 @@ function DividerItem(props) {
                  id={props.unique_id} style={{marginBottom: 10}}>
                 <div className="button-div shrink-expand-div d-flex flex-row">
                     <Shandle dragHandleProps={props.dragHandleProps}/>
-                    {!props.am_shrunk &&
+                    {!props["am_shrunk"] &&
                         <GlyphButton icon="chevron-down"
                                      handleClick={_toggleShrink}/>
                     }
-                    {props.am_shrunk &&
+                    {props["am_shrunk"] &&
                         <GlyphButton icon="chevron-right"
                                      style={GLYPH_BUTTON_STYLE5}
                                      handleClick={_toggleShrink}/>

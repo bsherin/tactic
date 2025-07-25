@@ -25,7 +25,7 @@ function updateOutputText(item) {
 }
 
 function consoleItemsReducer(console_items, action) {
-    var new_items;
+    let new_items;
     switch (action.type) {
         case "initialize":
             new_items = processOutputDicts(action.new_items);
@@ -56,7 +56,7 @@ function consoleItemsReducer(console_items, action) {
             new_items = console_items.map(t => {
                 if (t.unique === action.unique_id) {
                     let new_t = {...action.new_item};
-                    updateOutputText(new_t);
+                    return updateOutputText(new_t);
                 }else {
                         return t;
                     }
@@ -72,6 +72,7 @@ function consoleItemsReducer(console_items, action) {
             });
             break;
         case "change_item_value":
+            console.log(`change item_value ${action.field} ${String(action.new_value)}`);
             new_items = console_items.map(t => {
                 if (t.unique_id === action.unique_id) {
                     let new_t = {...t};
@@ -87,10 +88,9 @@ function consoleItemsReducer(console_items, action) {
         case "change_code_output":
             new_items = console_items.map(t => {
                 if (t.unique_id === action.unique_id) {
-                    let new_t = {...t};
-                    new_t["output_dict"] = action.new_value;
-                    new_t = updateOutputText(new_t);
-                    return new_t;
+                    let new_output_dict = {...t.output_dict, [action.row]: action.new_value};
+                    let new_t = {...t, output_dict: new_output_dict};
+                    return updateOutputText(new_t);
                 } else {
                     return t;
                 }
@@ -127,7 +127,7 @@ function consoleItemsReducer(console_items, action) {
             new_items = console_items.map(t => {
                 if (t.type == "divider" && t.divider_list.includes(t.unique_id)) {
                     let new_t = {...t};
-                    new_t.am_shurnk = false;
+                    new_t.am_shrunk = false;
                     return new_t
                 } else {
                     return t
@@ -138,7 +138,7 @@ function consoleItemsReducer(console_items, action) {
             new_items = console_items.map(t => {
                 if (t.type == "divider") {
                     let new_t = {...t};
-                    new_t.am_shurnk = true;
+                    new_t.am_shrunk = true;
                     return new_t
                 } else {
                     return t

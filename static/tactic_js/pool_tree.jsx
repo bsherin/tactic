@@ -90,7 +90,6 @@ function treeNodesReducer(nodes, action) {
                     updateNode(node, action.new_path)
                 }
             });
-            const pNode = nodeFromPath(getFileParentPath(action.new_path), newState8[0]);
             return newState8;
         case "MODIFY_FILE":
             const newStateMF = _.cloneDeep(nodes);
@@ -128,7 +127,7 @@ function treeNodesReducer(nodes, action) {
             return newState9;
         case "ADD_FILE":
             const newState10 = _.cloneDeep(nodes);
-            const [path, fname] = splitFilePath(action.fileDict.fullpath);
+            const [path, ] = splitFilePath(action.fileDict.fullpath);
             forEachNode(newState10, (node) => {
                 if (node.isDirectory) {
                     if (node.fullpath == path) {
@@ -139,7 +138,7 @@ function treeNodesReducer(nodes, action) {
             return newState10;
         case "ADD_DIRECTORY":
             const newState11 = _.cloneDeep(nodes);
-            const [dpath, dfname] = splitFilePath(action.folderDict.fullpath);
+            const [dpath, ] = splitFilePath(action.folderDict.fullpath);
             forEachNode(newState11, (node) => {
                 if (node.isDirectory) {
                     if (node.fullpath == dpath) {
@@ -150,7 +149,6 @@ function treeNodesReducer(nodes, action) {
             return newState11;
         case "MOVE_FILE":
             const newState12 = _.cloneDeep(nodes);
-            let src_node;
             let found_file = false;
             forEachNode(newState12, (node) => {
                 if (node.isDirectory) {
@@ -176,7 +174,6 @@ function treeNodesReducer(nodes, action) {
             return newState12;
         case "MOVE_DIRECTORY":
             const newStateMDir = _.cloneDeep(nodes);
-            let src_dir;
             let found_dir = false;
             forEachNode(newStateMDir, (node) => {
                 if (node.isDirectory && (node.fullpath != action.src)) {
@@ -215,35 +212,6 @@ function updateNode(node, newDict) {
     for (let key in newDict) {
         node[key] = newDict[key]
     }
-    return
-}
-
-function filenode(path) {
-    const basename = getBasename(path);
-    return {
-        id: path,
-        icon: "document",
-        isDirectory: false,
-        fullpath: path,
-        basename: basename,
-        label: basename,
-        isSelected: false
-    }
-}
-
-function dirnode(path) {
-    const basename = getBasename(path);
-    return {
-        id: path,
-        icon: "folder-close",
-        isDirectory: true,
-        isExpanded: false,
-        basename: basename,
-        label: basename,
-        fullpath: path,
-        childNodes: [],
-        isSelected: false
-    }
 }
 
 function forEachNode(nodes, callback) {
@@ -273,21 +241,12 @@ function nodeFromPath(fullpath, root) {
     return null
 }
 
-function sortNodes(nlist) {
-    let newList = _.cloneDeep(nlist);
-    newList.sort((a, b) => {
-        return a.basename.localeCompare(b.basename)
-    });
-    return newList
-}
-
 function PoolTree(props) {
-    const [nodes, dispatch, nodes_ref] = useReducerAndRef(treeNodesReducer, []);
+    const [, dispatch, nodes_ref] = useReducerAndRef(treeNodesReducer, []);
     const [showContextMenu, setShowContextMenu] = useState(false);
     const [contextMenuTarget, setContentMenuTarget] = useState({left: 0, top: 0});
     const [contextMenuNode, setContextMenuNode] = useState("");
-    const [folderOver, setFolderOver] = useState("null");
-    const [searchString, setSearchString, searchStringRef] = useStateAndRef("");
+    const [, setSearchString, searchStringRef] = useStateAndRef("");
     const [sortBy, setSortBy] = useState("updated");
     const [sortDirection, setSortDirection] = useState("descending");
     const settingsContext = useContext(SettingsContext);
@@ -368,8 +327,7 @@ function PoolTree(props) {
         if (props.tsocket) {
             props.tsocket.attachListener("pool-directory-event", (data) => {
                 const event_type = data["event_type"];
-                const path = data["path"];
-                let folderDict = data.folder_dict;
+                let folderDict = data["folder_dict"];
                 folderDict.id = folderDict.fullpath;
                 switch (event_type) {
                     case "modify":
@@ -405,7 +363,6 @@ function PoolTree(props) {
             });
             props.tsocket.attachListener("pool-file-event", (data) => {
                 const event_type = data["event_type"];
-                const path = data["path"];
                 let fileDict = data.file_dict;
                 fileDict.id = fileDict.fullpath;
                 switch (event_type) {
@@ -605,8 +562,8 @@ function PoolAddressSelector(props) {
     const [isOpen, setIsOpen] = useState(false);
     const pop_ref = useRef(null);
     const [refAcquired, setRefAcquired] = useState(false);
-    const [maxPopoverHeight, setMaxPopoverHeight, maxPopoverHeightRef] = useStateAndRef(.4 * window.innerHeight);
-    const [currentRootPath, setCurrentRootPath, currentRootPathRef] = useStateAndRef("/mydisk");
+    const [, setMaxPopoverHeight, maxPopoverHeightRef] = useStateAndRef(.4 * window.innerHeight);
+    const [, , currentRootPathRef] = useStateAndRef("/mydisk");
 
     useEffect(() => {
         window.addEventListener("resize", resizePopover);
@@ -627,7 +584,7 @@ function PoolAddressSelector(props) {
         }
     }
 
-    function handleNodeClick(node, nodes) {
+    function handleNodeClick(node) {
         props.setValue(node.fullpath);
         setIsOpen(false);
         return true
@@ -757,7 +714,7 @@ function CustomTree(props) {
         return () => { props.setRoot({fullpath: node.fullpath}) }
     }
 
-    function renderNodes(treeNodes, currentPath, className) {
+    function renderNodes(treeNodes, currentPath) {
         if (treeNodes == null) {
             return null;
         }
@@ -800,7 +757,7 @@ function CustomTree(props) {
                          onDragStart={(e) => {
                              e.dataTransfer.setData("fullpath", node.fullpath)
                          }}
-                         onDragEnd={(e) => {
+                         onDragEnd={() => {
                          }}>
                         {tnode}
                     </div>

@@ -223,7 +223,8 @@ function withStatus(WrappedComponent) {
         display: "flex",
         flexDirection: "column",
         position: "relative",
-        flexGrow: 1
+        flex: "1 1 0",
+        minHeight: 0
       }
     }, /*#__PURE__*/_react["default"].createElement(WrappedComponent, props))), /*#__PURE__*/_react["default"].createElement(Status, {
       show_spinner: show_spinner,
@@ -257,20 +258,18 @@ function Status(props) {
       height: STATUS_BAR_HEIGHT,
       width: "100%",
       "left": left,
-      "bottom": 0
+      position: "relative"
     },
     className: outer_cname
   }, /*#__PURE__*/_react["default"].createElement("div", {
     className: cname,
     style: {
-      position: "absolute",
-      bottom: 5,
-      left: props.leftEdge,
-      marginLeft: 15
+      marginLeft: 15,
+      marginBottom: 2
     }
   }, props.show_spinner && /*#__PURE__*/_react["default"].createElement(_core.Spinner, {
     size: 20
-  }), props.show_close && (props.show_spiner || props.status_message) && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
+  }), props.show_close && (props.show_spinner || props.status_message) && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
     handleClick: props.handleClose,
     size: "small",
     style: {

@@ -16,7 +16,7 @@ export {withErrorDrawer, ErrorItem, ErrorDrawerContext}
 function withErrorDrawer(WrappedComponent, lposition = "right", error_drawer_size = "30%") {
     function WithErrorComponent(props) {
         const [show_drawer, set_show_drawer] = useState(false);
-        const [contents, set_contents, contents_ref] = useStateAndRef({}); // the ref is necessary.
+        const [, set_contents, contents_ref] = useStateAndRef({}); // the ref is necessary.
 
 
 
@@ -238,9 +238,8 @@ function ErrorDrawer(props) {
     sorted_keys.sort(function (a, b) {
         return parseInt(b) - parseInt(a);
     });
-    let items = sorted_keys.map((ukey, index) => {
+    let items = sorted_keys.map((ukey) => {
         let entry = props.contents.current[ukey];
-        let content_dict = {__html: entry.content};
         let has_link = false;
         if (entry.hasOwnProperty("line_number")) {
             has_link = true;

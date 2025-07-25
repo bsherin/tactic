@@ -16,7 +16,6 @@ var _communication_react = require("./communication_react");
 var _error_drawer = require("./error_drawer");
 var _sizing_tools = require("./sizing_tools");
 var _toaster = require("./toaster");
-var _settings = require("./settings");
 var _modal_react = require("./modal_react");
 var _library_home_react = require("./library_home_react");
 function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t10 in e) "default" !== _t10 && {}.hasOwnProperty.call(e, _t10) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t10)) && (i.get || i.set) ? o(f, _t10, i) : f[_t10] = e[_t10]); return f; })(e, t); }
@@ -32,10 +31,7 @@ function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) 
 function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
 function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
 function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
-var pool_browser_id = (0, _utilities_react.guid)();
 function PoolBrowser(props) {
-  var top_ref = (0, _react.useRef)(null);
-  var resizing = (0, _react.useRef)(false);
   var _useStateAndRef = (0, _utilities_react.useStateAndRef)({
       name: "",
       tags: "",
@@ -46,12 +42,10 @@ function PoolBrowser(props) {
       res_type: null
     }),
     _useStateAndRef2 = _slicedToArray(_useStateAndRef, 3),
-    selected_resource = _useStateAndRef2[0],
     set_selected_resource = _useStateAndRef2[1],
     selected_resource_ref = _useStateAndRef2[2];
   var _useStateAndRef3 = (0, _utilities_react.useStateAndRef)("/mydisk"),
     _useStateAndRef4 = _slicedToArray(_useStateAndRef3, 3),
-    currentRootPath = _useStateAndRef4[0],
     setCurrentRootPath = _useStateAndRef4[1],
     currentRootPathRef = _useStateAndRef4[2];
   var _useStateAndRef5 = (0, _utilities_react.useStateAndRef)(null),
@@ -61,22 +55,16 @@ function PoolBrowser(props) {
     valueRef = _useStateAndRef6[2];
   var _useStateAndRef7 = (0, _utilities_react.useStateAndRef)(null),
     _useStateAndRef8 = _slicedToArray(_useStateAndRef7, 3),
-    selectedNode = _useStateAndRef8[0],
     setSelectedNode = _useStateAndRef8[1],
     selectedNodeRef = _useStateAndRef8[2];
   var _useStateAndRef9 = (0, _utilities_react.useStateAndRef)(false),
     _useStateAndRef0 = _slicedToArray(_useStateAndRef9, 3),
-    multi_select = _useStateAndRef0[0],
-    set_multi_select = _useStateAndRef0[1],
     multi_select_ref = _useStateAndRef0[2];
   var _useStateAndRef1 = (0, _utilities_react.useStateAndRef)([]),
     _useStateAndRef10 = _slicedToArray(_useStateAndRef1, 3),
-    list_of_selected = _useStateAndRef10[0],
-    set_list_of_selected = _useStateAndRef10[1],
     list_of_selected_ref = _useStateAndRef10[2];
   var _useState = (0, _react.useState)([]),
     _useState2 = _slicedToArray(_useState, 2),
-    contextMenuItems = _useState2[0],
     setContextMenuItems = _useState2[1];
   var _useState3 = (0, _react.useState)(false),
     _useState4 = _slicedToArray(_useState3, 2),
@@ -86,16 +74,8 @@ function PoolBrowser(props) {
     _useState6 = _slicedToArray(_useState5, 2),
     showHidden = _useState6[0],
     setShowHidden = _useState6[1];
-  var settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
-  var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
-  var _useSize = (0, _sizing_tools.useSize)(top_ref, 0, "pool_browser"),
-    _useSize2 = _slicedToArray(_useSize, 4),
-    usable_width = _useSize2[0],
-    usable_height = _useSize2[1],
-    topX = _useSize2[2],
-    topY = _useSize2[3];
   var treeRefreshFunc = (0, _react.useRef)(null);
   // Important note: The first mounting of the pool tree must happen after the pool pane
   // is first activated. Otherwise, I do GetPoolTree before everything is ready and I don't
@@ -128,7 +108,6 @@ function PoolBrowser(props) {
       });
     }
   }, [value]);
-  function handlePoolEvent() {}
   function sendNewCell(_x, _x2, _x3) {
     return _sendNewCell.apply(this, arguments);
   }
@@ -139,7 +118,6 @@ function PoolBrowser(props) {
         while (1) switch (_context13.n) {
           case 0:
             ext = (0, _utilities_react.getFileExtension)(path);
-            code = "";
             if (read_as_dataframe) {
               if (ext === "csv") {
                 code = "import pandas as pd\ndf = pd.read_csv(\"".concat(path, "\")");
@@ -410,7 +388,6 @@ function PoolBrowser(props) {
             if (_t3 != "canceled") {
               errorDrawerFuncs.addFromError("Error renaming", _t3);
             }
-            return _context17.a(2);
           case 5:
             return _context17.a(2);
         }
@@ -472,7 +449,6 @@ function PoolBrowser(props) {
             if (_t4 != "canceled") {
               errorDrawerFuncs.addFromError("Error adding directory", _t4);
             }
-            return _context18.a(2);
           case 5:
             return _context18.a(2);
         }
@@ -543,7 +519,6 @@ function PoolBrowser(props) {
             if (_t5 != "canceled") {
               errorDrawerFuncs.addFromError("Error duplicating file", _t5);
             }
-            return _context19.a(2);
           case 6:
             return _context19.a(2);
         }
@@ -558,7 +533,6 @@ function PoolBrowser(props) {
     _compress_file2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee20() {
       var node,
         sNode,
-        src,
         _args20 = arguments,
         _t6;
       return _regenerator().w(function (_context20) {
@@ -573,7 +547,6 @@ function PoolBrowser(props) {
           case 1:
             _context20.p = 1;
             sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
-            src = sNode.fullpath;
             _context20.n = 2;
             return (0, _communication_react.postPromise)("host", "compress_pool_resource", {
               full_path: sNode.fullpath,
@@ -601,7 +574,6 @@ function PoolBrowser(props) {
     _decompress_archive2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee21() {
       var node,
         sNode,
-        src,
         _args21 = arguments,
         _t7;
       return _regenerator().w(function (_context21) {
@@ -616,7 +588,6 @@ function PoolBrowser(props) {
           case 1:
             _context21.p = 1;
             sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
-            src = sNode.fullpath;
             _context21.n = 2;
             return (0, _communication_react.postPromise)("host", "decompress_archive", {
               full_path: sNode.fullpath,
@@ -650,7 +621,6 @@ function PoolBrowser(props) {
         _yield$getBlobPromise,
         _yield$getBlobPromise2,
         data,
-        status,
         xhr,
         blob,
         url,
@@ -698,7 +668,6 @@ function PoolBrowser(props) {
             _yield$getBlobPromise = _context22.v;
             _yield$getBlobPromise2 = _slicedToArray(_yield$getBlobPromise, 3);
             data = _yield$getBlobPromise2[0];
-            status = _yield$getBlobPromise2[1];
             xhr = _yield$getBlobPromise2[2];
             if (xhr.status === 200) {
               // Create a download link and trigger the download
@@ -885,7 +854,7 @@ function PoolBrowser(props) {
     }));
     return _delete_func2.apply(this, arguments);
   }
-  function _add_to_pool(myDropZone, setCurrentUrl, current_value) {
+  function _add_to_pool(myDropZone, setCurrentUrl) {
     var new_url = "import_pool/".concat(_library_home_react.library_id);
     myDropZone.options.url = new_url;
     setCurrentUrl(new_url);
@@ -967,7 +936,7 @@ function PoolBrowser(props) {
     }));
     return _handleDrop.apply(this, arguments);
   }
-  function handleNodeClick(node, nodes) {
+  function handleNodeClick(node) {
     setValue(node.fullpath);
     setSelectedNode(node);
     return true;
@@ -1185,14 +1154,8 @@ function PoolBrowser(props) {
   function registerTreeRefreshFunc(func) {
     treeRefreshFunc.current = func;
   }
-  var outer_style = {
-    marginTop: 0,
-    marginLeft: 0,
-    overflow: "auto",
-    marginRight: 0,
-    height: "100%"
-  };
-  var res_type = null;
+
+  // let outer_style = {marginTop: 0, marginLeft: 0, overflow: "auto", marginRight: 0, height: "100%"};
   var fixed_data = {
     created: selected_resource_ref.current.created,
     updated: selected_resource_ref.current.updated,
@@ -1205,7 +1168,9 @@ function PoolBrowser(props) {
     useFixedData: true,
     fixedData: fixed_data,
     elevation: 2,
-    outer_style: outer_style,
+    outer_style: {
+      height: "100%"
+    },
     readOnly: true
   });
   var left_pane = /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
@@ -1246,7 +1211,17 @@ function PoolBrowser(props) {
     showSecondaryLabel: true,
     handleNodeClick: handleNodeClick
   }))));
-  return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(PoolMenubar, _extends({
+  var outer_style = {
+    width: "calc(100% - ".concat(_sizing_tools.ICON_BAR_WIDTH, "px)"),
+    height: "100%",
+    display: 'flex',
+    flexDirection: 'column',
+    paddingLeft: 0,
+    position: "relative"
+  };
+  return /*#__PURE__*/_react["default"].createElement("div", {
+    style: outer_style
+  }, /*#__PURE__*/_react["default"].createElement(PoolMenubar, _extends({
     selected_resource: selected_resource_ref.current,
     connection_status: null,
     copy_func: _copy_func,
@@ -1272,18 +1247,13 @@ function PoolBrowser(props) {
     controlled: props.controlled,
     tsocket: props.tsocket
   })), /*#__PURE__*/_react["default"].createElement("div", {
-    ref: top_ref,
-    style: outer_style,
-    className: "pool-browser"
-  }, /*#__PURE__*/_react["default"].createElement("div", {
     style: {
-      width: usable_width,
-      height: usable_height
+      flex: "1 1 0",
+      display: "flex",
+      position: "relative"
     }
   }, /*#__PURE__*/_react["default"].createElement(_resizing_allotment.HorizontalPanes, {
-    outer_hp_style: {
-      paddingBottom: "50px"
-    },
+    outer_hp_style: {},
     show_handle: true,
     left_pane: left_pane,
     right_pane: right_pane,
@@ -1293,7 +1263,7 @@ function PoolBrowser(props) {
     handleSplitUpdate: null,
     handleResizeStart: null,
     handleResizeEnd: null
-  }))));
+  })));
 }
 exports.PoolBrowser = PoolBrowser = /*#__PURE__*/(0, _react.memo)(PoolBrowser);
 function PoolBreadcrumb(props) {
@@ -1310,7 +1280,7 @@ function PoolHiddenSwitch(props) {
   }
   return /*#__PURE__*/_react["default"].createElement(_core.Switch, {
     label: "show hidden",
-    large: false,
+    size: "medium",
     checked: props.showHidden,
     onChange: handleShowHiddenChange
   });
@@ -1363,7 +1333,6 @@ function PoolBreadcrumbs(props) {
 function PoolMenubar(props) {
   var _useStateAndRef11 = (0, _utilities_react.useStateAndRef)(props.selected_resource.res_type),
     _useStateAndRef12 = _slicedToArray(_useStateAndRef11, 3),
-    selectedType = _useStateAndRef12[0],
     setSelectedType = _useStateAndRef12[1],
     selectedTypeRef = _useStateAndRef12[2];
   (0, _react.useEffect)(function () {
@@ -1460,33 +1429,3 @@ function PoolMenubar(props) {
   });
 }
 PoolMenubar = /*#__PURE__*/(0, _react.memo)(PoolMenubar);
-function FileDropWrapper(props) {
-  var _useState7 = (0, _react.useState)(false),
-    _useState8 = _slicedToArray(_useState7, 2),
-    isDragging = _useState8[0],
-    setIsDragging = _useState8[1];
-  var handleDragOver = function handleDragOver(e) {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-  var handleDragLeave = function handleDragLeave() {
-    setIsDragging(false);
-  };
-  var handleDrop = function handleDrop(e) {
-    e.preventDefault();
-    setIsDragging(false);
-    var files = e.dataTransfer.files;
-    if (files) {
-      if (props.processFiles) {
-        props.processFiles(files);
-      }
-    }
-  };
-  return /*#__PURE__*/_react["default"].createElement("div", {
-    id: "pool-drop-zone",
-    className: "drop-zone ".concat(isDragging ? 'drag-over' : ''),
-    onDragOver: handleDragOver,
-    onDragLeave: handleDragLeave,
-    onDrop: handleDrop
-  }, props.children);
-}

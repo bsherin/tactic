@@ -206,7 +206,7 @@ function withStatus(WrappedComponent) {
             <div style={{display: "flex", flexDirection: "column",
                 position: "relative", width: "100%", height: "100%"}}>
                  <StatusContext.Provider value={statusFuncsRef.current}>
-                    <div style={{display: "flex", flexDirection: "column", position: "relative", flexGrow: 1}}>
+                    <div style={{display: "flex", flexDirection: "column", position: "relative", flex: "1 1 0", minHeight: 0}}>
                         <WrappedComponent {...props}/>
                     </div>
                 </StatusContext.Provider>
@@ -243,12 +243,12 @@ function Status(props) {
 
     return (
         <div ref={elRef}
-             style={{height: STATUS_BAR_HEIGHT, width: "100%", "left": left, "bottom": 0}}
+             style={{height: STATUS_BAR_HEIGHT, width: "100%", "left": left, position: "relative"}}
              className={outer_cname}>
-            <div className={cname} style={{position: "absolute", bottom: 5, left: props.leftEdge, marginLeft: 15}}>
+            <div className={cname} style={{marginLeft: 15, marginBottom: 2}}>
                 {props.show_spinner &&
                     <Spinner size={20}/>}
-                {props.show_close && (props.show_spiner || props.status_message) &&
+                {props.show_close && (props.show_spinner || props.status_message) &&
                     <GlyphButton handleClick={props.handleClose}
                                  size="small"
                                  style={{paddingTop: 5}}

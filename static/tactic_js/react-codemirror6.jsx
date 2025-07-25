@@ -1,6 +1,5 @@
 import React, {Fragment, useEffect, useRef, memo, useContext} from "react";
 import {Button, ButtonGroup} from "@blueprintjs/core";
-import {useSize} from "./sizing_tools";
 import {propsAreEqual, useStateAndRef} from "./utilities_react";
 import {SettingsContext} from "./settings";
 import {SearchForm} from "./library_widgets";
@@ -265,7 +264,6 @@ function ReactCodemirror6(props) {
     const containerNodeRef = useRef(null);
     const editorView = useRef(null);
     const matches = useRef(null);
-    const first_render = useRef(true);
     const themeCompartment = useRef(null);
     const completionCompartment = useRef(null);
     const lineNumberCompartment = useRef(null);
@@ -286,8 +284,6 @@ function ReactCodemirror6(props) {
     const [, doAIUpdate] = useDebounce(getAIUpdate, 2000);
 
     const settingsContext = useContext(SettingsContext);
-
-    const [usable_width, usable_height, topX, topY] = useSize(localRef, props.iCounter, "CodeMirror");
 
     useEffect(() => {
         if (props.registerSetFocusFunc) {
@@ -729,47 +725,38 @@ function ReactCodemirror6(props) {
         ccstyle.overflow = "auto";
 
     } else if (!props.no_height) {
-        ccstyle.height = usable_height;
+        ccstyle.height = "100%";
     }
 
     if (!props.no_width) {
-        ccstyle.width = usable_width;
+        ccstyle.width = "100%";
     }
 
-    let bgstyle = null;
-    if (props.show_fold_button) {
-        if (usable_width > 175) {
-            bgstyle = {
-                position: "fixed",
-                left: topX + usable_width - 135 - 15,
-                top: topY + usable_height - 35,
-                zIndex: 1
-            };
-            if (first_render.current) {
-                bgstyle.top -= 10;
-                first_render.current = false;
-            }
-        }
-    }
+    let bgstyle = {
+        position: "absolute",
+        right: 35,
+        bottom: 10,
+        zIndex: 1
+    };
+
     if (props.show_search) {
-        let title_label = props.title_label ? props.title_label : "";
         return (
             <Fragment>
                 <div style={{
-                    display: "flex", flexDirection: "row", justifyContent: "space-between",
-                    marginRight: 10,
+                    display: "flex", flexDirection: "row",
+                    justifyContent: props.title_label ? "space-between" : "flex-end",
                     width: "100%",
                     marginTop: 5,
                     height: props.header_left ? SEARCH_HEIGHT + 10 : SEARCH_HEIGHT,
                 }}>
                     {props.header_left && props.header_left}
-                    {title_label !== "" && <span className="bp6-ui-text"
+                    {props.title_label && <span className="bp6-ui-text"
                                                  style={{
                                                      display: "flex",
                                                      paddingLeft: 5,
                                                      paddingBottom: 2,
                                                      alignItems: "self-end"
-                                                 }}>{title_label}</span>}
+                                                 }}>{props.title_label}</span>}
 
                     <SearchForm update_search_state={props.updateSearchState}
                                 search_string={props.search_term}

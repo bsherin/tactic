@@ -7,7 +7,6 @@ import "../tactic_css/tactic_select.scss"
 import React from "react";
 import {Fragment, useEffect, useRef, memo, useContext, useReducer, useCallback} from "react";
 import { createRoot } from 'react-dom/client';
-//import { BlueprintProvider } from "@blueprintjs/core";
 import {NavbarDivider} from "@blueprintjs/core";
 import {Regions} from "@blueprintjs/table"
 import _ from 'lodash';
@@ -28,7 +27,7 @@ import {doFlash} from "./toaster"
 import {withStatus} from "./toaster";
 import {withErrorDrawer} from "./error_drawer";
 import {renderSpinnerMessage, useConnection, useConstructor, useStateAndRef} from "./utilities_react";
-import {useSize, withSizeContext, SizeContext, ICON_BAR_WIDTH} from "./sizing_tools";
+import {ICON_BAR_WIDTH} from "./sizing_tools";
 import {ErrorBoundary} from "./error_boundary";
 import {useCallbackStack, useReducerAndRef} from "./utilities_react";
 import {SettingsContext, withSettings} from "./settings";
@@ -41,10 +40,7 @@ import {MetadataDrawer, MetadataContext} from "./metadata_drawer";
 
 export {MainApp}
 
-
-const BOTTOM_MARGIN = 30;  // includes space for status messages at bottom
-const CONSOLE_HEADER_HEIGHT = 35;
-const TABLE_CONSOLE_GAP = 20; // handle width plus margin
+const CONSOLE_HEADER_HEIGHT = 40;
 
 const iStateDefaults = {
     table_is_shrunk: false,
@@ -81,7 +77,6 @@ function MainApp(props) {
     const last_save = useRef({});
     const resizing = useRef(false);
     const updateExportsList = useRef(null);
-    const table_container_ref = useRef(null);
     const main_outer_ref = useRef(null);
     const set_table_scroll = useRef(null);
 
@@ -131,7 +126,6 @@ function MainApp(props) {
         resource_name: props.resource_name,
         is_project: props.is_project,
     });
-    const [usable_width, usable_height, topX, topY] = useSize(main_outer_ref, 0, "MainApp");
 
     const connection_status = useConnection(props.tsocket, initSocket);
 
@@ -446,7 +440,7 @@ function MainApp(props) {
     }
 
     async function _tile_command(menu_id) {
-        var existing_tile_names = [];
+        let existing_tile_names = [];
         for (let tile_entry of tile_list) {
             existing_tile_names.push(tile_entry.tile_name)
         }
@@ -551,14 +545,13 @@ function MainApp(props) {
                 refill_table: _refill_table,
                 dehighlightAllText: () => _handleSearchFieldChange(null),
                 highlightTxtInDocument: (data) => _setAltSearchText(data.text_to_find),
-                //updateNumberRows: (data) => _updateNumberRows(data.doc_name, data.number_rows),
                 setCellContent: (data) => _setCellContent(data.row, data.column_header, data.new_content),
                 colorTxtInCell: (data) => _colorTextInCell(data.row_id, data.column_header, data.token_text, data.color_dict),
                 setFreeformContent: (data) => _setFreeformDoc(data.doc_name, data.new_content),
                 updateDocList: (data) => _updateDocList(data.doc_names, data.visible_doc),
                 setCellBackground: (data) => _setCellBackgroundColor(data.row, data.column_header, data.color)
             };
-            handlerDict[data.table_message](data)
+            handlerDict[data["table_message"]](data)
         }
     }
 
@@ -740,7 +733,7 @@ function MainApp(props) {
                 data_row_dict: data.data_row_dict,
                 total_rows: data.total_rows,
                 table_spec: {
-                    column_names: data.table_spec.header_list,
+                    column_names: data.table_spec["header_list"],
                     column_widths: data.table_spec.column_widths,
                     hidden_columns_list: data.table_spec.hidden_columns_list,
                     cell_backgrounds: data.table_spec.cell_backgrounds,
@@ -805,7 +798,7 @@ function MainApp(props) {
                 select_label: "New Collection",
                 cancel_text: "Cancel",
                 submit_text: "Submit",
-                option_list: data.collection_names,
+                option_list: data["collection_names"],
                 handleClose: dialogFuncs.hideModal,
             });
             const result_dict = {
@@ -818,7 +811,7 @@ function MainApp(props) {
             let table_spec;
             if (data_object.doc_type == "table") {
                 table_spec = {
-                    column_names: data_object.table_spec.header_list,
+                    column_names: data_object.table_spec["header_list"],
                     column_widths: data_object.table_spec.column_widths,
                     cell_backgrounds: data_object.table_spec.cell_backgrounds,
                     hidden_columns_list: data_object.table_spec.hidden_columns_list,
@@ -1039,7 +1032,6 @@ function MainApp(props) {
         }
     }
     let tile_pane = (
-        <div>
             <TileContainer main_id={props.main_id}
                            tsocket={props.tsocket}
                            tile_list={tile_list_ref}
@@ -1051,7 +1043,6 @@ function MainApp(props) {
                            tileDispatch={tileDispatch}
                            setMainStateValue={_setMainStateValue}
             />
-        </div>
     );
 
     let exports_pane;
@@ -1076,6 +1067,7 @@ function MainApp(props) {
                               handleCreateViewer={props.handleCreateViewer}
                               controlled={props.controlled}
                               console_items={console_items_ref}
+                              console_items_not_ref={console_items}
                               console_selected_items_ref={console_selected_items_ref}
                               set_console_selected_items={set_console_selected_items}
                               dispatch={dispatch}
@@ -1090,10 +1082,10 @@ function MainApp(props) {
         console_pane = <div style={{width: "100%"}}></div>
     }
 
-    let outer_hp_style = null;
-    if (mState.console_is_shrunk) {
-        outer_hp_style = {marginTop: TABLE_CONSOLE_GAP}
-    }
+    // let outer_hp_style = null;
+    // if (mState.console_is_shrunk) {
+    //     outer_hp_style = {marginTop: TABLE_CONSOLE_GAP}
+    // }
     let bottom_pane = (
         <HorizontalPanes left_pane={console_pane}
                          right_pane={exports_pane}
@@ -1101,21 +1093,17 @@ function MainApp(props) {
                          show_handle={true}
                          fixed_height={mState.console_is_shrunk}
                          initial_width_fraction={mState.console_width_fraction}
-                         outer_style={outer_hp_style}
+                         outer_style={{paddingBottom: 10, paddingRight: 10}}
                          handleSplitUpdate={_handleConsoleFractionChange}
         />
     );
     let table_pane;
     if (mState.doc_type != "none") {
         table_pane = (
-            <Fragment>
-                <div ref={table_container_ref}>
-                    <MainTableCard
-                        card_body={card_body}
-                        card_header={card_header}
-                    />
-                </div>
-            </Fragment>
+            <MainTableCard
+                card_body={card_body}
+                card_header={card_header}
+            />
         )
     }
     let top_pane;
@@ -1149,6 +1137,15 @@ function MainApp(props) {
     if (mState.doc_type != "none") {
         extra_menubar_buttons = [{onClick: _toggleTableShrink, icon: mState.table_is_shrunk ? "th" : "th-disconnect"}];
     }
+    let outer_style = {
+        width: `calc(100% - ${ICON_BAR_WIDTH}px)`,
+        flex: "1 1 0",
+        overflow: "auto",
+        display: 'flex',
+        flexDirection: 'column',
+        paddingLeft: 0,
+        position: "relative"
+    };
     return (
         <ErrorBoundary>
             {!window.in_context &&
@@ -1181,36 +1178,33 @@ function MainApp(props) {
             <ErrorBoundary>
                 <div className={`main-outer ${settingsContext.isDark() ? "bp6-dark" : "light-theme"}`}
                      ref={main_outer_ref}
-                     style={{width: "100%", height: usable_height}}>
+                     style={outer_style}>
                     {mState.console_is_zoomed &&
-                        <div style={{width: `calc(100% - ${ICON_BAR_WIDTH}px)`,
-                            height: usable_height - BOTTOM_MARGIN}}>
-                            <HorizontalPanes left_pane={console_pane}
-                                             right_pane={exports_pane}
-                                             separatorPadding={5}
-                                             show_handle={true}
-                                             fixed_height={mState.console_is_shrunk}
-                                             initial_width_fraction={mState.console_width_fraction}
-                                             outer_style={outer_hp_style}
-                                             handleSplitUpdate={_handleConsoleFractionChange}
-                            />
-                        </div>
+                        <HorizontalPanes left_pane={console_pane}
+                                         right_pane={exports_pane}
+                                         separatorPadding={5}
+                                         show_handle={true}
+                                         fixed_height={mState.console_is_shrunk}
+                                         initial_width_fraction={mState.console_width_fraction}
+                                         outer_style={{paddingBottom: 10, paddingRight: 10}}
+                                         handleSplitUpdate={_handleConsoleFractionChange}
+                        />
                     }
                     {!mState.console_is_zoomed && mState.console_is_shrunk &&
-                        <div style={{width: `calc(100% - ${ICON_BAR_WIDTH}px)`}}>
+                        <Fragment>
                             <div style={{
-                                height: usable_height - BOTTOM_MARGIN - CONSOLE_HEADER_HEIGHT - 20,
+                                flex: "1 1 0",
+                                minWidth: 0,
                                 overflow: "auto"
                             }}>
                                 {top_pane}
                             </div>
-                            <div style={{height: CONSOLE_HEADER_HEIGHT}}>
+                            <div style={{height: CONSOLE_HEADER_HEIGHT, marginTop: 10}}>
                                 {bottom_pane}
                             </div>
-                        </div>
+                        </Fragment>
                     }
                     {!mState.console_is_zoomed && !mState.console_is_shrunk &&
-                            <div style={{width: `calc(100% - ${ICON_BAR_WIDTH}px)`, height: usable_height - BOTTOM_MARGIN}}>
                             <VerticalPanes top_pane={top_pane}
                                            bottom_pane={bottom_pane}
                                            show_handle={true}
@@ -1222,7 +1216,6 @@ function MainApp(props) {
                                            separatorPadding={10}
                                            overflow="hidden"
                             />
-                        </div>
                     }
                 </div>
                 <MetadataDrawer res_type="project"
@@ -1244,7 +1237,7 @@ MainApp = memo(MainApp);
 
 function main_main() {
     function gotProps(the_props) {
-        let MainAppPlus = withPool(withSizeContext(withSettings(withDialogs(withErrorDrawer(withStatus(withAssistant(MainApp)))))));
+        let MainAppPlus = withPool(withSettings(withDialogs(withErrorDrawer(withStatus(withAssistant(MainApp))))));
         let the_element = <MainAppPlus {...the_props}
                                        controlled={false}
                                        changeName={null}
@@ -1252,7 +1245,12 @@ function main_main() {
         const domContainer = document.querySelector('#main-root');
         const root = createRoot(domContainer);
         root.render(
-                the_element
+            <div style={{display: "flex", flexDirection: "column",
+                position: "relative",
+                height: "100%",
+                width: "100%"}}>
+                {the_element}
+            </div>
         )
     }
 

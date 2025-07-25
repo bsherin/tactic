@@ -14,12 +14,8 @@ var _settings = require("./settings");
 var _excluded = ["extra_text", "menus", "selected", "show_api_links"];
 function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t in e) "default" !== _t && {}.hasOwnProperty.call(e, _t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t)) && (i.get || i.set) ? o(f, _t, i) : f[_t] = e[_t]); return f; })(e, t); }
 function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
-function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
-function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
 function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
-function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
-function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
 function _objectWithoutProperties(e, t) { if (null == e) return {}; var o, r, i = _objectWithoutPropertiesLoose(e, t); if (Object.getOwnPropertySymbols) { var n = Object.getOwnPropertySymbols(e); for (r = 0; r < n.length; r++) o = n[r], -1 === t.indexOf(o) && {}.propertyIsEnumerable.call(e, o) && (i[o] = e[o]); } return i; }
 function _objectWithoutPropertiesLoose(r, e) { if (null == r) return {}; var t = {}; for (var n in r) if ({}.hasOwnProperty.call(r, n)) { if (-1 !== e.indexOf(n)) continue; t[n] = r[n]; } return t; }
 var context_url = $SCRIPT_ROOT + '/context';
@@ -27,7 +23,6 @@ var library_url = $SCRIPT_ROOT + '/library';
 var repository_url = $SCRIPT_ROOT + '/repository';
 var account_url = $SCRIPT_ROOT + '/account_info';
 var login_url = $SCRIPT_ROOT + "/login";
-var padding = 10;
 function TacticNavbar(_ref) {
   var _ref$extra_text = _ref.extra_text,
     extra_text = _ref$extra_text === void 0 ? null : _ref$extra_text,
@@ -38,39 +33,9 @@ function TacticNavbar(_ref) {
     _ref$show_api_links = _ref.show_api_links,
     show_api_links = _ref$show_api_links === void 0 ? false : _ref$show_api_links,
     props = _objectWithoutProperties(_ref, _excluded);
-  var _useState = (0, _react.useState)(function () {
-      return window.innerWidth - padding * 2;
-    }),
-    _useState2 = _slicedToArray(_useState, 2),
-    usable_width = _useState2[0],
-    set_usable_width = _useState2[1];
-  var _useState3 = (0, _react.useState)(null),
-    _useState4 = _slicedToArray(_useState3, 2),
-    old_left_width = _useState4[0],
-    set_old_left_width = _useState4[1];
   var lg_ref = (0, _react.useRef)(null);
   var settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   var overflow_items = [];
-  function _update_window_dimensions() {
-    set_usable_width(window.innerWidth - 2 * padding);
-  }
-
-  // For some reason sizing things are a little flaky without old_left_width stuff
-  (0, _react.useEffect)(function () {
-    window.addEventListener("resize", _update_window_dimensions);
-    _update_window_dimensions();
-    if (!old_left_width) {
-      set_old_left_width(_getLeftWidth());
-    } else {
-      var new_left_width = _getLeftWidth();
-      if (new_left_width != old_left_width) {
-        set_old_left_width(new_left_width);
-      }
-    }
-    return function () {
-      window.removeEventListener("resize", _update_window_dimensions);
-    };
-  });
   function getIntent(butname) {
     return selected == butname ? "primary" : null;
   }
@@ -81,21 +46,6 @@ function TacticNavbar(_ref) {
     window.open($SCRIPT_ROOT + "/logout/" + props.page_id, "_self");
     return false;
   }
-
-  // function _setTheme(event) {
-  //     let dtheme = event.target.checked ? "dark" : "light";
-  //     set_theme_cookie(dtheme);
-  //     if (window.user_id != undefined) {
-  //         const result_dict = {
-  //             "user_id": window.user_id,
-  //             "theme": dtheme,
-  //         };
-  //         postWithCallback("host", "set_user_theme", result_dict,
-  //             null, null);
-  //     }
-  //     theme.setTheme(event.target.checked)
-  // }
-
   function renderNav(item) {
     return /*#__PURE__*/_react["default"].createElement(_core.Button, {
       icon: item.icon,
@@ -108,20 +58,6 @@ function TacticNavbar(_ref) {
       intent: item.intent,
       onClick: item.onClick
     });
-  }
-  function _getLeftWidth() {
-    if (lg_ref && lg_ref.current) {
-      return lg_ref.current.getBoundingClientRect().width;
-    }
-    return null;
-  }
-  function _getRightWidth() {
-    var lg_width = _getLeftWidth();
-    if (lg_width) {
-      return usable_width - lg_width - 35;
-    } else {
-      return .25 * usable_width - 35;
-    }
   }
   function _authenticatedItems() {
     return [{
@@ -199,7 +135,6 @@ function TacticNavbar(_ref) {
       icon_dict: icon_dict
     });
   }
-  var nav_class = menus == null ? "justify-content-end" : "justify-content-between";
   var right_nav_items = [];
   if (show_api_links) {
     right_nav_items = [{
@@ -231,11 +166,6 @@ function TacticNavbar(_ref) {
   } else {
     right_nav_items = right_nav_items.concat(_notAuthenticatedItems());
   }
-  var right_width = _getRightWidth();
-  var right_style = {
-    width: right_width
-  };
-  right_style.justifyContent = "flex-end";
   var theme_class = settingsContext.isDark() ? "bp6-dark" : "light-theme";
   var name_string = "Tactic";
   if (extra_text != null) {
@@ -243,6 +173,9 @@ function TacticNavbar(_ref) {
   }
   return /*#__PURE__*/_react["default"].createElement(_core.Navbar, {
     style: {
+      display: "flex",
+      flexDirection: "row",
+      width: "100%",
       paddingLeft: 10
     },
     className: theme_class
@@ -259,7 +192,11 @@ function TacticNavbar(_ref) {
     height: "32"
   }), name_string), menus != null && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, menus)), /*#__PURE__*/_react["default"].createElement(_core.NavbarGroup, {
     align: _core.Alignment.RIGHT,
-    style: right_style
+    style: {
+      justifyContent: "flex-end",
+      flex: "1 1 0",
+      overflow: "hidden"
+    }
   }, /*#__PURE__*/_react["default"].createElement(_core.NavbarDivider, null), /*#__PURE__*/_react["default"].createElement(_core.OverflowList, {
     items: right_nav_items,
     overflowRenderer: _overflowRenderer,
@@ -271,7 +208,6 @@ exports.TacticNavbar = TacticNavbar = /*#__PURE__*/(0, _react.memo)(TacticNavbar
 function render_navbar() {
   var selected = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
   var show_api_links = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-  var dark_theme = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
   var domContainer = document.querySelector('#navbar-root');
   var root = (0, _client.createRoot)(domContainer);
   root.render(/*#__PURE__*/_react["default"].createElement(TacticNavbar, {

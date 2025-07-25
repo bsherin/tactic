@@ -1,14 +1,71 @@
 import {createContext} from "react";
 import {TacticSocket} from "./tactic_socket";
-import {renderSpinnerMessage} from "./utilities_react";
+import {isInt, renderSpinnerMessage} from "./utilities_react";
 import {handleCallback, postPromise} from "./communication_react";
-import {correctOptionListTypes} from "./creator_modules_react";
+import _ from "lodash";
 
 export {creator_props}
 
 export {MakerPaneContext}
 
 const MakerPaneContext = createContext(null);
+
+function correctOptionListTypes(option_list) {
+    let copied_olist = _.cloneDeep(option_list);
+    for (let option of copied_olist) {
+        option.default = correctType(option.type, option.default);
+        // The following is needed because when reordering rows BpOrderableTable return the special_list
+        // as a string
+        if (option.type == "custom_list") {
+            if (typeof option.special_list == 'string') {
+                option.special_list = eval(option.special_list)
+            }
+        }
+    }
+    return copied_olist
+}
+
+function correctType(type, val, error_flag = "__ERROR__") {
+    let result;
+    if (val == null || val.length == 0) {
+        return null
+    }
+    switch (type) {
+        case "int":
+            if (isInt(val)) {
+                result = typeof val == "number" ? val : parseInt(val)
+            } else {
+                result = error_flag
+            }
+            break;
+        case "float":
+            if (isNaN(Number(val)) && isNaN(parseFloat(val))) {
+                result = error_flag
+            } else {
+                result = typeof val == "number" ? val : parseFloat(val)
+            }
+            break;
+        case "boolean":
+            if (typeof val == "boolean") {
+                result = val
+            } else {
+                let lval = val.toLowerCase();
+                if (lval == "false") {
+                    result = false
+                } else if (lval == "true") {
+                    result = true;
+                } else {
+                    result = error_flag;
+                }
+            }
+            break;
+        default:
+            result = val;
+            break;
+    }
+    return result
+}
+
 
 function creator_props(data, registerDirtyMethod, finalCallback) {
 

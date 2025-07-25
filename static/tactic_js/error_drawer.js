@@ -41,7 +41,6 @@ function withErrorDrawer(WrappedComponent) {
       set_show_drawer = _useState2[1];
     var _useStateAndRef = (0, _utilities_react.useStateAndRef)({}),
       _useStateAndRef2 = _slicedToArray(_useStateAndRef, 3),
-      contents = _useStateAndRef2[0],
       set_contents = _useStateAndRef2[1],
       contents_ref = _useStateAndRef2[2]; // the ref is necessary.
 
@@ -261,11 +260,8 @@ function ErrorDrawer(props) {
   sorted_keys.sort(function (a, b) {
     return parseInt(b) - parseInt(a);
   });
-  var items = sorted_keys.map(function (ukey, index) {
+  var items = sorted_keys.map(function (ukey) {
     var entry = props.contents.current[ukey];
-    var content_dict = {
-      __html: entry.content
-    };
     var has_link = false;
     if (entry.hasOwnProperty("line_number")) {
       has_link = true;

@@ -4,7 +4,6 @@ import {Fragment, useEffect, useRef, memo, useLayoutEffect, useContext} from "re
 import {Button, ButtonGroup} from "@blueprintjs/core";
 import {Helmet} from 'react-helmet';
 
-//import {postAjaxPromise} from "./communication_react"
 import {useSize} from "./sizing_tools";
 
 

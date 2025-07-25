@@ -53,11 +53,11 @@ function list_viewer_props(data, registerDirtyMethod, finalCallback) {
     main_id: resource_viewer_id,
     tsocket: tsocket,
     split_tags: data.mdata.tags == "" ? [] : data.mdata.tags.split(" "),
-    created: data.mdata.datestring,
+    created: data.mdata["datestring"],
     resource_name: data.resource_name,
     the_content: data.the_content,
     notes: data.mdata.notes,
-    readOnly: data.read_only,
+    readOnly: data["read_only"],
     is_repository: data.is_repository,
     registerDirtyMethod: registerDirtyMethod
   });
@@ -69,7 +69,6 @@ function ListEditor(props) {
     resize: "horizontal",
     margin: 2,
     flexGrow: 1
-    //height: usable_height - LIST_PADDING_TOP - 4
   };
   return /*#__PURE__*/_react["default"].createElement("div", {
     id: "listarea-container",
@@ -118,7 +117,6 @@ function ListViewerApp(props) {
   var statusFuncs = (0, _react.useContext)(_toaster2.StatusContext);
   var selectedPane = (0, _react.useContext)(_utilities_react.SelectedPaneContext);
   var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
-  var sizeInfo = (0, _react.useContext)(_sizing_tools.SizeContext);
   (0, _react.useEffect)(function () {
     statusFuncs.stopSpinner();
     if (props.controlled) {
@@ -143,7 +141,6 @@ function ListViewerApp(props) {
       window.addEventListener("beforeunload", function (e) {
         if (_dirty()) {
           e.preventDefault();
-          e.returnValue = '';
         }
       });
     }
@@ -223,7 +220,6 @@ function ListViewerApp(props) {
     }
     for (var _i = 0, _Object$entries = Object.entries(ms); _i < _Object$entries.length; _i++) {
       var _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2),
-        menu_name = _Object$entries$_i[0],
         menu = _Object$entries$_i[1];
       var _iterator = _createForOfIteratorHelper(menu),
         _step;
@@ -260,7 +256,7 @@ function ListViewerApp(props) {
   }
   function _saveMe2() {
     _saveMe2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3() {
-      var new_list_as_string, result_dict, _data, _t;
+      var new_list_as_string, result_dict, _t;
       return _regenerator().w(function (_context3) {
         while (1) switch (_context3.n) {
           case 0:
@@ -279,7 +275,6 @@ function ListViewerApp(props) {
             _context3.n = 3;
             return (0, _communication_react.postAjaxPromise)("update_list", result_dict);
           case 3:
-            _data = _context3.v;
             savedContent.current = new_list_as_string;
             statusFuncs.statusMessage("Saved list ".concat(result_dict.list_name));
             _context3.n = 5;
@@ -298,12 +293,12 @@ function ListViewerApp(props) {
     }));
     return _saveMe2.apply(this, arguments);
   }
-  function _saveMeAs(_x) {
+  function _saveMeAs() {
     return _saveMeAs2.apply(this, arguments);
   }
   function _saveMeAs2() {
-    _saveMeAs2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee4(e) {
-      var ln_result, new_name, result_dict, _data2, _t2;
+    _saveMeAs2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee4() {
+      var ln_result, new_name, result_dict, _t2;
       return _regenerator().w(function (_context4) {
         while (1) switch (_context4.n) {
           case 0:
@@ -325,7 +320,7 @@ function ListViewerApp(props) {
               title: "Save List As",
               field_title: "New List Name",
               default_value: "NewList",
-              existing_names: ln_result.list_names,
+              existing_names: ln_result["list_names"],
               checkboxes: [],
               handleClose: dialogFuncs.hideModal
             });
@@ -338,7 +333,6 @@ function ListViewerApp(props) {
             _context4.n = 4;
             return (0, _communication_react.postAjaxPromise)('/create_duplicate_list', result_dict);
           case 4:
-            _data2 = _context4.v;
             _setResourceNameState(new_name, function () {
               _saveMe();
             });
@@ -419,7 +413,7 @@ function _list_viewer_main() {
       while (1) switch (_context5.n) {
         case 0:
           gotProps = function _gotProps(the_props) {
-            var ListViewerAppPlus = (0, _sizing_tools.withSizeContext)((0, _settings.withSettings)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)((0, _assistant.withAssistant)(ListViewerApp))))));
+            var ListViewerAppPlus = (0, _settings.withSettings)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)((0, _assistant.withAssistant)(ListViewerApp)))));
             var the_element = /*#__PURE__*/_react["default"].createElement(ListViewerAppPlus, _extends({}, the_props, {
               controlled: false,
               changeName: null

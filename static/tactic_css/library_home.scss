@@ -21,6 +21,16 @@ $regular: #5c7080;
 
     }
 
+    .admin-pane {
+        .bp6-tabs.bp6-vertical > .bp6-tab-panel  {
+            margin-left: 0;
+            padding-left: 0 !important;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+    }
+
     // does this do anything?
     .open-selector-row {
         color: gray;
@@ -158,7 +168,7 @@ $regular: #5c7080;
         padding-left: 0 !important;
         //background-color: #f5f8fa;
         //border-left: 1px solid #CED9E0;
-        margin-left: 0px
+        margin-left: 0
     }
 
     .bp6-checkbox .bp6-control-indicator:focus {

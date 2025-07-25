@@ -1,9 +1,9 @@
 
 
-import {TacticSocket} from "./tactic_socket";
-import {renderSpinnerMessage} from "./utilities_react";
-import {handleCallback, postPromise} from "./communication_react";
-import {correctOptionListTypes} from "./creator_modules_react";
+import {TacticSocket} from "../tactic_js/tactic_socket";
+import {renderSpinnerMessage} from "../tactic_js/utilities_react";
+import {handleCallback, postPromise} from "../tactic_js/communication_react";
+import {correctOptionListTypes} from "../tactic_js/creator_modules_react";
 
 export {creator_props}
 

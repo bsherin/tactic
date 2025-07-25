@@ -1,5 +1,5 @@
 import React from "react";
-import {Fragment, useEffect, useRef, memo, useMemo, useContext} from "react";
+import { useEffect, useRef, memo, useMemo, useContext} from "react";
 import PropTypes from 'prop-types';
 
 import {PopoverPosition} from "@blueprintjs/core";
@@ -10,11 +10,9 @@ import {BpSelect} from "./blueprint_mdata_fields";
 import {TacticMenubar} from "./menu_utilities";
 import {SettingsContext} from "./settings"
 import {StatusContext} from "./toaster";
-import {useSize} from "./sizing_tools";
+import {ICON_BAR_WIDTH} from "./sizing_tools";
 
 export {MergeViewerApp}
-
-const BOTTOM_MARGIN = 85;
 
 function MergeViewerApp(props) {
 
@@ -23,8 +21,6 @@ function MergeViewerApp(props) {
 
     const settingsContext = useContext(SettingsContext);
     const statusFuncs = useContext(StatusContext);
-
-    const [usable_width, usable_height, topX, topY] = useSize(top_ref, 0, "MergeViewerApp");
 
     const button_groups = [
         [{"name_text": "Save", "icon_name": "saved", "click_handler": props.saveHandler}]
@@ -64,12 +60,11 @@ function MergeViewerApp(props) {
         return ms
     }
 
-    let toolbar_holder_style = {"paddingTop": 20, paddingLeft: 50};
-    let max_merge_height = usable_height - BOTTOM_MARGIN;
-
     let left_div_style = {
-        "width": "100%",
-        "height": usable_height,
+        display: "flex",
+        width: "100%",
+        height: "100%",
+        flexDirection: "column",
         paddingLeft: 25,
         paddingRight: 25
 
@@ -81,9 +76,18 @@ function MergeViewerApp(props) {
     } else {
         outer_class = outer_class + " light-theme"
     }
-    let current_style = {"bottom": 0};
+
+    let outer_style = {
+        width: `calc(100% - ${ICON_BAR_WIDTH}px)`,
+        flexGrow: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        paddingLeft: 0,
+        position: "relative"
+    };
+
     return (
-        <Fragment>
+        <div style={outer_style}>
             <TacticMenubar menu_specs={menu_specs()}
                            connection_status={props.connection_status}
                            showIconBar={true}
@@ -98,9 +102,18 @@ function MergeViewerApp(props) {
                            resource_name={props.resource_name}
                            controlled={false}
             />
-            <div style={{width: usable_width}} className={outer_class} tabIndex="0" onKeyDown={handleKeyDown} onKeyUp={handleKeyUp}>
+            <div className={outer_class}
+                 style={{
+                     display: "flex",
+                     flex: "1 1 0",
+                     minHeight: 0,
+                     width: "100%",
+                     position: "relative"
+                 }}
+                 tabIndex="0" onKeyDown={handleKeyDown} onKeyUp={handleKeyUp}>
                 <div id="left-div" ref={top_ref} style={left_div_style}>
-                    <div id="above-main" ref={above_main_ref} className="d-flex flex-row justify-content-between mb-2">
+                    <div id="above-main" ref={above_main_ref} className="d-flex flex-row justify-content-between"
+                         style={{marginTop: 5, marginBottom: 2}}>
                         <span className="align-self-end">Current</span>
                         <BpSelect options={props.option_list}
                                   onChange={props.handleSelectChange}
@@ -112,12 +125,11 @@ function MergeViewerApp(props) {
                                               editor_content={props.edit_content}
                                               right_content={props.right_content}
                                               saveMe={props.saveHandler}
-                                              max_height={max_merge_height}
 
                     />
                 </div>
             </div>
-        </Fragment>
+        </div>
     )
 }
 

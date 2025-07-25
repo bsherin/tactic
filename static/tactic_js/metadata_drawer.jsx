@@ -38,15 +38,6 @@ import {CombinedMetadata} from "./blueprint_mdata_fields";
 
 export {MetadataDrawer, MetadataContext}
 
-function formatLatexEquations(text) {
-    const displayRegex = /\$\$(.+?)\$\$/gs;
-    text = text.replace(displayRegex, (_, equation) => `\`$${equation}$\``);
-    const inlineRegex = /\$(.+?)\$/g;
-    text = text.replace(inlineRegex, (_, equation) => `\`$${equation}$\``);
-
-    return text;
-}
-
 const drawerStyle = {paddingLeft: 0, paddingRight: 15, paddingBottom: 15, paddingTop: 0};
 
 const icon_dict = {
@@ -62,10 +53,6 @@ const MetadataContext = createContext(null);
 function MetadataDrawer(props) {
 
     const settingsContext = useContext(SettingsContext);
-
-    useEffect(() => {
-        //console.log("theme changed")  // This is to force re-rendering because of highlight.js theme change
-    }, [settingsContext.settings.theme]);
 
     return (
         <Drawer

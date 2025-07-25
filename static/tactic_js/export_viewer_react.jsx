@@ -1,17 +1,15 @@
 
 import React from "react";
-import {Fragment, useState, useEffect, useRef, memo, useMemo, useContext} from "react";
+import {Fragment, useState, useEffect, useRef, memo, useContext} from "react";
 import { Card, Button, InputGroup, Spinner, ButtonGroup, FormGroup, Divider} from "@blueprintjs/core";
 
 import {GlyphButton, SelectList} from "./blueprint_react_widgets.js";
 import {postWithCallback, postPromise} from "./communication_react.js"
 import {useCallbackStack, useStateAndRef} from "./utilities_react";
 import {ErrorDrawerContext} from "./error_drawer";
-import {useSize} from "./sizing_tools";
 
 export {ExportsViewer}
 
-const FOOTING_HEIGHT = 23;
 
 function TextIcon(props) {
     return (
@@ -66,10 +64,7 @@ ExportButtonListButton = memo(ExportButtonListButton);
 
 function ExportButtonList(props) {
     const top_ref = useRef(null);
-    const select_ref = useRef(null);
     const export_index_ref = useRef({});
-
-    const [usable_width, usable_height, topX, topY] = useSize(top_ref, 0, "ExportButtonList");
 
     function _buttonPress(fullname) {
         props.handleChange(fullname, export_index_ref.current[fullname].shortname, export_index_ref.current[fullname].tilename)
@@ -85,7 +80,6 @@ function ExportButtonList(props) {
         let groups = [];
         let group_names = Object.keys(props.pipe_dict);
         group_names.sort();
-        let index = 0;
         for (let group of group_names) {
             let group_items = [];
             let entries = props.pipe_dict[group];
@@ -132,8 +126,8 @@ function ExportButtonList(props) {
     return (
         <div id="exports-button-list"
              ref={top_ref}
-             style={{flexDirection: "column", display: "inline-block",
-                 verticalAlign: "top", padding: 15, height: usable_height - FOOTING_HEIGHT}}
+             style={{flexDirection: "column", display: "flex",
+                 verticalAlign: "top", padding: 15, height: "100%", position: "relative"}}
              className="contingent-scroll">
             {create_groups()}
         </div>
@@ -141,8 +135,6 @@ function ExportButtonList(props) {
 }
 
 ExportButtonList = memo(ExportButtonList);
-
-const body_style = {padding: 15, width: "80%", height: "100%", display: "inline-block"};
 
 function ExportsViewer(props) {
     props = {
@@ -154,18 +146,18 @@ function ExportsViewer(props) {
     const footer_ref = useRef(null);
     const body_ref = useRef(null);
 
-    const [selected_export, set_selected_export, selected_export_ref] = useStateAndRef("");
+    const [, set_selected_export, selected_export_ref] = useStateAndRef("");
     const [selected_export_tilename, set_selected_export_tilename] = useState(null);
     const [key_list, set_key_list] = useState(null);
     const [key_list_value, set_key_list_value] = useState(null);
     const [tail_value, set_tail_value] = useState("");
-    const [max_rows, set_max_rows, max_rows_ref] = useStateAndRef(25);
+    const [, set_max_rows, max_rows_ref] = useStateAndRef(25);
     const [exports_info_value, set_exports_info_value] = useState(null);
     const [selected_export_short_name, set_selected_export_short_name] = useState(null);
     const [show_spinner, set_show_spinner] = useState(false);
     const [running, set_running] = useState(false);
     const [exports_body_value, set_exports_body_value] = useState("");
-    const [type, set_type] = useState(null);
+    const [, set_type] = useState(null);
     const [pipe_dict, set_pipe_dict] = useState({});
 
     const pushCallback = useCallbackStack();
@@ -177,8 +169,6 @@ function ExportsViewer(props) {
         props.setUpdate(_updateExportsList);
         _updateExportsList().then(() => {});
     }, []);
-
-    const [usable_width, usable_height, topX, topY] = useSize(body_ref, 0, "ExportsViewer");
 
     function initSocket() {
         props.tsocket.attachListener("export-viewer-message", _handleExportViewerMessage);
@@ -194,7 +184,7 @@ function ExportsViewer(props) {
                 startMySpinner: _startMySpinner,
                 got_export_info: _gotExportInfo
             };
-            handlerDict[data.export_viewer_message](data)
+            handlerDict[data["export_viewer_message"]](data)
         }
     }
 
@@ -213,12 +203,8 @@ function ExportsViewer(props) {
         }
     }
 
-    function _refresh() {
-        _handleExportListChange(selected_export_ref.current, selected_export_short_name, true)
-    }
-
     function _displayResult(data) {
-        set_exports_body_value(data.the_html);
+        set_exports_body_value(data["the_html"]);
         set_show_spinner(false);
         set_running(false)
     }
@@ -257,8 +243,8 @@ function ExportsViewer(props) {
     }
 
     function _gotExportInfo(data) {
-        var new_key_list = null;
-        var new_key_list_value = null;
+        let new_key_list = null;
+        let new_key_list_value = null;
         if (data.hasOwnProperty("key_list")) {
             new_key_list = data.key_list;
             if (data.hasOwnProperty("key_list_value")) {
@@ -271,7 +257,7 @@ function ExportsViewer(props) {
             }
         }
         set_type(data.type);
-        set_exports_info_value(data.info_string);
+        set_exports_info_value(data["info_string"]);
         set_tail_value("");
         set_show_spinner(false);
         set_running(false);
@@ -327,18 +313,29 @@ function ExportsViewer(props) {
     }
 
     let exports_body_dict = {__html: exports_body_value};
-    let butclass = "notclose bottom-heading-element bottom-heading-element-button";
     let exports_class = props.console_is_shrunk ? "am-shrunk" : "not-shrunk";
     let spinner_val = running ? null : 0;
     if (props.console_is_zoomed) {
         exports_class = "am-zoomed"
     }
 
-    const usable_height_style = useMemo(()=>{return {height: usable_height}});
-    const height_minus_footing_style = useMemo(()=>{return {height: usable_height - FOOTING_HEIGHT}});
+    let outer_style = {
+        width: "100%",
+        display: 'flex',
+        flexDirection: 'column',
+        paddingLeft: 0,
+        position: "relative"
+    };
+
+    if (!props.console_is_shrunk) {
+        outer_style.height = "100%";
+    }
     return (
-         <Card id="exports-panel" elevation={2} className={"mr-3 " + exports_class} style={props.style}>
-             <div className="d-flex flex-column justify-content-around">
+         <Card id="exports-panel"
+               elevation={props.console_is_shrunk ? 0 : 2}
+               className={"mr-3 " + exports_class} style={outer_style}>
+             <div className="d-flex flex-column justify-content-around"
+                  style={{flex: "1 1 0", position: "relative"}}>
                  <div id="exports-heading"
                       ref={header_ref}
                      className="d-flex flex-row justify-content-start">
@@ -392,15 +389,20 @@ function ExportsViewer(props) {
 
                  </div>
                  {!props.console_is_shrunk &&
-                     <div ref={body_ref} style={usable_height_style}>
-                         <div className="d-flex flex-row" style={height_minus_footing_style}>
+                     <div ref={body_ref}
+                          style={{flex: "1 1 0", minHeight: 0,
+                              display: "flex", flexDirection: "column",
+                              width: "100%", position: "relative", overflow: "auto"}}
+                     >
+                         <div className="d-flex flex-row"
+                              style={{flex: "1 1 0", minHeight: 0, width: "100%", position: "relative", overflow: "auto"}}>
                              <ExportButtonList pipe_dict={pipe_dict}
                                                value={selected_export_ref.current}
                                                handleChange={_handleExportListChange}
                              />
                              <Divider/>
                              <div id="exports-body"
-                                  style={body_style}
+                                  style={{padding: 15, flex: " 1 1 0", height: "100%", overflow: "auto"}}
                                   className="contingent-scroll" dangerouslySetInnerHTML={exports_body_dict}/>
                          </div>
                          <div id="exports-footing"

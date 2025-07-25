@@ -59,11 +59,8 @@ function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbol
 function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
 function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
 function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
-function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); } //import { BlueprintProvider } from "@blueprintjs/core";
-var BOTTOM_MARGIN = 30; // includes space for status messages at bottom
-var CONSOLE_HEADER_HEIGHT = 35;
-var TABLE_CONSOLE_GAP = 20; // handle width plus margin
-
+function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+var CONSOLE_HEADER_HEIGHT = 40;
 var iStateDefaults = {
   table_is_shrunk: false,
   tile_list: [],
@@ -96,7 +93,6 @@ function MainApp(props) {
   var last_save = (0, _react.useRef)({});
   var resizing = (0, _react.useRef)(false);
   var updateExportsList = (0, _react.useRef)(null);
-  var table_container_ref = (0, _react.useRef)(null);
   var main_outer_ref = (0, _react.useRef)(null);
   var set_table_scroll = (0, _react.useRef)(null);
   var _useStateAndRef = (0, _utilities_react.useStateAndRef)([]),
@@ -152,12 +148,6 @@ function MainApp(props) {
     _useReducer2 = _slicedToArray(_useReducer, 2),
     mState = _useReducer2[0],
     mDispatch = _useReducer2[1];
-  var _useSize = (0, _sizing_tools.useSize)(main_outer_ref, 0, "MainApp"),
-    _useSize2 = _slicedToArray(_useSize, 4),
-    usable_width = _useSize2[0],
-    usable_height = _useSize2[1],
-    topX = _useSize2[2],
-    topY = _useSize2[3];
   var connection_status = (0, _utilities_react.useConnection)(props.tsocket, initSocket);
   var pushCallback = (0, _utilities_react.useCallbackStack)();
   (0, _utilities_react.useConstructor)(function () {
@@ -707,7 +697,6 @@ function MainApp(props) {
         highlightTxtInDocument: function highlightTxtInDocument(data) {
           return _setAltSearchText(data.text_to_find);
         },
-        //updateNumberRows: (data) => _updateNumberRows(data.doc_name, data.number_rows),
         setCellContent: function setCellContent(data) {
           return _setCellContent(data.row, data.column_header, data.new_content);
         },
@@ -724,7 +713,7 @@ function MainApp(props) {
           return _setCellBackgroundColor(data.row, data.column_header, data.color);
         }
       };
-      handlerDict[data.table_message](data);
+      handlerDict[data["table_message"]](data);
     }
   }
   var _setCellContent = (0, _react.useCallback)(function (row_id, column_header, new_content) {
@@ -1015,7 +1004,7 @@ function MainApp(props) {
         data_row_dict: data.data_row_dict,
         total_rows: data.total_rows,
         table_spec: {
-          column_names: data.table_spec.header_list,
+          column_names: data.table_spec["header_list"],
           column_widths: data.table_spec.column_widths,
           hidden_columns_list: data.table_spec.hidden_columns_list,
           cell_backgrounds: data.table_spec.cell_backgrounds,
@@ -1142,7 +1131,7 @@ function MainApp(props) {
               select_label: "New Collection",
               cancel_text: "Cancel",
               submit_text: "Submit",
-              option_list: data.collection_names,
+              option_list: data["collection_names"],
               handleClose: dialogFuncs.hideModal
             });
           case 2:
@@ -1159,7 +1148,7 @@ function MainApp(props) {
             window._collection_name = data_object.collection_name;
             if (data_object.doc_type == "table") {
               table_spec = {
-                column_names: data_object.table_spec.header_list,
+                column_names: data_object.table_spec["header_list"],
                 column_widths: data_object.table_spec.column_widths,
                 cell_backgrounds: data_object.table_spec.cell_backgrounds,
                 hidden_columns_list: data_object.table_spec.hidden_columns_list,
@@ -1389,7 +1378,7 @@ function MainApp(props) {
       });
     }
   }
-  var tile_pane = /*#__PURE__*/_react["default"].createElement("div", null, /*#__PURE__*/_react["default"].createElement(_tile_react.TileContainer, {
+  var tile_pane = /*#__PURE__*/_react["default"].createElement(_tile_react.TileContainer, {
     main_id: props.main_id,
     tsocket: props.tsocket,
     tile_list: tile_list_ref,
@@ -1400,7 +1389,7 @@ function MainApp(props) {
     goToModule: props.goToModule,
     tileDispatch: tileDispatch,
     setMainStateValue: _setMainStateValue
-  }));
+  });
   var exports_pane;
   if (mState.show_exports_pane) {
     exports_pane = /*#__PURE__*/_react["default"].createElement(_export_viewer_react.ExportsViewer, {
@@ -1424,6 +1413,7 @@ function MainApp(props) {
       handleCreateViewer: props.handleCreateViewer,
       controlled: props.controlled,
       console_items: console_items_ref,
+      console_items_not_ref: console_items,
       console_selected_items_ref: console_selected_items_ref,
       set_console_selected_items: set_console_selected_items,
       dispatch: dispatch,
@@ -1440,12 +1430,11 @@ function MainApp(props) {
       }
     });
   }
-  var outer_hp_style = null;
-  if (mState.console_is_shrunk) {
-    outer_hp_style = {
-      marginTop: TABLE_CONSOLE_GAP
-    };
-  }
+
+  // let outer_hp_style = null;
+  // if (mState.console_is_shrunk) {
+  //     outer_hp_style = {marginTop: TABLE_CONSOLE_GAP}
+  // }
   var bottom_pane = /*#__PURE__*/_react["default"].createElement(_resizing_allotment.HorizontalPanes, {
     left_pane: console_pane,
     right_pane: exports_pane,
@@ -1453,17 +1442,18 @@ function MainApp(props) {
     show_handle: true,
     fixed_height: mState.console_is_shrunk,
     initial_width_fraction: mState.console_width_fraction,
-    outer_style: outer_hp_style,
+    outer_style: {
+      paddingBottom: 10,
+      paddingRight: 10
+    },
     handleSplitUpdate: _handleConsoleFractionChange
   });
   var table_pane;
   if (mState.doc_type != "none") {
-    table_pane = /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
-      ref: table_container_ref
-    }, /*#__PURE__*/_react["default"].createElement(_table_react.MainTableCard, {
+    table_pane = /*#__PURE__*/_react["default"].createElement(_table_react.MainTableCard, {
       card_body: card_body,
       card_header: card_header
-    })));
+    });
   }
   var top_pane;
   if (mState.table_is_shrunk) {
@@ -1492,6 +1482,15 @@ function MainApp(props) {
       icon: mState.table_is_shrunk ? "th" : "th-disconnect"
     }];
   }
+  var outer_style = {
+    width: "calc(100% - ".concat(_sizing_tools.ICON_BAR_WIDTH, "px)"),
+    flex: "1 1 0",
+    overflow: "auto",
+    display: 'flex',
+    flexDirection: 'column',
+    paddingLeft: 0,
+    position: "relative"
+  };
   return /*#__PURE__*/_react["default"].createElement(_error_boundary.ErrorBoundary, null, !window.in_context && /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
     is_authenticated: window.is_authenticated,
     user_name: window.username,
@@ -1520,43 +1519,31 @@ function MainApp(props) {
   })), /*#__PURE__*/_react["default"].createElement(_error_boundary.ErrorBoundary, null, /*#__PURE__*/_react["default"].createElement("div", {
     className: "main-outer ".concat(settingsContext.isDark() ? "bp6-dark" : "light-theme"),
     ref: main_outer_ref,
-    style: {
-      width: "100%",
-      height: usable_height
-    }
-  }, mState.console_is_zoomed && /*#__PURE__*/_react["default"].createElement("div", {
-    style: {
-      width: "calc(100% - ".concat(_sizing_tools.ICON_BAR_WIDTH, "px)"),
-      height: usable_height - BOTTOM_MARGIN
-    }
-  }, /*#__PURE__*/_react["default"].createElement(_resizing_allotment.HorizontalPanes, {
+    style: outer_style
+  }, mState.console_is_zoomed && /*#__PURE__*/_react["default"].createElement(_resizing_allotment.HorizontalPanes, {
     left_pane: console_pane,
     right_pane: exports_pane,
     separatorPadding: 5,
     show_handle: true,
     fixed_height: mState.console_is_shrunk,
     initial_width_fraction: mState.console_width_fraction,
-    outer_style: outer_hp_style,
+    outer_style: {
+      paddingBottom: 10,
+      paddingRight: 10
+    },
     handleSplitUpdate: _handleConsoleFractionChange
-  })), !mState.console_is_zoomed && mState.console_is_shrunk && /*#__PURE__*/_react["default"].createElement("div", {
+  }), !mState.console_is_zoomed && mState.console_is_shrunk && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
     style: {
-      width: "calc(100% - ".concat(_sizing_tools.ICON_BAR_WIDTH, "px)")
-    }
-  }, /*#__PURE__*/_react["default"].createElement("div", {
-    style: {
-      height: usable_height - BOTTOM_MARGIN - CONSOLE_HEADER_HEIGHT - 20,
+      flex: "1 1 0",
+      minWidth: 0,
       overflow: "auto"
     }
   }, top_pane), /*#__PURE__*/_react["default"].createElement("div", {
     style: {
-      height: CONSOLE_HEADER_HEIGHT
+      height: CONSOLE_HEADER_HEIGHT,
+      marginTop: 10
     }
-  }, bottom_pane)), !mState.console_is_zoomed && !mState.console_is_shrunk && /*#__PURE__*/_react["default"].createElement("div", {
-    style: {
-      width: "calc(100% - ".concat(_sizing_tools.ICON_BAR_WIDTH, "px)"),
-      height: usable_height - BOTTOM_MARGIN
-    }
-  }, /*#__PURE__*/_react["default"].createElement(_resizing_allotment.VerticalPanes, {
+  }, bottom_pane)), !mState.console_is_zoomed && !mState.console_is_shrunk && /*#__PURE__*/_react["default"].createElement(_resizing_allotment.VerticalPanes, {
     top_pane: top_pane,
     bottom_pane: bottom_pane,
     show_handle: true,
@@ -1567,7 +1554,7 @@ function MainApp(props) {
     handleResizeEnd: _handleResizeEnd,
     separatorPadding: 10,
     overflow: "hidden"
-  }))), /*#__PURE__*/_react["default"].createElement(_metadata_drawer.MetadataDrawer, {
+  })), /*#__PURE__*/_react["default"].createElement(_metadata_drawer.MetadataDrawer, {
     res_type: "project",
     res_name: _cProp("resource_name"),
     tsocket: props.tsocket,
@@ -1582,14 +1569,22 @@ function MainApp(props) {
 exports.MainApp = MainApp = /*#__PURE__*/(0, _react.memo)(MainApp);
 function main_main() {
   function gotProps(the_props) {
-    var MainAppPlus = (0, _pool_tree.withPool)((0, _sizing_tools.withSizeContext)((0, _settings.withSettings)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)((0, _assistant.withAssistant)(MainApp)))))));
+    var MainAppPlus = (0, _pool_tree.withPool)((0, _settings.withSettings)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)((0, _assistant.withAssistant)(MainApp))))));
     var the_element = /*#__PURE__*/_react["default"].createElement(MainAppPlus, _extends({}, the_props, {
       controlled: false,
       changeName: null
     }));
     var domContainer = document.querySelector('#main-root');
     var root = (0, _client.createRoot)(domContainer);
-    root.render(the_element);
+    root.render(/*#__PURE__*/_react["default"].createElement("div", {
+      style: {
+        display: "flex",
+        flexDirection: "column",
+        position: "relative",
+        height: "100%",
+        width: "100%"
+      }
+    }, the_element));
   }
   (0, _utilities_react.renderSpinnerMessage)("Starting up ...");
   var target;

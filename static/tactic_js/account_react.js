@@ -32,12 +32,20 @@ function _account_main() {
   var root = (0, _client.createRoot)(domContainer);
   var tsocket = new _tactic_socket.TacticSocket("main", 5000, "code_viewer", window.main_id);
   var AccountAppPlus = (0, _settings.withSettings)(AccountApp);
-  root.render(/*#__PURE__*/_react["default"].createElement(AccountAppPlus, {
+  var the_element = /*#__PURE__*/_react["default"].createElement(AccountAppPlus, {
     controlled: false,
     tsocket: tsocket
-  }));
+  });
+  root.render(/*#__PURE__*/_react["default"].createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      position: "relative",
+      height: "100%",
+      width: "100%"
+    }
+  }, the_element));
 }
-var field_names = ["new_password", "confirm_new_password"];
 function AccountApp(props) {
   var _useStateAndRef = (0, _utilities_react.useStateAndRef)([]),
     _useStateAndRef2 = _slicedToArray(_useStateAndRef, 3),

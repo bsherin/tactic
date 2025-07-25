@@ -4,14 +4,14 @@ import "../tactic_css/library_home.scss";
 
 import React from "react";
 import {Fragment, useEffect, useRef, memo, useContext} from "react";
-import { createRoot } from 'react-dom/client';
+import {createRoot} from 'react-dom/client';
 
 import {TacticSocket} from "./tactic_socket"
 import {handleCallback} from "./communication_react"
 import {LibraryPane} from "./library_pane"
 import {withStatus} from "./toaster";
 import {withErrorDrawer} from "./error_drawer";
-import {useCallbackStack, useConnection} from "./utilities_react";
+import {useConnection} from "./utilities_react";
 import {TacticNavbar} from "./blueprint_navbar";
 
 import {SettingsContext, withSettings} from "./settings";
@@ -20,14 +20,11 @@ import {StatusContext} from "./toaster"
 
 import {RepositoryAllMenubar} from "./repository_menubars";
 import {library_id} from "./library_home_react";
-import {BOTTOM_MARGIN, useSize, withSizeContext, SizeContext} from "./sizing_tools";
+import {ICON_BAR_WIDTH} from "./sizing_tools";
 
 export {RepositoryHomeApp}
 
-const MARGIN_SIZE = 17;
 let tsocket;
-
-const controllable_props = ["usable_height", "usable_width"];
 
 function RepositoryHomeApp(props) {
 
@@ -36,9 +33,6 @@ function RepositoryHomeApp(props) {
     const statusFuncs = useContext(StatusContext);
 
     const top_ref = useRef(null);
-    const [usable_width, usable_height, topX, topY] = useSize(top_ref, 0, "Repository");
-
-    const pushCallback = useCallbackStack("repository_home");
 
     useEffect(() => {
         statusFuncs.stopSpinner();
@@ -57,10 +51,6 @@ function RepositoryHomeApp(props) {
                 }
             });
         }
-    }
-
-    function getIconColor(paneId) {
-        return paneId == selected_tab_id ? "white" : "#CED9E0"
     }
 
     let lib_props = {...props};
@@ -90,9 +80,12 @@ function RepositoryHomeApp(props) {
     );
 
     let outer_style = {
-        width: "100%",
-        height: "100%",
-        paddingLeft: 0
+       width: `calc(100% - ${ICON_BAR_WIDTH}px)`,
+        flexGrow: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        paddingLeft: 0,
+        position: "relative"
     };
     let outer_class = "library-pane-holder  ";
     if (settingsContext.isDark()) {
@@ -109,14 +102,7 @@ function RepositoryHomeApp(props) {
                           extra_text={window.repository_type == "Local" ? "" : window.repository_type}
                           user_name={window.username}/>
             <div id="repository_container" className={outer_class} ref={top_ref} style={outer_style}>
-                <SizeContext.Provider value={{
-                    topX: topX,
-                    topY: topY,
-                    availableWidth: usable_width,
-                    availableHeight: usable_height - BOTTOM_MARGIN
-                }}>
-                    { all_pane }
-                </SizeContext.Provider>
+                    {all_pane}
             </div>
         </Fragment>
     )
@@ -128,11 +114,20 @@ RepositoryHomeApp = memo(RepositoryHomeApp);
 function _repository_home_main() {
     tsocket = new TacticSocket("main", 5000, "repository", library_id);
     tsocket.socket.emit('join-repository', {});
-    let RepositoryHomeAppPlus = withSizeContext(withSettings(withDialogs(withErrorDrawer(withStatus(RepositoryHomeApp)))));
+    let RepositoryHomeAppPlus = withSettings(withDialogs(withErrorDrawer(withStatus(RepositoryHomeApp))));
     const domContainer = document.querySelector('#library-home-root');
     const root = createRoot(domContainer);
-    root.render(<RepositoryHomeAppPlus controlled={false}
-                                       tsocket={tsocket}/>)
+    root.render(
+        <div style={{
+            display: "flex", flexDirection: "column",
+            position: "relative",
+            height: "100%",
+            width: "100%"
+        }}>
+            <RepositoryHomeAppPlus controlled={false}
+                                   tsocket={tsocket}/>
+        </div>
+    )
 }
 
 _repository_home_main();

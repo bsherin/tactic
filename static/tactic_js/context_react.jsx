@@ -11,7 +11,6 @@ import {useState, useEffect, useRef, useContext, Fragment, useCallback, useMemo}
 import {createRoot} from 'react-dom/client';
 
 import {Tab, Tabs, Button, Icon, Spinner, useHotkeys, Divider} from "@blueprintjs/core";
-//import { HotkeysProvider } from "@blueprintjs/core";
 import {FocusStyleManager} from "@blueprintjs/core";
 
 FocusStyleManager.onlyShowFocusOnTabs();
@@ -43,11 +42,7 @@ import {text_viewer_props, TextViewerApp} from "./text_viewer_react";
 import {ErrorDrawerContext, withErrorDrawer} from "./error_drawer";
 import {withAssistant} from "./assistant";
 import {
-    SizeContext,
-    getUsableDimensions,
-    USUAL_NAVBAR_HEIGHT,
     INIT_CONTEXT_PANEL_WIDTH,
-    ICON_BAR_WIDTH
 } from "./sizing_tools";
 import {postAjaxPromise} from "./communication_react";
 import {DragHandle} from "./drag_handle";
@@ -144,15 +139,8 @@ function ContextApp(props) {
     const [dirty_methods, set_dirty_methods] = useState({});
 
     const [lastSelectedTabId, setLastSelectedTabId] = useState(null);
-    const [usable_width, set_usable_width] = useState(() => {
-        return getUsableDimensions(true).usable_width - INIT_CONTEXT_PANEL_WIDTH - ICON_BAR_WIDTH;
-    });
-    const [usable_height, set_usable_height] = useState(() => {
-        return getUsableDimensions(true).usable_height_no_bottom
-    });
-    const [paneX, setPaneX] = useState(170);
-    const [paneY, setPaneY] = useState(USUAL_NAVBAR_HEIGHT);
-    const [tabWidth, setTabWidth] = useState(INIT_CONTEXT_PANEL_WIDTH);
+
+    const [tabWidth, ] = useState(INIT_CONTEXT_PANEL_WIDTH);
     const [dragging_over, set_dragging_over] = useState(null);
     const [currently_dragging, set_currently_dragging] = useState(null);
     const [showOpenOmnibar, setShowOpenOmnibar] = useState(false);
@@ -216,26 +204,11 @@ function ContextApp(props) {
     }, []);
 
     useEffect(() => {  // for mount
-        window.addEventListener("resize", () => _update_window_dimensions(null));
         window.addEventListener("beforeunload", function (e) {
             e.preventDefault();
             e.returnValue = 'Are you sure you want to close? All changes will be lost.'
         });
-
-        _update_window_dimensions(null);
-        const tab_list_elem = document.querySelector("#context-container .context-tab-list > .bp6-tab-list");
-        const resizeObserver = new ResizeObserver(() => {
-            _update_window_dimensions(null)
-        });
-        if (tab_list_elem) {
-            resizeObserver.observe(tab_list_elem)
-        }
-
     }, []);
-
-    useEffect(() => {
-        _update_window_dimensions(null)
-    }, [selectedTabId]);
 
     function get_tab_list_elem() {
         return document.querySelector("#context-container .context-tab-list > .bp6-tab-list");
@@ -245,7 +218,6 @@ function ContextApp(props) {
         let w = pane_closed ? saved_width : MIN_CONTEXT_WIDTH;
         let tab_elem = get_tab_list_elem();
         tab_elem.setAttribute("style", `width:${w}px`);
-        pushCallback(_update_window_dimensions)
     }
 
     function _handleTabResize(e, ui, lastX) {
@@ -272,36 +244,6 @@ function ContextApp(props) {
                 set_saved_width(new_width)
             }
         }
-        pushCallback(_update_window_dimensions)
-    }
-
-    function _update_window_dimensions(callback = null) {
-        const tab_list_elem = get_tab_list_elem();
-        let uwidth;
-        let uheight;
-        let tWidth;
-        let top_rect;
-        if (top_ref && top_ref.current) {
-            top_rect = top_ref.current.getBoundingClientRect();
-            uheight = window.innerHeight - top_rect.top
-        } else {
-            uheight = window.innerHeight - USUAL_NAVBAR_HEIGHT
-        }
-        if (tab_list_elem) {
-            let tab_rect = tab_list_elem.getBoundingClientRect();
-            uwidth = window.innerWidth - tab_rect.width;
-            tWidth = tab_rect.width
-        } else {
-            uwidth = window.innerWidth - 150;
-            tWidth = 150
-        }
-        set_usable_height(uheight);
-        set_usable_width(uwidth - ICON_BAR_WIDTH);
-        setPaneX(tWidth);
-        setPaneY(top_ref.current ? top_rect.top : USUAL_NAVBAR_HEIGHT);
-        setTabWidth(tWidth);
-        statusFuncs.setLeftEdge(tWidth);
-        pushCallback(callback);
     }
 
     function _registerDirtyMethod(tab_id, dirty_method) {
@@ -422,9 +364,6 @@ function ContextApp(props) {
                         setLastSelectedTabId("library")
                     }
                 }
-                pushCallback(() => {
-                    _updateOpenResources(() => _update_window_dimensions())
-                })
             });
         } catch (e) {
             if (e !== "canceled") {
@@ -476,7 +415,7 @@ function ContextApp(props) {
         }
         set_tab_panel_dict(new_tab_panel_dict);
         pushCallback(() => {
-            _updateOpenResources(() => _update_window_dimensions(callback))
+            _updateOpenResources(callback)
         });
     }
 
@@ -494,7 +433,7 @@ function ContextApp(props) {
         new_tab_panel_dict[the_id].panel.resource_name = new_name;
         set_tab_panel_dict(new_tab_panel_dict);
         pushCallback(() => {
-            _updateOpenResources(() => _update_window_dimensions(callback))
+            _updateOpenResources(callback)
         });
     }
 
@@ -558,11 +497,10 @@ function ContextApp(props) {
         }
     }
 
-    function _handleTabSelect(newTabId, prevTabId, event = null, callback = null) {
+    function _handleTabSelect(newTabId, prevTabId) {
         setSelectedTabId(newTabId);
         setLastSelectedTabId(prevTabId);
         pushCallback(() => {
-            _update_window_dimensions(callback);
             setTabSelectCounter(tabSelectCounter + 1)
         });
     }
@@ -735,8 +673,6 @@ function ContextApp(props) {
                                 am_selected={selectedTabIdRef.current === "library"}
                                 open_resources_ref={open_resources_ref}
                                 handleCreateViewer={_handleCreateViewer}
-                                usable_width={usable_width}
-                                usable_height={usable_height}
                 />
             </div>
         </SelectedPaneContext.Provider>
@@ -775,16 +711,12 @@ function ContextApp(props) {
                     _addOmniItems("pool", items)
                 }
             }}>
-                <div id="pool-browser-root">
-                    <PoolBrowser tsocket={tsocket}
-                                 am_selected={selectedTabIdRef.current === "pool"}
-                                 usable_width={usable_width}
-                                 getOpenResources={_getOpenResources}
-                                 setSelectedTabId={setSelectedTabId}
-                                 handleCreateViewer={_handleCreateViewer}
-                                 usable_height={usable_height}/>
+                <PoolBrowser tsocket={tsocket}
+                             am_selected={selectedTabIdRef.current === "pool"}
+                             getOpenResources={_getOpenResources}
+                             setSelectedTabId={setSelectedTabId}
+                             handleCreateViewer={_handleCreateViewer}/>
 
-                </div>
             </SelectedPaneContext.Provider>
         );
 
@@ -888,8 +820,6 @@ function ContextApp(props) {
                                   await _closeTab(tab_id)
                               }}
                               tsocket={tab_entry.panel.tsocket}
-                              usable_width={usable_width}
-                              usable_height={usable_height}
                     />
                 </SelectedPaneContext.Provider>
             wrapped_panel = (
@@ -1054,12 +984,6 @@ function ContextApp(props) {
                                 direction="x"
                                 barHeight="100%"
                                 useThinBar={true}/>
-                    <SizeContext.Provider value={{
-                        availableWidth: usable_width,
-                        availableHeight: usable_height,
-                        topX: paneX,
-                        topY: paneY
-                    }}>
                         <Tabs id="context-tabs" selectedTabId={selectedTabIdRef.current}
                               className={tlclass}
                               style={{
@@ -1069,7 +993,6 @@ function ContextApp(props) {
                               onChange={_handleTabSelect}>
                             {all_tabs}
                         </Tabs>
-                    </SizeContext.Provider>
                 </div>
                 <SelectedPaneContext.Provider value={{
                     tab_id: sid,

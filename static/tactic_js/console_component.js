@@ -1400,6 +1400,7 @@ function ConsoleComponent(props) {
     // if (current.length > MAX_OUTPUT_LENGTH) {
     //     current = current.slice(-1 * MAX_OUTPUT_LENGTH,)
     // }
+
     props.dispatch({
       type: "change_code_output",
       unique_id: data.console_id,
@@ -1798,14 +1799,15 @@ function ConsoleComponent(props) {
     console_class = "am-zoomed";
   }
   var outer_style = {
-    width: "100%",
-    height: "100%",
-    flexGrow: 1,
     display: 'flex',
     flexDirection: 'column',
+    flex: "1 1 0",
     paddingLeft: 0,
     position: "relative"
   };
+  if (!props.mState.console_is_shrunk) {
+    outer_style.height = "100%";
+  }
   var header_style = (0, _react.useMemo)(function () {
     var newStyle = {};
     if (!props.shrinkable) {
@@ -1854,13 +1856,13 @@ function ConsoleComponent(props) {
   return /*#__PURE__*/_react["default"].createElement(_core.Card, {
     id: "console-panel",
     className: console_class,
-    elevation: 2,
+    elevation: props.mState.console_is_shrunk ? 0 : 2,
     style: outer_style,
     tabIndex: "0",
     onKeyDown: handleKeyDown,
     onKeyUp: handleKeyUp
   }, /*#__PURE__*/_react["default"].createElement("div", {
-    className: "d-flex flex-column justify-content-around"
+    className: "d-flex flex-column justify-content-around "
   }, /*#__PURE__*/_react["default"].createElement("div", {
     id: "console-heading",
     ref: header_ref,
@@ -1922,9 +1924,6 @@ function ConsoleComponent(props) {
     container_id: props.main_id,
     ref: body_ref,
     outer_style: {
-      overflowX: "auto",
-      overflowY: "auto",
-      flexGrow: 1,
       marginLeft: 20,
       marginRight: 20
     },
@@ -1935,9 +1934,6 @@ function ConsoleComponent(props) {
     container_id: pseudo_tile_id,
     ref: body_ref,
     outer_style: {
-      overflowX: "auto",
-      overflowY: "auto",
-      flexGrow: 1,
       marginLeft: 20,
       marginRight: 20
     },
@@ -2078,11 +2074,11 @@ function DividerItem(props) {
     _selectMe(e);
     e.stopPropagation();
   }
-  var panel_class = props.am_shrunk ? "log-panel in-section divider-log-panel log-panel-invisible fixed-log-panel" : "log-panel divider-log-panel log-panel-visible fixed-log-panel";
+  var panel_class = props["am_shrunk"] ? "log-panel in-section divider-log-panel log-panel-invisible fixed-log-panel" : "log-panel divider-log-panel log-panel-visible fixed-log-panel";
   if (props.am_selected) {
     panel_class += " selected";
   }
-  if (props.is_error) {
+  if (props["is_error"]) {
     panel_class += " error-log-panel";
   }
   return /*#__PURE__*/_react["default"].createElement(_core.ContextMenu, {
@@ -2098,10 +2094,10 @@ function DividerItem(props) {
     className: "button-div shrink-expand-div d-flex flex-row"
   }, /*#__PURE__*/_react["default"].createElement(Shandle, {
     dragHandleProps: props.dragHandleProps
-  }), !props.am_shrunk && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
+  }), !props["am_shrunk"] && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
     icon: "chevron-down",
     handleClick: _toggleShrink
-  }), props.am_shrunk && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
+  }), props["am_shrunk"] && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
     icon: "chevron-right",
     style: GLYPH_BUTTON_STYLE5,
     handleClick: _toggleShrink

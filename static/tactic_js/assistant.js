@@ -78,27 +78,22 @@ function withAssistant(WrappedComponent) {
       set_show_drawer = _useState2[1];
     var _useStateAndRef = (0, _utilities_react.useStateAndRef)([]),
       _useStateAndRef2 = _slicedToArray(_useStateAndRef, 3),
-      item_list = _useStateAndRef2[0],
       set_item_list = _useStateAndRef2[1],
       item_list_ref = _useStateAndRef2[2];
     var _useStateAndRef3 = (0, _utilities_react.useStateAndRef)(""),
       _useStateAndRef4 = _slicedToArray(_useStateAndRef3, 3),
-      stream_text = _useStateAndRef4[0],
       set_stream_text = _useStateAndRef4[1],
       stream_text_ref = _useStateAndRef4[2];
     var _useStateAndRef5 = (0, _utilities_react.useStateAndRef)(null),
       _useStateAndRef6 = _slicedToArray(_useStateAndRef5, 3),
-      assistant_id = _useStateAndRef6[0],
       set_assistant_id = _useStateAndRef6[1],
       assistant_id_ref = _useStateAndRef6[2];
     var _useStateAndRef7 = (0, _utilities_react.useStateAndRef)(window.has_openapi_key ? "idle" : null),
       _useStateAndRef8 = _slicedToArray(_useStateAndRef7, 3),
-      chat_status = _useStateAndRef8[0],
       set_chat_status = _useStateAndRef8[1],
       chat_status_ref = _useStateAndRef8[2];
     var _useStateAndRef9 = (0, _utilities_react.useStateAndRef)(""),
       _useStateAndRef0 = _slicedToArray(_useStateAndRef9, 3),
-      assistant_prompt_value = _useStateAndRef0[0],
       set_assistant_prompt_value = _useStateAndRef0[1],
       assistant_prompt_value_ref = _useStateAndRef0[2];
     var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
@@ -114,14 +109,6 @@ function withAssistant(WrappedComponent) {
       }
     }, [show_drawer]);
     var pushCallback = (0, _utilities_react.useCallbackStack)();
-    function sendRemove() {
-      if (assistant_id_ref.current) {
-        navigator.sendBeacon("/delete_container_on_unload", JSON.stringify({
-          "container_id": assistant_id_ref.current,
-          "notify": false
-        }));
-      }
-    }
     function getPastMessages() {
       if (assistant_id_ref.current == null) return;
       (0, _communication_react.postPromise)(assistant_id_ref.current, "get_past_messages", {}).then(function (data) {
@@ -172,15 +159,6 @@ function withAssistant(WrappedComponent) {
       }).then(function (response) {
         set_assistant_id(response.assistant_id);
       });
-    }
-    function delete_my_container() {
-      if (assistant_id_ref.current) {
-        (0, _communication_react.postAjax)("/delete_container_on_unload", {
-          "container_id": assistant_id_ref.current,
-          "notify": false
-        });
-        assistant_id_ref.current = null;
-      }
     }
     function _close(data) {
       if (data == null || !("main_id" in data) || data.main_id == window.main_id) {
@@ -267,7 +245,6 @@ var input_style = {
   margin: 10
 };
 var idle_statuses = ["completed", "expired", "cancelled", "failed"];
-var BOTTOM_MARGIN = 25;
 function ChatModule(props) {
   var top_ref = /*#__PURE__*/_react["default"].createRef();
   var control_ref = /*#__PURE__*/_react["default"].createRef();
@@ -275,15 +252,8 @@ function ChatModule(props) {
   var stream_dict_ref = /*#__PURE__*/_react["default"].createRef();
   var _useStateAndRef1 = (0, _utilities_react.useStateAndRef)(0),
     _useStateAndRef10 = _slicedToArray(_useStateAndRef1, 3),
-    response_counter = _useStateAndRef10[0],
     set_response_counter = _useStateAndRef10[1],
     response_counter_ref = _useStateAndRef10[2];
-  var _useState3 = (0, _react.useState)(function () {
-      return window.innerHeight - 40 - BOTTOM_MARGIN;
-    }),
-    _useState4 = _slicedToArray(_useState3, 2),
-    usable_height = _useState4[0],
-    set_usable_height = _useState4[1];
   var assistantDrawerFuncs = (0, _react.useContext)(AssistantContext);
   var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
   var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
@@ -292,11 +262,6 @@ function ChatModule(props) {
   (0, _react.useEffect)(function () {
     initSocket();
     stream_dict_ref.current = {};
-    window.addEventListener("resize", _update_window_dimensions);
-    _update_window_dimensions();
-    return function () {
-      window.removeEventListener("resize", _update_window_dimensions);
-    };
   }, []);
   (0, _react.useEffect)(function () {
     if (list_ref && list_ref.current) {
@@ -306,17 +271,6 @@ function ChatModule(props) {
   function initSocket() {
     props.tsocket.attachListener("chat_status", _handleChatStatus);
     props.tsocket.attachListener("chat_delta", _handleChatDelta);
-  }
-  function _update_window_dimensions() {
-    var uheight;
-    var top_rect;
-    if (top_ref && top_ref.current) {
-      top_rect = top_ref.current.getBoundingClientRect();
-      uheight = window.innerHeight - top_rect.top - BOTTOM_MARGIN;
-    } else {
-      uheight = window.innerHeight - 40 - BOTTOM_MARGIN;
-    }
-    set_usable_height(uheight);
   }
   function _onInputChange(event) {
     props.set_assistant_prompt_value(event.target.value);
@@ -418,11 +372,11 @@ function ChatModule(props) {
     var new_item_list = [].concat(_toConsumableArray(assistantDrawerFuncs.item_list_ref.current), [entry]);
     assistantDrawerFuncs.set_item_list(new_item_list);
   }
-  function _promptSubmit(_x2) {
+  function _promptSubmit() {
     return _promptSubmit2.apply(this, arguments);
   }
   function _promptSubmit2() {
-    _promptSubmit2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3(event) {
+    _promptSubmit2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3() {
       var _t2;
       return _regenerator().w(function (_context3) {
         while (1) switch (_context3.n) {
@@ -453,7 +407,7 @@ function ChatModule(props) {
     }));
     return _promptSubmit2.apply(this, arguments);
   }
-  function handleKeyDown(_x3) {
+  function handleKeyDown(_x2) {
     return _handleKeyDown.apply(this, arguments);
   }
   function _handleKeyDown() {
@@ -578,16 +532,12 @@ function ChatModule(props) {
       stream_text: assistantDrawerFuncs.stream_text_ref.current
     }));
   }
-  var card_list_height = usable_height - 30;
-  if (control_ref.current) {
-    card_list_height = usable_height - control_ref.current.clientHeight;
-  }
   var chat_pane_style = {
-    marginTop: 10,
     marginLeft: 25,
     marginRight: 25,
-    paddingTop: 10,
-    height: usable_height,
+    flex: "1 1 0",
+    minHeight: 0,
+    overflow: "auto",
     position: "relative",
     display: "flex",
     flexDirection: "column",
@@ -611,7 +561,9 @@ function ChatModule(props) {
     ref: list_ref,
     bordered: false,
     style: {
-      height: card_list_height
+      flex: "1 1 0",
+      overflow: "auto",
+      position: "relative"
     }
   }, items), /*#__PURE__*/_react["default"].createElement(_core2.ControlGroup, {
     ref: control_ref,

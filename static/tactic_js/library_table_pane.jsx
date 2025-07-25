@@ -1,46 +1,22 @@
 import React from "react";
 import {FormGroup} from "@blueprintjs/core";
-import {useState, useRef, Fragment} from "react";
+import {useState, Fragment} from "react";
 
 import {TagButtonList} from "./tag_buttons_react";
 import {BpSelectorTable, SearchForm} from "./library_widgets";
-import {useSize} from "./sizing_tools";
-import {postAjaxPromise} from "./communication_react";
 export {LibraryTablePane}
 
 function LibraryTablePane(props) {
-    const [total_width, set_total_width] = useState(500);
-    const top_ref = useRef(null);
-    const [usable_width, usable_height, topX, topY] = useSize(top_ref, 0, "LibraryTablePane");
+    const [, set_total_width] = useState(500);
 
-
-    async function _doTagDelete(tag) {
-        const result_dict = {"pane_type": props.pane_type, "tag": tag};
-        let data;
-        try {
-            await postAjaxPromise("delete_tag", result_dict);
-            await _refresh_func()
-        } catch (e) {
-            errorDrawerFuncs.addFromError("Error deleting tag", e)
-        }
-    }
-
-    async function _doTagRename(tag_changes) {
-        const result_dict = {"pane_type": props.pane_type, "tag_changes": tag_changes};
-        try {
-            await postAjaxPromise("rename_tag", result_dict);
-            await _refresh_func()
-        } catch (e) {
-            errorDrawerFuncs.addFromError("Error renaming tag", e)
-        }
-    }
     return (
         <Fragment>
-            <div className="d-flex flex-row" style={{maxHeight: "100%", position: "relative"}}>
+            <div className="d-flex flex-row" style={{height: "100%", width: "100%", position: "relative"}}>
                 <div className="d-flex justify-content-around"
                      style={{
                          paddingRight: 10,
-                         maxHeight: usable_height
+                         height: "100%",
+                         position: "relative"
                      }}>
                     <TagButtonList tag_list={props.pStateRef.current.tag_list}
                                    tagRoot={props.pStateRef.current.search_state.tagRoot}
@@ -51,15 +27,16 @@ function LibraryTablePane(props) {
                                    doTagRename={props.doTagRename}
                     />
                 </div>
-                <div ref={top_ref}
-                     className={props.pane_type + "-pane"}
+                <div className={props.pane_type + "-pane"}
                      style={{
-                         width: usable_width,
-                         maxWidth: total_width,
-                         maxHeight: usable_height - 20, // The 20 is for the marginTop and padding
-                         overflowY: "scroll",
+                         flex: "1 1 0",
+                         minWidth: 0,
+                         overflowY: "auto",
                          marginTop: 15,
-                         padding: 5
+                         padding: 5,
+                         marginBottom: 15,
+                         display: "flex",
+                         flexDirection: "column"
                      }}>
                     <div style={{display: "flex", flexDirection: "column"}}>
                         {props.pane_type == "all" &&

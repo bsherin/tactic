@@ -102,7 +102,6 @@ function ModuleViewerApp(props) {
   var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
   var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
-  var sizeInfo = (0, _react.useContext)(_sizing_tools.SizeContext);
   var _useState5 = (0, _react.useState)(props.resource_name),
     _useState6 = _slicedToArray(_useState5, 2),
     resource_name = _useState6[0],
@@ -138,7 +137,6 @@ function ModuleViewerApp(props) {
     }
   });
   function _update_search_state(nstate) {
-    var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
     set_current_search_number(0);
     for (var field in nstate) {
       switch (field) {
@@ -445,7 +443,7 @@ function ModuleViewerApp(props) {
   }
   function _saveAndLoadModule2() {
     _saveAndLoadModule2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6() {
-      var data, _t4;
+      var _t4;
       return _regenerator().w(function (_context6) {
         while (1) switch (_context6.n) {
           case 0:
@@ -467,7 +465,6 @@ function ModuleViewerApp(props) {
               "user_id": window.user_id
             }, props.resource_viewer_id);
           case 4:
-            data = _context6.v;
             statusFuncs.statusMessage("Saved and loaded module");
             statusFuncs.stopSpinner();
             _context6.n = 6;

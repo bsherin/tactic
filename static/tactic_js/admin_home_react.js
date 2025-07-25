@@ -34,17 +34,25 @@ function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) 
 function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
 function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
 function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
-window.library_id = (0, _utilities_react.guid)();
-var MARGIN_SIZE = 17;
+window.library_id = (0, _utilities_react.guid)(); // I don't know why pycharm doesn't like this
+
 var tsocket;
 function _administer_home_main() {
   tsocket = new _tactic_socket.TacticSocket("main", 5000, "admin", window.library_id);
-  var AdministerHomeAppPlus = (0, _sizing_tools.withSizeContext)((0, _settings.withSettings)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(AdministerHomeApp)))));
+  var AdministerHomeAppPlus = (0, _settings.withSettings)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(AdministerHomeApp))));
   var domContainer = document.querySelector('#library-home-root');
   var root = (0, _client.createRoot)(domContainer);
-  root.render(/*#__PURE__*/_react["default"].createElement(AdministerHomeAppPlus, {
+  root.render(/*#__PURE__*/_react["default"].createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      position: "relative",
+      height: "100%",
+      width: "100%"
+    }
+  }, /*#__PURE__*/_react["default"].createElement(AdministerHomeAppPlus, {
     tsocket: tsocket
-  }));
+  })));
 }
 var res_types = ["container", "user"];
 var col_names = {
@@ -87,14 +95,9 @@ function AdministerHomeApp(props) {
     set_selected_tab_id = _useState2[1];
   var _useStateAndRef = (0, _utilities_react.useStateAndRef)(initial_pane_states),
     _useStateAndRef2 = _slicedToArray(_useStateAndRef, 3),
-    pane_states = _useStateAndRef2[0],
     set_pane_states = _useStateAndRef2[1],
     pane_states_ref = _useStateAndRef2[2];
-
-  // const [usable_height, set_usable_height] = useState(getUsableDimensions(true).usable_height_no_bottom);
-  // const [usable_width, set_usable_width] = useState(getUsableDimensions(true).usable_width - 170);
   var settingsContext = (0, _react.useContext)(_settings.SettingsContext);
-  var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
   var top_ref = (0, _react.useRef)(null);
   var pushCallback = (0, _utilities_react.useCallbackStack)();
@@ -130,20 +133,17 @@ function AdministerHomeApp(props) {
     pushCallback(callback);
   }
   function _updatePaneStatePromise(res_type, state_update) {
-    return new Promise(function (resolve, reject) {
+    return new Promise(function (resolve) {
       _updatePaneState(res_type, state_update, resolve);
     });
   }
-  function _handleTabChange(newTabId, prevTabId, event) {
+  function _handleTabChange(newTabId) {
     set_selected_tab_id(newTabId);
-    pushCallback(_update_window_dimensions);
   }
   function getIconColor(paneId) {
     return paneId == selected_tab_id ? "white" : "#CED9E0";
   }
   var container_pane = /*#__PURE__*/_react["default"].createElement(_administer_pane.AdminPane, _extends({}, props, {
-    // usable_width={usable_width}
-    // usable_height={usable_height}
     res_type: "container",
     allow_search_inside: false,
     allow_search_metadata: false,
@@ -156,8 +156,6 @@ function AdministerHomeApp(props) {
     id_field: "Id"
   }));
   var user_pane = /*#__PURE__*/_react["default"].createElement(_administer_pane.AdminPane, _extends({}, props, {
-    // usable_width={usable_width}
-    // usable_height={usable_height}
     res_type: "user",
     allow_search_inside: false,
     allow_search_metadata: false,
@@ -170,11 +168,14 @@ function AdministerHomeApp(props) {
     id_field: "_id"
   }));
   var outer_style = {
-    width: "100%",
-    // height: usable_height,
-    paddingLeft: 0
+    width: "calc(100% - ".concat(_sizing_tools.ICON_BAR_WIDTH, "px)"),
+    flexGrow: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    paddingLeft: 0,
+    position: "relative"
   };
-  var outer_class = "pane-holder";
+  var outer_class = "pane-holder admin-pane";
   if (settingsContext.isDark()) {
     outer_class = "".concat(outer_class, " bp6-dark");
   } else {
@@ -237,40 +238,40 @@ function ContainerMenubar(props) {
     statusFuncs.stopSpinner();
     (0, _toaster.doFlash)(data);
   }
-  function _container_logs() {
-    return _container_logs2.apply(this, arguments);
+  function _clear_user_func() {
+    return _clear_user_func2.apply(this, arguments);
   }
-  function _container_logs2() {
-    _container_logs2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee() {
-      var cont_id, data;
+  function _clear_user_func2() {
+    _clear_user_func2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee() {
+      var data;
       return _regenerator().w(function (_context) {
         while (1) switch (_context.n) {
           case 0:
-            cont_id = props.selected_resource.Id;
+            statusFuncs.startSpinner();
             _context.n = 1;
-            return (0, _communication_react.postAjaxPromise)('container_logs/' + cont_id);
+            return (0, _communication_react.postAjaxPromise)('clear_user_containers');
           case 1:
             data = _context.v;
-            props.setConsoleText(data.log_text);
+            _doFlashStopSpinner(data);
           case 2:
             return _context.a(2);
         }
       }, _callee);
     }));
-    return _container_logs2.apply(this, arguments);
-  }
-  function _clear_user_func(_x) {
     return _clear_user_func2.apply(this, arguments);
   }
-  function _clear_user_func2() {
-    _clear_user_func2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2(event) {
+  function _reset_server_func() {
+    return _reset_server_func2.apply(this, arguments);
+  }
+  function _reset_server_func2() {
+    _reset_server_func2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2() {
       var data;
       return _regenerator().w(function (_context2) {
         while (1) switch (_context2.n) {
           case 0:
             statusFuncs.startSpinner();
             _context2.n = 1;
-            return (0, _communication_react.postAjaxPromise)('clear_user_containers');
+            return (0, _communication_react.postAjaxPromise)("reset_server/" + library_id);
           case 1:
             data = _context2.v;
             _doFlashStopSpinner(data);
@@ -279,59 +280,37 @@ function ContainerMenubar(props) {
         }
       }, _callee2);
     }));
-    return _clear_user_func2.apply(this, arguments);
-  }
-  function _reset_server_func(_x2) {
-    return _reset_server_func2.apply(this, arguments);
-  }
-  function _reset_server_func2() {
-    _reset_server_func2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3(event) {
-      var data;
-      return _regenerator().w(function (_context3) {
-        while (1) switch (_context3.n) {
-          case 0:
-            statusFuncs.startSpinner();
-            _context3.n = 1;
-            return (0, _communication_react.postAjaxPromise)("reset_server/" + library_id);
-          case 1:
-            data = _context3.v;
-            _doFlashStopSpinner(data);
-          case 2:
-            return _context3.a(2);
-        }
-      }, _callee3);
-    }));
     return _reset_server_func2.apply(this, arguments);
   }
   function _destroy_container() {
     return _destroy_container2.apply(this, arguments);
   }
   function _destroy_container2() {
-    _destroy_container2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee4() {
+    _destroy_container2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3() {
       var cont_id, data, _t;
-      return _regenerator().w(function (_context4) {
-        while (1) switch (_context4.n) {
+      return _regenerator().w(function (_context3) {
+        while (1) switch (_context3.n) {
           case 0:
             statusFuncs.startSpinner();
             cont_id = props.selected_resource.Id;
-            _context4.p = 1;
-            _context4.n = 2;
+            _context3.p = 1;
+            _context3.n = 2;
             return (0, _communication_react.postAjaxPromise)('kill_container/' + cont_id, {});
           case 2:
-            data = _context4.v;
+            data = _context3.v;
             _doFlashStopSpinner(data);
             props.delete_row(cont_id);
-            _context4.n = 4;
+            _context3.n = 4;
             break;
           case 3:
-            _context4.p = 3;
-            _t = _context4.v;
+            _context3.p = 3;
+            _t = _context3.v;
             errorDrawerFuncs.addFromError("Error destroying container", _t);
             statusFuncs.stopSpinner();
           case 4:
-            return _context4.a(2);
+            return _context3.a(2);
         }
-      }, _callee4, null, [[1, 3]]);
+      }, _callee3, null, [[1, 3]]);
     }));
     return _destroy_container2.apply(this, arguments);
   }
@@ -455,16 +434,19 @@ function UserMenubar(props) {
   //     });
   // }
 
-  function _create_user(event) {
+  function _create_user() {
     window.open($SCRIPT_ROOT + '/register');
   }
-  function _duplicate_user(event) {
-    var username = props.selected_resource.username;
-    window.open($SCRIPT_ROOT + '/user_duplicate/' + username);
-  }
-  function _update_all_collections(event) {
-    window.open($SCRIPT_ROOT + '/update_all_collections');
-  }
+
+  // function _duplicate_user (event) {
+  //     let username = props.selected_resource.username;
+  //     window.open($SCRIPT_ROOT + '/user_duplicate/' + username);
+  // }
+  //
+  // function _update_all_collections (event) {
+  //     window.open($SCRIPT_ROOT + '/update_all_collections');
+  // }
+
   function menu_specs() {
     return {
       Manage: [{

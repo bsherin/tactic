@@ -24,12 +24,18 @@ function _account_main() {
     if (window._show_message) doFlash(window._message);
     const domContainer = document.querySelector('#root');
     const root = createRoot(domContainer);
-    var tsocket = new TacticSocket("main", 5000, "code_viewer", window.main_id);
+    let tsocket = new TacticSocket("main", 5000, "code_viewer", window.main_id);
     let AccountAppPlus = withSettings(AccountApp);
-    root.render(<AccountAppPlus controlled={false} tsocket={tsocket}/>)
+    let the_element = <AccountAppPlus controlled={false} tsocket={tsocket}/>
+     root.render(
+        <div style={{display: "flex", flexDirection: "column",
+            position: "relative",
+            height: "100%",
+            width: "100%"}}>
+            {the_element}
+        </div>
+    )
 }
-
-const field_names = ["new_password", "confirm_new_password"];
 
 function AccountApp(props) {
 

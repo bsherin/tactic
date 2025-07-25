@@ -6,7 +6,6 @@ import {Fragment, useState, useEffect, useRef, memo, useMemo, useContext} from "
 import { createRoot } from 'react-dom/client';
 
 import {TextArea} from "@blueprintjs/core";
-//import { HotkeysProvider } from "@blueprintjs/core";
 import { useHotkeys } from "@blueprintjs/core";
 
 import {ResourceViewerApp, copyToLibrary} from "./resource_viewer_react_app";
@@ -22,14 +21,14 @@ import {SettingsContext, withSettings} from "./settings"
 import {DialogContext, withDialogs} from "./modal_react";
 import {StatusContext} from "./toaster";
 import {SelectedPaneContext} from "./utilities_react";
-import {SizeContext, useSize, withSizeContext} from "./sizing_tools";
+import {ICON_BAR_WIDTH} from "./sizing_tools";
 
 export {text_viewer_props, TextViewerApp}
 
 function text_viewer_props(data, registerDirtyMethod, finalCallback) {
 
     let resource_viewer_id = guid();
-    var tsocket = new TacticSocket("main", 5000, "text_viewer", resource_viewer_id);
+    let tsocket = new TacticSocket("main", 5000, "text_viewer", resource_viewer_id);
 
 
     finalCallback({
@@ -50,21 +49,18 @@ function text_viewer_props(data, registerDirtyMethod, finalCallback) {
     })
 }
 
-const LIST_PADDING_TOP = 20;
-
 function TextEditor(props) {
     const top_ref = useRef(null);
-    const [usable_width, usable_height, topX, topY] = useSize(top_ref, 0, "TextEditor");
 
     let tastyle = {
         resize: "horizontal",
         margin: 2,
-        height: usable_height - LIST_PADDING_TOP - 4
+        height: "100%"
     };
     return (
         <div id="textarea-container"
              ref={top_ref}
-             style={{margin: 2, paddingTop: LIST_PADDING_TOP}}>
+             style={{marginTop: 10, marginBottom: 20, height: "100%", position: "relative"}}>
             <TextArea
                 cols="150"
                 style={tastyle}
@@ -89,17 +85,14 @@ function TextViewerApp(props) {
         ...props
     };
     const top_ref = useRef(null);
-    const search_ref = useRef(null);
 
     const savedContent = useRef(props.the_content);
     const savedTags = useRef(props.split_tags);
     const savedNotes = useRef(props.notes);
 
     const [text_content, set_text_content, text_content_ref] = useStateAndRef(props.the_content);
-    const [notes, set_notes, notes_ref] = useStateAndRef(props.notes);
-    const [tags, set_tags, tags_ref] = useStateAndRef(props.split_tags);
-
-    const [usable_width, usable_height, topX, topY] = useSize(top_ref, 0, "TextViewer");
+    const [, set_notes, notes_ref] = useStateAndRef(props.notes);
+    const [, set_tags, tags_ref] = useStateAndRef(props.split_tags);
 
     const [resource_name, set_resource_name] = useState(props.resource_name);
 
@@ -108,7 +101,6 @@ function TextViewerApp(props) {
     const statusFuncs = useContext(StatusContext);
     const selectedPane = useContext(SelectedPaneContext);
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
-    const sizeInfo = useContext(SizeContext);
 
     useEffect(() => {
         statusFuncs.stopSpinner();
@@ -178,7 +170,7 @@ function TextViewerApp(props) {
                 ],
             }
         }
-        for (const [menu_name, menu] of Object.entries(ms)) {
+        for (const [, menu] of Object.entries(ms)) {
             for (let but of menu) {
                 but.click_handler = but.click_handler.bind(this)
             }
@@ -242,36 +234,6 @@ function TextViewerApp(props) {
         }
     }
 
-    async function _saveMeAs(e) {
-        if (!am_selected()) {
-            return false
-        }
-        try {
-            // let ln_result = await postPromise("host", "get_list_names", {"user_id": window.user_id}, props.main_id);
-            let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
-                title: "Save File As",
-                field_title: "New File Name",
-                default_value: "NewList",
-                existing_names: ln_result.list_names,
-                checkboxes: [],
-                handleClose: dialogFuncs.hideModal,
-                });
-            const result_dict = {
-                "new_res_name": new_name,
-                "res_to_copy": _cProp("resource_name")
-            };
-            let data = await postAjaxPromise('/create_duplicate_list', result_dict);
-            _setResourceNameState(new_name, () => {
-                _saveMe();
-            })
-        }
-        catch(e) {
-            if (e != "canceled") {
-                errorDrawerFuncs.addFromError(`Error saving listy`, e);
-            }
-        }
-    }
-
     function _dirty() {
         return !((text_content_ref.current == savedContent.current) &&
             (tags_ref.current == savedTags.current) && (notes_ref.current == savedNotes.current))
@@ -279,8 +241,10 @@ function TextViewerApp(props) {
 
     let my_props = {...props};
     let outer_style = {
-        width: "100%",
-        height: sizeInfo.availableHeight,
+        width: `calc(100% - ${ICON_BAR_WIDTH}px)`,
+        flexGrow: 1,
+        display: 'flex',
+        flexDirection: 'column',
         paddingLeft: 0,
         position: "relative"
     };
@@ -336,7 +300,7 @@ TextViewerApp = memo(TextViewerApp);
 
 async function text_viewer_main() {
     function gotProps(the_props) {
-        let TextViewerAppPlus = withSizeContext(withSettings(withDialogs(withErrorDrawer(withStatus(TextViewerApp)))));
+        let TextViewerAppPlus = withSettings(withDialogs(withErrorDrawer(withStatus(TextViewerApp))));
         let the_element = <TextViewerAppPlus {...the_props}
                                              controlled={false}
                                              changeName={null}
@@ -344,9 +308,12 @@ async function text_viewer_main() {
         const domContainer = document.querySelector('#root');
         const root = createRoot(domContainer);
         root.render(
-            //<HotkeysProvider>
-                the_element
-            //</HotkeysProvider>
+            <div style={{display: "flex", flexDirection: "column",
+                            position: "relative",
+                            height: "100%",
+                            width: "100%"}}>
+                {the_element}
+            </div>
         )
     }
 
@@ -356,5 +323,5 @@ async function text_viewer_main() {
 }
 
 if (!window.in_context) {
-    list_viewer_main().then();
+    text_viewer_main().then();
 }

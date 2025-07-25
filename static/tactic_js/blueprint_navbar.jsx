@@ -1,5 +1,5 @@
 import React from "react";
-import {Fragment, useState, useEffect, useRef, useContext, memo} from "react";
+import {Fragment, useRef, useContext, memo} from "react";
 import { createRoot } from 'react-dom/client';
 
 import {
@@ -23,38 +23,11 @@ const repository_url = $SCRIPT_ROOT + '/repository';
 const account_url = $SCRIPT_ROOT + '/account_info';
 const login_url = $SCRIPT_ROOT + "/login";
 
-const padding = 10;
-
 function TacticNavbar({extra_text = null, menus = null, selected = null, show_api_links = false, ...props}) {
-    const [usable_width, set_usable_width] = useState(() => {
-        return window.innerWidth - padding * 2
-    });
-    const [old_left_width, set_old_left_width] = useState(null);
     const lg_ref = useRef(null);
     const settingsContext = useContext(SettingsContext);
 
-    var overflow_items = [];
-
-    function _update_window_dimensions() {
-        set_usable_width(window.innerWidth - 2 * padding)
-    }
-
-    // For some reason sizing things are a little flaky without old_left_width stuff
-    useEffect(() => {
-        window.addEventListener("resize", _update_window_dimensions);
-        _update_window_dimensions();
-        if (!old_left_width) {
-            set_old_left_width(_getLeftWidth());
-        } else {
-            let new_left_width = _getLeftWidth();
-            if (new_left_width != old_left_width) {
-                set_old_left_width(new_left_width)
-            }
-        }
-        return (()=>{
-            window.removeEventListener("resize", _update_window_dimensions)
-        })
-    });
+    let overflow_items = [];
 
     function getIntent(butname) {
         return selected == butname ? "primary" : null
@@ -69,41 +42,11 @@ function TacticNavbar({extra_text = null, menus = null, selected = null, show_ap
         return false
     }
 
-    // function _setTheme(event) {
-    //     let dtheme = event.target.checked ? "dark" : "light";
-    //     set_theme_cookie(dtheme);
-    //     if (window.user_id != undefined) {
-    //         const result_dict = {
-    //             "user_id": window.user_id,
-    //             "theme": dtheme,
-    //         };
-    //         postWithCallback("host", "set_user_theme", result_dict,
-    //             null, null);
-    //     }
-    //     theme.setTheme(event.target.checked)
-    // }
-
     function renderNav(item) {
         return (
             <Button icon={item.icon} key={item.text} variant="minimal" style={{minWidth: "fit-content"}}
                     text={item.text} intent={item.intent} onClick={item.onClick}/>
         )
-    }
-
-    function _getLeftWidth() {
-        if (lg_ref && lg_ref.current) {
-            return lg_ref.current.getBoundingClientRect().width;
-        }
-        return null
-    }
-
-    function _getRightWidth() {
-        let lg_width = _getLeftWidth();
-        if (lg_width) {
-            return usable_width - lg_width - 35
-        } else {
-            return .25 * usable_width - 35
-        }
     }
 
     function _authenticatedItems() {
@@ -171,7 +114,6 @@ function TacticNavbar({extra_text = null, menus = null, selected = null, show_ap
         )
     }
 
-    let nav_class = menus == null ? "justify-content-end" : "justify-content-between";
     let right_nav_items = [];
     if (show_api_links) {
         right_nav_items = [{
@@ -199,9 +141,6 @@ function TacticNavbar({extra_text = null, menus = null, selected = null, show_ap
     } else {
         right_nav_items = right_nav_items.concat(_notAuthenticatedItems())
     }
-    let right_width = _getRightWidth();
-    let right_style = {width: right_width};
-    right_style.justifyContent = "flex-end";
     let theme_class = settingsContext.isDark() ? "bp6-dark" : "light-theme";
     let name_string = "Tactic";
     if (extra_text != null) {
@@ -209,7 +148,13 @@ function TacticNavbar({extra_text = null, menus = null, selected = null, show_ap
     }
 
     return (
-        <Navbar style={{paddingLeft: 10}} className={theme_class}>
+        <Navbar style={{
+            display: "flex",
+            flexDirection: "row",
+            width: "100%",
+            paddingLeft: 10}}
+                className={theme_class}>
+
             <div className="bp6-navbar-group bp6-align-left" ref={lg_ref}>
                 <NavbarHeading className="d-flex align-items-center">
                     <img className="mr-2" src={window.tactic_img_url} alt="" width="32 " height="32"/>
@@ -222,7 +167,11 @@ function TacticNavbar({extra_text = null, menus = null, selected = null, show_ap
             </div>
 
 
-            <NavbarGroup align={Alignment.RIGHT} style={right_style}>
+            <NavbarGroup align={Alignment.RIGHT}
+                         style={{
+                             justifyContent: "flex-end",
+                             flex: "1 1 0",
+                             overflow: "hidden"}}>
                 <NavbarDivider/>
                 <OverflowList items={right_nav_items}
                               overflowRenderer={_overflowRenderer}
@@ -237,7 +186,7 @@ function TacticNavbar({extra_text = null, menus = null, selected = null, show_ap
 
 TacticNavbar = memo(TacticNavbar);
 
-function render_navbar(selected = null, show_api_links = false, dark_theme = false) {
+function render_navbar(selected = null, show_api_links = false) {
     const domContainer = document.querySelector('#navbar-root');
     const root = createRoot(domContainer);
     root.render(<TacticNavbar is_authenticated={window.is_authenticated}

@@ -8,7 +8,6 @@ var _react = _interopRequireWildcard(require("react"));
 var _table = require("@blueprintjs/table");
 var _library_widgets = require("./library_widgets");
 var _resizing_allotment = require("./resizing_allotment");
-var _sizing_tools = require("./sizing_tools");
 var _utilities_react = require("./utilities_react");
 var _communication_react = require("./communication_react");
 var _lodash = _interopRequireDefault(require("lodash"));
@@ -38,14 +37,12 @@ function AdminPane(props) {
     is_repository: false,
     tsocket: null
   }, props);
-  var top_ref = (0, _react.useRef)(null);
   var table_ref = (0, _react.useRef)(null);
   var console_text_ref = (0, _react.useRef)(null);
   var previous_search_spec = (0, _react.useRef)(null);
   var get_url = "grab_".concat(props.res_type, "_list_chunk");
   var _useStateAndRef = (0, _utilities_react.useStateAndRef)({}),
     _useStateAndRef2 = _slicedToArray(_useStateAndRef, 3),
-    data_dict = _useStateAndRef2[0],
     set_data_dict = _useStateAndRef2[1],
     data_dict_ref = _useStateAndRef2[2];
   var _useState = (0, _react.useState)(0),
@@ -56,32 +53,9 @@ function AdminPane(props) {
     _useState4 = _slicedToArray(_useState3, 2),
     awaiting_data = _useState4[0],
     set_awaiting_data = _useState4[1];
-  var _useState5 = (0, _react.useState)(false),
+  var _useState5 = (0, _react.useState)(500),
     _useState6 = _slicedToArray(_useState5, 2),
-    mounted = _useState6[0],
-    set_mounted = _useState6[1];
-  var _useState7 = (0, _react.useState)(500),
-    _useState8 = _slicedToArray(_useState7, 2),
-    total_width = _useState8[0],
-    set_total_width = _useState8[1];
-  var _useSize = (0, _sizing_tools.useSize)(top_ref, 0, "AdminPane"),
-    _useSize2 = _slicedToArray(_useSize, 4),
-    usable_width = _useSize2[0],
-    usable_height = _useSize2[1],
-    topX = _useSize2[2],
-    topY = _useSize2[3];
-  var _useSize3 = (0, _sizing_tools.useSize)(table_ref, 0, "AdminPane"),
-    _useSize4 = _slicedToArray(_useSize3, 4),
-    table_usable_width = _useSize4[0],
-    table_usable_height = _useSize4[1],
-    table_topX = _useSize4[2],
-    table_topY = _useSize4[3];
-  var _useSize5 = (0, _sizing_tools.useSize)(console_text_ref, 0, "AdminConsole"),
-    _useSize6 = _slicedToArray(_useSize5, 4),
-    console_usable_width = _useSize6[0],
-    console_usable_height = _useSize6[1],
-    console_topX = _useSize6[2],
-    console_topY = _useSize6[3];
+    set_total_width = _useState6[1];
   var pushCallback = (0, _utilities_react.useCallbackStack)();
   var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
   (0, _react.useEffect)(function () {
@@ -220,7 +194,7 @@ function AdminPane(props) {
     var spec_update = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
     var select = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
     return new Promise(/*#__PURE__*/function () {
-      var _ref = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee(resolve, reject) {
+      var _ref = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee(resolve) {
         return _regenerator().w(function (_context) {
           while (1) switch (_context.n) {
             case 0:
@@ -231,7 +205,7 @@ function AdminPane(props) {
           }
         }, _callee);
       }));
-      return function (_x3, _x4) {
+      return function (_x3) {
         return _ref.apply(this, arguments);
       };
     }());
@@ -268,7 +242,7 @@ function AdminPane(props) {
   function _updatePaneState(new_state, callback) {
     props.updatePaneState(props.res_type, new_state, callback);
   }
-  function _updatePaneStatePromise(_x5) {
+  function _updatePaneStatePromise(_x4) {
     return _updatePaneStatePromise2.apply(this, arguments);
   }
   function _updatePaneStatePromise2() {
@@ -299,30 +273,19 @@ function AdminPane(props) {
     delete new_data_dict[ind];
     set_data_dict(new_data_dict);
   }
-  function get_data_dict_entry(name) {
-    for (var index in data_dict_ref.current) {
-      if (data_dict_ref.current[index].name == name) {
-        return data_dict_ref.current[index];
-      }
-    }
-    return null;
-  }
   function _handleSplitResize(left_width, right_width, width_fraction) {
     _updatePaneState({
       left_width_fraction: width_fraction
     });
   }
-  function _handleRowClick(_x6) {
+  function _handleRowClick(_x5) {
     return _handleRowClick2.apply(this, arguments);
   }
   function _handleRowClick2() {
     _handleRowClick2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6(row_dict) {
-      var shift_key_down,
-        _args6 = arguments;
       return _regenerator().w(function (_context6) {
         while (1) switch (_context6.n) {
           case 0:
-            shift_key_down = _args6.length > 1 && _args6[1] !== undefined ? _args6[1] : false;
             _context6.n = 1;
             return _updatePaneStatePromise({
               selected_resource: row_dict,
@@ -336,7 +299,7 @@ function AdminPane(props) {
     }));
     return _handleRowClick2.apply(this, arguments);
   }
-  function _handleRowSelection(_x7) {
+  function _handleRowSelection(_x6) {
     return _handleRowSelection2.apply(this, arguments);
   }
   function _handleRowSelection2() {
@@ -355,15 +318,7 @@ function AdminPane(props) {
     }));
     return _handleRowSelection2.apply(this, arguments);
   }
-  function _filter_func(resource_dict, search_string) {
-    for (var key in resource_dict) {
-      if (resource_dict[key].toLowerCase().search(search_string) != -1) {
-        return true;
-      }
-    }
-    return resource_dict[props.id_field].toLowerCase().search(search_string) != -1;
-  }
-  function _update_search_state(_x8) {
+  function _update_search_state(_x7) {
     return _update_search_state2.apply(this, arguments);
   }
   function _update_search_state2() {
@@ -401,7 +356,7 @@ function AdminPane(props) {
     }
     return false;
   }
-  function _set_sort_state(_x9, _x0, _x1) {
+  function _set_sort_state(_x8, _x9, _x0) {
     return _set_sort_state2.apply(this, arguments);
   }
   function _set_sort_state2() {
@@ -430,60 +385,26 @@ function AdminPane(props) {
     }));
     return _set_sort_state2.apply(this, arguments);
   }
-  function _handleArrowKeyPress(_x10) {
-    return _handleArrowKeyPress2.apply(this, arguments);
-  }
-  function _handleArrowKeyPress2() {
-    _handleArrowKeyPress2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee0(key) {
-      var current_index, new_index, new_selected_res;
-      return _regenerator().w(function (_context0) {
-        while (1) switch (_context0.n) {
-          case 0:
-            current_index = parseInt(get_data_dict_index(props.selected_resource.Id));
-            if (!(key == "ArrowDown")) {
-              _context0.n = 1;
-              break;
-            }
-            new_index = current_index + 1;
-            _context0.n = 2;
-            break;
-          case 1:
-            new_index = current_index - 1;
-            if (!(new_index < 0)) {
-              _context0.n = 2;
-              break;
-            }
-            return _context0.a(2);
-          case 2:
-            _context0.n = 3;
-            return _selectRow(new_index);
-          case 3:
-            return _context0.a(2);
-        }
-      }, _callee0);
-    }));
-    return _handleArrowKeyPress2.apply(this, arguments);
-  }
-  function _selectRow(_x11) {
+  function _selectRow(_x1) {
     return _selectRow2.apply(this, arguments);
   }
   function _selectRow2() {
-    _selectRow2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee1(new_index) {
+    _selectRow2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee0(new_index) {
       var new_regions;
-      return _regenerator().w(function (_context1) {
-        while (1) switch (_context1.n) {
+      return _regenerator().w(function (_context0) {
+        while (1) switch (_context0.n) {
           case 0:
             if (Object.keys(data_dict_ref.current).includes(String(new_index))) {
-              _context1.n = 3;
+              _context0.n = 3;
               break;
             }
-            _context1.n = 1;
+            _context0.n = 1;
             return _grabNewChunkWithRowPromise(new_index, false, null, false);
           case 1:
-            _context1.n = 2;
+            _context0.n = 2;
             return _selectRow(new_index);
           case 2:
-            _context1.n = 4;
+            _context0.n = 4;
             break;
           case 3:
             new_regions = [_table.Regions.row(new_index)];
@@ -493,9 +414,9 @@ function AdminPane(props) {
               selectedRegions: new_regions
             });
           case 4:
-            return _context1.a(2);
+            return _context0.a(2);
         }
-      }, _callee1);
+      }, _callee0);
     }));
     return _selectRow2.apply(this, arguments);
   }
@@ -503,31 +424,31 @@ function AdminPane(props) {
     return _refresh_func2.apply(this, arguments);
   }
   function _refresh_func2() {
-    _refresh_func2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee10() {
+    _refresh_func2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee1() {
       var callback,
-        _args10 = arguments;
-      return _regenerator().w(function (_context10) {
-        while (1) switch (_context10.n) {
+        _args1 = arguments;
+      return _regenerator().w(function (_context1) {
+        while (1) switch (_context1.n) {
           case 0:
-            callback = _args10.length > 0 && _args10[0] !== undefined ? _args10[0] : null;
-            _context10.n = 1;
+            callback = _args1.length > 0 && _args1[0] !== undefined ? _args1[0] : null;
+            _context1.n = 1;
             return _grabNewChunkWithRow(0, true, null, true, callback);
           case 1:
-            return _context10.a(2);
+            return _context1.a(2);
         }
-      }, _callee10);
+      }, _callee1);
     }));
     return _refresh_func2.apply(this, arguments);
   }
-  function _setConsoleText(_x12) {
+  function _setConsoleText(_x10) {
     return _setConsoleText2.apply(this, arguments);
   }
   function _setConsoleText2() {
-    _setConsoleText2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee11(the_text) {
-      return _regenerator().w(function (_context11) {
-        while (1) switch (_context11.n) {
+    _setConsoleText2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee10(the_text) {
+      return _regenerator().w(function (_context10) {
+        while (1) switch (_context10.n) {
           case 0:
-            _context11.n = 1;
+            _context10.n = 1;
             return _updatePaneStatePromise({
               "console_text": the_text
             });
@@ -536,17 +457,15 @@ function AdminPane(props) {
               console_text_ref.current.scrollTop = console_text_ref.current.scrollHeight;
             }
           case 2:
-            return _context11.a(2);
+            return _context10.a(2);
         }
-      }, _callee11);
+      }, _callee10);
     }));
     return _setConsoleText2.apply(this, arguments);
   }
   function _communicateColumnWidthSum(total_width) {
     set_total_width(total_width + 50);
   }
-  var new_button_groups;
-  var left_width = props.usable_width * props.left_width_fraction;
   var primary_mdata_fields = ["name", "created", "created_for_sort", "updated", "updated_for_sort", "tags", "notes"];
   var additional_metadata = {};
   for (var field in props.selected_resource) {
@@ -565,7 +484,8 @@ function AdminPane(props) {
       style: {
         height: "100%",
         overflow: "hidden",
-        marginRight: 50
+        marginRight: 50,
+        position: "relative"
       }
     }, /*#__PURE__*/_react["default"].createElement(_searchable_console.SearchableConsole, {
       main_id: window.library_id,
@@ -573,29 +493,14 @@ function AdminPane(props) {
       container_id: props.selected_resource.Id,
       ref: null,
       outer_style: {
-        overflowX: "auto",
-        overflowY: "auto",
-        height: console_usable_height - _sizing_tools.BOTTOM_MARGIN - 25,
-        width: "100%",
-        marginTop: 0,
-        marginLeft: 5,
-        marginRight: 0,
-        padding: 15
+        marginLeft: 20,
+        marginRight: 20
       },
       showCommandField: true
     }));
   } else {
     right_pane = /*#__PURE__*/_react["default"].createElement("div", null);
   }
-  var th_style = {
-    "display": "inline-block",
-    "verticalAlign": "top",
-    "maxHeight": "100%",
-    "overflowY": "scroll",
-    "lineHeight": 1,
-    "whiteSpace": "nowrap",
-    "overflowX": "hidden"
-  };
   var MenubarClass = props.MenubarClass;
   var column_specs = {};
   var _iterator = _createForOfIteratorHelper(props.colnames),
@@ -621,11 +526,14 @@ function AdminPane(props) {
   }, /*#__PURE__*/_react["default"].createElement("div", {
     ref: table_ref,
     style: {
-      width: table_usable_width,
-      maxWidth: total_width,
-      maxHeight: table_usable_height,
-      padding: 15,
-      marginTop: 10
+      flex: "1 1 0",
+      minWidth: 0,
+      overflowY: "auto",
+      marginTop: 15,
+      padding: 5,
+      marginBottom: 15,
+      display: "flex",
+      flexDirection: "column"
     }
   }, /*#__PURE__*/_react["default"].createElement(_library_widgets.SearchForm, {
     allow_search_inside: false,
@@ -652,21 +560,21 @@ function AdminPane(props) {
     delete_row: _delete_row,
     refresh_func: _refresh_func
   }), /*#__PURE__*/_react["default"].createElement("div", {
-    ref: top_ref,
-    className: "d-flex flex-column mt-3"
-  }, /*#__PURE__*/_react["default"].createElement("div", {
     style: {
-      width: props.usable_width,
-      height: props.usable_height
+      display: "flex",
+      flexDirection: "column",
+      flexGrow: 1,
+      width: "100%",
+      marginLeft: 15,
+      marginTop: 0,
+      position: "relative"
     }
   }, /*#__PURE__*/_react["default"].createElement(_resizing_allotment.HorizontalPanes, {
     left_pane: left_pane,
     right_pane: right_pane,
     show_handle: true,
-    available_width: props.usable_width,
-    available_height: table_usable_height,
     initial_width_fraction: .65,
     handleSplitUpdate: _handleSplitResize
-  }))));
+  })));
 }
 exports.AdminPane = AdminPane = /*#__PURE__*/(0, _react.memo)(AdminPane);

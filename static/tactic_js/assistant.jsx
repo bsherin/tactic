@@ -35,7 +35,7 @@ import {Button, Drawer, ButtonGroup} from "@blueprintjs/core";
 import {Card, CardList, TextArea, ControlGroup} from "@blueprintjs/core";
 
 import {useStateAndRef, useCallbackStack} from "./utilities_react";
-import {postAjax, postPromise} from "./communication_react";
+import {postPromise} from "./communication_react";
 import {SettingsContext} from "./settings";
 import {ErrorDrawerContext} from "./error_drawer";
 import {StatusContext} from "./toaster";
@@ -56,11 +56,11 @@ function formatLatexEquations(text) {
 function withAssistant(WrappedComponent, lposition = "right", assistant_drawer_size = "45%") {
     function WithAssistant(props) {
         const [show_drawer, set_show_drawer] = useState(false);
-        const [item_list, set_item_list, item_list_ref] = useStateAndRef([]);
-        const [stream_text, set_stream_text, stream_text_ref] = useStateAndRef("");
-        const [assistant_id, set_assistant_id, assistant_id_ref] = useStateAndRef(null);
-        const [chat_status, set_chat_status, chat_status_ref] = useStateAndRef(window.has_openapi_key ? "idle" : null);
-        const [assistant_prompt_value, set_assistant_prompt_value, assistant_prompt_value_ref] = useStateAndRef("");
+        const [, set_item_list, item_list_ref] = useStateAndRef([]);
+        const [, set_stream_text, stream_text_ref] = useStateAndRef("");
+        const [, set_assistant_id, assistant_id_ref] = useStateAndRef(null);
+        const [, set_chat_status, chat_status_ref] = useStateAndRef(window.has_openapi_key ? "idle" : null);
+        const [, set_assistant_prompt_value, assistant_prompt_value_ref] = useStateAndRef("");
 
         const errorDrawerFuncs = useContext(ErrorDrawerContext);
 
@@ -79,13 +79,6 @@ function withAssistant(WrappedComponent, lposition = "right", assistant_drawer_s
         },[show_drawer]);
 
         const pushCallback = useCallbackStack();
-
-        function sendRemove() {
-            if (assistant_id_ref.current) {
-                navigator.sendBeacon("/delete_container_on_unload",
-                    JSON.stringify({"container_id": assistant_id_ref.current, "notify": false}));
-            }
-        }
 
         function getPastMessages() {
             if (assistant_id_ref.current == null) return;
@@ -129,13 +122,6 @@ function withAssistant(WrappedComponent, lposition = "right", assistant_drawer_s
                 .then((response) => {
                     set_assistant_id(response.assistant_id)
                 });
-        }
-
-        function delete_my_container() {
-            if (assistant_id_ref.current) {
-                postAjax("/delete_container_on_unload", {"container_id": assistant_id_ref.current, "notify": false});
-                assistant_id_ref.current = null
-            }
         }
 
         function _close(data) {
@@ -244,17 +230,13 @@ AssistantDrawer = memo(AssistantDrawer);
 
 const input_style = {position: "relative", bottom: 0, margin: 10};
 const idle_statuses = ["completed", "expired", "cancelled", "failed"];
-const BOTTOM_MARGIN = 25;
 function ChatModule(props) {
     const top_ref = React.createRef();
     const control_ref = React.createRef();
     const list_ref = React.createRef();
     const stream_dict_ref = React.createRef();
 
-    const [response_counter, set_response_counter, response_counter_ref] = useStateAndRef(0);
-    const [usable_height, set_usable_height] = useState(() => {
-        return window.innerHeight - 40 - BOTTOM_MARGIN
-    });
+    const [, set_response_counter, response_counter_ref] = useStateAndRef(0);
 
     const assistantDrawerFuncs = useContext(AssistantContext);
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
@@ -266,11 +248,6 @@ function ChatModule(props) {
     useEffect(() => {
         initSocket();
         stream_dict_ref.current = {};
-        window.addEventListener("resize", _update_window_dimensions);
-        _update_window_dimensions();
-        return (() => {
-            window.removeEventListener("resize", _update_window_dimensions);
-        })
     }, []);
 
     useEffect(() => {
@@ -282,19 +259,6 @@ function ChatModule(props) {
     function initSocket() {
         props.tsocket.attachListener("chat_status", _handleChatStatus);
         props.tsocket.attachListener("chat_delta", _handleChatDelta);
-    }
-
-    function _update_window_dimensions() {
-        let uheight;
-        let top_rect;
-        if (top_ref && top_ref.current) {
-            top_rect = top_ref.current.getBoundingClientRect();
-            uheight = window.innerHeight - top_rect.top - BOTTOM_MARGIN
-        } else {
-            uheight = window.innerHeight - 40 - BOTTOM_MARGIN
-        }
-
-        set_usable_height(uheight);
     }
 
     function _onInputChange(event) {
@@ -361,7 +325,7 @@ function ChatModule(props) {
         assistantDrawerFuncs.set_item_list(new_item_list);
     }
 
-    async function _promptSubmit(event) {
+    async function _promptSubmit() {
         try {
             _addEntry({kind: "user", text: props.assistant_prompt_value_ref.current});
             props.set_assistant_prompt_value("");
@@ -432,16 +396,13 @@ function ChatModule(props) {
         items.push(<ResponseInProgress key="response-in-progress"
                                        stream_text={assistantDrawerFuncs.stream_text_ref.current}/>)
     }
-    let card_list_height = usable_height - 30;
-    if (control_ref.current) {
-        card_list_height = usable_height - control_ref.current.clientHeight
-    }
+
     const chat_pane_style = {
-        marginTop: 10,
         marginLeft: 25,
         marginRight: 25,
-        paddingTop: 10,
-        height: usable_height,
+        flex: "1 1 0",
+        minHeight: 0,
+        overflow: "auto",
         position: "relative",
         display: "flex",
         flexDirection: "column",
@@ -455,7 +416,8 @@ function ChatModule(props) {
                     <Button icon="floppy-disk" text="Save" onClick={_saveThreadAs}/>
                 </ButtonGroup>
             </div>
-            <CardList ref={list_ref} bordered={false} style={{height: card_list_height}}>
+            <CardList ref={list_ref} bordered={false}
+                      style={{flex: "1 1 0", overflow: "auto", position: "relative"}}>
                 {items}
             </CardList>
             <ControlGroup ref={control_ref}

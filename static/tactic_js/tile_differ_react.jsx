@@ -3,18 +3,15 @@ import "../tactic_css/tactic.scss";
 import React from "react";
 import {Fragment, useState, useEffect, memo, useRef, useContext} from "react";
 import { createRoot } from 'react-dom/client';
-// import { HotkeysProvider } from "@blueprintjs/core";
 import {MergeViewerApp} from "./merge_viewer_app";
 import {doFlash, StatusContext} from "./toaster"
 import {postAjaxPromise} from "./communication_react"
 import {ErrorDrawerContext, withErrorDrawer} from "./error_drawer";
 import {withStatus} from "./toaster";
-import {guid, useConnection} from "./utilities_react";
+import {guid, useConnection, useStateAndRef} from "./utilities_react";
 import {TacticNavbar} from "./blueprint_navbar";
 import {TacticSocket} from "./tactic_socket";
-import {useCallbackStack} from "./utilities_react";
 import {withSettings} from "./settings";
-import {withSizeContext} from "./sizing_tools";
 
 function tile_differ_main() {
     function gotProps(the_props) {
@@ -26,9 +23,12 @@ function tile_differ_main() {
         const domContainer = document.querySelector('#root');
         const root = createRoot(domContainer);
         root.render(
-            //<HotkeysProvider>
-                the_element
-            //</HotkeysProvider>
+            <div style={{display: "flex", flexDirection: "column",
+                position: "relative",
+                height: "100%",
+                width: "100%"}}>
+                {the_element}
+            </div>
         )
 
     }
@@ -48,12 +48,11 @@ function tile_differ_main() {
 
     postAjaxPromise(`${get_url}/${window.resource_name}`, {})
         .then(function (data) {
-                var edit_content = data.the_content;
                 postAjaxPromise("get_tile_names")
                     .then(function (data2) {
-                        data.tile_list = data2.tile_names;
-                        data.resource_name = window.resource_name,
-                            data.second_resource_name = window.second_resource_name;
+                        data.tile_list = data2["tile_names"];
+                        data.resource_name = window.resource_name;
+                        data.second_resource_name = window.second_resource_name;
                         tile_differ_props(data, null, gotProps)
                     })
                     .catch((data)=>{
@@ -69,7 +68,7 @@ function tile_differ_main() {
 
 function tile_differ_props(data, registerDirtyMethod, finalCallback) {
     let resource_viewer_id = guid();
-    var tsocket = new TacticSocket("main", 5000, "differ", resource_viewer_id);
+    let tsocket = new TacticSocket("main", 5000, "differ", resource_viewer_id);
     finalCallback({
         resource_viewer_id: resource_viewer_id,
         tsocket: tsocket,
@@ -84,18 +83,15 @@ function tile_differ_props(data, registerDirtyMethod, finalCallback) {
 
 function TileDifferApp(props) {
 
-    const [edit_content, set_edit_content] = useState(props.edit_content);
+    const [edit_content, set_edit_content, edit_content_ref] = useStateAndRef(props.edit_content);
     const [right_content, set_right_content] = useState("");
     const [tile_popup_val, set_tile_popup_val] = useState(props.second_resource_name == "none" ?
         props.resource_name : props.second_resource_name);
-    const [tile_list, set_tile_list] = useState(props.tile_list);
+    const [tile_list, ] = useState(props.tile_list);
 
-    const [resource_name, set_resource_name] = useState(props.resource_name);
     const connection_status = useConnection(props.tsocket, initSocket);
 
     const savedContent = useRef(props.edit_content);
-
-    const pushCallback = useCallbackStack();
 
     const statusFuncs = useContext(StatusContext);
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
@@ -104,7 +100,6 @@ function TileDifferApp(props) {
         window.addEventListener("beforeunload", function (e) {
             if (_dirty()) {
                 e.preventDefault();
-                e.returnValue = ''
             }
         });
     }, []);
@@ -140,7 +135,7 @@ function TileDifferApp(props) {
     async function saveFromLeft() {
         let data_dict = {
             "module_name": props.resource_name,
-            "module_code": edit_content
+            "module_code": edit_content_ref.current
         };
         try {
             await postAjaxPromise("update_from_left", data_dict);
@@ -154,8 +149,8 @@ function TileDifferApp(props) {
         }
     }
 
-    function dirty() {
-        return edit_content != savedContent.current
+    function _dirty() {
+        return edit_content_ref.current != savedContent.current
     }
 
     return (
@@ -184,7 +179,7 @@ function TileDifferApp(props) {
     )
 }
 
-TileDifferApp = withSizeContext(memo(TileDifferApp));
+TileDifferApp = memo(TileDifferApp);
 
 if (!window.in_context) {
     tile_differ_main();

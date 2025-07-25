@@ -9,9 +9,9 @@ $log-panel-border-style: 1px solid #c7c7c7;
 $button-notclose-opacity: .9;
 $button-notclose-hover-opacity: .3;
 
-body {
-    background-color: themeable.$dark-app-backdrop;
-}
+//body {
+//    background-color: themeable.$dark-app-backdrop;
+//}
 
 /* console */
 
@@ -45,6 +45,10 @@ body {
     }
     &.not-shrunk {
         margin-top: 0
+    }
+
+    .bp6-context-menu {
+        display: flex !important;
     }
 }
 #console-heading {
@@ -343,7 +347,7 @@ body {
     justify-content: flex-start;
     padding: 2px 2px 2px 2px;
     border-top: 1px solid #10161a26;
-    height: 23px;
+    height: 25px;
 
     select {
         height: 20px

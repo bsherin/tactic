@@ -13,12 +13,12 @@ import {
     LabeledFormField,
     LabeledTextArea,
     BpOrderableTable,
-} from "./blueprint_react_widgets";
+} from "../tactic_js/blueprint_react_widgets";
 import _ from 'lodash';
-import {isInt} from "./utilities_react";
-import {useCallbackStack, useStateAndRef} from "./utilities_react";
-import {useSize} from "./sizing_tools";
-import {CombinedMetadata} from "./blueprint_mdata_fields";
+import {isInt} from "../tactic_js/utilities_react";
+import {useCallbackStack, useStateAndRef} from "../tactic_js/utilities_react";
+import {useSize} from "../tactic_js/sizing_tools";
+import {CombinedMetadata} from "../tactic_js/blueprint_mdata_fields";
 
 export {OptionModule, ExportModule, MetadataModule, correctOptionListTypes}
 

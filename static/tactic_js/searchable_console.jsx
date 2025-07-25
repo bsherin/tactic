@@ -21,7 +21,7 @@ function SearchableConsole(props, inner_ref) {
     // I need to have these as refs because the are accessed within the _handleUpdateMessage
     // callback. So they would have the old value.
     const [max_console_lines, set_max_console_lines, max_console_lines_ref] = useStateAndRef(100);
-    const [log_content, set_log_content, log_content_ref] = useStateAndRef("");
+    const [, set_log_content, log_content_ref] = useStateAndRef("");
     const cont_id = useRef(props.container_id);
     const my_room = useRef(null);
     const streamer_id = useRef(null);
@@ -70,6 +70,7 @@ function SearchableConsole(props, inner_ref) {
     }
 
     function _handleUpdateMessage(data) {
+        console.log("got searchable-console-message");
         if (data.message != "updateLog") return;
         _addToLog(data.new_line);
     }
@@ -88,9 +89,11 @@ function SearchableConsole(props, inner_ref) {
         function gotStreamerId(data) {
             streamer_id.current = data.streamer_id
         }
+        console.log(`posting get_container_log with container_id ${cont_id.current}`)
         let res = await postPromise("host", "get_container_log",
             {container_id: cont_id.current, since: log_since, max_lines: max_console_lines_ref.current},
             props.main_id);
+        console.log("got streamer stuff", String(res));
         set_log_content(res.log_text);
         let data = await postPromise(props.streaming_host, "StartLogStreaming",
             {container_id: cont_id.current, room: my_room.current, user_id: window.user_id},
@@ -160,19 +163,7 @@ function SearchableConsole(props, inner_ref) {
         set_filter(false)
     }
 
-    function _searchNext() {
-
-    }
-
-    function _structureText() {
-
-    }
-
-    function _searchPrevious() {
-
-    }
-
-    async function _logExec(command, callback = null) {
+    async function _logExec(command) {
         return await postPromise(cont_id.current, "os_command_exec", {
             "the_code": command,
         }, props.main_id);
@@ -223,13 +214,22 @@ function SearchableConsole(props, inner_ref) {
     }
 
     let the_text = {__html: _prepareText()};
-    let the_style = {whiteSpace: "nowrap", fontSize: 12, fontFamily: "monospace", ...props.outer_style};
+    let the_style = {
+        whiteSpace: "nowrap",
+        fontSize: 12,
+        fontFamily: "monospace",
+        flex: "1 1 0",
+        minHeight: 0,
+        marginTop: 20,
+        marginBottom: 20,
+        overflow: "auto",
+        ...props.outer_style};
     if (props.showCommandField) {
         the_style.height = the_style.height - 40
     }
-    let bottom_info = "575 lines";
     return (
-        <div className="searchable-console" style={{width: "100%"}}>
+        <div className="searchable-console"
+             style={{width: "100%", flex: "1 1 0", minHeight: 0, overflow: "hidden", display: "flex", flexDirection: "column"}}>
             <div className="d-flex flex-row" style={{justifyContent: "space-between"}}>
                 <ControlGroup vertical={false}
                               style={{marginLeft: 15, marginTop: 10}}>
@@ -243,7 +243,7 @@ function SearchableConsole(props, inner_ref) {
                                 options={[100, 250, 500, 1000, 2000]}
                     />
                     <Switch label="livescroll"
-                            large={false}
+                            size="medium"
                             checked={livescroll}
                             onChange={_setLiveScroll}
                             style={{marginBottom: 0, marginTop: 5, alignSelf: "center", height: 30}}
@@ -269,7 +269,6 @@ function SearchableConsole(props, inner_ref) {
                                 className="bp6-monospace-text"
                                 onChange={_onInputChange}
                                 size="small"
-                                large={false}
                                 leftIcon="chevron-right"
                                 fill={true}
                                 onKeyDown={(e) => _handleKeyDown(e)}

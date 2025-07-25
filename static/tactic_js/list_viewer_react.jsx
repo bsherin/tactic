@@ -24,7 +24,6 @@ import {SettingsContext} from "./settings"
 import {DialogContext, withDialogs} from "./modal_react";
 import {StatusContext} from "./toaster";
 import {SelectedPaneContext} from "./utilities_react";
-import {SizeContext, useSize, withSizeContext} from "./sizing_tools";
 import {ICON_BAR_WIDTH} from "./sizing_tools";
 
 export {list_viewer_props, ListViewerApp}
@@ -36,7 +35,7 @@ function list_viewer_props(data, registerDirtyMethod, finalCallback) {
     if (!window.in_context) {
         window.main_id = resource_viewer_id;
     }
-    var tsocket = new TacticSocket("main", 5000, "list_viewer", resource_viewer_id);
+    let tsocket = new TacticSocket("main", 5000, "list_viewer", resource_viewer_id);
 
 
     finalCallback({
@@ -44,11 +43,11 @@ function list_viewer_props(data, registerDirtyMethod, finalCallback) {
         main_id: resource_viewer_id,
         tsocket: tsocket,
         split_tags: data.mdata.tags == "" ? [] : data.mdata.tags.split(" "),
-        created: data.mdata.datestring,
+        created: data.mdata["datestring"],
         resource_name: data.resource_name,
         the_content: data.the_content,
         notes: data.mdata.notes,
-        readOnly: data.read_only,
+        readOnly: data["read_only"],
         is_repository: data.is_repository,
         registerDirtyMethod: registerDirtyMethod,
     })
@@ -63,7 +62,6 @@ function ListEditor(props) {
         resize: "horizontal",
         margin: 2,
         flexGrow: 1
-        //height: usable_height - LIST_PADDING_TOP - 4
     };
     return (
         <div id="listarea-container"
@@ -112,7 +110,6 @@ function ListViewerApp(props) {
     const statusFuncs = useContext(StatusContext);
     const selectedPane = useContext(SelectedPaneContext);
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
-    const sizeInfo = useContext(SizeContext);
 
     useEffect(() => {
         statusFuncs.stopSpinner();
@@ -142,7 +139,6 @@ function ListViewerApp(props) {
             window.addEventListener("beforeunload", function (e) {
                 if (_dirty()) {
                     e.preventDefault();
-                    e.returnValue = ''
                 }
             })
         }
@@ -199,7 +195,7 @@ function ListViewerApp(props) {
 
             }
         }
-        for (const [menu_name, menu] of Object.entries(ms)) {
+        for (const [, menu] of Object.entries(ms)) {
             for (let but of menu) {
                 but.click_handler = but.click_handler.bind(this)
             }
@@ -235,7 +231,7 @@ function ListViewerApp(props) {
         };
 
         try {
-            let data = await postAjaxPromise("update_list", result_dict);
+            await postAjaxPromise("update_list", result_dict);
             savedContent.current = new_list_as_string;
             statusFuncs.statusMessage(`Saved list ${result_dict.list_name}`)
         }
@@ -247,7 +243,7 @@ function ListViewerApp(props) {
         }
     }
 
-    async function _saveMeAs(e) {
+    async function _saveMeAs() {
         if (!am_selected()) {
             return false
         }
@@ -257,7 +253,7 @@ function ListViewerApp(props) {
                 title: "Save List As",
                 field_title: "New List Name",
                 default_value: "NewList",
-                existing_names: ln_result.list_names,
+                existing_names: ln_result["list_names"],
                 checkboxes: [],
                 handleClose: dialogFuncs.hideModal,
                 });
@@ -265,7 +261,7 @@ function ListViewerApp(props) {
                 "new_res_name": new_name,
                 "res_to_copy": _cProp("resource_name")
             };
-            let data = await postAjaxPromise('/create_duplicate_list', result_dict);
+            await postAjaxPromise('/create_duplicate_list', result_dict);
             _setResourceNameState(new_name, () => {
                 _saveMe();
             })
@@ -336,7 +332,7 @@ ListViewerApp = memo(ListViewerApp);
 async function list_viewer_main() {
 
     function gotProps(the_props) {
-        let ListViewerAppPlus = withSizeContext(withSettings(withDialogs(withErrorDrawer(withStatus(withAssistant(ListViewerApp))))));
+        let ListViewerAppPlus = withSettings(withDialogs(withErrorDrawer(withStatus(withAssistant(ListViewerApp)))));
         let the_element = <ListViewerAppPlus {...the_props}
                                              controlled={false}
                                              changeName={null}

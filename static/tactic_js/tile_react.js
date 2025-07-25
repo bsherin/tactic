@@ -18,7 +18,6 @@ var _utilities_react = require("./utilities_react");
 var _error_boundary = require("./error_boundary");
 var _menu_utilities = require("./menu_utilities");
 var _searchable_console = require("./searchable_console");
-var _sizing_tools = require("./sizing_tools");
 var _settings = require("./settings");
 var _modal_react = require("./modal_react");
 var _error_drawer = require("./error_drawer");
@@ -130,12 +129,6 @@ function TileContainer(props) {
     _useState2 = _slicedToArray(_useState, 2),
     dragging = _useState2[0],
     setDragging = _useState2[1];
-  var _useSize = (0, _sizing_tools.useSize)(tile_div_ref, 0, "TileContainer"),
-    _useSize2 = _slicedToArray(_useSize, 4),
-    usable_width = _useSize2[0],
-    usable_height = _useSize2[1],
-    topX = _useSize2[2],
-    topY = _useSize2[3];
   (0, _react.useEffect)(function () {
     initSocket();
   }, []);
@@ -231,7 +224,7 @@ function TileContainer(props) {
     _setTileState(tile_id, {
       front_content: data.html,
       javascript_code: data.javascript_code,
-      javascript_arg_dict: data.arg_dict
+      javascript_arg_dict: data["arg_dict"]
     });
   }
   function _displayTileContent(tile_id, data) {
@@ -245,32 +238,23 @@ function TileContainer(props) {
     var tile_id = data.tile_id;
     if (tileIndex(tile_id) != -1) {
       var handlerDict = {
-        hideOptions: function hideOptions(tile_id, data) {
-          return _setTileValue(tile_id, "show_form", false);
-        },
-        startSpinner: function startSpinner(tile_id, data) {
+        startSpinner: function startSpinner(tile_id) {
           return _setTileValue(tile_id, "show_spinner", true);
         },
-        stopSpinner: function stopSpinner(tile_id, data) {
+        stopSpinner: function stopSpinner(tile_id) {
           return _setTileValue(tile_id, "show_spinner", false);
         },
         displayTileContent: _displayTileContent,
-        displayFormContent: function displayFormContent(tile_id, data) {
-          return _setTileValue(tile_id, "form_data", data.form_data);
-        },
         displayTileContentWithJavascript: _displayTileContentWithJavascript
       };
-      if (data.tile_message in handlerDict) {
-        handlerDict[data.tile_message](tile_id, data);
+      if (data["tile_message"] in handlerDict) {
+        handlerDict[data["tile_message"]](tile_id, data);
       }
     }
   }
-  function beforeCapture(_, event) {
+  function beforeCapture(_) {
     setDragging(true);
   }
-  var outer_style = {
-    height: usable_height
-  };
   function makeTailoredTileComponent() {
     return /*#__PURE__*/(0, _react.memo)(function (tile_props) {
       return /*#__PURE__*/_react["default"].createElement(TileComponent, _extends({}, tile_props, {
@@ -288,11 +272,17 @@ function TileContainer(props) {
     return makeTailoredTileComponent();
   }, []);
   return /*#__PURE__*/_react["default"].createElement("div", {
-    ref: tile_div_ref
+    ref: tile_div_ref,
+    style: {
+      flexGrow: 1,
+      width: "100%",
+      position: "relative",
+      overflow: "auto"
+    }
   }, /*#__PURE__*/_react["default"].createElement(_sortable_container.SortableComponent, {
     className: props.table_is_shrunk ? "tile-div tile-container-float" : "tile-div",
     main_id: props.main_id,
-    style: outer_style,
+    style: {},
     helperClass: settingsContext.isDark() ? "bp6-dark" : "light-theme",
     ElementComponent: TailoredTileComponent,
     key_field_name: "tile_name",
@@ -363,22 +353,18 @@ function TileComponent(props) {
     _useState4 = _slicedToArray(_useState3, 2),
     header_height = _useState4[0],
     set_header_height = _useState4[1];
-  var _useState5 = (0, _react.useState)(1000),
+  var _useState5 = (0, _react.useState)(false),
     _useState6 = _slicedToArray(_useState5, 2),
-    max_name_width = _useState6[0],
-    set_max_name_width = _useState6[1];
-  var _useState7 = (0, _react.useState)(false),
+    resizing = _useState6[0],
+    set_resizing = _useState6[1];
+  var _useState7 = (0, _react.useState)(0),
     _useState8 = _slicedToArray(_useState7, 2),
-    resizing = _useState8[0],
-    set_resizing = _useState8[1];
+    dwidth = _useState8[0],
+    set_dwidth = _useState8[1];
   var _useState9 = (0, _react.useState)(0),
     _useState0 = _slicedToArray(_useState9, 2),
-    dwidth = _useState0[0],
-    set_dwidth = _useState0[1];
-  var _useState1 = (0, _react.useState)(0),
-    _useState10 = _slicedToArray(_useState1, 2),
-    dheight = _useState10[0],
-    set_dheight = _useState10[1];
+    dheight = _useState0[0],
+    set_dheight = _useState0[1];
 
   // const menu_component_ref = useRef(null);
 
@@ -574,7 +560,6 @@ function TileComponent(props) {
             _context5.p = 3;
             _t2 = _context5.v;
             errorDrawerFuncs.addFromError("Error updating option value", _t2);
-            return _context5.a(2);
           case 4:
             return _context5.a(2);
         }
@@ -605,7 +590,7 @@ function TileComponent(props) {
     try {
       for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
         var opt = _step4.value;
-        data[opt.name] = opt.starting_value;
+        data[opt.name] = opt["starting_value"];
       }
     } catch (err) {
       _iterator4.e(err);
@@ -670,7 +655,7 @@ function TileComponent(props) {
             data = _context7.v;
             _displayFormContent(data);
             props.setTileValue(props.tile_id, "source_changed", false);
-            if (!(data.options_changed || !resubmit)) {
+            if (!(data["options_changed"] || !resubmit)) {
               _context7.n = 3;
               break;
             }
@@ -709,7 +694,7 @@ function TileComponent(props) {
       (0, _communication_react.postWithCallback)(props.tile_id, "TileElementClick", data_dict, null, null, props.main_id);
       e.stopPropagation();
     });
-    $(body_ref.current).on(click_event, '.word-clickable', function (e) {
+    $(body_ref.current).on(click_event, '.word-clickable', function () {
       var data_dict = _standard_click_data();
       var s = window.getSelection();
       var range = s.getRangeAt(0);
@@ -727,12 +712,12 @@ function TileComponent(props) {
       data_dict.clicked_text = range.toString().trim();
       (0, _communication_react.postWithCallback)(props.tile_id, "TileWordClick", data_dict, null, null, props.main_id);
     });
-    $(body_ref.current).on(click_event, '.cell-clickable', function (e) {
+    $(body_ref.current).on(click_event, '.cell-clickable', function () {
       var data_dict = _standard_click_data();
       data_dict.clicked_cell = $(this).text();
       (0, _communication_react.postWithCallback)(props.tile_id, "TileCellClick", data_dict, null, null, props.main_id);
     });
-    $(body_ref.current).on(click_event, '.row-clickable', function (e) {
+    $(body_ref.current).on(click_event, '.row-clickable', function () {
       var data_dict = _standard_click_data();
       var cells = $(this).children();
       var row_vals = [];
@@ -781,7 +766,6 @@ function TileComponent(props) {
   var transitionFadeStyles;
   var lg_style;
   function compute_styles() {
-    var the_margin = 15;
     var tile_height = props.shrunk ? header_height : props.tile_height;
     front_style = {
       width: props.tile_width,
@@ -879,7 +863,7 @@ function TileComponent(props) {
       }
     };
   }
-  function logText(the_text) {
+  function logText() {
     (0, _communication_react.postWithCallback)(props.tile_id, "LogTile", {}, null, null, props.main_id);
   }
   function _stopMe() {
@@ -908,7 +892,7 @@ function TileComponent(props) {
             }, props.main_id);
           case 2:
             data = _context8.v;
-            window.open("", data.window_name);
+            window.open("", data["window_name"]);
             _context8.n = 4;
             break;
           case 3:
@@ -937,7 +921,7 @@ function TileComponent(props) {
     data_dict["tile_name"] = props.tile_name;
     (0, _communication_react.postWithCallback)(props.tile_id, "LogParams", data_dict, null, null, props.main_id);
   }
-  function _startResize(e, ui, startX, startY) {
+  function _startResize() {
     set_resizing(true);
     set_dwidth(0);
     set_dheight(0);

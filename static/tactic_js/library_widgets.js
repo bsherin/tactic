@@ -7,7 +7,6 @@ exports.BpSelectorTable = BpSelectorTable;
 exports.SearchForm = SearchForm;
 require("../tactic_css/tactic_select.scss");
 var _react = _interopRequireWildcard(require("react"));
-var _objectHash = _interopRequireDefault(require("object-hash"));
 var _core = require("@blueprintjs/core");
 var _table = require("@blueprintjs/table");
 var _lodash = _interopRequireDefault(require("lodash"));
@@ -67,11 +66,6 @@ function SearchForm(props) {
   function _handleSearchFieldChange(event) {
     doUpdate(event.target.value);
     set_temp_text(event.target.value);
-  }
-  function _handleClearSearch() {
-    props.update_search_state({
-      "search_string": ""
-    });
   }
   function _handleSearchMetadataChange(event) {
     props.update_search_state({
@@ -138,25 +132,25 @@ function SearchForm(props) {
   }), props.allow_regex && /*#__PURE__*/_react["default"].createElement(_core.Switch, {
     label: "regexp",
     className: "ml-3 mb-0 mt-1",
-    large: false,
+    size: "medium",
     checked: props.regex,
     onChange: _handleRegexChange
   }), props.allow_search_metadata && /*#__PURE__*/_react["default"].createElement(_core.Switch, {
     label: "metadata",
     className: "ml-3 mb-0 mt-1",
-    large: false,
+    size: "medium",
     checked: props.search_metadata,
     onChange: _handleSearchMetadataChange
   }), props.allow_search_inside && /*#__PURE__*/_react["default"].createElement(_core.Switch, {
     label: "inside",
     className: "ml-3 mb-0 mt-1",
-    large: false,
+    size: "medium",
     checked: props.search_inside,
     onChange: _handleSearchInsideChange
   }), props.allow_show_hidden && /*#__PURE__*/_react["default"].createElement(_core.Switch, {
     label: "show hidden",
     className: "ml-3 mb-0 mt-1",
-    large: false,
+    size: "medium",
     checked: props.show_hidden,
     onChange: _handleShowHiddenChange
   }), props.include_search_jumper && /*#__PURE__*/_react["default"].createElement(_core.ButtonGroup, {
@@ -397,10 +391,6 @@ function BpSelectorTable(props) {
       name: column_name
     });
   });
-  var obj = {
-    cwidths: columnWidths,
-    nrows: props.num_rows
-  };
   var dependencies;
   if (props.open_resources_ref && props.open_resources_ref.current) {
     dependencies = [props.data_dict, props.open_resources_ref.current];
@@ -419,7 +409,7 @@ function BpSelectorTable(props) {
     defaultRowHeight: 27,
     selectedRegions: props.selectedRegions,
     enableRowHeader: false,
-    columnWidths: columnWidthsRef.current,
+    columnWidths: columnWidths,
     onCompleteRender: _onCompleteRender,
     selectionModes: _table.SelectionModes.ALL,
     onSelection: function onSelection(regions) {
@@ -431,7 +421,6 @@ exports.BpSelectorTable = BpSelectorTable = /*#__PURE__*/(0, _react.memo)(BpSele
 var MAX_INITIAL_CELL_WIDTH = 300;
 var ICON_WIDTH = 35;
 function compute_initial_column_widths(header_list, data_list) {
-  var ncols = header_list.length;
   var max_field_width = MAX_INITIAL_CELL_WIDTH;
 
   // Get sample header and body cells
@@ -471,7 +460,6 @@ function compute_initial_column_widths(header_list, data_list) {
   var the_row;
   var the_width;
   var the_text;
-  var the_child;
 
   // Find the width of each body cell
   // Keep track of the largest value for each column

@@ -78,7 +78,7 @@ function consoleItemsReducer(console_items, action) {
       new_items = console_items.map(function (t) {
         if (t.unique === action.unique_id) {
           var new_t = _objectSpread({}, action.new_item);
-          updateOutputText(new_t);
+          return updateOutputText(new_t);
         } else {
           return t;
         }
@@ -93,6 +93,7 @@ function consoleItemsReducer(console_items, action) {
       });
       break;
     case "change_item_value":
+      console.log("change item_value ".concat(action.field, " ").concat(String(action.new_value)));
       new_items = console_items.map(function (t) {
         if (t.unique_id === action.unique_id) {
           var new_t = _objectSpread({}, t);
@@ -107,10 +108,11 @@ function consoleItemsReducer(console_items, action) {
     case "change_code_output":
       new_items = console_items.map(function (t) {
         if (t.unique_id === action.unique_id) {
-          var new_t = _objectSpread({}, t);
-          new_t["output_dict"] = action.new_value;
-          new_t = updateOutputText(new_t);
-          return new_t;
+          var new_output_dict = _objectSpread(_objectSpread({}, t.output_dict), {}, _defineProperty({}, action.row, action.new_value));
+          var new_t = _objectSpread(_objectSpread({}, t), {}, {
+            output_dict: new_output_dict
+          });
+          return updateOutputText(new_t);
         } else {
           return t;
         }
@@ -146,7 +148,7 @@ function consoleItemsReducer(console_items, action) {
       new_items = console_items.map(function (t) {
         if (t.type == "divider" && t.divider_list.includes(t.unique_id)) {
           var new_t = _objectSpread({}, t);
-          new_t.am_shurnk = false;
+          new_t.am_shrunk = false;
           return new_t;
         } else {
           return t;
@@ -157,7 +159,7 @@ function consoleItemsReducer(console_items, action) {
       new_items = console_items.map(function (t) {
         if (t.type == "divider") {
           var new_t = _objectSpread({}, t);
-          new_t.am_shurnk = true;
+          new_t.am_shrunk = true;
           return new_t;
         } else {
           return t;

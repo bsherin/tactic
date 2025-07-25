@@ -11,7 +11,6 @@ var _propTypes = _interopRequireDefault(require("prop-types"));
 var _table = require("@blueprintjs/table");
 var _objectHash = _interopRequireDefault(require("object-hash"));
 var _utilities_react = require("./utilities_react");
-var _sizing_tools = require("./sizing_tools");
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t in e) "default" !== _t && {}.hasOwnProperty.call(e, _t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t)) && (i.get || i.set) ? o(f, _t, i) : f[_t] = e[_t]); return f; })(e, t); }
 function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
@@ -27,7 +26,6 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
 function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
 function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
 var MAX_INITIAL_CELL_WIDTH = 400;
-var EXTRA_TABLE_AREA_SPACE = 500;
 function ColoredWord(props) {
   var style = {
     backgroundColor: props.the_color
@@ -41,7 +39,7 @@ ColoredWord.propTypes = {
   the_word: _propTypes["default"].string
 };
 ColoredWord = /*#__PURE__*/(0, _react.memo)(ColoredWord);
-function BlueprintTable(props, passedRef) {
+function BlueprintTable(props) {
   var top_ref = (0, _react.useRef)(null);
   var mismatched_column_widths = (0, _react.useRef)(false);
   var table_ref = (0, _react.useRef)(null);
@@ -51,10 +49,6 @@ function BlueprintTable(props, passedRef) {
     _useState2 = _slicedToArray(_useState, 2),
     focusedCell = _useState2[0],
     setFocusedCell = _useState2[1];
-  var _useSize = (0, _sizing_tools.useSize)(top_ref, 0, "BlueprintTable"),
-    _useSize2 = _slicedToArray(_useSize, 2),
-    usable_width = _useSize2[0],
-    usable_height = _useSize2[1];
   (0, _react.useEffect)(function () {
     computeColumnWidths();
     _updateRowHeights();
@@ -151,7 +145,6 @@ function BlueprintTable(props, passedRef) {
     return null;
   }
   function _cellRendererCreator(column_name) {
-    var self = this;
     return function (rowIndex) {
       var the_text;
       var cell_bg_color;
@@ -192,9 +185,6 @@ function BlueprintTable(props, passedRef) {
           } finally {
             _iterator.f();
           }
-          var converted_dict = {
-            __html: revised_text
-          };
           return /*#__PURE__*/_react["default"].createElement(_table.Cell, {
             key: column_name,
             truncated: true,
@@ -206,6 +196,25 @@ function BlueprintTable(props, passedRef) {
         if (props.mState.alt_search_text != null && props.mState.alt_search_text != "") {
           var regex = new RegExp(props.mState.alt_search_text, "gi");
           the_text = String(the_text).replace(regex, function (matched) {
+            return "<mark>" + matched + "</mark>";
+          });
+          var converted_dict = {
+            __html: the_text
+          };
+          return /*#__PURE__*/_react["default"].createElement(_table.Cell, {
+            key: column_name,
+            style: {
+              backgroundColor: cell_bg_color
+            },
+            truncated: true,
+            wrapText: true
+          }, /*#__PURE__*/_react["default"].createElement("div", {
+            dangerouslySetInnerHTML: converted_dict
+          }));
+        }
+        if (props.mState.search_text != null && props.mState.search_text != "") {
+          var _regex = new RegExp(props.mState.search_text, "gi");
+          the_text = String(the_text).replace(_regex, function (matched) {
             return "<mark>" + matched + "</mark>";
           });
           var _converted_dict = {
@@ -220,25 +229,6 @@ function BlueprintTable(props, passedRef) {
             wrapText: true
           }, /*#__PURE__*/_react["default"].createElement("div", {
             dangerouslySetInnerHTML: _converted_dict
-          }));
-        }
-        if (props.mState.search_text != null && props.mState.search_text != "") {
-          var _regex = new RegExp(props.mState.search_text, "gi");
-          the_text = String(the_text).replace(_regex, function (matched) {
-            return "<mark>" + matched + "</mark>";
-          });
-          var _converted_dict2 = {
-            __html: the_text
-          };
-          return /*#__PURE__*/_react["default"].createElement(_table.Cell, {
-            key: column_name,
-            style: {
-              backgroundColor: cell_bg_color
-            },
-            truncated: true,
-            wrapText: true
-          }, /*#__PURE__*/_react["default"].createElement("div", {
-            dangerouslySetInnerHTML: _converted_dict2
           }));
         }
         if (!props.mState.spreadsheet_mode) {
@@ -302,7 +292,7 @@ function BlueprintTable(props, passedRef) {
       column_widths: cwidths
     }, true);
   }
-  function _onColumnsReordered(oldIndex, newIndex, length) {
+  function _onColumnsReordered(oldIndex, newIndex) {
     var col_to_move = props.filtered_column_names[oldIndex];
     var cnames = _toConsumableArray(props.filtered_column_names);
     cnames.splice(oldIndex, 1);
@@ -335,7 +325,7 @@ function BlueprintTable(props, passedRef) {
     display: "block",
     overflowY: "auto",
     overflowX: "hidden",
-    height: usable_height
+    height: "100%"
   };
   return /*#__PURE__*/_react["default"].createElement("div", {
     id: "table-area",
@@ -374,27 +364,27 @@ function EnhancedEditableCell(props) {
     saved_text = _useState6[0],
     set_saved_text = _useState6[1];
   var pushCallback = (0, _utilities_react.useCallbackStack)();
-  function _handleKeyDown(event) {
+  function _handleKeyDown() {
     if (cell_ref.current) {
       cell_ref.current.handleEdit();
       set_am_editing(true);
       set_saved_text(props.value);
     }
   }
-  function _onChange(value, rowIndex, columnIndex) {
+  function _onChange(value) {
     props.setCellContent(props.rowIndex, props.columnHeader, value, false);
   }
   function _onCancel() {
     props.setCellContent(props.rowIndex, props.columnHeader, saved_text, false);
     set_am_editing(false);
   }
-  function _onConfirmCellEdit(value, rowIndex, columnIndex) {
+  function _onConfirmCellEdit(value) {
     set_am_editing(false);
     pushCallback(function () {
       props.setCellContent(props.rowIndex, props.columnHeader, value, true);
     });
   }
-  return /*#__PURE__*/_react["default"].createElement(_table.EditableCell2, _extends({
+  return /*#__PURE__*/_react["default"].createElement(_table.EditableCell, _extends({
     ref: cell_ref,
     onConfirm: _onConfirmCellEdit,
     onChange: _onChange,
@@ -422,7 +412,6 @@ function compute_added_column_width(header_text) {
   return max_field_width + added_header_width;
 }
 function compute_initial_column_widths(header_list, data_row_dict) {
-  var ncols = header_list.length;
   var max_field_width = MAX_INITIAL_CELL_WIDTH;
 
   // Get sample header and body cells
@@ -459,7 +448,6 @@ function compute_initial_column_widths(header_list, data_row_dict) {
   var the_row;
   var the_width;
   var the_text;
-  var the_child;
   for (var _i = 0, _columns_remaining = columns_remaining; _i < _columns_remaining.length; _i++) {
     var c = _columns_remaining[_i];
     the_text = header_list[c];

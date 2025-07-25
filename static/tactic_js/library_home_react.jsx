@@ -8,24 +8,20 @@ import React from "react";
 import { createRoot } from 'react-dom/client';
 import {Fragment, useEffect, useRef, memo, useContext} from "react";
 
-// import { HotkeysProvider } from "@blueprintjs/core";
-
 import {TacticSocket} from "./tactic_socket";
 import {doFlash} from "./toaster.js";
 import {LibraryPane} from "./library_pane";
 import {withStatus} from "./toaster";
 import {withErrorDrawer} from "./error_drawer";
-import {guid, useCallbackStack, useConnection } from "./utilities_react";
+import {guid, useConnection } from "./utilities_react";
 import {TacticNavbar} from "./blueprint_navbar";
 import {AllMenubar} from "./library_menubars"
 import {SettingsContext, withSettings} from "./settings";
-import {BOTTOM_MARGIN, ICON_BAR_WIDTH, SizeContext, useSize, withSizeContext} from "./sizing_tools";
+import {ICON_BAR_WIDTH} from "./sizing_tools";
 import {withDialogs} from "./modal_react";
 import {StatusContext} from "./toaster"
 import {withAssistant} from "./assistant";
 import {handleCallback} from "./communication_react";
-
-const TAB_BAR_WIDTH = 50;
 
 export {LibraryHomeApp, library_id}
 const library_id = guid();
@@ -33,21 +29,13 @@ if (!window.in_context) {
     window.main_id = library_id;
 }
 
-const tab_panes = ["all-pane", "collections-pane", "projects-pane", "tiles-pane", "lists-pane", "code-pane"];
-const controllable_props = ["usable_width", "usable_height"];
-
 function LibraryHomeApp(props) {
     const top_ref = useRef(null);
-    const [usable_width, usable_height, topX, topY] = useSize(top_ref, 0, "Library");
 
     const settingsContext = useContext(SettingsContext);
     const statusFuncs = useContext(StatusContext);
-    const sizeInfo = useContext(SizeContext);
 
     const connection_status = useConnection(props.tsocket, initSocket);
-
-    const pushCallback = useCallbackStack("library_home");
-
 
     useEffect(() => {
         statusFuncs.stopSpinner(null);
@@ -124,16 +112,8 @@ function LibraryHomeApp(props) {
                               user_name={window.username}/>
             }
             <div className={outer_class} ref={top_ref} style={outer_style}>
-                <SizeContext.Provider value={{
-                    topX: topX,
-                    topY: topY,
-                    availableWidth: usable_width,
-                    availableHeight: usable_height - BOTTOM_MARGIN
-                }}>
                     { all_pane }
-                </SizeContext.Provider>
             </div>
-
         </Fragment>
     )
 }
@@ -142,7 +122,7 @@ LibraryHomeApp = memo(LibraryHomeApp);
 
 function _library_home_main() {
     const tsocket = new TacticSocket("main", 5000, "library", library_id);
-    const LibraryHomeAppPlus = withSizeContext(withSettings(withDialogs(withErrorDrawer(withStatus(withAssistant(LibraryHomeApp))))));
+    const LibraryHomeAppPlus = withSettings(withDialogs(withErrorDrawer(withStatus(withAssistant(LibraryHomeApp)))));
     const domContainer = document.querySelector('#library-home-root');
     const root = createRoot(domContainer);
     root.render(

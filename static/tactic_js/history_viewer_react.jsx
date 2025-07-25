@@ -7,19 +7,17 @@ import "../tactic_css/tactic.scss";
 import React from "react";
 import {Fragment, useState, useEffect, memo, useRef, useContext} from "react";
 import { createRoot } from 'react-dom/client';
-// import { HotkeysProvider } from "@blueprintjs/core";
 
 import {MergeViewerApp} from "./merge_viewer_app";
 import {doFlash, StatusContext} from "./toaster.js"
 import {postAjax, postAjaxPromise} from "./communication_react.js"
 import {withErrorDrawer, ErrorDrawerContext} from "./error_drawer.js";
 import {withStatus} from "./toaster.js";
-import {withSizeContext} from "./sizing_tools";
 
 import {guid} from "./utilities_react.js";
 import {TacticNavbar} from "./blueprint_navbar";
 import {TacticSocket} from "./tactic_socket.js";
-import {useCallbackStack, useConnection} from "./utilities_react";
+import {useConnection, useStateAndRef} from "./utilities_react";
 import {withSettings} from "./settings";
 
 async function history_viewer_main ()  {
@@ -31,9 +29,12 @@ async function history_viewer_main ()  {
         const domContainer = document.querySelector('#root');
         const root = createRoot(domContainer);
         root.render(
-           // <HotkeysProvider>
-                the_element
-           // </HotkeysProvider>
+            <div style={{display: "flex", flexDirection: "column",
+                position: "relative",
+                height: "100%",
+                width: "100%"}}>
+                {the_element}
+            </div>
         )
     }
 
@@ -41,9 +42,8 @@ async function history_viewer_main ()  {
 
     try {
         let data = await postAjaxPromise(`${get_url}/${window.resource_name}`, {});
-        var edit_content = data.the_content;
         let data2 = await postAjaxPromise("get_checkpoint_dates", {"module_name": window.resource_name});
-        data.history_list = data2.checkpoints;
+        data.history_list = data2["checkpoints"];
         data.resource_name = window.resource_name;
         history_viewer_props(data, null, gotProps);
     }
@@ -61,7 +61,7 @@ async function history_viewer_main ()  {
 
 function history_viewer_props(data, registerDirtyMethod, finalCallback) {
     let resource_viewer_id = guid();
-    var tsocket = new TacticSocket("main", 5000, "history_viewer", resource_viewer_id);
+    let tsocket = new TacticSocket("main", 5000, "history_viewer", resource_viewer_id);
     finalCallback({
         resource_viewer_id: resource_viewer_id,
         tsocket: tsocket,
@@ -75,19 +75,18 @@ function history_viewer_props(data, registerDirtyMethod, finalCallback) {
 
 function HistoryViewerApp(props) {
 
-    const [edit_content, set_edit_content] = useState(props.edit_content);
+    const [edit_content, set_edit_content, edit_content_ref] = useStateAndRef(props.edit_content);
     const [right_content, set_right_content] = useState("");
     const [history_popup_val, set_history_popup_val] = useState(props.history_list[0]["updatestring"]);
     const [history_list, set_history_list] = useState(props.history_list);
 
-    const [resource_name, set_resource_name] = useState(props.resource_name);
+    const [resource_name, ] = useState(props.resource_name);
     const connection_status = useConnection(props.tsocket, initSocket);
 
     const savedContent = useRef(props.edit_content);
 
     const statusFuncs = useContext(StatusContext);
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
-    const pushCallback = useCallbackStack();
 
     useEffect(()=>{
         function beforeUnloadFunc(e) {
@@ -151,13 +150,11 @@ function HistoryViewerApp(props) {
     }
 
     function checkpointThenSaveFromLeft() {
-        let self = this;
-        let current_popup_val = history_popup_val;
         doCheckpointPromise()
             .then(function () {
                 postAjaxPromise("get_checkpoint_dates", {"module_name": resource_name})
                     .then((data) => {
-                        set_history_list(data.checkpoints)
+                        set_history_list(data["checkpoints"])
                     })
                     .catch((data)=>{
                         errorDrawerFuncs.addErrorDrawerEntry({
@@ -178,10 +175,10 @@ function HistoryViewerApp(props) {
     function saveFromLeft() {
         let data_dict = {
             "module_name": props.resource_name,
-            "module_code": edit_content
+            "module_code": edit_content_ref.current
         };
         postAjaxPromise("update_from_left", data_dict)
-            .then((data)=>{
+            .then(()=>{
                 statusFuncs.statusMessage("Updated from left")
             })
             .catch((data)=>{
@@ -192,8 +189,8 @@ function HistoryViewerApp(props) {
             })
     }
 
-    function dirty() {
-        return edit_content != savedContent.current
+    function _dirty() {
+        return edit_content_ref.current != savedContent.current
     }
 
     let option_list = history_list.map((item) => item["updatestring"]);
@@ -223,7 +220,7 @@ function HistoryViewerApp(props) {
 }
 
 
-HistoryViewerApp = withSizeContext(memo(HistoryViewerApp));
+HistoryViewerApp = memo(HistoryViewerApp);
 
 if (!window.in_context) {
     try {

@@ -61,7 +61,6 @@ function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) 
 function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
 function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
 function _arrayWithHoles(r) { if (Array.isArray(r)) return r; } // noinspection XmlDeprecatedElement,JSXUnresolvedComponent
-//import { HotkeysProvider } from "@blueprintjs/core";
 _core.FocusStyleManager.onlyShowFocusOnTabs();
 var spinner_panel = /*#__PURE__*/_react["default"].createElement("div", {
   style: {
@@ -170,50 +169,29 @@ function ContextApp(props) {
     _useState6 = _slicedToArray(_useState5, 2),
     lastSelectedTabId = _useState6[0],
     setLastSelectedTabId = _useState6[1];
-  var _useState7 = (0, _react.useState)(function () {
-      return (0, _sizing_tools.getUsableDimensions)(true).usable_width - _sizing_tools.INIT_CONTEXT_PANEL_WIDTH - _sizing_tools.ICON_BAR_WIDTH;
-    }),
-    _useState8 = _slicedToArray(_useState7, 2),
-    usable_width = _useState8[0],
-    set_usable_width = _useState8[1];
-  var _useState9 = (0, _react.useState)(function () {
-      return (0, _sizing_tools.getUsableDimensions)(true).usable_height_no_bottom;
-    }),
+  var _useState7 = (0, _react.useState)(_sizing_tools.INIT_CONTEXT_PANEL_WIDTH),
+    _useState8 = _slicedToArray(_useState7, 1),
+    tabWidth = _useState8[0];
+  var _useState9 = (0, _react.useState)(null),
     _useState0 = _slicedToArray(_useState9, 2),
-    usable_height = _useState0[0],
-    set_usable_height = _useState0[1];
-  var _useState1 = (0, _react.useState)(170),
+    dragging_over = _useState0[0],
+    set_dragging_over = _useState0[1];
+  var _useState1 = (0, _react.useState)(null),
     _useState10 = _slicedToArray(_useState1, 2),
-    paneX = _useState10[0],
-    setPaneX = _useState10[1];
-  var _useState11 = (0, _react.useState)(_sizing_tools.USUAL_NAVBAR_HEIGHT),
+    currently_dragging = _useState10[0],
+    set_currently_dragging = _useState10[1];
+  var _useState11 = (0, _react.useState)(false),
     _useState12 = _slicedToArray(_useState11, 2),
-    paneY = _useState12[0],
-    setPaneY = _useState12[1];
-  var _useState13 = (0, _react.useState)(_sizing_tools.INIT_CONTEXT_PANEL_WIDTH),
-    _useState14 = _slicedToArray(_useState13, 2),
-    tabWidth = _useState14[0],
-    setTabWidth = _useState14[1];
-  var _useState15 = (0, _react.useState)(null),
-    _useState16 = _slicedToArray(_useState15, 2),
-    dragging_over = _useState16[0],
-    set_dragging_over = _useState16[1];
-  var _useState17 = (0, _react.useState)(null),
-    _useState18 = _slicedToArray(_useState17, 2),
-    currently_dragging = _useState18[0],
-    set_currently_dragging = _useState18[1];
-  var _useState19 = (0, _react.useState)(false),
-    _useState20 = _slicedToArray(_useState19, 2),
-    showOpenOmnibar = _useState20[0],
-    setShowOpenOmnibar = _useState20[1];
+    showOpenOmnibar = _useState12[0],
+    setShowOpenOmnibar = _useState12[1];
   var settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
   var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
-  var _useState21 = (0, _react.useState)(0),
-    _useState22 = _slicedToArray(_useState21, 2),
-    tabSelectCounter = _useState22[0],
-    setTabSelectCounter = _useState22[1];
+  var _useState13 = (0, _react.useState)(0),
+    _useState14 = _slicedToArray(_useState13, 2),
+    tabSelectCounter = _useState14[0],
+    setTabSelectCounter = _useState14[1];
   var omniItemsRef = (0, _react.useRef)({});
   var top_ref = (0, _react.useRef)(null);
   var hotkeys = (0, _react.useMemo)(function () {
@@ -273,25 +251,11 @@ function ContextApp(props) {
   }, []);
   (0, _react.useEffect)(function () {
     // for mount
-    window.addEventListener("resize", function () {
-      return _update_window_dimensions(null);
-    });
     window.addEventListener("beforeunload", function (e) {
       e.preventDefault();
       e.returnValue = 'Are you sure you want to close? All changes will be lost.';
     });
-    _update_window_dimensions(null);
-    var tab_list_elem = document.querySelector("#context-container .context-tab-list > .bp6-tab-list");
-    var resizeObserver = new ResizeObserver(function () {
-      _update_window_dimensions(null);
-    });
-    if (tab_list_elem) {
-      resizeObserver.observe(tab_list_elem);
-    }
   }, []);
-  (0, _react.useEffect)(function () {
-    _update_window_dimensions(null);
-  }, [selectedTabId]);
   function get_tab_list_elem() {
     return document.querySelector("#context-container .context-tab-list > .bp6-tab-list");
   }
@@ -299,7 +263,6 @@ function ContextApp(props) {
     var w = pane_closed ? saved_width : MIN_CONTEXT_WIDTH;
     var tab_elem = get_tab_list_elem();
     tab_elem.setAttribute("style", "width:".concat(w, "px"));
-    pushCallback(_update_window_dimensions);
   }
   function _handleTabResize(e, ui, lastX) {
     var tab_elem = get_tab_list_elem();
@@ -322,36 +285,6 @@ function ContextApp(props) {
         set_saved_width(new_width);
       }
     }
-    pushCallback(_update_window_dimensions);
-  }
-  function _update_window_dimensions() {
-    var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-    var tab_list_elem = get_tab_list_elem();
-    var uwidth;
-    var uheight;
-    var tWidth;
-    var top_rect;
-    if (top_ref && top_ref.current) {
-      top_rect = top_ref.current.getBoundingClientRect();
-      uheight = window.innerHeight - top_rect.top;
-    } else {
-      uheight = window.innerHeight - _sizing_tools.USUAL_NAVBAR_HEIGHT;
-    }
-    if (tab_list_elem) {
-      var tab_rect = tab_list_elem.getBoundingClientRect();
-      uwidth = window.innerWidth - tab_rect.width;
-      tWidth = tab_rect.width;
-    } else {
-      uwidth = window.innerWidth - 150;
-      tWidth = 150;
-    }
-    set_usable_height(uheight);
-    set_usable_width(uwidth - _sizing_tools.ICON_BAR_WIDTH);
-    setPaneX(tWidth);
-    setPaneY(top_ref.current ? top_rect.top : _sizing_tools.USUAL_NAVBAR_HEIGHT);
-    setTabWidth(tWidth);
-    statusFuncs.setLeftEdge(tWidth);
-    pushCallback(callback);
   }
   function _registerDirtyMethod(tab_id, dirty_method) {
     var new_dirty_methods = _objectSpread({}, dirty_methods);
@@ -514,11 +447,6 @@ function ContextApp(props) {
                   setLastSelectedTabId("library");
                 }
               }
-              pushCallback(function () {
-                _updateOpenResources(function () {
-                  return _update_window_dimensions();
-                });
-              });
             });
             _context5.n = 4;
             break;
@@ -582,9 +510,7 @@ function ContextApp(props) {
     }
     set_tab_panel_dict(new_tab_panel_dict);
     pushCallback(function () {
-      _updateOpenResources(function () {
-        return _update_window_dimensions(callback);
-      });
+      _updateOpenResources(callback);
     });
   }
   function _updatePanelPromise(the_id, new_panel) {
@@ -602,9 +528,7 @@ function ContextApp(props) {
     new_tab_panel_dict[the_id].panel.resource_name = new_name;
     set_tab_panel_dict(new_tab_panel_dict);
     pushCallback(function () {
-      _updateOpenResources(function () {
-        return _update_window_dimensions(callback);
-      });
+      _updateOpenResources(callback);
     });
   }
   function _getResourceId(res_name, res_type) {
@@ -696,12 +620,9 @@ function ContextApp(props) {
     }
   }
   function _handleTabSelect(newTabId, prevTabId) {
-    var event = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
-    var callback = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
     setSelectedTabId(newTabId);
     setLastSelectedTabId(prevTabId);
     pushCallback(function () {
-      _update_window_dimensions(callback);
       setTabSelectCounter(tabSelectCounter + 1);
     });
   }
@@ -916,9 +837,7 @@ function ContextApp(props) {
     controlled: true,
     am_selected: selectedTabIdRef.current === "library",
     open_resources_ref: open_resources_ref,
-    handleCreateViewer: _handleCreateViewer,
-    usable_width: usable_width,
-    usable_height: usable_height
+    handleCreateViewer: _handleCreateViewer
   })));
   var ltab = /*#__PURE__*/_react["default"].createElement(_core.Tab, {
     id: "library",
@@ -972,17 +891,13 @@ function ContextApp(props) {
           _addOmniItems("pool", items);
         }
       }
-    }, /*#__PURE__*/_react["default"].createElement("div", {
-      id: "pool-browser-root"
     }, /*#__PURE__*/_react["default"].createElement(_pool_browser.PoolBrowser, {
       tsocket: tsocket,
       am_selected: selectedTabIdRef.current === "pool",
-      usable_width: usable_width,
       getOpenResources: _getOpenResources,
       setSelectedTabId: setSelectedTabId,
-      handleCreateViewer: _handleCreateViewer,
-      usable_height: usable_height
-    })));
+      handleCreateViewer: _handleCreateViewer
+    }));
     var ptab = /*#__PURE__*/_react["default"].createElement(_core.Tab, {
       id: "pool",
       tabIndex: -1,
@@ -1154,9 +1069,7 @@ function ContextApp(props) {
               }
             }, _callee8);
           })),
-          tsocket: tab_entry.panel.tsocket,
-          usable_width: usable_width,
-          usable_height: usable_height
+          tsocket: tab_entry.panel.tsocket
         })));
         wrapped_panel = /*#__PURE__*/_react["default"].createElement(_error_boundary.ErrorBoundary, null, /*#__PURE__*/_react["default"].createElement("div", {
           id: "".concat(tab_id, "-holder"),
@@ -1394,21 +1307,14 @@ function ContextApp(props) {
     direction: "x",
     barHeight: "100%",
     useThinBar: true
-  }), /*#__PURE__*/_react["default"].createElement(_sizing_tools.SizeContext.Provider, {
-    value: {
-      availableWidth: usable_width,
-      availableHeight: usable_height,
-      topX: paneX,
-      topY: paneY
-    }
-  }, /*#__PURE__*/_react["default"].createElement(_core.Tabs, {
+  }), /*#__PURE__*/_react["default"].createElement(_core.Tabs, {
     id: "context-tabs",
     selectedTabId: selectedTabIdRef.current,
     className: tlclass,
     style: {},
     vertical: true,
     onChange: _handleTabSelect
-  }, all_tabs))), /*#__PURE__*/_react["default"].createElement(_utilities_react.SelectedPaneContext.Provider, {
+  }, all_tabs)), /*#__PURE__*/_react["default"].createElement(_utilities_react.SelectedPaneContext.Provider, {
     value: {
       tab_id: sid,
       selectedTabIdRef: selectedTabIdRef,

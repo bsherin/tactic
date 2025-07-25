@@ -12,7 +12,6 @@ var _table = require("@blueprintjs/table");
 var _blueprint_mdata_fields = require("./blueprint_mdata_fields");
 var _resizing_allotment = require("./resizing_allotment");
 var _communication_react = require("./communication_react");
-var _sizing_tools = require("./sizing_tools");
 var _toaster = require("./toaster");
 var _utilities_react = require("./utilities_react");
 var _modal_react = require("./modal_react");
@@ -170,9 +169,6 @@ function LibraryPane(props) {
   var previous_search_spec = (0, _react.useRef)(null);
   var blank_selected_resource = (0, _react.useRef)({});
   var selectedTypeRef = (0, _react.useRef)(null);
-  var _useSize = (0, _sizing_tools.useSize)(top_ref, 0, "LibraryPane"),
-    _useSize2 = _slicedToArray(_useSize, 3),
-    usable_height = _useSize2[1];
   var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
   var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);

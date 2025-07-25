@@ -6,8 +6,7 @@ import {HorizontalPanes} from "./resizing_allotment";
 import {handleCallback} from "./communication_react"
 import {TacticMenubar} from "./menu_utilities"
 import {doFlash, StatusContext} from "./toaster";
-import {BOTTOM_MARGIN, SIDE_MARGIN, STATUS_BAR_HEIGHT, useSize} from "./sizing_tools"
-import {SearchForm} from "./library_widgets";
+import {BOTTOM_MARGIN, SIDE_MARGIN} from "./sizing_tools"
 import {useConnection} from "./utilities_react";
 import {postAjaxPromise} from "./communication_react";
 
@@ -96,8 +95,6 @@ function ResourceViewerApp(props) {
     // Only used when not in context
     const connection_status = useConnection(props.tsocket, initSocket);
 
-    const [usable_width, usable_height, topY, topX] = useSize(top_ref, 0, "ResourceViewer");
-
     useEffect(() => {
         statusFuncs.stopSpinner();
     }, []);
@@ -122,6 +119,7 @@ function ResourceViewerApp(props) {
     let left_pane = (
         <Fragment>
             <div style={{paddingRight: PADDING, height: "100%", width: "100%",
+                position: "relative",
                 overflow: "auto", display: "flex", flexDirection: "column"}}>
                 {props.children}
             </div>
@@ -161,7 +159,7 @@ function ResourceViewerApp(props) {
                      flexGrow: 1,
                      width: "100%",
                      position: "relative",
-                     marginLeft: 15, marginTop: 0}}>
+                     paddingLeft: 15, marginTop: 0}}>
                 <HorizontalPanes left_pane={left_pane}
                                  show_handle={true}
                                  right_pane={right_pane}

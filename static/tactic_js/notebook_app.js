@@ -234,6 +234,7 @@ function NotebookApp(props) {
     handleCreateViewer: props.handleCreateViewer,
     controlled: props.controlled,
     console_items: console_items_ref,
+    console_items_not_ref: console_items,
     console_selected_items_ref: console_selected_items_ref,
     set_console_selected_items: set_console_selected_items,
     dispatch: dispatch,
@@ -260,7 +261,8 @@ function NotebookApp(props) {
   }
   var outer_style = {
     width: "calc(100% - ".concat(_sizing_tools.ICON_BAR_WIDTH, "px)"),
-    flexGrow: 1,
+    flex: "1 1 0",
+    overflow: "auto",
     display: 'flex',
     flexDirection: 'column',
     paddingLeft: 0,
@@ -302,6 +304,10 @@ function NotebookApp(props) {
     initial_width_fraction: mState.console_width_fraction,
     controlled: true,
     separatorPadding: 5,
+    outer_style: {
+      paddingBottom: 10,
+      paddingRight: 10
+    },
     handleSplitUpdate: _handleConsoleFractionChange
   })), /*#__PURE__*/_react["default"].createElement(_metadata_drawer.MetadataDrawer, {
     res_type: "project",
@@ -318,7 +324,7 @@ function NotebookApp(props) {
 exports.NotebookApp = NotebookApp = /*#__PURE__*/(0, _react.memo)(NotebookApp);
 function main_main() {
   function gotProps(the_props) {
-    var NotebookAppPlus = (0, _sizing_tools.withSizeContext)((0, _settings.withSettings)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)((0, _assistant.withAssistant)(NotebookApp))))));
+    var NotebookAppPlus = (0, _settings.withSettings)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)((0, _assistant.withAssistant)(NotebookApp)))));
     var the_element = /*#__PURE__*/_react["default"].createElement(NotebookAppPlus, _extends({}, the_props, {
       controlled: false,
       changeName: null

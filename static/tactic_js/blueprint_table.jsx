@@ -4,16 +4,14 @@ import React from "react";
 import {useState, useEffect, useRef, memo} from "react";
 import PropTypes from 'prop-types';
 
-import {Cell, EditableCell2, RowHeaderCell, Column, Table, Regions, RegionCardinality} from "@blueprintjs/table";
+import {Cell, EditableCell, RowHeaderCell, Column, Table, Regions, RegionCardinality} from "@blueprintjs/table";
 import hash from "object-hash"
 
 import {useCallbackStack} from "./utilities_react";
-import {useSize} from "./sizing_tools";
 
 export {BlueprintTable, compute_added_column_width}
 
 const MAX_INITIAL_CELL_WIDTH = 400;
-const EXTRA_TABLE_AREA_SPACE = 500;
 
 function ColoredWord(props) {
 
@@ -30,7 +28,7 @@ ColoredWord.propTypes = {
 
 ColoredWord = memo(ColoredWord);
 
-function BlueprintTable(props, passedRef) {
+function BlueprintTable(props) {
 
     const top_ref = useRef(null);
     const mismatched_column_widths = useRef(false);
@@ -39,7 +37,6 @@ function BlueprintTable(props, passedRef) {
     const current_doc_name = useRef(null);
 
     const [focusedCell, setFocusedCell] = useState(null);
-    const [usable_width, usable_height] = useSize(top_ref, 0, "BlueprintTable");
 
     useEffect(()=> {
         computeColumnWidths();
@@ -142,7 +139,6 @@ function BlueprintTable(props, passedRef) {
     }
 
     function _cellRendererCreator(column_name) {
-        let self = this;
         return (rowIndex) => {
             let the_text;
             let cell_bg_color;
@@ -170,7 +166,6 @@ function BlueprintTable(props, passedRef) {
                         }
                         index += 1;
                     }
-                    let converted_dict = {__html: revised_text};
                     return (<Cell key={column_name}
                                   truncated={true}
                                   wrapText={true}>
@@ -268,7 +263,7 @@ function BlueprintTable(props, passedRef) {
         props.updateTableSpec({column_widths: cwidths}, true);
     }
 
-    function _onColumnsReordered(oldIndex, newIndex, length) {
+    function _onColumnsReordered(oldIndex, newIndex) {
         let col_to_move = props.filtered_column_names[oldIndex];
         let cnames = [...props.filtered_column_names];
         cnames.splice(oldIndex, 1);
@@ -301,7 +296,7 @@ function BlueprintTable(props, passedRef) {
     let style = {display: "block",
         overflowY: "auto",
         overflowX: "hidden",
-        height: usable_height
+        height: "100%"
     };
     return (
         <div id="table-area" ref={top_ref} style={style}>
@@ -338,7 +333,7 @@ function EnhancedEditableCell(props)  {
 
     const pushCallback = useCallbackStack();
 
-    function _handleKeyDown(event) {
+    function _handleKeyDown() {
         if (cell_ref.current) {
             cell_ref.current.handleEdit();
             set_am_editing(true);
@@ -346,7 +341,7 @@ function EnhancedEditableCell(props)  {
         }
     }
 
-    function _onChange(value, rowIndex, columnIndex) {
+    function _onChange(value) {
         props.setCellContent(props.rowIndex, props.columnHeader, value, false)
     }
 
@@ -355,14 +350,14 @@ function EnhancedEditableCell(props)  {
         set_am_editing(false)
     }
 
-    function _onConfirmCellEdit(value, rowIndex, columnIndex) {
+    function _onConfirmCellEdit(value) {
         set_am_editing(false);
         pushCallback(()=>{
             props.setCellContent(props.rowIndex, props.columnHeader, value, true);
         })
     }
     return (
-        <EditableCell2 ref={cell_ref}
+        <EditableCell ref={cell_ref}
                       onConfirm={_onConfirmCellEdit}
                       onChange={_onChange}
                       onCancel={_onCancel}
@@ -393,7 +388,6 @@ function compute_added_column_width(header_text) {
 }
 
 function compute_initial_column_widths(header_list, data_row_dict) {
-    const ncols = header_list.length;
     const max_field_width = MAX_INITIAL_CELL_WIDTH;
 
     // Get sample header and body cells
@@ -423,7 +417,6 @@ function compute_initial_column_widths(header_list, data_row_dict) {
     let the_row;
     let the_width;
     let the_text;
-    let the_child;
     for (let c of columns_remaining) {
         the_text = header_list[c];
         the_width = ctx.measureText(the_text).width + added_header_width;

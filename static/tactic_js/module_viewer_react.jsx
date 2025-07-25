@@ -12,7 +12,7 @@ import {ErrorDrawerContext, withErrorDrawer} from "./error_drawer";
 import {withStatus, StatusContext} from "./toaster";
 import {withAssistant} from "./assistant";
 
-import {withSizeContext, SizeContext, ICON_BAR_WIDTH} from "./sizing_tools";
+import {ICON_BAR_WIDTH} from "./sizing_tools";
 import {guid} from "./utilities_react";
 import {TacticNavbar} from "./blueprint_navbar";
 import {useCallbackStack, useConstructor, useStateAndRef} from "./utilities_react";
@@ -70,7 +70,6 @@ function ModuleViewerApp(props) {
     const dialogFuncs = useContext(DialogContext);
     const statusFuncs = useContext(StatusContext);
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
-    const sizeInfo = useContext(SizeContext);
 
     const [resource_name, set_resource_name] = useState(props.resource_name);
 
@@ -110,7 +109,7 @@ function ModuleViewerApp(props) {
         }
     });
 
-    function _update_search_state(nstate, callback = null) {
+    function _update_search_state(nstate) {
         set_current_search_number(0);
         for (let field in nstate) {
             switch (field) {
@@ -332,7 +331,7 @@ function ModuleViewerApp(props) {
         try {
             await doSavePromise();
             statusFuncs.statusMessage("Loading Module");
-            let data = await postPromise("host", "load_tile_module_task",
+            await postPromise("host", "load_tile_module_task",
                 {"tile_module_name": _cProp("resource_name"), "user_id": window.user_id},
                 props.resource_viewer_id);
             statusFuncs.statusMessage("Saved and loaded module");

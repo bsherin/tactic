@@ -267,11 +267,18 @@ table {
     width: auto;
 }
 
-.cm-editor {
-    //border: 1px solid #eee;
-    height: 100%;
-    width: 100%;
+.cm-editor, .cm-mergeViewEditors {
+    height: 100% !important;
+    width: 100% !important;
+    position: relative;
     padding: 5px;
+}
+
+.cm-mergeViewEditors {
+    .cm-editor {
+        height: 100% !important;
+        width: 100% !important;
+    }
 }
 
 .combined-metadata {

@@ -4,16 +4,15 @@ import {Fragment, useState, useEffect, useRef, memo, useContext} from "react";
 
 import {Menu, MenuItem, MenuDivider, Breadcrumb, Breadcrumbs, Switch} from "@blueprintjs/core";
 
-import {guid, useStateAndRef} from "./utilities_react";
+import {useStateAndRef} from "./utilities_react";
 import {LibraryMenubar} from "./library_menubars"
 import {CombinedMetadata, icon_dict} from "./blueprint_mdata_fields";
 import {PoolTree, getBasename, splitFilePath, getFileParentPath, PoolContext} from "./pool_tree";
 import {HorizontalPanes} from "./resizing_allotment";
 import {getBlobPromise, postAjaxPromise, postPromise} from "./communication_react";
 import {ErrorDrawerContext} from "./error_drawer";
-import {useSize} from "./sizing_tools";
-import {doFlash, StatusContext} from "./toaster";
-import {SettingsContext} from "./settings";
+import {ICON_BAR_WIDTH} from "./sizing_tools";
+import {doFlash} from "./toaster";
 import {copyToClipboard, getFileExtension} from "./utilities_react";
 
 import {DialogContext} from "./modal_react";
@@ -22,12 +21,8 @@ import {library_id} from "./library_home_react"
 
 export {PoolBrowser}
 
-const pool_browser_id = guid();
-
 function PoolBrowser(props) {
-    const top_ref = useRef(null);
-    const resizing = useRef(false);
-    const [selected_resource, set_selected_resource, selected_resource_ref] = useStateAndRef({
+    const [, set_selected_resource, selected_resource_ref] = useStateAndRef({
         name: "",
         tags: "",
         notes: "",
@@ -36,27 +31,22 @@ function PoolBrowser(props) {
         size: "",
         res_type: null,
     });
-    const [currentRootPath, setCurrentRootPath, currentRootPathRef] = useStateAndRef("/mydisk");
+    const [, setCurrentRootPath, currentRootPathRef] = useStateAndRef("/mydisk");
     const [value, setValue, valueRef] = useStateAndRef(null);
-    const [selectedNode, setSelectedNode, selectedNodeRef] = useStateAndRef(null);
-    const [multi_select, set_multi_select, multi_select_ref] = useStateAndRef(false);
-    const [list_of_selected, set_list_of_selected, list_of_selected_ref] = useStateAndRef([]);
-    const [contextMenuItems, setContextMenuItems] = useState([]);
+    const [, setSelectedNode, selectedNodeRef] = useStateAndRef(null);
+    const [, , multi_select_ref] = useStateAndRef(false);
+    const [, , list_of_selected_ref] = useStateAndRef([]);
+    const [, setContextMenuItems] = useState([]);
     const [have_activated, set_have_activated] = useState(false);
     const [showHidden, setShowHidden] = useState(false);
 
-    const settingsContext = useContext(SettingsContext);
     const dialogFuncs = useContext(DialogContext);
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
-    const statusFuncs = useContext(StatusContext);
-
-    const [usable_width, usable_height, topX, topY] = useSize(top_ref, 0, "pool_browser");
 
     const treeRefreshFunc = useRef(null);
     // Important note: The first mounting of the pool tree must happen after the pool pane
     // is first activated. Otherwise, I do GetPoolTree before everything is ready and I don't
     // get the callback for the post.
-
 
     useEffect(() => {
         if (props.am_selected && !have_activated) {
@@ -81,13 +71,9 @@ function PoolBrowser(props) {
         }
     }, [value]);
 
-    function handlePoolEvent() {
-
-    }
-
     async function sendNewCell(path, main_id, read_as_dataframe) {
         const ext = getFileExtension(path);
-        let code = "";
+        let code;
         if (read_as_dataframe) {
             if (ext === "csv") {
                 code = `import pandas as pd\ndf = pd.read_csv("${path}")`
@@ -215,7 +201,6 @@ function PoolBrowser(props) {
             if (e != "canceled") {
                 errorDrawerFuncs.addFromError(`Error renaming`, e)
             }
-            return
         }
     }
 
@@ -244,7 +229,6 @@ function PoolBrowser(props) {
             if (e != "canceled") {
                 errorDrawerFuncs.addFromError(`Error adding directory`, e)
             }
-            return
         }
     }
 
@@ -273,7 +257,6 @@ function PoolBrowser(props) {
             if (e != "canceled") {
                 errorDrawerFuncs.addFromError(`Error duplicating file`, e)
             }
-            return
         }
     }
 
@@ -281,7 +264,6 @@ function PoolBrowser(props) {
         if (!valueRef.current && !node) return;
         try {
             const sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
-            const src = sNode.fullpath;
             await postPromise("host", "compress_pool_resource", {
                 full_path: sNode.fullpath,
                 force_forward: true,
@@ -296,7 +278,6 @@ function PoolBrowser(props) {
         if (!valueRef.current && !node) return;
         try {
             const sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
-            const src = sNode.fullpath;
             await postPromise("host", "decompress_archive", {
                 full_path: sNode.fullpath,
                 force_forward: true,
@@ -329,12 +310,12 @@ function PoolBrowser(props) {
                 handleClose: dialogFuncs.hideModal,
             });
             const the_data = {src};
-            let [data, status, xhr] = await getBlobPromise("download_pool_file", the_data);
+            let [data, , xhr] = await getBlobPromise("download_pool_file", the_data);
             if (xhr.status === 200) {
                 // Create a download link and trigger the download
-                var blob = new Blob([data], {type: 'application/octet-stream'});
-                var url = window.URL.createObjectURL(blob);
-                var a = document.createElement('a');
+                let blob = new Blob([data], {type: 'application/octet-stream'});
+                let url = window.URL.createObjectURL(blob);
+                let a = document.createElement('a');
                 a.href = url;
                 a.download = new_name; // Set the desired file name
                 // noinspection XHTMLIncompatabilitiesJS
@@ -415,7 +396,7 @@ function PoolBrowser(props) {
         }
     }
 
-    function _add_to_pool(myDropZone, setCurrentUrl, current_value) {
+    function _add_to_pool(myDropZone, setCurrentUrl) {
         let new_url = `import_pool/${library_id}`;
         myDropZone.options.url = new_url;
         setCurrentUrl(new_url);
@@ -423,7 +404,7 @@ function PoolBrowser(props) {
     }
 
     function _showPoolImport(node = null) {
-        var initial_directory;
+        let initial_directory;
         const sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
         if (sNode && sNode.isDirectory) {
             initial_directory = sNode.fullpath
@@ -480,7 +461,7 @@ function PoolBrowser(props) {
 
     }
 
-    function handleNodeClick(node, nodes) {
+    function handleNodeClick(node) {
         setValue(node.fullpath);
         setSelectedNode(node);
         return true
@@ -590,9 +571,7 @@ function PoolBrowser(props) {
         treeRefreshFunc.current = func
     }
 
-
-    let outer_style = {marginTop: 0, marginLeft: 0, overflow: "auto", marginRight: 0, height: "100%"};
-    let res_type = null;
+    // let outer_style = {marginTop: 0, marginLeft: 0, overflow: "auto", marginRight: 0, height: "100%"};
     let fixed_data = {
         created: selected_resource_ref.current.created,
         updated: selected_resource_ref.current.updated,
@@ -605,7 +584,9 @@ function PoolBrowser(props) {
                           useFixedData={true}
                           fixedData={fixed_data}
                           elevation={2}
-                          outer_style={outer_style}
+                          outer_style={{
+                                  height: "100%"
+                              }}
                           readOnly={true}
         />
     );
@@ -642,8 +623,16 @@ function PoolBrowser(props) {
             {/*</FileDropWrapper>*/}
         </Fragment>
     );
+    let outer_style = {
+        width: `calc(100% - ${ICON_BAR_WIDTH}px)`,
+        height: "100%",
+        display: 'flex',
+        flexDirection: 'column',
+        paddingLeft: 0,
+        position: "relative"
+    };
     return (
-        <Fragment>
+        <div style={outer_style}>
             <PoolMenubar selected_resource={selected_resource_ref.current}
                          connection_status={null}
                          copy_func={_copy_func}
@@ -668,10 +657,13 @@ function PoolBrowser(props) {
                          library_id={props.library_id}
                          controlled={props.controlled}
                          tsocket={props.tsocket}/>
-            <div ref={top_ref} style={outer_style} className="pool-browser">
-                <div style={{width: usable_width, height: usable_height}}>
+                <div style={{
+                    flex: "1 1 0",
+                    display: "flex",
+                    position: "relative"
+                }}>
                     <HorizontalPanes
-                        outer_hp_style={{paddingBottom: "50px"}}
+                        outer_hp_style={{}}
                         show_handle={true}
                         left_pane={left_pane}
                         right_pane={right_pane}
@@ -683,8 +675,7 @@ function PoolBrowser(props) {
                         handleResizeEnd={null}
                     />
                 </div>
-            </div>
-        </Fragment>
+        </div>
     )
 }
 
@@ -706,7 +697,7 @@ function PoolHiddenSwitch(props) {
 
     return (
         <Switch label="show hidden"
-                large={false}
+                size="medium"
                 checked={props.showHidden}
                 onChange={handleShowHiddenChange}
         />
@@ -753,7 +744,7 @@ function PoolBreadcrumbs(props) {
 
 function PoolMenubar(props) {
 
-    const [selectedType, setSelectedType, selectedTypeRef] = useStateAndRef(props.selected_resource.res_type);
+    const [, setSelectedType, selectedTypeRef] = useStateAndRef(props.selected_resource.res_type);
 
     useEffect(() => {
         setSelectedType(props.selected_resource.res_type)
@@ -817,41 +808,3 @@ function PoolMenubar(props) {
 }
 
 PoolMenubar = memo(PoolMenubar);
-
-function FileDropWrapper(props) {
-    const [isDragging, setIsDragging] = useState(false);
-
-    const handleDragOver = (e) => {
-        e.preventDefault();
-        setIsDragging(true);
-    };
-
-    const handleDragLeave = () => {
-        setIsDragging(false);
-    };
-
-    const handleDrop = (e) => {
-        e.preventDefault();
-        setIsDragging(false);
-
-        const files = e.dataTransfer.files;
-
-        if (files) {
-            if (props.processFiles) {
-                props.processFiles(files)
-            }
-        }
-    };
-
-    return (
-        <div
-            id="pool-drop-zone"
-            className={`drop-zone ${isDragging ? 'drag-over' : ''}`}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-        >
-            {props.children}
-        </div>
-    );
-}

@@ -63,7 +63,6 @@ function SearchableConsole(props, inner_ref) {
     max_console_lines_ref = _useStateAndRef2[2];
   var _useStateAndRef3 = (0, _utilities_react.useStateAndRef)(""),
     _useStateAndRef4 = _slicedToArray(_useStateAndRef3, 3),
-    log_content = _useStateAndRef4[0],
     set_log_content = _useStateAndRef4[1],
     log_content_ref = _useStateAndRef4[2];
   var cont_id = (0, _react.useRef)(props.container_id);
@@ -129,6 +128,7 @@ function SearchableConsole(props, inner_ref) {
     tsocket.current.attachListener("searchable-console-message", _handleUpdateMessage);
   }
   function _handleUpdateMessage(data) {
+    console.log("got searchable-console-message");
     if (data.message != "updateLog") return;
     _addToLog(data.new_line);
   }
@@ -152,6 +152,7 @@ function SearchableConsole(props, inner_ref) {
             gotStreamerId = function _gotStreamerId(data) {
               streamer_id.current = data.streamer_id;
             };
+            console.log("posting get_container_log with container_id ".concat(cont_id.current));
             _context3.n = 1;
             return (0, _communication_react.postPromise)("host", "get_container_log", {
               container_id: cont_id.current,
@@ -160,6 +161,7 @@ function SearchableConsole(props, inner_ref) {
             }, props.main_id);
           case 1:
             res = _context3.v;
+            console.log("got streamer stuff", String(res));
             set_log_content(res.log_text);
             _context3.n = 2;
             return (0, _communication_react.postPromise)(props.streaming_host, "StartLogStreaming", {
@@ -282,20 +284,14 @@ function SearchableConsole(props, inner_ref) {
     set_search_string(null);
     set_filter(false);
   }
-  function _searchNext() {}
-  function _structureText() {}
-  function _searchPrevious() {}
   function _logExec(_x) {
     return _logExec2.apply(this, arguments);
   }
   function _logExec2() {
     _logExec2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5(command) {
-      var callback,
-        _args5 = arguments;
       return _regenerator().w(function (_context5) {
         while (1) switch (_context5.n) {
           case 0:
-            callback = _args5.length > 1 && _args5[1] !== undefined ? _args5[1] : null;
             _context5.n = 1;
             return (0, _communication_react.postPromise)(cont_id.current, "os_command_exec", {
               "the_code": command
@@ -368,16 +364,25 @@ function SearchableConsole(props, inner_ref) {
   var the_style = _objectSpread({
     whiteSpace: "nowrap",
     fontSize: 12,
-    fontFamily: "monospace"
+    fontFamily: "monospace",
+    flex: "1 1 0",
+    minHeight: 0,
+    marginTop: 20,
+    marginBottom: 20,
+    overflow: "auto"
   }, props.outer_style);
   if (props.showCommandField) {
     the_style.height = the_style.height - 40;
   }
-  var bottom_info = "575 lines";
   return /*#__PURE__*/_react["default"].createElement("div", {
     className: "searchable-console",
     style: {
-      width: "100%"
+      width: "100%",
+      flex: "1 1 0",
+      minHeight: 0,
+      overflow: "hidden",
+      display: "flex",
+      flexDirection: "column"
     }
   }, /*#__PURE__*/_react["default"].createElement("div", {
     className: "d-flex flex-row",
@@ -406,7 +411,7 @@ function SearchableConsole(props, inner_ref) {
     options: [100, 250, 500, 1000, 2000]
   }), /*#__PURE__*/_react["default"].createElement(_core.Switch, {
     label: "livescroll",
-    large: false,
+    size: "medium",
     checked: livescroll,
     onChange: _setLiveScroll,
     style: {
@@ -440,7 +445,6 @@ function SearchableConsole(props, inner_ref) {
     className: "bp6-monospace-text",
     onChange: _onInputChange,
     size: "small",
-    large: false,
     leftIcon: "chevron-right",
     fill: true,
     onKeyDown: function onKeyDown(e) {

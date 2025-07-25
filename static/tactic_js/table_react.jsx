@@ -66,10 +66,6 @@ function FreeformBody(props) {
             {document_name: props.mState.table_spec.current_doc_name, doc_text: new_data_text}, null)
     }
 
-    function _handleChange(new_data_text) {
-
-    }
-
     _clearSearch();
     _doSearch();
     return (
@@ -88,14 +84,6 @@ function FreeformBody(props) {
 }
 
 FreeformBody = memo(FreeformBody);
-
-function SmallSpinner () {
-    return (
-        <div className="d-flex">
-            <span className=" loader-small"></span>
-        </div>
-    )
-}
 
 function MainTableCardHeader(props) {
     props = {
@@ -156,7 +144,6 @@ function MainTableCardHeader(props) {
         }
         catch (e) {
             errorDrawerFuncs.addFromError("Error unfiltering table", e);
-            return
         }
     }
 
@@ -171,7 +158,6 @@ function MainTableCardHeader(props) {
     let heading_right_opacity = hide_right_element ? 0 : 100;
     let select_style = {height: 30, maxWidth: 250};
     let doc_button_text = <Text ellipsize={true}>{props.mState.table_spec.current_doc_name}</Text>;
-    let self = this;
     return (
         <div className="d-flex pl-2 pr-2 justify-content-between align-baseline main-heading" style={{height: 50}}>
             <div id="heading-left" ref={heading_left_ref} className="d-flex flex-column justify-content-around">
@@ -200,14 +186,14 @@ function MainTableCardHeader(props) {
                     {props.is_freeform &&
                         <Switch label="soft wrap"
                                  className="mr-2 mb-0"
-                                large={false}
+                                size="medium"
                                 checked={props.mState.soft_wrap}
                                 onChange={props.handleSoftWrapChange}
                         />
                     }
                         <Switch label="edit"
                                  className="mr-4 mb-0"
-                                large={false}
+                                size="medium"
                                 checked={props.mState.spreadsheet_mode}
                                 onChange={props.handleSpreadsheetModeChange}
                         />
@@ -237,15 +223,20 @@ function MainTableCardHeader(props) {
 
 MainTableCardHeader = memo(MainTableCardHeader);
 
-const MAX_INITIAL_CELL_WIDTH = 400;
-const EXTRA_TABLE_AREA_SPACE = 500;
-
 function MainTableCard(props) {
 
     return (
-        <Card id="main-panel" elevation={2}>
+        <Card id="main-panel" elevation={2}
+              style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  position: "relative",
+                  height: "100%",
+                  width: "100%",
+        }}>
             {props.card_header}
-            <div id="table-wrapper">
+            <div id="table-wrapper"
+                 style={{flex: "1 1 0", minWidth: 0, display: "flex", position: "relative"}}>
                 {props.card_body}
             </div>
         </Card>

@@ -3,7 +3,7 @@ import "../tactic_css/tactic_console.scss";
 import "../tactic_css/tactic_main.scss";
 
 import React from "react";
-import {Fragment, useEffect, useRef, memo, useMemo, useContext, useReducer, useCallback} from "react";
+import {Fragment, useEffect, useRef, memo, useContext, useReducer, useCallback} from "react";
 import { createRoot } from 'react-dom/client';
 
 import {TacticNavbar} from "./blueprint_navbar";
@@ -14,13 +14,12 @@ import {consoleItemsReducer} from "./console_support";
 import {doFlash, StatusContext} from "./toaster"
 import {withStatus} from "./toaster";
 import {renderSpinnerMessage, useConnection, useStateAndRef} from "./utilities_react";
-import {BOTTOM_MARGIN, ICON_BAR_WIDTH} from "./sizing_tools";
+import {ICON_BAR_WIDTH} from "./sizing_tools";
 
 import {postAjaxPromise, postAjax} from "./communication_react"
 import {ExportsViewer} from "./export_viewer_react";
 import {HorizontalPanes} from "./resizing_allotment";
 import {withErrorDrawer} from "./error_drawer";
-import {withSizeContext, useSize} from "./sizing_tools";
 import {MetadataContext} from "./metadata_drawer";
 import {withAssistant} from "./assistant";
 import {useCallbackStack, useConstructor, useReducerAndRef} from "./utilities_react";
@@ -237,6 +236,7 @@ function NotebookApp(props) {
                           handleCreateViewer={props.handleCreateViewer}
                           controlled={props.controlled}
                           console_items={console_items_ref}
+                          console_items_not_ref={console_items}
                           console_selected_items_ref={console_selected_items_ref}
                           set_console_selected_items={set_console_selected_items}
                           dispatch={dispatch}
@@ -264,7 +264,8 @@ function NotebookApp(props) {
 
     let outer_style = {
         width: `calc(100% - ${ICON_BAR_WIDTH}px)`,
-        flexGrow: 1,
+        flex: "1 1 0",
+        overflow: "auto",
         display: 'flex',
         flexDirection: 'column',
         paddingLeft: 0,
@@ -309,6 +310,7 @@ function NotebookApp(props) {
                                      initial_width_fraction={mState.console_width_fraction}
                                      controlled={true}
                                      separatorPadding={5}
+                                     outer_style={{paddingBottom: 10, paddingRight: 10}}
                                      handleSplitUpdate={_handleConsoleFractionChange}
                     />
             </div>
@@ -330,7 +332,7 @@ NotebookApp = memo(NotebookApp);
 
 function main_main() {
     function gotProps(the_props) {
-        let NotebookAppPlus = withSizeContext(withSettings(withDialogs(withErrorDrawer(withStatus(withAssistant(NotebookApp))))));
+        let NotebookAppPlus = withSettings(withDialogs(withErrorDrawer(withStatus(withAssistant(NotebookApp)))));
         let the_element = <NotebookAppPlus {...the_props}
                                            controlled={false}
                                            changeName={null}

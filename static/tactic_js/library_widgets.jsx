@@ -2,7 +2,6 @@ import "../tactic_css/tactic_select.scss"
 
 import React from "react";
 import {Fragment, useState, useEffect, useRef, memo} from 'react';
-import hash from "object-hash"
 
 import {
     InputGroup,
@@ -14,7 +13,7 @@ import {
     Button,
     ButtonGroup
 } from "@blueprintjs/core";
-import {Cell, Column, Table, ColumnHeaderCell, SelectionModes, RegionCardinality, TruncatedFormat, Regions} from "@blueprintjs/table";
+import {Cell, Column, Table, ColumnHeaderCell, SelectionModes, TruncatedFormat, Regions} from "@blueprintjs/table";
 import _ from 'lodash';
 
 import { useCallbackStack, useStateAndRef, useDebounce } from "./utilities_react";
@@ -52,10 +51,6 @@ function SearchForm(props) {
     function _handleSearchFieldChange(event) {
         doUpdate(event.target.value);
         set_temp_text(event.target.value)
-    }
-
-    function _handleClearSearch() {
-        props.update_search_state({"search_string": ""});
     }
 
     function _handleSearchMetadataChange(event) {
@@ -111,7 +106,7 @@ function SearchForm(props) {
                     {props.allow_regex &&
                         <Switch label="regexp"
                                 className="ml-3 mb-0 mt-1"
-                                large={false}
+                                size="medium"
                                 checked={props.regex}
                                 onChange={_handleRegexChange}
                         />
@@ -119,7 +114,7 @@ function SearchForm(props) {
                     {props.allow_search_metadata &&
                         <Switch label="metadata"
                                 className="ml-3 mb-0 mt-1"
-                                large={false}
+                                size="medium"
                                 checked={props.search_metadata}
                                 onChange={_handleSearchMetadataChange}
                         />
@@ -127,7 +122,7 @@ function SearchForm(props) {
                     {props.allow_search_inside &&
                         <Switch label="inside"
                                 className="ml-3 mb-0 mt-1"
-                                large={false}
+                                size="medium"
                                 checked={props.search_inside}
                                 onChange={_handleSearchInsideChange}
                         />
@@ -135,7 +130,7 @@ function SearchForm(props) {
                     {props.allow_show_hidden &&
                         <Switch label="show hidden"
                                 className="ml-3 mb-0 mt-1"
-                                large={false}
+                                size="medium"
                                 checked={props.show_hidden}
                                 onChange={_handleShowHiddenChange}
                         />
@@ -331,7 +326,6 @@ function BpSelectorTable(props) {
                        key={column_name}
                        name={column_name}/>
     });
-    let obj = {cwidths: columnWidths, nrows: props.num_rows};
     let dependencies;
     if (props.open_resources_ref && props.open_resources_ref.current) {
         dependencies = [props.data_dict, props.open_resources_ref.current]
@@ -351,7 +345,7 @@ function BpSelectorTable(props) {
                 defaultRowHeight={27}
                 selectedRegions={props.selectedRegions}
                 enableRowHeader={false}
-                columnWidths={columnWidthsRef.current}
+                columnWidths={columnWidths}
                 onCompleteRender={_onCompleteRender}
                 selectionModes={SelectionModes.ALL}
                 onSelection={(regions) => props.onSelection(regions)}
@@ -367,7 +361,6 @@ const MAX_INITIAL_CELL_WIDTH = 300;
 const ICON_WIDTH = 35;
 
 function compute_initial_column_widths(header_list, data_list) {
-    const ncols = header_list.length;
     const max_field_width = MAX_INITIAL_CELL_WIDTH;
 
     // Get sample header and body cells
@@ -399,7 +392,6 @@ function compute_initial_column_widths(header_list, data_list) {
     let the_row;
     let the_width;
     let the_text;
-    let the_child;
 
     // Find the width of each body cell
     // Keep track of the largest value for each column

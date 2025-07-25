@@ -20,7 +20,7 @@ import {withDialogs} from "./modal_react";
 
 
 import {AdminPane} from "./administer_pane"
-import {withSizeContext} from "./sizing_tools";
+import {ICON_BAR_WIDTH} from "./sizing_tools";
 import {ViewerContext} from "./resource_viewer_context";
 import {ErrorDrawerContext, withErrorDrawer} from "./error_drawer";
 import {guid} from "./utilities_react";
@@ -31,17 +31,22 @@ import {SettingsContext, withSettings} from "./settings";
 import {DialogContext} from "./modal_react";
 import {StatusContext} from "./toaster"
 
-window.library_id = guid();
-const MARGIN_SIZE = 17;
+window.library_id = guid();  // I don't know why pycharm doesn't like this
 
 let tsocket;
 
 function _administer_home_main () {
     tsocket = new TacticSocket("main", 5000, "admin", window.library_id);
-    let AdministerHomeAppPlus = withSizeContext(withSettings(withDialogs(withErrorDrawer(withStatus(AdministerHomeApp)))));
+    let AdministerHomeAppPlus = withSettings(withDialogs(withErrorDrawer(withStatus(AdministerHomeApp))));
     const domContainer = document.querySelector('#library-home-root');
     const root = createRoot(domContainer);
-    root.render(<AdministerHomeAppPlus tsocket={tsocket}/>)
+    root.render(
+        <div style={{display: "flex", flexDirection: "column",
+                position: "relative",
+                height: "100%",
+                width: "100%"}}>
+            <AdministerHomeAppPlus tsocket={tsocket}/>
+        </div>)
 }
 
 var res_types = ["container", "user"];
@@ -84,12 +89,9 @@ for (let res_type of res_types) {
 function AdministerHomeApp(props) {
 
     const [selected_tab_id, set_selected_tab_id] = useState();
-    const [pane_states, set_pane_states, pane_states_ref] = useStateAndRef(initial_pane_states);
+    const [, set_pane_states, pane_states_ref] = useStateAndRef(initial_pane_states);
 
-    // const [usable_height, set_usable_height] = useState(getUsableDimensions(true).usable_height_no_bottom);
-    // const [usable_width, set_usable_width] = useState(getUsableDimensions(true).usable_width - 170);
     const settingsContext = useContext(SettingsContext);
-    const dialogFuncs = useContext(DialogContext);
     const statusFuncs = useContext(StatusContext);
 
     const top_ref = useRef(null);
@@ -129,14 +131,13 @@ function AdministerHomeApp(props) {
     }
 
     function _updatePaneStatePromise(res_type, state_update) {
-        return new Promise((resolve, reject)=>{
+        return new Promise((resolve, )=>{
             _updatePaneState (res_type, state_update, resolve);
         })
     }
 
-    function _handleTabChange(newTabId, prevTabId, event) {
+    function _handleTabChange(newTabId) {
         set_selected_tab_id(newTabId);
-        pushCallback(_update_window_dimensions)
     }
 
     function getIconColor(paneId) {
@@ -145,8 +146,6 @@ function AdministerHomeApp(props) {
 
     let container_pane = (
         <AdminPane {...props}
-                   // usable_width={usable_width}
-                   // usable_height={usable_height}
                    res_type="container"
                    allow_search_inside={false}
                    allow_search_metadata={false}
@@ -162,8 +161,6 @@ function AdministerHomeApp(props) {
     );
     let user_pane = (
         <AdminPane {...props}
-                   // usable_width={usable_width}
-                   // usable_height={usable_height}
                    res_type="user"
                    allow_search_inside={false}
                    allow_search_metadata={false}
@@ -178,11 +175,14 @@ function AdministerHomeApp(props) {
         />
     );
     let outer_style = {
-        width: "100%",
-        // height: usable_height,
-        paddingLeft: 0
+        width: `calc(100% - ${ICON_BAR_WIDTH}px)`,
+        flexGrow: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        paddingLeft: 0,
+        position: "relative"
     };
-    let outer_class = "pane-holder";
+    let outer_class = "pane-holder admin-pane";
     if (settingsContext.isDark()) {
         outer_class = `${outer_class} bp6-dark`;
     } else {
@@ -231,19 +231,13 @@ function ContainerMenubar(props) {
         doFlash(data)
     }
 
-    async function _container_logs () {
-        let cont_id = props.selected_resource.Id;
-        let data = await postAjaxPromise('container_logs/' + cont_id);
-        props.setConsoleText(data.log_text);
-    }
-
-    async function _clear_user_func (event) {
+    async function _clear_user_func () {
         statusFuncs.startSpinner();
         let data = await postAjaxPromise('clear_user_containers');
         _doFlashStopSpinner(data)
     }
 
-    async function _reset_server_func (event) {
+    async function _reset_server_func () {
         statusFuncs.startSpinner();
         let data = await postAjaxPromise("reset_server/" + library_id);
          _doFlashStopSpinner(data)
@@ -388,18 +382,18 @@ function UserMenubar(props){
     //     });
     // }
 
-    function _create_user (event) {
+    function _create_user () {
         window.open($SCRIPT_ROOT + '/register');
     }
 
-    function _duplicate_user (event) {
-        let username = props.selected_resource.username;
-        window.open($SCRIPT_ROOT + '/user_duplicate/' + username);
-    }
-
-    function _update_all_collections (event) {
-        window.open($SCRIPT_ROOT + '/update_all_collections');
-    }
+    // function _duplicate_user (event) {
+    //     let username = props.selected_resource.username;
+    //     window.open($SCRIPT_ROOT + '/user_duplicate/' + username);
+    // }
+    //
+    // function _update_all_collections (event) {
+    //     window.open($SCRIPT_ROOT + '/update_all_collections');
+    // }
 
      function menu_specs() {
         return {

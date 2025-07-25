@@ -36,7 +36,6 @@ import {MakerPaneContext} from "./tile_maker_support";
 import {LabeledFormField, LabeledSelectList, LabeledTextArea} from "./blueprint_react_widgets";
 import {NativeTags, IconSelector, NotesField} from "./blueprint_mdata_fields";
 import {postAjaxPromise} from "./communication_react";
-import {SizeContext, useSize, SizeProvider} from "./sizing_tools"
 import {DragHandle} from "./drag_handle";
 
 export {
@@ -134,15 +133,17 @@ function SimplePaneTitle(props) {
 }
 
 function AnimatedItem({visible, children}) {
+    const nodeRef = useRef(null)
     return (
         <CSSTransition
             in={visible}
             timeout={300}
             classNames="fade"
+            nodeRef={nodeRef}
             unmountOnExit
             mountOnEnter
         >
-            <div className="fade-container">{children}</div>
+            <div ref={nodeRef} className="fade-container">{children}</div>
         </CSSTransition>
     );
 }
@@ -164,13 +165,17 @@ function PaneElement(props) {
     const top_ref = useRef(null);
     const height_ref = useRef(props.pane_height)
 
-    const [usable_width, , topX, topY] = useSize(top_ref, 0);
-
     const mpContext = useContext(MakerPaneContext);
 
     const [resizing, set_resizing] = useState(false);
     const [, set_dwidth] = useState(0);
     const [dheight, set_dheight] = useState(0);
+
+    useEffect(() => {
+        return (() => {
+            console.log("unmounting a pane")
+        })
+    }, [])
 
     useEffect(() => {
         if (props.pane_scroll_ref.current == props.identifier) {
@@ -228,7 +233,8 @@ function PaneElement(props) {
         <AnimatedItem visible={props.visible} identifier={props.identifier}>
             <Card ref={top_ref} key={props.identifier} elevation={0}
                   className={`maker-pane ${props.className}`}
-                  style={{height: current_height, position: "relative", paddingBottom: 10}}>
+                  style={{height: current_height, position: "relative", display: "flex",
+                      flexDirection: "column", paddingBottom: 20}}>
                 <Button variant="minimal" size="small" icon="cross"
                         style={{padding: 0, position: "absolute", left: 10, top: 10, zIndex: 20}}
                         onClick={() => {
@@ -243,14 +249,7 @@ function PaneElement(props) {
                     <Icon icon={props.icon} size={20} intent="primary"
                           style={{padding: 0, position: "absolute", right: 15, top: 10, zIndex: 20}}/>
                 }
-                <SizeProvider value={{
-                    availableWidth: usable_width - 20, // for padding for separation from scrollbar
-                    availableHeight: current_height - 5, // for margin bottom,
-                    topX: topX,
-                    topY: topY
-                }}>
                     {props.children}
-                </SizeProvider>
                 <DragHandle position_dict={draghandle_position_dict}
                             iconSize={20}
                             useThinBar={true}
@@ -594,7 +593,7 @@ function OptionModuleForm(props) {
                     <div style={{display: "flex", flexDirection: "column"}}>
                         <div style={{display: "flex", flexWrap: "wrap", flexDirection: "row"}}>
                             <LabeledFormField label="Name" onChange={handleNameChange} the_value={props.optionItem.name}
-                                              helperText={props.optionItem.name_warning_text}
+                                              helperText={props.optionItem["name_warning_text"]}
                             />
                             <LabeledSelectList label="Type" option_list={option_types} onChange={handleTypeChange}
                                                the_value={props.optionItem.type}/>
@@ -792,7 +791,6 @@ function CmElement(props) {
         ...props
     };
 
-    const sizeInfo = useContext(SizeContext);
     const [doScroll, setDoScroll] = useState(props.cmState.scrollTop != null);
 
     function handleCodeChange(new_code) {
@@ -820,12 +818,14 @@ function CmElement(props) {
         }
     }
 
-    let usable_height = sizeInfo.availableHeight;
     let outer_style = {
         width: "100%",
-        height: usable_height,
+        flex: "1 1 0",
+        overflow: "auto",
         paddingLeft: 0,
-        position: "relative"
+        position: "relative",
+        display: "flex",
+        flexDirection: "column"
     };
 
     return (
@@ -840,7 +840,7 @@ function CmElement(props) {
             <ReactCodemirror6 code_content={props.cmState.codeText}
                               controlled={true}
                               // need to pass height through manually otherwise resizing doesn't reliably
-                              controlled_height={usable_height - 50}
+                              flex_height={true}
                               no_height={props.no_height}
                               title_label={null}
                               show_search={false}

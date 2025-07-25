@@ -110,7 +110,6 @@ function treeNodesReducer(nodes, action) {
           updateNode(node, action.new_path);
         }
       });
-      var pNode = nodeFromPath(getFileParentPath(action.new_path), newState8[0]);
       return newState8;
     case "MODIFY_FILE":
       var newStateMF = _lodash["default"].cloneDeep(nodes);
@@ -158,9 +157,8 @@ function treeNodesReducer(nodes, action) {
     case "ADD_FILE":
       var newState10 = _lodash["default"].cloneDeep(nodes);
       var _splitFilePath = splitFilePath(action.fileDict.fullpath),
-        _splitFilePath2 = _slicedToArray(_splitFilePath, 2),
-        path = _splitFilePath2[0],
-        fname = _splitFilePath2[1];
+        _splitFilePath2 = _slicedToArray(_splitFilePath, 1),
+        path = _splitFilePath2[0];
       forEachNode(newState10, function (node) {
         if (node.isDirectory) {
           if (node.fullpath == path) {
@@ -172,9 +170,8 @@ function treeNodesReducer(nodes, action) {
     case "ADD_DIRECTORY":
       var newState11 = _lodash["default"].cloneDeep(nodes);
       var _splitFilePath3 = splitFilePath(action.folderDict.fullpath),
-        _splitFilePath4 = _slicedToArray(_splitFilePath3, 2),
-        dpath = _splitFilePath4[0],
-        dfname = _splitFilePath4[1];
+        _splitFilePath4 = _slicedToArray(_splitFilePath3, 1),
+        dpath = _splitFilePath4[0];
       forEachNode(newState11, function (node) {
         if (node.isDirectory) {
           if (node.fullpath == dpath) {
@@ -185,7 +182,6 @@ function treeNodesReducer(nodes, action) {
       return newState11;
     case "MOVE_FILE":
       var newState12 = _lodash["default"].cloneDeep(nodes);
-      var src_node;
       var found_file = false;
       forEachNode(newState12, function (node) {
         if (node.isDirectory) {
@@ -220,7 +216,6 @@ function treeNodesReducer(nodes, action) {
       return newState12;
     case "MOVE_DIRECTORY":
       var newStateMDir = _lodash["default"].cloneDeep(nodes);
-      var src_dir;
       var found_dir = false;
       forEachNode(newStateMDir, function (node) {
         if (node.isDirectory && node.fullpath != action.src) {
@@ -276,33 +271,6 @@ function updateNode(node, newDict) {
   for (var key in newDict) {
     node[key] = newDict[key];
   }
-  return;
-}
-function filenode(path) {
-  var basename = getBasename(path);
-  return {
-    id: path,
-    icon: "document",
-    isDirectory: false,
-    fullpath: path,
-    basename: basename,
-    label: basename,
-    isSelected: false
-  };
-}
-function dirnode(path) {
-  var basename = getBasename(path);
-  return {
-    id: path,
-    icon: "folder-close",
-    isDirectory: true,
-    isExpanded: false,
-    basename: basename,
-    label: basename,
-    fullpath: path,
-    childNodes: [],
-    isSelected: false
-  };
 }
 function forEachNode(nodes, callback) {
   if (nodes === undefined) {
@@ -356,17 +324,9 @@ function nodeFromPath(fullpath, root) {
   }
   return null;
 }
-function sortNodes(nlist) {
-  var newList = _lodash["default"].cloneDeep(nlist);
-  newList.sort(function (a, b) {
-    return a.basename.localeCompare(b.basename);
-  });
-  return newList;
-}
 function PoolTree(props) {
   var _useReducerAndRef = (0, _utilities_react.useReducerAndRef)(treeNodesReducer, []),
     _useReducerAndRef2 = _slicedToArray(_useReducerAndRef, 3),
-    nodes = _useReducerAndRef2[0],
     dispatch = _useReducerAndRef2[1],
     nodes_ref = _useReducerAndRef2[2];
   var _useState3 = (0, _react.useState)(false),
@@ -384,23 +344,18 @@ function PoolTree(props) {
     _useState8 = _slicedToArray(_useState7, 2),
     contextMenuNode = _useState8[0],
     setContextMenuNode = _useState8[1];
-  var _useState9 = (0, _react.useState)("null"),
-    _useState0 = _slicedToArray(_useState9, 2),
-    folderOver = _useState0[0],
-    setFolderOver = _useState0[1];
   var _useStateAndRef = (0, _utilities_react.useStateAndRef)(""),
     _useStateAndRef2 = _slicedToArray(_useStateAndRef, 3),
-    searchString = _useStateAndRef2[0],
     setSearchString = _useStateAndRef2[1],
     searchStringRef = _useStateAndRef2[2];
-  var _useState1 = (0, _react.useState)("updated"),
+  var _useState9 = (0, _react.useState)("updated"),
+    _useState0 = _slicedToArray(_useState9, 2),
+    sortBy = _useState0[0],
+    setSortBy = _useState0[1];
+  var _useState1 = (0, _react.useState)("descending"),
     _useState10 = _slicedToArray(_useState1, 2),
-    sortBy = _useState10[0],
-    setSortBy = _useState10[1];
-  var _useState11 = (0, _react.useState)("descending"),
-    _useState12 = _slicedToArray(_useState11, 2),
-    sortDirection = _useState12[0],
-    setSortDirection = _useState12[1];
+    sortDirection = _useState10[0],
+    setSortDirection = _useState10[1];
   var settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   var pushCallback = (0, _utilities_react.useCallbackStack)();
   var pool_context = (0, _react.useContext)(PoolContext);
@@ -495,8 +450,7 @@ function PoolTree(props) {
     if (props.tsocket) {
       props.tsocket.attachListener("pool-directory-event", function (data) {
         var event_type = data["event_type"];
-        var path = data["path"];
-        var folderDict = data.folder_dict;
+        var folderDict = data["folder_dict"];
         folderDict.id = folderDict.fullpath;
         switch (event_type) {
           case "modify":
@@ -532,7 +486,6 @@ function PoolTree(props) {
       });
       props.tsocket.attachListener("pool-file-event", function (data) {
         var event_type = data["event_type"];
-        var path = data["path"];
         var fileDict = data.file_dict;
         fileDict.id = fileDict.fullpath;
         switch (event_type) {
@@ -735,24 +688,21 @@ function splitFilePath(path) {
   return [plist.join("/"), fname];
 }
 function PoolAddressSelector(props) {
+  var _useState11 = (0, _react.useState)(false),
+    _useState12 = _slicedToArray(_useState11, 2),
+    isOpen = _useState12[0],
+    setIsOpen = _useState12[1];
+  var pop_ref = (0, _react.useRef)(null);
   var _useState13 = (0, _react.useState)(false),
     _useState14 = _slicedToArray(_useState13, 2),
-    isOpen = _useState14[0],
-    setIsOpen = _useState14[1];
-  var pop_ref = (0, _react.useRef)(null);
-  var _useState15 = (0, _react.useState)(false),
-    _useState16 = _slicedToArray(_useState15, 2),
-    refAcquired = _useState16[0],
-    setRefAcquired = _useState16[1];
+    refAcquired = _useState14[0],
+    setRefAcquired = _useState14[1];
   var _useStateAndRef3 = (0, _utilities_react.useStateAndRef)(.4 * window.innerHeight),
     _useStateAndRef4 = _slicedToArray(_useStateAndRef3, 3),
-    maxPopoverHeight = _useStateAndRef4[0],
     setMaxPopoverHeight = _useStateAndRef4[1],
     maxPopoverHeightRef = _useStateAndRef4[2];
   var _useStateAndRef5 = (0, _utilities_react.useStateAndRef)("/mydisk"),
     _useStateAndRef6 = _slicedToArray(_useStateAndRef5, 3),
-    currentRootPath = _useStateAndRef6[0],
-    setCurrentRootPath = _useStateAndRef6[1],
     currentRootPathRef = _useStateAndRef6[2];
   (0, _react.useEffect)(function () {
     window.addEventListener("resize", resizePopover);
@@ -770,7 +720,7 @@ function PoolAddressSelector(props) {
       setMaxPopoverHeight(max_height);
     }
   }
-  function handleNodeClick(node, nodes) {
+  function handleNodeClick(node) {
     props.setValue(node.fullpath);
     setIsOpen(false);
     return true;
@@ -918,7 +868,7 @@ function CustomTree(props) {
       });
     };
   }
-  function renderNodes(treeNodes, currentPath, className) {
+  function renderNodes(treeNodes, currentPath) {
     if (treeNodes == null) {
       return null;
     }
@@ -953,7 +903,7 @@ function CustomTree(props) {
           onDragStart: function onDragStart(e) {
             e.dataTransfer.setData("fullpath", node.fullpath);
           },
-          onDragEnd: function onDragEnd(e) {}
+          onDragEnd: function onDragEnd() {}
         }, tnode);
       } else {
         return tnode;
@@ -998,10 +948,10 @@ function CustomTree(props) {
 }
 CustomTree = /*#__PURE__*/(0, _react.memo)(CustomTree);
 function FileDropWrapper(props) {
-  var _useState17 = (0, _react.useState)(false),
-    _useState18 = _slicedToArray(_useState17, 2),
-    isDragging = _useState18[0],
-    setIsDragging = _useState18[1];
+  var _useState15 = (0, _react.useState)(false),
+    _useState16 = _slicedToArray(_useState15, 2),
+    isDragging = _useState16[0],
+    setIsDragging = _useState16[1];
   var handleDragOver = function handleDragOver(e) {
     if (props.suppress.current) return;
     e.preventDefault();

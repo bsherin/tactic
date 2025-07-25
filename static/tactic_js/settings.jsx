@@ -28,9 +28,7 @@ const SettingsContext = createContext(null);
 function withSettings(WrappedComponent, lposition = "right", settings_drawer_size = "30%") {
     function newFunc(props) {
         const [showSettingsDrawer, setShowSettingsDrawer] = useState(false);
-        const [settings, setSettings, settingsRef] = useStateAndRef(INITIAL_SETTINGS);
-
-        const ChildElement = props.wrapped_element;
+        const [, setSettings, settingsRef] = useStateAndRef(INITIAL_SETTINGS);
 
         useEffect(() => {
             initSocket(props.tsocket);
@@ -38,7 +36,7 @@ function withSettings(WrappedComponent, lposition = "right", settings_drawer_siz
                 .then((data) => {
                     setSettings(data.settings);
                 })
-                .catch((e) => {
+                .catch(() => {
                     console.log("error getting user settings");
                 });
             return (() => {

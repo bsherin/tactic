@@ -271,23 +271,9 @@ function ReactCodemirrorMergeView6(props) {
         return Math.max(editorHeight(cmobject.current.editor()), editorHeight(cmobject.current.rightOriginal()));
     }
 
-    function resizeHeights(max_height) {
-        var height = Math.min(mergeViewHeight(), max_height);
-        cmobject.current.editor().setSize(null, height);
-        if (cmobject.current.rightOriginal()) {
-            cmobject.current.rightOriginal().setSize(null, height);
-        }
-        cmobject.current.wrap.style.height = height + "px";
-    }
-
     function handleChange(value) {
         props.handleEditChange(value);
         //resizeHeights(props.max_height);
-    }
-
-    function refreshAreas() {
-        cmobject.current.editor().refresh();
-        cmobject.current.rightOriginal().refresh()
     }
 
     function searchCM() {
@@ -299,24 +285,11 @@ function ReactCodemirrorMergeView6(props) {
         // cmobject.current.rightOriginal().setSelection({ line: 0, ch: 0 });
     }
 
-    function create_keymap() {
-        CodeMirror.keyMap["default"]["Esc"] = function () {clearSelections()};
-        let is_mac = CodeMirror.keyMap["default"].hasOwnProperty("Cmd-S");
-
-        if (is_mac) {
-            CodeMirror.keyMap["default"]["Ctrl-S"] = function () {props.saveMe()};
-        }
-        else {
-            CodeMirror.keyMap["default"]["Ctrl-S"] = function () {
-                props.saveMe()
-            };
-        }
-        CodeMirror.keyMap["default"]["Ctrl-F"] = function (e) {
-            searchCM()
-        };
-    }
     let ccstyle = {
-        "height": props.max_height
+        flex: "1 1 0",
+        minWidth: 0,
+        minHeight: 0,
+        overflow: "auto"
     };
 
     return (
