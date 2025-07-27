@@ -670,9 +670,6 @@ function PoolBrowser(props) {
                         right_pane_overflow="auto"
                         initial_width_fraction={.75}
                         scrollAdjustSelectors={[".bp6-table-quadrant-scroll-container"]}
-                        handleSplitUpdate={null}
-                        handleResizeStart={null}
-                        handleResizeEnd={null}
                     />
                 </div>
         </div>

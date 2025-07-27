@@ -10,11 +10,10 @@ import React from "react";
 import {useState, useEffect, useRef, useContext, Fragment, useCallback, useMemo} from "react";
 import {createRoot} from 'react-dom/client';
 
-import {Tab, Tabs, Button, Icon, Spinner, useHotkeys, Divider} from "@blueprintjs/core";
+import {Spinner, useHotkeys} from "@blueprintjs/core";
 import {FocusStyleManager} from "@blueprintjs/core";
 
 FocusStyleManager.onlyShowFocusOnTabs();
-import {STATUS_BAR_HEIGHT} from "./toaster";
 
 import {SelectedPaneContext} from "./utilities_react";
 import {TacticSocket} from "./tactic_socket";
@@ -23,7 +22,6 @@ import {handleCallback} from "./communication_react";
 import {doFlash, StatusContext, withStatus} from "./toaster";
 import {TacticNavbar} from "./blueprint_navbar";
 import {ErrorBoundary} from "./error_boundary";
-import {icon_dict} from "./blueprint_mdata_fields";
 import {LibraryHomeApp} from "./library_home_react";
 import {PoolBrowser} from "./pool_browser";
 import {withPool} from "./pool_tree";
@@ -40,44 +38,25 @@ import {code_viewer_props, CodeViewerApp} from "./code_viewer_react";
 import {list_viewer_props, ListViewerApp} from "./list_viewer_react";
 import {text_viewer_props, TextViewerApp} from "./text_viewer_react";
 import {ErrorDrawerContext, withErrorDrawer} from "./error_drawer";
+import {HorizontalPanes} from "./resizing_allotment";
+import {usePropertyList} from "./property_list";
 import {withAssistant} from "./assistant";
 import {
     INIT_CONTEXT_PANEL_WIDTH,
 } from "./sizing_tools";
 import {postAjaxPromise} from "./communication_react";
-import {DragHandle} from "./drag_handle";
-import {useCallbackStack, useStateAndRef, useStateAndRefAndCounter} from "./utilities_react";
+import {useCallbackStack, useStateAndRef} from "./utilities_react";
 import {SettingsContext, withSettings} from "./settings"
+
+import {ContextPaneElement, ContextNavigator} from "./context_elements";
 
 import {withDialogs, DialogContext} from "./modal_react";
 
 const spinner_panel = (
-    <div style={{height: "100%", position: "absolute", top: "50%", left: "50%"}}>
+    <div style={{height: "100%", position: "absolute", top: "50%", left: "50%"}} key="spinner">
         <Spinner size={100}/>
     </div>);
 
-const MIN_CONTEXT_WIDTH = 45;
-const MIN_CONTEXT_SAVED_WIDTH = 100;
-
-const iconDict = {
-    "module-viewer": "application",
-    "code-viewer": "code",
-    "list-viewer": "list",
-    "text-viewer": "list",
-    "creator-viewer": "application",
-    "main-viewer": "projects",
-    "notebook-viewer": "projects"
-};
-
-const libIconDict = {
-    all: icon_dict["all"],
-    collections: icon_dict["collection"],
-    projects: icon_dict["project"],
-    tiles: icon_dict["tile"],
-    lists: icon_dict["list"],
-    code: icon_dict["code"],
-    pool: icon_dict["pool"],
-};
 const propDict = {
     "module-viewer": module_viewer_props,
     "code-viewer": code_viewer_props,
@@ -113,6 +92,18 @@ const classDict = {
     "text-viewer": TextViewerApp
 };
 
+let initialList = [ {
+    identifier: "library",
+    title: "Library"
+}]
+
+if (window.has_pool) {
+    initialList.push({
+        identifier: "pool",
+        title: "Pool"
+    })
+}
+
 function _context_main() {
     const ContextAppPlus = withPool(withSettings(withDialogs(withErrorDrawer(withStatus(withAssistant(ContextApp))))));
     const domContainer = document.querySelector('#context-root');
@@ -129,20 +120,13 @@ function _context_main() {
 
 
 function ContextApp(props) {
-    const [selectedTabId, setSelectedTabId, selectedTabIdRef, selectedTabIdCounter] = useStateAndRefAndCounter("library");
-    const [saved_width, set_saved_width] = useState(INIT_CONTEXT_PANEL_WIDTH);
-
-    const [, set_tab_panel_dict, tab_panel_dict_ref] = useStateAndRef({});
-    const [, set_tab_ids, tab_ids_ref] = useStateAndRef([]);
+    const [selectedTabId, setSelectedTabId, selectedTabIdRef] = useStateAndRef("library");
+    const [tabPanelList, tabPanelListDispatch, tabPanelListRef] = usePropertyList(initialList);
 
     const [, set_open_resources, open_resources_ref] = useStateAndRef([]);
     const [dirty_methods, set_dirty_methods] = useState({});
 
     const [lastSelectedTabId, setLastSelectedTabId] = useState(null);
-
-    const [tabWidth, ] = useState(INIT_CONTEXT_PANEL_WIDTH);
-    const [dragging_over, set_dragging_over] = useState(null);
-    const [currently_dragging, set_currently_dragging] = useState(null);
     const [showOpenOmnibar, setShowOpenOmnibar] = useState(false);
 
     const settingsContext = useContext(SettingsContext);
@@ -194,10 +178,6 @@ function ContextApp(props) {
         initSocket();
         _addContextOmniItems();
         errorDrawerFuncs.registerGoToModule(_goToModule);
-        const tab_list_elem = document.querySelector("#context-container .context-tab-list > .bp6-tab-list");
-        if (tab_list_elem) {
-            tab_list_elem.setAttribute("style", `width:${INIT_CONTEXT_PANEL_WIDTH}px`)
-        }
         return (() => {
             tsocket.disconnect()
         })
@@ -209,42 +189,6 @@ function ContextApp(props) {
             e.returnValue = 'Are you sure you want to close? All changes will be lost.'
         });
     }, []);
-
-    function get_tab_list_elem() {
-        return document.querySelector("#context-container .context-tab-list > .bp6-tab-list");
-    }
-
-    function _togglePane(pane_closed) {
-        let w = pane_closed ? saved_width : MIN_CONTEXT_WIDTH;
-        let tab_elem = get_tab_list_elem();
-        tab_elem.setAttribute("style", `width:${w}px`);
-    }
-
-    function _handleTabResize(e, ui, lastX) {
-        let tab_elem = get_tab_list_elem();
-        let w = lastX > window.innerWidth / 2 ? window.innerWidth / 2 : lastX;
-        w = w <= MIN_CONTEXT_WIDTH ? MIN_CONTEXT_WIDTH : w;
-        tab_elem.setAttribute("style", `width:${w}px`);
-    }
-
-    function _handleTabResizeStart() {
-        let new_width = Math.max(tabWidth, MIN_CONTEXT_SAVED_WIDTH);
-        if (new_width !== saved_width) {
-            set_saved_width(new_width)
-        }
-    }
-
-    function _handleTabResizeEnd() {
-        let tab_elem = get_tab_list_elem();
-
-        let tab_rect = tab_elem.getBoundingClientRect();
-        if (tab_rect.width > 45) {
-            let new_width = Math.max(tab_rect.width, MIN_CONTEXT_SAVED_WIDTH);
-            if (new_width !== saved_width) {
-                set_saved_width(new_width)
-            }
-        }
-    }
 
     function _registerDirtyMethod(tab_id, dirty_method) {
         let new_dirty_methods = {...dirty_methods};
@@ -271,13 +215,23 @@ function ContextApp(props) {
         props.tsocket.attachListener("create-viewer", _handleCreateViewer);
     }
 
+    function getItemFromdentifier(identifier) {
+        for (let item of tabPanelListRef.current) {
+            if (item.identifier === identifier) {
+                return item
+            }
+        }
+        return null
+    }
+
     async function _refreshTab(the_id) {
         if (the_id === "library") {
             return
         }
         try {
+            const item = getItemFromdentifier(the_id);
+            const title = item.title;
             if (!(the_id in dirty_methods) || dirty_methods[the_id]()) {
-                const title = tab_panel_dict_ref.current[the_id].title;
                 const confirm_text = `Are you sure that you want to reload the tab ${title}? Changes will be lost`;
                 await dialogFuncs.showModalPromise("ConfirmDialog", {
                     title: `Reload the tab ${title}`,
@@ -287,7 +241,7 @@ function ContextApp(props) {
                     handleClose: dialogFuncs.hideModal,
                 });
             }
-            let old_tab_panel = {...tab_panel_dict_ref.current[the_id]};
+            let old_tab_panel = {...item};
             let resource_name = old_tab_panel.panel.resource_name;
             let res_type = old_tab_panel.res_type;
             let the_view;
@@ -320,9 +274,10 @@ function ContextApp(props) {
         if (the_id === "library") {
             return
         }
+        const item = getItemFromdentifier(the_id);
         try {
             if (!(the_id in dirty_methods) || dirty_methods[the_id]()) {
-                const title = tab_panel_dict_ref.current[the_id].title;
+                const title = item.title;
                 const confirm_text = `Are you sure that you want to close the tab ${title}? Changes will be lost`;
                 await dialogFuncs.showModalPromise("ConfirmDialog", {
                     title: `Close the tab ${title}"`,
@@ -332,18 +287,11 @@ function ContextApp(props) {
                     handleClose: dialogFuncs.hideModal,
                 });
             }
-            let idx = tab_ids_ref.current.indexOf(the_id);
-            let copied_tab_panel_dict = {...tab_panel_dict_ref.current};
-            let copied_tab_ids = [...tab_ids_ref.current];
+            tabPanelListDispatch({type: "delete_item", identifier: the_id})
+
             let copied_dirty_methods = {...dirty_methods};
-            if (idx > -1) {
-                copied_tab_ids.splice(idx, 1);
-                delete copied_tab_panel_dict[the_id];
-                delete copied_dirty_methods[the_id];
-            }
-            set_tab_ids(copied_tab_ids);
+            delete copied_dirty_methods[the_id];
             set_dirty_methods(copied_dirty_methods);
-            set_tab_panel_dict(copied_tab_panel_dict);
             if (the_id in omniItemsRef.current) {
                 delete omniItemsRef.current[the_id];
             }
@@ -351,7 +299,7 @@ function ContextApp(props) {
             pushCallback(() => {
                 if (the_id === selectedTabIdRef.current) {
                     let newSelectedId;
-                    if (lastSelectedTabId && copied_tab_ids.includes(lastSelectedTabId)) {
+                    if (lastSelectedTabId && getItemFromdentifier(lastSelectedTabId)) {
                         newSelectedId = lastSelectedTabId;
                     } else {
                         newSelectedId = "library"
@@ -373,14 +321,11 @@ function ContextApp(props) {
     }
 
     function _addPanel(new_id, viewer_kind, res_type, title, new_panel, callback = null, data = null) {
-        let new_tab_panel_dict = {...tab_panel_dict_ref.current};
-        new_tab_panel_dict[new_id] = {
+        new_panel = {
             kind: viewer_kind, res_type: res_type, title: title,
-            panel: new_panel, data: data
+            panel: new_panel, data: data, identifier: new_id
         };
-        set_tab_panel_dict(new_tab_panel_dict);
-        const new_tab_ids = [...tab_ids_ref.current, new_id];
-        set_tab_ids(new_tab_ids);
+        tabPanelListDispatch({type: "add_at_end", new_item: new_panel});
         setLastSelectedTabId(selectedTabIdRef.current);
         setSelectedTabId(new_id);
         pushCallback(() => {
@@ -395,25 +340,23 @@ function ContextApp(props) {
     }
 
     function _updatePanel(the_id, new_panel, callback = null) {
-        let new_tab_panel_dict = {...tab_panel_dict_ref.current};
+
+        let lnew_panel = {...tabPanelListRef.current[the_id]};
         for (let k in new_panel) {
             if (k !== "panel") {
-                new_tab_panel_dict[the_id][k] = new_panel[k]
+                lnew_panel[k] = new_panel[k]
             }
         }
-
         if ("panel" in new_panel) {
             if (new_panel.panel === "spinner") {
-                new_tab_panel_dict[the_id].panel = "spinner";
-            } else if (new_tab_panel_dict[the_id].panel !== "spinner") {
-                for (let j in new_panel.panel) {
-                    new_tab_panel_dict[the_id].panel[j] = new_panel.panel[j]
-                }
+                lnew_panel.panel = "spinner";
+            } else if (lnew_panel.panel !== "spinner") {
+                lnew_panel.panel = {...lnew_panel.panel, ...new_panel.panel}
             } else {
-                new_tab_panel_dict[the_id].panel = new_panel.panel
+                lnew_panel.panel = new_panel.panel
             }
         }
-        set_tab_panel_dict(new_tab_panel_dict);
+        tabPanelListDispatch({type: "update_item", identifier: the_id, new_item: lnew_panel})
         pushCallback(() => {
             _updateOpenResources(callback)
         });
@@ -426,22 +369,28 @@ function ContextApp(props) {
     }
 
     function _changeResourceName(the_id, new_name, change_title = true, callback = null) {
-        let new_tab_panel_dict = {...tab_panel_dict_ref.current};
+        let lnew_panel = {...getItemFromdentifier(the_id)};
         if (change_title) {
-            new_tab_panel_dict[the_id].title = new_name;
+            lnew_panel.title = new_name;
         }
-        new_tab_panel_dict[the_id].panel.resource_name = new_name;
-        set_tab_panel_dict(new_tab_panel_dict);
+        lnew_panel.panel.resource_name = new_name;
+        tabPanelListDispatch({type: "update_item", identifier: the_id, lnew_panel})
         pushCallback(() => {
             _updateOpenResources(callback)
         });
     }
 
+    function isStandardTab(entry) {
+        return ["library", "pool"].includes(entry.identifier)
+    }
+
     function _getResourceId(res_name, res_type) {
-        for (let the_id of tab_ids_ref.current) {
-            let the_panel = tab_panel_dict_ref.current[the_id];
+        for (let the_panel of tabPanelListRef.current) {
+            if (isStandardTab(the_panel)) {
+                continue
+            }
             if (the_panel.panel.resource_name === res_name && the_panel.res_type === res_type) {
-                return the_id
+                return the_panel.identifier
             }
         }
         return -1
@@ -472,44 +421,43 @@ function ContextApp(props) {
         });
     }, []);
 
+    function getIdList() {
+        return tabPanelListRef.current.map((item) => item.identifier)
+    }
+
     function _goToNextPane(e) {
-        let templist = ["library"];
-        if (window.has_pool) templist.push("pool");
-        templist = [...templist, ...tab_ids_ref.current];
+        let templist = getIdList()
         let newId;
         let tabIndex = templist.indexOf(selectedTabIdRef.current) + 1;
         newId = tabIndex === templist.length ? "library" : templist[tabIndex];
-        _handleTabSelect(newId, selectedTabIdRef.current);
+        _handleTabSelect(newId);
         if (e) {
             e.preventDefault()
         }
     }
 
     function _goToPreviousPane(e) {
-        let templist = ["library"];
-        if (window.has_pool) templist.push("pool");
-        templist = [...templist, ...tab_ids_ref.current];
+        let templist = getIdList();
         let tabIndex = templist.indexOf(selectedTabIdRef.current) - 1;
         let newId = tabIndex === -1 ? templist.at(-1) : templist[tabIndex];
-        _handleTabSelect(newId, selectedTabIdRef.current);
+        _handleTabSelect(newId);
         if (e) {
             e.preventDefault();
         }
     }
 
-    function _handleTabSelect(newTabId, prevTabId) {
+    function _handleTabSelect(newTabId) {
         setSelectedTabId(newTabId);
-        setLastSelectedTabId(prevTabId);
+        setLastSelectedTabId(selectedTabIdRef.current,);
         pushCallback(() => {
             setTabSelectCounter(tabSelectCounter + 1)
         });
     }
 
     async function _goToModule(module_name, line_number) {
-        for (let tab_id in tab_panel_dict_ref.current) {
-            let pdict = tab_panel_dict_ref.current[tab_id];
+        for (let pdict of tabPanelListRef.current) {
             if (pdict.kind === "creator-viewer" && pdict.panel.resource_name === module_name) {
-                _handleTabSelect(tab_id, selectedTabIdRef.current, null, () => {
+                _handleTabSelect(pdict.identifier, selectedTabIdRef.current, null, () => {
                     if ("line_setter" in pdict) {
                         pdict.line_setter(line_number)
                     }
@@ -540,68 +488,12 @@ function ContextApp(props) {
         _updatePanel(tab_id, {line_setter: rfunc})
     }
 
-    function _onDragStart(event, tab_id) {
-        set_currently_dragging(tab_id);
-        event.stopPropagation()
-    }
-
-    function _onDragEnd(event) {
-        set_dragging_over(null);
-        set_currently_dragging(null);
-        event.stopPropagation();
-        event.preventDefault();
-    }
-
-    function _nextTab(tab_id) {
-        let tidx = tab_ids_ref.current.indexOf(tab_id);
-        if (tidx === -1) return null;
-        if (tidx === tab_ids_ref.current.length - 1) return "dummy";
-        return tab_ids_ref.current[tidx + 1]
-    }
-
-    function _onDrop(event, target_id) {
-        if (currently_dragging === null || currently_dragging === target_id) return;
-        let current_index = tab_ids_ref.current.indexOf(currently_dragging);
-        let new_tab_ids = [...tab_ids_ref.current];
-        new_tab_ids.splice(current_index, 1);
-        if (target_id === "dummy") {
-            new_tab_ids.push(currently_dragging)
-        } else {
-            let target_index = new_tab_ids.indexOf(target_id);
-            new_tab_ids.splice(target_index, 0, currently_dragging);
-        }
-        set_tab_ids(new_tab_ids);
-        set_dragging_over(null);
-        event.stopPropagation()
-    }
-
-    function _onDragOver(event) {
-        event.stopPropagation();
-        event.preventDefault();
-    }
-
-    function _onDragEnter(event, target_id) {
-        if (target_id === currently_dragging || target_id === _nextTab(currently_dragging)) {
-            set_dragging_over(null);
-        } else {
-            set_dragging_over(target_id)
-        }
-        event.stopPropagation();
-        event.preventDefault();
-    }
-
-    function _onDragLeave(event) {
-        event.stopPropagation();
-        event.preventDefault();
-    }
-
     function _getOpenResources() {
         let open_resources = [];
-        for (let the_id in tab_panel_dict_ref.current) {
-            const entry = tab_panel_dict_ref.current[the_id];
-            if (entry.panel !== "spinner") {
+        for (let entry of tabPanelListRef.current) {
+            if (!isStandardTab(entry) && entry.panel !== "spinner") {
                 open_resources.push({
-                    id: the_id,
+                    id: entry.identifier,
                     resource_name: entry.panel.resource_name,
                     res_type: entry.res_type,
                     main_id: entry.panel.main_id
@@ -647,112 +539,60 @@ function ContextApp(props) {
         _addOmniItems("global", omni_items)
     }
 
-    let bclass = "context-tab-button-content";
-    if (selectedTabIdRef.current === "library") {
-        bclass += " selected-tab-button"
-    }
-
-    const library_panel = (
-        <SelectedPaneContext.Provider value={{
-            tab_id: "library",
-            selectedTabIdRef,
-            amSelected,
-            counter: selectedTabIdCounter,
-            addOmniItems: (items) => {
-                _addOmniItems("library", items)
-            }
-        }}>
-            <div id="library-home-root"
-                style={{display: "flex", flexDirection: "column",
-                    position: "relative",
-                    height: "100%",
-                    width: "100%"}}>
-                <LibraryHomeApp tsocket={tsocket}
-                                library_style={window.library_style}
-                                controlled={true}
-                                am_selected={selectedTabIdRef.current === "library"}
-                                open_resources_ref={open_resources_ref}
-                                handleCreateViewer={_handleCreateViewer}
-                />
-            </div>
-        </SelectedPaneContext.Provider>
-    );
-
-    const ltab = (
-        <Tab id="library" tabIndex={-1} key={"library"} style={{paddingLeft: 10, marginBottom: 0}}
-             panelClassName="context-tab" title="" panel={library_panel}>
-            <div className={bclass + " open-resource-tab"}
-                 style={{display: "flex", flexDirection: "row", width: "100%", justifyContent: "space-between"}}>
-                <div style={{
-                    display: "table-cell", flexDirection: "row", justifyContent: "flex-start",
-                    textOverflow: "ellipsis", overflow: "hidden"
-                }}>
-                    <Icon icon={libIconDict["all"]}
-                          style={{verticalAlign: "middle", marginRight: 5}}
-                          size={16} tabIndex={-1}/>
-                    <span>Library</span>
-                </div>
-            </div>
-        </Tab>
-    );
-    let all_tabs = [ltab];
-    if (window.has_pool) {
-        let pclass = "context-tab-button-content";
-        if (selectedTabIdRef.current === "pool") {
-            pclass += " selected-tab-button"
-        }
-
-        const pool_panel = (
-            <SelectedPaneContext.Provider value={{
-                tab_id: "pool",
-                selectedTabIdRef, amSelected,
-                counter: selectedTabIdCounter,
-                addOmniItems: (items) => {
-                    _addOmniItems("pool", items)
-                }
-            }}>
-                <PoolBrowser tsocket={tsocket}
-                             am_selected={selectedTabIdRef.current === "pool"}
-                             getOpenResources={_getOpenResources}
-                             setSelectedTabId={setSelectedTabId}
-                             handleCreateViewer={_handleCreateViewer}/>
-
-            </SelectedPaneContext.Provider>
-        );
-
-        const ptab = (
-            <Tab id="pool" tabIndex={-1} key={"pool"} style={{paddingLeft: 10, marginBottom: 0}}
-                 panelClassName="context-tab" title="" panel={pool_panel}>
-                <div className={pclass + " open-resource-tab"}
-                     style={{display: "flex", flexDirection: "row", width: "100%", justifyContent: "space-between"}}>
-                    <div style={{
-                        display: "table-cell", flexDirection: "row", justifyContent: "flex-start",
-                        textOverflow: "ellipsis", overflow: "hidden"
-                    }}>
-                        <Icon icon={libIconDict["pool"]}
-                              style={{verticalAlign: "middle", marginRight: 5}}
-                              size={16} tabIndex={-1}/>
-                        <span>Pool</span>
-                    </div>
-                </div>
-            </Tab>
-        );
-        all_tabs.push(ptab)
-    }
-
-    bclass = "context-tab-button-content-divider";
-    let separator_tab = (
-        <Tab id="divider" draggable="false"
-             disabled={true}
-             tabIndex={-1} key="divider" panelClassName="context-tab" title="" panel={null}>
-            <Divider className={bclass} />
-        </Tab>
-    );
-    all_tabs.push(separator_tab);
-
     function amSelected(ltab_id, lselectedTabIdRef) {
         return !window.in_context || ltab_id === lselectedTabIdRef.current
     }
+
+
+    const library_panel = (
+        <SelectedPaneContext.Provider  key="library" value={{
+                tab_id: "library",
+                selectedTabIdRef,
+                amSelected,
+                addOmniItems: (items)=>{_addOmniItems("libary", items)}
+            }}>
+            <ContextPaneElement identifier="library">
+                <div id="library-home-root"
+                    style={{display: "flex", flexDirection: "column",
+                        position: "relative",
+                        height: "100%",
+                        width: "100%"}}>
+                    <LibraryHomeApp tsocket={tsocket}
+                                    library_style={window.library_style}
+                                    controlled={true}
+                                    am_selected={selectedTabIdRef.current === "library"}
+                                    open_resources_ref={open_resources_ref}
+                                    handleCreateViewer={_handleCreateViewer}
+                    />
+                </div>
+        </ContextPaneElement>
+        </SelectedPaneContext.Provider>
+    );
+
+
+    let all_panels = [library_panel];
+    if (window.has_pool) {
+        const pool_panel = (
+        <SelectedPaneContext.Provider key="pool" value={{
+                tab_id: "pool",
+                selectedTabIdRef,
+                amSelected,
+                addOmniItems: (items)=>{_addOmniItems("pool", items)}
+            }}>
+            <ContextPaneElement
+                identifier="pool">
+                <PoolBrowser tsocket={tsocket}
+                         am_selected={selectedTabIdRef.current === "pool"}
+                         getOpenResources={_getOpenResources}
+                         setSelectedTabId={setSelectedTabId}
+                         handleCreateViewer={_handleCreateViewer}/>
+            </ContextPaneElement>
+            </SelectedPaneContext.Provider>
+        );
+
+        all_panels.push(pool_panel)
+    }
+
 
     const _omni_view_func = useCallback(async (item) => {
         let the_view = view_views(false)[item.res_type];
@@ -778,146 +618,66 @@ function ContextApp(props) {
         }
     }, []);
 
-    for (let tab_id of tab_ids_ref.current) {
-        let tab_entry = tab_panel_dict_ref.current[tab_id];
-        let bclass = "context-tab-button-content";
-        if (selectedTabIdRef.current === tab_id) {
-            bclass += " selected-tab-button"
-        }
-        let visible_title = tab_entry.title;
+    for (let entry of tabPanelListRef.current) {
         let wrapped_panel;
-        if (tab_entry.panel === "spinner") {
+        if (["library", "pool"].includes(entry.identifier)) {
+            continue
+        }
+        if (entry.panel === "spinner") {
             wrapped_panel = spinner_panel
         } else {
-            let TheClass = classDict[tab_entry.kind];
-            let the_panel =
+            let TheClass = classDict[entry.kind];
+            let the_panel = (
                 <SelectedPaneContext.Provider value={{
-                    tab_id,
-                    selectedTabIdRef,
-                    amSelected,
-                    counter: selectedTabIdCounter,
-                    addOmniItems: (items) => {
-                        _addOmniItems(tab_id, items)
-                    }
-                }}>
-                    <TheClass {...tab_entry.panel}
-                              controlled={true}
-                              handleCreateViewer={_handleCreateViewer}
-                              tab_id={tab_id}
-                              selectedTabIdRef={selectedTabIdRef}
-                              changeResourceName={(new_name, callback = null, change_title = true) => {
-                                  _changeResourceName(tab_id, new_name, change_title, callback)
-                              }}
-                              updatePanel={(new_panel, callback = null) => {
-                                  _updatePanel(tab_id, new_panel, callback)
-                              }}
-                              goToModule={_goToModule}
-                              registerLineSetter={(rfunc) => _registerLineSetter(tab_id, rfunc)}
-                              refreshTab={async () => {
-                                  await _refreshTab(tab_id)
-                              }}
-                              closeTab={async () => {
-                                  await _closeTab(tab_id)
-                              }}
-                              tsocket={tab_entry.panel.tsocket}
-                    />
+                        tab_id: entry.identifier,
+                        selectedTabIdRef,
+                        amSelected,
+                        addOmniItems: (items)=>{_addOmniItems(entry.identifier, items)}
+                    }}>
+                    <ContextPaneElement
+                        identifier={entry.identifier}>
+                        <TheClass {...entry.panel}
+                                  controlled={true}
+                                  handleCreateViewer={_handleCreateViewer}
+                                  tab_id={entry.identifier}
+                                  selectedTabIdRef={selectedTabIdRef}
+                                  changeResourceName={(new_name, callback = null, change_title = true) => {
+                                      _changeResourceName(entry.identifier, new_name, change_title, callback)
+                                  }}
+                                  updatePanel={(new_panel, callback = null) => {
+                                      _updatePanel(entry.identifier, new_panel, callback)
+                                  }}
+                                  goToModule={_goToModule}
+                                  registerLineSetter={(rfunc) => _registerLineSetter(entry.identifier, rfunc)}
+                                  refreshTab={async () => {
+                                      await _refreshTab(entry.identifier)
+                                  }}
+                                  closeTab={async () => {
+                                      await _closeTab(entry.identifier)
+                                  }}
+                                  tsocket={entry.panel.tsocket}
+                        />
+                    </ContextPaneElement>
                 </SelectedPaneContext.Provider>
+            )
             wrapped_panel = (
-                <ErrorBoundary>
-                    <div id={`${tab_id}-holder`}
-                         style={{display: "flex", flexDirection: "column",
-                            position: "relative",
-                            height: "100%",
-                            width: "100%"}}
-                            className={panelRootDict[tab_panel_dict_ref.current[tab_id].kind]}>
-                        {the_panel}
-                    </div>
-                </ErrorBoundary>
+                <Fragment key={entry.identifier}>
+                    <ErrorBoundary>
+                        <div id={`${entry.identifier}-holder`}
+                             style={{display: "flex", flexDirection: "column",
+                                position: "relative",
+                                height: selectedTabIdRef.current == entry.identifier ? "100%" : 0,
+                                width: "100%"}}
+                                className={panelRootDict[entry.kind]}>
+                            {the_panel}
+                        </div>
+                    </ErrorBoundary>
+                </Fragment>
             );
         }
-        let icon_style = {verticalAlign: "middle", paddingLeft: 4};
-        if (tab_id === dragging_over) {
-            bclass += " hovering";
-        }
-        if (tab_id === currently_dragging) {
-            bclass += " currently-dragging"
-        }
-        let new_tab = (
-            <Tab id={tab_id} draggable="true"
-                 onDragStart={(e) => {
-                     _onDragStart(e, tab_id)
-                 }}
-                 onDrop={(e) => {
-                     _onDrop(e, tab_id)
-                 }}
-                 onDragEnter={(e) => {
-                     _onDragEnter(e, tab_id)
-                 }}
-                 onDragOver={(e) => {
-                     _onDragOver(e, tab_id)
-                 }}
-                 onDragLeave={(e) => {
-                     _onDragLeave(e, tab_id)
-                 }}
-                 onDragEnd={(e) => {
-                     _onDragEnd(e)
-                 }}
-                 tabIndex={-1} key={tab_id} panelClassName="context-tab" title="" panel={wrapped_panel}>
 
-                <div className={bclass + " open-resource-tab"}
-                     style={{display: "flex", flexDirection: "row", width: "100%", justifyContent: "space-between"}}>
-                    <div style={{
-                        display: "table-cell", flexDirection: "row", justifyContent: "flex-start",
-                        textOverflow: "ellipsis", overflow: "hidden"
-                    }}>
-                        <Icon icon={iconDict[tab_entry.kind]}
-                              style={{verticalAlign: "middle", marginRight: 5}}
-                              size={16} tabIndex={-1}/>
-                        <span>{visible_title}</span>
-                    </div>
-                    <div style={{marginRight: 5}}>
-                        <Icon icon="reset" style={icon_style} size={13} className="context-close-button show-on-hover"
-                              tabIndex={-1} onClick={async () => {
-                            await _refreshTab(tab_id)
-                        }}/>
-                        <Icon icon="delete" style={icon_style} size={13} className="context-close-button show-on-hover"
-                              tabIndex={-1} onClick={async () => {
-                            await _closeTab(tab_id)
-                        }}/>
-                    </div>
-                </div>
-            </Tab>
-        );
-        all_tabs.push(new_tab)
+        all_panels.push(wrapped_panel);
     }
-
-    // The purpose of the dummy tab is to make it possible to drag a tab to the bottom of the list
-    bclass = "context-tab-button-content";
-    if (dragging_over === "dummy") {
-        bclass += " hovering";
-    }
-    let dummy_tab = (
-        <Tab id="dummy" draggable="false"
-             disabled={true}
-             onDrop={(e) => {
-                 _onDrop(e, "dummy")
-             }}
-             onDragEnter={(e) => {
-                 _onDragEnter(e, "dummy")
-             }}
-             onDragOver={(e) => {
-                 _onDragOver(e, "dummy")
-             }}
-             onDragLeave={(e) => {
-                 _onDragLeave(e, "dummy")
-             }}
-             tabIndex={-1} key="dummy" panelClassName="context-tab" title="" panel={null}>
-            <div className={bclass}
-                 style={{height: 30, opacity: 0, display: "flex", flexDirection: "row", justifyContent: "space-between"}}>
-            </div>
-        </Tab>
-    );
-    all_tabs.push(dummy_tab);
 
     let outer_class = "pane-holder ";
     if (settingsContext.isDark()) {
@@ -933,16 +693,28 @@ function ContextApp(props) {
         paddingLeft: 0,
         position: "relative"
     };
-    let tlclass = "context-tab-list";
-    let pane_closed = tabWidth <= MIN_CONTEXT_WIDTH;
-    if (pane_closed) {
-        tlclass += " context-pane-closed"
-    }
+
     let sid = selectedTabIdRef.current;
     let commandItems = omniItemsRef.current["global"];
     if (sid in omniItemsRef.current) {
         commandItems = commandItems.concat(omniItemsRef.current[sid])
     }
+    let left_pane = (
+        <ContextNavigator
+            handleTabSelect={_handleTabSelect}
+            selectedItem={selectedTabIdRef.current}
+            closeTab={_closeTab}
+            refresTab={_refreshTab}
+            dispatch={tabPanelListDispatch}
+            tabPanelList={tabPanelList}
+        />
+    )
+    let right_pane = (
+        <div style={{width: "100%", height: "100%", position: "relative"}}>
+            {all_panels}
+        </div>
+    )
+
     return (
         <Fragment>
             <TacticNavbar is_authenticated={window.is_authenticated}
@@ -952,48 +724,21 @@ function ContextApp(props) {
                           page_id={window.context_id}
                           user_name={window.username}/>
             <div className={outer_class} tabIndex="0" style={outer_style} ref={top_ref}
+                 id="context-container"
                  onKeyDown={handleKeyDown} onKeyUp={handleKeyUp}>
-                <div id="context-container"
-                     style={{
-                         display: "flex",
-                         flexDirection: "row",
-                         width: "100%",
-                         position: "relative",
-                     }}
-                >
-                    <Button icon={<Icon icon={pane_closed ? "drawer-left-filled" : "drawer-right-filled"}
-                                        size={18}/>}
-                            style={{
-                                paddingLeft: 4, paddingRight: 0,
-                                position: "fixed", left: tabWidth - 30,
-                                bottom: STATUS_BAR_HEIGHT + 5,
-                                zIndex: 1
-                            }}
-                            variant="minimal"
-                            className="context-close-button"
-                            size="small"
-                            tabIndex={-1}
-                            onClick={() => {
-                                _togglePane(pane_closed)
-                            }}
-                    />
-                    <DragHandle position_dict={{position: "fixed", left: tabWidth - 5}}
-                                onDrag={_handleTabResize}
-                                dragStart={_handleTabResizeStart}
-                                dragEnd={_handleTabResizeEnd}
-                                direction="x"
-                                barHeight="100%"
-                                useThinBar={true}/>
-                        <Tabs id="context-tabs" selectedTabId={selectedTabIdRef.current}
-                              className={tlclass}
-                              style={{
 
-                              }}
-                              vertical={true}
-                              onChange={_handleTabSelect}>
-                            {all_tabs}
-                        </Tabs>
-                </div>
+                <HorizontalPanes left_pane={left_pane}
+                                 snap_left={true}
+                                 minWidth={100}
+                                 right_pane={right_pane}
+                                 show_handle={true}
+                                 widths={[INIT_CONTEXT_PANEL_WIDTH, window.innerWidth - INIT_CONTEXT_PANEL_WIDTH]}
+                                 initial_width_fraction={.1}
+                                 handleResizeEnd={null}
+                                 bottom_margin={0}
+                                 right_margin={0}
+                />
+            </div>
                 <SelectedPaneContext.Provider value={{
                     tab_id: sid,
                     selectedTabIdRef,
@@ -1006,8 +751,8 @@ function ContextApp(props) {
                                  openFunc={_omni_view_func}
                                  is_authenticated={window.is_authenticated}
                                  closeOmnibar={_closeOpenOmnibar}/>
+
                 </SelectedPaneContext.Provider>
-            </div>
         </Fragment>
     );
 }

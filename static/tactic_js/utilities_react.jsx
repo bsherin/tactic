@@ -17,15 +17,18 @@ export {useConstructor, useCallbackStack, useStateAndRef, useReducerAndRef, useC
 
 export {debounce, throttle, useDebounce, SelectedPaneContext, convertExtraKeys}
 
-function trueFunc() {
-    return true
-}
+function amSelected(ltab_id, lselectedTabIdRef) {
+        return !window.in_context || ltab_id === lselectedTabIdRef.current
+    }
 
 const SelectedPaneContext = createContext({
     tab_id: "",
     selectedTabIdRef: "",
-    amSelected: trueFunc,
-    counter: 0
+    amSelected: amSelected,
+    counter: 0,
+    addOmniItems: ()=>{},
+    closeTab: ()=>{},
+    refreshTab: ()=>{}
 });
 
 const convertExtraKeys = (extraKeys) => {

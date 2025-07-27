@@ -9,14 +9,13 @@ require("../tactic_css/tile_creator.scss");
 var _react = _interopRequireWildcard(require("react"));
 var _client = require("react-dom/client");
 var _core = require("@blueprintjs/core");
-var _toaster = require("./toaster");
 var _utilities_react = require("./utilities_react");
 var _tactic_socket = require("./tactic_socket");
 var _TacticOmnibar = require("./TacticOmnibar");
 var _communication_react = require("./communication_react");
+var _toaster = require("./toaster");
 var _blueprint_navbar = require("./blueprint_navbar");
 var _error_boundary = require("./error_boundary");
-var _blueprint_mdata_fields = require("./blueprint_mdata_fields");
 var _library_home_react = require("./library_home_react");
 var _pool_browser = require("./pool_browser");
 var _pool_tree = require("./pool_tree");
@@ -32,20 +31,17 @@ var _code_viewer_react = require("./code_viewer_react");
 var _list_viewer_react = require("./list_viewer_react");
 var _text_viewer_react = require("./text_viewer_react");
 var _error_drawer = require("./error_drawer");
+var _resizing_allotment = require("./resizing_allotment");
+var _property_list = require("./property_list");
 var _assistant = require("./assistant");
 var _sizing_tools = require("./sizing_tools");
-var _drag_handle = require("./drag_handle");
 var _settings = require("./settings");
+var _context_elements = require("./context_elements");
 var _modal_react = require("./modal_react");
-function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t7 in e) "default" !== _t7 && {}.hasOwnProperty.call(e, _t7) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t7)) && (i.get || i.set) ? o(f, _t7, i) : f[_t7] = e[_t7]); return f; })(e, t); }
+function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t6 in e) "default" !== _t6 && {}.hasOwnProperty.call(e, _t6) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t6)) && (i.get || i.set) ? o(f, _t6, i) : f[_t6] = e[_t6]); return f; })(e, t); }
 function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
 function _regeneratorValues(e) { if (null != e) { var t = e["function" == typeof Symbol && Symbol.iterator || "@@iterator"], r = 0; if (t) return t.call(e); if ("function" == typeof e.next) return e; if (!isNaN(e.length)) return { next: function next() { return e && r >= e.length && (e = void 0), { value: e && e[r++], done: !e }; } }; } throw new TypeError(_typeof(e) + " is not iterable"); }
-function _regeneratorKeys(e) { var n = Object(e), r = []; for (var t in n) r.unshift(t); return function e() { for (; r.length;) if ((t = r.pop()) in n) return e.value = t, e.done = !1, e; return e.done = !0, e; }; }
 function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
-function _toConsumableArray(r) { return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread(); }
-function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _iterableToArray(r) { if ("undefined" != typeof Symbol && null != r[Symbol.iterator] || null != r["@@iterator"]) return Array.from(r); }
-function _arrayWithoutHoles(r) { if (Array.isArray(r)) return _arrayLikeToArray(r); }
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
 function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
 function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
@@ -68,30 +64,11 @@ var spinner_panel = /*#__PURE__*/_react["default"].createElement("div", {
     position: "absolute",
     top: "50%",
     left: "50%"
-  }
+  },
+  key: "spinner"
 }, /*#__PURE__*/_react["default"].createElement(_core.Spinner, {
   size: 100
 }));
-var MIN_CONTEXT_WIDTH = 45;
-var MIN_CONTEXT_SAVED_WIDTH = 100;
-var iconDict = {
-  "module-viewer": "application",
-  "code-viewer": "code",
-  "list-viewer": "list",
-  "text-viewer": "list",
-  "creator-viewer": "application",
-  "main-viewer": "projects",
-  "notebook-viewer": "projects"
-};
-var libIconDict = {
-  all: _blueprint_mdata_fields.icon_dict["all"],
-  collections: _blueprint_mdata_fields.icon_dict["collection"],
-  projects: _blueprint_mdata_fields.icon_dict["project"],
-  tiles: _blueprint_mdata_fields.icon_dict["tile"],
-  lists: _blueprint_mdata_fields.icon_dict["list"],
-  code: _blueprint_mdata_fields.icon_dict["code"],
-  pool: _blueprint_mdata_fields.icon_dict["pool"]
-};
 var propDict = {
   "module-viewer": _module_viewer_react.module_viewer_props,
   "code-viewer": _code_viewer_react.code_viewer_props,
@@ -122,6 +99,16 @@ var classDict = {
   "notebook-viewer": _notebook_app.NotebookApp,
   "text-viewer": _text_viewer_react.TextViewerApp
 };
+var initialList = [{
+  identifier: "library",
+  title: "Library"
+}];
+if (window.has_pool) {
+  initialList.push({
+    identifier: "pool",
+    title: "Pool"
+  });
+}
 function _context_main() {
   var ContextAppPlus = (0, _pool_tree.withPool)((0, _settings.withSettings)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)((0, _assistant.withAssistant)(ContextApp))))));
   var domContainer = document.querySelector('#context-root');
@@ -139,59 +126,40 @@ function _context_main() {
   })));
 }
 function ContextApp(props) {
-  var _useStateAndRefAndCou = (0, _utilities_react.useStateAndRefAndCounter)("library"),
-    _useStateAndRefAndCou2 = _slicedToArray(_useStateAndRefAndCou, 4),
-    selectedTabId = _useStateAndRefAndCou2[0],
-    setSelectedTabId = _useStateAndRefAndCou2[1],
-    selectedTabIdRef = _useStateAndRefAndCou2[2],
-    selectedTabIdCounter = _useStateAndRefAndCou2[3];
-  var _useState = (0, _react.useState)(_sizing_tools.INIT_CONTEXT_PANEL_WIDTH),
-    _useState2 = _slicedToArray(_useState, 2),
-    saved_width = _useState2[0],
-    set_saved_width = _useState2[1];
-  var _useStateAndRef = (0, _utilities_react.useStateAndRef)({}),
+  var _useStateAndRef = (0, _utilities_react.useStateAndRef)("library"),
     _useStateAndRef2 = _slicedToArray(_useStateAndRef, 3),
-    set_tab_panel_dict = _useStateAndRef2[1],
-    tab_panel_dict_ref = _useStateAndRef2[2];
+    selectedTabId = _useStateAndRef2[0],
+    setSelectedTabId = _useStateAndRef2[1],
+    selectedTabIdRef = _useStateAndRef2[2];
+  var _usePropertyList = (0, _property_list.usePropertyList)(initialList),
+    _usePropertyList2 = _slicedToArray(_usePropertyList, 3),
+    tabPanelList = _usePropertyList2[0],
+    tabPanelListDispatch = _usePropertyList2[1],
+    tabPanelListRef = _usePropertyList2[2];
   var _useStateAndRef3 = (0, _utilities_react.useStateAndRef)([]),
     _useStateAndRef4 = _slicedToArray(_useStateAndRef3, 3),
-    set_tab_ids = _useStateAndRef4[1],
-    tab_ids_ref = _useStateAndRef4[2];
-  var _useStateAndRef5 = (0, _utilities_react.useStateAndRef)([]),
-    _useStateAndRef6 = _slicedToArray(_useStateAndRef5, 3),
-    set_open_resources = _useStateAndRef6[1],
-    open_resources_ref = _useStateAndRef6[2];
-  var _useState3 = (0, _react.useState)({}),
+    set_open_resources = _useStateAndRef4[1],
+    open_resources_ref = _useStateAndRef4[2];
+  var _useState = (0, _react.useState)({}),
+    _useState2 = _slicedToArray(_useState, 2),
+    dirty_methods = _useState2[0],
+    set_dirty_methods = _useState2[1];
+  var _useState3 = (0, _react.useState)(null),
     _useState4 = _slicedToArray(_useState3, 2),
-    dirty_methods = _useState4[0],
-    set_dirty_methods = _useState4[1];
-  var _useState5 = (0, _react.useState)(null),
+    lastSelectedTabId = _useState4[0],
+    setLastSelectedTabId = _useState4[1];
+  var _useState5 = (0, _react.useState)(false),
     _useState6 = _slicedToArray(_useState5, 2),
-    lastSelectedTabId = _useState6[0],
-    setLastSelectedTabId = _useState6[1];
-  var _useState7 = (0, _react.useState)(_sizing_tools.INIT_CONTEXT_PANEL_WIDTH),
-    _useState8 = _slicedToArray(_useState7, 1),
-    tabWidth = _useState8[0];
-  var _useState9 = (0, _react.useState)(null),
-    _useState0 = _slicedToArray(_useState9, 2),
-    dragging_over = _useState0[0],
-    set_dragging_over = _useState0[1];
-  var _useState1 = (0, _react.useState)(null),
-    _useState10 = _slicedToArray(_useState1, 2),
-    currently_dragging = _useState10[0],
-    set_currently_dragging = _useState10[1];
-  var _useState11 = (0, _react.useState)(false),
-    _useState12 = _slicedToArray(_useState11, 2),
-    showOpenOmnibar = _useState12[0],
-    setShowOpenOmnibar = _useState12[1];
+    showOpenOmnibar = _useState6[0],
+    setShowOpenOmnibar = _useState6[1];
   var settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
   var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
-  var _useState13 = (0, _react.useState)(0),
-    _useState14 = _slicedToArray(_useState13, 2),
-    tabSelectCounter = _useState14[0],
-    setTabSelectCounter = _useState14[1];
+  var _useState7 = (0, _react.useState)(0),
+    _useState8 = _slicedToArray(_useState7, 2),
+    tabSelectCounter = _useState8[0],
+    setTabSelectCounter = _useState8[1];
   var omniItemsRef = (0, _react.useRef)({});
   var top_ref = (0, _react.useRef)(null);
   var hotkeys = (0, _react.useMemo)(function () {
@@ -241,10 +209,6 @@ function ContextApp(props) {
     initSocket();
     _addContextOmniItems();
     errorDrawerFuncs.registerGoToModule(_goToModule);
-    var tab_list_elem = document.querySelector("#context-container .context-tab-list > .bp6-tab-list");
-    if (tab_list_elem) {
-      tab_list_elem.setAttribute("style", "width:".concat(_sizing_tools.INIT_CONTEXT_PANEL_WIDTH, "px"));
-    }
     return function () {
       tsocket.disconnect();
     };
@@ -256,36 +220,6 @@ function ContextApp(props) {
       e.returnValue = 'Are you sure you want to close? All changes will be lost.';
     });
   }, []);
-  function get_tab_list_elem() {
-    return document.querySelector("#context-container .context-tab-list > .bp6-tab-list");
-  }
-  function _togglePane(pane_closed) {
-    var w = pane_closed ? saved_width : MIN_CONTEXT_WIDTH;
-    var tab_elem = get_tab_list_elem();
-    tab_elem.setAttribute("style", "width:".concat(w, "px"));
-  }
-  function _handleTabResize(e, ui, lastX) {
-    var tab_elem = get_tab_list_elem();
-    var w = lastX > window.innerWidth / 2 ? window.innerWidth / 2 : lastX;
-    w = w <= MIN_CONTEXT_WIDTH ? MIN_CONTEXT_WIDTH : w;
-    tab_elem.setAttribute("style", "width:".concat(w, "px"));
-  }
-  function _handleTabResizeStart() {
-    var new_width = Math.max(tabWidth, MIN_CONTEXT_SAVED_WIDTH);
-    if (new_width !== saved_width) {
-      set_saved_width(new_width);
-    }
-  }
-  function _handleTabResizeEnd() {
-    var tab_elem = get_tab_list_elem();
-    var tab_rect = tab_elem.getBoundingClientRect();
-    if (tab_rect.width > 45) {
-      var new_width = Math.max(tab_rect.width, MIN_CONTEXT_SAVED_WIDTH);
-      if (new_width !== saved_width) {
-        set_saved_width(new_width);
-      }
-    }
-  }
   function _registerDirtyMethod(tab_id, dirty_method) {
     var new_dirty_methods = _objectSpread({}, dirty_methods);
     new_dirty_methods[tab_id] = dirty_method;
@@ -308,12 +242,29 @@ function ContextApp(props) {
     });
     props.tsocket.attachListener("create-viewer", _handleCreateViewer);
   }
+  function getItemFromdentifier(identifier) {
+    var _iterator = _createForOfIteratorHelper(tabPanelListRef.current),
+      _step;
+    try {
+      for (_iterator.s(); !(_step = _iterator.n()).done;) {
+        var item = _step.value;
+        if (item.identifier === identifier) {
+          return item;
+        }
+      }
+    } catch (err) {
+      _iterator.e(err);
+    } finally {
+      _iterator.f();
+    }
+    return null;
+  }
   function _refreshTab(_x) {
     return _refreshTab2.apply(this, arguments);
   }
   function _refreshTab2() {
     _refreshTab2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee4(the_id) {
-      var title, confirm_text, old_tab_panel, resource_name, res_type, the_view, re, drmethod, data, _t2;
+      var item, title, confirm_text, old_tab_panel, resource_name, res_type, the_view, re, drmethod, data, _t2;
       return _regenerator().w(function (_context4) {
         while (1) switch (_context4.n) {
           case 0:
@@ -324,11 +275,12 @@ function ContextApp(props) {
             return _context4.a(2);
           case 1:
             _context4.p = 1;
+            item = getItemFromdentifier(the_id);
+            title = item.title;
             if (!(!(the_id in dirty_methods) || dirty_methods[the_id]())) {
               _context4.n = 2;
               break;
             }
-            title = tab_panel_dict_ref.current[the_id].title;
             confirm_text = "Are you sure that you want to reload the tab ".concat(title, "? Changes will be lost");
             _context4.n = 2;
             return dialogFuncs.showModalPromise("ConfirmDialog", {
@@ -339,7 +291,7 @@ function ContextApp(props) {
               handleClose: dialogFuncs.hideModal
             });
           case 2:
-            old_tab_panel = _objectSpread({}, tab_panel_dict_ref.current[the_id]);
+            old_tab_panel = _objectSpread({}, item);
             resource_name = old_tab_panel.panel.resource_name;
             res_type = old_tab_panel.res_type;
             if (old_tab_panel.kind === "notebook-viewer" && !old_tab_panel.panel.is_project) {
@@ -390,7 +342,7 @@ function ContextApp(props) {
   }
   function _closeTab2() {
     _closeTab2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5(the_id) {
-      var title, confirm_text, idx, copied_tab_panel_dict, copied_tab_ids, copied_dirty_methods, _t3;
+      var item, title, confirm_text, copied_dirty_methods, _t3;
       return _regenerator().w(function (_context5) {
         while (1) switch (_context5.n) {
           case 0:
@@ -400,14 +352,15 @@ function ContextApp(props) {
             }
             return _context5.a(2);
           case 1:
-            _context5.p = 1;
+            item = getItemFromdentifier(the_id);
+            _context5.p = 2;
             if (!(!(the_id in dirty_methods) || dirty_methods[the_id]())) {
-              _context5.n = 2;
+              _context5.n = 3;
               break;
             }
-            title = tab_panel_dict_ref.current[the_id].title;
+            title = item.title;
             confirm_text = "Are you sure that you want to close the tab ".concat(title, "? Changes will be lost");
-            _context5.n = 2;
+            _context5.n = 3;
             return dialogFuncs.showModalPromise("ConfirmDialog", {
               title: "Close the tab ".concat(title, "\""),
               text_body: confirm_text,
@@ -415,26 +368,21 @@ function ContextApp(props) {
               submit_text: "close",
               handleClose: dialogFuncs.hideModal
             });
-          case 2:
-            idx = tab_ids_ref.current.indexOf(the_id);
-            copied_tab_panel_dict = _objectSpread({}, tab_panel_dict_ref.current);
-            copied_tab_ids = _toConsumableArray(tab_ids_ref.current);
+          case 3:
+            tabPanelListDispatch({
+              type: "delete_item",
+              identifier: the_id
+            });
             copied_dirty_methods = _objectSpread({}, dirty_methods);
-            if (idx > -1) {
-              copied_tab_ids.splice(idx, 1);
-              delete copied_tab_panel_dict[the_id];
-              delete copied_dirty_methods[the_id];
-            }
-            set_tab_ids(copied_tab_ids);
+            delete copied_dirty_methods[the_id];
             set_dirty_methods(copied_dirty_methods);
-            set_tab_panel_dict(copied_tab_panel_dict);
             if (the_id in omniItemsRef.current) {
               delete omniItemsRef.current[the_id];
             }
             pushCallback(function () {
               if (the_id === selectedTabIdRef.current) {
                 var newSelectedId;
-                if (lastSelectedTabId && copied_tab_ids.includes(lastSelectedTabId)) {
+                if (lastSelectedTabId && getItemFromdentifier(lastSelectedTabId)) {
                   newSelectedId = lastSelectedTabId;
                 } else {
                   newSelectedId = "library";
@@ -448,35 +396,36 @@ function ContextApp(props) {
                 }
               }
             });
-            _context5.n = 4;
+            _context5.n = 5;
             break;
-          case 3:
-            _context5.p = 3;
+          case 4:
+            _context5.p = 4;
             _t3 = _context5.v;
             if (_t3 !== "canceled") {
               errorDrawerFuncs.addFromError("Error closing tab", _t3);
             }
-          case 4:
+          case 5:
             return _context5.a(2);
         }
-      }, _callee5, null, [[1, 3]]);
+      }, _callee5, null, [[2, 4]]);
     }));
     return _closeTab2.apply(this, arguments);
   }
   function _addPanel(new_id, viewer_kind, res_type, title, new_panel) {
     var callback = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : null;
     var data = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : null;
-    var new_tab_panel_dict = _objectSpread({}, tab_panel_dict_ref.current);
-    new_tab_panel_dict[new_id] = {
+    new_panel = {
       kind: viewer_kind,
       res_type: res_type,
       title: title,
       panel: new_panel,
-      data: data
+      data: data,
+      identifier: new_id
     };
-    set_tab_panel_dict(new_tab_panel_dict);
-    var new_tab_ids = [].concat(_toConsumableArray(tab_ids_ref.current), [new_id]);
-    set_tab_ids(new_tab_ids);
+    tabPanelListDispatch({
+      type: "add_at_end",
+      new_item: new_panel
+    });
     setLastSelectedTabId(selectedTabIdRef.current);
     setSelectedTabId(new_id);
     pushCallback(function () {
@@ -491,24 +440,26 @@ function ContextApp(props) {
   }
   function _updatePanel(the_id, new_panel) {
     var callback = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
-    var new_tab_panel_dict = _objectSpread({}, tab_panel_dict_ref.current);
+    var lnew_panel = _objectSpread({}, tabPanelListRef.current[the_id]);
     for (var k in new_panel) {
       if (k !== "panel") {
-        new_tab_panel_dict[the_id][k] = new_panel[k];
+        lnew_panel[k] = new_panel[k];
       }
     }
     if ("panel" in new_panel) {
       if (new_panel.panel === "spinner") {
-        new_tab_panel_dict[the_id].panel = "spinner";
-      } else if (new_tab_panel_dict[the_id].panel !== "spinner") {
-        for (var j in new_panel.panel) {
-          new_tab_panel_dict[the_id].panel[j] = new_panel.panel[j];
-        }
+        lnew_panel.panel = "spinner";
+      } else if (lnew_panel.panel !== "spinner") {
+        lnew_panel.panel = _objectSpread(_objectSpread({}, lnew_panel.panel), new_panel.panel);
       } else {
-        new_tab_panel_dict[the_id].panel = new_panel.panel;
+        lnew_panel.panel = new_panel.panel;
       }
     }
-    set_tab_panel_dict(new_tab_panel_dict);
+    tabPanelListDispatch({
+      type: "update_item",
+      identifier: the_id,
+      new_item: lnew_panel
+    });
     pushCallback(function () {
       _updateOpenResources(callback);
     });
@@ -521,31 +472,40 @@ function ContextApp(props) {
   function _changeResourceName(the_id, new_name) {
     var change_title = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
     var callback = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
-    var new_tab_panel_dict = _objectSpread({}, tab_panel_dict_ref.current);
+    var lnew_panel = _objectSpread({}, getItemFromdentifier(the_id));
     if (change_title) {
-      new_tab_panel_dict[the_id].title = new_name;
+      lnew_panel.title = new_name;
     }
-    new_tab_panel_dict[the_id].panel.resource_name = new_name;
-    set_tab_panel_dict(new_tab_panel_dict);
+    lnew_panel.panel.resource_name = new_name;
+    tabPanelListDispatch({
+      type: "update_item",
+      identifier: the_id,
+      lnew_panel: lnew_panel
+    });
     pushCallback(function () {
       _updateOpenResources(callback);
     });
   }
+  function isStandardTab(entry) {
+    return ["library", "pool"].includes(entry.identifier);
+  }
   function _getResourceId(res_name, res_type) {
-    var _iterator = _createForOfIteratorHelper(tab_ids_ref.current),
-      _step;
+    var _iterator2 = _createForOfIteratorHelper(tabPanelListRef.current),
+      _step2;
     try {
-      for (_iterator.s(); !(_step = _iterator.n()).done;) {
-        var the_id = _step.value;
-        var the_panel = tab_panel_dict_ref.current[the_id];
+      for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+        var the_panel = _step2.value;
+        if (isStandardTab(the_panel)) {
+          continue;
+        }
         if (the_panel.panel.resource_name === res_name && the_panel.res_type === res_type) {
-          return the_id;
+          return the_panel.identifier;
         }
       }
     } catch (err) {
-      _iterator.e(err);
+      _iterator2.e(err);
     } finally {
-      _iterator.f();
+      _iterator2.f();
     }
     return -1;
   }
@@ -596,32 +556,33 @@ function ContextApp(props) {
       return _ref.apply(this, arguments);
     };
   }(), []);
+  function getIdList() {
+    return tabPanelListRef.current.map(function (item) {
+      return item.identifier;
+    });
+  }
   function _goToNextPane(e) {
-    var templist = ["library"];
-    if (window.has_pool) templist.push("pool");
-    templist = [].concat(_toConsumableArray(templist), _toConsumableArray(tab_ids_ref.current));
+    var templist = getIdList();
     var newId;
     var tabIndex = templist.indexOf(selectedTabIdRef.current) + 1;
     newId = tabIndex === templist.length ? "library" : templist[tabIndex];
-    _handleTabSelect(newId, selectedTabIdRef.current);
+    _handleTabSelect(newId);
     if (e) {
       e.preventDefault();
     }
   }
   function _goToPreviousPane(e) {
-    var templist = ["library"];
-    if (window.has_pool) templist.push("pool");
-    templist = [].concat(_toConsumableArray(templist), _toConsumableArray(tab_ids_ref.current));
+    var templist = getIdList();
     var tabIndex = templist.indexOf(selectedTabIdRef.current) - 1;
     var newId = tabIndex === -1 ? templist.at(-1) : templist[tabIndex];
-    _handleTabSelect(newId, selectedTabIdRef.current);
+    _handleTabSelect(newId);
     if (e) {
       e.preventDefault();
     }
   }
-  function _handleTabSelect(newTabId, prevTabId) {
+  function _handleTabSelect(newTabId) {
     setSelectedTabId(newTabId);
-    setLastSelectedTabId(prevTabId);
+    setLastSelectedTabId(selectedTabIdRef.current);
     pushCallback(function () {
       setTabSelectCounter(tabSelectCounter + 1);
     });
@@ -631,21 +592,23 @@ function ContextApp(props) {
   }
   function _goToModule2() {
     _goToModule2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6(module_name, line_number) {
-      var _loop, _ret, tab_id, the_view, re, data, _new_id, drmethod, _t4, _t5, _t6;
+      var _iterator5, _step5, _loop, _ret, the_view, re, data, _new_id, drmethod, _t4, _t5;
       return _regenerator().w(function (_context7) {
         while (1) switch (_context7.n) {
           case 0:
+            _iterator5 = _createForOfIteratorHelper(tabPanelListRef.current);
+            _context7.p = 1;
             _loop = /*#__PURE__*/_regenerator().m(function _loop() {
               var pdict;
               return _regenerator().w(function (_context6) {
                 while (1) switch (_context6.n) {
                   case 0:
-                    pdict = tab_panel_dict_ref.current[tab_id];
+                    pdict = _step5.value;
                     if (!(pdict.kind === "creator-viewer" && pdict.panel.resource_name === module_name)) {
                       _context6.n = 1;
                       break;
                     }
-                    _handleTabSelect(tab_id, selectedTabIdRef.current, null, function () {
+                    _handleTabSelect(pdict.identifier, selectedTabIdRef.current, null, function () {
                       if ("line_setter" in pdict) {
                         pdict.line_setter(line_number);
                       }
@@ -658,58 +621,68 @@ function ContextApp(props) {
                 }
               }, _loop);
             });
-            _t4 = _regeneratorKeys(tab_panel_dict_ref.current);
-          case 1:
-            if ((_t5 = _t4()).done) {
+            _iterator5.s();
+          case 2:
+            if ((_step5 = _iterator5.n()).done) {
+              _context7.n = 5;
+              break;
+            }
+            return _context7.d(_regeneratorValues(_loop()), 3);
+          case 3:
+            _ret = _context7.v;
+            if (!_ret) {
               _context7.n = 4;
               break;
             }
-            tab_id = _t5.value;
-            return _context7.d(_regeneratorValues(_loop()), 2);
-          case 2:
-            _ret = _context7.v;
-            if (!_ret) {
-              _context7.n = 3;
-              break;
-            }
             return _context7.a(2, _ret.v);
-          case 3:
-            _context7.n = 1;
-            break;
           case 4:
+            _context7.n = 2;
+            break;
+          case 5:
+            _context7.n = 7;
+            break;
+          case 6:
+            _context7.p = 6;
+            _t4 = _context7.v;
+            _iterator5.e(_t4);
+          case 7:
+            _context7.p = 7;
+            _iterator5.f();
+            return _context7.f(7);
+          case 8:
             the_view = (0, _library_pane.view_views)()["tile"];
             re = new RegExp("/$");
             the_view = the_view.replace(re, "_in_context");
-            _context7.p = 5;
-            _context7.n = 6;
+            _context7.p = 9;
+            _context7.n = 10;
             return (0, _communication_react.postAjaxPromise)(the_view, {
               context_id: window.context_id,
               resource_name: module_name
             });
-          case 6:
+          case 10:
             data = _context7.v;
             _new_id = "".concat(data.kind, ": ").concat(data.resource_name);
             drmethod = function drmethod(dmethod) {
               _registerDirtyMethod(_new_id, dmethod);
             };
-            _context7.n = 7;
+            _context7.n = 11;
             return _addPanelPromise(_new_id, data.kind, data.res_type, data.resource_name, "spinner");
-          case 7:
+          case 11:
             propDict[data.kind](data, drmethod, function (new_panel) {
               _updatePanel(_new_id, {
                 panel: new_panel
               });
             });
-            _context7.n = 9;
+            _context7.n = 13;
             break;
-          case 8:
-            _context7.p = 8;
-            _t6 = _context7.v;
-            errorDrawerFuncs.addFromError("Error going to module ".concat(module_name), _t6);
-          case 9:
+          case 12:
+            _context7.p = 12;
+            _t5 = _context7.v;
+            errorDrawerFuncs.addFromError("Error going to module ".concat(module_name), _t5);
+          case 13:
             return _context7.a(2);
         }
-      }, _callee6, null, [[5, 8]]);
+      }, _callee6, null, [[9, 12], [1, 6, 7, 8]]);
     }));
     return _goToModule2.apply(this, arguments);
   }
@@ -718,66 +691,26 @@ function ContextApp(props) {
       line_setter: rfunc
     });
   }
-  function _onDragStart(event, tab_id) {
-    set_currently_dragging(tab_id);
-    event.stopPropagation();
-  }
-  function _onDragEnd(event) {
-    set_dragging_over(null);
-    set_currently_dragging(null);
-    event.stopPropagation();
-    event.preventDefault();
-  }
-  function _nextTab(tab_id) {
-    var tidx = tab_ids_ref.current.indexOf(tab_id);
-    if (tidx === -1) return null;
-    if (tidx === tab_ids_ref.current.length - 1) return "dummy";
-    return tab_ids_ref.current[tidx + 1];
-  }
-  function _onDrop(event, target_id) {
-    if (currently_dragging === null || currently_dragging === target_id) return;
-    var current_index = tab_ids_ref.current.indexOf(currently_dragging);
-    var new_tab_ids = _toConsumableArray(tab_ids_ref.current);
-    new_tab_ids.splice(current_index, 1);
-    if (target_id === "dummy") {
-      new_tab_ids.push(currently_dragging);
-    } else {
-      var target_index = new_tab_ids.indexOf(target_id);
-      new_tab_ids.splice(target_index, 0, currently_dragging);
-    }
-    set_tab_ids(new_tab_ids);
-    set_dragging_over(null);
-    event.stopPropagation();
-  }
-  function _onDragOver(event) {
-    event.stopPropagation();
-    event.preventDefault();
-  }
-  function _onDragEnter(event, target_id) {
-    if (target_id === currently_dragging || target_id === _nextTab(currently_dragging)) {
-      set_dragging_over(null);
-    } else {
-      set_dragging_over(target_id);
-    }
-    event.stopPropagation();
-    event.preventDefault();
-  }
-  function _onDragLeave(event) {
-    event.stopPropagation();
-    event.preventDefault();
-  }
   function _getOpenResources() {
     var open_resources = [];
-    for (var the_id in tab_panel_dict_ref.current) {
-      var entry = tab_panel_dict_ref.current[the_id];
-      if (entry.panel !== "spinner") {
-        open_resources.push({
-          id: the_id,
-          resource_name: entry.panel.resource_name,
-          res_type: entry.res_type,
-          main_id: entry.panel.main_id
-        });
+    var _iterator3 = _createForOfIteratorHelper(tabPanelListRef.current),
+      _step3;
+    try {
+      for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+        var entry = _step3.value;
+        if (!isStandardTab(entry) && entry.panel !== "spinner") {
+          open_resources.push({
+            id: entry.identifier,
+            resource_name: entry.panel.resource_name,
+            res_type: entry.res_type,
+            main_id: entry.panel.main_id
+          });
+        }
       }
+    } catch (err) {
+      _iterator3.e(err);
+    } finally {
+      _iterator3.f();
     }
     return open_resources;
   }
@@ -808,20 +741,21 @@ function ContextApp(props) {
     }
     _addOmniItems("global", omni_items);
   }
-  var bclass = "context-tab-button-content";
-  if (selectedTabIdRef.current === "library") {
-    bclass += " selected-tab-button";
+  function amSelected(ltab_id, lselectedTabIdRef) {
+    return !window.in_context || ltab_id === lselectedTabIdRef.current;
   }
   var library_panel = /*#__PURE__*/_react["default"].createElement(_utilities_react.SelectedPaneContext.Provider, {
+    key: "library",
     value: {
       tab_id: "library",
       selectedTabIdRef: selectedTabIdRef,
       amSelected: amSelected,
-      counter: selectedTabIdCounter,
       addOmniItems: function addOmniItems(items) {
-        _addOmniItems("library", items);
+        _addOmniItems("libary", items);
       }
     }
+  }, /*#__PURE__*/_react["default"].createElement(_context_elements.ContextPaneElement, {
+    identifier: "library"
   }, /*#__PURE__*/_react["default"].createElement("div", {
     id: "library-home-root",
     style: {
@@ -838,120 +772,29 @@ function ContextApp(props) {
     am_selected: selectedTabIdRef.current === "library",
     open_resources_ref: open_resources_ref,
     handleCreateViewer: _handleCreateViewer
-  })));
-  var ltab = /*#__PURE__*/_react["default"].createElement(_core.Tab, {
-    id: "library",
-    tabIndex: -1,
-    key: "library",
-    style: {
-      paddingLeft: 10,
-      marginBottom: 0
-    },
-    panelClassName: "context-tab",
-    title: "",
-    panel: library_panel
-  }, /*#__PURE__*/_react["default"].createElement("div", {
-    className: bclass + " open-resource-tab",
-    style: {
-      display: "flex",
-      flexDirection: "row",
-      width: "100%",
-      justifyContent: "space-between"
-    }
-  }, /*#__PURE__*/_react["default"].createElement("div", {
-    style: {
-      display: "table-cell",
-      flexDirection: "row",
-      justifyContent: "flex-start",
-      textOverflow: "ellipsis",
-      overflow: "hidden"
-    }
-  }, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
-    icon: libIconDict["all"],
-    style: {
-      verticalAlign: "middle",
-      marginRight: 5
-    },
-    size: 16,
-    tabIndex: -1
-  }), /*#__PURE__*/_react["default"].createElement("span", null, "Library"))));
-  var all_tabs = [ltab];
+  }))));
+  var all_panels = [library_panel];
   if (window.has_pool) {
-    var pclass = "context-tab-button-content";
-    if (selectedTabIdRef.current === "pool") {
-      pclass += " selected-tab-button";
-    }
     var pool_panel = /*#__PURE__*/_react["default"].createElement(_utilities_react.SelectedPaneContext.Provider, {
+      key: "pool",
       value: {
         tab_id: "pool",
         selectedTabIdRef: selectedTabIdRef,
         amSelected: amSelected,
-        counter: selectedTabIdCounter,
         addOmniItems: function addOmniItems(items) {
           _addOmniItems("pool", items);
         }
       }
+    }, /*#__PURE__*/_react["default"].createElement(_context_elements.ContextPaneElement, {
+      identifier: "pool"
     }, /*#__PURE__*/_react["default"].createElement(_pool_browser.PoolBrowser, {
       tsocket: tsocket,
       am_selected: selectedTabIdRef.current === "pool",
       getOpenResources: _getOpenResources,
       setSelectedTabId: setSelectedTabId,
       handleCreateViewer: _handleCreateViewer
-    }));
-    var ptab = /*#__PURE__*/_react["default"].createElement(_core.Tab, {
-      id: "pool",
-      tabIndex: -1,
-      key: "pool",
-      style: {
-        paddingLeft: 10,
-        marginBottom: 0
-      },
-      panelClassName: "context-tab",
-      title: "",
-      panel: pool_panel
-    }, /*#__PURE__*/_react["default"].createElement("div", {
-      className: pclass + " open-resource-tab",
-      style: {
-        display: "flex",
-        flexDirection: "row",
-        width: "100%",
-        justifyContent: "space-between"
-      }
-    }, /*#__PURE__*/_react["default"].createElement("div", {
-      style: {
-        display: "table-cell",
-        flexDirection: "row",
-        justifyContent: "flex-start",
-        textOverflow: "ellipsis",
-        overflow: "hidden"
-      }
-    }, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
-      icon: libIconDict["pool"],
-      style: {
-        verticalAlign: "middle",
-        marginRight: 5
-      },
-      size: 16,
-      tabIndex: -1
-    }), /*#__PURE__*/_react["default"].createElement("span", null, "Pool"))));
-    all_tabs.push(ptab);
-  }
-  bclass = "context-tab-button-content-divider";
-  var separator_tab = /*#__PURE__*/_react["default"].createElement(_core.Tab, {
-    id: "divider",
-    draggable: "false",
-    disabled: true,
-    tabIndex: -1,
-    key: "divider",
-    panelClassName: "context-tab",
-    title: "",
-    panel: null
-  }, /*#__PURE__*/_react["default"].createElement(_core.Divider, {
-    className: bclass
-  }));
-  all_tabs.push(separator_tab);
-  function amSelected(ltab_id, lselectedTabIdRef) {
-    return !window.in_context || ltab_id === lselectedTabIdRef.current;
+    })));
+    all_panels.push(pool_panel);
   }
   var _omni_view_func = (0, _react.useCallback)(/*#__PURE__*/function () {
     var _ref2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3(item) {
@@ -1003,56 +846,54 @@ function ContextApp(props) {
       return _ref2.apply(this, arguments);
     };
   }(), []);
-  var _iterator2 = _createForOfIteratorHelper(tab_ids_ref.current),
-    _step2;
+  var _iterator4 = _createForOfIteratorHelper(tabPanelListRef.current),
+    _step4;
   try {
     var _loop2 = function _loop2() {
-      var tab_id = _step2.value;
-      var tab_entry = tab_panel_dict_ref.current[tab_id];
-      var bclass = "context-tab-button-content";
-      if (selectedTabIdRef.current === tab_id) {
-        bclass += " selected-tab-button";
-      }
-      var visible_title = tab_entry.title;
+      var entry = _step4.value;
       var wrapped_panel;
-      if (tab_entry.panel === "spinner") {
+      if (["library", "pool"].includes(entry.identifier)) {
+        return 1; // continue
+      }
+      if (entry.panel === "spinner") {
         wrapped_panel = spinner_panel;
       } else {
-        var TheClass = classDict[tab_entry.kind];
+        var TheClass = classDict[entry.kind];
         var the_panel = /*#__PURE__*/_react["default"].createElement(_utilities_react.SelectedPaneContext.Provider, {
           value: {
-            tab_id: tab_id,
+            tab_id: entry.identifier,
             selectedTabIdRef: selectedTabIdRef,
             amSelected: amSelected,
-            counter: selectedTabIdCounter,
             addOmniItems: function addOmniItems(items) {
-              _addOmniItems(tab_id, items);
+              _addOmniItems(entry.identifier, items);
             }
           }
-        }, /*#__PURE__*/_react["default"].createElement(TheClass, _extends({}, tab_entry.panel, {
+        }, /*#__PURE__*/_react["default"].createElement(_context_elements.ContextPaneElement, {
+          identifier: entry.identifier
+        }, /*#__PURE__*/_react["default"].createElement(TheClass, _extends({}, entry.panel, {
           controlled: true,
           handleCreateViewer: _handleCreateViewer,
-          tab_id: tab_id,
+          tab_id: entry.identifier,
           selectedTabIdRef: selectedTabIdRef,
           changeResourceName: function changeResourceName(new_name) {
             var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
             var change_title = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
-            _changeResourceName(tab_id, new_name, change_title, callback);
+            _changeResourceName(entry.identifier, new_name, change_title, callback);
           },
           updatePanel: function updatePanel(new_panel) {
             var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-            _updatePanel(tab_id, new_panel, callback);
+            _updatePanel(entry.identifier, new_panel, callback);
           },
           goToModule: _goToModule,
           registerLineSetter: function registerLineSetter(rfunc) {
-            return _registerLineSetter(tab_id, rfunc);
+            return _registerLineSetter(entry.identifier, rfunc);
           },
           refreshTab: /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee7() {
             return _regenerator().w(function (_context8) {
               while (1) switch (_context8.n) {
                 case 0:
                   _context8.n = 1;
-                  return _refreshTab(tab_id);
+                  return _refreshTab(entry.identifier);
                 case 1:
                   return _context8.a(2);
               }
@@ -1063,173 +904,38 @@ function ContextApp(props) {
               while (1) switch (_context9.n) {
                 case 0:
                   _context9.n = 1;
-                  return _closeTab(tab_id);
+                  return _closeTab(entry.identifier);
                 case 1:
                   return _context9.a(2);
               }
             }, _callee8);
           })),
-          tsocket: tab_entry.panel.tsocket
-        })));
-        wrapped_panel = /*#__PURE__*/_react["default"].createElement(_error_boundary.ErrorBoundary, null, /*#__PURE__*/_react["default"].createElement("div", {
-          id: "".concat(tab_id, "-holder"),
+          tsocket: entry.panel.tsocket
+        }))));
+        wrapped_panel = /*#__PURE__*/_react["default"].createElement(_react.Fragment, {
+          key: entry.identifier
+        }, /*#__PURE__*/_react["default"].createElement(_error_boundary.ErrorBoundary, null, /*#__PURE__*/_react["default"].createElement("div", {
+          id: "".concat(entry.identifier, "-holder"),
           style: {
             display: "flex",
             flexDirection: "column",
             position: "relative",
-            height: "100%",
+            height: selectedTabIdRef.current == entry.identifier ? "100%" : 0,
             width: "100%"
           },
-          className: panelRootDict[tab_panel_dict_ref.current[tab_id].kind]
-        }, the_panel));
+          className: panelRootDict[entry.kind]
+        }, the_panel)));
       }
-      var icon_style = {
-        verticalAlign: "middle",
-        paddingLeft: 4
-      };
-      if (tab_id === dragging_over) {
-        bclass += " hovering";
-      }
-      if (tab_id === currently_dragging) {
-        bclass += " currently-dragging";
-      }
-      var new_tab = /*#__PURE__*/_react["default"].createElement(_core.Tab, {
-        id: tab_id,
-        draggable: "true",
-        onDragStart: function onDragStart(e) {
-          _onDragStart(e, tab_id);
-        },
-        onDrop: function onDrop(e) {
-          _onDrop(e, tab_id);
-        },
-        onDragEnter: function onDragEnter(e) {
-          _onDragEnter(e, tab_id);
-        },
-        onDragOver: function onDragOver(e) {
-          _onDragOver(e, tab_id);
-        },
-        onDragLeave: function onDragLeave(e) {
-          _onDragLeave(e, tab_id);
-        },
-        onDragEnd: function onDragEnd(e) {
-          _onDragEnd(e);
-        },
-        tabIndex: -1,
-        key: tab_id,
-        panelClassName: "context-tab",
-        title: "",
-        panel: wrapped_panel
-      }, /*#__PURE__*/_react["default"].createElement("div", {
-        className: bclass + " open-resource-tab",
-        style: {
-          display: "flex",
-          flexDirection: "row",
-          width: "100%",
-          justifyContent: "space-between"
-        }
-      }, /*#__PURE__*/_react["default"].createElement("div", {
-        style: {
-          display: "table-cell",
-          flexDirection: "row",
-          justifyContent: "flex-start",
-          textOverflow: "ellipsis",
-          overflow: "hidden"
-        }
-      }, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
-        icon: iconDict[tab_entry.kind],
-        style: {
-          verticalAlign: "middle",
-          marginRight: 5
-        },
-        size: 16,
-        tabIndex: -1
-      }), /*#__PURE__*/_react["default"].createElement("span", null, visible_title)), /*#__PURE__*/_react["default"].createElement("div", {
-        style: {
-          marginRight: 5
-        }
-      }, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
-        icon: "reset",
-        style: icon_style,
-        size: 13,
-        className: "context-close-button show-on-hover",
-        tabIndex: -1,
-        onClick: /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee9() {
-          return _regenerator().w(function (_context0) {
-            while (1) switch (_context0.n) {
-              case 0:
-                _context0.n = 1;
-                return _refreshTab(tab_id);
-              case 1:
-                return _context0.a(2);
-            }
-          }, _callee9);
-        }))
-      }), /*#__PURE__*/_react["default"].createElement(_core.Icon, {
-        icon: "delete",
-        style: icon_style,
-        size: 13,
-        className: "context-close-button show-on-hover",
-        tabIndex: -1,
-        onClick: /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee0() {
-          return _regenerator().w(function (_context1) {
-            while (1) switch (_context1.n) {
-              case 0:
-                _context1.n = 1;
-                return _closeTab(tab_id);
-              case 1:
-                return _context1.a(2);
-            }
-          }, _callee0);
-        }))
-      }))));
-      all_tabs.push(new_tab);
+      all_panels.push(wrapped_panel);
     };
-    for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-      _loop2();
+    for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
+      if (_loop2()) continue;
     }
-
-    // The purpose of the dummy tab is to make it possible to drag a tab to the bottom of the list
   } catch (err) {
-    _iterator2.e(err);
+    _iterator4.e(err);
   } finally {
-    _iterator2.f();
+    _iterator4.f();
   }
-  bclass = "context-tab-button-content";
-  if (dragging_over === "dummy") {
-    bclass += " hovering";
-  }
-  var dummy_tab = /*#__PURE__*/_react["default"].createElement(_core.Tab, {
-    id: "dummy",
-    draggable: "false",
-    disabled: true,
-    onDrop: function onDrop(e) {
-      _onDrop(e, "dummy");
-    },
-    onDragEnter: function onDragEnter(e) {
-      _onDragEnter(e, "dummy");
-    },
-    onDragOver: function onDragOver(e) {
-      _onDragOver(e, "dummy");
-    },
-    onDragLeave: function onDragLeave(e) {
-      _onDragLeave(e, "dummy");
-    },
-    tabIndex: -1,
-    key: "dummy",
-    panelClassName: "context-tab",
-    title: "",
-    panel: null
-  }, /*#__PURE__*/_react["default"].createElement("div", {
-    className: bclass,
-    style: {
-      height: 30,
-      opacity: 0,
-      display: "flex",
-      flexDirection: "row",
-      justifyContent: "space-between"
-    }
-  }));
-  all_tabs.push(dummy_tab);
   var outer_class = "pane-holder ";
   if (settingsContext.isDark()) {
     outer_class = "".concat(outer_class, " bp6-dark");
@@ -1244,16 +950,26 @@ function ContextApp(props) {
     paddingLeft: 0,
     position: "relative"
   };
-  var tlclass = "context-tab-list";
-  var pane_closed = tabWidth <= MIN_CONTEXT_WIDTH;
-  if (pane_closed) {
-    tlclass += " context-pane-closed";
-  }
   var sid = selectedTabIdRef.current;
   var commandItems = omniItemsRef.current["global"];
   if (sid in omniItemsRef.current) {
     commandItems = commandItems.concat(omniItemsRef.current[sid]);
   }
+  var left_pane = /*#__PURE__*/_react["default"].createElement(_context_elements.ContextNavigator, {
+    handleTabSelect: _handleTabSelect,
+    selectedItem: selectedTabIdRef.current,
+    closeTab: _closeTab,
+    refresTab: _refreshTab,
+    dispatch: tabPanelListDispatch,
+    tabPanelList: tabPanelList
+  });
+  var right_pane = /*#__PURE__*/_react["default"].createElement("div", {
+    style: {
+      width: "100%",
+      height: "100%",
+      position: "relative"
+    }
+  }, all_panels);
   return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
     is_authenticated: window.is_authenticated,
     selected: null,
@@ -1266,55 +982,21 @@ function ContextApp(props) {
     tabIndex: "0",
     style: outer_style,
     ref: top_ref,
+    id: "context-container",
     onKeyDown: handleKeyDown,
     onKeyUp: handleKeyUp
-  }, /*#__PURE__*/_react["default"].createElement("div", {
-    id: "context-container",
-    style: {
-      display: "flex",
-      flexDirection: "row",
-      width: "100%",
-      position: "relative"
-    }
-  }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
-    icon: /*#__PURE__*/_react["default"].createElement(_core.Icon, {
-      icon: pane_closed ? "drawer-left-filled" : "drawer-right-filled",
-      size: 18
-    }),
-    style: {
-      paddingLeft: 4,
-      paddingRight: 0,
-      position: "fixed",
-      left: tabWidth - 30,
-      bottom: _toaster.STATUS_BAR_HEIGHT + 5,
-      zIndex: 1
-    },
-    variant: "minimal",
-    className: "context-close-button",
-    size: "small",
-    tabIndex: -1,
-    onClick: function onClick() {
-      _togglePane(pane_closed);
-    }
-  }), /*#__PURE__*/_react["default"].createElement(_drag_handle.DragHandle, {
-    position_dict: {
-      position: "fixed",
-      left: tabWidth - 5
-    },
-    onDrag: _handleTabResize,
-    dragStart: _handleTabResizeStart,
-    dragEnd: _handleTabResizeEnd,
-    direction: "x",
-    barHeight: "100%",
-    useThinBar: true
-  }), /*#__PURE__*/_react["default"].createElement(_core.Tabs, {
-    id: "context-tabs",
-    selectedTabId: selectedTabIdRef.current,
-    className: tlclass,
-    style: {},
-    vertical: true,
-    onChange: _handleTabSelect
-  }, all_tabs)), /*#__PURE__*/_react["default"].createElement(_utilities_react.SelectedPaneContext.Provider, {
+  }, /*#__PURE__*/_react["default"].createElement(_resizing_allotment.HorizontalPanes, {
+    left_pane: left_pane,
+    snap_left: true,
+    minWidth: 100,
+    right_pane: right_pane,
+    show_handle: true,
+    widths: [_sizing_tools.INIT_CONTEXT_PANEL_WIDTH, window.innerWidth - _sizing_tools.INIT_CONTEXT_PANEL_WIDTH],
+    initial_width_fraction: .1,
+    handleResizeEnd: null,
+    bottom_margin: 0,
+    right_margin: 0
+  })), /*#__PURE__*/_react["default"].createElement(_utilities_react.SelectedPaneContext.Provider, {
     value: {
       tab_id: sid,
       selectedTabIdRef: selectedTabIdRef,
@@ -1330,6 +1012,6 @@ function ContextApp(props) {
     openFunc: _omni_view_func,
     is_authenticated: window.is_authenticated,
     closeOmnibar: _closeOpenOmnibar
-  }))));
+  })));
 }
 _context_main();

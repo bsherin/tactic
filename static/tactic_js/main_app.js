@@ -91,7 +91,6 @@ function MainApp(props) {
   }
   var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
   var last_save = (0, _react.useRef)({});
-  var resizing = (0, _react.useRef)(false);
   var updateExportsList = (0, _react.useRef)(null);
   var main_outer_ref = (0, _react.useRef)(null);
   var set_table_scroll = (0, _react.useRef)(null);
@@ -668,12 +667,6 @@ function MainApp(props) {
   }
   function _handleHorizontalFractionChange(left_width, right_width, new_fraction) {
     _setMainStateValue("horizontal_fraction", new_fraction);
-  }
-  function _handleResizeStart() {
-    resizing.current = true;
-  }
-  function _handleResizeEnd() {
-    resizing.current = false;
   }
   function _handleConsoleFractionChange(left_width, right_width, new_fraction) {
     _setMainStateValue("console_width_fraction", new_fraction);
@@ -1470,9 +1463,7 @@ function MainApp(props) {
       scrollAdjustSelectors: [".bp6-table-quadrant-scroll-container", ".tile-div"],
       initial_width_fraction: mState.horizontal_fraction,
       separatorPadding: 8,
-      handleSplitUpdate: _handleHorizontalFractionChange,
-      handleResizeStart: _handleResizeStart,
-      handleResizeEnd: _handleResizeEnd
+      handleSplitUpdate: _handleHorizontalFractionChange
     }));
   }
   var extra_menubar_buttons = [];
@@ -1550,8 +1541,6 @@ function MainApp(props) {
     initial_height_fraction: mState.height_fraction,
     scrollAdjustSelectors: [".bp6-table-quadrant-scroll-container", ".tile-div"],
     handleSplitUpdate: _handleVerticalSplitUpdate,
-    handleResizeStart: _handleResizeStart,
-    handleResizeEnd: _handleResizeEnd,
     separatorPadding: 10,
     overflow: "hidden"
   })), /*#__PURE__*/_react["default"].createElement(_metadata_drawer.MetadataDrawer, {

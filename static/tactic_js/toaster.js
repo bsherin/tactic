@@ -121,9 +121,8 @@ function withStatus(WrappedComponent) {
       status_message = _useState4[0],
       set_status_message = _useState4[1];
     var _useState5 = (0, _react.useState)(props.spinner_size ? props.spinner_size : 25),
-      _useState6 = _slicedToArray(_useState5, 2),
-      spinner_size = _useState6[0],
-      set_spinner_size = _useState6[1];
+      _useState6 = _slicedToArray(_useState5, 1),
+      spinner_size = _useState6[0];
     var _useState7 = (0, _react.useState)(0),
       _useState8 = _slicedToArray(_useState7, 2),
       leftEdge = _useState8[0],

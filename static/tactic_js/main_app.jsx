@@ -75,7 +75,6 @@ function MainApp(props) {
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
 
     const last_save = useRef({});
-    const resizing = useRef(false);
     const updateExportsList = useRef(null);
     const main_outer_ref = useRef(null);
     const set_table_scroll = useRef(null);
@@ -516,14 +515,6 @@ function MainApp(props) {
 
     function _handleHorizontalFractionChange(left_width, right_width, new_fraction) {
         _setMainStateValue("horizontal_fraction", new_fraction)
-    }
-
-    function _handleResizeStart() {
-        resizing.current = true;
-    }
-
-    function _handleResizeEnd() {
-        resizing.current = false;
     }
 
     function _handleConsoleFractionChange(left_width, right_width, new_fraction) {
@@ -1126,8 +1117,6 @@ function MainApp(props) {
                                  initial_width_fraction={mState.horizontal_fraction}
                                  separatorPadding={8}
                                  handleSplitUpdate={_handleHorizontalFractionChange}
-                                 handleResizeStart={_handleResizeStart}
-                                 handleResizeEnd={_handleResizeEnd}
                 />
 
             </Fragment>
@@ -1211,8 +1200,6 @@ function MainApp(props) {
                                            initial_height_fraction={mState.height_fraction}
                                            scrollAdjustSelectors={[".bp6-table-quadrant-scroll-container", ".tile-div"]}
                                            handleSplitUpdate={_handleVerticalSplitUpdate}
-                                           handleResizeStart={_handleResizeStart}
-                                           handleResizeEnd={_handleResizeEnd}
                                            separatorPadding={10}
                                            overflow="hidden"
                             />

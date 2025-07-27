@@ -45,14 +45,17 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
 function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
 function _arrayWithHoles(r) { if (Array.isArray(r)) return r; } // noinspection ProblematicWhitespace,ConstantOnRightSideOfComparisonJS,JSUnusedLocalSymbols
 /*jshint esversion: 6 */
-function trueFunc() {
-  return true;
+function amSelected(ltab_id, lselectedTabIdRef) {
+  return !window.in_context || ltab_id === lselectedTabIdRef.current;
 }
 var SelectedPaneContext = exports.SelectedPaneContext = /*#__PURE__*/(0, _react.createContext)({
   tab_id: "",
   selectedTabIdRef: "",
-  amSelected: trueFunc,
-  counter: 0
+  amSelected: amSelected,
+  counter: 0,
+  addOmniItems: function addOmniItems() {},
+  closeTab: function closeTab() {},
+  refreshTab: function refreshTab() {}
 });
 var convertExtraKeys = exports.convertExtraKeys = function convertExtraKeys(extraKeys) {
   var newExtraKeys = [];

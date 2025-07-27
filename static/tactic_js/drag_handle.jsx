@@ -53,7 +53,6 @@ function DragHandle(props) {
     }
 
     function handleDragMove(event) {
-        const e = event.activatorEvent;
         const dx = event.delta.x;
         const dy = event.delta.y;
         lastX.current = startX.current + dx;
@@ -113,7 +112,7 @@ function DragHandleBody(props) {
         y: "drag-handle-horizontal",
         both: "caret-right"
     };
-    const {attributes, listeners, setNodeRef, transform} = useDraggable({id: 'drag-handle-id'});
+    const {attributes, listeners, setNodeRef, } = useDraggable({id: 'drag-handle-id'});
     return props.useThinBar ? (
         <div ref={setNodeRef} {...listeners} {...attributes}
              className={props.direction === "x" ? "resize-border" : "horizontal-resize-border"}

@@ -1259,10 +1259,7 @@ function PoolBrowser(props) {
     right_pane: right_pane,
     right_pane_overflow: "auto",
     initial_width_fraction: .75,
-    scrollAdjustSelectors: [".bp6-table-quadrant-scroll-container"],
-    handleSplitUpdate: null,
-    handleResizeStart: null,
-    handleResizeEnd: null
+    scrollAdjustSelectors: [".bp6-table-quadrant-scroll-container"]
   })));
 }
 exports.PoolBrowser = PoolBrowser = /*#__PURE__*/(0, _react.memo)(PoolBrowser);

@@ -66,7 +66,7 @@ $light-highlight-weight: 600;
         }
     }
 
-    .context-tab-button-content, .menu-bar, .combined-metadata, .all-pane {
+    .context-nav-item, .menu-bar, .combined-metadata, .all-pane {
         .bp6-icon-cube {
             color: blueprint_variables.$orange5 ! important
         }
@@ -114,43 +114,42 @@ $light-highlight-weight: 600;
         background-color: $light-app-backdrop
     }
 
-    #context-container {
-        .context-tab-list {
-            > .bp6-tab-list {
-                background-color: $light-framing-bg;
-                color: white;
-                border-top: .75px solid #c5cbd3;
-            }
-        }
-
-        .context-tab-button-content {
-            color: blueprint_variables.$dark-gray1;
-            background-color: blueprint_variables.$gray5;
-
-            .bp6-icon {
-                color: blueprint_variables.$dark-gray4
-            }
-
-            .context-close-button:hover {
-                color: blueprint_variables.$red5;
-            }
-
-            &.selected-tab-button {
-                color: $light-context-highlight-color !important;
-                font-weight: $light-highlight-weight;
-
-                .repository-highlight {
-                    color: $context-repository-highlight-color
-                }
-
-                .context-close-button .bp6-icon {
-                    color: $light-context-highlight-color;
-
-                }
-            }
-        }
-
+    .context-navigator {
+        background-color: $light-framing-bg;
+        color: white;
+        border-top: .75px solid #c5cbd3;
     }
+
+    .context-sortable-nav-item, .context-item-unsortable .context-nav-item  {
+        background-color: blueprint_variables.$dark-gray4 !important;
+    }
+
+    .context-sortable-nav-item {
+        color: blueprint_variables.$dark-gray1;
+
+        .bp6-icon {
+            color: blueprint_variables.$dark-gray4
+        }
+
+        .context-close-button:hover {
+            color: blueprint_variables.$red5;
+        }
+
+        &.selected-tab-button {
+            color: $light-context-highlight-color !important;
+            font-weight: $light-highlight-weight;
+
+            .repository-highlight {
+                color: $context-repository-highlight-color
+            }
+
+            .context-close-button .bp6-icon {
+                color: $light-context-highlight-color;
+
+            }
+        }
+    }
+
 
     #main-panel {
         .main-heading {
@@ -377,34 +376,32 @@ $light-highlight-weight: 600;
         background-color: $dark-app-backdrop;
     }
 
-    #context-container {
-        .context-tab-list {
-            > .bp6-tab-list {
-                background-color: $dark-framing-bg;
-                color: white;
-                border-right: 1px solid blueprint_variables.$light-gray4;
-            }
+    .context-navigator {
+        background-color: $dark-framing-bg;
+        color: white;
+        border-right: 1px solid blueprint_variables.$light-gray4;
+    }
+
+    .context-sortable-nav-item {
+        color: white;
+
+        .context-close-button:hover {
+            color: blueprint_variables.$red5;
         }
+    }
 
-        .context-tab-button-content {
-            color: white;
-            background-color: $light-context-highlight-color;
+    .context-sortable-nav-item, .context-item-unsortable .context-nav-item {
+        background-color: blueprint_variables.$dark-gray4 !important;
+        &.selected-tab-button {
+            color: $context-highlight-color !important;
 
-            .context-close-button:hover {
-                color: blueprint_variables.$red5;
+            .repository-highlight {
+                color: $context-repository-highlight-color
             }
 
-            &.selected-tab-button {
-                color: $context-highlight-color !important;
+            .context-close-button .bp6-icon {
+                color: $context-highlight-color;
 
-                .repository-highlight {
-                    color: $context-repository-highlight-color
-                }
-
-                .context-close-button .bp6-icon {
-                    color: $context-highlight-color;
-
-                }
             }
         }
     }

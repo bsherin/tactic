@@ -1102,6 +1102,7 @@ function CreatorApp(props) {
 
     let outer_style = {
         width: `calc(100% - ${ICON_BAR_WIDTH}px)`,
+        height: "100%",
         flexGrow: 1,
         display: 'flex',
         flexDirection: 'column',

@@ -328,7 +328,7 @@ function CodeViewerApp(props) {
     let my_props = {...props};
     let outer_style = {
         width: `calc(100% - ${ICON_BAR_WIDTH}px)`,
-        flexGrow: 1,
+        height: "100%",
         display: 'flex',
         flexDirection: 'column',
         paddingLeft: 0,

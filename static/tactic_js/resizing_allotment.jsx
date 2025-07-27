@@ -1,10 +1,16 @@
-import React, {useMemo, useRef} from "react";
-import {Allotment} from "allotment";
+import React, {useMemo, useRef, useState} from "react";
+import {Allotment, setSashSize} from "allotment";
 import "allotment/dist/style.css";
+import {Button, Icon} from "@blueprintjs/core";
+
+setSashSize(12)
 
 export function HorizontalPanes({
                                     left_pane,
                                     right_pane,
+                                    snap_left = false,
+                                    widths = null,
+                                    minWidth = 30,
                                     initial_width_fraction = 0.5,
                                     handleSplitUpdate = null,
                                     handleResizeStart = null,
@@ -16,6 +22,11 @@ export function HorizontalPanes({
                                 }) {
     const leftRef = useRef(null);
     const rightRef = useRef(null);
+    const mainRef = useRef(null);
+    const savedFraction = useRef(null);
+
+
+    const [snapped, setSnapped] = useState(false);
 
     const outerStyle = {
         ...outer_style,
@@ -27,56 +38,149 @@ export function HorizontalPanes({
         marginLeft: left_margin || undefined,
     };
 
-    // Called on pane resize
     const handleChange = (sizes) => {
-        const left = sizes[0];
-        const right = sizes[1];
+        let left = sizes[0];
+        let right = sizes[1];
+        let frac;
         const total = left + right;
-        const frac = total > 0 ? left / total : 0.5;
-
+        frac = total > 0 ? left / total : 0.5;
         if (handleSplitUpdate) handleSplitUpdate(left, right, frac);
-        if (handleResizeEnd) handleResizeEnd(frac);
     };
 
-    // Set up initial fraction
-    const preferredSizes = useMemo(() => {
-        const left = initial_width_fraction * 100;
-        const right = 100 - left;
+    const defaultSizes = useMemo(() => {
+        let left;
+        let right;
+        if (widths) {
+            left = widths[0];
+            right = widths[1];
+        } else {
+            left = initial_width_fraction * 100;
+            right = 100 - left;
+        }
+
         return [left, right];
-    }, [initial_width_fraction]);
+    }, [initial_width_fraction, widths]);
+
+    function unSnap() {
+        setSnapped(false);
+    }
+
+    function snap() {
+        setSnapped(true);
+    }
+
+    function onDragStart() {
+        if (snap_left) {
+            let left = leftRef.current?.offsetWidth || 0;
+            if (left < minWidth) {
+                left = minWidth
+            }
+
+            let right = rightRef.current?.offsetWidth || 0;
+            savedFraction.current = (left + right) > 0 ? left / (left + right) : 0.5;
+        }
+        if (handleResizeStart) {
+            handleResizeStart()
+        }
+    }
+
+    function onDragEnd() {
+        let left = leftRef.current?.offsetWidth || 0;
+        let right = rightRef.current?.offsetWidth || 0;
+        let frac = (left + right) > 0 ? left / (left + right) : 0.5;
+        if (snap_left) {
+            if (left < minWidth) {
+                setSnapped(true)
+                if (savedFraction.current && savedFraction.current > 0) {
+                    const left = savedFraction.current * 100;
+                    const right = 100 - left;
+                    mainRef.current.resize([left, right]);
+                } else {
+                    mainRef.current.resize(defaultSizes);
+                }
+            }
+        }
+        if (handleResizeEnd) {
+            handleResizeEnd(frac);
+        }
+    }
 
     return (
         <div style={outerStyle}>
             <Allotment
-                defaultSizes={preferredSizes}
+                ref={mainRef}
+                defaultSizes={defaultSizes}
                 onChange={handleChange}
-                onDragStart={handleResizeStart}
-                onDragEnd={() => {
-                    if (handleResizeEnd) {
-                        const left = leftRef.current?.offsetWidth || 0;
-                        const right = rightRef.current?.offsetWidth || 0;
-                        const frac = (left + right) > 0 ? left / (left + right) : 0.5;
-                        handleResizeEnd(frac);
-                    }
-                }}>
-                <Allotment.Pane>
+                onDragStart={onDragStart}
+                minSize={snap_left ? 10 : minWidth}
+                onDragEnd={onDragEnd}>
+
+                <Allotment.Pane visible={!snapped}>
                     <div ref={leftRef}
-                         style={{height: "100%", width: "100%", paddingRight: separatorPadding / 2,
-                             overflow: "hidden"}}>
-                            {left_pane}
+                         style={{
+                             height: "100%", width: "100%", paddingRight: separatorPadding / 2,
+                             overflow: "hidden", position: "relative"
+                         }}>
+                        {left_pane}
+                        {snap_left && !snapped && <SnapButton snap={snap}/>}
                     </div>
                 </Allotment.Pane>
 
                 <Allotment.Pane>
-                    <div ref={rightRef} style={{height: "100%", width: "100%",
+                    <div ref={rightRef} style={{
+                        height: "100%", width: "100%",
                         paddingLeft: separatorPadding / 2,
-                        overflow: "hidden"}}>
-                            {right_pane}
+                        overflow: "hidden"
+                    }}>
+                        {snap_left && snapped && <UnsnapButton unSnap={unSnap}/>}
+                        {right_pane}
                     </div>
                 </Allotment.Pane>
             </Allotment>
         </div>
     );
+}
+
+function UnsnapButton(props) {
+    props = {
+        unSnap: null,
+        ...props
+    }
+    return (
+        <Button icon={<Icon icon="chevron-right" size={25}/>}
+                style={{
+                    paddingLeft: 0, paddingRight: 0,
+                    position: "absolute", top: "50%",
+                    left: -3,
+                    zIndex: 1,
+                    opacity: 0.5
+                }}
+                variant="minimal"
+                size="small"
+                tabIndex={-1}
+                onClick={props.unSnap}/>
+    )
+}
+
+function SnapButton(props) {
+    props = {
+        snap: null,
+        ...props
+    }
+    return (
+        <Button icon={<Icon icon="chevron-left" size={25}/>}
+                style={{
+                    paddingLeft: 0, paddingRight: 0,
+                    position: "absolute", top: "50%",
+                    right: -3,
+                    zIndex: 1,
+                    opacity: 0.5
+                }}
+                variant="minimal"
+                size="small"
+                tabIndex={-1}
+                onClick={props.snap}/>
+    )
 }
 
 export function VerticalPanes({
@@ -122,13 +226,13 @@ export function VerticalPanes({
                 <Allotment.Pane>
                     <div ref={topRef}
                          style={{width: "100%", height: "100%", paddingBottom: separatorPadding / 2}}>
-                            {top_pane}
+                        {top_pane}
                     </div>
                 </Allotment.Pane>
 
                 <Allotment.Pane>
                     <div ref={bottomRef} style={{width: "100%", height: "100%", paddingTop: separatorPadding / 2}}>
-                            {bottom_pane}
+                        {bottom_pane}
                     </div>
                 </Allotment.Pane>
             </Allotment>

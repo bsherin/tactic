@@ -2,7 +2,7 @@
 
 import React from "react";
 import { createRoot } from 'react-dom/client';
-import {Fragment, useState, useEffect, useRef, memo, useContext, createContext, useCallback} from "react";
+import {useState, useEffect, useRef, memo, useContext, createContext, useCallback} from "react";
 
 import {OverlayToaster, Position, Spinner} from "@blueprintjs/core";
 import {GlyphButton} from "./blueprint_react_widgets";
@@ -107,7 +107,7 @@ function withStatus(WrappedComponent) {
     function newFunc(props) {
         const [show_spinner, set_show_spinner] = useState(false);
         const [status_message, set_status_message] = useState(null);
-        const [spinner_size, set_spinner_size] = useState(props.spinner_size ? props.spinner_size : 25);
+        const [spinner_size, ] = useState(props.spinner_size ? props.spinner_size : 25);
         const [leftEdge, setLeftEdge] = useState(0);
 
         const pushCallback = useCallbackStack();

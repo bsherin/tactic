@@ -357,6 +357,7 @@ function ListViewerApp(props) {
   var my_props = _objectSpread({}, props);
   var outer_style = {
     width: "calc(100% - ".concat(_sizing_tools.ICON_BAR_WIDTH, "px)"),
+    height: "100%",
     flexGrow: 1,
     display: 'flex',
     flexDirection: 'column',
