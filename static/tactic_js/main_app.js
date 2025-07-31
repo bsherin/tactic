@@ -1473,6 +1473,7 @@ function MainApp(props) {
   }
   var outer_style = {
     width: "calc(100% - ".concat(_sizing_tools.ICON_BAR_WIDTH, "px)"),
+    height: "100%",
     flex: "1 1 0",
     minHeight: 0,
     overflow: "auto",
