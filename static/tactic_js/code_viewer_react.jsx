@@ -1,4 +1,9 @@
-import "../tactic_css/tactic.scss";
+
+if (!window.in_context) {
+    import("../tactic_css/tactic.scss");
+    import("../tactic_css/resource_viewer.scss");
+    import ("../tactic_css/themeable.scss");
+}
 import React from "react";
 import {Fragment, useState, useEffect, useRef, useMemo, memo, useContext, useCallback} from "react";
 import {createRoot} from 'react-dom/client';
@@ -7,8 +12,8 @@ import {useHotkeys} from "@blueprintjs/core";
 import {ResourceViewerApp, copyToLibrary, sendToRepository} from "./resource_viewer_react_app";
 import {TacticSocket} from "./tactic_socket";
 import {ReactCodemirror6} from "./react-codemirror6";
-import {postAjaxPromise, postPromise} from "./communication_react.js"
-import {withStatus, StatusContext} from "./toaster.js"
+import {postAjaxPromise, postPromise} from "./communication_react"
+import {withStatus, StatusContext} from "./toaster"
 
 import {withErrorDrawer} from "./error_drawer.js";
 import {guid, SelectedPaneContext} from "./utilities_react";
@@ -337,11 +342,7 @@ function CodeViewerApp(props) {
     let outer_class = "resource-viewer-holder";
     if (!props.controlled) {
         my_props.resource_name = resource_name;
-        if (settingsContext.isDark()) {
-            outer_class = outer_class + " bp6-dark";
-        } else {
-            outer_class = outer_class + " light-theme"
-        }
+        outer_class = `${outer_class} pane-holder ${settingsContext.isDark() ? "bp6-dark" : "light-theme"}`
     }
     return (
         <Fragment>
@@ -367,8 +368,7 @@ function CodeViewerApp(props) {
                 >
                     <ReactCodemirror6 code_content={code_content}
                                       show_fold_button={true}
-                                      no_width={true}
-                                      flex_height={true}
+                                      flex_size={true}
                                       extraKeys={_extraKeys()}
                                       readOnly={props.readOnly}
                                       handleChange={_handleCodeChange}
@@ -403,14 +403,7 @@ function code_viewer_main() {
         />;
         const domContainer = document.querySelector('#root');
         const root = createRoot(domContainer);
-        root.render(
-            <div style={{display: "flex", flexDirection: "column",
-                position: "relative",
-                height: "100%",
-                width: "100%"}}>
-                {the_element}
-            </div>
-        )
+        root.render(the_element)
     }
 
     let target = window.is_repository ? "repository_view_code_in_context" : "view_code_in_context";

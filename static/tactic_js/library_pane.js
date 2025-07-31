@@ -9,7 +9,7 @@ exports.view_views = view_views;
 var _react = _interopRequireWildcard(require("react"));
 var _core = require("@blueprintjs/core");
 var _table = require("@blueprintjs/table");
-var _blueprint_mdata_fields = require("./blueprint_mdata_fields");
+var _combined_metadata = require("./combined_metadata");
 var _resizing_allotment = require("./resizing_allotment");
 var _communication_react = require("./communication_react");
 var _toaster = require("./toaster");
@@ -100,14 +100,6 @@ function BodyMenu(props) {
     className: "context-menu-header"
   }), menu_items);
 }
-var metadata_outer_style = {
-  marginTop: 0,
-  marginLeft: 0,
-  overflow: "auto",
-  padding: 25,
-  marginRight: 0,
-  height: "100%"
-};
 var initial_state = {
   data_dict: {},
   num_rows: 0,
@@ -2214,13 +2206,12 @@ function LibraryPane(props) {
   }
   var res_type = pStateRef.current.select_state.selected_resource.res_type;
   var res_name = pStateRef.current.select_state.selected_resource.name;
-  var right_pane = /*#__PURE__*/_react["default"].createElement(_blueprint_mdata_fields.CombinedMetadata, {
+  var right_pane = /*#__PURE__*/_react["default"].createElement(_combined_metadata.CombinedMetadata, {
     key: "combined-metadata-library",
     elevation: 0,
     tsocket: props.tsocket,
     res_name: res_name,
     res_type: res_type,
-    outer_style: metadata_outer_style,
     expandWidth: true,
     readOnly: props.is_repository
   });
@@ -2238,7 +2229,7 @@ function LibraryPane(props) {
         hoverOpenDelay: 700,
         intent: "warning"
       }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
-        icon: _blueprint_mdata_fields.icon_dict[rtype],
+        icon: _combined_metadata.icon_dict[rtype],
         variant: "minimal",
         active: rtype == pState.search_state.filterType,
         onClick: /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee39() {
@@ -2298,8 +2289,6 @@ function LibraryPane(props) {
       display: "flex",
       flexGrow: 1,
       width: "100%",
-      marginLeft: 15,
-      marginTop: 0,
       position: "relative"
     },
     tabIndex: "0",
@@ -2311,8 +2300,7 @@ function LibraryPane(props) {
     left_pane: left_pane,
     right_pane: right_pane,
     right_pane_overflow: "auto",
-    initial_width_fraction: .75,
-    scrollAdjustSelectors: [".bp6-table-quadrant-scroll-container"]
+    initial_width_fraction: .75
   })));
 }
 exports.LibraryPane = LibraryPane = /*#__PURE__*/(0, _react.memo)(LibraryPane);

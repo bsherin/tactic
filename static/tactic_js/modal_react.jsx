@@ -13,7 +13,7 @@ import {
     Intent
 } from "@blueprintjs/core";
 
-import {BpSelect} from "./blueprint_mdata_fields"
+import {BpSelect} from "./selector_advanced"
 import {useCallbackStack} from "./utilities_react";
 import {postWithCallback} from "./communication_react";
 import {PoolAddressSelector} from "./pool_tree";

@@ -1,0 +1,12 @@
+
+$standard-padding: 25px;
+
+.resource-viewer-left-pane-holder {
+    padding-left: $standard-padding;
+    padding-right: $standard-padding;
+    padding-bottom: $standard-padding;
+
+    &.top-padded {
+        padding-top: $standard-padding;
+    }
+}

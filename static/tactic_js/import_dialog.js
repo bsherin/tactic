@@ -10,7 +10,7 @@ require("../css/dzcss/dropzone.css");
 require("../css/dzcss/filepicker.css");
 require("../css/dzcss/basic.css");
 var _core = require("@blueprintjs/core");
-var _blueprint_mdata_fields = require("./blueprint_mdata_fields");
+var _blueprint_mdata_fields = require("./combined_metadata");
 var _utilities_react = require("./utilities_react");
 var _server = require("react-dom/server");
 var _error_drawer = require("./error_drawer");

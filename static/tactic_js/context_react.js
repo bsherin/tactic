@@ -1,11 +1,13 @@
 "use strict";
 
-function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 require("../tactic_css/tactic.scss");
 require("../tactic_css/context.scss");
 require("../tactic_css/tactic_table.scss");
+require("../tactic_css/tactic_main.scss");
 require("../tactic_css/library_home.scss");
 require("../tactic_css/tile_creator.scss");
+require("../tactic_css/resource_viewer.scss");
+require("../tactic_css/themeable.scss");
 var _react = _interopRequireWildcard(require("react"));
 var _client = require("react-dom/client");
 var _core = require("@blueprintjs/core");
@@ -38,7 +40,7 @@ var _sizing_tools = require("./sizing_tools");
 var _settings = require("./settings");
 var _context_elements = require("./context_elements");
 var _modal_react = require("./modal_react");
-function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t6 in e) "default" !== _t6 && {}.hasOwnProperty.call(e, _t6) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t6)) && (i.get || i.set) ? o(f, _t6, i) : f[_t6] = e[_t6]); return f; })(e, t); }
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
 function _regeneratorValues(e) { if (null != e) { var t = e["function" == typeof Symbol && Symbol.iterator || "@@iterator"], r = 0; if (t) return t.call(e); if ("function" == typeof e.next) return e; if (!isNaN(e.length)) return { next: function next() { return e && r >= e.length && (e = void 0), { value: e && e[r++], done: !e }; } }; } throw new TypeError(_typeof(e) + " is not iterable"); }
 function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
@@ -56,7 +58,11 @@ function _nonIterableRest() { throw new TypeError("Invalid attempt to destructur
 function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
 function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
 function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
-function _arrayWithHoles(r) { if (Array.isArray(r)) return r; } // noinspection XmlDeprecatedElement,JSXUnresolvedComponent
+function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
+function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t6 in e) "default" !== _t6 && {}.hasOwnProperty.call(e, _t6) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t6)) && (i.get || i.set) ? o(f, _t6, i) : f[_t6] = e[_t6]); return f; })(e, t); } // noinspection XmlDeprecatedElement,JSXUnresolvedComponent
+Promise.resolve().then(function () {
+  return _interopRequireWildcard(require("../tactic_css/tactic_console.scss"));
+});
 _core.FocusStyleManager.onlyShowFocusOnTabs();
 var spinner_panel = /*#__PURE__*/_react["default"].createElement("div", {
   style: {
@@ -113,17 +119,9 @@ function _context_main() {
   var ContextAppPlus = (0, _pool_tree.withPool)((0, _settings.withSettings)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)((0, _assistant.withAssistant)(ContextApp))))));
   var domContainer = document.querySelector('#context-root');
   var root = (0, _client.createRoot)(domContainer);
-  root.render(/*#__PURE__*/_react["default"].createElement("div", {
-    style: {
-      display: "flex",
-      flexDirection: "column",
-      position: "relative",
-      height: "100%",
-      width: "100%"
-    }
-  }, /*#__PURE__*/_react["default"].createElement(ContextAppPlus, {
+  root.render(/*#__PURE__*/_react["default"].createElement(ContextAppPlus, {
     tsocket: tsocket
-  })));
+  }));
 }
 function ContextApp(props) {
   var _useStateAndRef = (0, _utilities_react.useStateAndRef)("library"),
@@ -936,20 +934,6 @@ function ContextApp(props) {
   } finally {
     _iterator4.f();
   }
-  var outer_class = "pane-holder ";
-  if (settingsContext.isDark()) {
-    outer_class = "".concat(outer_class, " bp6-dark");
-  } else {
-    outer_class = "".concat(outer_class, " light-theme");
-  }
-  var outer_style = {
-    width: "100%",
-    flexGrow: 1,
-    display: 'flex',
-    flexDirection: 'row',
-    paddingLeft: 0,
-    position: "relative"
-  };
   var sid = selectedTabIdRef.current;
   var commandItems = omniItemsRef.current["global"];
   if (sid in omniItemsRef.current) {
@@ -963,14 +947,26 @@ function ContextApp(props) {
     dispatch: tabPanelListDispatch,
     tabPanelList: tabPanelList
   });
-  var right_pane = /*#__PURE__*/_react["default"].createElement("div", {
+  var right_pane = /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, all_panels);
+  var outer_class = "pane-holder ".concat(settingsContext.isDark() ? "bp6-dark" : "light-theme");
+  var outer_style = {
+    width: "100%",
+    height: "100%",
+    flexGrow: 1,
+    display: 'flex',
+    flexDirection: 'row',
+    paddingLeft: 0,
+    position: "relative"
+  };
+  return /*#__PURE__*/_react["default"].createElement("div", {
     style: {
-      width: "100%",
+      display: "flex",
+      flexDirection: "column",
+      position: "relative",
       height: "100%",
-      position: "relative"
+      width: "100%"
     }
-  }, all_panels);
-  return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
+  }, /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
     is_authenticated: window.is_authenticated,
     selected: null,
     show_api_links: false,
@@ -993,9 +989,7 @@ function ContextApp(props) {
     show_handle: true,
     widths: [_sizing_tools.INIT_CONTEXT_PANEL_WIDTH, window.innerWidth - _sizing_tools.INIT_CONTEXT_PANEL_WIDTH],
     initial_width_fraction: .1,
-    handleResizeEnd: null,
-    bottom_margin: 0,
-    right_margin: 0
+    handleResizeEnd: null
   })), /*#__PURE__*/_react["default"].createElement(_utilities_react.SelectedPaneContext.Provider, {
     value: {
       tab_id: sid,

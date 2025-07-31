@@ -1,6 +1,7 @@
 import "../tactic_css/tactic.scss";
 import "../tactic_css/tactic_table.scss";
 import "../tactic_css/library_home.scss";
+import "../tactic_css/resource_viewer.scss";
 
 import React from "react";
 import {Fragment, useEffect, useRef, memo, useContext} from "react";
@@ -87,7 +88,7 @@ function RepositoryHomeApp(props) {
         paddingLeft: 0,
         position: "relative"
     };
-    let outer_class = "library-pane-holder  ";
+    let outer_class = "library-pane-holder";
     if (settingsContext.isDark()) {
         outer_class = `${outer_class} bp6-dark`;
     } else {

@@ -1,20 +1,22 @@
 import React from "react";
 import {FormGroup} from "@blueprintjs/core";
-import {useState, Fragment} from "react";
+import {Fragment} from "react";
 
 import {TagButtonList} from "./tag_buttons_react";
 import {BpSelectorTable, SearchForm} from "./library_widgets";
 export {LibraryTablePane}
 
 function LibraryTablePane(props) {
-    const [, set_total_width] = useState(500);
 
     return (
         <Fragment>
-            <div className="d-flex flex-row" style={{height: "100%", width: "100%", position: "relative"}}>
-                <div className="d-flex justify-content-around"
+            <div className="d-flex flex-row resource-viewer-left-pane-holder top-padded"
+                 style={{height: "100%", width: "100%", position: "relative"}}>
+                <div className="d-flex"
                      style={{
-                         paddingRight: 10,
+                         flex: "1 1 0",
+                         minWidth: 0,
+                         justifyContent: "flex-start",
                          height: "100%",
                          position: "relative"
                      }}>
@@ -29,12 +31,9 @@ function LibraryTablePane(props) {
                 </div>
                 <div className={props.pane_type + "-pane"}
                      style={{
-                         flex: "1 1 0",
+                         flex: "5 5 0",
                          minWidth: 0,
                          overflowY: "auto",
-                         marginTop: 15,
-                         padding: 5,
-                         marginBottom: 15,
                          display: "flex",
                          flexDirection: "column"
                      }}>
@@ -61,7 +60,6 @@ function LibraryTablePane(props) {
                                      open_resources_ref={props.open_resources_ref}
                                      sortColumn={props.sortColumn}
                                      selectedRegions={props.pStateRef.current.select_state.selectedRegions}
-                                     communicateColumnWidthSum={set_total_width}
                                      onSelection={props.onSelection}
                                      keyHandler={props.keyHandler}
                                      initiateDataGrab={props.initiateDataGrab}

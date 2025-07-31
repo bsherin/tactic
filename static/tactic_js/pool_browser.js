@@ -5,11 +5,12 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.PoolBrowser = PoolBrowser;
+require("../tactic_css/pool.scss");
 var _react = _interopRequireWildcard(require("react"));
 var _core = require("@blueprintjs/core");
 var _utilities_react = require("./utilities_react");
 var _library_menubars = require("./library_menubars");
-var _blueprint_mdata_fields = require("./blueprint_mdata_fields");
+var _combined_metadata = require("./combined_metadata");
 var _pool_tree = require("./pool_tree");
 var _resizing_allotment = require("./resizing_allotment");
 var _communication_react = require("./communication_react");
@@ -1154,32 +1155,26 @@ function PoolBrowser(props) {
   function registerTreeRefreshFunc(func) {
     treeRefreshFunc.current = func;
   }
-
-  // let outer_style = {marginTop: 0, marginLeft: 0, overflow: "auto", marginRight: 0, height: "100%"};
   var fixed_data = {
     created: selected_resource_ref.current.created,
     updated: selected_resource_ref.current.updated,
     size: selected_resource_ref.current.size,
     path: valueRef.current
   };
-  var right_pane = /*#__PURE__*/_react["default"].createElement(_blueprint_mdata_fields.CombinedMetadata, {
+  var right_pane = /*#__PURE__*/_react["default"].createElement(_combined_metadata.CombinedMetadata, {
     res_type: selected_resource_ref.current.res_type,
     res_name: selected_resource_ref.current.name,
     useFixedData: true,
     fixedData: fixed_data,
     elevation: 2,
-    outer_style: {
-      height: "100%"
-    },
     readOnly: true
   });
   var left_pane = /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
-    className: "d-flex flex-column",
+    className: "d-flex flex-column resource-viewer-left-pane-holder top-padded",
     style: {
       maxHeight: "100%",
       position: "relative",
-      overflow: "scroll",
-      padding: 15
+      overflow: "scroll"
     }
   }, (props.am_selected || have_activated) && /*#__PURE__*/_react["default"].createElement(_pool_tree.PoolContext.Provider, {
     value: {
@@ -1250,6 +1245,7 @@ function PoolBrowser(props) {
     style: {
       flex: "1 1 0",
       display: "flex",
+      minHeight: 0,
       position: "relative"
     }
   }, /*#__PURE__*/_react["default"].createElement(_resizing_allotment.HorizontalPanes, {
@@ -1258,8 +1254,7 @@ function PoolBrowser(props) {
     left_pane: left_pane,
     right_pane: right_pane,
     right_pane_overflow: "auto",
-    initial_width_fraction: .75,
-    scrollAdjustSelectors: [".bp6-table-quadrant-scroll-container"]
+    initial_width_fraction: .75
   })));
 }
 exports.PoolBrowser = PoolBrowser = /*#__PURE__*/(0, _react.memo)(PoolBrowser);
@@ -1413,7 +1408,7 @@ function PoolMenubar(props) {
     selected_rows: props.selected_rows,
     selectedTypeRef: selectedTypeRef,
     selected_resource: props.selected_resource,
-    resource_icon: _blueprint_mdata_fields.icon_dict["pool"],
+    resource_icon: _combined_metadata.icon_dict["pool"],
     menu_specs: menu_specs(),
     multi_select: props.multi_select,
     controlled: props.controlled,

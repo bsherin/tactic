@@ -1,3 +1,5 @@
+import "../tactic_css/pool.scss";
+
 import React from "react";
 
 import {Fragment, useState, useEffect, useRef, memo, useContext} from "react";
@@ -6,7 +8,7 @@ import {Menu, MenuItem, MenuDivider, Breadcrumb, Breadcrumbs, Switch} from "@blu
 
 import {useStateAndRef} from "./utilities_react";
 import {LibraryMenubar} from "./library_menubars"
-import {CombinedMetadata, icon_dict} from "./blueprint_mdata_fields";
+import {CombinedMetadata, icon_dict} from "./combined_metadata";
 import {PoolTree, getBasename, splitFilePath, getFileParentPath, PoolContext} from "./pool_tree";
 import {HorizontalPanes} from "./resizing_allotment";
 import {getBlobPromise, postAjaxPromise, postPromise} from "./communication_react";
@@ -571,7 +573,6 @@ function PoolBrowser(props) {
         treeRefreshFunc.current = func
     }
 
-    // let outer_style = {marginTop: 0, marginLeft: 0, overflow: "auto", marginRight: 0, height: "100%"};
     let fixed_data = {
         created: selected_resource_ref.current.created,
         updated: selected_resource_ref.current.updated,
@@ -584,18 +585,14 @@ function PoolBrowser(props) {
                           useFixedData={true}
                           fixedData={fixed_data}
                           elevation={2}
-                          outer_style={{
-                                  height: "100%"
-                              }}
                           readOnly={true}
         />
     );
 
     let left_pane = (
         <Fragment>
-            {/*<FileDropWrapper processFiles={handleFileDrop}>*/}
-            <div className="d-flex flex-column"
-                 style={{maxHeight: "100%", position: "relative", overflow: "scroll", padding: 15}}>
+            <div className="d-flex flex-column resource-viewer-left-pane-holder top-padded"
+                 style={{maxHeight: "100%", position: "relative", overflow: "scroll"}}>
                 {(props.am_selected || have_activated) &&
                     <PoolContext.Provider value={{
                         workingPath: null, setWorkingPath: () => {
@@ -660,6 +657,7 @@ function PoolBrowser(props) {
                 <div style={{
                     flex: "1 1 0",
                     display: "flex",
+                    minHeight: 0,
                     position: "relative"
                 }}>
                     <HorizontalPanes
@@ -669,7 +667,6 @@ function PoolBrowser(props) {
                         right_pane={right_pane}
                         right_pane_overflow="auto"
                         initial_width_fraction={.75}
-                        scrollAdjustSelectors={[".bp6-table-quadrant-scroll-container"]}
                     />
                 </div>
         </div>

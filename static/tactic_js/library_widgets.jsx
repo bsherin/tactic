@@ -1,5 +1,3 @@
-import "../tactic_css/tactic_select.scss"
-
 import React from "react";
 import {Fragment, useState, useEffect, useRef, memo} from 'react';
 
@@ -16,7 +14,7 @@ import {
 import {Cell, Column, Table, ColumnHeaderCell, SelectionModes, TruncatedFormat, Regions} from "@blueprintjs/table";
 import _ from 'lodash';
 
-import { useCallbackStack, useStateAndRef, useDebounce } from "./utilities_react";
+import { useStateAndRef, useDebounce } from "./utilities_react";
 
 export {SearchForm}
 export {BpSelectorTable}
@@ -158,7 +156,7 @@ function BpSelectorTable(props) {
             "updated": {"sort_field": "updated_for_sort", "first_sort": "ascending"},
             "tags": {"sort_field": "tags", "first_sort": "ascending"}
         },
-        identifier_field: "name",
+        identifier_field: "_id",
         enableColumnResigin: false,
         maxColumnWidth: null,
         active_row: 0,
@@ -186,8 +184,6 @@ function BpSelectorTable(props) {
         }
     });
 
-    const pushCallback = useCallbackStack();
-
     function computeColumnWidths() {
         if (Object.keys(props.data_dict).length == 0) return;
         let column_names = Object.keys(props.columns);
@@ -206,10 +202,6 @@ function BpSelectorTable(props) {
         }
 
         setColumnWidths(cwidths);
-        pushCallback(() => {
-            let the_sum = columnWidthsRef.current.reduce((a, b) => a + b, 0);
-            props.communicateColumnWidthSum(the_sum)
-        })
     }
 
     async function _onCompleteRender() {
@@ -259,23 +251,16 @@ function BpSelectorTable(props) {
             } else {
                 the_body = ""
             }
-            let tclass;
-            if (props.open_resources_ref && props.open_resources_ref.current &&
-                props.open_resources_ref.current.includes(props.data_dict[rowIndex][props.identifier_field])) {
-                tclass = "open-selector-row";
-            } else {
-                tclass = ""
-            }
             return (
                 <Cell key={column_name}
+                      className="library-table-cell"
                       interactive={true}
                       truncated={true}
                       tabIndex={-1}
                       onKeyDown={props.keyHandler}
                       wrapText={true}>
                     <Fragment>
-                        <div className={tclass}
-                             onDoubleClick={() => props.handleRowDoubleClick(props.data_dict[rowIndex])}>
+                        <div onDoubleClick={() => props.handleRowDoubleClick(props.data_dict[rowIndex])}>
                             {the_body}
                         </div>
                     </Fragment>
@@ -315,6 +300,7 @@ function BpSelectorTable(props) {
     let columns = column_names.map((column_name) => {
         const cellRenderer = _cellRendererCreator(column_name);
         const columnHeaderCellRenderer = () => <ColumnHeaderCell name={column_name}
+                                                                 className='library-header-cell'
                                                                  nameRenderer={_columnHeaderNameRenderer}
                                                                  menuRenderer={() => {
                                                                      return (_renderMenu(column_name))

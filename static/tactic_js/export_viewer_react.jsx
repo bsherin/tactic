@@ -124,11 +124,10 @@ function ExportButtonList(props) {
         return groups
     }
     return (
-        <div id="exports-button-list"
-             ref={top_ref}
+        <div ref={top_ref}
              style={{flexDirection: "column", display: "flex",
-                 verticalAlign: "top", padding: 15, height: "100%", position: "relative"}}
-             className="contingent-scroll">
+                 verticalAlign: "top", height: "100%", position: "relative"}}
+             className="exports-button-list contingent-scroll">
             {create_groups()}
         </div>
     )
@@ -141,10 +140,6 @@ function ExportsViewer(props) {
         style: {},
         ...props
     };
-
-    const header_ref = useRef(null);
-    const footer_ref = useRef(null);
-    const body_ref = useRef(null);
 
     const [, set_selected_export, selected_export_ref] = useStateAndRef("");
     const [selected_export_tilename, set_selected_export_tilename] = useState(null);
@@ -324,21 +319,19 @@ function ExportsViewer(props) {
         display: 'flex',
         flexDirection: 'column',
         paddingLeft: 0,
-        position: "relative"
+        position: "relative",
+        margin: 0
     };
 
     if (!props.console_is_shrunk) {
         outer_style.height = "100%";
     }
     return (
-         <Card id="exports-panel"
-               elevation={props.console_is_shrunk ? 0 : 2}
-               className={"mr-3 " + exports_class} style={outer_style}>
+         <Card elevation={props.console_is_shrunk ? 0 : 2}
+               className={"exports-panel mr-3 " + exports_class} style={outer_style}>
              <div className="d-flex flex-column justify-content-around"
                   style={{flex: "1 1 0", position: "relative"}}>
-                 <div id="exports-heading"
-                      ref={header_ref}
-                     className="d-flex flex-row justify-content-start">
+                 <div className="exports-heading d-flex flex-row justify-content-start">
                      {!show_spinner &&
                         <GlyphButton handleClick={_eval}
                                       intent="primary"
@@ -362,8 +355,7 @@ function ExportsViewer(props) {
                                   icon="circle-arrow-left"/>
                      {(Object.keys(pipe_dict).length > 0) && (
                          <form onSubmit={_eval} className="d-flex flex-row">
-                               <span id="selected-export"
-                                     className="bottom-heading-element mr-2">{selected_export_short_name}</span>
+                               <span className="selected-export bottom-heading-element mr-2">{selected_export_short_name}</span>
                                {key_list && <SelectList option_list={key_list}
                                                          onChange={_handleKeyListChange}
                                                          the_value={key_list_value}
@@ -389,8 +381,7 @@ function ExportsViewer(props) {
 
                  </div>
                  {!props.console_is_shrunk &&
-                     <div ref={body_ref}
-                          style={{flex: "1 1 0", minHeight: 0,
+                     <div style={{flex: "1 1 0", minHeight: 0,
                               display: "flex", flexDirection: "column",
                               width: "100%", position: "relative", overflow: "auto"}}
                      >
@@ -401,14 +392,11 @@ function ExportsViewer(props) {
                                                handleChange={_handleExportListChange}
                              />
                              <Divider/>
-                             <div id="exports-body"
-                                  style={{padding: 15, flex: " 1 1 0", height: "100%", overflow: "auto"}}
-                                  className="contingent-scroll" dangerouslySetInnerHTML={exports_body_dict}/>
+                             <div style={{flex: " 1 1 0", height: "100%", overflow: "auto"}}
+                                  className="exports-body contingent-scroll" dangerouslySetInnerHTML={exports_body_dict}/>
                          </div>
-                         <div id="exports-footing"
-                              ref={footer_ref}
-                              className="d-flex flex-row justify-content-between">
-                             <span id="exports-info" className="bottom-heading-element ml-2">{exports_info_value}</span>
+                         <div className="exports-footing d-flex flex-row justify-content-between">
+                             <span className="exports-info bottom-heading-element ml-2">{exports_info_value}</span>
                              <FormGroup label="max rows" inline={true}>
                                  <SelectList option_list={[25, 100, 250, 500]}
                                              onChange={_handleMaxRowsChange}

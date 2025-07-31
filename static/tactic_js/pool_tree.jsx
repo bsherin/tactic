@@ -115,7 +115,7 @@ function treeNodesReducer(nodes, action) {
             const newState9 = _.cloneDeep(nodes);
             forEachNode(newState9, (node) => {
                 if (node.isDirectory) {
-                    var new_children = [];
+                    let new_children = [];
                     for (const cnode of node.childNodes) {
                         if (cnode.fullpath != action.fullpath) {
                             new_children.push(cnode)
@@ -152,7 +152,7 @@ function treeNodesReducer(nodes, action) {
             let found_file = false;
             forEachNode(newState12, (node) => {
                 if (node.isDirectory) {
-                    var new_children = [];
+                    let new_children = [];
                     for (const cnode of node.childNodes) {
                         if (cnode.fullpath != action.src) {
                             new_children.push(cnode)
@@ -177,7 +177,7 @@ function treeNodesReducer(nodes, action) {
             let found_dir = false;
             forEachNode(newStateMDir, (node) => {
                 if (node.isDirectory && (node.fullpath != action.src)) {
-                    var new_children = [];
+                    let new_children = [];
                     for (const cnode of node.childNodes) {
                         if (cnode.fullpath != action.src) {
                             new_children.push(cnode)
@@ -282,14 +282,14 @@ function PoolTree(props) {
             let data = await postPromise("host", "GetPoolTree",
                 {user_id: props.user_id, show_hidden: props.showHidden}
             );
-            if (!data.dtree) {
+            if (!data["dtree"]) {
                 doFlash("No pool storage available for this account.");
                 return
             }
-            data.dtree[0].isExpanded = true;
+            data["dtree"][0].isExpanded = true;
             dispatch({
                 type: "REPLACE_ALL",
-                new_nodes: data.dtree,
+                new_nodes: data["dtree"],
             });
             if (props.value) {
                 pushCallback(() => {
@@ -363,7 +363,7 @@ function PoolTree(props) {
             });
             props.tsocket.attachListener("pool-file-event", (data) => {
                 const event_type = data["event_type"];
-                let fileDict = data.file_dict;
+                let fileDict = data["file_dict"];
                 fileDict.id = fileDict.fullpath;
                 switch (event_type) {
                     case "modify":
@@ -427,7 +427,7 @@ function PoolTree(props) {
     }
 
     function findNodePath(fullpath) {
-        var current_path = [];
+        let current_path = [];
         return searchDown(nodes_ref.current, fullpath, current_path);
     }
 
@@ -437,7 +437,7 @@ function PoolTree(props) {
                 return current_path + [node.id]
             } else {
                 if ("childNodes" in node) {
-                    var the_path = searchDown(node.childNodes, fullpath, current_path + [node.id]);
+                    let the_path = searchDown(node.childNodes, fullpath, current_path + [node.id]);
                     if (the_path) {
                         return the_path
                     }
@@ -579,7 +579,7 @@ function PoolAddressSelector(props) {
 
     function resizePopover() {
         if (pop_ref.current) {
-            var max_height = window.innerHeight - pop_ref.current.offsetTop - 25;
+            let max_height = window.innerHeight - pop_ref.current.offsetTop - 25;
             setMaxPopoverHeight(max_height);
         }
     }
@@ -662,11 +662,11 @@ function CustomTree(props) {
 
         } else if (props.sortField == "size") {
             newList.sort((a, b) => {
-                return a.size_for_sort - b.size_for_sort
+                return a["size_for_sort"] - b["size_for_sort"]
             })
         } else {
             newList.sort((a, b) => {
-                return a.updated_for_sort - b.updated_for_sort
+                return a["updated_for_sort"] - b["updated_for_sort"]
             })
         }
 

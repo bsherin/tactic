@@ -3,6 +3,7 @@
  */
 
 import "../tactic_css/tactic.scss";
+import "../tactic_css/themeable.scss";
 
 import React from "react";
 import {Fragment, useState, useEffect, memo, useRef, useContext} from "react";

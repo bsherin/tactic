@@ -11,8 +11,9 @@ var _propTypes = _interopRequireDefault(require("prop-types"));
 var _core = require("@blueprintjs/core");
 var _blueprint_react_widgets = require("./blueprint_react_widgets");
 var _reactCodemirror = require("./react-codemirror6");
-var _blueprint_mdata_fields = require("./blueprint_mdata_fields");
+var _selector_advanced = require("./selector_advanced");
 var _communication_react = require("./communication_react");
+var _searchable_console = require("./searchable_console");
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t3 in e) "default" !== _t3 && {}.hasOwnProperty.call(e, _t3) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t3)) && (i.get || i.set) ? o(f, _t3, i) : f[_t3] = e[_t3]); return f; })(e, t); }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
@@ -20,12 +21,6 @@ function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present,
 function _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, "", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { if (r) i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n;else { var o = function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); }; o("next", 0), o("throw", 1), o("return", 2); } }, _regeneratorDefine2(e, r, n, t); }
 function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
 function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
-function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
-function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
-function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
-function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
-function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
 function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
 function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
@@ -102,23 +97,6 @@ function MainTableCardHeader(props) {
     soft_wrap: false,
     handleSoftWrapChange: null
   }, props);
-  var heading_left_ref = (0, _react.useRef)(null);
-  var heading_right_ref = (0, _react.useRef)(null);
-  var _useState = (0, _react.useState)(false),
-    _useState2 = _slicedToArray(_useState, 2),
-    hide_right_element = _useState2[0],
-    set_hide_right_element = _useState2[1];
-  (0, _react.useEffect)(function () {
-    var hide_right = _getHideRight();
-    if (hide_right != hide_right_element) {
-      set_hide_right_element(hide_right);
-    }
-  });
-  function _getHideRight() {
-    var le_rect = heading_left_ref.current.getBoundingClientRect();
-    var re_rect = heading_right_ref.current.getBoundingClientRect();
-    return re_rect.x < le_rect.x + le_rect.width + 10;
-  }
   function _handleSearchFieldChange(event) {
     props.handleSearchFieldChange(event.target.value);
   }
@@ -209,7 +187,6 @@ function MainTableCardHeader(props) {
   function _onChangeDoc(value) {
     props.handleChangeDoc(value);
   }
-  var heading_right_opacity = hide_right_element ? 0 : 100;
   var select_style = {
     height: 30,
     maxWidth: 250
@@ -217,84 +194,81 @@ function MainTableCardHeader(props) {
   var doc_button_text = /*#__PURE__*/_react["default"].createElement(_core.Text, {
     ellipsize: true
   }, props.mState.table_spec.current_doc_name);
+  var outer_style = {
+    display: "flex",
+    height: 50,
+    width: "100%",
+    paddingLeft: 10,
+    paddingRight: 10,
+    alignItems: "center",
+    position: "relative"
+  };
   return /*#__PURE__*/_react["default"].createElement("div", {
-    className: "d-flex pl-2 pr-2 justify-content-between align-baseline main-heading",
-    style: {
-      height: 50
-    }
-  }, /*#__PURE__*/_react["default"].createElement("div", {
-    id: "heading-left",
-    ref: heading_left_ref,
-    className: "d-flex flex-column justify-content-around"
-  }, /*#__PURE__*/_react["default"].createElement("div", {
-    className: "d-flex flex-row"
-  }, /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
-    handleClick: props.toggleShrink,
-    icon: "minimize"
-  }), /*#__PURE__*/_react["default"].createElement("div", {
-    className: "d-flex flex-column justify-content-around"
-  }, /*#__PURE__*/_react["default"].createElement("form", {
-    className: "d-flex flex-row"
-  }, /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
-    label: props.mState.short_collection_name,
-    inline: true,
-    style: {
-      marginBottom: 0,
-      marginLeft: 5,
-      marginRight: 10
-    }
-  }, /*#__PURE__*/_react["default"].createElement(_blueprint_mdata_fields.BpSelect, {
-    options: props.mState.doc_names,
-    onChange: _onChangeDoc,
-    buttonStyle: select_style,
-    buttonTextObject: doc_button_text,
-    value: props.mState.table_spec.current_doc_name
-  })), props.mState.show_table_spinner && /*#__PURE__*/_react["default"].createElement(_core.Spinner, {
-    size: 15
-  }))))), /*#__PURE__*/_react["default"].createElement("div", {
-    id: "heading-right",
-    ref: heading_right_ref,
-    style: {
-      opacity: heading_right_opacity
-    },
-    className: "d-flex flex-column justify-content-around"
-  }, /*#__PURE__*/_react["default"].createElement("form", {
-    onSubmit: _handleSubmit,
-    style: {
-      alignItems: "center"
-    },
-    className: "d-flex flex-row"
-  }, props.is_freeform && /*#__PURE__*/_react["default"].createElement(_core.Switch, {
-    label: "soft wrap",
-    className: "mr-2 mb-0",
-    size: "medium",
-    checked: props.mState.soft_wrap,
-    onChange: props.handleSoftWrapChange
-  }), /*#__PURE__*/_react["default"].createElement(_core.Switch, {
-    label: "edit",
-    className: "mr-4 mb-0",
-    size: "medium",
-    checked: props.mState.spreadsheet_mode,
-    onChange: props.handleSpreadsheetModeChange
-  }), /*#__PURE__*/_react["default"].createElement(_core.InputGroup, {
-    type: "search",
-    leftIcon: "search",
-    placeholder: "Search",
-    value: !props.mState.search_text ? "" : props.mState.search_text,
-    onChange: _handleSearchFieldChange,
-    autoCapitalize: "none",
-    autoCorrect: "off",
-    className: "mr-2"
-  }), /*#__PURE__*/_react["default"].createElement(_core.ButtonGroup, null, props.show_filter_button && /*#__PURE__*/_react["default"].createElement(_core.Button, {
-    onClick: _handleFilter
-  }, "Filter"), /*#__PURE__*/_react["default"].createElement(_core.Button, {
-    onClick: _handleUnFilter
-  }, "Clear")))));
+    className: "main-heading",
+    style: outer_style
+  }, /*#__PURE__*/_react["default"].createElement(_searchable_console.ResponsiveFlex, {
+    leftContent: /*#__PURE__*/_react["default"].createElement("div", {
+      className: "heading-left d-flex flex-row"
+    }, /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
+      handleClick: props.toggleShrink,
+      icon: "minimize"
+    }), /*#__PURE__*/_react["default"].createElement("form", {
+      className: "d-flex flex-row"
+    }, /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
+      label: props.mState.short_collection_name,
+      inline: true,
+      style: {
+        marginBottom: 0,
+        marginLeft: 5,
+        marginRight: 10
+      }
+    }, /*#__PURE__*/_react["default"].createElement(_selector_advanced.BpSelect, {
+      options: props.mState.doc_names,
+      onChange: _onChangeDoc,
+      buttonStyle: select_style,
+      buttonTextObject: doc_button_text,
+      value: props.mState.table_spec.current_doc_name
+    })), props.mState.show_table_spinner && /*#__PURE__*/_react["default"].createElement(_core.Spinner, {
+      size: 15
+    }))),
+    rightContent: /*#__PURE__*/_react["default"].createElement("form", {
+      onSubmit: _handleSubmit,
+      style: {
+        alignItems: "center"
+      },
+      className: "heading-right d-flex flex-row"
+    }, props.is_freeform && /*#__PURE__*/_react["default"].createElement(_core.Switch, {
+      label: "soft wrap",
+      className: "mr-2 mb-0",
+      size: "medium",
+      checked: props.mState.soft_wrap,
+      onChange: props.handleSoftWrapChange
+    }), /*#__PURE__*/_react["default"].createElement(_core.Switch, {
+      label: "edit",
+      className: "mr-4 mb-0",
+      size: "medium",
+      checked: props.mState.spreadsheet_mode,
+      onChange: props.handleSpreadsheetModeChange
+    }), /*#__PURE__*/_react["default"].createElement(_core.InputGroup, {
+      type: "search",
+      leftIcon: "search",
+      placeholder: "Search",
+      value: !props.mState.search_text ? "" : props.mState.search_text,
+      onChange: _handleSearchFieldChange,
+      autoCapitalize: "none",
+      autoCorrect: "off",
+      className: "mr-2"
+    }), /*#__PURE__*/_react["default"].createElement(_core.ButtonGroup, null, props.show_filter_button && /*#__PURE__*/_react["default"].createElement(_core.Button, {
+      onClick: _handleFilter
+    }, "Filter"), /*#__PURE__*/_react["default"].createElement(_core.Button, {
+      onClick: _handleUnFilter
+    }, "Clear")))
+  }));
 }
 exports.MainTableCardHeader = MainTableCardHeader = /*#__PURE__*/(0, _react.memo)(MainTableCardHeader);
 function MainTableCard(props) {
   return /*#__PURE__*/_react["default"].createElement(_core.Card, {
-    id: "main-panel",
+    className: "main-panel",
     elevation: 2,
     style: {
       display: "flex",
@@ -304,7 +278,7 @@ function MainTableCard(props) {
       width: "100%"
     }
   }, props.card_header, /*#__PURE__*/_react["default"].createElement("div", {
-    id: "table-wrapper",
+    className: "table-wrapper",
     style: {
       flex: "1 1 0",
       minWidth: 0,

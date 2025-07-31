@@ -4,9 +4,6 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.NotebookApp = NotebookApp;
-require("../tactic_css/tactic.scss");
-require("../tactic_css/tactic_console.scss");
-require("../tactic_css/tactic_main.scss");
 var _react = _interopRequireWildcard(require("react"));
 var _client = require("react-dom/client");
 var _blueprint_navbar = require("./blueprint_navbar");
@@ -26,7 +23,6 @@ var _assistant = require("./assistant");
 var _notebook_support = require("./notebook_support");
 var _settings = require("./settings");
 var _modal_react = require("./modal_react");
-function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t in e) "default" !== _t && {}.hasOwnProperty.call(e, _t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t)) && (i.get || i.set) ? o(f, _t, i) : f[_t] = e[_t]); return f; })(e, t); }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
 function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
@@ -40,17 +36,27 @@ function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t =
 function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
 function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
 function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
-var MARGIN_SIZE = 10;
-var cc_style = {
-  marginTop: MARGIN_SIZE
-};
+function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t in e) "default" !== _t && {}.hasOwnProperty.call(e, _t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t)) && (i.get || i.set) ? o(f, _t, i) : f[_t] = e[_t]); return f; })(e, t); }
+if (!window.in_context) {
+  Promise.resolve().then(function () {
+    return _interopRequireWildcard(require("../tactic_css/tactic.scss"));
+  });
+  Promise.resolve().then(function () {
+    return _interopRequireWildcard(require("../tactic_css/tactic_console.scss"));
+  });
+  Promise.resolve().then(function () {
+    return _interopRequireWildcard(require("../tactic_css/tactic_main.scss"));
+  });
+  Promise.resolve().then(function () {
+    return _interopRequireWildcard(require("../tactic_css/themeable.scss"));
+  });
+}
 function NotebookApp(props) {
   props = _objectSpread({
     refreshTab: null,
     closeTab: null
   }, props);
   var last_save = (0, _react.useRef)({});
-  var main_outer_ref = (0, _react.useRef)(null);
   var updateExportsList = (0, _react.useRef)(null);
   var connection_status = (0, _utilities_react.useConnection)(props.tsocket, initSocket);
   var _useStateAndRef = (0, _utilities_react.useStateAndRef)([]),
@@ -241,8 +247,7 @@ function NotebookApp(props) {
     mState: mState,
     setMainStateValue: _setMainStateValue,
     zoomable: false,
-    shrinkable: false,
-    style: cc_style
+    shrinkable: false
   });
   var exports_pane;
   if (mState.show_exports_pane) {
@@ -253,14 +258,14 @@ function NotebookApp(props) {
         updateExportsList.current = ufunc;
       },
       console_is_shrunk: mState.console_is_shrunk,
-      console_is_zoomed: mState.console_is_zoomed,
-      style: cc_style
+      console_is_zoomed: mState.console_is_zoomed
     });
   } else {
     exports_pane = /*#__PURE__*/_react["default"].createElement("div", null);
   }
   var outer_style = {
     width: "calc(100% - ".concat(_sizing_tools.ICON_BAR_WIDTH, "px)"),
+    height: "100%",
     flex: "1 1 0",
     overflow: "auto",
     display: 'flex',
@@ -279,6 +284,9 @@ function NotebookApp(props) {
       toggleMetadata: toggleMetadata,
       hideMetadata: hideMetadata
     }
+  }, /*#__PURE__*/_react["default"].createElement("div", {
+    className: "main-outer ".concat(settingsContext.isDark() ? "bp6-dark" : "light-theme"),
+    style: outer_style
   }, /*#__PURE__*/_react["default"].createElement(_menu_utilities.TacticMenubar, {
     connection_status: connection_status,
     menus: menus,
@@ -293,23 +301,15 @@ function NotebookApp(props) {
     showMetadataDrawerButton: true,
     showAssistantDrawerButton: true,
     showSettingsDrawerButton: true
-  })), /*#__PURE__*/_react["default"].createElement("div", {
-    className: "main-outer ".concat(settingsContext.isDark() ? "bp6-dark" : "light-theme"),
-    ref: main_outer_ref,
-    style: outer_style
-  }, /*#__PURE__*/_react["default"].createElement(_resizing_allotment.HorizontalPanes, {
+  }), /*#__PURE__*/_react["default"].createElement(_resizing_allotment.HorizontalPanes, {
     left_pane: console_pane,
     right_pane: exports_pane,
     show_handle: true,
     initial_width_fraction: mState.console_width_fraction,
     controlled: true,
-    separatorPadding: 5,
-    outer_style: {
-      paddingBottom: 10,
-      paddingRight: 10
-    },
+    className: "project-outer-padding",
     handleSplitUpdate: _handleConsoleFractionChange
-  })), /*#__PURE__*/_react["default"].createElement(_metadata_drawer.MetadataDrawer, {
+  }))), /*#__PURE__*/_react["default"].createElement(_metadata_drawer.MetadataDrawer, {
     res_type: "project",
     res_name: project_name,
     tsocket: props.tsocket,

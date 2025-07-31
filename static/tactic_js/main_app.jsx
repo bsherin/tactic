@@ -1,12 +1,15 @@
-import "../tactic_css/tactic.scss";
-import "../tactic_css/tactic_main.scss";
-import "../tactic_css/tactic_table.scss";
-import "../tactic_css/tactic_console.scss";
-import "../tactic_css/tactic_select.scss"
+
+if (!window.in_context) {
+    import("../tactic_css/tactic.scss");
+    import("../tactic_css/tactic_console.scss");
+    import("../tactic_css/tactic_main.scss");
+    import("../tactic_css/tactic_table.scss");
+    import ("../tactic_css/themeable.scss");
+}
 
 import React from "react";
 import {Fragment, useEffect, useRef, memo, useContext, useReducer, useCallback} from "react";
-import { createRoot } from 'react-dom/client';
+import {createRoot} from 'react-dom/client';
 import {NavbarDivider} from "@blueprintjs/core";
 import {Regions} from "@blueprintjs/table"
 import _ from 'lodash';
@@ -40,8 +43,6 @@ import {MetadataDrawer, MetadataContext} from "./metadata_drawer";
 
 export {MainApp}
 
-const CONSOLE_HEADER_HEIGHT = 40;
-
 const iStateDefaults = {
     table_is_shrunk: false,
     tile_list: [],
@@ -64,6 +65,7 @@ function MainApp(props) {
         updatePanel: null,
         ...props
     };
+
     function iStateOrDefault(pname) {
         if (props.is_project) {
             if ("interface_state" in props && props.interface_state && pname in props.interface_state) {
@@ -72,6 +74,7 @@ function MainApp(props) {
         }
         return iStateDefaults[pname]
     }
+
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
 
     const last_save = useRef({});
@@ -130,7 +133,7 @@ function MainApp(props) {
 
     const pushCallback = useCallbackStack();
 
-   useConstructor(()=>{
+    useConstructor(() => {
         dispatch({
             type: "initialize",
             new_items: props.is_project && props.interface_state ? props.interface_state["console_items"] : []
@@ -151,10 +154,12 @@ function MainApp(props) {
         if (!props.controlled) {
             document.title = mState.resource_name;
         }
+
         function sendRemove() {
             console.log("got the beacon");
             navigator.sendBeacon("/remove_mainwindow", JSON.stringify({"main_id": props.main_id}));
         }
+
         window.addEventListener("unload", sendRemove);
         return (() => {
             delete_my_containers();
@@ -162,12 +167,12 @@ function MainApp(props) {
         })
     }, []);
 
-    useEffect(()=>{
-         const data = {
+    useEffect(() => {
+        const data = {
             active_row_id: mState.selected_row,
             doc_name: mState.table_spec.current_doc_name
-         };
-         _broadcast_event_to_server("MainTableRowSelect", data)
+        };
+        _broadcast_event_to_server("MainTableRowSelect", data)
     }, [mState.selected_row]);
 
     function _filteredColumnNames() {
@@ -234,7 +239,7 @@ function MainApp(props) {
         }
     }
 
-    function _setTileValue (tile_id, field, value){
+    function _setTileValue(tile_id, field, value) {
         tileDispatch({
             type: "change_item_value",
             tile_id: tile_id,
@@ -267,10 +272,12 @@ function MainApp(props) {
             props.tsocket.attachListener("notebook-open", async function (data) {
                 const the_view = `${$SCRIPT_ROOT}/new_notebook_in_context`;
                 try {
-                    let createData = await postAjaxPromise(the_view, {temp_data_id: data.temp_data_id, resource_name: ""});
+                    let createData = await postAjaxPromise(the_view, {
+                        temp_data_id: data.temp_data_id,
+                        resource_name: ""
+                    });
                     props.handleCreateViewer(createData)
-                }
-                catch(e) {
+                } catch (e) {
                     errorDrawerFuncs.addFromError(`Error saving list`, e)
                 }
             })
@@ -285,7 +292,7 @@ function MainApp(props) {
     }
 
     function isFreeform() {
-       return mState.doc_type == "freeform"
+        return mState.doc_type == "freeform"
     }
 
     // Every item in tile_list is a list of this form
@@ -312,7 +319,7 @@ function MainApp(props) {
         }
     }
 
-    const _setMainStateValue = useCallback((field_name, new_value = null, callback = null) =>{
+    const _setMainStateValue = useCallback((field_name, new_value = null, callback = null) => {
         if (typeof (field_name) == "object") {
             mDispatch({
                 type: "change_multiple_fields",
@@ -376,8 +383,7 @@ function MainApp(props) {
                 pushCallback(() => {
                     _setMainStateValue("show_table_spinner", false)
                 });
-            }
-            catch (e) {
+            } catch (e) {
                 errorDrawerFuncs.addFromError("Error changing doc", e)
             }
         } else {
@@ -397,8 +403,7 @@ function MainApp(props) {
                         set_table_scroll.current = row_index;
                     }
                 });
-            }
-            catch (e) {
+            } catch (e) {
                 errorDrawerFuncs.addFromError("Error changing doc", e)
             }
 
@@ -420,7 +425,7 @@ function MainApp(props) {
         }
     }
 
-    const  _broadcast_event_to_server = useCallback((event_name, data_dict, callback=null) => {
+    const _broadcast_event_to_server = useCallback((event_name, data_dict, callback = null) => {
         data_dict.main_id = props.main_id;
         data_dict.event_name = event_name;
         if (!("doc_name" in data_dict)) {
@@ -445,13 +450,13 @@ function MainApp(props) {
         }
         try {
             let tile_name = await dialogFuncs.showModalPromise("ModalDialog", {
-                    title: "Create " + menu_id,
-                    field_title: "New Tile Name",
-                    default_value: menu_id,
-                    existing_names: existing_tile_names,
-                    checkboxes: [],
-                    handleClose: dialogFuncs.hideModal
-                });
+                title: "Create " + menu_id,
+                field_title: "New Tile Name",
+                default_value: menu_id,
+                existing_names: existing_tile_names,
+                checkboxes: [],
+                handleClose: dialogFuncs.hideModal
+            });
             statusFuncs.startSpinner();
             statusFuncs.statusMessage("Creating Tile " + tile_name);
             const data_dict = {
@@ -474,8 +479,7 @@ function MainApp(props) {
             statusFuncs.clearStatusMessage();
             statusFuncs.stopSpinner()
 
-        }
-        catch (e) {
+        } catch (e) {
             if (e != "canceled") {
                 errorDrawerFuncs.addFromError(`Error creating tile}`, e)
             }
@@ -621,7 +625,7 @@ function MainApp(props) {
         _updateTableSpec({hidden_columns_list: hc_list, column_widths: cwidths}, true)
     }
 
-   async function _hideColumnInAll() {
+    async function _hideColumnInAll() {
         let hc_list = [...mState.table_spec.hidden_columns_list];
         let fnames = _filteredColumnNames();
         let cname = mState.selected_column;
@@ -631,7 +635,7 @@ function MainApp(props) {
         hc_list.push(cname);
         const data_dict = {"column_name": mState.selected_column};
         await _broadcast_event_promise("HideColumnInAllDocs", data_dict, false);
-       _updateTableSpec({hidden_columns_list: hc_list, column_widths: cwidths});
+        _updateTableSpec({hidden_columns_list: hc_list, column_widths: cwidths});
     }
 
     function _unhideAllColumns() {
@@ -690,13 +694,13 @@ function MainApp(props) {
         try {
             let title = add_in_all ? "Create Column All Documents" : "Create Column This Document";
             let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
-                        title: title,
-                        field_title: "New Column Name",
-                        default_value: "newcol",
-                        existing_names: mState.table_spec.column_names,
-                        checkboxes: [],
-                        handleClose: dialogFuncs.hideModal,
-                    });
+                title: title,
+                field_title: "New Column Name",
+                default_value: "newcol",
+                existing_names: mState.table_spec.column_names,
+                checkboxes: [],
+                handleClose: dialogFuncs.hideModal,
+            });
             let cwidth = compute_added_column_width(new_name);
             _updateTableSpec({
                 column_names: [...mState.table_spec.column_names, new_name],
@@ -709,8 +713,7 @@ function MainApp(props) {
                 "all_docs": add_in_all
             };
             _broadcast_event_to_server("CreateColumn", data_dict);
-        }
-        catch (e) {
+        } catch (e) {
             if (e != "canceled") {
                 errorDrawerFuncs.addFromError(`Error adding column`, e)
             }
@@ -747,8 +750,7 @@ function MainApp(props) {
                 type: "update_data_row_dict",
                 new_data_row_dict: data.data_row_dict
             });
-        }
-        catch (e) {
+        } catch (e) {
             errorDrawerFuncs.addFromError("Error grabbing data chunk", e)
         }
     }
@@ -774,8 +776,7 @@ function MainApp(props) {
                     table_spec: table_spec
                 }
             });
-        }
-        catch (e) {
+        } catch (e) {
             errorDrawerFuncs.addFromError("Error removing collection", e)
         }
     }
@@ -808,13 +809,11 @@ function MainApp(props) {
                     hidden_columns_list: data_object.table_spec.hidden_columns_list,
                     current_doc_name: data_object.doc_names[0]
                 }
-            }
-            else if (data_object.doc_type == "freeform") {
+            } else if (data_object.doc_type == "freeform") {
                 table_spec = {
                     current_doc_name: data_object.doc_names[0]
                 }
-            }
-            else {
+            } else {
                 table_spec = {
                     current_doc_name: ""
                 }
@@ -834,8 +833,7 @@ function MainApp(props) {
             });
             statusFuncs.clearStatusMessage();
             statusFuncs.stopSpinner();
-        }
-        catch (e) {
+        } catch (e) {
             if (e != "canceled") {
                 errorDrawerFuncs.addFromError(`Error changing collection`, e)
             }
@@ -1023,17 +1021,17 @@ function MainApp(props) {
         }
     }
     let tile_pane = (
-            <TileContainer main_id={props.main_id}
-                           tsocket={props.tsocket}
-                           tile_list={tile_list_ref}
-                           current_doc_name={mState.table_spec.current_doc_name}
-                           selected_row={mState.selected_row}
-                           table_is_shrunk={mState.table_is_shrunk}
-                           broadcast_event={_broadcast_event_to_server}
-                           goToModule={props.goToModule}
-                           tileDispatch={tileDispatch}
-                           setMainStateValue={_setMainStateValue}
-            />
+        <TileContainer main_id={props.main_id}
+                       tsocket={props.tsocket}
+                       tile_list={tile_list_ref}
+                       current_doc_name={mState.table_spec.current_doc_name}
+                       selected_row={mState.selected_row}
+                       table_is_shrunk={mState.table_is_shrunk}
+                       broadcast_event={_broadcast_event_to_server}
+                       goToModule={props.goToModule}
+                       tileDispatch={tileDispatch}
+                       setMainStateValue={_setMainStateValue}
+        />
     );
 
     let exports_pane;
@@ -1073,25 +1071,19 @@ function MainApp(props) {
         console_pane = <div style={{width: "100%"}}></div>
     }
 
-    // let outer_hp_style = null;
-    // if (mState.console_is_shrunk) {
-    //     outer_hp_style = {marginTop: TABLE_CONSOLE_GAP}
-    // }
     let bottom_pane = (
         <HorizontalPanes left_pane={console_pane}
                          right_pane={exports_pane}
-                         separatorPadding={5}
                          show_handle={true}
                          fixed_height={mState.console_is_shrunk}
                          initial_width_fraction={mState.console_width_fraction}
-                         outer_style={{paddingBottom: 10, paddingRight: 10}}
                          handleSplitUpdate={_handleConsoleFractionChange}
         />
     );
     let table_pane;
     if (mState.doc_type != "none") {
         table_pane = (
-            <MainTableCard
+            <MainTableCard style={{padding: 0}}
                 card_body={card_body}
                 card_header={card_header}
             />
@@ -1099,27 +1091,15 @@ function MainApp(props) {
     }
     let top_pane;
     if (mState.table_is_shrunk) {
-        top_pane = (
-            <Fragment>
-                <div style={{paddingLeft: 10}}>
-                    {tile_pane}
-                </div>
-                {/*{mState.console_is_shrunk && bottom_pane}*/}
-            </Fragment>
-        )
+        top_pane = tile_pane
     } else {
         top_pane = (
-            <Fragment>
                 <HorizontalPanes left_pane={table_pane}
                                  right_pane={tile_pane}
                                  show_handle={true}
-                                 scrollAdjustSelectors={[".bp6-table-quadrant-scroll-container", ".tile-div"]}
                                  initial_width_fraction={mState.horizontal_fraction}
-                                 separatorPadding={8}
                                  handleSplitUpdate={_handleHorizontalFractionChange}
                 />
-
-            </Fragment>
         );
     }
     let extra_menubar_buttons = [];
@@ -1129,6 +1109,7 @@ function MainApp(props) {
     let outer_style = {
         width: `calc(100% - ${ICON_BAR_WIDTH}px)`,
         flex: "1 1 0",
+        minHeight: 0,
         overflow: "auto",
         display: 'flex',
         flexDirection: 'column',
@@ -1149,61 +1130,69 @@ function MainApp(props) {
                 toggleMetadata: toggleMetadata,
                 hideMetadata: hideMetadata
             }}>
-                <TacticMenubar connection_status={connection_status}
-                               menus={menus}
-                               showRefresh={true}
-                               showClose={true}
-                               refreshTab={props.refreshTab}
-                               closeTab={props.closeTab}
-                               resource_name={_cProp("resource_name")}
-                               showIconBar={true}
-                               showErrorDrawerButton={true}
-                               showMetadataDrawerButton={true}
-                               showAssistantDrawerButton={true}
-                               showSettingsDrawerButton={true}
-                               extraButtons={extra_menubar_buttons}
-                />
-            </MetadataContext.Provider>
-            <ErrorBoundary>
                 <div className={`main-outer ${settingsContext.isDark() ? "bp6-dark" : "light-theme"}`}
                      ref={main_outer_ref}
                      style={outer_style}>
-                    {mState.console_is_zoomed &&
-                        <HorizontalPanes left_pane={console_pane}
-                                         right_pane={exports_pane}
-                                         separatorPadding={5}
-                                         show_handle={true}
-                                         fixed_height={mState.console_is_shrunk}
-                                         initial_width_fraction={mState.console_width_fraction}
-                                         outer_style={{paddingBottom: 10, paddingRight: 10}}
-                                         handleSplitUpdate={_handleConsoleFractionChange}
-                        />
-                    }
-                    {!mState.console_is_zoomed && mState.console_is_shrunk &&
-                        <Fragment>
-                            <div style={{
-                                flex: "1 1 0",
-                                minWidth: 0,
-                                overflow: "auto"
-                            }}>
-                                {top_pane}
+                    <TacticMenubar connection_status={connection_status}
+                                   menus={menus}
+                                   showRefresh={true}
+                                   showClose={true}
+                                   refreshTab={props.refreshTab}
+                                   closeTab={props.closeTab}
+                                   resource_name={_cProp("resource_name")}
+                                   showIconBar={true}
+                                   showErrorDrawerButton={true}
+                                   showMetadataDrawerButton={true}
+                                   showAssistantDrawerButton={true}
+                                   showSettingsDrawerButton={true}
+                                   extraButtons={extra_menubar_buttons}
+                    />
+
+                    <ErrorBoundary>
+
+                        {mState.console_is_zoomed &&
+                            <HorizontalPanes left_pane={console_pane}
+                                             right_pane={exports_pane}
+                                             show_handle={true}
+                                             fixed_height={mState.console_is_shrunk}
+                                             initial_width_fraction={mState.console_width_fraction}
+                                             className="project-outer-padding"
+                                             handleSplitUpdate={_handleConsoleFractionChange}
+                            />
+                        }
+                        {!mState.console_is_zoomed && mState.console_is_shrunk &&
+                            <div className="project-outer-padding"
+                                 style = {{
+                                     flex: "1 1 0",
+                                     minHeight: 0,
+                                     overflow: "auto",
+                                     display: "flex",
+                                     flexDirection: "column"
+                                 }}
+                            >
+                                <div style={{
+                                    flex: "1 1 0",
+                                    minWidth: 0,
+                                    overflow: "auto"
+                                }}>
+                                    {top_pane}
+                                </div>
+                                <div className="shrunk-console">
+                                    {bottom_pane}
+                                </div>
                             </div>
-                            <div style={{height: CONSOLE_HEADER_HEIGHT, marginTop: 10}}>
-                                {bottom_pane}
-                            </div>
-                        </Fragment>
-                    }
-                    {!mState.console_is_zoomed && !mState.console_is_shrunk &&
+                        }
+                        {!mState.console_is_zoomed && !mState.console_is_shrunk &&
                             <VerticalPanes top_pane={top_pane}
                                            bottom_pane={bottom_pane}
                                            show_handle={true}
                                            initial_height_fraction={mState.height_fraction}
-                                           scrollAdjustSelectors={[".bp6-table-quadrant-scroll-container", ".tile-div"]}
                                            handleSplitUpdate={_handleVerticalSplitUpdate}
-                                           separatorPadding={10}
+                                           className="project-outer-padding"
                                            overflow="hidden"
                             />
-                    }
+                        }
+                    </ErrorBoundary>
                 </div>
                 <MetadataDrawer res_type="project"
                                 res_name={_cProp("resource_name")}
@@ -1214,8 +1203,9 @@ function MainApp(props) {
                                 position="right"
                                 onClose={hideMetadata}
                                 size="45%"
-                                />
-            </ErrorBoundary>
+                />
+
+            </MetadataContext.Provider>
         </ErrorBoundary>
     )
 }
@@ -1232,10 +1222,12 @@ function main_main() {
         const domContainer = document.querySelector('#main-root');
         const root = createRoot(domContainer);
         root.render(
-            <div style={{display: "flex", flexDirection: "column",
+            <div style={{
+                display: "flex", flexDirection: "column",
                 position: "relative",
                 height: "100%",
-                width: "100%"}}>
+                width: "100%"
+            }}>
                 {the_element}
             </div>
         )
@@ -1246,12 +1238,10 @@ function main_main() {
     if (window.project_name == "") {
         if (window.collection_name == "") {
             target = "new_project_in_context"
+        } else {
+            target = "main_collection_in_context"
         }
-        else {
-            target ="main_collection_in_context"
-        }
-    }
-    else {
+    } else {
         target = "main_project_in_context"
     }
     const resource_name = window.project_name == "" ? window.collection_name : window.project_name;

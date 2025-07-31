@@ -484,7 +484,7 @@ function AdminPane(props) {
       style: {
         height: "100%",
         overflow: "hidden",
-        marginRight: 50,
+        marginRight: 10,
         position: "relative"
       }
     }, /*#__PURE__*/_react["default"].createElement(_searchable_console.SearchableConsole, {
@@ -493,8 +493,7 @@ function AdminPane(props) {
       container_id: props.selected_resource.Id,
       ref: null,
       outer_style: {
-        marginLeft: 20,
-        marginRight: 20
+        padding: 20
       },
       showCommandField: true
     }));
@@ -560,6 +559,7 @@ function AdminPane(props) {
     delete_row: _delete_row,
     refresh_func: _refresh_func
   }), /*#__PURE__*/_react["default"].createElement("div", {
+    className: "admin-pane",
     style: {
       display: "flex",
       flexDirection: "column",

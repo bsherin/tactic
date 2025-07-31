@@ -247,14 +247,13 @@ function AdminPane(props) {
     if (props.res_type == "container") {
         right_pane = (
             <div className="d-flex d-inline" ref={console_text_ref}
-                 style={{height: "100%", overflow: "hidden", marginRight: 50, position: "relative"}}>
+                 style={{height: "100%", overflow: "hidden", marginRight: 10, position: "relative"}}>
                 <SearchableConsole main_id={window.library_id}
                                    streaming_host="host"
                                    container_id={props.selected_resource.Id}
                                    ref={null}
                                    outer_style={{
-                                       marginLeft: 20,
-                                       marginRight: 20
+                                       padding: 20
                                    }}
                                    showCommandField={true}
                 />
@@ -317,7 +316,7 @@ function AdminPane(props) {
                           delete_row={_delete_row}
                           refresh_func={_refresh_func}
                           />
-              <div style={{
+              <div className="admin-pane" style={{
                      display: "flex",
                      flexDirection: "column",
                      flexGrow: 1,

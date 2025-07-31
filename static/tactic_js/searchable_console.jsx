@@ -7,7 +7,8 @@ import {postPromise} from "./communication_react";
 import {guid, useStateAndRef, useDidMount} from "./utilities_react";
 import {TacticSocket} from "./tactic_socket";
 
-export {SearchableConsole}
+export {SearchableConsole, ResponsiveFlex}
+
 
 function SearchableConsole(props, inner_ref) {
 
@@ -18,7 +19,7 @@ function SearchableConsole(props, inner_ref) {
     const [livescroll, set_livescroll] = useState(true);
     const [log_since, set_log_since] = useState(null);
 
-    // I need to have these as refs because the are accessed within the _handleUpdateMessage
+    // I need to have these as refs because they are accessed within the _handleUpdateMessage
     // callback. So they would have the old value.
     const [max_console_lines, set_max_console_lines, max_console_lines_ref] = useStateAndRef(100);
     const [, set_log_content, log_content_ref] = useStateAndRef("");
@@ -41,12 +42,18 @@ function SearchableConsole(props, inner_ref) {
         my_room.current = guid();
         tsocket.current = new TacticSocket("main", 5000, "searchable-console", props.main_id);
         tsocket.current.socket.emit("join", {"room": my_room.current});
+
         function cleanup() {
-            _stopLogStreaming().then(() => {tsocket.current.disconnect()});
+            _stopLogStreaming().then(() => {
+                tsocket.current.disconnect()
+            });
         }
+
         initSocket();
         _getLogAndStartStreaming()
-            .then(()=>{window.addEventListener('beforeunload', cleanup)});
+            .then(() => {
+                window.addEventListener('beforeunload', cleanup)
+            });
         return (() => {
             cleanup();
             window.removeEventListener('beforeunload', cleanup);
@@ -72,11 +79,11 @@ function SearchableConsole(props, inner_ref) {
     function _handleUpdateMessage(data) {
         console.log("got searchable-console-message");
         if (data.message != "updateLog") return;
-        _addToLog(data.new_line);
+        _addToLog(data["new_line"]);
     }
 
     function _setLogSince() {
-        var now = new Date().getTime();
+        const now = new Date().getTime();
         set_log_since(now);
         set_log_content("")
     }
@@ -89,12 +96,13 @@ function SearchableConsole(props, inner_ref) {
         function gotStreamerId(data) {
             streamer_id.current = data.streamer_id
         }
+
         console.log(`posting get_container_log with container_id ${cont_id.current}`)
         let res = await postPromise("host", "get_container_log",
             {container_id: cont_id.current, since: log_since, max_lines: max_console_lines_ref.current},
             props.main_id);
         console.log("got streamer stuff", String(res));
-        set_log_content(res.log_text);
+        set_log_content(res["log_text"]);
         let data = await postPromise(props.streaming_host, "StartLogStreaming",
             {container_id: cont_id.current, room: my_room.current, user_id: window.user_id},
             props.main_id);
@@ -118,7 +126,7 @@ function SearchableConsole(props, inner_ref) {
     function _prepareText() {
         let the_text = "";
         if (log_content_ref.current) { // without this can get an error if project saved with tile log showing
-            var tlist = log_content_ref.current.split(/\r?\n/);
+            let tlist = log_content_ref.current.split(/\r?\n/);
             tlist = tlist.slice(-1 * max_console_lines_ref.current);
             if (search_string) {
                 if (filter) {
@@ -214,56 +222,66 @@ function SearchableConsole(props, inner_ref) {
     }
 
     let the_text = {__html: _prepareText()};
-    let the_style = {
+    const inner_style = {
         whiteSpace: "nowrap",
         fontSize: 12,
         fontFamily: "monospace",
         flex: "1 1 0",
         minHeight: 0,
-        marginTop: 20,
-        marginBottom: 20,
-        overflow: "auto",
-        ...props.outer_style};
-    if (props.showCommandField) {
-        the_style.height = the_style.height - 40
+        overflow: "auto"
     }
-    return (
-        <div className="searchable-console"
-             style={{width: "100%", flex: "1 1 0", minHeight: 0, overflow: "hidden", display: "flex", flexDirection: "column"}}>
-            <div className="d-flex flex-row" style={{justifyContent: "space-between"}}>
-                <ControlGroup vertical={false}
-                              style={{marginLeft: 15, marginTop: 10}}>
-                    <Button onClick={_setLogSince}
-                            style={{height: 30}}
-                            variant="minimal" size="small" icon="trash"/>
-                    <HTMLSelect onChange={_setMaxConsoleLines}
-                                large={false}
-                                variant="minimal"
-                                value={max_console_lines_ref.current}
-                                options={[100, 250, 500, 1000, 2000]}
-                    />
-                    <Switch label="livescroll"
-                            size="medium"
-                            checked={livescroll}
-                            onChange={_setLiveScroll}
-                            style={{marginBottom: 0, marginTop: 5, alignSelf: "center", height: 30}}
-                    />
+    const outer_style = {
+        width: "100%", height: "100%", overflow: "hidden", display: "flex", flexDirection: "column",
+        ...props.outer_style
+    }
+    const leftContent = (
+        <ControlGroup vertical={false}>
+            <Button onClick={_setLogSince}
+                    style={{height: 30}}
+                    variant="minimal" size="small" icon="trash"/>
+            <HTMLSelect onChange={_setMaxConsoleLines}
+                        large={false}
+                        variant="minimal"
+                        value={max_console_lines_ref.current}
+                        options={[100, 250, 500, 1000, 2000]}
+            />
+            <Switch label="livescroll"
+                    size="medium"
+                    checked={livescroll}
+                    onChange={_setLiveScroll}
+                    style={{
+                        marginBottom: 0,
+                        marginLeft: 5,
+                        alignSelf: "center"
+                    }}
+            />
 
-                </ControlGroup>
-                <FilterSearchForm
-                    search_string={search_string}
-                    handleSearchFieldChange={_handleSearchFieldChange}
-                    handleFilter={_handleFilter}
-                    handleUnFilter={_handleUnFilter}
-                    searchNext={null}
-                    searchPrevious={null}
-                    search_helper_text={search_helper_text}
-                    margin_right={25}
-                />
-            </div>
-            <div ref={inner_ref} style={the_style} dangerouslySetInnerHTML={the_text}/>
+        </ControlGroup>
+    );
+    const rightContent = (
+        <FilterSearchForm
+            search_string={search_string}
+            handleSearchFieldChange={_handleSearchFieldChange}
+            handleFilter={_handleFilter}
+            handleUnFilter={_handleUnFilter}
+            searchNext={null}
+            searchPrevious={null}
+            search_helper_text={search_helper_text}
+            margin_right={25}
+        />
+    );
+    return (
+
+        <div className="searchable-console"
+             style={outer_style}>
+            <ResponsiveFlex
+                leftContent={leftContent}
+                rightContent={rightContent}
+            />
+            {/*</div>*/}
+            <div ref={inner_ref} style={inner_style} dangerouslySetInnerHTML={the_text}/>
             {props.showCommandField && (
-                <form onSubmit={_commandSubmit} style={{position: "relative", bottom: 8, margin: 10}}>
+                <form onSubmit={_commandSubmit}>
 
                     <InputGroup type="text"
                                 className="bp6-monospace-text"
@@ -274,7 +292,7 @@ function SearchableConsole(props, inner_ref) {
                                 onKeyDown={(e) => _handleKeyDown(e)}
                                 value={console_command_value}
                     />
-                </form> )
+                </form>)
             }
 
         </div>
@@ -283,3 +301,56 @@ function SearchableConsole(props, inner_ref) {
 
 SearchableConsole = memo(forwardRef(SearchableConsole));
 
+function ResponsiveFlex(props) {
+    props = {
+        gapThreshold: 100,
+        leftContent: null,
+        rightContent: null,
+        ...props
+    }
+    const containerRef = useRef(null);
+    const leftContentRef = useRef(null);
+    const rightContentRef = useRef(null);
+    const [hideRight, setHideRight] = useState(false);
+
+    useEffect(() => {
+        const observer = new ResizeObserver(([entry]) => {
+            const {width} = entry.contentRect;
+            const le_width = leftContentRef.current.getBoundingClientRect().width;
+            const re_width = rightContentRef.current.getBoundingClientRect().width;
+
+            if ((width - (re_width + le_width)) < props.gapThreshold) {
+                setHideRight(true);
+            } else {
+                setHideRight(false);
+            }
+        });
+
+        if (containerRef.current) {
+            observer.observe(containerRef.current);
+        }
+        return () => observer.disconnect();
+    }, []);
+
+    return (
+        <div
+            ref={containerRef}
+            style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "self-start",
+                width: "100%",
+                position: "relative"
+            }}
+        >
+            <div ref={leftContentRef}>
+                {props.leftContent}
+            </div>
+
+            {/* The right side collapses when hideRight is true */}
+            <div style={{opacity: hideRight ? 0 : 1}} ref={rightContentRef}>
+                {props.rightContent}
+            </div>
+        </div>
+    );
+}

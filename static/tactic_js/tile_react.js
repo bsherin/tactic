@@ -7,7 +7,6 @@ exports.TileContainer = TileContainer;
 exports.tilesReducer = tilesReducer;
 var _react = _interopRequireWildcard(require("react"));
 var _core = require("@blueprintjs/core");
-var _reactTransitionGroup = require("react-transition-group");
 var _lodash = _interopRequireDefault(require("lodash"));
 var _tile_form_react = require("./tile_form_react");
 var _blueprint_react_widgets = require("./blueprint_react_widgets");
@@ -48,10 +47,6 @@ function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e 
 var using_touch = "ontouchend" in document;
 var click_event = using_touch ? "touchstart" : "click";
 var TILE_DISPLAY_AREA_MARGIN = 15;
-var ANI_DURATION = 300;
-function composeObjs(base_style, new_style) {
-  return Object.assign(Object.assign({}, base_style), new_style);
-}
 function tilesReducer(tile_list, action) {
   var new_items;
   switch (action.type) {
@@ -123,7 +118,6 @@ function tilesReducer(tile_list, action) {
   return new_items;
 }
 function TileContainer(props) {
-  var tile_div_ref = (0, _react.useRef)(null);
   var settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   var _useState = (0, _react.useState)(false),
     _useState2 = _slicedToArray(_useState, 2),
@@ -271,15 +265,7 @@ function TileContainer(props) {
   var TailoredTileComponent = (0, _react.useMemo)(function () {
     return makeTailoredTileComponent();
   }, []);
-  return /*#__PURE__*/_react["default"].createElement("div", {
-    ref: tile_div_ref,
-    style: {
-      flexGrow: 1,
-      width: "100%",
-      position: "relative",
-      overflow: "auto"
-    }
-  }, /*#__PURE__*/_react["default"].createElement(_sortable_container.SortableComponent, {
+  return /*#__PURE__*/_react["default"].createElement(_sortable_container.SortableComponent, {
     className: props.table_is_shrunk ? "tile-div tile-container-float" : "tile-div",
     main_id: props.main_id,
     style: {},
@@ -303,7 +289,7 @@ function TileContainer(props) {
       selected_row: props.selected_row,
       table_is_shrunk: props.table_is_shrunk
     }
-  }));
+  });
 }
 exports.TileContainer = TileContainer = /*#__PURE__*/(0, _react.memo)(TileContainer);
 function SortHandle(props) {
@@ -345,8 +331,6 @@ function TileComponent(props) {
   var inner_log_ref = (0, _react.useRef)(null);
   var tda_ref = (0, _react.useRef)(null);
   var log_ref = (0, _react.useRef)(null);
-  var left_glyphs_ref = (0, _react.useRef)(null);
-  var right_glyphs_ref = (0, _react.useRef)(null);
   var javascript_error_ref = (0, _react.useRef)(false);
   var last_front_content = (0, _react.useRef)("");
   var _useState3 = (0, _react.useState)(34),
@@ -755,114 +739,6 @@ function TileComponent(props) {
       (0, _communication_react.postWithCallback)(props.tile_id, "TileTextAreaChange", data_dict, null, null, props.main_id);
     });
   }
-  var front_style;
-  var tda_style;
-  var back_style;
-  var tile_log_style;
-  var panel_body_style;
-  var main_style;
-  var transitionStylesAltUp;
-  var transitionStylesAltDown;
-  var transitionFadeStyles;
-  var lg_style;
-  function compute_styles() {
-    var tile_height = props.shrunk ? header_height : props.tile_height;
-    front_style = {
-      width: props.tile_width,
-      height: tile_height - header_height
-    };
-    tda_style = {
-      width: props.tile_width - TILE_DISPLAY_AREA_MARGIN * 2,
-      height: tile_height - header_height - TILE_DISPLAY_AREA_MARGIN * 2
-    };
-    if (left_glyphs_ref.current && right_glyphs_ref.current) {
-      var lg_rect = left_glyphs_ref.current.getBoundingClientRect();
-      var rg_rect = right_glyphs_ref.current.getBoundingClientRect();
-      var lg_width = rg_rect.x - lg_rect.x - 10;
-      lg_style = {
-        width: lg_width,
-        overflow: "hidden"
-      };
-    } else {
-      lg_style = {};
-    }
-    back_style = Object.assign({}, front_style);
-    tile_log_style = {
-      overflow: "auto",
-      marginLeft: 20,
-      marginRight: 20,
-      marginTop: 10,
-      marginBottom: 10,
-      width: props.tile_width - 40,
-      height: tile_height - header_height - 50
-    };
-    panel_body_style = {
-      "width": props.tile_width
-    };
-    main_style = {
-      width: props.tile_width + dwidth,
-      height: tile_height + dheight,
-      position: "relative"
-    };
-    if (!props.finished_loading) {
-      main_style.opacity = .5;
-    }
-    front_style.transition = "top ".concat(ANI_DURATION, "ms ease-in-out");
-    back_style.transition = "top ".concat(ANI_DURATION, "ms ease-in-out");
-    transitionStylesAltUp = {
-      transition: "top ".concat(ANI_DURATION, "ms ease-in-out"),
-      entering: {
-        top: header_height
-      },
-      entered: {
-        top: header_height
-      },
-      exiting: {
-        top: -1 * tile_height
-      },
-      exited: {
-        top: -1 * tile_height
-      }
-    };
-    transitionStylesAltDown = {
-      entering: {
-        top: header_height,
-        opacity: 1
-      },
-      entered: {
-        top: header_height,
-        opacity: 1
-      },
-      exiting: {
-        top: tile_height + 50
-      },
-      exited: {
-        top: tile_height + 50,
-        opacity: 0
-      }
-    };
-    tile_log_style.transition = "opacity ".concat(ANI_DURATION, "ms ease-in-out");
-    transitionFadeStyles = {
-      entering: {
-        opacity: 1
-      },
-      entered: {
-        opacity: 1
-      },
-      exiting: {
-        opacity: 0,
-        width: 0,
-        height: 0,
-        padding: 0
-      },
-      exited: {
-        opacity: 0,
-        width: 0,
-        height: 0,
-        padding: 0
-      }
-    };
-  }
   function logText() {
     (0, _communication_react.postWithCallback)(props.tile_id, "LogTile", {}, null, null, props.main_id);
   }
@@ -942,10 +818,6 @@ function TileComponent(props) {
   var front_dict = {
     __html: props.front_content
   };
-  compute_styles();
-  // let tile_class = props.table_is_shrunk && !props.dragging ? "tile-panel tile-panel-float" : "tile-panel";
-  var tile_class = "tile-panel";
-  var tph_class = props.source_changed ? "tile-panel-heading tile-source-changed" : "tile-panel-heading";
   var draghandle_position_dict = {
     position: "absolute",
     bottom: 2,
@@ -999,18 +871,41 @@ function TileComponent(props) {
     "divider3": "divider",
     "Delete me": _closeTile
   };
+  var tile_height = props.shrunk ? header_height : props.tile_height;
+  var tile_log_style = {
+    overflow: "auto",
+    width: "100%",
+    height: "100%"
+  };
+  var main_style = {
+    width: props.tile_width + dwidth,
+    height: tile_height + dheight,
+    display: "flex",
+    flexDirection: "column",
+    position: "relative"
+  };
+  if (!props.finished_loading) {
+    main_style.opacity = .5;
+  }
   return /*#__PURE__*/_react["default"].createElement(_core.Card, {
     ref: my_ref,
     elevation: 2,
     style: main_style,
-    className: tile_class,
+    className: "tile-panel",
     id: props.tile_id
   }, /*#__PURE__*/_react["default"].createElement(_error_boundary.ErrorBoundary, null, /*#__PURE__*/_react["default"].createElement("div", {
-    className: tph_class
+    className: props.source_changed ? "tile-panel-heading tile-source-changed" : "tile-panel-heading",
+    style: {
+      display: "flex",
+      paddingRight: 10,
+      flexDirection: "row",
+      justifyContent: "space-between"
+    }
   }, /*#__PURE__*/_react["default"].createElement("div", {
     className: "left-glyphs",
-    ref: left_glyphs_ref,
-    style: lg_style
+    style: {
+      overflow: "hidden"
+    }
   }, /*#__PURE__*/_react["default"].createElement(_core.ButtonGroup, null, props.shrunk && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
     icon: "chevron-right",
     handleClick: _toggleShrunk
@@ -1025,11 +920,7 @@ function TileComponent(props) {
     dragHandleProps: props.dragHandleProps,
     tile_name: props.tile_name
   }))), /*#__PURE__*/_react["default"].createElement("div", {
-    className: "right-glyphs",
-    style: {
-      marginRight: 10
-    },
-    ref: right_glyphs_ref
+    className: "right-glyphs"
   }, /*#__PURE__*/_react["default"].createElement(_core.ButtonGroup, null, props.show_log && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
     intent: "primary",
     handleClick: _toggleTileLog,
@@ -1063,26 +954,38 @@ function TileComponent(props) {
     alt_button: alt_button
   })))), /*#__PURE__*/_react["default"].createElement(_error_boundary.ErrorBoundary, null, !props.shrunk && /*#__PURE__*/_react["default"].createElement("div", {
     ref: body_ref,
-    style: panel_body_style,
+    style: {
+      width: "100%",
+      minHeight: 0,
+      flex: "1 1 0",
+      display: "flex",
+      flexDirection: "column",
+      padding: TILE_DISPLAY_AREA_MARGIN,
+      overflow: "auto",
+      position: "relative"
+    },
     className: "tile-body"
-  }, /*#__PURE__*/_react["default"].createElement(_error_boundary.ErrorBoundary, null, /*#__PURE__*/_react["default"].createElement(_reactTransitionGroup.Transition, {
-    "in": props.show_form,
-    timeout: ANI_DURATION
-  }, function (state) {
-    return /*#__PURE__*/_react["default"].createElement("div", {
-      className: "back",
-      style: composeObjs(back_style, transitionStylesAltUp[state])
-    }, /*#__PURE__*/_react["default"].createElement(_tile_form_react.TileForm, {
-      options: _lodash["default"].cloneDeep(props.form_data),
-      tile_id: props.tile_id,
-      updateValue: _updateOptionValue,
-      handleSubmit: _handleSubmitOptions
-    }));
-  })), /*#__PURE__*/_react["default"].createElement(_error_boundary.ErrorBoundary, null, props.show_log && /*#__PURE__*/_react["default"].createElement("div", {
-    className: "tile-log",
+  }, props.show_form && /*#__PURE__*/_react["default"].createElement("div", {
+    className: "back",
+    style: {
+      width: "100%",
+      height: "100%",
+      overflow: "auto",
+      position: "relative"
+    }
+  }, /*#__PURE__*/_react["default"].createElement(_tile_form_react.TileForm, {
+    options: _lodash["default"].cloneDeep(props.form_data),
+    tile_id: props.tile_id,
+    updateValue: _updateOptionValue,
+    handleSubmit: _handleSubmitOptions
+  })), props.show_log && /*#__PURE__*/_react["default"].createElement("div", {
+    className: "tile-log-area",
+    style: {
+      width: "100%",
+      height: "100%",
+      position: "relative"
+    },
     ref: log_ref
-  }, /*#__PURE__*/_react["default"].createElement("div", {
-    className: "tile-log-area"
   }, /*#__PURE__*/_react["default"].createElement(_searchable_console.SearchableConsole, {
     main_id: props.main_id,
     streaming_host: "host",
@@ -1090,20 +993,16 @@ function TileComponent(props) {
     ref: inner_log_ref,
     outer_style: tile_log_style,
     showCommandField: true
-  })))), /*#__PURE__*/_react["default"].createElement(_error_boundary.ErrorBoundary, null, /*#__PURE__*/_react["default"].createElement(_reactTransitionGroup.Transition, {
-    "in": show_front,
-    timeout: ANI_DURATION
-  }, function (state) {
-    return /*#__PURE__*/_react["default"].createElement("div", {
-      className: "front",
-      style: composeObjs(front_style, transitionStylesAltDown[state])
-    }, /*#__PURE__*/_react["default"].createElement("div", {
-      className: "tile-display-area",
-      style: tda_style,
-      ref: tda_ref,
-      dangerouslySetInnerHTML: front_dict
-    }));
-  })))), /*#__PURE__*/_react["default"].createElement(_drag_handle.DragHandle, {
+  })), show_front && /*#__PURE__*/_react["default"].createElement("div", {
+    className: "tile-display-area",
+    style: {
+      width: "100%",
+      height: "100%",
+      position: "relative"
+    },
+    ref: tda_ref,
+    dangerouslySetInnerHTML: front_dict
+  }))), /*#__PURE__*/_react["default"].createElement(_drag_handle.DragHandle, {
     position_dict: draghandle_position_dict,
     dragStart: _startResize,
     onDrag: _onResize,

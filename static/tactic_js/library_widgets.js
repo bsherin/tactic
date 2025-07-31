@@ -5,7 +5,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.BpSelectorTable = BpSelectorTable;
 exports.SearchForm = SearchForm;
-require("../tactic_css/tactic_select.scss");
 var _react = _interopRequireWildcard(require("react"));
 var _core = require("@blueprintjs/core");
 var _table = require("@blueprintjs/table");
@@ -191,7 +190,7 @@ function BpSelectorTable(props) {
         "first_sort": "ascending"
       }
     },
-    identifier_field: "name",
+    identifier_field: "_id",
     enableColumnResigin: false,
     maxColumnWidth: null,
     active_row: 0,
@@ -219,7 +218,6 @@ function BpSelectorTable(props) {
       saved_data_dict.current = props.data_dict;
     }
   });
-  var pushCallback = (0, _utilities_react.useCallbackStack)();
   function computeColumnWidths() {
     if (Object.keys(props.data_dict).length == 0) return;
     var column_names = Object.keys(props.columns);
@@ -246,12 +244,6 @@ function BpSelectorTable(props) {
       cwidths = bcwidths;
     }
     setColumnWidths(cwidths);
-    pushCallback(function () {
-      var the_sum = columnWidthsRef.current.reduce(function (a, b) {
-        return a + b;
-      }, 0);
-      props.communicateColumnWidthSum(the_sum);
-    });
   }
   function _onCompleteRender() {
     return _onCompleteRender2.apply(this, arguments);
@@ -317,21 +309,15 @@ function BpSelectorTable(props) {
       } else {
         the_body = "";
       }
-      var tclass;
-      if (props.open_resources_ref && props.open_resources_ref.current && props.open_resources_ref.current.includes(props.data_dict[rowIndex][props.identifier_field])) {
-        tclass = "open-selector-row";
-      } else {
-        tclass = "";
-      }
       return /*#__PURE__*/_react["default"].createElement(_table.Cell, {
         key: column_name,
+        className: "library-table-cell",
         interactive: true,
         truncated: true,
         tabIndex: -1,
         onKeyDown: props.keyHandler,
         wrapText: true
       }, /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
-        className: tclass,
         onDoubleClick: function onDoubleClick() {
           return props.handleRowDoubleClick(props.data_dict[rowIndex]);
         }
@@ -377,6 +363,7 @@ function BpSelectorTable(props) {
     var columnHeaderCellRenderer = function columnHeaderCellRenderer() {
       return /*#__PURE__*/_react["default"].createElement(_table.ColumnHeaderCell, {
         name: column_name,
+        className: "library-header-cell",
         nameRenderer: _columnHeaderNameRenderer,
         menuRenderer: function menuRenderer() {
           return _renderMenu(column_name);

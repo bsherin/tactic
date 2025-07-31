@@ -40,13 +40,7 @@ function _administer_home_main () {
     let AdministerHomeAppPlus = withSettings(withDialogs(withErrorDrawer(withStatus(AdministerHomeApp))));
     const domContainer = document.querySelector('#library-home-root');
     const root = createRoot(domContainer);
-    root.render(
-        <div style={{display: "flex", flexDirection: "column",
-                position: "relative",
-                height: "100%",
-                width: "100%"}}>
-            <AdministerHomeAppPlus tsocket={tsocket}/>
-        </div>)
+    root.render(<AdministerHomeAppPlus tsocket={tsocket}/>)
 }
 
 var res_types = ["container", "user"];
@@ -198,7 +192,7 @@ function AdministerHomeApp(props) {
                           user_name={window.username}/>
             <ViewerContext.Provider value={{readOnly: false}}>
                 <div className={outer_class} ref={top_ref} style={outer_style}>
-                    <Tabs id="the_container" style={{marginTop: 100}}
+                    <Tabs id="admin-tabs" style={{marginTop: 100}}
                              selectedTabId={selected_tab_id}
                              renderActiveTabPanelOnly={true}
                              vertical={true} size="large" onChange={_handleTabChange}>

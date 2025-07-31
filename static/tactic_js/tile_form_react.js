@@ -9,7 +9,7 @@ var _react = _interopRequireWildcard(require("react"));
 var _core = require("@blueprintjs/core");
 var _lodash = _interopRequireDefault(require("lodash"));
 var _reactCodemirror = require("./react-codemirror6");
-var _blueprint_mdata_fields = require("./blueprint_mdata_fields");
+var _selector_advanced = require("./selector_advanced");
 var _utilities_react = require("./utilities_react");
 var _pool_tree = require("./pool_tree");
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
@@ -97,7 +97,7 @@ function TileForm(props) {
           display_text: display_text,
           key: att_name,
           choice_list: option["option_list"],
-          value: option.starting_value,
+          value: option["starting_value"],
           buttonIcon: selector_type_icons[option["type"]],
           updateValue: _updateValue
         }));
@@ -107,7 +107,7 @@ function TileForm(props) {
             att_name: att_name,
             display_text: display_text,
             key: att_name,
-            value: _lodash["default"].cloneDeep(option.starting_value),
+            value: _lodash["default"].cloneDeep(option["starting_value"]),
             pipe_dict: _lodash["default"].cloneDeep(option["pipe_dict"]),
             updateValue: _updateValue
           }));
@@ -117,7 +117,7 @@ function TileForm(props) {
             att_name: att_name,
             display_text: display_text,
             key: att_name,
-            value: option.starting_value,
+            value: option["starting_value"],
             updateValue: _updateValue
           }));
           break;
@@ -126,7 +126,7 @@ function TileForm(props) {
             att_name: att_name,
             display_text: display_text,
             key: att_name,
-            value: option.starting_value,
+            value: option["starting_value"],
             updateValue: _updateValue
           }));
           break;
@@ -135,7 +135,7 @@ function TileForm(props) {
             att_name: att_name,
             display_text: display_text,
             key: att_name,
-            value: option.starting_value,
+            value: option["starting_value"],
             updateValue: _updateValue
           }));
           break;
@@ -144,7 +144,7 @@ function TileForm(props) {
             att_name: att_name,
             display_text: display_text,
             key: att_name,
-            value: option.starting_value,
+            value: option["starting_value"],
             leftIcon: "paragraph",
             updateValue: _updateValue
           }));
@@ -154,7 +154,7 @@ function TileForm(props) {
             att_name: att_name,
             display_text: display_text,
             key: att_name,
-            value: option.starting_value,
+            value: option["starting_value"],
             updateValue: _updateValue
           }));
           break;
@@ -163,7 +163,7 @@ function TileForm(props) {
             att_name: att_name,
             display_text: display_text,
             key: att_name,
-            value: option.starting_value,
+            value: option["starting_value"],
             updateValue: _updateValue
           }));
           break;
@@ -173,7 +173,7 @@ function TileForm(props) {
             tile_id: props.tile_id,
             display_text: display_text,
             key: att_name,
-            value: option.starting_value,
+            value: option["starting_value"],
             select_type: option.pool_select_type,
             updateValue: _updateValue
           }));
@@ -232,8 +232,8 @@ function FormSection(props) {
   return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_core.Button, {
     onClick: _handleClick,
     text: label,
-    large: false,
-    outlined: true,
+    size: "medium",
+    variant: "outlined",
     intent: "primary",
     style: {
       width: "fit-content",
@@ -425,7 +425,7 @@ function SelectOption(props) {
   var label = props.display_text == null ? props.att_name : props.display_text;
   return /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
     label: label
-  }, /*#__PURE__*/_react["default"].createElement(_blueprint_mdata_fields.BpSelect, {
+  }, /*#__PURE__*/_react["default"].createElement(_selector_advanced.BpSelect, {
     onChange: _updateMe,
     value: props.value,
     buttonIcon: props.buttonIcon,
@@ -434,10 +434,6 @@ function SelectOption(props) {
 }
 SelectOption = /*#__PURE__*/(0, _react.memo)(SelectOption);
 function PoolOption(props) {
-  var _useState1 = (0, _react.useState)(false),
-    _useState10 = _slicedToArray(_useState1, 2),
-    isOpen = _useState10[0],
-    setIsOpen = _useState10[1];
   function _updateMe(newval) {
     props.updateValue(props.att_name, newval);
   }
@@ -510,7 +506,7 @@ function PipeOption(props) {
   var label = props.display_text == null ? props.att_name : props.display_text;
   return /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
     label: label
-  }, /*#__PURE__*/_react["default"].createElement(_blueprint_mdata_fields.BpSelectAdvanced, {
+  }, /*#__PURE__*/_react["default"].createElement(_selector_advanced.BpSelectAdvanced, {
     onChange: _updateMe,
     readOnly: false,
     value: full_value,

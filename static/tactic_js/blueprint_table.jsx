@@ -299,7 +299,7 @@ function BlueprintTable(props) {
         height: "100%"
     };
     return (
-        <div id="table-area" ref={top_ref} style={style}>
+        <div className="table-area" ref={top_ref} style={style}>
             <Table ref={table_ref}
                    key={hash_value()}  // kludge: Having this prevents partial row rendering
                    numRows={props.mState.total_rows}

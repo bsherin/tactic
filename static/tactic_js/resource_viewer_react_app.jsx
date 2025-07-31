@@ -1,7 +1,7 @@
 import React from "react";
 import {Fragment, useEffect, useRef, memo, useContext} from 'react';
 
-import {CombinedMetadata} from "./blueprint_mdata_fields";
+import {CombinedMetadata} from "./combined_metadata";
 import {HorizontalPanes} from "./resizing_allotment";
 import {handleCallback} from "./communication_react"
 import {TacticMenubar} from "./menu_utilities"
@@ -74,6 +74,7 @@ const metadata_outer_style = {
 function ResourceViewerApp(props) {
     props = {
         search_string: "",
+        padTop: false,
         search_matches: null,
         showErrorDrawerButton: false,
         am_selected: true,
@@ -118,10 +119,17 @@ function ResourceViewerApp(props) {
 
     let left_pane = (
         <Fragment>
-            <div style={{paddingRight: PADDING, height: "100%", width: "100%",
-                position: "relative",
-                overflow: "auto", display: "flex", flexDirection: "column"}}>
+            <div className={`resource-viewer-left-pane-holder ${props.padTop ? "top-padded" : ""}`}
+                style={{
+                    height: "100%", width: "100%",
+                    position: "relative",
+                    overflow: "auto", display: "flex", flexDirection: "column"}}>
+                <div style={{
+                    height: "100%", width: "100%",
+                    position: "relative",
+                    overflow: "auto", display: "flex", flexDirection: "column"}}>
                 {props.children}
+                </div>
             </div>
         </Fragment>
     );
@@ -129,7 +137,6 @@ function ResourceViewerApp(props) {
     let right_pane = (
         <CombinedMetadata expandWidth={true}
                           tsocket={props.tsocket}
-                          outer_style={metadata_outer_style}
                           useTags={true}
                           useNotes={true}
                           readOnly={props.readOnly}
@@ -159,14 +166,12 @@ function ResourceViewerApp(props) {
                      flexGrow: 1,
                      width: "100%",
                      position: "relative",
-                     paddingLeft: 15, marginTop: 0}}>
+                     marginTop: 0}}>
                 <HorizontalPanes left_pane={left_pane}
                                  show_handle={true}
                                  right_pane={right_pane}
                                  initial_width_fraction={.65}
                                  am_outer={true}
-                                 bottom_margin={BOTTOM_MARGIN}
-                                 right_margin={SIDE_MARGIN}
                 />
             </div>
         </Fragment>

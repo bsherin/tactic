@@ -1,6 +1,11 @@
-import "../tactic_css/tactic.scss";
-import "../tactic_css/tactic_table.scss";
-import "../tactic_css/tile_creator.scss";
+
+if (!window.in_context) {
+    import("../tactic_css/tactic.scss");
+    import("../tactic_css/resource_viewer.scss");
+    import ("../tactic_css/tile_creator.scss");
+    import("../tactic_css/tactic_table.css");
+    import ("../tactic_css/themeable.scss");
+}
 
 import React from "react";
 import {Fragment, useState, useEffect, useRef, memo, useMemo, useContext} from "react";
@@ -20,7 +25,7 @@ import {HorizontalPanes} from "./resizing_allotment";
 import {postAjax, postAjaxPromise, postPromise} from "./communication_react"
 import {withStatus, doFlash, StatusContext} from "./toaster"
 import {withAssistant} from "./assistant";
-import {ICON_BAR_WIDTH, SIDE_MARGIN} from "./sizing_tools";
+import {ICON_BAR_WIDTH} from "./sizing_tools";
 import {withErrorDrawer} from "./error_drawer";
 import {renderSpinnerMessage, convertExtraKeys, useStateAndRef} from "./utilities_react"
 import {TacticNavbar} from "./blueprint_navbar";
@@ -43,9 +48,6 @@ import {TileMakerSearchForm} from "./tile_maker_search_form";
 
 export {CreatorApp}
 
-const BOTTOM_MARGIN = 50;
-
-
 function CreatorApp(props) {
     props = {
         controlled: false,
@@ -59,7 +61,6 @@ function CreatorApp(props) {
         ...props
     };
     const top_ref = useRef(null);
-    const nav_ref = useRef(null);
     const search_ref = useRef(null);
     const last_save = useRef({});
     const rline_number = useRef(props.initial_line_number);
@@ -803,7 +804,6 @@ function CreatorApp(props) {
         codeElemDict[st["identifier"]] = () => {
             return (
                 <CmElement cmState={st}
-                           no_height={false}
                            allowSignatureChange={false}
                            allowDelete={false}
                            argString={st["argString"]}
@@ -837,7 +837,6 @@ function CreatorApp(props) {
                            cmDispatch={umDispatch}
                            cmObjectRef={null}
                            name={um["name"]}
-                           no_height={false}
                            registerCmObject={registerCmObject}
                            identifier={um["identifier"]}
                            extraKeys={_extraKeys}
@@ -865,7 +864,6 @@ function CreatorApp(props) {
                            cmObjectRef={null}
                            registerCmObject={registerCmObject}
                            name={hm["name"]}
-                           no_height={false}
                            identifier={hm["identifier"]}
                            extraKeys={_extraKeys}
                            saveAndCheckpoint={_saveAndCheckpoint}
@@ -913,7 +911,7 @@ function CreatorApp(props) {
     }
 
     const sections = [{
-        title: "PROPERTIES",
+        title: "properties",
         visible: true,
         icon: "properties",
         editable: false,
@@ -931,7 +929,7 @@ function CreatorApp(props) {
         ]
     },
         {
-            title: "OPTIONS",
+            title: "options",
             visible: true,
             editable: true,
             icon: "select",
@@ -942,17 +940,17 @@ function CreatorApp(props) {
             dispatch: optionDispatch
         },
         {
-            title: "EXPORTS", visible: true, editable: true, icon: "select",
+            title: "export", visible: true, editable: true, icon: "select",
             start_expanded: false,
             sub_items: export_list_ref.current, dispatch: exportDispatch
         },
         {
-            title: "SAVE_ATTRS", visible: !metadataRef.current.couple_save_attrs_and_exports,
+            title: "save_attrs", visible: !metadataRef.current.couple_save_attrs_and_exports,
             start_expanded: false,
             editable: true, icon: "select", sub_items: save_list_ref.current, dispatch: saveDispatch
         },
         {
-            title: "STANDARD METHODS",
+            title: "standard methods",
             visible: true,
             editable: false,
             icon: "code",
@@ -963,11 +961,11 @@ function CreatorApp(props) {
             dispatch: standardDispatch
         },
         {
-            title: "USER METHODS", visible: true, editable: true, icon: "code",
+            title: "user methods", visible: true, editable: true, icon: "code",
             start_expanded: false, sub_items: umListRef.current, dispatch: umDispatch
         },
         {
-            title: "HANDLER METHODS", visible: true, editable: true, icon: "code", sub_items: hmListRef.current,
+            title: "handler methods", visible: true, editable: true, icon: "code", sub_items: hmListRef.current,
             start_expanded: false,
             createFromList: true, choiceDict: props.all_handler_methods, dispatch: hmDispatch
         },
@@ -975,19 +973,12 @@ function CreatorApp(props) {
 
     let left_pane = (
         <Fragment>
-            <div ref={nav_ref}
-                 style={{overflow: "auto",
-                     paddingTop: 35,
-                     paddingLeft: 15,
-                     height: "100%"}}>
                 <MakerNavigator handleTabSelect={_handleTabSelect}
                                 pushCallback={pushCallback}
                                 is_mpl={my_props.is_mpl}
                                 is_d3={my_props.is_d3}
                                 sections={sections}
                                 umList={umListRef.current}/>
-            </div>
-
         </Fragment>
     );
     let mdata_panel = (
@@ -1079,25 +1070,25 @@ function CreatorApp(props) {
     }
 
     let right_pane = (
-        <div style={{width: "100%", height: "100%"}}>
-            <div style={{display: "flex", flexDirection: "column", paddingBottom: 5, width: "100%", height: "100%", paddingLeft: 20, paddingTop: 25}}>
-                <TileMakerSearchForm
-                    regex={false}
-                    allow_regex={true}
-                    field_width={200}
-                    include_search_jumper={true}
-                    searchDispatch={searchDispatch}
-                    searchStateRef={searchStateRef}
-                    searchNext={_searchNext}
-                    searchPrev={_searchPrev}
-                    searchState={searchStateRef.current}
-                    search_ref={search_ref}
-                />
-                <div style={{overflow: "auto", flex: "1 1 0", minWidth: 0, paddingBottom: 200}}>
-                    {right_pane_list}
-                </div>
+        <div style={{width: "100%", height: "100%", display: "flex", flexDirection: "column"}}
+             className="creator-right-pane">
+            <TileMakerSearchForm
+                regex={false}
+                allow_regex={true}
+                field_width={200}
+                include_search_jumper={true}
+                searchDispatch={searchDispatch}
+                searchStateRef={searchStateRef}
+                searchNext={_searchNext}
+                searchPrev={_searchPrev}
+                searchState={searchStateRef.current}
+                search_ref={search_ref}
+            />
+            <div style={{overflow: "auto", flex: "1 1 0", minWidth: 0}}
+                 className="creator-pane-list">
+                {right_pane_list}
             </div>
-        </div>
+    </div>
     )
 
     let outer_style = {
@@ -1106,10 +1097,9 @@ function CreatorApp(props) {
         flexGrow: 1,
         display: 'flex',
         flexDirection: 'column',
-        paddingLeft: 0,
         position: "relative"
     };
-    let outer_class = "resource-viewer-holder pane-holder";
+    let outer_class = "resource-viewer-holder pane-holder resource-viewer-left-pane-holder top-padded";
     if (!window.in_context) {
         if (settingsContext.isDark()) {
             outer_class = outer_class + " bp6-dark";
@@ -1157,8 +1147,6 @@ function CreatorApp(props) {
                                                  show_handle={true}
                                                  initial_width_fraction={.2}
                                                  handleSplitUpdate={null}
-                                                 bottom_margin={BOTTOM_MARGIN}
-                                                 right_margin={SIDE_MARGIN}
                                 />
                             </ErrorBoundary>
                     </div>

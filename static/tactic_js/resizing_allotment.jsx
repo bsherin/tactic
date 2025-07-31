@@ -5,6 +5,7 @@ import {Button, Icon} from "@blueprintjs/core";
 
 setSashSize(12)
 
+
 export function HorizontalPanes({
                                     left_pane,
                                     right_pane,
@@ -17,7 +18,7 @@ export function HorizontalPanes({
                                     handleResizeEnd = null,
                                     left_margin = null,
                                     outer_style = {},
-                                    separatorPadding = 0,
+                                    className="",
                                     hide_me = false,
                                 }) {
     const leftRef = useRef(null);
@@ -106,7 +107,7 @@ export function HorizontalPanes({
     }
 
     return (
-        <div style={outerStyle}>
+        <div style={outerStyle} className={className}>
             <Allotment
                 ref={mainRef}
                 defaultSizes={defaultSizes}
@@ -117,8 +118,9 @@ export function HorizontalPanes({
 
                 <Allotment.Pane visible={!snapped}>
                     <div ref={leftRef}
+                         className="horizontal-left-pane"
                          style={{
-                             height: "100%", width: "100%", paddingRight: separatorPadding / 2,
+                             height: "100%", width: "100%",
                              overflow: "hidden", position: "relative"
                          }}>
                         {left_pane}
@@ -127,11 +129,13 @@ export function HorizontalPanes({
                 </Allotment.Pane>
 
                 <Allotment.Pane>
-                    <div ref={rightRef} style={{
-                        height: "100%", width: "100%",
-                        paddingLeft: separatorPadding / 2,
-                        overflow: "hidden"
-                    }}>
+                    <div ref={rightRef}
+                         className="horizontal-right-pane"
+                         style={{
+                            height: "100%", width: "100%",
+                            overflow: "hidden",
+                            position: "relative"
+                        }}>
                         {snap_left && snapped && <UnsnapButton unSnap={unSnap}/>}
                         {right_pane}
                     </div>
@@ -172,7 +176,7 @@ function SnapButton(props) {
                 style={{
                     paddingLeft: 0, paddingRight: 0,
                     position: "absolute", top: "50%",
-                    right: -3,
+                    right: 0,
                     zIndex: 1,
                     opacity: 0.5
                 }}
@@ -190,7 +194,7 @@ export function VerticalPanes({
                                   handleSplitUpdate = null,
                                   handleResizeStart = null,
                                   handleResizeEnd = null,
-                                  separatorPadding = 0,
+                                  className = "",
                                   outer_style = {},
                                   hide_top = false,
                               }) {
@@ -221,17 +225,20 @@ export function VerticalPanes({
     };
 
     return (
-        <div style={wrapperStyle}>
+        <div style={wrapperStyle} className={className}>
             <Allotment vertical defaultSizes={defaultSizes} onChange={handleChange} onDragStart={handleResizeStart}>
                 <Allotment.Pane>
                     <div ref={topRef}
-                         style={{width: "100%", height: "100%", paddingBottom: separatorPadding / 2}}>
+                         className="vertical-top-pane"
+                         style={{width: "100%", height: "100%"}}>
                         {top_pane}
                     </div>
                 </Allotment.Pane>
 
                 <Allotment.Pane>
-                    <div ref={bottomRef} style={{width: "100%", height: "100%", paddingTop: separatorPadding / 2}}>
+                    <div ref={bottomRef}
+                         className="vertical-bottom-pane"
+                         style={{width: "100%", height: "100%"}}>
                         {bottom_pane}
                     </div>
                 </Allotment.Pane>

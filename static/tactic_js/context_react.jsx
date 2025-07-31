@@ -3,8 +3,13 @@
 import "../tactic_css/tactic.scss";
 import "../tactic_css/context.scss";
 import "../tactic_css/tactic_table.scss";
+import "../tactic_css/tactic_main.scss"
+import("../tactic_css/tactic_console.scss");
 import "../tactic_css/library_home.scss";
 import "../tactic_css/tile_creator.scss";
+import "../tactic_css/resource_viewer.scss";
+import "../tactic_css/themeable.scss";
+
 
 import React from "react";
 import {useState, useEffect, useRef, useContext, Fragment, useCallback, useMemo} from "react";
@@ -109,15 +114,9 @@ function _context_main() {
     const domContainer = document.querySelector('#context-root');
     const root = createRoot(domContainer);
     root.render(
-        <div style={{display: "flex", flexDirection: "column",
-            position: "relative",
-            height: "100%",
-            width: "100%"}}>
-            <ContextAppPlus tsocket={tsocket}/>
-        </div>
+        <ContextAppPlus tsocket={tsocket}/>
     )
 }
-
 
 function ContextApp(props) {
     const [selectedTabId, setSelectedTabId, selectedTabIdRef] = useStateAndRef("library");
@@ -534,7 +533,6 @@ function ContextApp(props) {
                     item_type: "command"
                 }
             )
-
         }
         _addOmniItems("global", omni_items)
     }
@@ -542,7 +540,6 @@ function ContextApp(props) {
     function amSelected(ltab_id, lselectedTabIdRef) {
         return !window.in_context || ltab_id === lselectedTabIdRef.current
     }
-
 
     const library_panel = (
         <SelectedPaneContext.Provider  key="library" value={{
@@ -679,21 +676,6 @@ function ContextApp(props) {
         all_panels.push(wrapped_panel);
     }
 
-    let outer_class = "pane-holder ";
-    if (settingsContext.isDark()) {
-        outer_class = `${outer_class} bp6-dark`;
-    } else {
-        outer_class = `${outer_class} light-theme`;
-    }
-    let outer_style = {
-        width: "100%",
-        flexGrow: 1,
-        display: 'flex',
-        flexDirection: 'row',
-        paddingLeft: 0,
-        position: "relative"
-    };
-
     let sid = selectedTabIdRef.current;
     let commandItems = omniItemsRef.current["global"];
     if (sid in omniItemsRef.current) {
@@ -710,13 +692,27 @@ function ContextApp(props) {
         />
     )
     let right_pane = (
-        <div style={{width: "100%", height: "100%", position: "relative"}}>
+        <Fragment>
             {all_panels}
-        </div>
+        </Fragment>
     )
 
+    let outer_class = `pane-holder ${settingsContext.isDark() ? "bp6-dark" : "light-theme"}`;
+    let outer_style = {
+        width: "100%",
+        height: "100%",
+        flexGrow: 1,
+        display: 'flex',
+        flexDirection: 'row',
+        paddingLeft: 0,
+        position: "relative"
+    };
+
     return (
-        <Fragment>
+        <div style={{display: "flex", flexDirection: "column",
+            position: "relative",
+            height: "100%",
+            width: "100%"}}>
             <TacticNavbar is_authenticated={window.is_authenticated}
                           selected={null}
                           show_api_links={false}
@@ -735,8 +731,6 @@ function ContextApp(props) {
                                  widths={[INIT_CONTEXT_PANEL_WIDTH, window.innerWidth - INIT_CONTEXT_PANEL_WIDTH]}
                                  initial_width_fraction={.1}
                                  handleResizeEnd={null}
-                                 bottom_margin={0}
-                                 right_margin={0}
                 />
             </div>
                 <SelectedPaneContext.Provider value={{
@@ -753,7 +747,7 @@ function ContextApp(props) {
                                  closeOmnibar={_closeOpenOmnibar}/>
 
                 </SelectedPaneContext.Provider>
-        </Fragment>
+        </div>
     );
 }
 

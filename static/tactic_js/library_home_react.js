@@ -5,9 +5,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.LibraryHomeApp = LibraryHomeApp;
 exports.library_id = void 0;
-require("../tactic_css/tactic.scss");
-require("../tactic_css/tactic_table.scss");
-require("../tactic_css/library_home.scss");
 var _react = _interopRequireWildcard(require("react"));
 var _client = require("react-dom/client");
 var _tactic_socket = require("./tactic_socket");
@@ -23,14 +20,33 @@ var _sizing_tools = require("./sizing_tools");
 var _modal_react = require("./modal_react");
 var _assistant = require("./assistant");
 var _communication_react = require("./communication_react");
-function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t in e) "default" !== _t && {}.hasOwnProperty.call(e, _t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t)) && (i.get || i.set) ? o(f, _t, i) : f[_t] = e[_t]); return f; })(e, t); }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
 function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
 function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
 function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
-function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); } // noinspection JSCheckFunctionSignatures
+function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t in e) "default" !== _t && {}.hasOwnProperty.call(e, _t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t)) && (i.get || i.set) ? o(f, _t, i) : f[_t] = e[_t]); return f; })(e, t); }
+// noinspection JSCheckFunctionSignatures
+
+if (!window.in_context) {
+  Promise.resolve().then(function () {
+    return _interopRequireWildcard(require("../tactic_css/tactic.scss"));
+  });
+  Promise.resolve().then(function () {
+    return _interopRequireWildcard(require("../tactic_css/tactic_table.scss"));
+  });
+  Promise.resolve().then(function () {
+    return _interopRequireWildcard(require("../tactic_css/library_home.scss"));
+  });
+  Promise.resolve().then(function () {
+    return _interopRequireWildcard(require("../tactic_css/resource_viewer.scss"));
+  });
+  Promise.resolve().then(function () {
+    return _interopRequireWildcard(require("../tactic_css/themeable.scss"));
+  });
+}
 var library_id = exports.library_id = (0, _utilities_react.guid)();
 if (!window.in_context) {
   window.main_id = library_id;
@@ -105,15 +121,10 @@ function LibraryHomeApp(props) {
     paddingLeft: 0,
     position: "relative"
   };
-  var outer_class = "";
+  var outer_class = "resource-viewer-holder top";
   if (!window.in_context) {
     outer_style.height = "100%";
-    outer_class = "pane-holder  ";
-    if (settingsContext.isDark()) {
-      outer_class = "".concat(outer_class, " bp6-dark");
-    } else {
-      outer_class = "".concat(outer_class, " light-theme");
-    }
+    outer_class = "".concat(outer_class, " pane-holder ").concat(settingsContext.isDark() ? "bp6-dark" : "light-theme");
   }
   return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, !props.controlled && /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
     is_authenticated: window.is_authenticated,
@@ -134,18 +145,10 @@ function _library_home_main() {
   var LibraryHomeAppPlus = (0, _settings.withSettings)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster2.withStatus)((0, _assistant.withAssistant)(LibraryHomeApp)))));
   var domContainer = document.querySelector('#library-home-root');
   var root = (0, _client.createRoot)(domContainer);
-  root.render(/*#__PURE__*/_react["default"].createElement("div", {
-    style: {
-      display: "flex",
-      flexDirection: "column",
-      position: "relative",
-      height: "100%",
-      width: "100%"
-    }
-  }, /*#__PURE__*/_react["default"].createElement(LibraryHomeAppPlus, {
+  root.render(/*#__PURE__*/_react["default"].createElement(LibraryHomeAppPlus, {
     tsocket: tsocket,
     controlled: false
-  })));
+  }));
 }
 if (!window.in_context) {
   _library_home_main();

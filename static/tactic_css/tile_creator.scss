@@ -1,244 +1,169 @@
 @use "blueprint_variables.scss";
-@use "themeable.scss";
 
-.fade-enter {
-  opacity: 0;
-  max-height: 0;
-  overflow: hidden;
-}
+$standard-padding: 25px;
 
-.fade-enter-active {
-  opacity: 1;
-  max-height: 500px;
-  transition: opacity 300ms ease, max-height 300ms ease;
-}
+$navigator-top-padding: 35px;
+$nav-item-indent: 25px;
+$nav-section-font-size: 15px;
+$nav-item-font-size: 13px;
+$small-pane-buttom-offset: 10px;
 
-.fade-exit {
-  opacity: 1;
-  max-height: 500px;
-}
-
-.fade-exit-active {
-  opacity: 0;
-  max-height: 0;
-  transition: opacity 300ms ease, max-height 300ms ease;
-}
-
-.nav-section-class {
-  .bp6-collapse-body {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-  }
-}
-
-.sortable-nav-section {
-  .bp6-input-group {
-    margin-left: 25px;
-    margin-right: 30px
-  }
-
-  .button-in-select {
-    font-size: 12px
-  }
-}
-
-.bp6-button-group {
-  .show-on-hover {
-    opacity: 0 !important;
-  }
-
-  &:hover {
-    .show-on-hover {
-      opacity: 100 !important;
-    }
-  }
-}
-
-.creator-code-header {
-  .cm-editor {
-    border: none;
-    padding-top: 0;
-    padding-bottom: 0;
-  }
-}
+$option-divider-color: #ec9a3c;
 
 .light-theme {
-  .cm-signature {
-    .cm-editor {
-      background-color: transparent;
-      border: none !important;
+    .cm-signature {
+        .cm-editor {
+            background-color: transparent;
+            border: none !important;
+        }
     }
-  }
 }
-
-#creator-root, .creator-root {
-  .maker-pane {
-    background-color: transparent !important;
-    margin-bottom: 5px;
-    margin-left: 5px;
-    padding-top: 0;
-    padding-bottom: 0;
-    margin-right: 20px; // for separation from scrollbar
-    // add margin-top of 10px if first child
-    &:first-child {
-      margin-top: 5px;
-    }
-    &.form-pane {
-          overflow: auto;
-    }
-  }
-
-  .maker-form-container {
-    padding-top: 40px
-  }
-
-  //.cm-signature {
-  //  height: 34px;
-  //}
-}
-
 
 .bp6-dark {
-  .cm-signature {
-    .cm-editor {
-      background-color: transparent !important;
+    .cm-signature {
+        .cm-editor {
+            background-color: transparent !important;
+        }
     }
-  }
 }
 
 #creator-root, .creator-root {
-  //margin-right: 25px;
-  vertical-align: top;
 
-  .code-holder {
-    height: 100%;
-
-  }
-
-  .cm-signature {
-    .cm-content {
-      align-content: end;
+    .fade-enter {
+        opacity: 0;
+        max-height: 0;
+        overflow: hidden;
     }
-  }
 
-  .cm-editable {
-    border-bottom: 1px solid #007acc;
-    padding-bottom: 1px;
-  }
+    .fade-enter-active {
+        opacity: 1;
+        max-height: 500px;
+        transition: opacity 300ms ease, max-height 300ms ease;
+    }
 
-  .bp6-tab:focus {
-    outline: none
-  }
+    .fade-exit {
+        opacity: 1;
+        max-height: 500px;
+    }
 
-  .bp6-large > .bp6-tab {
-    font-size: 18px;
-    margin-top: 10px;
-    margin-left: 30px;
-    margin-right: 0
-  }
+    .fade-exit-active {
+        opacity: 0;
+        max-height: 0;
+        transition: opacity 300ms ease, max-height 300ms ease;
+    }
 
-  //#rccode {
-  //  span {
-  //    margin-top: 2px
-  //  }
-  //}
+    .maker-navigator {
+        padding-top: $navigator-top-padding;
+
+        .nav-section {
+            .bp6-collapse-body {
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+
+        .nav-section-button {
+            padding-right: 2px;
+            font-size: $nav-section-font-size;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .sortable-nav-section {
+            .bp6-input-group {
+                margin-left: 25px;
+                margin-right: 30px
+            }
+
+        }
+
+        .maker-nav-item {
+            margin-left: $nav-item-indent;
+            padding-right: 2px;
+            font-size: $nav-item-font-size;
+
+            .spacer-nav-item {
+                width: 175px;
+                opacity: 0.5;
+            }
+
+            &.nav-divider{
+                font-weight: bold;
+                color: $option-divider-color;
+            }
+        }
+    }
+
+    .creator-right-pane {
+        padding-left: $standard-padding;
+    }
+
+    .maker-pane {
+        background-color: transparent !important;
+        //margin-right: 20px; // for separation from scrollbar
+
+        &:first-child {
+            margin-top: 5px;
+        }
+
+        .creator-metadata-outer {
+            padding-top: 25px;
+        }
+
+        .creator-simple-title {
+            position: absolute;
+            left: 40px;
+            top: 13px;
+        }
+
+        .creator-code-header {
+            .cm-editor {
+                border: none;
+                padding-top: 0;
+                padding-bottom: 0;
+            }
+        }
+
+        .cm-signature {
+            margin-left: 10px;
+
+            .cm-content {
+                align-content: end;
+            }
+        }
+
+        .cm-editable {
+            border-bottom: 1px solid #007acc;
+            padding-bottom: 1px;
+        }
+
+        .maker-pane-button {
+            position: absolute;
+            padding: 0;
+            top: $small-pane-buttom-offset;
+            z-index: 20;
+
+            &.maker-pane-left-button {
+                left: $small-pane-buttom-offset
+            }
+
+            &.maker-pane-right-button {
+                right: $small-pane-buttom-offset
+            }
+        }
+
+        .maker-form-container {
+            padding-top: 20px
+        }
+
+        &.form-pane {
+            overflow: auto;
+        }
+    }
+
+
+
 }
 
-#creator-root, .creator-root {
-  .bp6-large > .bp6-tab {
-    margin-top: 0px
-  }
-}
 
-#creator-resources {
-  height: 100%;
-
-  .tab-pane {
-    padding: 10px;
-    border-style: solid;
-    border-color: rgb(221, 221, 221);
-    border-width: 1px;
-    margin-right: 10px;
-    height: 100%
-  }
-
-  .bp6-tab-panel {
-    margin-top: 10px
-  }
-
-  .bp6-tab-list {
-    margin-left: 25px
-  }
-
-  .tab-content {
-    height: 100%;
-    padding-bottom: 25px
-  }
-
-  .nav-tabs {
-    border-bottom: none;
-  }
-
-  .form-inline label {
-    margin-bottom: 0;
-    margin-left: 4px
-  }
-
-  .indent-row {
-    margin-bottom: 10px
-  }
-
-  .resource-module {
-    margin: 0;
-  }
-
-  input {
-    width: 150px;
-  }
-
-  .form-row {
-    button {
-      align-self: flex-end;
-      margin: 7px;
-    }
-  }
-
-  #commands-pane {
-    blockquote, dd {
-      margin-inline-start: 0
-    }
-
-    .notes-field-markdown-output {
-      padding: 15px 25px 5px 15px;
-      border-top-left-radius: 0
-    }
-
-    button {
-      margin-top: 10px;
-      border-bottom: 0;
-      border-bottom-left-radius: 0;
-      border-bottom-right-radius: 0;
-      max-width: 700px;
-    }
-
-    .docutils.literal, cite {
-      color: #e83e8c;
-      word-break: break-word;
-      font-family: monospace;
-      font-style: normal
-    }
-
-    h4 {
-      color: blueprint_variables.$blue3;
-    }
-
-    h5 {
-      color: blueprint_variables.$orange3
-    }
-
-    h6 {
-      color: blueprint_variables.$forest2
-    }
-  }
-}

@@ -20,9 +20,7 @@ function FilterSearchForm(props) {
     searchNext: null,
     searchPrevious: null,
     search_helper_text: null,
-    margin_right: 116,
-    marginLeft: 0,
-    marginRight: 0
+    outer_style: {}
   }, props);
   function _handleSubmit(e) {
     props.searchNext();
@@ -30,15 +28,8 @@ function FilterSearchForm(props) {
   }
   return /*#__PURE__*/_react["default"].createElement("form", {
     onSubmit: _handleSubmit,
-    id: "console-search-form",
-    className: "d-flex flex-row bp6-form-group",
-    style: {
-      justifyContent: "flex-end",
-      marginRight: props.marginRight,
-      marginLeft: props.marginLeft,
-      marginBottom: 6,
-      marginTop: 12
-    }
+    className: "console-search-form d-flex flex-row bp6-form-group",
+    style: props.outer_style
   }, /*#__PURE__*/_react["default"].createElement("div", {
     className: "d-flex flex-column"
   }, /*#__PURE__*/_react["default"].createElement("div", {

@@ -2,11 +2,12 @@
 @use "blueprint_variables.scss";
 @use "themeable.scss";
 
-$danger: #c23030;
-$warning: #bf7326;
-$primary: #106ba3;
-$success: #0d8050;
-$regular: #5c7080;
+$library-table-font-size: 13px;
+$library-table-line-height: 27px;
+
+$library-tree-node-font: 12px;
+$library-tree-node-height: 25px;
+$library-tree-margin-top: 65px;
 
 .context-menu-header {
     font-style: italic;
@@ -22,7 +23,13 @@ $regular: #5c7080;
     }
 
     .admin-pane {
-        .bp6-tabs.bp6-vertical > .bp6-tab-panel  {
+        .bp6-tabs {
+            height: 100%;
+        }
+        .bp6-tab-list {
+            padding-top: 100px;
+        }
+        .bp6-tabs.bp6-vertical > .bp6-tab-panel {
             margin-left: 0;
             padding-left: 0 !important;
             width: 100%;
@@ -31,46 +38,17 @@ $regular: #5c7080;
         }
     }
 
-    // does this do anything?
-    .open-selector-row {
-        color: gray;
+    .library-table-cell {
+        font-size: $library-table-font-size;
+        line-height: $library-table-line-height;
     }
 
-    .bp6-button.bp6-intent-warning {
-        background-color: blueprint_variables.$light-gray5;
-        color: $warning !important;
-
-        .bp6-icon {
-            color: $warning !important
-        }
+    .library-header-cell {
+        font-weight: bold;
+        font-size: $library-table-font-size;
+        line-height: $library-table-line-height;
     }
 
-    .bp6-button.bp6-intent-success {
-        background-color: blueprint_variables.$light-gray5;
-        color: $success !important;
-
-        .bp6-icon {
-            color: $success !important
-        }
-    }
-
-    .bp6-button.bp6-intent-primary {
-        background-color: blueprint_variables.$light-gray5;
-        color: $primary !important;
-
-        .bp6-icon {
-            color: $primary !important
-        }
-    }
-
-    .bp6-button.bp6-intent-regular {
-        background-color: blueprint_variables.$light-gray5;
-        color: $regular !important;
-
-        .bp6-icon {
-            color: $regular !important
-        }
-    }
 
     .bp6-table-quadrant-scroll-container {
         overflow: hidden;
@@ -79,112 +57,45 @@ $regular: #5c7080;
             overflow: auto;
         }
     }
+}
 
-    .selector-button:hover td {
-        color: #106ba3 !important;
-        //font-weight: 900
+.hidden_cell {
+    opacity: .5
+}
+
+.tactic-tag-button-list {
+    margin-top: $library-tree-margin-top;
+    overflow-y: hidden;
+    min-width: 165px;
+    &:hover {
+        overflow-y: auto;
     }
-
-    .elevation-1-shadow {
-        box-shadow: 0 0 0 1px rgba(16, 22, 26, 0.1), 0 0 0 rgba(16, 22, 26, 0), 0 1px 1px rgba(16, 22, 26, 0.2);
-    }
-
-    .elevation-0-shadow {
-        box-shadow: 0 0 0 1px rgba(16, 22, 26, 0.15), 0 0 0 rgba(16, 22, 26, 0), 0 0 0 rgba(16, 22, 26, 0);
-    }
-
-    .dropdown-toggle.toolbar-button::after {
-        display: none;
-    }
-
-    .dropdown-toggle.toolbar-button-sm::after {
-        display: none;
-    }
-
-    .dropdown-toggle.toolbar-button .button-text::after {
-        display: inline-block;
-        width: 0;
-        height: 0;
-        margin-left: .255em;
-        vertical-align: .255em;
-        content: "";
-        border-top: .4em solid;
-        border-right: .4em solid transparent;
-        border-bottom: 0;
-        border-left: .4em solid transparent;
-    }
-
-    .dropdown-toggle.toolbar-button-sm .button-text::after {
-        display: inline-block;
-        width: 0;
-        height: 0;
-        margin-left: .255em;
-        vertical-align: .255em;
-        content: "";
-        border-top: .4em solid;
-        border-right: .4em solid transparent;
-        border-bottom: 0;
-        border-left: .4em solid transparent;
-    }
-
-    .bp6-tabs.bp6-vertical {
-        height: 100%
-    }
-
-    .bp6-tabs.bp6-vertical > .bp6-tab-list .bp6-tab {
-        padding: 0 12px;
-        margin: 0;
-    }
-
-    .bp6-tab-list {
-        margin-top: unset;
-        padding-top: 100px;
-        padding-left: 2px;
-        padding-right: 2px;
-        //background-color: themeable.$dark-medium;
-    }
-
-    .bp6-tab-indicator {
-        background-color: #48aff09e;
-        border-radius: 0;
-        width: 46px
-    }
-
-    .bp6-table-column-headers .bp6-table-header {
-        font-weight: 600
-    }
-
-    .bp6-tab:focus {
-        outline: none
-    }
-
-    .bp6-large > .bp6-tab {
-        //font-size: 16px;
-        //margin-left: 30px;
-        //margin-right: 0
-    }
-
-    .bp6-tabs.bp6-vertical > .bp6-tab-panel {
-        padding-left: 0 !important;
-        //background-color: #f5f8fa;
-        //border-left: 1px solid #CED9E0;
-        margin-left: 0
-    }
-
-    .bp6-checkbox .bp6-control-indicator:focus {
-        outline: none
-    }
-
-    .bp6-table-cell {
-        font-size: 13px;
-        line-height: 27px
-    }
-
-    table {
-        line-height: 1.4;
-        font-size: 13px
+    .library-tree-node {
+        font-size: $library-tree-node-font;
+        .bp6-tree-node-content {
+            height: $library-tree-node-height;
+        }
+        .bp6-tree-node-icon {
+            svg {
+                width: 14px;
+                height: 14px
+            }
+        }
+        &.hidden-tag {
+            opacity: .5;
+            .bp6-tree-node-label {
+                font-style: italic
+            }
+        }
     }
 }
+
+#repository_container  {
+    .bp6-tabs.bp6-vertical > .bp6-tab-list .bp6-tab-indicator-wrapper .bp6-tab-indicator {
+        background-color: #e648f09e
+    }
+}
+
 
 .import-dialog {
     width: 700px;
@@ -234,52 +145,6 @@ $regular: #5c7080;
     }
 }
 
-#repository_container  {
-    .bp6-tabs.bp6-vertical > .bp6-tab-list .bp6-tab-indicator-wrapper .bp6-tab-indicator {
-        background-color: #e648f09e
-    }
-}
-
-#loaded_tile_widget {
-    margin-top: 15px;
-    h6 {
-        font-weight: 600
-    }
-    p {
-        margin-bottom: 0;
-        font-size: 12px
-    }
-}
-
-.hidden_cell {
-    opacity: .5
-}
-
-.tactic-tag-button-list {
-    margin-top: 65px;
-    overflow-y: hidden;
-    min-width: 165px;
-    &:hover {
-        overflow-y: auto;
-    }
-    .bp6-tree-node-content {
-        font-size: 12px;
-        height: 25px;
-        .bp6-tree-node-icon {
-            svg {
-                width: 14px;
-                height: 14px
-            }
-        }
-    }
-    .hidden-tag {
-        opacity: .5;
-        .bp6-tree-node-label {
-            font-style: italic
-        }
-    }
-
-}
 
 
 

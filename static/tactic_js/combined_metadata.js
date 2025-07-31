@@ -3,18 +3,17 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.BpSelect = BpSelect;
-exports.BpSelectAdvanced = BpSelectAdvanced;
 exports.CombinedMetadata = CombinedMetadata;
 exports.IconSelector = IconSelector;
 exports.NativeTags = NativeTags;
 exports.NotesField = NotesField;
 exports.icon_dict = void 0;
-require("../tactic_css/tactic_select.scss");
 var _react = _interopRequireWildcard(require("react"));
 var _core = require("@blueprintjs/core");
 var _select = require("@blueprintjs/select");
 var _settings = require("./settings");
+var _metadata_reducer = require("./metadata_reducer");
+var _selector_advanced = require("./selector_advanced");
 var _core2 = _interopRequireDefault(require("highlight.js/lib/core"));
 var _javascript = _interopRequireDefault(require("highlight.js/lib/languages/javascript"));
 var _python = _interopRequireDefault(require("highlight.js/lib/languages/python"));
@@ -29,27 +28,27 @@ var _communication_react = require("./communication_react");
 var _reactCodemirror = require("./react-codemirror6");
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t2 in e) "default" !== _t2 && {}.hasOwnProperty.call(e, _t2) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t2)) && (i.get || i.set) ? o(f, _t2, i) : f[_t2] = e[_t2]); return f; })(e, t); }
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, "_invoke", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError("Generator is already running"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = "next"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i["return"]) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine2(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, "Generator"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, "toString", function () { return "[object Generator]"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }
 function _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, "", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { if (r) i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n;else { var o = function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); }; o("next", 0), o("throw", 1), o("return", 2); } }, _regeneratorDefine2(e, r, n, t); }
 function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
 function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
+function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
 function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
 function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
 function _toConsumableArray(r) { return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread(); }
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
 function _iterableToArray(r) { if ("undefined" != typeof Symbol && null != r[Symbol.iterator] || null != r["@@iterator"]) return Array.from(r); }
 function _arrayWithoutHoles(r) { if (Array.isArray(r)) return _arrayLikeToArray(r); }
+function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
 function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
 function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
 function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
 function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
-function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
-function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
-function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
-function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 _core2["default"].registerLanguage('javascript', _javascript["default"]);
 _core2["default"].registerLanguage('python', _python["default"]);
 var mdi = (0, _markdownIt["default"])({
@@ -78,205 +77,6 @@ var icon_dict = exports.icon_dict = {
   poolDir: "folder-close",
   poolFile: "document"
 };
-function SuggestionItemAdvanced(_ref) {
-  var item = _ref.item,
-    handleClick = _ref.handleClick,
-    modifiers = _ref.modifiers;
-  var display_text = "display_text" in item ? item.display_text : item.text;
-  var the_icon = "icon" in item ? item.icon : null;
-  if (item.isgroup) {
-    return /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, {
-      className: "tile-form-menu-item",
-      title: display_text
-    });
-  } else {
-    return /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-      className: "tile-form-menu-item",
-      text: display_text,
-      key: display_text,
-      icon: the_icon,
-      onClick: handleClick,
-      active: modifiers.active,
-      shouldDismissPopover: true
-    });
-  }
-}
-SuggestionItemAdvanced = /*#__PURE__*/(0, _react.memo)(SuggestionItemAdvanced);
-function renderSuggestionAdvanced(item, _ref2) {
-  var modifiers = _ref2.modifiers,
-    handleClick = _ref2.handleClick,
-    index = _ref2.index;
-  return /*#__PURE__*/_react["default"].createElement(SuggestionItemAdvanced, {
-    item: item,
-    key: index,
-    modifiers: modifiers,
-    handleClick: handleClick
-  });
-}
-function BpSelectAdvanced(_ref3) {
-  var options = _ref3.options,
-    value = _ref3.value,
-    onChange = _ref3.onChange,
-    _ref3$buttonIcon = _ref3.buttonIcon,
-    buttonIcon = _ref3$buttonIcon === void 0 ? null : _ref3$buttonIcon,
-    readOnly = _ref3.readOnly;
-  function _filterSuggestion(query, item) {
-    if (query.length === 0) {
-      return true;
-    }
-    var re = new RegExp(query.toLowerCase());
-    var the_text;
-    if (_typeof(item) == "object") {
-      the_text = item["text"];
-    } else {
-      the_text = item;
-    }
-    return re.test(the_text.toLowerCase());
-  }
-  function _getActiveItem(val) {
-    var _iterator = _createForOfIteratorHelper(options),
-      _step;
-    try {
-      for (_iterator.s(); !(_step = _iterator.n()).done;) {
-        var option = _step.value;
-        if (_lodash["default"].isEqual(option, val)) {
-          return option;
-        }
-      }
-    } catch (err) {
-      _iterator.e(err);
-    } finally {
-      _iterator.f();
-    }
-    return null;
-  }
-  var display_text = "display_text" in value ? value.display_text : value.text;
-  return /*#__PURE__*/_react["default"].createElement(_error_boundary.ErrorBoundary, null, /*#__PURE__*/_react["default"].createElement(_select.Select, {
-    activeItem: _getActiveItem(value),
-    itemRenderer: renderSuggestionAdvanced,
-    itemPredicate: _filterSuggestion,
-    items: options,
-    disabled: readOnly,
-    onItemSelect: onChange,
-    popoverProps: {
-      minimal: true,
-      boundary: "window",
-      modifiers: {
-        flip: false,
-        preventOverflow: true
-      },
-      position: _core.PopoverPosition.BOTTOM_LEFT
-    }
-  }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
-    text: display_text,
-    className: "button-in-select",
-    icon: buttonIcon
-  })));
-}
-exports.BpSelectAdvanced = BpSelectAdvanced = /*#__PURE__*/(0, _react.memo)(BpSelectAdvanced);
-function BpSelect(props) {
-  props = _objectSpread({
-    buttonIcon: null,
-    buttonStyle: {},
-    popoverPosition: _core.PopoverPosition.BOTTOM_LEFT,
-    buttonTextObject: null,
-    filterable: true,
-    size: "medium"
-  }, props);
-  function _filterSuggestion(query, item) {
-    if (query.length === 0 || item["isgroup"]) {
-      return true;
-    }
-    var re = new RegExp(query.toLowerCase());
-    var the_text;
-    if (_typeof(item) == "object") {
-      the_text = item["text"];
-    } else {
-      the_text = item;
-    }
-    return re.test(the_text.toLowerCase());
-  }
-  function _getActiveItem(val) {
-    var _iterator2 = _createForOfIteratorHelper(props.options),
-      _step2;
-    try {
-      for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-        var option = _step2.value;
-        if (_lodash["default"].isEqual(option, val)) {
-          return option;
-        }
-      }
-    } catch (err) {
-      _iterator2.e(err);
-    } finally {
-      _iterator2.f();
-    }
-    return null;
-  }
-  return /*#__PURE__*/_react["default"].createElement(_select.Select, {
-    activeItem: _getActiveItem(props.value),
-    className: "tile-form-menu-item",
-    filterable: props.filterable,
-    itemRenderer: renderSuggestion,
-    itemPredicate: _filterSuggestion,
-    items: _lodash["default"].cloneDeep(props.options),
-    onItemSelect: props.onChange,
-    popoverProps: {
-      minimal: true,
-      boundary: "window",
-      modifiers: {
-        flip: false,
-        preventOverflow: true
-      },
-      position: props.popoverPosition
-    }
-  }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
-    className: "button-in-select",
-    style: props.buttonStyle,
-    size: props.size,
-    text: props.buttonTextObject ? props.buttonTextObject : props.value,
-    icon: props.buttonIcon
-  }));
-}
-exports.BpSelect = BpSelect = /*#__PURE__*/(0, _react.memo)(BpSelect, function (prevProps, newProps) {
-  (0, _utilities_react.propsAreEqual)(newProps, prevProps, ["buttonTextObject"]);
-});
-function SuggestionItem(_ref4) {
-  var item = _ref4.item,
-    modifiers = _ref4.modifiers,
-    handleClick = _ref4.handleClick;
-  var the_text;
-  var the_icon;
-  if (_typeof(item) == "object") {
-    the_text = item["text"];
-    the_icon = item["icon"];
-  } else {
-    the_text = item;
-    the_icon = null;
-  }
-  return /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-    className: "tile-form-menu-item",
-    text: the_text,
-    icon: the_icon,
-    active: modifiers.active,
-    onClick: function onClick() {
-      return handleClick(the_text);
-    },
-    shouldDismissPopover: true
-  });
-}
-SuggestionItem = /*#__PURE__*/(0, _react.memo)(SuggestionItem);
-function renderSuggestion(item, _ref5) {
-  var modifiers = _ref5.modifiers,
-    handleClick = _ref5.handleClick,
-    index = _ref5.index;
-  return /*#__PURE__*/_react["default"].createElement(SuggestionItem, {
-    item: item,
-    key: index,
-    modifiers: modifiers,
-    handleClick: handleClick
-  });
-}
 var renderCreateNewTag = function renderCreateNewTag(query, active, handleClick) {
   return /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
     icon: "add",
@@ -326,7 +126,7 @@ function NativeTags(props) {
     createNewItemFromQuery: _createItemFromQuery,
     createNewItemRenderer: renderCreateNewTag,
     resetOnSelect: true,
-    itemRenderer: renderSuggestion,
+    itemRenderer: _selector_advanced.renderSuggestion,
     selectedItems: props.tags,
     allowNew: true,
     items: props.all_tags ? props.all_tags : [],
@@ -467,11 +267,11 @@ for (var _i = 0, _cat_order = cat_order; _i < _cat_order.length; _i++) {
     isgroup: true
   };
   icon_dlist.push(cat_entry);
-  var _iterator3 = _createForOfIteratorHelper(_icon_info.tile_icon_dict[category]),
-    _step3;
+  var _iterator = _createForOfIteratorHelper(_icon_info.tile_icon_dict[category]),
+    _step;
   try {
-    for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-      var entry = _step3.value;
+    for (_iterator.s(); !(_step = _iterator.n()).done;) {
+      var entry = _step.value;
       var new_entry = {
         text: entry.tags + ", " + category + ", " + entry.iconName,
         val: entry.iconName,
@@ -484,17 +284,17 @@ for (var _i = 0, _cat_order = cat_order; _i < _cat_order.length; _i++) {
       icon_entry_dict[new_entry.val] = new_entry;
     }
   } catch (err) {
-    _iterator3.e(err);
+    _iterator.e(err);
   } finally {
-    _iterator3.f();
+    _iterator.f();
   }
 }
-function IconSelector(_ref6) {
-  var handleSelectChange = _ref6.handleSelectChange,
-    icon_val = _ref6.icon_val,
-    readOnly = _ref6.readOnly;
+function IconSelector(_ref) {
+  var handleSelectChange = _ref.handleSelectChange,
+    icon_val = _ref.icon_val,
+    readOnly = _ref.readOnly;
   var value = icon_entry_dict[icon_val] ? icon_entry_dict[icon_val] : icon_entry_dict["application"];
-  return /*#__PURE__*/_react["default"].createElement(_error_boundary.ErrorBoundary, null, /*#__PURE__*/_react["default"].createElement(BpSelectAdvanced, {
+  return /*#__PURE__*/_react["default"].createElement(_error_boundary.ErrorBoundary, null, /*#__PURE__*/_react["default"].createElement(_selector_advanced.BpSelectAdvanced, {
     options: icon_dlist,
     onChange: function onChange(item) {
       handleSelectChange(item.val);
@@ -516,54 +316,13 @@ var initial_state = {
   category: null,
   additional_metadata: null
 };
-function metadataReducer(draft, action) {
-  switch (action.type) {
-    case "set_tags":
-      draft.tags = action.value;
-      break;
-    case "set_notes":
-      draft.notes = action.value;
-      break;
-    case "append_to_notes":
-      draft.notes = draft.notes + action.value;
-      break;
-    case "set_icon":
-      draft.icon = action.value;
-      break;
-    case "set_category":
-      draft.category = action.value;
-      break;
-    case "set_additional_metadata":
-      draft.additionalMdata = action.value;
-      break;
-    case "set_all_tags":
-      draft.allTags = action.value;
-      break;
-    case "set_created":
-      draft.created = action.value;
-      break;
-    case "set_updated":
-      draft.updated = action.value;
-      break;
-    case "multi_update":
-      for (var field in action.value) {
-        draft[field] = action.value[field];
-      }
-      break;
-    default:
-      break;
-  }
-}
 function CombinedMetadata(props) {
   props = _objectSpread({
     expandWidth: true,
     tabSelectCounter: 0,
     useTags: true,
     useNotes: true,
-    outer_style: {
-      overflow: "auto",
-      padding: 15
-    },
+    outer_style: null,
     elevation: 0,
     handleNotesBlur: null,
     category: null,
@@ -581,7 +340,7 @@ function CombinedMetadata(props) {
   }, props);
   var top_ref = (0, _react.useRef)();
   var listenderAttachedRef = (0, _react.useRef)(false);
-  var _useImmerReducerAndRe = (0, _utilities_react.useImmerReducerAndRef)(metadataReducer, initial_state),
+  var _useImmerReducerAndRe = (0, _utilities_react.useImmerReducerAndRef)(_metadata_reducer.metadataReducer, initial_state),
     _useImmerReducerAndRe2 = _slicedToArray(_useImmerReducerAndRe, 3),
     mDispatch = _useImmerReducerAndRe2[1],
     mStateRef = _useImmerReducerAndRe2[2];
@@ -642,17 +401,17 @@ function CombinedMetadata(props) {
       var updater = {
         "tags": data.tags,
         "notes": data.notes,
-        "created": data.datestring,
-        "updated": data.additional_mdata.updated
+        "created": data["datestring"],
+        "updated": data["additional_mdata"].updated
       };
-      var amdata = data.additional_mdata;
+      var amdata = data["additional_mdata"];
       delete amdata.updated;
-      if (data.additional_mdata.icon) {
-        updater["icon"] = data.additional_mdata.icon;
+      if (data["additional_mdata"].icon) {
+        updater["icon"] = data["additional_mdata"].icon;
       }
       if (props.res_type == "tile") {
-        if (data.additional_mdata.category) {
-          updater["category"] = data.additional_mdata.category;
+        if (data["additional_mdata"].category) {
+          updater["category"] = data["additional_mdata"].category;
           delete amdata.category;
         } else {
           updater["category"] = "nocat";
@@ -663,8 +422,8 @@ function CombinedMetadata(props) {
       }
       updater["additionalMdata"] = amdata;
       mDispatch({
-        type: "multi_update",
-        value: updater
+        type: "update_item",
+        new_item: updater
       });
     })["catch"](function (e) {
       console.log("error getting metadata", e);
@@ -718,8 +477,8 @@ function CombinedMetadata(props) {
           case 0:
             post_immediate = _args2.length > 1 && _args2[1] !== undefined ? _args2[1] : true;
             mDispatch({
-              type: "multi_update",
-              "value": state_stuff
+              type: "update_item",
+              "new_item": state_stuff
             });
             if (!post_immediate) {
               _context2.n = 2;
@@ -881,7 +640,9 @@ function CombinedMetadata(props) {
       }, String(_md))));
     }
   }
-  var ostyle = props.outer_style ? _lodash["default"].cloneDeep(props.outer_style) : {};
+  var ostyle = props.outer_style ? _lodash["default"].cloneDeep(props.outer_style) : {
+    height: "100%"
+  };
   ostyle["width"] = "100%";
   var split_tags = !mStateRef.current.tags || mStateRef.current.tags == "" ? [] : mStateRef.current.tags.split(" ");
   var MetadataNotesButtons = props.notes_buttons;

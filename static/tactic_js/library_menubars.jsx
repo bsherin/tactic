@@ -4,7 +4,7 @@ import React from "react";
 import {useEffect, memo, useContext} from "react";
 
 import {TacticMenubar} from "./menu_utilities";
-import {icon_dict} from "./blueprint_mdata_fields";
+import {icon_dict} from "./combined_metadata";
 import {ErrorDrawerContext} from "./error_drawer";
 
 export {AllMenubar, LibraryMenubar}

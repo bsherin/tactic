@@ -1,14 +1,14 @@
-import "../tactic_css/tactic_select.scss"
-
 import React from "react";
 import {Fragment, useState, useEffect, useRef, memo, useContext, useCallback} from "react";
 
 import {
-    PopoverPosition, Button, MenuDivider, MenuItem, TagInput, FormGroup, InputGroup,
+    MenuItem, TagInput, FormGroup, InputGroup,
     Card, Icon, H4
 } from "@blueprintjs/core";
-import {Select, MultiSelect} from "@blueprintjs/select";
+import {MultiSelect} from "@blueprintjs/select";
 import {SettingsContext} from "./settings";
+import {metadataReducer} from "./metadata_reducer";
+import {BpSelectAdvanced, renderSuggestion} from "./selector_advanced";
 
 import hljs from 'highlight.js/lib/core';
 import javascript from 'highlight.js/lib/languages/javascript';
@@ -41,14 +41,14 @@ const mdi = markdownIt({
 mdi.use(markdownItLatex);
 import _ from 'lodash';
 
-import {propsAreEqual, useDebounce, guid, useImmerReducerAndRef, useCallbackStack} from "./utilities_react";
+import {useDebounce, guid, useImmerReducerAndRef, useCallbackStack} from "./utilities_react";
 import {tile_icon_dict} from "./icon_info";
 import {ErrorBoundary} from "./error_boundary";
 import {postAjaxPromise} from "./communication_react";
 import {ReactCodemirror6} from "./react-codemirror6";
 
 export {icon_dict};
-export {NotesField, CombinedMetadata, BpSelect, BpSelectAdvanced, NativeTags, IconSelector};
+export {NotesField, CombinedMetadata, NativeTags, IconSelector};
 
 let icon_dict = {
     all: "cube",
@@ -62,174 +62,6 @@ let icon_dict = {
     poolFile: "document"
 };
 
-function SuggestionItemAdvanced({item, handleClick, modifiers}) {
-    let display_text = "display_text" in item ? item.display_text : item.text;
-    let the_icon = "icon" in item ? item.icon : null;
-    if (item.isgroup) {
-        return (
-            <MenuDivider className="tile-form-menu-item" title={display_text}/>
-        )
-    } else {
-        return (
-            <MenuItem
-                className="tile-form-menu-item"
-                text={display_text}
-                key={display_text}
-                icon={the_icon}
-                onClick={handleClick}
-                active={modifiers.active}
-                shouldDismissPopover={true}
-            />
-        );
-    }
-}
-
-SuggestionItemAdvanced = memo(SuggestionItemAdvanced);
-
-function renderSuggestionAdvanced(item, {modifiers, handleClick, index}) {
-    return <SuggestionItemAdvanced item={item} key={index} modifiers={modifiers} handleClick={handleClick}/>
-}
-
-function BpSelectAdvanced({options, value, onChange, buttonIcon = null, readOnly}) {
-    function _filterSuggestion(query, item) {
-        if (query.length === 0) {
-            return true
-        }
-        let re = new RegExp(query.toLowerCase());
-
-        let the_text;
-        if (typeof item == "object") {
-            the_text = item["text"]
-        } else {
-            the_text = item
-        }
-        return re.test(the_text.toLowerCase())
-    }
-
-    function _getActiveItem(val) {
-        for (let option of options) {
-            if (_.isEqual(option, val)) {
-                return option
-            }
-        }
-        return null
-    }
-
-    let display_text = "display_text" in value ? value.display_text : value.text;
-
-    return (
-        <ErrorBoundary>
-            <Select
-                activeItem={_getActiveItem(value)}
-                itemRenderer={renderSuggestionAdvanced}
-                itemPredicate={_filterSuggestion}
-                items={options}
-                disabled={readOnly}
-                onItemSelect={onChange}
-                popoverProps={{
-                    minimal: true,
-                    boundary: "window",
-                    modifiers: {flip: false, preventOverflow: true},
-                    position: PopoverPosition.BOTTOM_LEFT
-                }}>
-                <Button text={display_text} className="button-in-select" icon={buttonIcon}/>
-            </Select>
-        </ErrorBoundary>
-    )
-}
-
-BpSelectAdvanced = memo(BpSelectAdvanced);
-
-function BpSelect(props) {
-    props = {
-        buttonIcon: null,
-        buttonStyle: {},
-        popoverPosition: PopoverPosition.BOTTOM_LEFT,
-        buttonTextObject: null,
-        filterable: true,
-        size: "medium",
-        ...props
-    };
-
-    function _filterSuggestion(query, item) {
-        if ((query.length === 0) || (item["isgroup"])) {
-            return true
-        }
-        let re = new RegExp(query.toLowerCase());
-
-        let the_text;
-        if (typeof item == "object") {
-            the_text = item["text"]
-        } else {
-            the_text = item
-        }
-        return re.test(the_text.toLowerCase())
-    }
-
-    function _getActiveItem(val) {
-        for (let option of props.options) {
-            if (_.isEqual(option, val)) {
-                return option
-            }
-        }
-        return null
-    }
-
-    return (
-        <Select
-            activeItem={_getActiveItem(props.value)}
-            className="tile-form-menu-item"
-            filterable={props.filterable}
-            itemRenderer={renderSuggestion}
-            itemPredicate={_filterSuggestion}
-            items={_.cloneDeep(props.options)}
-            onItemSelect={props.onChange}
-            popoverProps={{
-                minimal: true,
-                boundary: "window",
-                modifiers: {flip: false, preventOverflow: true},
-                position: props.popoverPosition
-            }}>
-            <Button className="button-in-select"
-                    style={props.buttonStyle}
-                    size={props.size}
-                    text={props.buttonTextObject ? props.buttonTextObject : props.value}
-                    icon={props.buttonIcon}/>
-        </Select>
-    )
-}
-
-BpSelect = memo(BpSelect, (prevProps, newProps) => {
-    propsAreEqual(newProps, prevProps, ["buttonTextObject"])
-});
-
-function SuggestionItem({item, modifiers, handleClick}) {
-    let the_text;
-    let the_icon;
-    if (typeof item == "object") {
-        the_text = item["text"];
-        the_icon = item["icon"]
-    } else {
-        the_text = item;
-        the_icon = null
-    }
-    return (
-        <MenuItem
-            className="tile-form-menu-item"
-            text={the_text}
-            icon={the_icon}
-            active={modifiers.active}
-            onClick={() => handleClick(the_text)}
-            shouldDismissPopover={true}
-        />
-    );
-}
-
-SuggestionItem = memo(SuggestionItem);
-
-function renderSuggestion(item, {modifiers, handleClick, index}) {
-    return <SuggestionItem item={item} key={index} modifiers={modifiers} handleClick={handleClick}/>
-}
 
 const renderCreateNewTag = (query, active, handleClick) => {
     return (
@@ -402,7 +234,7 @@ function NotesField(props) {
         maxHeight: mdHeight,
         fontSize: 13
     };
-    var converted_markdown;
+    let converted_markdown;
     if (really_show_markdown) {
         converted_markdown = mdi.render(props.mStateRef.current.notes)
     }
@@ -438,13 +270,13 @@ function NotesField(props) {
 
 NotesField = memo(NotesField);
 
-var icon_dlist = [];
-var icon_entry_dict = {};
+let icon_dlist = [];
+let icon_entry_dict = {};
 
 const cat_order = ['data', 'action', 'table', 'interface', 'editor', 'file', 'media', 'miscellaneous'];
 
 for (let category of cat_order) {
-    var cat_entry = {text: category, display_text: category, isgroup: true};
+    let cat_entry = {text: category, display_text: category, isgroup: true};
     icon_dlist.push(cat_entry);
     for (let entry of tile_icon_dict[category]) {
         let new_entry = {
@@ -490,52 +322,13 @@ const initial_state = {
     additional_metadata: null
 };
 
-function metadataReducer(draft, action) {
-    switch (action.type) {
-        case "set_tags":
-            draft.tags = action.value;
-            break;
-        case "set_notes":
-            draft.notes = action.value;
-            break;
-        case "append_to_notes":
-            draft.notes = draft.notes + action.value;
-            break;
-        case "set_icon":
-            draft.icon = action.value;
-            break;
-        case "set_category":
-            draft.category = action.value;
-            break;
-        case "set_additional_metadata":
-            draft.additionalMdata = action.value;
-            break;
-        case "set_all_tags":
-            draft.allTags = action.value;
-            break;
-        case "set_created":
-            draft.created = action.value;
-            break;
-        case "set_updated":
-            draft.updated = action.value;
-            break;
-        case "multi_update":
-            for (let field in action.value) {
-                draft[field] = action.value[field]
-            }
-            break;
-        default:
-            break;
-    }
-}
-
 function CombinedMetadata(props) {
     props = {
         expandWidth: true,
         tabSelectCounter: 0,
         useTags: true,
         useNotes: true,
-        outer_style: {overflow: "auto", padding: 15},
+        outer_style: null,
         elevation: 0,
         handleNotesBlur: null,
         category: null,
@@ -620,17 +413,17 @@ function CombinedMetadata(props) {
                 let updater ={
                     "tags": data.tags,
                     "notes": data.notes,
-                    "created": data.datestring,
-                    "updated": data.additional_mdata.updated
+                    "created": data["datestring"],
+                    "updated": data["additional_mdata"].updated
                 };
-                let amdata = data.additional_mdata;
+                let amdata = data["additional_mdata"];
                 delete amdata.updated;
-                if (data.additional_mdata.icon) {
-                    updater["icon"] = data.additional_mdata.icon
+                if (data["additional_mdata"].icon) {
+                    updater["icon"] = data["additional_mdata"].icon
                 }
                 if (props.res_type == "tile") {
-                    if (data.additional_mdata.category) {
-                        updater["category"] = data.additional_mdata.category;
+                    if (data["additional_mdata"].category) {
+                        updater["category"] = data["additional_mdata"].category;
                         delete amdata.category
                     } else {
                         updater["category"] = "nocat"
@@ -640,7 +433,7 @@ function CombinedMetadata(props) {
                     }
                 }
                 updater["additionalMdata"] = amdata;
-                mDispatch({type: "multi_update", value: updater})
+                mDispatch({type: "update_item", new_item: updater})
             })
             .catch((e) => {
                 console.log("error getting metadata", e)
@@ -667,7 +460,7 @@ function CombinedMetadata(props) {
     }
 
     async function _handleMetadataChange(state_stuff, post_immediate=true) {
-        mDispatch({type: "multi_update", "value": state_stuff});
+        mDispatch({type: "update_item", "new_item": state_stuff});
         if (post_immediate) {
             await postChanges(state_stuff)
         }
@@ -729,7 +522,7 @@ function CombinedMetadata(props) {
             )
         }
     }
-    let ostyle = props.outer_style ? _.cloneDeep(props.outer_style) : {};
+    let ostyle = props.outer_style ? _.cloneDeep(props.outer_style) : {height: "100%"};
     ostyle["width"] = "100%";
     let split_tags = !mStateRef.current.tags || mStateRef.current.tags == "" ? [] : mStateRef.current.tags.split(" ");
     const MetadataNotesButtons = props.notes_buttons;

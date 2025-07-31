@@ -114,8 +114,10 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin):
         used_handler_methods_list_of_dicts = []
         for m in data_dict["used_handler_methods"]:
             arg_string = m["argString"]
+            if len(arg_string) > 0:
+                arg_string = ", " + arg_string
             used_handler_methods_list_of_dicts.append({"name": m["name"],
-                                               "arg_string": self.handler_methods[m["name"]],
+                                               "arg_string": arg_string,
                                                "method_body": insert_indents(m["codeText"], 2)})
 
         jscript_body = ""

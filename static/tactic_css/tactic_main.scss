@@ -1,13 +1,11 @@
 @use "blueprint_variables.scss";
 
+$console-header-height: 40px;
 
 // Panel header stuff for main table
-#main-panel {
-    padding: 0;
-    margin-top: 0.5rem;
-    margin-left: 0.5rem;
+.main-panel {
+    padding: 0 !important;  // remove default padding blueprint applies to Card
     .main-heading{
-
         .button-in-select .bp6-button-text {
             max-width: 100%
         }
@@ -17,10 +15,20 @@
 /*main window*/
 
 .tile-div {
+    flex: 1 1 0;
+    min-width: 0;
+    height: 100%;
+    width: 100%;
+    position: relative;
     overflow: hidden;
     &:hover {
         overflow: auto
     }
+}
+
+.shrunk-console {
+    height: $console-header-height;
+    padding-top: 10px;
 }
 
 /* Tile related */
@@ -54,47 +62,13 @@
     padding: 5px 3px 4px 3px;
 }
 
-//.tile-body .back button {
-//    width: 100%
-//}
-
 .form-display-area {
     label {
         font-weight: 700;
         font-size: 15px;
     }
-
 }
 
-.pool-breadcrumbs {
-    margin-left: 15px
-}
-
-.pool-breadcrumb {
-    font-size: 14px
-}
-
-.pool-select-tree {
-    padding: 5px;
-    .bp6-tree-node-label, .bp6-tree-node-secondary-label {
-        font-size: 12px
-    }
-    .bp6-tree-node-secondary-label {
-        white-space: pre-wrap;
-    }
-    .bp6-tree-node-icon svg {
-        height: 14px;
-        width: 14px;
-    }
-}
-
-.tree-sort-select select {
-    font-size: 12px
-}
-
-.res-viewer-resizer {
-    padding-bottom: 50px
-}
 
 .tile-form-menu-item {
     &.bp6-menu-item {
@@ -119,7 +93,7 @@
     overflow: hidden;
     height: 265px;
     margin-right: 0.5rem;
-    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
     padding: 0 !important;
 
 
@@ -145,40 +119,16 @@
 .tile-display-area {
     height: 100%;
     overflow: hidden;
-    padding: 0;
-    margin: 15px 15px 15px 15px;
 
     &:hover {
         overflow: auto
     }
 }
 
-.back {
-    padding: 20px;
-    margin: 0;
-    overflow: auto;
-    position: absolute;
-}
-
-.front {
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    position: absolute;
-}
-
 .tile-log {
     //padding: 20px;
     //margin: 0;
     //overflow: auto
-}
-
-.tile-body {
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden
 }
 
 .tile-body img {

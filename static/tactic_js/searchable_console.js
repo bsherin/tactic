@@ -4,6 +4,7 @@ function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.ResponsiveFlex = ResponsiveFlex;
 exports.SearchableConsole = SearchableConsole;
 var _react = _interopRequireWildcard(require("react"));
 var _core = require("@blueprintjs/core");
@@ -54,7 +55,7 @@ function SearchableConsole(props, inner_ref) {
     log_since = _useState10[0],
     set_log_since = _useState10[1];
 
-  // I need to have these as refs because the are accessed within the _handleUpdateMessage
+  // I need to have these as refs because they are accessed within the _handleUpdateMessage
   // callback. So they would have the old value.
   var _useStateAndRef = (0, _utilities_react.useStateAndRef)(100),
     _useStateAndRef2 = _slicedToArray(_useStateAndRef, 3),
@@ -130,7 +131,7 @@ function SearchableConsole(props, inner_ref) {
   function _handleUpdateMessage(data) {
     console.log("got searchable-console-message");
     if (data.message != "updateLog") return;
-    _addToLog(data.new_line);
+    _addToLog(data["new_line"]);
   }
   function _setLogSince() {
     var now = new Date().getTime();
@@ -162,7 +163,7 @@ function SearchableConsole(props, inner_ref) {
           case 1:
             res = _context3.v;
             console.log("got streamer stuff", String(res));
-            set_log_content(res.log_text);
+            set_log_content(res["log_text"]);
             _context3.n = 2;
             return (0, _communication_react.postPromise)(props.streaming_host, "StartLogStreaming", {
               container_id: cont_id.current,
@@ -361,40 +362,23 @@ function SearchableConsole(props, inner_ref) {
   var the_text = {
     __html: _prepareText()
   };
-  var the_style = _objectSpread({
+  var inner_style = {
     whiteSpace: "nowrap",
     fontSize: 12,
     fontFamily: "monospace",
     flex: "1 1 0",
     minHeight: 0,
-    marginTop: 20,
-    marginBottom: 20,
     overflow: "auto"
+  };
+  var outer_style = _objectSpread({
+    width: "100%",
+    height: "100%",
+    overflow: "hidden",
+    display: "flex",
+    flexDirection: "column"
   }, props.outer_style);
-  if (props.showCommandField) {
-    the_style.height = the_style.height - 40;
-  }
-  return /*#__PURE__*/_react["default"].createElement("div", {
-    className: "searchable-console",
-    style: {
-      width: "100%",
-      flex: "1 1 0",
-      minHeight: 0,
-      overflow: "hidden",
-      display: "flex",
-      flexDirection: "column"
-    }
-  }, /*#__PURE__*/_react["default"].createElement("div", {
-    className: "d-flex flex-row",
-    style: {
-      justifyContent: "space-between"
-    }
-  }, /*#__PURE__*/_react["default"].createElement(_core.ControlGroup, {
-    vertical: false,
-    style: {
-      marginLeft: 15,
-      marginTop: 10
-    }
+  var leftContent = /*#__PURE__*/_react["default"].createElement(_core.ControlGroup, {
+    vertical: false
   }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
     onClick: _setLogSince,
     style: {
@@ -416,11 +400,11 @@ function SearchableConsole(props, inner_ref) {
     onChange: _setLiveScroll,
     style: {
       marginBottom: 0,
-      marginTop: 5,
-      alignSelf: "center",
-      height: 30
+      marginLeft: 5,
+      alignSelf: "center"
     }
-  })), /*#__PURE__*/_react["default"].createElement(_search_form.FilterSearchForm, {
+  }));
+  var rightContent = /*#__PURE__*/_react["default"].createElement(_search_form.FilterSearchForm, {
     search_string: search_string,
     handleSearchFieldChange: _handleSearchFieldChange,
     handleFilter: _handleFilter,
@@ -429,17 +413,19 @@ function SearchableConsole(props, inner_ref) {
     searchPrevious: null,
     search_helper_text: search_helper_text,
     margin_right: 25
-  })), /*#__PURE__*/_react["default"].createElement("div", {
+  });
+  return /*#__PURE__*/_react["default"].createElement("div", {
+    className: "searchable-console",
+    style: outer_style
+  }, /*#__PURE__*/_react["default"].createElement(ResponsiveFlex, {
+    leftContent: leftContent,
+    rightContent: rightContent
+  }), /*#__PURE__*/_react["default"].createElement("div", {
     ref: inner_ref,
-    style: the_style,
+    style: inner_style,
     dangerouslySetInnerHTML: the_text
   }), props.showCommandField && /*#__PURE__*/_react["default"].createElement("form", {
-    onSubmit: _commandSubmit,
-    style: {
-      position: "relative",
-      bottom: 8,
-      margin: 10
-    }
+    onSubmit: _commandSubmit
   }, /*#__PURE__*/_react["default"].createElement(_core.InputGroup, {
     type: "text",
     className: "bp6-monospace-text",
@@ -454,3 +440,54 @@ function SearchableConsole(props, inner_ref) {
   })));
 }
 exports.SearchableConsole = SearchableConsole = /*#__PURE__*/(0, _react.memo)(/*#__PURE__*/(0, _react.forwardRef)(SearchableConsole));
+function ResponsiveFlex(props) {
+  props = _objectSpread({
+    gapThreshold: 100,
+    leftContent: null,
+    rightContent: null
+  }, props);
+  var containerRef = (0, _react.useRef)(null);
+  var leftContentRef = (0, _react.useRef)(null);
+  var rightContentRef = (0, _react.useRef)(null);
+  var _useState11 = (0, _react.useState)(false),
+    _useState12 = _slicedToArray(_useState11, 2),
+    hideRight = _useState12[0],
+    setHideRight = _useState12[1];
+  (0, _react.useEffect)(function () {
+    var observer = new ResizeObserver(function (_ref3) {
+      var _ref4 = _slicedToArray(_ref3, 1),
+        entry = _ref4[0];
+      var width = entry.contentRect.width;
+      var le_width = leftContentRef.current.getBoundingClientRect().width;
+      var re_width = rightContentRef.current.getBoundingClientRect().width;
+      if (width - (re_width + le_width) < props.gapThreshold) {
+        setHideRight(true);
+      } else {
+        setHideRight(false);
+      }
+    });
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
+    }
+    return function () {
+      return observer.disconnect();
+    };
+  }, []);
+  return /*#__PURE__*/_react["default"].createElement("div", {
+    ref: containerRef,
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "self-start",
+      width: "100%",
+      position: "relative"
+    }
+  }, /*#__PURE__*/_react["default"].createElement("div", {
+    ref: leftContentRef
+  }, props.leftContent), /*#__PURE__*/_react["default"].createElement("div", {
+    style: {
+      opacity: hideRight ? 0 : 1
+    },
+    ref: rightContentRef
+  }, props.rightContent));
+}

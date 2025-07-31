@@ -9,7 +9,7 @@ var _react = _interopRequireWildcard(require("react"));
 var _propTypes = _interopRequireDefault(require("prop-types"));
 var _core = require("@blueprintjs/core");
 var _reactCodemirrorMergeview = require("./react-codemirror-mergeview6");
-var _blueprint_mdata_fields = require("./blueprint_mdata_fields");
+var _selector_advanced = require("./selector_advanced");
 var _menu_utilities = require("./menu_utilities");
 var _settings = require("./settings");
 var _toaster = require("./toaster");
@@ -118,7 +118,7 @@ function MergeViewerApp(props) {
     }
   }, /*#__PURE__*/_react["default"].createElement("span", {
     className: "align-self-end"
-  }, "Current"), /*#__PURE__*/_react["default"].createElement(_blueprint_mdata_fields.BpSelect, {
+  }, "Current"), /*#__PURE__*/_react["default"].createElement(_selector_advanced.BpSelect, {
     options: props.option_list,
     onChange: props.handleSelectChange,
     buttonIcon: "application",

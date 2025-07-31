@@ -76,7 +76,6 @@ function TagButtonList(props) {
     const [showContextMenu, setShowContextMenu] = useState(false);
     const [contextMenuTarget, setContentMenuTarget] = useState({left:0, top:0});
     const [contextMenuTagString, setContextMenuTagString] = useState("");
-    // const [tagRoot, setTagRoot] = useState("all");
 
     const settingsContext = useContext(SettingsContext);
     const dialogFuncs = useContext(DialogContext);
@@ -99,13 +98,14 @@ function TagButtonList(props) {
         let full_list = [...prelist];
         full_list.push(name);
         let tag_string = full_list.join("/");
+        const base_class = "library-tree-node"
         return {
             id: tag_string,
             childNodes: [],
             label: name,
             icon: "tag",
             hasCaret: false,
-            className: name == "hidden" ? "hidden-tag" : "",
+            className: `${base_class} ${name == "hidden" ? "hidden-tag" : ""}`,
             isSelected: tag_string == props.active_tag,
             isExpanded: props.expanded_tags.includes(tag_string),
             nodeData: {tag_string: tag_string}

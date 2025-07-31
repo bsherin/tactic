@@ -34,7 +34,7 @@ mdi.use(markdownItLatex);
 import {useEffect, memo, useContext, createContext} from "react";
 import {Drawer} from "@blueprintjs/core";
 import {SettingsContext} from "./settings";
-import {CombinedMetadata} from "./blueprint_mdata_fields";
+import {CombinedMetadata} from "./combined_metadata";
 
 export {MetadataDrawer, MetadataContext}
 

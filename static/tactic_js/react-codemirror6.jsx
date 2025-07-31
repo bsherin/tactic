@@ -50,7 +50,6 @@ export {ReactCodemirror6};
 
 const SEARCH_HEIGHT = 55;
 const REGEXTYPE = Object.getPrototypeOf(new RegExp("that"));
-const TITLE_STYLE = {display: "flex", paddingLeft: 5, paddingBottom: 2, alignItems: "self-end"};
 
 function emptyExtension() {
     return []
@@ -225,23 +224,17 @@ const strippedDefaultKeymap = defaultKeymap.filter(k => k.key !== "Enter");
 
 function ReactCodemirror6(props) {
     props = {
-        iCounter: 0,
         no_width: false,
         no_height: false,
-        controlled_height: null,
-        flex_height: false,
+        flex_size: false,
         show_search: false,
         search_term: null,
         setSearchMatches: null,
         current_search_number: null,
         update_search_state: null,
-        header_left: null,
         first_line_number: 1,
         show_line_numbers: true,
         show_fold_button: false,
-        code_container_height: null,
-        code_container_width: null,
-        alt_clear_selections: null,
         handleChange: null,
         handleBlur: null,
         handleFocus: null,
@@ -249,7 +242,6 @@ function ReactCodemirror6(props) {
         readOnly: false,
         extraKeys: [],
         setCMObject: null,
-        code_container_ref: null,
         highlight_active_line: false,
         extraSelfCompletions: [],
         controlled: false,
@@ -717,19 +709,17 @@ function ReactCodemirror6(props) {
     let ccstyle = {
         lineHeight: "21px",
     };
-    if (props.controlled_height) {
-        ccstyle.height = props.controlled_height;
-    }
-    else if (props.flex_height) {
+    if (props.flex_size) {
         ccstyle.flexGrow = 1;
         ccstyle.overflow = "auto";
 
-    } else if (!props.no_height) {
-        ccstyle.height = "100%";
-    }
-
-    if (!props.no_width) {
-        ccstyle.width = "100%";
+    } else {
+        if (!props.no_height) {
+            ccstyle.height = "100%";
+        }
+        if (!props.no_width) {
+            ccstyle.width = "100%";
+        }
     }
 
     let bgstyle = {
@@ -744,20 +734,11 @@ function ReactCodemirror6(props) {
             <Fragment>
                 <div style={{
                     display: "flex", flexDirection: "row",
-                    justifyContent: props.title_label ? "space-between" : "flex-end",
+                    justifyContent: "flex-end",
                     width: "100%",
                     marginTop: 5,
-                    height: props.header_left ? SEARCH_HEIGHT + 10 : SEARCH_HEIGHT,
+                    height:  SEARCH_HEIGHT,
                 }}>
-                    {props.header_left && props.header_left}
-                    {props.title_label && <span className="bp6-ui-text"
-                                                 style={{
-                                                     display: "flex",
-                                                     paddingLeft: 5,
-                                                     paddingBottom: 2,
-                                                     alignItems: "self-end"
-                                                 }}>{props.title_label}</span>}
-
                     <SearchForm update_search_state={props.updateSearchState}
                                 search_string={props.search_term}
                                 regex={props.regex_search}
@@ -770,7 +751,7 @@ function ReactCodemirror6(props) {
                                 number_matches={props.search_matches}
                     />
                 </div>
-                {props.show_fold_button && bgstyle &&
+                {props.show_fold_button &&
                     <ButtonGroup variant="minimal" style={bgstyle}>
                         <Button size="small" icon="collapse-all" text="fold" onClick={_foldAll}/>
                         <Button size="small" icon="expand-all" text="unfold" onClick={_unfoldAll}/>
@@ -783,16 +764,11 @@ function ReactCodemirror6(props) {
 
     return (
         <Fragment>
-            {props.show_fold_button && bgstyle &&
+            {props.show_fold_button  &&
                 <ButtonGroup variant="minimal" style={bgstyle}>
                     <Button size="small" icon="collapse-all" text="fold" onClick={_foldAll}/>
                     <Button size="small" icon="expand-all" text="unfold" onClick={_unfoldAll}/>
                 </ButtonGroup>
-            }
-            {props.header_left && props.header_left}
-            {props.title_label &&
-                <span className="bp6-ui-text"
-                      style={TITLE_STYLE}>{props.title_label}</span>
             }
             <div className={`code-container ${props.className}`} style={ccstyle} ref={localRef}></div>
         </Fragment>

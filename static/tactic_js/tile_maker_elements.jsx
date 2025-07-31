@@ -29,12 +29,12 @@ import {CSS} from '@dnd-kit/utilities';
 import {CSSTransition} from 'react-transition-group';
 import {ErrorBoundary} from "./error_boundary";
 
-import {BpSelectAdvanced} from "./blueprint_mdata_fields";
+import {BpSelectAdvanced} from "./selector_advanced";
 import {ReactCodemirror6} from "./react-codemirror6";
 import {guid, isInt} from "./utilities_react"
 import {MakerPaneContext} from "./tile_maker_support";
 import {LabeledFormField, LabeledSelectList, LabeledTextArea} from "./blueprint_react_widgets";
-import {NativeTags, IconSelector, NotesField} from "./blueprint_mdata_fields";
+import {NativeTags, IconSelector, NotesField} from "./combined_metadata";
 import {postAjaxPromise} from "./communication_react";
 import {DragHandle} from "./drag_handle";
 
@@ -45,9 +45,6 @@ export {
 
 const INITIAL_CODE_PANE_HEIGHT = 330
 const INITIAL_FORM_PANE_HEIGHT = 125;
-const INDENT = 25;
-const SECTION_TOP_MARGIN = 0;
-const SECTION_BOTTOM_MARGIN = 0;
 
 function textRowsToArray(tstring) {
     let slist = [];
@@ -126,7 +123,7 @@ function SimplePaneTitle(props) {
     let theIcon = <Icon icon={props.icon} size={13}/>
 
     return (
-        <div style={{position: "absolute", left: 40, top: 13}}>
+        <div className="creator-simple-title">
             <EntityTitle title={props.title} heading={H6} subtitle={props.subtitle} icon={theIcon}/>
         </div>
     )
@@ -234,20 +231,20 @@ function PaneElement(props) {
             <Card ref={top_ref} key={props.identifier} elevation={0}
                   className={`maker-pane ${props.className}`}
                   style={{height: current_height, position: "relative", display: "flex",
-                      flexDirection: "column", paddingBottom: 20}}>
+                      flexDirection: "column"}}>
                 <Button variant="minimal" size="small" icon="cross"
-                        style={{padding: 0, position: "absolute", left: 10, top: 10, zIndex: 20}}
+                        className='maker-pane-button maker-pane-left-button'
                         onClick={() => {
                             mpContext.toggleVisibleTab(props.identifier)
                         }}/>
                 {props.allowDelete &&
                     <Button variant="minimal" intent="danger" size="small" icon="trash"
-                            style={{padding: 0, position: "absolute", right: 10, top: 10, zIndex: 20}}
+                            className='maker-pane-button maker-pane-right-button'
                             onClick={_deleteMe}/>
                 }
                 {!props.allowDelete && props.icon &&
                     <Icon icon={props.icon} size={20} intent="primary"
-                          style={{padding: 0, position: "absolute", right: 15, top: 10, zIndex: 20}}/>
+                          className='maker-pane-button maker-pane-right-button'/>
                 }
                     {props.children}
                 <DragHandle position_dict={draghandle_position_dict}
@@ -369,15 +366,13 @@ function MetadataModule(props) {
         width: "100%",
         height: "100%",
         overflow: "auto",
-        paddingTop: 15
     };
 
     const split_tags = props.metadataRef.current.tags.split(" ");
 
     return (
-        <div className="metadata-outer" style={outer_style}>
+        <div className="creator-metadata-outer" style={outer_style}>
             <SimplePaneTitle title="Metadata" icon="properties"/>
-            <div style={{marginTop: 30}}>
                 <ErrorBoundary custom_message="Error in NativeTags">
                     <FormGroup label="Tags">
                         <NativeTags key={`${props.res_name}-${props.res_type}-tags`}
@@ -424,7 +419,6 @@ function MetadataModule(props) {
                             checked={props.metadataRef.current.couple_save_attrs_and_exports}
                             onChange={handleCoupleChange}/>
                 </ErrorBoundary>
-            </div>
         </div>
     )
 }
@@ -458,14 +452,12 @@ function ExportModuleForm(props) {
     return (
         <div>
             <SimplePaneTitle icon="export" title={props.exportItem.name}/>
-            <div>
-                <form className="maker-form-container">
-                    <div style={{display: "flex", flexWrap: "wrap", flexDirection: "row"}}>
-                        <LabeledFormField label="Name" onChange={handleNameChange} the_value={props.exportItem.name}/>
-                        <LabeledFormField label="Tags" onChange={handleTagChange} the_value={props.exportItem.tags}/>
-                    </div>
-                </form>
-            </div>
+            <form className="maker-form-container">
+                <div style={{display: "flex", flexWrap: "wrap", flexDirection: "row"}}>
+                    <LabeledFormField label="Name" onChange={handleNameChange} the_value={props.exportItem.name}/>
+                    <LabeledFormField label="Tags" onChange={handleTagChange} the_value={props.exportItem.tags}/>
+                </div>
+            </form>
         </div>
     )
 }
@@ -733,7 +725,7 @@ function SignatureHeader(props) {
     }
     return (
         <div className="d-flex flex-row cm-signature"
-             style={{justifyContent: "space-between", marginLeft: 10, paddingTop: 10}}>
+             style={{justifyContent: "space-between"}}>
             {props.mode == "javascipt" ?
                 <ReactCodemirror6 readOnly={!props.allowSignatureChange}
                                   mode="javascript"
@@ -839,10 +831,7 @@ function CmElement(props) {
                              handleArgChange={handleArgChange}/>
             <ReactCodemirror6 code_content={props.cmState.codeText}
                               controlled={true}
-                              // need to pass height through manually otherwise resizing doesn't reliably
-                              flex_height={true}
-                              no_height={props.no_height}
-                              title_label={null}
+                              flex_size={true}
                               show_search={false}
                               mode={props.cmState.mode}
                               extraKeys={props.extraKeys()}
@@ -884,7 +873,7 @@ function MakerNavigator(props) {
     const sections = props.sections.filter(section => section.visible === true)
     return (
         <ErrorBoundary custom_message="There was an error in the Maker Navigator">
-            <div style={{overflow: "hidden"}}>
+            <div style={{overflow: "auto", height: "100%"}} className="maker-navigator">
                 {sections.map((section,) => (
                     section.editable ?
                         <SortableNavSection key={section.title} title={section.title} dispatch={section.dispatch}
@@ -917,16 +906,18 @@ function NavSection(props) {
 
     // noinspection JSValidateTypes
     return (
-        <div style={{marginTop: SECTION_TOP_MARGIN, marginBottom: SECTION_BOTTOM_MARGIN}}>
+        <div className="nav-section">
             <ButtonGroup key="button-group">
-                <Button variant="minimal" style={{paddingRight: 2, fontSize: 13, fontWeight: 600}} icon={props.icon}
+                <Button variant="minimal"
+                        className='nav-section-button'
+                        icon={props.icon}
                         size="medium"
                         onClick={() => setIsOpen(!isOpen)}>
                     {props.title}
                 </Button>
                 {props.right_button != null && props.right_button}
             </ButtonGroup>
-            <Collapse key="collapse" className="nav-section-class" isOpen={isOpen}>
+            <Collapse key="collapse" isOpen={isOpen}>
                 {props.sub_items.map((item,) => {
                     let icon = props.icon_dict ?
                         <Icon icon={props.icon_dict[item[props.icon_field]]} size={12}/> : null;
@@ -1069,10 +1060,11 @@ function SortableNavSection(props) {
 
     return (
         <ContextMenu content={contextMenu}>
-            <div style={{marginTop: SECTION_TOP_MARGIN}} className="sortable-nav-section">
+            <div className="sortable-nav-section">
                 {props.createFromList &&
                     <ControlGroup vertical={true} style={{alignItems: "self-start"}}>
-                        <Button style={{paddingRight: 2, fontSize: 13, fontWeight: 600}} variant="minimal"
+                        <Button className="nav-section-button"
+                                variant="minimal"
                                 icon={props.icon} size="medium"
                                 onClick={() => setIsOpen(!isOpen)}>
                             {props.title}
@@ -1084,7 +1076,8 @@ function SortableNavSection(props) {
                 }
                 {!props.createFromList &&
                     <ButtonGroup>
-                        <Button style={{paddingRight: 2, fontSize: 13, fontWeight: 600}} variant="minimal"
+                        <Button className="nav-section-button"
+                                variant="minimal"
                                 icon={props.icon} size="medium"
                                 onClick={() => setIsOpen(!isOpen)}>
                             {props.title}
@@ -1092,7 +1085,7 @@ function SortableNavSection(props) {
                         <Button icon="plus" size="small" variant="minimal" onClick={createItem}/>
                     </ButtonGroup>
                 }
-                <Collapse className="nav-section-class" isOpen={isOpen}>
+                <Collapse className="nav-section" isOpen={isOpen}>
                     <DndContext sensors={sensors} collisionDetection={rectIntersection} onDragEnd={handleDragEnd}>
                         <SortableContext items={[...props.sub_items.map(i => i.identifier), '__drop_spacer__']}
                                          strategy={verticalListSortingStrategy}>
@@ -1194,7 +1187,7 @@ function NavItem(props) {
 
     if (props.isSpacer) {
         return (<ControlGroup>
-            <Button style={{marginLeft: INDENT, paddingRight: 2, width: 175, opacity: 0.5}}
+            <Button className='spacer-nav-item'
                     icon={null}
                     intent="none"
                     size="medium"
@@ -1204,16 +1197,12 @@ function NavItem(props) {
             </Button>
         </ControlGroup>)
     }
-    let style;
-    if (props.isDivider) {
-        style = {marginLeft: INDENT, paddingRight: 2, fontWeight: "bold", color: "#ec9a3c"}
-    } else {
-        style = {marginLeft: INDENT, paddingRight: 2}
-    }
+
+    const className = `maker-nav-item ${props.isDivider ? 'nav-divider' : ''} `
 
     return (
         <ControlGroup>
-            <Button style={style}
+            <Button className={className}
                     icon={props.icon}
                     intent={mpContext.visibleTabList.includes(props.identifier) ? "primary" : "none"}
                     size="medium"

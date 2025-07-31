@@ -6,7 +6,7 @@ import {PopoverPosition} from "@blueprintjs/core";
 import { useHotkeys } from "@blueprintjs/core";
 
 import {ReactCodemirrorMergeView6} from "./react-codemirror-mergeview6";
-import {BpSelect} from "./blueprint_mdata_fields";
+import {BpSelect} from "./selector_advanced";
 import {TacticMenubar} from "./menu_utilities";
 import {SettingsContext} from "./settings"
 import {StatusContext} from "./toaster";

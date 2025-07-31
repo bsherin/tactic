@@ -1,19 +1,45 @@
 
 @use "blueprint_variables.scss";
 @use "themeable.scss";
-//
+@use "tactic.scss";
+
+$notebook-outer-padding: 10px;
+$console-section-indent: 25px;
+$execution-counter-width: 40px;
 
 $log-panel-border-style: 1px solid #c7c7c7;
 
+.console {
+    text-align: left;
+    font-size: 14px;
+    padding: 0
+}
 
-$button-notclose-opacity: .9;
-$button-notclose-hover-opacity: .3;
 
-//body {
-//    background-color: themeable.$dark-app-backdrop;
-//}
+.body-style {
+    margin-top: 10px;
+    margin-left: 30px;
+    padding: 8px;
+    flex: 1 1 0;
+    min-width: 0;
+    border: .5px solid #c7c7c7;
+    overflow-y: scroll
+}
 
-/* console */
+.body-shrunk-style {
+    margin-left: 30px;
+    flex-grow: 1;
+    position: relative
+}
+
+.execution-counter {
+        width: $execution-counter-width;
+        padding-top: 8px;
+        color: #9B79CC;
+        font-size: 14px;
+        font-weight: 600;
+        white-space: nowrap
+    }
 
 .bottom-heading-element {
     height: 30px !important;
@@ -25,13 +51,8 @@ $button-notclose-hover-opacity: .3;
     align-items: baseline
 }
 
-#console {
-    text-align: left;
-    font-size: 14px;
-    padding: 0 10px 5px 0;
-}
 
-#console-panel {
+.console-panel {
     margin-left: 0.5rem;
 
     margin-right: 0;
@@ -50,40 +71,28 @@ $button-notclose-hover-opacity: .3;
     .bp6-context-menu {
         display: flex !important;
     }
+
+    .CodeMirror {
+      height: auto !important;
+      margin-top: 2px;
+    }
 }
-#console-heading {
-    display: flex;
-    justify-content: space-between;
-    padding: 2px 2px 2px 2px;
+.console-heading {
     border-bottom: 1px solid #10161a26;
     height: 32px;
-
+    padding: 2px;
+    margin-left: 2px;
+    margin-right: 2px;
     .bp6-icon {
         margin-right: 3px
     }
 }
 
-#console-header-left .bp6-navbar {
+
+.console-header-left .bp6-navbar {
     box-shadow: none;
     &.light-theme, &.bp6-dark {
         background-color: transparent;
-    }
-}
-
-#console-panel .CodeMirror{
-  height: auto !important;
-  margin-top: 2px;
-}
-
-.console-text {
-    padding: 10px;
-    display: inline-block;
-
-    //border: $console-panel-border-style !important;
-    width: 100%;
-    overflow-y: hidden;
-    &:hover {
-        overflow-y: auto
     }
 }
 
@@ -97,19 +106,13 @@ $button-notclose-hover-opacity: .3;
         right: 20px;
     }
 }
-.in-section {
-    .console-code {
-        .float-buttons {
-            right: 20px
-        }
-    }
-}
+
 
 .text-box {
     position: relative;
     .float-buttons {
         position: absolute;
-        top: 0px;
+        top: 0;
         right: 54px;
     }
 }
@@ -123,21 +126,10 @@ $button-notclose-hover-opacity: .3;
 }
 
 .text-panel-output {
-
     p:last-child, ul:last-child, h1:last-child, h2:last-child, h3:last-child, h4:last-child {
         margin-bottom: 4px
     }
-    //border: 1px solid #c7c7c7
 }
-
-.execution-counter {
-        padding-right: 17px;
-        padding-top: 8px;
-        color: #9B79CC;
-        font-size: 14px;
-        font-weight: 600;
-        white-space: nowrap
-    }
 
 .bp6-dark {
     .link-button-group {
@@ -151,21 +143,35 @@ $button-notclose-hover-opacity: .3;
     }
 }
 
+.console-items-div {
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
 .log-panel {
     border: none;
-    margin: 1px 4px 1px 8px;
+    margin-top: 1px;
+    margin-bottom: 1px;
+    border-right: 3px solid transparent;
+    border-left: 3px solid transparent;
     box-shadow: none;
     position: relative;
     overflow: hidden;
     width: 100%;
     transition:min-height .5s ease-in-out, max-height .5s ease-in-out;
 
-    &.in-section:not(.divider-log-panel)  {
-        margin-left: 25px;
+    .bp6-editable-text:hover::before {
+        outline: none;
+        box-shadow: none;
     }
-    .notclose {
-        font-size: 15px;
-        padding-bottom: 3px
+
+    &.selected {
+        border-right: 3px solid blueprint_variables.$gray2;
+        border-left: 3px solid blueprint_variables.$gray2;
+    }
+
+    &.in-section:not(.divider-log-panel)  {
+        margin-left: $console-section-indent;
     }
 
     .button-div {
@@ -181,19 +187,11 @@ $button-notclose-hover-opacity: .3;
         display: flex;
     }
 
-
     &:hover {
         .button-div {
             opacity: 100;
             transition-delay: .1s;
         }
-    }
-
-    &.selected {
-        border-right: 3px solid blueprint_variables.$gray2;
-        border-left: 3px solid blueprint_variables.$gray2;
-        margin-left: 5px;
-        margin-right: 1px;
     }
 
     &.log-panel-visible {
@@ -204,6 +202,7 @@ $button-notclose-hover-opacity: .3;
         }
 
         .log-code-output {
+            width: calc(100% - $execution-counter-width);
             display: block
         }
 
@@ -223,14 +222,12 @@ $button-notclose-hover-opacity: .3;
             }
         }
 
-
         &:not(:focus-within):hover .button-div.shrink-expand-div {
             opacity: 100;
         }
         &:not(.selected):hover .button-div.shrink-expand-div {
             opacity: 100;
         }
-
     }
 
     &.log-panel-invisible {
@@ -238,10 +235,6 @@ $button-notclose-hover-opacity: .3;
 
         .log-panel-summary {
             display: block
-        }
-
-        .console-spin-outer {
-            display:none
         }
 
         .log-code-output {
@@ -258,13 +251,6 @@ $button-notclose-hover-opacity: .3;
         &:hover .expand-log-button {
             display: inline-block
         }
-    }
-}
-
-.log-panel {
-    .bp6-editable-text:hover::before {
-        outline: none;
-        box-shadow: none;
     }
 }
 
@@ -306,13 +292,12 @@ $button-notclose-hover-opacity: .3;
 
 .log-panel-summary {
     padding: 5px 0;
-    //border: .5px solid #c7c7c7 !important;
     margin-bottom: 5px;
     margin-top: 5px;
-    font-style: italic;
+    font-family: monospace;
 
     &.code-panel-summary {
-        font-style: italic;
+        font-family: monospace;
     }
 }
 
@@ -322,39 +307,43 @@ $button-notclose-hover-opacity: .3;
     margin-bottom: 10px;
     padding: 10px 45px 0 40px;
 }
+
 // exports
 
-#selected-export {
+.selected-export {
     font-size: 14px;
     line-height: 30px;
     font-weight: 400;
 }
 
-#exports-heading {
+.exports-heading {
     display: flex;
     justify-content: flex-start;
-    padding: 2px 2px 2px 2px;
     border-bottom: 1px solid #10161a26;
     height: 32px;
-
+    padding: 2px;
+    margin-left: 2px;
+    margin-right: 2px;
     .bp6-icon {
         margin-right: 3px
     }
 }
 
-#exports-footing {
+.exports-footing {
     display: flex;
     justify-content: flex-start;
-    padding: 2px 2px 2px 2px;
+    padding: 2px;
     border-top: 1px solid #10161a26;
     height: 25px;
+    margin-left: 2px;
+    margin-right: 2px;
 
     select {
         height: 20px
     }
 
     label {
-        line-height: 19px;
+        line-height: 19px !important;
         margin-right: 0;
         font-size: 11px
     }
@@ -364,33 +353,34 @@ $button-notclose-hover-opacity: .3;
         height: 20px;
         top: 2px
     }
-
 }
 
-#exports-info {
+.exports-info {
     font-size: 12px;
     line-height: 20px;
 }
 
-#exports-panel {
+.exports-panel {
     margin-right: 0;
     padding: 0 !important;
-    &.am-shrunk {
-        //margin-top: 0.5rem;
-        // margin-left: 7px
-    }
+
     &.am-zoomed {
         margin-top: 0.5rem;
-        // margin-left: 7px;
     }
     &.not-shrunk {
         margin-top: 0;
-        // margin-left: 7px
     }
 }
 
+.exports-body {
+    padding: 15px;
+}
 
-#exports-button-list .bp6-button-group.bp6-vertical {
+.exports-button-list {
+    padding: 15px;
+}
+
+.exports-button-list .bp6-button-group.bp6-vertical {
     max-width: 100%
 }
 
@@ -437,16 +427,3 @@ $button-notclose-hover-opacity: .3;
     font-size: 14px
 }
 
-button.notclose {
-    -webkit-appearance: none;
-    padding: 3px;
-    cursor: pointer;
-    background: transparent;
-    opacity: $button-notclose-opacity;
-    border: 0;
-    display: inline-flex;
-}
-
-button.notclose:hover {
-    opacity: $button-notclose-hover-opacity !important;
-}

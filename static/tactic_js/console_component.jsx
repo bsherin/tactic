@@ -5,16 +5,19 @@ import {Fragment, useState, useEffect, useRef, useCallback, useLayoutEffect, mem
 
 import {Icon, Card, ContextMenu, EditableText, Spinner, MenuDivider, Divider} from "@blueprintjs/core";
 import {Menu, MenuItem, ButtonGroup, Button} from "@blueprintjs/core";
-import { useHotkeys } from "@blueprintjs/core";
+import {useHotkeys} from "@blueprintjs/core";
 import {SelectedPaneContext} from "./utilities_react";
 import _ from 'lodash';
 
 import hljs from 'highlight.js/lib/core';
 import javascript from 'highlight.js/lib/languages/javascript';
+
 hljs.registerLanguage('javascript', javascript);
 
 import python from 'highlight.js/lib/languages/python';
+
 hljs.registerLanguage('python', python);
+
 
 import markdownIt from 'markdown-it'
 import 'markdown-it-latex/dist/index.css'
@@ -24,11 +27,12 @@ const mdi = markdownIt({
     html: true,
     highlight: function (str, lang) {
         if (lang && hljs.getLanguage(lang)) {
-          try {
-            return '<pre><code class="hljs">' +
-                   hljs.highlight(str, { language: lang, ignoreIllegals: true }).value +
-                   '</code></pre>';
-          } catch (__) {}
+            try {
+                return '<pre><code class="hljs">' +
+                    hljs.highlight(str, {language: lang, ignoreIllegals: true}).value +
+                    '</code></pre>';
+            } catch (__) {
+            }
         }
         return '<pre><code class="hljs">' + mdi.utils.escapeHtml(str) + '</code></pre>';
     }
@@ -39,7 +43,7 @@ import {GlyphButton} from "./blueprint_react_widgets";
 import {ReactCodemirror6} from "./react-codemirror6";
 import {SortableComponent} from "./sortable_container";
 import {postAjaxPromise, postWithCallback, postFormDataPromise, postPromise} from "./communication_react"
-import {icon_dict} from "./blueprint_mdata_fields";
+import {icon_dict} from "./combined_metadata";
 import {view_views} from "./library_pane";
 import {TacticMenubar} from "./menu_utilities";
 import {FilterSearchForm} from "./search_form";
@@ -53,8 +57,11 @@ import {AssistantContext} from "./assistant";
 
 export {ConsoleComponent}
 
-const GLYPH_BUTTON_STYLE = {marginLeft: 2};
-const GLYPH_BUTTON_STYLE2 = {marginRight: 5, marginTop: 2};
+const trash_icon = <Icon icon="trash" size={14}/>;
+const clean_icon = <Icon icon="clean" size={14}/>;
+
+const SHRINK_EXPAND_GLYPH_BUTTON_STYLE = {marginLeft: 2};
+const SHOW_EXPORTS_GLYPH_BUTTON_STYLE2 = {marginRight: 5, marginTop: 2};
 const GLYPH_BUTTON_STYLE3 = {marginLeft: 10, marginRight: 66, minHeight: 0};
 const GlYPH_BUTTON_STYLE4 = {marginLeft: 10, marginRight: 66};
 const GLYPH_BUTTON_STYLE5 = {marginTop: 5};
@@ -62,9 +69,13 @@ const GLYPH_BUTTON_STYLE5 = {marginTop: 5};
 const SPINNER_STYLE = {marginTop: 10, marginRight: 22};
 const MB10_STYLE = {marginBottom: 10};
 
+const searchable_console_style = {padding: 15}
+
+const sHandleStyle = {marginLeft: 0, marginRight: 6};
+
+const FILTER_SEARCH_RIGHT_MARGIN = 20;
+
 const empty_style = {};
-const trash_icon = <Icon icon="trash" size={14} />;
-const clean_icon = <Icon icon="clean" size={14} />;
 
 function ConsoleComponent(props) {
     props = {
@@ -74,7 +85,6 @@ function ConsoleComponent(props) {
         ...props
     };
     const header_ref = useRef(null);
-    const body_ref = useRef(null);
     const filtered_items_ref = useRef([]);
 
     const [, set_console_item_with_focus] = useState(null);
@@ -110,7 +120,7 @@ function ConsoleComponent(props) {
             });
         }
     }, []);
-    
+
     useEffect(() => {
         //console.log("theme changed")  // This is to force re-rendering because of highlight.js theme change
     }, [settingsContext.settings.theme]);
@@ -166,18 +176,20 @@ function ConsoleComponent(props) {
                 global: false,
                 group: "Notebook",
                 label: "Clear Selected Cells",
-                onKeyDown: ()=>{_clear_all_selected_items()}
+                onKeyDown: () => {
+                    _clear_all_selected_items()
+                }
             },
         ],
         [_addBlankCode, _addBlankText, _runSelected, _clear_all_selected_items]
     );
 
-    const { handleKeyDown, handleKeyUp } = useHotkeys(hotkeys);
+    const {handleKeyDown, handleKeyUp} = useHotkeys(hotkeys);
 
-function initSocket() {
-    function _handleConsoleMessage(data) {
-        if (data.main_id == props.main_id) {
-            // noinspection JSUnusedGlobalSymbols
+    function initSocket() {
+        function _handleConsoleMessage(data) {
+            if (data.main_id == props.main_id) {
+                // noinspection JSUnusedGlobalSymbols
                 let handlerDict = {
                     consoleLog: (data) => _addConsoleEntry(data.message, data.force_open, true),
                     consoleLogMultiple: (data) => _addConsoleEntries(data.message, data.force_open, true),
@@ -231,9 +243,8 @@ function initSocket() {
             formData.append("main_id", props.main_id);
             try {
                 await postFormDataPromise("print_blob_area_to_console", formData);
-            }
-            catch (e) {
-                 console.log(e);
+            } catch (e) {
+                console.log(e);
             }
         }
     }
@@ -245,8 +256,7 @@ function initSocket() {
             if (callback != null) {
                 callback();
             }
-        }
-        catch (e) {
+        } catch (e) {
             errorDrawerFuncs.addFromError("Error creating text area", e)
         }
     }
@@ -262,13 +272,12 @@ function initSocket() {
             if (callback != null) {
                 callback();
             }
-        }
-        catch (e) {
+        } catch (e) {
             errorDrawerFuncs.addFromError("Error creating divider", e)
         }
     }
 
-     const _addBlankDivider = useCallback(async () => {
+    const _addBlankDivider = useCallback(async () => {
         if (window.in_context && !am_selected()) {
             return
         }
@@ -308,8 +317,7 @@ function initSocket() {
                 type: "delete_items",
                 id_list: id_list,
             });
-        }
-        catch (e) {
+        } catch (e) {
             if (e != "canceled") {
                 errorDrawerFuncs.addFromError(`Error deleting section`, e)
             }
@@ -383,8 +391,7 @@ function initSocket() {
         try {
             let data = await postPromise("host", "get_copied_console_cells", {user_id: window.user_id}, props.main_id);
             _addConsoleEntries(data.console_items, true, false, unique_id)
-        }
-        catch (e) {
+        } catch (e) {
             errorDrawerFuncs.addFromError(`Error getting copied cells`, e)
         }
     }, []);
@@ -396,8 +403,7 @@ function initSocket() {
             if (callback) {
                 callback()
             }
-        }
-        catch (e) {
+        } catch (e) {
             errorDrawerFuncs.addFromError("Error creating link", e)
         }
     }
@@ -434,8 +440,7 @@ function initSocket() {
             let new_links = "links" in entry ? [...entry.links] : [];
             new_links.push({res_type: result.type, res_name: result.selected_resource});
             _setConsoleItemValue(entry.unique_id, "links", new_links)
-        }
-        catch (e) {
+        } catch (e) {
             errorDrawerFuncs.addFromError("Error inserting link", e)
         }
     }
@@ -447,8 +452,7 @@ function initSocket() {
                 {console_text: the_text, user_id: window.user_id, main_id: props.main_id, force_open: force_open},
                 null, null,
                 props.main_id);
-        }
-        catch (e) {
+        } catch (e) {
             errorDrawerFuncs.addFromError("Error creating code cell", e);
         }
     }
@@ -476,8 +480,7 @@ function initSocket() {
             pushCallback(() => {
                 props.dispatch({type: "delete_all_items"})
             })
-        }
-        catch (e) {
+        } catch (e) {
             if (e != "canceled") {
                 errorDrawerFuncs.addFromError(`Error clearing console`, e)
             }
@@ -504,7 +507,7 @@ function initSocket() {
         props.setMainStateValue("console_is_zoomed", true)
     }, []);
 
-    const _unzoomConsole = useCallback(() =>{
+    const _unzoomConsole = useCallback(() => {
         props.setMainStateValue("console_is_zoomed", false);
     }, []);
 
@@ -519,7 +522,7 @@ function initSocket() {
         }
     }, [props.mState.console_is_zoomed]);
 
-    const _toggleExports = useCallback(() =>{
+    const _toggleExports = useCallback(() => {
         props.setMainStateValue("show_exports_pane", !props.mState.show_exports_pane)
     }, [props.mState.show_exports_pane]);
 
@@ -786,7 +789,7 @@ function initSocket() {
         })
     }
 
-   async function _deleteSelected() {
+    async function _deleteSelected() {
         if (_are_selected()) {
             try {
                 if (_isDividerSelected()) {
@@ -801,8 +804,7 @@ function initSocket() {
                     });
                 }
                 _doDeleteSelected()
-            }
-            catch (e) {
+            } catch (e) {
                 if (e != "canceled") {
                     errorDrawerFuncs.addFromError(`Error duplicating resource ${res_name}`, e)
                 }
@@ -1240,7 +1242,7 @@ function initSocket() {
         })
     }
 
-    const TailoredSuperItem = useMemo(()=>{
+    const TailoredSuperItem = useMemo(() => {
         return superItemMaker({
             setConsoleItemValue: _setConsoleItemValue,
             selectConsoleItem: _selectConsoleItem,
@@ -1265,18 +1267,20 @@ function initSocket() {
     if (props.mState.console_is_zoomed) {
         console_class = "am-zoomed"
     }
+    console_class = `console-panel ${console_class}`;
     let outer_style = {
         display: 'flex',
         flexDirection: 'column',
         flex: "1 1 0",
         paddingLeft: 0,
-        position: "relative"
+        position: "relative",
+        margin: 0
     };
     if (!props.mState.console_is_shrunk) {
         outer_style.height = "100%";
     }
 
-    const header_style = useMemo(()=>{
+    const header_style = useMemo(() => {
         let newStyle = {};
         if (!props.shrinkable) {
             newStyle["paddingLeft"] = 10
@@ -1315,27 +1319,28 @@ function initSocket() {
             {intent: "primary", icon: "console", handleClick: show_main_log ? _toggleMainLog : _togglePseudoLog})
     }
 
-    const extraProps = useMemo(()=>{return {main_id: props.main_id}});
+    const extraProps = useMemo(() => {
+        return {main_id: props.main_id}
+    });
 
     return (
-        <Card id="console-panel" className={console_class}
+        <Card className={console_class}
               elevation={props.mState.console_is_shrunk ? 0 : 2}
               style={outer_style}
-               tabIndex="0" onKeyDown={handleKeyDown} onKeyUp={handleKeyUp}>
+              tabIndex="0" onKeyDown={handleKeyDown} onKeyUp={handleKeyUp}>
             <div className="d-flex flex-column justify-content-around ">
-                <div id="console-heading"
-                     ref={header_ref}
+                <div ref={header_ref}
                      style={header_style}
-                     className="d-flex flex-row justify-content-between">
-                    <div id="console-header-left" className="d-flex flex-row">
+                     className="console-heading d-flex flex-row justify-content-between">
+                    <div className="console-header-left d-flex flex-row">
                         {props.mState.console_is_shrunk && props.shrinkable &&
                             <GlyphButton handleClick={_expandConsole}
-                                         style={GLYPH_BUTTON_STYLE}
+                                         style={SHRINK_EXPAND_GLYPH_BUTTON_STYLE}
                                          icon="chevron-right"/>
                         }
                         {!props.mState.console_is_shrunk && props.shrinkable &&
                             <GlyphButton handleClick={_shrinkConsole}
-                                         style={GLYPH_BUTTON_STYLE}
+                                         style={SHRINK_EXPAND_GLYPH_BUTTON_STYLE}
                                          icon="chevron-down"/>
                         }
                         <AssistantContext.Provider value={null}>
@@ -1358,7 +1363,7 @@ function initSocket() {
                                      tooltip="Show export browser"
                                      size="small"
                                      className="show-exports-but"
-                                     style={GLYPH_BUTTON_STYLE2}
+                                     style={SHOW_EXPORTS_GLYPH_BUTTON_STYLE2}
                                      handleClick={_toggleExports}
                                      icon="variable"/>
 
@@ -1381,8 +1386,13 @@ function initSocket() {
                     handleUnFilter={_handleUnFilter}
                     searchNext={_searchNext}
                     searchPrevious={_searchPrevious}
-                    marginLeft={2}
-                    marginRight={20}
+                    outer_style = {{
+                        marginRight: 50,
+                        marginTop: 10,
+                        justifyContent: 'flex-end'
+                    }}
+                    marginLeft={0}
+                    marginRight={FILTER_SEARCH_RIGHT_MARGIN}
                     search_helper_text={search_helper_text}
                 />
             }
@@ -1390,11 +1400,7 @@ function initSocket() {
                 <SearchableConsole main_id={props.main_id}
                                    streaming_host="host"
                                    container_id={props.main_id}
-                                   ref={body_ref}
-                                   outer_style={{
-                                       marginLeft: 20,
-                                       marginRight: 20
-                                   }}
+                                   outer_style={searchable_console_style}
                                    showCommandField={false}
                 />
             }
@@ -1402,19 +1408,13 @@ function initSocket() {
                 <SearchableConsole main_id={props.main_id}
                                    streaming_host="host"
                                    container_id={pseudo_tile_id}
-                                   ref={body_ref}
-                                   outer_style={{
-                                       marginLeft: 20,
-                                       marginRight: 20,
-                                   }}
+                                   outer_style={searchable_console_style}
                                    showCommandField={true}
                 />
             }
             {!props.mState.console_is_shrunk && !show_pseudo_log && !show_main_log &&
 
-                <div id="console"
-                     ref={body_ref}
-                     className="contingent-scroll"
+                <div className="console contingent-scroll"
                      onClick={_clickConsoleBody}
                      style={{flexGrow: 1, width: "100%", position: "relative", overflow: "auto"}}>
                     <SortableComponent className="console-items-div"
@@ -1436,13 +1436,11 @@ function initSocket() {
                     <div id="padding-div" style={{height: 500}}></div>
                 </div>
             }
-            </Card>
+        </Card>
     );
 }
 
 ConsoleComponent = memo(ConsoleComponent);
-
-const sHandleStyle = {marginLeft: 0, marginRight: 6};
 
 function Shandle(props) {
     return (
@@ -1482,7 +1480,7 @@ function DividerItem(props) {
         props.setConsoleItemValue(props.unique_id, "am_shrunk", !props.am_shrunk);
     }, [props.am_shrunk]);
 
-    const _deleteMe = useCallback(() =>{
+    const _deleteMe = useCallback(() => {
         props.handleDelete(props.unique_id)
     }, []);
 
@@ -1564,7 +1562,7 @@ function DividerItem(props) {
     return (
         <ContextMenu content={contextMenu}>
             <div className={panel_class + " d-flex flex-row"} onClick={_consoleItemClick}
-                 id={props.unique_id} style={{marginBottom: 10}}>
+                 id={props.unique_id} style={MB10_STYLE}>
                 <div className="button-div shrink-expand-div d-flex flex-row">
                     <Shandle dragHandleProps={props.dragHandleProps}/>
                     {!props["am_shrunk"] &&
@@ -1622,7 +1620,7 @@ function SectionEndItem(props) {
         })
     }
 
-    const contextMenu = useMemo(()=>{
+    const contextMenu = useMemo(() => {
         // return a single element, or nothing to use default browser behavior
         return (
             <Menu>
@@ -1644,7 +1642,7 @@ function SectionEndItem(props) {
         );
     }, []);
 
-    const _consoleItemClick = useCallback((e)=>{
+    const _consoleItemClick = useCallback((e) => {
         _selectMe(e);
         e.stopPropagation()
     }, []);
@@ -1663,7 +1661,7 @@ function SectionEndItem(props) {
     return (
         <ContextMenu content={contextMenu}>
             <div className={panel_class + " d-flex flex-row"} onClick={_consoleItemClick}
-                 id={props.unique_id} style={{marginBottom: 10}}>
+                 id={props.unique_id} style={MB10_STYLE}>
                 <ButtonGroup variant="minimal" vertical={true} style={{width: "100%"}}>
                     <span {...props.dragHandleProps}/>
                     <Divider style={line_style}/>
@@ -1679,22 +1677,21 @@ SectionEndItem = memo(SectionEndItem);
 
 function LogItem(props) {
     const last_output_text = useRef("");
-    const body_ref = useRef(null);
 
     useEffect(() => {
         executeEmbeddedScripts();
         // makeTablesSortable()
     });
 
-    const _toggleShrink = useCallback(() =>{
+    const _toggleShrink = useCallback(() => {
         props.setConsoleItemValue(props.unique_id, "am_shrunk", !props.am_shrunk);
     }, [props.am_shrunk]);
 
-    const _deleteMe = useCallback(() =>{
+    const _deleteMe = useCallback(() => {
         props.handleDelete(props.unique_id)
     }, []);
 
-    const _handleSummaryTextChange = useCallback((value)=>{
+    const _handleSummaryTextChange = useCallback((value) => {
         props.setConsoleItemValue(props.unique_id, "summary_text", value)
     }, []);
 
@@ -1796,22 +1793,6 @@ function LogItem(props) {
         panel_class += " error-log-panel"
     }
 
-    const body_style = useMemo(()=>{ return {
-        marginTop: 10,
-        marginLeft: 30,
-        padding: 8,
-        flex: "1 1 0",
-        minWidth: 0,
-        border: ".5px solid #c7c7c7",
-        overflowY: "scroll"
-    }}, []);
-
-    const body_shrunk_style = useMemo(()=>{ return {
-        marginLeft: 30,
-        flexGrow: 1,
-        position: "relative"
-    }}, []);
-
     return (
         <ContextMenu content={renderContextMenu()}>
             <div className={panel_class + " d-flex flex-row"} onClick={_consoleItemClick}
@@ -1831,14 +1812,14 @@ function LogItem(props) {
                 <div className="d-flex flex-column" style={{flex: "1 1 0", minWidth: 0, overflow: "auto"}}>
                     <div className="log-panel-body d-flex flex-row">
                         {props.am_shrunk &&
-                            <div ref={body_ref} style={body_shrunk_style}>
+                            <div className="body-shrunk-style">
                                 <EditableText value={props.summary_text}
                                               onChange={_handleSummaryTextChange}
                                               className="log-panel-summary"/>
-                                </div>
+                            </div>
                         }
                         {!props.am_shrunk &&
-                            <div ref={body_ref} style={body_style}
+                            <div className="body-style"
                                  dangerouslySetInnerHTML={converted_dict}/>
                         }
                         <div className="button-div d-flex flex-row">
@@ -1858,22 +1839,21 @@ LogItem = memo(LogItem);
 
 function BlobItem(props) {
     const last_output_text = useRef("");
-    const body_ref = useRef(null);
 
     useEffect(() => {
         executeEmbeddedScripts();
         // makeTablesSortable()
     });
 
-    const _toggleShrink = useCallback(() =>{
+    const _toggleShrink = useCallback(() => {
         props.setConsoleItemValue(props.unique_id, "am_shrunk", !props.am_shrunk);
     }, [props.am_shrunk]);
 
-    const _deleteMe = useCallback(() =>{
+    const _deleteMe = useCallback(() => {
         props.handleDelete(props.unique_id)
     }, []);
 
-    const _handleSummaryTextChange = useCallback((value)=>{
+    const _handleSummaryTextChange = useCallback((value) => {
         props.setConsoleItemValue(props.unique_id, "summary_text", value)
     }, []);
 
@@ -1972,23 +1952,6 @@ function BlobItem(props) {
         panel_class += " selected"
     }
 
-
-    const body_style = useMemo(()=>{ return {
-        marginTop: 10,
-        marginLeft: 30,
-        padding: 8,
-        flex: "1 1 0",
-        minWidth: 0,
-        position: 'relative',
-        border: ".5px solid #c7c7c7",
-        overflowY: "scroll"
-    }}, []);
-    const body_shrunk_style = useMemo(()=>{ return {
-        marginLeft: 30,
-        flexGrow: 1,
-        position: "relative"
-    }}, []);
-
     return (
         <ContextMenu content={renderContextMenu()}>
             <div className={panel_class + " d-flex flex-row"} onClick={_consoleItemClick}
@@ -2008,17 +1971,17 @@ function BlobItem(props) {
                 <div className="d-flex flex-column" style={{flex: "1 1 0", minWidth: 0, overflow: "auto"}}>
                     <div className="log-panel-body d-flex flex-row">
                         {props.am_shrunk &&
-                            <div ref={body_ref} style={body_shrunk_style}>
+                            <div className="body-shrunk-style">
                                 <EditableText value={props.summary_text}
                                               onChange={_handleSummaryTextChange}
                                               className="log-panel-summary"/>
                             </div>
                         }
                         {!props.am_shrunk &&
-                            <div ref={body_ref} style={body_style}>
+                            <div className="body-style">
                                 {props.image_data_str && (
                                     <img src={props.image_data_str}
-                                         alt="An Image" />)
+                                         alt="An Image"/>)
                                 }
                             </div>
                         }
@@ -2059,18 +2022,18 @@ function ConsoleCodeItem(props) {
         }
     });
 
-    useLayoutEffect(()=>{
-        return(()=>{
-        if (elRef.current) {
-        const tables = elRef.current.querySelectorAll('table.sortable');
+    useLayoutEffect(() => {
+        return (() => {
+            if (elRef.current) {
+                const tables = elRef.current.querySelectorAll('table.sortable');
 
-        tables.forEach(table => {
-          const parent = table.parentElement;
-          if (parent) {
-            parent.innerHTML = '';
-          }
-        });
-      }
+                tables.forEach(table => {
+                    const parent = table.parentElement;
+                    if (parent) {
+                        parent.innerHTML = '';
+                    }
+                });
+            }
         })
     }, []);
 
@@ -2112,7 +2075,7 @@ function ConsoleCodeItem(props) {
     //     }
     // }
 
-    const _stopMe = useCallback(()=>{
+    const _stopMe = useCallback(() => {
         _stopMySpinner();
         postWithCallback(props.main_id, "stop_console_code", {"console_id": props.unique_id}, null, null, props.main_id)
     }, []);
@@ -2125,35 +2088,35 @@ function ConsoleCodeItem(props) {
         props.setConsoleItemValue(props.unique_id, "console_text", new_code)
     }, []);
 
-    const _handleSummaryTextChange = useCallback((value)=>{
+    const _handleSummaryTextChange = useCallback((value) => {
         props.setConsoleItemValue(props.unique_id, "summary_text", value)
     });
 
-    const _toggleShrink = useCallback(()=>{
+    const _toggleShrink = useCallback(() => {
         props.setConsoleItemValue(props.unique_id, "am_shrunk", !props.am_shrunk);
     }, [props.am_shrunk]);
 
-    const _deleteMe = useCallback(()=>{
+    const _deleteMe = useCallback(() => {
         if (props.show_spinner) {
             _stopMe()
         }
         props.handleDelete(props.unique_id)
     }, [props.show_spinner]);
 
-    const _clearOutput = useCallback(()=>{
+    const _clearOutput = useCallback(() => {
         props.setConsoleItemValue(props.unique_id, "output_dict", {})
     }, []);
 
     const _extraKeys = useMemo(() => {
         return [
-        {key:'Ctrl-Enter', run: () => props.runCodeItem(props.unique_id, true)},
-        {key: 'Cmd-Enter', run: () => props.runCodeItem(props.unique_id, true)},
-        {key: 'Ctrl-c', run: props.addNewCodeItem},
-        {key: 'Ctrl-t', run: props.addNewTextItem},
+            {key: 'Ctrl-Enter', run: () => props.runCodeItem(props.unique_id, true)},
+            {key: 'Cmd-Enter', run: () => props.runCodeItem(props.unique_id, true)},
+            {key: 'Ctrl-c', run: props.addNewCodeItem},
+            {key: 'Ctrl-t', run: props.addNewTextItem},
         ]
     }, []);
 
-    const _getFirstLine = useCallback(()=>{
+    const _getFirstLine = useCallback(() => {
         let re = /^(.*)$/m;
         if (props.console_text == "") {
             return "empty text cell"
@@ -2162,11 +2125,11 @@ function ConsoleCodeItem(props) {
         }
     }, [props.console_text]);
 
-    const _copyMe = useCallback(()=>{
+    const _copyMe = useCallback(() => {
         props.copyCell(props.unique_id)
     }, []);
 
-    const _pasteCell = useCallback(()=>{
+    const _pasteCell = useCallback(() => {
         props.pasteCell(props.unique_id)
     }, []);
 
@@ -2174,19 +2137,19 @@ function ConsoleCodeItem(props) {
         props.selectConsoleItem(props.unique_id, e, callback)
     }
 
-    const _addBlankText = useCallback(()=>{
+    const _addBlankText = useCallback(() => {
         _selectMe(null, () => {
             props.addNewTextItem()
         })
     }, []);
 
-    const _addBlankDivider = useCallback(()=> {
+    const _addBlankDivider = useCallback(() => {
         _selectMe(null, () => {
             props.addNewDivider()
         })
     }, []);
 
-    const _addBlankCode = useCallback(()=>{
+    const _addBlankCode = useCallback(() => {
         _selectMe(null, () => {
             props.addNewCodeItem()
         })
@@ -2196,7 +2159,7 @@ function ConsoleCodeItem(props) {
         props.runCodeItem(props.unique_id)
     }, []);
 
-    const cm = useMemo(()=>{
+    const cm = useMemo(() => {
         // return a single element, or nothing to use default browser behavior
         return (
             <Menu>
@@ -2242,7 +2205,7 @@ function ConsoleCodeItem(props) {
         );
     }, []);
 
-    const _consoleItemClick = useCallback((e)=>{
+    const _consoleItemClick = useCallback((e) => {
         _selectMe(e);
         e.stopPropagation()
     });
@@ -2253,116 +2216,111 @@ function ConsoleCodeItem(props) {
         }
     }, []);
 
-    let panel_clase = props.am_shrunk ? "log-panel log-panel-invisible" : "log-panel log-panel-visible";
+    let panel_class = props.am_shrunk ? "log-panel log-panel-invisible" : "log-panel log-panel-visible";
     if (props.am_selected) {
-        panel_clase += " selected"
+        panel_class += " selected"
     }
     if (props.in_section) {
-        panel_clase += " in-section"
+        panel_class += " in-section"
     }
     let output_dict = {__html: props.output_text};
     let spinner_val = props.running ? null : 0;
 
-    const body_shrunk_style = useMemo(()=>{ return {
-        marginLeft: 30,
-        flexGrow: 1,
-        position: "relative"
-    }}, []);
     // noinspection JSValidateTypes
     return (
         <ContextMenu content={cm}>
-                <div className={panel_clase + " d-flex flex-row"}
-                     ref={elRef}
-                     onClick={_consoleItemClick}
-                     id={props.unique_id}>
-                    <div className="button-div shrink-expand-div d-flex flex-row">
-                        <Shandle dragHandleProps={props.dragHandleProps}/>
-                        {!props.am_shrunk &&
-                            <GlyphButton icon="chevron-down"
-                                         handleClick={_toggleShrink}/>
-                        }
-                        {props.am_shrunk &&
-                            <GlyphButton icon="chevron-right"
-                                         style={GLYPH_BUTTON_STYLE5}
-                                         handleClick={_toggleShrink}/>
-                        }
-                    </div>
-                    {props.am_shrunk &&
-                        <div style={body_shrunk_style} className="d-flex flex-row console-code">
-                            <EditableText
-                                value={props.summary_text ? props.summary_text : _getFirstLine()}
-                                onChange={_handleSummaryTextChange}
-                                className="log-panel-summary code-panel-summary"/>
-                            <div className="button-div float-buttons d-flex flex-row">
-                                <GlyphButton handleClick={_deleteMe}
-                                             tooltip="Delete this item"
-                                             style={empty_style}
-                                             icon={trash_icon}/>
-                            </div>
-                        </div>
-
-                    }
+            <div className={panel_class + " d-flex flex-row"}
+                 ref={elRef}
+                 onClick={_consoleItemClick}
+                 id={props.unique_id}>
+                <div className="button-div shrink-expand-div d-flex flex-row">
+                    <Shandle dragHandleProps={props.dragHandleProps}/>
                     {!props.am_shrunk &&
-                        <Fragment>
-                            <div className="d-flex flex-column"
-                                 style={{flex: "1 1 0", minWidth: 0, overflow: "hidden"}}>
-                                <div className="d-flex flex-row">
-                                    <div className="log-panel-body d-flex flex-row console-code"
-                                         style={{minWidth: 0, overflow: "hidden"}}
-                                    >
-                                        <div className="button-div d-flex pr-1">
-                                            {!props.show_spinner &&
-                                                <GlyphButton handleClick={_codeRunner}
-                                                             intent="success"
-                                                             tooltip="Execute this item"
-                                                             icon="play"/>
-                                            }
-                                            {props.show_spinner &&
-                                                <GlyphButton handleClick={_stopMe}
-                                                             intent="danger"
-                                                             tooltip="Stop this item"
-                                                             icon="stop"/>
-                                            }
-                                        </div>
-                                        <ReactCodemirror6 handleChange={_handleChange}
-                                                         handleFocus={_handleFocus}
-                                                         registerSetFocusFunc={registerSetFocusFunc}
-                                                         readOnly={false}
-                                                         show_line_numbers={true}
-                                                         code_content={props.console_text}
-                                                         extraKeys={_extraKeys}
-                                                         search_term={props.search_string}
-                                                         flex_height={true}
-                                                          no_width={true}
-                                                         tsocket={props.tsocket}
-                                                          container_id={props.main_id}
-                                                         saveMe={null}/>
-                                        <div className="button-div float-buttons d-flex flex-row">
-                                            <GlyphButton handleClick={_deleteMe}
-                                                         tooltip="Delete this item"
-                                                         style={empty_style}
-                                                         icon={trash_icon}/>
-                                            <GlyphButton handleClick={_clearOutput}
-                                                         tooltip="Clear this item's output"
-                                                         style={empty_style}
-                                                         icon={clean_icon}/>
-                                        </div>
-                                    </div>
-                                    {!props.show_spinner &&
-                                        <div className='execution-counter'>[{String(props.execution_count)}]</div>
-                                    }
-                                    {props.show_spinner &&
-                                        <div style={SPINNER_STYLE}>
-                                            <Spinner size={13} value={spinner_val}/>
-                                        </div>
-                                    }
-                                </div>
-                                < div className='log-code-output' style={{width: "100%"}} dangerouslySetInnerHTML={output_dict}/>
-                            </div>
-
-                        </Fragment>
+                        <GlyphButton icon="chevron-down"
+                                     handleClick={_toggleShrink}/>
+                    }
+                    {props.am_shrunk &&
+                        <GlyphButton icon="chevron-right"
+                                     style={GLYPH_BUTTON_STYLE5}
+                                     handleClick={_toggleShrink}/>
                     }
                 </div>
+                {props.am_shrunk &&
+                    <div className="d-flex flex-row console-code body-shrunk-style">
+                        <EditableText
+                            value={props.summary_text ? props.summary_text : _getFirstLine()}
+                            onChange={_handleSummaryTextChange}
+                            className="log-panel-summary code-panel-summary"/>
+                        <div className="button-div float-buttons d-flex flex-row">
+                            <GlyphButton handleClick={_deleteMe}
+                                         tooltip="Delete this item"
+                                         style={empty_style}
+                                         icon={trash_icon}/>
+                        </div>
+                    </div>
+
+                }
+                {!props.am_shrunk &&
+                    <Fragment>
+                        <div className="d-flex flex-column"
+                             style={{flex: "1 1 0", minWidth: 0, overflow: "hidden"}}>
+                            <div className="d-flex flex-row">
+                                <div className="log-panel-body d-flex flex-row console-code"
+                                     style={{minWidth: 0, overflow: "hidden"}}
+                                >
+                                    <div className="button-div d-flex pr-1">
+                                        {!props.show_spinner &&
+                                            <GlyphButton handleClick={_codeRunner}
+                                                         intent="success"
+                                                         tooltip="Execute this item"
+                                                         icon="play"/>
+                                        }
+                                        {props.show_spinner &&
+                                            <GlyphButton handleClick={_stopMe}
+                                                         intent="danger"
+                                                         tooltip="Stop this item"
+                                                         icon="stop"/>
+                                        }
+                                    </div>
+                                    <ReactCodemirror6 handleChange={_handleChange}
+                                                      handleFocus={_handleFocus}
+                                                      registerSetFocusFunc={registerSetFocusFunc}
+                                                      readOnly={false}
+                                                      show_line_numbers={true}
+                                                      code_content={props.console_text}
+                                                      extraKeys={_extraKeys}
+                                                      search_term={props.search_string}
+                                                      flex_size={true}
+                                                      tsocket={props.tsocket}
+                                                      container_id={props.main_id}
+                                                      saveMe={null}/>
+                                    <div className="button-div float-buttons d-flex flex-row">
+                                        <GlyphButton handleClick={_deleteMe}
+                                                     tooltip="Delete this item"
+                                                     style={empty_style}
+                                                     icon={trash_icon}/>
+                                        <GlyphButton handleClick={_clearOutput}
+                                                     tooltip="Clear this item's output"
+                                                     style={empty_style}
+                                                     icon={clean_icon}/>
+                                    </div>
+                                </div>
+                                {!props.show_spinner &&
+                                    <div className='execution-counter'>[{String(props.execution_count)}]</div>
+                                }
+                                {props.show_spinner &&
+                                    <div style={SPINNER_STYLE}>
+                                        <Spinner size={13} value={spinner_val}/>
+                                    </div>
+                                }
+                            </div>
+                            < div className='log-code-output'
+                                  dangerouslySetInnerHTML={output_dict}/>
+                        </div>
+
+                    </Fragment>
+                }
+            </div>
         </ContextMenu>
     )
 }
@@ -2388,12 +2346,10 @@ function ResourceLinkButton(props) {
                     resource_name: props.res_name
                 });
                 props.handleCreateViewer(data)
-            }
-            catch(e){
+            } catch (e) {
                 errorDrawerFuncs.addFromError("Error following link", e)
             }
-        }
-        else {
+        } else {
             window.open($SCRIPT_ROOT + my_view.current + props.res_name)
         }
     }
@@ -2480,7 +2436,7 @@ function ConsoleTextItem(props) {
         }
     }, [props.show_markdown]);
 
-    const _hideMarkdown = useCallback(()=>{
+    const _hideMarkdown = useCallback(() => {
         props.setConsoleItemValue(props.unique_id, "show_markdown", false);
     }, []);
 
@@ -2492,11 +2448,11 @@ function ConsoleTextItem(props) {
         props.setConsoleItemValue(props.unique_id, "summary_text", value)
     }
 
-    const _toggleShrink = useCallback(()=>{
+    const _toggleShrink = useCallback(() => {
         props.setConsoleItemValue(props.unique_id, "am_shrunk", !props.am_shrunk);
     }, [props.am_shrunk]);
 
-    const _deleteMe = useCallback(()=>{
+    const _deleteMe = useCallback(() => {
         props.handleDelete(props.unique_id)
     }, []);
 
@@ -2537,8 +2493,7 @@ function ConsoleTextItem(props) {
             let new_links = [...props.links];
             new_links.push({res_type: result.type, res_name: result.selected_resource});
             props.setConsoleItemValue(props.unique_id, "links", new_links)
-        }
-        catch (e) {
+        } catch (e) {
             if (e != "canceled") {
                 errorDrawerFuncs.addFromError(`Error duplicating resource ${res_name}`, e)
             }
@@ -2609,7 +2564,7 @@ function ConsoleTextItem(props) {
         );
     }, []);
 
-    const _consoleItemClick = useCallback((e)=>{
+    const _consoleItemClick = useCallback((e) => {
         _selectMe(e);
         e.stopPropagation()
     }, []);
@@ -2652,11 +2607,7 @@ function ConsoleTextItem(props) {
                             res_type={link.res_type}
                             res_name={link.res_name}/>
     );
-    const body_shrunk_style = useMemo(()=>{ return {
-        marginLeft: 30,
-        flexGrow: 1,
-        position: "relative"
-    }}, []);
+
     // noinspection JSUnusedAssignment,JSValidateTypes
     return (
         <ContextMenu content={contextMenu}>
@@ -2673,12 +2624,12 @@ function ConsoleTextItem(props) {
                     }
                     {props.am_shrunk &&
                         <GlyphButton icon="chevron-right"
-                                     style={{marginTop: 5}}
+                                     style={GLYPH_BUTTON_STYLE5}
                                      handleClick={_toggleShrink}/>
                     }
                 </div>
                 {props.am_shrunk &&
-                    <div style={body_shrunk_style} className="d-flex flex-row text-box">
+                    <div className="d-flex flex-row text-box body-shrunk-style">
                         <EditableText
                             value={props.summary_text ? props.summary_text : _getFirstLine()}
                             onChange={_handleSummaryTextChange}
@@ -2702,25 +2653,26 @@ function ConsoleTextItem(props) {
                                              tooltip="Convert to/from markdown"
                                              icon="paragraph"/>
                             </div>
-                            <div className="d-flex flex-column" style={{flex: "1 1 0", minWidth: 0,
-                                position: "relative", overflow: "hidden"}}>
+                            <div className="d-flex flex-column" style={{
+                                flex: "1 1 0", minWidth: 0,
+                                position: "relative", overflow: "hidden"
+                            }}>
                                 {!really_show_markdown &&
                                     <Fragment>
                                         <ReactCodemirror6 handleChange={_handleChange}
-                                                         readOnly={false}
-                                                         handleFocus={_handleFocus}
-                                                         registerSetFocusFunc={registerSetFocusFunc}
-                                                         show_line_numbers={false}
-                                                         soft_wrap={true}
-                                                         mode="markdown"
-                                                         code_content={props.console_text}
-                                                         extraKeys={_extraKeys}
-                                                         search_term={props.search_string}
-                                                         flex_height={true}
-                                                          no_width={true}
-                                                         tsocket={props.tsocket}
+                                                          readOnly={false}
+                                                          handleFocus={_handleFocus}
+                                                          registerSetFocusFunc={registerSetFocusFunc}
+                                                          show_line_numbers={false}
+                                                          soft_wrap={true}
+                                                          mode="markdown"
+                                                          code_content={props.console_text}
+                                                          extraKeys={_extraKeys}
+                                                          search_term={props.search_string}
+                                                          flex_size={true}
+                                                          tsocket={props.tsocket}
                                                           container_id={props.main_id}
-                                                         saveMe={null}/>
+                                                          saveMe={null}/>
                                     </Fragment>
                                 }
                                 {really_show_markdown && !hasOnlyWhitespace() &&

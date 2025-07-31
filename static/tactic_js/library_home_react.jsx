@@ -1,8 +1,12 @@
 // noinspection JSCheckFunctionSignatures
 
-import "../tactic_css/tactic.scss";
-import "../tactic_css/tactic_table.scss";
-import "../tactic_css/library_home.scss";
+if (!window.in_context) {
+    import("../tactic_css/tactic.scss");
+    import("../tactic_css/tactic_table.scss");
+    import("../tactic_css/library_home.scss");
+    import("../tactic_css/resource_viewer.scss");
+    import ("../tactic_css/themeable.scss");
+}
 
 import React from "react";
 import { createRoot } from 'react-dom/client';
@@ -91,15 +95,10 @@ function LibraryHomeApp(props) {
         paddingLeft: 0,
         position: "relative"
     };
-    let outer_class = "";
+    let outer_class = "resource-viewer-holder top";
     if (!window.in_context) {
         outer_style.height = "100%";
-        outer_class = "pane-holder  ";
-        if (settingsContext.isDark()) {
-            outer_class = `${outer_class} bp6-dark`;
-        } else {
-            outer_class = `${outer_class} light-theme`;
-        }
+        outer_class = `${outer_class} pane-holder ${settingsContext.isDark() ? "bp6-dark" : "light-theme"}`
     }
     return (
         <Fragment>
@@ -112,7 +111,7 @@ function LibraryHomeApp(props) {
                               user_name={window.username}/>
             }
             <div className={outer_class} ref={top_ref} style={outer_style}>
-                    { all_pane }
+                { all_pane }
             </div>
         </Fragment>
     )
@@ -126,13 +125,8 @@ function _library_home_main() {
     const domContainer = document.querySelector('#library-home-root');
     const root = createRoot(domContainer);
     root.render(
-        <div style={{display: "flex", flexDirection: "column",
-                position: "relative",
-                height: "100%",
-                width: "100%"}}>
-            <LibraryHomeAppPlus tsocket={tsocket}
-                                controlled={false}/>
-        </div>
+        <LibraryHomeAppPlus tsocket={tsocket}
+                            controlled={false}/>
     )
 }
 

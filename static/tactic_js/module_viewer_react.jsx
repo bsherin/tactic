@@ -1,4 +1,10 @@
-import "../tactic_css/tactic.scss";
+
+if (!window.in_context) {
+    import("../tactic_css/tactic.scss");
+    import("../tactic_css/resource_viewer.scss");
+    import ("../tactic_css/themeable.scss");
+}
+
 import React from "react";
 import {Fragment, useState, useEffect, useRef, memo, useMemo, useContext} from "react";
 import {createRoot} from 'react-dom/client';
@@ -28,19 +34,19 @@ function module_viewer_props(data, registerDirtyMethod, finalCallback) {
     if (!window.in_context) {
         window.main_id = resource_viewer_id;
     }
-    var tsocket = new TacticSocket("main", 5000, "module_viewer", resource_viewer_id);
+    const tsocket = new TacticSocket("main", 5000, "module_viewer", resource_viewer_id);
 
     finalCallback({
         resource_viewer_id: resource_viewer_id,
         main_id: resource_viewer_id,
         tsocket: tsocket,
         split_tags: data.mdata.tags == "" ? [] : data.mdata.tags.split(" "),
-        created: data.mdata.datestring,
+        created: data.mdata["datestring"],
         resource_name: data.resource_name,
         the_content: data.the_content,
         notes: data.mdata.notes,
-        icon: data.mdata.additional_mdata.icon,
-        readOnly: data.read_only,
+        icon: data.mdata["additional_mdata"].icon,
+        readOnly: data["read_only"],
         is_repository: data.is_repository,
         registerDirtyMethod: registerDirtyMethod,
     })
@@ -300,7 +306,7 @@ function ModuleViewerApp(props) {
                 title: "Save Module As",
                 field_title: "New Module Name",
                 default_value: "NewModule",
-                existing_names: data.tile_names,
+                existing_names: data["tile_names"],
                 checkboxes: [],
                 handleClose: dialogFuncs.hideModal,
             });
@@ -428,14 +434,9 @@ function ModuleViewerApp(props) {
         paddingLeft: 0,
         position: "relative"
     };
-    // let cc_height = get_new_cc_height();
     let outer_class = "resource-viewer-holder";
     if (!props.controlled) {
-        if (settingsContext.isDark()) {
-            outer_class = outer_class + " bp6-dark";
-        } else {
-            outer_class = outer_class + " light-theme"
-        }
+        outer_class = `${outer_class} ${settingsContext.isDark() ? "bp6-dark" : "light-theme"}`
     }
 
     return (
@@ -462,8 +463,7 @@ function ModuleViewerApp(props) {
                 >
                     <ReactCodemirror6 code_content={code_content}
                                       show_fold_button={true}
-                                      no_width={true}
-                                      flex_height={true}
+                                      flex_size={true}
                                       extraKeys={_extraKeys()}
                                       readOnly={props.readOnly}
                                       handleChange={_handleCodeChange}
@@ -497,18 +497,7 @@ function module_viewer_main() {
         />;
         let domContainer = document.querySelector('#root');
         const root = createRoot(domContainer);
-        root.render(
-            <div style={{
-                display: "flex", flexDirection: "column",
-                position: "relative",
-                height: "100%",
-                width: "100%"
-            }}>
-                {
-                    the_element
-                }
-            </div>
-        )
+        root.render(the_element)
     }
 
     let target = window.is_repository ? "repository_view_module_in_context" : "view_module_in_context";

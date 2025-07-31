@@ -5,7 +5,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.ListViewerApp = ListViewerApp;
 exports.list_viewer_props = list_viewer_props;
-require("../tactic_css/tactic.scss");
 var _react = _interopRequireWildcard(require("react"));
 var _client = require("react-dom/client");
 var _propTypes = _interopRequireDefault(require("prop-types"));
@@ -13,17 +12,15 @@ var _core = require("@blueprintjs/core");
 var _resource_viewer_react_app = require("./resource_viewer_react_app");
 var _tactic_socket = require("./tactic_socket");
 var _communication_react = require("./communication_react");
-var _toaster = require("./toaster.js");
+var _toaster = require("./toaster");
 var _assistant = require("./assistant");
 var _settings = require("./settings");
-var _error_drawer = require("./error_drawer.js");
+var _error_drawer = require("./error_drawer");
 var _utilities_react = require("./utilities_react");
 var _blueprint_navbar = require("./blueprint_navbar");
 var _modal_react = require("./modal_react");
-var _toaster2 = require("./toaster");
 var _sizing_tools = require("./sizing_tools");
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
-function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t3 in e) "default" !== _t3 && {}.hasOwnProperty.call(e, _t3) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t3)) && (i.get || i.set) ? o(f, _t3, i) : f[_t3] = e[_t3]); return f; })(e, t); }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
 function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
@@ -42,6 +39,18 @@ function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t =
 function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
 function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
 function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t3 in e) "default" !== _t3 && {}.hasOwnProperty.call(e, _t3) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t3)) && (i.get || i.set) ? o(f, _t3, i) : f[_t3] = e[_t3]); return f; })(e, t); }
+if (!window.in_context) {
+  Promise.resolve().then(function () {
+    return _interopRequireWildcard(require("../tactic_css/tactic.scss"));
+  });
+  Promise.resolve().then(function () {
+    return _interopRequireWildcard(require("../tactic_css/resource_viewer.scss"));
+  });
+  Promise.resolve().then(function () {
+    return _interopRequireWildcard(require("../tactic_css/themeable.scss"));
+  });
+}
 function list_viewer_props(data, registerDirtyMethod, finalCallback) {
   var resource_viewer_id = (0, _utilities_react.guid)();
   if (!window.in_context) {
@@ -62,21 +71,18 @@ function list_viewer_props(data, registerDirtyMethod, finalCallback) {
     registerDirtyMethod: registerDirtyMethod
   });
 }
-var LIST_PADDING_TOP = 20;
 function ListEditor(props) {
   var top_ref = (0, _react.useRef)(null);
   var tastyle = {
     resize: "horizontal",
-    margin: 2,
     flexGrow: 1
   };
   return /*#__PURE__*/_react["default"].createElement("div", {
-    id: "listarea-container",
+    className: "listarea-container",
     ref: top_ref,
     style: {
       display: "flex",
-      margin: 2,
-      paddingTop: LIST_PADDING_TOP
+      height: "100%"
     }
   }, /*#__PURE__*/_react["default"].createElement(_core.TextArea, {
     cols: "50",
@@ -114,7 +120,7 @@ function ListViewerApp(props) {
     set_resource_name = _useState2[1];
   var settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
-  var statusFuncs = (0, _react.useContext)(_toaster2.StatusContext);
+  var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
   var selectedPane = (0, _react.useContext)(_utilities_react.SelectedPaneContext);
   var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
   (0, _react.useEffect)(function () {
@@ -367,11 +373,7 @@ function ListViewerApp(props) {
   var outer_class = "resource-viewer-holder";
   if (!props.controlled) {
     my_props.resource_name = resource_name;
-    if (settingsContext.isDark()) {
-      outer_class = outer_class + " bp6-dark";
-    } else {
-      outer_class = outer_class + " light-theme";
-    }
+    outer_class = "".concat(outer_class, " pane-holder ").concat(settingsContext.isDark() ? "bp6-dark" : "light-theme");
   }
   return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, !props.controlled && /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
     is_authenticated: window.is_authenticated,
@@ -387,6 +389,7 @@ function ListViewerApp(props) {
     onKeyDown: handleKeyDown,
     onKeyUp: handleKeyUp
   }, /*#__PURE__*/_react["default"].createElement(_resource_viewer_react_app.ResourceViewerApp, _extends({}, my_props, {
+    padTop: true,
     resource_viewer_id: props.resource_viewer_id,
     setResourceNameState: _setResourceNameState,
     refreshTab: props.refreshTab,
@@ -421,15 +424,7 @@ function _list_viewer_main() {
             }));
             var domContainer = document.querySelector('#root');
             var root = (0, _client.createRoot)(domContainer);
-            root.render(/*#__PURE__*/_react["default"].createElement("div", {
-              style: {
-                display: "flex",
-                flexDirection: "column",
-                position: "relative",
-                height: "100%",
-                width: "100%"
-              }
-            }, the_element));
+            root.render(the_element);
           };
           target = window.is_repository ? "repository_view_list_in_context" : "view_list_in_context";
           _context5.n = 1;

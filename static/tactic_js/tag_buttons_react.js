@@ -117,8 +117,6 @@ function TagButtonList(props) {
     _useState6 = _slicedToArray(_useState5, 2),
     contextMenuTagString = _useState6[0],
     setContextMenuTagString = _useState6[1];
-  // const [tagRoot, setTagRoot] = useState("all");
-
   var settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   function _renameTagPrep(old_tag, new_tag_base) {
@@ -147,13 +145,14 @@ function TagButtonList(props) {
     var full_list = _toConsumableArray(prelist);
     full_list.push(name);
     var tag_string = full_list.join("/");
+    var base_class = "library-tree-node";
     return {
       id: tag_string,
       childNodes: [],
       label: name,
       icon: "tag",
       hasCaret: false,
-      className: name == "hidden" ? "hidden-tag" : "",
+      className: "".concat(base_class, " ").concat(name == "hidden" ? "hidden-tag" : ""),
       isSelected: tag_string == props.active_tag,
       isExpanded: props.expanded_tags.includes(tag_string),
       nodeData: {

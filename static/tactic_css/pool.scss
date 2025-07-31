@@ -1,0 +1,30 @@
+
+$pool-breadcrumb-font-size: 14px;
+$pool-tree-label-font-size: 12px;
+$pool-tree-icon-size: 14px;
+$pool-sort-font-size: 12px;
+
+
+
+.pool-breadcrumbs {
+    margin-left: 15px;
+    font-size: $pool-breadcrumb-font-size
+}
+
+.pool-select-tree {
+    padding: 5px;
+    .bp6-tree-node-label, .bp6-tree-node-secondary-label {
+        font-size: $pool-tree-label-font-size;
+    }
+    .bp6-tree-node-secondary-label {
+        white-space: pre-wrap;
+    }
+    .bp6-tree-node-icon svg {
+        height: $pool-tree-icon-size;
+        width: $pool-tree-icon-size;
+    }
+}
+
+.tree-sort-select select {
+    font-size: $pool-sort-font-size
+}

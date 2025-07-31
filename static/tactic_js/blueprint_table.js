@@ -328,7 +328,7 @@ function BlueprintTable(props) {
     height: "100%"
   };
   return /*#__PURE__*/_react["default"].createElement("div", {
-    id: "table-area",
+    className: "table-area",
     ref: top_ref,
     style: style
   }, /*#__PURE__*/_react["default"].createElement(_table.Table, {

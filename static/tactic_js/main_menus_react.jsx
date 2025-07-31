@@ -669,7 +669,7 @@ function ViewMenu(props) {
                 result[table_opt_name] = props.toggleTableShrink;
                 result["divider1"] = "divider";
             }
-            let console_opt_name = props.show_console_pane ? "Hide Log" : "Show Log";
+            let console_opt_name = props.show_console_pane ? "Hide Notebook" : "Show Notebook";
             result[console_opt_name] = _toggleConsole;
         }
         let exports_opt_name = props.show_exports_pane ? "Hide Exports" : "Show Exports";
@@ -688,8 +688,7 @@ function ViewMenu(props) {
                 result[opt_name] = props.table_is_shrunk ? "maximize" : "minimize";
             }
 
-            let console_opt_name = props.show_console_pane ? "Hide Log" : "Show Log";
-            result[console_opt_name] = "code";
+            let console_opt_name = props.show_console_pane ? "Hide Notebook" : "Show Notebook"
         }
         let exports_opt_name = props.show_exports_pane ? "Hide Exports" : "Show Exports";
         result[exports_opt_name] = "variable";

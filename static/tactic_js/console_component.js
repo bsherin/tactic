@@ -18,7 +18,7 @@ var _blueprint_react_widgets = require("./blueprint_react_widgets");
 var _reactCodemirror = require("./react-codemirror6");
 var _sortable_container = require("./sortable_container");
 var _communication_react = require("./communication_react");
-var _blueprint_mdata_fields = require("./blueprint_mdata_fields");
+var _combined_metadata = require("./combined_metadata");
 var _library_pane = require("./library_pane");
 var _menu_utilities = require("./menu_utilities");
 var _search_form = require("./search_form");
@@ -69,10 +69,18 @@ var mdi = (0, _markdownIt["default"])({
   }
 });
 mdi.use(_markdownItLatex["default"]);
-var GLYPH_BUTTON_STYLE = {
+var trash_icon = /*#__PURE__*/_react["default"].createElement(_core.Icon, {
+  icon: "trash",
+  size: 14
+});
+var clean_icon = /*#__PURE__*/_react["default"].createElement(_core.Icon, {
+  icon: "clean",
+  size: 14
+});
+var SHRINK_EXPAND_GLYPH_BUTTON_STYLE = {
   marginLeft: 2
 };
-var GLYPH_BUTTON_STYLE2 = {
+var SHOW_EXPORTS_GLYPH_BUTTON_STYLE2 = {
   marginRight: 5,
   marginTop: 2
 };
@@ -95,15 +103,15 @@ var SPINNER_STYLE = {
 var MB10_STYLE = {
   marginBottom: 10
 };
+var searchable_console_style = {
+  padding: 15
+};
+var sHandleStyle = {
+  marginLeft: 0,
+  marginRight: 6
+};
+var FILTER_SEARCH_RIGHT_MARGIN = 20;
 var empty_style = {};
-var trash_icon = /*#__PURE__*/_react["default"].createElement(_core.Icon, {
-  icon: "trash",
-  size: 14
-});
-var clean_icon = /*#__PURE__*/_react["default"].createElement(_core.Icon, {
-  icon: "clean",
-  size: 14
-});
 function ConsoleComponent(props) {
   props = _objectSpread({
     style: {},
@@ -111,7 +119,6 @@ function ConsoleComponent(props) {
     zoomable: true
   }, props);
   var header_ref = (0, _react.useRef)(null);
-  var body_ref = (0, _react.useRef)(null);
   var filtered_items_ref = (0, _react.useRef)([]);
   var _useState = (0, _react.useState)(null),
     _useState2 = _slicedToArray(_useState, 2),
@@ -1798,12 +1805,14 @@ function ConsoleComponent(props) {
   if (props.mState.console_is_zoomed) {
     console_class = "am-zoomed";
   }
+  console_class = "console-panel ".concat(console_class);
   var outer_style = {
     display: 'flex',
     flexDirection: 'column',
     flex: "1 1 0",
     paddingLeft: 0,
-    position: "relative"
+    position: "relative",
+    margin: 0
   };
   if (!props.mState.console_is_shrunk) {
     outer_style.height = "100%";
@@ -1854,7 +1863,6 @@ function ConsoleComponent(props) {
     };
   });
   return /*#__PURE__*/_react["default"].createElement(_core.Card, {
-    id: "console-panel",
     className: console_class,
     elevation: props.mState.console_is_shrunk ? 0 : 2,
     style: outer_style,
@@ -1864,20 +1872,18 @@ function ConsoleComponent(props) {
   }, /*#__PURE__*/_react["default"].createElement("div", {
     className: "d-flex flex-column justify-content-around "
   }, /*#__PURE__*/_react["default"].createElement("div", {
-    id: "console-heading",
     ref: header_ref,
     style: header_style,
-    className: "d-flex flex-row justify-content-between"
+    className: "console-heading d-flex flex-row justify-content-between"
   }, /*#__PURE__*/_react["default"].createElement("div", {
-    id: "console-header-left",
-    className: "d-flex flex-row"
+    className: "console-header-left d-flex flex-row"
   }, props.mState.console_is_shrunk && props.shrinkable && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
     handleClick: _expandConsole,
-    style: GLYPH_BUTTON_STYLE,
+    style: SHRINK_EXPAND_GLYPH_BUTTON_STYLE,
     icon: "chevron-right"
   }), !props.mState.console_is_shrunk && props.shrinkable && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
     handleClick: _shrinkConsole,
-    style: GLYPH_BUTTON_STYLE,
+    style: SHRINK_EXPAND_GLYPH_BUTTON_STYLE,
     icon: "chevron-down"
   }), /*#__PURE__*/_react["default"].createElement(_assistant.AssistantContext.Provider, {
     value: null
@@ -1899,7 +1905,7 @@ function ConsoleComponent(props) {
     tooltip: "Show export browser",
     size: "small",
     className: "show-exports-but",
-    style: GLYPH_BUTTON_STYLE2,
+    style: SHOW_EXPORTS_GLYPH_BUTTON_STYLE2,
     handleClick: _toggleExports,
     icon: "variable"
   }), !props.mState.console_is_zoomed && props.zoomable && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
@@ -1915,33 +1921,28 @@ function ConsoleComponent(props) {
     handleUnFilter: _handleUnFilter,
     searchNext: _searchNext,
     searchPrevious: _searchPrevious,
-    marginLeft: 2,
-    marginRight: 20,
+    outer_style: {
+      marginRight: 50,
+      marginTop: 10,
+      justifyContent: 'flex-end'
+    },
+    marginLeft: 0,
+    marginRight: FILTER_SEARCH_RIGHT_MARGIN,
     search_helper_text: search_helper_text
   }), !props.mState.console_is_shrunk && show_main_log && /*#__PURE__*/_react["default"].createElement(_searchable_console.SearchableConsole, {
     main_id: props.main_id,
     streaming_host: "host",
     container_id: props.main_id,
-    ref: body_ref,
-    outer_style: {
-      marginLeft: 20,
-      marginRight: 20
-    },
+    outer_style: searchable_console_style,
     showCommandField: false
   }), !props.mState.console_is_shrunk && show_pseudo_log && /*#__PURE__*/_react["default"].createElement(_searchable_console.SearchableConsole, {
     main_id: props.main_id,
     streaming_host: "host",
     container_id: pseudo_tile_id,
-    ref: body_ref,
-    outer_style: {
-      marginLeft: 20,
-      marginRight: 20
-    },
+    outer_style: searchable_console_style,
     showCommandField: true
   }), !props.mState.console_is_shrunk && !show_pseudo_log && !show_main_log && /*#__PURE__*/_react["default"].createElement("div", {
-    id: "console",
-    ref: body_ref,
-    className: "contingent-scroll",
+    className: "console contingent-scroll",
     onClick: _clickConsoleBody,
     style: {
       flexGrow: 1,
@@ -1973,10 +1974,6 @@ function ConsoleComponent(props) {
   })));
 }
 exports.ConsoleComponent = ConsoleComponent = /*#__PURE__*/(0, _react.memo)(ConsoleComponent);
-var sHandleStyle = {
-  marginLeft: 0,
-  marginRight: 6
-};
 function Shandle(props) {
   return /*#__PURE__*/_react["default"].createElement("span", props.dragHandleProps, /*#__PURE__*/_react["default"].createElement(_core.Icon, _extends({
     icon: "drag-handle-vertical"
@@ -2087,9 +2084,7 @@ function DividerItem(props) {
     className: panel_class + " d-flex flex-row",
     onClick: _consoleItemClick,
     id: props.unique_id,
-    style: {
-      marginBottom: 10
-    }
+    style: MB10_STYLE
   }, /*#__PURE__*/_react["default"].createElement("div", {
     className: "button-div shrink-expand-div d-flex flex-row"
   }, /*#__PURE__*/_react["default"].createElement(Shandle, {
@@ -2184,9 +2179,7 @@ function SectionEndItem(props) {
     className: panel_class + " d-flex flex-row",
     onClick: _consoleItemClick,
     id: props.unique_id,
-    style: {
-      marginBottom: 10
-    }
+    style: MB10_STYLE
   }, /*#__PURE__*/_react["default"].createElement(_core.ButtonGroup, {
     variant: "minimal",
     vertical: true,
@@ -2202,7 +2195,6 @@ function SectionEndItem(props) {
 SectionEndItem = /*#__PURE__*/(0, _react.memo)(SectionEndItem);
 function LogItem(props) {
   var last_output_text = (0, _react.useRef)("");
-  var body_ref = (0, _react.useRef)(null);
   (0, _react.useEffect)(function () {
     executeEmbeddedScripts();
     // makeTablesSortable()
@@ -2317,24 +2309,6 @@ function LogItem(props) {
   if (props.is_error) {
     panel_class += " error-log-panel";
   }
-  var body_style = (0, _react.useMemo)(function () {
-    return {
-      marginTop: 10,
-      marginLeft: 30,
-      padding: 8,
-      flex: "1 1 0",
-      minWidth: 0,
-      border: ".5px solid #c7c7c7",
-      overflowY: "scroll"
-    };
-  }, []);
-  var body_shrunk_style = (0, _react.useMemo)(function () {
-    return {
-      marginLeft: 30,
-      flexGrow: 1,
-      position: "relative"
-    };
-  }, []);
   return /*#__PURE__*/_react["default"].createElement(_core.ContextMenu, {
     content: renderContextMenu()
   }, /*#__PURE__*/_react["default"].createElement("div", {
@@ -2363,15 +2337,13 @@ function LogItem(props) {
   }, /*#__PURE__*/_react["default"].createElement("div", {
     className: "log-panel-body d-flex flex-row"
   }, props.am_shrunk && /*#__PURE__*/_react["default"].createElement("div", {
-    ref: body_ref,
-    style: body_shrunk_style
+    className: "body-shrunk-style"
   }, /*#__PURE__*/_react["default"].createElement(_core.EditableText, {
     value: props.summary_text,
     onChange: _handleSummaryTextChange,
     className: "log-panel-summary"
   })), !props.am_shrunk && /*#__PURE__*/_react["default"].createElement("div", {
-    ref: body_ref,
-    style: body_style,
+    className: "body-style",
     dangerouslySetInnerHTML: converted_dict
   }), /*#__PURE__*/_react["default"].createElement("div", {
     className: "button-div d-flex flex-row"
@@ -2385,7 +2357,6 @@ function LogItem(props) {
 LogItem = /*#__PURE__*/(0, _react.memo)(LogItem);
 function BlobItem(props) {
   var last_output_text = (0, _react.useRef)("");
-  var body_ref = (0, _react.useRef)(null);
   (0, _react.useEffect)(function () {
     executeEmbeddedScripts();
     // makeTablesSortable()
@@ -2494,25 +2465,6 @@ function BlobItem(props) {
   if (props.am_selected) {
     panel_class += " selected";
   }
-  var body_style = (0, _react.useMemo)(function () {
-    return {
-      marginTop: 10,
-      marginLeft: 30,
-      padding: 8,
-      flex: "1 1 0",
-      minWidth: 0,
-      position: 'relative',
-      border: ".5px solid #c7c7c7",
-      overflowY: "scroll"
-    };
-  }, []);
-  var body_shrunk_style = (0, _react.useMemo)(function () {
-    return {
-      marginLeft: 30,
-      flexGrow: 1,
-      position: "relative"
-    };
-  }, []);
   return /*#__PURE__*/_react["default"].createElement(_core.ContextMenu, {
     content: renderContextMenu()
   }, /*#__PURE__*/_react["default"].createElement("div", {
@@ -2541,15 +2493,13 @@ function BlobItem(props) {
   }, /*#__PURE__*/_react["default"].createElement("div", {
     className: "log-panel-body d-flex flex-row"
   }, props.am_shrunk && /*#__PURE__*/_react["default"].createElement("div", {
-    ref: body_ref,
-    style: body_shrunk_style
+    className: "body-shrunk-style"
   }, /*#__PURE__*/_react["default"].createElement(_core.EditableText, {
     value: props.summary_text,
     onChange: _handleSummaryTextChange,
     className: "log-panel-summary"
   })), !props.am_shrunk && /*#__PURE__*/_react["default"].createElement("div", {
-    ref: body_ref,
-    style: body_style
+    className: "body-style"
   }, props.image_data_str && /*#__PURE__*/_react["default"].createElement("img", {
     src: props.image_data_str,
     alt: "An Image"
@@ -2767,29 +2717,23 @@ function ConsoleCodeItem(props) {
       _selectMe();
     }
   }, []);
-  var panel_clase = props.am_shrunk ? "log-panel log-panel-invisible" : "log-panel log-panel-visible";
+  var panel_class = props.am_shrunk ? "log-panel log-panel-invisible" : "log-panel log-panel-visible";
   if (props.am_selected) {
-    panel_clase += " selected";
+    panel_class += " selected";
   }
   if (props.in_section) {
-    panel_clase += " in-section";
+    panel_class += " in-section";
   }
   var output_dict = {
     __html: props.output_text
   };
   var spinner_val = props.running ? null : 0;
-  var body_shrunk_style = (0, _react.useMemo)(function () {
-    return {
-      marginLeft: 30,
-      flexGrow: 1,
-      position: "relative"
-    };
-  }, []);
+
   // noinspection JSValidateTypes
   return /*#__PURE__*/_react["default"].createElement(_core.ContextMenu, {
     content: cm
   }, /*#__PURE__*/_react["default"].createElement("div", {
-    className: panel_clase + " d-flex flex-row",
+    className: panel_class + " d-flex flex-row",
     ref: elRef,
     onClick: _consoleItemClick,
     id: props.unique_id
@@ -2805,8 +2749,7 @@ function ConsoleCodeItem(props) {
     style: GLYPH_BUTTON_STYLE5,
     handleClick: _toggleShrink
   })), props.am_shrunk && /*#__PURE__*/_react["default"].createElement("div", {
-    style: body_shrunk_style,
-    className: "d-flex flex-row console-code"
+    className: "d-flex flex-row console-code body-shrunk-style"
   }, /*#__PURE__*/_react["default"].createElement(_core.EditableText, {
     value: props.summary_text ? props.summary_text : _getFirstLine(),
     onChange: _handleSummaryTextChange,
@@ -2854,8 +2797,7 @@ function ConsoleCodeItem(props) {
     code_content: props.console_text,
     extraKeys: _extraKeys,
     search_term: props.search_string,
-    flex_height: true,
-    no_width: true,
+    flex_size: true,
     tsocket: props.tsocket,
     container_id: props.main_id,
     saveMe: null
@@ -2880,9 +2822,6 @@ function ConsoleCodeItem(props) {
     value: spinner_val
   }))), /*#__PURE__*/_react["default"].createElement("div", {
     className: "log-code-output",
-    style: {
-      width: "100%"
-    },
     dangerouslySetInnerHTML: output_dict
   })))));
 }
@@ -2941,7 +2880,7 @@ function ResourceLinkButton(props) {
   }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
     size: "small",
     text: props.res_name,
-    icon: _blueprint_mdata_fields.icon_dict[props.res_type],
+    icon: _combined_metadata.icon_dict[props.res_type],
     variant: "minimal",
     onClick: _goToLink
   }), /*#__PURE__*/_react["default"].createElement(_core.Button, {
@@ -3196,13 +3135,7 @@ function ConsoleTextItem(props) {
       res_name: link.res_name
     });
   });
-  var body_shrunk_style = (0, _react.useMemo)(function () {
-    return {
-      marginLeft: 30,
-      flexGrow: 1,
-      position: "relative"
-    };
-  }, []);
+
   // noinspection JSUnusedAssignment,JSValidateTypes
   return /*#__PURE__*/_react["default"].createElement(_core.ContextMenu, {
     content: contextMenu
@@ -3221,13 +3154,10 @@ function ConsoleTextItem(props) {
     handleClick: _toggleShrink
   }), props.am_shrunk && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
     icon: "chevron-right",
-    style: {
-      marginTop: 5
-    },
+    style: GLYPH_BUTTON_STYLE5,
     handleClick: _toggleShrink
   })), props.am_shrunk && /*#__PURE__*/_react["default"].createElement("div", {
-    style: body_shrunk_style,
-    className: "d-flex flex-row text-box"
+    className: "d-flex flex-row text-box body-shrunk-style"
   }, /*#__PURE__*/_react["default"].createElement(_core.EditableText, {
     value: props.summary_text ? props.summary_text : _getFirstLine(),
     onChange: _handleSummaryTextChange,
@@ -3278,8 +3208,7 @@ function ConsoleTextItem(props) {
     code_content: props.console_text,
     extraKeys: _extraKeys,
     search_term: props.search_string,
-    flex_height: true,
-    no_width: true,
+    flex_size: true,
     tsocket: props.tsocket,
     container_id: props.main_id,
     saveMe: null

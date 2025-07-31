@@ -1,166 +1,285 @@
 @use "blueprint_variables.scss";
 
-$table-border-color: #ddd;
-$table-border-thickness: 1px;
+// ==============================================
+// SECTION: Context Navigator
+// ==============================================
 
-$log-panel-font-color: #616161;
-$log-panel-font-color-dark: white;
+$dark-context-navigator-background: blueprint_variables.$dark-gray2;
+$dark-context-item-holder-background: blueprint_variables.$dark-gray4 !important;
+//$dark-context-navigator-right-border: 1px solid blueprint_variables.$light-gray4;
+$dark-context-navigator-right-border: none;
 
-$context-repository-highlight-color: blueprint_variables.$orange3;
+$light-context-navigator-background: blueprint_variables.$light-gray4;
+$light-context-item-holder-background: blueprint_variables.$light-gray2;
+$light-context-navigator-top-border: .75px solid #c5cbd3;
 
-// For dark mode
-$dark-framing-bg: blueprint_variables.$dark-gray2;
-$dark-pane-bg: blueprint_variables.$dark-gray4;
-$darker-pane-bg: blueprint_variables.$dark-gray3;
 
-$dark-code-bg: blueprint_variables.$dark-gray2;
+// ==============================================
+// SECTION: nav bar
+// ==============================================
 
-$dark-main-table-heading: blueprint_variables.$dark-gray3;
-$dark-table-border-style: $table-border-thickness none;
+$light-navbar-background: blueprint_variables.$light-gray4;
 
-$dark-tile-panel-heading: blueprint_variables.$dark-gray3;
-$dark-tile-bg: blueprint_variables.$dark-gray4;
+// ==============================================
+// SECTION: Status Bar
+// ==============================================
 
-$dark-console-exports-bg: blueprint_variables.$dark-gray3;
-$dark-console-exports-heading: blueprint_variables.$dark-gray4;
+$dark-status-bar-background: blueprint_variables.$dark-gray3;
+$light-status-bar-background: transparent;
 
-$dark-account-pane-bg: blueprint_variables.$dark-gray4;
+// ==============================================
+// SECTION: Combined Metadata
+// ==============================================
 
-$dark-text-panel-background: blueprint_variables.$dark-gray4;
+$dark-metadata-background: blueprint_variables.$dark-gray3;
+$light-metadata-background: blueprint_variables.$white;
 
-$dark-field-background: #1114184d;
-$dark-app-backdrop: blueprint_variables.$gray1;
+$light-notes-field-markdown-output-background: #FFFFFFB2;
+$dark-notes-field-markdown-output-background: #1114184d;
 
-$context-highlight-color: blueprint_variables.$orange4;
+$light-notes-field-markdown-output-color: blueprint_variables.$gray1;
+$dark-notes-field-markdown-output-color: blueprint_variables.$light-gray5;
 
-// for light mode
-$light-framing-bg: blueprint_variables.$light-gray5;
-$light-pane-bg: blueprint_variables.$white;
-$light-pane-darker-bg: blueprint_variables.$light-gray5;
+$light-notes-field-markdown-code-bg: blueprint_variables.$light-gray2;
+$dark-notes-field-markdown-code-bg: blueprint_variables.$dark-gray2;
 
-$light-code-bg: blueprint_variables.$light-gray2;
+$light-notes-field-markdown-code-color: blueprint_variables.$dark-gray1;
+$dark-notes-field-markdown-code-color: blueprint_variables.$gray3;
 
-$light-main-table-heading: blueprint_variables.$light-gray5;
-$table-border-style: $table-border-thickness solid $table-border-color;
+// ==============================================
+// SECTION: Backdrop Color
+// ==============================================
+$dark-backdrop: blueprint_variables.$dark-gray4;
+$light-backdrop: white;
 
-$light-tile-panel-heading: blueprint_variables.$light-gray5;
-$light-tile-bg: blueprint_variables.$white;
+// ==============================================
+// SECTION: Special Icon Colors
+// ==============================================
 
-$light-console-exports-bg: blueprint_variables.$white;
-$light-console-exports-heading: blueprint_variables.$light-gray4;
-$light-console-exports-body-bg: blueprint_variables.$white;
+$light-cube-icon-color: blueprint_variables.$orange3;
+$dark-cube-icon-color: blueprint_variables.$orange5;
 
-$light-account-pane-bg: blueprint_variables.$light-gray4;
-$light-text-panel-background: blueprint_variables.$light-gray5;
+$light-folder-icon-color: blueprint_variables.$orange3;
+$dark-folder-icon-color: blueprint_variables.$orange5;
 
-$light-app-backdrop: blueprint_variables.$light-gray1;
+$light-collection-icon-color: blueprint_variables.$blue3;
+$dark-collection-icon-color: blueprint_variables.$blue5;
 
-$light-context-highlight-color: #383e47;
-$light-highlight-weight: 600;
+$light-project-icon-color: blueprint_variables.$green3;
+$dark-project-icon-color: blueprint_variables.$green5;
 
-// Colors for the resource-specific icons
-.bp6-dark, .light-theme {
-    .floating-button-group {
-        button {
-            background-color: blueprint_variables.$dark-gray5;
-        }
-    }
+$light-tile-icon-color: blueprint_variables.$indigo3;
+$dark-tile-icon-color: blueprint_variables.$indigo5;
+
+$light-list-icon-color: blueprint_variables.$rose3;
+$dark-list-icon-color: blueprint_variables.$rose5;
+
+$light-code-icon-color: blueprint_variables.$lime3;
+$dark-code-icon-color: blueprint_variables.$lime5;
+
+// ==============================================
+// SECTION: Library Tag Button List
+// ==============================================
+
+$light-tag-button-selected-color: blueprint_variables.$blue3;
+$dark-tag-button-selected-color: blueprint_variables.$blue5;
+
+$light-tag-button-selected-background: blueprint_variables.$light-gray5;
+$dark-tag-button-selected-background: blueprint_variables.$dark-gray3;
+
+// ==============================================
+// SECTION: Icon Bar
+// ==============================================
+$light-icon-bar-background: blueprint_variables.$light-gray4;
+$dark-icon-bar-background: blueprint_variables.$dark-gray2;
+
+$light-icon-bar-border: none;
+//$dark-icon-bar-border: 1px solid #fff3;
+$dark-icon-bar-border: none;
+
+// ==============================================
+// SECTION: Main
+// ==============================================
+$light-main-backdrop: blueprint_variables.$light-gray1;
+$dark-main-backdrop: blueprint_variables.$gray1;
+
+$light-main-table-heading-background: #f6f8fa;
+$dark-main-table-heading-background: blueprint_variables.$dark-gray3;
+
+$light-main-table-heading-border-bottom: 1px solid #10161a26;
+$dark-main-table-heading-border-bottom: none;
+
+$light-main-heading-color: blueprint_variables.$gray1;
+
+// ==============================================
+// SECTION: Notebook
+// ==============================================
+
+$light-console-background: white;
+$dark-console-background: blueprint_variables.$dark-gray3;
+
+$light-console-heading: blueprint_variables.$light-gray4;
+$dark-console-heading: blueprint_variables.$dark-gray4;;
+
+$light-text-panel-output-background: blueprint_variables.$light-gray5;
+$dark-text-panel-output-background: blueprint_variables.$dark-gray4;
+
+$light-text-panel-output-font-color: #616161;
+
+$light-text-panel-output-code-bg: blueprint_variables.$light-gray2;
+$dark-text-panel-output-code-bg: blueprint_variables.$dark-gray2;
+
+// ==============================================
+// SECTION: Tiles
+// ==============================================
+
+$light-tile-heading-background: blueprint_variables.$light-gray5;
+$dark-tile-heading-background: blueprint_variables.$dark-gray3;
+
+$light-tile-heading-border-bottom: 1px solid #10161a26;
+$dark-tile-heading-border-bottom: 1px solid #10161a26;
+
+$light-tile-heading-color: blueprint_variables.$gray1;
+
+$dark-tile-body-background: blueprint_variables.$dark-gray4;
+$light-tile-body-background: #ffffff;
+
+// ==============================================
+// SECTION: Import dialog
+// ==============================================
+$light-filepicker-background: blueprint_variables.$light-gray5;
+$dark-filepicker-background: blueprint_variables.$dark-gray4;
+
+// ==============================================
+// SECTION: Account Settings
+// ==============================================
+$light-account-pane-bg: blueprint_variables.$white;
+$dark-account-pane-bg: blueprint_variables.$dark-gray3;
+
+// ==============================================
+// SECTION: Assistant Chat Module
+// ==============================================
+$light-chat-card-bg: blueprint_variables.$light-gray5;
+
+
+// ==============================================
+// ==============================================
+
+
+// ==============================================
+// SECTION: Icon Colors classes
+// ==============================================
+.light-theme {
 
     .context-nav-item, .menu-bar, .combined-metadata, .all-pane {
         .bp6-icon-cube {
-            color: blueprint_variables.$orange5 ! important
+            color: $light-cube-icon-color ! important
         }
 
         .bp6-icon-folder-close {
-            color: blueprint_variables.$orange5 ! important
+            color: $light-folder-icon-color ! important
         }
 
-        .bp6-icon-database, .bp6-icon-th, .bp6-icon-freeform, .bp6-icon-align-left {
-            color: blueprint_variables.$blue5 !important;
+        .bp6-icon-database, .bp6-icon-th, .bp6-icon-align-left {
+            color: $light-collection-icon-color !important;
         }
 
         .bp6-icon-projects, .bp6-icon-console, .bp6-icon-globe-network {
-            color: blueprint_variables.$green5 !important;
+            color: $light-project-icon-color !important;
         }
 
         .bp6-icon-application, .bp6-icon-timeline-line-chart, .bp6-icon-timeline-area-chart {
-            color: blueprint_variables.$indigo5 !important;
+            color: $light-tile-icon-color !important;
         }
 
         .bp6-icon-list {
-            color: blueprint_variables.$rose5 !important;
+            color: $light-list-icon-color !important;
         }
 
         .bp6-icon-code {
-            color: blueprint_variables.$lime5 !important;
+            color: $light-code-icon-color !important;
         }
     }
 }
 
-/// light theme
+.bp6-dark {
+
+    .context-nav-item, .menu-bar, .combined-metadata, .all-pane {
+        .bp6-icon-cube {
+            color: $dark-cube-icon-color ! important
+        }
+
+        .bp6-icon-folder-close {
+            color: $dark-folder-icon-color ! important
+        }
+
+        .bp6-icon-database, .bp6-icon-th, .bp6-icon-align-left {
+            color: $dark-collection-icon-color !important;
+        }
+
+        .bp6-icon-projects, .bp6-icon-console, .bp6-icon-globe-network {
+            color: $dark-project-icon-color !important;
+        }
+
+        .bp6-icon-application, .bp6-icon-timeline-line-chart, .bp6-icon-timeline-area-chart {
+            color: $dark-tile-icon-color !important;
+        }
+
+        .bp6-icon-list {
+            color: $dark-list-icon-color !important;
+        }
+
+        .bp6-icon-code {
+            color: $dark-code-icon-color !important;
+        }
+    }
+}
+
+// ==============================================
+// SECTION: Light theme classes
+// ==============================================
 
 .light-theme {
 
+    &.pane-holder{
+        background-color: $light-backdrop;
+    }
+
+
     .verticalIconBar {
         bottom: 0;
-        background-color: $light-framing-bg;
+        background-color: $light-icon-bar-background;
+        border-left: $light-icon-bar-border;
     }
 
     &.bp6-navbar {
         box-shadow: none;
+        background-color: $light-navbar-background;
     }
 
     &.main-outer {
-        background-color: $light-app-backdrop
+        background-color: $light-main-backdrop
     }
 
     .context-navigator {
-        background-color: $light-framing-bg;
-        color: white;
-        border-top: .75px solid #c5cbd3;
+        background-color: $light-context-navigator-background;
+        border-top: $light-context-navigator-top-border;
     }
 
-    .context-sortable-nav-item, .context-item-unsortable .context-nav-item  {
-        background-color: blueprint_variables.$dark-gray4 !important;
-    }
-
-    .context-sortable-nav-item {
-        color: blueprint_variables.$dark-gray1;
-
-        .bp6-icon {
-            color: blueprint_variables.$dark-gray4
-        }
-
-        .context-close-button:hover {
-            color: blueprint_variables.$red5;
-        }
-
-        &.selected-tab-button {
-            color: $light-context-highlight-color !important;
-            font-weight: $light-highlight-weight;
-
-            .repository-highlight {
-                color: $context-repository-highlight-color
-            }
-
-            .context-close-button .bp6-icon {
-                color: $light-context-highlight-color;
-
-            }
-        }
+    .context-item-holder {
+        background-color: $light-context-item-holder-background;
     }
 
 
-    #main-panel {
+    .main-panel {
         .main-heading {
-            color: blueprint_variables.$gray1;
-            background-color: #f6f8fa;
-            border-bottom: 1px solid #10161a26;
+            color: $light-main-heading-color;
+            background-color: $light-main-table-heading-background;
+            border-bottom: $light-main-table-heading-border-bottom;
         }
     }
 
-    #table-area {
-        border-right: $table-border-style;
+    .table-area {
 
         mark {
             background-color: #cebde6
@@ -173,20 +292,22 @@ $light-highlight-weight: 600;
         border-bottom: 0.75px solid #c5cbd3;
     }
 
-    &.resource-viewer-holder, &.merge-viewer-outer &.login-body {
-        background-color: $light-pane-bg;
+    &.merge-viewer-outer &.login-body {
+        background-color: $light-backdrop;
     }
 
     &.account-settings {
-        background-color: $light-pane-bg;
+        background-color: $light-account-pane-bg;
     }
 
-    &.pane-holder, &.library-pane-holder {
-        background-color: $light-pane-bg;
+
+    .combined-metadata {
+        box-shadow: none;
+        background-color: $light-metadata-background;
     }
 
-    .combined-metadata, div.filepicker {
-        background-color: $light-pane-darker-bg
+    div.filepicker {
+        background-color: $light-filepicker-background;
     }
 
     .combined-metadata {
@@ -196,19 +317,19 @@ $light-highlight-weight: 600;
     }
 
     .notes-field-markdown-output {
-        background: rgba(255, 255, 255, 0.7);
-        color: blueprint_variables.$gray1;
+        background: $light-notes-field-markdown-output-background;
+        color: $light-notes-field-markdown-output-color;
 
         code {
-            background-color: blueprint_variables.$light-gray2;
+            background-color: $light-notes-field-markdown-code-bg;
             color: blueprint_variables.$dark-gray4;
             padding-left: 2px;
             padding-right: 2px;
         }
 
         pre {
-            background-color: blueprint_variables.$light-gray2;
-            color: blueprint_variables.$dark-gray4;
+            background-color: $light-notes-field-markdown-code-bg;
+            color: $light-notes-field-markdown-code-color;
             padding: 4px;
         }
     }
@@ -216,14 +337,14 @@ $light-highlight-weight: 600;
     .tactic-tag-button-list {
         .bp6-tree-node-selected {
             .bp6-tree-node-content {
-                background-color: $light-pane-bg;
-                color: blueprint_variables.$blue3;
+                background-color: $light-tag-button-selected-background;
+                color: $light-tag-button-selected-color;
                 font-weight: 900
             }
 
             .bp6-icon {
-                background-color: $light-pane-bg;
-                color: blueprint_variables.$blue3 !important;
+                background-color: $light-tag-button-selected-background;
+                color: $light-tag-button-selected-color !important;
                 font-weight: 900
             }
         }
@@ -241,14 +362,6 @@ $light-highlight-weight: 600;
         background-color: blueprint_variables.$orange5;
     }
 
-    #creator-root {
-        .light-theme {
-            .CodeMirror-gutters {
-                background-color: $light-pane-darker-bg;
-            }
-        }
-    }
-
     .searchable-console {
         mark {
             background-color: #cebde6
@@ -256,13 +369,13 @@ $light-highlight-weight: 600;
     }
 
     .tile-panel-heading {
-        color: blueprint_variables.$gray1;
-        background-color: $light-tile-panel-heading;
-        border-bottom: 1px solid #10161a26;
+        color: $light-tile-heading-color;
+        background-color: $light-tile-heading-background;
+        border-bottom: $light-tile-heading-border-bottom;
     }
 
     .tile-panel {
-        background-color: $light-tile-bg !important;
+        background-color: $light-tile-body-background !important;
     }
 
     .tile-form-divider {
@@ -276,16 +389,16 @@ $light-highlight-weight: 600;
     .chat-module {
         .bp6-card-list {
             .bp6-card {
-                background-color: $light-pane-darker-bg;
+                background-color: $light-chat-card-bg;
             }
         }
     }
 
     .chat-response, .text-panel-output {
-        background-color: $light-text-panel-background;
+        background-color: $light-text-panel-output-background;
 
         code {
-            background-color: $light-code-bg;
+            background-color: $light-text-panel-output-code-bg;
             color: inherit;
             padding-left: 2px;
             padding-right: 2px;
@@ -293,29 +406,21 @@ $light-highlight-weight: 600;
 
         pre {
             padding: 10px;
-            background-color: $light-code-bg;
+            background-color: $light-text-panel-output-code-bg;
             overflow: scroll
         }
     }
 
 
-    #console, #exports-panel {
-        background-color: $light-console-exports-bg;
+    .console, .exports-panel {
+        background-color: $light-console-background;
     }
 
-    #console-search-form {
-        background-color: $light-console-exports-bg
+    .console-heading, .exports-heading, .exports-footing {
+        background-color: $light-console-heading !important;
     }
 
-    #console-heading, #exports-heading, #exports-footing {
-        background-color: $light-console-exports-heading !important;
-    }
-
-    #exports-body {
-        background-color: $light-console-exports-body-bg;
-    }
-
-    #selected-export {
+    .selected-export {
         color: blueprint_variables.$gray1;
     }
 
@@ -324,7 +429,7 @@ $light-highlight-weight: 600;
     }
 
     .log-panel-body {
-        color: $log-panel-font-color !important;
+        color: $light-text-panel-output-font-color!important;
     }
 
     .cm-editor {
@@ -337,13 +442,6 @@ $light-highlight-weight: 600;
             border: 1px solid #c7c7c7 !important;
         }
 
-        .CodeMirror-lines {
-            background-color: $light-pane-darker-bg !important;
-        }
-
-        .CodeMirror-gutters {
-            background-color: $light-pane-darker-bg !important;
-        }
     }
 
     .CodeMirror {
@@ -361,109 +459,84 @@ $light-highlight-weight: 600;
 
 }
 
-///// Dark theme
+// ==============================================
+// SECTION: Dark Theme Classes
+// ==============================================
 
 .bp6-dark {
 
     .verticalIconBar {
         bottom: 0;
-        background-color: $dark-framing-bg;
-        border-left: 1px solid #fff3;
+        background-color: $dark-icon-bar-background;
+        border-left: $dark-icon-bar-border;
     }
 
 
     &.main-outer {
-        background-color: $dark-app-backdrop;
+        background-color: $dark-main-backdrop;
     }
 
     .context-navigator {
-        background-color: $dark-framing-bg;
-        color: white;
-        border-right: 1px solid blueprint_variables.$light-gray4;
+        background-color: $dark-context-navigator-background;
+        border-right: $dark-context-navigator-right-border;
     }
 
-    .context-sortable-nav-item {
-        color: white;
-
-        .context-close-button:hover {
-            color: blueprint_variables.$red5;
-        }
+    .context-item-holder {
+        background-color: $dark-context-item-holder-background;
     }
 
-    .context-sortable-nav-item, .context-item-unsortable .context-nav-item {
-        background-color: blueprint_variables.$dark-gray4 !important;
-        &.selected-tab-button {
-            color: $context-highlight-color !important;
-
-            .repository-highlight {
-                color: $context-repository-highlight-color
-            }
-
-            .context-close-button .bp6-icon {
-                color: $context-highlight-color;
-
-            }
-        }
-    }
-
-
-    #main-panel {
+    .main-panel {
         .main-heading {
-            background-color: $dark-main-table-heading;
-            border-bottom: 1px solid #10161a26;
+            background-color: $dark-main-table-heading-background;
+            border-bottom: $dark-main-table-heading-border-bottom;
         }
     }
 
-    #table-area {
-        border-right: $dark-table-border-style;
+    .table-area {
 
         mark {
             background-color: #cebde6
         }
     }
 
-    &.resource-viewer-holder, &.merge-viewer-outer, &.login-body {
-        background-color: $darker-pane-bg
+    &.merge-viewer-outer, &.login-body {
+        background-color: $dark-backdrop;
     }
 
     &.menu-bar {
-        box-shadow: inset 0 0 0 1px #ffffff33, 0 1px 1px 0 #11141866;
+        //box-shadow: inset 0 0 0 1px #ffffff33, 0 1px 1px 0 #11141866;
+        box-shadow: none;
     }
 
     &.account-settings {
-        background-color: $darker-pane-bg
+        background-color: $dark-account-pane-bg;
     }
 
     &.pane-holder {
-        background-color: $dark-pane-bg
+        background-color: $dark-backdrop;
     }
 
-    &.library-pane-holder {
-        background-color: $darker-pane-bg
-    }
-
-    .combined-metadata, div.filepicker, #options-pane, #exports-pane {
-        background-color: $darker-pane-bg;
+    .combined-metadata, .exports-pane {
+        box-shadow: none;
+        background-color: $dark-metadata-background;
     }
 
     div.filepicker {
-        background-color: $dark-pane-bg;
+        background-color: $dark-filepicker-background;
     }
 
     .notes-field-markdown-output {
-        background-color: $dark-field-background;
-        color: blueprint_variables.$light-gray5;
+        background-color: $dark-notes-field-markdown-output-background;
+        //color: $dark-notes-field-markdown-output-color;
 
         code {
-            background-color: $dark-code-bg;
-            color: $dark-app-backdrop;
+            background-color: $dark-notes-field-markdown-code-bg;
             padding-left: 2px;
             padding-right: 2px;
         }
 
         pre {
-            background-color: $dark-code-bg;
-            color: $dark-app-backdrop;
+            background-color: $dark-notes-field-markdown-code-bg;
             padding: 4px;
         }
     }
@@ -471,14 +544,14 @@ $light-highlight-weight: 600;
     .tactic-tag-button-list {
         .bp6-tree-node-selected {
             .bp6-tree-node-content {
-                background-color: $darker-pane-bg;
-                color: blueprint_variables.$blue5;
+                background-color: $dark-tag-button-selected-background;
+                color: $dark-tag-button-selected-color;
                 font-weight: 900
             }
 
             .bp6-icon {
-                background-color: $dark-pane-bg;
-                color: blueprint_variables.$blue5 !important;
+                background-color: $dark-tag-button-selected-background;
+                color: $dark-tag-button-selected-color;
                 font-weight: 900
             }
         }
@@ -499,18 +572,6 @@ $light-highlight-weight: 600;
         color: black !important;
     }
 
-    .CodeMirror-merge-gap {
-        background: blueprint_variables.$gray1;
-    }
-
-    .CodeMirror-merge-r-chunk {
-        background: $darker-pane-bg;
-    }
-
-    .CodeMirror-merge-r-connect {
-        fill: $darker-pane-bg;
-    }
-
     .searchable-console {
         mark {
             background-color: #cebde6
@@ -518,14 +579,14 @@ $light-highlight-weight: 600;
     }
 
     .tile-panel-heading {
-        background-color: $dark-tile-panel-heading;
-        border-bottom: 1px solid #10161a26;
+        background-color: $dark-tile-heading-background;
+        border-bottom: $light-tile-heading-border-bottom;
         margin-right: 2px;
         margin-left: 2px;
     }
 
     .tile-panel {
-        background-color: $dark-tile-bg;
+        background-color: $dark-tile-body-background;
     }
 
     .tile-form-divider {
@@ -537,10 +598,10 @@ $light-highlight-weight: 600;
     }
 
     .chat-response, .text-panel-output {
-        background-color: $dark-text-panel-background;
+        background-color: $dark-text-panel-output-background;
 
         code {
-            background-color: $dark-code-bg;
+            background-color: $dark-text-panel-output-code-bg;
             color: inherit;
             padding-left: 2px;
             padding-right: 2px;
@@ -548,25 +609,17 @@ $light-highlight-weight: 600;
 
         pre {
             padding: 10px;
-            background-color: $dark-code-bg;
+            background-color: $dark-text-panel-output-code-bg;
             overflow: scroll
         }
     }
 
-    #console, #exports-panel {
-        background-color: $dark-console-exports-bg;
-        margin-left: 2px;
-        margin-right: 2px;
+    .console, .console-panel, .exports-panel {
+        background-color: $dark-console-background;
     }
 
-    #console-search-form, #console-panel {
-        background-color: $dark-console-exports-bg;
-    }
-
-    #console-heading, #exports-heading, #exports-footing {
-        background-color: $dark-console-exports-heading !important;
-        margin-left: 2px;
-        margin-right: 2px;
+    .console-heading, .exports-heading, .exports-footing {
+        background-color: $dark-console-heading !important;
     }
 
     caption {
@@ -581,16 +634,10 @@ $light-highlight-weight: 600;
 
 .status-holder {
     &.light-theme {
-        background-color: transparent;
+        background-color: $light-status-bar-background;
     }
 
     &.bp6-dark {
-        background-color: #2f343c;
-    }
-}
-
-#main-root {
-    .status-holder.light-theme {
-        background-color: blueprint_variables.$light-gray1;
+        background-color: $dark-status-bar-background;
     }
 }

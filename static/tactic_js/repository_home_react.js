@@ -7,6 +7,7 @@ exports.RepositoryHomeApp = RepositoryHomeApp;
 require("../tactic_css/tactic.scss");
 require("../tactic_css/tactic_table.scss");
 require("../tactic_css/library_home.scss");
+require("../tactic_css/resource_viewer.scss");
 var _react = _interopRequireWildcard(require("react"));
 var _client = require("react-dom/client");
 var _tactic_socket = require("./tactic_socket");
@@ -99,7 +100,7 @@ function RepositoryHomeApp(props) {
     paddingLeft: 0,
     position: "relative"
   };
-  var outer_class = "library-pane-holder  ";
+  var outer_class = "library-pane-holder";
   if (settingsContext.isDark()) {
     outer_class = "".concat(outer_class, " bp6-dark");
   } else {

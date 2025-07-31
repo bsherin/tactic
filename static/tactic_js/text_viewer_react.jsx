@@ -1,5 +1,8 @@
 
-import "../tactic_css/tactic.scss";
+if (!window.in_context) {
+    import("../tactic_css/tactic.scss");
+    import ("../tactic_css/themeable.scss");
+}
 
 import React from "react";
 import {Fragment, useState, useEffect, useRef, memo, useMemo, useContext} from "react";
@@ -54,13 +57,12 @@ function TextEditor(props) {
 
     let tastyle = {
         resize: "horizontal",
-        margin: 2,
         height: "100%"
     };
     return (
         <div id="textarea-container"
              ref={top_ref}
-             style={{marginTop: 10, marginBottom: 20, height: "100%", position: "relative"}}>
+             style={{height: "100%", position: "relative"}}>
             <TextArea
                 cols="150"
                 style={tastyle}
@@ -252,11 +254,7 @@ function TextViewerApp(props) {
     let outer_class = "resource-viewer-holder";
     if (!props.controlled) {
         my_props.resource_name = resource_name;
-        if (settingsContext.isDark()) {
-            outer_class = outer_class + " bp6-dark";
-        } else {
-            outer_class = outer_class + " light-theme"
-        }
+        outer_class = `${outer_class} ${settingsContext.isDark() ? "bp6-dark" : "light-theme"}`
     }
     return (
         <Fragment>
@@ -271,6 +269,7 @@ function TextViewerApp(props) {
                 tabIndex="0" onKeyDown={handleKeyDown} onKeyUp={handleKeyUp} >
                 <ResourceViewerApp {...my_props}
                                    resource_viewer_id={props.resource_viewer_id}
+                                   padTop={true}
                                    setResourceNameState={_setResourceNameState}
                                    refreshTab={props.refreshTab}
                                    closeTab={props.closeTab}
@@ -308,14 +307,7 @@ async function text_viewer_main() {
         />;
         const domContainer = document.querySelector('#root');
         const root = createRoot(domContainer);
-        root.render(
-            <div style={{display: "flex", flexDirection: "column",
-                            position: "relative",
-                            height: "100%",
-                            width: "100%"}}>
-                {the_element}
-            </div>
-        )
+        root.render(the_element)
     }
 
     let target = window.is_repository ? "repository_view_list_in_context" : "view_list_in_context";

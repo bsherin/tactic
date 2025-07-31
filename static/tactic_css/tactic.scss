@@ -4,20 +4,49 @@
 @import "~@blueprintjs/icons/lib/css/blueprint-icons.css";
 @import "~@blueprintjs/select/lib/css/blueprint-select.css";
 @import 'markdown-it-latex/dist/index.css';
-@include meta.load-css("themeable.scss");
+
+
+$codemirror-font-size: 14px;
+$codemirror-font-family: Courier, Courier New, serif;
 
 /* main navbar */
 
-$search-highlight-color: blueprint_variables.$gold5;
-$sortable-table-header-background: #eee;
-$sortable-table-header-text-color: #666666;
+$project-outer-padding: 10px;
+
+$separator-padding: 7px;
+$separator-padding-half: 3.5px;
+
+.horizontal-left-pane {
+    padding-right: $separator-padding-half
+}
+
+.horizontal-right-pane {
+    padding-left: $separator-padding-half
+}
+
+.vertical-top-pane {
+    padding-bottom: $separator-padding-half;
+}
+
+.vertical-bottom-pane {
+    padding-top: $separator-padding-half;
+}
+
+.project-outer-padding {
+    padding: $project-outer-padding;
+}
 
 .focus-red:focus {
     border: 1px solid red;
 }
 
+
+html,body {
+    height:100%;
+}
+
 body {
-    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    //font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
     overflow: hidden;
     position: fixed;
     width: 100%;
@@ -25,12 +54,15 @@ body {
 
 .bp6-drawer {
     margin-right: 40px;
-    margin-top: 80px
+    margin-top: 80px;
+    z-index: 5
 }
 
+
+
 .CodeMirror, .cm-editor, .cm-scroller {
-    font-size: 14px;
-    font-family: Courier, Courier New !important;
+    font-size: $codemirror-font-size !important;
+    font-family: $codemirror-font-family !important;
     box-shadow: none !important;
 }
 
@@ -39,74 +71,13 @@ body {
     height: 100%;
 }
 
-.CodeMirror-hints {
-    background: blueprint_variables.$light-gray2 !important;
-    max-width: 500px;
-    overflow-x: hidden;
-}
-
-.CodeMirror-hint {
-    white-space: pre-wrap !important;
-    text-indent: -20px;
-    padding-left: 20px !important;
-
-    &.CodeMirror-hint-active {
-        background: blueprint_variables.$gray2;
-    }
-
-    &.CodeMirror-hint-active .option-hint{
-        background: blueprint_variables.$green2;
-        color: white;
-    }
-
-    .option-hint {
-        //font-style: italic;
-    }
-    .api-option-icon {
-        font-size: 10px !important;
-        text-indent: 0px !important;
-    }
-
-    &.CodeMirror-hint-active .api-hint-name {
-        color: white;
-        background: blueprint_variables.$dark-gray5;
-        font-weight: 900;
-    }
-
-    &.CodeMirror-hint-active.library-hint {
-        color: white;
-        background: blueprint_variables.$dark-gray5;
-        font-weight: 900;
-    }
-
-    &.CodeMirror-hint-active .api-hint-args {
-        color: white;
-        background: blueprint_variables.$dark-gray5;
-        font-weight: normal;
-    }
-
-    .api-hint-name {
-        color: blueprint_variables.$dark-gray5;
-        font-weight: 900;
-    }
-
-    &.library-hint {
-        color: blueprint_variables.$dark-gray5;
-        font-weight: 900;
-    }
-
-    .api-hint-args {
-        color: blueprint_variables.$dark-gray5;
-        font-weight: normal;
-    }
-}
-
 table {
     caption {
         caption-side: top;
     }
 }
 
+// This table-striped might not do anything currently unless the user uses this style
 .table-striped tbody tr:nth-of-type(odd) {
     background-color: #f9f9f9;
 }
@@ -120,13 +91,20 @@ table {
     height: 100%
 }
 
-
-.main-outer {
-    height: 100%
-}
-
-
 /* General resources */
+
+
+.bp6-button-group, .context-item-holder {
+    .show-on-hover {
+        opacity: 0 !important;
+    }
+
+    &:hover {
+        .show-on-hover {
+            opacity: 100 !important;
+        }
+    }
+}
 
 .contingent-scroll {
     overflow: hidden;
@@ -135,15 +113,6 @@ table {
     }
 }
 
-.vertical-button {
-  align-items: center;
-  transform: rotate(90deg); /* Rotate the entire button */
-  transform-origin: right center;
-  height: 100px; /* Adjust height as needed */
-  width: 50px; /* Adjust width as needed */
-  justify-content: center;
-  text-align: center;
-}
 
 .verticalIconBar {
     position: fixed;
@@ -154,6 +123,7 @@ table {
     padding-top: 30px;
     flex-direction: column;
     align-items: center;
+    z-index: 10
   }
 
   .iconBarButton {
@@ -182,33 +152,6 @@ table {
 
 /* navbar */
 
-#menu-area {
-    .dropdown-toggle {
-        padding-right: 6px;
-        padding-left: 6px;
-        color: black;
-        border: none;
-        background-color: transparent;
-    }
-}
-
-.toolbar-button-group {
-    margin-left: 5px;
-    .bp6-button.bp6-large.bp-toolbar-button {
-        padding: 5px 12px
-    }
-}
-
-.bp-toolbar-button {
-    .bp6-icon {
-        margin-right: 0;
-        margin-bottom: 4px;
-        margin-top: 2px
-    }
-    &:focus {
-        outline: none
-    }
-}
 
 .bp6-button:focus {
     outline: none
@@ -252,15 +195,8 @@ table {
     padding-top: 10px;
   }
 
-#listarea-container {
-    height: 100%
-}
 
-.res-viewer-resizer {
-    display: inline-block;
-    vertical-align: top
-}
-
+// codemirror
 .CodeMirror {
     border: 1px solid #eee;
     height: auto;
@@ -281,6 +217,32 @@ table {
     }
 }
 
+// auto-complete
+
+.cm-completionIcon-suggestion {
+    &:after {
+        content: "Ai"
+    }
+}
+
+.cm-completionIcon-tactic {
+    &:after {
+        content: "Tt"
+    }
+}
+
+.completion-section {
+    margin-top: 6px;
+    font-size: 12px;
+    font-weight: bold;
+}
+.cm-completion-ai {
+    font-style: italic;
+    opacity: 0.8;
+}
+
+
+
 .combined-metadata {
     .bp6-form-content {
         width: 100%;
@@ -300,11 +262,6 @@ table {
 
 
 /* Other*/
-
-.highlight {
-    background: $search-highlight-color;
-}
-
 
 .monospace {
     font-family: monospace
@@ -368,48 +325,7 @@ table {
     margin: 10px
 }
 
-.drop-zone {
-  //width: 300px;
-  //height: 200px;
-  //border: 2px dashed #ccc;
-  //text-align: center;
-  //padding: 20px;
-  //margin: 20px auto;
-  //transition: border 0.3s ease-in-out;
-}
-
-.drop-zone.drag-over {
-  // border: 1px dashed $gray1;
-    background-color: blueprint_variables.$dark-gray5
-}
 
 
-// auto-complete
-
-.cm-completionIcon-suggestion {
-    &:after {
-        content: "Ai"
-    }
-}
-
-.cm-completionIcon-tactic {
-    &:after {
-        content: "Tt"
-    }
-}
-
-completion-section {
-    margin-top: 6px;
-    font-size: 12px;
-    font-weight: bold;
-}
-.cm-completion-ai {
-    font-style: italic;
-    opacity: 0.8;
-}
-
-html,body {
-    height:100%;
-}
 
 

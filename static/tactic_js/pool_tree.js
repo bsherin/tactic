@@ -395,17 +395,17 @@ function PoolTree(props) {
             });
           case 1:
             data = _context.v;
-            if (data.dtree) {
+            if (data["dtree"]) {
               _context.n = 2;
               break;
             }
             (0, _toaster.doFlash)("No pool storage available for this account.");
             return _context.a(2);
           case 2:
-            data.dtree[0].isExpanded = true;
+            data["dtree"][0].isExpanded = true;
             dispatch({
               type: "REPLACE_ALL",
-              new_nodes: data.dtree
+              new_nodes: data["dtree"]
             });
             if (props.value) {
               pushCallback(function () {
@@ -486,7 +486,7 @@ function PoolTree(props) {
       });
       props.tsocket.attachListener("pool-file-event", function (data) {
         var event_type = data["event_type"];
-        var fileDict = data.file_dict;
+        var fileDict = data["file_dict"];
         fileDict.id = fileDict.fullpath;
         switch (event_type) {
           case "modify":
@@ -797,11 +797,11 @@ function CustomTree(props) {
       });
     } else if (props.sortField == "size") {
       newList.sort(function (a, b) {
-        return a.size_for_sort - b.size_for_sort;
+        return a["size_for_sort"] - b["size_for_sort"];
       });
     } else {
       newList.sort(function (a, b) {
-        return a.updated_for_sort - b.updated_for_sort;
+        return a["updated_for_sort"] - b["updated_for_sort"];
       });
     }
     if (props.sortDirection == "descending") {

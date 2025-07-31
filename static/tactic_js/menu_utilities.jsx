@@ -5,7 +5,7 @@ import {Icon, MenuDivider, Menu, MenuItem, Popover, Navbar, Button, PopoverPosit
 
 import {SettingsContext} from "./settings"
 import {GlyphButton} from "./blueprint_react_widgets";
-import {SelectedPaneContext, useStateAndRef} from "./utilities_react";
+import {SelectedPaneContext} from "./utilities_react";
 import {ErrorDrawerContext} from "./error_drawer";
 import {AssistantContext} from "./assistant";
 import {MetadataContext} from "./metadata_drawer";
@@ -203,49 +203,6 @@ function IconBarButton(props) {
     return (
         <Button icon={<Icon icon={props.icon} size={18}/>}
                 variant="minimal" size="large" className="iconBarButton" onClick={props.onClick}/>
-    )
-}
-
-function DrawerButtonGroup(props) {
-    const [visible, setVisible, visibleRef] = useStateAndRef(false);
-
-    const assistantDrawerFuncs = useContext(AssistantContext);
-
-    useEffect(() => {
-        const handleMouseMove = (event) => {
-            const {clientX} = event;
-            const windowWidth = window.innerWidth;
-            if (windowWidth - clientX < 50) { // Show buttons when near the right edge (50px threshold)
-                if (!visibleRef.current) setVisible(true);
-            } else {
-                if (visibleRef.current) setVisible(false);
-            }
-        };
-
-        window.addEventListener('mousemove', handleMouseMove);
-
-        return () => {
-            window.removeEventListener('mousemove', handleMouseMove);
-        };
-    }, []);
-
-    return (
-        <ButtonGroup className={`floating-button-group ${visible ? 'visible' : ''}`}
-                     size="large"
-                     alignText={"left"}
-                     vertical={false}>
-            {props.showErrorDrawerButton &&
-                <ErrorDrawerButton/>
-            }
-            {assistantDrawerFuncs && assistantDrawerFuncs.showAssistantDrawerButton &&
-                <AssistantDrawerButton/>
-            }
-            {props.showMetadataDrawerButton &&
-                <MetadataDrawerButton show_drawer={props.showMetadata}/>
-            }
-
-        </ButtonGroup>
-
     )
 }
 

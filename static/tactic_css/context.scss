@@ -1,86 +1,60 @@
-@use "blueprint_variables.scss";
-@use "themeable.scss";
+
+$item-separation: 7px;
+$item-side-padding: 10px;
 
 #context-root {
-  height: 100%;
-
-  .pane-holder {
-    height: 100%
-  }
+    height: 100%;
 }
 
 #context-container {
-  .context-nav-item {
-    opacity: .5;
 
-    &.selected-tab-button {
-      opacity: 1;
-    }
-  }
-}
-
-$light-context-highlight-color: #383e47;
-$light-highlight-weight: 600;
-
-#context-container {
-
-  #library-home-root {
-    .bp6-tab-list {
-      display: none
+    #library-home-root {
+        .bp6-tab-list {
+            display: none
+        }
+        width: 100%
     }
 
-    width: 100%
-  }
-
-    .context-tab-button-content-divider {
-      width: 100%;
-      margin-top: 10px;
-      margin-bottom: 10px;
+    .context-navigator {
+        overflow: hidden;
+        padding-top: 100px;
+        height: 100%;
+        padding-right: 15px;
+        padding-left: 15px;
     }
 
-    .context-sortable-nav-item {
-      margin-bottom: 4px;
-      margin-left: 10px;
-      margin-right: 10px;
-      padding-bottom: 1px;
-      padding-left: 1px;
-      padding-top: 4px;
+    .context-item-holder {
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+        margin-bottom: $item-separation;
+        border-radius: 8px;
+
+        &.hovering {
+            margin-top: 40px;
+        }
+
+        &.currently-dragging {
+            opacity: .25;
+        }
     }
 
     .context-nav-item {
-      font-size: 16px;
-    }
+        font-size: 16px;
+        padding: 8px $item-side-padding;
+        margin-left: 0;
+        width: 100%;
+        opacity: .5;
 
-  .context-item-unsortable .context-nav-item {
-      padding-left: 8px;
-      padding-top: 8px;
-      padding-bottom: 8px;
-      margin-bottom: 4px;
-      margin-left: 10px;
-      margin-right: 10px;
-  }
-
-    .context-sortable-nav-item, .context-item-unsortable .context-nav-item {
-      border-radius: 8px;
-
-      .show-on-hover {
-        opacity: 0;
-      }
-
-      &:hover {
-        .show-on-hover {
-          opacity: 100;
+        &.selected-tab-button {
+            opacity: 1;
         }
-      }
-
-      &.hovering {
-        margin-top: 40px;
-      }
-
-      &.currently-dragging {
-        opacity: .25;
-      }
     }
 
+    .context-tab-button-content-divider {
+        width: 100%;
+        margin-top: 10px;
+        margin-bottom: 10px;
+    }
 
-  }
+}

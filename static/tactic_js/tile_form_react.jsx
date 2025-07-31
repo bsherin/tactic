@@ -6,7 +6,7 @@ import {FormGroup, InputGroup, Button, Divider, Switch,
 import _ from 'lodash';
 
 import {ReactCodemirror6} from "./react-codemirror6";
-import {BpSelect, BpSelectAdvanced} from "./blueprint_mdata_fields"
+import {BpSelect, BpSelectAdvanced} from "./selector_advanced"
 import {isInt} from "./utilities_react";
 
 import {PoolAddressSelector} from "./pool_tree";
@@ -43,13 +43,13 @@ function TileForm(props) {
         e.preventDefault()
     }
 
-    var all_items = [];
-    var section_items = null;
-    var in_section = false;
-    var option_items = all_items;
-    var current_section_att_name = "";
-    var current_section_display_text = "";
-    var current_section_start_open = false;
+    let all_items = [];
+    let section_items = null;
+    let in_section = false;
+    let option_items = all_items;
+    let current_section_att_name = "";
+    let current_section_display_text = "";
+    let current_section_start_open = false;
     for (let option of props.options) {
         if ("visible" in option && !option["visible"]) continue;
         let att_name = option["name"];
@@ -86,7 +86,7 @@ function TileForm(props) {
                                             display_text={display_text}
                                             key={att_name}
                                             choice_list={option["option_list"]}
-                                            value={option.starting_value}
+                                            value={option["starting_value"]}
                                             buttonIcon={selector_type_icons[option["type"]]}
                                             updateValue={_updateValue}/>)
         } else switch (option["type"]) {
@@ -94,7 +94,7 @@ function TileForm(props) {
                 option_items.push(<PipeOption att_name={att_name}
                                               display_text={display_text}
                                               key={att_name}
-                                              value={_.cloneDeep(option.starting_value)}
+                                              value={_.cloneDeep(option["starting_value"])}
                                               pipe_dict={_.cloneDeep(option["pipe_dict"])}
                                               updateValue={_updateValue}
                 />);
@@ -103,7 +103,7 @@ function TileForm(props) {
                 option_items.push(<BoolOption att_name={att_name}
                                               display_text={display_text}
                                               key={att_name}
-                                              value={option.starting_value}
+                                              value={option["starting_value"]}
                                               updateValue={_updateValue}
                 />);
                 break;
@@ -111,7 +111,7 @@ function TileForm(props) {
                 option_items.push(<TextAreaOption att_name={att_name}
                                                   display_text={display_text}
                                                   key={att_name}
-                                                  value={option.starting_value}
+                                                  value={option["starting_value"]}
                                                   updateValue={_updateValue}
                 />);
                 break;
@@ -119,7 +119,7 @@ function TileForm(props) {
                 option_items.push(<CodeAreaOption att_name={att_name}
                                                   display_text={display_text}
                                                   key={att_name}
-                                                  value={option.starting_value}
+                                                  value={option["starting_value"]}
                                                   updateValue={_updateValue}
                 />);
                 break;
@@ -127,7 +127,7 @@ function TileForm(props) {
                 option_items.push(<TextOption att_name={att_name}
                                               display_text={display_text}
                                               key={att_name}
-                                              value={option.starting_value}
+                                              value={option["starting_value"]}
                                               leftIcon="paragraph"
                                               updateValue={_updateValue}
                 />);
@@ -136,7 +136,7 @@ function TileForm(props) {
                 option_items.push(<IntOption att_name={att_name}
                                              display_text={display_text}
                                              key={att_name}
-                                             value={option.starting_value}
+                                             value={option["starting_value"]}
                                              updateValue={_updateValue}
                 />);
                 break;
@@ -145,7 +145,7 @@ function TileForm(props) {
                 option_items.push(<FloatOption att_name={att_name}
                                                display_text={display_text}
                                                key={att_name}
-                                               value={option.starting_value}
+                                               value={option["starting_value"]}
                                                updateValue={_updateValue}
                 />);
                 break;
@@ -154,7 +154,7 @@ function TileForm(props) {
                                               tile_id={props.tile_id}
                                                display_text={display_text}
                                                key={att_name}
-                                               value={option.starting_value}
+                                               value={option["starting_value"]}
                                                select_type={option.pool_select_type}
                                                updateValue={_updateValue}
                 />);
@@ -207,8 +207,8 @@ function FormSection(props) {
         <Fragment>
             <Button onClick={_handleClick}
                     text={label}
-                    large={false}
-                    outlined={true}
+                    size="medium"
+                    variant="outlined"
                     intent="primary"
                     style={{width: "fit-content", marginBottom: but_bottom_margin, marginTop: 10}}
             />
@@ -429,7 +429,6 @@ function SelectOption(props) {
 SelectOption = memo(SelectOption);
 
 function PoolOption(props) {
-    const [isOpen, setIsOpen] = useState(false);
 
     function _updateMe(newval) {
         props.updateValue(props.att_name, newval)

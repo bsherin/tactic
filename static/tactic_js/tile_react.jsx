@@ -4,7 +4,6 @@ import React from "react";
 import {useState, useEffect, useRef, memo, useMemo, useCallback, useContext} from "react";
 
 import {Icon, Card, Button, ButtonGroup, Spinner, PopoverPosition} from "@blueprintjs/core";
-import {Transition} from "react-transition-group";
 import _ from 'lodash';
 
 import {TileForm} from "./tile_form_react";
@@ -29,11 +28,6 @@ const using_touch = "ontouchend" in document;
 const click_event = using_touch ? "touchstart" : "click";
 
 const TILE_DISPLAY_AREA_MARGIN = 15;
-const ANI_DURATION = 300;
-
-function composeObjs(base_style, new_style) {
-    return Object.assign(Object.assign({}, base_style), new_style)
-}
 
 function tilesReducer(tile_list, action) {
     let new_items;
@@ -106,7 +100,6 @@ function tilesReducer(tile_list, action) {
 }
 
 function TileContainer(props) {
-    const tile_div_ref = useRef(null);
 
     const settingsContext = useContext(SettingsContext);
     const [dragging, setDragging] = useState(false);
@@ -246,31 +239,27 @@ function TileContainer(props) {
     }, []);
 
     return (
-        <div ref={tile_div_ref}
-             style={{flexGrow: 1, width: "100%", position: "relative", overflow: "auto"}}
-        >
-            <SortableComponent className={props.table_is_shrunk ? "tile-div tile-container-float" : "tile-div"}
-                               main_id={props.main_id}
-                               style={{}}
-                               helperClass={settingsContext.isDark() ? "bp6-dark" : "light-theme"}
-                               ElementComponent={TailoredTileComponent}
-                               key_field_name="tile_name"
-                               item_list={_.cloneDeep(props.tile_list.current)}
-                               handle=".tile-name-div"
-                               onSortStart={(_, event) => event.preventDefault()} // This prevents Safari weirdness
-                               onDragEnd={_resortTiles}
-                               onBeforeCapture={beforeCapture}
-                               direction="vertical"
-                               useDragHandle={true}
-                               axis="xy"
-                               extraProps={{
-                                   dragging: dragging,
-                                   current_doc_name: props.current_doc_name,
-                                   selected_row: props.selected_row,
-                                   table_is_shrunk: props.table_is_shrunk
-                               }}
-            />
-        </div>
+        <SortableComponent className={props.table_is_shrunk ? "tile-div tile-container-float" : "tile-div"}
+                           main_id={props.main_id}
+                           style={{}}
+                           helperClass={settingsContext.isDark() ? "bp6-dark" : "light-theme"}
+                           ElementComponent={TailoredTileComponent}
+                           key_field_name="tile_name"
+                           item_list={_.cloneDeep(props.tile_list.current)}
+                           handle=".tile-name-div"
+                           onSortStart={(_, event) => event.preventDefault()} // This prevents Safari weirdness
+                           onDragEnd={_resortTiles}
+                           onBeforeCapture={beforeCapture}
+                           direction="vertical"
+                           useDragHandle={true}
+                           axis="xy"
+                           extraProps={{
+                               dragging: dragging,
+                               current_doc_name: props.current_doc_name,
+                               selected_row: props.selected_row,
+                               table_is_shrunk: props.table_is_shrunk
+                           }}
+        />
     )
 }
 
@@ -317,8 +306,6 @@ function TileComponent(props) {
     const inner_log_ref = useRef(null);
     const tda_ref = useRef(null);
     const log_ref = useRef(null);
-    const left_glyphs_ref = useRef(null);
-    const right_glyphs_ref = useRef(null);
     const javascript_error_ref = useRef(false);
 
     const last_front_content = useRef("");
@@ -373,7 +360,6 @@ function TileComponent(props) {
     useEffect(() => {
         _broadcastTileSize(props.tile_width, props.tile_height)
     }, [props.tile_width, props.tile_height]);
-
 
 
     // Broadcasting the tile size is necessary because some tiles (notably matplotlib tiles)
@@ -621,79 +607,6 @@ function TileComponent(props) {
         });
     }
 
-    let front_style;
-    let tda_style;
-    let back_style;
-    let tile_log_style;
-    let panel_body_style;
-    let main_style;
-    let transitionStylesAltUp;
-    let transitionStylesAltDown;
-    let transitionFadeStyles;
-    let lg_style;
-
-    function compute_styles() {
-        let tile_height = props.shrunk ? header_height : props.tile_height;
-        front_style = {
-            width: props.tile_width,
-            height: tile_height - header_height,
-        };
-        tda_style = {
-            width: props.tile_width - TILE_DISPLAY_AREA_MARGIN * 2,
-            height: tile_height - header_height - TILE_DISPLAY_AREA_MARGIN * 2
-        };
-        if (left_glyphs_ref.current && right_glyphs_ref.current) {
-            let lg_rect = left_glyphs_ref.current.getBoundingClientRect();
-            let rg_rect = right_glyphs_ref.current.getBoundingClientRect();
-            let lg_width = rg_rect.x - lg_rect.x - 10;
-            lg_style = {width: lg_width, overflow: "hidden"};
-        } else {
-            lg_style = {};
-        }
-
-        back_style = Object.assign({}, front_style);
-        tile_log_style = {
-            overflow: "auto",
-            marginLeft: 20,
-            marginRight: 20,
-            marginTop: 10,
-            marginBottom: 10,
-            width: props.tile_width - 40,
-            height: tile_height - header_height - 50
-        };
-        panel_body_style = {"width": props.tile_width};
-        main_style = {
-            width: props.tile_width + dwidth,
-            height: tile_height + dheight,
-            position: "relative"
-        };
-        if (!props.finished_loading) {
-            main_style.opacity = .5
-        }
-        front_style.transition = `top ${ANI_DURATION}ms ease-in-out`;
-        back_style.transition = `top ${ANI_DURATION}ms ease-in-out`;
-        transitionStylesAltUp = {
-            transition: `top ${ANI_DURATION}ms ease-in-out`,
-            entering: {top: header_height},
-            entered: {top: header_height},
-            exiting: {top: -1 * tile_height},
-            exited: {top: -1 * tile_height}
-        };
-        transitionStylesAltDown = {
-            entering: {top: header_height, opacity: 1},
-            entered: {top: header_height, opacity: 1},
-            exiting: {top: tile_height + 50},
-            exited: {top: tile_height + 50, opacity: 0}
-        };
-        tile_log_style.transition = `opacity ${ANI_DURATION}ms ease-in-out`;
-        transitionFadeStyles = {
-            entering: {opacity: 1},
-            entered: {opacity: 1},
-            exiting: {opacity: 0, width: 0, height: 0, padding: 0},
-            exited: {opacity: 0, width: 0, height: 0, padding: 0}
-        }
-    }
-
     function logText() {
         postWithCallback(props.tile_id, "LogTile", {}, null, null, props.main_id);
     }
@@ -755,10 +668,6 @@ function TileComponent(props) {
 
     let show_front = (!props.show_form) && (!props.show_log);
     let front_dict = {__html: props.front_content};
-    compute_styles();
-    // let tile_class = props.table_is_shrunk && !props.dragging ? "tile-panel tile-panel-float" : "tile-panel";
-    const tile_class = "tile-panel"
-    let tph_class = props.source_changed ? "tile-panel-heading tile-source-changed" : "tile-panel-heading";
     let draghandle_position_dict = {position: "absolute", bottom: 2, right: 1};
 
     let tile_menu_options = {
@@ -782,11 +691,31 @@ function TileComponent(props) {
         "Delete me": _closeTile
     };
 
+    let tile_height = props.shrunk ? header_height : props.tile_height;
+
+    let tile_log_style = {
+        overflow: "auto",
+        width: "100%",
+        height: "100%"
+    };
+
+    let main_style = {
+            width: props.tile_width + dwidth,
+            height: tile_height + dheight,
+            display: "flex",
+            flexDirection: "column",
+            position: "relative"
+        };
+        if (!props.finished_loading) {
+            main_style.opacity = .5
+        }
     return (
-        <Card ref={my_ref} elevation={2} style={main_style} className={tile_class} id={props.tile_id}>
+        <Card ref={my_ref} elevation={2} style={main_style} className="tile-panel" id={props.tile_id}>
             <ErrorBoundary>
-                <div className={tph_class}>
-                    <div className="left-glyphs" ref={left_glyphs_ref} style={lg_style}>
+                <div className={props.source_changed ? "tile-panel-heading tile-source-changed" : "tile-panel-heading"}
+                     style={{display: "flex",  paddingRight: 10,
+                         flexDirection: "row", justifyContent: "space-between"}}>
+                    <div className="left-glyphs" style={{overflow: "hidden"}}>
                         <ButtonGroup>
                             {props.shrunk &&
                                 <GlyphButton
@@ -804,9 +733,7 @@ function TileComponent(props) {
                         </ButtonGroup>
                     </div>
 
-                    <div className="right-glyphs"
-                         style={{marginRight: 10}}
-                         ref={right_glyphs_ref}>
+                    <div className="right-glyphs">
                         <ButtonGroup>
                             {props.show_log && <GlyphButton intent="primary"
                                                             handleClick={_toggleTileLog}
@@ -833,23 +760,33 @@ function TileComponent(props) {
                 </div>
                 <ErrorBoundary>
                     {!props.shrunk &&
-                        <div ref={body_ref} style={panel_body_style} className="tile-body">
-                            <ErrorBoundary>
-                                <Transition in={props.show_form} timeout={ANI_DURATION}>
-                                    {state => (
-                                        <div className="back" style={composeObjs(back_style, transitionStylesAltUp[state])}>
-                                            <TileForm options={_.cloneDeep(props.form_data)}
-                                                      tile_id={props.tile_id}
-                                                      updateValue={_updateOptionValue}
-                                                      handleSubmit={_handleSubmitOptions}/>
-                                        </div>
-                                    )}
-                                </Transition>
-                            </ErrorBoundary>
-                             <ErrorBoundary>
+                        <div ref={body_ref}
+                             style={{
+                                 width: "100%",
+                                 minHeight: 0,
+                                 flex: "1 1 0",
+                                 display: "flex",
+                                 flexDirection: "column",
+                                 padding: TILE_DISPLAY_AREA_MARGIN,
+                                 overflow: "auto",
+                                 position: "relative"
+                        }}
+                             className="tile-body">
+                            {props.show_form &&
+                                    <div className="back"
+                                         style={{width: "100%", height: "100%",
+                                             overflow: "auto",
+                                             position: "relative"}} >
+                                        <TileForm options={_.cloneDeep(props.form_data)}
+                                                  tile_id={props.tile_id}
+                                                  updateValue={_updateOptionValue}
+                                                  handleSubmit={_handleSubmitOptions}/>
+                                    </div>
+                            }
                                 {props.show_log &&
-                                    <div className="tile-log" ref={log_ref}>
-                                        <div className="tile-log-area">
+                                        <div className="tile-log-area"
+                                             style={{width: "100%", height: "100%", position: "relative"}}
+                                             ref={log_ref}>
                                             <SearchableConsole main_id={props.main_id}
                                                                streaming_host="host"
                                                                container_id={props.tile_id}
@@ -857,20 +794,16 @@ function TileComponent(props) {
                                                                outer_style={tile_log_style}
                                                                showCommandField={true}
                                             />
-                                        </div>
                                     </div>
                                 }
-                            </ErrorBoundary>
-                            <ErrorBoundary>
-                                <Transition in={show_front} timeout={ANI_DURATION}>
-                                    {state => (
-                                        <div className="front" style={composeObjs(front_style, transitionStylesAltDown[state])}>
-                                            <div className="tile-display-area" style={tda_style} ref={tda_ref}
-                                                 dangerouslySetInnerHTML={front_dict}></div>
-                                        </div>
-                                    )}
-                                </Transition>
-                             </ErrorBoundary>
+                                {show_front &&
+                                    <div className="tile-display-area"
+                                         style={{
+                                             width: "100%", height: "100%",
+                                             position: "relative"}}
+                                         ref={tda_ref}
+                                         dangerouslySetInnerHTML={front_dict}/>
+                                }
                         </div>
                     }
                 </ErrorBoundary>

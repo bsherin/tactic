@@ -9,7 +9,7 @@ exports.withDialogs = withDialogs;
 var _react = _interopRequireWildcard(require("react"));
 var _propTypes = _interopRequireDefault(require("prop-types"));
 var _core = require("@blueprintjs/core");
-var _blueprint_mdata_fields = require("./blueprint_mdata_fields");
+var _selector_advanced = require("./selector_advanced");
 var _utilities_react = require("./utilities_react");
 var _communication_react = require("./communication_react");
 var _pool_tree = require("./pool_tree");
@@ -592,7 +592,7 @@ function SelectDialog(props) {
     className: _core.Classes.DIALOG_BODY
   }, props.option_list.length > 0 && /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
     title: props.select_label
-  }, /*#__PURE__*/_react["default"].createElement(_blueprint_mdata_fields.BpSelect, {
+  }, /*#__PURE__*/_react["default"].createElement(_selector_advanced.BpSelect, {
     options: props.option_list,
     onChange: _handleChange,
     value: value
@@ -747,13 +747,13 @@ function SelectResourceDialog(props) {
     className: _core.Classes.DIALOG_BODY
   }, /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
     label: "Resource Type"
-  }, /*#__PURE__*/_react["default"].createElement(_blueprint_mdata_fields.BpSelect, {
+  }, /*#__PURE__*/_react["default"].createElement(_selector_advanced.BpSelect, {
     options: res_types,
     onChange: _handleTypeChange,
     value: type
   })), /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
     label: "Specific Resource"
-  }, /*#__PURE__*/_react["default"].createElement(_blueprint_mdata_fields.BpSelect, {
+  }, /*#__PURE__*/_react["default"].createElement(_selector_advanced.BpSelect, {
     options: option_names,
     onChange: _handleResourceChange,
     value: selected_resource

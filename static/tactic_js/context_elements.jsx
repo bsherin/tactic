@@ -18,7 +18,7 @@ import {
 import {SelectedPaneContext} from "./utilities_react";
 import {Button, Divider} from "@blueprintjs/core";
 
-import {icon_dict} from "./blueprint_mdata_fields";
+import {icon_dict} from "./combined_metadata";
 import {CSS} from "@dnd-kit/utilities";
 
 const iconDict = {
@@ -64,12 +64,9 @@ function ContextPaneElement(props) {
 
 function ContextNavigator(props) {
     props = {
-        handleTabSelect: () => {
-        },
-        closeTab: () => {
-        },
-        refreshTab: () => {
-        },
+        handleTabSelect: () => {},
+        closeTab: () => {},
+        refreshTab: () => {},
         tabPanelList: null,
         selectedItem: null,
         paneClosed: false,
@@ -102,18 +99,14 @@ function ContextNavigator(props) {
         })
     };
     return (
-        <div style={{
-            overflow: "hidden", paddingTop: 100, height: "100%"
-        }}
-             className="context-navigator">
+        <div className="context-navigator">
             <DndContext sensors={sensors} collisionDetection={rectIntersection} onDragEnd={handleDragEnd}>
                 <SortableContext items={[...props.tabPanelList.map(i => i.identifier), '__drop_spacer__']}
                                  strategy={verticalListSortingStrategy}>
                     {props.tabPanelList.map((entry) => (
                         entry.identifier == "library" || entry.identifier == "pool" ?
                             <Fragment key={entry.identifier}>
-                                <div className="context-item-unsortable"
-                                     style={{display: "flex", paddingRight: 20, flexDirection: "row", width: "100%"}}>
+                                <div className="context-item-holder">
                                     <ContextNavigatorItem identifier={entry.identifier} key={entry.identifier}
                                                           selectedItem={props.selectedItem}
                                                           icon={iconDict[entry.identifier]}
@@ -193,12 +186,9 @@ function SortableContextNavigatorItem(props) {
         props.refreshTab(props.identifier);
     }
 
-    let bgStyle = {width: "100%", display: "flex", flexDirection: "row"};
-
     return (
         <div ref={setNodeRef} {...attributes} {...listeners} style={style}
-             className="context-sortable-nav-item">
-            <div style={bgStyle}>
+             className="context-item-holder">
                 <ContextNavigatorItem {...props} />
                 {props.isSpacer ? null :
                     <div style={{alignContent: "center"}}>
@@ -214,7 +204,6 @@ function SortableContextNavigatorItem(props) {
                         }}/>
                     </div>
                 }
-            </div>
         </div>
     );
 }
@@ -241,8 +230,7 @@ function ContextNavigatorItem(props) {
     if (props.isSpacer) {
         return (
             <div style={{flex: "1 1 0", minWidth: 0}}>
-                <Button style={{marginLeft: 5, paddingRight: 2, width: "100%"}}
-                        icon={null}
+                <Button icon={null}
                         intent="none"
                         size="medium"
                         variant="minimal"

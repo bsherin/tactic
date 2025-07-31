@@ -1,7 +1,7 @@
-import {useEffect, useRef} from "react";
+import {useRef} from "react";
 import {useImmerReducer} from "use-immer";
 
-export {useMetadata}
+export {useMetadata, metadataReducer}
 
 const INITIAL_PANE_HEIGHT = 400
 

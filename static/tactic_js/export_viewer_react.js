@@ -168,17 +168,15 @@ function ExportButtonList(props) {
     return groups;
   }
   return /*#__PURE__*/_react["default"].createElement("div", {
-    id: "exports-button-list",
     ref: top_ref,
     style: {
       flexDirection: "column",
       display: "flex",
       verticalAlign: "top",
-      padding: 15,
       height: "100%",
       position: "relative"
     },
-    className: "contingent-scroll"
+    className: "exports-button-list contingent-scroll"
   }, create_groups());
 }
 ExportButtonList = /*#__PURE__*/(0, _react.memo)(ExportButtonList);
@@ -186,9 +184,6 @@ function ExportsViewer(props) {
   props = _objectSpread({
     style: {}
   }, props);
-  var header_ref = (0, _react.useRef)(null);
-  var footer_ref = (0, _react.useRef)(null);
-  var body_ref = (0, _react.useRef)(null);
   var _useStateAndRef = (0, _utilities_react.useStateAndRef)(""),
     _useStateAndRef2 = _slicedToArray(_useStateAndRef, 3),
     set_selected_export = _useStateAndRef2[1],
@@ -424,15 +419,15 @@ function ExportsViewer(props) {
     display: 'flex',
     flexDirection: 'column',
     paddingLeft: 0,
-    position: "relative"
+    position: "relative",
+    margin: 0
   };
   if (!props.console_is_shrunk) {
     outer_style.height = "100%";
   }
   return /*#__PURE__*/_react["default"].createElement(_core.Card, {
-    id: "exports-panel",
     elevation: props.console_is_shrunk ? 0 : 2,
-    className: "mr-3 " + exports_class,
+    className: "exports-panel mr-3 " + exports_class,
     style: outer_style
   }, /*#__PURE__*/_react["default"].createElement("div", {
     className: "d-flex flex-column justify-content-around",
@@ -441,9 +436,7 @@ function ExportsViewer(props) {
       position: "relative"
     }
   }, /*#__PURE__*/_react["default"].createElement("div", {
-    id: "exports-heading",
-    ref: header_ref,
-    className: "d-flex flex-row justify-content-start"
+    className: "exports-heading d-flex flex-row justify-content-start"
   }, !show_spinner && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
     handleClick: _eval,
     intent: "primary",
@@ -475,8 +468,7 @@ function ExportsViewer(props) {
     onSubmit: _eval,
     className: "d-flex flex-row"
   }, /*#__PURE__*/_react["default"].createElement("span", {
-    id: "selected-export",
-    className: "bottom-heading-element mr-2"
+    className: "selected-export bottom-heading-element mr-2"
   }, selected_export_short_name), key_list && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.SelectList, {
     option_list: key_list,
     onChange: _handleKeyListChange,
@@ -500,7 +492,6 @@ function ExportsViewer(props) {
     size: 13,
     value: spinner_val
   }))), !props.console_is_shrunk && /*#__PURE__*/_react["default"].createElement("div", {
-    ref: body_ref,
     style: {
       flex: "1 1 0",
       minHeight: 0,
@@ -524,22 +515,17 @@ function ExportsViewer(props) {
     value: selected_export_ref.current,
     handleChange: _handleExportListChange
   }), /*#__PURE__*/_react["default"].createElement(_core.Divider, null), /*#__PURE__*/_react["default"].createElement("div", {
-    id: "exports-body",
     style: {
-      padding: 15,
       flex: " 1 1 0",
       height: "100%",
       overflow: "auto"
     },
-    className: "contingent-scroll",
+    className: "exports-body contingent-scroll",
     dangerouslySetInnerHTML: exports_body_dict
   })), /*#__PURE__*/_react["default"].createElement("div", {
-    id: "exports-footing",
-    ref: footer_ref,
-    className: "d-flex flex-row justify-content-between"
+    className: "exports-footing d-flex flex-row justify-content-between"
   }, /*#__PURE__*/_react["default"].createElement("span", {
-    id: "exports-info",
-    className: "bottom-heading-element ml-2"
+    className: "exports-info bottom-heading-element ml-2"
   }, exports_info_value), /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
     label: "max rows",
     inline: true

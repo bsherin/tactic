@@ -1,6 +1,10 @@
-import "../tactic_css/tactic.scss";
-import "../tactic_css/tactic_console.scss";
-import "../tactic_css/tactic_main.scss";
+
+if (!window.in_context) {
+    import("../tactic_css/tactic.scss");
+    import("../tactic_css/tactic_console.scss");
+    import("../tactic_css/tactic_main.scss");
+    import ("../tactic_css/themeable.scss");
+}
 
 import React from "react";
 import {Fragment, useEffect, useRef, memo, useContext, useReducer, useCallback} from "react";
@@ -29,11 +33,6 @@ import {withSettings, SettingsContext} from "./settings";
 import {withDialogs} from "./modal_react";
 import {MetadataDrawer} from "./metadata_drawer";
 
-
-const MARGIN_SIZE = 10;
-
-const cc_style = {marginTop: MARGIN_SIZE};
-
 export {NotebookApp}
 
 function NotebookApp(props) {
@@ -44,7 +43,6 @@ function NotebookApp(props) {
     };
 
     const last_save = useRef({});
-    const main_outer_ref = useRef(null);
     const updateExportsList = useRef(null);
     const connection_status = useConnection(props.tsocket, initSocket);
     const [, set_console_selected_items, console_selected_items_ref] = useStateAndRef([]);
@@ -244,7 +242,6 @@ function NotebookApp(props) {
                           setMainStateValue={_setMainStateValue}
                           zoomable={false}
                           shrinkable={false}
-                          style={cc_style}
         />
     );
     let exports_pane;
@@ -256,7 +253,6 @@ function NotebookApp(props) {
                                       }}
                                       console_is_shrunk={mState.console_is_shrunk}
                                       console_is_zoomed={mState.console_is_zoomed}
-                                      style={cc_style}
         />
     } else {
         exports_pane = <div></div>
@@ -264,6 +260,7 @@ function NotebookApp(props) {
 
     let outer_style = {
         width: `calc(100% - ${ICON_BAR_WIDTH}px)`,
+        height: "100%",
         flex: "1 1 0",
         overflow: "auto",
         display: 'flex',
@@ -286,6 +283,8 @@ function NotebookApp(props) {
                 toggleMetadata: toggleMetadata,
                 hideMetadata: hideMetadata
             }}>
+            <div className={`main-outer ${settingsContext.isDark() ? "bp6-dark" : "light-theme"}`}
+                 style={outer_style}>
                 <TacticMenubar connection_status={connection_status}
                                menus={menus}
                                showRefresh={true}
@@ -300,20 +299,16 @@ function NotebookApp(props) {
                                showAssistantDrawerButton={true}
                                showSettingsDrawerButton={true}
                 />
-            </MetadataContext.Provider>
-            <div className={`main-outer ${settingsContext.isDark() ? "bp6-dark" : "light-theme"}`}
-                 ref={main_outer_ref}
-                 style={outer_style}>
                     <HorizontalPanes left_pane={console_pane}
                                      right_pane={exports_pane}
                                      show_handle={true}
                                      initial_width_fraction={mState.console_width_fraction}
                                      controlled={true}
-                                     separatorPadding={5}
-                                     outer_style={{paddingBottom: 10, paddingRight: 10}}
+                                     className="project-outer-padding"
                                      handleSplitUpdate={_handleConsoleFractionChange}
                     />
             </div>
+                </MetadataContext.Provider>
             <MetadataDrawer res_type="project"
                             res_name={project_name}
                             tsocket={props.tsocket}

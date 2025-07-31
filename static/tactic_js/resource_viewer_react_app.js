@@ -8,7 +8,7 @@ exports.ResourceViewerApp = ResourceViewerApp;
 exports.copyToLibrary = copyToLibrary;
 exports.sendToRepository = sendToRepository;
 var _react = _interopRequireWildcard(require("react"));
-var _blueprint_mdata_fields = require("./blueprint_mdata_fields");
+var _combined_metadata = require("./combined_metadata");
 var _resizing_allotment = require("./resizing_allotment");
 var _communication_react = require("./communication_react");
 var _menu_utilities = require("./menu_utilities");
@@ -135,6 +135,7 @@ var metadata_outer_style = {
 function ResourceViewerApp(props) {
   props = _objectSpread({
     search_string: "",
+    padTop: false,
     search_matches: null,
     showErrorDrawerButton: false,
     am_selected: true,
@@ -171,8 +172,8 @@ function ResourceViewerApp(props) {
     }
   }
   var left_pane = /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
+    className: "resource-viewer-left-pane-holder ".concat(props.padTop ? "top-padded" : ""),
     style: {
-      paddingRight: PADDING,
       height: "100%",
       width: "100%",
       position: "relative",
@@ -180,11 +181,19 @@ function ResourceViewerApp(props) {
       display: "flex",
       flexDirection: "column"
     }
-  }, props.children));
-  var right_pane = /*#__PURE__*/_react["default"].createElement(_blueprint_mdata_fields.CombinedMetadata, {
+  }, /*#__PURE__*/_react["default"].createElement("div", {
+    style: {
+      height: "100%",
+      width: "100%",
+      position: "relative",
+      overflow: "auto",
+      display: "flex",
+      flexDirection: "column"
+    }
+  }, props.children)));
+  var right_pane = /*#__PURE__*/_react["default"].createElement(_combined_metadata.CombinedMetadata, {
     expandWidth: true,
     tsocket: props.tsocket,
-    outer_style: metadata_outer_style,
     useTags: true,
     useNotes: true,
     readOnly: props.readOnly,
@@ -212,7 +221,6 @@ function ResourceViewerApp(props) {
       flexGrow: 1,
       width: "100%",
       position: "relative",
-      paddingLeft: 15,
       marginTop: 0
     }
   }, /*#__PURE__*/_react["default"].createElement(_resizing_allotment.HorizontalPanes, {
@@ -220,9 +228,7 @@ function ResourceViewerApp(props) {
     show_handle: true,
     right_pane: right_pane,
     initial_width_fraction: .65,
-    am_outer: true,
-    bottom_margin: _sizing_tools.BOTTOM_MARGIN,
-    right_margin: _sizing_tools.SIDE_MARGIN
+    am_outer: true
   })));
 }
 exports.ResourceViewerApp = ResourceViewerApp = /*#__PURE__*/(0, _react.memo)(ResourceViewerApp);

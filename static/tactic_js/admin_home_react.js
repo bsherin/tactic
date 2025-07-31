@@ -42,17 +42,9 @@ function _administer_home_main() {
   var AdministerHomeAppPlus = (0, _settings.withSettings)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(AdministerHomeApp))));
   var domContainer = document.querySelector('#library-home-root');
   var root = (0, _client.createRoot)(domContainer);
-  root.render(/*#__PURE__*/_react["default"].createElement("div", {
-    style: {
-      display: "flex",
-      flexDirection: "column",
-      position: "relative",
-      height: "100%",
-      width: "100%"
-    }
-  }, /*#__PURE__*/_react["default"].createElement(AdministerHomeAppPlus, {
+  root.render(/*#__PURE__*/_react["default"].createElement(AdministerHomeAppPlus, {
     tsocket: tsocket
-  })));
+  }));
 }
 var res_types = ["container", "user"];
 var col_names = {
@@ -197,7 +189,7 @@ function AdministerHomeApp(props) {
     ref: top_ref,
     style: outer_style
   }, /*#__PURE__*/_react["default"].createElement(_core.Tabs, {
-    id: "the_container",
+    id: "admin-tabs",
     style: {
       marginTop: 100
     },

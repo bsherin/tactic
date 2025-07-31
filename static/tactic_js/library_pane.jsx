@@ -6,7 +6,7 @@ import {Fragment, useRef, useEffect, memo, useContext, useMemo, useCallback} fro
 import {Menu, MenuItem, MenuDivider, Button, Tooltip, useHotkeys} from "@blueprintjs/core";
 import {Regions} from "@blueprintjs/table";
 
-import {CombinedMetadata, icon_dict} from "./blueprint_mdata_fields";
+import {CombinedMetadata, icon_dict} from "./combined_metadata";
 import {HorizontalPanes} from "./resizing_allotment";
 import {postAjaxPromise, postPromise} from "./communication_react"
 
@@ -80,10 +80,6 @@ function BodyMenu(props) {
         </Menu>
     )
 }
-
-const metadata_outer_style = {
-    marginTop: 0, marginLeft: 0, overflow: "auto", padding: 25, marginRight: 0, height: "100%"
-};
 
 const initial_state = {
     data_dict: {},
@@ -1235,7 +1231,6 @@ function LibraryPane(props) {
                           tsocket={props.tsocket}
                           res_name={res_name}
                           res_type={res_type}
-                          outer_style={metadata_outer_style}
                           expandWidth={true}
                           readOnly={props.is_repository}
         />
@@ -1304,7 +1299,6 @@ function LibraryPane(props) {
                      display: "flex",
                      flexGrow: 1,
                      width: "100%",
-                     marginLeft: 15, marginTop: 0,
                      position: "relative"
                  }}
                  tabIndex="0" className="d-flex flex-column" onKeyDown={handleKeyDown} onKeyUp={handleKeyUp}>
@@ -1314,7 +1308,6 @@ function LibraryPane(props) {
                         right_pane={right_pane}
                         right_pane_overflow="auto"
                         initial_width_fraction={.75}
-                        scrollAdjustSelectors={[".bp6-table-quadrant-scroll-container"]}
                     />
             </div>
         </Fragment>

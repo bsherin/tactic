@@ -22,34 +22,13 @@ import {lintKeymap} from '@codemirror/lint';
 import {indentWithTab} from "@codemirror/commands";
 import {indentUnit} from "@codemirror/language";
 
-import {StateField, StateEffect, RangeSetBuilder} from "@codemirror/state";
+import {StateField, StateEffect} from "@codemirror/state";
 
 import {SettingsContext} from "./settings"
 import {importTheme, themeList} from "./theme_support";
 
 export {ReactCodemirrorMergeView6}
 
-function createHighlightDeco(view, searchTerm, current_search_number) {
-    const builder = new RangeSetBuilder();
-    const regex = new RegExp(searchTerm, "gi");
-    let counter = 0;
-    for (let {from, to} of view.visibleRanges) {
-        const text = view.state.doc.sliceString(from, to);
-        let match;
-        while ((match = regex.exec(text)) !== null) {
-            const start = from + match.index;
-            const end = start + match[0].length;
-            if (current_search_number != null && counter === current_search_number) {
-                builder.add(start, end, Decoration.mark({class: "cm-searchMatch cm-searchMatch-selected"}));
-            }
-            else {
-                builder.add(start, end, Decoration.mark({class: "cm-searchMatch"}));
-            }
-            counter += 1;
-        }
-    }
-    return builder.finish()
-}
 
 const setHighlights = StateEffect.define();
 const highlightField = StateField.define({
@@ -89,25 +68,6 @@ function ReactCodemirrorMergeView6(props) {
                 label: "Save Code",
                 onKeyDown: props.saveMe
             },
-            {
-                combo: "Escape",
-                global: false,
-                group: "Merge Viewer",
-                label: "Clear Selections",
-                onKeyDown: (e)=>{
-                    clearSelections();
-                    e.preventDefault()
-                }
-            },
-            {   combo: "Ctrl+F",
-                global: false,
-                group: "Merge Viewer",
-                label: "Search Code",
-                onKeyDown: (e)=>{
-                    searchCM();
-                    e.preventDefault()
-                }
-            },
         ],
         [props.saveMe],
     );
@@ -116,7 +76,6 @@ function ReactCodemirrorMergeView6(props) {
     useEffect(()=> {
         themeCompartmenta.current = new Compartment();
         themeCompartmentb.current = new Compartment();
-        let current_theme = _current_codemirror_theme();
         cmobject.current = createMergeArea(code_container_ref.current);
     }, []);
 
@@ -137,12 +96,6 @@ function ReactCodemirrorMergeView6(props) {
 
     }, [props.right_content]);
 
-    useEffect(()=>{
-        if (!cmobject.current) {
-            return
-        }
-        let current_theme = _current_codemirror_theme();
-    }, [settingsContext.settings.theme, settingsContext.settings.preferred_dark_theme, settingsContext.settings.preferred_light_theme]);
 
     function isDark() {
         return settingsContext.settingsRef.current.theme == "dark";
@@ -264,25 +217,8 @@ function ReactCodemirrorMergeView6(props) {
     }, [settingsContext.settings.theme, settingsContext.settings.preferred_dark_theme, settingsContext.settings.preferred_light_theme]);
 
 
-    function mergeViewHeight() {
-        function editorHeight(editor) {
-            return editor ? editor.getScrollInfo().height : 0;
-        }
-        return Math.max(editorHeight(cmobject.current.editor()), editorHeight(cmobject.current.rightOriginal()));
-    }
-
     function handleChange(value) {
         props.handleEditChange(value);
-        //resizeHeights(props.max_height);
-    }
-
-    function searchCM() {
-        // CodeMirror.commands.find(cmobject.current)
-    }
-
-    function clearSelections() {
-        // cmobject.current.editor().setSelection({ line: 0, ch: 0 });
-        // cmobject.current.rightOriginal().setSelection({ line: 0, ch: 0 });
     }
 
     let ccstyle = {
