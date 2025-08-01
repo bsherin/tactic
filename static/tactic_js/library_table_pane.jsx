@@ -56,6 +56,7 @@ function LibraryTablePane(props) {
                     <BpSelectorTable data_dict={props.pStateRef.current.data_dict}
                                      rowChanged={props.pStateRef.current.rowChanged}
                                      columns={props.columns}
+                                     columnWidths={[35, 280, 35, 165, 165, 75]}
                                      num_rows={props.pStateRef.current.num_rows}
                                      open_resources_ref={props.open_resources_ref}
                                      sortColumn={props.sortColumn}

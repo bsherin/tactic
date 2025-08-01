@@ -524,6 +524,7 @@ function CombinedMetadata(props) {
     }
     let ostyle = props.outer_style ? _.cloneDeep(props.outer_style) : {height: "100%"};
     ostyle["width"] = "100%";
+    ostyle["overflow"] = "auto";
     let split_tags = !mStateRef.current.tags || mStateRef.current.tags == "" ? [] : mStateRef.current.tags.split(" ");
     const MetadataNotesButtons = props.notes_buttons;
     return (

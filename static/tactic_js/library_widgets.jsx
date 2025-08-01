@@ -12,7 +12,6 @@ import {
     ButtonGroup
 } from "@blueprintjs/core";
 import {Cell, Column, Table, ColumnHeaderCell, SelectionModes, TruncatedFormat, Regions} from "@blueprintjs/table";
-import _ from 'lodash';
 
 import { useStateAndRef, useDebounce } from "./utilities_react";
 
@@ -148,13 +147,15 @@ function SearchForm(props) {
 
 SearchForm = memo(SearchForm);
 
+
+
 function BpSelectorTable(props) {
     props = {
         columns: {
             "name": {"sort_field": "name", "first_sort": "ascending"},
             "created": {"sort_field": "created_for_sort", "first_sort": "descending"},
             "updated": {"sort_field": "updated_for_sort", "first_sort": "ascending"},
-            "tags": {"sort_field": "tags", "first_sort": "ascending"}
+            // "tags": {"sort_field": "tags", "first_sort": "ascending"}
         },
         identifier_field: "_id",
         enableColumnResigin: false,
@@ -165,24 +166,25 @@ function BpSelectorTable(props) {
         keyHandler: null,
         draggable: true,
         rowChanged: 0,
+        columnWidths: null,
         ...props
     };
-    const [columnWidths, setColumnWidths, columnWidthsRef] = useStateAndRef(null);
+    const [columnWidths, setColumnWidths] = useState(null);
     const saved_data_dict = useRef(null);
     const data_update_required = useRef(null);
     const table_ref = useRef(null);
 
     useEffect(() => {
-        computeColumnWidths();
+        // computeColumnWidths();
         saved_data_dict.current = props.data_dict;
     }, []);
 
-    useEffect(() => {
-        if ((columnWidthsRef.current == null) || !_.isEqual(props.data_dict, saved_data_dict.current)) {
-            computeColumnWidths();
-            saved_data_dict.current = props.data_dict;
-        }
-    });
+    // useEffect(() => {
+    //     if ((columnWidthsRef.current == null) || !_.isEqual(props.data_dict, saved_data_dict.current)) {
+    //         computeColumnWidths();
+    //         saved_data_dict.current = props.data_dict;
+    //     }
+    // });
 
     function computeColumnWidths() {
         if (Object.keys(props.data_dict).length == 0) return;
@@ -205,6 +207,9 @@ function BpSelectorTable(props) {
     }
 
     async function _onCompleteRender() {
+        if (!props.columnWidths) {
+            computeColumnWidths();
+        }
         if (data_update_required.current != null) {
             await props.initiateDataGrab(data_update_required.current);
             data_update_required.current = null
@@ -331,7 +336,7 @@ function BpSelectorTable(props) {
                 defaultRowHeight={27}
                 selectedRegions={props.selectedRegions}
                 enableRowHeader={false}
-                columnWidths={columnWidths}
+                columnWidths={props.columnWidths ? props.columnWidths : columnWidths}
                 onCompleteRender={_onCompleteRender}
                 selectionModes={SelectionModes.ALL}
                 onSelection={(regions) => props.onSelection(regions)}

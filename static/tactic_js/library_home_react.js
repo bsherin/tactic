@@ -96,9 +96,7 @@ function LibraryHomeApp(props) {
       "updated": {
         first_sort: "ascending"
       },
-      "tags": {
-        first_sort: "ascending"
-      },
+      // "tags": {first_sort: "ascending"},
       "size": {
         first_sort: "descending"
       }

@@ -34,13 +34,13 @@ $light-status-bar-background: transparent;
 $dark-metadata-background: blueprint_variables.$dark-gray3;
 $light-metadata-background: blueprint_variables.$white;
 
-$light-notes-field-markdown-output-background: #FFFFFFB2;
+$light-notes-field-markdown-output-background: blueprint_variables.$light-gray4;;
 $dark-notes-field-markdown-output-background: #1114184d;
 
 $light-notes-field-markdown-output-color: blueprint_variables.$gray1;
 $dark-notes-field-markdown-output-color: blueprint_variables.$light-gray5;
 
-$light-notes-field-markdown-code-bg: blueprint_variables.$light-gray2;
+$light-notes-field-markdown-code-bg: blueprint_variables.$light-gray4;
 $dark-notes-field-markdown-code-bg: blueprint_variables.$dark-gray2;
 
 $light-notes-field-markdown-code-color: blueprint_variables.$dark-gray1;
@@ -78,8 +78,10 @@ $light-code-icon-color: blueprint_variables.$lime3;
 $dark-code-icon-color: blueprint_variables.$lime5;
 
 // ==============================================
-// SECTION: Library Tag Button List
+// SECTION: Library Tag Button
 // ==============================================
+
+$dark-library-cell-background: blueprint_variables.$dark-gray4;
 
 $light-tag-button-selected-color: blueprint_variables.$blue3;
 $dark-tag-button-selected-color: blueprint_variables.$blue5;
@@ -463,6 +465,15 @@ $light-chat-card-bg: blueprint_variables.$light-gray5;
 // SECTION: Dark Theme Classes
 // ==============================================
 
+// This alternate ordering is needed for the tabbed interface
+#library-home-root {
+    .bp6-dark {
+        .bp6-table-cell-client {
+            background-color: $dark-library-cell-background;
+        }
+    }
+}
+
 .bp6-dark {
 
     .verticalIconBar {
@@ -471,6 +482,11 @@ $light-chat-card-bg: blueprint_variables.$light-gray5;
         border-left: $dark-icon-bar-border;
     }
 
+    #library-home-root {
+        .bp6-table-cell-client {
+            background-color: $dark-library-cell-background;
+        }
+    }
 
     &.main-outer {
         background-color: $dark-main-backdrop;

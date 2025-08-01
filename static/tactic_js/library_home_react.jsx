@@ -72,7 +72,7 @@ function LibraryHomeApp(props) {
                          "icon:upload": {first_sort: "ascending"},
                          "created": {first_sort: "descending"},
                          "updated": {first_sort: "ascending"},
-                         "tags": {first_sort: "ascending"},
+                         // "tags": {first_sort: "ascending"},
                          "size": {first_sort: "descending"}
                      }}
                      pane_type="all"

@@ -644,6 +644,7 @@ function CombinedMetadata(props) {
     height: "100%"
   };
   ostyle["width"] = "100%";
+  ostyle["overflow"] = "auto";
   var split_tags = !mStateRef.current.tags || mStateRef.current.tags == "" ? [] : mStateRef.current.tags.split(" ");
   var MetadataNotesButtons = props.notes_buttons;
   return /*#__PURE__*/_react["default"].createElement(_error_boundary.ErrorBoundary, null, /*#__PURE__*/_react["default"].createElement(_core.Card, {
