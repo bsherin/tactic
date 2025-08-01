@@ -1084,7 +1084,7 @@ function CreatorApp(props) {
                 searchState={searchStateRef.current}
                 search_ref={search_ref}
             />
-            <div style={{overflow: "auto", flex: "1 1 0", minWidth: 0}}
+            <div style={{overflow: "auto", flex: "1 1 0", minWidth: 0, paddingBottom: 250}}
                  className="creator-pane-list">
                 {right_pane_list}
             </div>
