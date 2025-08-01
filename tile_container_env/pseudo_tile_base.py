@@ -34,6 +34,7 @@ Collection = None
 Tiles = None
 Pipes = None
 
+MAX_TABLE_ROWS = 50
 
 def display(txt):
     sys.stdout.overwrite(txt)
@@ -65,7 +66,7 @@ def custom_df_repr(self):
 pd.DataFrame.__repr__ = custom_df_repr
 
 # noinspection PyTypeChecker
-MAX_SINGLE_WRITE = 1000000
+MAX_SINGLE_WRITE = 10000000
 
 class ConsoleStringIO(StringIO):
     def __init__(self, tile, data, old_stdout):
@@ -97,6 +98,12 @@ class ConsoleStringIO(StringIO):
             self.counter += 1
         sys.stdout = sv_stdout
         return
+
+    def write_table(self, the_table):
+        self.data["force_open"] = True
+        self.data["table_data"] = the_table
+        self.data["console_message"] = "consoleCodeTable"
+        self.my_tile.emit_console_message("consoleCodeTable", self.data)
 
     def overwrite(self, s):
         self.data["force_open"] = True
@@ -327,6 +334,7 @@ class PseudoTileClass(TileBase, MplFigure):
         self._pipe_dict = data["pipe_dict"]
         pipe_val = self.get_pipe_value(data["export_name"])
         success = True
+        use_html_table = False
         if isinstance(pipe_val, str) and pipe_val == "__none__":
             success = False
             the_html = "pipe not found"
@@ -344,11 +352,7 @@ class PseudoTileClass(TileBase, MplFigure):
                     if isinstance(eval_result, c):
                         use_html_table = True
                 if use_html_table:
-                    the_html = self.html_table(eval_result, title=eval_type_info["info_string"],
-                                               header_style="font-size:12px",
-                                               body_style="font-size:11px",
-                                               sticky_header=True,
-                                               max_rows=data["max_rows"])
+                    the_html = self.convert_data_to_dlist(eval_result, data["max_rows"])
                 else:
                     max_chars = data["max_rows"] * ROUGH_CHARS_PER_EVAL_ROW
                     the_html = "<div class='export-header-text'>{}</div>".format(eval_type_info["info_string"])
@@ -358,7 +362,7 @@ class PseudoTileClass(TileBase, MplFigure):
                 print("error in _evaluate_export in tile_base")
                 the_html = self.get_traceback_message(ex)
 
-        data.update({"success": success, "the_html": the_html})
+        data.update({"success": success, "the_html": the_html, "is_table": use_html_table})
         self.emit_export_viewer_message("display_result", data)
         executing_console_id = None
         self.post_event("check_exec_queue", {})
@@ -459,7 +463,15 @@ class PseudoTileClass(TileBase, MplFigure):
                 exec(code_to_exec, globals(), globals())
                 eval_res = eval(code_to_eval, globals(), globals())
                 if eval_res is not None:
-                    print(eval_res)
+                    use_html_table = False
+                    for c in self.html_table_classes:
+                        if isinstance(eval_res, c):
+                            use_html_table = True
+                            break
+                    if use_html_table:
+                        sys.stdout.write_table(self.convert_data_to_dlist(eval_res, MAX_TABLE_ROWS))
+                    else:
+                        print(eval_res)
             else:
                 exec(data["the_code"], globals(), globals())
 

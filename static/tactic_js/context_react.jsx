@@ -340,7 +340,7 @@ function ContextApp(props) {
 
     function _updatePanel(the_id, new_panel, callback = null) {
 
-        let lnew_panel = {...tabPanelListRef.current[the_id]};
+        let lnew_panel = getItemFromdentifier(the_id);
         for (let k in new_panel) {
             if (k !== "panel") {
                 lnew_panel[k] = new_panel[k]

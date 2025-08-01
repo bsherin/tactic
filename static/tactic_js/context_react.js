@@ -438,7 +438,7 @@ function ContextApp(props) {
   }
   function _updatePanel(the_id, new_panel) {
     var callback = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
-    var lnew_panel = _objectSpread({}, tabPanelListRef.current[the_id]);
+    var lnew_panel = getItemFromdentifier(the_id);
     for (var k in new_panel) {
       if (k !== "panel") {
         lnew_panel[k] = new_panel[k];

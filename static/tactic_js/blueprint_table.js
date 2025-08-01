@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.BlueprintTable = BlueprintTable;
 exports.compute_added_column_width = compute_added_column_width;
+exports.compute_initial_column_widths = compute_initial_column_widths;
 var _react = _interopRequireWildcard(require("react"));
 var _propTypes = _interopRequireDefault(require("prop-types"));
 var _table = require("@blueprintjs/table");

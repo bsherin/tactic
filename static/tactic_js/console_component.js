@@ -27,6 +27,7 @@ var _settings = require("./settings");
 var _modal_react = require("./modal_react");
 var _error_drawer = require("./error_drawer");
 var _assistant = require("./assistant");
+var _simple_table = require("./simple_table");
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t11 in e) "default" !== _t11 && {}.hasOwnProperty.call(e, _t11) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t11)) && (i.get || i.set) ? o(f, _t11, i) : f[_t11] = e[_t11]); return f; })(e, t); }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
@@ -285,6 +286,9 @@ function ConsoleComponent(props) {
           },
           consoleCodeOverwrite: function consoleCodeOverwrite(data) {
             return _setConsoleItemOutput(data);
+          },
+          consoleCodeTable: function consoleCodeTable(data) {
+            return _appendTableToConsoleItem(data);
           }
         };
         handlerDict[data.console_message](data);
@@ -1383,6 +1387,13 @@ function ConsoleComponent(props) {
       updates: updates
     });
   }
+  function _appendTableToConsoleItem(data) {
+    props.dispatch({
+      type: "append_table_to_console_item_output",
+      unique_id: data.console_id,
+      table_data: data.table_data
+    });
+  }
   function _appendConsoleItemOutput(data) {
     //let current = get_console_item_entry(data.console_id).output_dict;
     // if (current != "") {
@@ -1798,6 +1809,7 @@ function ConsoleComponent(props) {
       deleteSection: _deleteSection,
       insertResourceLink: _insertResourceLink,
       pseudo_tile_id: pseudo_tile_id,
+      dispatch: props.dispatch,
       handleCreateViewer: props.handleCreateViewer
     });
   }, []);
@@ -2606,7 +2618,10 @@ function ConsoleCodeItem(props) {
     props.handleDelete(props.unique_id);
   }, [props.show_spinner]);
   var _clearOutput = (0, _react.useCallback)(function () {
-    props.setConsoleItemValue(props.unique_id, "output_dict", {});
+    props.dispatch({
+      type: "clear_code_output",
+      unique_id: props.unique_id
+    });
   }, []);
   var _extraKeys = (0, _react.useMemo)(function () {
     return [{
@@ -2820,10 +2835,20 @@ function ConsoleCodeItem(props) {
   }, /*#__PURE__*/_react["default"].createElement(_core.Spinner, {
     size: 13,
     value: spinner_val
-  }))), /*#__PURE__*/_react["default"].createElement("div", {
+  }))), (!props.table || props.output_text && props.output_text != "") && /*#__PURE__*/_react["default"].createElement("div", {
     className: "log-code-output",
     dangerouslySetInnerHTML: output_dict
-  })))));
+  }), props.table && /*#__PURE__*/_react["default"].createElement("div", {
+    className: "log-code-output",
+    style: {
+      paddingBottom: 15
+    }
+  }, /*#__PURE__*/_react["default"].createElement(_simple_table.SimpleTable, {
+    key: props.unique_id,
+    uid: props.unique_id,
+    expandRows: false,
+    data_dict_list: props.table
+  }))))));
 }
 ConsoleCodeItem = /*#__PURE__*/(0, _react.memo)(ConsoleCodeItem);
 function ResourceLinkButton(props) {

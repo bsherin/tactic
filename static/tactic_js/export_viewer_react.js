@@ -7,10 +7,11 @@ Object.defineProperty(exports, "__esModule", {
 exports.ExportsViewer = ExportsViewer;
 var _react = _interopRequireWildcard(require("react"));
 var _core = require("@blueprintjs/core");
-var _blueprint_react_widgets = require("./blueprint_react_widgets.js");
-var _communication_react = require("./communication_react.js");
+var _blueprint_react_widgets = require("./blueprint_react_widgets");
+var _communication_react = require("./communication_react");
 var _utilities_react = require("./utilities_react");
 var _error_drawer = require("./error_drawer");
+var _simple_table = require("./simple_table");
 function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t3 in e) "default" !== _t3 && {}.hasOwnProperty.call(e, _t3) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t3)) && (i.get || i.set) ? o(f, _t3, i) : f[_t3] = e[_t3]); return f; })(e, t); }
 function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, "_invoke", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError("Generator is already running"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = "next"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i["return"]) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine2(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, "Generator"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, "toString", function () { return "[object Generator]"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }
 function _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, "", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { if (r) i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n;else { var o = function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); }; o("next", 0), o("throw", 1), o("return", 2); } }, _regeneratorDefine2(e, r, n, t); }
@@ -208,6 +209,11 @@ function ExportsViewer(props) {
     _useStateAndRef4 = _slicedToArray(_useStateAndRef3, 3),
     set_max_rows = _useStateAndRef4[1],
     max_rows_ref = _useStateAndRef4[2];
+  var _useStateAndRef5 = (0, _utilities_react.useStateAndRef)(false),
+    _useStateAndRef6 = _slicedToArray(_useStateAndRef5, 3),
+    expand_rows = _useStateAndRef6[0],
+    set_expand_rows = _useStateAndRef6[1],
+    expand_rows_ref = _useStateAndRef6[2];
   var _useState9 = (0, _react.useState)(null),
     _useState0 = _slicedToArray(_useState9, 2),
     exports_info_value = _useState0[0],
@@ -224,17 +230,22 @@ function ExportsViewer(props) {
     _useState14 = _slicedToArray(_useState13, 2),
     running = _useState14[0],
     set_running = _useState14[1];
-  var _useState15 = (0, _react.useState)(""),
+  var _useState15 = (0, _react.useState)(false),
     _useState16 = _slicedToArray(_useState15, 2),
-    exports_body_value = _useState16[0],
-    set_exports_body_value = _useState16[1];
-  var _useState17 = (0, _react.useState)(null),
+    showingTable = _useState16[0],
+    setShowingTable = _useState16[1];
+  var _useState17 = (0, _react.useState)(""),
     _useState18 = _slicedToArray(_useState17, 2),
-    set_type = _useState18[1];
-  var _useState19 = (0, _react.useState)({}),
+    exports_body_value = _useState18[0],
+    set_exports_body_value = _useState18[1];
+  var _useState19 = (0, _react.useState)(null),
     _useState20 = _slicedToArray(_useState19, 2),
-    pipe_dict = _useState20[0],
-    set_pipe_dict = _useState20[1];
+    set_type = _useState20[1];
+  var _useState21 = (0, _react.useState)({}),
+    _useState22 = _slicedToArray(_useState21, 2),
+    pipe_dict = _useState22[0],
+    set_pipe_dict = _useState22[1];
+  var simpleTableId = (0, _react.useRef)(null);
   var pushCallback = (0, _utilities_react.useCallbackStack)();
   var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
   (0, _react.useEffect)(function () {
@@ -261,6 +272,9 @@ function ExportsViewer(props) {
   function _handleMaxRowsChange(new_value) {
     set_max_rows(parseInt(new_value));
     pushCallback(_eval);
+  }
+  function _handleExpandChange(new_value) {
+    set_expand_rows(new_value == "true");
   }
   function _updateExportsList() {
     return _updateExportsList2.apply(this, arguments);
@@ -291,6 +305,8 @@ function ExportsViewer(props) {
     return _updateExportsList2.apply(this, arguments);
   }
   function _displayResult(data) {
+    simpleTableId.current = (0, _utilities_react.guid)();
+    setShowingTable(data["is_table"]);
     set_exports_body_value(data["the_html"]);
     set_show_spinner(false);
     set_running(false);
@@ -406,9 +422,12 @@ function ExportsViewer(props) {
     }));
     return _sendToConsole2.apply(this, arguments);
   }
-  var exports_body_dict = {
-    __html: exports_body_value
-  };
+  var exports_body_dict = {};
+  if (!showingTable) {
+    exports_body_dict = {
+      __html: exports_body_value
+    };
+  }
   var exports_class = props.console_is_shrunk ? "am-shrunk" : "not-shrunk";
   var spinner_val = running ? null : 0;
   if (props.console_is_zoomed) {
@@ -470,7 +489,11 @@ function ExportsViewer(props) {
   }, /*#__PURE__*/_react["default"].createElement("span", {
     className: "selected-export bottom-heading-element mr-2"
   }, selected_export_short_name), key_list && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.SelectList, {
-    option_list: key_list,
+    option_list: key_list.map(function (key) {
+      return {
+        key: key
+      };
+    }),
     onChange: _handleKeyListChange,
     the_value: key_list_value,
     variant: "minimal",
@@ -514,11 +537,24 @@ function ExportsViewer(props) {
     pipe_dict: pipe_dict,
     value: selected_export_ref.current,
     handleChange: _handleExportListChange
-  }), /*#__PURE__*/_react["default"].createElement(_core.Divider, null), /*#__PURE__*/_react["default"].createElement("div", {
+  }), /*#__PURE__*/_react["default"].createElement(_core.Divider, null), showingTable ? /*#__PURE__*/_react["default"].createElement("div", {
     style: {
       flex: " 1 1 0",
       height: "100%",
-      overflow: "auto"
+      minWidth: 0
+    },
+    className: "exports-body"
+  }, /*#__PURE__*/_react["default"].createElement(_simple_table.SimpleTable, {
+    key: simpleTableId.current,
+    uid: simpleTableId.current,
+    expandRows: expand_rows_ref.current,
+    data_dict_list: exports_body_value
+  })) : /*#__PURE__*/_react["default"].createElement("div", {
+    style: {
+      flex: " 1 1 0",
+      height: "100%",
+      overflow: "auto",
+      minWidth: 0
     },
     className: "exports-body contingent-scroll",
     dangerouslySetInnerHTML: exports_body_dict
@@ -526,15 +562,50 @@ function ExportsViewer(props) {
     className: "exports-footing d-flex flex-row justify-content-between"
   }, /*#__PURE__*/_react["default"].createElement("span", {
     className: "exports-info bottom-heading-element ml-2"
-  }, exports_info_value), /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
+  }, exports_info_value), /*#__PURE__*/_react["default"].createElement("span", {
+    style: {
+      display: "flex",
+      flexDirection: "row"
+    }
+  }, showingTable && /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
+    label: "expand rows",
+    inline: true,
+    style: {
+      marginRight: 15
+    }
+  }, /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.SelectList, {
+    option_list: [{
+      label: "false",
+      value: false
+    }, {
+      label: "true",
+      value: true
+    }],
+    onChange: _handleExpandChange,
+    the_value: expand_rows.current,
+    variant: "minimal",
+    fontSize: 11
+  })), /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
     label: "max rows",
     inline: true
   }, /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.SelectList, {
-    option_list: [25, 100, 250, 500],
+    option_list: [{
+      label: "25",
+      value: 25
+    }, {
+      label: "100",
+      value: 100
+    }, {
+      label: "250",
+      value: 250
+    }, {
+      label: "500",
+      value: 500
+    }],
     onChange: _handleMaxRowsChange,
     the_value: max_rows_ref.current,
     variant: "minimal",
     fontSize: 11
-  }))))));
+  })))))));
 }
 exports.ExportsViewer = ExportsViewer = /*#__PURE__*/(0, _react.memo)(ExportsViewer);

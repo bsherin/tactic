@@ -9,7 +9,7 @@ import hash from "object-hash"
 
 import {useCallbackStack} from "./utilities_react";
 
-export {BlueprintTable, compute_added_column_width}
+export {BlueprintTable, compute_added_column_width, compute_initial_column_widths}
 
 const MAX_INITIAL_CELL_WIDTH = 400;
 

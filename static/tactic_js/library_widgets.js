@@ -5,6 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.BpSelectorTable = BpSelectorTable;
 exports.SearchForm = SearchForm;
+exports.compute_initial_column_widths = compute_initial_column_widths;
 var _react = _interopRequireWildcard(require("react"));
 var _core = require("@blueprintjs/core");
 var _table = require("@blueprintjs/table");

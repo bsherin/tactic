@@ -13,10 +13,11 @@ import {
 } from "@blueprintjs/core";
 import {Cell, Column, Table, ColumnHeaderCell, SelectionModes, TruncatedFormat, Regions} from "@blueprintjs/table";
 
-import { useStateAndRef, useDebounce } from "./utilities_react";
+import {useDebounce } from "./utilities_react";
 
 export {SearchForm}
 export {BpSelectorTable}
+export {compute_initial_column_widths};
 
 function SearchForm(props) {
     props = {

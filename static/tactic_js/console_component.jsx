@@ -54,6 +54,7 @@ import {DialogContext} from "./modal_react"
 import {useCallbackStack, useStateAndRef, useConstructor} from "./utilities_react";
 import {ErrorDrawerContext} from "./error_drawer";
 import {AssistantContext} from "./assistant";
+import {SimpleTable} from "./simple_table";
 
 export {ConsoleComponent}
 
@@ -205,6 +206,8 @@ function ConsoleComponent(props) {
                     },
                     consoleCodePrint: (data) => _appendConsoleItemOutput(data),
                     consoleCodeOverwrite: (data) => _setConsoleItemOutput(data),
+                    consoleCodeTable: (data) => _appendTableToConsoleItem(data),
+
                 };
                 handlerDict[data.console_message](data)
             }
@@ -934,6 +937,14 @@ function ConsoleComponent(props) {
         })
     }
 
+    function _appendTableToConsoleItem(data) {
+        props.dispatch({
+            type: "append_table_to_console_item_output",
+            unique_id: data.console_id,
+            table_data: data.table_data,
+        })
+    }
+
     function _appendConsoleItemOutput(data) {
         //let current = get_console_item_entry(data.console_id).output_dict;
         // if (current != "") {
@@ -1259,6 +1270,7 @@ function ConsoleComponent(props) {
             deleteSection: _deleteSection,
             insertResourceLink: _insertResourceLink,
             pseudo_tile_id: pseudo_tile_id,
+            dispatch: props.dispatch,
             handleCreateViewer: props.handleCreateViewer,
         })
     }, []);
@@ -2104,7 +2116,7 @@ function ConsoleCodeItem(props) {
     }, [props.show_spinner]);
 
     const _clearOutput = useCallback(() => {
-        props.setConsoleItemValue(props.unique_id, "output_dict", {})
+        props.dispatch({type: "clear_code_output", unique_id: props.unique_id});
     }, []);
 
     const _extraKeys = useMemo(() => {
@@ -2314,8 +2326,19 @@ function ConsoleCodeItem(props) {
                                     </div>
                                 }
                             </div>
-                            < div className='log-code-output'
-                                  dangerouslySetInnerHTML={output_dict}/>
+                            { (!props.table || (props.output_text && props.output_text != "")) &&
+                                <div className='log-code-output'
+                                      dangerouslySetInnerHTML={output_dict}/>
+                            }
+                            { props.table &&
+                                <div className="log-code-output"
+                                     style={{paddingBottom: 15}}
+                                >
+                                <SimpleTable key={props.unique_id} uid={props.unique_id}
+                                                 expandRows={false}
+                                                 data_dict_list={props.table} />
+                                </div>
+                            }
                         </div>
 
                     </Fragment>

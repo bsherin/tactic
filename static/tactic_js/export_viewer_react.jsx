@@ -3,10 +3,12 @@ import React from "react";
 import {Fragment, useState, useEffect, useRef, memo, useContext} from "react";
 import { Card, Button, InputGroup, Spinner, ButtonGroup, FormGroup, Divider} from "@blueprintjs/core";
 
-import {GlyphButton, SelectList} from "./blueprint_react_widgets.js";
-import {postWithCallback, postPromise} from "./communication_react.js"
-import {useCallbackStack, useStateAndRef} from "./utilities_react";
+import {GlyphButton, SelectList} from "./blueprint_react_widgets";
+import {postWithCallback, postPromise} from "./communication_react"
+import {useCallbackStack, useStateAndRef, guid} from "./utilities_react";
 import {ErrorDrawerContext} from "./error_drawer";
+
+import {SimpleTable} from "./simple_table";
 
 export {ExportsViewer}
 
@@ -147,13 +149,17 @@ function ExportsViewer(props) {
     const [key_list_value, set_key_list_value] = useState(null);
     const [tail_value, set_tail_value] = useState("");
     const [, set_max_rows, max_rows_ref] = useStateAndRef(25);
+    const [expand_rows, set_expand_rows, expand_rows_ref] = useStateAndRef(false);
     const [exports_info_value, set_exports_info_value] = useState(null);
     const [selected_export_short_name, set_selected_export_short_name] = useState(null);
     const [show_spinner, set_show_spinner] = useState(false);
     const [running, set_running] = useState(false);
+    const [showingTable, setShowingTable] = useState(false);
     const [exports_body_value, set_exports_body_value] = useState("");
     const [, set_type] = useState(null);
     const [pipe_dict, set_pipe_dict] = useState({});
+
+    const simpleTableId = useRef(null);
 
     const pushCallback = useCallbackStack();
 
@@ -188,6 +194,11 @@ function ExportsViewer(props) {
         pushCallback(_eval)
     }
 
+    function _handleExpandChange(new_value) {
+        set_expand_rows(new_value == "true");
+    }
+
+
     async function _updateExportsList() {
         try {
             let data = await postPromise(props.main_id, "get_full_pipe_dict", {}, props.main_id);
@@ -199,6 +210,8 @@ function ExportsViewer(props) {
     }
 
     function _displayResult(data) {
+        simpleTableId.current = guid();
+        setShowingTable(data["is_table"])
         set_exports_body_value(data["the_html"]);
         set_show_spinner(false);
         set_running(false)
@@ -307,7 +320,10 @@ function ExportsViewer(props) {
         }
     }
 
-    let exports_body_dict = {__html: exports_body_value};
+    let exports_body_dict = {}
+    if (!showingTable) {
+        exports_body_dict = {__html: exports_body_value};
+    }
     let exports_class = props.console_is_shrunk ? "am-shrunk" : "not-shrunk";
     let spinner_val = running ? null : 0;
     if (props.console_is_zoomed) {
@@ -356,7 +372,7 @@ function ExportsViewer(props) {
                      {(Object.keys(pipe_dict).length > 0) && (
                          <form onSubmit={_eval} className="d-flex flex-row">
                                <span className="selected-export bottom-heading-element mr-2">{selected_export_short_name}</span>
-                               {key_list && <SelectList option_list={key_list}
+                               {key_list && <SelectList option_list={key_list.map((key) => {return {key}})}
                                                          onChange={_handleKeyListChange}
                                                          the_value={key_list_value}
                                                          variant="minimal"
@@ -392,18 +408,43 @@ function ExportsViewer(props) {
                                                handleChange={_handleExportListChange}
                              />
                              <Divider/>
-                             <div style={{flex: " 1 1 0", height: "100%", overflow: "auto"}}
+                             {showingTable ?
+                                 <div style={{flex: " 1 1 0", height: "100%", minWidth: 0}} className="exports-body">
+                                    <SimpleTable key={simpleTableId.current} uid={simpleTableId.current}
+                                                 expandRows={expand_rows_ref.current}
+                                                 data_dict_list={exports_body_value} />
+                                 </div> :
+                             <div style={{flex: " 1 1 0", height: "100%", overflow: "auto", minWidth: 0}}
                                   className="exports-body contingent-scroll" dangerouslySetInnerHTML={exports_body_dict}/>
+                             }
                          </div>
                          <div className="exports-footing d-flex flex-row justify-content-between">
                              <span className="exports-info bottom-heading-element ml-2">{exports_info_value}</span>
-                             <FormGroup label="max rows" inline={true}>
-                                 <SelectList option_list={[25, 100, 250, 500]}
-                                             onChange={_handleMaxRowsChange}
-                                             the_value={max_rows_ref.current}
-                                             variant="minimal"
-                                             fontSize={11}/>
-                             </FormGroup>
+                             <span style={{display: "flex", flexDirection: "row"}}>
+                                 { showingTable &&
+                                     <FormGroup label="expand rows" inline={true} style={{marginRight: 15}}>
+                                         <SelectList option_list={[
+                                             {label: "false", value: false},
+                                             {label: "true", value: true}]}
+                                                     onChange={_handleExpandChange}
+                                                     the_value={expand_rows.current}
+                                                     variant="minimal"
+                                                     fontSize={11}/>
+
+                                     </FormGroup>
+                                 }
+                                 <FormGroup label="max rows" inline={true}>
+                                     <SelectList option_list={[
+                                         {label:"25", value: 25},
+                                         {label:"100", value: 100},
+                                         {label:"250", value: 250},
+                                         {label:"500", value: 500}]}
+                                                 onChange={_handleMaxRowsChange}
+                                                 the_value={max_rows_ref.current}
+                                                 variant="minimal"
+                                                 fontSize={11}/>
+                                 </FormGroup>
+                             </span>
                          </div>
                      </div>
              }

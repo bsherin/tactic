@@ -174,6 +174,46 @@ class OtherAPIMIxin:
                 res.append([label] + s.tolist())
         return res
 
+    def convert_df_to_dictlist(self, df, max_rows=None, include_row_labels=False):
+        if max_rows is not None:
+            new_df = df.head(max_rows)
+        else:
+            new_df = df
+
+        return new_df.to_dict(orient='records')
+
+    def convert_data_to_dlist(self, data, max_rows=100):
+        dlist = []
+        if isinstance(data, _pd.DataFrame):
+            dlist = self.convert_df_to_dictlist(data, max_rows)
+        elif isinstance(data, list) and isinstance(data[0], dict):
+            df = _pd.DataFrame(data)
+            dlist = self.convert_df_to_dictlist(df, max_rows)
+        elif isinstance(data, TacticDocument):
+            df = data.df
+            # delete column "__filenamee__" if it exists
+            df = df.drop(columns=["__filename__"], errors='ignore')
+            dlist = self.convert_df_to_dictlist(df, max_rows)
+        elif isinstance(data, nltk.FreqDist):
+            dlist = [["word", "freq"]] + data.most_common(max_rows)
+        elif isinstance(data, dict):
+            dlist = []
+            for key, the_val in data.items():
+                dlist.append({"key": key, "value": the_val})
+            dlist = dlist[:max_rows]
+        elif isinstance(data, list):
+            dlist = [{"value": val} for val in data[:max_rows]]
+        elif isinstance(data, _pd.Series):
+            ddict = dict(data)
+            dlist = []
+            for n, key, the_val in enumerate(ddict.items()):
+                if k > max_rows:
+                    break
+                dlist.append({"key": key, "value": the_val})
+        else:
+            dlist = data
+        return dlist
+
     def html_table(self, data, title=None, click_type="word-clickable", sortable=True,
                    sidebyside=False, has_header=True, max_rows=100, header_style=None, body_style=None,
                    column_order=None, include_row_labels=True, outer_border=False, sticky_header=False,

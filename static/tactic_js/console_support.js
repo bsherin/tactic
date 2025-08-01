@@ -108,10 +108,20 @@ function consoleItemsReducer(console_items, action) {
     case "change_code_output":
       new_items = console_items.map(function (t) {
         if (t.unique_id === action.unique_id) {
-          var new_output_dict = _objectSpread(_objectSpread({}, t.output_dict), {}, _defineProperty({}, action.row, action.new_value));
-          var new_t = _objectSpread(_objectSpread({}, t), {}, {
-            output_dict: new_output_dict
-          });
+          var new_t = _objectSpread({}, t);
+          new_t["output_dict"] = action.new_value;
+          return updateOutputText(new_t);
+        } else {
+          return t;
+        }
+      });
+      break;
+    case "clear_code_output":
+      new_items = console_items.map(function (t) {
+        if (t.unique_id === action.unique_id) {
+          var new_t = _objectSpread({}, t);
+          new_t["output_dict"] = {};
+          new_t["table"] = null;
           return updateOutputText(new_t);
         } else {
           return t;
@@ -124,6 +134,17 @@ function consoleItemsReducer(console_items, action) {
           var new_t = _objectSpread({}, t);
           new_t["output_dict"][action.row] = action.new_value;
           new_t = updateOutputText(new_t);
+          return new_t;
+        } else {
+          return t;
+        }
+      });
+      break;
+    case "append_table_to_console_item_output":
+      new_items = console_items.map(function (t) {
+        if (t.unique_id === action.unique_id) {
+          var new_t = _objectSpread({}, t);
+          new_t["table"] = action.table_data;
           return new_t;
         } else {
           return t;
