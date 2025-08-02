@@ -2533,6 +2533,10 @@ function ConsoleCodeItem(props) {
   var elRef = (0, _react.useRef)(null);
   var am_selected_previous = (0, _react.useRef)(false);
   var setFocusFunc = (0, _react.useRef)(null);
+  var simpleTableId = (0, _react.useRef)(null);
+  (0, _react.useEffect)(function () {
+    simpleTableId.current = (0, _utilities_react.guid)();
+  }, [props.table]);
   (0, _react.useEffect)(function () {
     if (props.am_selected && !am_selected_previous.current && elRef && elRef.current) {
       scrollMeIntoView();
@@ -2844,8 +2848,8 @@ function ConsoleCodeItem(props) {
       paddingBottom: 15
     }
   }, /*#__PURE__*/_react["default"].createElement(_simple_table.SimpleTable, {
-    key: props.unique_id,
-    uid: props.unique_id,
+    key: simpleTableId.current,
+    uid: simpleTableId.current,
     expandRows: false,
     data_dict_list: props.table
   }))))));

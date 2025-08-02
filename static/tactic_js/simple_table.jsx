@@ -96,8 +96,10 @@ function SimpleTable(props) {
         if (props.expandRows) {
             _updateRowHeights();
         } else {
-            resetRowHeights();
-            table_ref.current?.invalidateGrid?.();
+            if (didRender.current) {
+                resetRowHeights();
+                table_ref.current?.invalidateGrid?.();
+            }
         }
         didRender.current = false;
     }, [props.expandRows]);

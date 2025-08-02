@@ -19,6 +19,7 @@ from qworker_alt import task_worthy_methods, QWorker, stop_thread, debug_log
 from qworker_alt import get_pika_connection, my_channel, my_connection, simple_uid, close_connection
 from matplotlib_utilities import MplFigure, ColorMapper
 import time
+import json
 
 ethread = None
 executing_console_id = None

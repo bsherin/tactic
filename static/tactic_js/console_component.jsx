@@ -6,7 +6,7 @@ import {Fragment, useState, useEffect, useRef, useCallback, useLayoutEffect, mem
 import {Icon, Card, ContextMenu, EditableText, Spinner, MenuDivider, Divider} from "@blueprintjs/core";
 import {Menu, MenuItem, ButtonGroup, Button} from "@blueprintjs/core";
 import {useHotkeys} from "@blueprintjs/core";
-import {SelectedPaneContext} from "./utilities_react";
+import {SelectedPaneContext, guid} from "./utilities_react";
 import _ from 'lodash';
 
 import hljs from 'highlight.js/lib/core';
@@ -941,7 +941,7 @@ function ConsoleComponent(props) {
         props.dispatch({
             type: "append_table_to_console_item_output",
             unique_id: data.console_id,
-            table_data: data.table_data,
+            table_data: data.table_data
         })
     }
 
@@ -2022,6 +2022,11 @@ function ConsoleCodeItem(props) {
     const elRef = useRef(null);
     const am_selected_previous = useRef(false);
     const setFocusFunc = useRef(null);
+    const simpleTableId = useRef(null);
+
+    useEffect(()=> {
+        simpleTableId.current = guid();
+    }, [props.table])
 
     useEffect(() => {
         if (props.am_selected && !am_selected_previous.current && elRef && elRef.current) {
@@ -2334,7 +2339,7 @@ function ConsoleCodeItem(props) {
                                 <div className="log-code-output"
                                      style={{paddingBottom: 15}}
                                 >
-                                <SimpleTable key={props.unique_id} uid={props.unique_id}
+                                <SimpleTable key={simpleTableId.current} uid={simpleTableId.current}
                                                  expandRows={false}
                                                  data_dict_list={props.table} />
                                 </div>

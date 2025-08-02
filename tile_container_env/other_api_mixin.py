@@ -179,11 +179,10 @@ class OtherAPIMIxin:
             new_df = df.head(max_rows)
         else:
             new_df = df
-
+        new_df = new_df.astype(str)
         return new_df.to_dict(orient='records')
 
     def convert_data_to_dlist(self, data, max_rows=100):
-        dlist = []
         if isinstance(data, _pd.DataFrame):
             dlist = self.convert_df_to_dictlist(data, max_rows)
         elif isinstance(data, list) and isinstance(data[0], dict):
@@ -199,17 +198,17 @@ class OtherAPIMIxin:
         elif isinstance(data, dict):
             dlist = []
             for key, the_val in data.items():
-                dlist.append({"key": key, "value": the_val})
+                dlist.append({"key": key, "value": str(the_val)})
             dlist = dlist[:max_rows]
         elif isinstance(data, list):
-            dlist = [{"value": val} for val in data[:max_rows]]
+            dlist = [{"value": str(val)} for val in data[:max_rows]]
         elif isinstance(data, _pd.Series):
             ddict = dict(data)
             dlist = []
             for n, key, the_val in enumerate(ddict.items()):
                 if k > max_rows:
                     break
-                dlist.append({"key": key, "value": the_val})
+                dlist.append({"key": key, "value": str(the_val)})
         else:
             dlist = data
         return dlist

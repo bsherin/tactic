@@ -655,6 +655,7 @@ class HostWorker(QWorker):
 
     @task_worthy
     def emit_to_client(self, data):
+        print("*** in emit_to_client with message " + data["message"])
         from tactic_app import socketio
         if "room" in data:
             room = data["room"]
@@ -665,6 +666,7 @@ class HostWorker(QWorker):
             namespace = data["namespace"]
         else:
             namespace = "/main"
+        print("about to do socketio.emit")
         socketio.emit(data["message"], data, namespace=namespace, room=room)
 
         return {"success": True}
