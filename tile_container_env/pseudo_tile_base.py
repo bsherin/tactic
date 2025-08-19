@@ -20,6 +20,7 @@ from qworker_alt import get_pika_connection, my_channel, my_connection, simple_u
 from matplotlib_utilities import MplFigure, ColorMapper
 import time
 import json
+from widgets import is_html_table_class, is_widget_render
 
 ethread = None
 executing_console_id = None
@@ -34,8 +35,6 @@ Tile = None
 Collection = None
 Tiles = None
 Pipes = None
-
-MAX_TABLE_ROWS = 50
 
 def display(txt):
     sys.stdout.overwrite(txt)
@@ -84,6 +83,19 @@ class ConsoleStringIO(StringIO):
         new_s = re.sub(">", "&gt;", new_s) + " ..."
         return new_s
 
+    def write_widget(self, widget_render):
+        sv_stdout = sys.stdout
+        sys.stdout = self.old_stdout  # This is necessary in case there is a print statement in post_task.
+        new_data = copy.copy(self.data)
+        new_data.update(widget_render)
+        new_data["force_open"] = True
+        new_data["console_message"] = "consoleCodeWidget"
+        new_data["counter"] = self.counter
+        self.my_tile.emit_console_message("consoleCodeWidget", new_data)
+        self.counter += 1
+        sys.stdout = sv_stdout
+        return
+        
     def write(self, s):
         sv_stdout = sys.stdout
         sys.stdout = self.old_stdout  # This is necessary in case there is a print statement in post_task.
@@ -99,13 +111,7 @@ class ConsoleStringIO(StringIO):
             self.counter += 1
         sys.stdout = sv_stdout
         return
-
-    def write_table(self, the_table):
-        self.data["force_open"] = True
-        self.data["table_data"] = the_table
-        self.data["console_message"] = "consoleCodeTable"
-        self.my_tile.emit_console_message("consoleCodeTable", self.data)
-
+        
     def overwrite(self, s):
         self.data["force_open"] = True
         if len(s) > MAX_SINGLE_WRITE:
@@ -348,22 +354,20 @@ class PseudoTileClass(TileBase, MplFigure):
 
                 eval_result = eval(ev_string)
                 eval_type_info = self._get_type_info(eval_result)
-                use_html_table = False
-                for c in self.html_table_classes:
-                    if isinstance(eval_result, c):
-                        use_html_table = True
-                if use_html_table:
-                    the_html = self.convert_data_to_dlist(eval_result, data["max_rows"])
+                if is_html_table_class(eval_result):
+                    table_widget = self.create_widget("table", eval_result)
+                    data.update(table_widget.render())
+                    data.update({"success": True})
                 else:
-                    max_chars = data["max_rows"] * ROUGH_CHARS_PER_EVAL_ROW
                     the_html = "<div class='export-header-text'>{}</div>".format(eval_type_info["info_string"])
-                    the_html += str(eval_result)[:max_chars]
+                    the_html += str(eval_result)
+                    data.update({"success": True, "is_widget": False, "the_html": the_html})
             except Exception as ex:
-                succcess = False
                 print("error in _evaluate_export in tile_base")
                 the_html = self.get_traceback_message(ex)
+                data.update({"success": False, "the_html": the_html, "is_widget": False})
 
-        data.update({"success": success, "the_html": the_html, "is_table": use_html_table})
+
         self.emit_export_viewer_message("display_result", data)
         executing_console_id = None
         self.post_event("check_exec_queue", {})
@@ -464,13 +468,10 @@ class PseudoTileClass(TileBase, MplFigure):
                 exec(code_to_exec, globals(), globals())
                 eval_res = eval(code_to_eval, globals(), globals())
                 if eval_res is not None:
-                    use_html_table = False
-                    for c in self.html_table_classes:
-                        if isinstance(eval_res, c):
-                            use_html_table = True
-                            break
-                    if use_html_table:
-                        sys.stdout.write_table(self.convert_data_to_dlist(eval_res, MAX_TABLE_ROWS))
+                    if is_html_table_class(eval_res):
+                        table_widget = self.create_widget("table", eval_res)
+                        table_widget.show()
+                        sys.stdout.counter += 1
                     else:
                         print(eval_res)
             else:

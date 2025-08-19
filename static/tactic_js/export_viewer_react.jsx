@@ -5,10 +5,10 @@ import { Card, Button, InputGroup, Spinner, ButtonGroup, FormGroup, Divider} fro
 
 import {GlyphButton, SelectList} from "./blueprint_react_widgets";
 import {postWithCallback, postPromise} from "./communication_react"
-import {useCallbackStack, useStateAndRef, guid} from "./utilities_react";
+import {useCallbackStack, useStateAndRef} from "./utilities_react";
 import {ErrorDrawerContext} from "./error_drawer";
 
-import {SimpleTable} from "./simple_table";
+import {TableWidget} from "./table_widget";
 
 export {ExportsViewer}
 
@@ -137,6 +137,10 @@ function ExportButtonList(props) {
 
 ExportButtonList = memo(ExportButtonList);
 
+const widgetDict = {
+    table: TableWidget
+}
+
 function ExportsViewer(props) {
     props = {
         style: {},
@@ -148,18 +152,17 @@ function ExportsViewer(props) {
     const [key_list, set_key_list] = useState(null);
     const [key_list_value, set_key_list_value] = useState(null);
     const [tail_value, set_tail_value] = useState("");
-    const [, set_max_rows, max_rows_ref] = useStateAndRef(25);
-    const [expand_rows, set_expand_rows, expand_rows_ref] = useStateAndRef(false);
     const [exports_info_value, set_exports_info_value] = useState(null);
     const [selected_export_short_name, set_selected_export_short_name] = useState(null);
     const [show_spinner, set_show_spinner] = useState(false);
     const [running, set_running] = useState(false);
-    const [showingTable, setShowingTable] = useState(false);
     const [exports_body_value, set_exports_body_value] = useState("");
     const [, set_type] = useState(null);
     const [pipe_dict, set_pipe_dict] = useState({});
-
-    const simpleTableId = useRef(null);
+    const [isWidget, setIsWidget] = useState(false);
+    const [widgetKind, setWidgetKind] = useState(null);
+    const [widgetId, setWidgetId] = useState(null);
+    const [initialWidgetDdata, setInitialWidgetData] = useState(null);
 
     const pushCallback = useCallbackStack();
 
@@ -189,16 +192,6 @@ function ExportsViewer(props) {
         }
     }
 
-    function _handleMaxRowsChange(new_value) {
-        set_max_rows(parseInt(new_value));
-        pushCallback(_eval)
-    }
-
-    function _handleExpandChange(new_value) {
-        set_expand_rows(new_value == "true");
-    }
-
-
     async function _updateExportsList() {
         try {
             let data = await postPromise(props.main_id, "get_full_pipe_dict", {}, props.main_id);
@@ -210,9 +203,15 @@ function ExportsViewer(props) {
     }
 
     function _displayResult(data) {
-        simpleTableId.current = guid();
-        setShowingTable(data["is_table"])
-        set_exports_body_value(data["the_html"]);
+        setIsWidget(data["is_widget"]);
+        if (data["is_widget"]) {
+            setWidgetKind(data["widget_kind"]);
+            setWidgetId(data["uid"]);
+            setInitialWidgetData(data["widget_data"])
+        }
+        else {
+            set_exports_body_value(data["the_html"]);
+        }
         set_show_spinner(false);
         set_running(false)
     }
@@ -222,7 +221,6 @@ function ExportsViewer(props) {
         let send_data = {
             "export_name": selected_export_ref.current,
             "tail": tail_value,
-            "max_rows": max_rows_ref.current
         };
         if (key_list) {
             send_data.key = key_list_value
@@ -320,9 +318,24 @@ function ExportsViewer(props) {
         }
     }
 
-    let exports_body_dict = {}
-    if (!showingTable) {
+    let exports_body_dict = {};
+    let the_widget;
+
+    if (!isWidget) {
         exports_body_dict = {__html: exports_body_value};
+    }
+    else {
+        let widgetData = initialWidgetDdata;
+        if (widgetKind in widgetDict) {
+            let WidgetComponent = widgetDict[widgetKind];
+            if (widgetData == null) {
+                widgetData = [];
+            }
+            the_widget = <WidgetComponent key={widgetId} uid={widgetId} main_id={props.main_id}
+                                          data={widgetData} />;
+        } else {
+            exports_body_dict = {__html: "<div class='exports-widget'>Unsupported widget type: " + widgetKind + "</div>"};
+        }
     }
     let exports_class = props.console_is_shrunk ? "am-shrunk" : "not-shrunk";
     let spinner_val = running ? null : 0;
@@ -408,11 +421,9 @@ function ExportsViewer(props) {
                                                handleChange={_handleExportListChange}
                              />
                              <Divider/>
-                             {showingTable ?
+                             {isWidget ?
                                  <div style={{flex: " 1 1 0", height: "100%", minWidth: 0}} className="exports-body">
-                                    <SimpleTable key={simpleTableId.current} uid={simpleTableId.current}
-                                                 expandRows={expand_rows_ref.current}
-                                                 data_dict_list={exports_body_value} />
+                                     {the_widget}
                                  </div> :
                              <div style={{flex: " 1 1 0", height: "100%", overflow: "auto", minWidth: 0}}
                                   className="exports-body contingent-scroll" dangerouslySetInnerHTML={exports_body_dict}/>
@@ -420,31 +431,6 @@ function ExportsViewer(props) {
                          </div>
                          <div className="exports-footing d-flex flex-row justify-content-between">
                              <span className="exports-info bottom-heading-element ml-2">{exports_info_value}</span>
-                             <span style={{display: "flex", flexDirection: "row"}}>
-                                 { showingTable &&
-                                     <FormGroup label="expand rows" inline={true} style={{marginRight: 15}}>
-                                         <SelectList option_list={[
-                                             {label: "false", value: false},
-                                             {label: "true", value: true}]}
-                                                     onChange={_handleExpandChange}
-                                                     the_value={expand_rows.current}
-                                                     variant="minimal"
-                                                     fontSize={11}/>
-
-                                     </FormGroup>
-                                 }
-                                 <FormGroup label="max rows" inline={true}>
-                                     <SelectList option_list={[
-                                         {label:"25", value: 25},
-                                         {label:"100", value: 100},
-                                         {label:"250", value: 250},
-                                         {label:"500", value: 500}]}
-                                                 onChange={_handleMaxRowsChange}
-                                                 the_value={max_rows_ref.current}
-                                                 variant="minimal"
-                                                 fontSize={11}/>
-                                 </FormGroup>
-                             </span>
                          </div>
                      </div>
              }

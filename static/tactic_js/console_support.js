@@ -46,7 +46,8 @@ function consoleItemsReducer(console_items, action) {
   var new_items;
   switch (action.type) {
     case "initialize":
-      new_items = processOutputDicts(action.new_items);
+      // new_items = processOutputDicts(action.new_items);
+      new_items = action.new_items;
       break;
     case "delete_item":
       new_items = console_items.filter(function (t) {
@@ -78,7 +79,8 @@ function consoleItemsReducer(console_items, action) {
       new_items = console_items.map(function (t) {
         if (t.unique === action.unique_id) {
           var new_t = _objectSpread({}, action.new_item);
-          return updateOutputText(new_t);
+          return new_t;
+          // return updateOutputText(new_t);
         } else {
           return t;
         }
@@ -98,7 +100,7 @@ function consoleItemsReducer(console_items, action) {
         if (t.unique_id === action.unique_id) {
           var new_t = _objectSpread({}, t);
           new_t[action.field] = action.new_value;
-          new_t = updateOutputText(new_t);
+          // new_t = updateOutputText(new_t);
           return new_t;
         } else {
           return t;
@@ -110,7 +112,8 @@ function consoleItemsReducer(console_items, action) {
         if (t.unique_id === action.unique_id) {
           var new_t = _objectSpread({}, t);
           new_t["output_dict"] = action.new_value;
-          return updateOutputText(new_t);
+          return new_t;
+          // return updateOutputText(new_t);
         } else {
           return t;
         }
@@ -121,8 +124,8 @@ function consoleItemsReducer(console_items, action) {
         if (t.unique_id === action.unique_id) {
           var new_t = _objectSpread({}, t);
           new_t["output_dict"] = {};
-          new_t["table"] = null;
-          return updateOutputText(new_t);
+          //return updateOutputText(new_t);
+          return new_t;
         } else {
           return t;
         }
@@ -133,29 +136,37 @@ function consoleItemsReducer(console_items, action) {
         if (t.unique_id === action.unique_id) {
           var new_t = _objectSpread({}, t);
           new_t["output_dict"][action.row] = action.new_value;
-          new_t = updateOutputText(new_t);
+          // new_t = updateOutputText(new_t);
           return new_t;
         } else {
           return t;
         }
       });
       break;
-    case "append_table_to_console_item_output":
-      new_items = console_items.map(function (t) {
-        if (t.unique_id === action.unique_id) {
-          var new_t = _objectSpread({}, t);
-          new_t["table"] = action.table_data;
-          return new_t;
-        } else {
-          return t;
-        }
-      });
-      break;
+
+    // case "append_widget_to_console_item_output":
+    //     new_items = console_items.map(t => {
+    //         if (t.unique_id === action.unique_id) {
+    //             let new_t = {...t};
+    //             const new_output = {
+    //                 widgetData: action.widget_data,
+    //                 widgetKind: action.widget_kind,
+    //                 widgetId: action["widget_uid"]
+    //             }
+    //             new_t["output_dict"][action.row] = new_output;
+    //             return new_t;
+    //         } else {
+    //             return t;
+    //         }
+    //     });
+    //     break;
+
     case "update_items":
       new_items = console_items.map(function (t) {
         if (t.unique_id in action.updates) {
           var update_dict = action.updates[t.unique_id];
-          return updateOutputText(_objectSpread(_objectSpread({}, t), update_dict));
+          return _objectSpread(_objectSpread({}, t), update_dict);
+          // return updateOutputText({...t, ...update_dict});
         } else {
           return t;
         }
@@ -163,7 +174,8 @@ function consoleItemsReducer(console_items, action) {
       break;
     case "add_at_index":
       new_items = _toConsumableArray(console_items);
-      (_new_items = new_items).splice.apply(_new_items, [action.insert_index, 0].concat(_toConsumableArray(processOutputDicts(action.new_items))));
+      // new_items.splice(action.insert_index, 0, ...processOutputDicts(action.new_items));
+      (_new_items = new_items).splice.apply(_new_items, [action.insert_index, 0].concat(_toConsumableArray(action.new_items)));
       break;
     case "open_listed_dividers":
       new_items = console_items.map(function (t) {

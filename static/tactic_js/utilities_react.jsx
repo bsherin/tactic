@@ -5,30 +5,35 @@
 import _ from 'lodash';
 import React from "react";
 import {useState, useEffect, useRef, useReducer, createContext} from "react";
-import { createRoot } from 'react-dom/client';
+import {createRoot} from 'react-dom/client';
 import {Spinner, Text} from "@blueprintjs/core";
 
-import { useImmerReducer } from 'use-immer';
+import {useImmerReducer} from 'use-immer';
 
 export {propsAreEqual, arrayMove, arraysMatch, get_ppi, isInt, hasAnyKey, copyToClipboard, getFileExtension};
 export {remove_duplicates, guid, scrollMeIntoView, renderSpinnerMessage};
-export {useConstructor, useCallbackStack, useStateAndRef, useReducerAndRef, useConnection,
-    useStateAndRefAndCounter, useDidMount, useImmerReducerAndRef, useDeepCompareEffect};
+export {
+    useConstructor, useCallbackStack, useStateAndRef, useReducerAndRef, useConnection,
+    useStateAndRefAndCounter, useDidMount, useImmerReducerAndRef, useDeepCompareEffect, useWidget
+};
 
 export {debounce, throttle, useDebounce, SelectedPaneContext, convertExtraKeys}
 
 function amSelected(ltab_id, lselectedTabIdRef) {
-        return !window.in_context || ltab_id === lselectedTabIdRef.current
-    }
+    return !window.in_context || ltab_id === lselectedTabIdRef.current
+}
 
 const SelectedPaneContext = createContext({
     tab_id: "",
     selectedTabIdRef: "",
     amSelected: amSelected,
     counter: 0,
-    addOmniItems: ()=>{},
-    closeTab: ()=>{},
-    refreshTab: ()=>{}
+    addOmniItems: () => {
+    },
+    closeTab: () => {
+    },
+    refreshTab: () => {
+    }
 });
 
 const convertExtraKeys = (extraKeys) => {
@@ -41,7 +46,27 @@ const convertExtraKeys = (extraKeys) => {
 };
 
 function isFunction(variable) {
-  return typeof variable === 'function';
+    return typeof variable === 'function';
+}
+
+function useWidget(widgetIdArg = null, widgetTypeArg = null, widgetDataArg = {}) {
+    const [widgetId, setWidgetId] = useState(widgetIdArg);
+    const [widgetType, setWidgetType] = useState(widgetTypeArg);
+    const [widgetData, setWidgetData] = useState(widgetDataArg);
+
+    function setWidget(newWidget) {
+        if ("id" in newWidget) {
+            setWidgetId(newWidget.id);
+        }
+        if ("type" in newWidget) {
+            setWidgetType(newWidget.type);
+        }
+        if ("data" in newWidget) {
+            setWidgetData(newWidget.data);
+        }
+    }
+
+    return [widgetId, widgetType, widgetData, setWidget];
 }
 
 // It's necessary to have effectcount be a ref. Otherwise there can be subtle bugs
@@ -68,8 +93,7 @@ function useCallbackStack(myId = "") {
                     console.log("Bad callback in useCallbackStack", myId)
                 }
             }
-        }
-        catch(err) {
+        } catch (err) {
             console.log("Problem invoking callback in useCallbackStack", err)
         }
     }
@@ -147,6 +171,7 @@ function useStateAndRefAndCounter(initial) {
         setValue(newValue);
         setCounter(counter + 1);
     }
+
     const [value, setValue] = useState(initial);
     const [counter, setCounter] = useState(0);
     const valueRef = useRef(value);
@@ -365,8 +390,8 @@ function renderSpinnerMessage(msg, selector = "#main-root") {
 
 function copyToClipboard(text) {
     if (navigator.clipboard) {
-        navigator.clipboard.writeText(text).then(function() {
-        }).catch(function(error) {
+        navigator.clipboard.writeText(text).then(function () {
+        }).catch(function (error) {
             console.error('Failed to copy text: ', error);
         });
     } else {

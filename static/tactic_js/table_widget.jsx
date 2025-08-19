@@ -1,13 +1,18 @@
 import React, {Fragment, useState, useRef, useEffect} from "react";
 
+import {postWithCallback} from "./communication_react";
+
 import {
     Cell,
     Column,
     Table,
     ColumnHeaderCell, TruncatedFormat, Regions,
 } from "@blueprintjs/table";
+import {FormGroup} from "@blueprintjs/core";
+import {SelectList} from "./blueprint_react_widgets";
+import {postPromise} from "./communication_react";
 
-export {SimpleTable}
+export {TableWidget}
 
 const DEFAULT_ROW_HEIGHT = 27;
 
@@ -73,19 +78,23 @@ function compute_initial_column_widths(table_selector, header_list, data_list, m
     return result
 }
 
-
-function SimpleTable(props) {
+function TableWidget(props) {
     props = {
-        data_dict_list: {},
+        dataDictList: {},
         maxColumnWidth: null,
         columnWidths: null,
-        uid: null,
         expandRows: false,
+        maxRows: 50,
         className: "",
+        uid: null,
+        main_id: null,
         ...props
     }
 
     const [columnWidths, setColumnWidths] = useState(null);
+    const [expandRows, setExpandRows] = useState(props.expandRows);
+    const [maxRows, setMaxRows] = useState(props.maxRows);
+    const [dataDictList, setDataDictList] = useState(props.data);
 
     const [fixedRowHeights, setFixedRowHeights] = useState(null);
 
@@ -93,7 +102,13 @@ function SimpleTable(props) {
     const didRender = useRef(false);
 
     useEffect(() => {
-        if (props.expandRows) {
+        return () => {
+            postWithCallback(props.main_id, "remove_widget", {uid: props.uid});
+        }
+    }, []);
+
+    useEffect(() => {
+        if (expandRows) {
             _updateRowHeights();
         } else {
             if (didRender.current) {
@@ -102,13 +117,13 @@ function SimpleTable(props) {
             }
         }
         didRender.current = false;
-    }, [props.expandRows]);
+    }, [expandRows]);
 
     function _cellRendererCreator(column_name) {
         return (rowIndex) => {
             let the_body;
-            if (Object.keys(props.data_dict_list[rowIndex]).includes(column_name)) {
-                let the_text = String(props.data_dict_list[rowIndex][column_name]);
+            if (Object.keys(dataDictList[rowIndex]).includes(column_name)) {
+                let the_text = String(dataDictList[rowIndex][column_name]);
                 the_body = (<TruncatedFormat>
                     {the_text}
                 </TruncatedFormat>)
@@ -132,9 +147,9 @@ function SimpleTable(props) {
     }
 
     function computeColumnWidths() {
-        if (Object.keys(props.data_dict_list).length == 0) return;
-        let cnames = Object.keys(props.data_dict_list[0] || {});
-        let bcwidths = compute_initial_column_widths(`.table-${props.uid}`, cnames, props.data_dict_list);
+        if (Object.keys(dataDictList).length == 0) return;
+        let cnames = Object.keys(dataDictList[0] || {});
+        let bcwidths = compute_initial_column_widths(`.table-${props.uid}`, cnames, dataDictList);
         let cwidths = [];
         if (props.maxColumnWidth) {
             for (let c of bcwidths) {
@@ -167,20 +182,36 @@ function SimpleTable(props) {
     }
 
     function columnNames() {
-        return Object.keys(props.data_dict_list[0] || {});
+        return Object.keys(dataDictList[0] || {});
     }
 
+    async function handleMaxRowsChange(new_value) {
+        const newVal = parseInt(new_value);
+        if (newVal == maxRows) return;
+
+        let data = await postPromise(props.main_id, "widget_get",
+            {uid: props.uid, nrows: newVal}, props.main_id);
+        console.log("returned from widget_get");
+        setFixedRowHeights(Array(data["widget_data"].length).fill(DEFAULT_ROW_HEIGHT));
+        setMaxRows(newVal);
+        setExpandRows(false);
+        setDataDictList(data["widget_data"])
+    }
+
+    function handleExpandChange(new_value) {
+        setExpandRows(new_value == "true");
+    }
 
     function _updateRowHeights() {
         let cnames = columnNames();
         setFixedRowHeights(null);
         table_ref.current.resizeRowsByApproximateHeight((rowIndex, colIndex) => {
-            return props.data_dict_list[rowIndex][cnames[colIndex]]
+            return dataDictList[rowIndex][cnames[colIndex]]
         }, {getNumBufferLines: 1});
     }
 
     function resetRowHeights() {
-        setFixedRowHeights(Array(props.data_dict_list.length).fill(DEFAULT_ROW_HEIGHT));
+        setFixedRowHeights(Array(dataDictList.length).fill(DEFAULT_ROW_HEIGHT));
     }
 
     function _columnHeaderNameRenderer(the_text) {
@@ -204,20 +235,46 @@ function SimpleTable(props) {
                        name={column_name}/>
     });
     return (
-        <Table ref={table_ref}
-               numRows={props.data_dict_list.length}
-               columns={columns}
-               rowHeights={fixedRowHeights}
-               className={`table-${props.uid} ${props.className}`}
-               cellRendererDependencies={[props.data_dict_list]}
-               enableColumnReordering={false}
-               enableColumnResizing={true}
-               defaultRowHeight={27}
-               columnWidths={props.columnWidths ? props.columnWidths : columnWidths}
-               onCompleteRender={_onCompleteRender}
-               enableRowHeader={false}
-        >
-            {columns}
-        </Table>
+        <div style={{height: "100%", position: "relative", overflow: "auto", display: "flex", flexDirection: "column"}}>
+            <Table ref={table_ref}
+                   numRows={dataDictList.length}
+                   columns={columns}
+                   rowHeights={fixedRowHeights}
+                   className={`table-${props.uid} ${props.className}`}
+                   cellRendererDependencies={[dataDictList]}
+                   enableColumnReordering={false}
+                   enableColumnResizing={true}
+                   defaultRowHeight={27}
+                   columnWidths={props.columnWidths ? props.columnWidths : columnWidths}
+                   onCompleteRender={_onCompleteRender}
+                   enableRowHeader={false}>
+                {columns}
+            </Table>
+            <div className="table-footing d-flex flex-row" style={{justifyContent: "flex-end"}}>
+                 <span style={{display: "flex", flexDirection: "row"}}>
+                     <FormGroup label="expand rows" inline={true} style={{marginRight: 15}}>
+                         <SelectList option_list={[
+                             {label: "false", value: false},
+                             {label: "true", value: true}]}
+                                     onChange={handleExpandChange}
+                                     value={expandRows}
+                                     variant="minimal"
+                                     fontSize={11}/>
+
+                     </FormGroup>
+                     <FormGroup label="max rows" inline={true}>
+                         <SelectList option_list={[
+                             {label: "25", value: 25},
+                             {label: "100", value: 100},
+                             {label: "250", value: 250},
+                             {label: "500", value: 500}]}
+                                     onChange={handleMaxRowsChange}
+                                     value={maxRows}
+                                     variant="minimal"
+                                     fontSize={11}/>
+                     </FormGroup>
+                 </span>
+            </div>
+        </div>
     )
 }

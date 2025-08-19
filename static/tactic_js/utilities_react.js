@@ -31,6 +31,7 @@ exports.useImmerReducerAndRef = useImmerReducerAndRef;
 exports.useReducerAndRef = useReducerAndRef;
 exports.useStateAndRef = useStateAndRef;
 exports.useStateAndRefAndCounter = useStateAndRefAndCounter;
+exports.useWidget = useWidget;
 var _lodash = _interopRequireDefault(require("lodash"));
 var _react = _interopRequireWildcard(require("react"));
 var _client = require("react-dom/client");
@@ -71,6 +72,35 @@ var convertExtraKeys = exports.convertExtraKeys = function convertExtraKeys(extr
 };
 function isFunction(variable) {
   return typeof variable === 'function';
+}
+function useWidget() {
+  var widgetIdArg = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+  var widgetTypeArg = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+  var widgetDataArg = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+  var _useState = (0, _react.useState)(widgetIdArg),
+    _useState2 = _slicedToArray(_useState, 2),
+    widgetId = _useState2[0],
+    setWidgetId = _useState2[1];
+  var _useState3 = (0, _react.useState)(widgetTypeArg),
+    _useState4 = _slicedToArray(_useState3, 2),
+    widgetType = _useState4[0],
+    setWidgetType = _useState4[1];
+  var _useState5 = (0, _react.useState)(widgetDataArg),
+    _useState6 = _slicedToArray(_useState5, 2),
+    widgetData = _useState6[0],
+    setWidgetData = _useState6[1];
+  function setWidget(newWidget) {
+    if ("id" in newWidget) {
+      setWidgetId(newWidget.id);
+    }
+    if ("type" in newWidget) {
+      setWidgetType(newWidget.type);
+    }
+    if ("data" in newWidget) {
+      setWidgetData(newWidget.data);
+    }
+  }
+  return [widgetId, widgetType, widgetData, setWidget];
 }
 
 // It's necessary to have effectcount be a ref. Otherwise there can be subtle bugs
@@ -143,10 +173,10 @@ var useConstructor = exports.useConstructor = function useConstructor() {
 };
 function useConnection(tsocket, initSocket) {
   if (!tsocket) return null;
-  var _useState = (0, _react.useState)(null),
-    _useState2 = _slicedToArray(_useState, 2),
-    connection_status = _useState2[0],
-    set_connection_status = _useState2[1];
+  var _useState7 = (0, _react.useState)(null),
+    _useState8 = _slicedToArray(_useState7, 2),
+    connection_status = _useState8[0],
+    set_connection_status = _useState8[1];
   function socketNotifier(connected) {
     set_connection_status(connected ? "up" : "down");
   }
@@ -162,10 +192,10 @@ function useConnection(tsocket, initSocket) {
   return connection_status;
 }
 function useStateAndRef(initial) {
-  var _useState3 = (0, _react.useState)(initial),
-    _useState4 = _slicedToArray(_useState3, 2),
-    value = _useState4[0],
-    setValue = _useState4[1];
+  var _useState9 = (0, _react.useState)(initial),
+    _useState0 = _slicedToArray(_useState9, 2),
+    value = _useState0[0],
+    setValue = _useState0[1];
   var valueRef = (0, _react.useRef)(value);
   valueRef.current = value;
   return [value, setValue, valueRef];
@@ -175,14 +205,14 @@ function useStateAndRefAndCounter(initial) {
     setValue(newValue);
     setCounter(counter + 1);
   }
-  var _useState5 = (0, _react.useState)(initial),
-    _useState6 = _slicedToArray(_useState5, 2),
-    value = _useState6[0],
-    setValue = _useState6[1];
-  var _useState7 = (0, _react.useState)(0),
-    _useState8 = _slicedToArray(_useState7, 2),
-    counter = _useState8[0],
-    setCounter = _useState8[1];
+  var _useState1 = (0, _react.useState)(initial),
+    _useState10 = _slicedToArray(_useState1, 2),
+    value = _useState10[0],
+    setValue = _useState10[1];
+  var _useState11 = (0, _react.useState)(0),
+    _useState12 = _slicedToArray(_useState11, 2),
+    counter = _useState12[0],
+    setCounter = _useState12[1];
   var valueRef = (0, _react.useRef)(value);
   valueRef.current = value;
   return [value, setMe, valueRef, counter];

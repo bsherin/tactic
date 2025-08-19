@@ -304,7 +304,6 @@ $log-panel-border-style: 1px solid #c7c7c7;
 .log-code-output {
     max-height: 350px;
     overflow: auto;
-    margin-bottom: 10px;
     padding: 10px 45px 0 40px;
 }
 
@@ -329,7 +328,7 @@ $log-panel-border-style: 1px solid #c7c7c7;
     }
 }
 
-.exports-footing {
+.exports-footing, .table-footing {
     display: flex;
     justify-content: flex-start;
     padding: 2px;

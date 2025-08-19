@@ -27,7 +27,7 @@ var _settings = require("./settings");
 var _modal_react = require("./modal_react");
 var _error_drawer = require("./error_drawer");
 var _assistant = require("./assistant");
-var _simple_table = require("./simple_table");
+var _table_widget = require("./table_widget");
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t11 in e) "default" !== _t11 && {}.hasOwnProperty.call(e, _t11) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t11)) && (i.get || i.set) ? o(f, _t11, i) : f[_t11] = e[_t11]); return f; })(e, t); }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
@@ -287,8 +287,8 @@ function ConsoleComponent(props) {
           consoleCodeOverwrite: function consoleCodeOverwrite(data) {
             return _setConsoleItemOutput(data);
           },
-          consoleCodeTable: function consoleCodeTable(data) {
-            return _appendTableToConsoleItem(data);
+          consoleCodeWidget: function consoleCodeWidget(data) {
+            return _appendWidgetToConsoleItem(data);
           }
         };
         handlerDict[data.console_message](data);
@@ -1387,11 +1387,17 @@ function ConsoleComponent(props) {
       updates: updates
     });
   }
-  function _appendTableToConsoleItem(data) {
+  function _appendWidgetToConsoleItem(data) {
+    var vdict = {
+      widgetId: data["uid"],
+      widgetKind: data["widget_kind"],
+      widgetData: data["widget_data"]
+    };
     props.dispatch({
-      type: "append_table_to_console_item_output",
+      type: "change_code_output_row",
       unique_id: data.console_id,
-      table_data: data.table_data
+      row: data.counter,
+      new_value: vdict
     });
   }
   function _appendConsoleItemOutput(data) {
@@ -1407,14 +1413,22 @@ function ConsoleComponent(props) {
       type: "change_code_output_row",
       unique_id: data.console_id,
       row: data.counter,
-      new_value: data.result_text
+      new_value: {
+        widgetId: (0, _utilities_react.guid)(),
+        widgetKind: "text",
+        widgetData: data["result_text"]
+      }
     });
 
     // _setConsoleItemValue(data.console_id, "output_dict", current)
   }
   function _setConsoleItemOutput(data) {
     var current = {};
-    current[-1] = data.result_text;
+    current[-1] = {
+      widgetId: (0, _utilities_react.guid)(),
+      widgetKind: "text",
+      widgetData: data["result_text"]
+    };
     // if (current.length > MAX_OUTPUT_LENGTH) {
     //     current = current.slice(-1 * MAX_OUTPUT_LENGTH,)
     // }
@@ -2526,6 +2540,23 @@ function BlobItem(props) {
   }))))));
 }
 BlobItem = /*#__PURE__*/(0, _react.memo)(BlobItem);
+function TextWidget(props) {
+  props = _objectSpread({
+    widgetId: props.widgetId,
+    data: ""
+  }, props);
+  var output_dict = {
+    __html: props.data
+  };
+  return /*#__PURE__*/_react["default"].createElement("div", {
+    key: props.widgetId,
+    dangerouslySetInnerHTML: output_dict
+  });
+}
+var widgetDict = {
+  text: TextWidget,
+  table: _table_widget.TableWidget
+};
 function ConsoleCodeItem(props) {
   props = _objectSpread({
     summary_text: null
@@ -2743,9 +2774,35 @@ function ConsoleCodeItem(props) {
   if (props.in_section) {
     panel_class += " in-section";
   }
-  var output_dict = {
-    __html: props.output_text
-  };
+  var sortedOutputKeys = Object.keys(props.output_dict).map(Number).sort(function (a, b) {
+    return a - b;
+  });
+  //let output_dict = {__html: props.output_text};
+  var outputWidgets = sortedOutputKeys.map(function (idx) {
+    var outputDict = props.output_dict[idx];
+    var widgetKind = outputDict["widgetKind"];
+    var widgetId = outputDict["widgetId"];
+    var widgetData = outputDict["widgetData"];
+    var the_widget;
+    if (widgetKind in widgetDict) {
+      var WidgetComponent = widgetDict[widgetKind];
+      the_widget = /*#__PURE__*/_react["default"].createElement(WidgetComponent, {
+        key: widgetId,
+        uid: widgetId,
+        main_id: props.main_id,
+        data: widgetData
+      });
+    } else {
+      var _WidgetComponent = widgetDict["text"];
+      the_widget = /*#__PURE__*/_react["default"].createElement(_WidgetComponent, {
+        key: widgetId,
+        uid: widgetId,
+        main_id: props.main_id,
+        data: "Widget kind not found ".concat(widgetId, ", ").concat(widgetKind, " ").concat(widgetData)
+      });
+    }
+    return the_widget;
+  });
   var spinner_val = props.running ? null : 0;
 
   // noinspection JSValidateTypes
@@ -2754,6 +2811,7 @@ function ConsoleCodeItem(props) {
   }, /*#__PURE__*/_react["default"].createElement("div", {
     className: panel_class + " d-flex flex-row",
     ref: elRef,
+    style: MB10_STYLE,
     onClick: _consoleItemClick,
     id: props.unique_id
   }, /*#__PURE__*/_react["default"].createElement("div", {
@@ -2839,20 +2897,12 @@ function ConsoleCodeItem(props) {
   }, /*#__PURE__*/_react["default"].createElement(_core.Spinner, {
     size: 13,
     value: spinner_val
-  }))), (!props.table || props.output_text && props.output_text != "") && /*#__PURE__*/_react["default"].createElement("div", {
-    className: "log-code-output",
-    dangerouslySetInnerHTML: output_dict
-  }), props.table && /*#__PURE__*/_react["default"].createElement("div", {
+  }))), outputWidgets && outputWidgets.length > 0 && /*#__PURE__*/_react["default"].createElement("div", {
     className: "log-code-output",
     style: {
       paddingBottom: 15
     }
-  }, /*#__PURE__*/_react["default"].createElement(_simple_table.SimpleTable, {
-    key: simpleTableId.current,
-    uid: simpleTableId.current,
-    expandRows: false,
-    data_dict_list: props.table
-  }))))));
+  }, outputWidgets)))));
 }
 ConsoleCodeItem = /*#__PURE__*/(0, _react.memo)(ConsoleCodeItem);
 function ResourceLinkButton(props) {

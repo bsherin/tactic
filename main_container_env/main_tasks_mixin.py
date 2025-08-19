@@ -1518,10 +1518,26 @@ class ExportsTasksMixin:
         if "key" in data:
             ndata["key"] = data["key"]
         ndata["tail"] = data["tail"]
-        ndata["max_rows"] = int(data["max_rows"])
         ndata["console_id"] = "export_viewer"
 
         self.mworker.post_task(self.pseudo_tile_id, "_evaluate_export", ndata)
+        return
+
+    @task_worthy
+    def remove_widget(self, data):
+        if self.pseudo_tile_id is None:
+            self.create_pseudo_tile()
+            return
+        self.mworker.post_task(self.pseudo_tile_id, "remove_widget", data)
+        return
+
+    @task_worthy_manual_submit
+    def widget_get(self, data, task_packet):
+        if self.pseudo_tile_id is None:
+            self.create_pseudo_tile()
+        def got_response(response_data):
+            self.mworker.submit_response(task_packet, response_data)
+        self.mworker.post_task(self.pseudo_tile_id, "widget_get", data, got_response)
         return
 
     @task_worthy

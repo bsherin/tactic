@@ -9,6 +9,7 @@ from matplotlib_utilities import MplFigure, color_palette_names, ColorMapper
 # from types import NoneType
 import os
 import traceback
+import uuid
 import pickle
 from pickle import UnpicklingError
 from communication_utils import is_jsonizable, make_python_object_jsonizable, debinarize_python_object
@@ -28,6 +29,8 @@ import document_object
 from qworker_alt import debug_log
 import copy
 from qworker_alt import task_worthy_methods
+
+from widgets import kind_dict
 RETRIES = os.environ.get("RETRIES")
 
 
@@ -148,6 +151,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
         self.RETRIES = RETRIES  # This is here so that it can be easily accessible form the mixins
         self._std_out_nesting = 0
         self._last_exports = {}
+        self.widgets = {}
         return
 
     # <editor-fold desc="_task_worthy methods (events)">
@@ -563,6 +567,27 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
     # </editor-fold>
 
     # <editor-fold desc="Tile Internal Machinery">
+
+    def create_widget(self, kind, data):
+        new_widget = kind_dict[kind](data, self)
+        self.widgets[new_widget.uid] = new_widget
+        return new_widget
+
+    @_task_worthy
+    def remove_widget(self, data):
+        uid = data["uid"]
+        if uid in self.widgets:
+            del self.widgets[table_id]
+        return {"success": True}
+
+    @_task_worthy
+    def widget_get(self, data):
+        uid = data["uid"]
+        if uid in self.widgets:
+            widget = self.widgets[uid]
+            return {"success": True, "widget_data": widget.get(data)}
+        else:
+            return {"success": False, "error": "Widget not found"}
 
     def post_event(self, event_name, task_data=None):
         self._tworker.post_task(self._tworker.my_id, event_name, task_data)

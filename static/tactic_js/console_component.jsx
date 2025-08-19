@@ -54,7 +54,7 @@ import {DialogContext} from "./modal_react"
 import {useCallbackStack, useStateAndRef, useConstructor} from "./utilities_react";
 import {ErrorDrawerContext} from "./error_drawer";
 import {AssistantContext} from "./assistant";
-import {SimpleTable} from "./simple_table";
+import {TableWidget} from "./table_widget";
 
 export {ConsoleComponent}
 
@@ -206,7 +206,7 @@ function ConsoleComponent(props) {
                     },
                     consoleCodePrint: (data) => _appendConsoleItemOutput(data),
                     consoleCodeOverwrite: (data) => _setConsoleItemOutput(data),
-                    consoleCodeTable: (data) => _appendTableToConsoleItem(data),
+                    consoleCodeWidget: (data) => _appendWidgetToConsoleItem(data),
 
                 };
                 handlerDict[data.console_message](data)
@@ -937,12 +937,18 @@ function ConsoleComponent(props) {
         })
     }
 
-    function _appendTableToConsoleItem(data) {
+    function _appendWidgetToConsoleItem(data) {
+        let vdict = {
+            widgetId: data["uid"],
+            widgetKind: data["widget_kind"],
+            widgetData: data["widget_data"],
+        }
         props.dispatch({
-            type: "append_table_to_console_item_output",
+            type: "change_code_output_row",
             unique_id: data.console_id,
-            table_data: data.table_data
-        })
+            row: data.counter,
+            new_value: vdict
+        });
     }
 
     function _appendConsoleItemOutput(data) {
@@ -958,7 +964,7 @@ function ConsoleComponent(props) {
             type: "change_code_output_row",
             unique_id: data.console_id,
             row: data.counter,
-            new_value: data.result_text
+            new_value: {widgetId: guid(), widgetKind: "text", widgetData: data["result_text"]}
         });
 
         // _setConsoleItemValue(data.console_id, "output_dict", current)
@@ -966,7 +972,7 @@ function ConsoleComponent(props) {
 
     function _setConsoleItemOutput(data) {
         let current = {};
-        current[-1] = data.result_text;
+        current[-1] = {widgetId: guid(), widgetKind: "text", widgetData: data["result_text"]};
         // if (current.length > MAX_OUTPUT_LENGTH) {
         //     current = current.slice(-1 * MAX_OUTPUT_LENGTH,)
         // }
@@ -2014,6 +2020,23 @@ function BlobItem(props) {
 
 BlobItem = memo(BlobItem);
 
+function TextWidget(props) {
+    props = {
+        widgetId: props.widgetId,
+        data: "",
+        ...props
+    }
+
+     let output_dict = {__html: props.data};
+    return (<div key={props.widgetId} dangerouslySetInnerHTML={output_dict}/>)
+}
+
+const widgetDict = {
+    text: TextWidget,
+    table: TableWidget
+}
+
+
 function ConsoleCodeItem(props) {
     props = {
         summary_text: null,
@@ -2240,7 +2263,26 @@ function ConsoleCodeItem(props) {
     if (props.in_section) {
         panel_class += " in-section"
     }
-    let output_dict = {__html: props.output_text};
+
+    const sortedOutputKeys = Object.keys(props.output_dict).map(Number).sort((a, b) => a - b);
+    //let output_dict = {__html: props.output_text};
+    let outputWidgets = sortedOutputKeys.map(idx => {
+        let outputDict = props.output_dict[idx];
+        let widgetKind = outputDict["widgetKind"];
+        let widgetId = outputDict["widgetId"]
+        let widgetData = outputDict["widgetData"]
+        let the_widget;
+        if (widgetKind in widgetDict) {
+            let WidgetComponent = widgetDict[widgetKind];
+            the_widget = <WidgetComponent key={widgetId} uid={widgetId} main_id={props.main_id}
+                                          data={widgetData} />;
+        } else {
+            let WidgetComponent = widgetDict["text"];
+            the_widget = <WidgetComponent key={widgetId} uid={widgetId} main_id={props.main_id}
+                                          data={`Widget kind not found ${widgetId}, ${widgetKind} ${widgetData}`} />;
+        }
+        return the_widget;
+    });
     let spinner_val = props.running ? null : 0;
 
     // noinspection JSValidateTypes
@@ -2248,6 +2290,7 @@ function ConsoleCodeItem(props) {
         <ContextMenu content={cm}>
             <div className={panel_class + " d-flex flex-row"}
                  ref={elRef}
+                 style={MB10_STYLE}
                  onClick={_consoleItemClick}
                  id={props.unique_id}>
                 <div className="button-div shrink-expand-div d-flex flex-row">
@@ -2331,17 +2374,10 @@ function ConsoleCodeItem(props) {
                                     </div>
                                 }
                             </div>
-                            { (!props.table || (props.output_text && props.output_text != "")) &&
-                                <div className='log-code-output'
-                                      dangerouslySetInnerHTML={output_dict}/>
-                            }
-                            { props.table &&
+                            {outputWidgets && (outputWidgets.length > 0) &&
                                 <div className="log-code-output"
-                                     style={{paddingBottom: 15}}
-                                >
-                                <SimpleTable key={simpleTableId.current} uid={simpleTableId.current}
-                                                 expandRows={false}
-                                                 data_dict_list={props.table} />
+                                     style={{paddingBottom: 15}}>
+                                    {outputWidgets}
                                 </div>
                             }
                         </div>
