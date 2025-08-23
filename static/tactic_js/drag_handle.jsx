@@ -57,7 +57,6 @@ function DragHandle(props) {
         const dy = event.delta.y;
         lastX.current = startX.current + dx;
         lastY.current = startY.current + dy;
-        console.log("handleDragMove", lastX.current, dx, dy);
 
         if (props.onDrag) {
             props.onDrag(event, null, lastX.current, lastY.current, dx, dy);

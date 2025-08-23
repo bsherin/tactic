@@ -16,7 +16,8 @@ var _table_react = require("./table_react");
 var _blueprint_table = require("./blueprint_table");
 var _resizing_allotment = require("./resizing_allotment");
 var _main_menus_react = require("./main_menus_react");
-var _tile_react = require("./tile_react");
+var _tile_container = require("./tile_container");
+var _tile_container_support = require("./tile_container_support");
 var _export_viewer_react = require("./export_viewer_react");
 var _console_component = require("./console_component");
 var _console_support = require("./console_support");
@@ -114,7 +115,7 @@ function MainApp(props) {
     console_items = _useReducerAndRef2[0],
     dispatch = _useReducerAndRef2[1],
     console_items_ref = _useReducerAndRef2[2];
-  var _useReducerAndRef3 = (0, _utilities_react.useReducerAndRef)(_tile_react.tilesReducer, iStateOrDefault("tile_list")),
+  var _useReducerAndRef3 = (0, _utilities_react.useReducerAndRef)(_tile_container_support.tilesReducer),
     _useReducerAndRef4 = _slicedToArray(_useReducerAndRef3, 3),
     tile_list = _useReducerAndRef4[0],
     tileDispatch = _useReducerAndRef4[1],
@@ -164,6 +165,10 @@ function MainApp(props) {
     dispatch({
       type: "initialize",
       new_items: props.is_project && props.interface_state ? props.interface_state["console_items"] : []
+    });
+    tileDispatch({
+      type: "initialize",
+      new_items: iStateOrDefault("tile_list")
     });
   });
   (0, _react.useEffect)(function () {
@@ -1382,7 +1387,7 @@ function MainApp(props) {
       });
     }
   }
-  var tile_pane = /*#__PURE__*/_react["default"].createElement(_tile_react.TileContainer, {
+  var tile_pane = /*#__PURE__*/_react["default"].createElement(_tile_container.TileContainer, {
     main_id: props.main_id,
     tsocket: props.tsocket,
     tile_list: tile_list_ref,

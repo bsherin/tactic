@@ -1541,6 +1541,13 @@ class ExportsTasksMixin:
         return
 
     @task_worthy
+    def widget_set(self, data):
+        if self.pseudo_tile_id is None:
+            self.create_pseudo_tile()
+        self.mworker.post_task(self.pseudo_tile_id, "widget_set", data)
+        return
+
+    @task_worthy
     def stop_evaluate_export(self, data):
         if self.pseudo_tile_id is None:
             return

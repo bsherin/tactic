@@ -27,7 +27,7 @@ function ProjectMenu(props) {
     const statusFuncs = useContext(StatusContext);
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
 
-    var save_state;
+    let save_state;
     if (props.is_notebook)
         save_state = {
             console_items: props.console_items,

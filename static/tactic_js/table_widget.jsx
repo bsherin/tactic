@@ -1,7 +1,5 @@
 import React, {Fragment, useState, useRef, useEffect} from "react";
 
-import {postWithCallback} from "./communication_react";
-
 import {
     Cell,
     Column,
@@ -10,7 +8,7 @@ import {
 } from "@blueprintjs/table";
 import {FormGroup} from "@blueprintjs/core";
 import {SelectList} from "./blueprint_react_widgets";
-import {postPromise} from "./communication_react";
+import {useWidget} from "./widgets"
 
 export {TableWidget}
 
@@ -78,37 +76,51 @@ function compute_initial_column_widths(table_selector, header_list, data_list, m
     return result
 }
 
-function TableWidget(props) {
-    props = {
-        dataDictList: {},
+const base_outer_style = {height: "100%", position: "relative",
+    overflow: "auto", display: "flex", flexDirection: "column"}
+
+const tableDataDefault = {
+        value: [],
         maxColumnWidth: null,
-        columnWidths: null,
         expandRows: false,
         maxRows: 50,
         className: "",
+        style: {},
+}
+function TableWidget(props) {
+    props = {
         uid: null,
         main_id: null,
-        ...props
+        console_id: null,
+        tile_id: null,
+        row: 0,
+        dispatch: null,
+        ...props,
+        widgetData: {
+            ...tableDataDefault,
+            ...(props.widgetData || {}),
+          },
     }
 
     const [columnWidths, setColumnWidths] = useState(null);
-    const [expandRows, setExpandRows] = useState(props.expandRows);
-    const [maxRows, setMaxRows] = useState(props.maxRows);
-    const [dataDictList, setDataDictList] = useState(props.data);
+    const [expandRows, setExpandRows] = useState(props.widgetData.expandRows);
+    // const [maxRows, setMaxRows] = useState(props.widgetData.maxRows);
+    const [dataDictList, setDataDictList] = useState(props.widgetData.value);
+    const [footerChoices, setFooterChoices] = useState([]);
 
     const [fixedRowHeights, setFixedRowHeights] = useState(null);
 
     const table_ref = useRef(null);
     const didRender = useRef(false);
 
-    useEffect(() => {
-        return () => {
-            postWithCallback(props.main_id, "remove_widget", {uid: props.uid});
-        }
-    }, []);
+    const [, widgetSet] = useWidget(
+        props.uid, props.main_id, props.console_id, props.tile_id,
+        "table",
+        props.row, props.dispatch);
+
 
     useEffect(() => {
-        if (expandRows) {
+        if (props.widgetData.expandRows) {
             _updateRowHeights();
         } else {
             if (didRender.current) {
@@ -117,7 +129,46 @@ function TableWidget(props) {
             }
         }
         didRender.current = false;
-    }, [expandRows]);
+    }, [props.widgetData.expandRows]);
+
+    useEffect(() => {
+        setDataDictList(props.widgetData.value);
+    }, [props.widgetData.value]);
+
+    useEffect(() => {
+        setFooterChoices(getFooterChoices());
+        if (props.widgetData.maxRows > props.widgetData["availableRows"]) {
+            widgetSet({maxRows: props.widgetData["availableRows"]})
+        }
+
+    }, [props.widgetData["availableRows"]]);
+
+    function getFooterChoices() {
+        function footerChoice(val) {
+            return {label: String(val), value: val}
+        }
+        const defaultChoices = [25, 100, 250, 500];
+        let availableRows = props.widgetData["availableRows"];
+        if (!availableRows) {
+            return defaultChoices;
+        }
+        let choices = [];
+
+        for (let choice of defaultChoices) {
+            if (availableRows > choice) {
+                choices.push(footerChoice(choice));
+            }
+            if (availableRows == choice) {
+                choices.push(footerChoice(choice));
+                return choices
+            }
+            if (availableRows < choice) {
+                choices.push(footerChoice(availableRows));
+                return choices
+            }
+        }
+        return choices
+    }
 
     function _cellRendererCreator(column_name) {
         return (rowIndex) => {
@@ -187,19 +238,12 @@ function TableWidget(props) {
 
     async function handleMaxRowsChange(new_value) {
         const newVal = parseInt(new_value);
-        if (newVal == maxRows) return;
-
-        let data = await postPromise(props.main_id, "widget_get",
-            {uid: props.uid, nrows: newVal}, props.main_id);
-        console.log("returned from widget_get");
-        setFixedRowHeights(Array(data["widget_data"].length).fill(DEFAULT_ROW_HEIGHT));
-        setMaxRows(newVal);
-        setExpandRows(false);
-        setDataDictList(data["widget_data"])
+        if (newVal == props.widgetData.maxRows) return;
+        widgetSet({maxRows: newVal, expandRows: false});
     }
 
     function handleExpandChange(new_value) {
-        setExpandRows(new_value == "true");
+        widgetSet({expandRows: new_value == "true"});
     }
 
     function _updateRowHeights() {
@@ -234,8 +278,9 @@ function TableWidget(props) {
                        key={column_name}
                        name={column_name}/>
     });
+    const outer_style = {...base_outer_style, ...props.widgetData.style};
     return (
-        <div style={{height: "100%", position: "relative", overflow: "auto", display: "flex", flexDirection: "column"}}>
+        <div style={outer_style} key={props.uid}>
             <Table ref={table_ref}
                    numRows={dataDictList.length}
                    columns={columns}
@@ -263,13 +308,9 @@ function TableWidget(props) {
 
                      </FormGroup>
                      <FormGroup label="max rows" inline={true}>
-                         <SelectList option_list={[
-                             {label: "25", value: 25},
-                             {label: "100", value: 100},
-                             {label: "250", value: 250},
-                             {label: "500", value: 500}]}
+                         <SelectList option_list={footerChoices}
                                      onChange={handleMaxRowsChange}
-                                     value={maxRows}
+                                     value={props.widgetData.maxRows}
                                      variant="minimal"
                                      fontSize={11}/>
                      </FormGroup>

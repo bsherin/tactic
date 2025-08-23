@@ -55,6 +55,7 @@ import {useCallbackStack, useStateAndRef, useConstructor} from "./utilities_reac
 import {ErrorDrawerContext} from "./error_drawer";
 import {AssistantContext} from "./assistant";
 import {TableWidget} from "./table_widget";
+import {RawHtmlWidget, SliderWidget, TextWidget} from "./widgets";
 
 export {ConsoleComponent}
 
@@ -207,9 +208,10 @@ function ConsoleComponent(props) {
                     consoleCodePrint: (data) => _appendConsoleItemOutput(data),
                     consoleCodeOverwrite: (data) => _setConsoleItemOutput(data),
                     consoleCodeWidget: (data) => _appendWidgetToConsoleItem(data),
+                    consoleWidgetUpdate: (data) => updateWidgetData(data),
 
                 };
-                handlerDict[data.console_message](data)
+                handlerDict[data["console_message"]](data)
             }
         }
 
@@ -217,6 +219,15 @@ function ConsoleComponent(props) {
         // That requires storing it outside of this component since the console can be unmounted
 
         props.tsocket.attachListener("console-message", _handleConsoleMessage);
+    }
+
+    function updateWidgetData(data) {
+        props.dispatch({
+            type: "update_widget_data",
+            unique_id: data.console_id,
+            widgetId: data["uid"],
+            widgetData: data["widgetData"]
+        });
     }
 
     function _requestPseudoTileId() {
@@ -940,11 +951,11 @@ function ConsoleComponent(props) {
     function _appendWidgetToConsoleItem(data) {
         let vdict = {
             widgetId: data["uid"],
-            widgetKind: data["widget_kind"],
-            widgetData: data["widget_data"],
+            widgetKind: data["widgetKind"],
+            widgetData: data["widgetData"],
         }
         props.dispatch({
-            type: "change_code_output_row",
+            type: "replace_code_output_row",
             unique_id: data.console_id,
             row: data.counter,
             new_value: vdict
@@ -952,19 +963,18 @@ function ConsoleComponent(props) {
     }
 
     function _appendConsoleItemOutput(data) {
-        //let current = get_console_item_entry(data.console_id).output_dict;
-        // if (current != "") {
-        //     current += "<br>"
-        // }
-        // current[data.counter] = data.result_text;
-        // if (current.length > MAX_OUTPUT_LENGTH) {
-        //     current = current.slice(-1 * MAX_OUTPUT_LENGTH,)
-        // }
+        let new_value;
+        if (typeof data["result_text"] == "string") {
+            new_value = {widgetId: guid(), widgetKind: "rawHtml", widgetData: {value: data["result_text"]}}
+        }
+        else {
+            new_value = data["result_text"]
+        }
         props.dispatch({
-            type: "change_code_output_row",
+            type: "replace_code_output_row",
             unique_id: data.console_id,
             row: data.counter,
-            new_value: {widgetId: guid(), widgetKind: "text", widgetData: data["result_text"]}
+            new_value: new_value
         });
 
         // _setConsoleItemValue(data.console_id, "output_dict", current)
@@ -2020,22 +2030,12 @@ function BlobItem(props) {
 
 BlobItem = memo(BlobItem);
 
-function TextWidget(props) {
-    props = {
-        widgetId: props.widgetId,
-        data: "",
-        ...props
-    }
-
-     let output_dict = {__html: props.data};
-    return (<div key={props.widgetId} dangerouslySetInnerHTML={output_dict}/>)
-}
-
 const widgetDict = {
-    text: TextWidget,
-    table: TableWidget
+    rawHtml: RawHtmlWidget,
+    table: TableWidget,
+    slider: SliderWidget,
+    text: TextWidget
 }
-
 
 function ConsoleCodeItem(props) {
     props = {
@@ -2275,11 +2275,17 @@ function ConsoleCodeItem(props) {
         if (widgetKind in widgetDict) {
             let WidgetComponent = widgetDict[widgetKind];
             the_widget = <WidgetComponent key={widgetId} uid={widgetId} main_id={props.main_id}
-                                          data={widgetData} />;
+                                          console_id={props.unique_id}
+                                          row={idx}
+                                          dispatch={props.dispatch}
+                                          widgetData={widgetData} tsocket={props.tsocket}/>;
         } else {
             let WidgetComponent = widgetDict["text"];
             the_widget = <WidgetComponent key={widgetId} uid={widgetId} main_id={props.main_id}
-                                          data={`Widget kind not found ${widgetId}, ${widgetKind} ${widgetData}`} />;
+                                          row={idx}
+                                          console_id={props.unique_id}
+                                          dispatch={props.dispatch}
+                                          widgetData={`Widget kind not found ${widgetId}, ${widgetKind} ${widgetData}`} />;
         }
         return the_widget;
     });

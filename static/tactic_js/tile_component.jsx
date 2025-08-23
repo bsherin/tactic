@@ -1,7 +1,7 @@
 // noinspection XmlDeprecatedElement
 
 import React from "react";
-import {useState, useEffect, useRef, memo, useMemo, useCallback, useContext} from "react";
+import {useState, useEffect, useRef, memo, useContext} from "react";
 
 import {Icon, Card, Button, ButtonGroup, Spinner, PopoverPosition} from "@blueprintjs/core";
 import _ from 'lodash';
@@ -10,18 +10,21 @@ import {TileForm} from "./tile_form_react";
 import {GlyphButton} from "./blueprint_react_widgets";
 import {DragHandle} from "./drag_handle"
 
-import {SortableComponent} from "./sortable_container";
+
 import {postWithCallback, postPromise} from "./communication_react"
-import {arrayMove, useCallbackStack} from "./utilities_react";
+import {useCallbackStack} from "./utilities_react";
 import {ErrorBoundary} from "./error_boundary";
 import {MenuComponent} from "./menu_utilities"
 import {SearchableConsole} from "./searchable_console";
 
-import {SettingsContext} from "./settings";
+
 import {DialogContext} from "./modal_react";
 import {ErrorDrawerContext} from "./error_drawer";
+import {RawHtmlWidget, SliderWidget, TextWidget, JavascriptWidget} from "./widgets";
+import {TableWidget} from "./table_widget";
 
-export {TileContainer, tilesReducer}
+export {TileComponent}
+
 
 const using_touch = "ontouchend" in document;
 
@@ -29,241 +32,13 @@ const click_event = using_touch ? "touchstart" : "click";
 
 const TILE_DISPLAY_AREA_MARGIN = 15;
 
-function tilesReducer(tile_list, action) {
-    let new_items;
-    switch (action.type) {
-        case "initialize":
-            new_items = action.new_items;
-            break;
-        case "delete_item":
-            new_items = tile_list.filter(t => t.tile_id !== action.tile_id);
-            break;
-        case "change_item_value":
-            new_items = tile_list.map(t => {
-                if (t.tile_id === action.tile_id) {
-                    let new_t = {...t};
-                    new_t[action.field] = action.new_value;
-                    return new_t;
-                } else {
-                    return t;
-                }
-            });
-            break;
-        case "change_item_state":
-            new_items = tile_list.map(t => {
-                if (t.tile_id === action.tile_id) {
-                    let new_t = {...t};
-                    for (let field in action.new_state) {
-                        new_t[field] = action.new_state[field]
-                    }
-                    return new_t;
-                } else {
-                    return t;
-                }
-            });
-            break;
-
-        case "change_items_value":
-            new_items = tile_list.map(t => {
-                if (action.id_list.includes(t.tile_id)) {
-                    let new_t = {...t};
-                    new_t[action.field] = action.new_value;
-                    return new_t;
-                } else {
-                    return t;
-                }
-            });
-            break;
-        case "update_items":
-            new_items = tile_list.map(t => {
-                if (t.unique_id in action.updates) {
-                    const update_dict = action.updates[t.unique_id];
-                    return {...t, ...update_dict};
-                } else {
-                    return t;
-                }
-            });
-            break;
-        case "move_item":
-            let old_list = [...tile_list];
-            new_items = arrayMove(old_list, action.oldIndex, action.newIndex);
-            break;
-        case "add_at_index":
-            new_items = [...tile_list];
-            new_items.splice(action.insert_index, 0, action.new_item);
-            break;
-        default:
-            console.log("Got Unknown action: " + action.type);
-            return [...tile_list]
-    }
-    return new_items
+const widgetDict = {
+    rawHtml: RawHtmlWidget,
+    table: TableWidget,
+    slider: SliderWidget,
+    text: TextWidget,
+    javascript: JavascriptWidget
 }
-
-function TileContainer(props) {
-
-    const settingsContext = useContext(SettingsContext);
-    const [dragging, setDragging] = useState(false);
-
-    useEffect(() => {
-        initSocket();
-    }, []);
-
-    const pushCallback = useCallbackStack();
-
-    function _handleTileSourceChange(data) {
-        _markSourceChange(data.tile_type)
-    }
-
-    function initSocket() {
-        props.tsocket.attachListener("tile-message", _handleTileMessage);
-        props.tsocket.attachListener('tile-source-change', _handleTileSourceChange);
-    }
-
-    function _resortTiles(oldIndex, newIndex) {
-
-        props.tileDispatch({
-            type: "move_item",
-            oldIndex: oldIndex,
-            newIndex: newIndex
-        });
-        setDragging(false);
-    }
-
-    function _markSourceChange(tile_type) {
-        let change_list = [];
-        for (let entry of props.tile_list.current) {
-            if (entry.tile_type == tile_type) {
-                change_list.push(entry.tile_id)
-            }
-        }
-        props.tileDispatch({
-            type: "change_items_value",
-            id_list: change_list,
-            field: "source_changed",
-            new_value: true
-        })
-    }
-
-    function tileIndex(tile_id) {
-        let counter = 0;
-        for (let entry of props.tile_list.current) {
-            if (entry.tile_id == tile_id) {
-                return counter
-            }
-            ++counter;
-        }
-        return -1
-    }
-
-    const _closeTile = useCallback((tile_id)=>{
-        props.tileDispatch({
-            type: "delete_item",
-            tile_id: tile_id
-        });
-        const data_dict = {
-            main_id: props.main_id,
-            tile_id: tile_id
-        };
-        postWithCallback(props.main_id, "RemoveTile", data_dict, null, null, props.main_id);
-    }, []);
-
-    const _setTileValue = useCallback((tile_id, field, value, callback = null)=>{
-        props.tileDispatch({
-            type: "change_item_value",
-            tile_id: tile_id,
-            field: field,
-            new_value: value
-        });
-        pushCallback(callback)
-    }, []);
-
-    const _setTileState = useCallback((tile_id, new_state, callback = null)=>{
-        props.tileDispatch({
-            type: "change_item_state",
-            tile_id: tile_id,
-            new_state: new_state
-        });
-        pushCallback(callback)
-    }, []);
-
-    function _displayTileContentWithJavascript(tile_id, data) {
-        _setTileState(tile_id, {
-            front_content: data.html,
-            javascript_code: data.javascript_code,
-            javascript_arg_dict: data["arg_dict"]
-        })
-    }
-
-    function _displayTileContent(tile_id, data) {
-        _setTileState(tile_id, {
-            front_content: data.html,
-            javascript_code: null,
-            javascript_arg_dict: null
-        })
-    }
-
-    function _handleTileMessage(data) {
-        let tile_id = data.tile_id;
-        if (tileIndex(tile_id) != -1) {
-            let handlerDict = {
-                startSpinner: (tile_id, ) => _setTileValue(tile_id, "show_spinner", true),
-                stopSpinner: (tile_id, ) => _setTileValue(tile_id, "show_spinner", false),
-                displayTileContent: _displayTileContent,
-                displayTileContentWithJavascript: _displayTileContentWithJavascript,
-            };
-            if (data["tile_message"] in handlerDict) {
-                handlerDict[data["tile_message"]](tile_id, data)
-            }
-        }
-    }
-    function beforeCapture(_, ) {
-        setDragging(true)
-    }
-
-    function makeTailoredTileComponent() {
-        return memo(function(tile_props) {
-            return <TileComponent {...tile_props}
-                main_id={props.main_id}
-                setTileValue={_setTileValue}
-                setTileState={_setTileState}
-                handleClose={_closeTile}
-                goToModule={props.goToModule}
-                broadcast_event={props.broadcast_event}
-                tsocket={props.tsocket}
-            />}
-        )
-    }
-
-    const TailoredTileComponent = useMemo(()=>{
-        return makeTailoredTileComponent();
-    }, []);
-
-    return (
-        <SortableComponent className={props.table_is_shrunk ? "tile-div tile-container-float" : "tile-div"}
-                           main_id={props.main_id}
-                           style={{}}
-                           helperClass={settingsContext.isDark() ? "bp6-dark" : "light-theme"}
-                           ElementComponent={TailoredTileComponent}
-                           key_field_name="tile_name"
-                           item_list={_.cloneDeep(props.tile_list.current)}
-                           handle=".tile-name-div"
-                           onSortStart={(_, event) => event.preventDefault()} // This prevents Safari weirdness
-                           onDragEnd={_resortTiles}
-                           onBeforeCapture={beforeCapture}
-                           direction="vertical"
-                           useDragHandle={true}
-                           axis="xy"
-                           extraProps={{
-                               dragging: dragging,
-                               current_doc_name: props.current_doc_name,
-                               selected_row: props.selected_row,
-                               table_is_shrunk: props.table_is_shrunk
-                           }}
-        />
-    )
-}
-
-TileContainer = memo(TileContainer);
 
 function SortHandle(props) {
     return (
@@ -273,7 +48,6 @@ function SortHandle(props) {
 }
 
 SortHandle = memo(SortHandle);
-
 
 const menu_icons = {
     "Kill and reload": "refresh",
@@ -295,7 +69,7 @@ const alt_button = () => (menu_button);
 
 function TileComponent(props) {
     props = {
-        javascript_code: null,
+        // javascript_code: null,
         log_since: null,
         max_console_lines: 100,
         ...props
@@ -315,8 +89,6 @@ function TileComponent(props) {
     const [dwidth, set_dwidth] = useState(0);
     const [dheight, set_dheight] = useState(0);
 
-    // const menu_component_ref = useRef(null);
-
     const pushCallback = useCallbackStack();
     const dialogFuncs = useContext(DialogContext);
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
@@ -326,25 +98,20 @@ function TileComponent(props) {
         // menu_component_ref.current = _createMenu();
         executeEmbeddedScripts();
         // makeTablesSortable();
-        if (props.javascript_code) {
-            _executeJavascript()
-        }
+        // if (props.javascript_code) {
+        //     _executeJavascript()
+        // }
         listen_for_clicks();
     }, []);
-
-    // useEffect(()=>{
-    //     menu_component_ref.current = _createMenu();
-    // }, [props.setTileState, props.form_data, props.tile_id, props.show_log, props.tile_type,
-    //     props.broadcast_event, props.tile_name, props.main_id]); //
 
     useEffect(() => {
         if (!resizing) {
             executeEmbeddedScripts();
         }
         // makeTablesSortable();
-        if (props.javascript_code) {
-            _executeJavascript()
-        }
+        // if (props.javascript_code) {
+        //     _executeJavascript()
+        // }
         listen_for_clicks();
         if (props.show_log) {
             if (log_ref && log_ref.current) {
@@ -353,9 +120,9 @@ function TileComponent(props) {
         }
     });
 
-    useEffect(()=>{
-        javascript_error_ref.current = false
-    }, [props.javascript_code]);
+    // useEffect(()=>{
+    //     javascript_error_ref.current = false
+    // }, [props.javascript_code]);
 
     useEffect(() => {
         _broadcastTileSize(props.tile_width, props.tile_height)
@@ -409,20 +176,20 @@ function TileComponent(props) {
         return props.tile_height + dheight - header_height - TILE_DISPLAY_AREA_MARGIN * 2
     }
 
-    function _executeJavascript() {
-        try {
-            if (!javascript_error_ref.current) {
-                let selector = "[id='" + props.tile_id + "'] .jscript-target";
-                eval(props.javascript_code)(selector, tdaWidth(), tdaHeight(), props.javascript_arg_dict, resizing)
-            }
-        } catch (err) {
-            javascript_error_ref.current = true;
-            errorDrawerFuncs.addErrorDrawerEntry({
-                title: "Error evaluating javascript",
-                content: err.message
-            });
-        }
-    }
+    // function _executeJavascript() {
+    //     try {
+    //         if (!javascript_error_ref.current) {
+    //             let selector = "[id='" + props.tile_id + "'] .jscript-target";
+    //             eval(props.javascript_code)(selector, tdaWidth(), tdaHeight(), props.javascript_arg_dict, resizing)
+    //         }
+    //     } catch (err) {
+    //         javascript_error_ref.current = true;
+    //         errorDrawerFuncs.addErrorDrawerEntry({
+    //             title: "Error evaluating javascript",
+    //             content: err.message
+    //         });
+    //     }
+    // }
 
     function _toggleTileLog() {
         props.setTileState(props.tile_id, {show_log: !props.show_log, show_form: false});
@@ -667,8 +434,39 @@ function TileComponent(props) {
     }
 
     let show_front = (!props.show_form) && (!props.show_log);
-    let front_dict = {__html: props.front_content};
+
+    let outputWidgets = props.front_content.map((outputDict, idx) => {
+        let widgetKind = outputDict["widgetKind"];
+        let widgetId = outputDict["uid"]
+        let widgetData = outputDict["widgetData"]
+        let the_widget;
+        if (widgetKind in widgetDict) {
+            let WidgetComponent = widgetDict[widgetKind];
+            the_widget = <WidgetComponent key={widgetId} uid={widgetId} main_id={props.main_id}
+                                          console_id={null}
+                                          tile_id={props.tile_id}
+                                          row={idx}
+                                          dispatch={null}
+                                          tileWidth={tdaWidth()}
+                                          tileHeight={tdaHeight()}
+                                          resizing={resizing}
+                                          widgetData={widgetData} tsocket={props.tsocket}/>;
+        } else {
+            let WidgetComponent = widgetDict["text"];
+            the_widget = <WidgetComponent key={widgetId} uid={widgetId} main_id={props.main_id}
+                                          row={idx}
+                                          tile_id={props.tile_id}
+                                          console_id={null}
+                                          dispatch={null}
+                                          resizing={resizing}
+                                          widgetData={`Widget kind not found ${widgetId}, ${widgetKind} ${widgetData}`} />;
+        }
+        return the_widget;
+    })
+
     let draghandle_position_dict = {position: "absolute", bottom: 2, right: 1};
+
+
 
     let tile_menu_options = {
         "Run me": _handleSubmitOptions,
@@ -801,8 +599,11 @@ function TileComponent(props) {
                                          style={{
                                              width: "100%", height: "100%",
                                              position: "relative"}}
-                                         ref={tda_ref}
-                                         dangerouslySetInnerHTML={front_dict}/>
+                                         ref={tda_ref}>
+                                        {(outputWidgets && (outputWidgets.length > 0)) ?
+                                                outputWidgets : ""
+                                        }
+                                    </div>
                                 }
                         </div>
                     }

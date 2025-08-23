@@ -28,6 +28,7 @@ var _modal_react = require("./modal_react");
 var _error_drawer = require("./error_drawer");
 var _assistant = require("./assistant");
 var _table_widget = require("./table_widget");
+var _widgets = require("./widgets");
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t11 in e) "default" !== _t11 && {}.hasOwnProperty.call(e, _t11) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t11)) && (i.get || i.set) ? o(f, _t11, i) : f[_t11] = e[_t11]); return f; })(e, t); }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
@@ -289,9 +290,12 @@ function ConsoleComponent(props) {
           },
           consoleCodeWidget: function consoleCodeWidget(data) {
             return _appendWidgetToConsoleItem(data);
+          },
+          consoleWidgetUpdate: function consoleWidgetUpdate(data) {
+            return updateWidgetData(data);
           }
         };
-        handlerDict[data.console_message](data);
+        handlerDict[data["console_message"]](data);
       }
     }
 
@@ -299,6 +303,14 @@ function ConsoleComponent(props) {
     // That requires storing it outside of this component since the console can be unmounted
 
     props.tsocket.attachListener("console-message", _handleConsoleMessage);
+  }
+  function updateWidgetData(data) {
+    props.dispatch({
+      type: "update_widget_data",
+      unique_id: data.console_id,
+      widgetId: data["uid"],
+      widgetData: data["widgetData"]
+    });
   }
   function _requestPseudoTileId() {
     if (pseudo_tile_id == null) {
@@ -1390,34 +1402,34 @@ function ConsoleComponent(props) {
   function _appendWidgetToConsoleItem(data) {
     var vdict = {
       widgetId: data["uid"],
-      widgetKind: data["widget_kind"],
-      widgetData: data["widget_data"]
+      widgetKind: data["widgetKind"],
+      widgetData: data["widgetData"]
     };
     props.dispatch({
-      type: "change_code_output_row",
+      type: "replace_code_output_row",
       unique_id: data.console_id,
       row: data.counter,
       new_value: vdict
     });
   }
   function _appendConsoleItemOutput(data) {
-    //let current = get_console_item_entry(data.console_id).output_dict;
-    // if (current != "") {
-    //     current += "<br>"
-    // }
-    // current[data.counter] = data.result_text;
-    // if (current.length > MAX_OUTPUT_LENGTH) {
-    //     current = current.slice(-1 * MAX_OUTPUT_LENGTH,)
-    // }
+    var new_value;
+    if (typeof data["result_text"] == "string") {
+      new_value = {
+        widgetId: (0, _utilities_react.guid)(),
+        widgetKind: "rawHtml",
+        widgetData: {
+          value: data["result_text"]
+        }
+      };
+    } else {
+      new_value = data["result_text"];
+    }
     props.dispatch({
-      type: "change_code_output_row",
+      type: "replace_code_output_row",
       unique_id: data.console_id,
       row: data.counter,
-      new_value: {
-        widgetId: (0, _utilities_react.guid)(),
-        widgetKind: "text",
-        widgetData: data["result_text"]
-      }
+      new_value: new_value
     });
 
     // _setConsoleItemValue(data.console_id, "output_dict", current)
@@ -2540,22 +2552,11 @@ function BlobItem(props) {
   }))))));
 }
 BlobItem = /*#__PURE__*/(0, _react.memo)(BlobItem);
-function TextWidget(props) {
-  props = _objectSpread({
-    widgetId: props.widgetId,
-    data: ""
-  }, props);
-  var output_dict = {
-    __html: props.data
-  };
-  return /*#__PURE__*/_react["default"].createElement("div", {
-    key: props.widgetId,
-    dangerouslySetInnerHTML: output_dict
-  });
-}
 var widgetDict = {
-  text: TextWidget,
-  table: _table_widget.TableWidget
+  rawHtml: _widgets.RawHtmlWidget,
+  table: _table_widget.TableWidget,
+  slider: _widgets.SliderWidget,
+  text: _widgets.TextWidget
 };
 function ConsoleCodeItem(props) {
   props = _objectSpread({
@@ -2790,7 +2791,11 @@ function ConsoleCodeItem(props) {
         key: widgetId,
         uid: widgetId,
         main_id: props.main_id,
-        data: widgetData
+        console_id: props.unique_id,
+        row: idx,
+        dispatch: props.dispatch,
+        widgetData: widgetData,
+        tsocket: props.tsocket
       });
     } else {
       var _WidgetComponent = widgetDict["text"];
@@ -2798,7 +2803,10 @@ function ConsoleCodeItem(props) {
         key: widgetId,
         uid: widgetId,
         main_id: props.main_id,
-        data: "Widget kind not found ".concat(widgetId, ", ").concat(widgetKind, " ").concat(widgetData)
+        row: idx,
+        console_id: props.unique_id,
+        dispatch: props.dispatch,
+        widgetData: "Widget kind not found ".concat(widgetId, ", ").concat(widgetKind, " ").concat(widgetData)
       });
     }
     return the_widget;

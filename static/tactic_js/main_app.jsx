@@ -21,7 +21,8 @@ import {MainTableCard, MainTableCardHeader, FreeformBody} from "./table_react";
 import {BlueprintTable, compute_added_column_width} from "./blueprint_table";
 import {HorizontalPanes, VerticalPanes} from "./resizing_allotment";
 import {ProjectMenu, DocumentMenu, ColumnMenu, RowMenu, ViewMenu, MenuComponent} from "./main_menus_react";
-import {TileContainer, tilesReducer} from "./tile_react";
+import {TileContainer} from "./tile_container";
+import {tilesReducer, fixTileFrontContent} from "./tile_container_support"
 import {ExportsViewer} from "./export_viewer_react";
 import {ConsoleComponent} from "./console_component";
 import {consoleItemsReducer} from "./console_support";
@@ -84,7 +85,8 @@ function MainApp(props) {
 
     const [, set_console_selected_items, console_selected_items_ref] = useStateAndRef([]);
     const [console_items, dispatch, console_items_ref] = useReducerAndRef(consoleItemsReducer, []);
-    const [tile_list, tileDispatch, tile_list_ref] = useReducerAndRef(tilesReducer, iStateOrDefault("tile_list"));
+    const [tile_list, tileDispatch, tile_list_ref] = useReducerAndRef(tilesReducer);
+
 
     const settingsContext = useContext(SettingsContext);
     const dialogFuncs = useContext(DialogContext);
@@ -138,6 +140,11 @@ function MainApp(props) {
             type: "initialize",
             new_items: props.is_project && props.interface_state ? props.interface_state["console_items"] : []
         })
+
+        tileDispatch({
+            type: "initialize",
+            new_items: iStateOrDefault("tile_list")}
+        )
     });
     useEffect(() => {
         if (props.controlled) {

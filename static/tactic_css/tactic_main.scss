@@ -119,6 +119,8 @@ $console-header-height: 40px;
 .tile-display-area {
     height: 100%;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
 
     &:hover {
         overflow: auto

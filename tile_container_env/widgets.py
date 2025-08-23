@@ -4,6 +4,9 @@ import sys
 import nltk
 import pandas as _pd
 
+Tile = None
+in_pseudo_tile = False
+
 from other_api_mixin import nltk_available
 from document_object import TacticDocument
 
@@ -18,27 +21,124 @@ def is_html_table_class(obj):
 def is_widget_render(x):
     return type(x) == dict and "is_widget" in x and x["is_widget"] is True
 
-class Widget(object):
 
-    def __init__(self, wdata, tile):
-        self.uid = str(uuid.uuid4())
-        self.widget_data = None
-        self.base_render = {"is_widget": True, "widget_kind": self.widget_kind, "uid": self.uid}
-        self.tile = tile
+# noinspection PyProtectedMember
+class Widget(object):
+    extra_fields = ["style"]
+    defaults = {}
+
+    def __init__(self, wdata, runner_type="tile", runner_id=None):
+        self.uid = "a" + str(uuid.uuid4())
+        self.runner_type = runner_type
+        self.runner_id = runner_id
+        self.widget_data = {}
+        self.base_render = {"is_widget": True, "widgetKind": self.widget_kind, "uid": self.uid}
         self.initialize(wdata)
         return
 
     def __repr__(self):
-        return f"Widget(name={self.name})"
+        return f"Widget(name={self.widget_kind})"
 
-    def initialize(self, data):
+    def initialize(self, wdata):
+        self._value = wdata.get("value", None)
+        for attr in self.extra_fields:
+            if attr in wdata:
+                setattr(self, attr, wdata[attr])
+            elif attr in self.defaults:
+                setattr(self, attr, self.defaults[attr])
+            else:
+                setattr(self, attr, None)
+        on_change_func = wdata.get("on_change", None)
+        if on_change_func is not None:
+            self.on_change = on_change_func.__name__
+            self.is_method = is_class_method(on_change_func)
+        else:
+            self.on_change = None
+            self.is_method = False
         return
 
-    def set(self, data):
-        return
+    def set(self, widget_data):
+        for attr in self.extra_fields:
+            if attr in widget_data:
+                setattr(self, attr, widget_data[attr])
+        if "value" in widget_data:
+            self._value = widget_data["value"]
+        rdict = self.base_render.copy()
+        rdict["widgetData"] = self.widget_data_dict()
+        if self.runner_type == "console":
+            rdict["console_id"] = self.runner_id
+            Tile.emit_console_message("consoleWidgetUpdate", rdict)
+        else:
+            rdict["tile_id"] = self.runner_id
+            Tile._tworker.emit_tile_message("tileWidgetUpdate", rdict)
+        if "value" in widget_data:
+            if self.on_change is not None:
+                if self.is_method:
+                    getattr(Tile, self.on_change)(self._value)
+                else:
+                    if in_pseudo_tile:
+                        getattr(sys.modules["pseudo_tile_base"], self.on_change)(self._value)
+                    else:
+                        getattr(sys.modules["tile_env"], self.on_change)(self._value)
 
     def get(self, data):
+        self.widget_data_dict()
         return
+
+    def widget_data_dict(self):
+        res = {"value": self.value}
+        for attr in self.extra_fields:
+            res[attr] = getattr(self, attr, None)
+        return res
+
+    def render(self):
+        rdict = self.base_render.copy()
+        rdict["widgetData"] = self.widget_data_dict()
+        return rdict
+
+    @property
+    def value(self):
+        return self._value
+
+    @value.setter
+    def value(self, new_value):
+        self.set({"value": new_value})
+        return
+
+    def show(self):
+        new_data = copy.copy(sys.stdout.data)
+        new_data.update(self.render())
+        self.runner_id = new_data["console_id"]
+        new_data["force_open"] = True
+        new_data["console_message"] = "consoleCodeWidget"
+        new_data["counter"] = sys.stdout.counter
+        sys.stdout.counter += 1
+        Tile.emit_console_message("consoleCodeWidget", new_data)
+        return
+
+def is_class_method(func):
+    qn = getattr(func, '__qualname__', '')
+    return '.' in qn
+
+class SliderWidget(Widget):
+    widget_kind = "slider"
+    extra_fields = ["min", "max", "stepSize", "labelStepSize", "style"]
+    defaults = {"min": 0, "max": 10, "stepSize": 1, "labelStepSize": 1, "style": None}
+
+class TextWidget(Widget):
+    widget_kind = "text"
+    extra_fields = ["ellipsize", "style"]
+    defaults = {"ellipsize": True, "style": None}
+
+class JavascriptWidget(Widget):
+    widget_kind = "javascript"
+    extra_fields = ["style"]
+    defaults = {"style": None}
+
+class RawHtmlWidget(Widget):
+    widget_kind = "rawHtml"
+    extra_fields = ["style"]
+    defaults = {"style": None}
 
 
 MAX_TABLE_SIZE = 1000
@@ -46,11 +146,31 @@ INITIAL_TABLE_ROWS = 25
 
 class TableWidget(Widget):
     widget_kind = "table"
+    extra_fields = ["style", "className", "maxColumnWidth", "maxRows", "expandRows"]
+    defaults = {
+        "maxColumnWidth": None,
+        "maxRows": INITIAL_TABLE_ROWS,
+        "expandRows": False,
+        "className": "",
+        "style": {},
+    }
     def initialize(self, wdata):
-        self.widget_data = self.convert_data_to_dlist(wdata, max_rows=MAX_TABLE_SIZE)
+        super().initialize(wdata)
+        if self._value is None:
+            self._value = []
+        else:
+            self._value = self.convert_data_to_dlist(self._value, max_rows=MAX_TABLE_SIZE)
 
-    def get(self, data):
-        return self.widget_data[:data["nrows"]]
+    def widget_data_dict(self):
+        return {
+            "value": self._value[:self.maxRows],
+            "expandRows": self.expandRows,
+            "maxRows": self.maxRows,
+            "maxColumnWidgth": self.maxColumnWidth,
+            "className": self.className,
+            "style": self.style,
+            "availableRows": min(len(self._value), MAX_TABLE_SIZE),
+        }
 
     @staticmethod
     def convert_df_to_dictlist(df, max_rows=None):
@@ -92,24 +212,12 @@ class TableWidget(Widget):
             dlist = data
         return dlist
 
-    def render(self, nrows=INITIAL_TABLE_ROWS):
-        """
-        Render the table widget data.
-        """
-        rdict = self.base_render.copy()
-        rdict["widget_data"] = self.widget_data[:nrows]
-        return rdict
-
-    def show(self, nrows=INITIAL_TABLE_ROWS):
-        new_data = copy.copy(sys.stdout.data)
-        new_data.update(self.render(nrows))
-        new_data["force_open"] = True
-        new_data["console_message"] = "consoleCodeWidget"
-        new_data["counter"] = sys.stdout.counter
-        self.tile.emit_console_message("consoleCodeWidget", new_data)
-        return
-
 
 kind_dict = {
-    "table": TableWidget
+    "table": TableWidget,
+    "slider": SliderWidget,
+    "text": TextWidget,
+    "raw_html": RawHtmlWidget,
+    "javascript": JavascriptWidget,
+
 }

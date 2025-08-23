@@ -305,9 +305,9 @@ function ExportsViewer(props) {
   function _displayResult(data) {
     setIsWidget(data["is_widget"]);
     if (data["is_widget"]) {
-      setWidgetKind(data["widget_kind"]);
+      setWidgetKind(data["widgetKind"]);
       setWidgetId(data["uid"]);
-      setInitialWidgetData(data["widget_data"]);
+      setInitialWidgetData(data["widgetData"]);
     } else {
       set_exports_body_value(data["the_html"]);
     }
@@ -441,7 +441,7 @@ function ExportsViewer(props) {
         key: widgetId,
         uid: widgetId,
         main_id: props.main_id,
-        data: widgetData
+        widgetData: widgetData
       });
     } else {
       exports_body_dict = {

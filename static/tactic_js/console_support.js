@@ -4,6 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.consoleItemsReducer = consoleItemsReducer;
+var _utilities_react = require("./utilities_react");
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _toConsumableArray(r) { return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread(); }
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
@@ -41,13 +42,40 @@ function updateOutputText(item) {
   }
   return item;
 }
+function fixOutputRow(orow) {
+  var new_row = orow;
+  if (typeof orow == "string") {
+    new_row = {
+      widgetId: (0, _utilities_react.guid)(),
+      widgetKind: "rawHtml",
+      widgetData: {
+        value: orow
+      }
+    };
+  }
+  return new_row;
+}
+function fixCodeOutputs(item) {
+  if (item.type == "code") {
+    var new_item = _objectSpread({}, item);
+    var new_output_dict = {};
+    for (var key in item["output_dict"]) {
+      new_output_dict[key] = fixOutputRow(item["output_dict"][key]);
+    }
+    new_item["output_dict"] = new_output_dict;
+    return new_item;
+  }
+  return item;
+}
 function consoleItemsReducer(console_items, action) {
   var _new_items;
   var new_items;
   switch (action.type) {
     case "initialize":
       // new_items = processOutputDicts(action.new_items);
-      new_items = action.new_items;
+      new_items = action.new_items.map(function (t) {
+        return fixCodeOutputs(t);
+      });
       break;
     case "delete_item":
       new_items = console_items.filter(function (t) {
@@ -79,6 +107,7 @@ function consoleItemsReducer(console_items, action) {
       new_items = console_items.map(function (t) {
         if (t.unique === action.unique_id) {
           var new_t = _objectSpread({}, action.new_item);
+          new_t = fixCodeOutputs(new_t);
           return new_t;
           // return updateOutputText(new_t);
         } else {
@@ -100,7 +129,7 @@ function consoleItemsReducer(console_items, action) {
         if (t.unique_id === action.unique_id) {
           var new_t = _objectSpread({}, t);
           new_t[action.field] = action.new_value;
-          // new_t = updateOutputText(new_t);
+          new_t = fixCodeOutputs(new_t);
           return new_t;
         } else {
           return t;
@@ -112,6 +141,7 @@ function consoleItemsReducer(console_items, action) {
         if (t.unique_id === action.unique_id) {
           var new_t = _objectSpread({}, t);
           new_t["output_dict"] = action.new_value;
+          new_t = fixCodeOutputs(new_t);
           return new_t;
           // return updateOutputText(new_t);
         } else {
@@ -131,11 +161,35 @@ function consoleItemsReducer(console_items, action) {
         }
       });
       break;
-    case "change_code_output_row":
+    case "update_widget_data":
       new_items = console_items.map(function (t) {
         if (t.unique_id === action.unique_id) {
           var new_t = _objectSpread({}, t);
-          new_t["output_dict"][action.row] = action.new_value;
+          var sortedOutputKeys = Object.keys(new_t["output_dict"]).map(Number).sort(function (a, b) {
+            return a - b;
+          });
+          new_t["output_dict"] = sortedOutputKeys.map(function (key) {
+            var d = new_t["output_dict"][key];
+            var new_d = _objectSpread({}, d);
+            if (d.widgetId == action.widgetId) {
+              new_d.widgetData = _objectSpread(_objectSpread({}, new_t.widgetData), action.widgetData);
+              return new_d;
+            } else {
+              return d;
+            }
+          });
+          return new_t;
+        } else {
+          return t;
+        }
+      });
+      break;
+    case "replace_code_output_row":
+      new_items = console_items.map(function (t) {
+        if (t.unique_id === action.unique_id) {
+          var new_t = _objectSpread({}, t);
+          new_t["output_dict"][action.row] = _objectSpread(_objectSpread({}, new_t["output_dict"][action.row]), action.new_value);
+          new_t = fixCodeOutputs(new_t);
           // new_t = updateOutputText(new_t);
           return new_t;
         } else {
@@ -143,29 +197,13 @@ function consoleItemsReducer(console_items, action) {
         }
       });
       break;
-
-    // case "append_widget_to_console_item_output":
-    //     new_items = console_items.map(t => {
-    //         if (t.unique_id === action.unique_id) {
-    //             let new_t = {...t};
-    //             const new_output = {
-    //                 widgetData: action.widget_data,
-    //                 widgetKind: action.widget_kind,
-    //                 widgetId: action["widget_uid"]
-    //             }
-    //             new_t["output_dict"][action.row] = new_output;
-    //             return new_t;
-    //         } else {
-    //             return t;
-    //         }
-    //     });
-    //     break;
-
     case "update_items":
       new_items = console_items.map(function (t) {
         if (t.unique_id in action.updates) {
           var update_dict = action.updates[t.unique_id];
-          return _objectSpread(_objectSpread({}, t), update_dict);
+          var new_t = _objectSpread(_objectSpread({}, t), update_dict);
+          new_t = fixCodeOutputs(new_t);
+          return new_t;
           // return updateOutputText({...t, ...update_dict});
         } else {
           return t;
@@ -175,7 +213,10 @@ function consoleItemsReducer(console_items, action) {
     case "add_at_index":
       new_items = _toConsumableArray(console_items);
       // new_items.splice(action.insert_index, 0, ...processOutputDicts(action.new_items));
-      (_new_items = new_items).splice.apply(_new_items, [action.insert_index, 0].concat(_toConsumableArray(action.new_items)));
+      var new_fixed_items = action.new_items.map(function (t) {
+        return fixCodeOutputs(t);
+      });
+      (_new_items = new_items).splice.apply(_new_items, [action.insert_index, 0].concat(_toConsumableArray(new_fixed_items)));
       break;
     case "open_listed_dividers":
       new_items = console_items.map(function (t) {

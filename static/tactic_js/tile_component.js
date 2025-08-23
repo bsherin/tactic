@@ -1,297 +1,54 @@
 "use strict";
 
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.TileContainer = TileContainer;
-exports.tilesReducer = tilesReducer;
+exports.TileComponent = TileComponent;
 var _react = _interopRequireWildcard(require("react"));
 var _core = require("@blueprintjs/core");
 var _lodash = _interopRequireDefault(require("lodash"));
 var _tile_form_react = require("./tile_form_react");
 var _blueprint_react_widgets = require("./blueprint_react_widgets");
 var _drag_handle = require("./drag_handle");
-var _sortable_container = require("./sortable_container");
 var _communication_react = require("./communication_react");
 var _utilities_react = require("./utilities_react");
 var _error_boundary = require("./error_boundary");
 var _menu_utilities = require("./menu_utilities");
 var _searchable_console = require("./searchable_console");
-var _settings = require("./settings");
 var _modal_react = require("./modal_react");
 var _error_drawer = require("./error_drawer");
+var _widgets = require("./widgets");
+var _table_widget = require("./table_widget");
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t5 in e) "default" !== _t5 && {}.hasOwnProperty.call(e, _t5) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t5)) && (i.get || i.set) ? o(f, _t5, i) : f[_t5] = e[_t5]); return f; })(e, t); }
-function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, "_invoke", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError("Generator is already running"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = "next"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i["return"]) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine2(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, "Generator"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, "toString", function () { return "[object Generator]"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }
 function _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, "", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { if (r) i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n;else { var o = function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); }; o("next", 0), o("throw", 1), o("return", 2); } }, _regeneratorDefine2(e, r, n, t); }
 function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
 function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
-function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
 function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
 function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
+function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
 function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
 function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
-function _toConsumableArray(r) { return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread(); }
-function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
-function _iterableToArray(r) { if ("undefined" != typeof Symbol && null != r[Symbol.iterator] || null != r["@@iterator"]) return Array.from(r); }
-function _arrayWithoutHoles(r) { if (Array.isArray(r)) return _arrayLikeToArray(r); }
-function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
 function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
 function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
 function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
-function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); } // noinspection XmlDeprecatedElement
+function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); } // noinspection XmlDeprecatedElement
 var using_touch = "ontouchend" in document;
 var click_event = using_touch ? "touchstart" : "click";
 var TILE_DISPLAY_AREA_MARGIN = 15;
-function tilesReducer(tile_list, action) {
-  var new_items;
-  switch (action.type) {
-    case "initialize":
-      new_items = action.new_items;
-      break;
-    case "delete_item":
-      new_items = tile_list.filter(function (t) {
-        return t.tile_id !== action.tile_id;
-      });
-      break;
-    case "change_item_value":
-      new_items = tile_list.map(function (t) {
-        if (t.tile_id === action.tile_id) {
-          var new_t = _objectSpread({}, t);
-          new_t[action.field] = action.new_value;
-          return new_t;
-        } else {
-          return t;
-        }
-      });
-      break;
-    case "change_item_state":
-      new_items = tile_list.map(function (t) {
-        if (t.tile_id === action.tile_id) {
-          var new_t = _objectSpread({}, t);
-          for (var field in action.new_state) {
-            new_t[field] = action.new_state[field];
-          }
-          return new_t;
-        } else {
-          return t;
-        }
-      });
-      break;
-    case "change_items_value":
-      new_items = tile_list.map(function (t) {
-        if (action.id_list.includes(t.tile_id)) {
-          var new_t = _objectSpread({}, t);
-          new_t[action.field] = action.new_value;
-          return new_t;
-        } else {
-          return t;
-        }
-      });
-      break;
-    case "update_items":
-      new_items = tile_list.map(function (t) {
-        if (t.unique_id in action.updates) {
-          var update_dict = action.updates[t.unique_id];
-          return _objectSpread(_objectSpread({}, t), update_dict);
-        } else {
-          return t;
-        }
-      });
-      break;
-    case "move_item":
-      var old_list = _toConsumableArray(tile_list);
-      new_items = (0, _utilities_react.arrayMove)(old_list, action.oldIndex, action.newIndex);
-      break;
-    case "add_at_index":
-      new_items = _toConsumableArray(tile_list);
-      new_items.splice(action.insert_index, 0, action.new_item);
-      break;
-    default:
-      console.log("Got Unknown action: " + action.type);
-      return _toConsumableArray(tile_list);
-  }
-  return new_items;
-}
-function TileContainer(props) {
-  var settingsContext = (0, _react.useContext)(_settings.SettingsContext);
-  var _useState = (0, _react.useState)(false),
-    _useState2 = _slicedToArray(_useState, 2),
-    dragging = _useState2[0],
-    setDragging = _useState2[1];
-  (0, _react.useEffect)(function () {
-    initSocket();
-  }, []);
-  var pushCallback = (0, _utilities_react.useCallbackStack)();
-  function _handleTileSourceChange(data) {
-    _markSourceChange(data.tile_type);
-  }
-  function initSocket() {
-    props.tsocket.attachListener("tile-message", _handleTileMessage);
-    props.tsocket.attachListener('tile-source-change', _handleTileSourceChange);
-  }
-  function _resortTiles(oldIndex, newIndex) {
-    props.tileDispatch({
-      type: "move_item",
-      oldIndex: oldIndex,
-      newIndex: newIndex
-    });
-    setDragging(false);
-  }
-  function _markSourceChange(tile_type) {
-    var change_list = [];
-    var _iterator = _createForOfIteratorHelper(props.tile_list.current),
-      _step;
-    try {
-      for (_iterator.s(); !(_step = _iterator.n()).done;) {
-        var entry = _step.value;
-        if (entry.tile_type == tile_type) {
-          change_list.push(entry.tile_id);
-        }
-      }
-    } catch (err) {
-      _iterator.e(err);
-    } finally {
-      _iterator.f();
-    }
-    props.tileDispatch({
-      type: "change_items_value",
-      id_list: change_list,
-      field: "source_changed",
-      new_value: true
-    });
-  }
-  function tileIndex(tile_id) {
-    var counter = 0;
-    var _iterator2 = _createForOfIteratorHelper(props.tile_list.current),
-      _step2;
-    try {
-      for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-        var entry = _step2.value;
-        if (entry.tile_id == tile_id) {
-          return counter;
-        }
-        ++counter;
-      }
-    } catch (err) {
-      _iterator2.e(err);
-    } finally {
-      _iterator2.f();
-    }
-    return -1;
-  }
-  var _closeTile = (0, _react.useCallback)(function (tile_id) {
-    props.tileDispatch({
-      type: "delete_item",
-      tile_id: tile_id
-    });
-    var data_dict = {
-      main_id: props.main_id,
-      tile_id: tile_id
-    };
-    (0, _communication_react.postWithCallback)(props.main_id, "RemoveTile", data_dict, null, null, props.main_id);
-  }, []);
-  var _setTileValue = (0, _react.useCallback)(function (tile_id, field, value) {
-    var callback = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
-    props.tileDispatch({
-      type: "change_item_value",
-      tile_id: tile_id,
-      field: field,
-      new_value: value
-    });
-    pushCallback(callback);
-  }, []);
-  var _setTileState = (0, _react.useCallback)(function (tile_id, new_state) {
-    var callback = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
-    props.tileDispatch({
-      type: "change_item_state",
-      tile_id: tile_id,
-      new_state: new_state
-    });
-    pushCallback(callback);
-  }, []);
-  function _displayTileContentWithJavascript(tile_id, data) {
-    _setTileState(tile_id, {
-      front_content: data.html,
-      javascript_code: data.javascript_code,
-      javascript_arg_dict: data["arg_dict"]
-    });
-  }
-  function _displayTileContent(tile_id, data) {
-    _setTileState(tile_id, {
-      front_content: data.html,
-      javascript_code: null,
-      javascript_arg_dict: null
-    });
-  }
-  function _handleTileMessage(data) {
-    var tile_id = data.tile_id;
-    if (tileIndex(tile_id) != -1) {
-      var handlerDict = {
-        startSpinner: function startSpinner(tile_id) {
-          return _setTileValue(tile_id, "show_spinner", true);
-        },
-        stopSpinner: function stopSpinner(tile_id) {
-          return _setTileValue(tile_id, "show_spinner", false);
-        },
-        displayTileContent: _displayTileContent,
-        displayTileContentWithJavascript: _displayTileContentWithJavascript
-      };
-      if (data["tile_message"] in handlerDict) {
-        handlerDict[data["tile_message"]](tile_id, data);
-      }
-    }
-  }
-  function beforeCapture(_) {
-    setDragging(true);
-  }
-  function makeTailoredTileComponent() {
-    return /*#__PURE__*/(0, _react.memo)(function (tile_props) {
-      return /*#__PURE__*/_react["default"].createElement(TileComponent, _extends({}, tile_props, {
-        main_id: props.main_id,
-        setTileValue: _setTileValue,
-        setTileState: _setTileState,
-        handleClose: _closeTile,
-        goToModule: props.goToModule,
-        broadcast_event: props.broadcast_event,
-        tsocket: props.tsocket
-      }));
-    });
-  }
-  var TailoredTileComponent = (0, _react.useMemo)(function () {
-    return makeTailoredTileComponent();
-  }, []);
-  return /*#__PURE__*/_react["default"].createElement(_sortable_container.SortableComponent, {
-    className: props.table_is_shrunk ? "tile-div tile-container-float" : "tile-div",
-    main_id: props.main_id,
-    style: {},
-    helperClass: settingsContext.isDark() ? "bp6-dark" : "light-theme",
-    ElementComponent: TailoredTileComponent,
-    key_field_name: "tile_name",
-    item_list: _lodash["default"].cloneDeep(props.tile_list.current),
-    handle: ".tile-name-div",
-    onSortStart: function onSortStart(_, event) {
-      return event.preventDefault();
-    } // This prevents Safari weirdness
-    ,
-    onDragEnd: _resortTiles,
-    onBeforeCapture: beforeCapture,
-    direction: "vertical",
-    useDragHandle: true,
-    axis: "xy",
-    extraProps: {
-      dragging: dragging,
-      current_doc_name: props.current_doc_name,
-      selected_row: props.selected_row,
-      table_is_shrunk: props.table_is_shrunk
-    }
-  });
-}
-exports.TileContainer = TileContainer = /*#__PURE__*/(0, _react.memo)(TileContainer);
+var widgetDict = {
+  rawHtml: _widgets.RawHtmlWidget,
+  table: _table_widget.TableWidget,
+  slider: _widgets.SliderWidget,
+  text: _widgets.TextWidget,
+  javascript: _widgets.JavascriptWidget
+};
 function SortHandle(props) {
   return /*#__PURE__*/_react["default"].createElement("span", _extends({
     className: "tile-name-div"
@@ -322,7 +79,7 @@ var alt_button = function alt_button() {
 };
 function TileComponent(props) {
   props = _objectSpread({
-    javascript_code: null,
+    // javascript_code: null,
     log_since: null,
     max_console_lines: 100
   }, props);
@@ -333,25 +90,22 @@ function TileComponent(props) {
   var log_ref = (0, _react.useRef)(null);
   var javascript_error_ref = (0, _react.useRef)(false);
   var last_front_content = (0, _react.useRef)("");
-  var _useState3 = (0, _react.useState)(34),
+  var _useState = (0, _react.useState)(34),
+    _useState2 = _slicedToArray(_useState, 2),
+    header_height = _useState2[0],
+    set_header_height = _useState2[1];
+  var _useState3 = (0, _react.useState)(false),
     _useState4 = _slicedToArray(_useState3, 2),
-    header_height = _useState4[0],
-    set_header_height = _useState4[1];
-  var _useState5 = (0, _react.useState)(false),
+    resizing = _useState4[0],
+    set_resizing = _useState4[1];
+  var _useState5 = (0, _react.useState)(0),
     _useState6 = _slicedToArray(_useState5, 2),
-    resizing = _useState6[0],
-    set_resizing = _useState6[1];
+    dwidth = _useState6[0],
+    set_dwidth = _useState6[1];
   var _useState7 = (0, _react.useState)(0),
     _useState8 = _slicedToArray(_useState7, 2),
-    dwidth = _useState8[0],
-    set_dwidth = _useState8[1];
-  var _useState9 = (0, _react.useState)(0),
-    _useState0 = _slicedToArray(_useState9, 2),
-    dheight = _useState0[0],
-    set_dheight = _useState0[1];
-
-  // const menu_component_ref = useRef(null);
-
+    dheight = _useState8[0],
+    set_dheight = _useState8[1];
   var pushCallback = (0, _utilities_react.useCallbackStack)();
   var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
@@ -360,25 +114,19 @@ function TileComponent(props) {
     // menu_component_ref.current = _createMenu();
     executeEmbeddedScripts();
     // makeTablesSortable();
-    if (props.javascript_code) {
-      _executeJavascript();
-    }
+    // if (props.javascript_code) {
+    //     _executeJavascript()
+    // }
     listen_for_clicks();
   }, []);
-
-  // useEffect(()=>{
-  //     menu_component_ref.current = _createMenu();
-  // }, [props.setTileState, props.form_data, props.tile_id, props.show_log, props.tile_type,
-  //     props.broadcast_event, props.tile_name, props.main_id]); //
-
   (0, _react.useEffect)(function () {
     if (!resizing) {
       executeEmbeddedScripts();
     }
     // makeTablesSortable();
-    if (props.javascript_code) {
-      _executeJavascript();
-    }
+    // if (props.javascript_code) {
+    //     _executeJavascript()
+    // }
     listen_for_clicks();
     if (props.show_log) {
       if (log_ref && log_ref.current) {
@@ -386,9 +134,11 @@ function TileComponent(props) {
       }
     }
   });
-  (0, _react.useEffect)(function () {
-    javascript_error_ref.current = false;
-  }, [props.javascript_code]);
+
+  // useEffect(()=>{
+  //     javascript_error_ref.current = false
+  // }, [props.javascript_code]);
+
   (0, _react.useEffect)(function () {
     _broadcastTileSize(props.tile_width, props.tile_height);
   }, [props.tile_width, props.tile_height]);
@@ -415,19 +165,19 @@ function TileComponent(props) {
       // to avoid doubles of bokeh images
       last_front_content.current = props.front_content;
       var scripts = $("#" + props.tile_id + " .tile-display-area script").toArray();
-      var _iterator3 = _createForOfIteratorHelper(scripts),
-        _step3;
+      var _iterator = _createForOfIteratorHelper(scripts),
+        _step;
       try {
-        for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-          var script = _step3.value;
+        for (_iterator.s(); !(_step = _iterator.n()).done;) {
+          var script = _step.value;
           try {
             window.eval(script.text);
           } catch (e) {}
         }
       } catch (err) {
-        _iterator3.e(err);
+        _iterator.e(err);
       } finally {
-        _iterator3.f();
+        _iterator.f();
       }
     }
   }
@@ -445,20 +195,22 @@ function TileComponent(props) {
   function tdaHeight() {
     return props.tile_height + dheight - header_height - TILE_DISPLAY_AREA_MARGIN * 2;
   }
-  function _executeJavascript() {
-    try {
-      if (!javascript_error_ref.current) {
-        var selector = "[id='" + props.tile_id + "'] .jscript-target";
-        eval(props.javascript_code)(selector, tdaWidth(), tdaHeight(), props.javascript_arg_dict, resizing);
-      }
-    } catch (err) {
-      javascript_error_ref.current = true;
-      errorDrawerFuncs.addErrorDrawerEntry({
-        title: "Error evaluating javascript",
-        content: err.message
-      });
-    }
-  }
+
+  // function _executeJavascript() {
+  //     try {
+  //         if (!javascript_error_ref.current) {
+  //             let selector = "[id='" + props.tile_id + "'] .jscript-target";
+  //             eval(props.javascript_code)(selector, tdaWidth(), tdaHeight(), props.javascript_arg_dict, resizing)
+  //         }
+  //     } catch (err) {
+  //         javascript_error_ref.current = true;
+  //         errorDrawerFuncs.addErrorDrawerEntry({
+  //             title: "Error evaluating javascript",
+  //             content: err.message
+  //         });
+  //     }
+  // }
+
   function _toggleTileLog() {
     props.setTileState(props.tile_id, {
       show_log: !props.show_log,
@@ -569,17 +321,17 @@ function TileComponent(props) {
       show_spinner: true
     });
     var data = {};
-    var _iterator4 = _createForOfIteratorHelper(props.form_data),
-      _step4;
+    var _iterator2 = _createForOfIteratorHelper(props.form_data),
+      _step2;
     try {
-      for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
-        var opt = _step4.value;
+      for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+        var opt = _step2.value;
         data[opt.name] = opt["starting_value"];
       }
     } catch (err) {
-      _iterator4.e(err);
+      _iterator2.e(err);
     } finally {
-      _iterator4.f();
+      _iterator2.f();
     }
     data.tile_id = props.tile_id;
     props.broadcast_event("UpdateOptions", data);
@@ -815,9 +567,43 @@ function TileComponent(props) {
     });
   }
   var show_front = !props.show_form && !props.show_log;
-  var front_dict = {
-    __html: props.front_content
-  };
+  var outputWidgets = props.front_content.map(function (outputDict, idx) {
+    var widgetKind = outputDict["widgetKind"];
+    var widgetId = outputDict["uid"];
+    var widgetData = outputDict["widgetData"];
+    var the_widget;
+    if (widgetKind in widgetDict) {
+      var WidgetComponent = widgetDict[widgetKind];
+      the_widget = /*#__PURE__*/_react["default"].createElement(WidgetComponent, {
+        key: widgetId,
+        uid: widgetId,
+        main_id: props.main_id,
+        console_id: null,
+        tile_id: props.tile_id,
+        row: idx,
+        dispatch: null,
+        tileWidth: tdaWidth(),
+        tileHeight: tdaHeight(),
+        resizing: resizing,
+        widgetData: widgetData,
+        tsocket: props.tsocket
+      });
+    } else {
+      var _WidgetComponent = widgetDict["text"];
+      the_widget = /*#__PURE__*/_react["default"].createElement(_WidgetComponent, {
+        key: widgetId,
+        uid: widgetId,
+        main_id: props.main_id,
+        row: idx,
+        tile_id: props.tile_id,
+        console_id: null,
+        dispatch: null,
+        resizing: resizing,
+        widgetData: "Widget kind not found ".concat(widgetId, ", ").concat(widgetKind, " ").concat(widgetData)
+      });
+    }
+    return the_widget;
+  });
   var draghandle_position_dict = {
     position: "absolute",
     bottom: 2,
@@ -1000,9 +786,8 @@ function TileComponent(props) {
       height: "100%",
       position: "relative"
     },
-    ref: tda_ref,
-    dangerouslySetInnerHTML: front_dict
-  }))), /*#__PURE__*/_react["default"].createElement(_drag_handle.DragHandle, {
+    ref: tda_ref
+  }, outputWidgets && outputWidgets.length > 0 ? outputWidgets : ""))), /*#__PURE__*/_react["default"].createElement(_drag_handle.DragHandle, {
     position_dict: draghandle_position_dict,
     dragStart: _startResize,
     onDrag: _onResize,
@@ -1010,4 +795,4 @@ function TileComponent(props) {
     direction: "both"
   })));
 }
-TileComponent = /*#__PURE__*/(0, _react.memo)(TileComponent);
+exports.TileComponent = TileComponent = /*#__PURE__*/(0, _react.memo)(TileComponent);

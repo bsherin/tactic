@@ -121,7 +121,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
         self._sleepperiod = .0001
         self.save_attrs = ["current_html", "tile_type", "tile_name", "doc_type", "configured",
                            "width", "height", "base_figure_url",
-                           "img_dict", "is_d3"]
+                           "img_dict", "is_d3", "_widgets"]
         # These define the state of a tile and should be saved
 
         self.tile_type = self.__class__.__name__
@@ -151,7 +151,8 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
         self.RETRIES = RETRIES  # This is here so that it can be easily accessible form the mixins
         self._std_out_nesting = 0
         self._last_exports = {}
-        self.widgets = {}
+        self._widgets = {}
+        self.in_pseudo_tile = False
         return
 
     # <editor-fold desc="_task_worthy methods (events)">
@@ -527,11 +528,13 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
         is_lite = "lite_save" in data and data["lite_save"]
         export_names = [exp["name"] for exp in self.exports]
         for attr in self.save_attrs:
+            print(f"saving attribute {attr}")
             if not hasattr(self, attr):
                 result[attr] = None
                 continue
             if is_lite and attr in export_names:
                 continue
+            print(f"getting value for attribute {attr}")
             attr_val = getattr(self, attr)
             if hasattr(attr_val, "compile_save_dict"):
                 result[attr] = attr_val.compile_save_dict()
@@ -568,24 +571,38 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
 
     # <editor-fold desc="Tile Internal Machinery">
 
-    def create_widget(self, kind, data):
-        new_widget = kind_dict[kind](data, self)
-        self.widgets[new_widget.uid] = new_widget
+    def create_widget_full(self, kind, data, runner_type="tile", runner_id=None):
+        new_widget = kind_dict[kind](data, runner_type, runner_id)
+        self._widgets[new_widget.uid] = new_widget
         return new_widget
+
+    def create_widget(self, kind, data):
+        return self.create_widget_full(kind, data, "tile", self._tworker.my_id)
 
     @_task_worthy
     def remove_widget(self, data):
         uid = data["uid"]
-        if uid in self.widgets:
-            del self.widgets[table_id]
+        if uid in self._widgets:
+            del self._widgets[uid]
         return {"success": True}
 
     @_task_worthy
     def widget_get(self, data):
         uid = data["uid"]
-        if uid in self.widgets:
-            widget = self.widgets[uid]
-            return {"success": True, "widget_data": widget.get(data)}
+
+        if uid in self._widgets:
+            widget = self._widgets[uid]
+            return {"success": True, "widgetData": widget.get(data)}
+        else:
+            return {"success": False, "error": f"Widget not found uid {uid} in {self._widgets.keys()}"}
+
+    @_task_worthy
+    def widget_set(self, data):
+        uid = data["uid"]
+        if uid in self._widgets:
+            widget = self._widgets[uid]
+            widget.set(data["widgetData"])
+            return {"success": True}
         else:
             return {"success": False, "error": "Widget not found"}
 
@@ -715,6 +732,22 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
             exports_with_type_info.append(new_exp)
         return exports_with_type_info
 
+    def convert_content_to_widget_list(self, content):
+        result_list = []
+        if type(content) == str:
+            rw = self.create_widget("raw_html", {"value": content})
+            result_list.append(rw.render())
+        elif type(content) == dict:
+            result_list.append(content)
+        else:
+            for item in content:
+                if type(item) == str:
+                    rw = self.create_widget("raw_html", {"value": item})
+                    result_list.append(rw.render())
+                elif type(item) == dict:
+                    result_list.append(item)
+        return result_list
+
     def _do_the_refresh(self, new_html=None):
         try:
             if new_html is None:
@@ -722,6 +755,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
                     new_html = "Tile not configured"
                 else:
                     new_html = self.render_content()
+            new_html = self.convert_content_to_widget_list(new_html)
             self.current_html = new_html
             current_exports = self.get_export_type_info()
             if self.exports_have_changed(current_exports):
@@ -760,6 +794,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
                     decoded_val = pickle.loads(str(attr_val.decode()))
                     setattr(self, attr, decoded_val)
                 elif attr in save_dict["binary_attrs"]:
+                    print("prcessing binary attribute {}".format(attr))
                     try:
                         decoded_val = debinarize_python_object(attr_val)
                     except Exception as ex:  # legacy if above fails try the old method

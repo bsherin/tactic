@@ -104,7 +104,8 @@ class ConsoleStringIO(StringIO):
         StringIO.write(self, s)
         if not s == "\n":   # The print commmand automatically adds a \n. We don't want to print it.
             self.data["force_open"] = True
-            self.data["result_text"] = s
+            rw = self.my_tile.create_widget("raw_html", {"value": s})
+            self.data["result_text"] = rw.render()
             self.data["console_message"] = "consoleCodePrint"
             self.data["counter"] = self.counter
             self.my_tile.emit_console_message("consoleCodePrint", self.data)
@@ -136,6 +137,7 @@ class PseudoTileClass(TileBase, MplFigure):
         self._last_globals = []
         self.execution_counter = 0
         self._base_stdout = sys.stdout
+        self.in_pseudo_tile = True
         return
 
     # Note that task_data must contain console_id
@@ -195,6 +197,7 @@ class PseudoTileClass(TileBase, MplFigure):
 
         result["tile_id"] = self._tworker.my_id  # I had to move this down here because it was being overwritten
         result["img_dict"] = make_python_object_jsonizable(self.img_dict)
+        result["widgets"] = make_python_object_jsonizable(self._widgets)
         result["module_name"] = None
         result["execution_counter"] = self.execution_counter
         return result
@@ -215,7 +218,15 @@ class PseudoTileClass(TileBase, MplFigure):
                 self.img_dict = {}
                 self._handle_exception(ex, "debinarizing failed for img_dict",
                                        print_to_console=True)
-
+        if "widgets" in save_dict:
+            try:
+                self._widgets = debinarize_python_object(save_dict["widgets"])
+            except Exception as ex:
+                self._wdigets = {}
+                self._handle_exception(ex, "debinarizing failed for widgets",
+                                       print_to_console=True)
+        else:
+            self._wdigets = {}
         if "execution_counter" in save_dict:
             self.execution_counter = save_dict["execution_counter"]
         for (attr, attr_val) in save_dict.items():
@@ -351,11 +362,10 @@ class PseudoTileClass(TileBase, MplFigure):
                 ev_string += "['{}']".format(data["key"])
             ev_string += data["tail"]
             try:
-
                 eval_result = eval(ev_string)
                 eval_type_info = self._get_type_info(eval_result)
                 if is_html_table_class(eval_result):
-                    table_widget = self.create_widget("table", eval_result)
+                    table_widget = self.create_widget("table", {"value": eval_result})
                     data.update(table_widget.render())
                     data.update({"success": True})
                 else:
@@ -444,6 +454,9 @@ class PseudoTileClass(TileBase, MplFigure):
                 return True
         return False
 
+    def create_widget(self, kind, data):
+        return self.create_widget_full(kind, data, "console")
+
     def _restore_base_stdout(self):
         sys.stdout = self._base_stdout
         self._std_out_nesting = 0
@@ -469,7 +482,7 @@ class PseudoTileClass(TileBase, MplFigure):
                 eval_res = eval(code_to_eval, globals(), globals())
                 if eval_res is not None:
                     if is_html_table_class(eval_res):
-                        table_widget = self.create_widget("table", eval_res)
+                        table_widget = self.create_widget("table", {"value": eval_res})
                         table_widget.show()
                         sys.stdout.counter += 1
                     else:

@@ -32,6 +32,7 @@ from rabbit_manage import sleep_until_rabbit_alive
 import sys, os
 import time
 import pika
+import widgets
 
 sys.stdout = sys.stderr
 print("Waiting for rabbit")
@@ -74,6 +75,8 @@ class TileWorker(QWorker):
         QWorker.__init__(self)
         self.tile_instance = None
         tile_env.Tile = None
+        widgets.Tile = None
+        widgets.in_pseudo_tile = False
         self.get_megaplex_task_now = False
         self.use_svg = True
         self.generate_heartbeats = True
@@ -169,6 +172,8 @@ class TileWorker(QWorker):
             print("entering recreate_from_save. class_name is " + class_info["class_name"])
             self.tile_instance = class_info["tile_class"](None, None, tile_name=data["tile_name"])
             tile_env.Tile = self.tile_instance
+            widgets.Tile = self.tile_instance
+            widgets.in_pseudo_tile = self.tile_instance.in_pseudo_tile
             self.handler_instances["tilebase"] = self.tile_instance
             self.tile_instance.recreate_from_save(data)
             self.tile_instance.base_figure_url = data["new_base_figure_url"]
@@ -244,6 +249,8 @@ class TileWorker(QWorker):
         try:
             self.tile_instance = class_info["tile_class"](None, None, tile_name=reload_dict["tile_name"])
             tile_env.Tile = self.tile_instance
+            widgets.Tile = self.tile_instance
+            widgets.in_pseudo_tile = self.tile_instance.in_pseudo_tile
             self.handler_instances["tilebase"] = self.tile_instance
             old_option_names = reload_dict["old_option_names"]
             del reload_dict["old_option_names"]
@@ -276,6 +283,8 @@ class TileWorker(QWorker):
         try:
             self.tile_instance = PseudoTileClass()
             pseudo_tile_base.Tile = self.tile_instance
+            widgets.Tile = self.tile_instance
+            widgets.in_pseudo_tile = self.tile_instance.in_pseudo_tile
             self.handler_instances["tilebase"] = self.tile_instance
             self.tile_instance.user_id = os.environ["OWNER"]
             self.tile_instance.base_figure_url = data["base_figure_url"]
@@ -324,6 +333,8 @@ class TileWorker(QWorker):
             print("entering instantiate_tile_class")
             self.tile_instance = class_info["tile_class"](None, None, tile_name=data["tile_name"])
             tile_env.Tile = self.tile_instance
+            widgets.Tile = self.tile_instance
+            widgets.in_pseudo_tile = self.tile_instance.in_pseudo_tile
             self.handler_instances["tilebase"] = self.tile_instance
             self.tile_instance.user_id = os.environ["OWNER"]
             self.tile_instance.base_figure_url = data["base_figure_url"]
