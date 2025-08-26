@@ -19,7 +19,6 @@ var _searchable_console = require("./searchable_console");
 var _modal_react = require("./modal_react");
 var _error_drawer = require("./error_drawer");
 var _widgets = require("./widgets");
-var _table_widget = require("./table_widget");
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t5 in e) "default" !== _t5 && {}.hasOwnProperty.call(e, _t5) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t5)) && (i.get || i.set) ? o(f, _t5, i) : f[_t5] = e[_t5]); return f; })(e, t); }
 function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, "_invoke", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError("Generator is already running"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = "next"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i["return"]) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine2(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, "Generator"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, "toString", function () { return "[object Generator]"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }
@@ -42,13 +41,6 @@ function _extends() { return _extends = Object.assign ? Object.assign.bind() : f
 var using_touch = "ontouchend" in document;
 var click_event = using_touch ? "touchstart" : "click";
 var TILE_DISPLAY_AREA_MARGIN = 15;
-var widgetDict = {
-  rawHtml: _widgets.RawHtmlWidget,
-  table: _table_widget.TableWidget,
-  slider: _widgets.SliderWidget,
-  text: _widgets.TextWidget,
-  javascript: _widgets.JavascriptWidget
-};
 function SortHandle(props) {
   return /*#__PURE__*/_react["default"].createElement("span", _extends({
     className: "tile-name-div"
@@ -79,7 +71,6 @@ var alt_button = function alt_button() {
 };
 function TileComponent(props) {
   props = _objectSpread({
-    // javascript_code: null,
     log_since: null,
     max_console_lines: 100
   }, props);
@@ -88,7 +79,6 @@ function TileComponent(props) {
   var inner_log_ref = (0, _react.useRef)(null);
   var tda_ref = (0, _react.useRef)(null);
   var log_ref = (0, _react.useRef)(null);
-  var javascript_error_ref = (0, _react.useRef)(false);
   var last_front_content = (0, _react.useRef)("");
   var _useState = (0, _react.useState)(34),
     _useState2 = _slicedToArray(_useState, 2),
@@ -111,22 +101,13 @@ function TileComponent(props) {
   var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
   (0, _react.useEffect)(function () {
     _broadcastTileSize(props.tile_width, props.tile_height);
-    // menu_component_ref.current = _createMenu();
     executeEmbeddedScripts();
-    // makeTablesSortable();
-    // if (props.javascript_code) {
-    //     _executeJavascript()
-    // }
     listen_for_clicks();
   }, []);
   (0, _react.useEffect)(function () {
     if (!resizing) {
       executeEmbeddedScripts();
     }
-    // makeTablesSortable();
-    // if (props.javascript_code) {
-    //     _executeJavascript()
-    // }
     listen_for_clicks();
     if (props.show_log) {
       if (log_ref && log_ref.current) {
@@ -134,11 +115,6 @@ function TileComponent(props) {
       }
     }
   });
-
-  // useEffect(()=>{
-  //     javascript_error_ref.current = false
-  // }, [props.javascript_code]);
-
   (0, _react.useEffect)(function () {
     _broadcastTileSize(props.tile_width, props.tile_height);
   }, [props.tile_width, props.tile_height]);
@@ -418,8 +394,9 @@ function TileComponent(props) {
     return _reloadTile2.apply(this, arguments);
   }
   function listen_for_clicks() {
-    $(body_ref.current).off();
-    $(body_ref.current).on(click_event, '.element-clickable', function (e) {
+    var selector = "#".concat(props.tile_id, " .raw-html-widget");
+    $(selector).off();
+    $(selector).on(click_event, '.element-clickable', function (e) {
       var data_dict = _standard_click_data();
       var dset = e.target.dataset;
       data_dict.dataset = {};
@@ -430,7 +407,7 @@ function TileComponent(props) {
       (0, _communication_react.postWithCallback)(props.tile_id, "TileElementClick", data_dict, null, null, props.main_id);
       e.stopPropagation();
     });
-    $(body_ref.current).on(click_event, '.word-clickable', function () {
+    $(selector).on(click_event, '.word-clickable', function () {
       var data_dict = _standard_click_data();
       var s = window.getSelection();
       var range = s.getRangeAt(0);
@@ -448,12 +425,12 @@ function TileComponent(props) {
       data_dict.clicked_text = range.toString().trim();
       (0, _communication_react.postWithCallback)(props.tile_id, "TileWordClick", data_dict, null, null, props.main_id);
     });
-    $(body_ref.current).on(click_event, '.cell-clickable', function () {
+    $(selector).on(click_event, '.cell-clickable', function () {
       var data_dict = _standard_click_data();
       data_dict.clicked_cell = $(this).text();
       (0, _communication_react.postWithCallback)(props.tile_id, "TileCellClick", data_dict, null, null, props.main_id);
     });
-    $(body_ref.current).on(click_event, '.row-clickable', function () {
+    $(selector).on(click_event, '.row-clickable', function () {
       var data_dict = _standard_click_data();
       var cells = $(this).children();
       var row_vals = [];
@@ -463,12 +440,12 @@ function TileComponent(props) {
       data_dict["clicked_row"] = row_vals;
       (0, _communication_react.postWithCallback)(props.tile_id, "TileRowClick", data_dict, null, null, props.main_id);
     });
-    $(body_ref.current).on(click_event, '.front button', function (e) {
+    $(selector).on(click_event, 'button', function (e) {
       var data_dict = _standard_click_data();
       data_dict["button_value"] = e.target.value;
       (0, _communication_react.postWithCallback)(props.tile_id, "TileButtonClick", data_dict, null, null, props.main_id);
     });
-    $(body_ref.current).on('submit', '.front form', function (e) {
+    $(selector).on('submit', 'form', function (e) {
       var data_dict = _standard_click_data();
       var form_data = {};
       var the_form = e.target;
@@ -479,13 +456,13 @@ function TileComponent(props) {
       (0, _communication_react.postWithCallback)(props.tile_id, "TileFormSubmit", data_dict, null, null, props.main_id);
       return false;
     });
-    $(body_ref.current).on("change", '.front select', function (e) {
+    $(selector).on("change", 'select', function (e) {
       var data_dict = _standard_click_data();
       data_dict.select_value = e.target.value;
       data_dict.select_name = e.target.name;
       (0, _communication_react.postWithCallback)(props.tile_id, "SelectChange", data_dict, null, null, props.main_id);
     });
-    $(body_ref.current).on('change', '.front textarea', function (e) {
+    $(selector).on('change', 'textarea', function (e) {
       var data_dict = _standard_click_data();
       data_dict["text_value"] = e.target.value;
       (0, _communication_react.postWithCallback)(props.tile_id, "TileTextAreaChange", data_dict, null, null, props.main_id);
@@ -569,14 +546,14 @@ function TileComponent(props) {
   var show_front = !props.show_form && !props.show_log;
   var outputWidgets = props.front_content.map(function (outputDict, idx) {
     var widgetKind = outputDict["widgetKind"];
-    var widgetId = outputDict["uid"];
+    var widgetId = outputDict["widgetId"];
     var widgetData = outputDict["widgetData"];
     var the_widget;
-    if (widgetKind in widgetDict) {
-      var WidgetComponent = widgetDict[widgetKind];
+    if (widgetKind in _widgets.widgetDict) {
+      var WidgetComponent = _widgets.widgetDict[widgetKind];
       the_widget = /*#__PURE__*/_react["default"].createElement(WidgetComponent, {
         key: widgetId,
-        uid: widgetId,
+        widgetId: widgetId,
         main_id: props.main_id,
         console_id: null,
         tile_id: props.tile_id,
@@ -585,14 +562,15 @@ function TileComponent(props) {
         tileWidth: tdaWidth(),
         tileHeight: tdaHeight(),
         resizing: resizing,
+        widgetDict: _widgets.widgetDict,
         widgetData: widgetData,
         tsocket: props.tsocket
       });
     } else {
-      var _WidgetComponent = widgetDict["text"];
+      var _WidgetComponent = _widgets.widgetDict["text"];
       the_widget = /*#__PURE__*/_react["default"].createElement(_WidgetComponent, {
         key: widgetId,
-        uid: widgetId,
+        widgetId: widgetId,
         main_id: props.main_id,
         row: idx,
         tile_id: props.tile_id,
@@ -751,8 +729,8 @@ function TileComponent(props) {
       position: "relative"
     },
     className: "tile-body"
-  }, props.show_form && /*#__PURE__*/_react["default"].createElement("div", {
-    className: "back",
+  }, /*#__PURE__*/_react["default"].createElement("div", {
+    className: "back ".concat(props.show_form ? "show-me" : "hide-me"),
     style: {
       width: "100%",
       height: "100%",
@@ -764,8 +742,8 @@ function TileComponent(props) {
     tile_id: props.tile_id,
     updateValue: _updateOptionValue,
     handleSubmit: _handleSubmitOptions
-  })), props.show_log && /*#__PURE__*/_react["default"].createElement("div", {
-    className: "tile-log-area",
+  })), /*#__PURE__*/_react["default"].createElement("div", {
+    className: "tile-log-area ".concat(props.show_log ? "show-me" : "hide-me"),
     style: {
       width: "100%",
       height: "100%",
@@ -779,11 +757,10 @@ function TileComponent(props) {
     ref: inner_log_ref,
     outer_style: tile_log_style,
     showCommandField: true
-  })), show_front && /*#__PURE__*/_react["default"].createElement("div", {
-    className: "tile-display-area",
+  })), /*#__PURE__*/_react["default"].createElement("div", {
+    className: "tile-display-area front ".concat(show_front ? "show-me" : "hide-me"),
     style: {
       width: "100%",
-      height: "100%",
       position: "relative"
     },
     ref: tda_ref

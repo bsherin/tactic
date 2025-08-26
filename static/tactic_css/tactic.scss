@@ -40,6 +40,15 @@ $separator-padding-half: 3.5px;
     border: 1px solid red;
 }
 
+.hide-me {
+    height: 0 !important;
+    opacity: 0 !important;
+}
+
+.show-me {
+    height: 100%;
+    opacity: 1;
+}
 
 html,body {
     height:100%;

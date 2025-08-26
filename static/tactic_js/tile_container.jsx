@@ -132,7 +132,7 @@ function TileContainer(props) {
         props.tileDispatch({
             type: "update_widget_data",
             tile_id: tile_id,
-            widgetId: data["uid"],
+            widgetId: data["widgetId"],
             widgetData: data["widgetData"]
         })
     }

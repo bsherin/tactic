@@ -691,13 +691,6 @@ class HostWorker(QWorker):
                 summary_text = data["summary"]
             else:
                 summary_text = "error " + user_tstring
-                data["message"] = {"unique_id": unique_id,
-                                   "type": "fixed",
-                                   "is_error": True,
-                                   "am_shrunk": False,
-                                   "summary_text": summary_text,
-                                   "console_text": console_text,
-                                   "show_markdown": False}
         else:
             if "summary" in data:
                 summary_text = data["summary"]

@@ -116,18 +116,6 @@ class MainWorker(QWorker, ExceptionMixin, CopilotMixin):
                                            "summary": summary})
         return {"success": True}
 
-    def print_text_area_to_console(self, uid, the_text, force_open=False):
-        self.ask_host("print_text_area_to_console", {"unique_id": uid, "force_open": force_open,
-                                                     "search_string": null,
-                                                     "console_text": the_text,
-                                                     "user_id": self.mwindow.user_id})
-        return {"success": True, "unique_id": uid}
-
-    def print_code_area_to_console(self, uid, force_open=False):
-        self.ask_host("print_code_area_to_console", {"unique_id": uid, "force_open": force_open,
-                                                     "user_id": self.mwindow.user_id})
-        return {"success": True, "unique_id": uid}
-
     def distribute_event(self, event_name, data_dict=None, tile_id=None):
         if data_dict is None:
             data_dict = {}

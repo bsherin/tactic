@@ -104,7 +104,7 @@ class ConsoleStringIO(StringIO):
         StringIO.write(self, s)
         if not s == "\n":   # The print commmand automatically adds a \n. We don't want to print it.
             self.data["force_open"] = True
-            rw = self.my_tile.create_widget("raw_html", {"value": s})
+            rw = self.my_tile.create_widget("html", {"value": s})
             self.data["result_text"] = rw.render()
             self.data["console_message"] = "consoleCodePrint"
             self.data["counter"] = self.counter
@@ -270,6 +270,14 @@ class PseudoTileClass(TileBase, MplFigure):
         return {"success": True}
 
     @_task_worthy
+    def store_widgets(self, data):
+        new_widgets = debinarize_python_object(data["binary_widgets"])
+        print("storing widgets " + str(new_widgets))
+        self._widgets.update(new_widgets)
+        print("now widgets are " + str(self._widgets))
+        return {"success": True}
+
+    @_task_worthy
     def delete_image(self, data):
         del self.img_dict[data["figure_name"]]
         return {"success": True}
@@ -365,7 +373,7 @@ class PseudoTileClass(TileBase, MplFigure):
                 eval_result = eval(ev_string)
                 eval_type_info = self._get_type_info(eval_result)
                 if is_html_table_class(eval_result):
-                    table_widget = self.create_widget("table", {"value": eval_result})
+                    table_widget = self.create_widget_full("table", {"value": eval_result}, runner_type="export_viewer")
                     data.update(table_widget.render())
                     data.update({"success": True})
                 else:
@@ -454,8 +462,11 @@ class PseudoTileClass(TileBase, MplFigure):
                 return True
         return False
 
-    def create_widget(self, kind, data):
-        return self.create_widget_full(kind, data, "console")
+    def create_widget(self, kind, data=None, **kwargs):
+        if data is None:
+            data = {}
+        full_data = {**data, **kwargs}
+        return self.create_widget_full(kind, full_data, "console")
 
     def _restore_base_stdout(self):
         sys.stdout = self._base_stdout

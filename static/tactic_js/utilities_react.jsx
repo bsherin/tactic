@@ -9,6 +9,7 @@ import {createRoot} from 'react-dom/client';
 import {Spinner, Text} from "@blueprintjs/core";
 
 import {useImmerReducer} from 'use-immer';
+import {postWithCallback} from "./communication_react";
 
 export {propsAreEqual, arrayMove, arraysMatch, get_ppi, isInt, hasAnyKey, copyToClipboard, getFileExtension};
 export {remove_duplicates, guid, scrollMeIntoView, renderSpinnerMessage};
@@ -55,8 +56,8 @@ function useWidget(widgetIdArg = null, widgetTypeArg = null, widgetDataArg = {})
     const [widgetData, setWidgetData] = useState(widgetDataArg);
 
     function setWidget(newWidget) {
-        if ("id" in newWidget) {
-            setWidgetId(newWidget.id);
+        if ("widgetId" in newWidget) {
+            setWidgetId(newWidget.widgetId);
         }
         if ("type" in newWidget) {
             setWidgetType(newWidget.type);

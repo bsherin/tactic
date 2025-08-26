@@ -2,50 +2,71 @@ import {guid} from "./utilities_react";
 
 export {consoleItemsReducer}
 
-function concatenateSortedValues(dict) {
-    const sortedKeys = Object.keys(dict).map(Number).sort((a, b) => a - b);
-    return sortedKeys.map(key => dict[key]).join('<br>');
-}
+function fixOutputRowRecursively(wdict) {
+    let new_wdict = wdict;
 
-function processOutputDicts(items) {
-    return items.map(t => {
-        if (t.type == "code") {
-            let new_t = {...t};
-            new_t["output_text"] = concatenateSortedValues(new_t["output_dict"]);
-            return new_t;
-        } else {
-            return t;
-        }
-    })
-}
-
-function updateOutputText(item) {
-    if (item.type == "code") {
-        item["output_text"] = concatenateSortedValues(item["output_dict"]);
+    if (typeof wdict == "string") {
+        new_wdict = {widgetId: guid(), widgetKind: "rawHtml", widgetData: {value: wdict}};
+    } else if ("widgets" in wdict.widgetData) {
+        let new_wdict = {...wdict}
+        new_wdict.widgetData.widgets = wdict.widgetData.widgets.map((w) => {
+            fixOutputRowRecursively(w)
+        });
     }
-    return item
-}
-
-function fixOutputRow(orow) {
-    let new_row = orow;
-
-    if (typeof orow == "string") {
-        new_row = {widgetId: guid(), widgetKind: "rawHtml", widgetData: {value: orow}};
-    }
-    return new_row;
+    return new_wdict;
 }
 
 function fixCodeOutputs(item) {
     if (item.type == "code") {
         let new_item = {...item};
-        let new_output_dict = {};
-        for (let key in item["output_dict"]) {
-            new_output_dict[key] = fixOutputRow(item["output_dict"][key]);
+        try {
+            let new_output_dict = {};
+            const sortedOutputKeys = Object.keys(item["output_dict"]).map(Number).sort((a, b) => a - b);
+            for (let key of sortedOutputKeys) {
+                new_output_dict[key] = fixOutputRowRecursively(item["output_dict"][key]);
+            }
+            new_item["output_dict"] = new_output_dict;
+        } catch (e) {
+            console.log("Error fixing code outputs: " + e);
         }
-        new_item["output_dict"] = new_output_dict;
+
         return new_item;
     }
     return item;
+}
+
+function fixLogItemBodyRecursively(console_text) {
+    let new_body = console_text;
+    if (typeof new_body == "string") {
+        new_body = [{widgetId: guid(), widgetKind: "rawHtml", widgetData: {value: console_text}}];
+    } else {
+        new_body = console_text.map((wdict) => {
+                if ("widgets" in wdict.widgetData) {
+                    let new_wdict = {...wdict};
+                    new_wdict.widgetData.widgets = fixLogItemBodyRecursively(new_wdict.widgetData.widgets);
+                    return new_wdict;
+                } else {
+                    return wdict;
+                }
+            }
+        );
+    }
+    return new_body;
+}
+
+function fixLogItem(item) {
+    if (item.type == "fixed") {
+        let new_item = {...item};
+        new_item.console_text = fixLogItemBodyRecursively(item.console_text);
+        return new_item;
+    }
+    return item;
+}
+
+function fixItem(item) {
+    let new_item = fixCodeOutputs(item);
+    new_item = fixLogItem(new_item);
+    return new_item;
 }
 
 function consoleItemsReducer(console_items, action) {
@@ -53,7 +74,7 @@ function consoleItemsReducer(console_items, action) {
     switch (action.type) {
         case "initialize":
             // new_items = processOutputDicts(action.new_items);
-            new_items = action.new_items.map(t => fixCodeOutputs(t));
+            new_items = action.new_items.map(t => fixItem(t));
             break;
         case "delete_item":
             new_items = console_items.filter(t => t.unique_id !== action.unique_id);
@@ -79,12 +100,11 @@ function consoleItemsReducer(console_items, action) {
             break;
         case "replace_item":
             new_items = console_items.map(t => {
-                if (t.unique === action.unique_id) {
-                    let new_t = {...action.new_item};
-                    new_t = fixCodeOutputs(new_t);
-                    return new_t
-                    // return updateOutputText(new_t);
-                }else {
+                    if (t.unique === action.unique_id) {
+                        let new_t = {...action.new_item};
+                        new_t = fixItem(new_t);
+                        return new_t
+                    } else {
                         return t;
                     }
                 }
@@ -99,12 +119,11 @@ function consoleItemsReducer(console_items, action) {
             });
             break;
         case "change_item_value":
-            console.log(`change item_value ${action.field} ${String(action.new_value)}`);
             new_items = console_items.map(t => {
                 if (t.unique_id === action.unique_id) {
                     let new_t = {...t};
                     new_t[action.field] = action.new_value;
-                    new_t = fixCodeOutputs(new_t);
+                    new_t = fixItem(new_t);
                     return new_t;
                 } else {
                     return t;
@@ -142,19 +161,31 @@ function consoleItemsReducer(console_items, action) {
             new_items = console_items.map(t => {
                 if (t.unique_id === action.unique_id) {
                     let new_t = {...t};
-                    const sortedOutputKeys = Object.keys(new_t["output_dict"]).map(Number).sort((a, b) => a - b);
-                    new_t["output_dict"] = sortedOutputKeys.map(key => {
-                        let d = new_t["output_dict"][key]
-                        let new_d = {...d};
-                        if (d.widgetId == action.widgetId) {
-                            new_d.widgetData = {...new_t.widgetData, ...action.widgetData};
-                            return new_d
-                        }
-                        else {
-                            return d
-                        }
-                    })
-                    return new_t;
+                    if (t.type == "code") {
+                        const sortedOutputKeys = Object.keys(new_t["output_dict"]).map(Number).sort((a, b) => a - b);
+                        new_t["output_dict"] = sortedOutputKeys.map(key => {
+                            let d = new_t["output_dict"][key]
+                            let new_d = {...d};
+                            if (d.widgetId == action.widgetId) {
+                                new_d.widgetData = {...new_t.widgetData, ...action.widgetData};
+                                return new_d
+                            } else {
+                                return d
+                            }
+                        })
+                        return new_t;
+                    } else if (t.type == "fixed") {
+                        new_t.console_text = new_t.console_text.map(d => {
+                            let new_d = {...d};
+                            if (d.widgetId == action.widgetId) {
+                                new_d.widgetData = {...new_t.widgetData, ...action.widgetData};
+                                return new_d
+                            } else {
+                                return d
+                            }
+                        })
+                        return new_t;
+                    }
                 } else {
                     return t;
                 }
@@ -180,9 +211,8 @@ function consoleItemsReducer(console_items, action) {
                 if (t.unique_id in action.updates) {
                     const update_dict = action.updates[t.unique_id];
                     let new_t = {...t, ...update_dict};
-                    new_t = fixCodeOutputs(new_t);
+                    new_t = fixItem(new_t);
                     return new_t;
-                    // return updateOutputText({...t, ...update_dict});
                 } else {
                     return t;
                 }
@@ -190,13 +220,12 @@ function consoleItemsReducer(console_items, action) {
             break;
         case "add_at_index":
             new_items = [...console_items];
-            // new_items.splice(action.insert_index, 0, ...processOutputDicts(action.new_items));
-            let new_fixed_items = action.new_items.map(t => fixCodeOutputs(t));
+            let new_fixed_items = action.new_items.map(t => fixItem(t));
             new_items.splice(action.insert_index, 0, ...new_fixed_items);
             break;
         case "open_listed_dividers":
             new_items = console_items.map(t => {
-                if (t.type == "divider" && t.divider_list.includes(t.unique_id)) {
+                if (t.type == "divider" && t["divider_list"].includes(t.unique_id)) {
                     let new_t = {...t};
                     new_t.am_shrunk = false;
                     return new_t

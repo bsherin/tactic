@@ -6,7 +6,9 @@ Object.defineProperty(exports, "__esModule", {
 exports.ConsoleComponent = ConsoleComponent;
 var _react = _interopRequireWildcard(require("react"));
 var _core = require("@blueprintjs/core");
+var _error_boundary = require("./error_boundary");
 var _utilities_react = require("./utilities_react");
+var _widgets = require("./widgets");
 var _lodash = _interopRequireDefault(require("lodash"));
 var _core2 = _interopRequireDefault(require("highlight.js/lib/core"));
 var _javascript = _interopRequireDefault(require("highlight.js/lib/languages/javascript"));
@@ -27,8 +29,6 @@ var _settings = require("./settings");
 var _modal_react = require("./modal_react");
 var _error_drawer = require("./error_drawer");
 var _assistant = require("./assistant");
-var _table_widget = require("./table_widget");
-var _widgets = require("./widgets");
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t11 in e) "default" !== _t11 && {}.hasOwnProperty.call(e, _t11) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t11)) && (i.get || i.set) ? o(f, _t11, i) : f[_t11] = e[_t11]); return f; })(e, t); }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
@@ -122,6 +122,7 @@ function ConsoleComponent(props) {
   }, props);
   var header_ref = (0, _react.useRef)(null);
   var filtered_items_ref = (0, _react.useRef)([]);
+  var widgetHomesRef = (0, _react.useRef)({});
   var _useState = (0, _react.useState)(null),
     _useState2 = _slicedToArray(_useState, 2),
     set_console_item_with_focus = _useState2[1];
@@ -305,10 +306,11 @@ function ConsoleComponent(props) {
     props.tsocket.attachListener("console-message", _handleConsoleMessage);
   }
   function updateWidgetData(data) {
+    console.log("in updateWidgetData");
     props.dispatch({
       type: "update_widget_data",
-      unique_id: data.console_id,
-      widgetId: data["uid"],
+      unique_id: widgetHomesRef.current[data["widgetId"]],
+      widgetId: data["widgetId"],
       widgetData: data["widgetData"]
     });
   }
@@ -323,90 +325,90 @@ function ConsoleComponent(props) {
     return _pasteImage2.apply(this, arguments);
   }
   function _pasteImage2() {
-    _pasteImage2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee12() {
+    _pasteImage2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee14() {
       var clipboardContents, blob, _iterator1, _step1, item, gotBlob, _gotBlob, _t5;
-      return _regenerator().w(function (_context13) {
-        while (1) switch (_context13.n) {
+      return _regenerator().w(function (_context15) {
+        while (1) switch (_context15.n) {
           case 0:
             _gotBlob = function _gotBlob3() {
-              _gotBlob = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee11(blob) {
+              _gotBlob = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee13(blob) {
                 var formData, _t4;
-                return _regenerator().w(function (_context12) {
-                  while (1) switch (_context12.n) {
+                return _regenerator().w(function (_context14) {
+                  while (1) switch (_context14.n) {
                     case 0:
                       formData = new FormData();
                       formData.append('image', blob, 'image.png');
                       formData.append("main_id", props.main_id);
-                      _context12.p = 1;
-                      _context12.n = 2;
+                      _context14.p = 1;
+                      _context14.n = 2;
                       return (0, _communication_react.postFormDataPromise)("print_blob_area_to_console", formData);
                     case 2:
-                      _context12.n = 4;
+                      _context14.n = 4;
                       break;
                     case 3:
-                      _context12.p = 3;
-                      _t4 = _context12.v;
+                      _context14.p = 3;
+                      _t4 = _context14.v;
                       console.log(_t4);
                     case 4:
-                      return _context12.a(2);
+                      return _context14.a(2);
                   }
-                }, _callee11, null, [[1, 3]]);
+                }, _callee13, null, [[1, 3]]);
               }));
               return _gotBlob.apply(this, arguments);
             };
-            gotBlob = function _gotBlob2(_x7) {
+            gotBlob = function _gotBlob2(_x8) {
               return _gotBlob.apply(this, arguments);
             };
             blob = null;
-            _context13.n = 1;
+            _context15.n = 1;
             return navigator.clipboard.read();
           case 1:
-            clipboardContents = _context13.v;
+            clipboardContents = _context15.v;
             _iterator1 = _createForOfIteratorHelper(clipboardContents);
-            _context13.p = 2;
+            _context15.p = 2;
             _iterator1.s();
           case 3:
             if ((_step1 = _iterator1.n()).done) {
-              _context13.n = 8;
+              _context15.n = 8;
               break;
             }
             item = _step1.value;
             if (!item.types.includes("image/png")) {
-              _context13.n = 7;
+              _context15.n = 7;
               break;
             }
-            _context13.n = 4;
+            _context15.n = 4;
             return item.getType("image/png");
           case 4:
-            blob = _context13.v;
+            blob = _context15.v;
             if (!(blob == null)) {
-              _context13.n = 5;
+              _context15.n = 5;
               break;
             }
-            return _context13.a(2);
+            return _context15.a(2);
           case 5:
-            _context13.n = 6;
+            _context15.n = 6;
             return gotBlob(blob);
           case 6:
-            return _context13.a(3, 8);
+            return _context15.a(3, 8);
           case 7:
-            _context13.n = 3;
+            _context15.n = 3;
             break;
           case 8:
-            _context13.n = 10;
+            _context15.n = 10;
             break;
           case 9:
-            _context13.p = 9;
-            _t5 = _context13.v;
+            _context15.p = 9;
+            _t5 = _context15.v;
             _iterator1.e(_t5);
           case 10:
-            _context13.p = 10;
+            _context15.p = 10;
             _iterator1.f();
-            return _context13.f(10);
+            return _context15.f(10);
           case 11:
-            return _context13.a(2);
+            return _context15.a(2);
         }
-      }, _callee12, null, [[2, 9, 10, 11]]);
+      }, _callee14, null, [[2, 9, 10, 11]]);
     }));
     return _pasteImage2.apply(this, arguments);
   }
@@ -414,16 +416,16 @@ function ConsoleComponent(props) {
     return _addConsoleText2.apply(this, arguments);
   }
   function _addConsoleText2() {
-    _addConsoleText2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee13(the_text) {
+    _addConsoleText2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee15(the_text) {
       var callback,
-        _args14 = arguments,
+        _args16 = arguments,
         _t6;
-      return _regenerator().w(function (_context14) {
-        while (1) switch (_context14.n) {
+      return _regenerator().w(function (_context16) {
+        while (1) switch (_context16.n) {
           case 0:
-            callback = _args14.length > 1 && _args14[1] !== undefined ? _args14[1] : null;
-            _context14.p = 1;
-            _context14.n = 2;
+            callback = _args16.length > 1 && _args16[1] !== undefined ? _args16[1] : null;
+            _context16.p = 1;
+            _context16.n = 2;
             return (0, _communication_react.postPromise)("host", "print_text_area_to_console", {
               "console_text": the_text,
               "user_id": window.user_id,
@@ -433,16 +435,16 @@ function ConsoleComponent(props) {
             if (callback != null) {
               callback();
             }
-            _context14.n = 4;
+            _context16.n = 4;
             break;
           case 3:
-            _context14.p = 3;
-            _t6 = _context14.v;
+            _context16.p = 3;
+            _t6 = _context16.v;
             errorDrawerFuncs.addFromError("Error creating text area", _t6);
           case 4:
-            return _context14.a(2);
+            return _context16.a(2);
         }
-      }, _callee13, null, [[1, 3]]);
+      }, _callee15, null, [[1, 3]]);
     }));
     return _addConsoleText2.apply(this, arguments);
   }
@@ -453,16 +455,16 @@ function ConsoleComponent(props) {
     return _addConsoleDivider2.apply(this, arguments);
   }
   function _addConsoleDivider2() {
-    _addConsoleDivider2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee14(header_text) {
+    _addConsoleDivider2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee16(header_text) {
       var callback,
-        _args15 = arguments,
+        _args17 = arguments,
         _t7;
-      return _regenerator().w(function (_context15) {
-        while (1) switch (_context15.n) {
+      return _regenerator().w(function (_context17) {
+        while (1) switch (_context17.n) {
           case 0:
-            callback = _args15.length > 1 && _args15[1] !== undefined ? _args15[1] : null;
-            _context15.p = 1;
-            _context15.n = 2;
+            callback = _args17.length > 1 && _args17[1] !== undefined ? _args17[1] : null;
+            _context17.p = 1;
+            _context17.n = 2;
             return (0, _communication_react.postPromise)("host", "print_divider_area_to_console", {
               "header_text": header_text,
               "user_id": window.user_id,
@@ -472,16 +474,16 @@ function ConsoleComponent(props) {
             if (callback != null) {
               callback();
             }
-            _context15.n = 4;
+            _context17.n = 4;
             break;
           case 3:
-            _context15.p = 3;
-            _t7 = _context15.v;
+            _context17.p = 3;
+            _t7 = _context17.v;
             errorDrawerFuncs.addFromError("Error creating divider", _t7);
           case 4:
-            return _context15.a(2);
+            return _context17.a(2);
         }
-      }, _callee14, null, [[1, 3]]);
+      }, _callee16, null, [[1, 3]]);
     }));
     return _addConsoleDivider2.apply(this, arguments);
   }
@@ -660,16 +662,16 @@ function ConsoleComponent(props) {
     return _addConsoleTextLink2.apply(this, arguments);
   }
   function _addConsoleTextLink2() {
-    _addConsoleTextLink2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee15() {
+    _addConsoleTextLink2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee17() {
       var callback,
-        _args16 = arguments,
+        _args18 = arguments,
         _t8;
-      return _regenerator().w(function (_context16) {
-        while (1) switch (_context16.n) {
+      return _regenerator().w(function (_context18) {
+        while (1) switch (_context18.n) {
           case 0:
-            callback = _args16.length > 0 && _args16[0] !== undefined ? _args16[0] : null;
-            _context16.p = 1;
-            _context16.n = 2;
+            callback = _args18.length > 0 && _args18[0] !== undefined ? _args18[0] : null;
+            _context18.p = 1;
+            _context18.n = 2;
             return (0, _communication_react.postPromise)("host", "print_link_area_to_console", {
               "user_id": window.user_id,
               "main_id": props.main_id
@@ -678,16 +680,16 @@ function ConsoleComponent(props) {
             if (callback) {
               callback();
             }
-            _context16.n = 4;
+            _context18.n = 4;
             break;
           case 3:
-            _context16.p = 3;
-            _t8 = _context16.v;
+            _context18.p = 3;
+            _t8 = _context18.v;
             errorDrawerFuncs.addFromError("Error creating link", _t8);
           case 4:
-            return _context16.a(2);
+            return _context18.a(2);
         }
-      }, _callee15, null, [[1, 3]]);
+      }, _callee17, null, [[1, 3]]);
     }));
     return _addConsoleTextLink2.apply(this, arguments);
   }
@@ -733,37 +735,37 @@ function ConsoleComponent(props) {
     return _insertLinkInItem2.apply(this, arguments);
   }
   function _insertLinkInItem2() {
-    _insertLinkInItem2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee16(unique_id) {
+    _insertLinkInItem2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee18(unique_id) {
       var entry, result, new_links, _t9;
-      return _regenerator().w(function (_context17) {
-        while (1) switch (_context17.n) {
+      return _regenerator().w(function (_context19) {
+        while (1) switch (_context19.n) {
           case 0:
-            _context17.p = 0;
+            _context19.p = 0;
             entry = get_console_item_entry(unique_id);
-            _context17.n = 1;
+            _context19.n = 1;
             return dialogFuncs.showModalPromise("SelectResourceDialog", {
               cancel_text: "cancel",
               submit_text: "insert link",
               handleClose: dialogFuncs.hideModal
             });
           case 1:
-            result = _context17.v;
+            result = _context19.v;
             new_links = "links" in entry ? _toConsumableArray(entry.links) : [];
             new_links.push({
               res_type: result.type,
               res_name: result.selected_resource
             });
             _setConsoleItemValue(entry.unique_id, "links", new_links);
-            _context17.n = 3;
+            _context19.n = 3;
             break;
           case 2:
-            _context17.p = 2;
-            _t9 = _context17.v;
+            _context19.p = 2;
+            _t9 = _context19.v;
             errorDrawerFuncs.addFromError("Error inserting link", _t9);
           case 3:
-            return _context17.a(2);
+            return _context19.a(2);
         }
-      }, _callee16, null, [[0, 2]]);
+      }, _callee18, null, [[0, 2]]);
     }));
     return _insertLinkInItem2.apply(this, arguments);
   }
@@ -1104,7 +1106,7 @@ function ConsoleComponent(props) {
                   case 0:
                     next_id = props.console_items.current[next_index].unique_id;
                     next_item = props.console_items.current[next_index];
-                    if (!(!next_item.am_shrunk && (next_item.type == "code" || next_item.type == "text" && !next_item.show_markdown))) {
+                    if (!(!next_item.am_shrunk && (next_item.type == "code" || next_item.type == "text" && !next_item["show_markdown"]))) {
                       _context9.n = 1;
                       break;
                     }
@@ -1208,22 +1210,22 @@ function ConsoleComponent(props) {
     return _deleteSelected2.apply(this, arguments);
   }
   function _deleteSelected2() {
-    _deleteSelected2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee17() {
+    _deleteSelected2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee19() {
       var confirm_text, _t0;
-      return _regenerator().w(function (_context18) {
-        while (1) switch (_context18.n) {
+      return _regenerator().w(function (_context20) {
+        while (1) switch (_context20.n) {
           case 0:
             if (!_are_selected()) {
-              _context18.n = 4;
+              _context20.n = 4;
               break;
             }
-            _context18.p = 1;
+            _context20.p = 1;
             if (!_isDividerSelected()) {
-              _context18.n = 2;
+              _context20.n = 2;
               break;
             }
             confirm_text = "The selection includes section dividers. " + "The sections will be completed in their entirety. Do you want to continue";
-            _context18.n = 2;
+            _context20.n = 2;
             return dialogFuncs.showModalPromise("ConfirmDialog", {
               title: "Do Delete",
               text_body: confirm_text,
@@ -1233,34 +1235,53 @@ function ConsoleComponent(props) {
             });
           case 2:
             _doDeleteSelected();
-            _context18.n = 4;
+            _context20.n = 4;
             break;
           case 3:
-            _context18.p = 3;
-            _t0 = _context18.v;
+            _context20.p = 3;
+            _t0 = _context20.v;
             if (_t0 != "canceled") {
-              errorDrawerFuncs.addFromError("Error duplicating resource ".concat(res_name), _t0);
+              errorDrawerFuncs.addFromError("Error duplicating resource", _t0);
             }
           case 4:
-            return _context18.a(2);
+            return _context20.a(2);
         }
-      }, _callee17, null, [[1, 3]]);
+      }, _callee19, null, [[1, 3]]);
     }));
     return _deleteSelected2.apply(this, arguments);
   }
-  var _closeConsoleItem = (0, _react.useCallback)(function (unique_id) {
-    var centry = get_console_item_entry(unique_id);
-    if (centry.type == "divider") {
-      _deleteSection(unique_id);
-    } else {
-      _dselectOneItem(unique_id, function () {
-        props.dispatch({
-          type: "delete_item",
-          unique_id: unique_id
-        });
-      });
-    }
-  }, []);
+  var _closeConsoleItem = (0, _react.useCallback)(/*#__PURE__*/function () {
+    var _ref0 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee0(unique_id) {
+      var centry;
+      return _regenerator().w(function (_context1) {
+        while (1) switch (_context1.n) {
+          case 0:
+            centry = get_console_item_entry(unique_id);
+            if (!(centry.type == "divider")) {
+              _context1.n = 2;
+              break;
+            }
+            _context1.n = 1;
+            return _deleteSection(unique_id);
+          case 1:
+            _context1.n = 3;
+            break;
+          case 2:
+            _dselectOneItem(unique_id, function () {
+              props.dispatch({
+                type: "delete_item",
+                unique_id: unique_id
+              });
+            });
+          case 3:
+            return _context1.a(2);
+        }
+      }, _callee0);
+    }));
+    return function (_x7) {
+      return _ref0.apply(this, arguments);
+    };
+  }(), []);
   function _getNextEndIndex(start_id) {
     var start_index = _consoleItemIndex(start_id);
     var _iterator6 = _createForOfIteratorHelper(props.console_items.current.slice(start_index)),
@@ -1401,7 +1422,7 @@ function ConsoleComponent(props) {
   }
   function _appendWidgetToConsoleItem(data) {
     var vdict = {
-      widgetId: data["uid"],
+      widgetId: data["widgetId"],
       widgetKind: data["widgetKind"],
       widgetData: data["widgetData"]
     };
@@ -1431,8 +1452,6 @@ function ConsoleComponent(props) {
       row: data.counter,
       new_value: new_value
     });
-
-    // _setConsoleItemValue(data.console_id, "output_dict", current)
   }
   function _setConsoleItemOutput(data) {
     var current = {};
@@ -1441,10 +1460,6 @@ function ConsoleComponent(props) {
       widgetKind: "text",
       widgetData: data["result_text"]
     };
-    // if (current.length > MAX_OUTPUT_LENGTH) {
-    //     current = current.slice(-1 * MAX_OUTPUT_LENGTH,)
-    // }
-
     props.dispatch({
       type: "change_code_output",
       unique_id: data.console_id,
@@ -1641,23 +1656,17 @@ function ConsoleComponent(props) {
       }, {
         name_text: "Paste Cells",
         icon_name: "clipboard",
-        click_handler: function click_handler() {
-          _pasteCell();
-        }
-      }, {
-        name_text: "Paste Image",
-        icon_name: "clipboard",
         click_handler: function () {
-          var _click_handler = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee0() {
-            return _regenerator().w(function (_context1) {
-              while (1) switch (_context1.n) {
+          var _click_handler = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee1() {
+            return _regenerator().w(function (_context10) {
+              while (1) switch (_context10.n) {
                 case 0:
-                  _context1.n = 1;
-                  return _pasteImage();
+                  _context10.n = 1;
+                  return _pasteCell();
                 case 1:
-                  return _context1.a(2);
+                  return _context10.a(2);
               }
-            }, _callee0);
+            }, _callee1);
           }));
           function click_handler() {
             return _click_handler.apply(this, arguments);
@@ -1665,22 +1674,42 @@ function ConsoleComponent(props) {
           return click_handler;
         }()
       }, {
-        name_text: "Delete Selected",
-        icon_name: "trash",
+        name_text: "Paste Image",
+        icon_name: "clipboard",
         click_handler: function () {
-          var _click_handler2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee1() {
-            return _regenerator().w(function (_context10) {
-              while (1) switch (_context10.n) {
+          var _click_handler2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee10() {
+            return _regenerator().w(function (_context11) {
+              while (1) switch (_context11.n) {
                 case 0:
-                  _context10.n = 1;
-                  return _deleteSelected();
+                  _context11.n = 1;
+                  return _pasteImage();
                 case 1:
-                  return _context10.a(2);
+                  return _context11.a(2);
               }
-            }, _callee1);
+            }, _callee10);
           }));
           function click_handler() {
             return _click_handler2.apply(this, arguments);
+          }
+          return click_handler;
+        }()
+      }, {
+        name_text: "Delete Selected",
+        icon_name: "trash",
+        click_handler: function () {
+          var _click_handler3 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee11() {
+            return _regenerator().w(function (_context12) {
+              while (1) switch (_context12.n) {
+                case 0:
+                  _context12.n = 1;
+                  return _deleteSelected();
+                case 1:
+                  return _context12.a(2);
+              }
+            }, _callee11);
+          }));
+          function click_handler() {
+            return _click_handler3.apply(this, arguments);
           }
           return click_handler;
         }()
@@ -1770,26 +1799,29 @@ function ConsoleComponent(props) {
   }
   var _runCodeItem = (0, _react.useCallback)(function (unique_id) {
     var go_to_next = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-    _clearCodeOutput(unique_id, /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee10() {
+    _clearCodeOutput(unique_id, /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee12() {
       var entry;
-      return _regenerator().w(function (_context11) {
-        while (1) switch (_context11.n) {
+      return _regenerator().w(function (_context13) {
+        while (1) switch (_context13.n) {
           case 0:
             _startSpinner(unique_id);
             entry = get_console_item_entry(unique_id);
-            _context11.n = 1;
+            _context13.n = 1;
             return (0, _communication_react.postPromise)(props.main_id, "exec_console_code", {
               "the_code": entry.console_text,
               "console_id": unique_id
             }, props.main_id);
           case 1:
-            if (go_to_next) {
-              _goToNextCell(unique_id);
+            if (!go_to_next) {
+              _context13.n = 2;
+              break;
             }
+            _context13.n = 2;
+            return _goToNextCell(unique_id);
           case 2:
-            return _context11.a(2);
+            return _context13.a(2);
         }
-      }, _callee10);
+      }, _callee12);
     })));
   }, []);
   function _showTextItemMarkdown(unique_id) {
@@ -1805,8 +1837,8 @@ function ConsoleComponent(props) {
       opacity: "100%"
     });
   }
-  var _sortStart = (0, _react.useCallback)(function (_ref1) {
-    var draggableId = _ref1.draggableId;
+  var _sortStart = (0, _react.useCallback)(function (_ref10) {
+    var draggableId = _ref10.draggableId;
     var idx = _consoleItemIndex(draggableId);
     var entry = props.console_items.current[idx];
     if (entry.type == "divider") {
@@ -1835,6 +1867,7 @@ function ConsoleComponent(props) {
       deleteSection: _deleteSection,
       insertResourceLink: _insertResourceLink,
       pseudo_tile_id: pseudo_tile_id,
+      widgetHomesRef: widgetHomesRef,
       dispatch: props.dispatch,
       handleCreateViewer: props.handleCreateViewer
     });
@@ -2335,18 +2368,60 @@ function LogItem(props) {
     e.stopPropagation();
   }
   var panel_class = props.am_shrunk ? "log-panel log-panel-invisible fixed-log-panel" : "log-panel log-panel-visible fixed-log-panel";
-  var converted_dict = {
-    __html: props.console_text
-  };
+  // let converted_dict = {__html: props.console_text};
+
   if (props.in_section) {
     panel_class += " in-section";
   }
   if (props.am_selected) {
     panel_class += " selected";
   }
-  if (props.is_error) {
+  if (props["is_error"]) {
     panel_class += " error-log-panel";
   }
+  var outputWidgets = props.console_text.map(function (w) {
+    var widgetKind = w["widgetKind"];
+    var widgetId = w["widgetId"];
+    var widgetData = w["widgetData"];
+    var the_widget;
+    if (widgetKind in _widgets.widgetDict) {
+      var WidgetComponent = _widgets.widgetDict[widgetKind];
+      the_widget = /*#__PURE__*/_react["default"].createElement("div", {
+        className: "log-code-output  log-item-output",
+        style: {
+          paddingBottom: 5
+        },
+        key: widgetId
+      }, /*#__PURE__*/_react["default"].createElement(WidgetComponent, {
+        key: widgetId,
+        widgetId: widgetId,
+        main_id: props.main_id,
+        console_id: props.unique_id,
+        dispatch: props.dispatch,
+        widgetDict: _widgets.widgetDict,
+        widgetData: widgetData,
+        tsocket: props.tsocket
+      }));
+    } else {
+      var _WidgetComponent = _widgets.widgetDict["text"];
+      the_widget = /*#__PURE__*/_react["default"].createElement("div", {
+        className: "log-code-output log-item-output",
+        style: {
+          paddingBottom: 5
+        },
+        key: widgetId
+      }, /*#__PURE__*/_react["default"].createElement(_WidgetComponent, {
+        key: widgetId,
+        widgetId: widgetId,
+        main_id: props.main_id,
+        console_id: props.unique_id,
+        dispatch: props.dispatch,
+        widgetData: "Widget kind not found ".concat(widgetId, ", ").concat(widgetKind, " ").concat(widgetData)
+      }));
+    }
+    props.widgetHomesRef.current[widgetId] = props.unique_id;
+    return the_widget;
+  });
   return /*#__PURE__*/_react["default"].createElement(_core.ContextMenu, {
     content: renderContextMenu()
   }, /*#__PURE__*/_react["default"].createElement("div", {
@@ -2380,10 +2455,10 @@ function LogItem(props) {
     value: props.summary_text,
     onChange: _handleSummaryTextChange,
     className: "log-panel-summary"
-  })), !props.am_shrunk && /*#__PURE__*/_react["default"].createElement("div", {
+  })), !props.am_shrunk && outputWidgets && outputWidgets.length > 0 && /*#__PURE__*/_react["default"].createElement("div", {
     className: "body-style",
-    dangerouslySetInnerHTML: converted_dict
-  }), /*#__PURE__*/_react["default"].createElement("div", {
+    style: {}
+  }, outputWidgets), /*#__PURE__*/_react["default"].createElement("div", {
     className: "button-div d-flex flex-row"
   }, /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
     handleClick: _deleteMe,
@@ -2552,12 +2627,6 @@ function BlobItem(props) {
   }))))));
 }
 BlobItem = /*#__PURE__*/(0, _react.memo)(BlobItem);
-var widgetDict = {
-  rawHtml: _widgets.RawHtmlWidget,
-  table: _table_widget.TableWidget,
-  slider: _widgets.SliderWidget,
-  text: _widgets.TextWidget
-};
 function ConsoleCodeItem(props) {
   props = _objectSpread({
     summary_text: null
@@ -2599,7 +2668,7 @@ function ConsoleCodeItem(props) {
     var my_element = elRef.current;
     var outer_element = my_element.parentNode.parentNode;
     var scrolled_element = my_element.parentNode;
-    var outer_height = outer_element.offsetHeight;
+    var outer_height = outer_element["offsetHeight"];
     var distance_from_top = my_element.offsetTop - outer_element.scrollTop - scrolled_element.offsetTop;
     if (distance_from_top > outer_height - 35) {
       var distance_to_move = distance_from_top - .5 * outer_height;
@@ -2780,36 +2849,61 @@ function ConsoleCodeItem(props) {
   });
   //let output_dict = {__html: props.output_text};
   var outputWidgets = sortedOutputKeys.map(function (idx) {
-    var outputDict = props.output_dict[idx];
-    var widgetKind = outputDict["widgetKind"];
-    var widgetId = outputDict["widgetId"];
-    var widgetData = outputDict["widgetData"];
     var the_widget;
-    if (widgetKind in widgetDict) {
-      var WidgetComponent = widgetDict[widgetKind];
-      the_widget = /*#__PURE__*/_react["default"].createElement(WidgetComponent, {
-        key: widgetId,
-        uid: widgetId,
-        main_id: props.main_id,
-        console_id: props.unique_id,
-        row: idx,
-        dispatch: props.dispatch,
-        widgetData: widgetData,
-        tsocket: props.tsocket
-      });
-    } else {
-      var _WidgetComponent = widgetDict["text"];
-      the_widget = /*#__PURE__*/_react["default"].createElement(_WidgetComponent, {
-        key: widgetId,
-        uid: widgetId,
-        main_id: props.main_id,
-        row: idx,
-        console_id: props.unique_id,
-        dispatch: props.dispatch,
-        widgetData: "Widget kind not found ".concat(widgetId, ", ").concat(widgetKind, " ").concat(widgetData)
-      });
+    try {
+      var outputDict = props.output_dict[idx];
+      var widgetKind = outputDict["widgetKind"];
+      var widgetId = outputDict["widgetId"];
+      var widgetData = outputDict["widgetData"];
+      if (widgetKind in _widgets.widgetDict) {
+        var WidgetComponent = _widgets.widgetDict[widgetKind];
+        the_widget = /*#__PURE__*/_react["default"].createElement("div", {
+          className: "log-code-output",
+          style: {
+            paddingBottom: 5
+          }
+        }, /*#__PURE__*/_react["default"].createElement(_error_boundary.ErrorBoundary, {
+          custom_message: "Error in output widget ".concat(widgetId, " of kind ").concat(widgetKind)
+        }, /*#__PURE__*/_react["default"].createElement(WidgetComponent, {
+          key: widgetId,
+          widgetId: widgetId,
+          main_id: props.main_id,
+          console_id: props.unique_id,
+          row: idx,
+          dispatch: props.dispatch,
+          widgetData: widgetData,
+          tsocket: props.tsocket
+        })));
+      } else {
+        var _WidgetComponent2 = _widgets.widgetDict["text"];
+        the_widget = /*#__PURE__*/_react["default"].createElement("div", {
+          className: "log-code-output",
+          style: {
+            paddingBottom: 5
+          }
+        }, /*#__PURE__*/_react["default"].createElement(_error_boundary.ErrorBoundary, {
+          custom_message: "Error outputting not found messsage"
+        }, /*#__PURE__*/_react["default"].createElement(_WidgetComponent2, {
+          key: widgetId,
+          widgetId: widgetId,
+          main_id: props.main_id,
+          row: idx,
+          console_id: props.unique_id,
+          dispatch: props.dispatch,
+          widgetData: "Widget kind not found ".concat(widgetId, ", ").concat(widgetKind, " ").concat(widgetData)
+        })));
+      }
+      props.widgetHomesRef.current[widgetId] = props.unique_id;
+      return the_widget;
+    } catch (e) {
+      the_widget = /*#__PURE__*/_react["default"].createElement("div", {
+        className: "log-code-output",
+        style: {
+          paddingBottom: 5
+        }
+      }, "Error outputting widget ".concat(e));
+      return the_widget;
     }
-    return the_widget;
   });
   var spinner_val = props.running ? null : 0;
 
@@ -2906,15 +3000,18 @@ function ConsoleCodeItem(props) {
     size: 13,
     value: spinner_val
   }))), outputWidgets && outputWidgets.length > 0 && /*#__PURE__*/_react["default"].createElement("div", {
-    className: "log-code-output",
     style: {
-      paddingBottom: 15
+      paddingBottom: 10,
+      display: "flex",
+      flexDirection: "column",
+      position: "relative"
     }
   }, outputWidgets)))));
 }
 ConsoleCodeItem = /*#__PURE__*/(0, _react.memo)(ConsoleCodeItem);
 function ResourceLinkButton(props) {
   var my_view = (0, _react.useRef)(null);
+  var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
   (0, _utilities_react.useConstructor)(function () {
     my_view.current = (0, _library_pane.view_views)(false)[props.res_type];
     if (window.in_context) {
@@ -2926,39 +3023,39 @@ function ResourceLinkButton(props) {
     return _goToLink2.apply(this, arguments);
   }
   function _goToLink2() {
-    _goToLink2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee18() {
+    _goToLink2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee20() {
       var data, _t1;
-      return _regenerator().w(function (_context19) {
-        while (1) switch (_context19.n) {
+      return _regenerator().w(function (_context21) {
+        while (1) switch (_context21.n) {
           case 0:
             if (!window.in_context) {
-              _context19.n = 5;
+              _context21.n = 5;
               break;
             }
-            _context19.p = 1;
-            _context19.n = 2;
+            _context21.p = 1;
+            _context21.n = 2;
             return (0, _communication_react.postAjaxPromise)(my_view.current, {
               context_id: window.context_id,
               resource_name: props.res_name
             });
           case 2:
-            data = _context19.v;
+            data = _context21.v;
             props.handleCreateViewer(data);
-            _context19.n = 4;
+            _context21.n = 4;
             break;
           case 3:
-            _context19.p = 3;
-            _t1 = _context19.v;
+            _context21.p = 3;
+            _t1 = _context21.v;
             errorDrawerFuncs.addFromError("Error following link", _t1);
           case 4:
-            _context19.n = 6;
+            _context21.n = 6;
             break;
           case 5:
             window.open($SCRIPT_ROOT + my_view.current + props.res_name);
           case 6:
-            return _context19.a(2);
+            return _context21.a(2);
         }
-      }, _callee18, null, [[1, 3]]);
+      }, _callee20, null, [[1, 3]]);
     }));
     return _goToLink2.apply(this, arguments);
   }
@@ -2989,13 +3086,15 @@ function ConsoleTextItem(props) {
   var elRef = (0, _react.useRef)(null);
   var am_selected_previous = (0, _react.useRef)(false);
   var setFocusFunc = (0, _react.useRef)(null);
+  var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
+  var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   (0, _react.useEffect)(function () {
     if (props.am_selected && !am_selected_previous.current && elRef && elRef.current) {
       scrollMeIntoView();
     }
     am_selected_previous.current = props.am_selected;
     if (props.set_focus) {
-      if (props.show_markdown) {
+      if (props["show_markdown"]) {
         _hideMarkdown();
       } else if (setFocusFunc.current) {
         setFocusFunc.current();
@@ -3010,7 +3109,7 @@ function ConsoleTextItem(props) {
     var my_element = elRef.current;
     var outer_element = my_element.parentNode.parentNode;
     var scrolled_element = my_element.parentNode;
-    var outer_height = outer_element.offsetHeight;
+    var outer_height = outer_element["offsetHeight"];
     var distance_from_top = my_element.offsetTop - outer_element.scrollTop - scrolled_element.offsetTop;
     if (distance_from_top > outer_height - 35) {
       var distance_to_move = distance_from_top - .5 * outer_height;
@@ -3027,12 +3126,12 @@ function ConsoleTextItem(props) {
     props.setConsoleItemValue(props.unique_id, "show_markdown", true);
   }
   var _toggleMarkdown = (0, _react.useCallback)(function () {
-    if (props.show_markdown) {
+    if (props["show_markdown"]) {
       _hideMarkdown();
     } else {
       _showMarkdown();
     }
-  }, [props.show_markdown]);
+  }, [props["show_markdown"]]);
   var _hideMarkdown = (0, _react.useCallback)(function () {
     props.setConsoleItemValue(props.unique_id, "show_markdown", false);
   }, []);
@@ -3075,38 +3174,38 @@ function ConsoleTextItem(props) {
     return _insertResourceLink2.apply(this, arguments);
   }
   function _insertResourceLink2() {
-    _insertResourceLink2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee19() {
+    _insertResourceLink2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee21() {
       var result, new_links, _t10;
-      return _regenerator().w(function (_context20) {
-        while (1) switch (_context20.n) {
+      return _regenerator().w(function (_context22) {
+        while (1) switch (_context22.n) {
           case 0:
-            _context20.p = 0;
-            _context20.n = 1;
+            _context22.p = 0;
+            _context22.n = 1;
             return dialogFuncs.showModalPromise("SelectResourceDialog", {
               cancel_text: "cancel",
               submit_text: "insert link",
               handleClose: dialogFuncs.hideModal
             });
           case 1:
-            result = _context20.v;
+            result = _context22.v;
             new_links = _toConsumableArray(props.links);
             new_links.push({
               res_type: result.type,
               res_name: result.selected_resource
             });
             props.setConsoleItemValue(props.unique_id, "links", new_links);
-            _context20.n = 3;
+            _context22.n = 3;
             break;
           case 2:
-            _context20.p = 2;
-            _t10 = _context20.v;
+            _context22.p = 2;
+            _t10 = _context22.v;
             if (_t10 != "canceled") {
-              errorDrawerFuncs.addFromError("Error duplicating resource ".concat(res_name), _t10);
+              errorDrawerFuncs.addFromError("Error inserting resource", _t10);
             }
           case 3:
-            return _context20.a(2);
+            return _context22.a(2);
         }
-      }, _callee19, null, [[0, 2]]);
+      }, _callee21, null, [[0, 2]]);
     }));
     return _insertResourceLink2.apply(this, arguments);
   }
@@ -3197,7 +3296,7 @@ function ConsoleTextItem(props) {
       run: props.addNewTextItem
     }];
   }, []);
-  var really_show_markdown = hasOnlyWhitespace() && props.links.length == 0 ? false : props.show_markdown;
+  var really_show_markdown = hasOnlyWhitespace() && props.links.length == 0 ? false : props["show_markdown"];
   var converted_markdown;
   if (really_show_markdown) {
     converted_markdown = mdi.render(props.console_text);

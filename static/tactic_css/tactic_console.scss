@@ -23,7 +23,10 @@ $log-panel-border-style: 1px solid #c7c7c7;
     flex: 1 1 0;
     min-width: 0;
     border: .5px solid #c7c7c7;
-    overflow-y: scroll
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    position: relative
 }
 
 .body-shrunk-style {
@@ -305,6 +308,10 @@ $log-panel-border-style: 1px solid #c7c7c7;
     max-height: 350px;
     overflow: auto;
     padding: 10px 45px 0 40px;
+
+    &.log-item-output {
+        padding: 10px 10px 0 10px;
+    }
 }
 
 // exports

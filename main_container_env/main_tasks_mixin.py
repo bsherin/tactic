@@ -1548,6 +1548,13 @@ class ExportsTasksMixin:
         return
 
     @task_worthy
+    def widget_action(self, data):
+        if self.pseudo_tile_id is None:
+            self.create_pseudo_tile()
+        self.mworker.post_task(self.pseudo_tile_id, "widget_action", data)
+        return
+
+    @task_worthy
     def stop_evaluate_export(self, data):
         if self.pseudo_tile_id is None:
             return
@@ -1582,14 +1589,22 @@ class ConsoleTasksMixin:
                                              summary=data["summary"])
 
     @task_worthy
-    def create_console_code_area(self, data):
-        unique_id = str(uuid.uuid4())
-        return self.mworker.print_code_area_to_console(unique_id, force_open=True)
-
-    @task_worthy
-    def create_console_text_item(self, data):  # not used I think
-        unique_id = str(uuid.uuid4())
-        return self.mworker.print_text_area_to_console(unique_id, data["the_text"], force_open=True)
+    def print_tile_to_console_event(self, data):
+        self.mworker.post_task(self.pseudo_tile_id, "store_widgets", data)
+        widget_renders = data["current_html"]
+        if type(widget_renders) == str:
+            widget_renders = [{"widgetKind": "rawHtml", "widgetData": {"value": widget_renders}}]
+        elif type(widget_renders) == dict:
+            widget_renders = [widget_renders]
+        new_renders = []
+        for wdict in widget_renders:
+            if wdict["widgetKind"] == "rawHtml":
+                wdict["widgetData"]["value"] = self.move_figures_to_pseudo_tile(wdict["widgetData"]["value"])
+            new_renders.append(wdict)
+        return self.mworker.print_to_console(new_renders,
+                                             force_open=data["force_open"],
+                                             is_error=data["is_error"],
+                                             summary=data["summary"])
 
     @task_worthy
     def got_console_result(self, data):

@@ -25,14 +25,15 @@ def is_widget_render(x):
 # noinspection PyProtectedMember
 class Widget(object):
     extra_fields = ["style"]
+    function_fields = ["on_change", "on_click"]
     defaults = {}
 
     def __init__(self, wdata, runner_type="tile", runner_id=None):
-        self.uid = "a" + str(uuid.uuid4())
+        self.widgetId = "a" + str(uuid.uuid4())
         self.runner_type = runner_type
         self.runner_id = runner_id
         self.widget_data = {}
-        self.base_render = {"is_widget": True, "widgetKind": self.widget_kind, "uid": self.uid}
+        self.base_render = {"is_widget": True, "widgetKind": self.widget_kind, "widgetId": self.widgetId}
         self.initialize(wdata)
         return
 
@@ -48,13 +49,16 @@ class Widget(object):
                 setattr(self, attr, self.defaults[attr])
             else:
                 setattr(self, attr, None)
-        on_change_func = wdata.get("on_change", None)
-        if on_change_func is not None:
-            self.on_change = on_change_func.__name__
-            self.is_method = is_class_method(on_change_func)
-        else:
-            self.on_change = None
-            self.is_method = False
+
+        for ffield in self.function_fields:
+            func = wdata.get(ffield, None)
+            if func is not None:
+                setattr(self, ffield, func.__name__)
+                setattr(self, f"{ffield}_is_method", is_class_method(func))
+            else:
+                setattr(self, ffield, None)
+                setattr(self, f"{ffield}_is_method", False)
+
         return
 
     def set(self, widget_data):
@@ -68,18 +72,30 @@ class Widget(object):
         if self.runner_type == "console":
             rdict["console_id"] = self.runner_id
             Tile.emit_console_message("consoleWidgetUpdate", rdict)
+        elif self.runner_type == "export_viewer":
+            Tile.emit_export_viewer_message("exportViewerWidgetUpdate", rdict)
         else:
             rdict["tile_id"] = self.runner_id
             Tile._tworker.emit_tile_message("tileWidgetUpdate", rdict)
         if "value" in widget_data:
             if self.on_change is not None:
-                if self.is_method:
+                if self.on_change_is_method:
                     getattr(Tile, self.on_change)(self._value)
                 else:
                     if in_pseudo_tile:
                         getattr(sys.modules["pseudo_tile_base"], self.on_change)(self._value)
                     else:
                         getattr(sys.modules["tile_env"], self.on_change)(self._value)
+
+    def action(self, value=None):
+        if self.on_click is not None:
+            if self.on_click_is_method:
+                getattr(Tile, self.on_click)(value)
+            else:
+                if in_pseudo_tile:
+                    getattr(sys.modules["pseudo_tile_base"], self.on_click)(value)
+                else:
+                    getattr(sys.modules["tile_env"], self.on_click)(value)
 
     def get(self, data):
         self.widget_data_dict()
@@ -120,10 +136,53 @@ def is_class_method(func):
     qn = getattr(func, '__qualname__', '')
     return '.' in qn
 
+class ButtonWidget(Widget):
+    widget_kind = "button"
+    extra_fields = ["text", "fill", "icon", "variant", "style"]
+    defaults = {"text": "Button", "fill": False, "icon": None, "variant": "solid", "style": None}
+
+
+class InputWidget(Widget):
+    widget_kind = "input"
+    extra_fields = ["fill", "label", "inline", "style"]
+    defaults = {"fill": False, "label": "", "inline": False, "style": None}
+
+    def initialize(self, wdata):
+        super().initialize(wdata)
+        if "on_change" not in wdata:
+            self.on_change = None
+
 class SliderWidget(Widget):
     widget_kind = "slider"
     extra_fields = ["min", "max", "stepSize", "labelStepSize", "style"]
     defaults = {"min": 0, "max": 10, "stepSize": 1, "labelStepSize": 1, "style": None}
+
+    def initialize(self, wdata):
+        super().initialize(wdata)
+        if "on_change" not in wdata:
+            self.on_change = None
+
+class SwitchWidget(Widget):
+    widget_kind = "switch"
+    extra_fields = ["label", "style"]
+    defaults = {"label": "switch", "style": None}
+
+    def initialize(self, wdata):
+        super().initialize(wdata)
+        if self._value is None:
+            self._value = False
+        if "on_change" not in wdata:
+            self.on_change = None
+
+class SelectWidget(Widget):
+    widget_kind = "select"
+    extra_fields = ["label", "style", "options"]
+    defaults = {"label": "select", "style": None, "options": []}
+
+    def initialize(self, wdata):
+        super().initialize(wdata)
+        if "on_change" not in wdata:
+            self.on_change = None
 
 class TextWidget(Widget):
     widget_kind = "text"
@@ -138,6 +197,16 @@ class JavascriptWidget(Widget):
 class RawHtmlWidget(Widget):
     widget_kind = "rawHtml"
     extra_fields = ["style"]
+    defaults = {"style": None}
+
+class IframeWidget(Widget):
+    widget_kind = "iframe"
+    extra_fields = ["style"]
+    defaults = {"style": None}
+
+class Box(Widget):
+    widget_kind = "box"
+    extra_fields = ["style", "widgets"]
     defaults = {"style": None}
 
 
@@ -217,7 +286,13 @@ kind_dict = {
     "table": TableWidget,
     "slider": SliderWidget,
     "text": TextWidget,
-    "raw_html": RawHtmlWidget,
+    "html": RawHtmlWidget,
+    "iframe": IframeWidget,
     "javascript": JavascriptWidget,
+    "button": ButtonWidget,
+    "switch": SwitchWidget,
+    "select": SelectWidget,
+    "input": InputWidget,
+    "box": Box,
 
 }

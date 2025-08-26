@@ -1,42 +1,112 @@
 import React, {useContext, useEffect, useRef} from "react";
 
-import {Slider, Text} from "@blueprintjs/core";
+import {Slider, Text, Button, Switch, HTMLSelect, FormGroup, InputGroup} from "@blueprintjs/core";
 
 import {postPromise, postWithCallback} from "./communication_react";
 import {ErrorDrawerContext} from "./error_drawer";
+import {TableWidget} from "./table_widget";
 
-export {useWidget, SliderWidget, RawHtmlWidget, TextWidget, JavascriptWidget}
+export {useWidget, widgetDict}
 
-function useWidget(uid, main_id, console_id, tile_id) {
-     useEffect(() => {
-        return () => {
-            postWithCallback(main_id, "remove_widget", {uid: uid});
+const widgetDict = {
+    rawHtml: RawHtmlWidget,
+    table: TableWidget,
+    slider: SliderWidget,
+    text: TextWidget,
+    javascript: JavascriptWidget,
+    box: BoxWidget,
+    button: ButtonWidget,
+    switch: SwitchWidget,
+    select: SelectWidget,
+    input: InputWidget,
+    iframe: IframeWidget
+}
+
+
+function useWidget(widgetId, main_id, console_id, tile_id) {
+
+    function widgetGet(data) {
+        let ndata = {widgetId, ...data};
+        if (tile_id) {
+            return postPromise(tile_id, "widget_get", ndata, main_id)
         }
-    }, []);
-
-     function widgetGet(data) {
-         let ndata = {uid, ...data};
-         if (tile_id) {
-             return postPromise(tile_id, "widget_get", ndata, main_id)
-         }
-         return postPromise(main_id, "widget_get",
+        return postPromise(main_id, "widget_get",
             ndata, main_id)
-     }
+    }
 
-     function widgetSet(widgetData, callback = null) {
-         let ndata = {uid, widgetData: widgetData};
-         if (tile_id) {
-             return postWithCallback(tile_id, "widget_set", ndata, callback, null, main_id);
-         }
-         postWithCallback(main_id, "widget_set", ndata, callback, null, main_id);
-     }
+    function widgetAction(value, callback = null) {
+        let ndata = {widgetId, value};
+        if (tile_id) {
+            postWithCallback(tile_id, "widget_action", ndata, callback, null, main_id);
+        }
+        postWithCallback(main_id, "widget_action", ndata, callback, null, main_id);
+    }
 
-     return [widgetGet, widgetSet];
+    function widgetSet(widgetData, callback = null) {
+        let ndata = {widgetId, widgetData: widgetData};
+        if (tile_id) {
+            return postWithCallback(tile_id, "widget_set", ndata, callback, null, main_id);
+        }
+        postWithCallback(main_id, "widget_set", ndata, callback, null, main_id);
+    }
+
+    return [widgetGet, widgetSet, widgetAction];
+}
+
+function BoxWidget(props) {
+    props = {
+        widgetId: props.widgetId,
+        main_id: null,
+        console_id: null,
+        tile_id: null,
+        dispatch: null,
+        row: 0,
+        widgetData: {widgets: [], style: {display: "flex", flexDirection: "column"}},
+        widgetDict: {},
+        tileWidth: null,
+        tileHeight: null,
+        resizing: false,
+        tsocket: null,
+        ...props
+    }
+    const [,] = useWidget(props.widgetId, props.main_id, props.console_id, props.tile_id);
+
+    let outputWidgets = props.widgetData.widgets.map((outputDict, idx) => {
+        let widgetKind = outputDict["widgetKind"];
+        let widgetId = outputDict["widgetId"]
+        let widgetData = outputDict["widgetData"]
+        let the_widget;
+        if (widgetKind in props.widgetDict) {
+            let WidgetComponent = props.widgetDict[widgetKind];
+            the_widget = <WidgetComponent key={widgetId} widgetId={widgetId} main_id={props.main_id}
+                                          console_id={null}
+                                          tile_id={props.tile_id}
+                                          row={idx}
+                                          dispatch={null}
+                                          tileWidth={props.tileWidth}
+                                          tileHeight={props.tileHeight}
+                                          resizing={props.resizing}
+                                          widgetData={widgetData} tsocket={props.tsocket}/>;
+        } else {
+            let WidgetComponent = props.widgetDict["text"];
+            the_widget = <WidgetComponent key={widgetId} widgetId={widgetId} main_id={props.main_id}
+                                          row={idx}
+                                          tile_id={props.tile_id}
+                                          console_id={null}
+                                          dispatch={null}
+                                          resizing={props.resizing}
+                                          widgetData={`Widget kind not found ${widgetId}, ${widgetKind} ${widgetData}`}/>;
+        }
+        return the_widget;
+    })
+    return (<div style={props.widgetData?.style} key={props.widgetId}>
+        {outputWidgets}
+    </div>)
 }
 
 function RawHtmlWidget(props) {
     props = {
-        uid: props.uid,
+        widgetId: props.widgetId,
         main_id: null,
         console_id: null,
         tile_id: null,
@@ -45,13 +115,65 @@ function RawHtmlWidget(props) {
         widgetData: {value: ""},
         ...props
     }
-    const [ , ] = useWidget(props.uid, props.main_id, props.console_id, props.tile_id);
+    const [,] = useWidget(props.widgetId, props.main_id, props.console_id, props.tile_id);
 
-     let output_dict = {__html: props.widgetData.value};
-    return (<div style={props.widgetData?.style}
-                 key={props.uid} dangerouslySetInnerHTML={output_dict}/>)
+    let output_dict = {__html: props.widgetData.value};
+    return (<div className="raw-html-widget" style={props.widgetData?.style}
+                 key={props.widgetId} dangerouslySetInnerHTML={output_dict}/>)
 }
-const sliderDataDefault =  {
+
+function IframeWidget(props) {
+    props = {
+        widgetId: props.widgetId,
+        main_id: null,
+        console_id: null,
+        tile_id: null,
+        dispatch: null,
+        row: 0,
+        widgetData: {value: ""},
+        ...props
+    }
+    const [,] = useWidget(props.widgetId, props.main_id, props.console_id, props.tile_id);
+
+   return (
+        <iframe srcDoc={props.widgetData.value} style={props.widgetData?.style} key={props.widgetId}/>
+   )
+}
+
+const buttonDataDefault = {
+    fill: false,
+    icon: null,
+    text: "Button",
+    variant: "solid"
+}
+
+function ButtonWidget(props) {
+    props = {
+        widgetId: null,
+        main_id: null,
+        console_id: null,
+        tile_id: null,
+        dispatch: null,
+        row: 0,
+        widgetData: buttonDataDefault,
+        ...props
+    }
+
+    const [, , widgetAction] = useWidget(props.widgetId, props.main_id, props.console_id, props.tile_id);
+
+    function onClick() {
+        widgetAction(props.widgetData.value);
+    }
+
+    return (
+        <div style={props.widgetData?.style} key={props.widgetId}>
+            <Button {...props.widgetData}
+                    onClick={onClick}/>
+        </div>
+    )
+}
+
+const sliderDataDefault = {
     value: 0,
     min: 0,
     max: 10,
@@ -61,7 +183,7 @@ const sliderDataDefault =  {
 
 function SliderWidget(props) {
     props = {
-        uid: null,
+        widgetId: null,
         main_id: null,
         console_id: null,
         tile_id: null,
@@ -71,7 +193,7 @@ function SliderWidget(props) {
         ...props
     }
 
-    const [, widgetSet] = useWidget(props.uid, props.main_id, props.console_id, props.tile_id);
+    const [, widgetSet] = useWidget(props.widgetId, props.main_id, props.console_id, props.tile_id);
 
     function onChange(newValue) {
         const newWidgetData = {...props.widgetData, value: newValue};
@@ -79,21 +201,92 @@ function SliderWidget(props) {
     }
 
     return (
-        <div style={ props.widgetData?.style} key={props.uid}>
-            <Slider {... props.widgetData}
+        <Slider {...props.widgetData} key={props.widgetId}
+                onChange={onChange}/>
+    )
+}
+
+const selectDataDefault = {
+    value: "",
+    options: [],
+    label: ""
+}
+
+function SelectWidget(props) {
+    props = {
+        widgetId: null,
+        main_id: null,
+        console_id: null,
+        tile_id: null,
+        dispatch: null,
+        row: 0,
+        widgetData: selectDataDefault,
+        ...props
+    }
+
+    const [, widgetSet,] = useWidget(props.widgetId, props.main_id, props.console_id, props.tile_id);
+
+    const {style, label, ...rest} = props.widgetData;
+
+    function onChange(e) {
+        const newWidgetData = {...props.widgetData, value: e.currentTarget.value};
+        widgetSet(newWidgetData);
+    }
+
+    return (
+        <FormGroup key={props.widgetId}
+                   inline={false}
+                   style={props.widgetData?.style}
+                   label={props.widgetData.label}>
+            <HTMLSelect {...rest}
+                        onChange={onChange}/>
+        </FormGroup>
+    )
+}
+
+
+const switchDataDefault = {
+    value: false,
+    label: "switch",
+}
+
+function SwitchWidget(props) {
+    props = {
+        widgetId: null,
+        main_id: null,
+        console_id: null,
+        tile_id: null,
+        dispatch: null,
+        row: 0,
+        widgetData: switchDataDefault,
+        ...props
+    }
+
+    const [, widgetSet] = useWidget(props.widgetId, props.main_id, props.console_id, props.tile_id);
+
+    function onChange(e) {
+        const newWidgetData = {...props.widgetData, value: e.target.checked};
+        widgetSet(newWidgetData);
+    }
+
+    return (
+        <div style={props.widgetData?.style} key={props.widgetId}>
+            <Switch key={props.widgetId}
+                    {...props.widgetData}
+                    checked={props.widgetData.value}
                     onChange={onChange}/>
         </div>
     )
 }
 
-const textDataDefault =  {
+const textDataDefault = {
     value: "",
     ellipsize: true,
 }
 
 function TextWidget(props) {
     props = {
-        uid: null,
+        widgetId: null,
         main_id: null,
         console_id: null,
         tile_id: null,
@@ -103,20 +296,60 @@ function TextWidget(props) {
         ...props
     }
 
-    const [, ] = useWidget(props.uid, props.main_id, props.console_id, props.tile_id);
+    const [,] = useWidget(props.widgetId, props.main_id, props.console_id, props.tile_id);
 
     return (
-        <div key={ props.uid }>
-            <Text {...props.widgetData}>
-                {props.widgetData.value}
-            </Text>
-        </div>
+        <Text {...props.widgetData} key={props.widgetId}>
+            {props.widgetData.value}
+        </Text>
+    )
+}
+
+const inputDataDefault = {
+    value: "",
+    fill: false,
+    label: "",
+    inline: false,
+    style: {}
+}
+
+function InputWidget(props) {
+    props = {
+        widgetId: null,
+        main_id: null,
+        console_id: null,
+        tile_id: null,
+        dispatch: null,
+        row: 0,
+        widgetData: inputDataDefault,
+        ...props
+    }
+
+    const [, widgetSet] = useWidget(props.widgetId, props.main_id, props.console_id, props.tile_id);
+    const {style, label, inline, ...rest} = props.widgetData;
+
+    function onChange(e) {
+        const newWidgetData = {...props.widgetData, value: e.target.value};
+        widgetSet(newWidgetData);
+    }
+
+
+    return (
+        <FormGroup key={props.widgetId}
+                   inline={false}
+                   style={props.widgetData.style}
+                   label={props.widgetData.label}>
+            <InputGroup type="text"
+                        {...rest}
+                        onChange={onChange}
+            />
+        </FormGroup>
     )
 }
 
 function JavascriptWidget(props) {
     props = {
-        uid: null,
+        widgetId: null,
         main_id: null,
         console_id: null,
         tile_id: null,
@@ -129,19 +362,19 @@ function JavascriptWidget(props) {
         ...props
     }
     const javascript_error_ref = useRef(false);
-    const [ , ] = useWidget(props.uid, props.main_id, props.console_id, props.tile_id);
+    const [,] = useWidget(props.widgetId, props.main_id, props.console_id, props.tile_id);
 
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
 
-    useEffect(()=>{
+    useEffect(() => {
         javascript_error_ref.current = false
         _executeJavascript()
     }, [props.widgetData.value, props.tileWidth, props.tileHeight]);
 
-     function _executeJavascript() {
+    function _executeJavascript() {
         try {
             if (!javascript_error_ref.current) {
-                let selector = `#${props.uid}`;
+                let selector = `#${props.widgetId}`;
                 window.eval(props.widgetData.value.javascript_code)(selector, props.tileWidth, props.tileHeight,
                     props.widgetData.value.javascript_arg_dict, props.resizing)
             }
@@ -154,7 +387,7 @@ function JavascriptWidget(props) {
         }
     }
 
-    return (<div id={props.uid} className="jscript-target" style={props.widgetData?.style}
-                 key={props.uid}/>)
+    return (<div id={props.widgetId} className="jscript-target" style={props.widgetData?.style}
+                 key={props.widgetId}/>)
 }
 

@@ -89,7 +89,7 @@ const tableDataDefault = {
 }
 function TableWidget(props) {
     props = {
-        uid: null,
+        widgetId: null,
         main_id: null,
         console_id: null,
         tile_id: null,
@@ -114,7 +114,7 @@ function TableWidget(props) {
     const didRender = useRef(false);
 
     const [, widgetSet] = useWidget(
-        props.uid, props.main_id, props.console_id, props.tile_id,
+        props.widgetId, props.main_id, props.console_id, props.tile_id,
         "table",
         props.row, props.dispatch);
 
@@ -200,7 +200,7 @@ function TableWidget(props) {
     function computeColumnWidths() {
         if (Object.keys(dataDictList).length == 0) return;
         let cnames = Object.keys(dataDictList[0] || {});
-        let bcwidths = compute_initial_column_widths(`.table-${props.uid}`, cnames, dataDictList);
+        let bcwidths = compute_initial_column_widths(`.table-${props.widgetId}`, cnames, dataDictList);
         let cwidths = [];
         if (props.maxColumnWidth) {
             for (let c of bcwidths) {
@@ -280,12 +280,12 @@ function TableWidget(props) {
     });
     const outer_style = {...base_outer_style, ...props.widgetData.style};
     return (
-        <div style={outer_style} key={props.uid}>
+        <div style={outer_style} key={props.widgetId}>
             <Table ref={table_ref}
                    numRows={dataDictList.length}
                    columns={columns}
                    rowHeights={fixedRowHeights}
-                   className={`table-${props.uid} ${props.className}`}
+                   className={`table-${props.widgetId} ${props.className}`}
                    cellRendererDependencies={[dataDictList]}
                    enableColumnReordering={false}
                    enableColumnResizing={true}

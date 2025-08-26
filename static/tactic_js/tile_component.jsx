@@ -20,8 +20,7 @@ import {SearchableConsole} from "./searchable_console";
 
 import {DialogContext} from "./modal_react";
 import {ErrorDrawerContext} from "./error_drawer";
-import {RawHtmlWidget, SliderWidget, TextWidget, JavascriptWidget} from "./widgets";
-import {TableWidget} from "./table_widget";
+import {widgetDict} from "./widgets";
 
 export {TileComponent}
 
@@ -31,14 +30,6 @@ const using_touch = "ontouchend" in document;
 const click_event = using_touch ? "touchstart" : "click";
 
 const TILE_DISPLAY_AREA_MARGIN = 15;
-
-const widgetDict = {
-    rawHtml: RawHtmlWidget,
-    table: TableWidget,
-    slider: SliderWidget,
-    text: TextWidget,
-    javascript: JavascriptWidget
-}
 
 function SortHandle(props) {
     return (
@@ -69,7 +60,6 @@ const alt_button = () => (menu_button);
 
 function TileComponent(props) {
     props = {
-        // javascript_code: null,
         log_since: null,
         max_console_lines: 100,
         ...props
@@ -80,7 +70,6 @@ function TileComponent(props) {
     const inner_log_ref = useRef(null);
     const tda_ref = useRef(null);
     const log_ref = useRef(null);
-    const javascript_error_ref = useRef(false);
 
     const last_front_content = useRef("");
 
@@ -95,12 +84,7 @@ function TileComponent(props) {
 
     useEffect(() => {
         _broadcastTileSize(props.tile_width, props.tile_height);
-        // menu_component_ref.current = _createMenu();
         executeEmbeddedScripts();
-        // makeTablesSortable();
-        // if (props.javascript_code) {
-        //     _executeJavascript()
-        // }
         listen_for_clicks();
     }, []);
 
@@ -108,10 +92,6 @@ function TileComponent(props) {
         if (!resizing) {
             executeEmbeddedScripts();
         }
-        // makeTablesSortable();
-        // if (props.javascript_code) {
-        //     _executeJavascript()
-        // }
         listen_for_clicks();
         if (props.show_log) {
             if (log_ref && log_ref.current) {
@@ -119,10 +99,6 @@ function TileComponent(props) {
             }
         }
     });
-
-    // useEffect(()=>{
-    //     javascript_error_ref.current = false
-    // }, [props.javascript_code]);
 
     useEffect(() => {
         _broadcastTileSize(props.tile_width, props.tile_height)
@@ -300,8 +276,9 @@ function TileComponent(props) {
     }
 
     function listen_for_clicks() {
-        $(body_ref.current).off();
-        $(body_ref.current).on(click_event, '.element-clickable', function (e) {
+        let selector = `#${props.tile_id} .raw-html-widget`;
+        $(selector).off();
+        $(selector).on(click_event, '.element-clickable', function (e) {
             let data_dict = _standard_click_data();
             const dset = e.target.dataset;
             data_dict.dataset = {};
@@ -312,7 +289,7 @@ function TileComponent(props) {
             postWithCallback(props.tile_id, "TileElementClick", data_dict, null, null, props.main_id);
             e.stopPropagation()
         });
-        $(body_ref.current).on(click_event, '.word-clickable', function () {
+        $(selector).on(click_event, '.word-clickable', function () {
             let data_dict = _standard_click_data();
             const s = window.getSelection();
             const range = s.getRangeAt(0);
@@ -330,12 +307,12 @@ function TileComponent(props) {
             data_dict.clicked_text = range.toString().trim();
             postWithCallback(props.tile_id, "TileWordClick", data_dict, null, null, props.main_id)
         });
-        $(body_ref.current).on(click_event, '.cell-clickable', function () {
+        $(selector).on(click_event, '.cell-clickable', function () {
             let data_dict = _standard_click_data();
             data_dict.clicked_cell = $(this).text();
             postWithCallback(props.tile_id, "TileCellClick", data_dict, null, null, props.main_id)
         });
-        $(body_ref.current).on(click_event, '.row-clickable', function () {
+        $(selector).on(click_event, '.row-clickable', function () {
             let data_dict = _standard_click_data();
             const cells = $(this).children();
             const row_vals = [];
@@ -345,12 +322,12 @@ function TileComponent(props) {
             data_dict["clicked_row"] = row_vals;
             postWithCallback(props.tile_id, "TileRowClick", data_dict, null, null, props.main_id)
         });
-        $(body_ref.current).on(click_event, '.front button', function (e) {
+        $(selector).on(click_event, 'button', function (e) {
             let data_dict = _standard_click_data();
             data_dict["button_value"] = e.target.value;
             postWithCallback(props.tile_id, "TileButtonClick", data_dict, null, null, props.main_id)
         });
-        $(body_ref.current).on('submit', '.front form', function (e) {
+        $(selector).on('submit', 'form', function (e) {
             let data_dict = _standard_click_data();
             const form_data = {};
             let the_form = e.target;
@@ -361,13 +338,13 @@ function TileComponent(props) {
             postWithCallback(props.tile_id, "TileFormSubmit", data_dict, null, null, props.main_id);
             return false
         });
-        $(body_ref.current).on("change", '.front select', function (e) {
+        $(selector).on("change", 'select', function (e) {
             let data_dict = _standard_click_data();
             data_dict.select_value = e.target.value;
             data_dict.select_name = e.target.name;
             postWithCallback(props.tile_id, "SelectChange", data_dict, null, null, props.main_id)
         });
-        $(body_ref.current).on('change', '.front textarea', function (e) {
+        $(selector).on('change', 'textarea', function (e) {
             let data_dict = _standard_click_data();
             data_dict["text_value"] = e.target.value;
             postWithCallback(props.tile_id, "TileTextAreaChange", data_dict, null, null, props.main_id)
@@ -437,12 +414,12 @@ function TileComponent(props) {
 
     let outputWidgets = props.front_content.map((outputDict, idx) => {
         let widgetKind = outputDict["widgetKind"];
-        let widgetId = outputDict["uid"]
+        let widgetId = outputDict["widgetId"]
         let widgetData = outputDict["widgetData"]
         let the_widget;
         if (widgetKind in widgetDict) {
             let WidgetComponent = widgetDict[widgetKind];
-            the_widget = <WidgetComponent key={widgetId} uid={widgetId} main_id={props.main_id}
+            the_widget = <WidgetComponent key={widgetId} widgetId={widgetId} main_id={props.main_id}
                                           console_id={null}
                                           tile_id={props.tile_id}
                                           row={idx}
@@ -450,10 +427,11 @@ function TileComponent(props) {
                                           tileWidth={tdaWidth()}
                                           tileHeight={tdaHeight()}
                                           resizing={resizing}
+                                          widgetDict={widgetDict}
                                           widgetData={widgetData} tsocket={props.tsocket}/>;
         } else {
             let WidgetComponent = widgetDict["text"];
-            the_widget = <WidgetComponent key={widgetId} uid={widgetId} main_id={props.main_id}
+            the_widget = <WidgetComponent key={widgetId} widgetId={widgetId} main_id={props.main_id}
                                           row={idx}
                                           tile_id={props.tile_id}
                                           console_id={null}
@@ -570,41 +548,35 @@ function TileComponent(props) {
                                  position: "relative"
                         }}
                              className="tile-body">
-                            {props.show_form &&
-                                    <div className="back"
-                                         style={{width: "100%", height: "100%",
-                                             overflow: "auto",
-                                             position: "relative"}} >
-                                        <TileForm options={_.cloneDeep(props.form_data)}
-                                                  tile_id={props.tile_id}
-                                                  updateValue={_updateOptionValue}
-                                                  handleSubmit={_handleSubmitOptions}/>
-                                    </div>
-                            }
-                                {props.show_log &&
-                                        <div className="tile-log-area"
-                                             style={{width: "100%", height: "100%", position: "relative"}}
-                                             ref={log_ref}>
-                                            <SearchableConsole main_id={props.main_id}
-                                                               streaming_host="host"
-                                                               container_id={props.tile_id}
-                                                               ref={inner_log_ref}
-                                                               outer_style={tile_log_style}
-                                                               showCommandField={true}
-                                            />
-                                    </div>
-                                }
-                                {show_front &&
-                                    <div className="tile-display-area"
-                                         style={{
-                                             width: "100%", height: "100%",
-                                             position: "relative"}}
-                                         ref={tda_ref}>
-                                        {(outputWidgets && (outputWidgets.length > 0)) ?
-                                                outputWidgets : ""
-                                        }
-                                    </div>
-                                }
+                                <div className={`back ${props.show_form ? "show-me" : "hide-me"}`}
+                                     style={{width: "100%", height: "100%",
+                                         overflow: "auto",
+                                         position: "relative"}} >
+                                    <TileForm options={_.cloneDeep(props.form_data)}
+                                              tile_id={props.tile_id}
+                                              updateValue={_updateOptionValue}
+                                              handleSubmit={_handleSubmitOptions}/>
+                                </div>
+                                <div className={`tile-log-area ${props.show_log ? "show-me" : "hide-me"}`}
+                                     style={{width: "100%", height: "100%", position: "relative"}}
+                                     ref={log_ref}>
+                                    <SearchableConsole main_id={props.main_id}
+                                                       streaming_host="host"
+                                                       container_id={props.tile_id}
+                                                       ref={inner_log_ref}
+                                                       outer_style={tile_log_style}
+                                                       showCommandField={true}
+                                    />
+                                </div>
+                                <div className={`tile-display-area front ${show_front ? "show-me" : "hide-me"}`}
+                                     style={{
+                                         width: "100%",
+                                         position: "relative"}}
+                                     ref={tda_ref}>
+                                    {(outputWidgets && (outputWidgets.length > 0)) ?
+                                            outputWidgets : ""
+                                    }
+                                </div>
                         </div>
                     }
                 </ErrorBoundary>

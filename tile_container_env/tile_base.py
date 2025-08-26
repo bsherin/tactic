@@ -573,37 +573,57 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
 
     def create_widget_full(self, kind, data, runner_type="tile", runner_id=None):
         new_widget = kind_dict[kind](data, runner_type, runner_id)
-        self._widgets[new_widget.uid] = new_widget
+        self._widgets[new_widget.widgetId] = new_widget
         return new_widget
 
-    def create_widget(self, kind, data):
-        return self.create_widget_full(kind, data, "tile", self._tworker.my_id)
+    def create_widget(self, kind, data=None, **kwargs):
+        if data is None:
+            data = {}
+        full_data = {**data, **kwargs}
+        return self.create_widget_full(kind, full_data, "tile", self._tworker.my_id)
 
     @_task_worthy
     def remove_widget(self, data):
-        uid = data["uid"]
-        if uid in self._widgets:
-            del self._widgets[uid]
+        widget_id = data["widgetId"]
+        if widget_id in self._widgets:
+            del self._widgets[widget_id]
         return {"success": True}
 
     @_task_worthy
     def widget_get(self, data):
-        uid = data["uid"]
-
-        if uid in self._widgets:
-            widget = self._widgets[uid]
+        widget_id = data["widgetId"]
+        if widget_id in self._widgets:
+            widget = self._widgets[widget_id]
             return {"success": True, "widgetData": widget.get(data)}
         else:
-            return {"success": False, "error": f"Widget not found uid {uid} in {self._widgets.keys()}"}
+            return {"success": False, "error": f"Widget not found widgetId {widget_id} in {self._widgets.keys()}"}
 
     @_task_worthy
     def widget_set(self, data):
-        uid = data["uid"]
-        if uid in self._widgets:
-            widget = self._widgets[uid]
+        widget_id = data["widgetId"]
+        if widget_id in self._widgets:
+            widget = self._widgets[widget_id]
             widget.set(data["widgetData"])
             return {"success": True}
         else:
+            print("didn't find the widget")
+            print(f"looking for {widget_id} in {self._widgets.keys()}")
+            print("current widgets are " + str(self._widgets))
+            return {"success": False, "error": "Widget not found"}
+
+    @_task_worthy
+    def widget_action(self, data):
+        print("got widget_action")
+        widget_id = data["widgetId"]
+        if widget_id in self._widgets:
+            widget = self._widgets[widget_id]
+            val = data["value"] if "value" in data else None
+            widget.action(val)
+            return {"success": True}
+        else:
+            print("didn't find the widget")
+            print(f"looking for {widget_id} in {self._widgets.keys()}")
+            print("current widgets are " + str(self._widgets))
             return {"success": False, "error": "Widget not found"}
 
     def post_event(self, event_name, task_data=None):
@@ -735,14 +755,14 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
     def convert_content_to_widget_list(self, content):
         result_list = []
         if type(content) == str:
-            rw = self.create_widget("raw_html", {"value": content})
+            rw = self.create_widget("html", {"value": content})
             result_list.append(rw.render())
         elif type(content) == dict:
             result_list.append(content)
         else:
             for item in content:
                 if type(item) == str:
-                    rw = self.create_widget("raw_html", {"value": item})
+                    rw = self.create_widget("html", {"value": item})
                     result_list.append(rw.render())
                 elif type(item) == dict:
                     result_list.append(item)
@@ -947,7 +967,21 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
 
     def handle_log_tile(self):
         summary = "Log from tile " + self.tile_name
-        self.log_it(self.current_html, summary=summary)
+        if type(self.current_html) == str:
+            rw = self.create_widget("html", {"value": self.current_html})
+            self.current_html = rw.render()
+        new_widgets = {}
+        for k, v in self._widgets.items():
+            new_v = copy.deepcopy(v)
+            new_v.runner_type = "console"
+            new_widgets[k] = new_v
+
+        self._tworker.post_task(self._main_id, "print_tile_to_console_event",
+                                {"current_html" :self.current_html,
+                                 "binary_widgets": make_python_object_jsonizable(new_widgets),
+                                 "force_open": "true",
+                                 "is_error": "false",
+                                 "summary": summary})
         return
 
     def handle_tile_word_click(self, clicked_word, doc_name, active_row_id=None):

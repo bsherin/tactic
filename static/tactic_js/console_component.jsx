@@ -6,7 +6,9 @@ import {Fragment, useState, useEffect, useRef, useCallback, useLayoutEffect, mem
 import {Icon, Card, ContextMenu, EditableText, Spinner, MenuDivider, Divider} from "@blueprintjs/core";
 import {Menu, MenuItem, ButtonGroup, Button} from "@blueprintjs/core";
 import {useHotkeys} from "@blueprintjs/core";
+import {ErrorBoundary} from "./error_boundary";
 import {SelectedPaneContext, guid} from "./utilities_react";
+import {widgetDict} from "./widgets";
 import _ from 'lodash';
 
 import hljs from 'highlight.js/lib/core';
@@ -54,8 +56,7 @@ import {DialogContext} from "./modal_react"
 import {useCallbackStack, useStateAndRef, useConstructor} from "./utilities_react";
 import {ErrorDrawerContext} from "./error_drawer";
 import {AssistantContext} from "./assistant";
-import {TableWidget} from "./table_widget";
-import {RawHtmlWidget, SliderWidget, TextWidget} from "./widgets";
+import {TextWidget} from "./widgets";
 
 export {ConsoleComponent}
 
@@ -88,6 +89,8 @@ function ConsoleComponent(props) {
     };
     const header_ref = useRef(null);
     const filtered_items_ref = useRef([]);
+
+    const widgetHomesRef = useRef({});
 
     const [, set_console_item_with_focus] = useState(null);
     const [, set_console_item_saved_focus] = useState(null);
@@ -222,10 +225,11 @@ function ConsoleComponent(props) {
     }
 
     function updateWidgetData(data) {
+        console.log("in updateWidgetData");
         props.dispatch({
             type: "update_widget_data",
-            unique_id: data.console_id,
-            widgetId: data["uid"],
+            unique_id: widgetHomesRef.current[data["widgetId"]],
+            widgetId: data["widgetId"],
             widgetData: data["widgetData"]
         });
     }
@@ -239,7 +243,7 @@ function ConsoleComponent(props) {
     }
 
     async function _pasteImage() {
-        var clipboardContents;
+        let clipboardContents;
         let blob = null;
         clipboardContents = await navigator.clipboard.read();
         for (const item of clipboardContents) {
@@ -578,7 +582,7 @@ function ConsoleComponent(props) {
             updates[unique_id] = {am_selected: false, search_string: null};
             _multiple_console_item_updates(updates, () => {
                 let narray = _.cloneDeep(props.console_selected_items_ref.current);
-                var myIndex = narray.indexOf(unique_id);
+                let myIndex = narray.indexOf(unique_id);
                 if (myIndex !== -1) {
                     narray.splice(myIndex, 1);
                 }
@@ -661,7 +665,7 @@ function ConsoleComponent(props) {
             if (newIndex == 0) {
                 below_index = 0
             } else {
-                var trueNewIndex;
+                let trueNewIndex;
                 if (newIndex >= filtered_items.length) {
                     trueNewIndex = -1
                 } else
@@ -753,7 +757,7 @@ function ConsoleComponent(props) {
             let next_id = props.console_items.current[next_index].unique_id;
             let next_item = props.console_items.current[next_index];
             if (!next_item.am_shrunk &&
-                ((next_item.type == "code") || ((next_item.type == "text") && (!next_item.show_markdown)))) {
+                ((next_item.type == "code") || ((next_item.type == "text") && (!next_item["show_markdown"])))) {
                 if (!next_item.show_on_filtered) {
                     set_filter_console_items(false);
                     pushCallback(() => {
@@ -820,16 +824,16 @@ function ConsoleComponent(props) {
                 _doDeleteSelected()
             } catch (e) {
                 if (e != "canceled") {
-                    errorDrawerFuncs.addFromError(`Error duplicating resource ${res_name}`, e)
+                    errorDrawerFuncs.addFromError(`Error duplicating resource`, e)
                 }
             }
         }
     }
 
-    const _closeConsoleItem = useCallback((unique_id) => {
+    const _closeConsoleItem = useCallback(async (unique_id) => {
         let centry = get_console_item_entry(unique_id);
         if (centry.type == "divider") {
-            _deleteSection(unique_id)
+            await _deleteSection(unique_id)
         } else {
             _dselectOneItem(unique_id, () => {
                 props.dispatch({
@@ -920,7 +924,7 @@ function ConsoleComponent(props) {
     }
 
     function _startSpinner(unique_id) {
-        var update_dict = {
+        const update_dict = {
             show_spinner: true,
             running: true
         };
@@ -933,7 +937,7 @@ function ConsoleComponent(props) {
     }
 
     function _stopConsoleSpinner(unique_id, execution_count = null) {
-        var update_dict = {
+        const update_dict = {
             show_spinner: false,
             running: false
         };
@@ -950,7 +954,7 @@ function ConsoleComponent(props) {
 
     function _appendWidgetToConsoleItem(data) {
         let vdict = {
-            widgetId: data["uid"],
+            widgetId: data["widgetId"],
             widgetKind: data["widgetKind"],
             widgetData: data["widgetData"],
         }
@@ -976,16 +980,11 @@ function ConsoleComponent(props) {
             row: data.counter,
             new_value: new_value
         });
-
-        // _setConsoleItemValue(data.console_id, "output_dict", current)
     }
 
     function _setConsoleItemOutput(data) {
         let current = {};
         current[-1] = {widgetId: guid(), widgetKind: "text", widgetData: data["result_text"]};
-        // if (current.length > MAX_OUTPUT_LENGTH) {
-        //     current = current.slice(-1 * MAX_OUTPUT_LENGTH,)
-        // }
 
         props.dispatch({
             type: "change_code_output",
@@ -1145,8 +1144,8 @@ function ConsoleComponent(props) {
                     }
                 },
                 {
-                    name_text: "Paste Cells", icon_name: "clipboard", click_handler: () => {
-                        _pasteCell()
+                    name_text: "Paste Cells", icon_name: "clipboard", click_handler: async () => {
+                        await _pasteCell()
                     }
                 },
                 {
@@ -1237,7 +1236,7 @@ function ConsoleComponent(props) {
                 "console_id": unique_id
             }, props.main_id);
             if (go_to_next) {
-                _goToNextCell(unique_id)
+                await _goToNextCell(unique_id)
             }
         })
     }, []);
@@ -1286,6 +1285,7 @@ function ConsoleComponent(props) {
             deleteSection: _deleteSection,
             insertResourceLink: _insertResourceLink,
             pseudo_tile_id: pseudo_tile_id,
+            widgetHomesRef: widgetHomesRef,
             dispatch: props.dispatch,
             handleCreateViewer: props.handleCreateViewer,
         })
@@ -1809,7 +1809,7 @@ function LogItem(props) {
     }
 
     let panel_class = props.am_shrunk ? "log-panel log-panel-invisible fixed-log-panel" : "log-panel log-panel-visible fixed-log-panel";
-    let converted_dict = {__html: props.console_text};
+    // let converted_dict = {__html: props.console_text};
 
     if (props.in_section) {
         panel_class += " in-section"
@@ -1817,9 +1817,36 @@ function LogItem(props) {
     if (props.am_selected) {
         panel_class += " selected"
     }
-    if (props.is_error) {
+    if (props["is_error"]) {
         panel_class += " error-log-panel"
     }
+
+    let outputWidgets = props.console_text.map((w, ) => {
+        let widgetKind = w["widgetKind"];
+        let widgetId = w["widgetId"]
+        let widgetData = w["widgetData"]
+        let the_widget;
+        if (widgetKind in widgetDict) {
+            let WidgetComponent = widgetDict[widgetKind];
+            the_widget =(<div className="log-code-output  log-item-output" style={{paddingBottom: 5}} key={widgetId} >
+                <WidgetComponent key={widgetId} widgetId={widgetId} main_id={props.main_id}
+                                          console_id={props.unique_id}
+                                          dispatch={props.dispatch}
+                                          widgetDict={widgetDict}
+                                          widgetData={widgetData} tsocket={props.tsocket}/>
+            </div>);
+        } else {
+            let WidgetComponent = widgetDict["text"];
+            the_widget = (<div className="log-code-output log-item-output" style={{paddingBottom: 5}} key={widgetId} >
+                <WidgetComponent key={widgetId} widgetId={widgetId} main_id={props.main_id}
+                                          console_id={props.unique_id}
+                                          dispatch={props.dispatch}
+                                          widgetData={`Widget kind not found ${widgetId}, ${widgetKind} ${widgetData}`} />
+            </div>)
+        }
+        props.widgetHomesRef.current[widgetId] = props.unique_id;
+        return the_widget;
+    })
 
     return (
         <ContextMenu content={renderContextMenu()}>
@@ -1846,9 +1873,10 @@ function LogItem(props) {
                                               className="log-panel-summary"/>
                             </div>
                         }
-                        {!props.am_shrunk &&
-                            <div className="body-style"
-                                 dangerouslySetInnerHTML={converted_dict}/>
+                        {!props.am_shrunk && outputWidgets && (outputWidgets.length > 0) &&
+                                <div className="body-style" style={{}}>
+                                    {outputWidgets}
+                                </div>
                         }
                         <div className="button-div d-flex flex-row">
                             <GlyphButton handleClick={_deleteMe}
@@ -2030,13 +2058,6 @@ function BlobItem(props) {
 
 BlobItem = memo(BlobItem);
 
-const widgetDict = {
-    rawHtml: RawHtmlWidget,
-    table: TableWidget,
-    slider: SliderWidget,
-    text: TextWidget
-}
-
 function ConsoleCodeItem(props) {
     props = {
         summary_text: null,
@@ -2085,7 +2106,7 @@ function ConsoleCodeItem(props) {
         let my_element = elRef.current;
         let outer_element = my_element.parentNode.parentNode;
         let scrolled_element = my_element.parentNode;
-        let outer_height = outer_element.offsetHeight;
+        let outer_height = outer_element["offsetHeight"];
         let distance_from_top = my_element.offsetTop - outer_element.scrollTop - scrolled_element.offsetTop;
         if (distance_from_top > outer_height - 35) {
             let distance_to_move = distance_from_top - .5 * outer_height;
@@ -2267,27 +2288,45 @@ function ConsoleCodeItem(props) {
     const sortedOutputKeys = Object.keys(props.output_dict).map(Number).sort((a, b) => a - b);
     //let output_dict = {__html: props.output_text};
     let outputWidgets = sortedOutputKeys.map(idx => {
-        let outputDict = props.output_dict[idx];
-        let widgetKind = outputDict["widgetKind"];
-        let widgetId = outputDict["widgetId"]
-        let widgetData = outputDict["widgetData"]
         let the_widget;
-        if (widgetKind in widgetDict) {
-            let WidgetComponent = widgetDict[widgetKind];
-            the_widget = <WidgetComponent key={widgetId} uid={widgetId} main_id={props.main_id}
-                                          console_id={props.unique_id}
-                                          row={idx}
-                                          dispatch={props.dispatch}
-                                          widgetData={widgetData} tsocket={props.tsocket}/>;
-        } else {
-            let WidgetComponent = widgetDict["text"];
-            the_widget = <WidgetComponent key={widgetId} uid={widgetId} main_id={props.main_id}
-                                          row={idx}
-                                          console_id={props.unique_id}
-                                          dispatch={props.dispatch}
-                                          widgetData={`Widget kind not found ${widgetId}, ${widgetKind} ${widgetData}`} />;
+        try {
+            let outputDict = props.output_dict[idx];
+            let widgetKind = outputDict["widgetKind"];
+            let widgetId = outputDict["widgetId"]
+            let widgetData = outputDict["widgetData"]
+            if (widgetKind in widgetDict) {
+                let WidgetComponent = widgetDict[widgetKind];
+                the_widget = (<div className="log-code-output" style={{paddingBottom: 5}}>
+                    <ErrorBoundary custom_message={`Error in output widget ${widgetId} of kind ${widgetKind}`}>
+                        <WidgetComponent key={widgetId} widgetId={widgetId} main_id={props.main_id}
+                                         console_id={props.unique_id}
+                                         row={idx}
+                                         dispatch={props.dispatch}
+                                         widgetData={widgetData} tsocket={props.tsocket}/>
+                    </ErrorBoundary>
+                </div>)
+            } else {
+                let WidgetComponent = widgetDict["text"];
+                the_widget = (<div className="log-code-output" style={{paddingBottom: 5}}>
+                    <ErrorBoundary custom_message={`Error outputting not found messsage`}>
+                        <WidgetComponent key={widgetId} widgetId={widgetId} main_id={props.main_id}
+                                         row={idx}
+                                         console_id={props.unique_id}
+                                         dispatch={props.dispatch}
+                                         widgetData={`Widget kind not found ${widgetId}, ${widgetKind} ${widgetData}`}/>
+                    </ErrorBoundary>
+                </div>)
+            }
+            props.widgetHomesRef.current[widgetId] = props.unique_id;
+            return the_widget;
         }
-        return the_widget;
+        catch (e) {
+            the_widget = (<div className="log-code-output" style={{paddingBottom: 5}}>
+                    {`Error outputting widget ${e}`}
+            </div>)
+            return the_widget;
+        }
+
     });
     let spinner_val = props.running ? null : 0;
 
@@ -2381,8 +2420,7 @@ function ConsoleCodeItem(props) {
                                 }
                             </div>
                             {outputWidgets && (outputWidgets.length > 0) &&
-                                <div className="log-code-output"
-                                     style={{paddingBottom: 15}}>
+                                <div style={{paddingBottom: 10, display: "flex", flexDirection: "column", position: "relative"}}>
                                     {outputWidgets}
                                 </div>
                             }
@@ -2399,6 +2437,8 @@ ConsoleCodeItem = memo(ConsoleCodeItem);
 
 function ResourceLinkButton(props) {
     const my_view = useRef(null);
+
+    const errorDrawerFuncs = useContext(ErrorDrawerContext);
 
     useConstructor(() => {
         my_view.current = view_views(false)[props.res_type];
@@ -2455,13 +2495,16 @@ function ConsoleTextItem(props) {
     const am_selected_previous = useRef(false);
     const setFocusFunc = useRef(null);
 
+    const errorDrawerFuncs = useContext(ErrorDrawerContext);
+    const dialogFuncs = useContext(DialogContext);
+
     useEffect(() => {
         if (props.am_selected && !am_selected_previous.current && elRef && elRef.current) {
             scrollMeIntoView()
         }
         am_selected_previous.current = props.am_selected;
         if (props.set_focus) {
-            if (props.show_markdown) {
+            if (props["show_markdown"]) {
                 _hideMarkdown()
             } else if (setFocusFunc.current) {
                 setFocusFunc.current();
@@ -2479,7 +2522,7 @@ function ConsoleTextItem(props) {
         let my_element = elRef.current;
         let outer_element = my_element.parentNode.parentNode;
         let scrolled_element = my_element.parentNode;
-        let outer_height = outer_element.offsetHeight;
+        let outer_height = outer_element["offsetHeight"];
         let distance_from_top = my_element.offsetTop - outer_element.scrollTop - scrolled_element.offsetTop;
         if (distance_from_top > (outer_height - 35)) {
             let distance_to_move = distance_from_top - .5 * outer_height;
@@ -2499,12 +2542,12 @@ function ConsoleTextItem(props) {
     }
 
     const _toggleMarkdown = useCallback(() => {
-        if (props.show_markdown) {
+        if (props["show_markdown"]) {
             _hideMarkdown()
         } else {
             _showMarkdown()
         }
-    }, [props.show_markdown]);
+    }, [props["show_markdown"]]);
 
     const _hideMarkdown = useCallback(() => {
         props.setConsoleItemValue(props.unique_id, "show_markdown", false);
@@ -2565,7 +2608,7 @@ function ConsoleTextItem(props) {
             props.setConsoleItemValue(props.unique_id, "links", new_links)
         } catch (e) {
             if (e != "canceled") {
-                errorDrawerFuncs.addFromError(`Error duplicating resource ${res_name}`, e)
+                errorDrawerFuncs.addFromError(`Error inserting resource`, e)
             }
         }
 
@@ -2654,8 +2697,8 @@ function ConsoleTextItem(props) {
         ]
     }, []);
 
-    let really_show_markdown = hasOnlyWhitespace() && props.links.length == 0 ? false : props.show_markdown;
-    var converted_markdown;
+    let really_show_markdown = hasOnlyWhitespace() && props.links.length == 0 ? false : props["show_markdown"];
+    let converted_markdown;
     if (really_show_markdown) {
         converted_markdown = mdi.render(props.console_text)
     }

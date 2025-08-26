@@ -37,6 +37,7 @@ var _react = _interopRequireWildcard(require("react"));
 var _client = require("react-dom/client");
 var _core = require("@blueprintjs/core");
 var _useImmer = require("use-immer");
+var _communication_react = require("./communication_react");
 function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t in e) "default" !== _t && {}.hasOwnProperty.call(e, _t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t)) && (i.get || i.set) ? o(f, _t, i) : f[_t] = e[_t]); return f; })(e, t); }
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
@@ -90,8 +91,8 @@ function useWidget() {
     widgetData = _useState6[0],
     setWidgetData = _useState6[1];
   function setWidget(newWidget) {
-    if ("id" in newWidget) {
-      setWidgetId(newWidget.id);
+    if ("widgetId" in newWidget) {
+      setWidgetId(newWidget.widgetId);
     }
     if ("type" in newWidget) {
       setWidgetType(newWidget.type);

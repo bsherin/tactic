@@ -5,7 +5,9 @@ ADD ./main_container_env/requirements.txt /code/requirements.txt
 RUN pip install -r requirements.txt
 LABEL maintainer="Bruce L Sherin"
 ADD ./main_container_env /code
-ADD  ./shared_python/volume_manager.py ./shared_python/exception_mixin.py ./shared_python/tactic_copilot_mixin.py ./shared_python/redis_tools.py ./shared_python/qworker.py ./shared_python/communication_utils.py \
-./shared_python/docker_functions.py ./shared_python/mongo_accesser.py ./shared_python/loaded_tile_management.py  ./shared_python/rabbit_manage.py ./shared_python/mongo_db_fs.py /code/
+ADD  ./shared_python/volume_manager.py ./shared_python/exception_mixin.py ./shared_python/tactic_copilot_mixin.py \
+./shared_python/redis_tools.py ./shared_python/qworker.py ./shared_python/communication_utils.py \
+./shared_python/docker_functions.py ./shared_python/mongo_accesser.py ./shared_python/loaded_tile_management.py \
+./shared_python/rabbit_manage.py ./shared_python/mongo_db_fs.py /code/
 # RUN pip install pydevd-pycharm~=201.6668.115
 CMD ["python", "-u", "main_main.py"]

@@ -4,25 +4,56 @@ import {guid} from "./utilities_react"
 
 export {tilesReducer}
 
-function fixFrontContent(front_content) {
+function fixFrontContentRecursively(front_content) {
     let front_list = [];
 
     if (typeof front_content == "string") {
         front_list.push({widgetId: guid(), widgetKind: "rawHtml", widgetData: {value: front_content}});
     }
     else if (!Array.isArray(front_content)) {
-        front_list.push(front_content);
+        let new_content = {...front_content};
+        if ("widgets" in new_content.widgetData) {
+            new_content.widgetData.widgets = fixFrontContentRecursively(new_content.widgetData.widgets);
+        }
+        front_list.push(new_content);
     }
     else {
-        front_list = front_content
+        front_list = front_content.map((wdict) => {
+            if ("widgets" in wdict.widgetData) {
+                let new_content = {...wdict};
+                new_content.widgetData.widgets = fixFrontContentRecursively(new_content.widgetData.widgets);
+                return new_content
+            }
+            return wdict;
+        })
     }
     return front_list
 }
 
 function fixTileFrontContent(tileDict) {
-    tileDict["front_content"] = fixFrontContent(tileDict["front_content"]);
+    tileDict["front_content"] = fixFrontContentRecursively(tileDict["front_content"]);
     return tileDict;
 }
+
+function recursivelySetWidgetData(widgetList, widgetId, widgetData) {
+    return widgetList.map(d => {
+        let new_d = {...d};
+        if (d.widgetId == widgetId) {
+            new_d.widgetData = {...new_d.widgetData, ...widgetData};
+            if ("widgets" in new_d.widgetData) {
+                new_d.widgetData.widgets = recursivelySetWidgetData(new_d.widgetData.widgets, widgetId, widgetData);
+            }
+            return new_d
+        }
+        else {
+            if ("widgets" in new_d.widgetData) {
+                new_d.widgetData.widgets = recursivelySetWidgetData(new_d.widgetData.widgets, widgetId, widgetData);
+            }
+            return new_d
+        }
+    })
+}
+
 
 function tilesReducer(tile_list, action) {
     let new_items;
@@ -36,7 +67,7 @@ function tilesReducer(tile_list, action) {
         case "change_item_value":
             let new_value;
             if (action.field === "front_content") {
-                new_value = fixFrontContent(action.new_value);
+                new_value = fixFrontContentRecursively(action.new_value);
             } else {
                 new_value = action.new_value;
             }
@@ -81,16 +112,7 @@ function tilesReducer(tile_list, action) {
             new_items = tile_list.map(t => {
                 if (t.tile_id === action.tile_id) {
                     let new_t = {...t};
-                    new_t["front_content"] = t.front_content.map(d => {
-                        let new_d = {...d};
-                        if (d.uid == action.widgetId) {
-                            new_d.widgetData = {...new_t.widgetData, ...action.widgetData};
-                            return new_d
-                        }
-                        else {
-                            return d
-                        }
-                    })
+                    new_t["front_content"] = recursivelySetWidgetData(t.front_content, action.widgetId, action.widgetData);
                     new_t = fixTileFrontContent(new_t)
                     return new_t;
                 } else {

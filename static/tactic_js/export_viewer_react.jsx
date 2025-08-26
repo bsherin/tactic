@@ -7,8 +7,7 @@ import {GlyphButton, SelectList} from "./blueprint_react_widgets";
 import {postWithCallback, postPromise} from "./communication_react"
 import {useCallbackStack, useStateAndRef} from "./utilities_react";
 import {ErrorDrawerContext} from "./error_drawer";
-
-import {TableWidget} from "./table_widget";
+import {widgetDict} from "./widgets";
 
 export {ExportsViewer}
 
@@ -137,10 +136,6 @@ function ExportButtonList(props) {
 
 ExportButtonList = memo(ExportButtonList);
 
-const widgetDict = {
-    table: TableWidget
-}
-
 function ExportsViewer(props) {
     props = {
         style: {},
@@ -186,7 +181,8 @@ function ExportsViewer(props) {
                 showMySpinner: _showMySpinner,
                 stopMySpinner: _stopMySpinner,
                 startMySpinner: _startMySpinner,
-                got_export_info: _gotExportInfo
+                got_export_info: _gotExportInfo,
+                exportViewerWidgetUpdate: (data) => updateWidgetData(data),
             };
             handlerDict[data["export_viewer_message"]](data)
         }
@@ -202,11 +198,15 @@ function ExportsViewer(props) {
         }
     }
 
+    function updateWidgetData(data) {
+        setInitialWidgetData(data["widgetData"])
+    }
+
     function _displayResult(data) {
         setIsWidget(data["is_widget"]);
         if (data["is_widget"]) {
             setWidgetKind(data["widgetKind"]);
-            setWidgetId(data["uid"]);
+            setWidgetId(data["widgetId"]);
             setInitialWidgetData(data["widgetData"])
         }
         else {
@@ -331,7 +331,7 @@ function ExportsViewer(props) {
             if (widgetData == null) {
                 widgetData = [];
             }
-            the_widget = <WidgetComponent key={widgetId} uid={widgetId} main_id={props.main_id}
+            the_widget = <WidgetComponent key={widgetId} widgetId={widgetId} main_id={props.main_id}
                                           widgetData={widgetData} />;
         } else {
             exports_body_dict = {__html: "<div class='exports-widget'>Unsupported widget type: " + widgetKind + "</div>"};
