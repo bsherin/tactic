@@ -9,7 +9,6 @@ import {createRoot} from 'react-dom/client';
 import {Spinner, Text} from "@blueprintjs/core";
 
 import {useImmerReducer} from 'use-immer';
-import {postWithCallback} from "./communication_react";
 
 export {propsAreEqual, arrayMove, arraysMatch, get_ppi, isInt, hasAnyKey, copyToClipboard, getFileExtension};
 export {remove_duplicates, guid, scrollMeIntoView, renderSpinnerMessage};
@@ -218,7 +217,7 @@ const useDidMount = (func, deps) => {
 };
 
 function debounce(callback, delay = 1000) {
-    var time;
+    let time;
 
     return (...args) => {
         clearTimeout(time);
@@ -310,19 +309,6 @@ String.prototype.format = function () {
     }
     return str;
 };
-
-// function get_ppi_old() {
-//     const d = $("<div/>").css({
-//         position: 'absolute',
-//         top: '-1000in',
-//         left: '-1000in',
-//         height: '1000in',
-//         width: '1000in'
-//     }).appendTo('body');
-//     const px_per_in = d.height() / 1000;
-//     d.remove();
-//     return px_per_in;
-// }
 
 function get_ppi() {
     const d = document.createElement("div");

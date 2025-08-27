@@ -103,8 +103,10 @@ $option-divider-color: #ec9a3c;
         background-color: transparent !important;
         //margin-right: 20px; // for separation from scrollbar
 
+        margin-left: 25px;
+
         &:first-child {
-            margin-top: 5px;
+            margin-top: 8px;
         }
 
         .creator-metadata-outer {

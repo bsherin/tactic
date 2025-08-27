@@ -3,8 +3,6 @@ import {useImmerReducer} from "use-immer";
 
 export {useMetadata, metadataReducer}
 
-const INITIAL_PANE_HEIGHT = 400
-
 function metadataReducer(draft, action) {
     switch (action.type) {
         case "set_tags":
@@ -46,7 +44,7 @@ function metadataReducer(draft, action) {
 
 function useMetadata(initial) {
     if (!initial.hasOwnProperty("pane_height")) {
-        initial.pane_height = 424;
+        initial.pane_height = "unset";
     }
     if (!initial.hasOwnProperty("couple_save_attrs_and_exports")) {
         initial.couple_save_attrs_and_exports = true;

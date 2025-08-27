@@ -6,9 +6,11 @@ import {
     Collapse,
     ControlGroup,
     ButtonGroup,
+    Divider,
     Switch,
     Icon,
     EntityTitle,
+    H3,
     H6,
     Menu, MenuItem, ContextMenu, Card, FormGroup, InputGroup
 } from "@blueprintjs/core";
@@ -39,12 +41,22 @@ import {postAjaxPromise} from "./communication_react";
 import {DragHandle} from "./drag_handle";
 
 export {
-    CmElement, PaneElement, MakerNavigator, OptionModuleForm, ExportModuleForm,
+    CmElement, PaneElement, MakerNavigator, OptionModuleForm, ExportModuleForm, DividerElement, pane_type_icons,
     MetadataModule, option_icons, standard_method_icons, INITIAL_CODE_PANE_HEIGHT, INITIAL_FORM_PANE_HEIGHT
 }
 
 const INITIAL_CODE_PANE_HEIGHT = 330
 const INITIAL_FORM_PANE_HEIGHT = 125;
+
+const pane_type_icons = {
+    "option": "select",
+    "export": "export",
+    "metadata": "properties",
+    "save": "floppy-disk",
+    "user_method": "user",
+    "standard_method": "play",
+    "handler_method": "wrench",
+}
 
 function textRowsToArray(tstring) {
     let slist = [];
@@ -451,7 +463,7 @@ function ExportModuleForm(props) {
 
     return (
         <div>
-            <SimplePaneTitle icon="export" title={props.exportItem.name}/>
+            <SimplePaneTitle icon={pane_type_icons["export"]} title={props.exportItem.name}/>
             <form className="maker-form-container">
                 <div style={{display: "flex", flexWrap: "wrap", flexDirection: "row"}}>
                     <LabeledFormField label="Name" onChange={handleNameChange} the_value={props.exportItem.name}/>
@@ -579,7 +591,7 @@ function OptionModuleForm(props) {
 
     return (
         <div>
-            <SimplePaneTitle icon="select" title={props.optionItem.name}/>
+            <SimplePaneTitle icon={pane_type_icons["option"]} title={props.optionItem.name}/>
             <div>
                 <form className="maker-form-container">
                     <div style={{display: "flex", flexDirection: "column"}}>
@@ -754,6 +766,23 @@ function SignatureHeader(props) {
             }
         </div>
     )
+}
+
+function DividerElement(props) {
+    props = {
+        text: "",
+        icon: "minus",
+        ...props
+    }
+
+    return (
+        <div style={{
+            display: "flex", flexDirection: "row", paddingTop: 25, paddingBottom: 15,
+            position: "relative", width: "100%"}}>
+            <EntityTitle title={props.text} icon={props.icon} heading={H3}/>
+            <Divider style={{flex: "1 1 0", marginLeft: 10, marginRight: 10, borderRight: "0px"}}/>
+        </div>
+        )
 }
 
 function CmElement(props) {

@@ -40,8 +40,8 @@ import {usePropertyList, makeUndoableDispatch, getListItemFromidentifier} from "
 import {useSearch} from "./search_reducer"
 import {MakerPaneContext} from "./tile_maker_support";
 import {
-    CmElement, PaneElement, MakerNavigator, OptionModuleForm, ExportModuleForm, MetadataModule,
-    option_icons, standard_method_icons, INITIAL_CODE_PANE_HEIGHT, INITIAL_FORM_PANE_HEIGHT
+    CmElement, PaneElement, MakerNavigator, OptionModuleForm, ExportModuleForm, MetadataModule, DividerElement,
+    option_icons, standard_method_icons, INITIAL_CODE_PANE_HEIGHT, INITIAL_FORM_PANE_HEIGHT, pane_type_icons,
 } from "./tile_maker_elements";
 import {useMetadata} from "./metadata_reducer";
 import {TileMakerSearchForm} from "./tile_maker_search_form";
@@ -913,7 +913,7 @@ function CreatorApp(props) {
     const sections = [{
         title: "properties",
         visible: true,
-        icon: "properties",
+        icon: pane_type_icons["metadata"],
         editable: false,
         dispatch: () => {
         },
@@ -932,7 +932,7 @@ function CreatorApp(props) {
             title: "options",
             visible: true,
             editable: true,
-            icon: "select",
+            icon: pane_type_icons["option"],
             icon_dict: option_icons,
             icon_field: "type",
             start_expanded: false,
@@ -940,20 +940,20 @@ function CreatorApp(props) {
             dispatch: optionDispatch
         },
         {
-            title: "export", visible: true, editable: true, icon: "select",
+            title: "export", visible: true, editable: true, icon: pane_type_icons["export"],
             start_expanded: false,
             sub_items: export_list_ref.current, dispatch: exportDispatch
         },
         {
             title: "save_attrs", visible: !metadataRef.current.couple_save_attrs_and_exports,
             start_expanded: false,
-            editable: true, icon: "select", sub_items: save_list_ref.current, dispatch: saveDispatch
+            editable: true, icon: pane_type_icons["save"], sub_items: save_list_ref.current, dispatch: saveDispatch
         },
         {
             title: "standard methods",
             visible: true,
             editable: false,
-            icon: "code",
+            icon: pane_type_icons["standard_method"],
             icon_dict: standard_method_icons,
             icon_field: "name",
             start_expanded: true,
@@ -961,11 +961,11 @@ function CreatorApp(props) {
             dispatch: standardDispatch
         },
         {
-            title: "user methods", visible: true, editable: true, icon: "code",
+            title: "user methods", visible: true, editable: true, icon: pane_type_icons["user_method"],
             start_expanded: false, sub_items: umListRef.current, dispatch: umDispatch
         },
         {
-            title: "handler methods", visible: true, editable: true, icon: "code", sub_items: hmListRef.current,
+            title: "handler methods", visible: true, editable: true, icon: pane_type_icons["handler_method"], sub_items: hmListRef.current,
             start_expanded: false,
             createFromList: true, choiceDict: props.all_handler_methods, dispatch: hmDispatch
         },
@@ -1002,6 +1002,16 @@ function CreatorApp(props) {
             {mdata_panel}
         </PaneElement>
     )
+
+    for (let key of Object.keys(optionElemDict)) {
+        if (visibleTabListRef.current.includes(key)) {
+                right_pane_list.push(
+                        <DividerElement text="Options" icon={pane_type_icons["option"]}/>
+                )
+            break;
+        }
+    }
+
     for (let key of Object.keys(optionElemDict)) {
         const item = getListItemFromidentifier(key, option_list_ref.current);
         right_pane_list.push(
@@ -1014,6 +1024,15 @@ function CreatorApp(props) {
         )
     }
     for (let key of Object.keys(exportElemDict)) {
+        if (visibleTabListRef.current.includes(key)) {
+            right_pane_list.push(
+                    <DividerElement text="Exports" icon={pane_type_icons["export"]}/>
+            )
+            break;
+        }
+    }
+
+    for (let key of Object.keys(exportElemDict)) {
         const item = getListItemFromidentifier(key, export_list_ref.current);
         right_pane_list.push(
             <PaneElement identifier={key} key={key} el={item} pane_height={item.pane_height}
@@ -1024,6 +1043,16 @@ function CreatorApp(props) {
             </PaneElement>
         )
     }
+
+    for (let key of Object.keys(saveElemDict)) {
+        if (visibleTabListRef.current.includes(key)) {
+            right_pane_list.push(
+                    <DividerElement text="Save Attrs" icon={pane_type_icons["save"]}/>
+            )
+            break;
+        }
+    }
+
     for (let key of Object.keys(saveElemDict)) {
         const item = getListItemFromidentifier(key, save_list_ref.current);
         right_pane_list.push(
@@ -1035,6 +1064,16 @@ function CreatorApp(props) {
             </PaneElement>
         )
     }
+
+    for (let item of standardListRef.current) {
+        if (visibleTabListRef.current.includes(item["identifier"])) {
+            right_pane_list.push(
+                    <DividerElement text="Standard Methods" icon={pane_type_icons["standard_method"]}/>
+            )
+            break;
+        }
+    }
+
     for (let item of standardListRef.current) {
         right_pane_list.push(
             <PaneElement key={item["identifier"]} el={item} dispatch={standardDispatch}
@@ -1047,16 +1086,16 @@ function CreatorApp(props) {
             </PaneElement>
         )
     }
-    for (let item of hmListRef.current) {
-        right_pane_list.push(
-            <PaneElement key={item["identifier"]} el={item} dispatch={hmDispatch} pane_height={item["pane_height"]}
-                         pane_scroll_ref={pane_scroll_ref}
-                         allowDelete={true} visible={visibleTabListRef.current.includes(item["identifier"])}
-                         identifier={item["identifier"]} pushCallback={pushCallback}>
-                {codeElemDict[item["identifier"]]?.()}
-            </PaneElement>
-        )
+
+    for (let item of umListRef.current) {
+        if (visibleTabListRef.current.includes(item["identifier"])) {
+            right_pane_list.push(
+                <DividerElement text="User Methods" icon={pane_type_icons["user_method"]}/>
+            )
+            break;
+        }
     }
+
     for (let item of umListRef.current) {
         right_pane_list.push(
             <PaneElement key={item["identifier"]} el={item} pane_height={item["pane_height"]}
@@ -1064,6 +1103,25 @@ function CreatorApp(props) {
                          visible={visibleTabListRef.current.includes(item["identifier"])}
                          identifier={item["identifier"]} allowDelete={true} dispatch={umDispatch}
                          pushCallback={pushCallback}>
+                {codeElemDict[item["identifier"]]?.()}
+            </PaneElement>
+        )
+    }
+
+    for (let item of hmListRef.current) {
+        if (visibleTabListRef.current.includes(item["identifier"])) {
+            right_pane_list.push(
+                    <DividerElement text="Handler Methods" icon={pane_type_icons["handler_method"]}/>
+            )
+            break;
+        }
+    }
+    for (let item of hmListRef.current) {
+        right_pane_list.push(
+            <PaneElement key={item["identifier"]} el={item} dispatch={hmDispatch} pane_height={item["pane_height"]}
+                         pane_scroll_ref={pane_scroll_ref}
+                         allowDelete={true} visible={visibleTabListRef.current.includes(item["identifier"])}
+                         identifier={item["identifier"]} pushCallback={pushCallback}>
                 {codeElemDict[item["identifier"]]?.()}
             </PaneElement>
         )
