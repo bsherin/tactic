@@ -50,7 +50,7 @@ class D3Tile(TileBase):
             self.current_html = ""
             self._current_arg_dict = arg_dict
             javascript_code = "(selector, w, h, arg_dict, resizing) => {" + self.jscript + "}"
-            jw = self.create_widget("javascript",
+            jw = self.widget("javascript",
                                     {"value": {"javascript_code": javascript_code,
                                      "javascript_arg_dict": arg_dict}})
 

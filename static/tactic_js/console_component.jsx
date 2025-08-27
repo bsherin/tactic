@@ -225,7 +225,6 @@ function ConsoleComponent(props) {
     }
 
     function updateWidgetData(data) {
-        console.log("in updateWidgetData");
         props.dispatch({
             type: "update_widget_data",
             unique_id: widgetHomesRef.current[data["widgetId"]],
@@ -684,7 +683,6 @@ function ConsoleComponent(props) {
                     }
                 }
             }
-            console.log("Got below index " + String(below_index));
             props.dispatch({
                 type: "add_at_index",
                 new_items: the_section,
@@ -720,7 +718,6 @@ function ConsoleComponent(props) {
     const _resortConsoleItems = useCallback((oldIndex, newIndex) => {
         filtered_items = filtered_items_ref.current;
         const callback = _showNonDividers;
-        console.log(`Got oldIndex ${String(oldIndex)} newIndex ${String(newIndex)} ${filtered_items.length} items`);
         if (oldIndex == newIndex) {
             callback();
             return

@@ -584,7 +584,6 @@ function ReactCodemirror6(props) {
                 "cursor_position": cursorPos
             })
             .then((data) => {
-                console.log("got aiupdate result");
                 if (data.success) {
                     if (data.change_counter === changeCounterRef.current) {
                         setAIText(data["suggestion"]);

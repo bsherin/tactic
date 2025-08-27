@@ -701,17 +701,14 @@ function SelectResourceDialog(props) {
   var settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   var pushCallback = (0, _utilities_react.useCallbackStack)();
   (0, _react.useEffect)(function () {
-    console.log("I'm in useEffect");
     _handleTypeChange("collection");
   }, []);
   function _handleTypeChange(val) {
     var get_url = "get_".concat(val, "_names");
     var dict_hash = "".concat(val, "_names");
-    console.log("about to postWithCallback");
     (0, _communication_react.postWithCallback)("host", get_url, {
       "user_id": user_id
     }, function (data) {
-      console.log("returned from post");
       set_show(true);
       set_type(val);
       set_option_names(data[dict_hash]);

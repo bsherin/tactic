@@ -647,16 +647,13 @@ function SelectResourceDialog(props) {
     const pushCallback = useCallbackStack();
 
     useEffect(() => {
-        console.log("I'm in useEffect");
         _handleTypeChange("collection")
     }, []);
 
     function _handleTypeChange(val) {
         let get_url = `get_${val}_names`;
         let dict_hash = `${val}_names`;
-        console.log("about to postWithCallback");
         postWithCallback("host", get_url, {"user_id": user_id}, function (data) {
-            console.log("returned from post");
             set_show(true);
             set_type(val);
             set_option_names(data[dict_hash]);

@@ -280,7 +280,6 @@ function BlueprintTable(props) {
   }
   function _setSelectedRow(rowIndex) {
     var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-    console.log("Setting selected for " + String(rowIndex));
     props.setMainStateValue({
       selected_row: props.mState.data_row_dict[rowIndex].__id__,
       selected_column: null

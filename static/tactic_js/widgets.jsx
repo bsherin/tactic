@@ -39,7 +39,9 @@ function useWidget(widgetId, main_id, console_id, tile_id) {
         if (tile_id) {
             postWithCallback(tile_id, "widget_action", ndata, callback, null, main_id);
         }
-        postWithCallback(main_id, "widget_action", ndata, callback, null, main_id);
+        else {
+            postWithCallback(main_id, "widget_action", ndata, callback, null, main_id);
+        }
     }
 
     function widgetSet(widgetData, callback = null) {
@@ -47,7 +49,10 @@ function useWidget(widgetId, main_id, console_id, tile_id) {
         if (tile_id) {
             return postWithCallback(tile_id, "widget_set", ndata, callback, null, main_id);
         }
-        postWithCallback(main_id, "widget_set", ndata, callback, null, main_id);
+        else {
+            postWithCallback(main_id, "widget_set", ndata, callback, null, main_id);
+        }
+
     }
 
     return [widgetGet, widgetSet, widgetAction];
@@ -166,7 +171,7 @@ function ButtonWidget(props) {
     }
 
     return (
-        <div style={props.widgetData?.style} key={props.widgetId}>
+        <div >
             <Button {...props.widgetData}
                     onClick={onClick}/>
         </div>
@@ -195,14 +200,18 @@ function SliderWidget(props) {
 
     const [, widgetSet] = useWidget(props.widgetId, props.main_id, props.console_id, props.tile_id);
 
+    const {style, ...rest} = props.widgetData;
+
     function onChange(newValue) {
         const newWidgetData = {...props.widgetData, value: newValue};
         widgetSet(newWidgetData);
     }
 
     return (
-        <Slider {...props.widgetData} key={props.widgetId}
-                onChange={onChange}/>
+        <div style={props.widgetData?.style} key={props.widgetId}>
+            <Slider {...rest} key={props.widgetId}
+                    onChange={onChange}/>
+        </div>
     )
 }
 
@@ -270,12 +279,10 @@ function SwitchWidget(props) {
     }
 
     return (
-        <div style={props.widgetData?.style} key={props.widgetId}>
-            <Switch key={props.widgetId}
-                    {...props.widgetData}
-                    checked={props.widgetData.value}
-                    onChange={onChange}/>
-        </div>
+        <Switch key={props.widgetId}
+                {...props.widgetData}
+                checked={props.widgetData.value}
+                onChange={onChange}/>
     )
 }
 

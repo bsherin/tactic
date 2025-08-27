@@ -301,7 +301,6 @@ function PoolBrowser(props) {
                 return
             }
             const src = sNode.fullpath;
-            console.log("Got source " + String(src));
 
             let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
                 title: "Download File",

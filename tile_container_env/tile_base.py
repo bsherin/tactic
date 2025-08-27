@@ -576,7 +576,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
         self._widgets[new_widget.widgetId] = new_widget
         return new_widget
 
-    def create_widget(self, kind, data=None, **kwargs):
+    def widget(self, kind, data=None, **kwargs):
         if data is None:
             data = {}
         full_data = {**data, **kwargs}
@@ -637,7 +637,8 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
             result[attr] = getattr(self, attr)
         return result
 
-    def _get_tag_base(self, the_tag):
+    @staticmethod
+    def _get_tag_base(the_tag):
         if "/" not in the_tag:
             return the_tag
         else:
@@ -755,14 +756,14 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
     def convert_content_to_widget_list(self, content):
         result_list = []
         if type(content) == str:
-            rw = self.create_widget("html", {"value": content})
+            rw = self.widget("html", {"value": content})
             result_list.append(rw.render())
         elif type(content) == dict:
             result_list.append(content)
         else:
             for item in content:
                 if type(item) == str:
-                    rw = self.create_widget("html", {"value": item})
+                    rw = self.widget("html", {"value": item})
                     result_list.append(rw.render())
                 elif type(item) == dict:
                     result_list.append(item)
@@ -968,7 +969,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
     def handle_log_tile(self):
         summary = "Log from tile " + self.tile_name
         if type(self.current_html) == str:
-            rw = self.create_widget("html", {"value": self.current_html})
+            rw = self.widget("html", {"value": self.current_html})
             self.current_html = rw.render()
         new_widgets = {}
         for k, v in self._widgets.items():

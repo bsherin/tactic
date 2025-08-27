@@ -648,7 +648,6 @@ function PoolBrowser(props) {
             return _context22.a(2);
           case 2:
             src = sNode.fullpath;
-            console.log("Got source " + String(src));
             _context22.n = 3;
             return dialogFuncs.showModalPromise("ModalDialog", {
               title: "Download File",

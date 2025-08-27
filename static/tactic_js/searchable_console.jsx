@@ -77,7 +77,6 @@ function SearchableConsole(props, inner_ref) {
     }
 
     function _handleUpdateMessage(data) {
-        console.log("got searchable-console-message");
         if (data.message != "updateLog") return;
         _addToLog(data["new_line"]);
     }
@@ -97,11 +96,9 @@ function SearchableConsole(props, inner_ref) {
             streamer_id.current = data.streamer_id
         }
 
-        console.log(`posting get_container_log with container_id ${cont_id.current}`)
         let res = await postPromise("host", "get_container_log",
             {container_id: cont_id.current, since: log_since, max_lines: max_console_lines_ref.current},
             props.main_id);
-        console.log("got streamer stuff", String(res));
         set_log_content(res["log_text"]);
         let data = await postPromise(props.streaming_host, "StartLogStreaming",
             {container_id: cont_id.current, room: my_room.current, user_id: window.user_id},

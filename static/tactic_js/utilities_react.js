@@ -153,7 +153,6 @@ function useCallbackStack() {
 function useDeepCompareEffect(callback, dependencies) {
   var currentDependenciesRef = (0, _react.useRef)();
   if (!_lodash["default"].isEqual(currentDependenciesRef.current, dependencies)) {
-    console.log('Dependencies changed:', dependencies);
     currentDependenciesRef.current = dependencies;
   }
   (0, _react.useEffect)(function () {

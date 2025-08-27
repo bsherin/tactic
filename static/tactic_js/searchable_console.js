@@ -129,7 +129,6 @@ function SearchableConsole(props, inner_ref) {
     tsocket.current.attachListener("searchable-console-message", _handleUpdateMessage);
   }
   function _handleUpdateMessage(data) {
-    console.log("got searchable-console-message");
     if (data.message != "updateLog") return;
     _addToLog(data["new_line"]);
   }
@@ -153,7 +152,6 @@ function SearchableConsole(props, inner_ref) {
             gotStreamerId = function _gotStreamerId(data) {
               streamer_id.current = data.streamer_id;
             };
-            console.log("posting get_container_log with container_id ".concat(cont_id.current));
             _context3.n = 1;
             return (0, _communication_react.postPromise)("host", "get_container_log", {
               container_id: cont_id.current,
@@ -162,7 +160,6 @@ function SearchableConsole(props, inner_ref) {
             }, props.main_id);
           case 1:
             res = _context3.v;
-            console.log("got streamer stuff", String(res));
             set_log_content(res["log_text"]);
             _context3.n = 2;
             return (0, _communication_react.postPromise)(props.streaming_host, "StartLogStreaming", {

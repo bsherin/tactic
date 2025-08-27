@@ -21,6 +21,17 @@ def is_html_table_class(obj):
 def is_widget_render(x):
     return type(x) == dict and "is_widget" in x and x["is_widget"] is True
 
+def to_camel_case(s: str) -> str:
+    if s == "float":
+        return "cssFloat"
+    parts = s.split("-")
+    return parts[0] + "".join(word.capitalize() for word in parts[1:])
+
+def to_react_style(style):
+    if type(style) == dict:
+        return {to_camel_case(k): v for k, v in style.items()}
+    return style
+
 
 # noinspection PyProtectedMember
 class Widget(object):
@@ -44,7 +55,10 @@ class Widget(object):
         self._value = wdata.get("value", None)
         for attr in self.extra_fields:
             if attr in wdata:
-                setattr(self, attr, wdata[attr])
+                if attr == "style":
+                    setattr(self, attr, to_react_style(wdata[attr]))
+                else:
+                    setattr(self, attr, wdata[attr])
             elif attr in self.defaults:
                 setattr(self, attr, self.defaults[attr])
             else:
@@ -64,7 +78,10 @@ class Widget(object):
     def set(self, widget_data):
         for attr in self.extra_fields:
             if attr in widget_data:
-                setattr(self, attr, widget_data[attr])
+                if attr == "style":
+                    setattr(self, attr, to_react_style(widget_data[attr]))
+                else:
+                    setattr(self, attr, widget_data[attr])
         if "value" in widget_data:
             self._value = widget_data["value"]
         rdict = self.base_render.copy()

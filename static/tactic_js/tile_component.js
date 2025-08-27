@@ -41,6 +41,8 @@ function _extends() { return _extends = Object.assign ? Object.assign.bind() : f
 var using_touch = "ontouchend" in document;
 var click_event = using_touch ? "touchstart" : "click";
 var TILE_DISPLAY_AREA_MARGIN = 15;
+var MIN_TILE_WIDTH = 150;
+var MIN_TILE_HEIGHT = 100;
 function SortHandle(props) {
   return /*#__PURE__*/_react["default"].createElement("span", _extends({
     className: "tile-name-div"
@@ -130,9 +132,11 @@ function TileComponent(props) {
   function _resizeTileArea(dx, dy) {
     var hheight = $(body_ref.current).position().top;
     set_header_height(hheight);
+    var new_height = Math.max(MIN_TILE_HEIGHT, props.tile_height + dy);
+    var new_width = Math.max(MIN_TILE_WIDTH, props.tile_width + dx);
     var new_state = {
-      tile_height: props.tile_height + dy,
-      tile_width: props.tile_width + dx
+      tile_height: new_height,
+      tile_width: new_width
     };
     props.setTileState(props.tile_id, new_state);
   }

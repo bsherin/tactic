@@ -77,7 +77,8 @@ class ConsoleStringIO(StringIO):
         StringIO.__init__(self)
         return
 
-    def crop_output(self, s):
+    @staticmethod
+    def crop_output(s):
         new_s = s[:150]
         new_s = re.sub("<", "&lt;", new_s)
         new_s = re.sub(">", "&gt;", new_s) + " ..."
@@ -104,7 +105,7 @@ class ConsoleStringIO(StringIO):
         StringIO.write(self, s)
         if not s == "\n":   # The print commmand automatically adds a \n. We don't want to print it.
             self.data["force_open"] = True
-            rw = self.my_tile.create_widget("html", {"value": s})
+            rw = self.my_tile.widget("html", {"value": s})
             self.data["result_text"] = rw.render()
             self.data["console_message"] = "consoleCodePrint"
             self.data["counter"] = self.counter
@@ -317,7 +318,8 @@ class PseudoTileClass(TileBase, MplFigure):
         self._restore_stdout()
         return {"encoded_val": encoded_val}
 
-    def _eval_name(self, name):
+    @staticmethod
+    def _eval_name(name):
         return eval(name, globals(), globals())
 
     def _get_export_info_thread(self, data):
@@ -412,7 +414,8 @@ class PseudoTileClass(TileBase, MplFigure):
     #         eval_thread.kill()
     #     self.emit_export_viewer_message("stop_eval", data)
 
-    def _get_type_info(self, avar):
+    @staticmethod
+    def _get_type_info(avar):
         result = {}
         if isinstance(avar, str) and avar == "__none__":
             result["type"] = "none"
@@ -462,7 +465,7 @@ class PseudoTileClass(TileBase, MplFigure):
                 return True
         return False
 
-    def create_widget(self, kind, data=None, **kwargs):
+    def widget(self, kind, data=None, **kwargs):
         if data is None:
             data = {}
         full_data = {**data, **kwargs}
@@ -493,7 +496,7 @@ class PseudoTileClass(TileBase, MplFigure):
                 eval_res = eval(code_to_eval, globals(), globals())
                 if eval_res is not None:
                     if is_html_table_class(eval_res):
-                        table_widget = self.create_widget("table", {"value": eval_res})
+                        table_widget = self.widget("table", {"value": eval_res})
                         table_widget.show()
                         sys.stdout.counter += 1
                     else:
@@ -529,7 +532,8 @@ class PseudoTileClass(TileBase, MplFigure):
             ethread.start()
         return
 
-    def remove_from_queue(self, console_id):
+    @staticmethod
+    def remove_from_queue(console_id):
         global exec_queue
         exec_queue = [entry for entry in exec_queue if not entry[1]["console_id"] == console_id]
         return
