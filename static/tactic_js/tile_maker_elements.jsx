@@ -10,7 +10,7 @@ import {
     Switch,
     Icon,
     EntityTitle,
-    H3,
+    H4,
     H6,
     Menu, MenuItem, ContextMenu, Card, FormGroup, InputGroup
 } from "@blueprintjs/core";
@@ -779,7 +779,7 @@ function DividerElement(props) {
         <div style={{
             display: "flex", flexDirection: "row", paddingTop: 25, paddingBottom: 15,
             position: "relative", width: "100%"}}>
-            <EntityTitle title={props.text} icon={props.icon} heading={H3}/>
+            <EntityTitle title={props.text} icon={props.icon} heading={H4}/>
             <Divider style={{flex: "1 1 0", marginLeft: 10, marginRight: 10, borderRight: "0px"}}/>
         </div>
         )

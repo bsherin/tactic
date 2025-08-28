@@ -54,7 +54,9 @@ function ContextPaneElement(props) {
             width: "100%",
             opacity: am_selected() ? 1 : 0,
             height: am_selected() ? "100%" : 0,
-            position: "relative"
+            position: "relative",
+            display: "flex",
+            flexDirection: "column",
         }}>
             {props.children}
         </div>
