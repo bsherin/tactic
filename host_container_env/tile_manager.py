@@ -86,6 +86,16 @@ class TileManager(LibraryResourceManager):
             mdata = None
         return mdata
 
+    def grab_field(self, res_name, field, user_obj=None):
+        if user_obj is None:
+            user_obj = current_user
+        tile_dict = self.db[user_obj.tile_collection_name].find_one({self.name_field: res_name})
+
+        if tile_dict is not None:
+            if field in tile_dict:
+                return tile_dict[field]
+        return None
+
     def get_tile_icon(self, tile_type, user_obj):
         module_name = loaded_tile_management.get_module_from_type(user_obj.username, tile_type)
         mdata = self.grab_metadata(module_name, user_obj)

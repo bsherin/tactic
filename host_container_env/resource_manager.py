@@ -49,6 +49,9 @@ class ResourceManager(ExceptionMixin):
     def add_rules(self):
         print("not implemented")
 
+    def grab_field(self, res_name, field, user_obj=None):
+        return None
+
     def update_selector_row(self, res_dict, user_obj=None):
         if user_obj is None:
             user_obj = current_user
@@ -291,13 +294,27 @@ class LibraryResourceManager(ResourceManager):
             "do_jsonify": False
         }
 
+    def get_spec(self, res_type):
+        if res_type == "collection":
+            return self.collection_spec()
+        elif res_type == "project":
+            return self.project_spec()
+        elif res_type == "tile":
+            return self.tile_spec()
+        elif res_type == "list":
+            return self.list_spec()
+        elif res_type == "code":
+            return self.code_spec()
+        else:
+            raise None
+
     def project_spec(self, is_repository=False):
         colname = repository_user.project_collection_name if is_repository else \
             current_user.project_collection_name
         return {
             "collection_name": colname,
             "name_field": "project_name",
-            "content_field": None,
+            "content_field": "searchable_text",
             "additional_mdata_fields": ["collection_name", "loaded_tiles", "type"],
             "do_jsonify": False
         }

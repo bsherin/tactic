@@ -1232,6 +1232,8 @@ function LibraryPane(props) {
                           res_name={res_name}
                           res_type={res_type}
                           expandWidth={true}
+                          search_string={pStateRef.current.search_state.search_string}
+                          search_inside={pStateRef.current.search_state.search_inside}
                           readOnly={props.is_repository}
         />
     );

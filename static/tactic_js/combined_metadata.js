@@ -314,7 +314,8 @@ var initial_state = {
   notes: null,
   icon: null,
   category: null,
-  additional_metadata: null
+  additional_metadata: null,
+  search_context: null
 };
 function CombinedMetadata(props) {
   props = _objectSpread({
@@ -336,7 +337,9 @@ function CombinedMetadata(props) {
     useFixedData: false,
     tsocket: null,
     alt_category: null,
-    setCMObject: null
+    setCMObject: null,
+    search_string: "",
+    search_inside: false
   }, props);
   var top_ref = (0, _react.useRef)();
   var listenderAttachedRef = (0, _react.useRef)(false);
@@ -396,6 +399,8 @@ function CombinedMetadata(props) {
     (0, _communication_react.postAjaxPromise)("grab_metadata", {
       res_type: props.res_type,
       res_name: props.res_name,
+      search_string: props.search_string,
+      search_inside: props.search_inside,
       is_repository: props.is_repository
     }).then(function (data) {
       var updater = {
@@ -421,6 +426,7 @@ function CombinedMetadata(props) {
         }
       }
       updater["additionalMdata"] = amdata;
+      updater["search_context"] = data === null || data === void 0 ? void 0 : data.search_context;
       mDispatch({
         type: "update_item",
         new_item: updater
@@ -695,6 +701,13 @@ function CombinedMetadata(props) {
     handleBlur: props.handleNotesBlur
   }), props.notes_buttons && /*#__PURE__*/_react["default"].createElement(MetadataNotesButtons, {
     appendToNotes: appendToNotes
+  })), props.search_inside && mStateRef.current.search_context && /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
+    label: "Search Context",
+    readOnly: true
+  }, /*#__PURE__*/_react["default"].createElement(_core.TextArea, {
+    value: mStateRef.current.search_context,
+    fill: true,
+    autoResize: true
   })), mStateRef.current.created != null && /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
     label: "Created: ",
     className: "metadata-form_group",

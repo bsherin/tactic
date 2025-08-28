@@ -3,7 +3,7 @@ import {Fragment, useState, useEffect, useRef, memo, useContext, useCallback} fr
 
 import {
     MenuItem, TagInput, FormGroup, InputGroup,
-    Card, Icon, H4
+    Card, Icon, H4, TextArea
 } from "@blueprintjs/core";
 import {MultiSelect} from "@blueprintjs/select";
 import {SettingsContext} from "./settings";
@@ -319,7 +319,8 @@ const initial_state = {
     notes: null,
     icon: null,
     category: null,
-    additional_metadata: null
+    additional_metadata: null,
+    search_context: null
 };
 
 function CombinedMetadata(props) {
@@ -343,6 +344,8 @@ function CombinedMetadata(props) {
         tsocket: null,
         alt_category: null,
         setCMObject: null,
+        search_string: "",
+        search_inside: false,
         ...props
     };
     const top_ref = useRef();
@@ -407,6 +410,8 @@ function CombinedMetadata(props) {
         postAjaxPromise("grab_metadata", {
             res_type: props.res_type,
             res_name: props.res_name,
+            search_string: props.search_string,
+            search_inside: props.search_inside,
             is_repository: props.is_repository
         })
             .then(data => {
@@ -433,6 +438,7 @@ function CombinedMetadata(props) {
                     }
                 }
                 updater["additionalMdata"] = amdata;
+                updater["search_context"] = data?.search_context;
                 mDispatch({type: "update_item", new_item: updater})
             })
             .catch((e) => {
@@ -575,6 +581,14 @@ function CombinedMetadata(props) {
                         {props.notes_buttons &&
                             <MetadataNotesButtons appendToNotes={appendToNotes}/>
                         }
+                    </FormGroup>
+                }
+                {props.search_inside && mStateRef.current.search_context &&
+                    <FormGroup label="Search Context" readOnly={true}>
+                        <TextArea value={mStateRef.current.search_context}
+                                  fill={true}
+                                  autoResize={true}
+                        />
                     </FormGroup>
                 }
                 {mStateRef.current.created != null &&

@@ -119,6 +119,14 @@ class ListManager(LibraryResourceManager):
             mdata = None
         return mdata
 
+    def grab_field(self, res_name, content_field, user_obj=None):
+        user_obj = current_user
+        doc = self.db[user_obj.list_collection_name].find_one({self.name_field: res_name})
+        if content_field in doc:
+            return doc[content_field]
+        else:
+            return None
+
     def save_metadata(self, res_name, tags, notes, uid=""):
         doc = self.db[current_user.list_collection_name].find_one({"list_name": res_name})
         if "metadata" in doc:
@@ -336,3 +344,4 @@ class RepositoryListManager(ListManager):
         else:
             mdata = None
         return mdata
+

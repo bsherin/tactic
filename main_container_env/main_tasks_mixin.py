@@ -332,6 +332,11 @@ class LoadSaveTasksMixin:
                 project_dict["loaded_modules"] = project_dict["used_modules"]
             save_dict = {"metadata": self.mdata,
                          "project_name": project_dict["project_name"]}
+            if "console_items" in data_dict["interface_state"]:
+                save_dict["searchable_text"] = self.get_text_from_console_items(
+                    data_dict["interface_state"]["console_items"])
+            else:
+                save_dict["searchable_text"] = ""
             self.emit_status_message("Pickle, convert, compress")
             pdict = make_jsonizable_and_compress(project_dict)
             self.emit_status_message("Writing the data")
@@ -370,8 +375,14 @@ class LoadSaveTasksMixin:
             self.mdata["loaded_tiles"] = []
             self.mdata["save_style"] = "b64save_react"
             project_dict["interface_state"] = data_dict["interface_state"]
+
             save_dict = {"metadata": self.mdata,
                          "project_name": project_dict["project_name"]}
+            if "console_items" in data_dict["interface_state"]:
+                save_dict["searchable_text"] = self.get_text_from_console_items(
+                    data_dict["interface_state"]["console_items"])
+            else:
+                save_dict["searchable_text"] = ""
             self.emit_status_message("Pickle, convert, compress")
             pdict = make_jsonizable_and_compress(project_dict)
             self.emit_status_message("Writing the data")
@@ -400,6 +411,16 @@ class LoadSaveTasksMixin:
             _return_data = {"success": False, "message": error_string}
             self.mworker.submit_response(task_packet, _return_data)
         return
+
+    @staticmethod
+    def get_text_from_console_items(console_items):
+        text = ""
+        for citem in console_items:
+            if citem["type"] == "text":
+                text += citem["console_text"] + "\n"
+            elif citem["type"] == "code":
+                text += citem["console_text"] + "\n"
+        return text
 
     @task_worthy_manual_submit
     def update_project(self, data_dict, task_packet):
@@ -431,6 +452,11 @@ class LoadSaveTasksMixin:
                 save_dict["project_name"] = pname
                 save_dict["metadata"] = self.mdata
                 save_dict["file_id"] = new_file_id
+                if "console_items" in data_dict["interface_state"]:
+                    save_dict["searchable_text"] = self.get_text_from_console_items(
+                        data_dict["interface_state"]["console_items"])
+                else:
+                    save_dict["searchable_text"] = ""
                 self.db[self.project_collection_name].update_one({"project_name": pname},
                                                                  {'$set': save_dict})
                 self.emit_clear_status()

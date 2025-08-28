@@ -57,6 +57,14 @@ class CodeManager(LibraryResourceManager):
             mdata = None
         return mdata
 
+
+    def grab_field(self, res_name, content_field, user_obj=None):
+        user_obj = current_user
+        doc = self.db[user_obj.code_collection_name].find_one({self.name_field: res_name})
+        if content_field in doc:
+            return doc[content_field]
+        return mdata
+
     def save_metadata(self, res_name, tags, notes, uid=""):
         doc = self.db[current_user.code_collection_name].find_one({"code_name": res_name})
         if "metadata" in doc:

@@ -243,6 +243,15 @@ class ProjectManager(LibraryResourceManager):
             mdata = None
         return mdata
 
+    def grab_field(self, res_name, content_field, user_obj=None):
+        user_obj = current_user
+        doc = self.db[user_obj.project_collection_name].find_one({self.name_field: res_name})
+        if content_field in doc:
+            mdata = doc[content_field]
+        else:
+            mdata = None
+        return mdata
+
     def save_metadata(self, res_name, tags, notes, uid=""):
         doc = self.db[current_user.project_collection_name].find_one({"project_name": res_name})
         if "metadata" in doc:

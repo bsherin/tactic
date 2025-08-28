@@ -253,6 +253,17 @@ def send_to_repository():
         return jsonify({"success": True, "message": f"{str(successful_copies)} resources copied"})
 
 
+def extract_context(text: str, search: str, margin: int = 75) -> str:
+    index = text.find(search)
+    if index == -1:
+        return None  # search string not found
+
+    start = max(0, index - margin)
+    end = min(len(text), index + len(search) + margin)
+
+    return text[start:end]
+
+
 # Metadata views
 @app.route('/grab_metadata', methods=['POST'])
 @login_required
@@ -260,14 +271,28 @@ def grab_metadata():
     try:
         res_type = request.json["res_type"]
         res_name = request.json["res_name"]
+
         is_repository = request.json["is_repository"]
         manager = get_manager_for_type(res_type, is_repository=is_repository)
         mdata = manager.grab_metadata(res_name)
+
         if mdata is None:
             return jsonify({"success": False, "message": "No metadata found", "alert_type": "alert-warning"})
         else:
             result = current_user.process_metadata(mdata)
+            search_context = None
+            if "search_inside" in request.json:
+                search_inside = request.json["search_inside"]
+                if search_inside and "search_string" in request.json:
+                    search_string = request.json["search_string"]
+                    if len(search_string) > 0:
+                        content_field = manager.get_spec(res_type)["content_field"]
+                        searchable_text = manager.grab_field(res_name, content_field)
+                        if searchable_text is not None:
+                            search_context = extract_context(searchable_text, search_string)
             result.update({"success": True, "res_name": res_name})
+            if search_context is not None:
+                result["search_context"] = search_context
             return jsonify(result)
     except Exception as ex:
         return generic_exception_handler.get_exception_for_ajax(ex, "Error getting metadata")
