@@ -17,7 +17,6 @@ from threading import Lock
 import threading
 from qworker_alt import task_worthy_methods, QWorker, stop_thread, debug_log
 from qworker_alt import get_pika_connection, my_channel, my_connection, simple_uid, close_connection
-from matplotlib_utilities import MplFigure, ColorMapper
 import time
 import json
 from widgets import is_html_table_class, is_widget_render
@@ -123,7 +122,7 @@ class ConsoleStringIO(StringIO):
         self.my_tile.emit_console_message("consoleCodeOverwrite", self.data)
 
 # noinspection PyUnusedLocal
-class PseudoTileClass(TileBase, MplFigure):
+class PseudoTileClass(TileBase):
     category = "word"
     exports = []
     measures = ["raw_freq", "student_t", "chi_sq", "pmi", "likelihood_ratio"]
@@ -132,7 +131,6 @@ class PseudoTileClass(TileBase, MplFigure):
         TileBase.__init__(self, tile_name=tile_name)
         self.width = PSEUDO_WIDTH
         self.height = PSEUDO_HEIGHT
-        MplFigure.__init__(self)
         globals()["self"] = self
         self._saved_globals = copy.copy(globals())
         self._last_globals = []

@@ -5,7 +5,7 @@ import subprocess
 # noinspection PyPackageRequirements
 from bson.binary import Binary
 # noinspection PyUnresolvedReferences
-from matplotlib_utilities import MplFigure, color_palette_names, ColorMapper
+# from matplotlib_utilities import MplFigure, color_palette_names, ColorMapper
 # from types import NoneType
 import os
 import traceback
@@ -117,6 +117,8 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
                        "cluster_metric", "tile_select", "document_select", "list_select", "collection_select",
                        "function_select", "class_select", "palette_select", "custom_list"]
 
+    _color_palette_names = None
+
     def __init__(self, main_id_ignored=None, tile_id_ignored=None, tile_name=None):
         self._sleepperiod = .0001
         self.save_attrs = ["current_html", "tile_type", "tile_name", "doc_type", "configured",
@@ -198,10 +200,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
         self.height = data["height"]
         self._tworker.send_updated_reload_dict()
         if self.configured:
-            if isinstance(self, MplFigure):
-                self._resize_mpl_tile()
-            else:
-                self.handle_size_change()
+            self.handle_size_change()
         return None
 
     @_task_worthy
@@ -477,6 +476,9 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
                     case "class_select":
                         form_item["option_list"] = self._get_sorted_match_list(option_tags, data["class_names"])
                     case "palette_select":
+                        if self._color_palette_names is None:
+                            from matplotlib_utilities import color_palette_names
+                            self._color_palette_names = color_palette_names
                         form_item["option_list"] = color_palette_names
                     case "custom_list":
                         form_item["option_list"] = option["special_list"]
@@ -666,22 +668,22 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
         choice_list.sort()
         return choice_list
 
-    def _create_select_list_html(self, choice_list, starting_value=None, att_name=None):
-        if not choice_list:
-            return ""
-        if starting_value is None:
-            new_start_value = process.extractOne(att_name, choice_list, scorer=Levenshtein.ratio)[0]
-        elif starting_value not in choice_list:
-            new_start_value = process.extractOne(starting_value, choice_list, scorer=Levenshtein.ratio)[0]
-        else:
-            new_start_value = starting_value
-        new_html = ""
-        for choice in choice_list:
-            if choice == new_start_value:
-                new_html += self._select_option_selected_template.format(choice)
-            else:
-                new_html += self._select_option_template.format(choice)
-        return new_html
+    # def _create_select_list_html(self, choice_list, starting_value=None, att_name=None):
+    #     if not choice_list:
+    #         return ""
+    #     if starting_value is None:
+    #         new_start_value = process.extractOne(att_name, choice_list, scorer=Levenshtein.ratio)[0]
+    #     elif starting_value not in choice_list:
+    #         new_start_value = process.extractOne(starting_value, choice_list, scorer=Levenshtein.ratio)[0]
+    #     else:
+    #         new_start_value = starting_value
+    #     new_html = ""
+    #     for choice in choice_list:
+    #         if choice == new_start_value:
+    #             new_html += self._select_option_selected_template.format(choice)
+    #         else:
+    #             new_html += self._select_option_template.format(choice)
+    #     return new_html
 
     def _find_best_pipe_match(self, starting_value, att_name, option_tags):
         best_match_item = None

@@ -41,7 +41,7 @@ function ContextPaneElement(props) {
         identifier: null,
         children: null,
         ...props
-    }
+    };
 
     const selectedPane = useContext(SelectedPaneContext);
 
@@ -73,7 +73,7 @@ function ContextNavigator(props) {
         selectedItem: null,
         paneClosed: false,
         ...props
-    }
+    };
 
     const [activeId, setActiveId] = React.useState(null);
 
@@ -161,7 +161,7 @@ function SortableContextNavigatorItem(props) {
         handleTabSelect: () => {
         },
         ...props,
-    }
+    };
     const {
         attributes,
         listeners,
@@ -172,12 +172,18 @@ function SortableContextNavigatorItem(props) {
 
 
     const style = {
-        transform: CSS.Transform.toString(transform),
-        transition: props.isSpacer ? 'none' : (props.activeId ? 'none' : transition)
+        transform: CSS.Transform.toString(transform)
     };
 
     if (props.isSpacer) {
-        style.opacity = 0
+        style.opacity = 0;
+        style.transition = 'none'
+    }
+    else if (props.activeId) {
+        style.transition = 'none'
+    }
+    else {
+        style.transition = transition
     }
 
     function closeMe() {
@@ -223,7 +229,7 @@ function ContextNavigatorItem(props) {
         handleTabSelect: () => {
         },
         ...props
-    }
+    };
 
     let outerClass = "context-nav-item";
     if (props.selectedItem == props.identifier) {

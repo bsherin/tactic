@@ -436,7 +436,7 @@ function ModuleViewerApp(props) {
     };
     let outer_class = "resource-viewer-holder";
     if (!props.controlled) {
-        outer_class = `${outer_class} ${settingsContext.isDark() ? "bp6-dark" : "light-theme"}`
+        outer_class = `${outer_class} pane-holder ${settingsContext.isDark() ? "bp6-dark" : "light-theme"}`
     }
 
     return (

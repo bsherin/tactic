@@ -4,6 +4,7 @@ from matplotlib.colors import LinearSegmentedColormap, ListedColormap
 from matplotlib.colors import Normalize as mpl_Normalize
 import warnings
 import matplotlib
+matplotlib.use("Agg")
 with (warnings.catch_warnings()):
     warnings.simplefilter("ignore")
     # get_cmap = matplotlib.cm.ColormapRegistry.get_cmap
@@ -140,50 +141,6 @@ class MplFigure(Figure):
             image_string = "<img class='output-plot' src='{}' lt='Image Placeholder'>"
             the_html = image_string.format(fig_url)
         return the_html
-
-
-class GraphList(MplFigure):
-    def draw_plot(self):
-        value_list = self.data
-        ax = self.add_subplot(111)
-        # self.subplots_adjust(left=.05, bottom=.15, right=.98, top=.95)
-        ax.grid(True)
-        x = range(1, len(value_list) + 1)
-        ax.plot(x, value_list, 'bo')
-        if "xlabels" in self.kwargs:
-            ax.set_xticks(x)
-            ax.set_xticklabels(self.kwargs["xlabels"], rotation='vertical')
-        if self.title is not None:
-            ax.set_title(self.title, fontsize=10)
-        self.tight_layout()
-        return
-
-
-class DispersionPlot(MplFigure):
-    def draw_plot(self):
-        text = self.data[0]
-        words = self.data[1]
-        ax = self.add_subplot(111)
-
-        text = list(text)
-        text = list(map(str, text))  # deals with there being unicode
-        words = list(map(str, words))
-        words.reverse()
-        words_to_comp = list(map(str.lower, words))
-        text_to_comp = list(map(str.lower, text))
-
-        points = [(x, y) for x in range(len(text_to_comp))
-                  for y in range(len(words_to_comp))
-                  if text_to_comp[x] == words_to_comp[y]]
-
-        if len(points) > 0:
-            x, y = list(zip(*points))
-            ax.plot(x, y, "b|", scalex=.1)
-            ax.set_yticks(range(len(words)))
-            ax.set_yticklabels(words)
-            ax.set_ylim(-1, len(words))
-        self.tight_layout()
-        return
 
 
 class ColorMapper(object):

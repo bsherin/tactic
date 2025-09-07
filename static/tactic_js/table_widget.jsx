@@ -77,7 +77,7 @@ function compute_initial_column_widths(table_selector, header_list, data_list, m
 }
 
 const base_outer_style = {height: "100%", position: "relative",
-    overflow: "auto", display: "flex", flexDirection: "column"}
+    overflow: "auto", display: "flex", flexDirection: "column"};
 
 const tableDataDefault = {
         value: [],
@@ -86,7 +86,7 @@ const tableDataDefault = {
         maxRows: 50,
         className: "",
         style: {},
-}
+};
 function TableWidget(props) {
     props = {
         widgetId: null,
@@ -100,7 +100,7 @@ function TableWidget(props) {
             ...tableDataDefault,
             ...(props.widgetData || {}),
           },
-    }
+    };
 
     const [columnWidths, setColumnWidths] = useState(null);
     const [expandRows, setExpandRows] = useState(props.widgetData.expandRows);
@@ -261,11 +261,11 @@ function TableWidget(props) {
     function _columnHeaderNameRenderer(the_text) {
         let the_body;
         the_text = String(the_text);
-        the_body = <div className="bp6-table-truncated-text">{the_text}</div>
+        the_body = <div className="bp6-table-truncated-text">{the_text}</div>;
         return the_body
     }
 
-    let column_names = columnNames()
+    let column_names = columnNames();
     let columns = column_names.map((column_name) => {
         const cellRenderer = _cellRendererCreator(column_name);
         const columnHeaderCellRenderer = () => <ColumnHeaderCell name={column_name}

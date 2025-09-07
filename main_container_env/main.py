@@ -140,16 +140,24 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
 
     def create_tile_container(self, data):
         try:
-            environ = {"PPI": data["ppi"], "USE_WAIT_TASKS": "True", "NLTK_DATA": "/root/resources/nltk_data"}
+            environ = {"PPI": data["ppi"], "USE_WAIT_TASKS": "True"}
+            if "is_pseudo" in data and data["is_pseudo"]:
+                environ["IS_PSEUDO_TILE"] = "True"
+            else:
+                environ["IS_PSEUDO_TILE"] = "False"
             user_host_persist_dir = true_host_persist_dir + "/tile_manager/" + self.username
-            transformers_resource_dir = true_host_resources_dir + "/huggingface"
+            # transformers_resource_dir = true_host_resources_dir + "/huggingface"
             tile_volume_dict = {}
             tile_volume_dict[user_host_persist_dir] = {"bind": "/code/persist", "mode": "rw"}
             tile_volume_dict[true_host_resources_dir] = {"bind": "/root/resources", "mode": "ro"}
             if true_user_host_pool_dir is not None:
                 tile_volume_dict[true_user_host_pool_dir] = {"bind": "/mydisk", "mode": "rw"}
-            tile_volume_dict[transformers_resource_dir] = {"bind": "/root/.cache/huggingface", "mode": "rw"}
-            tile_container_id, container_id = docker_functions.create_container("bsherin/tactic:tile",
+            tile_volume_dict["nltk_cache"] = {"bind" : "/root/nltk_data", "mode": "rw"}
+            tile_volume_dict["hf_cache"] = {"bind": "/var/cache/hf", "mode": "rw"}
+            tile_volume_dict["torch_cache"] = {"bind": "/var/cache/torch", "mode": "rw"}
+            tile_volume_dict["mpl_cache"] = {"bind": "/var/cache/matplotlib", "mode": "rw"}
+            tile_volume_dict["tmp"] = {"bind": "/tmp", "mode": "rw"}
+            tile_container_id, container_id = docker_functions.create_container("bsherin/tactic-tile",
                                                                                 network_mode="bridge",
                                                                                 owner=data["user_id"],
                                                                                 parent=data["parent"],
@@ -517,7 +525,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
     def create_pseudo_tile(self, globals_dict=None):
         print("entering create_pseudo_tile")
 
-        data = self.create_tile_container({"user_id": self.user_id, "parent": self.mworker.my_id,
+        data = self.create_tile_container({"user_id": self.user_id, "parent": self.mworker.my_id, "is_pseudo": True,
                                            "other_name": "pseudo_tile", "ppi": self.ppi, "tile_id": None})
 
         if not data["success"]:

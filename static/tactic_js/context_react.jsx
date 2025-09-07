@@ -100,7 +100,7 @@ const classDict = {
 let initialList = [ {
     identifier: "library",
     title: "Library"
-}]
+}];
 
 if (window.has_pool) {
     initialList.push({
@@ -286,7 +286,7 @@ function ContextApp(props) {
                     handleClose: dialogFuncs.hideModal,
                 });
             }
-            tabPanelListDispatch({type: "delete_item", identifier: the_id})
+            tabPanelListDispatch({type: "delete_item", identifier: the_id});
 
             let copied_dirty_methods = {...dirty_methods};
             delete copied_dirty_methods[the_id];
@@ -355,7 +355,7 @@ function ContextApp(props) {
                 lnew_panel.panel = new_panel.panel
             }
         }
-        tabPanelListDispatch({type: "update_item", identifier: the_id, new_item: lnew_panel})
+        tabPanelListDispatch({type: "update_item", identifier: the_id, new_item: lnew_panel});
         pushCallback(() => {
             _updateOpenResources(callback)
         });
@@ -373,7 +373,7 @@ function ContextApp(props) {
             lnew_panel.title = new_name;
         }
         lnew_panel.panel.resource_name = new_name;
-        tabPanelListDispatch({type: "update_item", identifier: the_id, lnew_panel})
+        tabPanelListDispatch({type: "update_item", identifier: the_id, lnew_panel});
         pushCallback(() => {
             _updateOpenResources(callback)
         });
@@ -425,7 +425,7 @@ function ContextApp(props) {
     }
 
     function _goToNextPane(e) {
-        let templist = getIdList()
+        let templist = getIdList();
         let newId;
         let tabIndex = templist.indexOf(selectedTabIdRef.current) + 1;
         newId = tabIndex === templist.length ? "library" : templist[tabIndex];
@@ -445,18 +445,21 @@ function ContextApp(props) {
         }
     }
 
-    function _handleTabSelect(newTabId) {
+    function _handleTabSelect(newTabId, callback = null) {
         setSelectedTabId(newTabId);
         setLastSelectedTabId(selectedTabIdRef.current,);
         pushCallback(() => {
-            setTabSelectCounter(tabSelectCounter + 1)
+            setTabSelectCounter(tabSelectCounter + 1);
+            if (callback) {
+                callback();
+            }
         });
     }
 
     async function _goToModule(module_name, line_number) {
         for (let pdict of tabPanelListRef.current) {
             if (pdict.kind === "creator-viewer" && pdict.panel.resource_name === module_name) {
-                _handleTabSelect(pdict.identifier, selectedTabIdRef.current, null, () => {
+                _handleTabSelect(pdict.identifier, () => {
                     if ("line_setter" in pdict) {
                         pdict.line_setter(line_number)
                     }
@@ -656,7 +659,7 @@ function ContextApp(props) {
                         />
                     </ContextPaneElement>
                 </SelectedPaneContext.Provider>
-            )
+            );
             wrapped_panel = (
                 <Fragment key={entry.identifier}>
                     <ErrorBoundary>
@@ -686,16 +689,16 @@ function ContextApp(props) {
             handleTabSelect={_handleTabSelect}
             selectedItem={selectedTabIdRef.current}
             closeTab={_closeTab}
-            refresTab={_refreshTab}
+            refreshTab={_refreshTab}
             dispatch={tabPanelListDispatch}
             tabPanelList={tabPanelList}
         />
-    )
+    );
     let right_pane = (
         <Fragment>
             {all_panels}
         </Fragment>
-    )
+    );
 
     let outer_class = `pane-holder ${settingsContext.isDark() ? "bp6-dark" : "light-theme"}`;
     let outer_style = {

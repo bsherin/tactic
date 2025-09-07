@@ -9,7 +9,6 @@ import {useStateAndRef, useCallbackStack} from "./utilities_react";
 import {postAjax, postAjaxPromise} from "./communication_react";
 import {doFlash} from "./toaster";
 import {AccountTextField, AccountSelectField} from "./account_fields";
-
 export {SettingsContext, withSettings}
 
 const HIGHLIGHT_THEMES = {

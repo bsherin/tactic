@@ -45,6 +45,7 @@ import os
 from js_source_management import _develop
 
 myport = os.environ.get("MYPORT")
+MY_ID = os.environ.get("MY_ID")
 
 from qworker import max_pika_retries
 
@@ -126,7 +127,6 @@ class HostWorker(QWorker):
 
     @task_worthy
     def get_handler_methods(self, data):
-        print("*** in get_handler_methods ***")
         from tactic_app import handler_methods
         print(str(handler_methods))
         return {"success": True, "handler_methods": handler_methods}
@@ -295,6 +295,7 @@ class HostWorker(QWorker):
                 return
             print("load_source returned success")
             mdata = tile_manager.grab_metadata(res_dict["tile_name"], user_obj)
+            kind = mdata["type"] if "type" in mdata else "standard"
             category = mdata["category"] if "category" in mdata else "basic"
 
             if "is_default" in data:
@@ -306,7 +307,8 @@ class HostWorker(QWorker):
                                                         res_dict["tile_name"],
                                                         tile_module,
                                                         tile_module_name,
-                                                        is_default)
+                                                        is_default,
+                                                        )
             _id = user_obj.get_tile_dict(tile_module_name)["_id"]
             tile_manager.update_selector_row(
                 {"name": tile_module_name, "doc_id": str(_id), "event_type": "update",
@@ -360,7 +362,7 @@ class HostWorker(QWorker):
     def go_to_module_viewer_if_exists(self, data):
         user_id = data["user_id"]
         tile_type = data["tile_type"]
-        matching_ids = get_matching_user_containers(user_id, "bsherin/tactic:module_viewer", tile_type)
+        matching_ids = get_matching_user_containers(user_id, "bsherin/tactic-module-viewer", tile_type)
         if len(matching_ids) == 0:
             return {"success": False}
         else:
@@ -1145,20 +1147,25 @@ class HealthTracker:
             redis_ht.hset(container_id, "last_contact", current_timestamp())
 
     def check_health(self):
-        current_time = current_timestamp()
-        if (current_time - self.last_health_check) > health_check_time:
-            if not redis_ht.exists("last_health_check"):
-                # we want to see if another worker has done a check more recently
-                last_worker_check = float(redis_ht.get("last_health_check"))
-                if (current_time - last_worker_check) < health_check:
-                    return
-            self.check_for_dead_containers()
-            redis_ht.set("last_health_check", current_time)
+        if MY_ID == "host5000":  ## Only initiate checks from one host
+            current_time = current_timestamp()
+            if (current_time - self.last_health_check) > health_check_time:
+                if not redis_ht.exists("last_health_check"):
+                    # we want to see if another worker has done a check more recently
+                    last_worker_check = float(redis_ht.get("last_health_check"))
+                    if (current_time - last_worker_check) < health_check:
+                        return
+                self.check_for_dead_containers()
+                redis_ht.set("last_health_check", current_time)
         return
 
     def deregister_container(self, container_id):
+        print(f"deregister_container with container_id {container_id}")
         if redis_ht.exists(container_id):
+            print(f"deleting health data for container_id {container_id}")
             redis_ht.delete(container_id)
+        else:
+            print(f"no health data found for container_id {container_id}")
 
     def update_contact(self, container_id):
         if redis_ht.exists(container_id):
@@ -1177,7 +1184,7 @@ class HealthTracker:
         for k in all_keys:
             if self.is_container_health_data(k):
                 if (current_time - self.last_contact(k)) > inactive_container_time:
-                    print("found an inactive container")
+                    print(f"found an inactive container {k}")
                     cont_list.append(k)
                     continue
                 if (current_time - self.created(k)) > old_container_time:
@@ -1185,7 +1192,6 @@ class HealthTracker:
                     cont_list.append(k)
         for cont_id in cont_list:
             destroy_container(cont_id)
-
 
 tactic_app.health_tracker = HealthTracker()
 tactic_app.host_worker = HostWorker()

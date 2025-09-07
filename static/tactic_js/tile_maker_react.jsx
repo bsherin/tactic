@@ -1,4 +1,3 @@
-
 if (!window.in_context) {
     import("../tactic_css/tactic.scss");
     import("../tactic_css/resource_viewer.scss");
@@ -41,7 +40,7 @@ import {useSearch} from "./search_reducer"
 import {MakerPaneContext} from "./tile_maker_support";
 import {
     CmElement, PaneElement, MakerNavigator, OptionModuleForm, ExportModuleForm, MetadataModule, DividerElement,
-    option_icons, standard_method_icons, INITIAL_CODE_PANE_HEIGHT, INITIAL_FORM_PANE_HEIGHT, pane_type_icons,
+    option_icons, INITIAL_CODE_PANE_HEIGHT, INITIAL_FORM_PANE_HEIGHT, pane_type_icons,
 } from "./tile_maker_elements";
 import {useMetadata} from "./metadata_reducer";
 import {TileMakerSearchForm} from "./tile_maker_search_form";
@@ -70,12 +69,15 @@ function CreatorApp(props) {
     const [, setMethodsToOpen, methodsToOpenRef] = useStateAndRef(props.interface_state != null && "visibleMethodList" in props.interface_state ?
         props.interface_state.visibleMethodList : ["render_content"]);
 
+    const [renderContentInfo, setRenderContentInfo, renderContentInfoRef] = useStateAndRef(props.render_content_info);
+    const [globalsInfo, setGlobalsInfo, globalsInfoRef] = useStateAndRef(props.globals_info);
+
     const [, optionDispatchBase, option_list_ref] = usePropertyList(props.option_list, INITIAL_FORM_PANE_HEIGHT, {special_list: []});
     const [, exportDispatchBase, export_list_ref] = usePropertyList(props.export_list, INITIAL_FORM_PANE_HEIGHT, {tags: ""});
     const [, saveDispatchBase, save_list_ref] = usePropertyList(props.additional_save_attrs ? props.additional_save_attrs : [], INITIAL_FORM_PANE_HEIGHT);
-    const [, standardDispatchBase, standardListRef] = usePropertyList(props.standard_methods_list, INITIAL_CODE_PANE_HEIGHT);
     const [, umDispatchBase, umListRef] = usePropertyList(props.user_methods_list, INITIAL_CODE_PANE_HEIGHT);
     const [, hmDispatchBase, hmListRef] = usePropertyList(props.used_handler_methods_list, INITIAL_CODE_PANE_HEIGHT);
+    const [, jsDispatchBase, jsListRef] = usePropertyList(props.javascript_functions_list, INITIAL_CODE_PANE_HEIGHT);
 
     const [, metadataDispatch, metadataRef] = useMetadata(props.mdata);
 
@@ -85,11 +87,11 @@ function CreatorApp(props) {
     const optionDispatch = makeUndoableDispatch(optionDispatchBase, option_list_ref, "Options", undoStackRef);
     const exportDispatch = makeUndoableDispatch(exportDispatchBase, export_list_ref, "Exports", undoStackRef);
     const saveDispatch = makeUndoableDispatch(saveDispatchBase, save_list_ref, "Saves", undoStackRef);
-    const standardDispatch = makeUndoableDispatch(standardDispatchBase, standardListRef, "Standard", undoStackRef);
     const umDispatch = makeUndoableDispatch(umDispatchBase, umListRef, "UserMethods", undoStackRef);
     const hmDispatch = makeUndoableDispatch(hmDispatchBase, hmListRef, "HandlerMethods", undoStackRef);
+    const jsDispatch = makeUndoableDispatch(jsDispatchBase, jsListRef, "JavaScriptFunctions", undoStackRef);
 
-    const [searchState, searchDispatch, searchStateRef] = useSearch([], [standardListRef, umListRef, hmListRef]);
+    const [searchState, searchDispatch, searchStateRef] = useSearch([globalsInfoRef, renderContentInfoRef], [umListRef, hmListRef, jsListRef]);
 
     const extraSelfCompletionsRef = useRef([]);
 
@@ -148,6 +150,8 @@ function CreatorApp(props) {
     const connection_status = useConnection(props.tsocket, initSocket);
 
     useEffect(() => {
+        updateGlobals({pane_height: INITIAL_CODE_PANE_HEIGHT});
+        updateRenderContent({pane_height: INITIAL_CODE_PANE_HEIGHT});
         if (props.controlled) {
             props.registerDirtyMethod(_dirty);
             props.registerLineSetter(_selectLineNumber);
@@ -180,7 +184,7 @@ function CreatorApp(props) {
             })
         });
         return (() => {
-            for (let listRef of [standardListRef, umListRef, hmListRef]) {
+            for (let listRef of [jsListRef, umListRef, hmListRef]) {
                 destroyCmObjects(listRef);
             }
             for (let cm of otherCmObjects.current) {
@@ -540,12 +544,16 @@ function CreatorApp(props) {
         return false
     }
 
+    function removeNotSavedThingsFromItem(item) {
+        const newItem = {...item};  // shallow copy
+        delete newItem.cmObject;
+        delete newItem.scrollTop;
+        return newItem;
+    }
+
     function removeNotSavedThings(listRef) {
         return listRef.current.map((item) => {
-            const newItem = {...item};  // shallow copy
-            delete newItem.cmObject;
-            delete newItem.scrollTop;
-            return newItem;
+            return removeNotSavedThingsFromItem(item)
         });
     }
 
@@ -580,16 +588,18 @@ function CreatorApp(props) {
         });
         mdata["interface_state"] = {
             "visibleMethodList": visibleMethods,
-        }
+        };
         return {
             "module_name": _cProp("resource_name"),
             "mdata": mdata,
             "exports": removeNotSavedThings(export_list_ref),
+            "globals_info": removeNotSavedThingsFromItem(globalsInfoRef.current),
+            "render_content_info": removeNotSavedThingsFromItem(renderContentInfoRef.current),
             "additional_save_attrs": removeNotSavedThings(save_list_ref),
             "options": removeNotSavedThings(option_list_ref),
             "user_methods": removeNotSavedThings(umListRef),
             "used_handler_methods": removeNotSavedThings(hmListRef),
-            "standard_methods": removeNotSavedThings(standardListRef),
+            "javascript_functions": removeNotSavedThings(jsListRef),
             "is_mpl": props.is_mpl,
             "is_d3": props.is_d3,
             "last_viewer": "creator",
@@ -620,7 +630,10 @@ function CreatorApp(props) {
     }
 
     function getIdentifierFromName(name) {
-        for (let listRef of [standardListRef, umListRef, hmListRef]) {
+        if (["globals", "render_content"].includes(name)) {
+            return name;
+        }
+        for (let listRef of [umListRef, hmListRef, jsListRef]) {
             const identifier = getIdentifierFromNameInLIst(listRef, name);
             if (identifier) {
                 return identifier;
@@ -639,7 +652,10 @@ function CreatorApp(props) {
     }
 
     function getNameFromIdentifier(identifier) {
-        for (let listRef of [standardListRef, umListRef, hmListRef]) {
+        if (["globals", "render_content"].includes(identifier)) {
+            return identifier;
+        }
+        for (let listRef of [jsListRef, umListRef, hmListRef]) {
             const name = getNameFromIdentifierInList(listRef, identifier);
             if (name) {
                 return name;
@@ -658,7 +674,13 @@ function CreatorApp(props) {
     }
 
     function getItemFromIdentifier(identifier) {
-        for (let listRef of [option_list_ref, export_list_ref, save_list_ref, standardListRef, umListRef, hmListRef]) {
+        if (identifier === "globals") {
+            return globalsInfoRef.current;
+        }
+        if (identifier === "render_content") {
+            return renderContentInfoRef.current;
+        }
+        for (let listRef of [option_list_ref, export_list_ref, save_list_ref, jsListRef, umListRef, hmListRef]) {
             const item = getListItemFromidentifier(identifier, listRef.current);
             if (item) {
                 return item;
@@ -667,8 +689,31 @@ function CreatorApp(props) {
         return null
     }
 
+    function updateGlobals(itemUpdate) {
+
+        setGlobalsInfo(prevGlobalsInfo => ({
+            ...prevGlobalsInfo,
+            ...itemUpdate
+        }));
+    }
+
+    function updateRenderContent(itemUpdate) {
+        setRenderContentInfo(prevRenderContentInfo => ({
+            ...prevRenderContentInfo,
+            ...itemUpdate
+        }));
+    }
+
     function setItem(identifier, item) {
-        for (let [listRef, dispatch] of [[standardListRef, standardDispatch], [umListRef, umDispatch], [hmListRef, hmDispatch]]) {
+        if (["globals", "render_content"].includes(identifier)) {
+            if (identifier === "globals") {
+                updateGlobals(item);
+            } else if (identifier === "render_content") {
+                updateRenderContent(item);
+            }
+            return;
+        }
+        for (let [listRef, dispatch] of [[jsListRef, jsDispatch], [umListRef, umDispatch], [hmListRef, hmDispatch]]) {
             const existingItem = getListItemFromidentifier(identifier, listRef.current);
             if (existingItem) {
                 dispatch({type: "update_item", identifier: identifier, new_item: item});
@@ -678,19 +723,15 @@ function CreatorApp(props) {
     }
 
     function save_success(data) {
-        const stLineNumbers = data["standard_methods_line_numbers"];
         let identifier;
-        for (let name of Object.keys(stLineNumbers)) {
-            identifier = getIdentifierFromNameInLIst(standardListRef, name);
-            setLineNumbers(stLineNumbers[name], identifier, standardDispatch);
-        }
+        updateRenderContent(data.render_content_line_numbers);
         const umLineNumbers = data["user_methods_line_numbers"];
         for (let name of Object.keys(umLineNumbers)) {
             identifier = getIdentifierFromNameInLIst(umListRef, name);
             setLineNumbers(umLineNumbers[name], identifier, umDispatch);
         }
         const hmLineNumbers = data["used_handler_methods_line_numbers"];
-        for (let identifier of Object.keys(hmLineNumbers)) {
+        for (let name of Object.keys(hmLineNumbers)) {
             identifier = getIdentifierFromNameInLIst(hmListRef, name);
             setLineNumbers(hmLineNumbers[name], identifier, hmDispatch);
         }
@@ -701,13 +742,12 @@ function CreatorApp(props) {
         last_save.current = _getSaveDict();
     }
 
-    function _highlightLine(listRef, identifier, lnumber) {
+    function _highlightLine(item, lnumber) {
         try {
-            const item = getListItemFromidentifier(identifier, listRef.current);
             if (item == null || !item.cmObject) {
                 return
             }
-            rline_number.current = null
+            rline_number.current = null;
             const cm = item.cmObject;
             const line = cm.state.doc.line(lnumber + 1 - item.firstLineNumber);
             cm.dispatch({
@@ -724,19 +764,23 @@ function CreatorApp(props) {
 
     function _goToLineNumber() {
         if (rline_number.current) {
-            const local_number = rline_number.current
-            rline_number.current = null
+            const local_number = rline_number.current;
+            rline_number.current = null;
             errorDrawerFuncs.closeErrorDrawer();
-            for (let listRef of [standardListRef, umListRef, hmListRef]) {
+            for (let item of [globalsInfoRef.current, renderContentInfoRef.current]) {
+                if (local_number >= item["firstLineNumber"] && local_number <= item["lastLineNumber"]) {
+                    showTab(item["identifier"]);
+                    _highlightLine(item, local_number);
+                    return;
+                }
+            }
+            for (let listRef of [umListRef, hmListRef]) {
                 for (let item of listRef.current) {
                     if (local_number >= item["firstLineNumber"] && local_number <= item["lastLineNumber"]) {
                         showTab(item["identifier"]);
-                        pushCallback(() => {
-                            _highlightLine(listRef, item["identifier"], local_number);
-                        })
+                        _highlightLine(item, local_number);
                         break;
                     }
-
                 }
             }
         }
@@ -768,12 +812,13 @@ function CreatorApp(props) {
         setVisibleTabList(new_tab_list)
     }
 
-    function showTab(newTabIdentifier) {
+    function showTab(newTabIdentifier, callback=null) {
         if (!visibleTabListRef.current.includes(newTabIdentifier)) {
             let new_tab_list = [...visibleTabListRef.current];
             new_tab_list.push(newTabIdentifier);
             setVisibleTabList(new_tab_list);
             scrollToPane(newTabIdentifier);
+            pushCallback(callback)
         }
     }
 
@@ -800,31 +845,60 @@ function CreatorApp(props) {
     }
 
     let codeElemDict = {};
-    for (let st of standardListRef.current) {
-        codeElemDict[st["identifier"]] = () => {
-            return (
-                <CmElement cmState={st}
-                           allowSignatureChange={false}
-                           allowDelete={false}
-                           argString={st["argString"]}
-                           cmDispatch={standardDispatch}
-                           cmObjectRef={null}
-                           name={st["name"]}
-                           registerCmObject={registerCmObject}
-                           identifier={st["identifier"]}
-                           extraKeys={_extraKeys}
-                           saveAndCheckpoint={_saveAndCheckpoint}
-                           searchState={searchState}
-                           searchDispatch={searchDispatch}
-                           search_ref={null}
-                           pushCallback={pushCallback}
-                           tsocket={props.tsocket}
-                           extraSelfCompletions={st["mode"] == "python" ? extraSelfCompletionsRef.current : []}
-                           module_viewer_id={props.module_viewer_id}
-                           show_search={false}/>
-            )
-        }
-    }
+    let gi = globalsInfoRef.current;
+    codeElemDict["globals"] = () => {
+        return (
+            <CmElement cmState={gi}
+                       allowSignatureChange={false}
+                       allowDelete={false}
+                       argString={""}
+                       cmDispatch={null}
+                       updateItem={updateGlobals}
+                       showSignatureHeader={false}
+                       directSet={setGlobalsInfo}
+                       cmObjectRef={null}
+                       name={gi["name"]}
+                       registerCmObject={registerCmObject}
+                       identifier={"globals"}
+                       extraKeys={_extraKeys}
+                       saveAndCheckpoint={_saveAndCheckpoint}
+                       searchState={searchState}
+                       searchDispatch={searchDispatch}
+                       search_ref={null}
+                       pushCallback={pushCallback}
+                       tsocket={props.tsocket}
+                       extraSelfCompletions={extraSelfCompletionsRef.current}
+                       module_viewer_id={props.module_viewer_id}
+                       show_search={false}/>
+        )
+    };
+
+    let ri = renderContentInfoRef.current;
+    codeElemDict["render_content"] = () => {
+        return (
+            <CmElement cmState={ri}
+                       allowSignatureChange={false}
+                       allowDelete={false}
+                       argString={""}
+                       cmDispatch={null}
+                       updateItem={updateRenderContent}
+                       directSet={setRenderContentInfo}
+                       cmObjectRef={null}
+                       name={ri["name"]}
+                       registerCmObject={registerCmObject}
+                       identifier={"render_content"}
+                       extraKeys={_extraKeys}
+                       saveAndCheckpoint={_saveAndCheckpoint}
+                       searchState={searchState}
+                       searchDispatch={searchDispatch}
+                       search_ref={null}
+                       pushCallback={pushCallback}
+                       tsocket={props.tsocket}
+                       extraSelfCompletions={extraSelfCompletionsRef.current}
+                       module_viewer_id={props.module_viewer_id}
+                       show_search={false}/>
+        )
+    };
 
     for (let um of umListRef.current) {
         codeElemDict[um["identifier"]] = () => {
@@ -878,6 +952,32 @@ function CreatorApp(props) {
             )
         }
     }
+    for (let js of jsListRef.current) {
+        codeElemDict[js["identifier"]] = () => {
+            return (
+                <CmElement cmState={js}
+                           allowDelete={true}
+                           showSignatureHeader={true}
+                           allowSignatureChange={true}
+                           argString={js["argString"]}
+                           cmDispatch={jsDispatch}
+                           cmObjectRef={null}
+                           registerCmObject={registerCmObject}
+                           name={js["name"]}
+                           identifier={js["identifier"]}
+                           extraKeys={_extraKeys}
+                           saveAndCheckpoint={_saveAndCheckpoint}
+                           searchState={searchState}
+                           searchDispatch={searchDispatch}
+                           search_ref={null}
+                           pushCallback={pushCallback}
+                           tsocket={props.tsocket}
+                           extraSelfCompletions={extraSelfCompletionsRef.current}
+                           module_viewer_id={props.module_viewer_id}
+                           show_search={false}/>
+            )
+        }
+    }
     let optionElemDict = {};
     for (let opt of option_list_ref.current) {
         optionElemDict[opt["identifier"]] = () => {
@@ -910,75 +1010,141 @@ function CreatorApp(props) {
         }
     }
 
-    const sections = [{
-        title: "properties",
-        visible: true,
-        icon: pane_type_icons["metadata"],
-        editable: false,
-        dispatch: () => {
-        },
-        start_expanded: false,
-        sub_items: [
-            {
-                identifier: "metadata",
-                name: "Metadata",
-                icon: "manually-entered-data",
-                start_open: true,
-                item_list: []
+    const sections = [
+        {
+            kind: "direct",
+            visible: true,
+            editable: false,
+            dispatch: () => {
             },
-        ]
-    },
+            start_expanded: false,
+            identifier: "metadata",
+            name: "Metadata",
+            icon: pane_type_icons["metadata"],
+            start_open: true,
+        },
+        {
+            kind: "direct",
+            visible: true,
+            editable: false,
+            dispatch: () => {
+            },
+
+            start_expanded: false,
+            identifier: "globals",
+            name: "globals",
+            mode: "python",
+            icon: pane_type_icons["globals"],
+        },
+        {
+            kind: "direct",
+            visible: true,
+            editable: false,
+            dispatch: () => {
+            },
+            identifier: "render_content",
+            name: "render_content",
+            mode: "python",
+            icon: pane_type_icons["render_content"],
+        },
+        {kind: "divider", name: "Options Divider", visible: true},
         {
             title: "options",
+            kind: "section",
             visible: true,
             editable: true,
             icon: pane_type_icons["option"],
             icon_dict: option_icons,
             icon_field: "type",
             start_expanded: false,
+            item_base: {
+                name: "new_item",
+                tags: "",
+                default: null,
+                pool_select_type: null,
+                special_list: []
+            },
             sub_items: option_list_ref.current,
             dispatch: optionDispatch
         },
         {
-            title: "export", visible: true, editable: true, icon: pane_type_icons["export"],
+            title: "exports", kind: "section", visible: true, editable: true, icon: pane_type_icons["export"],
             start_expanded: false,
+            item_base: {
+                name: "new_item",
+                tags: "",
+            },
             sub_items: export_list_ref.current, dispatch: exportDispatch
         },
         {
-            title: "save_attrs", visible: !metadataRef.current.couple_save_attrs_and_exports,
+            title: "save_attrs", kind: "section",
+            visible: !metadataRef.current.couple_save_attrs_and_exports,
             start_expanded: false,
+            item_base: {
+                name: "new_item",
+                tags: "",
+            },
             editable: true, icon: pane_type_icons["save"], sub_items: save_list_ref.current, dispatch: saveDispatch
         },
-        {
-            title: "standard methods",
-            visible: true,
-            editable: false,
-            icon: pane_type_icons["standard_method"],
-            icon_dict: standard_method_icons,
-            icon_field: "name",
-            start_expanded: true,
-            sub_items: standardListRef.current,
-            dispatch: standardDispatch
-        },
+        {kind: "divider", name: "Methods Divider", visible: true},
+
         {
             title: "user methods", visible: true, editable: true, icon: pane_type_icons["user_method"],
+            mode: "python",
+            item_base: {
+                name: "new_item",
+                argString: "",
+                codeText: "",
+                mode: "python",
+                firstLineNumber: 1,
+            },
             start_expanded: false, sub_items: umListRef.current, dispatch: umDispatch
         },
         {
-            title: "handler methods", visible: true, editable: true, icon: pane_type_icons["handler_method"], sub_items: hmListRef.current,
+            title: "handler methods",
+            visible: true,
+            editable: true,
+            mode: "python",
+            item_base: {
+                name: "new_item",
+                argString: "",
+                codeText: "",
+                mode: "python",
+                firstLineNumber: 1,
+            },
+            icon: pane_type_icons["handler_method"],
+            sub_items: hmListRef.current,
             start_expanded: false,
-            createFromList: true, choiceDict: props.all_handler_methods, dispatch: hmDispatch
+            createFromList: true,
+            choiceDict: props.all_handler_methods,
+            dispatch: hmDispatch
         },
-    ]
+        {
+            title: "javascript",
+            visible: true,
+            editable: true,
+            icon: pane_type_icons["javascript"],
+            start_expanded: false,
+            mode: "javascript",
+            item_base: {
+                name: "new_item",
+                argString: "",
+                codeText: "",
+                mode: "javascript",
+                firstLineNumber: 1,
+            },
+            dispatch: jsDispatch,
+            sub_items: jsListRef.current,
+        },
+    ];
 
     let left_pane = (
         <Fragment>
-                <MakerNavigator handleTabSelect={_handleTabSelect}
-                                pushCallback={pushCallback}
-                                is_mpl={my_props.is_mpl}
-                                is_d3={my_props.is_d3}
-                                sections={sections}
-                                umList={umListRef.current}/>
+            <MakerNavigator handleTabSelect={_handleTabSelect}
+                            pushCallback={pushCallback}
+                            is_mpl={my_props.is_mpl}
+                            is_d3={my_props.is_d3}
+                            sections={sections}/>
         </Fragment>
     );
     let mdata_panel = (
@@ -1001,13 +1167,41 @@ function CreatorApp(props) {
                      pane_height={metadataRef.current.pane_height}>
             {mdata_panel}
         </PaneElement>
-    )
+    );
+
+    let gitem = globalsInfoRef.current;
+    right_pane_list.push(
+        <PaneElement key="globals" el={gitem} dispatch={null}
+                     directSet={setGlobalsInfo}
+                     pane_height={gitem["pane_height"]}
+                     pane_scroll_ref={pane_scroll_ref}
+                     icon={pane_type_icons["globals"]}
+                     updateItem={updateGlobals}
+                     visible={visibleTabListRef.current.includes("globals")}
+                     identifier="globals" pushCallback={pushCallback}>
+            {codeElemDict["globals"]?.()}
+        </PaneElement>
+    );
+
+    let item = renderContentInfoRef.current;
+    right_pane_list.push(
+        <PaneElement key="render_content" el={item} dispatch={null}
+                     directSet={setRenderContentInfo}
+                     pane_height={item["pane_height"]}
+                     pane_scroll_ref={pane_scroll_ref}
+                     icon={pane_type_icons["render_content"]}
+                     updateItem={updateRenderContent}
+                     visible={visibleTabListRef.current.includes("render_content")}
+                     identifier={"render_content"} pushCallback={pushCallback}>
+            {codeElemDict["render_content"]?.()}
+        </PaneElement>
+    );
 
     for (let key of Object.keys(optionElemDict)) {
         if (visibleTabListRef.current.includes(key)) {
-                right_pane_list.push(
-                        <DividerElement text="Options" icon={pane_type_icons["option"]}/>
-                )
+            right_pane_list.push(
+                <DividerElement text="Options" key="options-divider" icon={pane_type_icons["option"]}/>
+            );
             break;
         }
     }
@@ -1026,8 +1220,8 @@ function CreatorApp(props) {
     for (let key of Object.keys(exportElemDict)) {
         if (visibleTabListRef.current.includes(key)) {
             right_pane_list.push(
-                    <DividerElement text="Exports" icon={pane_type_icons["export"]}/>
-            )
+                <DividerElement text="Exports" key="exports-divider" icon={pane_type_icons["export"]}/>
+            );
             break;
         }
     }
@@ -1047,8 +1241,8 @@ function CreatorApp(props) {
     for (let key of Object.keys(saveElemDict)) {
         if (visibleTabListRef.current.includes(key)) {
             right_pane_list.push(
-                    <DividerElement text="Save Attrs" icon={pane_type_icons["save"]}/>
-            )
+                <DividerElement text="Save Attrs" key="save-divider" icon={pane_type_icons["save"]}/>
+            );
             break;
         }
     }
@@ -1065,33 +1259,11 @@ function CreatorApp(props) {
         )
     }
 
-    for (let item of standardListRef.current) {
-        if (visibleTabListRef.current.includes(item["identifier"])) {
-            right_pane_list.push(
-                    <DividerElement text="Standard Methods" icon={pane_type_icons["standard_method"]}/>
-            )
-            break;
-        }
-    }
-
-    for (let item of standardListRef.current) {
-        right_pane_list.push(
-            <PaneElement key={item["identifier"]} el={item} dispatch={standardDispatch}
-                         pane_height={item["pane_height"]}
-                         pane_scroll_ref={pane_scroll_ref}
-                         icon={standard_method_icons[item["name"]]}
-                         visible={visibleTabListRef.current.includes(item["identifier"])}
-                         identifier={item["identifier"]} pushCallback={pushCallback}>
-                {codeElemDict[item["identifier"]]?.()}
-            </PaneElement>
-        )
-    }
-
     for (let item of umListRef.current) {
         if (visibleTabListRef.current.includes(item["identifier"])) {
             right_pane_list.push(
-                <DividerElement text="User Methods" icon={pane_type_icons["user_method"]}/>
-            )
+                <DividerElement text="User Methods" key="um-divider" icon={pane_type_icons["user_method"]}/>
+            );
             break;
         }
     }
@@ -1111,14 +1283,32 @@ function CreatorApp(props) {
     for (let item of hmListRef.current) {
         if (visibleTabListRef.current.includes(item["identifier"])) {
             right_pane_list.push(
-                    <DividerElement text="Handler Methods" icon={pane_type_icons["handler_method"]}/>
-            )
+                <DividerElement text="Handler Methods" key="hm-divider" icon={pane_type_icons["handler_method"]}/>
+            );
             break;
         }
     }
     for (let item of hmListRef.current) {
         right_pane_list.push(
             <PaneElement key={item["identifier"]} el={item} dispatch={hmDispatch} pane_height={item["pane_height"]}
+                         pane_scroll_ref={pane_scroll_ref}
+                         allowDelete={true} visible={visibleTabListRef.current.includes(item["identifier"])}
+                         identifier={item["identifier"]} pushCallback={pushCallback}>
+                {codeElemDict[item["identifier"]]?.()}
+            </PaneElement>
+        )
+    }
+    for (let item of jsListRef.current) {
+        if (visibleTabListRef.current.includes(item["identifier"])) {
+            right_pane_list.push(
+                <DividerElement text="Javascript Functions" key="js-divider" icon={pane_type_icons["javascript"]}/>
+            );
+            break;
+        }
+    }
+    for (let item of jsListRef.current) {
+        right_pane_list.push(
+            <PaneElement key={item["identifier"]} el={item} dispatch={jsDispatch} pane_height={item["pane_height"]}
                          pane_scroll_ref={pane_scroll_ref}
                          allowDelete={true} visible={visibleTabListRef.current.includes(item["identifier"])}
                          identifier={item["identifier"]} pushCallback={pushCallback}>
@@ -1146,8 +1336,8 @@ function CreatorApp(props) {
                  className="creator-pane-list">
                 {right_pane_list}
             </div>
-    </div>
-    )
+        </div>
+    );
 
     let outer_style = {
         width: `calc(100% - ${ICON_BAR_WIDTH}px)`,
@@ -1199,14 +1389,14 @@ function CreatorApp(props) {
                 }}>
                     <div className={outer_class} ref={top_ref} style={outer_style}
                          tabIndex="0" onKeyDown={handleKeyDown} onKeyUp={handleKeyUp}>
-                            <ErrorBoundary custom_message="Error in HorizontalPanes">
-                                <HorizontalPanes left_pane={left_pane}
-                                                 right_pane={right_pane}
-                                                 show_handle={true}
-                                                 initial_width_fraction={.2}
-                                                 handleSplitUpdate={null}
-                                />
-                            </ErrorBoundary>
+                        <ErrorBoundary custom_message="Error in HorizontalPanes">
+                            <HorizontalPanes left_pane={left_pane}
+                                             right_pane={right_pane}
+                                             show_handle={true}
+                                             initial_width_fraction={.2}
+                                             handleSplitUpdate={null}
+                            />
+                        </ErrorBoundary>
                     </div>
                 </MakerPaneContext.Provider>
             </ErrorBoundary>
@@ -1226,10 +1416,12 @@ function tile_creator_main() {
         const domContainer = document.querySelector('#creator-root');
         const root = createRoot(domContainer);
         root.render(
-            <div style={{display: "flex", flexDirection: "column",
+            <div style={{
+                display: "flex", flexDirection: "column",
                 position: "relative",
                 height: "100%",
-                width: "100%"}}>
+                width: "100%"
+            }}>
                 {the_element}
             </div>
         )

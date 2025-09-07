@@ -3,7 +3,7 @@ import {Allotment, setSashSize} from "allotment";
 import "allotment/dist/style.css";
 import {Button, Icon} from "@blueprintjs/core";
 
-setSashSize(12)
+setSashSize(12);
 
 
 export function HorizontalPanes({
@@ -91,7 +91,7 @@ export function HorizontalPanes({
         let frac = (left + right) > 0 ? left / (left + right) : 0.5;
         if (snap_left) {
             if (left < minWidth) {
-                setSnapped(true)
+                setSnapped(true);
                 if (savedFraction.current && savedFraction.current > 0) {
                     const left = savedFraction.current * 100;
                     const right = 100 - left;
@@ -134,7 +134,9 @@ export function HorizontalPanes({
                          style={{
                             height: "100%", width: "100%",
                             overflow: "hidden",
-                            position: "relative"
+                            position: "relative",
+                             display: "flex",
+                             flexDirection: "column"
                         }}>
                         {snap_left && snapped && <UnsnapButton unSnap={unSnap}/>}
                         {right_pane}
@@ -149,7 +151,7 @@ function UnsnapButton(props) {
     props = {
         unSnap: null,
         ...props
-    }
+    };
     return (
         <Button icon={<Icon icon="chevron-right" size={25}/>}
                 style={{
@@ -170,7 +172,7 @@ function SnapButton(props) {
     props = {
         snap: null,
         ...props
-    }
+    };
     return (
         <Button icon={<Icon icon="chevron-left" size={25}/>}
                 style={{

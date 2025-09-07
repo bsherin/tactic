@@ -1,0 +1,17 @@
+ARG BASE_IMAGE
+FROM ${BASE_IMAGE}
+WORKDIR /build
+
+COPY ./wheels_env/requirements.txt .
+
+# build toolchain only in this builder
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      build-essential gcc g++ \
+      libffi-dev libssl-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Helpful: ensure build-time tools first (sometimes avoids edge cases)
+RUN python -m pip install --upgrade pip setuptools wheel "numpy<3" cython
+
+# Build all wheels here
+RUN pip wheel --no-cache-dir --no-deps -r requirements.txt -w /wheelhouse

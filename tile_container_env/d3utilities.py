@@ -1,9 +1,5 @@
-from __future__ import print_function
 
-import matplotlib
 import warnings
-from matplotlib.colors import rgb2hex
-import matplotlib as mpl
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
     # get_cmap = matplotlib.cm.ColormapRegistry.get_cmap
@@ -21,6 +17,8 @@ class D3Tile(TileBase):
         self.is_d3 = True
 
     def palette_to_hex(self, cmap, num):
+        from matplotlib.colors import rgb2hex
+        import matplotlib as mpl
         step = 1.0 / num
         cmap = mpl.colormaps[self.palette_name]
         breaks = [i * step for i in range(num)]
@@ -49,10 +47,8 @@ class D3Tile(TileBase):
                     arg_dict = self.render_content()
             self.current_html = ""
             self._current_arg_dict = arg_dict
-            javascript_code = "(selector, w, h, arg_dict, resizing) => {" + self.jscript + "}"
             jw = self.widget("javascript",
-                                    {"value": {"javascript_code": javascript_code,
-                                     "javascript_arg_dict": arg_dict}})
+                                    {"value": {"code": self.jscript, "args": arg_dict}})
 
             super()._do_the_refresh([jw.render()])
         except Exception as ex:

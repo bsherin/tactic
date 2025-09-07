@@ -18,6 +18,13 @@ CHUNK_SIZE = int(int(os.environ.get("CHUNK_SIZE")) / 2)
 
 import loaded_tile_management
 
+base_user_image_names = ["bsherin/tactic-tile", "bsherin/tactic-main", "bsherin/tactic-module-viewer"]
+
+tactic_user_image_names = []
+for base_name in base_user_image_names:
+    tactic_user_image_names.append(f"{base_name}:x86")
+for base_name in base_user_image_names:
+    tactic_user_image_names.append(f"{base_name}:arm64")
 
 class ContainerManager(ResourceManager):
 
@@ -34,10 +41,6 @@ class ContainerManager(ResourceManager):
                          login_required(self.grab_container_list_chunk), methods=['get', 'post'])
 
     def clear_user_containers(self):
-        tactic_user_image_names = ["bsherin/tactic:tile", "bsherin/tactic:main", "bsherin/tactic:module_viewer",
-                                   "bsherin/tactic:tile-arm64", "bsherin/tactic:main-arm46",
-                                   "bsherin/tactic:module_viewer-arm64"
-                                   ]
         tactic_image_ids = {}
         for iname in tactic_user_image_names:
             tactic_image_ids[iname] = cli.images.get(iname).id
@@ -47,17 +50,17 @@ class ContainerManager(ResourceManager):
             self.emit_status_message("removing user containers")
             all_containers = cli.containers.list(all=True)
             for cont in all_containers:
-                if cont.attrs["Image"] == tactic_image_ids["bsherin/tactic:main"]:
+                if cont.attrs["Image"] == tactic_image_ids["bsherin/tactic-main"]:
                     self.emit_status_message("removing main container " + cont.attrs["Name"])
                     cont.remove(force=True)
                     continue
-                if cont.attrs["Image"] == tactic_image_ids["bsherin/tactic:tile"]:
+                if cont.attrs["Image"] == tactic_image_ids["bsherin/tactic-tile"]:
                     the_id = container_id(cont)
                     if not the_id == "tile_test_container":
                         self.emit_status_message("removing tile container " + cont.attrs["Name"])
                         cont.remove(force=True)
                     continue
-                if cont.attrs["Image"] == tactic_image_ids["bsherin/tactic:module_viewer"]:
+                if cont.attrs["Image"] == tactic_image_ids["bsherin/tactic-module-viewer"]:
                     the_id = container_id(cont)
                     if not the_id == "tile_test_container":
                         self.emit_status_message("removing module viewer container " + cont.attrs["Name"])

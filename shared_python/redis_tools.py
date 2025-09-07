@@ -1,5 +1,6 @@
 
 import redis
+import json
 
 print("getting redis client")
 print("*** Using updated Redis config2 ***")

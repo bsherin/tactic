@@ -87,7 +87,7 @@ function CodeViewerApp(props) {
         }
         return (() => {
             cmObjectRef.current = null;
-            set_code_content(null)
+            set_code_content(null);
             if (!props.controlled) {
                 window.removeEventListener("beforeunload", function (e) {
                     if (_dirty()) {

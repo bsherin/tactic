@@ -117,25 +117,24 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin):
             if len(arg_string) > 0:
                 arg_string = ", " + arg_string
             used_handler_methods_list_of_dicts.append({"name": m["name"],
-                                               "arg_string": arg_string,
-                                               "method_body": insert_indents(m["codeText"], 2)})
+                                                       "arg_string": arg_string,
+                                                       "method_body": insert_indents(m["codeText"], 2)})
 
-        jscript_body = ""
-        globals_code = ""
+        javascript_functions_list_of_dicts = []
+        if "javascript_functions" in data_dict:
+            for f in data_dict["javascript_functions"]:
+                javascript_functions_list_of_dicts.append({"name": f["name"],
+                                                           "code": f["codeText"]})
+        globals_code = data_dict["globals_info"]["codeText"]
         standard_methods_list_of_dicts = []
-        for m in data_dict["standard_methods"]:
-            if m["name"] == "javascript":
-                jscript_body = m["codeText"]
-            elif m["name"] == "globals":
-                globals_code = m["codeText"]
-            else:
-                arg_string = m["argString"]
-                if len(arg_string) > 0:
-                    arg_string = ", " + arg_string
-                standard_methods_list_of_dicts.append(
-                    {"name": m["name"],
-                     "arg_string": arg_string,
-                     "method_body": insert_indents(m["codeText"], 2)})
+        m = data_dict["render_content_info"]
+        arg_string = m["argString"]
+        if len(arg_string) > 0:
+            arg_string = ", " + arg_string
+        standard_methods_list_of_dicts.append(
+            {"name": m["name"],
+             "arg_string": arg_string,
+             "method_body": insert_indents(m["codeText"], 2)})
 
         options = data_dict["options"]
         for opt_dict in options:
@@ -156,9 +155,7 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin):
                                         couple_save_attrs_and_exports=couple_save_attrs_and_exports,
                                         additional_save_attrs=additional_save_attrs,
                                         options=data_dict["options"],
-                                        is_mpl=data_dict["is_mpl"],
-                                        is_d3=data_dict["is_d3"],
-                                        jscript_code=jscript_body,
+                                        jscript_functions=javascript_functions_list_of_dicts,
                                         globals_code=globals_code,
                                         user_methods=user_methods_list_of_dicts,
                                         used_handler_methods=used_handler_methods_list_of_dicts,
@@ -216,12 +213,7 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin):
             mdata.update(data_dict["mdata"])
 
             mdata["updated"] = datetime.datetime.utcnow()
-            if data_dict["is_mpl"]:
-                mdata["type"] = "matplotlib"
-            elif data_dict["is_d3"]:
-                mdata["type"] = "d3"
-            else:
-                mdata["type"] = "standard"
+            mdata["type"] = "standard"
 
             self.db[self.tile_collection_name].update_one({"tile_module_name": module_name},
                                                           {'$set': {"tile_module": module_code, "metadata": mdata,
@@ -236,57 +228,62 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin):
             return self.get_traceback_exception_dict(ex, "Error saving module")
 
     def assemble_parse_information(self):
-        for option in self.tp.options:
-            if option["name"] in self.tp.defaults:
-                option["default"] = self.tp.defaults[option["name"]]
-        standard_methods_list = []
-        func_dict = self.tp.methods
-        if "render_content" in func_dict:
-            render_content_code = func_dict["render_content"]["method_body"]
-            render_content_code = remove_indents(render_content_code, 2)
-        else:
-            render_content_code = ""
-        standard_methods_list.append({"name": "render_content",
-                                      "codeText": render_content_code,
-                                      "argString": "",
-                                      "mode": "python",
-                                      "firstLineNumber": func_dict["render_content"]["body_start"],
-                                      "lastLineNumber": func_dict["render_content"]["last_line"]
-                                      })
-        is_mpl = self.tp.is_mpl
-        is_d3 = self.tp.is_d3
-
-        if is_mpl and "draw_plot" in func_dict:
-            draw_plot_code = func_dict["draw_plot"]["method_body"]
-            draw_plot_code = remove_indents(draw_plot_code, 2)
-            standard_methods_list.append({"name": "draw_plot",
-                                          "codeText": draw_plot_code,
-                                          "argString": "",
-                                          "mode": "python",
-                                          "firstLineNumber": func_dict["draw_plot"]["body_start"],
-                                          "lastLineNumber": func_dict["draw_plot"]["last_line"]
-                                          })
-        if is_d3 and "jscript" in self.tp.defaults:
-            jscript_code = self.tp.defaults["jscript"]
-            standard_methods_list.append({"name": "javascript",
-                                          "codeText": jscript_code,
-                                          "argString": "",
-                                          "mode": "javascript",
-                                          "firstLineNumber": 1,
-                                            "lastLineNumber": len(jscript_code.splitlines())
-                                          })
-
-        globals_code = self.tp.globals_code
-        standard_methods_list.append({"name": "globals",
-                                      "codeText": globals_code,
-                                      "argString": "",
-                                      "mode": "python",
-                                      "firstLineNumber": 1,
-                                        "lastLineNumber": len(globals_code.splitlines())
-                                      })
-        user_methods_list = self.tp.get_user_methods_list()
-
+        print("*** assemble_parse_information called in module_viewer_main")
         try:
+            for option in self.tp.options:
+                if option["name"] in self.tp.defaults:
+                    option["default"] = self.tp.defaults[option["name"]]
+            func_dict = self.tp.methods
+            if "render_content" in func_dict:
+                render_content_code = func_dict["render_content"]["method_body"]
+                render_content_code = remove_indents(render_content_code, 2)
+            else:
+                render_content_code = ""
+            render_content_info = {"name": "render_content",
+                                  "codeText": render_content_code,
+                                  "argString": "",
+                                  "mode": "python",
+                                   "identifier": "render_content",
+                                  "firstLineNumber": func_dict["render_content"]["body_start"],
+                                  "lastLineNumber": func_dict["render_content"]["last_line"]
+                                  }
+
+            javascript_functions_list = []
+            if "jscript" in self.tp.defaults:
+                print("got jscript")
+                jscript = self.tp.defaults["jscript"]
+                if type(jscript) == str:
+                    javascript_functions_list.append(
+                        {"name": "__raw_code__",
+                         "codeText": jscript,
+                         "argString": "",
+                         "mode": "javascript",
+                         "firstLineNumber": 1,
+                         "lastLineNumber": len(jscript.splitlines())
+                         }
+                    )
+                else:
+                    print("about to loop for jscript")
+                    for func_info in jscript:
+                        javascript_functions_list.append(
+                            {"name": func_info["name"],
+                             "codeText": func_info["code"],
+                             "argString": "",
+                             "mode": "javascript",
+                             "firstLineNumber": 1,
+                             "lastLineNumber": len(func_info["code"].splitlines())
+                             }
+                        )
+            globals_code = self.tp.globals_code
+            globals_info = {"name": "globals",
+                            "codeText": globals_code,
+                            "argString": "",
+                            "mode": "python",
+                            "identifier": "globals",
+                            "firstLineNumber": 1,
+                            "lastLineNumber": len(globals_code.splitlines())
+                            }
+            user_methods_list = self.tp.get_user_methods_list()
             user_methods_list = [{"name": func["name"],
                                   "codeText": remove_indents(func["method_body"], 2),
                                   "argString": func["arg_string"],
@@ -304,18 +301,17 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin):
                                       "argString": func["arg_string"],
                                       "mode": "python",
                                       "firstLineNumber": func["body_start"],
-                                        "lastLineNumber": func["last_line"]
+                                      "lastLineNumber": func["last_line"]
                                       } for func in used_handler_methods_list]
         parsed_data = {"option_dict": self.tp.options, "export_list": self.tp.exports,
                        "additional_save_attrs": self.tp.additional_save_attrs,
-                       "render_content_code": render_content_code,
+                       "render_content_info": render_content_info,
+                       "javascript_functions_list": javascript_functions_list,
+                       "globals_info": globals_info,
+                       "is_mpl": self.tp.is_mpl,
                        "user_methods_list": user_methods_list,
                        "used_handler_methods_list": used_handler_methods_list,
-                       "standard_methods_list": standard_methods_list,
-                       "category": self.tp.category,
-                       "is_mpl": is_mpl,
-                       "is_d3": is_d3,
-                       "globals_code": globals_code}
+                       "category": self.tp.category}
         return parsed_data
 
     @task_worthy

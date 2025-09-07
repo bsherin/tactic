@@ -246,8 +246,15 @@ function BpSelectorTable(props) {
                 }
                 let the_text = String(props.data_dict[rowIndex][column_name]);
                 if (the_text.startsWith("icon:")) {
+                    if (("res_type" in props.data_dict[rowIndex]) && (props.data_dict[rowIndex]["res_type"] == "tile")) {
+                        the_class = "tile-icon-cell"
+
+                    }
+                    else {
+                        the_class = "icon-cell";
+                    }
                     the_text = the_text.replace(/(^icon:)/gi, "");
-                    the_body = <Icon icon={the_text} size={14}/>
+                    the_body = <Icon className={the_class} icon={the_text} size={14}/>
                 } else {
                     the_body = (<TruncatedFormat className={the_class}>
                         {the_text}

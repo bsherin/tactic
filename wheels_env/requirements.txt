@@ -1,0 +1,44 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
+beautifulsoup4
+markdown
+matplotlib >= 3.9.0
+networkx
+hdbscan==0.8.40
+nltk
+numpy == 1.26.4
+pandas
+plotly == 6.0.1
+pyldavis >= 3.4.1
+redis
+scipy == 1.13.1
+tweepy
+yellowbrick
+textblob
+wikipedia-api
+lime
+mpld3
+scikit-learn
+gensim
+torch == 2.3.*
+## torchtext == 0.18.*
+transformers
+tensorflow == 2.20
+eli5
+bokeh
+levenshtein
+pyvis
+openai >= 1.23.4
+bertopic
+zstandard
+pymongo
+kaleido == 0.2.1
+paramiko
+tf-keras
+Werkzeug == 2.2.2
+Flask == 2.2.3
+pika
+redis
+regex
+kombu
+docutils
+rabbitmq-admin

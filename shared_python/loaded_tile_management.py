@@ -141,6 +141,7 @@ def get_module_from_type(username, tile_type):
             return None
         else:
             return hget(username, "tile_module_index", tile_type)
+    return None
 
 
 def get_loaded_user_modules(username):
@@ -186,7 +187,7 @@ def unload_one_module(username, tile_module_name):
     return
 
 
-def add_user_tile_module(username, category, tile_name, tile_module, tile_module_name, is_default=False):
+def add_user_tile_module(username, category, tile_name, tile_module, tile_module_name, is_default=False,):
     print("adding tile {}".format(tile_name))
 
     unload_one_tile(username, tile_name, tile_module_name)

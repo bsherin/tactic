@@ -72,7 +72,7 @@ const GLYPH_BUTTON_STYLE5 = {marginTop: 5};
 const SPINNER_STYLE = {marginTop: 10, marginRight: 22};
 const MB10_STYLE = {marginBottom: 10};
 
-const searchable_console_style = {padding: 15}
+const searchable_console_style = {padding: 15};
 
 const sHandleStyle = {marginLeft: 0, marginRight: 6};
 
@@ -113,7 +113,7 @@ function ConsoleComponent(props) {
 
     useEffect(() => {
         initSocket();
-        _requestPseudoTileId();
+        // _requestPseudoTileId();
         if (props.console_items.current.length == 0) {
             _addCodeArea("", false)
         }
@@ -125,6 +125,12 @@ function ConsoleComponent(props) {
             });
         }
     }, []);
+
+    useEffect(()=>{
+        if (show_pseudo_log) {
+            _requestPseudoTileId();
+        }
+    }, [show_pseudo_log]);
 
     useEffect(() => {
         //console.log("theme changed")  // This is to force re-rendering because of highlight.js theme change
@@ -954,7 +960,7 @@ function ConsoleComponent(props) {
             widgetId: data["widgetId"],
             widgetKind: data["widgetKind"],
             widgetData: data["widgetData"],
-        }
+        };
         props.dispatch({
             type: "replace_code_output_row",
             unique_id: data.console_id,
@@ -1820,8 +1826,8 @@ function LogItem(props) {
 
     let outputWidgets = props.console_text.map((w, ) => {
         let widgetKind = w["widgetKind"];
-        let widgetId = w["widgetId"]
-        let widgetData = w["widgetData"]
+        let widgetId = w["widgetId"];
+        let widgetData = w["widgetData"];
         let the_widget;
         if (widgetKind in widgetDict) {
             let WidgetComponent = widgetDict[widgetKind];
@@ -1843,7 +1849,7 @@ function LogItem(props) {
         }
         props.widgetHomesRef.current[widgetId] = props.unique_id;
         return the_widget;
-    })
+    });
 
     return (
         <ContextMenu content={renderContextMenu()}>
@@ -2067,7 +2073,7 @@ function ConsoleCodeItem(props) {
 
     useEffect(()=> {
         simpleTableId.current = guid();
-    }, [props.table])
+    }, [props.table]);
 
     useEffect(() => {
         if (props.am_selected && !am_selected_previous.current && elRef && elRef.current) {
@@ -2289,8 +2295,8 @@ function ConsoleCodeItem(props) {
         try {
             let outputDict = props.output_dict[idx];
             let widgetKind = outputDict["widgetKind"];
-            let widgetId = outputDict["widgetId"]
-            let widgetData = outputDict["widgetData"]
+            let widgetId = outputDict["widgetId"];
+            let widgetData = outputDict["widgetData"];
             if (widgetKind in widgetDict) {
                 let WidgetComponent = widgetDict[widgetKind];
                 the_widget = (<div className="log-code-output" style={{paddingBottom: 5}}>
@@ -2320,7 +2326,7 @@ function ConsoleCodeItem(props) {
         catch (e) {
             the_widget = (<div className="log-code-output" style={{paddingBottom: 5}}>
                     {`Error outputting widget ${e}`}
-            </div>)
+            </div>);
             return the_widget;
         }
 

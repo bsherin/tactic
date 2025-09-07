@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=bsherin/tactic:base
+ARG BASE_IMAGE
 FROM ${BASE_IMAGE}
 WORKDIR /code
 ADD ./module_viewer_container_env/requirements.txt /code/requirements.txt

@@ -302,8 +302,7 @@ function LibraryPane(props) {
         let start = rowIndices[0];
         let end = rowIndices[0];
 
-        for (let i = 1; i < rowIndices.length; i++) {
-            const current = rowIndices[i];
+        for (const current of rowIndices) {
             if (current === end + 1) {
                 end = current;
             } else {

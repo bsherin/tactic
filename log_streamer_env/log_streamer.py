@@ -15,12 +15,38 @@ def container_id(container):
     else:
         return "system"
 
+# def get_container(tactic_id):
+#     conts = cli.containers.list(all=True)
+#     for lcont in conts:
+#         if container_id(lcont) == tactic_id:
+#             return lcont
+#     return None
+
+
 def get_container(tactic_id):
-    conts = cli.containers.list(all=True)
-    for lcont in conts:
-        if container_id(lcont) == tactic_id:
-            return lcont
-    return None
+    try:
+        summaries = cli.api.containers(
+            all=True,
+            filters={"label": f"my_id={tactic_id}"}
+        )
+    except APIError:
+        # If the Engine hiccups, treat as not found for callers that do cleanup
+        return None
+
+    if not summaries:
+        return None
+
+    # If you guarantee uniqueness of my_id, just grab the first match
+    cid = summaries[0].get("Id")
+    if not cid:
+        return None
+
+    # 2) Convert to a high-level Container with a guarded inspect
+    try:
+        return cli.containers.get(cid)   # this does a single inspect
+    except NotFound:
+        # It disappeared between list and get; that's fine—treat as not found
+        return None
 
 room = os.environ.get("ROOM")
 cont_id = os.environ.get("CONT_ID")
@@ -37,4 +63,5 @@ if cont is not None:
 else:
     print("cont was None")
 
+socketio.emit("searchable-console-message", {"message": "streamerExited","container_id": cont_id},  namespace="/main", room=room)
 print("exiting")

@@ -194,6 +194,10 @@ $light-chat-card-bg: blueprint_variables.$light-gray5;
             color: $light-tile-icon-color !important;
         }
 
+        .tile-icon-color {
+            color: $light-tile-icon-color !important;
+        }
+
         .bp6-icon-list {
             color: $light-list-icon-color !important;
         }
@@ -227,6 +231,10 @@ $light-chat-card-bg: blueprint_variables.$light-gray5;
             color: $dark-tile-icon-color !important;
         }
 
+        .tile-icon-cell {
+            color: $dark-tile-icon-color !important;
+        }
+
         .bp6-icon-list {
             color: $dark-list-icon-color !important;
         }
@@ -234,6 +242,7 @@ $light-chat-card-bg: blueprint_variables.$light-gray5;
         .bp6-icon-code {
             color: $dark-code-icon-color !important;
         }
+
     }
 }
 

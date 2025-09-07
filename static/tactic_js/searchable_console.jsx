@@ -60,6 +60,16 @@ function SearchableConsole(props, inner_ref) {
         })
     }, []);
 
+    useEffect(() => {
+        if (!streamer_id.current) {
+            _getLogAndStartStreaming()
+                .then(() => {
+                    console.log("streamer_id.current", streamer_id.current);
+                });
+        }
+
+    }, [streamer_id.current]);
+
     useDidMount(async () => {
         await _stopLogStreaming(_getLogAndStartStreaming)
     }, [max_console_lines]);
@@ -77,6 +87,10 @@ function SearchableConsole(props, inner_ref) {
     }
 
     function _handleUpdateMessage(data) {
+        if (data.message == "streamerExited") {
+            streamer_id.current = null;
+            return;
+        }
         if (data.message != "updateLog") return;
         _addToLog(data["new_line"]);
     }
@@ -226,11 +240,11 @@ function SearchableConsole(props, inner_ref) {
         flex: "1 1 0",
         minHeight: 0,
         overflow: "auto"
-    }
+    };
     const outer_style = {
         width: "100%", height: "100%", overflow: "hidden", display: "flex", flexDirection: "column",
         ...props.outer_style
-    }
+    };
     const leftContent = (
         <ControlGroup vertical={false}>
             <Button onClick={_setLogSince}
@@ -304,7 +318,7 @@ function ResponsiveFlex(props) {
         leftContent: null,
         rightContent: null,
         ...props
-    }
+    };
     const containerRef = useRef(null);
     const leftContentRef = useRef(null);
     const rightContentRef = useRef(null);

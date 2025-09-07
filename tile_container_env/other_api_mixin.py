@@ -1,10 +1,11 @@
 
 from communication_utils import debinarize_python_object
+import io
 # noinspection PyPackageRequirements
 import pandas as _pd
 try:
     import nltk
-    nltk.data.path.append("/root/resources/nltk_data")
+    # nltk.data.path.append("/root/resources/nltk_data")
     nltk_available = True
 except:
     nltk_available = False
@@ -27,6 +28,52 @@ def iterable(arg):
 class OtherAPIMIxin:
 
     # <editor-fold desc="Other">
+
+    def get_tile_js_code(self, js_func_name):
+        code = ''
+        if hasattr(self, "jscript"):
+            for jinfo in self.jscript:
+                if jinfo["name"] == js_func_name:
+                    code = jinfo["code"]
+        return code
+
+    def create_pyplot_html(self, use_svg=True):
+        import matplotlib.pyplot as plt
+        self._tworker.use_svg = use_svg
+        if use_svg:
+            img_file = io.StringIO()
+            plt.gcf().savefig(img_file, format="svg")
+            img_file.seek(0)
+            the_html = img_file.read()
+        else:
+            img_file = io.BytesIO()
+            plt.gcf().savefig(img_file)
+            img_file.seek(0)
+            figname = str(uuid.uuid4())
+            self.img_dict[figname] = img_file.getvalue()
+            fig_url = self.base_figure_url + figname
+            image_string = "<img class='output-plot' src='{}' lt='Image Placeholder'>"
+            the_html = image_string.format(fig_url)
+        return the_html
+
+    def create_figure_html(self, fig, use_svg=True):
+        self._tworker.use_svg = use_svg
+        if use_svg:
+            img_file = io.StringIO()
+            fig.savefig(img_file, format="svg")
+            img_file.seek(0)
+            the_html = img_file.read()
+        else:
+            img_file = io.BytesIO()
+            fig.savefig(img_file)
+            img_file.seek(0)
+            figname = str(uuid.uuid4())
+            self.img_dict[figname] = img_file.getvalue()
+            fig_url = self.base_figure_url + figname
+            image_string = "<img class='output-plot' src='{}' lt='Image Placeholder'>"
+            the_html = image_string.format(fig_url)
+        return the_html
+
     def gst(self):
         return self.get_selected_text()
 

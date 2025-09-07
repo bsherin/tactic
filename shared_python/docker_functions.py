@@ -21,9 +21,9 @@ CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE"))
 mongo_uri = os.environ.get("MONGO_URI")
 _develop = ("DEVELOP" in os.environ) and (os.environ.get("DEVELOP") == "True")
 RETRIES = os.environ.get("RETRIES")
-tactic_image_names = ["bsherin/tactic:tile", "bsherin/tactic:main",
-                      "bsherin/tactic:module_viewer", "bsherin/tactic:host",
-                      "bsherin/tactic:log-streamer", "bsherin/tactic:assistant",
+tactic_image_names = ["bsherin/tactic-tile", "bsherin/tactic-main",
+                      "bsherin/tactic-module-viewer", "bsherin/tactic-host",
+                      "bsherin/tactic-log-streamer", "bsherin/tactic-assistant",
                       ]
 
 if "DEBUG_MAIN_CONTAINER" in os.environ:
@@ -89,7 +89,7 @@ def create_log_streamer_container(room, cont_id, user_id, username):
         "ROOM": room,
         "CONT_ID": cont_id,
     }
-    streamer_id, _container_id = create_container("bsherin/tactic:log-streamer", network_mode="bridge",
+    streamer_id, _container_id = create_container("bsherin/tactic-log-streamer", network_mode="bridge",
                                                   env_vars=environ,
                                                   owner=user_id, other_name=None, username=username,
                                                   volume_dict=streamer_volume_dict,
@@ -101,7 +101,7 @@ def create_assistant_container(openai_api_key, parent, user_id, username):
     environ = {
         "OPENAI_API_KEY": openai_api_key,
     }
-    assistant_id, _container_id = create_container("bsherin/tactic:assistant", network_mode="bridge",
+    assistant_id, _container_id = create_container("bsherin/tactic-assistant", network_mode="bridge",
                                                     env_vars=environ,
                                                     parent=parent,
                                                     owner=user_id, other_name=None, username=username,
@@ -132,7 +132,7 @@ class MainContainerTracker(object):
             environ["REMOTE_KEY_FILE"] = os.environ.get("REMOTE_KEY_FILE")
             environ["REMOTE_USERNAME"] = os.environ.get("REMOTE_USERNAME")
             main_volume_dict[environ["REMOTE_KEY_FILE"]] = {"bind": environ["REMOTE_KEY_FILE"], "mode": "ro"}
-        main_id, _container_id = create_container("bsherin/tactic:main", network_mode="bridge",
+        main_id, _container_id = create_container("bsherin/tactic-main", network_mode="bridge",
                                                   env_vars=environ,
                                                   owner=user_id, other_name=other_name, username=username,
                                                   volume_dict=main_volume_dict,
@@ -207,13 +207,16 @@ def create_container(image_name, container_name=None, network_mode="bridge", hos
 
     labels = {"my_id": unique_id, "owner": owner, "parent": parent, "other_name": other_name, "project": "tactic"}
 
-    if image_name == "bsherin/tactic:tile":  # We don't want people to be able to see the mongo_uri
+    if image_name == "bsherin/tactic-tile":  # We don't want people to be able to see the mongo_uri
         del environ["MONGO_URI"]
 
     print("in create container with image_name " + image_name)
     print("USE_ARM64 is " + str(USE_ARM64))
     if USE_ARM64 and image_name in tactic_image_names:
-        image_name += "-arm64"
+        image_name += ":arm64"
+        print("changed image name to " + image_name)
+    else:
+        image_name += ":x86"
         print("changed image name to " + image_name)
 
     run_args = {
@@ -272,7 +275,7 @@ def container_owner(container):
         return "system"
 
 def get_user_assistant(user_id):
-    image_name = "bsherin/tactic:assistant"
+    image_name = "bsherin/tactic-assistant"
     if USE_ARM64:
         image_name += "-arm64"
     conts = cli.containers.list(
@@ -306,13 +309,6 @@ def container_other_name(container):
         return "name"
 
 
-def container_id(container):
-    if "my_id" in container.attrs["Config"]["Labels"]:
-        return container.attrs["Config"]["Labels"]["my_id"]
-    else:
-        return "system"
-
-
 def container_image(container):
     return container.attrs["Config"]["Image"]
 
@@ -336,12 +332,44 @@ def remove_network(network_name):
     return cli.remove_network(network_name)
 
 
+def container_id(container):
+    if "my_id" in container.attrs["Config"]["Labels"]:
+        return container.attrs["Config"]["Labels"]["my_id"]
+    else:
+        return "system"
+
+
+# def get_container(tactic_id):
+#     conts = cli.containers.list(all=True)
+#     for cont in conts:
+#         if container_id(cont) == tactic_id:
+#             return cont
+#     return None
+
 def get_container(tactic_id):
-    conts = cli.containers.list(all=True)
-    for cont in conts:
-        if container_id(cont) == tactic_id:
-            return cont
-    return None
+    try:
+        summaries = cli.api.containers(
+            all=True,
+            filters={"label": f"my_id={tactic_id}"}
+        )
+    except APIError:
+        # If the Engine hiccups, treat as not found for callers that do cleanup
+        return None
+
+    if not summaries:
+        return None
+
+    # If you guarantee uniqueness of my_id, just grab the first match
+    cid = summaries[0].get("Id")
+    if not cid:
+        return None
+
+    # 2) Convert to a high-level Container with a guarded inspect
+    try:
+        return cli.containers.get(cid)   # this does a single inspect
+    except NotFound:
+        # It disappeared between list and get; that's fine—treat as not found
+        return None
 
 
 def container_exec(tactic_id, cmd):
@@ -430,15 +458,86 @@ def get_traceback_message(e, special_string=None):
     error_string += traceback.format_exc()
     return error_string
 
+import time
+import docker
+from docker.errors import APIError, NotFound
+
+client = docker.from_env()
+
+def safe_remove(c, stop_timeout=10, retries=5, backoff=0.5):
+    try:
+        c.update(restart_policy={"Name": "no"})
+    except APIError:
+        pass
+
+    # 2) Unpause if paused
+    try:
+        c.reload()
+        if c.attrs.get("State", {}).get("Paused"):
+            try: c.unpause()
+            except APIError: pass
+    except APIError:
+        pass
+
+    # 3) Stop/kill and wait to exit
+    try:
+        if c.status in ("running", "restarting"):
+            try:
+                c.stop(timeout=stop_timeout)
+            except APIError:
+                try: c.kill()
+                except APIError:
+                    pass
+            # wait until it is fully exited
+            try: c.wait()
+            except APIError: pass
+    except APIError:
+        pass
+
+    # brief settle loop: Docker needs a tick to mark it Stopped
+    for _ in range(10):
+        try:
+            c.reload()
+            st = c.attrs.get("State", {})
+            if not (st.get("Running") or st.get("Paused") or st.get("Restarting")):
+                break
+        except APIError:
+            break
+        time.sleep(0.1)
+
+    # 4) Remove with retries
+    last_err = None
+    for i in range(retries):
+        try:
+            c.remove(force=True)
+            return None
+        except NotFound:
+            return "Container not found, it may have already been removed."
+        except APIError as e:
+            last_err = e
+            msg = (getattr(e, "explanation", "") or "").lower()
+            if any(s in msg for s in [
+                "removal of container", "is already in progress",
+                "is restarting", "you cannot remove a paused container",
+                "conflict"
+            ]):
+                time.sleep(backoff * (2 ** i))
+                continue
+            raise
+    # If we get here, we kept conflicting
+    return last_err
+
 def destroy_container(tactic_id, notify=True):
     try:
+        print(f"destroying container ${tactic_id}")
         cont = get_container(tactic_id)
         message = None
         if cont is None:
-            print("container not found, but still need to deregister")
+            print(f"container ${tactic_id} not found, but still need to deregister")
             post_task_noqworker("host", "host", "deregister_container", {"container_id": tactic_id})
-            return -1
+            return 1
         else:
+            print(f"container ${tactic_id} found")
             cont_type = get_container_type(cont)
             post_task_noqworker("host", "host", "deregister_container", {"container_id": tactic_id})
 
@@ -449,18 +548,21 @@ def destroy_container(tactic_id, notify=True):
                 elif cont_type == "tile":
                     tile_name = container_other_name(cont)
                     message = "Container for tile {} has been destroyed".format(tile_name)
-            cont.remove(force=True)
+            err = safe_remove(cont)
+            if err is not None:
+                print(f"Error removing container {tactic_id}: {err}")
+            ## cont.remove(force=True)
             cont_list = [tactic_id, tactic_id + "_wait"]
             if cont_type == "tile":
                 cont_list.append("kill_" + tactic_id)
             delete_list_of_queues(cont_list)
-            if notify and message is not None:
+            if notify and message is not None and err is None:
                 print("about to send kill message")
                 data = {"content": message,
                         "title": "Killed Container",
                         "user_id": container_owner(cont)}
                 post_task_noqworker("host", "host", "add_error_drawer_entry_task", data)
-            return
+            return 1
     except Exception as ex:
         print(get_traceback_message(ex, "got an exception in destroy_container"))
         return -1

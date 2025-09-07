@@ -431,7 +431,9 @@ class LibraryResourceManager(ResourceManager):
                     val["icon:upload"] = "icon:upload"
                 else:
                     val["icon:upload"] = ""
-                if "type" in val and val["type"] in type_dict:
+                if "icon" in val:
+                    val["icon:th"] = f"icon:{val['icon']}"
+                elif "type" in val and val["type"] in type_dict:
                     val["icon:th"] = type_dict[val["type"]]
                 else:
                     val["icon:th"] = type_dict["standard"]

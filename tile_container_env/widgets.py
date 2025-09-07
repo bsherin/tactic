@@ -1,4 +1,6 @@
 import uuid
+import io
+import os
 import copy
 import sys
 import nltk
@@ -208,7 +210,7 @@ class TextWidget(Widget):
 
 class JavascriptWidget(Widget):
     widget_kind = "javascript"
-    extra_fields = ["style"]
+    extra_fields = ["style", "code"]
     defaults = {"style": None}
 
 class RawHtmlWidget(Widget):
@@ -226,6 +228,60 @@ class Box(Widget):
     extra_fields = ["style", "widgets"]
     defaults = {"style": None}
 
+PPI = int(os.environ["PPI"])
+
+class MatplotlibWidget(Widget):
+    widget_kind = "matplotlib"
+    extra_fields = ["style", "use_svg"]
+    defaults = {"style": None, "use_svg": True}
+
+    _FigureCanvasAgg = None
+
+    def _get_canvas_class(self):
+        if self._FigureCanvasAgg is None:
+            from matplotlib.backends.backend_agg import FigureCanvasAgg
+            self._FigureCanvasAgg = FigureCanvasAgg
+        return self._FigureCanvasAgg
+
+    def initialize(self, wdata):
+        from matplotlib_utilities import Figure
+        from matplotlib.backends.backend_agg import FigureCanvasAgg
+        super().initialize(wdata)
+
+        self.fig = Figure(**wdata)
+        if "figsize" not in wdata:
+            self.size_to_tile()
+        self.canvas = self._get_canvas_class()(self.fig)  # it was necessary to add this in Python 3
+
+    def set_html(self):
+        self._get_canvas_class()(self.fig)  # This does seem to be necessary or savefig won't work.
+        if self.use_svg:
+            img_file = io.StringIO()
+            self.fig.savefig(img_file, format="svg", facecolor=self.fig.get_facecolor())
+            img_file.seek(0)
+            the_html = img_file.read()
+        else:
+            img_file = io.BytesIO()
+            self.fig.savefig(img_file, facecolor=self.fig.get_facecolor())
+            img_file.seek(0)
+            figname = str(uuid.uuid4())
+            Tile.img_dict[figname] = img_file.getvalue()
+            fig_url = self.base_figure_url + figname
+            image_string = "<img class='output-plot' src='{}' lt='Image Placeholder'>"
+            the_html = image_string.format(fig_url)
+        self.value = the_html
+        return
+
+    def size_to_tile(self):
+        self.fig.set_size_inches(Tile.width / PPI, Tile.height / PPI)
+        return
+
+    def widget_data_dict(self):
+        return {
+            "value": self._value,
+            "use_svg": self.use_svg,
+            "style": self.style,
+        }
 
 MAX_TABLE_SIZE = 1000
 INITIAL_TABLE_ROWS = 25
@@ -310,6 +366,7 @@ kind_dict = {
     "switch": SwitchWidget,
     "select": SelectWidget,
     "input": InputWidget,
+    "matplotlib": MatplotlibWidget,
     "box": Box,
 
 }

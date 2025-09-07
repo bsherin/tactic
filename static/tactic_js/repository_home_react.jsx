@@ -59,13 +59,13 @@ function RepositoryHomeApp(props) {
         <LibraryPane {...lib_props}
                      connection_status={connection_status}
                      columns={{
-                         "icon:th": {"first_sort": "ascending"},
-                         "name": {"first_sort": "ascending"},
-                         "icon:upload": {"first_sort": "ascending"},
-                         "created": {"first_sort": "descending"},
-                         "updated": {"first_sort": "ascending"},
-                         "tags": {"first_sort": "ascending"},
-                         "size": {"first_sort": "descending"}
+                         "icon:th": {first_sort: "ascending"},
+                         "name": {first_sort: "ascending"},
+                         "icon:upload": {first_sort: "ascending"},
+                         "created": {first_sort: "descending"},
+                         "updated": {first_sort: "ascending"},
+                         // "tags": {first_sort: "ascending"},
+                         "size": {first_sort: "descending"}
                      }}
                      pane_type="all"
                      handleCreateViewer={null}
@@ -88,12 +88,9 @@ function RepositoryHomeApp(props) {
         paddingLeft: 0,
         position: "relative"
     };
-    let outer_class = "library-pane-holder";
-    if (settingsContext.isDark()) {
-        outer_class = `${outer_class} bp6-dark`;
-    } else {
-        outer_class = `${outer_class} light-theme`;
-    }
+    let outer_class = "resource-viewer-holder top";
+    outer_style.height = "100%";
+    outer_class = `${outer_class} pane-holder ${settingsContext.isDark() ? "bp6-dark" : "light-theme"}`;
     return (
         <Fragment>
             <TacticNavbar is_authenticated={window.is_authenticated}

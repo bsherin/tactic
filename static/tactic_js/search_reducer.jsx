@@ -77,7 +77,7 @@ function searchReducer(draft, action) {
         case 'SET_SEARCH_NUMBER':
             return {...draft, current_search_number: action.payload};
         case 'SET_SEARCH_MATCH_NUMBERS':
-            let newNumbers = {...draft.search_match_numbers}
+            let newNumbers = {...draft.search_match_numbers};
             newNumbers[action.payload.identifier] = action.payload.num;
             let current_matches = 0;
             for (let cname in newNumbers) {
@@ -93,19 +93,20 @@ function searchReducer(draft, action) {
         case 'SET_ID_LIST':
             let new_state = {
                 id_list: action.payload,
-            }
+            };
             if (!action.payload.includes(draft.current_search_cm)) {
                 if (action.payload.length > 0) {
                     new_state.current_search_cm = action.payload[0];
                 } else {
-                    new_state.current_search_cm = null
-                    new_state.search_matches = 0
+                    new_state.current_search_cm = null;
+                    new_state.search_matches = 0;
                     new_state.search_match_numbers = {}
                 }
             }
             return {...draft, ...new_state};
         case 'SEARCH_NEXT':
-            if (draft.current_search_number >= draft.search_match_numbers[draft.current_search_cm] - 1) {
+            if ((draft.search_match_numbers[draft.current_search_cm] == 0) ||
+                (draft.current_search_number >= draft.search_match_numbers[draft.current_search_cm] - 1)){
                 let index = draft.id_list.indexOf(draft.current_search_cm);
                 let start_index = index;
                 let next_cm = null;
@@ -115,7 +116,7 @@ function searchReducer(draft, action) {
                     if (index == start_index) {
                         return {...draft}
                     }
-                    next_id = draft.id_list[(index) % draft.id_list.length]
+                    next_id = draft.id_list[(index) % draft.id_list.length];
                     if (next_id in draft.search_match_numbers) {
                         if (draft.search_match_numbers[next_id] > 0) {
                             next_cm = next_id;
@@ -139,7 +140,7 @@ function searchReducer(draft, action) {
                     if (pindex == start_index) {
                         return {...draft}
                     }
-                    next_id = draft.id_list[(pindex + draft.id_list.length) % draft.id_list.length]
+                    next_id = draft.id_list[(pindex + draft.id_list.length) % draft.id_list.length];
                     if (next_id in draft.search_match_numbers) {
                         if (draft.search_match_numbers[next_id] > 0) {
                             next_cm = next_id;
@@ -158,15 +159,15 @@ function searchReducer(draft, action) {
     }
 }
 
-function useSearch(initIdList, listRefs) {
+function useSearch(directRefs, listRefs) {
 
     const searchState = {
-        id_list: initIdList,
+        id_list: [],
         search_match_numbers: {},
         temp_search_string: "",
         search_string: "",
         current_search_number: 0,
-        current_search_cm: initIdList[0],
+        current_search_cm: null,
         use_regex: false,
         search_matches: 0
     };
@@ -176,7 +177,7 @@ function useSearch(initIdList, listRefs) {
     useEffect(()=>{
         getAllSearchMatches()
 
-    }, [valueRef.current.search_string])
+    }, [valueRef.current.search_string]);
 
     useEffect(() => {
         const currentIds = getIds();
@@ -188,6 +189,9 @@ function useSearch(initIdList, listRefs) {
 
     function getIds() {
         let ids = [];
+        for (let itemRef of directRefs) {
+            ids.push(itemRef.current["identifier"]);
+        }
         for (let listRef of listRefs) {
             for (let item of listRef.current) {
                 ids.push(item["identifier"]);
@@ -198,6 +202,9 @@ function useSearch(initIdList, listRefs) {
 
     function getAllSearchMatches() {
         const reg = _searchMatcher(valueRef.current.search_string, true, valueRef.current.use_regex);
+        for (let itemRef of directRefs) {
+            setSearchMatches(itemRef.current, reg);
+        }
         for (let listRef of listRefs) {
             for (let item of listRef.current) {
                 setSearchMatches(item, reg);

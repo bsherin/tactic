@@ -1,14 +1,11 @@
 {{globals_code|safe}}
 @user_tile
-class {{class_name}}({% if is_d3 %}D3Tile{% else %}TileBase{% if is_mpl %}, MplFigure{% endif %}{% endif %}):
+class {{class_name}}(TileBase):
     category = "{{category}}"
     exports = [{% for exp in exports %}{"name": "{{exp.name | e}}", "tags": "{{exp.tags|safe}}"}{% if not loop.last %}, {% endif %}{% endfor %}]
 
     def __init__(self, main_id, tile_id, tile_name=None):
         import textwrap
-        {% if is_d3 -%}
-        D3Tile.__init__(self, main_id, tile_id, tile_name)
-        {% else -%}
         TileBase.__init__(self, main_id, tile_id, tile_name)
         {% endif -%}
         {% if couple_save_attrs_and_exports -%}
@@ -19,9 +16,11 @@ class {{class_name}}({% if is_d3 %}D3Tile{% else %}TileBase{% if is_mpl %}, MplF
         {% for option in options -%}
         self.{{option.name|e}} = {{option.default|safe}}
         {% endfor -%}
-        {% if is_d3 -%}
-        self.jscript = """{{jscript_code|safe}}"""
-        {% endif -%}
+        self.jscript = [
+            {% for jscript in jscript_functions -%}
+            {"name": "{{jscript.name|e}}", "code": """{{jscript.code|safe}}"""}{% if not loop.last %}, {% endif %}
+            {% endfor -%}
+        ]
         return
 
     @property

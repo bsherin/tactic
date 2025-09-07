@@ -1,5 +1,7 @@
 "use strict";
 
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
+var _extends2 = _interopRequireDefault(require("@babel/runtime/helpers/extends"));
 require("../tactic_css/tactic.scss");
 require("../tactic_css/context.scss");
 require("../tactic_css/tactic_table.scss");
@@ -40,31 +42,10 @@ var _sizing_tools = require("./sizing_tools");
 var _settings = require("./settings");
 var _context_elements = require("./context_elements");
 var _modal_react = require("./modal_react");
-function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
-function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
-function _regeneratorValues(e) { if (null != e) { var t = e["function" == typeof Symbol && Symbol.iterator || "@@iterator"], r = 0; if (t) return t.call(e); if ("function" == typeof e.next) return e; if (!isNaN(e.length)) return { next: function next() { return e && r >= e.length && (e = void 0), { value: e && e[r++], done: !e }; } }; } throw new TypeError(_typeof(e) + " is not iterable"); }
-function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
-function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
-function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
-function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
-function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
-function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
-function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, "_invoke", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError("Generator is already running"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = "next"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i["return"]) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine2(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, "Generator"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, "toString", function () { return "[object Generator]"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }
-function _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, "", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { if (r) i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n;else { var o = function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); }; o("next", 0), o("throw", 1), o("return", 2); } }, _regeneratorDefine2(e, r, n, t); }
-function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
-function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
-function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
-function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
-function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
-function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
-function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
-function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t6 in e) "default" !== _t6 && {}.hasOwnProperty.call(e, _t6) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t6)) && (i.get || i.set) ? o(f, _t6, i) : f[_t6] = e[_t6]); return f; })(e, t); } // noinspection XmlDeprecatedElement,JSXUnresolvedComponent
-Promise.resolve().then(function () {
-  return _interopRequireWildcard(require("../tactic_css/tactic_console.scss"));
-});
+function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function (e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, default: e }; if (null === e || "object" != typeof e && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (const t in e) "default" !== t && {}.hasOwnProperty.call(e, t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, t)) && (i.get || i.set) ? o(f, t, i) : f[t] = e[t]); return f; })(e, t); } // noinspection XmlDeprecatedElement,JSXUnresolvedComponent
+Promise.resolve().then(() => _interopRequireWildcard(require("../tactic_css/tactic_console.scss")));
 _core.FocusStyleManager.onlyShowFocusOnTabs();
-var spinner_panel = /*#__PURE__*/_react["default"].createElement("div", {
+const spinner_panel = /*#__PURE__*/_react.default.createElement("div", {
   style: {
     height: "100%",
     position: "absolute",
@@ -72,10 +53,10 @@ var spinner_panel = /*#__PURE__*/_react["default"].createElement("div", {
     left: "50%"
   },
   key: "spinner"
-}, /*#__PURE__*/_react["default"].createElement(_core.Spinner, {
+}, /*#__PURE__*/_react.default.createElement(_core.Spinner, {
   size: 100
 }));
-var propDict = {
+const propDict = {
   "module-viewer": _module_viewer_react.module_viewer_props,
   "code-viewer": _code_viewer_react.code_viewer_props,
   "list-viewer": _list_viewer_react.list_viewer_props,
@@ -84,7 +65,7 @@ var propDict = {
   "main-viewer": _main_support.main_props,
   "notebook-viewer": _notebook_support.notebook_props
 };
-var panelRootDict = {
+const panelRootDict = {
   "module-viewer": "root",
   "code-viewer": "root",
   "list-viewer": "root",
@@ -95,8 +76,8 @@ var panelRootDict = {
 };
 window.context_id = (0, _utilities_react.guid)();
 window.main_id = window.context_id;
-var tsocket = new _tactic_socket.TacticSocket("main", 5000, "context", window.context_id);
-var classDict = {
+let tsocket = new _tactic_socket.TacticSocket("main", 5000, "context", window.context_id);
+const classDict = {
   "module-viewer": _module_viewer_react.ModuleViewerApp,
   "code-viewer": _code_viewer_react.CodeViewerApp,
   "list-viewer": _list_viewer_react.ListViewerApp,
@@ -105,7 +86,7 @@ var classDict = {
   "notebook-viewer": _notebook_app.NotebookApp,
   "text-viewer": _text_viewer_react.TextViewerApp
 };
-var initialList = [{
+let initialList = [{
   identifier: "library",
   title: "Library"
 }];
@@ -116,102 +97,64 @@ if (window.has_pool) {
   });
 }
 function _context_main() {
-  var ContextAppPlus = (0, _pool_tree.withPool)((0, _settings.withSettings)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)((0, _assistant.withAssistant)(ContextApp))))));
-  var domContainer = document.querySelector('#context-root');
-  var root = (0, _client.createRoot)(domContainer);
-  root.render(/*#__PURE__*/_react["default"].createElement(ContextAppPlus, {
+  const ContextAppPlus = (0, _pool_tree.withPool)((0, _settings.withSettings)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)((0, _assistant.withAssistant)(ContextApp))))));
+  const domContainer = document.querySelector('#context-root');
+  const root = (0, _client.createRoot)(domContainer);
+  root.render(/*#__PURE__*/_react.default.createElement(ContextAppPlus, {
     tsocket: tsocket
   }));
 }
 function ContextApp(props) {
-  var _useStateAndRef = (0, _utilities_react.useStateAndRef)("library"),
-    _useStateAndRef2 = _slicedToArray(_useStateAndRef, 3),
-    selectedTabId = _useStateAndRef2[0],
-    setSelectedTabId = _useStateAndRef2[1],
-    selectedTabIdRef = _useStateAndRef2[2];
-  var _usePropertyList = (0, _property_list.usePropertyList)(initialList),
-    _usePropertyList2 = _slicedToArray(_usePropertyList, 3),
-    tabPanelList = _usePropertyList2[0],
-    tabPanelListDispatch = _usePropertyList2[1],
-    tabPanelListRef = _usePropertyList2[2];
-  var _useStateAndRef3 = (0, _utilities_react.useStateAndRef)([]),
-    _useStateAndRef4 = _slicedToArray(_useStateAndRef3, 3),
-    set_open_resources = _useStateAndRef4[1],
-    open_resources_ref = _useStateAndRef4[2];
-  var _useState = (0, _react.useState)({}),
-    _useState2 = _slicedToArray(_useState, 2),
-    dirty_methods = _useState2[0],
-    set_dirty_methods = _useState2[1];
-  var _useState3 = (0, _react.useState)(null),
-    _useState4 = _slicedToArray(_useState3, 2),
-    lastSelectedTabId = _useState4[0],
-    setLastSelectedTabId = _useState4[1];
-  var _useState5 = (0, _react.useState)(false),
-    _useState6 = _slicedToArray(_useState5, 2),
-    showOpenOmnibar = _useState6[0],
-    setShowOpenOmnibar = _useState6[1];
-  var settingsContext = (0, _react.useContext)(_settings.SettingsContext);
-  var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
-  var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
-  var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
-  var _useState7 = (0, _react.useState)(0),
-    _useState8 = _slicedToArray(_useState7, 2),
-    tabSelectCounter = _useState8[0],
-    setTabSelectCounter = _useState8[1];
-  var omniItemsRef = (0, _react.useRef)({});
-  var top_ref = (0, _react.useRef)(null);
-  var hotkeys = (0, _react.useMemo)(function () {
-    return [{
-      combo: "Tab",
-      global: true,
-      label: "Go To Next Pane",
-      onKeyDown: _goToNextPane
-    }, {
-      combo: "Shift+Tab",
-      global: true,
-      label: "Go To Previous Pane",
-      onKeyDown: _goToPreviousPane
-    }, {
-      combo: "Ctrl+Space",
-      global: true,
-      label: "Show Omnibar",
-      onKeyDown: _showOpenOmnibar
-    }, {
-      combo: "Ctrl+W",
-      global: true,
-      label: "Close Tab",
-      onKeyDown: function () {
-        var _onKeyDown = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee() {
-          return _regenerator().w(function (_context) {
-            while (1) switch (_context.n) {
-              case 0:
-                _context.n = 1;
-                return _closeTab(selectedTabIdRef.current);
-              case 1:
-                return _context.a(2);
-            }
-          }, _callee);
-        }));
-        function onKeyDown() {
-          return _onKeyDown.apply(this, arguments);
-        }
-        return onKeyDown;
-      }()
-    }];
-  }, [_goToNextPane, _goToPreviousPane, _showOpenOmnibar, _closeTab, selectedTabIdRef.current]);
-  var _useHotkeys = (0, _core.useHotkeys)(hotkeys),
-    handleKeyDown = _useHotkeys.handleKeyDown,
-    handleKeyUp = _useHotkeys.handleKeyUp;
-  var pushCallback = (0, _utilities_react.useCallbackStack)("context");
-  (0, _react.useEffect)(function () {
+  const [selectedTabId, setSelectedTabId, selectedTabIdRef] = (0, _utilities_react.useStateAndRef)("library");
+  const [tabPanelList, tabPanelListDispatch, tabPanelListRef] = (0, _property_list.usePropertyList)(initialList);
+  const [, set_open_resources, open_resources_ref] = (0, _utilities_react.useStateAndRef)([]);
+  const [dirty_methods, set_dirty_methods] = (0, _react.useState)({});
+  const [lastSelectedTabId, setLastSelectedTabId] = (0, _react.useState)(null);
+  const [showOpenOmnibar, setShowOpenOmnibar] = (0, _react.useState)(false);
+  const settingsContext = (0, _react.useContext)(_settings.SettingsContext);
+  const dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
+  const statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
+  const errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
+  const [tabSelectCounter, setTabSelectCounter] = (0, _react.useState)(0);
+  const omniItemsRef = (0, _react.useRef)({});
+  const top_ref = (0, _react.useRef)(null);
+  const hotkeys = (0, _react.useMemo)(() => [{
+    combo: "Tab",
+    global: true,
+    label: "Go To Next Pane",
+    onKeyDown: _goToNextPane
+  }, {
+    combo: "Shift+Tab",
+    global: true,
+    label: "Go To Previous Pane",
+    onKeyDown: _goToPreviousPane
+  }, {
+    combo: "Ctrl+Space",
+    global: true,
+    label: "Show Omnibar",
+    onKeyDown: _showOpenOmnibar
+  }, {
+    combo: "Ctrl+W",
+    global: true,
+    label: "Close Tab",
+    onKeyDown: async () => {
+      await _closeTab(selectedTabIdRef.current);
+    }
+  }], [_goToNextPane, _goToPreviousPane, _showOpenOmnibar, _closeTab, selectedTabIdRef.current]);
+  const {
+    handleKeyDown,
+    handleKeyUp
+  } = (0, _core.useHotkeys)(hotkeys);
+  const pushCallback = (0, _utilities_react.useCallbackStack)("context");
+  (0, _react.useEffect)(() => {
     initSocket();
     _addContextOmniItems();
     errorDrawerFuncs.registerGoToModule(_goToModule);
-    return function () {
+    return () => {
       tsocket.disconnect();
     };
   }, []);
-  (0, _react.useEffect)(function () {
+  (0, _react.useEffect)(() => {
     // for mount
     window.addEventListener("beforeunload", function (e) {
       e.preventDefault();
@@ -219,15 +162,17 @@ function ContextApp(props) {
     });
   }, []);
   function _registerDirtyMethod(tab_id, dirty_method) {
-    var new_dirty_methods = _objectSpread({}, dirty_methods);
+    let new_dirty_methods = {
+      ...dirty_methods
+    };
     new_dirty_methods[tab_id] = dirty_method;
     set_dirty_methods(new_dirty_methods);
   }
   function initSocket() {
-    props.tsocket.attachListener("window-open", function (data) {
-      window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data["the_id"]));
+    props.tsocket.attachListener("window-open", data => {
+      window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`);
     });
-    props.tsocket.attachListener('close-user-windows', function (data) {
+    props.tsocket.attachListener('close-user-windows', data => {
       if (!(data["originator"] === window.context_id)) {
         window.close();
       }
@@ -235,183 +180,124 @@ function ContextApp(props) {
     props.tsocket.attachListener("doFlashUser", function (data) {
       (0, _toaster.doFlash)(data);
     });
-    props.tsocket.attachListener('handle-callback', function (task_packet) {
+    props.tsocket.attachListener('handle-callback', task_packet => {
       (0, _communication_react.handleCallback)(task_packet, window.context_id);
     });
     props.tsocket.attachListener("create-viewer", _handleCreateViewer);
   }
   function getItemFromdentifier(identifier) {
-    var _iterator = _createForOfIteratorHelper(tabPanelListRef.current),
-      _step;
-    try {
-      for (_iterator.s(); !(_step = _iterator.n()).done;) {
-        var item = _step.value;
-        if (item.identifier === identifier) {
-          return item;
-        }
+    for (let item of tabPanelListRef.current) {
+      if (item.identifier === identifier) {
+        return item;
       }
-    } catch (err) {
-      _iterator.e(err);
-    } finally {
-      _iterator.f();
     }
     return null;
   }
-  function _refreshTab(_x) {
-    return _refreshTab2.apply(this, arguments);
+  async function _refreshTab(the_id) {
+    if (the_id === "library") {
+      return;
+    }
+    try {
+      const item = getItemFromdentifier(the_id);
+      const title = item.title;
+      if (!(the_id in dirty_methods) || dirty_methods[the_id]()) {
+        const confirm_text = `Are you sure that you want to reload the tab ${title}? Changes will be lost`;
+        await dialogFuncs.showModalPromise("ConfirmDialog", {
+          title: `Reload the tab ${title}`,
+          text_body: confirm_text,
+          cancel_text: "do nothing",
+          submit_text: "reload",
+          handleClose: dialogFuncs.hideModal
+        });
+      }
+      let old_tab_panel = {
+        ...item
+      };
+      let resource_name = old_tab_panel.panel.resource_name;
+      let res_type = old_tab_panel.res_type;
+      let the_view;
+      if (old_tab_panel.kind === "notebook-viewer" && !old_tab_panel.panel.is_project) {
+        the_view = "/new_notebook_in_context/";
+      } else {
+        the_view = (0, _library_pane.view_views)()[res_type];
+        const re = new RegExp("/$");
+        the_view = the_view.replace(re, "_in_context");
+      }
+      const drmethod = dmethod => {
+        _registerDirtyMethod(the_id, dmethod);
+      };
+      await _updatePanelPromise(the_id, {
+        panel: "spinner"
+      });
+      let data = await (0, _communication_react.postAjaxPromise)($SCRIPT_ROOT + the_view, {
+        context_id: window.context_id,
+        resource_name: resource_name
+      });
+      propDict[data.kind](data, drmethod, new_panel => {
+        _updatePanel(the_id, {
+          panel: new_panel,
+          kind: data.kind
+        });
+      });
+    } catch (e) {
+      if (String(e) !== "canceled") {
+        errorDrawerFuncs.addFromError(`Error refreshing pane`, e);
+      }
+    }
   }
-  function _refreshTab2() {
-    _refreshTab2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee4(the_id) {
-      var item, title, confirm_text, old_tab_panel, resource_name, res_type, the_view, re, drmethod, data, _t2;
-      return _regenerator().w(function (_context4) {
-        while (1) switch (_context4.n) {
-          case 0:
-            if (!(the_id === "library")) {
-              _context4.n = 1;
-              break;
-            }
-            return _context4.a(2);
-          case 1:
-            _context4.p = 1;
-            item = getItemFromdentifier(the_id);
-            title = item.title;
-            if (!(!(the_id in dirty_methods) || dirty_methods[the_id]())) {
-              _context4.n = 2;
-              break;
-            }
-            confirm_text = "Are you sure that you want to reload the tab ".concat(title, "? Changes will be lost");
-            _context4.n = 2;
-            return dialogFuncs.showModalPromise("ConfirmDialog", {
-              title: "Reload the tab ".concat(title),
-              text_body: confirm_text,
-              cancel_text: "do nothing",
-              submit_text: "reload",
-              handleClose: dialogFuncs.hideModal
-            });
-          case 2:
-            old_tab_panel = _objectSpread({}, item);
-            resource_name = old_tab_panel.panel.resource_name;
-            res_type = old_tab_panel.res_type;
-            if (old_tab_panel.kind === "notebook-viewer" && !old_tab_panel.panel.is_project) {
-              the_view = "/new_notebook_in_context/";
-            } else {
-              the_view = (0, _library_pane.view_views)()[res_type];
-              re = new RegExp("/$");
-              the_view = the_view.replace(re, "_in_context");
-            }
-            drmethod = function drmethod(dmethod) {
-              _registerDirtyMethod(the_id, dmethod);
-            };
-            _context4.n = 3;
-            return _updatePanelPromise(the_id, {
-              panel: "spinner"
-            });
-          case 3:
-            _context4.n = 4;
-            return (0, _communication_react.postAjaxPromise)($SCRIPT_ROOT + the_view, {
-              context_id: window.context_id,
-              resource_name: resource_name
-            });
-          case 4:
-            data = _context4.v;
-            propDict[data.kind](data, drmethod, function (new_panel) {
-              _updatePanel(the_id, {
-                panel: new_panel,
-                kind: data.kind
-              });
-            });
-            _context4.n = 6;
-            break;
-          case 5:
-            _context4.p = 5;
-            _t2 = _context4.v;
-            if (String(_t2) !== "canceled") {
-              errorDrawerFuncs.addFromError("Error refreshing pane", _t2);
-            }
-          case 6:
-            return _context4.a(2);
+  async function _closeTab(the_id) {
+    if (the_id === "library") {
+      return;
+    }
+    const item = getItemFromdentifier(the_id);
+    try {
+      if (!(the_id in dirty_methods) || dirty_methods[the_id]()) {
+        const title = item.title;
+        const confirm_text = `Are you sure that you want to close the tab ${title}? Changes will be lost`;
+        await dialogFuncs.showModalPromise("ConfirmDialog", {
+          title: `Close the tab ${title}"`,
+          text_body: confirm_text,
+          cancel_text: "do nothing",
+          submit_text: "close",
+          handleClose: dialogFuncs.hideModal
+        });
+      }
+      tabPanelListDispatch({
+        type: "delete_item",
+        identifier: the_id
+      });
+      let copied_dirty_methods = {
+        ...dirty_methods
+      };
+      delete copied_dirty_methods[the_id];
+      set_dirty_methods(copied_dirty_methods);
+      if (the_id in omniItemsRef.current) {
+        delete omniItemsRef.current[the_id];
+      }
+      pushCallback(() => {
+        if (the_id === selectedTabIdRef.current) {
+          let newSelectedId;
+          if (lastSelectedTabId && getItemFromdentifier(lastSelectedTabId)) {
+            newSelectedId = lastSelectedTabId;
+          } else {
+            newSelectedId = "library";
+          }
+          setSelectedTabId(newSelectedId);
+          setLastSelectedTabId("library");
+        } else {
+          setSelectedTabId(selectedTabId);
+          if (lastSelectedTabId === the_id) {
+            setLastSelectedTabId("library");
+          }
         }
-      }, _callee4, null, [[1, 5]]);
-    }));
-    return _refreshTab2.apply(this, arguments);
+      });
+    } catch (e) {
+      if (e !== "canceled") {
+        errorDrawerFuncs.addFromError(`Error closing tab`, e);
+      }
+    }
   }
-  function _closeTab(_x2) {
-    return _closeTab2.apply(this, arguments);
-  }
-  function _closeTab2() {
-    _closeTab2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5(the_id) {
-      var item, title, confirm_text, copied_dirty_methods, _t3;
-      return _regenerator().w(function (_context5) {
-        while (1) switch (_context5.n) {
-          case 0:
-            if (!(the_id === "library")) {
-              _context5.n = 1;
-              break;
-            }
-            return _context5.a(2);
-          case 1:
-            item = getItemFromdentifier(the_id);
-            _context5.p = 2;
-            if (!(!(the_id in dirty_methods) || dirty_methods[the_id]())) {
-              _context5.n = 3;
-              break;
-            }
-            title = item.title;
-            confirm_text = "Are you sure that you want to close the tab ".concat(title, "? Changes will be lost");
-            _context5.n = 3;
-            return dialogFuncs.showModalPromise("ConfirmDialog", {
-              title: "Close the tab ".concat(title, "\""),
-              text_body: confirm_text,
-              cancel_text: "do nothing",
-              submit_text: "close",
-              handleClose: dialogFuncs.hideModal
-            });
-          case 3:
-            tabPanelListDispatch({
-              type: "delete_item",
-              identifier: the_id
-            });
-            copied_dirty_methods = _objectSpread({}, dirty_methods);
-            delete copied_dirty_methods[the_id];
-            set_dirty_methods(copied_dirty_methods);
-            if (the_id in omniItemsRef.current) {
-              delete omniItemsRef.current[the_id];
-            }
-            pushCallback(function () {
-              if (the_id === selectedTabIdRef.current) {
-                var newSelectedId;
-                if (lastSelectedTabId && getItemFromdentifier(lastSelectedTabId)) {
-                  newSelectedId = lastSelectedTabId;
-                } else {
-                  newSelectedId = "library";
-                }
-                setSelectedTabId(newSelectedId);
-                setLastSelectedTabId("library");
-              } else {
-                setSelectedTabId(selectedTabId);
-                if (lastSelectedTabId === the_id) {
-                  setLastSelectedTabId("library");
-                }
-              }
-            });
-            _context5.n = 5;
-            break;
-          case 4:
-            _context5.p = 4;
-            _t3 = _context5.v;
-            if (_t3 !== "canceled") {
-              errorDrawerFuncs.addFromError("Error closing tab", _t3);
-            }
-          case 5:
-            return _context5.a(2);
-        }
-      }, _callee5, null, [[2, 4]]);
-    }));
-    return _closeTab2.apply(this, arguments);
-  }
-  function _addPanel(new_id, viewer_kind, res_type, title, new_panel) {
-    var callback = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : null;
-    var data = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : null;
+  function _addPanel(new_id, viewer_kind, res_type, title, new_panel, callback = null, data = null) {
     new_panel = {
       kind: viewer_kind,
       res_type: res_type,
@@ -426,20 +312,18 @@ function ContextApp(props) {
     });
     setLastSelectedTabId(selectedTabIdRef.current);
     setSelectedTabId(new_id);
-    pushCallback(function () {
+    pushCallback(() => {
       _updateOpenResources(callback);
     });
   }
-  function _addPanelPromise(new_id, viewer_kind, res_type, title, new_panel) {
-    var data = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : null;
+  function _addPanelPromise(new_id, viewer_kind, res_type, title, new_panel, data = null) {
     return new Promise(function (resolve) {
       _addPanel(new_id, viewer_kind, res_type, title, new_panel, resolve, data);
     });
   }
-  function _updatePanel(the_id, new_panel) {
-    var callback = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
-    var lnew_panel = getItemFromdentifier(the_id);
-    for (var k in new_panel) {
+  function _updatePanel(the_id, new_panel, callback = null) {
+    let lnew_panel = getItemFromdentifier(the_id);
+    for (let k in new_panel) {
       if (k !== "panel") {
         lnew_panel[k] = new_panel[k];
       }
@@ -448,7 +332,10 @@ function ContextApp(props) {
       if (new_panel.panel === "spinner") {
         lnew_panel.panel = "spinner";
       } else if (lnew_panel.panel !== "spinner") {
-        lnew_panel.panel = _objectSpread(_objectSpread({}, lnew_panel.panel), new_panel.panel);
+        lnew_panel.panel = {
+          ...lnew_panel.panel,
+          ...new_panel.panel
+        };
       } else {
         lnew_panel.panel = new_panel.panel;
       }
@@ -458,7 +345,7 @@ function ContextApp(props) {
       identifier: the_id,
       new_item: lnew_panel
     });
-    pushCallback(function () {
+    pushCallback(() => {
       _updateOpenResources(callback);
     });
   }
@@ -467,10 +354,10 @@ function ContextApp(props) {
       _updatePanel(the_id, new_panel, resolve);
     });
   }
-  function _changeResourceName(the_id, new_name) {
-    var change_title = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
-    var callback = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
-    var lnew_panel = _objectSpread({}, getItemFromdentifier(the_id));
+  function _changeResourceName(the_id, new_name, change_title = true, callback = null) {
+    let lnew_panel = {
+      ...getItemFromdentifier(the_id)
+    };
     if (change_title) {
       lnew_panel.title = new_name;
     }
@@ -478,9 +365,9 @@ function ContextApp(props) {
     tabPanelListDispatch({
       type: "update_item",
       identifier: the_id,
-      lnew_panel: lnew_panel
+      lnew_panel
     });
-    pushCallback(function () {
+    pushCallback(() => {
       _updateOpenResources(callback);
     });
   }
@@ -488,22 +375,13 @@ function ContextApp(props) {
     return ["library", "pool"].includes(entry.identifier);
   }
   function _getResourceId(res_name, res_type) {
-    var _iterator2 = _createForOfIteratorHelper(tabPanelListRef.current),
-      _step2;
-    try {
-      for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-        var the_panel = _step2.value;
-        if (isStandardTab(the_panel)) {
-          continue;
-        }
-        if (the_panel.panel.resource_name === res_name && the_panel.res_type === res_type) {
-          return the_panel.identifier;
-        }
+    for (let the_panel of tabPanelListRef.current) {
+      if (isStandardTab(the_panel)) {
+        continue;
       }
-    } catch (err) {
-      _iterator2.e(err);
-    } finally {
-      _iterator2.f();
+      if (the_panel.panel.resource_name === res_name && the_panel.res_type === res_type) {
+        return the_panel.identifier;
+      }
     }
     return -1;
   }
@@ -513,56 +391,31 @@ function ContextApp(props) {
   function _closeOpenOmnibar() {
     setShowOpenOmnibar(false);
   }
-  var _handleCreateViewer = (0, _react.useCallback)(/*#__PURE__*/function () {
-    var _ref = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2(data) {
-      var callback,
-        existing_id,
-        new_id,
-        drmethod,
-        _args2 = arguments;
-      return _regenerator().w(function (_context2) {
-        while (1) switch (_context2.n) {
-          case 0:
-            callback = _args2.length > 1 && _args2[1] !== undefined ? _args2[1] : null;
-            existing_id = _getResourceId(data.resource_name, data.res_type);
-            if (!(existing_id !== -1)) {
-              _context2.n = 1;
-              break;
-            }
-            setSelectedTabId(existing_id);
-            pushCallback(callback);
-            return _context2.a(2);
-          case 1:
-            new_id = "a" + (0, _utilities_react.guid)();
-            drmethod = function drmethod(dmethod) {
-              _registerDirtyMethod(new_id, dmethod);
-            };
-            _context2.n = 2;
-            return _addPanelPromise(new_id, data.kind, data.res_type, data.resource_name, "spinner");
-          case 2:
-            propDict[data.kind](data, drmethod, function (new_panel) {
-              _updatePanel(new_id, {
-                panel: new_panel
-              }, callback);
-            });
-          case 3:
-            return _context2.a(2);
-        }
-      }, _callee2);
-    }));
-    return function (_x3) {
-      return _ref.apply(this, arguments);
+  const _handleCreateViewer = (0, _react.useCallback)(async (data, callback = null) => {
+    let existing_id = _getResourceId(data.resource_name, data.res_type);
+    if (existing_id !== -1) {
+      setSelectedTabId(existing_id);
+      pushCallback(callback);
+      return;
+    }
+    const new_id = "a" + (0, _utilities_react.guid)();
+    const drmethod = dmethod => {
+      _registerDirtyMethod(new_id, dmethod);
     };
-  }(), []);
-  function getIdList() {
-    return tabPanelListRef.current.map(function (item) {
-      return item.identifier;
+    await _addPanelPromise(new_id, data.kind, data.res_type, data.resource_name, "spinner");
+    propDict[data.kind](data, drmethod, new_panel => {
+      _updatePanel(new_id, {
+        panel: new_panel
+      }, callback);
     });
+  }, []);
+  function getIdList() {
+    return tabPanelListRef.current.map(item => item.identifier);
   }
   function _goToNextPane(e) {
-    var templist = getIdList();
-    var newId;
-    var tabIndex = templist.indexOf(selectedTabIdRef.current) + 1;
+    let templist = getIdList();
+    let newId;
+    let tabIndex = templist.indexOf(selectedTabIdRef.current) + 1;
     newId = tabIndex === templist.length ? "library" : templist[tabIndex];
     _handleTabSelect(newId);
     if (e) {
@@ -570,119 +423,57 @@ function ContextApp(props) {
     }
   }
   function _goToPreviousPane(e) {
-    var templist = getIdList();
-    var tabIndex = templist.indexOf(selectedTabIdRef.current) - 1;
-    var newId = tabIndex === -1 ? templist.at(-1) : templist[tabIndex];
+    let templist = getIdList();
+    let tabIndex = templist.indexOf(selectedTabIdRef.current) - 1;
+    let newId = tabIndex === -1 ? templist.at(-1) : templist[tabIndex];
     _handleTabSelect(newId);
     if (e) {
       e.preventDefault();
     }
   }
-  function _handleTabSelect(newTabId) {
+  function _handleTabSelect(newTabId, callback = null) {
     setSelectedTabId(newTabId);
     setLastSelectedTabId(selectedTabIdRef.current);
-    pushCallback(function () {
+    pushCallback(() => {
       setTabSelectCounter(tabSelectCounter + 1);
+      if (callback) {
+        callback();
+      }
     });
   }
-  function _goToModule(_x4, _x5) {
-    return _goToModule2.apply(this, arguments);
-  }
-  function _goToModule2() {
-    _goToModule2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6(module_name, line_number) {
-      var _iterator5, _step5, _loop, _ret, the_view, re, data, _new_id, drmethod, _t4, _t5;
-      return _regenerator().w(function (_context7) {
-        while (1) switch (_context7.n) {
-          case 0:
-            _iterator5 = _createForOfIteratorHelper(tabPanelListRef.current);
-            _context7.p = 1;
-            _loop = /*#__PURE__*/_regenerator().m(function _loop() {
-              var pdict;
-              return _regenerator().w(function (_context6) {
-                while (1) switch (_context6.n) {
-                  case 0:
-                    pdict = _step5.value;
-                    if (!(pdict.kind === "creator-viewer" && pdict.panel.resource_name === module_name)) {
-                      _context6.n = 1;
-                      break;
-                    }
-                    _handleTabSelect(pdict.identifier, selectedTabIdRef.current, null, function () {
-                      if ("line_setter" in pdict) {
-                        pdict.line_setter(line_number);
-                      }
-                    });
-                    return _context6.a(2, {
-                      v: void 0
-                    });
-                  case 1:
-                    return _context6.a(2);
-                }
-              }, _loop);
-            });
-            _iterator5.s();
-          case 2:
-            if ((_step5 = _iterator5.n()).done) {
-              _context7.n = 5;
-              break;
-            }
-            return _context7.d(_regeneratorValues(_loop()), 3);
-          case 3:
-            _ret = _context7.v;
-            if (!_ret) {
-              _context7.n = 4;
-              break;
-            }
-            return _context7.a(2, _ret.v);
-          case 4:
-            _context7.n = 2;
-            break;
-          case 5:
-            _context7.n = 7;
-            break;
-          case 6:
-            _context7.p = 6;
-            _t4 = _context7.v;
-            _iterator5.e(_t4);
-          case 7:
-            _context7.p = 7;
-            _iterator5.f();
-            return _context7.f(7);
-          case 8:
-            the_view = (0, _library_pane.view_views)()["tile"];
-            re = new RegExp("/$");
-            the_view = the_view.replace(re, "_in_context");
-            _context7.p = 9;
-            _context7.n = 10;
-            return (0, _communication_react.postAjaxPromise)(the_view, {
-              context_id: window.context_id,
-              resource_name: module_name
-            });
-          case 10:
-            data = _context7.v;
-            _new_id = "".concat(data.kind, ": ").concat(data.resource_name);
-            drmethod = function drmethod(dmethod) {
-              _registerDirtyMethod(_new_id, dmethod);
-            };
-            _context7.n = 11;
-            return _addPanelPromise(_new_id, data.kind, data.res_type, data.resource_name, "spinner");
-          case 11:
-            propDict[data.kind](data, drmethod, function (new_panel) {
-              _updatePanel(_new_id, {
-                panel: new_panel
-              });
-            });
-            _context7.n = 13;
-            break;
-          case 12:
-            _context7.p = 12;
-            _t5 = _context7.v;
-            errorDrawerFuncs.addFromError("Error going to module ".concat(module_name), _t5);
-          case 13:
-            return _context7.a(2);
-        }
-      }, _callee6, null, [[9, 12], [1, 6, 7, 8]]);
-    }));
-    return _goToModule2.apply(this, arguments);
+  async function _goToModule(module_name, line_number) {
+    for (let pdict of tabPanelListRef.current) {
+      if (pdict.kind === "creator-viewer" && pdict.panel.resource_name === module_name) {
+        _handleTabSelect(pdict.identifier, () => {
+          if ("line_setter" in pdict) {
+            pdict.line_setter(line_number);
+          }
+        });
+        return;
+      }
+    }
+    let the_view = (0, _library_pane.view_views)()["tile"];
+    const re = new RegExp("/$");
+    the_view = the_view.replace(re, "_in_context");
+    let data;
+    try {
+      data = await (0, _communication_react.postAjaxPromise)(the_view, {
+        context_id: window.context_id,
+        resource_name: module_name
+      });
+      const new_id = `${data.kind}: ${data.resource_name}`;
+      const drmethod = dmethod => {
+        _registerDirtyMethod(new_id, dmethod);
+      };
+      await _addPanelPromise(new_id, data.kind, data.res_type, data.resource_name, "spinner");
+      propDict[data.kind](data, drmethod, new_panel => {
+        _updatePanel(new_id, {
+          panel: new_panel
+        });
+      });
+    } catch (e) {
+      errorDrawerFuncs.addFromError(`Error going to module ${module_name}`, e);
+    }
   }
   function _registerLineSetter(tab_id, rfunc) {
     _updatePanel(tab_id, {
@@ -690,30 +481,20 @@ function ContextApp(props) {
     });
   }
   function _getOpenResources() {
-    var open_resources = [];
-    var _iterator3 = _createForOfIteratorHelper(tabPanelListRef.current),
-      _step3;
-    try {
-      for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-        var entry = _step3.value;
-        if (!isStandardTab(entry) && entry.panel !== "spinner") {
-          open_resources.push({
-            id: entry.identifier,
-            resource_name: entry.panel.resource_name,
-            res_type: entry.res_type,
-            main_id: entry.panel.main_id
-          });
-        }
+    let open_resources = [];
+    for (let entry of tabPanelListRef.current) {
+      if (!isStandardTab(entry) && entry.panel !== "spinner") {
+        open_resources.push({
+          id: entry.identifier,
+          resource_name: entry.panel.resource_name,
+          res_type: entry.res_type,
+          main_id: entry.panel.main_id
+        });
       }
-    } catch (err) {
-      _iterator3.e(err);
-    } finally {
-      _iterator3.f();
     }
     return open_resources;
   }
-  function _updateOpenResources() {
-    var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+  function _updateOpenResources(callback = null) {
     set_open_resources(_getOpenResources());
     pushCallback(callback);
   }
@@ -724,10 +505,9 @@ function ContextApp(props) {
     omniItemsRef.current[tid] = omniItemsRef.current[tid].concat(items);
   }
   function _addContextOmniItems() {
-    var omni_funcs = [["Go To Next Panel", "context", _goToNextPane, "arrow-right"], ["Go To Previous Panel", "context", _goToPreviousPane, "arrow-left"]];
-    var omni_items = [];
-    for (var _i = 0, _omni_funcs = omni_funcs; _i < _omni_funcs.length; _i++) {
-      var item = _omni_funcs[_i];
+    let omni_funcs = [["Go To Next Panel", "context", _goToNextPane, "arrow-right"], ["Go To Previous Panel", "context", _goToPreviousPane, "arrow-left"]];
+    let omni_items = [];
+    for (let item of omni_funcs) {
       omni_items.push({
         category: "Global",
         display_text: item[0],
@@ -742,19 +522,19 @@ function ContextApp(props) {
   function amSelected(ltab_id, lselectedTabIdRef) {
     return !window.in_context || ltab_id === lselectedTabIdRef.current;
   }
-  var library_panel = /*#__PURE__*/_react["default"].createElement(_utilities_react.SelectedPaneContext.Provider, {
+  const library_panel = /*#__PURE__*/_react.default.createElement(_utilities_react.SelectedPaneContext.Provider, {
     key: "library",
     value: {
       tab_id: "library",
-      selectedTabIdRef: selectedTabIdRef,
-      amSelected: amSelected,
-      addOmniItems: function addOmniItems(items) {
+      selectedTabIdRef,
+      amSelected,
+      addOmniItems: items => {
         _addOmniItems("libary", items);
       }
     }
-  }, /*#__PURE__*/_react["default"].createElement(_context_elements.ContextPaneElement, {
+  }, /*#__PURE__*/_react.default.createElement(_context_elements.ContextPaneElement, {
     identifier: "library"
-  }, /*#__PURE__*/_react["default"].createElement("div", {
+  }, /*#__PURE__*/_react.default.createElement("div", {
     id: "library-home-root",
     style: {
       display: "flex",
@@ -763,7 +543,7 @@ function ContextApp(props) {
       height: "100%",
       width: "100%"
     }
-  }, /*#__PURE__*/_react["default"].createElement(_library_home_react.LibraryHomeApp, {
+  }, /*#__PURE__*/_react.default.createElement(_library_home_react.LibraryHomeApp, {
     tsocket: tsocket,
     library_style: window.library_style,
     controlled: true,
@@ -771,21 +551,21 @@ function ContextApp(props) {
     open_resources_ref: open_resources_ref,
     handleCreateViewer: _handleCreateViewer
   }))));
-  var all_panels = [library_panel];
+  let all_panels = [library_panel];
   if (window.has_pool) {
-    var pool_panel = /*#__PURE__*/_react["default"].createElement(_utilities_react.SelectedPaneContext.Provider, {
+    const pool_panel = /*#__PURE__*/_react.default.createElement(_utilities_react.SelectedPaneContext.Provider, {
       key: "pool",
       value: {
         tab_id: "pool",
-        selectedTabIdRef: selectedTabIdRef,
-        amSelected: amSelected,
-        addOmniItems: function addOmniItems(items) {
+        selectedTabIdRef,
+        amSelected,
+        addOmniItems: items => {
           _addOmniItems("pool", items);
         }
       }
-    }, /*#__PURE__*/_react["default"].createElement(_context_elements.ContextPaneElement, {
+    }, /*#__PURE__*/_react.default.createElement(_context_elements.ContextPaneElement, {
       identifier: "pool"
-    }, /*#__PURE__*/_react["default"].createElement(_pool_browser.PoolBrowser, {
+    }, /*#__PURE__*/_react.default.createElement(_pool_browser.PoolBrowser, {
       tsocket: tsocket,
       am_selected: selectedTabIdRef.current === "pool",
       getOpenResources: _getOpenResources,
@@ -794,162 +574,104 @@ function ContextApp(props) {
     })));
     all_panels.push(pool_panel);
   }
-  var _omni_view_func = (0, _react.useCallback)(/*#__PURE__*/function () {
-    var _ref2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3(item) {
-      var the_view, re, data, _t;
-      return _regenerator().w(function (_context3) {
-        while (1) switch (_context3.n) {
-          case 0:
-            the_view = (0, _library_pane.view_views)(false)[item.res_type];
-            statusFuncs.setStatus({
-              show_spinner: true,
-              status_message: "Opening ..."
-            });
-            if (!window.in_context) {
-              _context3.n = 6;
-              break;
-            }
-            re = new RegExp("/$");
-            the_view = the_view.replace(re, "_in_context");
-            _context3.p = 1;
-            _context3.n = 2;
-            return (0, _communication_react.postAjaxPromise)(the_view, {
-              context_id: context_id,
-              resource_name: item.name
-            });
-          case 2:
-            data = _context3.v;
-            _context3.n = 3;
-            return _handleCreateViewer(data, statusFuncs.clearStatus);
-          case 3:
-            _context3.n = 5;
-            break;
-          case 4:
-            _context3.p = 4;
-            _t = _context3.v;
-            statusFuncs.clearStatus();
-            errorDrawerFuncs.addFromError("Error following ".concat(the_view), _t);
-          case 5:
-            _context3.n = 7;
-            break;
-          case 6:
-            statusFuncs.clearStatus();
-            window.open($SCRIPT_ROOT + the_view + item.name);
-          case 7:
-            return _context3.a(2);
-        }
-      }, _callee3, null, [[1, 4]]);
-    }));
-    return function (_x6) {
-      return _ref2.apply(this, arguments);
-    };
-  }(), []);
-  var _iterator4 = _createForOfIteratorHelper(tabPanelListRef.current),
-    _step4;
-  try {
-    var _loop2 = function _loop2() {
-      var entry = _step4.value;
-      var wrapped_panel;
-      if (["library", "pool"].includes(entry.identifier)) {
-        return 1; // continue
+  const _omni_view_func = (0, _react.useCallback)(async item => {
+    let the_view = (0, _library_pane.view_views)(false)[item.res_type];
+    statusFuncs.setStatus({
+      show_spinner: true,
+      status_message: "Opening ..."
+    });
+    if (window.in_context) {
+      const re = new RegExp("/$");
+      the_view = the_view.replace(re, "_in_context");
+      let data;
+      try {
+        data = await (0, _communication_react.postAjaxPromise)(the_view, {
+          context_id: context_id,
+          resource_name: item.name
+        });
+        await _handleCreateViewer(data, statusFuncs.clearStatus);
+      } catch (e) {
+        statusFuncs.clearStatus();
+        errorDrawerFuncs.addFromError(`Error following ${the_view}`, e);
       }
-      if (entry.panel === "spinner") {
-        wrapped_panel = spinner_panel;
-      } else {
-        var TheClass = classDict[entry.kind];
-        var the_panel = /*#__PURE__*/_react["default"].createElement(_utilities_react.SelectedPaneContext.Provider, {
-          value: {
-            tab_id: entry.identifier,
-            selectedTabIdRef: selectedTabIdRef,
-            amSelected: amSelected,
-            addOmniItems: function addOmniItems(items) {
-              _addOmniItems(entry.identifier, items);
-            }
-          }
-        }, /*#__PURE__*/_react["default"].createElement(_context_elements.ContextPaneElement, {
-          identifier: entry.identifier
-        }, /*#__PURE__*/_react["default"].createElement(TheClass, _extends({}, entry.panel, {
-          controlled: true,
-          handleCreateViewer: _handleCreateViewer,
-          tab_id: entry.identifier,
-          selectedTabIdRef: selectedTabIdRef,
-          changeResourceName: function changeResourceName(new_name) {
-            var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-            var change_title = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
-            _changeResourceName(entry.identifier, new_name, change_title, callback);
-          },
-          updatePanel: function updatePanel(new_panel) {
-            var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-            _updatePanel(entry.identifier, new_panel, callback);
-          },
-          goToModule: _goToModule,
-          registerLineSetter: function registerLineSetter(rfunc) {
-            return _registerLineSetter(entry.identifier, rfunc);
-          },
-          refreshTab: /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee7() {
-            return _regenerator().w(function (_context8) {
-              while (1) switch (_context8.n) {
-                case 0:
-                  _context8.n = 1;
-                  return _refreshTab(entry.identifier);
-                case 1:
-                  return _context8.a(2);
-              }
-            }, _callee7);
-          })),
-          closeTab: /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee8() {
-            return _regenerator().w(function (_context9) {
-              while (1) switch (_context9.n) {
-                case 0:
-                  _context9.n = 1;
-                  return _closeTab(entry.identifier);
-                case 1:
-                  return _context9.a(2);
-              }
-            }, _callee8);
-          })),
-          tsocket: entry.panel.tsocket
-        }))));
-        wrapped_panel = /*#__PURE__*/_react["default"].createElement(_react.Fragment, {
-          key: entry.identifier
-        }, /*#__PURE__*/_react["default"].createElement(_error_boundary.ErrorBoundary, null, /*#__PURE__*/_react["default"].createElement("div", {
-          id: "".concat(entry.identifier, "-holder"),
-          style: {
-            display: "flex",
-            flexDirection: "column",
-            position: "relative",
-            height: selectedTabIdRef.current == entry.identifier ? "100%" : 0,
-            width: "100%"
-          },
-          className: panelRootDict[entry.kind]
-        }, the_panel)));
-      }
-      all_panels.push(wrapped_panel);
-    };
-    for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
-      if (_loop2()) continue;
+    } else {
+      statusFuncs.clearStatus();
+      window.open($SCRIPT_ROOT + the_view + item.name);
     }
-  } catch (err) {
-    _iterator4.e(err);
-  } finally {
-    _iterator4.f();
+  }, []);
+  for (let entry of tabPanelListRef.current) {
+    let wrapped_panel;
+    if (["library", "pool"].includes(entry.identifier)) {
+      continue;
+    }
+    if (entry.panel === "spinner") {
+      wrapped_panel = spinner_panel;
+    } else {
+      let TheClass = classDict[entry.kind];
+      let the_panel = /*#__PURE__*/_react.default.createElement(_utilities_react.SelectedPaneContext.Provider, {
+        value: {
+          tab_id: entry.identifier,
+          selectedTabIdRef,
+          amSelected,
+          addOmniItems: items => {
+            _addOmniItems(entry.identifier, items);
+          }
+        }
+      }, /*#__PURE__*/_react.default.createElement(_context_elements.ContextPaneElement, {
+        identifier: entry.identifier
+      }, /*#__PURE__*/_react.default.createElement(TheClass, (0, _extends2.default)({}, entry.panel, {
+        controlled: true,
+        handleCreateViewer: _handleCreateViewer,
+        tab_id: entry.identifier,
+        selectedTabIdRef: selectedTabIdRef,
+        changeResourceName: (new_name, callback = null, change_title = true) => {
+          _changeResourceName(entry.identifier, new_name, change_title, callback);
+        },
+        updatePanel: (new_panel, callback = null) => {
+          _updatePanel(entry.identifier, new_panel, callback);
+        },
+        goToModule: _goToModule,
+        registerLineSetter: rfunc => _registerLineSetter(entry.identifier, rfunc),
+        refreshTab: async () => {
+          await _refreshTab(entry.identifier);
+        },
+        closeTab: async () => {
+          await _closeTab(entry.identifier);
+        },
+        tsocket: entry.panel.tsocket
+      }))));
+      wrapped_panel = /*#__PURE__*/_react.default.createElement(_react.Fragment, {
+        key: entry.identifier
+      }, /*#__PURE__*/_react.default.createElement(_error_boundary.ErrorBoundary, null, /*#__PURE__*/_react.default.createElement("div", {
+        id: `${entry.identifier}-holder`,
+        style: {
+          display: "flex",
+          flexDirection: "column",
+          position: "relative",
+          height: selectedTabIdRef.current == entry.identifier ? "100%" : 0,
+          width: "100%"
+        },
+        className: panelRootDict[entry.kind]
+      }, the_panel)));
+    }
+    all_panels.push(wrapped_panel);
   }
-  var sid = selectedTabIdRef.current;
-  var commandItems = omniItemsRef.current["global"];
+  let sid = selectedTabIdRef.current;
+  let commandItems = omniItemsRef.current["global"];
   if (sid in omniItemsRef.current) {
     commandItems = commandItems.concat(omniItemsRef.current[sid]);
   }
-  var left_pane = /*#__PURE__*/_react["default"].createElement(_context_elements.ContextNavigator, {
+  let left_pane = /*#__PURE__*/_react.default.createElement(_context_elements.ContextNavigator, {
     handleTabSelect: _handleTabSelect,
     selectedItem: selectedTabIdRef.current,
     closeTab: _closeTab,
-    refresTab: _refreshTab,
+    refreshTab: _refreshTab,
     dispatch: tabPanelListDispatch,
     tabPanelList: tabPanelList
   });
-  var right_pane = /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, all_panels);
-  var outer_class = "pane-holder ".concat(settingsContext.isDark() ? "bp6-dark" : "light-theme");
-  var outer_style = {
+  let right_pane = /*#__PURE__*/_react.default.createElement(_react.Fragment, null, all_panels);
+  let outer_class = `pane-holder ${settingsContext.isDark() ? "bp6-dark" : "light-theme"}`;
+  let outer_style = {
     width: "100%",
     height: "100%",
     flexGrow: 1,
@@ -958,7 +680,7 @@ function ContextApp(props) {
     paddingLeft: 0,
     position: "relative"
   };
-  return /*#__PURE__*/_react["default"].createElement("div", {
+  return /*#__PURE__*/_react.default.createElement("div", {
     style: {
       display: "flex",
       flexDirection: "column",
@@ -966,14 +688,14 @@ function ContextApp(props) {
       height: "100%",
       width: "100%"
     }
-  }, /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
+  }, /*#__PURE__*/_react.default.createElement(_blueprint_navbar.TacticNavbar, {
     is_authenticated: window.is_authenticated,
     selected: null,
     show_api_links: false,
     extra_text: window.database_type === "Local" ? "" : window.database_type,
     page_id: window.context_id,
     user_name: window.username
-  }), /*#__PURE__*/_react["default"].createElement("div", {
+  }), /*#__PURE__*/_react.default.createElement("div", {
     className: outer_class,
     tabIndex: "0",
     style: outer_style,
@@ -981,7 +703,7 @@ function ContextApp(props) {
     id: "context-container",
     onKeyDown: handleKeyDown,
     onKeyUp: handleKeyUp
-  }, /*#__PURE__*/_react["default"].createElement(_resizing_allotment.HorizontalPanes, {
+  }, /*#__PURE__*/_react.default.createElement(_resizing_allotment.HorizontalPanes, {
     left_pane: left_pane,
     snap_left: true,
     minWidth: 100,
@@ -990,16 +712,16 @@ function ContextApp(props) {
     widths: [_sizing_tools.INIT_CONTEXT_PANEL_WIDTH, window.innerWidth - _sizing_tools.INIT_CONTEXT_PANEL_WIDTH],
     initial_width_fraction: .1,
     handleResizeEnd: null
-  })), /*#__PURE__*/_react["default"].createElement(_utilities_react.SelectedPaneContext.Provider, {
+  })), /*#__PURE__*/_react.default.createElement(_utilities_react.SelectedPaneContext.Provider, {
     value: {
       tab_id: sid,
-      selectedTabIdRef: selectedTabIdRef,
-      amSelected: amSelected,
-      addOmniItems: function addOmniItems(items) {
+      selectedTabIdRef,
+      amSelected,
+      addOmniItems: items => {
         _addOmniItems(sid, items);
       }
     }
-  }, /*#__PURE__*/_react["default"].createElement(_TacticOmnibar.OpenOmnibar, {
+  }, /*#__PURE__*/_react.default.createElement(_TacticOmnibar.OpenOmnibar, {
     commandItems: commandItems,
     page_id: window.context_id,
     showOmnibar: showOpenOmnibar,

@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useRef} from "react";
+import React, {useContext, useEffect, useRef, useMemo} from "react";
 
 import {Slider, Text, Button, Switch, HTMLSelect, FormGroup, InputGroup} from "@blueprintjs/core";
 
@@ -19,8 +19,9 @@ const widgetDict = {
     switch: SwitchWidget,
     select: SelectWidget,
     input: InputWidget,
-    iframe: IframeWidget
-}
+    iframe: IframeWidget,
+    matplotlib: MatplotlibWidget
+};
 
 
 function useWidget(widgetId, main_id, console_id, tile_id) {
@@ -38,8 +39,7 @@ function useWidget(widgetId, main_id, console_id, tile_id) {
         let ndata = {widgetId, value};
         if (tile_id) {
             postWithCallback(tile_id, "widget_action", ndata, callback, null, main_id);
-        }
-        else {
+        } else {
             postWithCallback(main_id, "widget_action", ndata, callback, null, main_id);
         }
     }
@@ -48,8 +48,7 @@ function useWidget(widgetId, main_id, console_id, tile_id) {
         let ndata = {widgetId, widgetData: widgetData};
         if (tile_id) {
             return postWithCallback(tile_id, "widget_set", ndata, callback, null, main_id);
-        }
-        else {
+        } else {
             postWithCallback(main_id, "widget_set", ndata, callback, null, main_id);
         }
 
@@ -73,13 +72,13 @@ function BoxWidget(props) {
         resizing: false,
         tsocket: null,
         ...props
-    }
+    };
     const [,] = useWidget(props.widgetId, props.main_id, props.console_id, props.tile_id);
 
     let outputWidgets = props.widgetData.widgets.map((outputDict, idx) => {
         let widgetKind = outputDict["widgetKind"];
-        let widgetId = outputDict["widgetId"]
-        let widgetData = outputDict["widgetData"]
+        let widgetId = outputDict["widgetId"];
+        let widgetData = outputDict["widgetData"];
         let the_widget;
         if (widgetKind in props.widgetDict) {
             let WidgetComponent = props.widgetDict[widgetKind];
@@ -103,7 +102,7 @@ function BoxWidget(props) {
                                           widgetData={`Widget kind not found ${widgetId}, ${widgetKind} ${widgetData}`}/>;
         }
         return the_widget;
-    })
+    });
     return (<div style={props.widgetData?.style} key={props.widgetId}>
         {outputWidgets}
     </div>)
@@ -119,11 +118,29 @@ function RawHtmlWidget(props) {
         row: 0,
         widgetData: {value: ""},
         ...props
-    }
+    };
     const [,] = useWidget(props.widgetId, props.main_id, props.console_id, props.tile_id);
 
     let output_dict = {__html: props.widgetData.value};
     return (<div className="raw-html-widget" style={props.widgetData?.style}
+                 key={props.widgetId} dangerouslySetInnerHTML={output_dict}/>)
+}
+
+function MatplotlibWidget(props) {
+    props = {
+        widgetId: props.widgetId,
+        main_id: null,
+        console_id: null,
+        tile_id: null,
+        dispatch: null,
+        row: 0,
+        widgetData: {value: ""},
+        ...props
+    };
+    const [,] = useWidget(props.widgetId, props.main_id, props.console_id, props.tile_id);
+
+    let output_dict = {__html: props.widgetData.value};
+    return (<div className="matplotlib-widget" style={props.widgetData?.style}
                  key={props.widgetId} dangerouslySetInnerHTML={output_dict}/>)
 }
 
@@ -137,12 +154,12 @@ function IframeWidget(props) {
         row: 0,
         widgetData: {value: ""},
         ...props
-    }
+    };
     const [,] = useWidget(props.widgetId, props.main_id, props.console_id, props.tile_id);
 
-   return (
+    return (
         <iframe srcDoc={props.widgetData.value} style={props.widgetData?.style} key={props.widgetId}/>
-   )
+    )
 }
 
 const buttonDataDefault = {
@@ -150,7 +167,7 @@ const buttonDataDefault = {
     icon: null,
     text: "Button",
     variant: "solid"
-}
+};
 
 function ButtonWidget(props) {
     props = {
@@ -162,7 +179,7 @@ function ButtonWidget(props) {
         row: 0,
         widgetData: buttonDataDefault,
         ...props
-    }
+    };
 
     const [, , widgetAction] = useWidget(props.widgetId, props.main_id, props.console_id, props.tile_id);
 
@@ -171,7 +188,7 @@ function ButtonWidget(props) {
     }
 
     return (
-        <div >
+        <div>
             <Button {...props.widgetData}
                     onClick={onClick}/>
         </div>
@@ -184,7 +201,7 @@ const sliderDataDefault = {
     max: 10,
     stepSize: 1,
     labelStepSize: 1,
-}
+};
 
 function SliderWidget(props) {
     props = {
@@ -196,7 +213,7 @@ function SliderWidget(props) {
         row: 0,
         widgetData: sliderDataDefault,
         ...props
-    }
+    };
 
     const [, widgetSet] = useWidget(props.widgetId, props.main_id, props.console_id, props.tile_id);
 
@@ -219,7 +236,7 @@ const selectDataDefault = {
     value: "",
     options: [],
     label: ""
-}
+};
 
 function SelectWidget(props) {
     props = {
@@ -231,7 +248,7 @@ function SelectWidget(props) {
         row: 0,
         widgetData: selectDataDefault,
         ...props
-    }
+    };
 
     const [, widgetSet,] = useWidget(props.widgetId, props.main_id, props.console_id, props.tile_id);
 
@@ -257,7 +274,7 @@ function SelectWidget(props) {
 const switchDataDefault = {
     value: false,
     label: "switch",
-}
+};
 
 function SwitchWidget(props) {
     props = {
@@ -269,7 +286,7 @@ function SwitchWidget(props) {
         row: 0,
         widgetData: switchDataDefault,
         ...props
-    }
+    };
 
     const [, widgetSet] = useWidget(props.widgetId, props.main_id, props.console_id, props.tile_id);
 
@@ -289,7 +306,7 @@ function SwitchWidget(props) {
 const textDataDefault = {
     value: "",
     ellipsize: true,
-}
+};
 
 function TextWidget(props) {
     props = {
@@ -301,7 +318,7 @@ function TextWidget(props) {
         row: 0,
         widgetData: textDataDefault,
         ...props
-    }
+    };
 
     const [,] = useWidget(props.widgetId, props.main_id, props.console_id, props.tile_id);
 
@@ -318,7 +335,7 @@ const inputDataDefault = {
     label: "",
     inline: false,
     style: {}
-}
+};
 
 function InputWidget(props) {
     props = {
@@ -330,7 +347,7 @@ function InputWidget(props) {
         row: 0,
         widgetData: inputDataDefault,
         ...props
-    }
+    };
 
     const [, widgetSet] = useWidget(props.widgetId, props.main_id, props.console_id, props.tile_id);
     const {style, label, inline, ...rest} = props.widgetData;
@@ -364,35 +381,66 @@ function JavascriptWidget(props) {
         row: 0,
         tileWidth: null,
         tileHeight: null,
-        widgetData: {value: {javascript_code: "", javascript_arg_dict: {}}},
+        widgetData: {value: "null", style: {}, "code": ""},
         resizing: false,
         ...props
-    }
+    };
     const javascript_error_ref = useRef(false);
-    const [,] = useWidget(props.widgetId, props.main_id, props.console_id, props.tile_id);
+    const [widgetGet, widgetSet, widgetAction] = useWidget(props.widgetId, props.main_id, props.console_id, props.tile_id);
 
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
 
-    useEffect(() => {
-        javascript_error_ref.current = false
-        _executeJavascript()
-    }, [props.widgetData.value, props.tileWidth, props.tileHeight]);
+    const codeStr = props.widgetData?.code ?? "";
+    const value = props.widgetData?.value ?? null;
 
-    function _executeJavascript() {
+    const errorOnceRef = useRef(null);
+    const blockRunRef = useRef(false);
+
+    const compiledFn = useMemo(() => {
+        if (!codeStr.trim()) return null;
         try {
-            if (!javascript_error_ref.current) {
-                let selector = `#${props.widgetId}`;
-                window.eval(props.widgetData.value.javascript_code)(selector, props.tileWidth, props.tileHeight,
-                    props.widgetData.value.javascript_arg_dict, props.resizing)
-            }
-        } catch (err) {
-            javascript_error_ref.current = true;
-            errorDrawerFuncs.addErrorDrawerEntry({
-                title: "Error evaluating javascript",
-                content: err.message
-            });
+            // Safer than eval; creates a function with the desired params.
+            return new Function("selector", "w", "h", "value", "setValue", "resizing", codeStr);
+        } catch (e) {
+            // Syntax error at compile time
+            errorOnceRef.current = `Compile error: ${e.message}`;
+            return null;
         }
+    }, [codeStr]);
+
+    useEffect(() => {
+        blockRunRef.current = false;
+        errorOnceRef.current = null;
+    }, [codeStr, props.tileWidth, props.tileHeight, JSON.stringify(value)]);
+
+    function setValue(newValue) {
+        const newWidgetData = {value: newValue};
+        widgetSet(newWidgetData);
     }
+
+
+    useEffect(() => {
+        if (!compiledFn || blockRunRef.current) return;
+
+        try {
+            const selector = `#${props.widgetId}`;
+            compiledFn(selector, props.tileWidth, props.tileHeight, value, setValue, props.resizing);
+        } catch (err) {
+            // Block further runs until inputs change to avoid loops
+            blockRunRef.current = true;
+
+            // Only log once per input set
+            const msg = err?.message || String(err);
+            if (errorOnceRef.current !== msg) {
+                errorOnceRef.current = msg;
+                errorDrawerFuncs.addErrorDrawerEntry({
+                    title: "Error evaluating javascript",
+                    content: msg,
+                });
+            }
+        }
+    }, [compiledFn, props.tileWidth, props.tileHeight, props.resizing, value, props.widgetId]);
+
 
     return (<div id={props.widgetId} className="jscript-target" style={props.widgetData?.style}
                  key={props.widgetId}/>)

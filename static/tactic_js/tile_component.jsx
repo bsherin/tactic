@@ -418,8 +418,8 @@ function TileComponent(props) {
 
     let outputWidgets = props.front_content.map((outputDict, idx) => {
         let widgetKind = outputDict["widgetKind"];
-        let widgetId = outputDict["widgetId"]
-        let widgetData = outputDict["widgetData"]
+        let widgetId = outputDict["widgetId"];
+        let widgetData = outputDict["widgetData"];
         let the_widget;
         if (widgetKind in widgetDict) {
             let WidgetComponent = widgetDict[widgetKind];
@@ -444,7 +444,7 @@ function TileComponent(props) {
                                           widgetData={`Widget kind not found ${widgetId}, ${widgetKind} ${widgetData}`} />;
         }
         return the_widget;
-    })
+    });
 
     let draghandle_position_dict = {position: "absolute", bottom: 2, right: 1};
 

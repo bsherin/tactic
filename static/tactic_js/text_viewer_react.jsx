@@ -254,7 +254,7 @@ function TextViewerApp(props) {
     let outer_class = "resource-viewer-holder";
     if (!props.controlled) {
         my_props.resource_name = resource_name;
-        outer_class = `${outer_class} ${settingsContext.isDark() ? "bp6-dark" : "light-theme"}`
+        outer_class = `${outer_class} pane-holder ${settingsContext.isDark() ? "bp6-dark" : "light-theme"}`
     }
     return (
         <Fragment>

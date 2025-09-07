@@ -1,5 +1,40 @@
-not_used
-persist
-repository_tiles
-resources
+unused_python
 static
+
+# Version control
+.git
+.gitignore
+
+# Python caches
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Notebooks & checkpoints
+*.ipynb_checkpoints
+
+# Virtual envs
+.venv/
+env/
+venv/
+
+# Data / models / outputs
+data/
+datasets/
+models/
+outputs/
+artifacts/
+
+# Node / frontend
+node_modules/
+dist/
+build/
+
+# OS cruft
+.DS_Store
+Thumbs.db
+
+# Config / secrets
+.env
+.cache/

@@ -3,7 +3,9 @@
 # pydevd_pycharm.settrace('docker.for.mac.localhost', port=21000, stdoutToServer=True, stderrToServer=True,
 #                         suspend=True)
 import os
-import pika
+
+IS_PSEUDO_TILE = os.environ.get("IS_PSEUDO_TILE", "False").lower() == "true"
+
 import json
 import base64
 from flask import Flask
@@ -22,8 +24,6 @@ import tile_base
 import document_object
 import remote_tile_object
 from tile_base import clear_and_exec_user_code, TileBase
-from pseudo_tile_base import PseudoTileClass
-import pseudo_tile_base
 import library_object
 import settings_object
 from communication_utils import make_python_object_jsonizable
@@ -31,7 +31,6 @@ import uuid
 from rabbit_manage import sleep_until_rabbit_alive
 import sys, os
 import time
-import pika
 import widgets
 
 sys.stdout = sys.stderr
@@ -41,6 +40,10 @@ print("Done waiting for rabbit with success " + str(success))
 
 kill_thread = None
 kill_thread_lock = Lock()
+
+if IS_PSEUDO_TILE:
+    from pseudo_tile_base import PseudoTileClass
+    import pseudo_tile_base
 
 # noinspection PyUnusedLocal,PyProtectedMember,PyMissingConstructor
 class KillWorker(QWorker):

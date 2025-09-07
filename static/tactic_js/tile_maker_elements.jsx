@@ -42,11 +42,14 @@ import {DragHandle} from "./drag_handle";
 
 export {
     CmElement, PaneElement, MakerNavigator, OptionModuleForm, ExportModuleForm, DividerElement, pane_type_icons,
-    MetadataModule, option_icons, standard_method_icons, INITIAL_CODE_PANE_HEIGHT, INITIAL_FORM_PANE_HEIGHT
+    MetadataModule, option_icons, INITIAL_CODE_PANE_HEIGHT, INITIAL_FORM_PANE_HEIGHT
 }
 
-const INITIAL_CODE_PANE_HEIGHT = 330
+const INITIAL_CODE_PANE_HEIGHT = 330;
 const INITIAL_FORM_PANE_HEIGHT = 125;
+
+const NAV_ITEM_SPACER_HEIGHT = 10;
+const NAV_ITEM_SPACER_HEIGHT_EMPTY_SECTION = 20;
 
 const pane_type_icons = {
     "option": "select",
@@ -54,9 +57,11 @@ const pane_type_icons = {
     "metadata": "properties",
     "save": "floppy-disk",
     "user_method": "user",
-    "standard_method": "play",
+    "render_content": "control",
+    "globals": "globe",
+    "javascript": "function",
     "handler_method": "wrench",
-}
+};
 
 function textRowsToArray(tstring) {
     let slist = [];
@@ -130,9 +135,9 @@ function SimplePaneTitle(props) {
         subtitle: null,
         icon: null,
         ...props
-    }
+    };
 
-    let theIcon = <Icon icon={props.icon} size={13}/>
+    let theIcon = <Icon icon={props.icon} size={13}/>;
 
     return (
         <div className="creator-simple-title">
@@ -142,15 +147,15 @@ function SimplePaneTitle(props) {
 }
 
 function AnimatedItem({visible, children}) {
-    const nodeRef = useRef(null)
+    const nodeRef = useRef(null);
     return (
         <CSSTransition
             in={visible}
             timeout={300}
             classNames="fade"
             nodeRef={nodeRef}
-            unmountOnExit
-            mountOnEnter
+            unmountOnExit={false}
+            mountOnEnter={false}
         >
             <div ref={nodeRef} className="fade-container">{children}</div>
         </CSSTransition>
@@ -169,10 +174,11 @@ function PaneElement(props) {
         className: "",
         icon: null,
         visible: false,
+        updateItem: null,
         ...props,
-    }
+    };
     const top_ref = useRef(null);
-    const height_ref = useRef(props.pane_height)
+    const height_ref = useRef(props.pane_height);
 
     const mpContext = useContext(MakerPaneContext);
 
@@ -184,7 +190,7 @@ function PaneElement(props) {
         return (() => {
             console.log("unmounting a pane")
         })
-    }, [])
+    }, []);
 
     useEffect(() => {
         if (props.pane_scroll_ref.current == props.identifier) {
@@ -197,7 +203,7 @@ function PaneElement(props) {
 
             });
         }
-    }, [props.pane_scroll_ref.current, top_ref.current])
+    }, [props.pane_scroll_ref.current, top_ref.current]);
 
     function _startResize() {
         set_resizing(true);
@@ -215,13 +221,19 @@ function PaneElement(props) {
     }
 
     function _stopResize(e, ui, x, y, dx, dy) {
-        resize_pane(dx, dy)
+        resize_pane(dx, dy);
         set_resizing(false);
         set_dwidth(0);
         set_dheight(0);
     }
 
     function resize_pane(dx, dy) {
+        if (props.updateItem) {
+            props.updateItem({
+                pane_height: height_ref.current + dy
+            });
+            return;
+        }
         props.dispatch({
                 type: "update_item",
                 identifier: props.identifier,
@@ -284,7 +296,7 @@ function MetadataModule(props) {
         metadataDispatch: () => {
         },
         ...props
-    }
+    };
 
     useEffect(() => {
         get_all_tags()
@@ -443,7 +455,7 @@ function ExportModuleForm(props) {
         dispatch: () => {
         },
         ...props
-    }
+    };
 
     function handleNameChange(event) {
         props.dispatch({
@@ -500,14 +512,7 @@ const option_icons = {
     tile_select: "application",
     divider: "minus",
     pool_select: "folder-open"
-}
-
-const standard_method_icons = {
-    render_content: "play",
-    globals: "globe",
-    draw_plot: "scatter-plot",
-    javascript: "timeline-area-chart",
-}
+};
 
 function OptionModuleForm(props) {
     props = {
@@ -515,7 +520,7 @@ function OptionModuleForm(props) {
         dispatch: () => {
         },
         ...props
-    }
+    };
 
     function handleNameChange(event) {
         props.dispatch({
@@ -641,7 +646,7 @@ function SignatureHeader(props) {
     props = {
         name: "",
         argString: "",
-        mode: "mode",
+        mode: "python",
         handleNameChange: () => {
         },
         handleArgChange: () => {
@@ -649,92 +654,131 @@ function SignatureHeader(props) {
         allowSignatureChange: false,
         registerCmObject: null,
         ...props
-    }
+    };
 
     const lastNameRef = useRef(props.name);
     const lastArgStringRef = useRef(props.argString);
 
     function getEditableRanges(lineText) {
-        const match = lineText.match(/^def\s+(\w+)\s*\(([^)]*)\):/);
-        if (!match) return [];
+        if (props.mode == "python") {
+            const match = lineText.match(/^def\s+(\w+)\s*\(([^)]*)\):/);
+            if (!match) return [];
 
-        const [, funcName, argsStr] = match;
+            const [, funcName, argsStr] = match;
 
-        // Find function name range
-        const funcNameStart = lineText.indexOf(funcName);
-        const funcNameEnd = funcNameStart + funcName.length;
+            // Find function name range
+            const shortLineText = lineText.slice(4);
+            const funcNameStart = shortLineText.indexOf(funcName) + 4;
+            const funcNameEnd = funcNameStart + funcName.length;
 
-        // Compute where the argument list starts and ends
-        const openParenIndex = lineText.indexOf("(");
-        const closeParenIndex = lineText.indexOf(")", openParenIndex);
-        if (openParenIndex === -1 || closeParenIndex === -1) return [];
+            // Compute where the argument list starts and ends
+            const openParenIndex = lineText.indexOf("(");
+            const closeParenIndex = lineText.indexOf(")", openParenIndex);
+            if (openParenIndex === -1 || closeParenIndex === -1) return [];
 
-        // Determine start of editable args: after 'self,' or after '(' if no 'self'
-        let editableStart = openParenIndex + 1;
+            // Determine start of editable args: after 'self,' or after '(' if no 'self'
+            let editableStart = openParenIndex + 1;
 
-        const selfMatch = argsStr.match(/^\s*self\s*(,)?/);
-        if (selfMatch) {
-            // Skip past 'self' and optional comma
-            editableStart = lineText.indexOf("self") + "self".length;
-            if (selfMatch[1]) {
-                editableStart = lineText.indexOf(",", editableStart) + 1;
+            const selfMatch = argsStr.match(/^\s*self\s*(,)?/);
+            if (selfMatch) {
+                // Skip past 'self' and optional comma
+                editableStart = lineText.indexOf("self") + "self".length;
+                if (selfMatch[1]) {
+                    editableStart = lineText.indexOf(",", editableStart) + 1;
+                }
             }
+
+            // Trim leading whitespace
+            while (lineText[editableStart] === " " || lineText[editableStart] === ",") {
+                editableStart++;
+            }
+
+            return [
+                {from: funcNameStart, to: funcNameEnd},
+                {from: editableStart, to: closeParenIndex}
+            ];
+        }
+        else if (props.mode == "javascript") {
+            const match = lineText.match(/^function\s+(\w+)\s*/);
+            if (!match) return [];
+
+            const [, funcName, argsStr] = match;
+
+            // Find function name range
+            const shortLineText = lineText.slice(9);
+            const funcNameStart = shortLineText.indexOf(funcName) + 9;
+            const funcNameEnd = funcNameStart + funcName.length;
+            return [
+                {from: funcNameStart, to: funcNameEnd},
+            ]
+        }
+        else {
+            return []
         }
 
-        // Trim leading whitespace
-        while (lineText[editableStart] === " " || lineText[editableStart] === ",") {
-            editableStart++;
-        }
 
-        return [
-            {from: funcNameStart, to: funcNameEnd},
-            {from: editableStart, to: closeParenIndex}
-        ];
     }
 
     function handleSignatureChange(new_signature) {
         // Extract the function name and arguments from the new signature
-        let match = new_signature.match(/^def\s+(\w+)\s*\(([^)]*)\):/);
-        let funcName;
-        let argsStr;
-        if (!match) {
-            match = new_signature.match(/^def\s+\s*\(([^)]*)\):/);
+        if (props.mode == "python") {
+            let match = new_signature.match(/^def\s+(\w+)\s*\(([^)]*)\):/);
+            let funcName;
+            let argsStr;
             if (!match) {
-                funcName = lastNameRef.current;
-                argsStr = lastArgStringRef.current + "*";
+                match = new_signature.match(/^def\s+\s*\(([^)]*)\):/);
+                if (!match) {
+                    funcName = lastNameRef.current;
+                    argsStr = lastArgStringRef.current + "*";
+                } else {
+                    [, argsStr] = match;
+                    funcName = "method";
+                }
             } else {
-                [, argsStr] = match;
-                funcName = "method";
+                [, funcName, argsStr] = match;
             }
-        } else {
-            [, funcName, argsStr] = match;
-        }
 
-        // remove "self," from the argsStr if it exists
-        const selfMatch = argsStr.match(/^\s*self\s*(,)?/);
-        if (selfMatch) {
-            // Remove 'self' and optional comma
-            argsStr = argsStr.replace(/^\s*self\s*(,)?/, "").trim();
-            if (argsStr.startsWith(",")) {
-                argsStr = argsStr.slice(1).trim(); // Remove leading comma if present
+            // remove "self," from the argsStr if it exists
+            const selfMatch = argsStr.match(/^\s*self\s*(,)?/);
+            if (selfMatch) {
+                // Remove 'self' and optional comma
+                argsStr = argsStr.replace(/^\s*self\s*(,)?/, "").trim();
+                if (argsStr.startsWith(",")) {
+                    argsStr = argsStr.slice(1).trim(); // Remove leading comma if present
+                }
             }
-        }
 
-        // Update the name and argString props
-        lastNameRef.current = funcName;
-        lastArgStringRef.current = argsStr;
-        props.handleNameChange(funcName);
-        props.handleArgChange(argsStr);
+            // Update the name and argString props
+            lastNameRef.current = funcName;
+            lastArgStringRef.current = argsStr;
+            props.handleNameChange(funcName);
+            props.handleArgChange(argsStr);
+        }
+        else {
+
+            let match = new_signature.match(/^function\s+(\w+)\s*/);
+            let funcName;
+            if (!match) {
+                match = new_signature.match(/^function\s+\s*\(/);
+                funcName = "func";
+            } else {
+                [, funcName] = match;
+            }
+
+            lastNameRef.current = funcName;
+            props.handleNameChange(funcName);
+        }
     }
 
     let code_content;
     if (props.mode == "javascript") {
-        code_content = "(selector, w, h, arg_dict, resizing) =>";
+        code_content = `function ${props.name}(selector, w, h, value, setValue, resizing)`;
     } else if (props.name == "globals") {
         code_content = "# globals"
     } else {
         code_content = `def ${props.name}(self, ${props.argString}):`;
     }
+    const handleChange = props.allowSignatureChange ? handleSignatureChange : null;
     return (
         <div className="d-flex flex-row cm-signature"
              style={{justifyContent: "space-between"}}>
@@ -761,7 +805,7 @@ function SignatureHeader(props) {
                                   restrict_edits_to_range={props.allowSignatureChange}
                                   className="creator-code-header"
                                   no_width={true}
-                                  handleChange={props.allowSignatureChange ? handleSignatureChange : null}
+                                  handleChange={handleChange}
                                   code_content={code_content}/>
             }
         </div>
@@ -773,7 +817,7 @@ function DividerElement(props) {
         text: "",
         icon: "minus",
         ...props
-    }
+    };
 
     return (
         <div style={{
@@ -791,6 +835,7 @@ function CmElement(props) {
         allowDelete: false,
         code_content: "",
         cmDispatch: null,
+        updateItem: null,
         cmObjectRef: null,
         name: "",
         argString: "",
@@ -815,21 +860,39 @@ function CmElement(props) {
     const [doScroll, setDoScroll] = useState(props.cmState.scrollTop != null);
 
     function handleCodeChange(new_code) {
+        if (props.updateItem) {
+            props.updateItem({codeText: new_code});
+            return;
+        }
         props.cmDispatch({type: "update_item", new_item: {codeText: new_code}, identifier: props.identifier});
     }
 
     function handleNameChange(new_name) {
+        if (props.updateItem) {
+            props.updateItem({name: new_name});
+            return;
+        }
         props.cmDispatch({type: "update_item", new_item: {name: new_name}, identifier: props.identifier});
     }
 
     function handleArgChange(new_args) {
+        if (props.updateItem) {
+            props.updateItem({argString: new_args});
+            return;
+        }
         props.cmDispatch({type: "update_item", new_item: {argString: new_args}, identifier: props.identifier});
     }
 
     function setCmObject(cmObject) {
-        props.cmDispatch({type: "update_item", new_item: {cmObject: cmObject}, identifier: props.identifier});
+        if (props.updateItem) {
+            props.updateItem({cmObject: cmObject});
+        }
+        else {
+            props.cmDispatch({type: "update_item", new_item: {cmObject: cmObject}, identifier: props.identifier});
+        }
+
         if (doScroll) {
-            setDoScroll(false)
+            setDoScroll(false);
             requestAnimationFrame(() => {
                 // The timeout below is necessary because I can't do this until the cmObject is fully initialized
                 setTimeout(() => {
@@ -898,24 +961,47 @@ function MakerNavigator(props) {
         pushCallback: () => {
         },
         ...props
-    }
-    const sections = props.sections.filter(section => section.visible === true)
+    };
+    const sections = props.sections.filter(section => section.visible === true);  // saveattrs may be hidden
     return (
         <ErrorBoundary custom_message="There was an error in the Maker Navigator">
             <div style={{overflow: "auto", height: "100%"}} className="maker-navigator">
-                {sections.map((section,) => (
-                    section.editable ?
-                        <SortableNavSection key={section.title} title={section.title} dispatch={section.dispatch}
+                {sections.map((section,) => {
+                    let createFromlist = section.createFromList ? section.createFromList : false;
+                    let choiceDict = section.choiceDict ? section.choiceDict : null;
+                    if (section.kind == "divider") {
+                        return (
+                            <NavDivider key={section.name} name={section.name}/>
+                        )
+                    }
+                    if (section.kind == "direct") {
+                        return (
+                            <DirectNavSection key={section.name} title={section.name}
+                                              item_list={null}
+                                              identifier={section.identifier}
+                                              icon={section.icon}/>
+                        )
+                    }
+                    if (section.editable) {
+                        return (
+                            <SortableNavSection key={section.title} title={section.title} dispatch={section.dispatch}
                                             sub_items={section.sub_items} icon={section.icon}
                                             pushCallback={props.pushCallback} startExpaneded={section.start_expanded}
-                                            createFromList={section.createFromList ? section.createFromList : false}
-                                            choiceDict={section.choiceDict ? section.choiceDict : null}
-                                            icon_dict={section.icon_dict} icon_field={section.icon_field}/> :
-                        <NavSection key={section.title} title={section.title} dispatch={section.dispatch}
-                                    sub_items={section.sub_items} icon={section.icon}
-                                    startExpaneded={section.start_expanded}
-                                    icon_dict={section.icon_dict} icon_field={section.icon_field}/>
-                ))}
+                                            createFromList={createFromlist}
+                                            choiceDict={choiceDict}
+                                                item_base={section.item_base}
+                                            icon_dict={section.icon_dict} icon_field={section.icon_field}/>
+                        )
+                    }
+                    else {
+                        return (
+                            <NavSection key={section.title} title={section.title} dispatch={section.dispatch}
+                                        sub_items={section.sub_items} icon={section.icon}
+                                        startExpaneded={section.start_expanded}
+                                        icon_dict={section.icon_dict} icon_field={section.icon_field}/>
+                        )
+                    }
+                })}
             </div>
         </ErrorBoundary>
     )
@@ -930,7 +1016,7 @@ function NavSection(props) {
         icon_dict: null,
         icon_field: null,
         ...props
-    }
+    };
     const [isOpen, setIsOpen] = React.useState(props.startExpanded);
 
     // noinspection JSValidateTypes
@@ -963,12 +1049,42 @@ function NavSection(props) {
     );
 }
 
+function DirectNavSection(props) {
+    props = {
+        title: "",
+        item_list: [],
+        identifier: "",
+        isDivider: false,
+        directSet: null,
+        ...props
+    };
+    const mpContext = useContext(MakerPaneContext);
+
+    const className = "direct-nav-section-button";
+
+    return (
+        <ControlGroup>
+            <Button className={className}
+                    icon={props.icon}
+                    intent={mpContext.visibleTabList.includes(props.identifier) ? "primary" : "none"}
+                    size="medium"
+                    variant="minimal"
+                    onClick={() => {
+                        mpContext.toggleVisibleTab(props.identifier)
+                    }}>
+                {props.title}
+            </Button>
+        </ControlGroup>
+    );
+}
+
+
 function HandlerCreator(props) {
     props = {
         choiceDict: null,
         dispatch: null,
         ...props
-    }
+    };
 
     const [selectedChoice, setSelectedChoice] = useState({
         text: Object.keys(props.choiceDict)[0],
@@ -984,7 +1100,7 @@ function HandlerCreator(props) {
             value: choice,
             isgroup: false
         }));
-    })
+    });
 
     function createItemFromChoiceDict() {
         const uid = guid();
@@ -994,7 +1110,7 @@ function HandlerCreator(props) {
             codeText: "",
             mode: "python", firstLineNumber: 1,
             identifier: uid,
-        }
+        };
         props.dispatch({type: "add_at_end", new_item: new_entry});
         mpContext.pushCallback(() => {
             mpContext.toggleVisibleTab(uid);
@@ -1012,9 +1128,24 @@ function HandlerCreator(props) {
     )
 }
 
+function NavDivider(props) {
+    props = {
+        name: "divider",
+        ...props
+    };
+    return (
+        <Divider key={name} style={{
+            width:'90%',
+            marginTop: 10,
+            marginBottom: 10
+        }}/>
+    )
+}
+
 function SortableNavSection(props) {
     props = {
         title: "",
+        item_base: {},
         sub_items: [],
         right_button: null,
         icon_dict: null,
@@ -1029,7 +1160,7 @@ function SortableNavSection(props) {
         dispatch: () => {
         },
         ...props
-    }
+    };
 
     const [activeId, setActiveId] = React.useState(null);
     const [isOpen, setIsOpen] = React.useState(props.startExpanded);
@@ -1062,13 +1193,7 @@ function SortableNavSection(props) {
 
     function createItem() {
         const uid = guid();
-        const new_entry = {
-            name: "new_item",
-            argString: "",
-            codeText: "",
-            mode: "python", firstLineNumber: 1,
-            identifier: uid,
-        }
+        const new_entry = {...props.item_base, identifier: uid};
         props.dispatch({type: "add_at_end", new_item: new_entry});
         setIsOpen(true);
         mpContext.pushCallback(() => {
@@ -1135,6 +1260,7 @@ function SortableNavSection(props) {
                             })}
                             <SortableNavItem
                                 key="__drop_spacer__"
+                                is_empty_section={props.sub_items.length === 0}
                                 identifier="__drop_spacer__"
                                 activeId={activeId}
                                 isSpacer={true}
@@ -1153,8 +1279,10 @@ function SortableNavItem(props) {
         activeId: null,
         isSpacer: false,
         isDivider: false,
+        dispatch: null,
+        is_empty_section: false,
         ...props
-    }
+    };
     const {
         attributes,
         listeners,
@@ -1165,11 +1293,19 @@ function SortableNavItem(props) {
 
     const style = {
         transform: CSS.Transform.toString(transform),
-        transition: props.isSpacer ? 'none' : (props.activeId ? 'none' : transition)
     };
+
     if (props.isSpacer) {
-        style.height = 18;
+        style.height = props.is_empty_section ? NAV_ITEM_SPACER_HEIGHT_EMPTY_SECTION : NAV_ITEM_SPACER_HEIGHT;
+        style.transition = 'none'
     }
+    else if (props.activeId) {
+        style.transition = 'none'
+    }
+    else {
+        style.transition = transition
+    }
+
 
     function _deleteMe() {
         props.dispatch({type: "delete_item", identifier: props.identifier})
@@ -1207,27 +1343,29 @@ function SortableNavItem(props) {
 function NavItem(props) {
     props = {
         title: "",
+        is_empty_section: false,
         item_list: [],
         identifier: "",
         isDivider: false,
         ...props
-    }
+    };
     const mpContext = useContext(MakerPaneContext);
 
     if (props.isSpacer) {
         return (<ControlGroup>
-            <Button className='spacer-nav-item'
+            <Button className='spacer-nav-item maker-nav-item'
                     icon={null}
                     intent="none"
                     size="medium"
                     variant="minimal"
                     onClick={() => {
                     }}>
+                {props.is_empty_section ? "..." : ""}
             </Button>
         </ControlGroup>)
     }
 
-    const className = `maker-nav-item ${props.isDivider ? 'nav-divider' : ''} `
+    const className = `maker-nav-item ${props.isDivider ? 'nav-divider' : ''} `;
 
     return (
         <ControlGroup>

@@ -67,8 +67,6 @@ class TileParser(object):
         extra_methods = OrderedDict()
         for k, entry in self.methods.items():
             if k not in ["__init__", "render_content", "options"]:
-                if self.is_mpl and k == "draw_plot":
-                    continue
                 extra_methods[k] = entry
         return extra_methods
 

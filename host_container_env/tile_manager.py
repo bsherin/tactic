@@ -251,7 +251,7 @@ class TileManager(LibraryResourceManager):
             environ["REMOTE_KEY_FILE"] = os.environ.get("REMOTE_KEY_FILE")
             environ["REMOTE_USERNAME"] = os.environ.get("REMOTE_USERNAME")
             vol_dict[environ["REMOTE_KEY_FILE"]] = {"bind": environ["REMOTE_KEY_FILE"], "mode": "ro"}
-        module_viewer_id, container_id = create_container("bsherin/tactic:module_viewer",
+        module_viewer_id, container_id = create_container("bsherin/tactic-module-viewer",
                                                           env_vars=environ,
                                                           volume_dict=vol_dict,
                                                           owner=user_obj.get_id(),
