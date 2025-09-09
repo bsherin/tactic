@@ -197,11 +197,18 @@ class LoadSaveTasksMixin:
             def track_recreated_tiles(trcdata):
                 debug_log("tracking created tiles")
                 if trcdata["old_tile_id"] in tiles_to_recreate:
-                    self.mworker.emit_to_main_client("tile-finished-loading", {"message": "tile-finished-loading",
-                                                                               "tile_id": trcdata["old_tile_id"]})
-                    tiles_to_recreate.remove(trcdata["old_tile_id"])
-                    tsdict = self.project_dict["tile_instances"][trcdata["old_tile_id"]]
-                    self.tile_id_dict[tsdict["tile_name"]] = trcdata["old_tile_id"]
+                    if trcdata["success"]:
+                        self.mworker.emit_to_main_client("tile-finished-loading", {"message": "tile-finished-loading",
+                                                                                   "success": True,
+                                                                                   "tile_id": trcdata["old_tile_id"]})
+                        tiles_to_recreate.remove(trcdata["old_tile_id"])
+                        tsdict = self.project_dict["tile_instances"][trcdata["old_tile_id"]]
+                        self.tile_id_dict[tsdict["tile_name"]] = trcdata["old_tile_id"]
+                    else:
+                        print("tile failed to load properly")
+                        tiles_to_recreate.remove(trcdata["old_tile_id"])
+                        tsdict = self.project_dict["tile_instances"][trcdata["old_tile_id"]]
+                        self.tile_id_dict[tsdict["tile_name"]] = trcdata["old_tile_id"]
                 if not tiles_to_recreate:
                     debug_log("done recreating tiles")
                     self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task", {"tile_id_map": tile_id_map})
@@ -215,7 +222,7 @@ class LoadSaveTasksMixin:
             if not modules_to_load:
                 debug_log("finished loading modules, ready to recreate tiles")
                 self.emit_status_message("Recreating tiles")
-                self.tile_save_results = {}
+                # self.tile_save_results = {}
 
                 new_tile_instances = {}
                 for old_tile_id, tile_save_dict in self.project_dict["tile_instances"].items():
@@ -247,7 +254,10 @@ class LoadSaveTasksMixin:
             tile_id_map[old_id] = str(uuid.uuid4())
 
         for tile_entry in interface_state["tile_list"]:
-            tile_entry["tile_id"] = tile_id_map[tile_entry["tile_id"]]
+            if tile_entry["tile_id"] not in tile_id_map:
+                print("Error: tile_id {} not found in tile_id_map".format(tile_entry["tile_id"]))
+            else:
+                tile_entry["tile_id"] = tile_id_map[tile_entry["tile_id"]]
 
         debug_log("loaded modules is {}".format(str(loaded_modules)))
 
@@ -856,13 +866,21 @@ class TileCreationTasksMixin:
         lsdata = {"tile_code": tile_code, "tile_save_dict": tile_save_dict}
 
         def recreate_done(recreate_response):
+            if not recreate_response["success"]:
+                print("tile didn't recreate successfully")
+                self.tile_save_dicts[old_tile_id] = recreate_response["tile_save_dict"]
+                # self.tile_instances.append(new_id[0])
+                self.mworker.ask_host("delete_container", {"container_id": new_id[0], "notify": False})
+                self.mworker.submit_response(task_packet, {"old_tile_id": old_tile_id, "success": False})
+                return
+
             exports = recreate_response["exports"]
             self.update_pipe_dict(exports, new_id[0], tile_name)
             self.mworker.emit_export_viewer_message("update_exports_popup", {})
-            self.tile_save_results[new_id[0]] = recreate_response
+            # self.tile_save_results[new_id[0]] = recreate_response
             self.tile_instances.append(new_id[0])
             self.tile_reload_dicts[new_id[0]] = recreate_response["reload_dict"]
-            self.mworker.submit_response(task_packet, {"old_tile_id": old_tile_id})
+            self.mworker.submit_response(task_packet, {"old_tile_id": old_tile_id, "success": True})
             return
 
         self.mworker.post_task(new_id[0], "load_source_and_recreate", lsdata, recreate_done,
@@ -929,10 +947,33 @@ class TileCreationTasksMixin:
 
     @task_worthy_manual_submit
     def reload_tile(self, ddict, task_packet):
+        def recreated_tile(rcdata):
+            if rcdata["success"]:
+                form_info["pipe_dict"] = self._pipe_dict
+                self.rebuild_tile_forms_task({})
+                self.mworker.emit_to_main_client("tile-finished-loading", {"message": "tile-finished-loading",
+                                                                           "success": True,
+                                                                           "tile_id": tile_id})
+                final_result = {"success": True, "form_data": None,
+                                 "options_changed": True}
+                self.mworker.submit_response(local_task_packet, final_result)
+            else:
+                raise Exception("Tried to recreate from tile_save_dict but wasn't able to.")
+
         local_task_packet = task_packet
         tile_id = bytes_to_string(ddict["tile_id"])
-        print("got tile_id {}".format(str(tile_id)))
-        print(str(ddict))
+        form_info = self.compile_form_info(tile_id)
+        if tile_id not in self.tile_reload_dicts:
+            if tile_id not in self.tile_save_dicts:
+                error_string=("Tile ID {} not found in tile_reload_dicts or tile_id_dict".format(tile_id))
+                self.mworker.send_error_entry("Couldn't reload the tile", error_string)
+                self.mworker.submit_response(local_task_packet, {"success": False, "message": error_string})
+                return
+            else:
+                print("trying to recreate rather than reload")
+                data = {"old_tile_id": tile_id, "tile_save_dict": self.tile_save_dicts[tile_id]}
+                self.mworker.post_task(self.mworker.my_id, "recreate_one_tile", data, recreated_tile)
+                return
 
         reload_dict = self.tile_reload_dicts[tile_id]
         tile_type = reload_dict["tile_type"]
@@ -954,9 +995,9 @@ class TileCreationTasksMixin:
                                 "options_changed": reinst_result["options_changed"]}
                 self.mworker.submit_response(local_task_packet, final_result)
             else:
-                raise Exception(reinst_result["message"])
+                self.mworker.send_error_entry("Tile reinstantiate error", reinst_result["message"])
+                self.mworker.submit_response(local_task_packet, {"success": False})
 
-        form_info = self.compile_form_info(tile_id)
         reload_dict["form_info"] = form_info
         reload_dict["tile_address"] = self.tile_addresses[tile_id]
         print("about to load_source")

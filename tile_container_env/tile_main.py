@@ -159,14 +159,16 @@ class TileWorker(QWorker):
         if not result["success"]:
             print("didn't load successfully")
             print("message " + result["message"])
-            return result
+            return {"success": False, "tile_save_dict": data["tile_save_dict"]}
         return self.recreate_from_save(data["tile_save_dict"])
 
     @task_worthy
     def load_source_and_reinstantiate(self, data):
         result = self.load_source(data)
         if not result["success"]:
-            return result
+            print("didn't load successfully")
+            print("message " + result["message"])
+            return {"success": False, "message": result["message"],}
         return self.reinstantiate_tile(data["reload_dict"])
 
     @task_worthy

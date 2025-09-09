@@ -77,72 +77,6 @@ color_palette_names = ["standard"] + color_palette_names
 PPI = int(os.environ["PPI"])
 
 
-class MplFigure(Figure):
-    # kwargs for mplfigure are same as matplotlib Figure
-    def __init__(self, **kwargs):
-        # self.ppi = self._tworker.ppi
-        self.use_svg = self._tworker.use_svg
-        self.user_set_facecolor = False
-        if "figsize" not in kwargs:
-            kwargs["figsize"] = (self.width / PPI, self.height / PPI)
-        Figure.__init__(self, **kwargs)
-        self.canvas = FigureCanvas(self)  # it was necessary to add this in Python 3
-        self.kwargs = kwargs
-
-    def draw_plot(self):
-        print("draw_plot not implemented")
-        return
-
-    def init_mpl_figure(self, **kwargs):
-        MplFigure.__init__(self, **kwargs)
-
-    def convert_figure_to_img(self):
-        FigureCanvas(self)  # This does seem to be necessary or savefig won't work.
-        img_file = io.BytesIO()
-        self.savefig(img_file)
-        img_file.seek(0)
-        img = img_file.getvalue()
-        return img
-
-    def create_figure_html(self, use_svg=True):
-        self._tworker.use_svg = use_svg
-        FigureCanvas(self)  # This does seem to be necessary or savefig won't work.
-        if use_svg:
-            img_file = io.StringIO()
-            self.savefig(img_file, format="svg", facecolor=self.get_facecolor())
-            img_file.seek(0)
-            the_html = img_file.read()
-        else:
-            img_file = io.BytesIO()
-            self.savefig(img_file, facecolor=self.get_facecolor())
-            img_file.seek(0)
-            figname = str(uuid.uuid4())
-            self.img_dict[figname] = img_file.getvalue()
-            fig_url = self.base_figure_url + figname
-            image_string = "<img class='output-plot' src='{}' lt='Image Placeholder'>"
-            the_html = image_string.format(fig_url)
-        return the_html
-
-    def create_pyplot_html(self, use_svg=True):
-        import matplotlib.pyplot as plt
-        self._tworker.use_svg = use_svg
-        if use_svg:
-            img_file = io.StringIO()
-            plt.gcf().savefig(img_file, format="svg", facecolor=self.get_facecolor())
-            img_file.seek(0)
-            the_html = img_file.read()
-        else:
-            img_file = io.BytesIO()
-            plt.gcf().savefig(img_file, facecolor=self.get_facecolor())
-            img_file.seek(0)
-            figname = str(uuid.uuid4())
-            self.img_dict[figname] = img_file.getvalue()
-            fig_url = self.base_figure_url + figname
-            image_string = "<img class='output-plot' src='{}' lt='Image Placeholder'>"
-            the_html = image_string.format(fig_url)
-        return the_html
-
-
 class ColorMapper(object):
     def __init__(self, bottom_val, top_val, color_palette_name):
         cnorm = mpl_Normalize(vmin=bottom_val, vmax=top_val)
@@ -157,11 +91,3 @@ class ColorMapper(object):
     def color_from_val(self, val):
         return self.rgb_to_hex(self.scalar_map.to_rgba(val)[:3])
 
-
-class ImageShow(MplFigure):
-    def draw_plot(self):
-        ax = self.add_subplot(111)
-        ax.imshow(self.data)
-        ax.axis("off")
-        self.tight_layout()
-        return

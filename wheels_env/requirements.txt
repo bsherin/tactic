@@ -42,3 +42,4 @@ regex
 kombu
 docutils
 rabbitmq-admin
+pyarrow

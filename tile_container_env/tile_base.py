@@ -476,9 +476,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
                     case "class_select":
                         form_item["option_list"] = self._get_sorted_match_list(option_tags, data["class_names"])
                     case "palette_select":
-                        if self._color_palette_names is None:
-                            from matplotlib_utilities import color_palette_names
-                            self._color_palette_names = color_palette_names
+                        from matplotlib_utilities import color_palette_names
                         form_item["option_list"] = color_palette_names
                     case "custom_list":
                         form_item["option_list"] = option["special_list"]

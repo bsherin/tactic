@@ -79,7 +79,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
         self._pipe_dict = {}
         self.selected_text = ""
         self.project_dict = None
-        self.tile_save_results = None
+        # self.tile_save_results = None
         self.mdata = None
         self.pseudo_tile_id = None
         self.loaded_modules = None
@@ -87,6 +87,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
         self.tile_addresses = {}
         self.pseudo_tile_address = None
         self.tile_reload_dicts = {}
+        self.tile_save_dicts = {}
 
         self.ppi = data_dict["ppi"]
         self.username = os.environ.get("USERNAME")

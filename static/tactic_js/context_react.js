@@ -469,6 +469,8 @@ function ContextApp(props) {
       propDict[data.kind](data, drmethod, new_panel => {
         _updatePanel(new_id, {
           panel: new_panel
+        },  () => {
+          _goToModule(module_name, line_number);
         });
       });
     } catch (e) {

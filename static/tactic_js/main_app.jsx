@@ -139,7 +139,7 @@ function MainApp(props) {
         dispatch({
             type: "initialize",
             new_items: props.is_project && props.interface_state ? props.interface_state["console_items"] : []
-        })
+        });
 
         tileDispatch({
             type: "initialize",

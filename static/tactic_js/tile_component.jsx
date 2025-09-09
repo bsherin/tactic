@@ -264,7 +264,12 @@ function TileComponent(props) {
         try {
             _startSpinner();
             let data = await postPromise(props.main_id, "reload_tile", data_dict, props.main_id);
-            _displayFormContent(data);
+            if (!data.success) {
+                return;
+            }
+            if (data.form_data) {
+                _displayFormContent(data);
+            }
             props.setTileValue(props.tile_id, "source_changed", false);
             if (data["options_changed"] || !resubmit) {
                 _stopSpinner();
