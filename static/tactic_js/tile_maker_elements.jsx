@@ -304,7 +304,7 @@ function MetadataModule(props) {
 
     function get_all_tags() {
         let data_dict = {
-            pane_type: "tile",
+            res_types: ["tile"],
             is_repository: false,
             show_hidden: true
         };

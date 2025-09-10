@@ -1,12 +1,46 @@
 import React from "react";
-import {FormGroup} from "@blueprintjs/core";
-import {Fragment} from "react";
+import {Fragment, useState, useEffect} from "react";
 
 import {TagButtonList} from "./tag_buttons_react";
 import {BpSelectorTable, SearchForm} from "./library_widgets";
 export {LibraryTablePane}
 
+function sumArray(arr) {
+    return arr.reduce((acc, val) => acc + val, 0);
+}
+
+const defaultColumnWidths = {
+    "icon:th": 35,
+    "name": 280,
+    "icon:upload": 35,
+    "created": 165,
+    "updated": 165,
+    "size": 75
+};
+
 function LibraryTablePane(props) {
+
+    const [columnWidths, setColumnWidths] = useState([]);
+    const [totalWidth, setTotalWidth] = useState(700);
+
+    function onColumnWidthChange(index, newWidth) {
+        const newWidths = [...columnWidths];
+        newWidths[index] = newWidth;
+        setColumnWidths(newWidths);
+    }
+
+    useEffect(() => {
+        let newWidths = [];
+        for (let col of props.columns) {
+            newWidths.push(defaultColumnWidths[col]);
+        }
+        setColumnWidths(newWidths);
+    },[props.columns]);
+
+    useEffect(() => {
+        let total = sumArray(columnWidths);
+        setTotalWidth(total);
+    },[columnWidths]);
 
     return (
         <Fragment>
@@ -29,7 +63,7 @@ function LibraryTablePane(props) {
                                    doTagRename={props.doTagRename}
                     />
                 </div>
-                <div className={props.pane_type + "-pane"}
+                <div className="all-pane"
                      style={{
                          flex: "5 5 0",
                          minWidth: 0,
@@ -37,26 +71,29 @@ function LibraryTablePane(props) {
                          display: "flex",
                          flexDirection: "column"
                      }}>
-                    <div style={{display: "flex", flexDirection: "column"}}>
-                        {props.pane_type == "all" &&
-                            <FormGroup label="Filter:" inline={true} style={{marginBottom: 0}}>
-                                {props.filter_buttons}
-                            </FormGroup>
-                        }
-                        <SearchForm allow_search_inside={props.allow_search_inside}
-                                    allow_search_metadata={props.allow_search_metadata}
-                                    allow_show_hidden={true}
+                    <div style={{display: "flex", flexDirection: "row",
+                        justifyContent: "space-between", width: totalWidth}}>
+
+                        <SearchForm allow_search_inside={false}
+                                    allow_search_metadata={false}
+                                    allow_show_hidden={false}
                                     update_search_state={props.update_search_state}
                                     search_string={props.pStateRef.current.search_state.search_string}
                                     search_inside={props.pStateRef.current.search_state.search_inside}
                                     show_hidden={props.pStateRef.current.search_state.show_hidden}
                                     search_metadata={props.pStateRef.current.search_state.search_metadata}
                         />
+                        <div style={{display: "flex", flexDirection: "row"}}>
+                            {props.resource_filter}
+                            {props.column_selector}
+                        </div>
                     </div>
+                    {props.columns.length > 0 && props.columns.length === columnWidths.length &&
                     <BpSelectorTable data_dict={props.pStateRef.current.data_dict}
                                      rowChanged={props.pStateRef.current.rowChanged}
                                      columns={props.columns}
-                                     columnWidths={[35, 280, 35, 165, 165, 75]}
+                                     columnWidths={columnWidths}
+                                     onColumnWidthChanged={onColumnWidthChange}
                                      num_rows={props.pStateRef.current.num_rows}
                                      open_resources_ref={props.open_resources_ref}
                                      sortColumn={props.sortColumn}
@@ -67,6 +104,7 @@ function LibraryTablePane(props) {
                                      renderBodyContextMenu={props.renderBodyContextMenu}
                                      handleRowDoubleClick={props.handleRowDoubleClick}
                     />
+                    }
                 </div>
             </div>
         </Fragment>

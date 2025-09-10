@@ -1,5 +1,6 @@
 //comments
 import "../tactic_css/tactic.scss";
+import ("../tactic_css/themeable.scss");
 
 import React from "react";
 import {Fragment, useEffect, useState, memo, useContext} from "react";
@@ -26,7 +27,7 @@ function _account_main() {
     const root = createRoot(domContainer);
     let tsocket = new TacticSocket("main", 5000, "code_viewer", window.main_id);
     let AccountAppPlus = withSettings(AccountApp);
-    let the_element = <AccountAppPlus controlled={false} tsocket={tsocket}/>
+    let the_element = <AccountAppPlus controlled={false} tsocket={tsocket}/>;
      root.render(
         <div style={{display: "flex", flexDirection: "column",
             position: "relative",

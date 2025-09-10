@@ -4,13 +4,19 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.BpSelectorTable = BpSelectorTable;
+exports.ColumnSelector = ColumnSelector;
+exports.ResourceFilter = ResourceFilter;
 exports.SearchForm = SearchForm;
+exports.base_columns = void 0;
 exports.compute_initial_column_widths = compute_initial_column_widths;
 var _react = _interopRequireWildcard(require("react"));
 var _core = require("@blueprintjs/core");
 var _table = require("@blueprintjs/table");
 var _utilities_react = require("./utilities_react");
 function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function (e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, default: e }; if (null === e || "object" != typeof e && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (const t in e) "default" !== t && {}.hasOwnProperty.call(e, t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, t)) && (i.get || i.set) ? o(f, t, i) : f[t] = e[t]); return f; })(e, t); }
+const DEFAULT_ROW_HEIGHT = 35;
+const MAX_INITIAL_CELL_WIDTH = 300;
+const ICON_WIDTH = 35;
 function SearchForm(props) {
   props = {
     allow_search_inside: false,
@@ -44,7 +50,7 @@ function SearchForm(props) {
     set_temp_text(event.target.value);
   }
   function _handleSearchMetadataChange(event) {
-    props.update_search_state({
+    update_search_state({
       "search_metadata": event.target.checked
     });
   }
@@ -147,25 +153,148 @@ function SearchForm(props) {
   })))));
 }
 exports.SearchForm = SearchForm = /*#__PURE__*/(0, _react.memo)(SearchForm);
+const all_columns = ["icon:th", "name", "icon:upload", "created", "updated", "size"];
+const base_columns = exports.base_columns = ["icon:th", "name", "icon:upload"];
+function ColumnSelector({
+  icon_dict,
+  selectedColumns,
+  onColumnChange
+}) {
+  const toggleColumn = k => {
+    const next = new Set(selectedColumns);
+    if (next.has(k)) next.delete(k);else next.add(k);
+    onColumnChange([...next]);
+  };
+  return /*#__PURE__*/_react.default.createElement(_core.Popover, {
+    placement: "bottom-start",
+    content: /*#__PURE__*/_react.default.createElement(_core.Menu, null, all_columns.map(k => /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
+      key: k,
+      shouldDismissPopover: false
+      // icon={icon_dict[k]}
+      ,
+      text: /*#__PURE__*/_react.default.createElement(_core.Checkbox, {
+        checked: selectedColumns.includes(k),
+        label: k,
+        className: "menu-control",
+        disabled: base_columns.includes(k),
+        alignIndicator: _core.Alignment.END,
+        onChange: () => toggleColumn(k)
+      })
+    })))
+  }, /*#__PURE__*/_react.default.createElement(_core.Button, {
+    icon: "list-columns"
+  }));
+}
+function ResourceFilter({
+  kinds,
+  icon_dict,
+  selectedKinds,
+  onKindChange,
+  update_search_state,
+  search_inside = false,
+  search_metadata = false,
+  show_hidden = false,
+  showSummary = false
+}) {
+  const allSelected = selectedKinds.size === kinds.length;
+  const noneSelected = selectedKinds.size === 0;
+  const toggleKind = k => {
+    const next = new Set(selectedKinds);
+    if (next.has(k)) next.delete(k);else next.add(k);
+    onKindChange([...next]);
+  };
+
+  ///const selectAll = () => onKindChange(kinds);
+  const selectNone = () => onKindChange([]);
+  const summary = (0, _react.useMemo)(() => {
+    if (!showSummary) return "";
+    if (allSelected) return "All kinds";
+    if (noneSelected) return "None";
+    return Array.from(selectedKinds).join(", ");
+  }, [allSelected, noneSelected, selectedKinds]);
+  function _handleSearchMetadataChange(event) {
+    update_search_state({
+      "search_metadata": event.target.checked
+    });
+  }
+  function _handleSearchInsideChange(event) {
+    update_search_state({
+      "search_inside": event.target.checked
+    });
+  }
+  function _handleShowHiddenChange(event) {
+    update_search_state({
+      "show_hidden": event.target.checked
+    });
+  }
+  return /*#__PURE__*/_react.default.createElement(_core.Popover, {
+    placement: "bottom-start",
+    content: /*#__PURE__*/_react.default.createElement(_core.Menu, null, /*#__PURE__*/_react.default.createElement("div", {
+      onClick: selectNone,
+      style: {
+        display: "flex",
+        flexDirection: "row",
+        justifyContent: "space-between"
+      }
+    }, /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
+      text: "Clear",
+      key: "clear",
+      shouldDismissPopover: false,
+      disabled: noneSelected
+    }), /*#__PURE__*/_react.default.createElement(_core.Icon, {
+      icon: "circle",
+      className: "bp6-menu-item"
+    })), /*#__PURE__*/_react.default.createElement(_core.MenuDivider, null), kinds.map(k => /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
+      key: k,
+      shouldDismissPopover: false,
+      icon: icon_dict[k],
+      text: /*#__PURE__*/_react.default.createElement(_core.Checkbox, {
+        checked: selectedKinds.includes(k),
+        label: k,
+        className: "menu-control",
+        alignIndicator: _core.Alignment.END,
+        onChange: () => toggleKind(k)
+      })
+    })), /*#__PURE__*/_react.default.createElement(_core.MenuDivider, null), /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
+      key: "metadata",
+      shouldDismissPopover: false,
+      text: /*#__PURE__*/_react.default.createElement(_core.Switch, {
+        checked: search_metadata,
+        label: "Metadata",
+        className: "menu-control",
+        onChange: _handleSearchMetadataChange
+      })
+    }), /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
+      key: "inside",
+      shouldDismissPopover: false,
+      text: /*#__PURE__*/_react.default.createElement(_core.Switch, {
+        checked: search_inside,
+        label: "inside",
+        className: "menu-control",
+        onChange: _handleSearchInsideChange
+      })
+    }), /*#__PURE__*/_react.default.createElement(_core.MenuDivider, null), /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
+      key: "hidden",
+      shouldDismissPopover: false,
+      text: /*#__PURE__*/_react.default.createElement(_core.Switch, {
+        checked: show_hidden,
+        label: "show hidden",
+        className: "menu-control",
+        alignIndicator: _core.Alignment.END,
+        onChange: _handleShowHiddenChange
+      })
+    }))
+  }, /*#__PURE__*/_react.default.createElement(_core.Button, {
+    icon: "filter",
+    text: `${summary}`
+  }));
+}
 function BpSelectorTable(props) {
   props = {
-    columns: {
-      "name": {
-        "sort_field": "name",
-        "first_sort": "ascending"
-      },
-      "created": {
-        "sort_field": "created_for_sort",
-        "first_sort": "descending"
-      },
-      "updated": {
-        "sort_field": "updated_for_sort",
-        "first_sort": "ascending"
-      }
-      // "tags": {"sort_field": "tags", "first_sort": "ascending"}
-    },
+    columns: ["name", "created", "updated"],
     identifier_field: "_id",
     enableColumnResigin: false,
+    onColumnWidthChanged: null,
     maxColumnWidth: null,
     active_row: 0,
     show_animations: false,
@@ -194,7 +323,7 @@ function BpSelectorTable(props) {
 
   function computeColumnWidths() {
     if (Object.keys(props.data_dict).length == 0) return;
-    let column_names = Object.keys(props.columns);
+    let column_names = props.columns;
     let bcwidths = compute_initial_column_widths(column_names, Object.values(props.data_dict));
     let cwidths = [];
     if (props.maxColumnWidth) {
@@ -218,7 +347,7 @@ function BpSelectorTable(props) {
       await props.initiateDataGrab(data_update_required.current);
       data_update_required.current = null;
     }
-    const lastColumnRegion = _table.Regions.column(Object.keys(props.columns).length - 1);
+    const lastColumnRegion = _table.Regions.column(props.columns.length - 1);
     const firstColumnRegion = _table.Regions.column(0);
     table_ref.current.scrollToRegion(lastColumnRegion);
     table_ref.current.scrollToRegion(firstColumnRegion);
@@ -310,7 +439,7 @@ function BpSelectorTable(props) {
     }
     return the_body;
   }
-  let column_names = Object.keys(props.columns);
+  let column_names = props.columns;
   let columns = column_names.map(column_name => {
     const cellRenderer = _cellRendererCreator(column_name);
     const columnHeaderCellRenderer = () => /*#__PURE__*/_react.default.createElement(_table.ColumnHeaderCell, {
@@ -344,9 +473,10 @@ function BpSelectorTable(props) {
     enableColumnResizing: props.enableColumnResizing,
     maxColumnWidth: props.maxColumnWidth,
     enableMultipleSelection: true,
-    defaultRowHeight: 27,
+    defaultRowHeight: DEFAULT_ROW_HEIGHT,
     selectedRegions: props.selectedRegions,
     enableRowHeader: false,
+    onColumnWidthChanged: props.onColumnWidthChanged,
     columnWidths: props.columnWidths ? props.columnWidths : columnWidths,
     onCompleteRender: _onCompleteRender,
     selectionModes: _table.SelectionModes.ALL,
@@ -354,8 +484,6 @@ function BpSelectorTable(props) {
   }, columns);
 }
 exports.BpSelectorTable = BpSelectorTable = /*#__PURE__*/(0, _react.memo)(BpSelectorTable);
-const MAX_INITIAL_CELL_WIDTH = 300;
-const ICON_WIDTH = 35;
 function compute_initial_column_widths(header_list, data_list) {
   const max_field_width = MAX_INITIAL_CELL_WIDTH;
 

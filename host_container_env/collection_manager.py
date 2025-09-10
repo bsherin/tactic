@@ -31,7 +31,7 @@ import loaded_tile_management
 
 ILLEGAL_CHARACTERS_RE = re.compile(r'[\000-\010]|[\013-\014]|[\016-\037]')
 
-CHUNK_SIZE = int(int(os.environ.get("CHUNK_SIZE")) / 2)
+LIBRARY_CHUNK_SIZE = int(int(os.environ.get("LIBRARY_CHUNK_SIZE")) / 2)
 
 AUTOSPLIT = False
 AUTOSPLIT_SIZE = 10000

@@ -2,8 +2,8 @@
 @use "blueprint_variables.scss";
 @use "themeable.scss";
 
-$library-table-font-size: 13px;
-$library-table-line-height: 27px;
+$library-table-font-size: 15px;
+$library-table-line-height: 31px;
 
 $library-tree-node-font: 12px;
 $library-tree-node-height: 25px;
@@ -58,6 +58,10 @@ $library-tree-margin-top: 65px;
         }
     }
 }
+
+  .menu-control {
+    margin-bottom: 3px;
+  }
 
 .hidden_cell {
     opacity: .5

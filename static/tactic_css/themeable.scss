@@ -308,7 +308,7 @@ $light-chat-card-bg: blueprint_variables.$light-gray5;
     }
 
     &.account-settings {
-        background-color: $light-account-pane-bg;
+        background-color: $light-backdrop;
     }
 
 
@@ -464,10 +464,6 @@ $light-chat-card-bg: blueprint_variables.$light-gray5;
         color: #6c757d;
     }
 
-    .account-pane {
-        background-color: $light-account-pane-bg;
-    }
-
 }
 
 // ==============================================
@@ -534,7 +530,7 @@ $light-chat-card-bg: blueprint_variables.$light-gray5;
     }
 
     &.account-settings {
-        background-color: $dark-account-pane-bg;
+        background-color: $dark-backdrop;
     }
 
     &.pane-holder {
@@ -651,9 +647,6 @@ $light-chat-card-bg: blueprint_variables.$light-gray5;
         color: blueprint_variables.$light-gray1;
     }
 
-    .account-pane {
-        background-color: $dark-account-pane-bg;
-    }
 }
 
 

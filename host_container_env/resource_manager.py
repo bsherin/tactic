@@ -15,7 +15,7 @@ print("in resource_manager with use_remote_database " + str(use_remote_database)
 
 repository_user = User.get_user_by_username("repository", use_remote_repository)
 
-CHUNK_SIZE = int(int(os.environ.get("CHUNK_SIZE")) / 2)
+LIBRARY_CHUNK_SIZE = int(int(os.environ.get("LIBRARY_CHUNK_SIZE")) / 2)
 
 default_tile_icons = {
     "standard": "application",
@@ -352,11 +352,8 @@ class LibraryResourceManager(ResourceManager):
             "do_jsonify": False
         }
 
-    def prep_collection_results(self, filtered_list, is_all=False):
-        if is_all:
-            icon_dict = {"table": "icon:database", "freeform": "icon:database"}
-        else:
-            icon_dict = {"table": "icon:th", "freeform": "icon:align-left"}
+    def prep_collection_results(self, filtered_list):
+        icon_dict = {"table": "icon:th", "freeform": "icon:align-left"}
 
         for val in filtered_list:
             if val["res_type"] == "collection":
@@ -369,19 +366,12 @@ class LibraryResourceManager(ResourceManager):
                 val["icon:upload"] = ""
         return filtered_list
 
-    def prep_project_results(self, filtered_list, is_all=False):
-        if is_all:
-            icon_dict = {"table": "icon:projects",
-                         "freeform": "icon:projects",
-                         "notebook": "icon:projects",
-                         "none": "icon:projects",
-                         "jupyter": "icon:projects"}
-        else:
-            icon_dict = {"table": "icon:projects",
-                         "freeform": "icon:projects",
-                         "notebook": "icon:console",
-                         "none": "icon:projects",
-                         "jupyter": "icon:globe-network"}
+    def prep_project_results(self, filtered_list):
+        icon_dict = {"table": "icon:projects",
+                     "freeform": "icon:projects",
+                     "notebook": "icon:console",
+                     "none": "icon:projects",
+                     "jupyter": "icon:globe-network"}
         for val in filtered_list:
             if val["res_type"] == "project":
                 if "type" in val:
@@ -391,7 +381,7 @@ class LibraryResourceManager(ResourceManager):
                 val["icon:upload"] = ""
         return filtered_list
 
-    def prep_list_results(self, filtered_list, is_all=False):
+    def prep_list_results(self, filtered_list):
         for val in filtered_list:
             if val["res_type"] == "list":
                 val["icon:th"] = "icon:list"
@@ -399,7 +389,7 @@ class LibraryResourceManager(ResourceManager):
                 val["size"] = ""
         return filtered_list
 
-    def prep_code_results(self, filtered_list, is_all=False):
+    def prep_code_results(self, filtered_list):
         for val in filtered_list:
             if val["res_type"] == "code":
                 val["icon:th"] = "icon:code"
@@ -407,15 +397,10 @@ class LibraryResourceManager(ResourceManager):
                 val["size"] = ""
         return filtered_list
 
-    def prep_tile_results(self, filtered_list, is_all=False):
-        if is_all:
-            type_dict = {"standard": "icon:application",
-                         "matplotlib": "icon:application",
-                         "d3": "icon:application"}
-        else:
-            type_dict = {"standard": "icon:application",
-                         "matplotlib": "icon:timeline-line-chart",
-                         "d3": "icon:timeline-area-chart"}
+    def prep_tile_results(self, filtered_list):
+        type_dict = {"standard": "icon:application",
+                     "matplotlib": "icon:timeline-line-chart",
+                     "d3": "icon:timeline-area-chart"}
 
         if not request.json["is_repository"]:
             failed_loads = set(loaded_tile_management.get_failed_loads_list(current_user.username))
@@ -454,21 +439,23 @@ class LibraryResourceManager(ResourceManager):
                     "list": self.prep_list_results,
                     "code": self.prep_code_results}
 
-        pane_type = data["pane_type"]
-        if pane_type == "all":
+        types_to_grab = data["res_types"]
+        if len(types_to_grab) == 0:
             types_to_grab = res_types
-        else:
-            types_to_grab = [pane_type]
 
         if "number_to_get" in data:
             number_to_get = data["number_to_get"]
         else:
-            number_to_get = CHUNK_SIZE
+            number_to_get = LIBRARY_CHUNK_SIZE
         db_to_use = self.repository_db if is_repo else self.db
 
         search_spec = data["search_spec"]
         row_number = data["row_number"]
         search_text = search_spec['search_string']
+        if "columns" in data:
+            columns = data["columns"]
+        else:
+            columns = []
 
         filtered_res = []
         all_tags = []
@@ -510,7 +497,7 @@ class LibraryResourceManager(ResourceManager):
                         doc_id = str(doc["_id"])
                         all_subtags = self.get_all_subtags(mdata["tags"])
                         all_tags += mdata["tags"].split()
-                        if "file_id" in doc:
+                        if "file_id" in doc and "size" in columns:
                             rdict = self.build_res_dict(doc[name_field], mdata, None,
                                                         doc["file_id"], res_type=rtype,
                                                         doc_id=doc_id, sort_field=sort_field)
@@ -526,10 +513,9 @@ class LibraryResourceManager(ResourceManager):
                     msg = self.get_traceback_message(ex, f"Got problem with doc {str(doc[name_field])}")
                     print(msg)
 
-        is_all = pane_type == "all"
         for rtype in types_to_grab:
             prepper = preppers[rtype]
-            filtered_res = prepper(filtered_res, is_all)
+            filtered_res = prepper(filtered_res)
 
         reverse =  search_spec["sort_direction"] == "descending"
 

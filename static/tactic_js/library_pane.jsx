@@ -3,7 +3,7 @@
 import React from "react";
 import {Fragment, useRef, useEffect, memo, useContext, useMemo, useCallback} from "react";
 
-import {Menu, MenuItem, MenuDivider, Button, Tooltip, useHotkeys} from "@blueprintjs/core";
+import {Menu, MenuItem, MenuDivider, useHotkeys} from "@blueprintjs/core";
 import {Regions} from "@blueprintjs/table";
 
 import {CombinedMetadata, icon_dict} from "./combined_metadata";
@@ -11,13 +11,14 @@ import {HorizontalPanes} from "./resizing_allotment";
 import {postAjaxPromise, postPromise} from "./communication_react"
 
 import {doFlash} from "./toaster"
-import {useCallbackStack, useConstructor, useImmerReducerAndRef} from "./utilities_react";
+import {useCallbackStack, useImmerReducerAndRef} from "./utilities_react";
 
 import {DialogContext} from "./modal_react";
 import {StatusContext} from "./toaster"
 import {ErrorDrawerContext} from "./error_drawer";
 import {LibraryTablePane} from "./library_table_pane";
 import {paneReducer, get_index, get_index_from_id} from "./library_pane_reducer";
+import {ResourceFilter, ColumnSelector} from "./library_widgets";
 
 export {LibraryPane, view_views, res_types}
 
@@ -109,8 +110,8 @@ const initial_state = {
         search_string: "",
         search_inside: false,
         search_metadata: false,
-        filterType: "all",
-        show_hidden: false,
+        filterType: [],
+        show_hidden: false
 
     },
     rowChanged: 0
@@ -118,12 +119,7 @@ const initial_state = {
 
 function LibraryPane(props) {
     props = {
-        columns: {
-            "name": {"first_sort": "ascending"},
-            "created": {"first_sort": "descending"},
-            "updated": {"first_sort": "ascending"},
-            "tags": {"first_sort": "ascending"}
-        },
+        columns: ["name", "created", "updated", "tags"],
         is_repository: false,
         tsocket: null,
         ...props
@@ -133,7 +129,6 @@ function LibraryPane(props) {
 
     const top_ref = useRef(null);
     const previous_search_spec = useRef(null);
-    const blank_selected_resource = useRef({});
     
     const selectedTypeRef = useRef(null);
 
@@ -185,8 +180,8 @@ function LibraryPane(props) {
             _update_search_state({search_string: ""})
         } else if (pStateRef.current.search_state.active_tag != "all") {
             _update_search_state({active_tag: "all"})
-        } else if (props.pane_type == "all" && pStateRef.current.search_state.filterType != "all") {
-            await _setFilterType("all")
+        } else if (!_.isEqual(pStateRef.current.search_state.filterType, res_types)) {
+            await _setFilterType(res_types)
         }
     }
 
@@ -228,13 +223,6 @@ function LibraryPane(props) {
 
    const { handleKeyDown, handleKeyUp } = useHotkeys(hotkeys);
 
-    useConstructor(() => {
-
-        for (let col in props.columns) {
-            blank_selected_resource.current[col] = ""
-        }
-    });
-
     useEffect(() => {
         initSocket();
         _grabNewChunkWithRow(0).then(() => {});
@@ -275,8 +263,8 @@ function LibraryPane(props) {
         )
     }
 
-    async function _setFilterType(rtype) {
-        if (rtype == pStateRef.current.search_state.filterType) return;
+    async function _setFilterType(rtypes) {
+        if (_.isEqual(rtypes, pStateRef.current.search_state.filterType)) return;
 
         if (!pStateRef.current.search_state.multi_select) {
             let sres = pStateRef.current.select_state.selected_resource;
@@ -284,12 +272,13 @@ function LibraryPane(props) {
                 await _saveFromSelectedResource()
             }
         }
-        pDispatch({type: "UPDATE_SEARCH_STATE", search_state: {filterType: rtype}});
+        pDispatch({type: "UPDATE_SEARCH_STATE", search_state: {filterType: rtypes}});
         clearSelected();
         pushCallback(async () => {
             await _grabNewChunkWithRow(0, true, null, true)
         });
     }
+
 
     function clearSelected() {
         pDispatch({type: "CLEAR_SELECTED"});
@@ -351,10 +340,11 @@ function LibraryPane(props) {
             search_spec.active_tag = "/" + search_spec.active_tag
         }
         let args = {
-            pane_type: pStateRef.current.search_state.filterType,
+            res_types: pStateRef.current.search_state.filterType,
             search_spec: search_spec,
             row_number: row_index,
-            is_repository: props.is_repository
+            is_repository: props.is_repository,
+            columns: props.columns
         };
 
 
@@ -406,16 +396,6 @@ function LibraryPane(props) {
                 }
                 if (!ind) return;
                 pDispatch({type: "UPDATE_ROW", index: ind, res_dict: res_dict});
-                // if ("tags" in res_dict) {
-                //     let data_dict = {
-                //         pane_type: props.pane_type,
-                //         is_repository: props.is_repository,
-                //         show_hidden: pStateRef.current.search_state.show_hidden
-                //     };
-                //     let data = await postAjaxPromise("get_tag_list", data_dict);
-                //     let all_tags = data.tag_list;
-                //     set_tag_list(all_tags);
-                // }
                 if (_id == pStateRef.current.select_state.selected_resource._id) {
                     let the_row = {...pStateRef.current.data_dict[ind], ...res_dict};
                     pDispatch({type: "UPDATE_SELECT_STATE", select_state: {selected_resource: the_row}});
@@ -798,7 +778,6 @@ function LibraryPane(props) {
     }
 
     async function _send_repository_func() {
-        let pane_type = props.pane_type;
         if (!pStateRef.current.select_state.multi_select) {
             let res_type = pStateRef.current.select_state.selected_resource.res_type;
             let res_name = pStateRef.current.select_state.selected_resource.name;
@@ -813,7 +792,6 @@ function LibraryPane(props) {
                     handleClose: dialogFuncs.hideModal,
                 });
                 const result_dict = {
-                    "pane_type": pane_type,
                     "res_type": res_type,
                     "res_name": res_name,
                     "new_res_name": new_name
@@ -827,7 +805,6 @@ function LibraryPane(props) {
             }
         } else {
             const result_dict = {
-                "pane_type": pane_type,
                 "selected_rows": pStateRef.current.select_state.selected_rows,
             };
             try {
@@ -1239,29 +1216,29 @@ function LibraryPane(props) {
 
     let MenubarClass = props.MenubarClass;
 
-    let filter_buttons = [];
-    for (let rtype of ["all"].concat(res_types)) {
-        filter_buttons.push(
-            <Tooltip content={rtype}
-                      key={rtype}
-                      placement="top"
-                      hoverOpenDelay={700}
-                      intent="warning">
-                <Button icon={icon_dict[rtype]}
-                        variant="minimal"
-                        active={rtype == pState.search_state.filterType}
-                        onClick={async () => {
-                            await _setFilterType(rtype)
-                        }}/>
-            </Tooltip>
-        )
-    }
+    let resource_filter = (<ResourceFilter kinds={res_types}
+                                           icon_dict={icon_dict}
+                                           selectedKinds={pStateRef.current.search_state.filterType}
+                                           search_string={pStateRef.current.search_state.search_string}
+                                           search_inside={pStateRef.current.search_state.search_inside}
+                                            show_hidden={pStateRef.current.search_state.show_hidden}
+                                            search_metadata={pStateRef.current.search_state.search_metadata}
+                                           update_search_state={_update_search_state}
+                                           onKindChange={async (rtypes) => {
+                                                await _setFilterType(rtypes)
+                                            }}/>);
+
+    let column_selector = (<ColumnSelector
+                                       icon_dict={[]}
+                                       selectedColumns={props.columns}
+                                       onColumnChange={props.updateColumns}/>);
 
     let left_pane = (
         <LibraryTablePane
             {...props}
             pStateRef={pStateRef}
-            filter_buttons={filter_buttons}
+            resource_filter={resource_filter}
+            column_selector={column_selector}
             update_search_state={_update_search_state}
             updateTagState={_update_search_state}
             sortColumn={_set_sort_state}

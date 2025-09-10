@@ -47,6 +47,7 @@ Database.create_collection = create_collection
 # noinspection PyUnresolvedReferences
 try:
     CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE"))
+    LIBRARY_CHUNK_SIZE = int(os.environ.get("LIBRARY_CHUNK_SIZE"))
 
     db, fs, repository_db, repository_fs, use_remote_repository, use_remote_database = get_dbs()
 

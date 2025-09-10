@@ -20,6 +20,7 @@ var _modal_react = require("./modal_react");
 var _error_drawer = require("./error_drawer");
 var _library_table_pane = require("./library_table_pane");
 var _library_pane_reducer = require("./library_pane_reducer");
+var _library_widgets = require("./library_widgets");
 function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function (e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, default: e }; if (null === e || "object" != typeof e && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (const t in e) "default" !== t && {}.hasOwnProperty.call(e, t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, t)) && (i.get || i.set) ? o(f, t, i) : f[t] = e[t]); return f; })(e, t); }
 // noinspection JSValidateTypes,JSDeprecatedSymbols
 
@@ -107,27 +108,14 @@ const initial_state = {
     search_string: "",
     search_inside: false,
     search_metadata: false,
-    filterType: "all",
+    filterType: [],
     show_hidden: false
   },
   rowChanged: 0
 };
 function LibraryPane(props) {
   props = {
-    columns: {
-      "name": {
-        "first_sort": "ascending"
-      },
-      "created": {
-        "first_sort": "descending"
-      },
-      "updated": {
-        "first_sort": "ascending"
-      },
-      "tags": {
-        "first_sort": "ascending"
-      }
-    },
+    columns: ["name", "created", "updated", "tags"],
     is_repository: false,
     tsocket: null,
     ...props
@@ -135,7 +123,6 @@ function LibraryPane(props) {
   const [pState, pDispatch, pStateRef] = (0, _utilities_react.useImmerReducerAndRef)(_library_pane_reducer.paneReducer, initial_state);
   const top_ref = (0, _react.useRef)(null);
   const previous_search_spec = (0, _react.useRef)(null);
-  const blank_selected_resource = (0, _react.useRef)({});
   const selectedTypeRef = (0, _react.useRef)(null);
   const dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   const statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
@@ -189,8 +176,8 @@ function LibraryPane(props) {
       _update_search_state({
         active_tag: "all"
       });
-    } else if (props.pane_type == "all" && pStateRef.current.search_state.filterType != "all") {
-      await _setFilterType("all");
+    } else if (!_.isEqual(pStateRef.current.search_state.filterType, res_types)) {
+      await _setFilterType(res_types);
     }
   }
   const hotkeys = (0, _react.useMemo)(() => [{
@@ -228,11 +215,6 @@ function LibraryPane(props) {
     handleKeyDown,
     handleKeyUp
   } = (0, _core.useHotkeys)(hotkeys);
-  (0, _utilities_react.useConstructor)(() => {
-    for (let col in props.columns) {
-      blank_selected_resource.current[col] = "";
-    }
-  });
   (0, _react.useEffect)(() => {
     initSocket();
     _grabNewChunkWithRow(0).then(() => {});
@@ -270,8 +252,8 @@ function LibraryPane(props) {
       selected_rows: selected_rows
     });
   }
-  async function _setFilterType(rtype) {
-    if (rtype == pStateRef.current.search_state.filterType) return;
+  async function _setFilterType(rtypes) {
+    if (_.isEqual(rtypes, pStateRef.current.search_state.filterType)) return;
     if (!pStateRef.current.search_state.multi_select) {
       let sres = pStateRef.current.select_state.selected_resource;
       if (sres.name != "" && sres.notes != get_data_dict_entry(sres.name, sres.res_type).notes) {
@@ -281,7 +263,7 @@ function LibraryPane(props) {
     pDispatch({
       type: "UPDATE_SEARCH_STATE",
       search_state: {
-        filterType: rtype
+        filterType: rtypes
       }
     });
     clearSelected();
@@ -356,10 +338,11 @@ function LibraryPane(props) {
       search_spec.active_tag = "/" + search_spec.active_tag;
     }
     let args = {
-      pane_type: pStateRef.current.search_state.filterType,
+      res_types: pStateRef.current.search_state.filterType,
       search_spec: search_spec,
       row_number: row_index,
-      is_repository: props.is_repository
+      is_repository: props.is_repository,
+      columns: props.columns
     };
 
     /** @type {{ chunk_dict: object, all_tags: array, num_rows: int }} */
@@ -421,16 +404,6 @@ function LibraryPane(props) {
           index: ind,
           res_dict: res_dict
         });
-        // if ("tags" in res_dict) {
-        //     let data_dict = {
-        //         pane_type: props.pane_type,
-        //         is_repository: props.is_repository,
-        //         show_hidden: pStateRef.current.search_state.show_hidden
-        //     };
-        //     let data = await postAjaxPromise("get_tag_list", data_dict);
-        //     let all_tags = data.tag_list;
-        //     set_tag_list(all_tags);
-        // }
         if (_id == pStateRef.current.select_state.selected_resource._id) {
           let the_row = {
             ...pStateRef.current.data_dict[ind],
@@ -821,7 +794,6 @@ function LibraryPane(props) {
     }
   }
   async function _send_repository_func() {
-    let pane_type = props.pane_type;
     if (!pStateRef.current.select_state.multi_select) {
       let res_type = pStateRef.current.select_state.selected_resource.res_type;
       let res_name = pStateRef.current.select_state.selected_resource.name;
@@ -836,7 +808,6 @@ function LibraryPane(props) {
           handleClose: dialogFuncs.hideModal
         });
         const result_dict = {
-          "pane_type": pane_type,
           "res_type": res_type,
           "res_name": res_name,
           "new_res_name": new_name
@@ -850,7 +821,6 @@ function LibraryPane(props) {
       }
     } else {
       const result_dict = {
-        "pane_type": pane_type,
         "selected_rows": pStateRef.current.select_state.selected_rows
       };
       try {
@@ -1259,26 +1229,28 @@ function LibraryPane(props) {
     readOnly: props.is_repository
   });
   let MenubarClass = props.MenubarClass;
-  let filter_buttons = [];
-  for (let rtype of ["all"].concat(res_types)) {
-    filter_buttons.push(/*#__PURE__*/_react.default.createElement(_core.Tooltip, {
-      content: rtype,
-      key: rtype,
-      placement: "top",
-      hoverOpenDelay: 700,
-      intent: "warning"
-    }, /*#__PURE__*/_react.default.createElement(_core.Button, {
-      icon: _combined_metadata.icon_dict[rtype],
-      variant: "minimal",
-      active: rtype == pState.search_state.filterType,
-      onClick: async () => {
-        await _setFilterType(rtype);
-      }
-    })));
-  }
+  let resource_filter = /*#__PURE__*/_react.default.createElement(_library_widgets.ResourceFilter, {
+    kinds: res_types,
+    icon_dict: _combined_metadata.icon_dict,
+    selectedKinds: pStateRef.current.search_state.filterType,
+    search_string: pStateRef.current.search_state.search_string,
+    search_inside: pStateRef.current.search_state.search_inside,
+    show_hidden: pStateRef.current.search_state.show_hidden,
+    search_metadata: pStateRef.current.search_state.search_metadata,
+    update_search_state: _update_search_state,
+    onKindChange: async rtypes => {
+      await _setFilterType(rtypes);
+    }
+  });
+  let column_selector = /*#__PURE__*/_react.default.createElement(_library_widgets.ColumnSelector, {
+    icon_dict: [],
+    selectedColumns: props.columns,
+    onColumnChange: props.updateColumns
+  });
   let left_pane = /*#__PURE__*/_react.default.createElement(_library_table_pane.LibraryTablePane, (0, _extends2.default)({}, props, {
     pStateRef: pStateRef,
-    filter_buttons: filter_buttons,
+    resource_filter: resource_filter,
+    column_selector: column_selector,
     update_search_state: _update_search_state,
     updateTagState: _update_search_state,
     sortColumn: _set_sort_state,

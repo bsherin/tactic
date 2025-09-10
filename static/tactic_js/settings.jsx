@@ -20,6 +20,8 @@ const INITIAL_SETTINGS = {
     theme: "dark",
     preferred_dark_theme: "nord",
     preferred_light_theme: "github",
+    library_columns: ["created", "updated", "size"],
+    
 };
 
 const SettingsContext = createContext(null);
@@ -61,6 +63,16 @@ function withSettings(WrappedComponent, lposition = "right", settings_drawer_siz
             setShowSettingsDrawer(!showSettingsDrawer)
         }
 
+        function updateSetting(fname, fvalue) {
+            let data = {};
+            data[fname] = fvalue;
+            postAjax("update_settings", data, function (result) {
+                if (!result.success) {
+                    console.log("Error updating setting", fname, fvalue);
+                }
+            });
+        }
+
         const highlightTheme = "theme" in settingsRef.current ?
             HIGHLIGHT_THEMES[settingsRef.current.theme] : HIGHLIGHT_THEMES["dark"];
 
@@ -73,6 +85,7 @@ function withSettings(WrappedComponent, lposition = "right", settings_drawer_siz
                     settings: settingsRef.current,
                     settingsRef: settingsRef,
                     setSettings: setSettings,
+                    updateSetting: updateSetting,
                     setShowSettingsDrawer: setShowSettingsDrawer,
                     toggleSettingsDrawer: toggleSettingsDrawer,
                     isDark: isDark}}>

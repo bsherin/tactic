@@ -91,7 +91,7 @@
   background-color: white;
 }
 .light-theme.account-settings {
-  background-color: #ffffff;
+  background-color: white;
 }
 .light-theme .combined-metadata {
   box-shadow: none;
@@ -198,9 +198,6 @@
 .light-theme caption {
   color: #6c757d;
 }
-.light-theme .account-pane {
-  background-color: #ffffff;
-}
 
 #library-home-root .bp6-dark .bp6-table-cell-client {
   background-color: #383e47;
@@ -238,7 +235,7 @@
   box-shadow: none;
 }
 .bp6-dark.account-settings {
-  background-color: #2f343c;
+  background-color: #383e47;
 }
 .bp6-dark.pane-holder {
   background-color: #383e47;
@@ -324,9 +321,6 @@
 .bp6-dark caption {
   color: #d3d8de;
 }
-.bp6-dark .account-pane {
-  background-color: #2f343c;
-}
 
 .status-holder.light-theme {
   background-color: transparent;
@@ -360,19 +354,23 @@
   flex-direction: column;
 }
 #library-home-root .library-table-cell {
-  font-size: 13px;
-  line-height: 27px;
+  font-size: 15px;
+  line-height: 31px;
 }
 #library-home-root .library-header-cell {
   font-weight: bold;
-  font-size: 13px;
-  line-height: 27px;
+  font-size: 15px;
+  line-height: 31px;
 }
 #library-home-root .bp6-table-quadrant-scroll-container {
   overflow: hidden;
 }
 #library-home-root .bp6-table-quadrant-scroll-container:hover {
   overflow: auto;
+}
+
+.menu-control {
+  margin-bottom: 3px;
 }
 
 .hidden_cell {

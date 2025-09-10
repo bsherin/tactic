@@ -1,5 +1,5 @@
 import React from "react";
-import {Fragment, useState, useEffect, useRef, memo} from 'react';
+import {Fragment, useState, useEffect, useRef, memo, useMemo} from 'react';
 
 import {
     InputGroup,
@@ -9,15 +9,26 @@ import {
     FormGroup,
     Switch,
     Button,
-    ButtonGroup
+    ButtonGroup,
+    Popover,
+    Checkbox,
+    MenuDivider,
+    Alignment
 } from "@blueprintjs/core";
 import {Cell, Column, Table, ColumnHeaderCell, SelectionModes, TruncatedFormat, Regions} from "@blueprintjs/table";
 
-import {useDebounce } from "./utilities_react";
+import {useDebounce} from "./utilities_react";
 
 export {SearchForm}
 export {BpSelectorTable}
 export {compute_initial_column_widths};
+export {ResourceFilter};
+export {ColumnSelector};
+export {base_columns}
+
+const DEFAULT_ROW_HEIGHT = 35;
+const MAX_INITIAL_CELL_WIDTH = 300;
+const ICON_WIDTH = 35;
 
 function SearchForm(props) {
     props = {
@@ -42,7 +53,7 @@ function SearchForm(props) {
         ...props
     };
     const [temp_text, set_temp_text] = useState(null);
-    const [waiting, doUpdate] = useDebounce((newval)=>{
+    const [waiting, doUpdate] = useDebounce((newval) => {
         props.update_search_state({"search_string": newval});
     });
 
@@ -52,7 +63,7 @@ function SearchForm(props) {
     }
 
     function _handleSearchMetadataChange(event) {
-        props.update_search_state({"search_metadata": event.target.checked});
+        update_search_state({"search_metadata": event.target.checked});
     }
 
     function _handleSearchInsideChange(event) {
@@ -148,18 +159,180 @@ function SearchForm(props) {
 
 SearchForm = memo(SearchForm);
 
+const all_columns = ["icon:th", "name", "icon:upload", "created", "updated", "size"];
+const base_columns = ["icon:th", "name", "icon:upload"];
 
+function ColumnSelector({
+                            icon_dict,
+                            selectedColumns,
+                            onColumnChange,
+                        }) {
+
+    const toggleColumn = (k) => {
+        const next = new Set(selectedColumns);
+        if (next.has(k)) next.delete(k);
+        else next.add(k);
+        onColumnChange([...next]);
+    };
+
+    return (
+        <Popover
+            placement="bottom-start"
+            content={
+                <Menu>
+                    {all_columns.map((k) => (
+                        <MenuItem
+                            key={k}
+                            shouldDismissPopover={false}
+                            // icon={icon_dict[k]}
+                            text={
+                                <Checkbox
+                                    checked={selectedColumns.includes(k)}
+                                    label={k}
+                                    className="menu-control"
+                                    disabled={base_columns.includes(k)}
+                                    alignIndicator={Alignment.END}
+                                    onChange={() => toggleColumn(k)}
+                                />
+                            }
+                        />
+                    ))}
+                </Menu>
+            }
+        >
+            <Button icon="list-columns"/>
+        </Popover>
+    );
+}
+
+function ResourceFilter({
+                            kinds,
+                            icon_dict,
+                            selectedKinds,
+                            onKindChange,
+                            update_search_state,
+                            search_inside = false,
+                            search_metadata = false,
+                            show_hidden = false,
+                            showSummary = false
+                        }) {
+    const allSelected = selectedKinds.size === kinds.length;
+    const noneSelected = selectedKinds.size === 0;
+
+
+
+    const toggleKind = (k) => {
+        const next = new Set(selectedKinds);
+        if (next.has(k)) next.delete(k);
+        else next.add(k);
+        onKindChange([...next]);
+    };
+
+    ///const selectAll = () => onKindChange(kinds);
+    const selectNone = () => onKindChange([]);
+
+    const summary = useMemo(() => {
+        if (!showSummary) return "";
+        if (allSelected) return "All kinds";
+        if (noneSelected) return "None";
+        return Array.from(selectedKinds).join(", ");
+    }, [allSelected, noneSelected, selectedKinds]);
+
+    function _handleSearchMetadataChange(event) {
+        update_search_state({"search_metadata": event.target.checked});
+    }
+
+    function _handleSearchInsideChange(event) {
+        update_search_state({"search_inside": event.target.checked});
+
+    }
+
+    function _handleShowHiddenChange(event) {
+        update_search_state({"show_hidden": event.target.checked});
+    }
+
+    return (
+        <Popover
+            placement="bottom-start"
+            content={
+                <Menu>
+                    <div onClick={selectNone}
+                         style={{display: "flex", flexDirection: "row", justifyContent: "space-between"}}>
+                        <MenuItem
+                            text="Clear"
+                            key="clear"
+                            shouldDismissPopover={false}
+                            disabled={noneSelected}
+                        />
+                        <Icon icon="circle" className="bp6-menu-item"/>
+                    </div>
+                    <MenuDivider/>
+                    {kinds.map((k) => (
+                        <MenuItem
+                            key={k}
+                            shouldDismissPopover={false}
+                            icon={icon_dict[k]}
+                            text={
+                                <Checkbox
+                                    checked={selectedKinds.includes(k)}
+                                    label={k}
+                                    className="menu-control"
+                                    alignIndicator={Alignment.END}
+                                    onChange={() => toggleKind(k)}
+                                />
+                            }
+                        />
+                    ))}
+                    <MenuDivider/>
+                    <MenuItem
+                        key="metadata"
+                        shouldDismissPopover={false}
+                        text={
+                                <Switch
+                                    checked={search_metadata}
+                                    label="Metadata"
+                                    className="menu-control"
+                                    onChange={_handleSearchMetadataChange}
+                                />
+                            }/>
+                    <MenuItem
+                        key="inside"
+                        shouldDismissPopover={false}
+                        text={
+                                <Switch
+                                    checked={search_inside}
+                                    label="inside"
+                                    className="menu-control"
+                                    onChange={_handleSearchInsideChange}
+                                />
+                            }/>
+                    <MenuDivider/>
+                    <MenuItem
+                        key="hidden"
+                        shouldDismissPopover={false}
+                        text={
+                                <Switch
+                                    checked={show_hidden}
+                                    label="show hidden"
+                                    className="menu-control"
+                                    alignIndicator={Alignment.END}
+                                    onChange={_handleShowHiddenChange}
+                                />
+                            }/>
+                </Menu>
+            }
+        >
+            <Button icon="filter" text={`${summary}`}/>
+        </Popover>
+    );
+}
 
 function BpSelectorTable(props) {
     props = {
-        columns: {
-            "name": {"sort_field": "name", "first_sort": "ascending"},
-            "created": {"sort_field": "created_for_sort", "first_sort": "descending"},
-            "updated": {"sort_field": "updated_for_sort", "first_sort": "ascending"},
-            // "tags": {"sort_field": "tags", "first_sort": "ascending"}
-        },
+        columns: ["name", "created", "updated"],
         identifier_field: "_id",
         enableColumnResigin: false,
+        onColumnWidthChanged: null,
         maxColumnWidth: null,
         active_row: 0,
         show_animations: false,
@@ -189,7 +362,7 @@ function BpSelectorTable(props) {
 
     function computeColumnWidths() {
         if (Object.keys(props.data_dict).length == 0) return;
-        let column_names = Object.keys(props.columns);
+        let column_names = props.columns;
         let bcwidths = compute_initial_column_widths(column_names, Object.values(props.data_dict));
         let cwidths = [];
         if (props.maxColumnWidth) {
@@ -215,7 +388,7 @@ function BpSelectorTable(props) {
             await props.initiateDataGrab(data_update_required.current);
             data_update_required.current = null
         }
-        const lastColumnRegion = Regions.column(Object.keys(props.columns).length - 1);
+        const lastColumnRegion = Regions.column(props.columns.length - 1);
         const firstColumnRegion = Regions.column(0);
         table_ref.current.scrollToRegion(lastColumnRegion);
         table_ref.current.scrollToRegion(firstColumnRegion)
@@ -249,8 +422,7 @@ function BpSelectorTable(props) {
                     if (("res_type" in props.data_dict[rowIndex]) && (props.data_dict[rowIndex]["res_type"] == "tile")) {
                         the_class = "tile-icon-cell"
 
-                    }
-                    else {
+                    } else {
                         the_class = "icon-cell";
                     }
                     the_text = the_text.replace(/(^icon:)/gi, "");
@@ -309,7 +481,7 @@ function BpSelectorTable(props) {
         return the_body
     }
 
-    let column_names = Object.keys(props.columns);
+    let column_names = props.columns;
     let columns = column_names.map((column_name) => {
         const cellRenderer = _cellRendererCreator(column_name);
         const columnHeaderCellRenderer = () => <ColumnHeaderCell name={column_name}
@@ -328,26 +500,26 @@ function BpSelectorTable(props) {
     let dependencies;
     if (props.open_resources_ref && props.open_resources_ref.current) {
         dependencies = [props.data_dict, props.open_resources_ref.current]
-    }
-    else {
+    } else {
         dependencies = [props.data_dict]
     }
     return (
         <Table numRows={props.num_rows}
-                ref={table_ref}
-                cellRendererDependencies={dependencies}
-                bodyContextMenuRenderer={props.renderBodyContextMenu}
-                enableColumnReordering={false}
-                enableColumnResizing={props.enableColumnResizing}
-                maxColumnWidth={props.maxColumnWidth}
-                enableMultipleSelection={true}
-                defaultRowHeight={27}
-                selectedRegions={props.selectedRegions}
-                enableRowHeader={false}
-                columnWidths={props.columnWidths ? props.columnWidths : columnWidths}
-                onCompleteRender={_onCompleteRender}
-                selectionModes={SelectionModes.ALL}
-                onSelection={(regions) => props.onSelection(regions)}
+               ref={table_ref}
+               cellRendererDependencies={dependencies}
+               bodyContextMenuRenderer={props.renderBodyContextMenu}
+               enableColumnReordering={false}
+               enableColumnResizing={props.enableColumnResizing}
+               maxColumnWidth={props.maxColumnWidth}
+               enableMultipleSelection={true}
+               defaultRowHeight={DEFAULT_ROW_HEIGHT}
+               selectedRegions={props.selectedRegions}
+               enableRowHeader={false}
+               onColumnWidthChanged={props.onColumnWidthChanged}
+               columnWidths={props.columnWidths ? props.columnWidths : columnWidths}
+               onCompleteRender={_onCompleteRender}
+               selectionModes={SelectionModes.ALL}
+               onSelection={(regions) => props.onSelection(regions)}
         >
             {columns}
         </Table>
@@ -355,9 +527,6 @@ function BpSelectorTable(props) {
 }
 
 BpSelectorTable = memo(BpSelectorTable);
-
-const MAX_INITIAL_CELL_WIDTH = 300;
-const ICON_WIDTH = 35;
 
 function compute_initial_column_widths(header_list, data_list) {
     const max_field_width = MAX_INITIAL_CELL_WIDTH;

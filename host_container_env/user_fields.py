@@ -18,5 +18,7 @@ user_data_fields = [
      "type": "select", "default": "single-window", "options": ["separate-tabs", "single-window"], "info_type": "setting"},
     {"name": "openai_api_key", "editable": True, "display_text": "openai api key", "type": "text", "is_setting": False, "default": "", "info_type": "setting"},
     {"name": "use_ai_code_suggestions", "editable": True, "display_text": "use ai code suggestions",
-     "type": "select", "options": ["yes", "no"], "is_setting": "True", "default": False, "info_type": "setting"}
+     "type": "select", "options": ["yes", "no"], "is_setting": True, "default": False, "info_type": "setting"},
+    {"name": "library_columns", "editable": False, "is_setting": True,
+     "default": ["created", "updated", "size"],}
 ]

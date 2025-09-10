@@ -80,7 +80,7 @@ function NativeTags(props) {
     props = {
         all_tags: [],
         ...props
-    }
+    };
 
     function renderTag(item) {
         return item
@@ -173,7 +173,7 @@ function NotesField(props) {
     useEffect(() => {
         return () => {
             if (cmObject.current) {
-                cmObject.current.destroy()
+                cmObject.current.destroy();
                 cmObject.current = null;
             }
             setFocusFunc.current = null;
@@ -398,7 +398,7 @@ function CombinedMetadata(props) {
         if (props.useFixedData || props.res_name == null || props.res_type == null) return;
         if (!props.readOnly) {
             let data_dict = {
-                pane_type: props.res_type,
+                res_types: [props.res_type],
                 is_repository: false,
                 show_hidden: true
             };

@@ -19,7 +19,7 @@ import tactic_app
 
 admin_user = User.get_user_by_username("admin")
 
-CHUNK_SIZE = int(int(os.environ.get("CHUNK_SIZE")) / 2)
+LIBRARY_CHUNK_SIZE = int(int(os.environ.get("LIBRARY_CHUNK_SIZE")) / 2)
 
 if "DB_NAME" in os.environ:
     db_name = os.environ.get("DB_NAME")
@@ -224,8 +224,8 @@ class UserManager(ResourceManager):
 
         sorted_results = sorted(filtered_res, key=sort_key_func, reverse=reverse)
 
-        chunk_start = int(row_number / CHUNK_SIZE) * CHUNK_SIZE
-        chunk_list = sorted_results[chunk_start: chunk_start + CHUNK_SIZE]
+        chunk_start = int(row_number / LIBRARY_CHUNK_SIZE) * LIBRARY_CHUNK_SIZE
+        chunk_list = sorted_results[chunk_start: LIBRARY_CHUNK_SIZE + LIBRARY_CHUNK_SIZE]
         chunk_dict = {}
         for n, r in enumerate(chunk_list):
             chunk_dict[n + chunk_start] = r

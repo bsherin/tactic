@@ -10,7 +10,7 @@ if (!window.in_context) {
 
 import React from "react";
 import { createRoot } from 'react-dom/client';
-import {Fragment, useEffect, useRef, memo, useContext} from "react";
+import {Fragment, useEffect, useRef, memo, useContext, useState} from "react";
 
 import {TacticSocket} from "./tactic_socket";
 import {doFlash} from "./toaster.js";
@@ -26,6 +26,7 @@ import {withDialogs} from "./modal_react";
 import {StatusContext} from "./toaster"
 import {withAssistant} from "./assistant";
 import {handleCallback} from "./communication_react";
+import {base_columns} from "./library_widgets";
 
 export {LibraryHomeApp, library_id}
 const library_id = guid();
@@ -38,12 +39,17 @@ function LibraryHomeApp(props) {
 
     const settingsContext = useContext(SettingsContext);
     const statusFuncs = useContext(StatusContext);
+    const [columns, setColumns] = useState([]);
 
     const connection_status = useConnection(props.tsocket, initSocket);
 
     useEffect(() => {
         statusFuncs.stopSpinner(null);
     }, []);
+
+    useEffect(() => {
+        setColumns([...base_columns, ...settingsContext.settingsRef.current.library_columns]);
+    }, [settingsContext.settingsRef.current.library_columns]);
 
     function initSocket() {
         props.tsocket.attachListener("window-open", data => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
@@ -62,20 +68,18 @@ function LibraryHomeApp(props) {
         }
     }
 
+    function updateColumns(new_columns) {
+        new_columns = new_columns.filter(col => !base_columns.includes(col));
+        const unique = [...new Set(new_columns)];
+        settingsContext.updateSetting("library_columns", unique);
+    }
+
     let lib_props = {...props};
     let all_pane = (
         <LibraryPane {...lib_props}
                      connection_status={connection_status}
-                     columns={{
-                         "icon:th": {first_sort: "ascending"},
-                         "name": {first_sort: "ascending"},
-                         "icon:upload": {first_sort: "ascending"},
-                         "created": {first_sort: "descending"},
-                         "updated": {first_sort: "ascending"},
-                         // "tags": {first_sort: "ascending"},
-                         "size": {first_sort: "descending"}
-                     }}
-                     pane_type="all"
+                     columns={columns}
+                     updateColumns={updateColumns}
                      handleCreateViewer={props.handleCreateViewer}
                      open_resources_ref={props.open_resources_ref}
                      allow_search_inside={true}

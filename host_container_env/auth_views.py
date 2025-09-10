@@ -271,7 +271,7 @@ def get_user_settings():
     settings_dict = {}
     fields_list = []
     for fdict in get_full_user_data_fields():
-        if not fdict["editable"] or not fdict["is_setting"]:
+        if not fdict["is_setting"]:
             continue
 
         settings_dict[fdict["name"]] = user_data[fdict["name"]]

@@ -10,6 +10,7 @@ import {SelectedPaneContext} from "./utilities_react";
 import {useDebounce} from "./utilities_react";
 import {AssistantContext} from "./assistant";
 import {ErrorDrawerContext} from "./error_drawer";
+import {res_types} from "./library_pane";
 
 export {OpenOmnibar}
 
@@ -75,7 +76,7 @@ function OpenOmnibar(props) {
             };
 
             let data = {
-                pane_type: "all",
+                res_type: res_types,
                 search_spec: search_spec,
                 row_number: 0,
                 number_to_get: 20,

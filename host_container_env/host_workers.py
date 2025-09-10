@@ -14,7 +14,6 @@ from docker_functions import get_log, restart_container, create_log_streamer_con
 from docker_functions import get_matching_user_containers, get_container, create_assistant_container, get_user_assistant
 from tactic_app import app, socketio, db, fs
 from library_views import tile_manager, project_manager, collection_manager, list_manager, pool_manager, get_manager_for_type
-from library_views import code_manager
 from redis_tools import redis_ht, delete_ready_block_participant
 import datetime
 from mongo_accesser import bytes_to_string
