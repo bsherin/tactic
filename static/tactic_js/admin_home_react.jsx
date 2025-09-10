@@ -148,7 +148,7 @@ function AdministerHomeApp(props) {
                    updatePaneStatePromise={_updatePaneStatePromise}
                    {...pane_states_ref.current["container"]}
                    tsocket={tsocket}
-                   colnames={col_names.container}
+                   columns={col_names.container}
                    id_field="Id"
 
         />
@@ -163,7 +163,7 @@ function AdministerHomeApp(props) {
                    updatePaneStatePromise={_updatePaneStatePromise}
                    {...pane_states_ref.current["user"]}
                    tsocket={tsocket}
-                   colnames={col_names.user}
+                   columns={col_names.user}
                    id_field="_id"
 
         />

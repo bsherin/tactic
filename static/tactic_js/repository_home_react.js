@@ -24,6 +24,7 @@ var _modal_react = require("./modal_react");
 var _repository_menubars = require("./repository_menubars");
 var _library_home_react = require("./library_home_react");
 var _sizing_tools = require("./sizing_tools");
+var _library_widgets = require("./library_widgets");
 function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function (e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, default: e }; if (null === e || "object" != typeof e && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (const t in e) "default" !== t && {}.hasOwnProperty.call(e, t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, t)) && (i.get || i.set) ? o(f, t, i) : f[t] = e[t]); return f; })(e, t); }
 let tsocket;
 function RepositoryHomeApp(props) {
@@ -53,28 +54,8 @@ function RepositoryHomeApp(props) {
   };
   let all_pane = /*#__PURE__*/_react.default.createElement(_library_pane.LibraryPane, (0, _extends2.default)({}, lib_props, {
     connection_status: connection_status,
-    columns: {
-      "icon:th": {
-        first_sort: "ascending"
-      },
-      "name": {
-        first_sort: "ascending"
-      },
-      "icon:upload": {
-        first_sort: "ascending"
-      },
-      "created": {
-        first_sort: "descending"
-      },
-      "updated": {
-        first_sort: "ascending"
-      },
-      // "tags": {first_sort: "ascending"},
-      "size": {
-        first_sort: "descending"
-      }
-    },
-    pane_type: "all",
+    columns: _library_widgets.all_columns,
+    updateColumns: null,
     handleCreateViewer: null,
     open_resources_ref: null,
     allow_search_inside: true,

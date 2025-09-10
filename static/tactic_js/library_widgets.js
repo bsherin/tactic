@@ -7,7 +7,7 @@ exports.BpSelectorTable = BpSelectorTable;
 exports.ColumnSelector = ColumnSelector;
 exports.ResourceFilter = ResourceFilter;
 exports.SearchForm = SearchForm;
-exports.base_columns = void 0;
+exports.base_columns = exports.all_columns = void 0;
 exports.compute_initial_column_widths = compute_initial_column_widths;
 var _react = _interopRequireWildcard(require("react"));
 var _core = require("@blueprintjs/core");
@@ -153,7 +153,7 @@ function SearchForm(props) {
   })))));
 }
 exports.SearchForm = SearchForm = /*#__PURE__*/(0, _react.memo)(SearchForm);
-const all_columns = ["icon:th", "name", "icon:upload", "created", "updated", "size"];
+const all_columns = exports.all_columns = ["icon:th", "name", "icon:upload", "created", "updated", "size"];
 const base_columns = exports.base_columns = ["icon:th", "name", "icon:upload"];
 function ColumnSelector({
   icon_dict,

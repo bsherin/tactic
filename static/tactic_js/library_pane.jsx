@@ -18,7 +18,7 @@ import {StatusContext} from "./toaster"
 import {ErrorDrawerContext} from "./error_drawer";
 import {LibraryTablePane} from "./library_table_pane";
 import {paneReducer, get_index, get_index_from_id} from "./library_pane_reducer";
-import {ResourceFilter, ColumnSelector} from "./library_widgets";
+import {ResourceFilter, ColumnSelector, all_columns} from "./library_widgets";
 
 export {LibraryPane, view_views, res_types}
 
@@ -119,7 +119,7 @@ const initial_state = {
 
 function LibraryPane(props) {
     props = {
-        columns: ["name", "created", "updated", "tags"],
+        columns: all_columns,
         is_repository: false,
         tsocket: null,
         ...props
@@ -1228,10 +1228,10 @@ function LibraryPane(props) {
                                                 await _setFilterType(rtypes)
                                             }}/>);
 
-    let column_selector = (<ColumnSelector
-                                       icon_dict={[]}
-                                       selectedColumns={props.columns}
-                                       onColumnChange={props.updateColumns}/>);
+    let column_selector = props.update_columns ?
+        (<ColumnSelector icon_dict={[]}
+                         selectedColumns={props.columns}
+                         onColumnChange={props.updateColumns}/>) : null;
 
     let left_pane = (
         <LibraryTablePane

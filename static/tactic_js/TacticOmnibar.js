@@ -66,7 +66,7 @@ function OpenOmnibar(props) {
       sort_direction: "descending"
     };
     let data = {
-      res_type: _library_pane.res_types,
+      res_types: _library_pane.res_types,
       search_spec: search_spec,
       row_number: 0,
       number_to_get: 20,

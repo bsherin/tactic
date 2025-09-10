@@ -115,7 +115,7 @@ const initial_state = {
 };
 function LibraryPane(props) {
   props = {
-    columns: ["name", "created", "updated", "tags"],
+    columns: _library_widgets.all_columns,
     is_repository: false,
     tsocket: null,
     ...props
@@ -1242,11 +1242,11 @@ function LibraryPane(props) {
       await _setFilterType(rtypes);
     }
   });
-  let column_selector = /*#__PURE__*/_react.default.createElement(_library_widgets.ColumnSelector, {
+  let column_selector = props.update_columns ? /*#__PURE__*/_react.default.createElement(_library_widgets.ColumnSelector, {
     icon_dict: [],
     selectedColumns: props.columns,
     onColumnChange: props.updateColumns
-  });
+  }) : null;
   let left_pane = /*#__PURE__*/_react.default.createElement(_library_table_pane.LibraryTablePane, (0, _extends2.default)({}, props, {
     pStateRef: pStateRef,
     resource_filter: resource_filter,

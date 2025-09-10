@@ -24,7 +24,7 @@ export {BpSelectorTable}
 export {compute_initial_column_widths};
 export {ResourceFilter};
 export {ColumnSelector};
-export {base_columns}
+export {base_columns, all_columns}
 
 const DEFAULT_ROW_HEIGHT = 35;
 const MAX_INITIAL_CELL_WIDTH = 300;

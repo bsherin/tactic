@@ -76,7 +76,7 @@ function OpenOmnibar(props) {
             };
 
             let data = {
-                res_type: res_types,
+                res_types: res_types,
                 search_spec: search_spec,
                 row_number: 0,
                 number_to_get: 20,

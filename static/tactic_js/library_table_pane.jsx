@@ -85,7 +85,7 @@ function LibraryTablePane(props) {
                         />
                         <div style={{display: "flex", flexDirection: "row"}}>
                             {props.resource_filter}
-                            {props.column_selector}
+                            {props.column_selector && props.column_selector}
                         </div>
                     </div>
                     {props.columns.length > 0 && props.columns.length === columnWidths.length &&

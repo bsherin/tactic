@@ -267,10 +267,6 @@ function AdminPane(props) {
 
     let MenubarClass = props.MenubarClass;
 
-    let column_specs = {};
-    for (let col of props.colnames) {
-        column_specs[col] = {"sort_field": col, "first_sort": "ascending"}
-    }
 
     let left_pane = (
         <Fragment>
@@ -300,7 +296,7 @@ function AdminPane(props) {
                                      communicateColumnWidthSum={_communicateColumnWidthSum}
                                      onSelection={_onTableSelection}
                                      initiateDataGrab={_initiateDataGrab}
-                                     columns={column_specs}
+                                     columns={props.columns}
                                      identifier_field={props.id_field}
 
                     />

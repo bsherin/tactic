@@ -6,13 +6,12 @@ import {HorizontalPanes} from "./resizing_allotment";
 import {handleCallback} from "./communication_react"
 import {TacticMenubar} from "./menu_utilities"
 import {doFlash, StatusContext} from "./toaster";
-import {BOTTOM_MARGIN, SIDE_MARGIN} from "./sizing_tools"
 import {useConnection} from "./utilities_react";
 import {postAjaxPromise} from "./communication_react";
 
 export {ResourceViewerApp, copyToLibrary, sendToRepository}
 
-const PADDING = 20
+const PADDING = 20;
 
 async function copyToLibrary(res_type, resource_name, dialogFuncs, statusFuncs, errorDrawerFuncs) {
     try {

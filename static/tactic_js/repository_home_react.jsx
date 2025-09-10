@@ -22,6 +22,7 @@ import {StatusContext} from "./toaster"
 import {RepositoryAllMenubar} from "./repository_menubars";
 import {library_id} from "./library_home_react";
 import {ICON_BAR_WIDTH} from "./sizing_tools";
+import {all_columns} from "./library_widgets";
 
 export {RepositoryHomeApp}
 
@@ -58,16 +59,8 @@ function RepositoryHomeApp(props) {
     let all_pane = (
         <LibraryPane {...lib_props}
                      connection_status={connection_status}
-                     columns={{
-                         "icon:th": {first_sort: "ascending"},
-                         "name": {first_sort: "ascending"},
-                         "icon:upload": {first_sort: "ascending"},
-                         "created": {first_sort: "descending"},
-                         "updated": {first_sort: "ascending"},
-                         // "tags": {first_sort: "ascending"},
-                         "size": {first_sort: "descending"}
-                     }}
-                     pane_type="all"
+                     columns={all_columns}
+                     updateColumns={null}
                      handleCreateViewer={null}
                      open_resources_ref={null}
                      allow_search_inside={true}
