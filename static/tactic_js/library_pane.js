@@ -1242,7 +1242,7 @@ function LibraryPane(props) {
       await _setFilterType(rtypes);
     }
   });
-  let column_selector = props.update_columns ? /*#__PURE__*/_react.default.createElement(_library_widgets.ColumnSelector, {
+  let column_selector = props.updateColumns ? /*#__PURE__*/_react.default.createElement(_library_widgets.ColumnSelector, {
     icon_dict: [],
     selectedColumns: props.columns,
     onColumnChange: props.updateColumns

@@ -1228,7 +1228,7 @@ function LibraryPane(props) {
                                                 await _setFilterType(rtypes)
                                             }}/>);
 
-    let column_selector = props.update_columns ?
+    let column_selector = props.updateColumns ?
         (<ColumnSelector icon_dict={[]}
                          selectedColumns={props.columns}
                          onColumnChange={props.updateColumns}/>) : null;
