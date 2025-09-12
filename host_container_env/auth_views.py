@@ -258,20 +258,20 @@ def get_account_info():
     user_data = current_user.user_data_dict
     field_list = []
     for fdict in get_full_user_data_fields():
-        if not fdict["editable"]:
+        if not fdict["account_page"]:
             continue
         new_fdict = copy.copy(fdict)
         new_fdict["val"] = user_data[new_fdict["name"]]
         field_list.append(new_fdict)
     return jsonify({"field_list": field_list})
 
-@app.route('/get_user_settings', methods=['GET', 'POST'])
-def get_user_settings():
+@app.route('/get_with_settings_settings', methods=['GET', 'POST'])
+def get_with_settings_settings():
     user_data = current_user.user_data_dict
     settings_dict = {}
     fields_list = []
     for fdict in get_full_user_data_fields():
-        if not fdict["is_setting"]:
+        if not fdict["withSettings"]:
             continue
 
         settings_dict[fdict["name"]] = user_data[fdict["name"]]

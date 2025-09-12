@@ -1,7 +1,7 @@
 from flask import render_template, jsonify
 from flask_login import login_required, current_user
 from tactic_app import app
-from users import User
+from users import User, remove_user
 import tactic_app
 from mongo_db_fs import repository_type, database_type
 
@@ -18,6 +18,7 @@ container_manager = ContainerManager("container")
 user_manager = UserManager("user")
 
 from js_source_management import js_source_dict, _develop, css_source
+from mongo_accesser import res_types
 
 
 @app.route('/admin_interface', methods=['GET', 'POST'])
@@ -35,3 +36,5 @@ def admin_interface():
                                module_source=js_source_dict["admin_home_react"])
     else:
         return "not authorized"
+
+

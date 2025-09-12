@@ -13,6 +13,13 @@ mongo_uri = os.environ.get("MONGO_URI")
 repository_type = "not set"
 database_type = "not set"
 
+def get_dump_dbs(dump_db_name):
+    client = MongoClient(mongo_uri, serverSelectionTimeoutMS=30000)
+    client.drop_database(dump_db_name)
+    dump_db = client[dump_db_name]
+    dump_fs = gridfs.GridFS(dump_db)
+    return dump_db, dump_fs
+
 def get_dbs(get_repo=True):
     global repository_type
     global database_type

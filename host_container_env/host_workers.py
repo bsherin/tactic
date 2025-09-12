@@ -194,17 +194,16 @@ class HostWorker(QWorker):
         return user_obj.update_account({"theme": data["theme"]})
 
     @task_worthy
-    def get_user_settings(self, data):
-        print("in get_user_settings")
+    def get_settings_object_settings(self, data):
+        print("in get_settings_object_settings")
         user_id = data["user_id"]
         user_obj = load_user(user_id)
         user_data = user_obj.user_data_dict
         setting_dict = {}
         for fdict in user_data_fields:
-            if not fdict["editable"]:
+            if not fdict["settings_object"]:
                 continue
-            if fdict["info_type"] == "setting":
-                setting_dict[fdict["name"]] = user_data[fdict["name"]]
+            setting_dict[fdict["name"]] = user_data[fdict["name"]]
         return {"settings": setting_dict}
 
     @task_worthy

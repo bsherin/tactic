@@ -453,6 +453,13 @@ class MongoAccess(object):
                   "project": self.project_collection_name, "code": self.code_collection_name}
         return cnames[res_type]
 
+    def get_all_resource_names(self, res_type):
+        colname = self.resource_collection_name(res_type)
+        name_key = name_keys[res_type]
+        coll = self.db[colname]
+        names = [doc[name_key] for doc in coll.find({}, {name_key: 1, "_id": 0})]
+        return names
+
     def get_resource_names(self, res_type, tag_filter=None, search_filter=None):
         if tag_filter is not None:
             tag_filter = tag_filter.lower()

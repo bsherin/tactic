@@ -288,6 +288,8 @@ ContainerMenubar = memo(ContainerMenubar);
 
 function UserMenubar(props){
     const dialogFuncs = useContext(DialogContext);
+    const statusFuncs = useContext(StatusContext);
+    const errorDrawerFuncs = useContext(ErrorDrawerContext);
 
     function _delete_user () {
         let user_id = props.selected_resource._id;
@@ -301,6 +303,73 @@ function UserMenubar(props){
             handleSubmit: ()=>{
                 $.getJSON($SCRIPT_ROOT + '/delete_user/' + user_id, doFlash);
             },
+            handleClose: dialogFuncs.hideModal,
+            handleCancel: null
+        });
+    }
+
+    async function createSeedDatabase() {
+        statusFuncs.startSpinner();
+        try {
+            let data = await postAjaxPromise('create_seed_database');
+            if (data["success"]) {
+                doFlash(data);
+                statusFuncs.startSpinner();
+            }
+            else {
+                statusFuncs.stopSpinner();
+                errorDrawerFuncs.addFromError("Error creating seed database", data);
+            }
+        }
+        catch (e) {
+            errorDrawerFuncs.addFromError("Error creating database", e);
+            statusFuncs.stopSpinner();
+        }
+    }
+
+    function _create_seed_database () {
+        const confirm_text = `Are you sure that you want to create the seed database?`;
+        dialogFuncs.showModal("ConfirmDialog", {
+            title: "Delete User",
+            text_body: confirm_text,
+            cancel_text: "do nothing",
+            submit_text: "create",
+            handleSubmit: createSeedDatabase,
+            handleClose: dialogFuncs.hideModal,
+            handleCancel: null
+        });
+    }
+
+    async function createUserDatabase() {
+        let user_id = props.selected_resource._id;
+        statusFuncs.startSpinner();
+        try {
+            let data = await postAjaxPromise(`create_user_database/${user_id}`);
+            if (data["success"]) {
+                doFlash(data);
+                statusFuncs.startSpinner();
+            }
+            else {
+                statusFuncs.stopSpinner();
+                errorDrawerFuncs.addFromError("Error creating user database", data);
+            }
+        }
+        catch (e) {
+            errorDrawerFuncs.addFromError("Error creating database", e);
+            statusFuncs.stopSpinner();
+        }
+    }
+
+    function _create_user_database () {
+
+        let username = props.selected_resource.username;
+        const confirm_text = "Do you want to dump a database for " + String(username) + "?  ";
+        dialogFuncs.showModal("ConfirmDialog", {
+            title: "Bump User",
+            text_body: confirm_text,
+            cancel_text: "do nothing",
+            submit_text: "create",
+            handleSubmit: createUserDatabase,
             handleClose: dialogFuncs.hideModal,
             handleCancel: null
         });
@@ -402,6 +471,10 @@ function UserMenubar(props){
                     click_handler: _bump_user_alt_id},
                 {name_text: "Bump All Alt Ids", icon_name: "reset",
                     click_handler: _bump_all_alt_ids},
+                {name_text: "Create Seed Database", icon_name: "database",
+                    click_handler: _create_seed_database},
+                {name_text: "Create User Database", icon_name: "database",
+                    click_handler: _create_user_database},
                 // {name_text: "Upgrade all users", icon_name: "reset",
                 //     click_handler: _upgrade_all_users},
                 // {name_text: "Remove All Duplicates", icon_name: "reset",

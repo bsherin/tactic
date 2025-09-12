@@ -106,9 +106,9 @@ class OtherAPIMIxin:
         self._restore_stdout()
         return result["log_text"]
 
-    def get_user_settings(self):
+    def get_settings_object_settings(self):
         self._save_stdout()
-        result = self._tworker.post_and_wait("host", "get_user_settings", {"user_id": self.user_id})
+        result = self._tworker.post_and_wait("host", "get_settings_object_settings", {"user_id": self.user_id})
         self._restore_stdout()
         return result["settings"]
 

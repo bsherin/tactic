@@ -10,12 +10,14 @@ services:
     restart: always
     profiles:
       - start_project
+      - start_mongo_only
     networks:
       - tactic-net
     ports:
       - "27017:27017"
     volumes:
       - ${MONGO_DIR}:/data/db
+      - ./dump:/dump
 
   tactic-redis:
     image: redis:alpine

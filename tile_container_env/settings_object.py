@@ -11,12 +11,12 @@ class TacticSettings:
         return _tworker.tile_instance
 
     def __getitem__(self, name):
-        settings = self._tinst.get_user_settings()
+        settings = self._tinst.get_settings_objects_settings()
         return settings[name]
 
     @property
     def names(self):
-        return list(self._tinst.get_user_settings().keys())
+        return list(self._tinst.get_settings_object_settings().keys())
 
 
 Settings = TacticSettings()

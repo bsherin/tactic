@@ -11,7 +11,7 @@ from library_views import collection_manager
 from resource_manager import ResourceManager
 from pymongo import MongoClient
 from bson.objectid import ObjectId
-from mongo_accesser import bytes_to_string
+from mongo_accesser import bytes_to_string, res_types
 import gridfs
 from tactic_app import Database
 import tactic_app
@@ -26,6 +26,7 @@ if "DB_NAME" in os.environ:
 else:
     db_name = "tacticdb"
 
+seed_db_name = "tactic_seed"
 
 # noinspection PyMethodOverriding
 class UserManager(ResourceManager):
@@ -46,6 +47,85 @@ class UserManager(ResourceManager):
                          login_required(self.upgrade_all_users), methods=['get', "post"])
         app.add_url_rule('/remove_all_duplicate_collections', "remove_all_duplicate_collections",
                          login_required(self.remove_all_duplicate_collections), methods=['get', "post"])
+        app.add_url_rule('/create_seed_database', "create_seed_database",
+                         login_required(self.create_seed_database), methods=['get', 'post'])
+        app.add_url_rule('/create_user_database/<userid>', "create_user_database",
+                         login_required(self.create_user_database), methods=['get', "post"])
+
+    def create_seed_database(self):
+
+        from mongo_db_fs import get_dump_dbs
+        from tactic_app import db, fs
+        from library_views import copy_between_accounts
+        if current_user.get_id() == admin_user.get_id():
+            print("got the admin user")
+            seed_db, seed_fs = get_dump_dbs(seed_db_name)
+            result_dict = User.create_new({"username": "repository", "password": "abcd"}, seed_db)
+            if result_dict["success"]:
+                print("created seed user in seed db")
+                # seed_user_result = seed_db.user_collection.find_one({"username": "seed"})
+                print("got result_dict", str(result_dict))
+                seed_user = User(result_dict)
+                seed_user.db = seed_db
+                seed_user.fs = seed_fs
+                repository_user = User.get_user_by_username("repository")
+                for res_type in res_types:
+                    starters = repository_user.get_resource_names(res_type, tag_filter="starter")
+                    for rname in starters:
+                        copy_between_accounts(repository_user, seed_user, res_type,
+                                              rname, rname,
+                                              source_db=db, dest_db=seed_db, source_fs=fs, dest_fs=seed_fs)
+                admin_result = User.create_new({"username": "admin", "password": "abcd"}, seed_db)
+                if not admin_result["success"]:
+                    print("failed to create admin user in seed db")
+                    return jsonify({"success": False, "message": "Failed to create admin user."})
+
+                return jsonify({"success": True, "message": "Created seed database."})
+            else:
+                print("failed to create seed user in seed db")
+                return jsonify({"success": False, "message": "Failed to create seed user."})
+        else:
+            return jsonify({"success": False, "message": "Not authorized."})
+
+    def create_user_database(self, userid):
+        print("in create_user_database")
+        from mongo_db_fs import get_dump_dbs
+        from tactic_app import db, fs
+        from library_views import copy_between_accounts
+        username = get_username_true_id(userid)
+        if username is None:
+            return jsonify({"success": False, "message": "user not found."})
+        if current_user.get_id() == admin_user.get_id():
+            print("got the admin user")
+            dump_db, dump_fs = get_dump_dbs(f"{username}_db")
+            print("got dump db and fs")
+            result_dict = User.create_new({"username": username, "password": "abcd"}, dump_db)
+            print("creating user in dump db", str(result_dict))
+            if result_dict["success"]:
+                print("created user in dump db")
+                dump_user = User(result_dict)
+                dump_user.db = dump_db
+                dump_user.fs = dump_fs
+                source_user = User.get_user_by_username(username)
+                print("got source user")
+                for res_type in res_types:
+                    print("in create_user_database, res_type", res_type)
+                    resources = source_user.get_all_resource_names(res_type)
+                    print(f"found {len(resources)} resources of type {res_type} for user {username}")
+                    for n, rname in enumerate(resources):
+                        copy_between_accounts(source_user, dump_user, res_type,
+                                              rname, rname,
+                                              source_db=db, dest_db=dump_db, source_fs=fs, dest_fs=dump_fs)
+                        if n % 50 == 0:
+                            print(f"copied {n} resources of type {res_type} for user {username}")
+                print("copied resources to dump db")
+                dump_db.drop_collection("user_collection")
+                return jsonify({"success": True, "message": "created user database successfully."})
+            else:
+                print("failed to create seed user in seed db")
+                return jsonify({"success": False, "message": "Failed to create seed user."})
+        else:
+            return jsonify({"success": False, "message": "Not authorized."})
 
     def bump_user_alt_id(self, userid):
         username = get_username_true_id(userid)
@@ -65,11 +145,17 @@ class UserManager(ResourceManager):
         else:
             return {"success": False, "message": "didn't bump the id"}
 
+    def dump_user_db(self, user_id):
+        username = get_username_true_id(userid)
+        result = self.create_user_database(username)
+        return result
+
     def bump_one_alt_id(self, userid):
         if not (current_user.username == "admin"):
             return jsonify({"success": False, "message": "not authorized", "alert_type": "alert-warning"})
         result = self.bump_user_alt_id(userid)
         return jsonify(result)
+
 
     def remove_all_duplicate_collections(self):
         def get_traceback_message(e, special_string=None):

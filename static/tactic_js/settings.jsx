@@ -33,7 +33,7 @@ function withSettings(WrappedComponent, lposition = "right", settings_drawer_siz
 
         useEffect(() => {
             initSocket(props.tsocket);
-            postAjaxPromise('get_user_settings', {})
+            postAjaxPromise('get_with_settings_settings', {})
                 .then((data) => {
                     setSettings(data.settings);
                 })
@@ -111,7 +111,7 @@ function SettingsDrawer(props) {
     const pushCallback = useCallbackStack();
 
     useEffect(()=>{
-        postAjax("get_user_settings", {}, (data)=> {
+        postAjax("get_with_settings_settings", {}, (data)=> {
             set_fields(data.fields);
         })
     }, []);
@@ -178,6 +178,9 @@ function SettingsDrawer(props) {
         for (let fdict of fields) {
             let new_item;
             if (fdict.name == "use_ai_code_suggestions" && !window.has_openapi_key) {
+                continue;
+            }
+            if (!fdict.settings_drawer) {
                 continue;
             }
             if (fdict.type == "text") {

@@ -50,9 +50,10 @@ def load_user(userid):
         return User(result)
 
 
-def remove_user(trueid):
+def remove_user(trueid, username=None):
     try:
-        username = get_username_true_id(trueid)
+        if username is None:
+            username = get_username_true_id(trueid)
         user = User.get_user_by_username(username)
         db.drop_collection(user.list_collection_name)
         db.drop_collection(user.tile_collection_name)
@@ -290,7 +291,12 @@ class User(UserMixin, MongoAccess):
             return {"success": False, "message": "Problem updating info."}
 
     @staticmethod
-    def create_new(user_dict):
+    def create_new(user_dict, seed_db=None):
+        if seed_db is None:
+            the_db = db
+        else:
+            the_db = seed_db
+
         username = user_dict["username"]
         if len(username) < 4:
             return {"success": False, "message": "Usernames must be at least 4 characters.", "username": username}
@@ -299,14 +305,15 @@ class User(UserMixin, MongoAccess):
         password = user_dict["password"]
         if len(password) < 4:
             return {"success": False, "message": "Passwords must be at least 4 characters.", "username": username}
-        if db.user_collection.find_one({"username": username}) is not None:
+        if the_db.user_collection.find_one({"username": username}) is not None:
             return {"success": False, "message": "That username is taken.", "username": username}
         password_hash = generate_password_hash(password)
         new_user_dict = {"username": username,
                          "password_hash": password_hash,
                          "email": ""}
-        db.user_collection.insert_one(new_user_dict)
-        return {"success": True, "message": "", "username": username}
+        the_db.user_collection.insert_one(new_user_dict)
+        return {"success": True, "message": "", "username": username,
+                "password_hash": password_hash,}
 
     # get_id is required by login_manager
     def get_id(self):
