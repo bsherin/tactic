@@ -341,6 +341,17 @@ class LibraryResourceManager(ResourceManager):
             "do_jsonify": False
         }
 
+    def metabook_spec(self, is_repository=False):
+        colname = repository_user.metabook_collection_name if is_repository else \
+            current_user.metabook_collection_name
+        return {
+            "collection_name": colname,
+            "name_field": "metabook_name",
+            "content_field": "searchabl_text",
+            "additional_mdata_fields": None,
+            "do_jsonify": False
+        }
+
     def code_spec(self, is_repository=False):
         colname = repository_user.code_collection_name if is_repository else \
             current_user.code_collection_name
@@ -389,6 +400,14 @@ class LibraryResourceManager(ResourceManager):
                 val["size"] = ""
         return filtered_list
 
+    def prep_metabook_results(self, filtered_list):
+        for val in filtered_list:
+            if val["res_type"] == "metabook":
+                val["icon:th"] = "icon:manual"
+                val["icon:upload"] = ""
+                val["size"] = ""
+        return filtered_list
+
     def prep_code_results(self, filtered_list):
         for val in filtered_list:
             if val["res_type"] == "code":
@@ -432,12 +451,16 @@ class LibraryResourceManager(ResourceManager):
                  "project": self.project_spec(is_repo),
                  "tile": self.tile_spec(is_repo),
                  "list": self.list_spec(is_repo),
-                 "code": self.code_spec(is_repo)}
+                 "code": self.code_spec(is_repo),
+                 "metabook": self.metabook_spec(is_repo),
+                 }
         preppers = {"collection": self.prep_collection_results,
                     "project": self.prep_project_results,
                     "tile": self.prep_tile_results,
                     "list": self.prep_list_results,
-                    "code": self.prep_code_results}
+                    "code": self.prep_code_results,
+                    "metabook": self.prep_metabook_results
+                    }
 
         types_to_grab = data["res_types"]
         if len(types_to_grab) == 0:

@@ -81,6 +81,7 @@ function LibraryHomeApp(props) {
                      columns={columns}
                      updateColumns={updateColumns}
                      handleCreateViewer={props.handleCreateViewer}
+                     setCurrentMetabook={props.setCurrentMetabook}
                      open_resources_ref={props.open_resources_ref}
                      allow_search_inside={true}
                      allow_search_metadata={true}

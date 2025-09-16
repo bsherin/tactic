@@ -37,7 +37,7 @@ function propertyListReducer(state, action) {
             return { items: new_items, default_values: initDefaults };
         case "delete_item":
             new_items = prop_list.filter(t => t.identifier !== action.identifier);
-            return { ...state, items: new_items }
+            return { ...state, items: new_items };
         case "update_item":
             const identifier = action.identifier;
             new_items = prop_list.map(t => {
@@ -48,7 +48,7 @@ function propertyListReducer(state, action) {
                     return t;
                 }
             });
-            return { ...state, items: new_items }
+            return { ...state, items: new_items };
         case "move_item_over":
             const active_id = action["active_identifier"];
             const over_id = action["over_identifier"];
@@ -58,7 +58,7 @@ function propertyListReducer(state, action) {
                 new_items = arrayMove([...prop_list], oldIndex, newIndex);
                 return { ...state, items: new_items };
             }
-            return state
+            return state;
         case "move_item":
             new_items = arrayMove(prop_list, action.oldIndex, action.newIndex);
             return { ...state, items: new_items };
@@ -121,7 +121,7 @@ function makeUndoableDispatch(dispatch, listRef, listName, undoStackRef) {
         let undoEntry = null;
 
         switch (action.type) {
-            case "update_item": {
+            case "update_item":
                 const oldItem = listBefore.find(t => t.identifier === action.identifier);
                 if (oldItem && !stagedUndoEntry) {
                     undoEntry = {
@@ -137,9 +137,8 @@ function makeUndoableDispatch(dispatch, listRef, listName, undoStackRef) {
                 }
                 scheduleCommit();
                 break;
-            }
 
-            case "delete_item": {
+            case "delete_item":
                 const deletedItem = listBefore.find(t => t.identifier === action.identifier);
                 if (deletedItem) {
                     undoEntry = {
@@ -152,9 +151,8 @@ function makeUndoableDispatch(dispatch, listRef, listName, undoStackRef) {
                     };
                 }
                 break;
-            }
 
-            case "add_at_end": {
+            case "add_at_end":
                 const addedId = action.new_item.identifier;
                 if (addedId) {
                     undoEntry = {
@@ -167,9 +165,8 @@ function makeUndoableDispatch(dispatch, listRef, listName, undoStackRef) {
                     };
                 }
                 break;
-            }
 
-            case "move_item": {
+            case "move_item":
                 undoEntry = {
                     dispatch,
                     undoAction: {
@@ -180,9 +177,8 @@ function makeUndoableDispatch(dispatch, listRef, listName, undoStackRef) {
                     description: `${listName}: Undo move`
                 };
                 break;
-            }
 
-            case "add_at_index": {
+            case "add_at_index":
                 const insertIndex = action.insert_index;
                 const insertedItem = listBefore[insertIndex];
                 if (insertedItem) {
@@ -196,7 +192,6 @@ function makeUndoableDispatch(dispatch, listRef, listName, undoStackRef) {
                     };
                 }
                 break;
-            }
 
             default:
                 break;

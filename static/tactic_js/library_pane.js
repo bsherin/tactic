@@ -24,7 +24,7 @@ var _library_widgets = require("./library_widgets");
 function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function (e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, default: e }; if (null === e || "object" != typeof e && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (const t in e) "default" !== t && {}.hasOwnProperty.call(e, t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, t)) && (i.get || i.set) ? o(f, t, i) : f[t] = e[t]); return f; })(e, t); }
 // noinspection JSValidateTypes,JSDeprecatedSymbols
 
-const res_types = exports.res_types = ["collection", "project", "tile", "list", "code"];
+const res_types = exports.res_types = ["collection", "project", "tile", "list", "code", "metabook"];
 function view_views(is_repository = false) {
   if (is_repository) {
     return {
@@ -141,6 +141,13 @@ function LibraryPane(props) {
     await _selectRow(new_index);
   }, [pStateRef.current.select_state.multi_select, pStateRef.current.select_state.selected_resource, pStateRef.current.data_dict]);
   const _view_func = (0, _react.useCallback)(async (the_view = null) => {
+    const res_type = pStateRef.current.select_state.selected_resource.res_type;
+    if (!res_type) return;
+    if (res_type == "metabook") {
+      if (!window.in_context) return;
+      props.setCurrentMetabook(pStateRef.current.select_state.selected_resource._id);
+      return;
+    }
     if (the_view == null) {
       the_view = view_views(props.is_repository)[pStateRef.current.select_state.selected_resource.res_type];
     }
@@ -1101,6 +1108,28 @@ function LibraryPane(props) {
       }
     }
   }
+  async function _new_metabook() {
+    try {
+      let data = await (0, _communication_react.postAjaxPromise)(`get_resource_names/metabook`, {});
+      let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
+        title: "New Metabook Resource",
+        field_title: "New Metabook Name",
+        default_value: "NewMetabookResource",
+        existing_names: data.resource_names,
+        checkboxes: [],
+        handleClose: dialogFuncs.hideModal
+      });
+      const result_dict = {
+        "metabook_name": new_name
+      };
+      let new_metabook_data = await (0, _communication_react.postAjaxPromise)("/new_metabook", result_dict);
+      props.setCurrentMetabook(new_metabook_data._id);
+    } catch (e) {
+      if (e != "canceled") {
+        errorDrawerFuncs.addFromError("Error creating metabook resource", e);
+      }
+    }
+  }
   async function _new_list(template_name) {
     try {
       let data = await (0, _communication_react.postAjaxPromise)(`get_resource_names/list`, {});
@@ -1187,6 +1216,7 @@ function LibraryPane(props) {
   function _menu_funcs() {
     return {
       view_func: _view_func,
+      setCurrentMetabook: props.setCurrentMetabook,
       send_repository_func: _send_repository_func,
       repository_copy_func: _repository_copy_func,
       duplicate_func: _duplicate_func,
@@ -1210,6 +1240,7 @@ function LibraryPane(props) {
       unload_all_tiles: _unload_all_tiles,
       showHistoryViewer: _showHistoryViewer,
       compare_tiles: _compare_tiles,
+      new_metabook: _new_metabook,
       new_list: _new_list,
       showListImport: _showListImport,
       new_code: _new_code

@@ -55,7 +55,7 @@ class ListManager(LibraryResourceManager):
 
     def view_list_in_context(self):
         list_name = request.json["resource_name"]
-        the_list = current_user.get_list(list_name)
+        the_list = c
         lstring = ""
         for w in the_list:
             lstring += w + "\n"

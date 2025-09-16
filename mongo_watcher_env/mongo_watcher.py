@@ -45,7 +45,8 @@ kind_dict = {
     "projects": "project",
     "data_collections": "collection",
     "code": "code",
-    "lists": "list"
+    "lists": "list",
+    "metabooks": "metabook"
 }
 
 

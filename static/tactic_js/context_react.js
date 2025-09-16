@@ -38,6 +38,7 @@ var _error_drawer = require("./error_drawer");
 var _resizing_allotment = require("./resizing_allotment");
 var _property_list = require("./property_list");
 var _assistant = require("./assistant");
+var _metabook = require("./metabook");
 var _sizing_tools = require("./sizing_tools");
 var _settings = require("./settings");
 var _context_elements = require("./context_elements");
@@ -109,6 +110,11 @@ function ContextApp(props) {
   const [tabPanelList, tabPanelListDispatch, tabPanelListRef] = (0, _property_list.usePropertyList)(initialList);
   const [, set_open_resources, open_resources_ref] = (0, _utilities_react.useStateAndRef)([]);
   const [dirty_methods, set_dirty_methods] = (0, _react.useState)({});
+  const [metabookState, setMetabookState] = (0, _react.useState)({
+    meta_id: null,
+    visible: false,
+    position: "right"
+  });
   const [lastSelectedTabId, setLastSelectedTabId] = (0, _react.useState)(null);
   const [showOpenOmnibar, setShowOpenOmnibar] = (0, _react.useState)(false);
   const settingsContext = (0, _react.useContext)(_settings.SettingsContext);
@@ -391,6 +397,12 @@ function ContextApp(props) {
   function _closeOpenOmnibar() {
     setShowOpenOmnibar(false);
   }
+  function _setCurrentMetabook(meta_id) {
+    setMetabookState({
+      meta_id: meta_id,
+      visible: true
+    });
+  }
   const _handleCreateViewer = (0, _react.useCallback)(async (data, callback = null) => {
     let existing_id = _getResourceId(data.resource_name, data.res_type);
     if (existing_id !== -1) {
@@ -469,8 +481,6 @@ function ContextApp(props) {
       propDict[data.kind](data, drmethod, new_panel => {
         _updatePanel(new_id, {
           panel: new_panel
-        },  () => {
-          _goToModule(module_name, line_number);
         });
       });
     } catch (e) {
@@ -551,7 +561,8 @@ function ContextApp(props) {
     controlled: true,
     am_selected: selectedTabIdRef.current === "library",
     open_resources_ref: open_resources_ref,
-    handleCreateViewer: _handleCreateViewer
+    handleCreateViewer: _handleCreateViewer,
+    setCurrentMetabook: _setCurrentMetabook
   }))));
   let all_panels = [library_panel];
   if (window.has_pool) {
@@ -671,7 +682,24 @@ function ContextApp(props) {
     dispatch: tabPanelListDispatch,
     tabPanelList: tabPanelList
   });
-  let right_pane = /*#__PURE__*/_react.default.createElement(_react.Fragment, null, all_panels);
+  let right_main_panes = /*#__PURE__*/_react.default.createElement(_react.Fragment, null, all_panels);
+  let right_pane;
+  if (metabookState.visible) {
+    let right_metabook_pane = /*#__PURE__*/_react.default.createElement(_metabook.Metabook, (0, _extends2.default)({}, metabookState, {
+      tsocket: tsocket
+    }));
+    right_pane = /*#__PURE__*/_react.default.createElement(_resizing_allotment.HorizontalPanes, {
+      left_pane: right_main_panes,
+      snap_left: true,
+      minWidth: 100,
+      right_pane: right_metabook_pane,
+      show_handle: true,
+      widths: [window.innerWidth - _sizing_tools.INIT_CONTEXT_PANEL_WIDTH - 200, 200],
+      handleResizeEnd: null
+    });
+  } else {
+    right_pane = right_main_panes;
+  }
   let outer_class = `pane-holder ${settingsContext.isDark() ? "bp6-dark" : "light-theme"}`;
   let outer_style = {
     width: "100%",

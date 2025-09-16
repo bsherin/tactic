@@ -1,13 +1,15 @@
 import re
 import datetime
 import zlib
-from communication_utils import make_python_object_jsonizable, debinarize_python_object, make_jsonizable_and_compress
+from bson import ObjectId
+from communication_utils import debinarize_python_object, make_jsonizable_and_compress
 from communication_utils import store_temp_data, read_temp_data
+
 import traceback
 
 name_keys = {"tile": "tile_module_name", "list": "list_name", "collection": "collection_name",
-             "project": "project_name", "code": "code_name"}
-res_types = ["list", "collection", "project", "tile", "code"]
+             "project": "project_name", "code": "code_name", "metabook": "metabook_name"}
+res_types = ["list", "collection", "project", "tile", "code", "metabook"]
 
 PROTECTED_METADATA_KEYS = ["_id", "file_id", "name", "my_class_for_recreate", "table_spec", "data_text", "length",
                            "data_rows", "header_list", "number_of_rows"]
@@ -50,6 +52,14 @@ class MongoAccess(object):
                  "tags": "",
                  "notes": ""}
         return mdata
+
+    @property
+    def metabook_collection_name(self):
+        return '{}.metabooks'.format(self.username)
+
+    @property
+    def node_collection_name(self):
+        return '{}.nodes'.format(self.username)
 
     @property
     def project_collection_name(self):
@@ -310,6 +320,80 @@ class MongoAccess(object):
         return sorted([str(t) for t in my_project_names], key=str.lower)
 
     @property
+    def metabook_names(self):
+        if self.metabook_collection_name not in self.db.list_collection_names():
+            self.db.create_collection(self.metabook_collection_name)
+            return []
+        my_metabook_names = []
+        for doc in self.db[self.metabook_collection_name].find(projection=["metabook_name"]):
+            my_metabook_names.append(doc["metabook_name"])
+        return sorted(my_metabook_names, key=str.lower)
+
+    @property
+    def metabook_names_with_metadata(self):
+        if self.metabook_collection_name not in self.db.list_collection_names():
+            self.db.create_collection(self.metabook_collection_name)
+            return []
+        my_metabook_names = []
+        for doc in self.db[self.metabook_collection_name].find(projection=["metabook_name", "metadata"]):
+            if "metadata" in doc:
+                my_metabook_names.append([doc["metabook_name"], doc["metadata"]])
+            else:
+                my_metabook_names.append([doc["metabook_name"], None])
+        return sorted(my_metabook_names, key=self.sort_data_list_key)
+
+    @property
+    def metabook_tags_dict(self):
+        if self.metabook_collection_name not in self.db.list_collection_names():
+            self.db.create_collection(self.metabook_collection_name)
+            return {}
+        metabooks = {}
+        for doc in self.db[self.metabook_collection_name].find(projection=["metabook_name", "metadata"]):
+            if "metadata" in doc:
+                metabooks[doc["metabook_name"]] = doc["metadata"]["tags"]
+            else:
+                metabooks[doc["metabook_name"]] = ""
+        return metabooks
+
+    def remove_node_uses(self, node_id, meta_id, delete_if_unused=False):
+        node_col = self.db[self.node_collection_name]
+        node = node_col.find_one({"_id":  ObjectId(node_id)})
+        if not node:
+            return {"success": False, "error": "Node not found."}
+        if delete_if_unused:
+            uses = node["uses"]
+            uses.remove(meta_id)
+            if len(uses) == 0:
+                node_col.delete_one({"_id":  ObjectId(node_id)})
+                return {"success": True}
+        if meta_id in node["uses"]:
+            node_col.update_one(
+                {"_id": ObjectId(node_id)},
+                {"$pull": {"uses": meta_id}}
+            )
+        return {"success": True}
+
+    def remove_metabook(self, metabook_name):
+        print(f"in remove_metabook with name {metabook_name}")
+        metabook = self.db[self.metabook_collection_name].find_one({"metabook_name": metabook_name})
+        if metabook is None:
+            print(f"metabook {metabook_name} not found.")
+        else:
+            print("found the metabook")
+            if "nodes" in metabook:
+                for node_id in metabook["nodes"]:
+                    try:
+                        self.remove_node_uses(node_id, metabook._id, True)
+                    except Exception as ex:
+                        print(f"Error removing node {node_id} from metabook {metabook_name}: {ex}")
+            else:
+                print("no nodes found")
+        print("about to do the delete")
+        self.db[self.metabook_collection_name].delete_one({"metabook_name": metabook_name})
+        print("done with the delete")
+        return
+
+    @property
     def list_names(self):
         if self.list_collection_name not in self.db.list_collection_names():
             self.db.create_collection(self.list_collection_name)
@@ -421,7 +505,8 @@ class MongoAccess(object):
 
     @property
     def all_names(self):
-        names = self.list_collection_names + self.project_names + self.tile_module_names + self.list_names + self.code_names
+        names = (self.list_collection_names + self.project_names +
+                 self.tile_module_names + self.list_names + self.code_names + self.metadata_names)
         return sorted(names, key=str.lower)
 
     @property
@@ -431,8 +516,9 @@ class MongoAccess(object):
         list_names_with_metadata = [d + ["list"] for d in self.list_names_with_metadata]
         tile_names_with_metadata = [d + ["tile"] for d in self.tile_module_names_with_metadata]
         code_names_with_metadata = [d + ["code"] for d in self.code_names_with_metadata]
+        metabook_names_with_metadata = [d + ["metabook"] for d in self.metabook_names_with_metadata]
         names_with_metadata = col_names_with_metadata + proj_names_with_metadata + list_names_with_metadata + \
-            tile_names_with_metadata + code_names_with_metadata
+            tile_names_with_metadata + code_names_with_metadata + metabook_names_with_metadata
         return sorted(names_with_metadata, key=self.sort_data_list_key)
 
     @property
@@ -450,7 +536,8 @@ class MongoAccess(object):
     def resource_collection_name(self, res_type):
         cnames = {"tile": self.tile_collection_name, "list": self.list_collection_name,
                   "collection": self.collection_collection_name,
-                  "project": self.project_collection_name, "code": self.code_collection_name}
+                  "project": self.project_collection_name, "code": self.code_collection_name,
+                  "metabook": self.metabook_collection_name}
         return cnames[res_type]
 
     def get_all_resource_names(self, res_type):
@@ -505,6 +592,37 @@ class MongoAccess(object):
     def get_code(self, code_name):
         code_dict = self.db[self.code_collection_name].find_one({"code_name": code_name})
         return code_dict["the_code"]
+
+    def get_unpacked_node(self, node_id):
+        node = self.db[self.node_collection_name].find_one({"_id": ObjectId(node_id)})
+        node["data"] = self.read_node_data(node_id)
+        node["_id"] = str(node["_id"])
+        del node["file_id"]
+        return node
+
+    def read_node_data(self, node_id):
+        node = self.db[self.node_collection_name].find_one({"_id":  ObjectId(node_id)})
+        if not node:
+            return None
+        binarized_python_object = zlib.decompress(self.fs.get(node["file_id"]).read())
+        return debinarize_python_object(binarized_python_object)
+
+    def get_metabook_unpacked(self, meta_id):
+        metabook = self.db[self.metabook_collection_name].find_one({"_id":  ObjectId(meta_id)})
+        if not metabook:
+            return None
+        unpacked_nodes = []
+        for node_id in metabook["nodes"]:
+            unpacked_nodes.append(self.get_unpacked_node(node_id))
+        metabook["nodes"] = unpacked_nodes
+        metabook["_id"] = str(metabook["_id"])
+        return metabook
+
+    def get_metabook(self, meta_id):
+        metabook = self.db[self.metabook_collection_name].find_one({"_id":  ObjectId(meta_id)})
+        if not metabook:
+            return None
+        return metabook
 
     def get_code_with_class(self, class_name):
         if self.code_collection_name not in self.db.list_collection_names():

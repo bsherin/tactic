@@ -14,6 +14,7 @@ from docker_functions import get_log, restart_container, create_log_streamer_con
 from docker_functions import get_matching_user_containers, get_container, create_assistant_container, get_user_assistant
 from tactic_app import app, socketio, db, fs
 from library_views import tile_manager, project_manager, collection_manager, list_manager, pool_manager, get_manager_for_type
+from meta_manager import NodeManagerMixin
 from redis_tools import redis_ht, delete_ready_block_participant
 import datetime
 from mongo_accesser import bytes_to_string
@@ -48,7 +49,7 @@ MY_ID = os.environ.get("MY_ID")
 
 from qworker import max_pika_retries
 
-class HostWorker(QWorker):
+class HostWorker(QWorker, NodeManagerMixin):
     def __init__(self):
         QWorker.__init__(self)
         self.my_id = "host" + str(myport)

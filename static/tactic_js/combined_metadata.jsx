@@ -373,7 +373,9 @@ function CombinedMetadata(props) {
             listenderAttachedRef.current = true;
         }
         return () => {
-            props.tsocket.detachListener("resource-updated");
+            if (props.tsocket) {
+                props.tsocket.detachListener("resource-updated");
+            }
         }
     }, []);
 

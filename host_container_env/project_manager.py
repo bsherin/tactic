@@ -6,11 +6,9 @@ import io
 from collections import OrderedDict
 from flask import jsonify, request, url_for, render_template, send_file
 from flask_login import login_required, current_user
-import tactic_app
-from tactic_app import app, db, fs
+from tactic_app import app
 from docker_functions import create_container, main_container_info
-from resource_manager import ResourceManager, LibraryResourceManager, repository_user
-from users import User
+from resource_manager import LibraryResourceManager, repository_user
 from communication_utils import make_jsonizable_and_compress, read_project_dict
 import loaded_tile_management
 from mongo_accesser import make_name_unique

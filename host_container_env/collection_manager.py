@@ -5,9 +5,8 @@ import tempfile
 import zipfile
 from flask_login import login_required, current_user
 from flask import jsonify, render_template, url_for, request, send_file
-from users import User
 from docker_functions import main_container_info
-from tactic_app import app, db, repository_db, use_remote_database
+from tactic_app import app
 from communication_utils import make_python_object_jsonizable, debinarize_python_object, make_jsonizable_and_compress
 from communication_utils import read_temp_data, delete_temp_data
 from mongo_accesser import MongoAccessException, NonexistentNameError
@@ -17,11 +16,8 @@ import openpyxl
 from openpyxl.styles import Alignment, Font
 from openpyxl.utils import get_column_letter
 import io
-# import cStringIO
-import tactic_app
 from file_handling import read_csv_file_to_list, read_txt_file_to_list
 from file_handling import read_freeform_file, read_excel_file
-from users import load_user
 from redis_tools import create_ready_block
 
 from js_source_management import js_source_dict, _develop, css_source
@@ -626,6 +622,7 @@ class CollectionManager(LibraryResourceManager):
                 "failed_reads": failed_reads}
 
     def delete_resource_list(self):
+        print("in delete_resource_list")
         try:
             user_obj = current_user
             res_list = request.json["resource_list"]
@@ -641,11 +638,13 @@ class CollectionManager(LibraryResourceManager):
                     self.db[user_obj.list_collection_name].delete_one({"list_name": res_name})
                 elif row["res_type"] == "code":
                     self.db[user_obj.code_collection_name].delete_one({"code_name": res_name})
+                elif row["res_type"] == "metabook":
+                    user_obj.remove_metabook(res_name)
             return jsonify({"success": True, "message": "Resource(s) successfully deleted",
                             "alert_type": "alert-success"})
 
         except Exception as ex:
-            return self.get_exception_for_ajax(ex, "Error deleting collections")
+            return self.get_exception_for_ajax(ex, "Error deleting resources")
 
     def combine_to_new_collection(self):
         try:

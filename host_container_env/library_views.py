@@ -21,6 +21,7 @@ from collection_manager import CollectionManager, RepositoryCollectionManager
 from project_manager import ProjectManager, RepositoryProjectManager
 from tile_manager import TileManager, RepositoryTileManager
 from code_manager import CodeManager, RepositoryCodeManager
+from meta_manager import MetabookManager, RepositoryMetabookManager
 from users import User
 
 from js_source_management import js_source_dict, _develop, css_source
@@ -40,7 +41,8 @@ repository_collection_manager = RepositoryCollectionManager("collection")
 list_manager = ListManager("list")
 pool_manager = PoolManager("pool")
 repository_list_manager = RepositoryListManager("list")
-
+metabook_manager = MetabookManager("metabook")
+repository_metabook_manager = RepositoryMetabookManager("metabook")
 
 managers = {
     "list": [list_manager, repository_list_manager],
@@ -48,7 +50,8 @@ managers = {
     "project": [project_manager, repository_project_manager],
     "tile": [tile_manager, repository_tile_manager],
     "code": [code_manager, repository_code_manager],
-    "pool": [pool_manager, None]
+    "pool": [pool_manager, None],
+    "metabook": [metabook_manager, repository_metabook_manager]
 }
 
 

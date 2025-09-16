@@ -46,6 +46,7 @@ import {ErrorDrawerContext, withErrorDrawer} from "./error_drawer";
 import {HorizontalPanes} from "./resizing_allotment";
 import {usePropertyList} from "./property_list";
 import {withAssistant} from "./assistant";
+import {Metabook} from "./metabook";
 import {
     INIT_CONTEXT_PANEL_WIDTH,
 } from "./sizing_tools";
@@ -124,6 +125,7 @@ function ContextApp(props) {
 
     const [, set_open_resources, open_resources_ref] = useStateAndRef([]);
     const [dirty_methods, set_dirty_methods] = useState({});
+    const [metabookState, setMetabookState] = useState({meta_id: null, visible: false, position: "right"});
 
     const [lastSelectedTabId, setLastSelectedTabId] = useState(null);
     const [showOpenOmnibar, setShowOpenOmnibar] = useState(false);
@@ -403,6 +405,13 @@ function ContextApp(props) {
         setShowOpenOmnibar(false)
     }
 
+    function _setCurrentMetabook(meta_id) {
+        setMetabookState({
+            meta_id: meta_id,
+            visible: true
+        });
+    }
+
     const _handleCreateViewer = useCallback(async (data, callback = null) => {
         let existing_id = _getResourceId(data.resource_name, data.res_type);
         if (existing_id !== -1) {
@@ -563,6 +572,7 @@ function ContextApp(props) {
                                     am_selected={selectedTabIdRef.current === "library"}
                                     open_resources_ref={open_resources_ref}
                                     handleCreateViewer={_handleCreateViewer}
+                                    setCurrentMetabook={_setCurrentMetabook}
                     />
                 </div>
         </ContextPaneElement>
@@ -694,11 +704,32 @@ function ContextApp(props) {
             tabPanelList={tabPanelList}
         />
     );
-    let right_pane = (
+    let right_main_panes = (
         <Fragment>
             {all_panels}
         </Fragment>
     );
+
+    let right_pane;
+
+    if (metabookState.visible) {
+        let right_metabook_pane = (
+            <Metabook {...metabookState} tsocket={tsocket}/>
+        );
+        right_pane = (
+            <HorizontalPanes left_pane={right_main_panes}
+                             snap_left={true}
+                             minWidth={100}
+                             right_pane={right_metabook_pane}
+                             show_handle={true}
+                             widths={[window.innerWidth - INIT_CONTEXT_PANEL_WIDTH - 200, 200]}
+                             handleResizeEnd={null}
+            />
+        )
+    }
+    else {
+        right_pane = right_main_panes
+    }
 
     let outer_class = `pane-holder ${settingsContext.isDark() ? "bp6-dark" : "light-theme"}`;
     let outer_style = {

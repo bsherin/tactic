@@ -153,6 +153,12 @@ function AllMenubar(props) {
                         props.new_code("BasicCodeTemplate")
                     }
                 },
+                {
+                    name_text: "New Metabook", icon_name: "manual",
+                    click_handler: () => {
+                        props.new_metabook()
+                    }
+                },
             ],
             Open: [
                 {
@@ -172,6 +178,12 @@ function AllMenubar(props) {
                     click_handler: () => {
                         props.open_raw(props.selected_resource)
                     }, res_type: "collection"
+                },
+                {
+                name_text: "Set Metabook", icon_name: "manual",
+                    click_handler: () => {
+                        props.setCurrentMetabook(props.selected_resource._id)
+                    }, res_type: "metabook"
                 },
                 {name_text: "divider1", icon_name: null, click_handler: "divider"},
                 {

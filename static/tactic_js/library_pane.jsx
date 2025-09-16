@@ -23,7 +23,7 @@ import {ResourceFilter, ColumnSelector, all_columns} from "./library_widgets";
 export {LibraryPane, view_views, res_types}
 
 
-const res_types = ["collection", "project", "tile", "list", "code"];
+const res_types = ["collection", "project", "tile", "list", "code", "metabook"];
 
 function view_views(is_repository = false) {
 
@@ -151,6 +151,13 @@ function LibraryPane(props) {
     }, [pStateRef.current.select_state.multi_select, pStateRef.current.select_state.selected_resource, pStateRef.current.data_dict]);
 
     const _view_func = useCallback(async (the_view = null) => {
+        const res_type = pStateRef.current.select_state.selected_resource.res_type;
+        if (!res_type) return;
+        if (res_type == "metabook") {
+            if (!window.in_context) return;
+            props.setCurrentMetabook(pStateRef.current.select_state.selected_resource._id);
+            return
+        }
         if (the_view == null) {
             the_view = view_views(props.is_repository)[pStateRef.current.select_state.selected_resource.res_type]
         }
@@ -1088,6 +1095,29 @@ function LibraryPane(props) {
         }
     }
 
+    async function _new_metabook() {
+        try {
+            let data = await postAjaxPromise(`get_resource_names/metabook`, {});
+            let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
+                title: "New Metabook Resource",
+                field_title: "New Metabook Name",
+                default_value: "NewMetabookResource",
+                existing_names: data.resource_names,
+                checkboxes: [],
+                handleClose: dialogFuncs.hideModal,
+            });
+            const result_dict = {
+                "metabook_name": new_name
+            };
+            let new_metabook_data = await postAjaxPromise("/new_metabook", result_dict);
+            props.setCurrentMetabook(new_metabook_data._id);
+        } catch (e) {
+            if (e != "canceled") {
+                errorDrawerFuncs.addFromError("Error creating metabook resource", e)
+            }
+        }
+    }
+
     async function _new_list(template_name) {
         try {
             let data = await postAjaxPromise(`get_resource_names/list`, {});
@@ -1170,6 +1200,7 @@ function LibraryPane(props) {
     function _menu_funcs() {
         return {
             view_func: _view_func,
+            setCurrentMetabook: props.setCurrentMetabook,
             send_repository_func: _send_repository_func,
             repository_copy_func: _repository_copy_func,
             duplicate_func: _duplicate_func,
@@ -1193,6 +1224,7 @@ function LibraryPane(props) {
             unload_all_tiles: _unload_all_tiles,
             showHistoryViewer: _showHistoryViewer,
             compare_tiles: _compare_tiles,
+            new_metabook: _new_metabook,
             new_list: _new_list,
             showListImport: _showListImport,
             new_code: _new_code
