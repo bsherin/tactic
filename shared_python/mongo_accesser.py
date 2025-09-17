@@ -46,6 +46,67 @@ class NonexistentNameError(MongoAccessException):
 
 class MongoAccess(object):
 
+    def grab_filtered_resources(self, res_type, col_name, name_field, content_field, additional_mdata_fields,
+                                search_text, search_spec, columns, is_repo=False):
+        all_tags = []
+        sort_field = search_spec["sort_field"]
+        db_to_use = self.repository_db if is_repo else self.db
+        reg = re.compile(".*" + search_text + ".*", re.IGNORECASE)
+        or_list = [{name_field: reg}]
+        and_list = []
+        if search_spec["search_metadata"]:
+            or_list += [{"metadata.notes": reg}, {"metadata.tags": reg}, {"metadata.type": reg}]
+            if additional_mdata_fields:
+                for fld in additional_mdata_fields:
+                    or_list.append({"metadata." + fld: reg})
+        if search_spec["search_inside"]:
+            or_list += [{"the_list": reg}]
+        and_list.append({"$or": or_list})
+        if not search_spec["show_hidden"]:
+            hidden_reg = "(^|/| )hidden($|/| )"
+            and_list.append({"metadata.tags": {"$not": {"$regex": hidden_reg}}})
+        if search_spec["active_tag"]:
+            atag = search_spec['active_tag']
+            if atag[0] == "/":
+                atag = atag[1:]
+            tag_reg = f"(^|/| ){atag}($|/| )"
+            and_list.append({"metadata.tags": {"$regex": tag_reg}})
+        res = db_to_use[col_name].find({"$and": and_list},
+                                       {name_field: 1, "metadata": 1, "file_id": 1})
+        filtered_res = []
+        for doc in res:
+            try:
+                if "metadata" in doc and doc["metadata"] is not None:
+                    mdata = doc["metadata"]
+                    doc_id = str(doc["_id"])
+                    all_tags += mdata["tags"].split()
+                    if "file_id" in doc and "size" in columns:
+                        rdict = self.build_res_dict(doc[name_field], mdata, None,
+                                                    doc["file_id"], res_type=res_type,
+                                                    doc_id=doc_id, sort_field=sort_field)
+                    else:
+                        rdict = self.build_res_dict(doc[name_field], mdata, res_type=res_type,
+                                                    doc_id=doc_id, sort_field=sort_field)
+                    if mdata and "tags" in mdata:
+                        rdict["hidden"] = self.has_hidden(mdata["tags"])
+                    else:
+                        rdict["hidden"] = False
+                    filtered_res.append(rdict)
+            except Exception as ex:
+                msg = self.get_traceback_message(ex, f"Got problem with doc {str(doc[name_field])}")
+                print(msg)
+        return filtered_res, all_tags
+
+
+    @staticmethod
+    def extract_search_context(text: str, search: str, margin: int = 75) -> str:
+        index = text.find(search)
+        if index == -1:
+            return None  # search string not found
+        start = max(0, index - margin)
+        end = min(len(text), index + len(search) + margin)
+        return text[start:end]
+
     def create_initial_metadata(self):
         mdata = {"datetime": datetime.datetime.utcnow(),
                  "updated": datetime.datetime.utcnow(),
@@ -68,10 +129,6 @@ class MongoAccess(object):
     @property
     def collection_collection_name(self):
         return '{}.data_collections'.format(self.username)
-
-    @property
-    def list_collection_name(self):
-        return '{}.lists'.format(self.username)
 
     @property
     def tile_collection_name(self):
@@ -394,45 +451,6 @@ class MongoAccess(object):
         return
 
     @property
-    def list_names(self):
-        if self.list_collection_name not in self.db.list_collection_names():
-            self.db.create_collection(self.list_collection_name)
-            return []
-        my_list_names = []
-        for doc in self.db[self.list_collection_name].find(projection=["list_name"]):
-            my_list_names.append(doc["list_name"])
-        return sorted([str(t) for t in my_list_names], key=str.lower)
-
-    def sort_data_list_key(self, item):
-        return str.lower(str(item[0]))
-
-    @property
-    def list_names_with_metadata(self):
-        if self.list_collection_name not in self.db.list_collection_names():
-            self.db.create_collection(self.list_collection_name)
-            return []
-        my_list_names = []
-        for doc in self.db[self.list_collection_name].find(projection=["list_name", "metadata"]):
-            if "metadata" in doc:
-                my_list_names.append([doc["list_name"], doc["metadata"]])
-            else:
-                my_list_names.append([doc["list_name"], None])
-        return sorted(my_list_names, key=self.sort_data_list_key)
-
-    @property
-    def list_tags_dict(self):
-        if self.list_collection_name not in self.db.list_collection_names():
-            self.db.create_collection(self.list_collection_name)
-            return {}
-        lists = {}
-        for doc in self.db[self.list_collection_name].find(projection=["list_name", "metadata"]):
-            if "metadata" in doc:
-                lists[doc["list_name"]] = doc["metadata"]["tags"]
-            else:
-                lists[doc["list_name"]] = ""
-        return lists
-
-    @property
     def project_names_with_metadata(self):
         if self.project_collection_name not in self.db.list_collection_names():
             self.db.create_collection(self.project_collection_name)
@@ -570,10 +588,6 @@ class MongoAccess(object):
             else:
                 res_names.append(doc[name_key])
         return sorted([str(t) for t in res_names], key=str.lower)
-
-    def get_list(self, list_name):
-        list_dict = self.db[self.list_collection_name].find_one({"list_name": list_name})
-        return list_dict["the_list"]
 
     def get_tile_dict(self, tile_module_name):
         tile_dict = self.db[self.tile_collection_name].find_one({"tile_module_name": tile_module_name})

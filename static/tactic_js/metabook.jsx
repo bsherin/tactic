@@ -26,8 +26,6 @@ function Metabook(props) {
 
     const settingsContext = useContext(SettingsContext);
 
-    const header_ref =
-
     useEffect(()=>{
         postAjaxPromise(`read_metabook/${props.meta_id}`)
             .then(data => {
