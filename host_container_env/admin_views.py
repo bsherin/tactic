@@ -1,24 +1,15 @@
-from flask import render_template, jsonify
+from flask import render_template
 from flask_login import login_required, current_user
 from tactic_app import app
-from users import User, remove_user
-import tactic_app
 from mongo_db_fs import repository_type, database_type
-
-from container_manager import ContainerManager
-from user_manager import UserManager
+from users import User
 
 import datetime
 tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
 
 admin_user = User.get_user_by_username("admin")
-import loaded_tile_management
-
-container_manager = ContainerManager("container")
-user_manager = UserManager("user")
 
 from js_source_management import js_source_dict, _develop, css_source
-from mongo_accesser import res_types
 
 
 @app.route('/admin_interface', methods=['GET', 'POST'])

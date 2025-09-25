@@ -26,7 +26,7 @@ function AdminPane(props) {
     const table_ref = useRef(null);
     const console_text_ref = useRef(null);
     const previous_search_spec = useRef(null);
-    const get_url = `grab_${props.res_type}_list_chunk`;
+    const get_task = `grab_${props.res_type}_list_chunk_task`;
 
     const [, set_data_dict, data_dict_ref] = useStateAndRef({});
     const [num_rows, set_num_rows] = useState(0);
@@ -83,7 +83,7 @@ function AdminPane(props) {
                 search_spec = Object.assign(search_spec, spec_update)
             }
             let query = {search_spec: search_spec, row_number: row_index};
-            let data = await postAjaxPromise(get_url, query);
+            let data = await postPromise("host", get_task, query);
             let new_data_dict;
             if (flush) {
                 new_data_dict = data.chunk_dict

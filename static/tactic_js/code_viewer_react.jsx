@@ -12,7 +12,7 @@ import {useHotkeys} from "@blueprintjs/core";
 import {ResourceViewerApp, copyToLibrary, sendToRepository} from "./resource_viewer_react_app";
 import {TacticSocket} from "./tactic_socket";
 import {ReactCodemirror6} from "./react-codemirror6";
-import {postAjaxPromise, postPromise} from "./communication_react"
+import {postPromise} from "./communication_react"
 import {withStatus, StatusContext} from "./toaster"
 
 import {withErrorDrawer} from "./error_drawer.js";
@@ -34,20 +34,20 @@ function code_viewer_props(data, registerDirtyMethod, finalCallback) {
     if (!window.in_context) {
         window.main_id = resource_viewer_id;
     }
-    const tsocket = new TacticSocket("main", 5000, "code_viewer", resource_viewer_id);
-
-    finalCallback({
-        resource_viewer_id: resource_viewer_id,
-        main_id: resource_viewer_id,
-        tsocket: tsocket,
-        split_tags: data.mdata.tags == "" ? [] : data.mdata.tags.split(" "),
-        created: data.mdata["datestring"],
-        resource_name: data.resource_name,
-        the_content: data.the_content,
-        notes: data.mdata.notes,
-        readOnly: data["read_only"],
-        is_repository: data.is_repository,
-        registerDirtyMethod: registerDirtyMethod,
+    const tsocket = new TacticSocket("main", 5000, "code_viewer", resource_viewer_id, () => {
+        finalCallback({
+            resource_viewer_id: resource_viewer_id,
+            main_id: resource_viewer_id,
+            tsocket: tsocket,
+            split_tags: [],
+            created: "",
+            resource_name: data.resource_name,
+            the_content: "",
+            notes: "",
+            readOnly: data.is_repository,
+            is_repository: data.is_repository,
+            registerDirtyMethod: registerDirtyMethod,
+        })
     })
 }
 
@@ -58,6 +58,7 @@ function CodeViewerApp(props) {
         updatePanel: null,
         refreshTab: null,
         closeTab: null,
+        the_content: "",
         ...props
     };
 
@@ -65,9 +66,10 @@ function CodeViewerApp(props) {
     const search_ref = useRef(null);
     const cmObjectRef = useRef(null);
 
-    const savedContent = useRef(props.the_content);
+    const savedContent = useRef("");
+    const initialized = useRef(false);
 
-    const [code_content, set_code_content, code_content_ref] = useStateAndRef(props.the_content);
+    const [code_content, set_code_content, code_content_ref] = useStateAndRef("");
     const [current_search_number, set_current_search_number, current_search_number_ref] = useStateAndRef(null);
     const [search_string, set_search_string] = useState("");
     const [regex, set_regex] = useState(false);
@@ -85,6 +87,24 @@ function CodeViewerApp(props) {
         if (props.controlled) {
             props.registerDirtyMethod(_dirty)
         }
+        postPromise("host", "get_code_content_with_metadata_task", {"code_name": props.resource_name})
+            .then(data => {
+                if (!data["success"]) {
+                    errorDrawerFuncs.addErrorDrawerEntry({
+                        title: "Error getting code content",
+                        content: "Code not found"
+                    });
+                    props.closeTab()
+                }
+                else {
+                    const the_code = data["the_code"];
+                    const metadata = data["metadata"];
+                    set_code_content(the_code);
+                    savedContent.current = the_code;
+                    initialized.current = true;
+                }
+
+            });
         return (() => {
             cmObjectRef.current = null;
             set_code_content(null);
@@ -315,7 +335,7 @@ function CodeViewerApp(props) {
                 "new_res_name": new_name,
                 "res_to_copy": _cProp("resource_name")
             };
-            await postAjaxPromise('/create_duplicate_code', result_dict);
+            await postPromise("host", "create_duplicate_code_task", result_dict, props.main_id);
             await _setResourceNameStatePromise(new_name);
             await _saveMe()
         } catch (e) {
@@ -367,6 +387,7 @@ function CodeViewerApp(props) {
                                    showErrorDrawerButton={true}
                 >
                     <ReactCodemirror6 code_content={code_content}
+                                      controlled={true}
                                       show_fold_button={true}
                                       flex_size={true}
                                       extraKeys={_extraKeys()}
@@ -407,10 +428,8 @@ function code_viewer_main() {
     }
 
     let target = window.is_repository ? "repository_view_code_in_context" : "view_code_in_context";
-    postAjaxPromise(target, {"resource_name": window.resource_name})
-        .then((data) => {
-            code_viewer_props(data, null, gotProps, null);
-        })
+    let data = {resource_name: resource_name, res_type: "code"};
+    code_viewer_props(data, null, gotProps, null);
 }
 
 

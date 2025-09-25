@@ -220,7 +220,7 @@ function TextViewerApp(props) {
         };
 
         try {
-            let data = await postAjaxPromise("save_text_file", result_dict);
+            let data = await postPromise("host", "save_text_file_task", result_dict);
             if (data.success) {
                 statusFuncs.statusMessage(`Saved text file ${props.resource_name}`)
             }

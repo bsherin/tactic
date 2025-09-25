@@ -1013,7 +1013,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
     # because its simpler having the execing machinery here.
     def get_user_function_with_metadata(self, function_name):
         self._save_stdout()
-        raw_result = self._tworker.post_and_wait(self._main_id, "get_function_with_metadata",
+        raw_result = self._tworker.post_and_wait(self._main_id, "get_function_with_metadata_task",
                                                  {"function_name": function_name})
 
         result = debinarize_python_object(raw_result["function_data"])
@@ -1030,7 +1030,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
 
     def get_user_class_with_metadata(self, class_name):
         self._save_stdout()
-        raw_result = self._tworker.post_and_wait(self._main_id, "get_class_with_metadata",
+        raw_result = self._tworker.post_and_wait(self._main_id, "get_class_with_metadata_task",
                                                  {"class_name": class_name})
 
         result = debinarize_python_object(raw_result["class_data"])

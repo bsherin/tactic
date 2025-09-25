@@ -19,7 +19,6 @@ import copy
 from communication_utils import emit_direct
 
 from main import mainWindow
-import main
 
 # noinspection PyUnresolvedReferences
 from qworker import QWorker, task_worthy, callback_dict, callback_data_dict, error_handler_dict

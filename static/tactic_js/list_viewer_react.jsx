@@ -15,7 +15,7 @@ import { useHotkeys } from "@blueprintjs/core";
 
 import {ResourceViewerApp, copyToLibrary, sendToRepository} from "./resource_viewer_react_app";
 import {TacticSocket} from "./tactic_socket";
-import {postAjaxPromise, postPromise} from "./communication_react"
+import {postPromise} from "./communication_react"
 import {withStatus} from "./toaster"
 import {withAssistant} from "./assistant";
 
@@ -23,7 +23,7 @@ import {withSettings} from "./settings"
 import {ErrorDrawerContext, withErrorDrawer} from "./error_drawer";
 import {guid} from "./utilities_react";
 import {TacticNavbar} from "./blueprint_navbar";
-import {useCallbackStack, useConstructor, useStateAndRef} from "./utilities_react";
+import {useCallbackStack, useStateAndRef} from "./utilities_react";
 import {SettingsContext} from "./settings"
 import {DialogContext, withDialogs} from "./modal_react";
 import {StatusContext} from "./toaster";
@@ -39,21 +39,20 @@ function list_viewer_props(data, registerDirtyMethod, finalCallback) {
     if (!window.in_context) {
         window.main_id = resource_viewer_id;
     }
-    let tsocket = new TacticSocket("main", 5000, "list_viewer", resource_viewer_id);
-
-
-    finalCallback({
-        resource_viewer_id: resource_viewer_id,
-        main_id: resource_viewer_id,
-        tsocket: tsocket,
-        split_tags: data.mdata.tags == "" ? [] : data.mdata.tags.split(" "),
-        created: data.mdata["datestring"],
-        resource_name: data.resource_name,
-        the_content: data.the_content,
-        notes: data.mdata.notes,
-        readOnly: data["read_only"],
-        is_repository: data.is_repository,
-        registerDirtyMethod: registerDirtyMethod,
+    let tsocket = new TacticSocket("main", 5000, "list_viewer", resource_viewer_id, () => {
+        finalCallback({
+            resource_viewer_id: resource_viewer_id,
+            main_id: resource_viewer_id,
+            tsocket: tsocket,
+            split_tags: [],
+            created: "",
+            resource_name: data.resource_name,
+            the_content: [],
+            notes: [],
+            readOnly: false,
+            is_repository: false,
+            registerDirtyMethod: registerDirtyMethod,
+        })
     })
 }
 
@@ -100,9 +99,10 @@ function ListViewerApp(props) {
     };
     const top_ref = useRef(null);
 
-    const savedContent = useRef(props.the_content);
+    const savedContent = useRef();
+    const initialized = useRef(false);
 
-    const [list_content, set_list_content, list_content_ref] = useStateAndRef(props.the_content);
+    const [list_content, set_list_content, list_content_ref] = useStateAndRef("");
 
     const [resource_name, set_resource_name] = useState(props.resource_name);
 
@@ -115,13 +115,24 @@ function ListViewerApp(props) {
     useEffect(() => {
         statusFuncs.stopSpinner();
         if (props.controlled) {
-            props.registerDirtyMethod(_dirty)
+            props.registerDirtyMethod(_dirty);
+            // This postPromise can't go to the local stack because it's not ready in time
+
         }
+        postPromise("host", "get_list_content_with_metadata_task", {"list_name": props.resource_name})
+            .then(data => {
+                const the_list = data["the_list"];
+                const metadata = data["metadata"];
+                set_list_content(the_list);
+                savedContent.current = the_list;
+                initialized.current = true;
+
+            })
     }, []);
 
-    const pushCallback = useCallbackStack("code_viewer");
+    const pushCallback = useCallbackStack("list_viewer");
 
-        const hotkeys = useMemo(
+    const hotkeys = useMemo(
         () => [
             {
                 combo: "Ctrl+S",
@@ -135,15 +146,15 @@ function ListViewerApp(props) {
     );
     const { handleKeyDown, handleKeyUp } = useHotkeys(hotkeys);
 
-    useConstructor(() => {
+    useEffect(() => {
         if (!props.controlled) {
             window.addEventListener("beforeunload", function (e) {
                 if (_dirty()) {
                     e.preventDefault();
                 }
-            })
+            });
         }
-    });
+    }, []);
 
     function cPropGetters() {
         return {
@@ -232,7 +243,7 @@ function ListViewerApp(props) {
         };
 
         try {
-            await postAjaxPromise("update_list", result_dict);
+            await postPromise("host", "update_list_task", result_dict, props.main_id);
             savedContent.current = new_list_as_string;
             statusFuncs.statusMessage(`Saved list ${result_dict.list_name}`)
         }
@@ -249,7 +260,7 @@ function ListViewerApp(props) {
             return false
         }
         try {
-            let ln_result = await postPromise("host", "get_list_names", {"user_id": window.user_id}, props.main_id);
+            let ln_result = await postPromise("host", "get_list_names_task", {}, props.main_id);
             let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
                 title: "Save List As",
                 field_title: "New List Name",
@@ -262,7 +273,7 @@ function ListViewerApp(props) {
                 "new_res_name": new_name,
                 "res_to_copy": _cProp("resource_name")
             };
-            await postAjaxPromise('/create_duplicate_list', result_dict);
+            await postPromise("host", "create_duplicate_list_task", result_dict, props.main_id);
             _setResourceNameState(new_name, () => {
                 _saveMe();
             })
@@ -341,8 +352,7 @@ async function list_viewer_main() {
         root.render(the_element)
     }
 
-    let target = window.is_repository ? "repository_view_list_in_context" : "view_list_in_context";
-    let data = await postAjaxPromise(target, {"resource_name": window.resource_name});
+    let data = {resource_name: resource_name, res_type: "list"};
     list_viewer_props(data, null, gotProps);
 }
 

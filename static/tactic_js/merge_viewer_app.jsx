@@ -15,6 +15,10 @@ import {ICON_BAR_WIDTH} from "./sizing_tools";
 export {MergeViewerApp}
 
 function MergeViewerApp(props) {
+    props = {
+        initialized: true,
+        ...props
+    };
 
     const top_ref = useRef(null);
     const above_main_ref = useRef(null);
@@ -111,23 +115,25 @@ function MergeViewerApp(props) {
                      position: "relative"
                  }}
                  tabIndex="0" onKeyDown={handleKeyDown} onKeyUp={handleKeyUp}>
-                <div id="left-div" ref={top_ref} style={left_div_style}>
-                    <div id="above-main" ref={above_main_ref} className="d-flex flex-row justify-content-between"
-                         style={{marginTop: 5, marginBottom: 2}}>
-                        <span className="align-self-end">Current</span>
-                        <BpSelect options={props.option_list}
-                                  onChange={props.handleSelectChange}
-                                  buttonIcon="application"
-                                  popoverPosition={PopoverPosition.BOTTOM_RIGHT}
-                                  value={props.select_val}/>
-                    </div>
-                    <ReactCodemirrorMergeView6 handleEditChange={props.handleEditChange}
-                                              editor_content={props.edit_content}
-                                              right_content={props.right_content}
-                                              saveMe={props.saveHandler}
+                {props.initialized &&
+                    <div id="left-div" ref={top_ref} style={left_div_style}>
+                        <div id="above-main" ref={above_main_ref} className="d-flex flex-row justify-content-between"
+                             style={{marginTop: 5, marginBottom: 2}}>
+                            <span className="align-self-end">Current</span>
+                            <BpSelect options={props.option_list}
+                                      onChange={props.handleSelectChange}
+                                      buttonIcon="application"
+                                      popoverPosition={PopoverPosition.BOTTOM_RIGHT}
+                                      value={props.select_val}/>
+                        </div>
+                            <ReactCodemirrorMergeView6 handleEditChange={props.handleEditChange}
+                                                       editor_content={props.edit_content}
+                                                       right_content={props.right_content}
+                                                       saveMe={props.saveHandler}
 
-                    />
-                </div>
+                            />
+                    </div>
+                }
             </div>
         </div>
     )

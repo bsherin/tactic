@@ -1,22 +1,15 @@
-
 import re
 import os
-from datetime import datetime
-from flask import jsonify, request
-from flask_login import login_required, current_user
-from tactic_app import app  # create_megaplex
-from users import User, load_user
-from resource_manager import ResourceManager
-from docker_functions import cli, destroy_container, container_owner, get_log
-from docker_functions import container_id, container_memory_usage, restart_container
-from docker_functions import container_other_name
-from exception_mixin import generic_exception_handler
-import tactic_app
+import datetime
 
-admin_user = User.get_user_by_username("admin")
 LIBRARY_CHUNK_SIZE = int(int(os.environ.get("LIBRARY_CHUNK_SIZE")) / 2)
 
-import loaded_tile_management
+from qworker import task_worthy
+
+from docker_functions import cli, restart_container, destroy_container, container_id, container_owner
+from docker_functions import container_other_name, container_memory_usage
+
+from users import load_user
 
 base_user_image_names = ["bsherin/tactic-tile", "bsherin/tactic-main", "bsherin/tactic-module-viewer"]
 
@@ -26,90 +19,78 @@ for base_name in base_user_image_names:
 for base_name in base_user_image_names:
     tactic_user_image_names.append(f"{base_name}:arm64")
 
-class ContainerManager(ResourceManager):
+class ContainerTasksMixin:
 
-    def add_rules(self):
-        app.add_url_rule('/reset_server/<library_id>', "reset_server", login_required(self.reset_server),
-                         methods=['get'])
-        app.add_url_rule('/clear_user_containers', "clear_user_containers",
-                         login_required(self.clear_user_containers), methods=['get', 'post'])
-        app.add_url_rule('/kill_container/<cont_id>', "kill_container",
-                         login_required(self.kill_container), methods=['get', 'post'])
-        app.add_url_rule('/container_logs/<cont_id>', "container_logs",
-                         login_required(self.container_logs), methods=['get', 'post'])
-        app.add_url_rule('/grab_container_list_chunk', "grab_container_list_chunk",
-                         login_required(self.grab_container_list_chunk), methods=['get', 'post'])
-
-    def clear_user_containers(self):
+    @task_worthy
+    def clear_user_containers_task(self, data):
+        admin_id = data["user_id"]
+        admin_user = self.get_user_from_data(data)
         tactic_image_ids = {}
         for iname in tactic_user_image_names:
             tactic_image_ids[iname] = cli.images.get(iname).id
-        if not (current_user.get_id() == admin_user.get_id()):
-            return jsonify({"success": False, "message": "not authorized", "alert_type": "alert-warning"})
+        if not admin_user.username == "admin":
+            return {"success": False, "message": "not authorized", "alert_type": "alert-warning"}
         try:
-            self.emit_status_message("removing user containers")
+            self.emit_status_message("removing user containers", admin_id)
             all_containers = cli.containers.list(all=True)
             for cont in all_containers:
                 if cont.attrs["Image"] == tactic_image_ids["bsherin/tactic-main"]:
-                    self.emit_status_message("removing main container " + cont.attrs["Name"])
+                    self.emit_status_message("removing main container " + cont.attrs["Name"], admin_id)
                     cont.remove(force=True)
                     continue
                 if cont.attrs["Image"] == tactic_image_ids["bsherin/tactic-tile"]:
                     the_id = container_id(cont)
                     if not the_id == "tile_test_container":
-                        self.emit_status_message("removing tile container " + cont.attrs["Name"])
+                        self.emit_status_message("removing tile container " + cont.attrs["Name"], admin_id)
                         cont.remove(force=True)
                     continue
                 if cont.attrs["Image"] == tactic_image_ids["bsherin/tactic-module-viewer"]:
                     the_id = container_id(cont)
                     if not the_id == "tile_test_container":
-                        self.emit_status_message("removing module viewer container " + cont.attrs["Name"])
+                        self.emit_status_message("removing module viewer container " + cont.attrs["Name"], admin_id)
                         cont.remove(force=True)
                     continue
         except Exception as ex:
-            return generic_exception_handler.get_traceback_exception_for_ajax(ex, "Error clearing user containers")
+            msg =  self.get_traceback_message(ex, "Error clearing user containers")
+            return {"success": False, "message": msg, "alert_type": "alert-warning"}
 
-        self.emit_clear_status()
-        self.refresh_selector_list()
-        return jsonify({"success": True, "message": "User Containers Cleared", "alert_type": "alert-success"})
+        self.emit_clear_status(admin_id)
+        self.refresh_selector_list(admin_id)
+        return {"success": True, "message": "User Containers Cleared", "alert_type": "alert-success"}
 
-    def reset_server(self, library_id):
-        if not (current_user.get_id() == admin_user.get_id()):
-            return jsonify({"success": False, "message": "not authorized", "alert_type": "alert-warning"})
+    @task_worthy
+    def reset_server_task(self, data):
+        admin_user = self.get_user_from_data(data)
+        admin_id = data["user_id"]
+        if not admin_user.username == "admin":
+            return {"success": False, "message": "not authorized", "alert_type": "alert-warning"}
         try:
-            self.show_um_message("Restarting the host container", library_id)
+            self.emit_status_message("Restarting the host container", admin_id)
             restart_container("host")
         except Exception as ex:
-            return generic_exception_handler.get_traceback_exception_for_ajax(ex, "Error resetting server")
+            msg = self.get_traceback_message(ex, "Error resetting server")
+            return {"success": False, "message": msg, "alert_type": "alert-warning"}
 
-        self.emit_clear_status()
-        self.refresh_selector_list()
-        return jsonify({"success": True, "message": "Server successefully reset", "alert_type": "alert-success"})
+        self.emit_clear_status(admin_id)
+        self.refresh_selector_list(admin_id)
+        return {"success": True, "message": "Server successefully reset", "alert_type": "alert-success"}
 
-    def kill_container(self, cont_id):
-        if not (current_user.get_id() == admin_user.get_id()):
-            return jsonify({"success": False, "message": "not authorized", "alert_type": "alert-warning"})
+    @task_worthy
+    def kill_container_task(self, data):
+        admin_user = self.get_user_from_data(data)
+        cont_id = data["cont_id"]
+        admin_id = data["user_id"]
+        if not admin_user.username == "admin":
+            return {"success": False, "message": "not authorized", "alert_type": "alert-warning"}
         try:
             destroy_container(cont_id)
         except Exception as ex:
-            return generic_exception_handler.get_traceback_exception_for_ajax(ex, "Error killing container")
-        self.refresh_selector_list()
-        return jsonify({"success": True, "message": "Container Destroeyd", "alert_type": "alert-success"})
+            msg = self.get_traceback_message(ex, "Error killing container")
+            return {"success": False, "message": msg, "alert_type": "alert-warning"}
+        self.refresh_selector_list(admin_id)
+        return {"success": True, "message": "Container Destroeyd", "alert_type": "alert-success"}
 
-    def container_logs(self, cont_id):
-        print("in container_logs in container_manager")
-        if not (current_user.get_id() == admin_user.get_id()):
-            return jsonify({"success": False, "message": "not authorized", "alert_type": "alert-warning"})
-        try:
-            print("passed admin_user test")
-            log_text = get_log(cont_id).decode()
-            print("got the logs")
-        except Exception as ex:
-            print("got an exception")
-            return generic_exception_handler.get_traceback_exception_for_ajax(ex, "Error getting container logs")
-        return jsonify({"success": True, "message": "Got Logs", "log_text": log_text, "alert_type": "alert-success"})
-
-    def build_res_dict(self, cont):
+    def build_container_res_dict(self, cont):
         owner_id = container_owner(cont)
         if owner_id == "host":
             owner_name = "host"
@@ -153,18 +134,19 @@ class ContainerManager(ResourceManager):
             return f"{minutes + minpart:.1f} minutes"
         return f"{int(td.seconds)} seconds"
 
-    def grab_container_list_chunk(self):
-        if not current_user.get_id() == admin_user.get_id():
-            return
-
+    @task_worthy
+    def grab_container_list_chunk_task(self, data):
+        admin_user = self.get_user_from_data(data)
+        if not admin_user.username == "admin":
+            return {"success": False, "message": "not authorized", "alert_type": "alert-warning"}
         def sort_regular_key(item):
             if sort_field not in item:
                 return ""
             return item[sort_field]
 
-        search_spec = request.json["search_spec"]
-        row_number = request.json["row_number"]
-        search_text = search_spec['search_string']
+        search_spec = data["search_spec"]
+        row_number = data["row_number"]
+        search_text = data['search_string']
         reg = re.compile(".*" + search_text + ".*", re.IGNORECASE)
 
         all_containers = cli.containers.list(all=True)
@@ -177,7 +159,7 @@ class ContainerManager(ResourceManager):
                 self.image_id_names[img.id] = img.tags[0]
 
         for cont in all_containers:
-            new_row = self.build_res_dict(cont)
+            new_row = self.build_container_res_dict(cont)
             for k in match_keys:
                 if reg.match(new_row[k], re.IGNORECASE):
                     filtered_res.append(new_row)
@@ -200,4 +182,3 @@ class ContainerManager(ResourceManager):
             chunk_dict[n + chunk_start] = r
         return jsonify(
             {"success": True, "chunk_dict": chunk_dict, "num_rows": len(sorted_results)})
-

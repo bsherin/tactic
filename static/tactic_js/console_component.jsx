@@ -44,7 +44,7 @@ mdi.use(markdownItLatex);
 import {GlyphButton} from "./blueprint_react_widgets";
 import {ReactCodemirror6} from "./react-codemirror6";
 import {SortableComponent} from "./sortable_container";
-import {postAjaxPromise, postWithCallback, postFormDataPromise, postPromise} from "./communication_react"
+import {postWithCallback, postFormDataPromise, postPromise} from "./communication_react"
 import {icon_dict} from "./combined_metadata";
 import {view_views} from "./library_pane";
 import {TacticMenubar} from "./menu_utilities";
@@ -2445,20 +2445,12 @@ function ResourceLinkButton(props) {
 
     useConstructor(() => {
         my_view.current = view_views(false)[props.res_type];
-        if (window.in_context) {
-            const re = new RegExp("/$");
-            my_view.current = my_view.current.replace(re, "_in_context");
-        }
     });
 
     async function _goToLink() {
         if (window.in_context) {
             try {
-                let data = await postAjaxPromise(my_view.current, {
-                    context_id: window.context_id,
-                    resource_name: props.res_name
-                });
-                props.handleCreateViewer(data)
+                props.handleCreateViewer(props.res_type, props.res_name)
             } catch (e) {
                 errorDrawerFuncs.addFromError("Error following link", e)
             }

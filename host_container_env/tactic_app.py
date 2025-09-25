@@ -49,14 +49,14 @@ try:
     CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE"))
     LIBRARY_CHUNK_SIZE = int(os.environ.get("LIBRARY_CHUNK_SIZE"))
 
-    db, fs, repository_db, repository_fs, use_remote_repository, use_remote_database = get_dbs()
+    db, fs, repository_db, repository_fs = get_dbs()
 
     if ("ANYONE_CAN_REGISTER" in os.environ) and (os.environ.get("ANYONE_CAN_REGISTER") == "True"):
         ANYONE_CAN_REGISTER = True
     else:
         ANYONE_CAN_REGISTER = False
 
-    print("creating, clearning temp_data")
+    print("creating, cleaning temp_data")
     if "temp_data" not in db.list_collection_names():
         db.create_collection("temp_data")
     else:

@@ -224,7 +224,7 @@ function MainApp(props) {
     }
 
     async function _update_menus_listener() {
-        let data = await postPromise("host", "get_tile_types", {"user_id": window.user_id}, props.main_id);
+        let data = await postPromise("host", "get_tile_types_task", {"user_id": window.user_id}, props.main_id);
         mDispatch({
             type: "change_multiple_fields",
             newPartialState: {
@@ -277,13 +277,8 @@ function MainApp(props) {
             });
         } else {
             props.tsocket.attachListener("notebook-open", async function (data) {
-                const the_view = `${$SCRIPT_ROOT}/new_notebook_in_context`;
                 try {
-                    let createData = await postAjaxPromise(the_view, {
-                        temp_data_id: data.temp_data_id,
-                        resource_name: ""
-                    });
-                    props.handleCreateViewer(createData)
+                    props.handleCreateViewer("new-notebook", null, null, data.temp_data_id)
                 } catch (e) {
                     errorDrawerFuncs.addFromError(`Error saving list`, e)
                 }

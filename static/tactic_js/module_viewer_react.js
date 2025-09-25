@@ -33,20 +33,20 @@ function module_viewer_props(data, registerDirtyMethod, finalCallback) {
   if (!window.in_context) {
     window.main_id = resource_viewer_id;
   }
-  const tsocket = new _tactic_socket.TacticSocket("main", 5000, "module_viewer", resource_viewer_id);
-  finalCallback({
-    resource_viewer_id: resource_viewer_id,
-    main_id: resource_viewer_id,
-    tsocket: tsocket,
-    split_tags: data.mdata.tags == "" ? [] : data.mdata.tags.split(" "),
-    created: data.mdata["datestring"],
-    resource_name: data.resource_name,
-    the_content: data.the_content,
-    notes: data.mdata.notes,
-    icon: data.mdata["additional_mdata"].icon,
-    readOnly: data["read_only"],
-    is_repository: data.is_repository,
-    registerDirtyMethod: registerDirtyMethod
+  const tsocket = new _tactic_socket.TacticSocket("main", 5000, "module_viewer", resource_viewer_id, () => {
+    finalCallback({
+      resource_viewer_id: resource_viewer_id,
+      main_id: resource_viewer_id,
+      tsocket: tsocket,
+      split_tags: [],
+      created: "",
+      resource_name: data.resource_name,
+      the_content: "",
+      notes: "",
+      readOnly: false,
+      is_repository: false,
+      registerDirtyMethod: registerDirtyMethod
+    });
   });
 }
 function ModuleViewerApp(props) {
@@ -61,7 +61,7 @@ function ModuleViewerApp(props) {
   const top_ref = (0, _react.useRef)(null);
   const search_ref = (0, _react.useRef)(null);
   const savedContent = (0, _react.useRef)(props.the_content);
-  const [code_content, set_code_content, code_content_ref] = (0, _utilities_react.useStateAndRef)(props.the_content);
+  const [code_content, set_code_content, code_content_ref] = (0, _utilities_react.useStateAndRef)("");
   const [current_search_number, set_current_search_number, current_search_number_ref] = (0, _utilities_react.useStateAndRef)(null);
   const [search_string, set_search_string] = (0, _react.useState)("");
   const [regex, set_regex] = (0, _react.useState)(false);
@@ -90,7 +90,8 @@ function ModuleViewerApp(props) {
     handleKeyDown,
     handleKeyUp
   } = (0, _core.useHotkeys)(hotkeys);
-  (0, _utilities_react.useConstructor)(() => {
+  (0, _react.useEffect)(() => {
+    statusFuncs.stopSpinner();
     if (!props.controlled) {
       window.addEventListener("beforeunload", function (e) {
         if (_dirty()) {
@@ -99,7 +100,25 @@ function ModuleViewerApp(props) {
         }
       });
     }
-  });
+    if (props.controlled) {
+      props.registerDirtyMethod(_dirty);
+    }
+    (0, _communication_react.postPromise)("host", "get_tile_content_with_metadata_task", {
+      "tile_module_name": props.resource_name
+    }).then(data => {
+      if (!data["success"]) {
+        errorDrawerFuncs.addErrorDrawerEntry({
+          title: "Error getting tile content",
+          content: "Tile module not found"
+        });
+        props.closeTab();
+      } else {
+        const the_code = data["tile_module"];
+        set_code_content(the_code);
+        savedContent.current = the_code;
+      }
+    });
+  }, []);
   function _update_search_state(nstate) {
     set_current_search_number(0);
     for (let field in nstate) {
@@ -265,11 +284,11 @@ function ModuleViewerApp(props) {
       let result_dict;
       result_dict = {
         "module_name": _cProp("resource_name"),
-        "new_code": new_code,
+        "new_tile_module": new_code,
         "last_saved": "viewer"
       };
       try {
-        let data = await (0, _communication_react.postAjaxPromise)("update_module", result_dict);
+        let data = await (0, _communication_react.postPromise)("host", "update_tile_task", result_dict, props.resource_viewer_id);
         savedContent.current = new_code;
         data.timeout = 2000;
         resolve(data);
@@ -296,7 +315,7 @@ function ModuleViewerApp(props) {
         "new_res_name": new_name,
         "res_to_copy": _cProp("resource_name")
       };
-      await (0, _communication_react.postAjaxPromise)('/create_duplicate_tile', result_dict);
+      await (0, _communication_react.postPromise)("host", 'create_duplicate_tile_task', result_dict);
       _setResourceNameState(new_name, () => {
         _saveMe();
       });
@@ -367,7 +386,7 @@ function ModuleViewerApp(props) {
     }
   }
   function doCheckpointPromise() {
-    return (0, _communication_react.postAjaxPromise)("checkpoint_module", {
+    return (0, _communication_react.postPromise)("host", "checkpoint_module_task", {
       "module_name": _cProp("resource_name")
     });
   }
@@ -436,7 +455,8 @@ function ModuleViewerApp(props) {
     show_search: false,
     showErrorDrawerButton: true
   }), /*#__PURE__*/_react.default.createElement(_reactCodemirror.ReactCodemirror6, {
-    code_content: code_content,
+    code_content: code_content_ref.current,
+    controlled: true,
     show_fold_button: true,
     flex_size: true,
     extraKeys: _extraKeys(),
@@ -468,12 +488,11 @@ function module_viewer_main() {
     const root = (0, _client.createRoot)(domContainer);
     root.render(the_element);
   }
-  let target = window.is_repository ? "repository_view_module_in_context" : "view_module_in_context";
-  (0, _communication_react.postAjaxPromise)(target, {
-    "resource_name": window.resource_name
-  }).then(data => {
-    module_viewer_props(data, null, gotProps, null);
-  });
+  let data = {
+    resource_name: window.resource_name,
+    res_type: "list"
+  };
+  module_viewer_props(data, null, gotProps, null);
 }
 if (!window.in_context) {
   module_viewer_main();

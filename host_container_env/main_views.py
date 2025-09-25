@@ -11,11 +11,8 @@ import base64
 from flask import request, jsonify, render_template, send_file, url_for, redirect
 from flask_login import current_user, login_required
 from flask_socketio import join_room, disconnect
-from tactic_app import app, db, fs, socketio, csrf
-from library_views import collection_manager
-from users import load_user
+from tactic_app import app, socketio, csrf
 from communication_utils import debinarize_python_object, make_python_object_jsonizable
-from communication_utils import read_temp_data, delete_temp_data
 from exception_mixin import generic_exception_handler
 import tactic_app
 
@@ -66,16 +63,14 @@ def on_join_repository(data):
 def on_join(data):
     room = data["room"]
     join_room(room)
+    socketio.emit("room-joined", data, namespace='/main', room=room)
     print("user joined room " + room)
     if "user_id" in data:
         room = data["user_id"]
         join_room(room)
+        socketio.emit("room-joined", data, namespace='/main', room=room)
         print("user joined room " + room)
-    if "return_tile_types" in data and data["return_tile_types"]:
-        tile_types = tactic_app.host_worker.get_tile_types({"user_id": data["user_id"]})
-        return tile_types
-    else:
-        return True
+    return True
 
 @socketio.on('client-ready', namespace='/main')
 @authenticated_only
@@ -127,12 +122,12 @@ def on_ready_to_begin(data):
 @login_required
 def load_temp_page(the_id):
 
-    template_data = read_temp_data(db, the_id)
+    template_data = current_user.read_temp_data(the_id)
 
     if "type" in template_data:
         match template_data["type"]:
             case "collection_download":
-                delete_temp_data(db, the_id)
+                current_user.delete_temp_data(the_id)
                 return redirect(url_for('download_collection',
                                         collection_name=template_data["collection_name"],
                                         new_name=template_data["file_name"]))
@@ -140,7 +135,7 @@ def load_temp_page(the_id):
                 mem = io.BytesIO()
                 mem.write(template_data["the_data"].encode())
                 mem.seek(0)
-                delete_temp_data(db, the_id)
+                current_user.delete_temp_data(the_id)
                 return send_file(mem,
                                  download_name=template_data["file_name"],
                                  as_attachment=True)

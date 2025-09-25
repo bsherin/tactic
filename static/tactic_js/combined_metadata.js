@@ -25,8 +25,8 @@ var _lodash = _interopRequireDefault(require("lodash"));
 var _utilities_react = require("./utilities_react");
 var _icon_info = require("./icon_info");
 var _error_boundary = require("./error_boundary");
-var _communication_react = require("./communication_react");
 var _reactCodemirror = require("./react-codemirror6");
+var _communication_react = require("./communication_react");
 function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function (e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, default: e }; if (null === e || "object" != typeof e && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (const t in e) "default" !== t && {}.hasOwnProperty.call(e, t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, t)) && (i.get || i.set) ? o(f, t, i) : f[t] = e[t]); return f; })(e, t); }
 _core2.default.registerLanguage('javascript', _javascript.default);
 _core2.default.registerLanguage('python', _python.default);
@@ -350,18 +350,18 @@ function CombinedMetadata(props) {
     if (props.useFixedData || props.res_name == null || props.res_type == null) return;
     if (!props.readOnly) {
       let data_dict = {
-        res_types: [props.res_type],
+        res_type: props.res_type,
         is_repository: false,
         show_hidden: true
       };
-      (0, _communication_react.postAjaxPromise)("get_tag_list", data_dict).then(data => {
+      (0, _communication_react.postPromise)("host", "get_all_tags_task", data_dict).then(data => {
         mDispatch({
           "type": "set_all_tags",
           "value": data.tag_list
         });
       });
     }
-    (0, _communication_react.postAjaxPromise)("grab_metadata", {
+    (0, _communication_react.postPromise)("host", "grab_processed_metadata_task", {
       res_type: props.res_type,
       res_name: props.res_name,
       search_string: props.search_string,
@@ -404,14 +404,16 @@ function CombinedMetadata(props) {
     const result_dict = {
       "res_type": latestPropsRef.current.res_type,
       "res_name": latestPropsRef.current.res_name,
-      "tags": "tags" in state_stuff ? state_stuff["tags"] : mStateRef.current.tags,
-      "notes": "notes" in state_stuff ? state_stuff["notes"] : mStateRef.current.notes,
-      "icon": "icon" in state_stuff ? state_stuff["icon"] : mStateRef.current.icon,
-      "category": "category" in state_stuff ? state_stuff["category"] : mStateRef.current.category,
-      "mdata_uid": (0, _utilities_react.guid)()
+      "metadata": {
+        "tags": "tags" in state_stuff ? state_stuff["tags"] : mStateRef.current.tags,
+        "notes": "notes" in state_stuff ? state_stuff["notes"] : mStateRef.current.notes,
+        "icon": "icon" in state_stuff ? state_stuff["icon"] : mStateRef.current.icon,
+        "category": "category" in state_stuff ? state_stuff["category"] : mStateRef.current.category,
+        "mdata_uid": (0, _utilities_react.guid)()
+      }
     };
     try {
-      await (0, _communication_react.postAjaxPromise)("save_metadata", result_dict);
+      await (0, _communication_react.postPromise)("host", "save_metadata_task", result_dict);
       updatedIdRef.current = result_dict["mdata_uid"];
     } catch (e) {
       console.log("error saving metadata ", e);

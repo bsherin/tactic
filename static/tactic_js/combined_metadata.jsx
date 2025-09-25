@@ -44,8 +44,8 @@ import _ from 'lodash';
 import {useDebounce, guid, useImmerReducerAndRef, useCallbackStack} from "./utilities_react";
 import {tile_icon_dict} from "./icon_info";
 import {ErrorBoundary} from "./error_boundary";
-import {postAjaxPromise} from "./communication_react";
 import {ReactCodemirror6} from "./react-codemirror6";
+import {postPromise} from "./communication_react";
 
 export {icon_dict};
 export {NotesField, CombinedMetadata, NativeTags, IconSelector};
@@ -400,16 +400,16 @@ function CombinedMetadata(props) {
         if (props.useFixedData || props.res_name == null || props.res_type == null) return;
         if (!props.readOnly) {
             let data_dict = {
-                res_types: [props.res_type],
+                res_type: props.res_type,
                 is_repository: false,
                 show_hidden: true
             };
-            postAjaxPromise("get_tag_list", data_dict)
+            postPromise("host", "get_all_tags_task", data_dict)
                 .then(data => {
                     mDispatch({"type": "set_all_tags", "value": data.tag_list})
                 })
         }
-        postAjaxPromise("grab_metadata", {
+        postPromise("host", "grab_processed_metadata_task", {
             res_type: props.res_type,
             res_name: props.res_name,
             search_string: props.search_string,
@@ -453,14 +453,16 @@ function CombinedMetadata(props) {
         const result_dict = {
             "res_type": latestPropsRef.current.res_type,
             "res_name": latestPropsRef.current.res_name,
-            "tags": "tags" in state_stuff ? state_stuff["tags"] : mStateRef.current.tags,
-            "notes": "notes" in state_stuff ? state_stuff["notes"] : mStateRef.current.notes,
-            "icon": "icon" in state_stuff ? state_stuff["icon"] : mStateRef.current.icon,
-            "category": "category" in state_stuff ? state_stuff["category"] : mStateRef.current.category,
-            "mdata_uid": guid()
+            "metadata": {
+                "tags": "tags" in state_stuff ? state_stuff["tags"] : mStateRef.current.tags,
+                "notes": "notes" in state_stuff ? state_stuff["notes"] : mStateRef.current.notes,
+                "icon": "icon" in state_stuff ? state_stuff["icon"] : mStateRef.current.icon,
+                "category": "category" in state_stuff ? state_stuff["category"] : mStateRef.current.category,
+                "mdata_uid": guid()
+            }
         };
         try {
-            await postAjaxPromise("save_metadata", result_dict);
+            await postPromise("host", "save_metadata_task", result_dict);
             updatedIdRef.current = result_dict["mdata_uid"];
         } catch (e) {
             console.log("error saving metadata ", e)

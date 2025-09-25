@@ -303,7 +303,7 @@ function ReactCodemirror6(props) {
                 }
                 if (props.restrict_edits_to_range) {
                     const line = update.state.doc.toString();
-                    const ranges = props.getEditableRanges(line)
+                    const ranges = props.getEditableRanges(line);
                     update.view.dispatch({
                         effects: restrictCompartment.current.reconfigure([
                             restrictEditsToRange(ranges),

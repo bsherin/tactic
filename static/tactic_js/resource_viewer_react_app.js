@@ -17,7 +17,9 @@ function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r
 const PADDING = 20;
 async function copyToLibrary(res_type, resource_name, dialogFuncs, statusFuncs, errorDrawerFuncs) {
   try {
-    let data = await (0, _communication_react.postAjaxPromise)(`get_resource_names/${res_type}`);
+    let data = await (0, _communication_react.postPromise)("host", "get_resource_names", {
+      res_type
+    });
     let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
       title: `Import ${res_type}`,
       field_title: `New ${res_type} Name`,
@@ -31,7 +33,7 @@ async function copyToLibrary(res_type, resource_name, dialogFuncs, statusFuncs, 
       "res_name": resource_name,
       "new_res_name": new_name
     };
-    await (0, _communication_react.postAjaxPromise)("copy_from_repository", result_dict);
+    await (0, _communication_react.postPromise)("host", "copy_from_repository_task", result_dict);
     statusFuncs.statusMessage(`Copied resource from repository`);
   } catch (e) {
     if (e != "canceled") {
@@ -41,7 +43,10 @@ async function copyToLibrary(res_type, resource_name, dialogFuncs, statusFuncs, 
 }
 async function sendToRepository(res_type, resource_name, dialogFuncs, statusFuncs, errorDrawerFuncs) {
   try {
-    let data = await (0, _communication_react.postAjaxPromise)(`get_repository_resource_names/${res_type}`, {});
+    let data = await (0, _communication_react.postPromise)("host", "get_resources_names_task", {
+      res_type,
+      is_repository: true
+    });
     let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
       title: `Share ${res_type}`,
       field_title: `New ${res_type} Name`,
@@ -55,7 +60,7 @@ async function sendToRepository(res_type, resource_name, dialogFuncs, statusFunc
       "res_name": resource_name,
       "new_res_name": new_name
     };
-    await (0, _communication_react.postAjaxPromise)("send_to_repository", result_dict);
+    await (0, _communication_react.postPromise)("host", "send_to_repository_task", result_dict);
     statusFuncs.statusMessage(`Sent resource to repository`);
   } catch (e) {
     if (e != "canceled") {

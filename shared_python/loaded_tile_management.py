@@ -11,7 +11,7 @@ def get_repository_tiles_matching_tag(tag):
     from users import User
     repository_user = User.get_user_by_username("repository")
     if repository_user is not None:
-        tm_list = repository_user.get_resource_names("tile", tag_filter=tag)
+        tm_list = repository_user.get_rfiltered_esource_names("tile", tag_filter=tag)
     else:
         tm_list = []
     return tm_list
@@ -23,7 +23,7 @@ def load_user_default_tiles(username):
     the_user = User.get_user_by_username(username)
     error_list = []
     if the_user is not None:
-        tm_list = the_user.get_resource_names("tile", tag_filter="default")
+        tm_list = the_user.get_filtered_resource_names("tile", tag_filter="default")
 
         for tm in tm_list:
             tactic_app.host_worker.post_task("host", "load_tile_module_task", {"tile_module_name": tm,

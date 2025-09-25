@@ -13,6 +13,8 @@ from flask import render_template, Flask
 from tile_code_parser import TileParser, remove_indents, insert_indents
 import exception_mixin
 from exception_mixin import ExceptionMixin
+from mongo_accesser import MongoAccess
+from tile_accesser import TileAccess
 from mongo_db_fs import get_dbs
 
 import sys, os
@@ -20,28 +22,23 @@ import sys, os
 sys.stdout = sys.stderr
 import time
 
-if "DB_NAME" in os.environ:
-    db_name = os.environ.get("DB_NAME")
-else:
-    db_name = "tacticdb"
-
-mongo_uri = os.environ.get("MONGO_URI")
-
 rb_id = os.environ.get("RB_ID")
 
 
 # noinspection PyUnusedLocal
-class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin):
+class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin, MongoAccess, TileAccess):
     def __init__(self):
         QWorker.__init__(self)
         self.tp = None
         self.tstring = None
         self.module_name = None
         self.user_id = None
-        self.db = None
-        self.tile_collection_name = None
+        self.username = os.environ.get("USERNAME")
         self.tile_instance = None
         self.generate_heartbeats = True
+        db, fs, repository_db, repository_fs = get_dbs()
+        self.db = db
+        self.fs = fs
         return
 
     def ask_host(self, msg_type, task_data=None, callback_func=None):
@@ -59,19 +56,9 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin):
         local_task_packet = task_packet
         self.tstring = data_dict["version_string"]
         self.module_name = data_dict["module_name"]
-        self.user_id = data_dict["user_id"]
-        try:
-            db, fs, repository_db, repository_fs, use_remote_repository, use_remote_database = get_dbs(get_repo=False)
-            self.db = db
-        except Exception as ex:
-            error_string = self.extract_short_error_message(ex, "error getting pymongo client")
-            print(error_string)
-            self.mworker.debug_log(error_string)
-            sys.exit()
-        self.tile_collection_name = data_dict["tile_collection_name"]
-        tile_dict = self.db[self.tile_collection_name].find_one({"tile_module_name": self.module_name})
-        module_code = tile_dict["tile_module"]
         self.user_id = os.environ.get("OWNER")
+        tile_dict = self.get_tile_doc(self.module_name)
+        module_code = tile_dict["tile_module"]
 
         def do_the_parse(handler_result):
             self.handler_methods = []
@@ -163,20 +150,6 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin):
                                         version_string=self.tstring)
         return full_code
 
-    def create_recent_checkpoint(self, module_name):
-        tile_dict = self.db[self.tile_collection_name].find_one({"tile_module_name": module_name})
-        if "recent_history" in tile_dict:
-            recent_history = tile_dict["recent_history"]
-        else:
-            recent_history = []
-        recent_history.append({"updated": tile_dict["metadata"]["updated"],
-                               "tile_module": tile_dict["tile_module"]})
-        self.db[self.tile_collection_name].update_one({"tile_module_name": module_name},
-                                                      {'$set': {"recent_history": recent_history}})
-        return
-
-    optional_mdata_fields = ["tags", "notes", "icon", "category"]
-
     @task_worthy
     def update_module(self, data_dict):
         try:
@@ -204,20 +177,7 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin):
             used_handler_methods_line_numbers = {func["name"]: {
                 "firstLineNumber": func["body_start"],
                 "lastLineNumber": func["last_line"]} for func in used_handler_methods_list}
-            doc = self.db[self.tile_collection_name].find_one({"tile_module_name": module_name})
-            if doc and "metadata" in doc:
-                mdata = doc["metadata"]
-            else:
-                mdata = {}
-
-            mdata.update(data_dict["mdata"])
-
-            mdata["updated"] = datetime.datetime.utcnow()
-            mdata["type"] = "standard"
-
-            self.db[self.tile_collection_name].update_one({"tile_module_name": module_name},
-                                                          {'$set': {"tile_module": module_code, "metadata": mdata,
-                                                                    "last_saved": "creator"}})
+            self.update_tile(module_name, module_code, "creator")
             self.create_recent_checkpoint(module_name)
             return {"success": True, "message": "Module Successfully Saved",
                     "alert_type": "alert-success", "render_content_line_numbers": render_content_line_numbers,

@@ -136,15 +136,7 @@ function PoolBrowser(props) {
                 });
             let data;
             if (checkResults["create_new_notebook"]) {
-                data = await postAjaxPromise("new_notebook_in_context", {});
-                if (data.success) {
-                    props.handleCreateViewer(data, async () => await sendNewCell(path, data.main_id, checkResults["read_as_dataframe"]))
-                } else {
-                    errorDrawerFuncs.addErrorDrawerEntry({
-                        title: "Error opening in notebook",
-                        content: "message" in data ? data.message : ""
-                    });
-                }
+                props.handleCreateViewer("new-notebook", null, async () => await sendNewCell(path, data.main_id, checkResults["read_as_dataframe"]))
             }
             else {
                 props.setSelectedTabId(open_projects_dict[selectedResource].id);
@@ -162,18 +154,7 @@ function PoolBrowser(props) {
         try {
             const path = node && "isDirectory" in node ? node.fullpath : valueRef.current;
             if (node.isDirectory) return;
-            data = await postAjaxPromise("view_text_in_context", {
-                context_id: context_id,
-                file_path: path
-            });
-            if (data.success) {
-                props.handleCreateViewer(data)
-            } else {
-                errorDrawerFuncs.addErrorDrawerEntry({
-                    title: "Error viewing text file",
-                    content: "message" in data ? data.message : ""
-                });
-            }
+            props.handleCreateViewer("text", null, null, null, path)
         } catch (e) {
             errorDrawerFuncs.addFromError(`Error viewing text file`, e)
         }
@@ -198,7 +179,7 @@ function PoolBrowser(props) {
                 handleClose: dialogFuncs.hideModal,
             });
             const the_data = {new_name: new_name, old_path: path};
-            await postAjaxPromise(`rename_pool_resource`, the_data);
+            await postPromise("host", "rename_pool_resource_task", the_data);
         } catch (e) {
             if (e != "canceled") {
                 errorDrawerFuncs.addFromError(`Error renaming`, e)
@@ -226,7 +207,7 @@ function PoolBrowser(props) {
                 handleClose: dialogFuncs.hideModal,
             });
             const the_data = {full_path: full_path};
-            await postAjaxPromise(`create_pool_directory`, the_data);
+            await postPromise("host", "create_pool_directory", the_data);
         } catch (e) {
             if (e != "canceled") {
                 errorDrawerFuncs.addFromError(`Error adding directory`, e)
@@ -254,7 +235,7 @@ function PoolBrowser(props) {
                 handleClose: dialogFuncs.hideModal,
             });
             const the_data = {dst, src};
-            await postAjaxPromise(`duplicate_pool_file`, the_data);
+            await postromise("host", "duplicate_pool_file_task", the_data);
         } catch (e) {
             if (e != "canceled") {
                 errorDrawerFuncs.addFromError(`Error duplicating file`, e)
@@ -335,7 +316,7 @@ function PoolBrowser(props) {
         if (src == dst) return;
         try {
             const the_data = {dst: dst, src: src};
-            await postAjaxPromise(`move_pool_resource`, the_data);
+            await postPromise("host", "move_pool_resource_task", the_data);
         } catch (e) {
             errorDrawerFuncs.addFromError("Error moving resource", e)
         }
@@ -389,7 +370,7 @@ function PoolBrowser(props) {
                 submit_text: "delete",
                 handleClose: dialogFuncs.hideModal,
             });
-            await postAjaxPromise("delete_pool_resource", {full_path: path, is_directory: sNode.isDirectory})
+            await postPromise("host", "delete_pool_resource_task", {full_path: path, is_directory: sNode.isDirectory})
         } catch (e) {
             if (e != "canceled") {
                 errorDrawerFuncs.addFromError(`Error deleting`, e)

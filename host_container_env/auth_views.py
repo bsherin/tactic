@@ -8,9 +8,8 @@ from flask_login import current_user
 import gridfs
 from tactic_app import login_manager
 
-from users import User, user_data_fields, get_full_user_data_fields, RemoteUser
+from users import User, get_full_user_data_fields
 from mongo_accesser import res_types, name_keys
-from library_views import copy_between_accounts
 from flask_wtf import Form
 # noinspection PyProtectedMember
 from flask_wtf.csrf import CSRFError
@@ -46,18 +45,6 @@ def get_starter_tiles():
                 if "starter" in doc["metadata"]["tags"].lower():
                     tile_dicts.append(doc)
     return {"success": True, "tile_dicts": tile_dicts}
-
-def initialize_db():
-    from ssh_pymongo import MongoSession
-    User.create_new({"username": "admin", "password": "abcd"})
-    User.create_new({"username": "repository", "password": "abcd"})
-    local_repo_user = User.get_user_by_username("repository")
-    for res_type in res_types:
-        cname = remote_repo_user.resource_collection_name(res_type)
-        name_key = name_keys[res_type]
-        if cname not in db.list_collection_names():
-            db.create_collection(cname)
-    return
 
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/login', methods=['GET', 'POST'])
@@ -130,9 +117,6 @@ def login_after_register():
 @app.route('/attempt_login', methods=['GET', 'POST'])
 def attempt_login():
     data = request.json
-    if "user_collection" not in db.list_collection_names():
-        print("initializing db")
-        initialize_db()
     result_dict = {}
     user = User.get_user_by_username(data["username"])
     if user is not None and user.verify_password(data["password"]):
@@ -212,9 +196,9 @@ def attempt_register():
         repository_user = User.get_user_by_username("repository")
         new_user = User.get_user_by_username(data["username"])
         for res_type in res_types:
-            starters = repository_user.get_resource_names(res_type, tag_filter="starter")
+            starters = repository_user.get_filtered_resource_names(res_type, tag_filter="starter")
             for rname in starters:
-                copy_between_accounts(repository_user, new_user, res_type, rname, rname)
+                new_user.copy_between_accounts(repository_user, new_user, res_type, rname, rname)
     return jsonify(result_dict)
 
 
@@ -229,14 +213,14 @@ def attempt_duplicate():
         repository_user = User.get_user_by_username("repository")
         new_user = User.get_user_by_username(data["username"])
         for res_type in res_types:
-            starters = repository_user.get_resource_names(res_type, tag_filter="starter")
+            starters = repository_user.get_filtered_resource_names(res_type, tag_filter="starter")
             for rname in starters:
-                copy_between_accounts(repository_user, new_user, res_type, rname, rname)
+                current_user.copy_between_accounts(repository_user, new_user, res_type, rname, rname)
         old_user = User.get_user_by_username(data["old_username"])
         for res_type in res_types:
             starters = old_user.get_resource_names(res_type)
             for rname in starters:
-                copy_between_accounts(old_user, new_user, res_type, rname, rname)
+                current_user.copy_between_accounts(old_user, new_user, res_type, rname, rname)
         result_dict["message"] = "user duplicated apparently"
     else:
         result_dict["message"] = "something went wrong"

@@ -18,6 +18,9 @@ class MessagePostException(Exception):
     pass
 
 
+class TileModuleNotFoundError(Exception):
+    pass
+
 class ExceptionMixin(object):
 
     def __init__(self):

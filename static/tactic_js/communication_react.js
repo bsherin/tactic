@@ -128,6 +128,9 @@ function postPromise(dest_id, task_type, task_data, special_main_id=null) {
 }
 
 function postWithCallback(dest_id, task_type, task_data, callback_func, error_callback=null, special_main_id=null){
+    if (!("user_id" in task_data)) {
+        task_data["user_id"] = window.user_id;
+    }
     const task_packet =  {
         "source": "client",
         "dest": dest_id,

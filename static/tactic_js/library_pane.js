@@ -44,15 +44,6 @@ function view_views(is_repository = false) {
     };
   }
 }
-function duplicate_views() {
-  return {
-    collection: "/duplicate_collection",
-    project: "/duplicate_project",
-    tile: "/create_duplicate_tile",
-    list: "/create_duplicate_list",
-    code: "/create_duplicate_code"
-  };
-}
 function BodyMenu(props) {
   function getIntent(item) {
     return item.intent ? item.intent : null;
@@ -148,28 +139,21 @@ function LibraryPane(props) {
       props.setCurrentMetabook(pStateRef.current.select_state.selected_resource._id);
       return;
     }
-    if (the_view == null) {
-      the_view = view_views(props.is_repository)[pStateRef.current.select_state.selected_resource.res_type];
-    }
     statusFuncs.setStatus({
       show_spinner: true,
       status_message: "Opening ..."
     });
     if (window.in_context) {
-      const re = new RegExp("/$");
-      the_view = the_view.replace(re, "_in_context");
-      let data;
       try {
-        data = await (0, _communication_react.postAjaxPromise)(the_view, {
-          context_id: context_id,
-          resource_name: pStateRef.current.select_state.selected_resource.name
-        });
-        props.handleCreateViewer(data, statusFuncs.clearStatus);
+        props.handleCreateViewer(res_type, pStateRef.current.select_state.selected_resource.name, statusFuncs.clearStatus);
       } catch (e) {
         statusFuncs.clearStatus();
         errorDrawerFuncs.addFromError(`Error viewing with view ${the_view}`, e);
       }
     } else {
+      if (the_view == null) {
+        the_view = view_views(props.is_repository)[pStateRef.current.select_state.selected_resource.res_type];
+      }
       statusFuncs.clearStatus();
       window.open($SCRIPT_ROOT + the_view + pStateRef.current.select_state.selected_resource.name);
     }
@@ -355,7 +339,7 @@ function LibraryPane(props) {
     /** @type {{ chunk_dict: object, all_tags: array, num_rows: int }} */
     let data;
     try {
-      data = await (0, _communication_react.postAjaxPromise)("grab_all_list_chunk", args);
+      data = await (0, _communication_react.postPromise)("host", "grab_all_list_chunk_task", args);
       if (flush) {
         pDispatch({
           type: "INIT_DATA_DICT",
@@ -473,21 +457,21 @@ function LibraryPane(props) {
     const result_dict = {
       "res_type": pStateRef.current.select_state.selected_rows[0].res_type,
       "res_name": pStateRef.current.select_state.list_of_selected[0],
-      "tags": pStateRef.current.select_state.selected_resource.tags,
-      "notes": pStateRef.current.select_state.selected_resource.notes
+      "metadata": {
+        "tags": pStateRef.current.select_state.selected_resource.tags,
+        "notes": pStateRef.current.select_state.selected_resource.notes
+      }
     };
     if (pStateRef.current.select_state.selected_rows[0].res_type == "tile" && "icon" in pStateRef.current.select_state.selected_resource) {
-      result_dict["icon"] = pStateRef.current.select_state.selected_resource["icon"];
+      result_dict["metadata"]["icon"] = pStateRef.current.select_state.selected_resource["icon"];
     }
     try {
-      await (0, _communication_react.postAjaxPromise)("save_metadata", result_dict);
+      await (0, _communication_react.postPromise)("host", "save_metadata_task", result_dict);
     } catch (e) {
       errorDrawerFuncs.addFromError(`Error updating resource ${result_dict.res_name}`, e);
     }
   }
   function _handleRowDoubleClick(row_dict) {
-    let view_view = view_views(props.is_repository)[row_dict.res_type];
-    if (view_view == null) return;
     statusFuncs.setStatus({
       show_spinner: true,
       status_message: "Opening ..."
@@ -503,20 +487,15 @@ function LibraryPane(props) {
     });
     pushCallback(async () => {
       if (window.in_context) {
-        const re = new RegExp("/$");
-        view_view = view_view.replace(re, "_in_context");
-        let data;
         try {
-          data = await (0, _communication_react.postAjaxPromise)(view_view, {
-            context_id: context_id,
-            resource_name: row_dict.name
-          });
-          props.handleCreateViewer(data, statusFuncs.clearStatus);
+          props.handleCreateViewer(row_dict.res_type, row_dict.name, statusFuncs.clearStatus);
         } catch (e) {
           statusFuncs.clearStatus();
           errorDrawerFuncs.addFromError(`Error handling double click with view ${view_view}`, e);
         }
       } else {
+        let view_view = view_views(props.is_repository)[row_dict.res_type];
+        if (view_view == null) return;
         statusFuncs.clearStatus();
         window.open($SCRIPT_ROOT + view_view + row_dict.name);
       }
@@ -639,27 +618,21 @@ function LibraryPane(props) {
   }
   async function _view_resource(selected_resource, the_view = null, force_new_tab = false) {
     let resource_name = selected_resource.name;
-    if (the_view == null) {
-      the_view = view_views(props.is_repository)[selected_resource.res_type];
-    }
     statusFuncs.setStatus({
       show_spinner: true,
       status_message: "Opening ..."
     });
     if (window.in_context && !force_new_tab) {
-      const re = new RegExp("/$");
-      the_view = the_view.replace(re, "_in_context");
       try {
-        let data = await (0, _communication_react.postAjaxPromise)(the_view, {
-          context_id: context_id,
-          resource_name: resource_name
-        });
-        props.handleCreateViewer(data, statusFuncs.clearStatus);
+        props.handleCreateViewer(selected_resource.res_type, resource_name, statusFuncs.clearStatus);
       } catch (e) {
         statusFuncs.clearStatus();
         errorDrawerFuncs.addFromError(`Error viewing resource ${resource_name}`, e);
       }
     } else {
+      if (the_view == null) {
+        the_view = view_views(props.is_repository)[selected_resource.res_type];
+      }
       statusFuncs.clearStatus();
       window.open($SCRIPT_ROOT + the_view + resource_name);
     }
@@ -669,7 +642,9 @@ function LibraryPane(props) {
     let res_name = the_row.name;
     let res_type = the_row.res_type;
     try {
-      let data = await (0, _communication_react.postAjaxPromise)("get_resource_names/" + res_type, {});
+      let data = await (0, _communication_react.postPromise)("host", "get_resource_names_task", {
+        res_type
+      });
       let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
         title: `Duplicate ${res_type}`,
         field_title: "New Name",
@@ -678,14 +653,14 @@ function LibraryPane(props) {
         checkboxes: [],
         handleClose: dialogFuncs.hideModal
       });
-      let duplicate_view = duplicate_views()[res_type];
       const result_dict = {
         "new_res_name": new_name,
         "res_to_copy": res_name,
         "library_id": props.library_id,
-        "is_repository": false
+        "is_repository": false,
+        "res_type": res_type
       };
-      await (0, _communication_react.postAjaxPromise)(duplicate_view, result_dict);
+      await (0, _communication_react.postPromise)("host", "create_duplicate_resource_task", result_dict);
     } catch (e) {
       if (e != "canceled") {
         errorDrawerFuncs.addFromError(`Error duplicating resource ${res_name}`, e);
@@ -716,7 +691,7 @@ function LibraryPane(props) {
         submit_text: "delete",
         handleClose: dialogFuncs.hideModal
       });
-      await (0, _communication_react.postAjaxPromise)("delete_resource_list", {
+      await (0, _communication_react.postPromise)("host", "delete_resource_list_task", {
         "resource_list": res_list
       });
     } catch (e) {
@@ -736,7 +711,9 @@ function LibraryPane(props) {
       res_name = row.name;
     }
     try {
-      let data = await (0, _communication_react.postAjaxPromise)("get_resource_names/" + res_type, {});
+      let data = await (0, _communication_react.postPromise)("host", "get_resource_names_task", {
+        res_type
+      });
       const res_names = data["resource_names"];
       const index = res_names.indexOf(res_name);
       if (index >= 0) {
@@ -753,7 +730,11 @@ function LibraryPane(props) {
       const the_data = {
         "new_name": new_name
       };
-      await (0, _communication_react.postAjaxPromise)(`rename_resource/${res_type}/${res_name}`, the_data);
+      await (0, _communication_react.postPromise)("host", "rename_resource_task", {
+        old_name: res_name,
+        res_type,
+        new_name
+      });
     } catch (e) {
       if (e != "canceled") {
         errorDrawerFuncs.addFromError(`Error renaming resource ${res_name}`, e);
@@ -765,7 +746,9 @@ function LibraryPane(props) {
       let res_type = pStateRef.current.select_state.selected_resource.res_type;
       let res_name = pStateRef.current.select_state.selected_resource.name;
       try {
-        let data = await (0, _communication_react.postAjaxPromise)("get_resource_names/" + res_type, {});
+        let data = await (0, _communication_react.postPromise)("host", "get_resource_names_tasks", {
+          res_type
+        });
         let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
           title: `Import ${res_type}`,
           field_title: "New Name",
@@ -779,7 +762,7 @@ function LibraryPane(props) {
           "res_name": res_name,
           "new_res_name": new_name
         };
-        await (0, _communication_react.postAjaxPromise)("/copy_from_repository", result_dict);
+        await (0, _communication_react.postPromise)("host", "copy_from_repository_task", result_dict);
         statusFuncs.statusMessage(`Imported Resource ${res_name}`);
         return res_name;
       } catch (e) {
@@ -792,7 +775,7 @@ function LibraryPane(props) {
         "selected_rows": pStateRef.current.select_state.selected_rows
       };
       try {
-        await (0, _communication_react.postAjaxPromise)("/copy_from_repository", result_dict);
+        await (0, _communication_react.postPromise)("host", "copy_from_repository_task", result_dict);
         statusFuncs.statusMessage(`Imported Resources`);
       } catch (e) {
         errorDrawerFuncs.addFromError("Error importing resources", e);
@@ -805,7 +788,10 @@ function LibraryPane(props) {
       let res_type = pStateRef.current.select_state.selected_resource.res_type;
       let res_name = pStateRef.current.select_state.selected_resource.name;
       try {
-        let data = await (0, _communication_react.postAjaxPromise)("get_repository_resource_names/" + res_type, {});
+        let data = await (0, _communication_react.postPromise)("host", "get_resource_names", {
+          res_type,
+          is_repository: true
+        });
         let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
           title: `Share ${res_type}`,
           field_title: `New ${res_type} Name`,
@@ -819,7 +805,7 @@ function LibraryPane(props) {
           "res_name": res_name,
           "new_res_name": new_name
         };
-        await (0, _communication_react.postAjaxPromise)('/send_to_repository', result_dict);
+        await (0, _communication_react.postPromise)("host", 'send_to_repository_task', result_dict);
         statusFuncs.statusMessage(`Shared resource ${res_name}`);
       } catch (e) {
         if (e != "canceled") {
@@ -831,7 +817,7 @@ function LibraryPane(props) {
         "selected_rows": pStateRef.current.select_state.selected_rows
       };
       try {
-        await (0, _communication_react.postAjaxPromise)('/send_to_repository', result_dict);
+        await (0, _communication_react.postPromise)("host", 'send_to_repository_task', result_dict);
         statusFuncs.statusMessage("Shared resources");
       } catch (e) {
         errorDrawerFuncs.addFromError("Error sharing resources", e);
@@ -845,11 +831,7 @@ function LibraryPane(props) {
   async function _new_notebook() {
     if (window.in_context) {
       try {
-        const the_view = "new_notebook_in_context";
-        let data = await (0, _communication_react.postAjaxPromise)(the_view, {
-          resource_name: ""
-        });
-        props.handleCreateViewer(data);
+        props.handleCreateViewer("new-notebook");
       } catch (e) {
         errorDrawerFuncs.addFromError("Error creating new notebook", e);
       }
@@ -860,11 +842,7 @@ function LibraryPane(props) {
   async function _new_project() {
     if (window.in_context) {
       try {
-        const the_view = "new_project_in_context";
-        let data = await (0, _communication_react.postAjaxPromise)(the_view, {
-          resource_name: ""
-        });
-        props.handleCreateViewer(data);
+        props.handleCreateViewer("new-project");
       } catch (e) {
         errorDrawerFuncs.addFromError("Error creating new project", e);
       }
@@ -917,7 +895,9 @@ function LibraryPane(props) {
     var res_name = pStateRef.current.select_state.selected_resource.name;
     if (!pStateRef.current.select_state.multi_select) {
       try {
-        let data = await (0, _communication_react.postAjaxPromise)("get_resource_names/collection", {});
+        let data = await (0, _communication_react.postPromise)("host", "get_resource_names_tasks", {
+          res_type: "collection"
+        });
         let other_name = await dialogFuncs.showModalPromise("SelectDialog", {
           title: "Select a new collection to combine with " + res_name,
           select_label: "Collection to Combine",
@@ -928,7 +908,10 @@ function LibraryPane(props) {
         });
         statusFuncs.startSpinner(true);
         const target = `combine_collections/${res_name}/${other_name}`;
-        await (0, _communication_react.postAjaxPromise)(target, {});
+        await (0, _communication_react.postPromise)("host", "combine_collections_task", {
+          base_collection_name: res_name,
+          collection_to_add: other_name
+        });
         statusFuncs.stopSpinner();
         statusFuncs.statusMessage("Combined Collections");
       } catch (e) {
@@ -939,7 +922,9 @@ function LibraryPane(props) {
       }
     } else {
       try {
-        let data = await (0, _communication_react.postAjaxPromise)("get_resource_names/collection", {});
+        let data = await (0, _communication_react.postPromise)("host", "get_resource_names_tasks", {
+          res_type: "collection"
+        });
         let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
           title: "Combine Collections",
           field_title: "Name for combined collection",
@@ -948,7 +933,7 @@ function LibraryPane(props) {
           checkboxes: [],
           handleClose: dialogFuncs.hideModal
         });
-        await (0, _communication_react.postAjaxPromise)("combine_to_new_collection", {
+        await (0, _communication_react.postPromise)("host", "combine_to_new_collection", {
           "original_collections": pStateRef.current.select_state.list_of_selected,
           "new_name": new_name
         });
@@ -1017,21 +1002,6 @@ function LibraryPane(props) {
       errorDrawerFuncs.addFromError("Error importing document", e);
     }
   }
-  async function _tile_view() {
-    await _view_func("/view_module/");
-  }
-  async function _view_named_tile(res, in_new_tab = false) {
-    await _view_resource({
-      name: res.name,
-      res_type: "tile"
-    }, "/view_module/", in_new_tab);
-  }
-  async function _creator_view_named_tile(res, in_new_tab = false) {
-    await _view_resource({
-      name: res.tile,
-      res_type: "tile"
-    }, "/view_in_creator/", in_new_tab);
-  }
   async function _creator_view() {
     await _view_func("/view_in_creator/");
   }
@@ -1067,7 +1037,9 @@ function LibraryPane(props) {
   async function _unload_module(resource = null) {
     let res_name = resource ? resource.name : pStateRef.current.select_state.selected_resource.name;
     try {
-      await (0, _communication_react.postAjaxPromise)(`unload_one_module/${res_name}`, {});
+      await (0, _communication_react.postPromise)("host", "unload_one_module_task", {
+        "tile_module_name": res_name
+      });
       statusFuncs.statusMessage("Tile unloaded");
     } catch (e) {
       errorDrawerFuncs.addFromError("Error unloading tile", e);
@@ -1075,7 +1047,7 @@ function LibraryPane(props) {
   }
   async function _unload_all_tiles() {
     try {
-      await (0, _communication_react.postAjaxPromise)(`unload_all_tiles`, {});
+      await (0, _communication_react.postPromise)("host", "unload_all_tiles_task", {});
       statusFuncs.statusMessage("Unloaded all tiles");
     } catch (e) {
       errorDrawerFuncs.addFromError("Error unloading tiles", e);
@@ -1083,7 +1055,7 @@ function LibraryPane(props) {
   }
   async function _new_in_creator(template_name) {
     try {
-      let data = await (0, _communication_react.postAjaxPromise)(`get_resource_names/tile`, {});
+      let data = await (0, _communication_react.postPromise)("host", "get_tile_names_task", {});
       let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
         title: "New Tile",
         field_title: "New Tile Name",
@@ -1097,11 +1069,11 @@ function LibraryPane(props) {
         "new_res_name": new_name,
         "last_saved": "creator"
       };
-      await (0, _communication_react.postAjaxPromise)("/create_tile_module", result_dict);
+      await postPomise("host", "create_tile_from_repository_template", result_dict);
       await _view_resource({
         name: String(new_name),
         res_type: "tile"
-      }, "/view_in_creator/");
+      });
     } catch (e) {
       if (e != "canceled") {
         errorDrawerFuncs.addFromError("Error creating tile module", e);
@@ -1110,7 +1082,7 @@ function LibraryPane(props) {
   }
   async function _new_metabook() {
     try {
-      let data = await (0, _communication_react.postAjaxPromise)(`get_resource_names/metabook`, {});
+      let data = await (0, _communication_react.postPromise)("host", "get_metabook_names_task", {});
       let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
         title: "New Metabook Resource",
         field_title: "New Metabook Name",
@@ -1122,7 +1094,7 @@ function LibraryPane(props) {
       const result_dict = {
         "metabook_name": new_name
       };
-      let new_metabook_data = await (0, _communication_react.postAjaxPromise)("/new_metabook", result_dict);
+      let new_metabook_data = await (0, _communication_react.postPromise)("host", "create_empty_metabook", result_dict);
       props.setCurrentMetabook(new_metabook_data._id);
     } catch (e) {
       if (e != "canceled") {
@@ -1132,7 +1104,7 @@ function LibraryPane(props) {
   }
   async function _new_list(template_name) {
     try {
-      let data = await (0, _communication_react.postAjaxPromise)(`get_resource_names/list`, {});
+      let data = await (0, _communication_react.postPromise)("host", "get_list_names_task", {});
       let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
         title: "New List Resource",
         field_title: "New List Name",
@@ -1143,9 +1115,9 @@ function LibraryPane(props) {
       });
       const result_dict = {
         "template_name": template_name,
-        "new_res_name": new_name
+        "new_list_name": new_name
       };
-      await (0, _communication_react.postAjaxPromise)("/create_list", result_dict);
+      await (0, _communication_react.postPromise)("host", "create_list_from_repository_template", result_dict);
       await _view_resource({
         name: String(new_name),
         res_type: "list"
@@ -1183,7 +1155,7 @@ function LibraryPane(props) {
   }
   async function _new_code(template_name) {
     try {
-      let data = await (0, _communication_react.postAjaxPromise)(`get_resource_names/code`, {});
+      let data = await postromise("host", "get_code_names_task", {});
       let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
         title: "New code Resource",
         field_title: "New Code Resource Name",
@@ -1194,9 +1166,9 @@ function LibraryPane(props) {
       });
       const result_dict = {
         "template_name": template_name,
-        "new_res_name": new_name
+        "new_code_name": new_name
       };
-      await (0, _communication_react.postAjaxPromise)("/create_code", result_dict);
+      await (0, _communication_react.postPromise)("host", "create_code_from_repository_template", result_dict);
       await _view_resource({
         name: String(new_name),
         res_type: "code"
@@ -1232,9 +1204,6 @@ function LibraryPane(props) {
       downloadCollection: _downloadCollection,
       new_in_creator: _new_in_creator,
       creator_view: _creator_view,
-      tile_view: _tile_view,
-      creator_view_named_tile: _creator_view_named_tile,
-      view_named_tile: _view_named_tile,
       load_tile: _load_tile,
       unload_module: _unload_module,
       unload_all_tiles: _unload_all_tiles,

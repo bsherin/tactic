@@ -24,7 +24,7 @@ function AdminPane(props) {
   const table_ref = (0, _react.useRef)(null);
   const console_text_ref = (0, _react.useRef)(null);
   const previous_search_spec = (0, _react.useRef)(null);
-  const get_url = `grab_${props.res_type}_list_chunk`;
+  const get_task = `grab_${props.res_type}_list_chunk_task`;
   const [, set_data_dict, data_dict_ref] = (0, _utilities_react.useStateAndRef)({});
   const [num_rows, set_num_rows] = (0, _react.useState)(0);
   const [awaiting_data, set_awaiting_data] = (0, _react.useState)(false);
@@ -78,7 +78,7 @@ function AdminPane(props) {
         search_spec: search_spec,
         row_number: row_index
       };
-      let data = await (0, _communication_react.postAjaxPromise)(get_url, query);
+      let data = await postPromise("host", get_task, query);
       let new_data_dict;
       if (flush) {
         new_data_dict = data.chunk_dict;

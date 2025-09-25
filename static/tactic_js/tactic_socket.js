@@ -29,14 +29,19 @@ class TacticSocket {
     join_rooms(reconnect = false, on_join = null) {
         this.socket.emit('join', {"room": window.user_id});
         if (this.main_id) {
+            // If I have a callback of null here it gets treated as an extra argument, which cases problems
+            // So we have to split this isn't two cases, one with a callback and one without
             if (on_join) {
                 this.socket.emit('join', {
                     "room": this.main_id,
-                    "user_id": window.user_id,
-                    "return_tile_types": true
-                }, on_join);
-            } else {
-                this.socket.emit('join', {"room": this.main_id, "return_tile_types": false});
+                    "user_id": window.user_id
+                }, on_join)
+            }
+            else {
+                this.socket.emit('join', {
+                    "room": this.main_id,
+                    "user_id": window.user_id
+                });
             }
         }
     }

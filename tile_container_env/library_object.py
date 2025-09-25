@@ -26,11 +26,11 @@ class TacticResourceSet:
         return
 
     def names(self, tag_filter=None, search_filter=None):
-        return self.get_resource_names(tag_filter, search_filter)
+        return self.get_filtered_resource_names(tag_filter, search_filter)
 
-    def get_resource_names(self, tag_filter=None, search_filter=None):
+    def get_filtered_resource_names(self, tag_filter=None, search_filter=None):
         self._tinst._save_stdout()
-        result = _tworker.post_and_wait(self._tinst._main_id, "get_resource_names_task",
+        result = _tworker.post_and_wait(self._tinst._main_id, "get_filtered_resource_names_task",
                                         {"user_id": self._tinst.user_id, "res_type": self._res_type,
                                          "tag_filter": tag_filter, "search_filter": search_filter})
         self._tinst._restore_stdout()
@@ -62,7 +62,7 @@ class TacticListSet(TacticResourceSet):
 
     def get_user_list_with_metadata(self, the_list):
         self._tinst._save_stdout()
-        raw_result = _tworker.post_and_wait(self._tinst._main_id, "get_list_with_metadata",
+        raw_result = _tworker.post_and_wait(self._tinst._main_id, "get_list_with_metadata_task",
                                             {"list_name": the_list})
 
         result = debinarize_python_object(raw_result["list_data"])
@@ -82,7 +82,7 @@ class TacticCodeSet(TacticResourceSet):
 
     def get_user_code_with_metadata(self, the_code):
         self._tinst._save_stdout()
-        raw_result = _tworker.post_and_wait(self._tinst._main_id, "get_code_with_metadata",
+        raw_result = _tworker.post_and_wait(self._tinst._main_id, "get_code_with_metadata_task",
                                             {"code_name": the_code})
 
         result = debinarize_python_object(raw_result["code_data"])
@@ -134,7 +134,7 @@ class TacticFunctionSet(TacticResourceSet):
 
     def names(self, tag_filter=None, search_filter=None):
         self._tinst._save_stdout()
-        result = _tworker.post_and_wait(self._tinst._main_id, "get_function_names",
+        result = _tworker.post_and_wait(self._tinst._main_id, "get_function_names_task",
                                         {"tag_filter": tag_filter, "search_filter": search_filter})
         self._tinst._restore_stdout()
         return result["function_names"]
@@ -152,7 +152,7 @@ class TacticClassSet(TacticResourceSet):
 
     def names(self, tag_filter=None, search_filter=None):
         self._tinst._save_stdout()
-        result = _tworker.post_and_wait(self._tinst._main_id, "get_class_names",
+        result = _tworker.post_and_wait(self._tinst._main_id, "get_class_names_task",
                                         {"tag_filter": tag_filter, "search_filter": search_filter})
         self._tinst._restore_stdout()
         return result["class_names"]

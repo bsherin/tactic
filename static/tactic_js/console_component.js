@@ -2389,19 +2389,11 @@ function ResourceLinkButton(props) {
   const errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
   (0, _utilities_react.useConstructor)(() => {
     my_view.current = (0, _library_pane.view_views)(false)[props.res_type];
-    if (window.in_context) {
-      const re = new RegExp("/$");
-      my_view.current = my_view.current.replace(re, "_in_context");
-    }
   });
   async function _goToLink() {
     if (window.in_context) {
       try {
-        let data = await (0, _communication_react.postAjaxPromise)(my_view.current, {
-          context_id: window.context_id,
-          resource_name: props.res_name
-        });
-        props.handleCreateViewer(data);
+        props.handleCreateViewer(props.res_type, props.res_name);
       } catch (e) {
         errorDrawerFuncs.addFromError("Error following link", e);
       }

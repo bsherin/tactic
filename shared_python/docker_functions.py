@@ -127,11 +127,6 @@ class MainContainerTracker(object):
             "TRUE_USER_HOST_POOL_DIR": get_user_pool_dir(username)
         }
 
-        if "USE_REMOTE_DATABASE" in os.environ:
-            environ["USE_REMOTE_DATABASE"] = os.environ.get("USE_REMOTE_DATABASE")
-            environ["REMOTE_KEY_FILE"] = os.environ.get("REMOTE_KEY_FILE")
-            environ["REMOTE_USERNAME"] = os.environ.get("REMOTE_USERNAME")
-            main_volume_dict[environ["REMOTE_KEY_FILE"]] = {"bind": environ["REMOTE_KEY_FILE"], "mode": "ro"}
         main_id, _container_id = create_container("bsherin/tactic-main", network_mode="bridge",
                                                   env_vars=environ,
                                                   owner=user_id, other_name=other_name, username=username,

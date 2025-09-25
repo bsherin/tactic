@@ -19,8 +19,6 @@ function main_props(data, registerDirtyMethod, finalCallback) {
 
     tsocket = new TacticSocket("main", 5000, "main_app", main_id, function (response) {
         tsocket.socket.on("remove-ready-block", readyListener);
-        initial_tile_types = response.tile_types;
-        initial_tile_icon_dict = response.icon_dict;
         tsocket.socket.emit('client-ready', {
             "room": main_id, "user_id": window.user_id,
             "participant": "client", "rb_id": data.ready_block_id, "main_id": main_id
@@ -87,6 +85,7 @@ function main_props(data, registerDirtyMethod, finalCallback) {
                 is_project: data.is_project,
                 main_id: main_id,
                 is_freeform: false,
+                is_legacy_save: data.is_legacy_save,
                 doc_type: data.doc_type,
                 resource_name: data.is_project ? data.project_name : "",
 
@@ -94,8 +93,8 @@ function main_props(data, registerDirtyMethod, finalCallback) {
                 is_jupyter: false,
                 tsocket: tsocket,
                 short_collection_name: "",
-                initial_tile_types: initial_tile_types,
-                initial_tile_icon_dict: initial_tile_icon_dict,
+                initial_tile_types: data.tile_types,
+                initial_tile_icon_dict: data.icon_dict,
                 interface_state: interface_state,
                 initial_data_text: fdata.data_text,
                 initial_table_spec: {
@@ -111,13 +110,14 @@ function main_props(data, registerDirtyMethod, finalCallback) {
                 main_id: main_id,
                 doc_type: data.doc_type,
                 is_freeform: true,
+                is_legacy_save: data.is_legacy_save,
                 resource_name: data.is_project ? data.project_name : data.short_collection_name,
                 is_notebook: false,
                 is_jupyter: false,
                 tsocket: tsocket,
                 short_collection_name: data.short_collection_name,
-                initial_tile_types: initial_tile_types,
-                initial_tile_icon_dict: initial_tile_icon_dict,
+                initial_tile_types: data.tile_types,
+                initial_tile_icon_dict: data.icon_dict,
                 interface_state: interface_state,
                 initial_data_text: fdata.data_text,
                 initial_table_spec: {
@@ -134,11 +134,12 @@ function main_props(data, registerDirtyMethod, finalCallback) {
                 is_freeform: false,
                 is_notebook: false,
                 is_jupyter: false,
+                is_legacy_save: data.is_legacy_save,
                 tsocket: tsocket,
                 resource_name: data.is_project ? data.project_name : data.short_collection_name,
                 short_collection_name: data.short_collection_name,
-                initial_tile_types: initial_tile_types,
-                initial_tile_icon_dict: initial_tile_icon_dict,
+                initial_tile_types: data.tile_types,
+                initial_tile_icon_dict: data.icon_dict,
                 initial_table_spec: {
                     column_names: fdata.table_spec.header_list,
                     column_widths: fdata.table_spec.column_widths,

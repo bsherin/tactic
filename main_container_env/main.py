@@ -10,8 +10,8 @@ import pymongo
 import gridfs
 import datetime
 import os
-from communication_utils import debinarize_python_object, store_temp_data, emit_direct
-from communication_utils import make_jsonizable_and_compress, read_project_dict, read_temp_data, delete_temp_data
+from communication_utils import debinarize_python_object, emit_direct
+from communication_utils import make_jsonizable_and_compress
 import docker_functions
 from docker_functions import env_or_none
 import loaded_tile_management
@@ -21,6 +21,14 @@ from main_tasks_mixin import StateTasksMixin, LoadSaveTasksMixin, TileCreationTa
 from main_tasks_mixin import ExportsTasksMixin, ConsoleTasksMixin, DataSupportTasksMixin
 from exception_mixin import ExceptionMixin
 from mongo_db_fs import get_dbs
+from list_accesser import ListAccess
+from code_accesser import CodeAccess
+from tile_accesser import TileAccess
+from project_accesser import ProjectAccess
+from collection_accesser import CollectionAccess
+from metabook_accesser import MetabookAccess
+from node_accesser import NodeAccess
+from temp_data_accesser import TempDataAccess
 
 from doc_info import docInfo, FreeformDocInfo
 from qworker import debug_log
@@ -42,7 +50,10 @@ true_user_host_pool_dir = env_or_none("TRUE_USER_HOST_POOL_DIR")
 
 # noinspection PyPep8Naming,PyUnusedLocal,PyTypeChecker,PyMissingConstructor
 class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationTasksMixin, APISupportTasksMixin,
-                 ExportsTasksMixin, ConsoleTasksMixin, DataSupportTasksMixin, ExceptionMixin):
+                 ExportsTasksMixin, ConsoleTasksMixin, DataSupportTasksMixin, ExceptionMixin,
+                 ListAccess, CodeAccess, TileAccess, ProjectAccess, CollectionAccess, MetabookAccess, NodeAccess,
+                 TempDataAccess
+                 ):
     save_attrs = ["short_collection_name", "collection_name",
                   "doc_dict", "project_name", "loaded_modules",
                   "doc_type", "purgetiles"]
@@ -59,7 +70,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
         print("entering mainwindow_init")
         self.mworker = mworker
         try:
-            db, fs, repository_db, repository_fs, use_remote_repository, use_remote_database = get_dbs()
+            db, fs, repository_db, repository_fs = get_dbs()
             self.db = db
             self.fs = fs
         except Exception as ex:
@@ -80,7 +91,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
         self.selected_text = ""
         self.project_dict = None
         # self.tile_save_results = None
-        self.mdata = None
+        self.is_legacy_save = "is_legacy_save" in data_dict and data_dict["is_legacy_save"]
         self.pseudo_tile_id = None
         self.loaded_modules = None
         self.tile_id_dict = {}  # dict with the keys the names of tiles and ids as the values.
@@ -126,7 +137,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
     def show_error_window(self, error_string):
         data_dict = {"error_string": str(error_string),
                      "template_name": "error_window_template.html"}
-        unique_id = store_temp_data(self.db, data_dict)
+        unique_id = self.store_temp_data(data_dict)
         self.mworker.emit_to_main_client("window-open", {"the_id": unique_id})
         return
 
@@ -173,9 +184,6 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
             print("Error creating tile container")
             return self.get_short_exception_dict(ex, "Error creating empty tile container")
         return {"success": True, "tile_id": tile_container_id, "tile_address": tile_address}
-
-    def is_legacy_save(self, mdata):
-        return "save_style" not in mdata or mdata["save_style"] != "b64save_react"
 
     def convert_legacy_console(self, project_dict):
         from bs4 import BeautifulSoup
@@ -287,22 +295,18 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
     def recreate_from_save(self, project_name, unique_id=None):
         print("entering recreate_from_save in main")
         if unique_id is None:
-            save_dict = self.db[self.project_collection_name].find_one({"project_name": project_name})
-
-            self.mdata = save_dict["metadata"]
             try:
-                project_dict = read_project_dict(self.fs, self.mdata, save_dict["file_id"])
-                print("got the project_dict")
-                project_dict["metadata"] = save_dict["metadata"]
+                project_dict = self.read_project_dict(project_name)
             except Exception as ex:
                 error_string = self.handle_exception(ex, "<pre>Error loading project dict</pre>", print_to_console=True)
                 print(error_string)
                 return_data = {"success": False, "message": error_string}
                 return error_string, {}, "", False
         else:
-            save_dict = read_temp_data(self.db, unique_id)
-            project_dict = read_project_dict(self.fs, {"save_style": "b64save_react"}, save_dict["file_id"])
-            delete_temp_data(self.db, unique_id, fs=self.fs)
+            doc = self.read_temp_data(unique_id)
+            doc["metadata"] = {"save_style": "b64save_react"}
+            project_dict = self.read_project_dict_from_doc(doc)
+            self.delete_temp_data(unique_id, fs=self.fs)
 
         error_messages = []
         if "doc_type" not in project_dict:  # legacy this is for backward compatibility
@@ -357,7 +361,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
                 self.visible_doc_name = ""
             else:
                 self.visible_doc_name = list(self.doc_dict)[0]  # This is necessary for recreating the tiles
-            if self.is_legacy_save(self.mdata):
+            if self.is_legacy_save:
                 print("got a legacy save")
                 interface_state = self.convert_legacy_save(project_dict)
                 if not interface_state:
@@ -372,7 +376,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
                 print(error_string)
             return tile_info_dict, project_dict["loaded_modules"], project_dict["interface_state"], True
         else:
-            if unique_id is None and self.is_legacy_save(self.mdata):
+            if unique_id is None and self.is_legacy_save:
                 project_dict["interface_state"] = {
                     "console_items": self.convert_legacy_console(project_dict)
                 }
@@ -516,7 +520,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
         td = tnow - tstart
         return td.seconds * 1000000 + td.microseconds
 
-    def get_tile_code(self, tile_type):
+    def get_loaded_tile_code(self, tile_type):
         print("in get_tile_code in main")
         return loaded_tile_management.get_tile_code(tile_type, self.username)
 
@@ -613,7 +617,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
                      "list_names": self.list_tags_dict,
                      "function_names": self.function_tags_dict,
                      "class_names": self.class_tags_dict,
-                     "collection_names": self.data_collection_tags_dict,
+                     "collection_names": self.collection_tags_dict,
                      "other_tile_names": other_tile_names}
         return form_info
 

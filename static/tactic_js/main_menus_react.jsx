@@ -74,10 +74,10 @@ function ProjectMenu(props) {
             result_dict.interface_state = save_state;
             let data_object;
             if (props.is_notebook) {
-                await postPromise(props.main_id, "save_new_notebook_project", result_dict, props.main_id);
+                await postPromise(props.main_id, "save_new_notebook_project_task", result_dict, props.main_id);
             } else {
                 result_dict["purgetiles"] = true;
-                await postPromise(props.main_id, "save_new_project", result_dict, props.main_id);
+                await postPromise(props.main_id, "save_new_project_task", result_dict, props.main_id);
             }
             props.setProjectName(new_name, () => {
                 if (!window.in_context) {
@@ -109,7 +109,7 @@ function ProjectMenu(props) {
             result_dict.interface_state = save_state;
 
             statusFuncs.startSpinner();
-            await postPromise(props.main_id, "update_project", result_dict, props.main_id);
+            await postPromise(props.main_id, "update_project_task", result_dict, props.main_id);
             props.updateLastSave();
             statusFuncs.statusMessage(`Saved project ${props.project_name}`);
             statusFuncs.stopSpinner();

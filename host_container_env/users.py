@@ -10,22 +10,24 @@ import uuid
 from collections import OrderedDict
 from flask import jsonify, request, url_for
 from flask_login import UserMixin
-from tactic_app import login_manager, app, db, fs, repository_db, repository_fs , socketio
-from communication_utils import read_project_dict, make_jsonizable_and_compress
+
+from tactic_app import login_manager, app, db, fs, socketio
+from communication_utils import make_jsonizable_and_compress
 from bson.objectid import ObjectId
 from exception_mixin import generic_exception_handler
 from werkzeug.security import generate_password_hash, check_password_hash
 from mongo_accesser import MongoAccess
-
+from list_accesser import ListAccess
+from code_accesser import CodeAccess
+from tile_accesser import TileAccess
+from project_accesser import ProjectAccess
+from collection_accesser import CollectionAccess
+from metabook_accesser import MetabookAccess
+from node_accesser import NodeAccess
+from temp_data_accesser import TempDataAccess
+from exception_mixin import ExceptionMixin
 from user_fields import user_data_fields
-
-
-def put_docs_in_collection(collection_name, dict_list):
-    return db[collection_name].insert_many(dict_list)
-
-
-class ModuleNotFoundError(Exception):
-    pass
+from user_accesser import UserAccess
 
 
 USE_ALT_IDS = True
@@ -49,43 +51,6 @@ def load_user(userid):
     else:
         return User(result)
 
-
-def remove_user(trueid, username=None):
-    try:
-        if username is None:
-            username = get_username_true_id(trueid)
-        user = User.get_user_by_username(username)
-        db.drop_collection(user.list_collection_name)
-        db.drop_collection(user.tile_collection_name)
-        db.drop_collection(user.code_collection_name)
-        user.delete_all_data_collections()  # have to do this because of gridfs pointers
-        db.drop_collection(user.collection_collection_name)
-        user.delete_all_projects()  # have to do this because of gridfs pointers
-        db.drop_collection(user.project_collection_name)
-        db.user_collection.delete_one({"_id": ObjectId(trueid)})
-        return {"success": True, "message": "User successfully removed."}
-    except Exception as ex:
-        return generic_exception_handler.get_traceback_exception_dict(ex)
-
-
-def get_all_users():
-    return db.user_collection.find()
-
-
-def create_new_alt_id(username):
-    update_dict = {"alt_id": str(ObjectId())}
-    db["user_collection"].update_one({"username": username},
-                                     {'$set': update_dict})
-    return update_dict
-
-
-def get_username_true_id(userid):
-    result = db.user_collection.find_one({"_id": ObjectId(userid)})
-    if result is not None and "username" in result:
-        return result["username"]
-    else:
-        return None
-
 def get_full_user_data_fields():
     static_folder = app.static_folder
     dark_path = os.path.join(static_folder, 'tactic_js/codemirror_dark_themes')
@@ -102,16 +67,13 @@ def get_full_user_data_fields():
             field["options"] = light_themes
     return ufields
 
-class User(UserMixin, MongoAccess):
+class User(UserMixin, MongoAccess, ListAccess, CodeAccess, TileAccess, TempDataAccess, UserAccess,
+           ProjectAccess, CollectionAccess, MetabookAccess, NodeAccess, ExceptionMixin):
 
-    def __init__(self, user_dict, use_remote=False):
+    def __init__(self, user_dict):
         self.username = ""  # This is just to be make introspection happy
-        if use_remote:
-            self.db = repository_db
-            self.fs = repository_fs
-        else:
-            self.db = db  # This is to make mongoaccesser work
-            self.fs = fs  # This is to make mongoaccesser work
+        self.db = db  # This is to make mongoaccesser work
+        self.fs = fs  # This is to make mongoaccesser work
         for fdict in get_full_user_data_fields():
             key = fdict["name"]
             if key in user_dict:
@@ -148,6 +110,46 @@ class User(UserMixin, MongoAccess):
     @property
     def has_pool(self):
         return os.path.exists(self.pool_dir)
+
+    @staticmethod
+    def make_name_unique(new_name, existing_names):
+        counter = 1
+        revised_name = new_name
+        if new_name in existing_names:
+            while new_name + str(counter) in existing_names:
+                counter += 1
+            revised_name = new_name + str(counter)
+        return revised_name
+
+
+    @staticmethod
+    def send_import_report(result, library_id):
+        if "content" in result:
+            content = result["content"]
+        else:
+            content = ""
+        new_resource_name = None
+
+        title = result["title"]
+
+        if result["success"] == "partial":
+            content += "{} files not read successfully. ".format(len(result["failed_reads"].keys()))
+
+        if "file_decoding_errors" in result and len(result["file_decoding_errors"].keys()) > 0:
+            content += "<br><b>Decoding errors were enountered</b>"
+            for filename, val in result["file_decoding_errors"].items():
+                number_of_errors = str(len(val))
+                content += "<br>{}: {} errors".format(filename, number_of_errors)
+                for error_detail in val:
+                    content += "<br>{}".format(error_detail)
+        if "failed_reads" in result and len(result["failed_reads"].keys()) > 0:
+            content += "<br><b>Reads failed for the following reasons:</b>"
+            for filename, val in result["failed_reads"].items():
+                content += "<br>File {}:</br>".format(filename)
+                content += "{}".format(val)
+        data = {"title": title, "content": content, "resource_name": new_resource_name, "success": result["success"]}
+        socketio.emit("upload-response", data, namespace='/main', room=library_id)
+        return
 
     def set_user_timezone_offset(self, tzoffset):
         self.db["user_collection"].update_one({"username": self.username},
@@ -192,9 +194,6 @@ class User(UserMixin, MongoAccess):
                 del additional_mdata[field]
         if "updated" in additional_mdata:
             additional_mdata["updated"] = self.get_timestrings(additional_mdata["updated"])[0]
-        if "collection_name" in additional_mdata:
-            additional_mdata["collection_name"] = self.get_short_collection_name(
-                additional_mdata["collection_name"])
         return {"datestring": datestring, "tags": mdata["tags"], "notes": mdata["notes"],
                 "additional_mdata": additional_mdata}
 
@@ -209,17 +208,14 @@ class User(UserMixin, MongoAccess):
         return dt - datetime.timedelta(hours=tzoffset)
 
     @staticmethod
-    def get_user_by_username(username, use_remote=False):
-        if use_remote:
-            result = repository_db.user_collection.find_one({"username": username})
-        else:
-            result = db.user_collection.find_one({"username": username})
+    def get_user_by_username(username):
+        result = db.user_collection.find_one({"username": username})
         if result is None:
             return None
         else:
             if USE_ALT_IDS and "alt_id" not in result:
                 create_new_alt_id(username)
-            return User(result, use_remote)
+            return User(result)
 
     @property
     def has_openapi_key(self):
@@ -331,53 +327,3 @@ class User(UserMixin, MongoAccess):
         return self.db.user_collection.find_one({"username": self.username})
 
 
-def load_remote_user(userid, the_db):
-    # This expects that userid will be a string
-    # If it's an ObjectId, rather than a string, I get an error likely having to do with login_manager
-    result = the_db.user_collection.find_one({"_id": ObjectId(userid)})
-
-    if result is None:
-        return None
-    else:
-        return User(result)
-
-
-# noinspection PyMethodOverriding,PyMissingConstructor
-class RemoteUser(User):
-    def __init__(self, user_dict, repository_db):
-        self.username = ""  # This is just to be make introspection happy
-        for field in get_full_user_data_fields():
-            key = field["name"]
-            print(f"got key {key}")
-            if field["name"] in user_dict:
-                setattr(self, key, user_dict[key])
-            else:
-                setattr(self, key, "")
-        if "password_hash" in user_dict:
-            self.password_hash = user_dict["password_hash"]
-        self.repository_db = repository_db
-
-    @staticmethod
-    def get_user_by_username(username, repository_db):
-        result = repository_db.user_collection.find_one({"username": username})
-        if result is None:
-            return None
-        else:
-            return RemoteUser(result, repository_db)
-
-    @property
-    def tile_module_names_with_metadata(self):
-        if self.tile_collection_name not in self.repository_db.list_collection_names():
-            self.repository_db.create_collection(self.tile_collection_name)
-            return []
-        my_tile_names = []
-        for doc in self.repository_db[self.tile_collection_name].find(projection=["tile_module_name", "metadata"]):
-            if "metadata" in doc:
-                my_tile_names.append([doc["tile_module_name"], doc["metadata"]])
-            else:
-                my_tile_names.append([doc["tile_module_name"], None])
-        return sorted(my_tile_names, key=self.sort_data_list_key)
-
-    def get_tile_module(self, tile_module_name):
-        tile_dict = self.repository_db[self.tile_collection_name].find_one({"tile_module_name": tile_module_name})
-        return tile_dict["tile_module"]

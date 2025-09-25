@@ -28,7 +28,7 @@ class LibraryAccessMixin:
     def get_user_list(self, the_list):
         self._save_stdout()
         # result = self._tworker.post_and_wait("host", "get_list", {"user_id": self.user_id, "list_name": the_list})
-        raw_result = self._tworker.post_and_wait(self._main_id, "get_list_with_metadata", {"list_name": the_list})
+        raw_result = self._tworker.post_and_wait(self._main_id, "get_list_with_metadata_task", {"list_name": the_list})
         result = debinarize_python_object(raw_result["list_data"])
         self._restore_stdout()
         if result is None:
@@ -84,14 +84,14 @@ class LibraryAccessMixin:
 
     def get_function_names(self, tag=None):
         self._save_stdout()
-        result = self._tworker.post_and_wait(self._main_id, "get_function_names",
+        result = self._tworker.post_and_wait(self._main_id, "get_function_names_task",
                                             {"tag_filter": tag, "search_filter": None})
         self._restore_stdout()
         return result["function_names"]
 
     def get_class_names(self, tag=None):
         self._save_stdout()
-        result = self._tworker.post_and_wait(self._main_id, "get_class_names",
+        result = self._tworker.post_and_wait(self._main_id, "get_class_names_task",
                                              {"tag_filter": tag, "search_filter": None})
         self._restore_stdout()
         return result["class_names"]
@@ -140,7 +140,7 @@ class LibraryAccessMixin:
         self._save_stdout()
         data = self.assemble_collection_data("", doc_dict, doc_type, doc_metadata)
         data["temp_data"] = {"type": temp_type, "file_name": file_name}
-        result = self._tworker.post_and_wait(self._main_id, "create_collection", data)
+        result = self._tworker.post_and_wait(self._main_id, "create_collection_task", data)
         self._restore_stdout()
         if not result["success"]:
             raise Exception(result["message"])
@@ -151,7 +151,7 @@ class LibraryAccessMixin:
         self._save_stdout()
         data = self.assemble_collection_data(name, doc_dict, doc_type, doc_metadata,
                                              header_list_dict, collection_metadata)
-        result = self._tworker.post_and_wait(self._main_id, "create_collection", data)
+        result = self._tworker.post_and_wait(self._main_id, "create_collection_task", data)
         self._restore_stdout()
         if not result["success"]:
             raise Exception(result["message"])

@@ -73,7 +73,7 @@ function OpenOmnibar(props) {
       is_repository: false
     };
     try {
-      let result_data = await (0, _communication_react.postAjaxPromise)("grab_all_list_chunk", data);
+      let result_data = await (0, _communication_react.postPromise)("host", "grab_all_list_chunk_task", data);
       let fItems = props.commandItems.filter(item => {
         return commandItemPredicate(search_string, item);
       });

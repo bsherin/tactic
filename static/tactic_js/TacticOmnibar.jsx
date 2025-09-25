@@ -4,7 +4,7 @@ import {memo, useContext, useState, useCallback, useRef, useEffect} from "react"
 import {QueryList, Classes} from "@blueprintjs/select"
 import {MenuItem, Overlay, InputGroup} from "@blueprintjs/core";
 
-import {postAjax, postAjaxPromise} from "./communication_react";
+import {postPromise, postAjax} from "./communication_react";
 import {SettingsContext} from "./settings"
 import {SelectedPaneContext} from "./utilities_react";
 import {useDebounce} from "./utilities_react";
@@ -83,7 +83,7 @@ function OpenOmnibar(props) {
                 is_repository: false
             };
             try {
-                let result_data = await postAjaxPromise("grab_all_list_chunk", data);
+                let result_data = await postPromise("host", "grab_all_list_chunk_task", data);
                 let fItems = props.commandItems.filter((item) => {
                     return commandItemPredicate(search_string, item)
                 });

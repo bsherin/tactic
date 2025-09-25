@@ -13,7 +13,7 @@ import {useHotkeys} from "@blueprintjs/core";
 import {ResourceViewerApp, copyToLibrary, sendToRepository} from "./resource_viewer_react_app";
 import {TacticSocket} from "./tactic_socket";
 import {ReactCodemirror6} from "./react-codemirror6";
-import {postAjaxPromise, postPromise} from "./communication_react"
+import {postPromise} from "./communication_react"
 import {ErrorDrawerContext, withErrorDrawer} from "./error_drawer";
 import {withStatus, StatusContext} from "./toaster";
 import {withAssistant} from "./assistant";
@@ -21,7 +21,7 @@ import {withAssistant} from "./assistant";
 import {ICON_BAR_WIDTH} from "./sizing_tools";
 import {guid} from "./utilities_react";
 import {TacticNavbar} from "./blueprint_navbar";
-import {useCallbackStack, useConstructor, useStateAndRef} from "./utilities_react";
+import {useCallbackStack, useStateAndRef} from "./utilities_react";
 import {SettingsContext, withSettings} from "./settings";
 import {DialogContext, withDialogs} from "./modal_react";
 import {SelectedPaneContext, convertExtraKeys} from "./utilities_react";
@@ -34,21 +34,20 @@ function module_viewer_props(data, registerDirtyMethod, finalCallback) {
     if (!window.in_context) {
         window.main_id = resource_viewer_id;
     }
-    const tsocket = new TacticSocket("main", 5000, "module_viewer", resource_viewer_id);
-
-    finalCallback({
-        resource_viewer_id: resource_viewer_id,
-        main_id: resource_viewer_id,
-        tsocket: tsocket,
-        split_tags: data.mdata.tags == "" ? [] : data.mdata.tags.split(" "),
-        created: data.mdata["datestring"],
-        resource_name: data.resource_name,
-        the_content: data.the_content,
-        notes: data.mdata.notes,
-        icon: data.mdata["additional_mdata"].icon,
-        readOnly: data["read_only"],
-        is_repository: data.is_repository,
-        registerDirtyMethod: registerDirtyMethod,
+    const tsocket = new TacticSocket("main", 5000, "module_viewer", resource_viewer_id, () => {
+        finalCallback({
+            resource_viewer_id: resource_viewer_id,
+            main_id: resource_viewer_id,
+            tsocket: tsocket,
+            split_tags: [],
+            created: "",
+            resource_name: data.resource_name,
+            the_content: "",
+            notes: "",
+            readOnly: false,
+            is_repository: false,
+            registerDirtyMethod: registerDirtyMethod,
+        })
     })
 }
 
@@ -66,7 +65,7 @@ function ModuleViewerApp(props) {
 
     const savedContent = useRef(props.the_content);
 
-    const [code_content, set_code_content, code_content_ref] = useStateAndRef(props.the_content);
+    const [code_content, set_code_content, code_content_ref] = useStateAndRef("");
     const [current_search_number, set_current_search_number, current_search_number_ref] = useStateAndRef(null);
     const [search_string, set_search_string] = useState("");
     const [regex, set_regex] = useState(false);
@@ -104,7 +103,8 @@ function ModuleViewerApp(props) {
     );
     const {handleKeyDown, handleKeyUp} = useHotkeys(hotkeys);
 
-    useConstructor(() => {
+    useEffect(() => {
+        statusFuncs.stopSpinner();
         if (!props.controlled) {
             window.addEventListener("beforeunload", function (e) {
                 if (_dirty()) {
@@ -113,7 +113,26 @@ function ModuleViewerApp(props) {
                 }
             })
         }
-    });
+
+        if (props.controlled) {
+            props.registerDirtyMethod(_dirty);
+        }
+        postPromise("host", "get_tile_content_with_metadata_task", {"tile_module_name": props.resource_name})
+            .then(data => {
+                if (!data["success"]) {
+                    errorDrawerFuncs.addErrorDrawerEntry({
+                        title: "Error getting tile content",
+                        content: "Tile module not found"
+                    });
+                    props.closeTab()
+                }
+                else {
+                    const the_code = data["tile_module"];
+                    set_code_content(the_code);
+                    savedContent.current = the_code;
+                }
+            })
+    }, []);
 
     function _update_search_state(nstate) {
         set_current_search_number(0);
@@ -284,11 +303,11 @@ function ModuleViewerApp(props) {
             let result_dict;
             result_dict = {
                 "module_name": _cProp("resource_name"),
-                "new_code": new_code,
+                "new_tile_module": new_code,
                 "last_saved": "viewer"
             };
             try {
-                let data = await postAjaxPromise("update_module", result_dict);
+                let data = await postPromise("host", "update_tile_task", result_dict, props.resource_viewer_id);
                 savedContent.current = new_code;
                 data.timeout = 2000;
                 resolve(data)
@@ -314,7 +333,7 @@ function ModuleViewerApp(props) {
                 "new_res_name": new_name,
                 "res_to_copy": _cProp("resource_name")
             };
-            await postAjaxPromise('/create_duplicate_tile', result_dict);
+            await postPromise("host", 'create_duplicate_tile_task', result_dict);
             _setResourceNameState(new_name, () => {
                 _saveMe()
             });
@@ -390,7 +409,7 @@ function ModuleViewerApp(props) {
     }
 
     function doCheckpointPromise() {
-        return postAjaxPromise("checkpoint_module", {"module_name": _cProp("resource_name")});
+        return postPromise("host", "checkpoint_module_task", {"module_name": _cProp("resource_name")});
     }
 
     function _showHistoryViewer() {
@@ -461,7 +480,8 @@ function ModuleViewerApp(props) {
                                    show_search={false}
                                    showErrorDrawerButton={true}
                 >
-                    <ReactCodemirror6 code_content={code_content}
+                    <ReactCodemirror6 code_content={code_content_ref.current}
+                                      controlled={true}
                                       show_fold_button={true}
                                       flex_size={true}
                                       extraKeys={_extraKeys()}
@@ -500,12 +520,8 @@ function module_viewer_main() {
         root.render(the_element)
     }
 
-    let target = window.is_repository ? "repository_view_module_in_context" : "view_module_in_context";
-    postAjaxPromise(target, {"resource_name": window.resource_name})
-        .then((data) => {
-            module_viewer_props(data, null, gotProps, null);
-
-        })
+    let data = {resource_name: window.resource_name, res_type: "list"};
+    module_viewer_props(data, null, gotProps, null);
 }
 
 if (!window.in_context) {

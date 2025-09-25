@@ -192,7 +192,12 @@ function AllMenubar(props) {
                 },
                 {
                     name_text: "Edit Raw Tile", icon_name: "document-open",
-                    click_handler: props.tile_view, res_type: "tile"
+                    click_handler: () => {
+                        props.view_resource({
+                            name: props.selected_resource.name,
+                            res_type: "raw-tile",
+                        }, "/view_module/")},
+                    res_type: "tile"
                 },
             ],
             Edit: [

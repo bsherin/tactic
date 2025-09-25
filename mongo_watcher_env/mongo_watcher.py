@@ -9,7 +9,7 @@ import time
 
 max_pika_retries = 100
 
-db, fs, repository_db, repository_fs, use_remote_repository, use_remote_database = get_dbs()
+db, fs, repository_db, repository_fs = get_dbs()
 
 pipeline = [
     {

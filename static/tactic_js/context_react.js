@@ -23,7 +23,6 @@ var _error_boundary = require("./error_boundary");
 var _library_home_react = require("./library_home_react");
 var _pool_browser = require("./pool_browser");
 var _pool_tree = require("./pool_tree");
-var _library_pane = require("./library_pane");
 var _module_viewer_react = require("./module_viewer_react");
 var _tile_maker_react = require("./tile_maker_react");
 var _tile_maker_support = require("./tile_maker_support");
@@ -189,7 +188,6 @@ function ContextApp(props) {
     props.tsocket.attachListener('handle-callback', task_packet => {
       (0, _communication_react.handleCallback)(task_packet, window.context_id);
     });
-    props.tsocket.attachListener("create-viewer", _handleCreateViewer);
   }
   function getItemFromdentifier(identifier) {
     for (let item of tabPanelListRef.current) {
@@ -221,23 +219,17 @@ function ContextApp(props) {
       };
       let resource_name = old_tab_panel.panel.resource_name;
       let res_type = old_tab_panel.res_type;
-      let the_view;
-      if (old_tab_panel.kind === "notebook-viewer" && !old_tab_panel.panel.is_project) {
-        the_view = "/new_notebook_in_context/";
-      } else {
-        the_view = (0, _library_pane.view_views)()[res_type];
-        const re = new RegExp("/$");
-        the_view = the_view.replace(re, "_in_context");
-      }
       const drmethod = dmethod => {
         _registerDirtyMethod(the_id, dmethod);
       };
+      let data;
+      if (old_tab_panel.kind === "notebook-viewer" && !old_tab_panel.panel.is_project) {
+        data = await (0, _communication_react.postPromise)("host", "initiate_new_otebook_in_context", {});
+      } else {
+        data = await getViewerDataForRes(res_type, resource_name);
+      }
       await _updatePanelPromise(the_id, {
         panel: "spinner"
-      });
-      let data = await (0, _communication_react.postAjaxPromise)($SCRIPT_ROOT + the_view, {
-        context_id: window.context_id,
-        resource_name: resource_name
       });
       propDict[data.kind](data, drmethod, new_panel => {
         _updatePanel(the_id, {
@@ -250,6 +242,71 @@ function ContextApp(props) {
         errorDrawerFuncs.addFromError(`Error refreshing pane`, e);
       }
     }
+  }
+  async function getViewerDataForRes(res_type, resource_name, temp_data_id = null, file_path = null) {
+    let data;
+    if (["list", "code"].includes(res_type)) {
+      data = {
+        kind: `${res_type}-viewer`,
+        resource_name: resource_name,
+        res_type: res_type
+      };
+    } else {
+      switch (res_type) {
+        case "raw-tile":
+          data = {
+            kind: "module-viewer",
+            resource_name: resource_name,
+            res_type: "tile"
+          };
+          break;
+        case "tile":
+          let ls_result = await (0, _communication_react.postPromise)("host", "get_last_saved_task", {
+            tile_module_name: resource_name
+          });
+          let last_saved = ls_result.last_saved;
+          if (last_saved == "creator") {
+            data = await (0, _communication_react.postPromise)("host", "initiate_creator_in_context", {
+              tile_module_name: resource_name
+            });
+          } else {
+            data = await (0, _communication_react.postPromise)("host", "initiate_module_viewer_in_context", {
+              tile_module_name: resource_name
+            });
+          }
+          break;
+        case "collection":
+          data = await (0, _communication_react.postPromise)("host", "initiate_collection_in_context", {
+            collection_name: resource_name
+          });
+          break;
+        case "project":
+          data = await (0, _communication_react.postPromise)("host", "initiate_project_in_context", {
+            project_name: resource_name
+          });
+          break;
+        case "new-notebook":
+          if (temp_data_id) {
+            data = await (0, _communication_react.postPromise)("host", "initiate_new_notebook_in_context", {
+              temp_data_id: temp_data_id
+            });
+          } else {
+            data = await (0, _communication_react.postPromise)("host", "initiate_new_notebook_in_context", {});
+          }
+          break;
+        case "new-project":
+          data = await (0, _communication_react.postPromise)("host", "initiate_new_project_in_context", {});
+          break;
+        case "text":
+          data = await (0, _communication_react.postPromise)("host", "initiate_text_viewer_in_context", {
+            "file_path": file_path
+          });
+          break;
+        default:
+          data = None;
+      }
+    }
+    return data;
   }
   async function _closeTab(the_id) {
     if (the_id === "library") {
@@ -403,8 +460,8 @@ function ContextApp(props) {
       visible: true
     });
   }
-  const _handleCreateViewer = (0, _react.useCallback)(async (data, callback = null) => {
-    let existing_id = _getResourceId(data.resource_name, data.res_type);
+  const handleCreateViewer = (0, _react.useCallback)(async (res_type, resource_name, callback = null, temp_data_id = null, file_path = null) => {
+    let existing_id = _getResourceId(resource_name, resource_name);
     if (existing_id !== -1) {
       setSelectedTabId(existing_id);
       pushCallback(callback);
@@ -414,6 +471,7 @@ function ContextApp(props) {
     const drmethod = dmethod => {
       _registerDirtyMethod(new_id, dmethod);
     };
+    let data = await getViewerDataForRes(res_type, resource_name, temp_data_id, file_path);
     await _addPanelPromise(new_id, data.kind, data.res_type, data.resource_name, "spinner");
     propDict[data.kind](data, drmethod, new_panel => {
       _updatePanel(new_id, {
@@ -464,15 +522,9 @@ function ContextApp(props) {
         return;
       }
     }
-    let the_view = (0, _library_pane.view_views)()["tile"];
-    const re = new RegExp("/$");
-    the_view = the_view.replace(re, "_in_context");
     let data;
     try {
-      data = await (0, _communication_react.postAjaxPromise)(the_view, {
-        context_id: window.context_id,
-        resource_name: module_name
-      });
+      data = await getViewerDataForRes("tile", resource_name);
       const new_id = `${data.kind}: ${data.resource_name}`;
       const drmethod = dmethod => {
         _registerDirtyMethod(new_id, dmethod);
@@ -561,7 +613,7 @@ function ContextApp(props) {
     controlled: true,
     am_selected: selectedTabIdRef.current === "library",
     open_resources_ref: open_resources_ref,
-    handleCreateViewer: _handleCreateViewer,
+    handleCreateViewer: handleCreateViewer,
     setCurrentMetabook: _setCurrentMetabook
   }))));
   let all_panels = [library_panel];
@@ -583,26 +635,18 @@ function ContextApp(props) {
       am_selected: selectedTabIdRef.current === "pool",
       getOpenResources: _getOpenResources,
       setSelectedTabId: setSelectedTabId,
-      handleCreateViewer: _handleCreateViewer
+      handleCreateViewer: handleCreateViewer
     })));
     all_panels.push(pool_panel);
   }
   const _omni_view_func = (0, _react.useCallback)(async item => {
-    let the_view = (0, _library_pane.view_views)(false)[item.res_type];
     statusFuncs.setStatus({
       show_spinner: true,
       status_message: "Opening ..."
     });
     if (window.in_context) {
-      const re = new RegExp("/$");
-      the_view = the_view.replace(re, "_in_context");
-      let data;
       try {
-        data = await (0, _communication_react.postAjaxPromise)(the_view, {
-          context_id: context_id,
-          resource_name: item.name
-        });
-        await _handleCreateViewer(data, statusFuncs.clearStatus);
+        await handleCreateViewer(item.res_type, item.name, statusFuncs.clearStatus);
       } catch (e) {
         statusFuncs.clearStatus();
         errorDrawerFuncs.addFromError(`Error following ${the_view}`, e);
@@ -634,7 +678,7 @@ function ContextApp(props) {
         identifier: entry.identifier
       }, /*#__PURE__*/_react.default.createElement(TheClass, (0, _extends2.default)({}, entry.panel, {
         controlled: true,
-        handleCreateViewer: _handleCreateViewer,
+        handleCreateViewer: handleCreateViewer,
         tab_id: entry.identifier,
         selectedTabIdRef: selectedTabIdRef,
         changeResourceName: (new_name, callback = null, change_title = true) => {

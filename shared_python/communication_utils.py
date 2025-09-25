@@ -62,45 +62,6 @@ def debinarize_python_object(bdat):
         dat = base64.b64decode(bdat)
     return pickle.loads(bytes(dat))
 
-
-def store_temp_data(db, data_dict, unique_id=None):
-    if not unique_id:
-        unique_id = str(uuid.uuid4())
-    data_dict["unique_id"] = unique_id
-
-    # Note that the dict passed to insert_one has an ObjectId added to it
-    # This can end up in the task_data and cause a problem for jsonifying
-    ldata = copy.deepcopy(data_dict)
-    db["temp_data"].insert_one(ldata)
-    return unique_id
-
-
-def read_temp_data(db, unique_id):
-    return db["temp_data"].find_one({"unique_id": unique_id})
-
-
-def delete_temp_data(db, unique_id, fs=None):
-    save_dict = read_temp_data(db, unique_id)
-    db["temp_data"].delete_one({"unique_id": unique_id})
-    if fs is not None and "file_id" in save_dict:
-        fs.delete(save_dict["file_id"])
-    return
-
-
-def read_project_dict(fs, mdata, file_id):
-    project_dict = None
-    if "save_style" in mdata:
-        if mdata["save_style"] == "b64save" or mdata["save_style"] == "b64save_react":
-            binarized_python_object = zlib.decompress(fs.get(file_id).read())
-            project_dict = debinarize_python_object(binarized_python_object)
-    else:  # legacy
-        project_dict = pickle.loads(zlib.decompress(fs.get(file_id).read()).decode("utf-8", "ignore").encode("ascii"))
-    # legacy
-    if "user_id" in project_dict:
-        del project_dict["user_id"]
-    return project_dict
-
-
 def send_request_to_container(taddress, msg_type, data_dict=None, wait_for_success=True,
                               timeout=3, tries=RETRIES, wait_time=.1):
     last_fail = ""

@@ -459,7 +459,7 @@ function CreatorApp(props) {
         try {
             await postPromise(
                 "host", "load_tile_module_task",
-                {"tile_module_name": _cProp("resource_name"), "user_id": window.user_id},
+                {"tile_module_name": _cProp("resource_name")},
                 props.module_viewer_id);
             statusFuncs.statusMessage("Loaded successfully");
             statusFuncs.stopSpinner()
@@ -472,7 +472,7 @@ function CreatorApp(props) {
         statusFuncs.startSpinner();
         let data;
         try {
-            data = await postPromise("host", "get_tile_names", {"user_id": window.user_id}, props.main_id);
+            data = await postPromise("host", "get_tile_names_task", {}, props.main_id);
             dialogFuncs.showModal("ModalDialog", {
                 title: "Save Module As",
                 field_title: "New Module Name",
@@ -497,7 +497,7 @@ function CreatorApp(props) {
                 "res_to_copy": _cProp("resource_name")
             };
             try {
-                data = await postAjaxPromise('/create_duplicate_tile', result_dict);
+                data = await postPromise("host", "create_duplicate_tile_task", result_dict);
                 _setResourceNameState(new_name, () => {
                     _saveMe()
                 })
@@ -621,7 +621,7 @@ function CreatorApp(props) {
     }
 
     function doCheckpointPromise() {
-        return postAjaxPromise("checkpoint_module", {"module_name": _cProp("resource_name")});
+        return postPromise("host", "checkpoint_module_task", {"module_name": _cProp("resource_name")});
     }
 
     function setLineNumbers(line_number_dict, identifier, dispatch) {
@@ -1428,7 +1428,7 @@ function tile_creator_main() {
     }
 
     renderSpinnerMessage("Starting up ...", '#creator-root');
-    postAjaxPromise("view_in_creator_in_context", {"resource_name": window.module_name})
+    postAjax("initiate_creator_in_context", {"resource_name": window.module_name})
         .then((data) => {
             creator_props(data, null, gotProps, null)
         })

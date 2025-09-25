@@ -11,15 +11,18 @@ import { createRoot } from 'react-dom/client';
 
 import {MergeViewerApp} from "./merge_viewer_app";
 import {doFlash, StatusContext} from "./toaster.js"
-import {postAjax, postAjaxPromise} from "./communication_react.js"
+import {handleCallback, postPromise} from "./communication_react.js"
 import {withErrorDrawer, ErrorDrawerContext} from "./error_drawer.js";
 import {withStatus} from "./toaster.js";
 
 import {guid} from "./utilities_react.js";
 import {TacticNavbar} from "./blueprint_navbar";
 import {TacticSocket} from "./tactic_socket.js";
-import {useConnection, useStateAndRef} from "./utilities_react";
+import {useCallbackStack, useConnection, useStateAndRef} from "./utilities_react";
 import {withSettings} from "./settings";
+
+const resource_viewer_id = guid();
+window.main_id = resource_viewer_id;
 
 async function history_viewer_main ()  {
     function gotProps(the_props) {
@@ -39,14 +42,8 @@ async function history_viewer_main ()  {
         )
     }
 
-    let get_url = "get_module_code";
-
     try {
-        let data = await postAjaxPromise(`${get_url}/${window.resource_name}`, {});
-        let data2 = await postAjaxPromise("get_checkpoint_dates", {"module_name": window.resource_name});
-        data.history_list = data2["checkpoints"];
-        data.resource_name = window.resource_name;
-        history_viewer_props(data, null, gotProps);
+        history_viewer_props({}, null, gotProps);
     }
     catch (e) {
         let fallback = "History viewer failed to load";
@@ -61,33 +58,36 @@ async function history_viewer_main ()  {
 }
 
 function history_viewer_props(data, registerDirtyMethod, finalCallback) {
-    let resource_viewer_id = guid();
-    let tsocket = new TacticSocket("main", 5000, "history_viewer", resource_viewer_id);
-    finalCallback({
-        resource_viewer_id: resource_viewer_id,
-        tsocket: tsocket,
-        history_list: data.history_list,
-        resource_name: data.resource_name,
-        edit_content: data.the_content,
-        is_repository: false,
-        registerDirtyMethod: registerDirtyMethod
+    let tsocket = new TacticSocket("main", 5000, "history_viewer", resource_viewer_id, ()=> {
+        finalCallback({
+            resource_viewer_id: resource_viewer_id,
+            tsocket: tsocket,
+            history_list: [],
+            resource_name: window.resource_name,
+            edit_content: "",
+            is_repository: false,
+            registerDirtyMethod: registerDirtyMethod
+        })
     })
 }
 
 function HistoryViewerApp(props) {
 
-    const [edit_content, set_edit_content, edit_content_ref] = useStateAndRef(props.edit_content);
+    const [edit_content, set_edit_content, edit_content_ref] = useStateAndRef();
     const [right_content, set_right_content] = useState("");
-    const [history_popup_val, set_history_popup_val] = useState(props.history_list[0]["updatestring"]);
+    const [history_popup_val, set_history_popup_val] = useState("");
     const [history_list, set_history_list] = useState(props.history_list);
+    const [initialized, setInitialized] = useState(false);
 
     const [resource_name, ] = useState(props.resource_name);
     const connection_status = useConnection(props.tsocket, initSocket);
 
-    const savedContent = useRef(props.edit_content);
+    const savedContent = useRef("");
 
     const statusFuncs = useContext(StatusContext);
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
+
+    const pushCallback = useCallbackStack();
 
     useEffect(()=>{
         function beforeUnloadFunc(e) {
@@ -103,7 +103,28 @@ function HistoryViewerApp(props) {
         })
     }, []);
 
+    useEffect(() => {
+        postPromise("host", "get_tile_content_task", {"tile_module_name": window.resource_name})
+            .then((data) => {
+                postPromise("host", "get_checkpoint_dates_task", {"module_name": window.resource_name})
+                    .then((data2) => {
+                        set_history_list(data2.checkpoints);
+                        set_edit_content(data.tile_content);
+                        savedContent.current = data.tile_content;
+                        pushCallback(() => {
+                            setInitialized(true);
+                            set_history_popup_val(data2.checkpoints[0]["update_string"]);
+                            getCheckpointCode(data2.checkpoints[0]["updatestring_for_sort"]);
+                        })
+                    })
+        });
+
+    }, []);
+
     function initSocket() {
+        props.tsocket.attachListener('handle-callback', (task_packet) => {
+            handleCallback(task_packet, resource_viewer_id)
+        });
         props.tsocket.attachListener("window-open", (data) => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
         props.tsocket.attachListener('close-user-windows', (data) => {
             if (!(data["originator"] == window.library_id)) {
@@ -113,21 +134,26 @@ function HistoryViewerApp(props) {
         props.tsocket.attachListener('doflashUser', doFlash);
     }
 
+    function getCheckpointCode(updatestring_for_sort) {
+        postPromise("host", "get_checkpoint_code_task", {"module_name": resource_name, "updatestring_for_sort": updatestring_for_sort})
+            .then((data) => {
+                    set_right_content(data.module_code);
+                })
+            .catch((data)=>{
+                errorDrawerFuncs.addErrorDrawerEntry({
+                    title: "Error getting checkpoint code",
+                    content: "message" in data ? data.message : ""
+                });
+            });
+    }
+
     function handleSelectChange(new_value) {
+        if (!new_value) return;
         set_history_popup_val(new_value);
         for (let item of history_list) {
             if (item["updatestring"] == new_value){
                 let updatestring_for_sort = item["updatestring_for_sort"];
-                postAjaxPromise("get_checkpoint_code", {"module_name": resource_name, "updatestring_for_sort": updatestring_for_sort})
-                    .then((data) => {
-                            set_right_content(data.module_code);
-                        })
-                    .catch((data)=>{
-                        errorDrawerFuncs.addErrorDrawerEntry({
-                            title: "Error getting checkpoint code",
-                            content: "message" in data ? data.message : ""
-                        });
-                    });
+                getCheckpointCode(updatestring_for_sort);
                 return
             }
         }
@@ -138,22 +164,21 @@ function HistoryViewerApp(props) {
     }
 
     function doCheckpointPromise() {
-        return new Promise (function (resolve, reject) {
-            postAjax("checkpoint_module", {"module_name": props.resource_name}, function (data) {
-                if (data.success) {
-                    resolve(data)
-                }
-                else {
-                    reject(data)
-                }
-            });
+        return new Promise (async function (resolve, reject) {
+            let data = postPromise("host", "checkpoint_module_task", {"module_name": props.resource_name});
+            if (data.success) {
+                resolve(data)
+            }
+            else {
+                reject(data)
+            }
         })
     }
 
     function checkpointThenSaveFromLeft() {
         doCheckpointPromise()
             .then(function () {
-                postAjaxPromise("get_checkpoint_dates", {"module_name": resource_name})
+                postPromise("host", "get_checkpoint_dates_task", {"module_name": resource_name})
                     .then((data) => {
                         set_history_list(data["checkpoints"])
                     })
@@ -178,7 +203,7 @@ function HistoryViewerApp(props) {
             "module_name": props.resource_name,
             "module_code": edit_content_ref.current
         };
-        postAjaxPromise("update_from_left", data_dict)
+        postPromise("host", "update_from_left_task", data_dict)
             .then(()=>{
                 statusFuncs.statusMessage("Updated from left")
             })
@@ -205,12 +230,13 @@ function HistoryViewerApp(props) {
                                   user_name={window.username}/>
                 }
                 <MergeViewerApp connection_status={connection_status}
+                                initialized={initialized}
                                 page_id={props.resource_viewer_id}
                                 resource_viewer_id={props.resource_viewer_id}
                                 resource_name={props.resource_name}
                                 option_list={option_list}
                                 select_val={history_popup_val}
-                                edit_content={edit_content}
+                                edit_content={edit_content_ref.current}
                                 right_content={right_content}
                                 handleSelectChange={handleSelectChange}
                                 handleEditChange={handleEditChange}

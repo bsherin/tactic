@@ -7,8 +7,8 @@ import copy
 import json
 from flask import render_template
 from qworker import task_worthy_methods, task_worthy_manual_submit_methods
-from communication_utils import make_python_object_jsonizable, debinarize_python_object, store_temp_data
-from communication_utils import make_jsonizable_and_compress, read_project_dict, socketio
+from communication_utils import make_python_object_jsonizable, debinarize_python_object
+from communication_utils import make_jsonizable_and_compress, socketio
 import docker_functions
 from mongo_accesser import bytes_to_string, NameExistsError
 from doc_info import docInfo, FreeformDocInfo
@@ -26,7 +26,6 @@ def task_worthy(m):
 def task_worthy_manual_submit(m):
     task_worthy_manual_submit_methods[m.__name__] = "mainwindow"
     return m
-
 
 class StateTasksMixin:
     @task_worthy
@@ -167,9 +166,10 @@ class LoadSaveTasksMixin:
             debug_log("Entering do_full_jupyter_recreation")
             self.emit_status_message("Entering do_full_jupyter_recreation")
             project_name = data_dict["project_name"]
-            save_dict = self.db[self.project_collection_name].find_one({"project_name": project_name})
+
+            save_dict = self.get_project_doc(project_name)
             self.mdata = save_dict["metadata"]
-            project_dict = read_project_dict(self.fs, self.mdata, save_dict["file_id"])
+            project_dict = self.read_project_dict_from_doc(save_dict)
             jupyter_text = project_dict["jupyter_text"]
             jupyter_dict = json.loads(jupyter_text)
             converted_cells = self.convert_jupyter_cells(jupyter_dict["cells"])
@@ -328,39 +328,23 @@ class LoadSaveTasksMixin:
         return
 
     @task_worthy_manual_submit
-    def save_new_project(self, data_dict, task_packet):
+    def save_new_project_task(self, data_dict, task_packet):
 
         def got_save_dict(project_dict):
             print("in got_save_dict in main")
-            self.mdata = self.create_initial_metadata()
-            self.mdata["type"] = self.doc_type
-            self.mdata["collection_name"] = self.collection_name
-            self.mdata["loaded_tiles"] = project_dict["used_tile_types"]
-            self.mdata["save_style"] = "b64save_react"
-            project_dict["interface_state"] = data_dict["interface_state"]
-            if self.purgetiles:
-                project_dict["loaded_modules"] = project_dict["used_modules"]
-            save_dict = {"metadata": self.mdata,
-                         "project_name": project_dict["project_name"]}
-            if "console_items" in data_dict["interface_state"]:
-                save_dict["searchable_text"] = self.get_text_from_console_items(
-                    data_dict["interface_state"]["console_items"])
-            else:
-                save_dict["searchable_text"] = ""
-            self.emit_status_message("Pickle, convert, compress")
-            pdict = make_jsonizable_and_compress(project_dict)
-            self.emit_status_message("Writing the data")
-            save_dict["file_id"] = self.fs.put(pdict)
-            self.db[self.project_collection_name].insert_one(save_dict)
+            save_dict, project_dict, self.mdata = (
+                self.prepare_project_datat(self.project_name, project_dict, self.doc_type,
+                                                self.collection_name, interface_state, None, self.purgetiles, True))
+            self.save_new_project(save_dict, project_dict)
             self.emit_clear_status()
-
             return_data = {"project_name": data_dict["project_name"],
                            "success": True,
                            "message": "Project Successfully Saved"}
             self.mworker.submit_response(task_packet, return_data)
 
         try:
-            console_items = data_dict["interface_state"]["console_items"]
+            interface_state = data_dict["interface_state"]
+            console_items = interface_state["console_items"]
             self.project_name = data_dict["project_name"]
             self.purgetiles = data_dict["purgetiles"]
             self.emit_status_message("Getting loaded modules")
@@ -376,38 +360,22 @@ class LoadSaveTasksMixin:
         return
 
     @task_worthy_manual_submit
-    def save_new_notebook_project(self, data_dict, task_packet):
+    def save_new_notebook_project_task(self, data_dict, task_packet):
         # noinspection PyBroadException
         def got_save_dict(project_dict):
-            self.mdata = self.create_initial_metadata()
-            self.mdata["type"] = "notebook"
-            self.mdata["collection_name"] = ""
-            self.mdata["loaded_tiles"] = []
-            self.mdata["save_style"] = "b64save_react"
-            project_dict["interface_state"] = data_dict["interface_state"]
-
-            save_dict = {"metadata": self.mdata,
-                         "project_name": project_dict["project_name"]}
-            if "console_items" in data_dict["interface_state"]:
-                save_dict["searchable_text"] = self.get_text_from_console_items(
-                    data_dict["interface_state"]["console_items"])
-            else:
-                save_dict["searchable_text"] = ""
-            self.emit_status_message("Pickle, convert, compress")
-            pdict = make_jsonizable_and_compress(project_dict)
-            self.emit_status_message("Writing the data")
-            save_dict["file_id"] = self.fs.put(pdict)
-            self.db[self.project_collection_name].insert_one(save_dict)
-
+            doc, project_dict, self.mdata = (
+                self.prepare_project_datat(self.project_name, project_dict, "notebook", "",
+                                                interface_state, None, False, True))
+            self.save_new_project(doc, project_dict)
             self.emit_clear_status()
-
             return_data = {"project_name": data_dict["project_name"],
                            "success": True,
                            "message": "Project Successfully Saved"}
             self.mworker.submit_response(task_packet, return_data)
 
         try:
-            console_items = data_dict["interface_state"]["console_items"]
+            interface_state = data_dict["interface_state"]
+            console_items = interface_state["console_items"]
             self.project_name = data_dict["project_name"]
             self.purgetiles = True
 
@@ -422,55 +390,26 @@ class LoadSaveTasksMixin:
             self.mworker.submit_response(task_packet, _return_data)
         return
 
-    @staticmethod
-    def get_text_from_console_items(console_items):
-        text = ""
-        for citem in console_items:
-            if citem["type"] == "text":
-                text += citem["console_text"] + "\n"
-            elif citem["type"] == "code":
-                text += citem["console_text"] + "\n"
-        return text
 
     @task_worthy_manual_submit
-    def update_project(self, data_dict, task_packet):
+    def update_project_task(self, data_dict, task_packet):
         # noinspection PyBroadException
         print("entering update_project")
 
         def got_save_dict(project_dict):
 
             try:
-                print("got save dict in update_project")
-                pname = data_dict["project_name"]
-                self.mdata["updated"] = datetime.datetime.utcnow()
-                self.mdata["save_style"] = "b64save_react"
-                project_dict["interface_state"] = data_dict["interface_state"]
-                project_dict["project_name"] = pname  # sync these up for no reason
                 if not self.doc_type == "notebook":
-                    self.mdata["collection_name"] = self.collection_name
-                    self.mdata["loaded_tiles"] = project_dict["used_tile_types"]
-                    self.mdata["type"] = self.doc_type
-                    if self.purgetiles:
-                        project_dict["loaded_modules"] = project_dict["used_modules"]
-                self.emit_status_message("Pickle, convert, compress")
-                pdict = make_jsonizable_and_compress(project_dict)
-                self.emit_status_message("Writing the data")
-                new_file_id = self.fs.put(pdict)
-                print("using pname {}, project_collection_name {}".format(pname, self.project_collection_name))
-                save_dict = self.db[self.project_collection_name].find_one({"project_name": pname})
-                self.fs.delete(save_dict["file_id"])
-                save_dict["project_name"] = pname
-                save_dict["metadata"] = self.mdata
-                save_dict["file_id"] = new_file_id
-                if "console_items" in data_dict["interface_state"]:
-                    save_dict["searchable_text"] = self.get_text_from_console_items(
-                        data_dict["interface_state"]["console_items"])
+                    doc, project_dict, self.mdata = (
+                        self.prepare_project_data(self.project_name, project_dict, self.doc_type, "",
+                                                  interface_state, self.mdata, False))
                 else:
-                    save_dict["searchable_text"] = ""
-                self.db[self.project_collection_name].update_one({"project_name": pname},
-                                                                 {'$set': save_dict})
+                    doc, project_dict, self.mdata = (
+                        self.prepare_project_data(self.project_name, project_dict, "notebook", self.collection_name,
+                                                  interface_state, self.mdata, False))
+                self.update_project(doc, project_dict)
                 self.emit_clear_status()
-                return_data = {"project_name": pname,
+                return_data = {"project_name": data_dict["project_name"],
                                "success": True,
                                "message": "Project Successfully Saved"}
                 self.mworker.submit_response(task_packet, return_data)
@@ -480,9 +419,9 @@ class LoadSaveTasksMixin:
                 _lreturn_data = {"success": False, "message": lerror_string}
                 self.mworker.submit_response(task_packet, _lreturn_data)
                 return
-
         try:
-            console_items = data_dict["interface_state"]["console_items"]
+            interface_state = data_dict["interface_state"]
+            console_items = interface_state["console_items"]
             self.emit_status_message("Getting loaded modules")
             self.loaded_modules = self.get_loaded_user_modules()
             self.emit_status_message("compiling save dictionary")
@@ -556,7 +495,7 @@ class LoadSaveTasksMixin:
                                 "success": True,
                                 "message": "Presentation Successfully Exported"}
             else:
-                unique_id = store_temp_data(self.db, {"the_html": report_html})
+                unique_id = self.store_temp_data({"the_html": report_html})
                 _return_data = {"success": True,
                                 "temp_id": unique_id,
                                 "message": "Presentation Successfully Created"}
@@ -580,7 +519,7 @@ class LoadSaveTasksMixin:
 
     @task_worthy
     def store_temp_data_task(self, data_dict):
-        unique_id = store_temp_data(self.db, data_dict)
+        unique_id = self.store_temp_data(data_dict)
         return_data = {"success": True, "temp_id": unique_id}
         return return_data
 
@@ -652,7 +591,7 @@ class LoadSaveTasksMixin:
                                 "message": "Report Successfully Exported"}
             else:
                 print("not saving to a collection")
-                unique_id = store_temp_data(self.db, {"the_html": report_html})
+                unique_id = self.store_temp_data({"the_html": report_html})
                 _return_data = {"success": True,
                                 "temp_id": unique_id,
                                 "message": "Report Successfully Created"}
@@ -677,22 +616,16 @@ class LoadSaveTasksMixin:
                 cell["metadata"] = {}
                 if cell["cell_type"] == "code":
                     cell["execution_count"] = 0
-            metadata = {"kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"}}
-            full_dict = {"metadata": metadata,
+            internal_metadata = {"kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"}}
+            full_dict = {"metadata": internal_metadata,
                          "nbformat": 4,
                          "nbformat_minor": 2,
                          "cells": data_dict["cell_list"]}
             notebook_json = json.dumps(full_dict, indent=1, sort_keys=True)
-            mdata = self.create_initial_metadata()
-            mdata["type"] = "jupyter"
-            mdata["save_style"] = "b64save"
-            save_dict = {"metadata": mdata,
-                         "project_name": new_project_name}
             project_dict = {"jupyter_text": notebook_json}
-            pdict = make_jsonizable_and_compress(project_dict)
-            save_dict["file_id"] = self.fs.put(pdict)
-            self.db[self.project_collection_name].insert_one(save_dict)
-            _return_data = {"project_name": data_dict["project_name"],
+            save_dict, project_dict, _ = self.prepare_project_data(new_project_name, project_dict, "jupyter", "", None, None, False, True)
+            self.save_new_project(save_dict, project_dict)
+            _return_data = {"project_name": new_project_name,
                             "success": True,
                             "message": "Notebook Successfully Exported"}
 
@@ -710,9 +643,7 @@ class LoadSaveTasksMixin:
         def got_save_dict(console_dict):
             console_dict["doc_type"] = "notebook"
             console_dict["interface_state"] = {"console_items": data_dict["console_items"]}
-            cdict = make_jsonizable_and_compress(console_dict)
-            save_dict = {"file_id": self.fs.put(cdict), "user_id": self.user_id}
-            unique_id = store_temp_data(self.db, save_dict)
+            unique_id = self.store_temp_data_with_compress(console_dict)
             self.mworker.emit_to_main_client("notebook-open", {"message": "notebook-open", "temp_data_id": unique_id})
             return
 
@@ -797,7 +728,7 @@ class TileCreationTasksMixin:
         data_dict["base_figure_url"] = self.base_figure_url
         data_dict["doc_type"] = self.doc_type
         print("about to get tile_code")
-        data_dict["tile_code"] = self.get_tile_code(data_dict["tile_type"])
+        data_dict["tile_code"] = self.get_loaded_tile_code(data_dict["tile_type"])
         print("got tile code")
         data_dict["form_info"] = self.compile_form_info(tile_container_id)
         print("compiled form info")
@@ -848,7 +779,7 @@ class TileCreationTasksMixin:
             self.mworker.submit_response(task_packet, {"old_tile_id": old_tile_id})
             return
 
-        tile_code = self.get_tile_code(tile_save_dict["tile_type"])
+        tile_code = self.get_loaded_tile_code(tile_save_dict["tile_type"])
 
         gtc_response = self.create_tile_container({"user_id": self.user_id, "parent": self.mworker.my_id,
                                                    "other_name": tile_name, "ppi": self.ppi, "tile_id": old_tile_id})
@@ -924,7 +855,7 @@ class TileCreationTasksMixin:
                          "list_names": self.list_tags_dict,
                          "function_names": self.function_tags_dict,
                          "class_names": self.class_tags_dict,
-                         "collection_names": self.data_collection_tags_dict,
+                         "collection_names": self.collection_tags_dict,
                          "other_tile_names": other_tile_names}
         except Exception as ex:
             error_string = self.handle_exception(ex, "Error assembling form info")
@@ -977,7 +908,7 @@ class TileCreationTasksMixin:
 
         reload_dict = self.tile_reload_dicts[tile_id]
         tile_type = reload_dict["tile_type"]
-        module_code = self.get_tile_code(tile_type)
+        module_code = self.get_loaded_tile_code(tile_type)
         print("tile_id is {}".format(tile_id))
         print("restarting container from main")
         docker_functions.restart_container(tile_id)
@@ -1038,7 +969,7 @@ class TileCreationTasksMixin:
                      "list_names": self.list_tags_dict,
                      "function_names": self.function_tags_dict,
                      "class_names": self.class_tags_dict,
-                     "collection_names": self.data_collection_tags_dict,
+                     "collection_names": self.collection_tags_dict,
                      "other_tile_names": other_tile_names}
         self.mworker.submit_response(task_packet, form_info)
         return
@@ -1077,16 +1008,16 @@ class APISupportTasksMixin:
 
     @task_worthy
     def get_collection_names(self, data):
-        return {"success": True, "collection_names": self.data_collection_names}
+        return {"success": True, "collection_names": self.collection_names}
 
     @task_worthy
     def get_list_names(self, data):
         return {"success": True, "list_names": self.list_names}
 
     @task_worthy
-    def get_resource_names_task(self, data):
-        print("in get_resource_names_task")
-        res_names = self.get_resource_names(data["res_type"], data["tag_filter"], data["search_filter"])
+    def get_filtered_resource_names_task(self, data):
+        print("in get_filtered_esource_names_task")
+        res_names = self.get_filtered_resource_names(data["res_type"], data["tag_filter"], data["search_filter"])
         return {"success": True, "res_names": res_names}
 
     @task_worthy
@@ -1107,115 +1038,47 @@ class APISupportTasksMixin:
         return {"success": True, "collection_data": make_python_object_jsonizable(result)}
 
     @task_worthy
-    def get_list_with_metadata(self, data):
-        result = self.db[self.list_collection_name].find_one({"list_name": data["list_name"]})
-        if result is None:
-            list_dict = None
-        else:
-            list_dict = {"the_list": result["the_list"],
-                         "list_name": result["list_name"],
-                         "metadata": result["metadata"]}
+    def get_list_with_metadata_task(self, data):
+        list_dict = self.get_list_content_with_metadata(data["list_name"])
         return {"list_data": make_python_object_jsonizable(list_dict)}
 
     @task_worthy
-    def get_code_with_metadata(self, data):
-        result = self.db[self.code_collection_name].find_one({"code_name": data["code_name"]})
-        if result is None:
-            code_dict = None
-        else:
-            code_dict = {"the_code": result["the_code"],
-                         "code_name": result["code_name"],
-                         "metadata": result["metadata"]}
+    def get_code_with_metadata_task(self, data):
+        code_dict = self.get_code_content_with_metadata(data["code_name"])
         return {"code_data": make_python_object_jsonizable(code_dict)}
 
     @task_worthy
-    def get_function_names(self, data):
-        tag_filter = data["tag_filter"]
-        search_filter = data["search_filter"]
+    def get_function_names_task(self, data):
+        tag_filter = data.get("tag_filter", None)
+        search_filter = data.get("search_filter", None)
         if tag_filter is not None:
             tag_filter = tag_filter.lower()
         if search_filter is not None:
             search_filter = search_filter.lower()
-        if self.code_collection_name not in self.db.list_collection_names():
-            self.db.create_collection(self.code_collection_name)
-            return {}
-        function_names = []
-        for doc in self.db[self.code_collection_name].find():
-            if tag_filter is not None:
-                if "metadata" in doc:
-                    if "tags" in doc["metadata"]:
-                        if tag_filter in doc["metadata"]["tags"].lower():
-                            function_names += doc["metadata"]["functions"]
-            elif search_filter is not None:
-                for fname in doc["metadata"]["functions"]:
-                    if search_filter in fname.lower():
-                        function_names += doc[fnames]
-            else:
-                function_names += doc["metadata"]["functions"]
+        function_names = self.get_filtered_function_names(tag_filter, search_filter)
         return {"function_names": function_names}
 
     @task_worthy
-    def get_class_names(self, data):
+    def get_class_names_task(self, data):
         tag_filter = data["tag_filter"]
         search_filter = data["search_filter"]
         if tag_filter is not None:
             tag_filter = tag_filter.lower()
         if search_filter is not None:
             search_filter = search_filter.lower()
-        if self.code_collection_name not in self.db.list_collection_names():
-            self.db.create_collection(self.code_collection_name)
-            return {}
-        class_names = []
-        for doc in self.db[self.code_collection_name].find():
-            if tag_filter is not None:
-                if "metadata" in doc:
-                    if "tags" in doc["metadata"]:
-                        if tag_filter in doc["metadata"]["tags"].lower():
-                            class_names += doc["metadata"]["classes"]
-            elif search_filter is not None:
-                for fname in doc["metadata"]["classes"]:
-                    if search_filter in fname.lower():
-                        class_names += doc[fnames]
-            else:
-                class_names += doc["metadata"]["classes"]
+        class_names = self.get_filtered_class_anmes(tag_filter, search_filter)
         return {"class_names": class_names}
 
     @task_worthy
-    def get_function_with_metadata(self, data):
+    def get_function_with_metadata_task(self, data):
         function_name = data["function_name"]
-        if self.code_collection_name not in self.db.list_collection_names():
-            self.db.create_collection(self.code_collection_name)
-        found = False
-        doc = None
-        for doc in self.db[self.code_collection_name].find():
-            if function_name in doc["metadata"]["functions"]:
-                found = True
-                break
-        if not found:
-            function_dict = None
-        else:
-            function_dict = {"the_code": doc["the_code"],
-                             "code_name": doc["code_name"],
-                             "metadata": doc["metadata"]}
+        function_dict = self.get_function_content_with_metadata(function_name)
         return {"function_data": make_python_object_jsonizable(function_dict)}
 
     @task_worthy
-    def get_class_with_metadata(self, data):
+    def get_class_with_metadata_task(self, data):
         class_name = data["class_name"]
-        if self.code_collection_name not in self.db.list_collection_names():
-            self.db.create_collection(self.code_collection_name)
-        found = False
-        doc = None
-        for doc in self.db[self.code_collection_name].find():
-            if class_name in doc["metadata"]["classes"]:
-                found = True
-                break
-        if not found:
-            class_dict = None
-        else:
-            class_dict = {"the_code": doc["the_code"],
-                          "code_name": doc["code_name"],
-                          "metadata": doc["metadata"]}
+        class_dict = self.get_class_with_metadata(class_name)
         return {"class_data": make_python_object_jsonizable(class_dict)}
 
     @task_worthy
@@ -1369,7 +1232,7 @@ class APISupportTasksMixin:
             return {"success": False, "title": "Error exporting", "content": error_string, "user_id": self.user_id}
 
     @task_worthy
-    def create_collection(self, data):
+    def create_collection_task(self, data):
         try:
             temp_data = data["temp_data"] if "temp_data" in data else None
             result = self.create_complete_collection(data["name"],

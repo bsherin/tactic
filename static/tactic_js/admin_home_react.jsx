@@ -14,7 +14,7 @@ import {Regions} from "@blueprintjs/table";
 import {TacticSocket} from "./tactic_socket"
 import {doFlash} from "./toaster"
 import {TacticNavbar} from "./blueprint_navbar";
-import {handleCallback, postAjaxPromise} from "./communication_react"
+import {handleCallback, postPromise, postAjaxPromise} from "./communication_react"
 import {withStatus} from "./toaster";
 import {withDialogs} from "./modal_react";
 
@@ -227,13 +227,13 @@ function ContainerMenubar(props) {
 
     async function _clear_user_func () {
         statusFuncs.startSpinner();
-        let data = await postAjaxPromise('clear_user_containers');
+        let data = await postPromise("host", 'clear_user_containers_task', {});
         _doFlashStopSpinner(data)
     }
 
     async function _reset_server_func () {
         statusFuncs.startSpinner();
-        let data = await postAjaxPromise("reset_server/" + library_id);
+        let data = await postPromise("host", "reset_server_task", {});
          _doFlashStopSpinner(data)
     }
 
@@ -241,7 +241,7 @@ function ContainerMenubar(props) {
         statusFuncs.startSpinner();
         let cont_id = props.selected_resource.Id;
         try {
-            let data = await postAjaxPromise('kill_container/' + cont_id, {});
+            let data = await postPromise("host", 'kill_container_task', {cont_id});
             _doFlashStopSpinner(data);
             props.delete_row(cont_id);
         }
@@ -292,7 +292,7 @@ function UserMenubar(props){
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
 
     function _delete_user () {
-        let user_id = props.selected_resource._id;
+        let true_id = props.selected_resource._id;
         let username = props.selected_resource.username;
         const confirm_text = `Are you sure that you want to delete user ${username} and all their data ?`;
         dialogFuncs.showModal("ConfirmDialog", {
@@ -300,8 +300,9 @@ function UserMenubar(props){
             text_body: confirm_text,
             cancel_text: "do nothing",
             submit_text: "delete",
-            handleSubmit: ()=>{
-                $.getJSON($SCRIPT_ROOT + '/delete_user/' + user_id, doFlash);
+            handleSubmit: async ()=>{
+                postPromise("host", "delete_user_task", {true_id})
+                    .then(doFlash)
             },
             handleClose: dialogFuncs.hideModal,
             handleCancel: null
@@ -311,7 +312,7 @@ function UserMenubar(props){
     async function createSeedDatabase() {
         statusFuncs.startSpinner();
         try {
-            let data = await postAjaxPromise('create_seed_database');
+            let data = await postPromise("host", 'create_seed_database_task', {});
             if (data["success"]) {
                 doFlash(data);
                 statusFuncs.startSpinner();
@@ -376,7 +377,7 @@ function UserMenubar(props){
     }
 
     function _bump_user_alt_id () {
-        let user_id = props.selected_resource._id;
+        let true_id = props.selected_resource._id;
         let username = props.selected_resource.username;
         const confirm_text = "Are you sure that you want to bump the id for user " + String(username) + "?  " +
             "This will effectively log them out";
@@ -385,17 +386,19 @@ function UserMenubar(props){
             text_body: confirm_text,
             cancel_text: "do nothing",
             submit_text: "bump",
-            handleSubmit: ()=>{
-                $.getJSON($SCRIPT_ROOT + '/bump_one_alt_id/' + user_id, doFlash);
+            handleSubmit: async ()=>{
+                postPromise("host", "bump_one_alt_id_task", {true_id})
+                    .then(doFlash)
             },
             handleClose: dialogFuncs.hideModal,
             handleCancel: null
         });
     }
 
-    function _toggle_status () {
+    async function _toggle_status () {
         let user_id = props.selected_resource._id;
-        $.getJSON($SCRIPT_ROOT + '/toggle_status/' + user_id, doFlash);
+        postPromise("host", "toggle_user_status_task", {true_id: user_id})
+            .then(doFlash);
     }
 
     function _bump_all_alt_ids () {
@@ -406,8 +409,9 @@ function UserMenubar(props){
             text_body: confirm_text,
             cancel_text: "do nothing",
             submit_text: "bump",
-            handleSubmit: ()=>{
-                $.getJSON($SCRIPT_ROOT + '/bump_all_alt_ids', doFlash);
+            handleSubmit: async ()=>{
+                postPromise("host", "bump_all_alt_ids_task", {})
+                    .then(doFlash);
             },
             handleClose: dialogFuncs.hideModal,
             handleCancel: null

@@ -37,7 +37,7 @@ import {guid, isInt} from "./utilities_react"
 import {MakerPaneContext} from "./tile_maker_support";
 import {LabeledFormField, LabeledSelectList, LabeledTextArea} from "./blueprint_react_widgets";
 import {NativeTags, IconSelector, NotesField} from "./combined_metadata";
-import {postAjaxPromise} from "./communication_react";
+import {postPromise} from "./communication_react";
 import {DragHandle} from "./drag_handle";
 
 export {
@@ -304,11 +304,11 @@ function MetadataModule(props) {
 
     function get_all_tags() {
         let data_dict = {
-            res_types: ["tile"],
+            res_type: "tile",
             is_repository: false,
             show_hidden: true
         };
-        postAjaxPromise("get_tag_list", data_dict)
+        postPromise("host", "get_all_tags_task", data_dict)
             .then(data => {
                 props.metadataDispatch({"type": "set_all_tags", "value": data.tag_list})
             })

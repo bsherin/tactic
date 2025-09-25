@@ -16,7 +16,7 @@ import {ErrorDrawerContext, ErrorItem} from "./error_drawer";
 import {PoolAddressSelector} from "./pool_tree";
 
 import {SettingsContext} from "./settings";
-import {postAjaxPromise} from "./communication_react";
+import {postPromise} from "./communication_react";
 
 export {FileImportDialog}
 
@@ -61,7 +61,7 @@ function FileImportDialog(props) {
 
     useConstructor(async () => {
         try {
-            let data = await postAjaxPromise(`get_resource_names/${props.res_type}`);
+            let data = await postPromise("host", "get_resource_names", {res_type});
             existing_names.current = data.resource_names;
             while (_name_exists(default_name)) {
                     name_counter.current += 1;

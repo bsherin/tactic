@@ -211,19 +211,21 @@ function ContainerMenubar(props) {
   }
   async function _clear_user_func() {
     statusFuncs.startSpinner();
-    let data = await (0, _communication_react.postAjaxPromise)('clear_user_containers');
+    let data = await (0, _communication_react.postPromise)("host", 'clear_user_containers_task', {});
     _doFlashStopSpinner(data);
   }
   async function _reset_server_func() {
     statusFuncs.startSpinner();
-    let data = await (0, _communication_react.postAjaxPromise)("reset_server/" + library_id);
+    let data = await (0, _communication_react.postPromise)("host", "reset_server_task", {});
     _doFlashStopSpinner(data);
   }
   async function _destroy_container() {
     statusFuncs.startSpinner();
     let cont_id = props.selected_resource.Id;
     try {
-      let data = await (0, _communication_react.postAjaxPromise)('kill_container/' + cont_id, {});
+      let data = await (0, _communication_react.postPromise)("host", 'kill_container_task', {
+        cont_id
+      });
       _doFlashStopSpinner(data);
       props.delete_row(cont_id);
     } catch (e) {
@@ -273,7 +275,7 @@ function UserMenubar(props) {
   const statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
   const errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
   function _delete_user() {
-    let user_id = props.selected_resource._id;
+    let true_id = props.selected_resource._id;
     let username = props.selected_resource.username;
     const confirm_text = `Are you sure that you want to delete user ${username} and all their data ?`;
     dialogFuncs.showModal("ConfirmDialog", {
@@ -281,8 +283,10 @@ function UserMenubar(props) {
       text_body: confirm_text,
       cancel_text: "do nothing",
       submit_text: "delete",
-      handleSubmit: () => {
-        $.getJSON($SCRIPT_ROOT + '/delete_user/' + user_id, _toaster.doFlash);
+      handleSubmit: async () => {
+        (0, _communication_react.postPromise)("host", "delete_user_task", {
+          true_id
+        }).then(_toaster.doFlash);
       },
       handleClose: dialogFuncs.hideModal,
       handleCancel: null
@@ -291,7 +295,7 @@ function UserMenubar(props) {
   async function createSeedDatabase() {
     statusFuncs.startSpinner();
     try {
-      let data = await (0, _communication_react.postAjaxPromise)('create_seed_database');
+      let data = await (0, _communication_react.postPromise)("host", 'create_seed_database_task', {});
       if (data["success"]) {
         (0, _toaster.doFlash)(data);
         statusFuncs.startSpinner();
@@ -347,7 +351,7 @@ function UserMenubar(props) {
     });
   }
   function _bump_user_alt_id() {
-    let user_id = props.selected_resource._id;
+    let true_id = props.selected_resource._id;
     let username = props.selected_resource.username;
     const confirm_text = "Are you sure that you want to bump the id for user " + String(username) + "?  " + "This will effectively log them out";
     dialogFuncs.showModal("ConfirmDialog", {
@@ -355,16 +359,20 @@ function UserMenubar(props) {
       text_body: confirm_text,
       cancel_text: "do nothing",
       submit_text: "bump",
-      handleSubmit: () => {
-        $.getJSON($SCRIPT_ROOT + '/bump_one_alt_id/' + user_id, _toaster.doFlash);
+      handleSubmit: async () => {
+        (0, _communication_react.postPromise)("host", "bump_one_alt_id_task", {
+          true_id
+        }).then(_toaster.doFlash);
       },
       handleClose: dialogFuncs.hideModal,
       handleCancel: null
     });
   }
-  function _toggle_status() {
+  async function _toggle_status() {
     let user_id = props.selected_resource._id;
-    $.getJSON($SCRIPT_ROOT + '/toggle_status/' + user_id, _toaster.doFlash);
+    (0, _communication_react.postPromise)("host", "toggle_user_status_task", {
+      true_id: user_id
+    }).then(_toaster.doFlash);
   }
   function _bump_all_alt_ids() {
     const confirm_text = "Are you sure that you want to bump all alt ids?" + "This will effectively log them out";
@@ -373,8 +381,8 @@ function UserMenubar(props) {
       text_body: confirm_text,
       cancel_text: "do nothing",
       submit_text: "bump",
-      handleSubmit: () => {
-        $.getJSON($SCRIPT_ROOT + '/bump_all_alt_ids', _toaster.doFlash);
+      handleSubmit: async () => {
+        (0, _communication_react.postPromise)("host", "bump_all_alt_ids_task", {}).then(_toaster.doFlash);
       },
       handleClose: dialogFuncs.hideModal,
       handleCancel: null
