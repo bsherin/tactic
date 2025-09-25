@@ -21,7 +21,7 @@ import {creator_props} from "./tile_maker_support";
 import {TacticMenubar} from "./menu_utilities"
 import {sendToRepository} from "./resource_viewer_react_app";
 import {HorizontalPanes} from "./resizing_allotment";
-import {postAjax, postAjaxPromise, postPromise} from "./communication_react"
+import {postAjax, postPromise} from "./communication_react"
 import {withStatus, doFlash, StatusContext} from "./toaster"
 import {withAssistant} from "./assistant";
 import {ICON_BAR_WIDTH} from "./sizing_tools";

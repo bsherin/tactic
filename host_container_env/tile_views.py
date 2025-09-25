@@ -35,7 +35,7 @@ def view_module(module_name):
 @app.route('/last_saved_view/<module_name>', methods=['get'])
 @login_required
 def last_saved_view(module_name):
-    tile_dict = current_user.get_tile_dict(module_name)
+    tile_dict = current_user.get_tile_doc(module_name)
     if "last_saved" in tile_dict and tile_dict["last_saved"] == "creator":
         result = view_in_creator(module_name)
     else:

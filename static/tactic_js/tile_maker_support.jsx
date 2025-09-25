@@ -89,6 +89,7 @@ function creator_props(data, registerDirtyMethod, finalCallback) {
             "rb_id": data.ready_block_id, "main_id": data.module_viewer_id
         })
     });
+
     let tile_collection_name = data.tile_collection_name;
 
 
