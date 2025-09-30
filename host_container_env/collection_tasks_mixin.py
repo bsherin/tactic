@@ -12,11 +12,13 @@ class CollectionTasksMixin:
     def initiate_collection_in_context(self, data):
         user_obj = self.get_user_from_data(data)
         user_id = data["user_id"]
+        local_id = data.get("local_id", str(uuid.uuid4()))
         short_collection_name = data["collection_name"]
-        main_id, rb_id = main_container_info.create_main_container(short_collection_name, user_obj.get_id(),
+        _, rb_id = main_container_info.create_main_container(short_collection_name, user_obj.get_id(),
                                                                    user_obj.username,
-                                                                   openai_api_key = user_obj.get_openai_api_key())
-        create_ready_block(rb_id, user_obj.username, [main_id, "client"], main_id)
+                                                                   openai_api_key = user_obj.get_openai_api_key(),
+                                                                   special_unique_id=local_id)
+        create_ready_block(rb_id, user_obj.username, [local_id, "client"], local_id)
         doc_dict, doc_mddict, hl_dict, mdata = user_obj.get_all_collection_info(short_collection_name)
         if "_id" in mdata:
             del(mdata["_id"])
@@ -34,7 +36,7 @@ class CollectionTasksMixin:
             "short_collection_name": short_collection_name,
             "resource_name": short_collection_name,
             "collection_name": short_collection_name,
-            "main_id": main_id,
+            "local_id": local_id,
             "ready_block_id": rb_id,
             "is_project": False,
             "is_legacy_save": is_legacy_save,
@@ -63,6 +65,7 @@ class CollectionTasksMixin:
     @task_worthy
     def create_duplicate_collection_task(self, data):
         try:
+            print("in create_duplicate_collection_task")
             the_user = self.get_user_from_data(data)
             new_res_name = data["new_res_name"]
             self.emit_status_message("Duplicating collection ...", data["user_id"])
@@ -87,7 +90,7 @@ class CollectionTasksMixin:
         except Exception as ex:
             msg = self.get_traceback_message(ex)
             self.add_error_drawer_entry("Error duplicating collection", msg, data["user_id"])
-            return {"success": False}
+            return {"success": False, "message": msg, "alert_type": "alert-warning"}
 
     @task_worthy
     def create_empty_collection_task(self, data):

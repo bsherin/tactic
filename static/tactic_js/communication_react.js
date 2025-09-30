@@ -7,8 +7,8 @@ let callbacks = {};
 
 let megaplex_port = "8085";
 
-function handleCallback(task_packet, room_id) {
-    if (task_packet["room"] == room_id) {
+function handleCallback(task_packet, room) {
+    if (task_packet["room"] == room) {
         let task_id = task_packet.callback_id;
         if (task_id in callbacks) {
             let func = callbacks[task_id];
@@ -109,7 +109,7 @@ function getBlobPromise(target, data={}) {
 }
 
 
-function postPromise(dest_id, task_type, task_data, special_main_id=null) {
+function postPromise(dest_id, task_type, task_data, room=null) {
     return new Promise(function(resolve, reject) {
         function tentResolve(data) {
             if (data && "success" in data && !data.success) {
@@ -123,11 +123,11 @@ function postPromise(dest_id, task_type, task_data, special_main_id=null) {
             reject({success: false, message: errorThrown,
                 title: "Post Ajax Failure: {}".format(textStatus)})
         }
-        postWithCallback(dest_id, task_type, task_data, tentResolve, errorCallback, special_main_id)
+        postWithCallback(dest_id, task_type, task_data, tentResolve, errorCallback, room)
     })
 }
 
-function postWithCallback(dest_id, task_type, task_data, callback_func, error_callback=null, special_main_id=null){
+function postWithCallback(dest_id, task_type, task_data, callback_func, error_callback=null, room=null){
     if (!("user_id" in task_data)) {
         task_data["user_id"] = window.user_id;
     }
@@ -137,9 +137,11 @@ function postWithCallback(dest_id, task_type, task_data, callback_func, error_ca
         "task_type": task_type,
         "task_data": task_data,
         "response_data": null,
-        "main_id": special_main_id ? special_main_id : window.main_id,
+        "global_id": window.global_id,
         "expiration": null
     };
+
+    task_packet.room = room == null ? window.global_id : room;
 
     if ((typeof callback_func != "undefined") && (callback_func != null)) {
         const unique_id = guid();

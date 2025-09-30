@@ -1,7 +1,7 @@
 import "../tactic_css/tactic.scss";
 
 import React from "react";
-import {Fragment, memo, useContext} from "react";
+import {Fragment, memo} from "react";
 import { createRoot } from 'react-dom/client';
 
 import {FormGroup, InputGroup, Button} from "@blueprintjs/core";
@@ -11,7 +11,7 @@ import {doFlash} from "./toaster"
 import {postAjax} from "./communication_react";
 import {useStateAndRef, guid} from "./utilities_react";
 
-window.page_id = guid();
+window.global_id = "a" + guid();
 
 function _register_main() {
     const domContainer = document.querySelector('#root');
@@ -98,7 +98,7 @@ function RegisterApp(props) {
             <TacticNavbar is_authenticated={window.is_authenticated}
                           selected={null}
                           show_api_links={true}
-                          page_id={window.page_id}
+                          global_id={window.global_id}
                           user_name={window.username}/>
             <div className={outer_class}  style={outer_style}>
                 <form onSubmit={e => {

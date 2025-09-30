@@ -19,7 +19,7 @@ print("back in host_main")
 import users
 print("imported user")
 import auth_views, main_views, library_views, admin_views
-import list_views, code_views, tile_views, project_views
+import list_views, code_views, tile_views, project_views, collection_views
 import module_viewer_views
 print("imported views")
 import host_workers

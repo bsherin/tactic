@@ -29,6 +29,7 @@ from collection_accesser import CollectionAccess
 from metabook_accesser import MetabookAccess
 from node_accesser import NodeAccess
 from temp_data_accesser import TempDataAccess
+from across_accounts_accesser import AcrossAccountsAccess
 
 from doc_info import docInfo, FreeformDocInfo
 from qworker import debug_log
@@ -52,7 +53,7 @@ true_user_host_pool_dir = env_or_none("TRUE_USER_HOST_POOL_DIR")
 class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationTasksMixin, APISupportTasksMixin,
                  ExportsTasksMixin, ConsoleTasksMixin, DataSupportTasksMixin, ExceptionMixin,
                  ListAccess, CodeAccess, TileAccess, ProjectAccess, CollectionAccess, MetabookAccess, NodeAccess,
-                 TempDataAccess
+                 TempDataAccess, AcrossAccountsAccess
                  ):
     save_attrs = ["short_collection_name", "collection_name",
                   "doc_dict", "project_name", "loaded_modules",

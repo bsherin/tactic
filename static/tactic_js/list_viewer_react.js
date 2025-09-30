@@ -29,24 +29,20 @@ if (!window.in_context) {
   Promise.resolve().then(() => _interopRequireWildcard(require("../tactic_css/themeable.scss")));
 }
 function list_viewer_props(data, registerDirtyMethod, finalCallback) {
-  let resource_viewer_id = (0, _utilities_react.guid)();
   if (!window.in_context) {
-    window.main_id = resource_viewer_id;
+    window.global_id = data.local_id;
   }
-  let tsocket = new _tactic_socket.TacticSocket("main", 5000, "list_viewer", resource_viewer_id, () => {
-    finalCallback({
-      resource_viewer_id: resource_viewer_id,
-      main_id: resource_viewer_id,
-      tsocket: tsocket,
-      split_tags: [],
-      created: "",
-      resource_name: data.resource_name,
-      the_content: [],
-      notes: [],
-      readOnly: false,
-      is_repository: false,
-      registerDirtyMethod: registerDirtyMethod
-    });
+  finalCallback({
+    local_id: data.local_id,
+    tsocket: data.tsocket,
+    split_tags: [],
+    created: "",
+    resource_name: data.resource_name,
+    the_content: [],
+    notes: [],
+    readOnly: false,
+    is_repository: false,
+    registerDirtyMethod: registerDirtyMethod
   });
 }
 function ListEditor(props) {
@@ -209,7 +205,7 @@ function ListViewerApp(props) {
       "new_list_as_string": new_list_as_string
     };
     try {
-      await (0, _communication_react.postPromise)("host", "update_list_task", result_dict, props.main_id);
+      await (0, _communication_react.postPromise)("host", "update_list_task", result_dict, props.local_id);
       savedContent.current = new_list_as_string;
       statusFuncs.statusMessage(`Saved list ${result_dict.list_name}`);
     } catch (e) {
@@ -224,7 +220,7 @@ function ListViewerApp(props) {
       return false;
     }
     try {
-      let ln_result = await (0, _communication_react.postPromise)("host", "get_list_names_task", {}, props.main_id);
+      let ln_result = await (0, _communication_react.postPromise)("host", "get_list_names_task", {}, props.local_id);
       let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
         title: "Save List As",
         field_title: "New List Name",
@@ -237,7 +233,7 @@ function ListViewerApp(props) {
         "new_res_name": new_name,
         "res_to_copy": _cProp("resource_name")
       };
-      await (0, _communication_react.postPromise)("host", "create_duplicate_list_task", result_dict, props.main_id);
+      await (0, _communication_react.postPromise)("host", "create_duplicate_list_task", result_dict, props.local_id);
       _setResourceNameState(new_name, () => {
         _saveMe();
       });
@@ -271,7 +267,7 @@ function ListViewerApp(props) {
     is_authenticated: window.is_authenticated,
     selected: null,
     show_api_links: true,
-    page_id: props.resource_viewer_id,
+    global_id: props.global_id,
     user_name: window.username
   }), /*#__PURE__*/_react.default.createElement("div", {
     className: outer_class,
@@ -282,7 +278,7 @@ function ListViewerApp(props) {
     onKeyUp: handleKeyUp
   }, /*#__PURE__*/_react.default.createElement(_resource_viewer_react_app.ResourceViewerApp, (0, _extends2.default)({}, my_props, {
     padTop: true,
-    resource_viewer_id: props.resource_viewer_id,
+    local_id: props.local_id,
     setResourceNameState: _setResourceNameState,
     refreshTab: props.refreshTab,
     closeTab: props.closeTab,
@@ -300,6 +296,7 @@ function ListViewerApp(props) {
 }
 exports.ListViewerApp = ListViewerApp = /*#__PURE__*/(0, _react.memo)(ListViewerApp);
 async function list_viewer_main() {
+  let local_id = "a" + (0, _utilities_react.guid)();
   function gotProps(the_props) {
     let ListViewerAppPlus = (0, _settings.withSettings)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)((0, _assistant.withAssistant)(ListViewerApp)))));
     let the_element = /*#__PURE__*/_react.default.createElement(ListViewerAppPlus, (0, _extends2.default)({}, the_props, {
@@ -310,11 +307,18 @@ async function list_viewer_main() {
     const root = (0, _client.createRoot)(domContainer);
     root.render(the_element);
   }
-  let data = {
-    resource_name: resource_name,
-    res_type: "list"
-  };
-  list_viewer_props(data, null, gotProps);
+  let tsocket = new _tactic_socket.TacticSocket("main", 5000, "list_viewer", local_id, async () => {
+    tsocket.attachListener('handle-callback', task_packet => {
+      (0, _communication_react.handleCallback)(task_packet, local_id);
+    });
+    let data = {
+      resource_name: resource_name,
+      res_type: "list",
+      local_id,
+      tsocket
+    };
+    list_viewer_props(data, null, gotProps);
+  });
 }
 if (!window.in_context) {
   list_viewer_main().then();

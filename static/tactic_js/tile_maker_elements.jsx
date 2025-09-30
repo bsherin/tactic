@@ -849,7 +849,7 @@ function CmElement(props) {
         pushCallback: null,
         tsocket: null,
         extraSelfCompletions: null,
-        module_viewer_id: null,
+        local_id: null,
         show_search: true,
         no_height: false,
         allowSignatureChange: true,
@@ -945,7 +945,7 @@ function CmElement(props) {
                               tsocket={props.tsocket}
                               no_width={true}
                               extraSelfCompletions={props.cmState.mode == "python" ? props.extraSelfCompletions : []}
-                              container_id={props.module_viewer_id}
+                              local_id={props.local_id}
                               highlight_active_line={true}/>
         </div>
     )

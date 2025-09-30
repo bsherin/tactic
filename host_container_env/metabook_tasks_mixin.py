@@ -3,8 +3,9 @@ from qworker import task_worthy
 class MetabookTasksMixin:
 
     @task_worthy
-    def read_metabook_task(self, meta_id):
+    def read_metabook_task(self, data):
         the_user = self.get_user_from_data(data)
+        meta_id = data.get("meta_id", None)
         metabook = the_user.get_metabook_unpacked(meta_id)
         if not metabook:
             return jsonify({"success": False, "error": "Metabook not found."}), 404

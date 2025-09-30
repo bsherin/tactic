@@ -9,7 +9,7 @@ import { createRoot } from 'react-dom/client';
 import { Button } from "@blueprintjs/core";
 
 import {doFlash} from "./toaster"
-import {postAjax} from "./communication_react";
+import {postPromise, postAjax} from "./communication_react";
 
 import {guid, useCallbackStack, useStateAndRef} from "./utilities_react";
 import {TacticNavbar} from "./blueprint_navbar";
@@ -19,23 +19,26 @@ import {withSettings, SettingsContext} from "./settings";
 import {AccountTextField, AccountSelectField} from "./account_fields";
 import {TacticSocket} from "./tactic_socket";
 
-window.main_id = guid();
+window.global_id = "a" + guid();
 
 function _account_main() {
     if (window._show_message) doFlash(window._message);
     const domContainer = document.querySelector('#root');
     const root = createRoot(domContainer);
-    let tsocket = new TacticSocket("main", 5000, "code_viewer", window.main_id);
-    let AccountAppPlus = withSettings(AccountApp);
-    let the_element = <AccountAppPlus controlled={false} tsocket={tsocket}/>;
-     root.render(
-        <div style={{display: "flex", flexDirection: "column",
-            position: "relative",
-            height: "100%",
-            width: "100%"}}>
-            {the_element}
-        </div>
-    )
+    let tsocket = new TacticSocket("main", 5000, "code_viewer", window.global_id, async ()=> {
+        let AccountAppPlus = withSettings(AccountApp);
+        let the_element = <AccountAppPlus controlled={false} tsocket={tsocket}/>;
+        root.render(
+            <div style={{
+                display: "flex", flexDirection: "column",
+                position: "relative",
+                height: "100%",
+                width: "100%"
+            }}>
+                {the_element}
+            </div>
+        )
+    })
 }
 
 function AccountApp(props) {
@@ -68,7 +71,8 @@ function AccountApp(props) {
         }
         let data = {};
         data["password"] = pwd;
-        postAjax("update_account_info", data, function (result) {
+        postPromise("host", "update_account_info", data)
+            .then((result) => {
             if (result.success) {
                 doFlash({"message": "Password successfully updated", "alert_type": "alert-success"});
             }
@@ -133,7 +137,8 @@ function AccountApp(props) {
     function _submitUpdatedField(fname, fvalue) {
         let data = {};
         data[fname] = fvalue;
-        postAjax("update_account_info", data, function (result) {
+        postPromise("host", "update_account_info", data)
+            .then((result) =>{
             if (result.success) {
                 if (fname == "password") {
                     doFlash({"message": "Password successfully updated", "alert_type": "alert-success"});
@@ -149,7 +154,8 @@ function AccountApp(props) {
         })
     }
      function _submit_account_info() {
-        postAjax("update_account_info", fields_ref.current, function (result) {
+        postPromise("host", "update_account_info", fields_ref.current)
+            .then((result) => {
             if (result.success) {
                 doFlash({"message": "Account successfully updated", "alert_type": "alert-success"});
             }
@@ -209,7 +215,7 @@ function AccountApp(props) {
                 <TacticNavbar is_authenticated={window.is_authenticated}
                               selected={null}
                               show_api_links={false}
-                              page_id={window.main_id}
+                              global_id={window.global_id}
                               user_name={window.username}/>
                 <div className={outer_class}>
                     <div style={{display: "flex", flexDirection: "column", overflowY: "scroll"}}>

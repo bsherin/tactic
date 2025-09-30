@@ -99,7 +99,7 @@ function TileComponent(props) {
     (0, _communication_react.postWithCallback)(props.tile_id, "TileSizeChange", {
       width: tdaWidth(),
       height: tdaHeight()
-    }, null, null, props.main_id);
+    }, null, null, props.local_id);
   }
   function _resizeTileArea(dx, dy) {
     let hheight = $(body_ref.current).position().top;
@@ -182,7 +182,7 @@ function TileComponent(props) {
   function _standard_click_data() {
     return {
       tile_id: props.tile_id,
-      main_id: props.main_id,
+      local_id: props.local_id,
       doc_name: props.current_doc_name,
       active_row_id: props.selected_row
     };
@@ -237,7 +237,7 @@ function TileComponent(props) {
   }
   async function spin_and_refresh() {
     _startSpinner();
-    await (0, _communication_react.postPromise)(props.tile_id, "RefreshTile", {}, props.main_id);
+    await (0, _communication_react.postPromise)(props.tile_id, "RefreshTile", {}, props.local_id);
     _stopSpinner();
   }
   async function _reloadTile(resubmit = false) {
@@ -247,7 +247,7 @@ function TileComponent(props) {
     };
     try {
       _startSpinner();
-      let data = await (0, _communication_react.postPromise)(props.main_id, "reload_tile", data_dict, props.main_id);
+      let data = await (0, _communication_react.postPromise)(props.local_id, "reload_tile", data_dict, props.local_id);
       if (!data.success) {
         return;
       }
@@ -277,7 +277,7 @@ function TileComponent(props) {
         if (!dset.hasOwnProperty(key)) continue;
         data_dict.dataset[key] = dset[key];
       }
-      (0, _communication_react.postWithCallback)(props.tile_id, "TileElementClick", data_dict, null, null, props.main_id);
+      (0, _communication_react.postWithCallback)(props.tile_id, "TileElementClick", data_dict, null, null, props.local_id);
       e.stopPropagation();
     });
     $(selector).on(click_event, '.word-clickable', function () {
@@ -296,12 +296,12 @@ function TileComponent(props) {
         range.setEnd(node, range.endOffset + 1);
       } while (range.toString().indexOf(' ') == -1 && range.toString().trim() !== '' && range.endOffset < nlen);
       data_dict.clicked_text = range.toString().trim();
-      (0, _communication_react.postWithCallback)(props.tile_id, "TileWordClick", data_dict, null, null, props.main_id);
+      (0, _communication_react.postWithCallback)(props.tile_id, "TileWordClick", data_dict, null, null, props.local_id);
     });
     $(selector).on(click_event, '.cell-clickable', function () {
       let data_dict = _standard_click_data();
       data_dict.clicked_cell = $(this).text();
-      (0, _communication_react.postWithCallback)(props.tile_id, "TileCellClick", data_dict, null, null, props.main_id);
+      (0, _communication_react.postWithCallback)(props.tile_id, "TileCellClick", data_dict, null, null, props.local_id);
     });
     $(selector).on(click_event, '.row-clickable', function () {
       let data_dict = _standard_click_data();
@@ -311,12 +311,12 @@ function TileComponent(props) {
         row_vals.push($(this).text());
       });
       data_dict["clicked_row"] = row_vals;
-      (0, _communication_react.postWithCallback)(props.tile_id, "TileRowClick", data_dict, null, null, props.main_id);
+      (0, _communication_react.postWithCallback)(props.tile_id, "TileRowClick", data_dict, null, null, props.local_id);
     });
     $(selector).on(click_event, 'button', function (e) {
       let data_dict = _standard_click_data();
       data_dict["button_value"] = e.target.value;
-      (0, _communication_react.postWithCallback)(props.tile_id, "TileButtonClick", data_dict, null, null, props.main_id);
+      (0, _communication_react.postWithCallback)(props.tile_id, "TileButtonClick", data_dict, null, null, props.local_id);
     });
     $(selector).on('submit', 'form', function (e) {
       let data_dict = _standard_click_data();
@@ -326,23 +326,23 @@ function TileComponent(props) {
         form_data[the_form[i]["name"]] = the_form[i]["value"];
       }
       data_dict["form_data"] = form_data;
-      (0, _communication_react.postWithCallback)(props.tile_id, "TileFormSubmit", data_dict, null, null, props.main_id);
+      (0, _communication_react.postWithCallback)(props.tile_id, "TileFormSubmit", data_dict, null, null, props.local_id);
       return false;
     });
     $(selector).on("change", 'select', function (e) {
       let data_dict = _standard_click_data();
       data_dict.select_value = e.target.value;
       data_dict.select_name = e.target.name;
-      (0, _communication_react.postWithCallback)(props.tile_id, "SelectChange", data_dict, null, null, props.main_id);
+      (0, _communication_react.postWithCallback)(props.tile_id, "SelectChange", data_dict, null, null, props.local_id);
     });
     $(selector).on('change', 'textarea', function (e) {
       let data_dict = _standard_click_data();
       data_dict["text_value"] = e.target.value;
-      (0, _communication_react.postWithCallback)(props.tile_id, "TileTextAreaChange", data_dict, null, null, props.main_id);
+      (0, _communication_react.postWithCallback)(props.tile_id, "TileTextAreaChange", data_dict, null, null, props.local_id);
     });
   }
   function logText() {
-    (0, _communication_react.postWithCallback)(props.tile_id, "LogTile", {}, null, null, props.main_id);
+    (0, _communication_react.postWithCallback)(props.tile_id, "LogTile", {}, null, null, props.local_id);
   }
   function _stopMe() {
     (0, _communication_react.postWithCallback)("kill_" + props.tile_id, "StopMe", {}, null);
@@ -355,7 +355,7 @@ function TileComponent(props) {
           user_id: window.user_id,
           tile_type: props.tile_type,
           line_number: 0
-        }, props.main_id);
+        }, props.local_id);
         window.open("", data["window_name"]);
       } catch (e) {
         window.open($SCRIPT_ROOT + "/view_location_in_creator/" + props.tile_type + "/" + "0");
@@ -369,10 +369,10 @@ function TileComponent(props) {
   }
   function _logParams() {
     const data_dict = {};
-    data_dict["main_id"] = props.main_id;
+    data_dict["local_id"] = props.local_id;
     data_dict["tile_id"] = props.tile_id;
     data_dict["tile_name"] = props.tile_name;
-    (0, _communication_react.postWithCallback)(props.tile_id, "LogParams", data_dict, null, null, props.main_id);
+    (0, _communication_react.postWithCallback)(props.tile_id, "LogParams", data_dict, null, null, props.local_id);
   }
   function _startResize() {
     set_resizing(true);
@@ -402,7 +402,7 @@ function TileComponent(props) {
       the_widget = /*#__PURE__*/_react.default.createElement(WidgetComponent, {
         key: widgetId,
         widgetId: widgetId,
-        main_id: props.main_id,
+        local_id: props.local_id,
         console_id: null,
         tile_id: props.tile_id,
         row: idx,
@@ -419,7 +419,7 @@ function TileComponent(props) {
       the_widget = /*#__PURE__*/_react.default.createElement(WidgetComponent, {
         key: widgetId,
         widgetId: widgetId,
-        main_id: props.main_id,
+        local_id: props.local_id,
         row: idx,
         tile_id: props.tile_id,
         console_id: null,
@@ -563,7 +563,7 @@ function TileComponent(props) {
     },
     ref: log_ref
   }, /*#__PURE__*/_react.default.createElement(_searchable_console.SearchableConsole, {
-    main_id: props.main_id,
+    local_id: props.local_id,
     streaming_host: "host",
     container_id: props.tile_id,
     ref: inner_log_ref,

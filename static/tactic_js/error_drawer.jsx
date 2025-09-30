@@ -22,7 +22,7 @@ function withErrorDrawer(WrappedComponent, lposition = "right", error_drawer_siz
 
         const goToLineNumber = useRef(null);
         const ucounter = useRef(0);
-        const local_id = useRef(props.main_id ? props.main_id : props.library_id);
+        const local_id = useRef(props.local_id);
 
         const goToModule = useRef(null);
 
@@ -45,19 +45,19 @@ function withErrorDrawer(WrappedComponent, lposition = "right", error_drawer_siz
         }, []);
 
         const _close = useCallback((data) =>  {
-            if (data == null || !("main_id" in data) || (data.main_id == local_id.current)) {
+            if (data == null || !("local_id" in data) || (data.local_id == local_id.current)) {
                 set_show_drawer(false)
             }
         }, [local_id.current]);
 
         const _open = useCallback((data) => {
-            if (data == null || !("main_id" in data) || (data.main_id == local_id.current)) {
+            if (data == null || !("local_id" in data) || (data.local_Id == local_id.current)) {
                 set_show_drawer(true)
             }
         }, [local_id.current]);
 
         const _toggle = useCallback((data) => {
-            if (data == null || !("main_id" in data) || (data.main_id == local_id.current)) {
+            if (data == null || !("local_id" in data) || (data.local_id == local_id.current)) {
                 set_show_drawer((prev_show_drawer)=>!prev_show_drawer)
             }
         }, [local_id.current]);
@@ -91,19 +91,12 @@ function withErrorDrawer(WrappedComponent, lposition = "right", error_drawer_siz
             set_show_drawer(false)
         }, [contents_ref.current]);
 
-        const _postAjaxFailure = useCallback((qXHR, textStatus, errorThrown) => {
-            _addEntry({
-                title: "Post Ajax Failure: {}".format(textStatus),
-                content: errorThrown
-            })
-        }, []);
-
         const _clearAll = useCallback((data) =>{
-            if (data == null || !("main_id" in data) || (data.main_id == props.main_id)) {
+            if (data == null || !("local_id" in data) || (data.local_id == props.local_id)) {
                 set_contents([]);
                 set_show_drawer(false)
             }
-        }, [props.main_id]);
+        }, [props.local_id]);
 
         const _onClose = useCallback(()=>{
             set_show_drawer(false);
@@ -119,7 +112,6 @@ function withErrorDrawer(WrappedComponent, lposition = "right", error_drawer_siz
             clearErrorDrawer: _clearAll,
             addErrorDrawerEntry: _addEntry,
             addFromError: _addFromError,
-            postAjaxFailure: _postAjaxFailure,
             toggleErrorDrawer: _toggle,
             setGoToLineNumber: _setGoToLineNumber,
             registerGoToModule: _registerGoToModule
@@ -132,7 +124,6 @@ function withErrorDrawer(WrappedComponent, lposition = "right", error_drawer_siz
                 clearErrorDrawer: _clearAll,
                 addErrorDrawerEntry: _addEntry,
                 addFromError: _addFromError,
-                postAjaxFailure: _postAjaxFailure,
                 toggleErrorDrawer: _toggle,
                 setGoToLineNumber: _setGoToLineNumber,
                 registerGoToModule: _registerGoToModule

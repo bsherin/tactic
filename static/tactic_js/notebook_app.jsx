@@ -1,3 +1,5 @@
+import {TacticSocket} from "./tactic_socket";
+import {guid} from "./utilities_react";
 
 if (!window.in_context) {
     import("../tactic_css/tactic.scss");
@@ -20,7 +22,7 @@ import {withStatus} from "./toaster";
 import {renderSpinnerMessage, useConnection, useStateAndRef} from "./utilities_react";
 import {ICON_BAR_WIDTH} from "./sizing_tools";
 
-import {postAjaxPromise, postAjax} from "./communication_react"
+import {postAjax, postPromise, handleCallback} from "./communication_react"
 import {ExportsViewer} from "./export_viewer_react";
 import {HorizontalPanes} from "./resizing_allotment";
 import {withErrorDrawer} from "./error_drawer";
@@ -84,7 +86,7 @@ function NotebookApp(props) {
         }
         function sendRemove() {
             console.log("got the beacon");
-            navigator.sendBeacon("/remove_mainwindow", JSON.stringify({"main_id": props.main_id}));
+            navigator.sendBeacon("/remove_mainwindow", JSON.stringify({"local_id": props.local_id}));
         }
         window.addEventListener("unload", sendRemove);
         _updateLastSave();
@@ -134,7 +136,7 @@ function NotebookApp(props) {
     }
 
     function delete_my_containers() {
-        postAjax("/remove_mainwindow", {"main_id": props.main_id});
+        postAjax("/remove_mainwindow", {"local_id": props.local_id});
     }
 
     function initSocket() {
@@ -149,7 +151,7 @@ function NotebookApp(props) {
             });
 
             props.tsocket.attachListener('close-user-windows', function (data) {
-                if (!(data["originator"] == main_id)) {
+                if (!(data["originator"] == window.global_id)) {
                     window.close()
                 }
             });
@@ -201,7 +203,7 @@ function NotebookApp(props) {
     let project_name = my_props.is_project ? props.resource_name : "";
     let menus = (
         <Fragment>
-            <ProjectMenu main_id={props.main_id}
+            <ProjectMenu local_id={props.local_id}
                          project_name={project_name}
                          is_notebook={true}
                          is_juptyer={props.is_jupyter}
@@ -215,7 +217,7 @@ function NotebookApp(props) {
                          disabled_items={my_props.is_project ? [] : ["Save"]}
                          hidden_items={["Open Console as Notebook", "Export Table as Collection", "divider2", "Change collection"]}
             />
-            <ViewMenu main_id={props.main_id}
+            <ViewMenu local_id={props.local_id}
                       project_name={project_name}
                       is_notebook={true}
                       is_juptyer={props.is_jupyter}
@@ -229,7 +231,7 @@ function NotebookApp(props) {
         </Fragment>
     );
     let console_pane = (
-        <ConsoleComponent main_id={props.main_id}
+        <ConsoleComponent local_id={props.local_id}
                           tsocket={props.tsocket}
                           handleCreateViewer={props.handleCreateViewer}
                           controlled={props.controlled}
@@ -246,7 +248,7 @@ function NotebookApp(props) {
     );
     let exports_pane;
     if (mState.show_exports_pane) {
-        exports_pane = <ExportsViewer main_id={props.main_id}
+        exports_pane = <ExportsViewer local_id={props.local_id}
                                       tsocket={props.tsocket}
                                       setUpdate={(ufunc) => {
                                           updateExportsList.current = ufunc
@@ -275,7 +277,7 @@ function NotebookApp(props) {
                 <TacticNavbar is_authenticated={window.is_authenticated}
                               user_name={window.username}
                               menus={null}
-                              page_id={props.main_id}
+                              global_id={props.global_id}
                 />
             }
             <MetadataContext.Provider value={{
@@ -289,7 +291,7 @@ function NotebookApp(props) {
                                menus={menus}
                                showRefresh={true}
                                showClose={true}
-                               page_id={props.main_id}
+                               local_id={props.local_id}
                                refreshTab={props.refreshTab}
                                closeTab={props.closeTab}
                                resource_name={_cProp("resource_name")}
@@ -345,18 +347,26 @@ function main_main() {
     }
 
     renderSpinnerMessage("Starting up ...");
-    var target = window.is_new_notebook ? "new_notebook_in_context" : "main_project_in_context";
+    const local_id = "a" + guid();
+    var target = window.is_new_notebook ? "initate_new_notebook_in_context" : "initiate_project_in_context";
     var resource_name = window.is_new_notebook ? "" : window.project_name;
 
-    let post_data = {"resource_name": resource_name};
-    if (window.is_new_notebook) {
-        post_data.temp_data_id = window.temp_data_id
-    }
+    let tsocket = new TacticSocket("main", 5000, "notebook", local_id, async () => {
+        tsocket.attachListener('handle-callback', (task_packet) => {
+            handleCallback(task_packet, local_id)
+        });
+        let post_data = {"project_name": resource_name, local_id};
+        if (window.is_new_notebook) {
+            post_data.temp_data_id = window.temp_data_id
+        }
 
-    postAjaxPromise(target, post_data)
-        .then((data) => {
-            notebook_props(data, null, gotProps)
-        })
+        postPromise("host", target, post_data, local_id)
+            .then((data) => {
+                data.tsocket = tsocket;
+                data.local_id = local_id;
+                notebook_props(data, null, gotProps)
+            })
+    })
 }
 
 

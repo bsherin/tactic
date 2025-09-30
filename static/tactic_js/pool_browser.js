@@ -235,7 +235,7 @@ function PoolBrowser(props) {
         dst,
         src
       };
-      await postromise("host", "duplicate_pool_file_task", the_data);
+      await (0, _communication_react.postPromise)("host", "duplicate_pool_file_task", the_data);
     } catch (e) {
       if (e != "canceled") {
         errorDrawerFuncs.addFromError(`Error duplicating file`, e);

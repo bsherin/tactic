@@ -1,12 +1,13 @@
 "use strict";
 
-function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.AssistantContext = void 0;
 exports.ChatModule = ChatModule;
 exports.withAssistant = withAssistant;
+var _extends2 = _interopRequireDefault(require("@babel/runtime/helpers/extends"));
 var _react = _interopRequireWildcard(require("react"));
 var _markdownIt = _interopRequireDefault(require("markdown-it"));
 require("markdown-it-latex/dist/index.css");
@@ -21,32 +22,17 @@ var _settings = require("./settings");
 var _error_drawer = require("./error_drawer");
 var _toaster = require("./toaster");
 var _modal_react = require("./modal_react");
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
-function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t5 in e) "default" !== _t5 && {}.hasOwnProperty.call(e, _t5) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t5)) && (i.get || i.set) ? o(f, _t5, i) : f[_t5] = e[_t5]); return f; })(e, t); }
-function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, "_invoke", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError("Generator is already running"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = "next"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i["return"]) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine2(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, "Generator"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, "toString", function () { return "[object Generator]"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }
-function _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, "", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { if (r) i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n;else { var o = function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); }; o("next", 0), o("throw", 1), o("return", 2); } }, _regeneratorDefine2(e, r, n, t); }
-function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
-function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
-function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
-function _toConsumableArray(r) { return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread(); }
-function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _iterableToArray(r) { if ("undefined" != typeof Symbol && null != r[Symbol.iterator] || null != r["@@iterator"]) return Array.from(r); }
-function _arrayWithoutHoles(r) { if (Array.isArray(r)) return _arrayLikeToArray(r); }
-function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
-function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
-function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
-function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
-function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
-function _arrayWithHoles(r) { if (Array.isArray(r)) return r; } // noinspection TypeScriptUMDGlobal
-_core["default"].registerLanguage('javascript', _javascript["default"]);
-_core["default"].registerLanguage('python', _python["default"]);
-var mdi = (0, _markdownIt["default"])({
+function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function (e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, default: e }; if (null === e || "object" != typeof e && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (const t in e) "default" !== t && {}.hasOwnProperty.call(e, t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, t)) && (i.get || i.set) ? o(f, t, i) : f[t] = e[t]); return f; })(e, t); }
+// noinspection TypeScriptUMDGlobal
+
+_core.default.registerLanguage('javascript', _javascript.default);
+_core.default.registerLanguage('python', _python.default);
+const mdi = (0, _markdownIt.default)({
   html: true,
-  highlight: function highlight(str, lang) {
-    if (lang && _core["default"].getLanguage(lang)) {
+  highlight: function (str, lang) {
+    if (lang && _core.default.getLanguage(lang)) {
       try {
-        return '<pre><code class="hljs">' + _core["default"].highlight(str, {
+        return '<pre><code class="hljs">' + _core.default.highlight(str, {
           language: lang,
           ignoreIllegals: true
         }).value + '</code></pre>';
@@ -55,80 +41,47 @@ var mdi = (0, _markdownIt["default"])({
     return '<pre><code class="hljs">' + mdi.utils.escapeHtml(str) + '</code></pre>';
   }
 });
-mdi.use(_markdownItLatex["default"]);
-var AssistantContext = exports.AssistantContext = /*#__PURE__*/(0, _react.createContext)(null);
+mdi.use(_markdownItLatex.default);
+const AssistantContext = exports.AssistantContext = /*#__PURE__*/(0, _react.createContext)(null);
 function formatLatexEquations(text) {
-  var displayRegex = /\$\$([^]+?)\$\$/g;
-  text = text.replace(displayRegex, function (_, equation) {
-    return "`$".concat(equation, "$`");
-  });
-  var inlineRegex = /\$(.+?)\$/g;
-  text = text.replace(inlineRegex, function (_, equation) {
-    return "`$".concat(equation, "$`");
-  });
+  const displayRegex = /\$\$(.+?)\$\$/gs;
+  text = text.replace(displayRegex, (_, equation) => `\`$${equation}$\``);
+  const inlineRegex = /\$(.+?)\$/g;
+  text = text.replace(inlineRegex, (_, equation) => `\`$${equation}$\``);
   return text;
 }
-function withAssistant(WrappedComponent) {
-  var lposition = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "right";
-  var assistant_drawer_size = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : "45%";
+function withAssistant(WrappedComponent, lposition = "right", assistant_drawer_size = "45%") {
   function WithAssistant(props) {
-    var _useState = (0, _react.useState)(false),
-      _useState2 = _slicedToArray(_useState, 2),
-      show_drawer = _useState2[0],
-      set_show_drawer = _useState2[1];
-    var _useStateAndRef = (0, _utilities_react.useStateAndRef)([]),
-      _useStateAndRef2 = _slicedToArray(_useStateAndRef, 3),
-      set_item_list = _useStateAndRef2[1],
-      item_list_ref = _useStateAndRef2[2];
-    var _useStateAndRef3 = (0, _utilities_react.useStateAndRef)(""),
-      _useStateAndRef4 = _slicedToArray(_useStateAndRef3, 3),
-      set_stream_text = _useStateAndRef4[1],
-      stream_text_ref = _useStateAndRef4[2];
-    var _useStateAndRef5 = (0, _utilities_react.useStateAndRef)(null),
-      _useStateAndRef6 = _slicedToArray(_useStateAndRef5, 3),
-      set_assistant_id = _useStateAndRef6[1],
-      assistant_id_ref = _useStateAndRef6[2];
-    var _useStateAndRef7 = (0, _utilities_react.useStateAndRef)(window.has_openapi_key ? "idle" : null),
-      _useStateAndRef8 = _slicedToArray(_useStateAndRef7, 3),
-      set_chat_status = _useStateAndRef8[1],
-      chat_status_ref = _useStateAndRef8[2];
-    var _useStateAndRef9 = (0, _utilities_react.useStateAndRef)(""),
-      _useStateAndRef0 = _slicedToArray(_useStateAndRef9, 3),
-      set_assistant_prompt_value = _useStateAndRef0[1],
-      assistant_prompt_value_ref = _useStateAndRef0[2];
-    var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
-    (0, _react.useEffect)(function () {
+    const [show_drawer, set_show_drawer] = (0, _react.useState)(false);
+    const [, set_item_list, item_list_ref] = (0, _utilities_react.useStateAndRef)([]);
+    const [, set_stream_text, stream_text_ref] = (0, _utilities_react.useStateAndRef)("");
+    const [, set_assistant_id, assistant_id_ref] = (0, _utilities_react.useStateAndRef)(null);
+    const [, set_chat_status, chat_status_ref] = (0, _utilities_react.useStateAndRef)(window.has_openapi_key ? "idle" : null);
+    const [, set_assistant_prompt_value, assistant_prompt_value_ref] = (0, _utilities_react.useStateAndRef)("");
+    const errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
+    (0, _react.useEffect)(() => {
       if (window.has_openapi_key) {
         getAssistant();
       }
-      return function () {};
+      return () => {};
     }, []);
-    (0, _react.useEffect)(function () {
+    (0, _react.useEffect)(() => {
       if (show_drawer) {
         getAssistant();
       }
     }, [show_drawer]);
-    var pushCallback = (0, _utilities_react.useCallbackStack)();
+    const pushCallback = (0, _utilities_react.useCallbackStack)();
     function getPastMessages() {
       if (assistant_id_ref.current == null) return;
-      (0, _communication_react.postPromise)(assistant_id_ref.current, "get_past_messages", {}).then(function (data) {
-        var _iterator = _createForOfIteratorHelper(data["messages"]),
-          _step;
-        try {
-          for (_iterator.s(); !(_step = _iterator.n()).done;) {
-            var msg = _step.value;
-            if (msg["kind"] == "assistant") {
-              msg["text"] = formatLatexEquations(msg["text"]);
-              msg["text"] = mdi.render(msg["text"]);
-            }
+      (0, _communication_react.postPromise)(assistant_id_ref.current, "get_past_messages", {}).then(data => {
+        for (let msg of data["messages"]) {
+          if (msg["kind"] == "assistant") {
+            msg["text"] = formatLatexEquations(msg["text"]);
+            msg["text"] = mdi.render(msg["text"]);
           }
-        } catch (err) {
-          _iterator.e(err);
-        } finally {
-          _iterator.f();
         }
         set_item_list(data["messages"]);
-      })["catch"](function (data) {
+      }).catch(data => {
         errorDrawerFuncs.addErrorDrawerEntry({
           title: "Error getting past messages",
           content: "message" in data ? data.message : ""
@@ -138,14 +91,14 @@ function withAssistant(WrappedComponent) {
     function getAssistant() {
       (0, _communication_react.postPromise)("host", "GetAssistant", {
         user_id: window.user_id
-      }).then(function (response) {
+      }).then(response => {
         if (response.assistant_id == null) {
           startAssistant();
         } else if (response.assistant_id != assistant_id_ref.current) {
           set_assistant_id(response.assistant_id);
           pushCallback(getPastMessages);
         }
-      })["catch"](function (data) {
+      }).catch(data => {
         errorDrawerFuncs.addErrorDrawerEntry({
           title: "Error getting assistant",
           content: "message" in data ? data.message : ""
@@ -154,41 +107,28 @@ function withAssistant(WrappedComponent) {
     }
     function startAssistant() {
       (0, _communication_react.postPromise)("host", "StartAssistant", {
-        main_id: window.main_id,
+        parent_id: window.global_id,
         user_id: window.user_id
-      }).then(function (response) {
+      }).then(response => {
         set_assistant_id(response.assistant_id);
       });
     }
     function _close(data) {
-      if (data == null || !("main_id" in data) || data.main_id == window.main_id) {
-        set_show_drawer(false);
-      }
+      set_show_drawer(false);
     }
     function _open(data) {
-      if (data == null || !("main_id" in data) || data.main_id == window.main_id) {
-        set_show_drawer(true);
-      }
+      set_show_drawer(true);
     }
     function _toggle(data) {
-      if (data == null || !("main_id" in data) || data.main_id == window.main_id) {
-        set_show_drawer(!show_drawer);
-      }
-    }
-    function _postAjaxFailure(qXHR, textStatus, errorThrown) {
-      _addEntry({
-        title: "Post Ajax Failure: {}".format(textStatus),
-        content: errorThrown
-      });
+      set_show_drawer(!show_drawer);
     }
     function _onClose() {
       set_show_drawer(false);
     }
-    var assistantDrawerFuncs = {
+    let assistantDrawerFuncs = {
       showAssistantDrawerButton: window.has_openapi_key,
       openAssistantDrawer: _open,
       closeAssistantDrawer: _close,
-      postAjaxFailure: _postAjaxFailure,
       toggleAssistantDrawer: _toggle,
       item_list_ref: item_list_ref,
       set_item_list: set_item_list,
@@ -199,9 +139,9 @@ function withAssistant(WrappedComponent) {
       assistant_id_ref: assistant_id_ref,
       show_drawer: show_drawer
     };
-    return /*#__PURE__*/_react["default"].createElement(AssistantContext.Provider, {
+    return /*#__PURE__*/_react.default.createElement(AssistantContext.Provider, {
       value: assistantDrawerFuncs
-    }, /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, window.has_openapi_key && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(WrappedComponent, props), /*#__PURE__*/_react["default"].createElement(AssistantDrawer, {
+    }, /*#__PURE__*/_react.default.createElement(_react.Fragment, null, window.has_openapi_key && /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement(WrappedComponent, props), /*#__PURE__*/_react.default.createElement(AssistantDrawer, {
       show_drawer: show_drawer,
       position: lposition,
       tsocket: props.tsocket,
@@ -212,16 +152,16 @@ function withAssistant(WrappedComponent) {
       title: "ChatBot",
       size: assistant_drawer_size,
       onClose: _onClose
-    })), !window.has_openapi_key && /*#__PURE__*/_react["default"].createElement(WrappedComponent, props)));
+    })), !window.has_openapi_key && /*#__PURE__*/_react.default.createElement(WrappedComponent, props)));
   }
   return /*#__PURE__*/(0, _react.memo)(WithAssistant);
 }
 function AssistantDrawer(props) {
-  var settingsContext = (0, _react.useContext)(_settings.SettingsContext);
-  (0, _react.useEffect)(function () {
+  const settingsContext = (0, _react.useContext)(_settings.SettingsContext);
+  (0, _react.useEffect)(() => {
     // console.log("theme changed")  // This is to force re-rendering because of highlight.js theme change
   }, [settingsContext.settings.theme]);
-  return /*#__PURE__*/_react["default"].createElement(_core2.Drawer, {
+  return /*#__PURE__*/_react.default.createElement(_core2.Drawer, {
     icon: "chat",
     className: settingsContext.isDark() ? "bp6-dark" : "light-theme",
     title: props.title,
@@ -232,38 +172,35 @@ function AssistantDrawer(props) {
     enforceFocus: false,
     hasBackdrop: false,
     size: props.size
-  }, /*#__PURE__*/_react["default"].createElement(ChatModule, {
+  }, /*#__PURE__*/_react.default.createElement(ChatModule, {
     tsocket: props.tsocket,
     assistant_prompt_value_ref: props.assistant_prompt_value_ref,
     set_assistant_prompt_value: props.set_assistant_prompt_value
   }));
 }
 AssistantDrawer = /*#__PURE__*/(0, _react.memo)(AssistantDrawer);
-var input_style = {
+const input_style = {
   position: "relative",
   bottom: 0,
   margin: 10
 };
-var idle_statuses = ["completed", "expired", "cancelled", "failed"];
+const idle_statuses = ["completed", "expired", "cancelled", "failed"];
 function ChatModule(props) {
-  var top_ref = /*#__PURE__*/_react["default"].createRef();
-  var control_ref = /*#__PURE__*/_react["default"].createRef();
-  var list_ref = /*#__PURE__*/_react["default"].createRef();
-  var stream_dict_ref = /*#__PURE__*/_react["default"].createRef();
-  var _useStateAndRef1 = (0, _utilities_react.useStateAndRef)(0),
-    _useStateAndRef10 = _slicedToArray(_useStateAndRef1, 3),
-    set_response_counter = _useStateAndRef10[1],
-    response_counter_ref = _useStateAndRef10[2];
-  var assistantDrawerFuncs = (0, _react.useContext)(AssistantContext);
-  var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
-  var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
-  var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
-  var pushCallback = (0, _utilities_react.useCallbackStack)();
-  (0, _react.useEffect)(function () {
+  const top_ref = /*#__PURE__*/_react.default.createRef();
+  const control_ref = /*#__PURE__*/_react.default.createRef();
+  const list_ref = /*#__PURE__*/_react.default.createRef();
+  const stream_dict_ref = /*#__PURE__*/_react.default.createRef();
+  const [, set_response_counter, response_counter_ref] = (0, _utilities_react.useStateAndRef)(0);
+  const assistantDrawerFuncs = (0, _react.useContext)(AssistantContext);
+  const errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
+  const dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
+  const statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
+  const pushCallback = (0, _utilities_react.useCallbackStack)();
+  (0, _react.useEffect)(() => {
     initSocket();
     stream_dict_ref.current = {};
   }, []);
-  (0, _react.useEffect)(function () {
+  (0, _react.useEffect)(() => {
     if (list_ref && list_ref.current) {
       list_ref.current.scrollTo(0, list_ref.current.scrollHeight);
     }
@@ -276,30 +213,26 @@ function ChatModule(props) {
     props.set_assistant_prompt_value(event.target.value);
   }
   function stream_dict_to_string() {
-    var sortedKeys = Object.keys(stream_dict_ref.current).sort(function (a, b) {
-      return a - b;
-    });
-    return sortedKeys.map(function (key) {
-      return stream_dict_ref.current[key];
-    }).join('');
+    const sortedKeys = Object.keys(stream_dict_ref.current).sort((a, b) => a - b);
+    return sortedKeys.map(key => stream_dict_ref.current[key]).join('');
   }
   function _handleChatDelta(data) {
-    var current_stream_dict = stream_dict_ref.current;
+    let current_stream_dict = stream_dict_ref.current;
     current_stream_dict[data.counter] = data.delta;
-    var new_text = stream_dict_to_string();
+    const new_text = stream_dict_to_string();
     assistantDrawerFuncs.set_stream_text(new_text);
-    pushCallback(function () {
+    pushCallback(() => {
       set_response_counter(response_counter_ref.current + 1);
     });
   }
   function _handleChatEnd(stream_text) {
     stream_dict_ref.current = {};
     stream_text = formatLatexEquations(stream_text);
-    var converted_markdown = mdi.render(stream_text);
-    var new_item_list = [].concat(_toConsumableArray(assistantDrawerFuncs.item_list_ref.current), [{
+    let converted_markdown = mdi.render(stream_text);
+    const new_item_list = [...assistantDrawerFuncs.item_list_ref.current, {
       kind: "response",
       text: converted_markdown
-    }]);
+    }];
     assistantDrawerFuncs.set_item_list(new_item_list);
     assistantDrawerFuncs.set_chat_status("idle");
   }
@@ -307,232 +240,110 @@ function ChatModule(props) {
     if (idle_statuses.includes(data.status)) {
       assistantDrawerFuncs.set_chat_status("idle");
       if (Object.keys(stream_dict_ref.current).length == 0) return;
-      var current_stream_text = assistantDrawerFuncs.stream_text_ref.current;
+      const current_stream_text = assistantDrawerFuncs.stream_text_ref.current;
       assistantDrawerFuncs.set_stream_text({});
       _handleChatEnd(current_stream_text);
     } else {
       assistantDrawerFuncs.set_chat_status(data.status);
     }
   }
-  function _handleButton(_x) {
-    return _handleButton2.apply(this, arguments);
+  async function _handleButton(event) {
+    event.preventDefault();
+    if (assistantDrawerFuncs.chat_status_ref.current == "idle") {
+      await _promptSubmit();
+    } else {
+      await _cancelPrompt();
+    }
   }
-  function _handleButton2() {
-    _handleButton2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee(event) {
-      return _regenerator().w(function (_context) {
-        while (1) switch (_context.n) {
-          case 0:
-            event.preventDefault();
-            if (!(assistantDrawerFuncs.chat_status_ref.current == "idle")) {
-              _context.n = 2;
-              break;
-            }
-            _context.n = 1;
-            return _promptSubmit();
-          case 1:
-            _context.n = 3;
-            break;
-          case 2:
-            _context.n = 3;
-            return _cancelPrompt();
-          case 3:
-            return _context.a(2);
-        }
-      }, _callee);
-    }));
-    return _handleButton2.apply(this, arguments);
-  }
-  function _cancelPrompt() {
-    return _cancelPrompt2.apply(this, arguments);
-  }
-  function _cancelPrompt2() {
-    _cancelPrompt2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2() {
-      var _t;
-      return _regenerator().w(function (_context2) {
-        while (1) switch (_context2.n) {
-          case 0:
-            _context2.p = 0;
-            _context2.n = 1;
-            return (0, _communication_react.postPromise)(assistantDrawerFuncs.assistant_id_ref.current, "cancel_run_task", {});
-          case 1:
-            _context2.n = 3;
-            break;
-          case 2:
-            _context2.p = 2;
-            _t = _context2.v;
-            console.log(_t.message);
-          case 3:
-            return _context2.a(2);
-        }
-      }, _callee2, null, [[0, 2]]);
-    }));
-    return _cancelPrompt2.apply(this, arguments);
+  async function _cancelPrompt() {
+    try {
+      await (0, _communication_react.postPromise)(assistantDrawerFuncs.assistant_id_ref.current, "cancel_run_task", {});
+    } catch (error) {
+      console.log(error.message);
+    }
   }
   function _addEntry(entry) {
-    var new_item_list = [].concat(_toConsumableArray(assistantDrawerFuncs.item_list_ref.current), [entry]);
+    const new_item_list = [...assistantDrawerFuncs.item_list_ref.current, entry];
     assistantDrawerFuncs.set_item_list(new_item_list);
   }
-  function _promptSubmit() {
-    return _promptSubmit2.apply(this, arguments);
+  async function _promptSubmit() {
+    try {
+      _addEntry({
+        kind: "user",
+        text: props.assistant_prompt_value_ref.current
+      });
+      props.set_assistant_prompt_value("");
+      assistantDrawerFuncs.set_chat_status("posted");
+      await (0, _communication_react.postPromise)(assistantDrawerFuncs.assistant_id_ref.current, "post_prompt_stream", {
+        prompt: props.assistant_prompt_value_ref.current,
+        global_id: window.global_id
+      });
+    } catch (error) {
+      console.log(error.message);
+    }
   }
-  function _promptSubmit2() {
-    _promptSubmit2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3() {
-      var _t2;
-      return _regenerator().w(function (_context3) {
-        while (1) switch (_context3.n) {
-          case 0:
-            _context3.p = 0;
-            _addEntry({
-              kind: "user",
-              text: props.assistant_prompt_value_ref.current
-            });
-            props.set_assistant_prompt_value("");
-            assistantDrawerFuncs.set_chat_status("posted");
-            _context3.n = 1;
-            return (0, _communication_react.postPromise)(assistantDrawerFuncs.assistant_id_ref.current, "post_prompt_stream", {
-              prompt: props.assistant_prompt_value_ref.current,
-              main_id: window.main_id
-            });
-          case 1:
-            _context3.n = 3;
-            break;
-          case 2:
-            _context3.p = 2;
-            _t2 = _context3.v;
-            console.log(_t2.message);
-          case 3:
-            return _context3.a(2);
-        }
-      }, _callee3, null, [[0, 2]]);
-    }));
-    return _promptSubmit2.apply(this, arguments);
+  async function handleKeyDown(event) {
+    if (event.ctrlKey && event.key === 'Enter') {
+      event.preventDefault();
+      await _promptSubmit(event);
+    }
   }
-  function handleKeyDown(_x2) {
-    return _handleKeyDown.apply(this, arguments);
+  async function _clearThread() {
+    try {
+      await (0, _communication_react.postPromise)(assistantDrawerFuncs.assistant_id_ref.current, "clear_thread", {});
+      assistantDrawerFuncs.set_item_list([]);
+    } catch (e) {
+      errorDrawerFuncs.addFromError(title, e);
+    }
   }
-  function _handleKeyDown() {
-    _handleKeyDown = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee4(event) {
-      return _regenerator().w(function (_context4) {
-        while (1) switch (_context4.n) {
-          case 0:
-            if (!(event.ctrlKey && event.key === 'Enter')) {
-              _context4.n = 1;
-              break;
-            }
-            event.preventDefault();
-            _context4.n = 1;
-            return _promptSubmit(event);
-          case 1:
-            return _context4.a(2);
-        }
-      }, _callee4);
-    }));
-    return _handleKeyDown.apply(this, arguments);
+  async function _saveThreadAs() {
+    statusFuncs.startSpinner();
+    let data = await (0, _communication_react.postPromise)("host", "get_project_names_task", {});
+    try {
+      let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
+        title: "Save Thread To Notebook",
+        field_title: "New Notebook Name",
+        default_value: "ThreadNotebook",
+        existing_names: data.project_names,
+        checkboxes: null,
+        handleClose: dialogFuncs.hideModal
+      });
+      await (0, _communication_react.postPromise)("host", "SaveAssistantThread", {
+        room: window.global_id,
+        assistant_id: assistantDrawerFuncs.assistant_id_ref.current,
+        new_name: new_name,
+        user_id: window.user_id
+      });
+      statusFuncs.clearStatusMessage();
+      statusFuncs.stopSpinner();
+      statusFuncs.statusMessage(`Saved project ${new_name}`);
+    } catch (e) {
+      if (e != "canceled") {
+        let title = "title" in e ? e.title : "Error saving thread";
+        errorDrawerFuncs.addFromError(title, e);
+      }
+      statusFuncs.clearStatusMessage();
+      statusFuncs.stopSpinner();
+    }
   }
-  function _clearThread() {
-    return _clearThread2.apply(this, arguments);
-  }
-  function _clearThread2() {
-    _clearThread2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5() {
-      var _t3;
-      return _regenerator().w(function (_context5) {
-        while (1) switch (_context5.n) {
-          case 0:
-            _context5.p = 0;
-            _context5.n = 1;
-            return (0, _communication_react.postPromise)(assistantDrawerFuncs.assistant_id_ref.current, "clear_thread", {
-              main_id: window.main_id
-            });
-          case 1:
-            assistantDrawerFuncs.set_item_list([]);
-            _context5.n = 3;
-            break;
-          case 2:
-            _context5.p = 2;
-            _t3 = _context5.v;
-            errorDrawerFuncs.addFromError(title, _t3);
-          case 3:
-            return _context5.a(2);
-        }
-      }, _callee5, null, [[0, 2]]);
-    }));
-    return _clearThread2.apply(this, arguments);
-  }
-  function _saveThreadAs() {
-    return _saveThreadAs2.apply(this, arguments);
-  }
-  function _saveThreadAs2() {
-    _saveThreadAs2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6() {
-      var data, new_name, _title, _t4;
-      return _regenerator().w(function (_context6) {
-        while (1) switch (_context6.n) {
-          case 0:
-            statusFuncs.startSpinner();
-            _context6.n = 1;
-            return (0, _communication_react.postPromise)("host", "get_project_names", {
-              "user_id": window.user_id
-            }, props.main_id);
-          case 1:
-            data = _context6.v;
-            _context6.p = 2;
-            _context6.n = 3;
-            return dialogFuncs.showModalPromise("ModalDialog", {
-              title: "Save Thread To Notebook",
-              field_title: "New Notebook Name",
-              default_value: "ThreadNotebook",
-              existing_names: data.project_names,
-              checkboxes: null,
-              handleClose: dialogFuncs.hideModal
-            });
-          case 3:
-            new_name = _context6.v;
-            _context6.n = 4;
-            return (0, _communication_react.postPromise)("host", "SaveAssistantThread", {
-              main_id: window.main_id,
-              assistant_id: assistantDrawerFuncs.assistant_id_ref.current,
-              new_name: new_name,
-              user_id: window.user_id
-            });
-          case 4:
-            statusFuncs.clearStatusMessage();
-            statusFuncs.stopSpinner();
-            statusFuncs.statusMessage("Saved project ".concat(new_name));
-            _context6.n = 6;
-            break;
-          case 5:
-            _context6.p = 5;
-            _t4 = _context6.v;
-            if (_t4 != "canceled") {
-              _title = "title" in _t4 ? _t4.title : "Error saving thread";
-              errorDrawerFuncs.addFromError(_title, _t4);
-            }
-            statusFuncs.clearStatusMessage();
-            statusFuncs.stopSpinner();
-          case 6:
-            return _context6.a(2);
-        }
-      }, _callee6, null, [[2, 5]]);
-    }));
-    return _saveThreadAs2.apply(this, arguments);
-  }
-  var items = assistantDrawerFuncs.item_list_ref.current.map(function (item, index) {
+  let items = assistantDrawerFuncs.item_list_ref.current.map((item, index) => {
     if (item.kind == "user") {
-      return /*#__PURE__*/_react["default"].createElement(Prompt, _extends({
+      return /*#__PURE__*/_react.default.createElement(Prompt, (0, _extends2.default)({
         key: index
       }, item));
     } else {
-      return /*#__PURE__*/_react["default"].createElement(Response, _extends({
+      return /*#__PURE__*/_react.default.createElement(Response, (0, _extends2.default)({
         key: index
       }, item));
     }
   });
   if (assistantDrawerFuncs.chat_status_ref.current != "idle") {
-    items.push(/*#__PURE__*/_react["default"].createElement(ResponseInProgress, {
+    items.push(/*#__PURE__*/_react.default.createElement(ResponseInProgress, {
       key: "response-in-progress",
       stream_text: assistantDrawerFuncs.stream_text_ref.current
     }));
   }
-  var chat_pane_style = {
+  const chat_pane_style = {
     marginLeft: 25,
     marginRight: 25,
     flex: "1 1 0",
@@ -543,21 +354,21 @@ function ChatModule(props) {
     flexDirection: "column",
     justifyContent: "space-between"
   };
-  return /*#__PURE__*/_react["default"].createElement("div", {
+  return /*#__PURE__*/_react.default.createElement("div", {
     className: "chat-module",
     ref: top_ref,
     style: chat_pane_style
-  }, /*#__PURE__*/_react["default"].createElement("div", {
+  }, /*#__PURE__*/_react.default.createElement("div", {
     className: "d-flex flex-row justify-content-end mt-2"
-  }, /*#__PURE__*/_react["default"].createElement(_core2.ButtonGroup, null, /*#__PURE__*/_react["default"].createElement(_core2.Button, {
+  }, /*#__PURE__*/_react.default.createElement(_core2.ButtonGroup, null, /*#__PURE__*/_react.default.createElement(_core2.Button, {
     icon: "trash",
     text: "Clear",
     onClick: _clearThread
-  }), /*#__PURE__*/_react["default"].createElement(_core2.Button, {
+  }), /*#__PURE__*/_react.default.createElement(_core2.Button, {
     icon: "floppy-disk",
     text: "Save",
     onClick: _saveThreadAs
-  }))), /*#__PURE__*/_react["default"].createElement(_core2.CardList, {
+  }))), /*#__PURE__*/_react.default.createElement(_core2.CardList, {
     ref: list_ref,
     bordered: false,
     style: {
@@ -565,16 +376,16 @@ function ChatModule(props) {
       overflow: "auto",
       position: "relative"
     }
-  }, items), /*#__PURE__*/_react["default"].createElement(_core2.ControlGroup, {
+  }, items), /*#__PURE__*/_react.default.createElement(_core2.ControlGroup, {
     ref: control_ref,
     vertical: false,
     style: input_style
-  }, /*#__PURE__*/_react["default"].createElement(_core2.Button, {
+  }, /*#__PURE__*/_react.default.createElement(_core2.Button, {
     icon: assistantDrawerFuncs.chat_status_ref.current == "idle" ? "send-message" : "stop",
     variant: "minimal",
     size: "large",
     onClick: _handleButton
-  }), /*#__PURE__*/_react["default"].createElement(_core2.TextArea, {
+  }), /*#__PURE__*/_react.default.createElement(_core2.TextArea, {
     type: "text",
     autoResize: true,
     style: {
@@ -588,57 +399,54 @@ function ChatModule(props) {
   })));
 }
 exports.ChatModule = ChatModule = /*#__PURE__*/(0, _react.memo)(ChatModule);
-var chat_item_style = {
+const chat_item_style = {
   display: "flex",
   flexDirection: "column",
   width: "100%"
 };
 function Prompt(props) {
-  return /*#__PURE__*/_react["default"].createElement(_core2.Card, {
+  return /*#__PURE__*/_react.default.createElement(_core2.Card, {
     interactive: false
-  }, /*#__PURE__*/_react["default"].createElement("div", {
+  }, /*#__PURE__*/_react.default.createElement("div", {
     style: chat_item_style
-  }, /*#__PURE__*/_react["default"].createElement("h6", null, "You"), /*#__PURE__*/_react["default"].createElement("div", null, props.text)));
+  }, /*#__PURE__*/_react.default.createElement("h6", null, "You"), /*#__PURE__*/_react.default.createElement("div", null, props.text)));
 }
 Prompt = /*#__PURE__*/(0, _react.memo)(Prompt);
 function Response(props) {
-  var converted_dict = {
+  let converted_dict = {
     __html: props.text
   };
-  return /*#__PURE__*/_react["default"].createElement(_core2.Card, {
+  return /*#__PURE__*/_react.default.createElement(_core2.Card, {
     interactive: false
-  }, /*#__PURE__*/_react["default"].createElement("div", {
+  }, /*#__PURE__*/_react.default.createElement("div", {
     style: chat_item_style
-  }, /*#__PURE__*/_react["default"].createElement("h6", null, "ChatBot"), /*#__PURE__*/_react["default"].createElement("div", {
+  }, /*#__PURE__*/_react.default.createElement("h6", null, "ChatBot"), /*#__PURE__*/_react.default.createElement("div", {
     className: "chat-response markdown-heading-sizes",
     dangerouslySetInnerHTML: converted_dict
   })));
 }
 Response = /*#__PURE__*/(0, _react.memo)(Response);
-var dummy_text = "This is a test of the chatbot. This is only a test. \nIf this were a real chatbot, you would be getting useful information.";
+const dummy_text = `This is a test of the chatbot. This is only a test. 
+If this were a real chatbot, you would be getting useful information.`;
 function ResponseInProgress(props) {
   if (props.stream_text != "") {
-    var sortedKeys = Object.keys(props.stream_text).sort(function (a, b) {
-      return a - b;
-    });
-    var result = sortedKeys.map(function (key) {
-      return props.stream_text[key];
-    }).join('');
+    const sortedKeys = Object.keys(props.stream_text).sort((a, b) => a - b);
+    let result = sortedKeys.map(key => props.stream_text[key]).join('');
     result = formatLatexEquations(result);
-    var converted_markdown = mdi.render(result);
-    return /*#__PURE__*/_react["default"].createElement(Response, {
+    let converted_markdown = mdi.render(result);
+    return /*#__PURE__*/_react.default.createElement(Response, {
       text: converted_markdown
     });
   }
-  var converted_dict = {
+  let converted_dict = {
     __html: dummy_text
   };
-  return /*#__PURE__*/_react["default"].createElement(_core2.Card, {
+  return /*#__PURE__*/_react.default.createElement(_core2.Card, {
     className: "bp-skeleton",
     interactive: false
-  }, /*#__PURE__*/_react["default"].createElement("div", {
+  }, /*#__PURE__*/_react.default.createElement("div", {
     style: chat_item_style
-  }, /*#__PURE__*/_react["default"].createElement("h6", null, "ChatBot"), /*#__PURE__*/_react["default"].createElement("div", {
+  }, /*#__PURE__*/_react.default.createElement("h6", null, "ChatBot"), /*#__PURE__*/_react.default.createElement("div", {
     style: {
       height: 100
     },

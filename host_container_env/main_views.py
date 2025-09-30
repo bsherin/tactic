@@ -19,9 +19,6 @@ import tactic_app
 import datetime
 tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
 
-from js_source_management import _develop
-
-
 def authenticated_only(f):
     @functools.wraps(f)
     def wrapped(*args, **kwargs):
@@ -83,8 +80,8 @@ def on_client_ready(data):
 @login_required
 @csrf.exempt
 def delete_container_on_unload():
-    print("in delete_container_on_unload")
-    data = json.loads(request.data)
+    data = request.json
+    print("in delete_container_on_unload with data {}".format(data))
     print("data is {}".format(data))
     tactic_app.host_worker.delete_container(data)
     return jsonify({"success": True})
@@ -158,7 +155,7 @@ def print_blob_area_to_console():
     from tactic_app import socketio
     bytes_object = request.files['image'].read()
     base_64_str = base64.b64encode(bytes_object).decode('utf-8')
-    main_id = request.form["main_id"]
+    local_id = request.form["local_id"]
     unique_id = str(uuid.uuid4())
     data = {}
     data["message"] = {"unique_id": unique_id,
@@ -168,8 +165,8 @@ def print_blob_area_to_console():
                        "summary_text": "pasted image",
                        "image_data_str": "data:image/png;base64, " + base_64_str}
     data["console_message"] = "consoleLog"
-    data["main_id"] = main_id
-    socketio.emit("console-message", data, namespace='/main', room=main_id)
+    data["local_id"] = local_id
+    socketio.emit("console-message", data, namespace='/main', room=local_id)
     return jsonify({"success": True})
 
 
@@ -184,7 +181,7 @@ def export_data():
         return
     data_dict = request.json
     export_name = data_dict['export_name']
-    tactic_app.host_worker.post_task(data_dict["main_id"], "export_data",
+    tactic_app.host_worker.post_task(data_dict["local_id"], "export_data",
                                      {"export_name": export_name},
                                      export_success)
     return jsonify({"success": True})

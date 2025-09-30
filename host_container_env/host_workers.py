@@ -34,6 +34,7 @@ from metabook_tasks_mixin import MetabookTasksMixin
 from higher_mongo_tasks_mixin import HigherMongoTasksMixin
 from user_tasks_mixin import UserTasksMixin
 from container_tasks_mixin import ContainerTasksMixin
+from across_accounts_mixin import AcrossAccountsTasksMixin
 
 # inactive_container_time is the max time a tile can
 # go without making active contact with the megaplex.
@@ -56,7 +57,8 @@ MY_ID = os.environ.get("MY_ID")
 from qworker import max_pika_retries
 
 class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTasksMixin,ContainerTasksMixin,
-                 ProjectTasksMixin, CollectionTasksMixin, MetabookTasksMixin, HigherMongoTasksMixin):
+                 ProjectTasksMixin, CollectionTasksMixin, MetabookTasksMixin,
+                 AcrossAccountsTasksMixin, HigherMongoTasksMixin):
     def __init__(self):
         QWorker.__init__(self)
         self.my_id = "host" + str(myport)
@@ -203,15 +205,15 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         user_obj = load_user(user_id)
         rb_id = data["rb_id"]
         participant = data["participant"]
-        result, main_id = delete_ready_block_participant(user_obj.username, rb_id, participant)
+        result, local_id = delete_ready_block_participant(user_obj.username, rb_id, participant)
         if result:
             print("** all participants ready **")
             for pid in result:
-                if pid == "main_id":
+                if pid == "local_id":
                     continue
                 if pid == "client":
                     print(str(data))
-                    socketio.emit("remove-ready-block", {main_id: main_id}, namespace='/main', room=main_id)
+                    socketio.emit("remove-ready-block", {local_id: local_id}, namespace='/main', room=local_id)
                 else:
                     self.post_task(pid, "remove_ready_block", data)
 
@@ -279,9 +281,9 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
 
     @task_worthy
     def remove_mainwindow_task(self, data):
-        main_id = data["main_id"]
-        destroy_child_containers(main_id)
-        destroy_container(main_id, notify=False)
+        local_id = data["local_id"]
+        destroy_child_containers(local_id)
+        destroy_container(local_id, notify=False)
         return {"success": True}
 
     @task_worthy
@@ -308,6 +310,7 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         user_id = data["user_id"]
         user_obj = load_user(user_id)
         tile_module_name = data["tile_module_name"]
+        data["user_id"] = user_id
         if data["tile_module_name"] in loaded_tile_management.get_loaded_user_modules(user_obj.username):
             self.submit_response(task_packet, {"success": True, "module_name": tile_module_name})
             return
@@ -365,7 +368,7 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
                 mdata = {}
                 file_id = None
             else:
-                doc = self.get_resource_doc_from_id(res_type, _id, user_obj)
+                doc = user_obj.get_resource_doc_from_id(res_type, _id)
                 nfield = getattr(user_obj, f"{res_type}_name_field")
                 doc_name = doc[nfield]
                 if "metadata" in doc:
@@ -477,13 +480,13 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
     @task_worthy
     def emit_table_message(self, data):
         from tactic_app import socketio
-        socketio.emit("table-message", data, namespace='/main', room=data["main_id"])
+        socketio.emit("table-message", data, namespace='/main', room=data["local_id"])
         return {"success": True}
 
     @task_worthy
     def emit_console_message(self, data):
         from tactic_app import socketio
-        socketio.emit("console-message", data, namespace='/main', room=data["main_id"])
+        socketio.emit("console-message", data, namespace='/main', room=data["local_id"])
         return {"success": True}
 
     @task_worthy
@@ -493,7 +496,7 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         if "room" in data:
             room = data["room"]
         else:
-            room = data["main_id"]
+            room = data["local_id"]
             data["room"] = room
         if "namespace" in data:
             namespace = data["namespace"]
@@ -508,7 +511,7 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
     def emit_export_viewer_message(self, data):
         from tactic_app import socketio
 
-        socketio.emit("export-viewer-message", data, namespace='/main', room=data["main_id"])
+        socketio.emit("export-viewer-message", data, namespace='/main', room=data["local_id"])
         return {"success": True}
 
     @task_worthy
@@ -634,12 +637,12 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
     @task_worthy
     def go_to_row_in_document(self, data):
         from tactic_app import socketio
-        socketio.emit("change-doc", data, namespace='/main', room=data["main_id"])
+        socketio.emit("change-doc", data, namespace='/main', room=data["local_id"])
 
     @task_worthy
     def emit_tile_message(self, data):
         from tactic_app import socketio
-        socketio.emit("tile-message", data, namespace='/main', room=data["main_id"])
+        socketio.emit("tile-message", data, namespace='/main', room=data["local_id"])
         return {"success": True}
 
     @task_worthy
@@ -688,7 +691,7 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
 
     @task_worthy
     def StartAssistant(self, data):
-        parent_id = data["main_id"]
+        parent_id = data["parent_id"]
         user_id = data["user_id"]
         user = load_user(user_id)
         username = user.username
@@ -847,12 +850,6 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         tactic_app.health_tracker.check_health()
         return
 
-    def handle_client_event(self, task_packet):
-        # I think I should never get here.
-        task_packet["table_message"] = task_packet["task_type"]
-        socketio.emit("table-message", task_packet, namespace='/main', room=task_packet["main_id"])
-        return
-
     def handle_response(self, task_packet):
         if "client_post" in task_packet:
             self.handle_client_response(task_packet)
@@ -865,7 +862,7 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
             if "room" in task_packet:
                 room = task_packet["room"]
             else:
-                room = task_packet["main_id"]
+                room = task_packet["global_id"]
                 task_packet["room"] = room
             if "namespace" in task_packet:
                 namespace = task_packet["namespace"]

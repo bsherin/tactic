@@ -16,28 +16,28 @@ print(openai.__file__)
 from qworker import task_worthy, task_worthy_manual_submit, QWorker
 
 class StreamEventHandler(AssistantEventHandler):
-    def __init__(self, assist, main_id):
+    def __init__(self, assist, local_id):
         AssistantEventHandler.__init__(self)
-        self.main_id = main_id
+        self.local_id = local_id
         self.assist = assist
 
     def on_text_created(self, text):
-        self.assist.emit_to_client("chat_status", {"success": True, "status": "created", "main_id": self.main_id})
+        self.assist.emit_to_client("chat_status", {"success": True, "status": "created", "local_id": self.local_id})
 
     def on_text_delta(self, delta, snapshot):
         text = delta.value
         if self.assist.cancel_stream:
-            self.assist.emit_to_client("chat_status", {"success": True, "status": "canceled", "main_id": self.main_id})
+            self.assist.emit_to_client("chat_status", {"success": True, "status": "canceled", "local_id": self.local_id})
             raise Exception("stream canceled")
         self.assist.emit_to_client("chat_delta", {
             "success": True,
             "counter": self.assist.stream_counter,
-            "main_id": self.main_id,
+            "local_id": self.local_id,
             "delta": text})
         self.assist.stream_counter += 1
 
     def on_text_done(self, text):
-        self.assist.emit_to_client("chat_status", {"success": True, "status": "completed", "main_id": self.main_id})
+        self.assist.emit_to_client("chat_status", {"success": True, "status": "completed", "local_id": self.local_id})
 
 
 # noinspection PyUnusedLocal,PyMissingConstructor
@@ -160,7 +160,7 @@ class Assistant(QWorker, ExceptionMixin, AssistantEventHandler):
             with self.chat_client.beta.threads.runs.stream(
                 thread_id=self.chat_thread.id,
                 assistant_id=self.chat_assistant.id,
-                event_handler=StreamEventHandler(self, data_dict["main_id"]),
+                event_handler=StreamEventHandler(self, data_dict["local_id"]),
             ) as stream:
                 stream.until_done()
             print("leaving post prompt stream")

@@ -12,7 +12,7 @@ import {handleCallback} from "./communication_react"
 import {LibraryPane} from "./library_pane"
 import {withStatus} from "./toaster";
 import {withErrorDrawer} from "./error_drawer";
-import {useConnection} from "./utilities_react";
+import {useConnection, guid} from "./utilities_react";
 import {TacticNavbar} from "./blueprint_navbar";
 
 import {SettingsContext, withSettings} from "./settings";
@@ -20,11 +20,14 @@ import {withDialogs} from "./modal_react";
 import {StatusContext} from "./toaster"
 
 import {RepositoryAllMenubar} from "./repository_menubars";
-import {library_id} from "./library_home_react";
 import {ICON_BAR_WIDTH} from "./sizing_tools";
 import {all_columns} from "./library_widgets";
 
 export {RepositoryHomeApp}
+
+const library_id = "a" + guid();
+window.global_id = library_id;
+
 
 let tsocket;
 
@@ -45,10 +48,10 @@ function RepositoryHomeApp(props) {
         tsocket.attachListener("window-open", data => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
         if (!window.in_context) {
             tsocket.attachListener('handle-callback', (task_packet) => {
-                handleCallback(task_packet, window.library_id)
+                handleCallback(task_packet, library_id)
             });
             tsocket.attachListener('close-user-windows', (data) => {
-                if (!(data["originator"] == window.library_id)) {
+                if (!(data["originator"] == window.global_id)) {
                     window.close()
                 }
             });
@@ -88,7 +91,7 @@ function RepositoryHomeApp(props) {
         <Fragment>
             <TacticNavbar is_authenticated={window.is_authenticated}
                           selected={null}
-                          page_id={library_id}
+                          global_id={window.global_id}
                           show_api_links={false}
                           extra_text={window.repository_type == "Local" ? "" : window.repository_type}
                           user_name={window.username}/>

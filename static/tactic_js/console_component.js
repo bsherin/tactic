@@ -190,7 +190,7 @@ function ConsoleComponent(props) {
   } = (0, _core.useHotkeys)(hotkeys);
   function initSocket() {
     function _handleConsoleMessage(data) {
-      if (data.main_id == props.main_id) {
+      if (data.local_id == props.local_id) {
         // noinspection JSUnusedGlobalSymbols
         let handlerDict = {
           consoleLog: data => _addConsoleEntry(data.message, data.force_open, true),
@@ -229,7 +229,7 @@ function ConsoleComponent(props) {
   }
   function _requestPseudoTileId() {
     if (pseudo_tile_id == null) {
-      (0, _communication_react.postWithCallback)(props.main_id, "get_pseudo_tile_id", {}, function (res) {
+      (0, _communication_react.postWithCallback)(props.local_id, "get_pseudo_tile_id", {}, function (res) {
         set_pseudo_tile_id(res.pseudo_tile_id);
       });
     }
@@ -249,7 +249,7 @@ function ConsoleComponent(props) {
     async function gotBlob(blob) {
       const formData = new FormData();
       formData.append('image', blob, 'image.png');
-      formData.append("main_id", props.main_id);
+      formData.append("local_id", props.local_id);
       try {
         await (0, _communication_react.postFormDataPromise)("print_blob_area_to_console", formData);
       } catch (e) {
@@ -262,8 +262,8 @@ function ConsoleComponent(props) {
       await (0, _communication_react.postPromise)("host", "print_text_area_to_console", {
         "console_text": the_text,
         "user_id": window.user_id,
-        "main_id": props.main_id
-      }, props.main_id);
+        "local_id": props.local_id
+      }, props.local_id);
       if (callback != null) {
         callback();
       }
@@ -279,8 +279,8 @@ function ConsoleComponent(props) {
       await (0, _communication_react.postPromise)("host", "print_divider_area_to_console", {
         "header_text": header_text,
         "user_id": window.user_id,
-        "main_id": props.main_id
-      }, props.main_id);
+        "local_id": props.local_id
+      }, props.local_id);
       if (callback != null) {
         callback();
       }
@@ -360,11 +360,11 @@ function ConsoleComponent(props) {
   }, []);
   function _copyAll() {
     const result_dict = {
-      "main_id": props.main_id,
+      "local_id": props.local_id,
       "console_items": props.console_items.current,
       "user_id": window.user_id
     };
-    (0, _communication_react.postWithCallback)("host", "copy_console_cells", result_dict, null, null, props.main_id);
+    (0, _communication_react.postWithCallback)("host", "copy_console_cells", result_dict, null, null, props.local_id);
   }
   function _copyItems(id_list) {
     let entry_list = [];
@@ -385,17 +385,17 @@ function ConsoleComponent(props) {
       }
     }
     const result_dict = {
-      "main_id": props.main_id,
+      "local_id": props.local_id,
       "console_items": entry_list,
       "user_id": window.user_id
     };
-    (0, _communication_react.postWithCallback)("host", "copy_console_cells", result_dict, null, null, props.main_id);
+    (0, _communication_react.postWithCallback)("host", "copy_console_cells", result_dict, null, null, props.local_id);
   }
   const _pasteCell = (0, _react.useCallback)(async (unique_id = null) => {
     try {
       let data = await (0, _communication_react.postPromise)("host", "get_copied_console_cells", {
         user_id: window.user_id
-      }, props.main_id);
+      }, props.local_id);
       _addConsoleEntries(data.console_items, true, false, unique_id);
     } catch (e) {
       errorDrawerFuncs.addFromError(`Error getting copied cells`, e);
@@ -405,8 +405,8 @@ function ConsoleComponent(props) {
     try {
       await (0, _communication_react.postPromise)("host", "print_link_area_to_console", {
         "user_id": window.user_id,
-        "main_id": props.main_id
-      }, props.main_id);
+        "local_id": props.local_id
+      }, props.local_id);
       if (callback) {
         callback();
       }
@@ -456,9 +456,9 @@ function ConsoleComponent(props) {
       (0, _communication_react.postWithCallback)("host", "print_code_area_to_console", {
         console_text: the_text,
         user_id: window.user_id,
-        main_id: props.main_id,
+        local_id: props.local_id,
         force_open: force_open
-      }, null, null, props.main_id);
+      }, null, null, props.local_id);
     } catch (e) {
       errorDrawerFuncs.addFromError("Error creating code cell", e);
     }
@@ -467,10 +467,10 @@ function ConsoleComponent(props) {
     props.dispatch({
       type: "reset"
     });
-    (0, _communication_react.postWithCallback)(props.main_id, "clear_console_namespace", {}, null, null, props.main_id);
+    (0, _communication_react.postWithCallback)(props.local_id, "clear_console_namespace", {}, null, null, props.local_id);
   }, []);
   function _stopAll() {
-    (0, _communication_react.postWithCallback)(props.main_id, "stop_all_console_code", {}, null, null, props.main_id);
+    (0, _communication_react.postWithCallback)(props.local_id, "stop_all_console_code", {}, null, null, props.local_id);
   }
   const _clearConsole = (0, _react.useCallback)(async () => {
     try {
@@ -1224,10 +1224,10 @@ function ConsoleComponent(props) {
     _clearCodeOutput(unique_id, async () => {
       _startSpinner(unique_id);
       let entry = get_console_item_entry(unique_id);
-      await (0, _communication_react.postPromise)(props.main_id, "exec_console_code", {
+      await (0, _communication_react.postPromise)(props.local_id, "exec_console_code", {
         "the_code": entry.console_text,
         "console_id": unique_id
-      }, props.main_id);
+      }, props.local_id);
       if (go_to_next) {
         await _goToNextCell(unique_id);
       }
@@ -1338,7 +1338,7 @@ function ConsoleComponent(props) {
   }
   const extraProps = (0, _react.useMemo)(() => {
     return {
-      main_id: props.main_id
+      local_id: props.local_id
     };
   });
   return /*#__PURE__*/_react.default.createElement(_core.Card, {
@@ -1409,13 +1409,13 @@ function ConsoleComponent(props) {
     marginRight: FILTER_SEARCH_RIGHT_MARGIN,
     search_helper_text: search_helper_text
   }), !props.mState.console_is_shrunk && show_main_log && /*#__PURE__*/_react.default.createElement(_searchable_console.SearchableConsole, {
-    main_id: props.main_id,
+    local_id: props.local_id,
     streaming_host: "host",
-    container_id: props.main_id,
+    container_id: props.local_id,
     outer_style: searchable_console_style,
     showCommandField: false
   }), !props.mState.console_is_shrunk && show_pseudo_log && /*#__PURE__*/_react.default.createElement(_searchable_console.SearchableConsole, {
-    main_id: props.main_id,
+    local_id: props.local_id,
     streaming_host: "host",
     container_id: pseudo_tile_id,
     outer_style: searchable_console_style,
@@ -1433,7 +1433,7 @@ function ConsoleComponent(props) {
     className: "console-items-div",
     direction: "vertical",
     style: empty_style,
-    main_id: props.main_id,
+    local_id: props.local_id,
     ElementComponent: TailoredSuperItem,
     key_field_name: "unique_id",
     item_list: filtered_items,
@@ -1788,7 +1788,7 @@ function LogItem(props) {
       }, /*#__PURE__*/_react.default.createElement(WidgetComponent, {
         key: widgetId,
         widgetId: widgetId,
-        main_id: props.main_id,
+        local_id: props.local_id,
         console_id: props.unique_id,
         dispatch: props.dispatch,
         widgetDict: _widgets.widgetDict,
@@ -1806,7 +1806,7 @@ function LogItem(props) {
       }, /*#__PURE__*/_react.default.createElement(WidgetComponent, {
         key: widgetId,
         widgetId: widgetId,
-        main_id: props.main_id,
+        local_id: props.local_id,
         console_id: props.unique_id,
         dispatch: props.dispatch,
         widgetData: `Widget kind not found ${widgetId}, ${widgetKind} ${widgetData}`
@@ -2083,9 +2083,9 @@ function ConsoleCodeItem(props) {
 
   const _stopMe = (0, _react.useCallback)(() => {
     _stopMySpinner();
-    (0, _communication_react.postWithCallback)(props.main_id, "stop_console_code", {
+    (0, _communication_react.postWithCallback)(props.local_id, "stop_console_code", {
       "console_id": props.unique_id
-    }, null, null, props.main_id);
+    }, null, null, props.local_id);
   }, []);
   function _stopMySpinner() {
     props.setConsoleItemValue(props.unique_id, "show_spinner", false);
@@ -2242,7 +2242,7 @@ function ConsoleCodeItem(props) {
         }, /*#__PURE__*/_react.default.createElement(WidgetComponent, {
           key: widgetId,
           widgetId: widgetId,
-          main_id: props.main_id,
+          local_id: props.local_id,
           console_id: props.unique_id,
           row: idx,
           dispatch: props.dispatch,
@@ -2261,7 +2261,7 @@ function ConsoleCodeItem(props) {
         }, /*#__PURE__*/_react.default.createElement(WidgetComponent, {
           key: widgetId,
           widgetId: widgetId,
-          main_id: props.main_id,
+          local_id: props.local_id,
           row: idx,
           console_id: props.unique_id,
           dispatch: props.dispatch,
@@ -2353,7 +2353,7 @@ function ConsoleCodeItem(props) {
     search_term: props.search_string,
     flex_size: true,
     tsocket: props.tsocket,
-    container_id: props.main_id,
+    local_id: props.local_id,
     saveMe: null
   }), /*#__PURE__*/_react.default.createElement("div", {
     className: "button-div float-buttons d-flex flex-row"
@@ -2711,7 +2711,7 @@ function ConsoleTextItem(props) {
     search_term: props.search_string,
     flex_size: true,
     tsocket: props.tsocket,
-    container_id: props.main_id,
+    local_id: props.local_id,
     saveMe: null
   })), really_show_markdown && !hasOnlyWhitespace() && /*#__PURE__*/_react.default.createElement("div", {
     className: "text-panel-output markdown-heading-sizes",

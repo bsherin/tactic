@@ -11,7 +11,7 @@ from collections import OrderedDict
 from flask import jsonify, request, url_for
 from flask_login import UserMixin
 
-from tactic_app import login_manager, app, db, fs, socketio
+from tactic_app import login_manager, app, db, fs, repository_db, repository_fs, socketio
 from communication_utils import make_jsonizable_and_compress
 from bson.objectid import ObjectId
 from exception_mixin import generic_exception_handler
@@ -28,6 +28,7 @@ from temp_data_accesser import TempDataAccess
 from exception_mixin import ExceptionMixin
 from user_fields import user_data_fields
 from user_accesser import UserAccess
+from across_accounts_accesser import AcrossAccountsAccess
 
 
 USE_ALT_IDS = True
@@ -68,12 +69,15 @@ def get_full_user_data_fields():
     return ufields
 
 class User(UserMixin, MongoAccess, ListAccess, CodeAccess, TileAccess, TempDataAccess, UserAccess,
-           ProjectAccess, CollectionAccess, MetabookAccess, NodeAccess, ExceptionMixin):
+           ProjectAccess, CollectionAccess, MetabookAccess, NodeAccess,
+           AcrossAccountsAccess):
 
     def __init__(self, user_dict):
         self.username = ""  # This is just to be make introspection happy
         self.db = db  # This is to make mongoaccesser work
         self.fs = fs  # This is to make mongoaccesser work
+        self.repository_db = repository_db
+        self.repository_fs = repository_fs  # This is to make mongoaccesser work
         for fdict in get_full_user_data_fields():
             key = fdict["name"]
             if key in user_dict:
@@ -152,14 +156,12 @@ class User(UserMixin, MongoAccess, ListAccess, CodeAccess, TileAccess, TempDataA
         return
 
     def set_user_timezone_offset(self, tzoffset):
-        self.db["user_collection"].update_one({"username": self.username},
-                                         {'$set': {"tzoffset": tzoffset}})
+        self.update_user_doc(self.username, {"tzoffset": tzoffset})
         return
 
     def set_last_login(self):
         current_time = datetime.datetime.utcnow()
-        self.db["user_collection"].update_one({"username": self.username},
-                                         {'$set': {"last_login": current_time}})
+        self.update_user_doc(self.username, {"last_login": current_time})
         return
 
     def dt_to_datestring(self, dt):
@@ -251,7 +253,7 @@ class User(UserMixin, MongoAccess, ListAccess, CodeAccess, TileAccess, TempDataA
         return result
 
     def get_true_id(self):
-        return str(self.db.user_collection.find_one({"username": self.username})["_id"])
+        return self.get_true_user_is(self.username)
 
     def update_account(self, data_dict):
         update_dict = {}
@@ -263,8 +265,7 @@ class User(UserMixin, MongoAccess, ListAccess, CodeAccess, TileAccess, TempDataA
             if "password" not in key:
                 update_dict[key] = val
         try:
-            self.db["user_collection"].update_one({"username": self.username},
-                                             {'$set': update_dict})
+            self.update_user_doc(self.username, update_dict)
             if "password_hash" in update_dict:
                 del update_dict["password_hash"]
             data = {"updates": update_dict}
@@ -278,8 +279,7 @@ class User(UserMixin, MongoAccess, ListAccess, CodeAccess, TileAccess, TempDataA
         for (key, val) in data_dict.items():
             update_dict[key] = val
         try:
-            self.db["user_collection"].update_one({"username": self.username},
-                                             {'$set': update_dict})
+            self.update_user_doc(self.username, update_dict)
             data = {"updates": update_dict}
             socketio.emit("user-settings-updated", data, namespace='/main', room=self.get_id())
             return {"success": True, "message": "Information successfully updated."}
@@ -301,26 +301,16 @@ class User(UserMixin, MongoAccess, ListAccess, CodeAccess, TileAccess, TempDataA
         password = user_dict["password"]
         if len(password) < 4:
             return {"success": False, "message": "Passwords must be at least 4 characters.", "username": username}
-        if the_db.user_collection.find_one({"username": username}) is not None:
-            return {"success": False, "message": "That username is taken.", "username": username}
         password_hash = generate_password_hash(password)
-        new_user_dict = {"username": username,
-                         "password_hash": password_hash,
-                         "email": ""}
-        the_db.user_collection.insert_one(new_user_dict)
-        return {"success": True, "message": "", "username": username,
-                "password_hash": password_hash,}
+        return self.create_user(username, password_hash, "", alt_db=seed_db)
 
     # get_id is required by login_manager
     def get_id(self):
         # Note that I have to convert this to a string for login_manager to be happy.
-        return str(self.db.user_collection.find_one({"username": self.username})[ID_FIELD])
+        return self.get_user_id(self.username, ID_FIELD)
 
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)
-
-    def get_user_dict(self):
-        return {"username": self.username, "password_hash": self.password_hash}
 
     @property
     def my_record(self):

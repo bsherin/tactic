@@ -12,7 +12,7 @@ import {doFlash} from "./toaster"
 import {postAjax} from "./communication_react";
 import {guid, useStateAndRef} from "./utilities_react";
 
-window.page_id = guid();
+window.global_id = guid();
 
 function _duplicate_main() {
     render_navbar("account");

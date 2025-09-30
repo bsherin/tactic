@@ -8,7 +8,7 @@ import {SortableComponent} from "./sortable_container";
 
 import {SettingsContext} from "./settings";
 import {TacticMenubar} from "./menu_utilities";
-import {postAjaxPromise, postPromise} from "./communication_react";
+import {postPromise} from "./communication_react";
 
 export {Metabook};
 
@@ -27,7 +27,7 @@ function Metabook(props) {
     const settingsContext = useContext(SettingsContext);
 
     useEffect(()=>{
-        postAjaxPromise(`read_metabook/${props.meta_id}`)
+        postPromise("host", "read_metabook_task", {meta_id: props.meta_id})
             .then(data => {
                 dispatch({
                     type: "initialize",
@@ -110,7 +110,7 @@ function Metabook(props) {
                 <SortableComponent className="console-items-div"
                                    direction="vertical"
                                    style={empty_style}
-                                   main_id={null}
+                                   local_id={null}
                                    ElementComponent={MetabookSuperItem}
                                    key_field_name="unique_id"
                                    item_list={state.nodes}

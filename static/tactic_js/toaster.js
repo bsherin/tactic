@@ -1,6 +1,5 @@
 'use strict';
 
-function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -14,40 +13,27 @@ var _core = require("@blueprintjs/core");
 var _blueprint_react_widgets = require("./blueprint_react_widgets");
 var _utilities_react = require("./utilities_react");
 var _settings = require("./settings");
-function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t in e) "default" !== _t && {}.hasOwnProperty.call(e, _t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t)) && (i.get || i.set) ? o(f, _t, i) : f[_t] = e[_t]); return f; })(e, t); }
-function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
-function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
-function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
-function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
-function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
-function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
-function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
-function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
-function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
-function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
-var StatusContext = exports.StatusContext = /*#__PURE__*/(0, _react.createContext)(null);
-var STATUS_BAR_HEIGHT = exports.STATUS_BAR_HEIGHT = 25;
-var DEFAULT_TIMEOUT = 20000;
-var disconnect_toast_id = null;
-var reconnect_toast_id = null;
-var intent_dict = {
+function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function (e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, default: e }; if (null === e || "object" != typeof e && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (const t in e) "default" !== t && {}.hasOwnProperty.call(e, t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, t)) && (i.get || i.set) ? o(f, t, i) : f[t] = e[t]); return f; })(e, t); }
+const StatusContext = exports.StatusContext = /*#__PURE__*/(0, _react.createContext)(null);
+const STATUS_BAR_HEIGHT = exports.STATUS_BAR_HEIGHT = 25;
+const DEFAULT_TIMEOUT = 20000;
+let disconnect_toast_id = null;
+let reconnect_toast_id = null;
+const intent_dict = {
   "alert-success": "Success",
   "alert-warning": "Warning",
   "alert-info": null
 };
 function doFlash(data) {
-  var AppToasterPromise = _core.OverlayToaster.createAsync({
+  const AppToasterPromise = _core.OverlayToaster.createAsync({
     className: "recipe-toaster",
     position: _core.Position.TOP,
     autoFocus: false
   }, {
-    domRenderer: function domRenderer(toaster, containerElement) {
-      return (0, _client.createRoot)(containerElement).render(toaster);
-    }
+    domRenderer: (toaster, containerElement) => (0, _client.createRoot)(containerElement).render(toaster)
   });
-  AppToasterPromise.then(function (AppToaster) {
-    var intent;
+  AppToasterPromise.then(AppToaster => {
+    let intent;
     if (typeof data == "string") {
       AppToaster.show({
         message: data,
@@ -112,23 +98,12 @@ function messageOrError(data, success_message, failure_tiltle, statusFuncs, erro
 }
 function withStatus(WrappedComponent) {
   function newFunc(props) {
-    var _useState = (0, _react.useState)(false),
-      _useState2 = _slicedToArray(_useState, 2),
-      show_spinner = _useState2[0],
-      set_show_spinner = _useState2[1];
-    var _useState3 = (0, _react.useState)(null),
-      _useState4 = _slicedToArray(_useState3, 2),
-      status_message = _useState4[0],
-      set_status_message = _useState4[1];
-    var _useState5 = (0, _react.useState)(props.spinner_size ? props.spinner_size : 25),
-      _useState6 = _slicedToArray(_useState5, 1),
-      spinner_size = _useState6[0];
-    var _useState7 = (0, _react.useState)(0),
-      _useState8 = _slicedToArray(_useState7, 2),
-      leftEdge = _useState8[0],
-      setLeftEdge = _useState8[1];
-    var pushCallback = (0, _utilities_react.useCallbackStack)();
-    (0, _react.useEffect)(function () {
+    const [show_spinner, set_show_spinner] = (0, _react.useState)(false);
+    const [status_message, set_status_message] = (0, _react.useState)(null);
+    const [spinner_size] = (0, _react.useState)(props.spinner_size ? props.spinner_size : 25);
+    const [leftEdge, setLeftEdge] = (0, _react.useState)(0);
+    const pushCallback = (0, _utilities_react.useCallbackStack)();
+    (0, _react.useEffect)(() => {
       if (props.tsocket) {
         initSocket();
       }
@@ -138,56 +113,39 @@ function withStatus(WrappedComponent) {
       props.tsocket.attachListener('show-status-msg', _statusMessageFromData);
       props.tsocket.attachListener("clear-status-msg", _clearStatusMessage);
     }
-    var getId = (0, _react.useCallback)(function () {
-      if ("main_id" in props) {
-        return props.main_id;
-      } else {
-        return props.library_id;
-      }
-    }, [props.main_id, props.library_id]);
-    var _stopSpinner = (0, _react.useCallback)(function (data) {
-      if (data == null || data.main_id == getId()) {
-        set_show_spinner(false);
-      }
+    const _stopSpinner = (0, _react.useCallback)(data => {
+      set_show_spinner(false);
     }, []);
-    var _startSpinner = (0, _react.useCallback)(function (data) {
-      if (data == null || data.main_id == getId()) {
-        set_show_spinner(true);
-      }
+    const _startSpinner = (0, _react.useCallback)(data => {
+      set_show_spinner(true);
     }, []);
-    var _clearStatusMessage = (0, _react.useCallback)(function (data) {
-      if (data == null || data.main_id == getId()) {
-        set_status_message(null);
-      }
+    const _clearStatusMessage = (0, _react.useCallback)(data => {
+      set_status_message(null);
     }, []);
-    var _clearStatus = (0, _react.useCallback)(function (data) {
-      if (data == null || data.main_id == getId()) {
-        set_show_spinner(false);
-        set_status_message(null);
-      }
+    const _clearStatus = (0, _react.useCallback)(data => {
+      set_show_spinner(false);
+      set_status_message(null);
     }, []);
-    var _statusMessage = (0, _react.useCallback)(function (message) {
-      var timeout = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+    const _statusMessage = (0, _react.useCallback)((message, timeout = null) => {
       set_status_message(message);
       if (!timeout) {
         timeout = 7;
       }
-      pushCallback(function () {
+      pushCallback(() => {
         if (timeout) {
           setTimeout(_clearStatusMessage, timeout * 1000);
         }
       });
     }, []);
-    var _statusMessageFromData = (0, _react.useCallback)(function (data) {
+    const _statusMessageFromData = (0, _react.useCallback)(data => {
       set_status_message(data.message);
-      pushCallback(function () {
+      pushCallback(() => {
         if (data.hasOwnProperty("timeout") && data.timeout != null) {
           setTimeout(_clearStatusMessage, data.timeout * 1000);
         }
       });
     }, []);
-    var _setStatus = (0, _react.useCallback)(function (sstate) {
-      var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+    const _setStatus = (0, _react.useCallback)((sstate, callback = null) => {
       if ("show_spinner" in sstate) {
         set_show_spinner(sstate["show_spinner"]);
       }
@@ -198,7 +156,7 @@ function withStatus(WrappedComponent) {
         pushCallback(callback);
       }
     }, []);
-    var statusFuncsRef = (0, _react.useRef)({
+    const statusFuncsRef = (0, _react.useRef)({
       startSpinner: _startSpinner,
       stopSpinner: _stopSpinner,
       clearStatus: _clearStatus,
@@ -207,7 +165,7 @@ function withStatus(WrappedComponent) {
       setStatus: _setStatus,
       setLeftEdge: setLeftEdge
     }, []);
-    return /*#__PURE__*/_react["default"].createElement("div", {
+    return /*#__PURE__*/_react.default.createElement("div", {
       style: {
         display: "flex",
         flexDirection: "column",
@@ -215,9 +173,9 @@ function withStatus(WrappedComponent) {
         width: "100%",
         height: "100%"
       }
-    }, /*#__PURE__*/_react["default"].createElement(StatusContext.Provider, {
+    }, /*#__PURE__*/_react.default.createElement(StatusContext.Provider, {
       value: statusFuncsRef.current
-    }, /*#__PURE__*/_react["default"].createElement("div", {
+    }, /*#__PURE__*/_react.default.createElement("div", {
       style: {
         display: "flex",
         flexDirection: "column",
@@ -225,13 +183,13 @@ function withStatus(WrappedComponent) {
         flex: "1 1 0",
         minHeight: 0
       }
-    }, /*#__PURE__*/_react["default"].createElement(WrappedComponent, props))), /*#__PURE__*/_react["default"].createElement(Status, {
+    }, /*#__PURE__*/_react.default.createElement(WrappedComponent, props))), /*#__PURE__*/_react.default.createElement(Status, {
       show_spinner: show_spinner,
       status_message: status_message,
       spinner_size: spinner_size,
       leftEdge: leftEdge,
       show_close: true,
-      handleClose: function handleClose() {
+      handleClose: () => {
         _clearStatus(null);
       }
     }));
@@ -239,19 +197,20 @@ function withStatus(WrappedComponent) {
   return /*#__PURE__*/(0, _react.memo)(newFunc);
 }
 function Status(props) {
-  props = _objectSpread({
+  props = {
     show_spinner: false,
     show_close: true,
     handleClose: null,
     status_message: null,
-    spinner_size: 25
-  }, props);
-  var elRef = (0, _react.useRef)(null);
-  var settingsContext = (0, _react.useContext)(_settings.SettingsContext);
-  var cname = "d-flex flex-row";
-  var outer_cname = settingsContext.isDark() ? "status-holder bp6-dark" : "status-holder light-theme";
-  var left = elRef && elRef.current && elRef.current.parentNode ? elRef.current.parentNode.offsetLeft : 25;
-  return /*#__PURE__*/_react["default"].createElement("div", {
+    spinner_size: 25,
+    ...props
+  };
+  const elRef = (0, _react.useRef)(null);
+  const settingsContext = (0, _react.useContext)(_settings.SettingsContext);
+  let cname = "d-flex flex-row";
+  let outer_cname = settingsContext.isDark() ? "status-holder bp6-dark" : "status-holder light-theme";
+  let left = elRef && elRef.current && elRef.current.parentNode ? elRef.current.parentNode.offsetLeft : 25;
+  return /*#__PURE__*/_react.default.createElement("div", {
     ref: elRef,
     style: {
       height: STATUS_BAR_HEIGHT,
@@ -260,27 +219,27 @@ function Status(props) {
       position: "relative"
     },
     className: outer_cname
-  }, /*#__PURE__*/_react["default"].createElement("div", {
+  }, /*#__PURE__*/_react.default.createElement("div", {
     className: cname,
     style: {
       marginLeft: 15,
       marginBottom: 2
     }
-  }, props.show_spinner && /*#__PURE__*/_react["default"].createElement(_core.Spinner, {
+  }, props.show_spinner && /*#__PURE__*/_react.default.createElement(_core.Spinner, {
     size: 20
-  }), props.show_close && (props.show_spinner || props.status_message) && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
+  }), props.show_close && (props.show_spinner || props.status_message) && /*#__PURE__*/_react.default.createElement(_blueprint_react_widgets.GlyphButton, {
     handleClick: props.handleClose,
     size: "small",
     style: {
       paddingTop: 5
     },
     icon: "cross"
-  }), props.status_message && /*#__PURE__*/_react["default"].createElement("div", {
+  }), props.status_message && /*#__PURE__*/_react.default.createElement("div", {
     className: "d-flex flex-column justify-content-around",
     style: {
       marginLeft: 8
     }
-  }, /*#__PURE__*/_react["default"].createElement("div", {
+  }, /*#__PURE__*/_react.default.createElement("div", {
     id: "status-msg-area",
     className: "bp6-ui-text",
     style: {

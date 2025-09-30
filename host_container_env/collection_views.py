@@ -8,7 +8,6 @@ from flask import jsonify, render_template, url_for, request, send_file
 from docker_functions import main_container_info
 from tactic_app import app
 from communication_utils import make_python_object_jsonizable, debinarize_python_object, make_jsonizable_and_compress
-from communication_utils import read_temp_data, delete_temp_data
 from mongo_accesser import MongoAccessException, NonexistentNameError
 import tempfile
 # noinspection PyPackageRequirements
@@ -115,8 +114,16 @@ def download_temp_collection(self, download_name, temp_id):
     return self.download_collection("", download_name, temp_id=temp_id)
 
 
+def delete_temp_data(db, unique_id, fs=None):
+    save_dict = read_temp_data(db, unique_id)
+    db["temp_data"].delete_one({"unique_id": unique_id})
+    if fs is not None and "file_id" in save_dict:
+        fs.delete(save_dict["file_id"])
+    return
+
 @app.route('/download_collection/<collection_name>/<new_name>', methods=['post', 'get'])
 def download_collection(collection_name, new_name, max_col_width=50, temp_id=None):
+    from tactic_app import db
     user_obj = current_user
     try:
         coll_dict, doc_mdata_dict, header_list_dict, coll_mdata = user_obj.get_all_collection_info(collection_name,
@@ -125,7 +132,7 @@ def download_collection(collection_name, new_name, max_col_width=50, temp_id=Non
     except NonexistentNameError:
         return "Collection name not found"
     if temp_id is not None:
-        delete_temp_data(self.db, temp_id)
+        delete_temp_data(db, temp_id)
 
     wb = openpyxl.Workbook()
     first = True
@@ -193,7 +200,7 @@ def download_collection(collection_name, new_name, max_col_width=50, temp_id=Non
                 except:
                     val = None
                 _ = ws.cell(row=r, column=c, value=val)
-        self.adjust_ws_col_widths(ws, max_col_width)
+        adjust_ws_col_widths(ws, max_col_width)
 
     tmp = tempfile.NamedTemporaryFile()
     wb.save(tmp.name)

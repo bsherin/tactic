@@ -45,11 +45,11 @@ class TileAccess(object):
         doc = self.get_tile_doc(tile_module_name)
         return doc.get("last_saved", "creator") if doc else None
 
-    def remove_tile_doc(self, tile_module_name):
-        result = self.db[self.tile_collection_name].delete_one(
+    def remove_tile(self, tile_module_name):
+        self.db[self.tile_collection_name].delete_one(
             {"tile_module_name": tile_module_name}
         )
-        return result.deleted_count > 0
+        return
 
     def get_tile_content(self, tile_module_name):
         doc = self.db[self.tile_collection_name].find_one(

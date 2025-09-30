@@ -20,8 +20,7 @@ function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r
  * Created by bls910
  */
 
-const resource_viewer_id = (0, _utilities_react.guid)();
-window.main_id = resource_viewer_id;
+window.global_id = "a" + (0, _utilities_react.guid)();
 async function history_viewer_main() {
   function gotProps(the_props) {
     let HistoryViewerAppPlus = (0, _settings.withSettings)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(HistoryViewerApp)));
@@ -55,9 +54,9 @@ async function history_viewer_main() {
   }
 }
 function history_viewer_props(data, registerDirtyMethod, finalCallback) {
-  let tsocket = new _tactic_socket.TacticSocket("main", 5000, "history_viewer", resource_viewer_id, () => {
+  let tsocket = new _tactic_socket.TacticSocket("main", 5000, "history_viewer", window.global_id, () => {
     finalCallback({
-      resource_viewer_id: resource_viewer_id,
+      local_id: window.global_id,
       tsocket: tsocket,
       history_list: [],
       resource_name: window.resource_name,
@@ -112,11 +111,11 @@ function HistoryViewerApp(props) {
   }, []);
   function initSocket() {
     props.tsocket.attachListener('handle-callback', task_packet => {
-      (0, _communication_react.handleCallback)(task_packet, resource_viewer_id);
+      (0, _communication_react.handleCallback)(task_packet, props.local_id);
     });
     props.tsocket.attachListener("window-open", data => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
     props.tsocket.attachListener('close-user-windows', data => {
-      if (!(data["originator"] == window.library_id)) {
+      if (!(data["originator"] == window.global_id)) {
         window.close();
       }
     });
@@ -203,13 +202,11 @@ function HistoryViewerApp(props) {
     is_authenticated: window.is_authenticated,
     selected: null,
     show_api_links: true,
-    page_id: props.resource_viewer_id,
+    global_id: props.global_id,
     user_name: window.username
   }), /*#__PURE__*/_react.default.createElement(_merge_viewer_app.MergeViewerApp, {
     connection_status: connection_status,
     initialized: initialized,
-    page_id: props.resource_viewer_id,
-    resource_viewer_id: props.resource_viewer_id,
     resource_name: props.resource_name,
     option_list: option_list,
     select_val: history_popup_val,

@@ -88,7 +88,7 @@ function tilesReducer(tile_list, action) {
                     for (let field in action.new_state) {
                         new_t[field] = action.new_state[field]
                     }
-                    new_t = fixTileFrontContent(new_t)
+                    new_t = fixTileFrontContent(new_t);
                     return new_t;
                 } else {
                     return t;
@@ -113,7 +113,7 @@ function tilesReducer(tile_list, action) {
                 if (t.tile_id === action.tile_id) {
                     let new_t = {...t};
                     new_t["front_content"] = recursivelySetWidgetData(t.front_content, action.widgetId, action.widgetData);
-                    new_t = fixTileFrontContent(new_t)
+                    new_t = fixTileFrontContent(new_t);
                     return new_t;
                 } else {
                     return t;

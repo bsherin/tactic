@@ -87,6 +87,8 @@ services:
     profiles:
       - start_project
       - build_project
+      - build_non_base
+      - start_host
     image: bsherin/tactic-host:${IMG_SUFFIX}
     restart: on-failure
     ports:
@@ -142,6 +144,7 @@ services:
     image: bsherin/tactic-host:${IMG_SUFFIX}
     profiles:
       - start_project
+      - start_host
     restart: on-failure
     ports:
       - "5001:5000"
@@ -244,6 +247,7 @@ services:
         BASE_IMAGE: ${BASE_IMAGE}
     profiles:
       - build_project
+      - build_non_base
     image: bsherin/tactic-log-streamer:${IMG_SUFFIX}
     platform: ${PLATFORM}
     environment:
@@ -257,6 +261,7 @@ services:
         BASE_IMAGE: ${BASE_IMAGE}
     profiles:
       - build_project
+      - build_non_base
     image: bsherin/tactic-assistant:${IMG_SUFFIX}
     platform: ${PLATFORM}
     environment:
@@ -272,6 +277,7 @@ services:
     profiles:
       - start_project
       - build_project
+      - build_non_base
     restart: always
     container_name: mongo_watcher
     init: true
@@ -302,6 +308,7 @@ services:
     profiles:
       - start_project
       - build_project
+      - build_non_base
     build:
       context: .
       dockerfile: Dockerfile-pool-watcher
@@ -334,6 +341,7 @@ services:
     platform: ${PLATFORM}
     profiles:
       - build_project
+      - build_non_base
 
   tactic_module_viewer:
     build:
@@ -345,6 +353,7 @@ services:
     image: bsherin/tactic-module-viewer:${IMG_SUFFIX}
     profiles:
       - build_project
+      - build_non_base
 
   tactic_tile:
     build:
@@ -359,6 +368,7 @@ services:
     platform: ${PLATFORM}
     profiles:
       - build_project
+      - build_non_base
     environment:
       HF_HOME: /var/cache/hf
       NLTK_DATA: /root/nltk

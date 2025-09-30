@@ -24,32 +24,32 @@ const widgetDict = {
 };
 
 
-function useWidget(widgetId, main_id, console_id, tile_id) {
+function useWidget(widgetId, local_id, console_id, tile_id) {
 
     function widgetGet(data) {
         let ndata = {widgetId, ...data};
         if (tile_id) {
-            return postPromise(tile_id, "widget_get", ndata, main_id)
+            return postPromise(tile_id, "widget_get", ndata, local_id)
         }
-        return postPromise(main_id, "widget_get",
-            ndata, main_id)
+        return postPromise(local_id, "widget_get",
+            ndata, local_id)
     }
 
     function widgetAction(value, callback = null) {
         let ndata = {widgetId, value};
         if (tile_id) {
-            postWithCallback(tile_id, "widget_action", ndata, callback, null, main_id);
+            postWithCallback(tile_id, "widget_action", ndata, callback, null, local_id);
         } else {
-            postWithCallback(main_id, "widget_action", ndata, callback, null, main_id);
+            postWithCallback(local_id, "widget_action", ndata, callback, null, local_id);
         }
     }
 
     function widgetSet(widgetData, callback = null) {
         let ndata = {widgetId, widgetData: widgetData};
         if (tile_id) {
-            return postWithCallback(tile_id, "widget_set", ndata, callback, null, main_id);
+            return postWithCallback(tile_id, "widget_set", ndata, callback, null, local_id);
         } else {
-            postWithCallback(main_id, "widget_set", ndata, callback, null, main_id);
+            postWithCallback(local_id, "widget_set", ndata, callback, null, local_id);
         }
 
     }
@@ -60,7 +60,7 @@ function useWidget(widgetId, main_id, console_id, tile_id) {
 function BoxWidget(props) {
     props = {
         widgetId: props.widgetId,
-        main_id: null,
+        local_id: null,
         console_id: null,
         tile_id: null,
         dispatch: null,
@@ -73,7 +73,7 @@ function BoxWidget(props) {
         tsocket: null,
         ...props
     };
-    const [,] = useWidget(props.widgetId, props.main_id, props.console_id, props.tile_id);
+    const [,] = useWidget(props.widgetId, props.local_id, props.console_id, props.tile_id);
 
     let outputWidgets = props.widgetData.widgets.map((outputDict, idx) => {
         let widgetKind = outputDict["widgetKind"];
@@ -82,7 +82,7 @@ function BoxWidget(props) {
         let the_widget;
         if (widgetKind in props.widgetDict) {
             let WidgetComponent = props.widgetDict[widgetKind];
-            the_widget = <WidgetComponent key={widgetId} widgetId={widgetId} main_id={props.main_id}
+            the_widget = <WidgetComponent key={widgetId} widgetId={widgetId} local_id={props.local_id}
                                           console_id={null}
                                           tile_id={props.tile_id}
                                           row={idx}
@@ -93,7 +93,7 @@ function BoxWidget(props) {
                                           widgetData={widgetData} tsocket={props.tsocket}/>;
         } else {
             let WidgetComponent = props.widgetDict["text"];
-            the_widget = <WidgetComponent key={widgetId} widgetId={widgetId} main_id={props.main_id}
+            the_widget = <WidgetComponent key={widgetId} widgetId={widgetId} local_id={props.local_id}
                                           row={idx}
                                           tile_id={props.tile_id}
                                           console_id={null}
@@ -111,7 +111,7 @@ function BoxWidget(props) {
 function RawHtmlWidget(props) {
     props = {
         widgetId: props.widgetId,
-        main_id: null,
+        local_id: null,
         console_id: null,
         tile_id: null,
         dispatch: null,
@@ -119,7 +119,7 @@ function RawHtmlWidget(props) {
         widgetData: {value: ""},
         ...props
     };
-    const [,] = useWidget(props.widgetId, props.main_id, props.console_id, props.tile_id);
+    const [,] = useWidget(props.widgetId, props.local_id, props.console_id, props.tile_id);
 
     let output_dict = {__html: props.widgetData.value};
     return (<div className="raw-html-widget" style={props.widgetData?.style}
@@ -129,7 +129,7 @@ function RawHtmlWidget(props) {
 function MatplotlibWidget(props) {
     props = {
         widgetId: props.widgetId,
-        main_id: null,
+        local_id: null,
         console_id: null,
         tile_id: null,
         dispatch: null,
@@ -137,7 +137,7 @@ function MatplotlibWidget(props) {
         widgetData: {value: ""},
         ...props
     };
-    const [,] = useWidget(props.widgetId, props.main_id, props.console_id, props.tile_id);
+    const [,] = useWidget(props.widgetId, props.local_id, props.console_id, props.tile_id);
 
     let output_dict = {__html: props.widgetData.value};
     return (<div className="matplotlib-widget" style={props.widgetData?.style}
@@ -147,7 +147,7 @@ function MatplotlibWidget(props) {
 function IframeWidget(props) {
     props = {
         widgetId: props.widgetId,
-        main_id: null,
+        local_id: null,
         console_id: null,
         tile_id: null,
         dispatch: null,
@@ -155,7 +155,7 @@ function IframeWidget(props) {
         widgetData: {value: ""},
         ...props
     };
-    const [,] = useWidget(props.widgetId, props.main_id, props.console_id, props.tile_id);
+    const [,] = useWidget(props.widgetId, props.local_id, props.console_id, props.tile_id);
 
     return (
         <iframe srcDoc={props.widgetData.value} style={props.widgetData?.style} key={props.widgetId}/>
@@ -172,7 +172,7 @@ const buttonDataDefault = {
 function ButtonWidget(props) {
     props = {
         widgetId: null,
-        main_id: null,
+        local_id: null,
         console_id: null,
         tile_id: null,
         dispatch: null,
@@ -181,7 +181,7 @@ function ButtonWidget(props) {
         ...props
     };
 
-    const [, , widgetAction] = useWidget(props.widgetId, props.main_id, props.console_id, props.tile_id);
+    const [, , widgetAction] = useWidget(props.widgetId, props.local_id, props.console_id, props.tile_id);
 
     function onClick() {
         widgetAction(props.widgetData.value);
@@ -206,7 +206,7 @@ const sliderDataDefault = {
 function SliderWidget(props) {
     props = {
         widgetId: null,
-        main_id: null,
+        local_id: null,
         console_id: null,
         tile_id: null,
         dispatch: null,
@@ -215,7 +215,7 @@ function SliderWidget(props) {
         ...props
     };
 
-    const [, widgetSet] = useWidget(props.widgetId, props.main_id, props.console_id, props.tile_id);
+    const [, widgetSet] = useWidget(props.widgetId, props.local_id, props.console_id, props.tile_id);
 
     const {style, ...rest} = props.widgetData;
 
@@ -241,7 +241,7 @@ const selectDataDefault = {
 function SelectWidget(props) {
     props = {
         widgetId: null,
-        main_id: null,
+        local_id: null,
         console_id: null,
         tile_id: null,
         dispatch: null,
@@ -250,7 +250,7 @@ function SelectWidget(props) {
         ...props
     };
 
-    const [, widgetSet,] = useWidget(props.widgetId, props.main_id, props.console_id, props.tile_id);
+    const [, widgetSet,] = useWidget(props.widgetId, props.local_id, props.console_id, props.tile_id);
 
     const {style, label, ...rest} = props.widgetData;
 
@@ -279,7 +279,7 @@ const switchDataDefault = {
 function SwitchWidget(props) {
     props = {
         widgetId: null,
-        main_id: null,
+        local_id: null,
         console_id: null,
         tile_id: null,
         dispatch: null,
@@ -288,7 +288,7 @@ function SwitchWidget(props) {
         ...props
     };
 
-    const [, widgetSet] = useWidget(props.widgetId, props.main_id, props.console_id, props.tile_id);
+    const [, widgetSet] = useWidget(props.widgetId, props.local_id, props.console_id, props.tile_id);
 
     function onChange(e) {
         const newWidgetData = {...props.widgetData, value: e.target.checked};
@@ -311,7 +311,7 @@ const textDataDefault = {
 function TextWidget(props) {
     props = {
         widgetId: null,
-        main_id: null,
+        local_id: null,
         console_id: null,
         tile_id: null,
         dispatch: null,
@@ -320,7 +320,7 @@ function TextWidget(props) {
         ...props
     };
 
-    const [,] = useWidget(props.widgetId, props.main_id, props.console_id, props.tile_id);
+    const [,] = useWidget(props.widgetId, props.local_id, props.console_id, props.tile_id);
 
     return (
         <Text {...props.widgetData} key={props.widgetId}>
@@ -340,7 +340,7 @@ const inputDataDefault = {
 function InputWidget(props) {
     props = {
         widgetId: null,
-        main_id: null,
+        local_id: null,
         console_id: null,
         tile_id: null,
         dispatch: null,
@@ -349,7 +349,7 @@ function InputWidget(props) {
         ...props
     };
 
-    const [, widgetSet] = useWidget(props.widgetId, props.main_id, props.console_id, props.tile_id);
+    const [, widgetSet] = useWidget(props.widgetId, props.local_id, props.console_id, props.tile_id);
     const {style, label, inline, ...rest} = props.widgetData;
 
     function onChange(e) {
@@ -374,7 +374,7 @@ function InputWidget(props) {
 function JavascriptWidget(props) {
     props = {
         widgetId: null,
-        main_id: null,
+        local_id: null,
         console_id: null,
         tile_id: null,
         dispatch: null,
@@ -386,7 +386,7 @@ function JavascriptWidget(props) {
         ...props
     };
     const javascript_error_ref = useRef(false);
-    const [widgetGet, widgetSet, widgetAction] = useWidget(props.widgetId, props.main_id, props.console_id, props.tile_id);
+    const [widgetGet, widgetSet, widgetAction] = useWidget(props.widgetId, props.local_id, props.console_id, props.tile_id);
 
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
 

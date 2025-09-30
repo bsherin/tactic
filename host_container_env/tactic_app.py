@@ -31,7 +31,9 @@ csrf = CSRFProtect()
 
 app = None
 db = None
+reposistory_db = None
 fs = None
+repository_fs = None
 socketio = None
 host_worker = None
 health_tracker = None

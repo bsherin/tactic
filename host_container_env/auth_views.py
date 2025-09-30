@@ -32,29 +32,18 @@ admin_user = User.get_user_by_username("admin")
 
 tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
 
-@app.route('/get_starter_tiles', methods=['GET', 'POST'])
-def get_starter_tiles():
-    res_type = "tile"
-    repo_user = User.get_user_by_username("repository")
-    cname = repo_user.resource_collection_name(res_type)
-    name_key = name_keys[res_type]
-    tile_dicts = []
-    if cname in db.list_collection_names():
-        for doc in db[cname].find():
-            if "metadata" in doc and "tags" in doc["metdata"]:
-                if "starter" in doc["metadata"]["tags"].lower():
-                    tile_dicts.append(doc)
-    return {"success": True, "tile_dicts": tile_dicts}
-
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     print("entering login view")
     next_view = request.args.get('next')
     if next_view is None:
+        print("no next view")
         if current_user.is_authenticated:
             return redirect(url_for("successful_login"))
+        print("not authenticated")
         next_view = "successful_login"
+    print("next view is ", next_view)
     javascript_source = url_for('static', filename=js_source_dict["auth_react"])
     return render_template('auth/login_react.html', develop=str(_develop),
                            javascript_source=javascript_source,
@@ -136,25 +125,11 @@ def attempt_login():
     result_dict["success"] = True  # Needed so that postAjaxPromise doesn't get confused
     return jsonify(result_dict)
 
-
-@app.route('/check_if_admin', methods=["GET"])
-def check_if_admin():
-    result_dict = {}
-    try:
-        if ANYONE_CAN_REGISTER or (current_user.username == "admin"):
-            result_dict["is_admin"] = True
-        else:
-            result_dict["is_admin"] = False
-    except AttributeError:
-        result_dict["is_admin"] = False
-    return jsonify(result_dict)
-
-
-@app.route('/logout/<page_id>')
+@app.route('/logout/<global_id>')
 @login_required
-def logout(page_id):
+def logout(global_id):
     user_id = current_user.get_id()
-    socketio.emit('close-user-windows', {"originator": page_id}, namespace='/main', room=user_id)
+    socketio.emit('close-user-windows', {"originator": global_id}, namespace='/main', room=user_id)
     loaded_tile_management.remove_user(current_user.username)
     # The containers should be gone by this point. But make sure.
     tactic_app.host_worker.post_task("host", "destroy_a_users_containers", {"user_id": user_id, "notify": False})
@@ -230,7 +205,6 @@ def attempt_duplicate():
 @app.route('/account_info', methods=['GET', 'POST'])
 @fresh_login_required
 def account_info():
-    user_obj = current_user
     return render_template('account_react.html',
                            css_source=css_source("account_react"),
                            module_source=js_source_dict["account_react"], version_string=tstring)

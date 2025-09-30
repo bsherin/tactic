@@ -6,7 +6,7 @@ import {Helmet} from 'react-helmet';
 import {Drawer, Classes} from "@blueprintjs/core";
 
 import {useStateAndRef, useCallbackStack} from "./utilities_react";
-import {postAjax, postAjaxPromise} from "./communication_react";
+import {postPromise, postAjaxPromise} from "./communication_react";
 import {doFlash} from "./toaster";
 import {AccountTextField, AccountSelectField} from "./account_fields";
 export {SettingsContext, withSettings}
@@ -111,9 +111,10 @@ function SettingsDrawer(props) {
     const pushCallback = useCallbackStack();
 
     useEffect(()=>{
-        postAjax("get_with_settings_settings", {}, (data)=> {
-            set_fields(data.fields);
-        })
+        postAjaxPromise("get_with_settings_settings", {})
+            .then((data)=> {
+                set_fields(data.fields);
+            })
     }, []);
 
     function _onFieldChange(fname, value, submit=false) {
@@ -162,15 +163,14 @@ function SettingsDrawer(props) {
     function _submitUpdatedField(fname, fvalue) {
         let data = {};
         data[fname] = fvalue;
-        postAjax("update_settings", data, function (result) {
-            if (result.success) {
+        postPromise("host", "update_settings", data)
+            .then(() => {
                 _setHelperText(fname, "value updated", true)
-            }
-            else {
+            })
+            .catch(() => {
                 data.alert_type = "alert-warning";
                 doFlash(data);
-            }
-        })
+            })
     }
 
     function _getFieldItems() {

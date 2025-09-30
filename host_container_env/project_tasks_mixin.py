@@ -14,10 +14,13 @@ class ProjectTasksMixin:
         the_user = self.get_user_from_data(data)
         user_id = data["user_id"]
         project_name = data["project_name"]
+        local_id = data.get("local_id", str(uuid.uuid4()))
 
         # noinspection PyTypeChecker
-        main_id, rb_id = main_container_info.create_main_container(project_name, user_id, the_user.username,
-                                                                   openai_api_key = the_user.get_openai_api_key())
+        _, rb_id = main_container_info.create_main_container(project_name, user_id, the_user.username,
+                                                                   openai_api_key=the_user.get_openai_api_key(),
+                                                                   special_unique_id=local_id,
+                                                                   )
 
         save_dict = the_user.get_project_doc(project_name)
         mdata = save_dict["metadata"]
@@ -28,7 +31,7 @@ class ProjectTasksMixin:
 
         is_legacy_save = "save_style" in mdata and mdata["save_style"] != "b64save_react"
 
-        create_ready_block(rb_id, the_user.username, [main_id, "client"], main_id)
+        create_ready_block(rb_id, the_user.username, [local_id, "client"], local_id)
         is_notebook = doc_type == 'notebook' or doc_type == 'jupyter'
         if is_notebook:
             viewer = "notebook-viewer"
@@ -49,7 +52,7 @@ class ProjectTasksMixin:
                      "project_name": project_name,
                      "resource_name": project_name,
                      "ready_block_id": rb_id,
-                     "main_id": main_id,
+                     "local_id": local_id,
                      "is_legacy_save": is_legacy_save,
                      "tile_types": tile_types,
                      "icon_dict": icon_dict,
@@ -70,26 +73,29 @@ class ProjectTasksMixin:
     @task_worthy
     def initiate_new_notebook_in_context(self, data):
         the_user = self.get_user_from_data(data)
+        local_id = data.get("local_id", str(uuid.uuid4()))
         if "temp_data_id" in data:
             temp_data_id = data["temp_data_id"]
-            main_id, rb_id = main_container_info.create_main_container("new_notebook",
+            local_id, rb_id = main_container_info.create_main_container("new_notebook",
                                                                        the_user.get_id(),
                                                                        the_user.username,
-                                                                       openai_api_key = the_user.get_openai_api_key())
+                                                                       openai_api_key = the_user.get_openai_api_key(),
+                                                                       special_unique_id=local_id,)
         else:
             temp_data_id = ""
-            main_id, rb_id = main_container_info.create_main_container("new_notebook",
+            local_id, rb_id = main_container_info.create_main_container("new_notebook",
                                                                        the_user.get_id(),
                                                                        the_user.username,
-                                                                       openai_api_key = the_user.get_openai_api_key())
-        create_ready_block(rb_id, the_user.username, [main_id, "client"], main_id)
+                                                                       openai_api_key = the_user.get_openai_api_key(),
+                                                                        special_unique_id=local_id)
+        create_ready_block(rb_id, the_user.username, [local_id, "client"], local_id)
         data_dict = {"success": True,
                      "kind": "notebook-viewer",
                      "res_type": "project",
                      "project_name": "",
                      "resource_name": "new notebook",
                      "ready_block_id": rb_id,
-                     "main_id": main_id,
+                     "local_id": local_id,
                      "temp_data_id": temp_data_id,
                      "collection_name": "",
                      "doc_names": [],
@@ -105,13 +111,14 @@ class ProjectTasksMixin:
         return data_dict
 
     @task_worthy
-    def intiate_new_project_in_context(self, data):
+    def initiate_new_project_in_context(self, data):
         the_user = self.get_user_from_data(data)
-        user_id = data["user_id"]
-        main_id, rb_id = main_container_info.create_main_container("", the_user.get_id(),
+        local_id = data.get("local_id", str(uuid.uuid4()))
+        local_id, rb_id = main_container_info.create_main_container("", the_user.get_id(),
                                                                    the_user.username,
-                                                                   openai_api_key = the_user.get_openai_api_key())
-        create_ready_block(rb_id, the_user.username, [main_id, "client"], main_id)
+                                                                   openai_api_key = the_user.get_openai_api_key(),
+                                                                   special_unique_id=local_id,)
+        create_ready_block(rb_id, the_user.username, [local_id, "client"], local_id)
         doc_type = "none"
         tile_types, icon_dict = self.get_tile_types(the_user.get_id())
         data = {
@@ -123,7 +130,7 @@ class ProjectTasksMixin:
             "collection_name": "",
             "tile_types": tile_types,
             "icon_dict": icon_dict,
-            "main_id": main_id,
+            "local_id": local_id,
             "ready_block_id": rb_id,
             "is_legacy_save": False,
             "is_project": False,

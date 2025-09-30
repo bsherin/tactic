@@ -31,7 +31,7 @@ const mdi = markdownIt({
 });
 mdi.use(markdownItLatex);
 
-import {useEffect, memo, useContext, createContext} from "react";
+import { memo, useContext, createContext} from "react";
 import {Drawer} from "@blueprintjs/core";
 import {SettingsContext} from "./settings";
 import {CombinedMetadata} from "./combined_metadata";

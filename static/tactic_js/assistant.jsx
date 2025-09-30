@@ -118,35 +118,22 @@ function withAssistant(WrappedComponent, lposition = "right", assistant_drawer_s
         }
 
         function startAssistant() {
-            postPromise("host", "StartAssistant", {main_id: window.main_id, user_id: window.user_id})
+            postPromise("host", "StartAssistant", {parent_id: window.global_id, user_id: window.user_id})
                 .then((response) => {
                     set_assistant_id(response.assistant_id)
                 });
         }
 
         function _close(data) {
-            if (data == null || !("main_id" in data) || (data.main_id == window.main_id)) {
-                set_show_drawer(false)
-            }
+            set_show_drawer(false);
         }
 
         function _open(data) {
-            if (data == null || !("main_id" in data) || (data.main_id == window.main_id)) {
-                set_show_drawer(true)
-            }
+            set_show_drawer(true)
         }
 
         function _toggle(data) {
-            if (data == null || !("main_id" in data) || (data.main_id == window.main_id)) {
-                set_show_drawer(!show_drawer)
-            }
-        }
-
-        function _postAjaxFailure(qXHR, textStatus, errorThrown) {
-            _addEntry({
-                title: "Post Ajax Failure: {}".format(textStatus),
-                content: errorThrown
-            })
+            set_show_drawer(!show_drawer)
         }
 
         function _onClose() {
@@ -157,7 +144,6 @@ function withAssistant(WrappedComponent, lposition = "right", assistant_drawer_s
             showAssistantDrawerButton: window.has_openapi_key,
             openAssistantDrawer: _open,
             closeAssistantDrawer: _close,
-            postAjaxFailure: _postAjaxFailure,
             toggleAssistantDrawer: _toggle,
             item_list_ref: item_list_ref,
             set_item_list: set_item_list,
@@ -331,7 +317,7 @@ function ChatModule(props) {
             props.set_assistant_prompt_value("");
             assistantDrawerFuncs.set_chat_status("posted");
             await postPromise(assistantDrawerFuncs.assistant_id_ref.current, "post_prompt_stream",
-                {prompt: props.assistant_prompt_value_ref.current, main_id: window.main_id})
+                {prompt: props.assistant_prompt_value_ref.current, global_id: window.global_id})
         } catch (error) {
             console.log(error.message)
         }
@@ -346,7 +332,7 @@ function ChatModule(props) {
 
     async function _clearThread() {
         try {
-            await postPromise(assistantDrawerFuncs.assistant_id_ref.current, "clear_thread", {main_id: window.main_id});
+            await postPromise(assistantDrawerFuncs.assistant_id_ref.current, "clear_thread", {});
             assistantDrawerFuncs.set_item_list([])
         } catch (e) {
             errorDrawerFuncs.addFromError(title, e)
@@ -355,7 +341,7 @@ function ChatModule(props) {
 
     async function _saveThreadAs() {
         statusFuncs.startSpinner();
-        let data = await postPromise("host", "get_project_names", {"user_id": window.user_id}, props.main_id);
+        let data = await postPromise("host", "get_project_names_task", {});
 
         try {
             let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
@@ -367,7 +353,7 @@ function ChatModule(props) {
                 handleClose: dialogFuncs.hideModal,
             });
             await postPromise("host", "SaveAssistantThread", {
-                main_id: window.main_id,
+                room: window.global_id,
                 assistant_id: assistantDrawerFuncs.assistant_id_ref.current,
                 new_name: new_name,
                 user_id: window.user_id});

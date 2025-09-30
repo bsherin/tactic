@@ -4,7 +4,7 @@ import {memo, useContext, useState, useCallback, useRef, useEffect} from "react"
 import {QueryList, Classes} from "@blueprintjs/select"
 import {MenuItem, Overlay, InputGroup} from "@blueprintjs/core";
 
-import {postPromise, postAjax} from "./communication_react";
+import {postPromise} from "./communication_react";
 import {SettingsContext} from "./settings"
 import {SelectedPaneContext} from "./utilities_react";
 import {useDebounce} from "./utilities_react";
@@ -50,7 +50,6 @@ function OpenOmnibarItem(props) {
 const resources_to_grab = 20;
 
 function OpenOmnibar(props) {
-    // const [commandItems, setCommandItems] = useState([]);
     const [item_list, set_item_list] = useState([]);
 
     const settingsContext = useContext(SettingsContext);
@@ -175,7 +174,7 @@ function OpenOmnibar(props) {
     }
 
     function _handle_signout() {
-        window.open($SCRIPT_ROOT + "/logout/" + props.page_id, "_self");
+        window.open($SCRIPT_ROOT + "/logout/" + props.local_id, "_self");
         return false
     }
 
@@ -233,9 +232,9 @@ function OpenOmnibar(props) {
         return omni_items
     }
 
-    function _toggleTheme() {
+    async function _toggleTheme() {
         const new_theme = settingsContext.isDark() ? "light" : "dark";
-        postAjax("update_settings", {theme: new_theme}, null);
+        await postPromise("host", "update_settings", {theme: new_theme});
     }
 
     return (

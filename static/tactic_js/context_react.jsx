@@ -1,5 +1,6 @@
 // noinspection XmlDeprecatedElement,JSXUnresolvedComponent
 
+
 import "../tactic_css/tactic.scss";
 import "../tactic_css/context.scss";
 import "../tactic_css/tactic_table.scss";
@@ -81,10 +82,9 @@ const panelRootDict = {
     "notebook-viewer": "main-root"
 };
 
-window.context_id = guid();
-window.main_id = window.context_id;
+window.global_id = guid();
 
-let tsocket = new TacticSocket("main", 5000, "context", window.context_id);
+let tsocket = new TacticSocket("main", 5000, "context", window.global_id);
 
 const classDict = {
     "module-viewer": ModuleViewerApp,
@@ -113,7 +113,7 @@ function _context_main() {
     const domContainer = document.querySelector('#context-root');
     const root = createRoot(domContainer);
     root.render(
-        <ContextAppPlus tsocket={tsocket}/>
+        <ContextAppPlus tsocket={tsocket} local_id={window.global_id}/>
     )
 }
 
@@ -201,7 +201,7 @@ function ContextApp(props) {
             }
         );
         props.tsocket.attachListener('close-user-windows', data => {
-            if (!(data["originator"] === window.context_id)) {
+            if (!(data["originator"] === window.global_id)) {
                 window.close()
             }
         });
@@ -209,7 +209,7 @@ function ContextApp(props) {
             doFlash(data)
         });
         props.tsocket.attachListener('handle-callback', (task_packet) => {
-            handleCallback(task_packet, window.context_id)
+            handleCallback(task_packet,  props.local_id)
         });
     }
 
@@ -241,19 +241,28 @@ function ContextApp(props) {
             }
             let old_tab_panel = {...item};
             let resource_name = old_tab_panel.panel.resource_name;
-            let res_type = old_tab_panel.res_type;
+            let res_type;
             const drmethod = (dmethod) => {
                 _registerDirtyMethod(the_id, dmethod)
             };
             let data;
             if (old_tab_panel.kind === "notebook-viewer" && !old_tab_panel.panel.is_project) {
-                data = await postPromise("host", "initiate_new_otebook_in_context", {})
+                res_type = "new-notebook";
+                // data = await postPromise("host", "initiate_new_notebook_in_context", {})
+            }
+            else if (old_tab_panel.kind === "main-viewer" && !old_tab_panel.panel.is_project
+                && old_tab_panel.panel.original_res_type != "collection") {
+                res_type = "new-project";
+                // data = await postPromise("host", "initiate_new_project_in_context", {})
             }
             else {
-                data = await getViewerDataForRes(res_type, resource_name);
+                res_type = old_tab_panel.panel.original_res_type
             }
+
+            data = await getViewerDataForResSocket(res_type, resource_name, null, old_tab_panel.panel.file_path);
             await _updatePanelPromise(the_id, {panel: "spinner"});
             propDict[data.kind](data, drmethod, (new_panel) => {
+                new_panel.original_res_type = res_type;
                 _updatePanel(the_id, {panel: new_panel, kind: data.kind});
             });
         } catch (e) {
@@ -263,13 +272,28 @@ function ContextApp(props) {
         }
     }
 
-    async function getViewerDataForRes(res_type, resource_name, temp_data_id = null, file_path = null) {
+    function getViewerDataForResSocket(res_type, resource_name, temp_data_id = null, file_path = null) {
+        let new_viewer_id = "a" + guid();
+        return new Promise((resolve, reject) => {
+            let tsocket = new TacticSocket("main", 5000, resource_name, new_viewer_id, async () => {
+                tsocket.attachListener('handle-callback', (task_packet) => {
+                    handleCallback(task_packet, new_viewer_id)
+                });
+                await getViewerDataForRes(res_type, resource_name, tsocket, new_viewer_id, temp_data_id,
+                    file_path, resolve)
+            })
+        })
+    }
+
+    async function getViewerDataForRes(res_type, resource_name, tsocket, new_viewer_id, temp_data_id = null,
+                                       file_path = null, resolve = null) {
         let data;
-        if (["list", "code"].includes(res_type)) {
+        if (["list", "code", "text"].includes(res_type)) {
             data = {
                 kind: `${res_type}-viewer`,
                 resource_name: resource_name,
                 res_type: res_type,
+                local_id: new_viewer_id,
             };
         }
         else {
@@ -278,44 +302,59 @@ function ContextApp(props) {
                     data = {
                         kind: "module-viewer",
                         resource_name: resource_name,
-                        res_type: "tile"
+                        res_type: "tile",
+                        original_res_type: "raw-tile",
+                        local_id: new_viewer_id
                     };
                     break;
                 case "tile":
                     let ls_result = await postPromise("host", "get_last_saved_task", {tile_module_name: resource_name});
                     let last_saved = ls_result.last_saved;
                     if (last_saved == "creator") {
-                        data = await postPromise("host", "initiate_creator_in_context", {tile_module_name: resource_name});
+                        data = await postPromise("host", "initiate_creator_in_context",
+                            {tile_module_name: resource_name, local_id: new_viewer_id});
                     }
                     else {
-                        data = await postPromise("host", "initiate_module_viewer_in_context", {tile_module_name: resource_name})
+                        data = await postPromise("host", "initiate_module_viewer_in_context", {tile_module_name: resource_name,
+                        local_id: new_viewer_id});
                     }
                     break;
                 case "collection":
-                    data = await postPromise("host", "initiate_collection_in_context", {collection_name: resource_name});
+                    data = await postPromise("host", "initiate_collection_in_context", {collection_name: resource_name,
+                        local_id: new_viewer_id});
                     break;
                 case "project":
-                    data = await postPromise("host", "initiate_project_in_context", {project_name: resource_name});
+                    data = await postPromise("host", "initiate_project_in_context", {project_name: resource_name,
+                        local_id: new_viewer_id});
                     break;
                 case "new-notebook":
                     if (temp_data_id) {
-                        data = await postPromise("host", "initiate_new_notebook_in_context", {temp_data_id: temp_data_id});
+                        data = await postPromise("host", "initiate_new_notebook_in_context", {temp_data_id: temp_data_id,
+                            local_id: new_viewer_id});
                     } else {
-                        data = await postPromise("host", "initiate_new_notebook_in_context", {});
+                        data = await postPromise("host", "initiate_new_notebook_in_context", {local_id: new_viewer_id});
                     }
                     break;
                 case "new-project":
-                    data = await postPromise("host", "initiate_new_project_in_context", {});
+                    data = await postPromise("host", "initiate_new_project_in_context", {local_id: new_viewer_id});
                     break;
                 case "text":
                     data = await postPromise("host", "initiate_text_viewer_in_context", {"file_path": file_path});
                     break;
                 default:
-                    data = None
+                    data = {}
 
             }
         }
-         return data
+        data.original_res_type = res_type;
+        data.file_path = file_path;
+        data.tsocket = tsocket;
+        if (resolve) {
+            resolve(data);
+        }
+        else {
+             return data
+        }
     }
 
     async function _closeTab(the_id) {
@@ -470,9 +509,10 @@ function ContextApp(props) {
         const drmethod = (dmethod) => {
             _registerDirtyMethod(new_id, dmethod)
         };
-        let data = await getViewerDataForRes(res_type, resource_name, temp_data_id, file_path);
+        let data = await getViewerDataForResSocket(res_type, resource_name, temp_data_id, file_path);
         await _addPanelPromise(new_id, data.kind, data.res_type, data.resource_name, "spinner");
         propDict[data.kind](data, drmethod, (new_panel) => {
+            new_panel.original_res_type = res_type;
             _updatePanel(new_id, {panel: new_panel}, callback);
         });
     }, []);
@@ -526,13 +566,14 @@ function ContextApp(props) {
         }
         let data;
         try {
-            data = await getViewerDataForRes("tile", resource_name);
+            data = await getViewerDataForResSocket("tile", resource_name);
             const new_id = `${data.kind}: ${data.resource_name}`;
             const drmethod = (dmethod) => {
                 _registerDirtyMethod(new_id, dmethod)
             };
             await _addPanelPromise(new_id, data.kind, data.res_type, data.resource_name, "spinner");
             propDict[data.kind](data, drmethod, (new_panel) => {
+                new_panel.original_res_type = "tile";
                 _updatePanel(new_id, {panel: new_panel});
             });
         } catch (e) {
@@ -552,7 +593,7 @@ function ContextApp(props) {
                     id: entry.identifier,
                     resource_name: entry.panel.resource_name,
                     res_type: entry.res_type,
-                    main_id: entry.panel.main_id
+                    local_id: entry.panel.local_id
                 });
             }
 
@@ -788,7 +829,7 @@ function ContextApp(props) {
                           selected={null}
                           show_api_links={false}
                           extra_text={window.database_type === "Local" ? "" : window.database_type}
-                          page_id={window.context_id}
+                          global_id={props.global_id}
                           user_name={window.username}/>
             <div className={outer_class} tabIndex="0" style={outer_style} ref={top_ref}
                  id="context-container"
@@ -811,7 +852,7 @@ function ContextApp(props) {
                     addOmniItems: (items)=>{_addOmniItems(sid, items)}
                 }}>
                     <OpenOmnibar commandItems={commandItems}
-                                 page_id={window.context_id}
+                                 local_id={props.local_id}
                                  showOmnibar={showOpenOmnibar}
                                  openFunc={_omni_view_func}
                                  is_authenticated={window.is_authenticated}

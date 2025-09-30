@@ -31,7 +31,7 @@ class ProjectAccess(object):
     def read_project_dict(self, project_name, include_metadata=True):
         return self.read_project_dict_from_doc(self.get_project_doc(project_name), include_metadata)
 
-    def read_project_dict_from_doc(self, doc, include_metadata=True):
+    def read_project_dict_from_doc(self, doc, include_metadata=False):
         if doc is None or "file_id" not in doc:
             return None
         file_id = doc["file_id"]
@@ -171,17 +171,17 @@ class ProjectAccess(object):
             val["icon:upload"] = ""
         return flist, all_tags
 
-    def create_new_jupyter_project(self, project_name, jupyter_text):
+    def create_new_jupyter_project(self, jupyter_name, jupyter_text):
         mdata = self.create_initial_metadata()
         mdata["type"] = "jupyter"
         mdata["save_style"] = "b64save_react"
         save_dict = {"metadata": mdata,
                      "project_name": jupyter_name}
-        project_dict = {"jupyter_text": result_txt}
+        project_dict = {"jupyter_text": jupyter_text}
 
         pdict = make_jsonizable_and_compress(project_dict)
         save_dict["file_id"] = self.fs.put(pdict)
-        self.db[current_user.project_collection_name].insert_one(save_dict)
+        self.db[self.project_collection_name].insert_one(save_dict)
 
     def create_assistant_save(self, new_name, interface_state):
         project_dict = {"doc_type": "notebook", "project_name": new_name}
@@ -262,17 +262,17 @@ class ProjectAccess(object):
             self.fs.delete(old_file_id)
         return
 
-    def create_duplicate_project(self, project_name, template_name):
-        if self.project_name_exists(project_name):
-            raise ValueError(f"project with name {project_name} already exists.")
+    def create_duplicate_project(self, new_project_name, template_name):
+        if self.project_name_exists(new_project_name):
+            raise ValueError(f"project with name {new_project_name} already exists.")
         template_doc = self.get_project_doc(template_name)
 
-        if template_data is None:
+        if template_doc is None:
             raise ValueError(f"Template project {template_name} does not exist.")
 
         mdata = copy.copy(template_doc["metadata"])
         mdata = self.update_metadata(mdata, True)
-        searchable_text = template_data["searchable_text"]
+        searchable_text = template_doc["searchable_text"]
         new_save_dict = {"metadata": mdata, "searchable_text": searchable_text,
                          "project_name": new_project_name}
 

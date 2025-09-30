@@ -21,14 +21,15 @@ tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
 @app.route('/download_jupyter/<project_name>/<new_name>', methods=['get', 'post'])
 @login_required
 def download_jupyter(project_name, new_name):
-    save_dict = user_object.get_project_doc(project_name)
+    user_obj = current_user
+    save_dict = user_obj.get_project_doc(project_name)
     mdata = save_dict["metadata"]
 
     print("in download_jupyter with mdata " + str(mdata))
     if not mdata["type"] == "jupyter":
         return NotImplementedError
 
-    project_dict = self.read_project_dict_from_doc(save_dict, True)
+    project_dict = user_obj.read_project_dict_from_doc(save_dict, False)
     mem = io.BytesIO()
     mem.write(project_dict["jupyter_text"].encode())
     mem.seek(0)
@@ -41,15 +42,21 @@ def download_jupyter(project_name, new_name):
 @app.route('/import_jupyter/<library_id>', methods=['get', 'post'])
 @login_required
 def import_jupyter(library_id):
+    print("in import_jupyter")
     user_obj = current_user
     file_list = []
+    print("getting files from request")
     for the_file in request.files.values():
+        print("got a file")
         file_list.append(the_file)
+    print("got " + str(len(file_list)) + " files")
     if len(file_list) == 0:
         result = {"success": "false", "title": "Error creating notebooks", "content": "No files received"}
         user_obj.send_import_report(result, library_id)
         return {"success": True}
+    print("calling import_as_jupyter_full")
     result = import_as_jupyter_full(file_list)
+    print("import_as_jupyter_full returned " + str(result))
     if result["success"] in ["false", "partial"]:
         user_obj.send_import_report(result, library_id)
     return {"success": True}
@@ -73,7 +80,7 @@ def import_as_jupyter_full(file_list):
         if len(decoding_problems) > 0:
             file_decoding_errors[the_file.filename] = decoding_problems
 
-        user_obj.create_new_jupyter_project(jupyter_name, result_text)
+        user_obj.create_new_jupyter_project(jupyter_name, result_txt)
         if len(decoding_problems) > 0:
             file_decoding_errors[filename] = decoding_problems
         successful_reads.append(filename)

@@ -1,6 +1,8 @@
+from qworker import task_worthy
 
+class AcrossAccountsTasksMixin:
 
-class AcrossAccountsMixin:
+    @task_worthy
     def copy_from_repository_task(self, data):
         the_user = self.get_user_from_data(data)
         if "res_name" in data:
@@ -24,6 +26,7 @@ class AcrossAccountsMixin:
                     successful_copies += 1
             return {"success": True, "message": f"{str(successful_copies)} resources copied"}
 
+    @task_worthy
     def send_to_repository_task(self, data):
         the_user = self.get_user_from_data(data)
         if "res_name" in data:

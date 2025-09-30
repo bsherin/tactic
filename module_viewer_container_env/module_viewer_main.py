@@ -42,12 +42,12 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin, MongoAccess, Til
         return
 
     def ask_host(self, msg_type, task_data=None, callback_func=None):
-        task_data["main_id"] = self.my_id
+        task_data["local_id"] = self.my_id
         self.post_task("host", msg_type, task_data, callback_func)
         return
 
     def emit_to_client(self, message, data):
-        data["main_id"] = self.my_id
+        data["local_id"] = self.my_id
         data["message"] = message
         self.ask_host("emit_to_client", data)
 
@@ -71,7 +71,7 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin, MongoAccess, Til
                       "all_handler_methods": self.handler_methods}
             self.submit_response(local_task_packet, result)
 
-        self.ask_host("get_handler_methods", {"user_id": self.user_id, "main_id": self.my_id}, do_the_parse),
+        self.ask_host("get_handler_methods", {"user_id": self.user_id, "local_id": self.my_id}, do_the_parse),
         return
 
     @task_worthy
@@ -297,7 +297,7 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin, MongoAccess, Til
 
     def ready(self):
         self.ask_host("participant_ready", {"rb_id": rb_id, "user_id": os.environ.get("OWNER"),
-                                            "participant": self.my_id, "main_id": self.my_id})
+                                            "participant": self.my_id, "local_id": self.my_id})
         return
 
 

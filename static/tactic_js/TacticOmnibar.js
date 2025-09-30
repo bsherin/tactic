@@ -45,7 +45,6 @@ function OpenOmnibarItem(props) {
 }
 const resources_to_grab = 20;
 function OpenOmnibar(props) {
-  // const [commandItems, setCommandItems] = useState([]);
   const [item_list, set_item_list] = (0, _react.useState)([]);
   const settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   const old_search_string = (0, _react.useRef)("");
@@ -166,7 +165,7 @@ function OpenOmnibar(props) {
     }), listProps.itemList));
   }
   function _handle_signout() {
-    window.open($SCRIPT_ROOT + "/logout/" + props.page_id, "_self");
+    window.open($SCRIPT_ROOT + "/logout/" + props.local_id, "_self");
     return false;
   }
   function _showSettings() {
@@ -199,11 +198,11 @@ function OpenOmnibar(props) {
     }
     return omni_items;
   }
-  function _toggleTheme() {
+  async function _toggleTheme() {
     const new_theme = settingsContext.isDark() ? "light" : "dark";
-    (0, _communication_react.postAjax)("update_settings", {
+    await (0, _communication_react.postPromise)("host", "update_settings", {
       theme: new_theme
-    }, null);
+    });
   }
   return /*#__PURE__*/_react.default.createElement(_select.QueryList, {
     items: item_list,

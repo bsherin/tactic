@@ -59,9 +59,9 @@ function ProjectMenu(props) {
   }
   async function _saveProjectAs() {
     statusFuncs.startSpinner();
-    let data = await (0, _communication_react.postPromise)("host", "get_project_names", {
+    let data = await (0, _communication_react.postPromise)("host", "get_project_names_task", {
       "user_id": window.user_id
-    }, props.main_id);
+    }, props.local_id);
     let checkboxes = [{
       checkname: "lite_save",
       checktext: "create lite save"
@@ -77,7 +77,7 @@ function ProjectMenu(props) {
       });
       const result_dict = {
         "project_name": new_name,
-        "main_id": props.main_id,
+        "local_id": props.local_id,
         "doc_type": "table",
         "purgetiles": true,
         "lite_save": checkbox_states["lite_save"]
@@ -85,10 +85,10 @@ function ProjectMenu(props) {
       result_dict.interface_state = save_state;
       let data_object;
       if (props.is_notebook) {
-        await (0, _communication_react.postPromise)(props.main_id, "save_new_notebook_project_task", result_dict, props.main_id);
+        await (0, _communication_react.postPromise)(props.local_id, "save_new_notebook_project_task", result_dict, props.local_id);
       } else {
         result_dict["purgetiles"] = true;
-        await (0, _communication_react.postPromise)(props.main_id, "save_new_project_task", result_dict, props.main_id);
+        await (0, _communication_react.postPromise)(props.local_id, "save_new_project_task", result_dict, props.local_id);
       }
       props.setProjectName(new_name, () => {
         if (!window.in_context) {
@@ -111,13 +111,13 @@ function ProjectMenu(props) {
   async function _saveProject(lite_save) {
     try {
       const result_dict = {
-        main_id: props.main_id,
+        local_id: props.local_id,
         project_name: props.project_name,
         lite_save: lite_save
       };
       result_dict.interface_state = save_state;
       statusFuncs.startSpinner();
-      await (0, _communication_react.postPromise)(props.main_id, "update_project_task", result_dict, props.main_id);
+      await (0, _communication_react.postPromise)(props.local_id, "update_project_task", result_dict, props.local_id);
       props.updateLastSave();
       statusFuncs.statusMessage(`Saved project ${props.project_name}`);
       statusFuncs.stopSpinner();
@@ -132,7 +132,7 @@ function ProjectMenu(props) {
     try {
       let data = await (0, _communication_react.postPromise)("host", "get_collection_names", {
         "user_id": user_id
-      }, props.main_id);
+      }, props.local_id);
       let [use_dark_theme, save_as_collection, collection_name] = await dialogFuncs.showModalPromise("PresentationDialog", {
         default_value: "NewPresentation",
         existing_names: data.collection_names,
@@ -174,10 +174,10 @@ function ProjectMenu(props) {
         "save_as_collection": save_as_collection,
         "use_dark_theme": use_dark_theme,
         "presentation": true,
-        "main_id": props.main_id,
+        "local_id": props.local_id,
         "cell_list": cell_list
       };
-      let data_object = await (0, _communication_react.postPromise)(props.main_id, "export_as_presentation", result_dict, props.main_id);
+      let data_object = await (0, _communication_react.postPromise)(props.local_id, "export_as_presentation", result_dict, props.local_id);
       statusFuncs.clearStatusMessage();
       if (save_as_collection) {
         statusFuncs.statusMessage("Exported presentation");
@@ -195,7 +195,7 @@ function ProjectMenu(props) {
     try {
       let data = await (0, _communication_react.postPromise)("host", "get_collection_names", {
         "user_id": user_id
-      }, props.main_id);
+      }, props.local_id);
       let [collapsible, include_summaries, use_dark_theme, save_as_collection, collection_name] = await dialogFuncs.showModalPromise("ReportDialog", {
         default_value: "NewReport",
         existing_names: data.collection_names,
@@ -237,10 +237,10 @@ function ProjectMenu(props) {
         "use_dark_theme": use_dark_theme,
         "collapsible": collapsible,
         "include_summaries": include_summaries,
-        "main_id": props.main_id,
+        "local_id": props.local_id,
         "cell_list": cell_list
       };
-      let data_object = await (0, _communication_react.postPromise)(props.main_id, "export_as_report", result_dict, props.main_id);
+      let data_object = await (0, _communication_react.postPromise)(props.local_id, "export_as_report", result_dict, props.local_id);
       statusFuncs.clearStatusMessage();
       if (save_as_collection) {
         data_object.alert_type = "alert-success";
@@ -260,9 +260,9 @@ function ProjectMenu(props) {
   async function _exportAsJupyter() {
     statusFuncs.startSpinner();
     try {
-      let data = await (0, _communication_react.postPromise)("host", "get_project_names", {
+      let data = await (0, _communication_react.postPromise)("host", "get_project_names_task", {
         "user_id": user_id
-      }, props.main_id);
+      }, props.local_id);
       let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
         title: "Export Notebook in Jupyter Format",
         field_title: "New Project Name",
@@ -289,10 +289,10 @@ function ProjectMenu(props) {
       }
       const result_dict = {
         "project_name": new_name,
-        "main_id": props.main_id,
+        "local_id": props.local_id,
         "cell_list": cell_list
       };
-      let data_object = await (0, _communication_react.postPromise)(props.main_id, "export_to_jupyter_notebook", result_dict, props.main_id);
+      let data_object = await (0, _communication_react.postPromise)(props.local_id, "export_to_jupyter_notebook", result_dict, props.local_id);
       statusFuncs.statusMessage("Exported jupyter notebook");
       statusFuncs.stopSpinner();
     } catch (e) {
@@ -319,7 +319,7 @@ function ProjectMenu(props) {
       });
       const result_dict = {
         "export_name": new_name,
-        "main_id": props.main_id,
+        "local_id": props.local_id,
         "user_id": window.user_id
       };
       await (0, _communication_react.postAjaxPromise)("export_data", result_dict);
@@ -333,11 +333,11 @@ function ProjectMenu(props) {
   async function _consoleToNotebook() {
     try {
       const result_dict = {
-        "main_id": props.main_id,
+        "local_id": props.local_id,
         "console_items": props.console_items,
         "user_id": window.user_id
       };
-      await (0, _communication_react.postPromise)(props.main_id, "console_to_notebook", result_dict, props.main_id);
+      await (0, _communication_react.postPromise)(props.local_id, "console_to_notebook", result_dict, props.local_id);
     } catch (e) {
       errorDrawerFuncs.addFromError("Error converting to notebook", e);
     }
@@ -440,10 +440,10 @@ function DocumentMenu(props) {
         checkboxes: [],
         handleClose: dialogFuncs.hideModal
       });
-      await (0, _communication_react.postPromise)(props.main_id, "new_blank_document", {
+      await (0, _communication_react.postPromise)(props.local_id, "new_blank_document", {
         model_document_name: props.currentDoc,
         new_document_name: new_name
-      }, props.main_id);
+      }, props.local_id);
       statusFuncs.stopSpinner();
     } catch (e) {
       if (e != "canceled") {
@@ -463,10 +463,10 @@ function DocumentMenu(props) {
         checkboxes: [],
         handleClose: dialogFuncs.hideModal
       });
-      await (0, _communication_react.postPromise)(props.main_id, "duplicate_document", {
+      await (0, _communication_react.postPromise)(props.local_id, "duplicate_document", {
         original_document_name: props.currentDoc,
         new_document_name: new_name
-      }, props.main_id);
+      }, props.local_id);
       statusFuncs.stopSpinner();
     } catch (e) {
       if (e != "canceled") {
@@ -486,10 +486,10 @@ function DocumentMenu(props) {
         checkboxes: [],
         handleClose: dialogFuncs.hideModal
       });
-      await (0, _communication_react.postPromise)(props.main_id, "rename_document", {
+      await (0, _communication_react.postPromise)(props.local_id, "rename_document", {
         old_document_name: props.currentDoc,
         new_document_name: new_name
-      }, props.main_id);
+      }, props.local_id);
       statusFuncs.stopSpinner();
     } catch (e) {
       if (e != "canceled") {

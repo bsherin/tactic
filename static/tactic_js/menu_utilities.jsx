@@ -1,7 +1,7 @@
 import React from "react";
 import {Fragment, useEffect, memo, useContext} from "react";
 
-import {Icon, MenuDivider, Menu, MenuItem, Popover, Navbar, Button, PopoverPosition, Classes, ButtonGroup} from "@blueprintjs/core";
+import {Icon, MenuDivider, Menu, MenuItem, Popover, Navbar, Button, PopoverPosition, Classes} from "@blueprintjs/core";
 
 import {SettingsContext} from "./settings"
 import {GlyphButton} from "./blueprint_react_widgets";

@@ -649,14 +649,13 @@ function LibraryPane(props) {
         title: `Duplicate ${res_type}`,
         field_title: "New Name",
         default_value: res_name,
-        existing_names: data.resource_names,
+        existing_names: data.res_names,
         checkboxes: [],
         handleClose: dialogFuncs.hideModal
       });
       const result_dict = {
         "new_res_name": new_name,
         "res_to_copy": res_name,
-        "library_id": props.library_id,
         "is_repository": false,
         "res_type": res_type
       };
@@ -714,7 +713,7 @@ function LibraryPane(props) {
       let data = await (0, _communication_react.postPromise)("host", "get_resource_names_task", {
         res_type
       });
-      const res_names = data["resource_names"];
+      const res_names = data["res_names"];
       const index = res_names.indexOf(res_name);
       if (index >= 0) {
         res_names.splice(index, 1);
@@ -753,7 +752,7 @@ function LibraryPane(props) {
           title: `Import ${res_type}`,
           field_title: "New Name",
           default_value: res_name,
-          existing_names: data.resource_names,
+          existing_names: data.res_names,
           checkboxes: [],
           handleClose: dialogFuncs.hideModal
         });
@@ -788,7 +787,7 @@ function LibraryPane(props) {
       let res_type = pStateRef.current.select_state.selected_resource.res_type;
       let res_name = pStateRef.current.select_state.selected_resource.name;
       try {
-        let data = await (0, _communication_react.postPromise)("host", "get_resource_names", {
+        let data = await (0, _communication_react.postPromise)("host", "get_resource_names_task", {
           res_type,
           is_repository: true
         });
@@ -796,7 +795,7 @@ function LibraryPane(props) {
           title: `Share ${res_type}`,
           field_title: `New ${res_type} Name`,
           default_value: res_name,
-          existing_names: data.resource_names,
+          existing_names: data.res_names,
           checkboxes: [],
           handleClose: dialogFuncs.hideModal
         });
@@ -903,10 +902,10 @@ function LibraryPane(props) {
           select_label: "Collection to Combine",
           cancel_text: "Cancel",
           submit_text: "Combine",
-          option_list: data.resource_names,
+          option_list: data.res_names,
           handleClose: dialogFuncs.hideModal
         });
-        statusFuncs.startSpinner(true);
+        statusFuncs.startSpinner();
         const target = `combine_collections/${res_name}/${other_name}`;
         await (0, _communication_react.postPromise)("host", "combine_collections_task", {
           base_collection_name: res_name,
@@ -929,7 +928,7 @@ function LibraryPane(props) {
           title: "Combine Collections",
           field_title: "Name for combined collection",
           default_value: "NewCollection",
-          existing_names: data.resource_names,
+          existing_names: data.res_names,
           checkboxes: [],
           handleClose: dialogFuncs.hideModal
         });
@@ -988,12 +987,19 @@ function LibraryPane(props) {
   async function _import_collection(myDropZone, setCurrentUrl, new_name, check_results, csv_options = null) {
     let doc_type = check_results["import_as_freeform"] ? "freeform" : "table";
     try {
-      await (0, _communication_react.postAjaxPromise)("create_empty_collection", {
+      let data = await (0, _communication_react.postPromise)("host", "create_empty_collection_task", {
         "collection_name": new_name,
         "doc_type": doc_type,
         "library_id": props.library_id,
         "csv_options": csv_options
       });
+      if (!data.success) {
+        errorDrawerFuncs.addErrorDrawerEntry({
+          title: "Error creating collection",
+          content: data.message
+        });
+        return;
+      }
       let new_url = `append_documents_to_collection/${new_name}/${doc_type}/${props.library_id}`;
       myDropZone.options.url = new_url;
       setCurrentUrl(new_url);
@@ -1060,16 +1066,16 @@ function LibraryPane(props) {
         title: "New Tile",
         field_title: "New Tile Name",
         default_value: "NewTileModule",
-        existing_names: data.resource_names,
+        existing_names: data.tile_names,
         checkboxes: [],
         handleClose: dialogFuncs.hideModal
       });
       const result_dict = {
         "template_name": template_name,
-        "new_res_name": new_name,
+        "new_tile_name": new_name,
         "last_saved": "creator"
       };
-      await postPomise("host", "create_tile_from_repository_template", result_dict);
+      await (0, _communication_react.postPromise)("host", "create_tile_from_repository_template", result_dict);
       await _view_resource({
         name: String(new_name),
         res_type: "tile"
@@ -1087,7 +1093,7 @@ function LibraryPane(props) {
         title: "New Metabook Resource",
         field_title: "New Metabook Name",
         default_value: "NewMetabookResource",
-        existing_names: data.resource_names,
+        existing_names: data.res_names,
         checkboxes: [],
         handleClose: dialogFuncs.hideModal
       });
@@ -1109,7 +1115,7 @@ function LibraryPane(props) {
         title: "New List Resource",
         field_title: "New List Name",
         default_value: "NewListResource",
-        existing_names: data.resource_names,
+        existing_names: data.list_names,
         checkboxes: [],
         handleClose: dialogFuncs.hideModal
       });
@@ -1155,12 +1161,12 @@ function LibraryPane(props) {
   }
   async function _new_code(template_name) {
     try {
-      let data = await postromise("host", "get_code_names_task", {});
+      let data = await (0, _communication_react.postPromise)("host", "get_code_names_task", {});
       let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
         title: "New code Resource",
         field_title: "New Code Resource Name",
         default_value: "NewCodeResource",
-        existing_names: data.resource_names,
+        existing_names: data.code_names,
         checkboxes: [],
         handleClose: dialogFuncs.hideModal
       });
@@ -1275,7 +1281,8 @@ function LibraryPane(props) {
     open_raw: _open_raw
   }, props.errorDrawerFuncs, {
     handleCreateViewer: props.handleCreateViewer,
-    library_id: props.library_id,
+    library_id: props.library_id // Does this do anything
+    ,
     controlled: props.controlled,
     tsocket: props.tsocket
   })), /*#__PURE__*/_react.default.createElement("div", {

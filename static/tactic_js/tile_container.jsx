@@ -71,10 +71,10 @@ function TileContainer(props) {
             tile_id: tile_id
         });
         const data_dict = {
-            main_id: props.main_id,
+            local_id: props.local_id,
             tile_id: tile_id
         };
-        postWithCallback(props.main_id, "RemoveTile", data_dict, null, null, props.main_id);
+        postWithCallback(props.local_id, "RemoveTile", data_dict, null, null, props.local_id);
     }, []);
 
     const _setTileValue = useCallback((tile_id, field, value, callback = null) => {
@@ -144,7 +144,7 @@ function TileContainer(props) {
     function makeTailoredTileComponent() {
         return memo(function (tile_props) {
                 return <TileComponent {...tile_props}
-                                      main_id={props.main_id}
+                                      local_id={props.local_id}
                                       setTileValue={_setTileValue}
                                       setTileState={_setTileState}
                                       handleClose={_closeTile}
@@ -162,7 +162,7 @@ function TileContainer(props) {
 
     return (
         <SortableComponent className={props.table_is_shrunk ? "tile-div tile-container-float" : "tile-div"}
-                           main_id={props.main_id}
+                           local_id={props.local_id}
                            style={{}}
                            helperClass={settingsContext.isDark() ? "bp6-dark" : "light-theme"}
                            ElementComponent={TailoredTileComponent}

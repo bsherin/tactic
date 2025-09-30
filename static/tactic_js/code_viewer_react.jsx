@@ -1,4 +1,3 @@
-
 if (!window.in_context) {
     import("../tactic_css/tactic.scss");
     import("../tactic_css/resource_viewer.scss");
@@ -12,7 +11,7 @@ import {useHotkeys} from "@blueprintjs/core";
 import {ResourceViewerApp, copyToLibrary, sendToRepository} from "./resource_viewer_react_app";
 import {TacticSocket} from "./tactic_socket";
 import {ReactCodemirror6} from "./react-codemirror6";
-import {postPromise} from "./communication_react"
+import {postPromise, handleCallback} from "./communication_react"
 import {withStatus, StatusContext} from "./toaster"
 
 import {withErrorDrawer} from "./error_drawer.js";
@@ -29,25 +28,23 @@ import {ICON_BAR_WIDTH} from "./sizing_tools";
 export {code_viewer_props, CodeViewerApp}
 
 function code_viewer_props(data, registerDirtyMethod, finalCallback) {
+    const local_id = data.local_id || guid();
+    let tsocket = data.tsocket;
 
-    let resource_viewer_id = guid();
     if (!window.in_context) {
-        window.main_id = resource_viewer_id;
+        window.global_id = local_id;
     }
-    const tsocket = new TacticSocket("main", 5000, "code_viewer", resource_viewer_id, () => {
-        finalCallback({
-            resource_viewer_id: resource_viewer_id,
-            main_id: resource_viewer_id,
-            tsocket: tsocket,
-            split_tags: [],
-            created: "",
-            resource_name: data.resource_name,
-            the_content: "",
-            notes: "",
-            readOnly: data.is_repository,
-            is_repository: data.is_repository,
-            registerDirtyMethod: registerDirtyMethod,
-        })
+    finalCallback({
+        local_id: local_id,
+        tsocket: tsocket,
+        split_tags: [],
+        created: "",
+        resource_name: data.resource_name,
+        the_content: "",
+        notes: "",
+        readOnly: data.is_repository,
+        is_repository: data.is_repository,
+        registerDirtyMethod: registerDirtyMethod,
     })
 }
 
@@ -131,7 +128,7 @@ function CodeViewerApp(props) {
             "user_id": window.user_id
         };
         try {
-            await postPromise("host", "update_code_task", result_dict, props.resource_viewer_id);
+            await postPromise("host", "update_code_task", result_dict, props.local_id);
             savedContent.current = new_code;
             statusFuncs.statusMessage(`Updated code resource ${_cProp("resource_name")}`, 7)
         } catch (e) {
@@ -322,7 +319,7 @@ function CodeViewerApp(props) {
         }
         statusFuncs.startSpinner();
         try {
-            let data = await postPromise("host", "get_code_names", {"user_id": window.user_id}, props.main_id);
+            let data = await postPromise("host", "get_code_names", {"user_id": window.user_id}, props.local_id);
             let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
                 title: "Save Code As",
                 field_title: "New Code Name",
@@ -335,7 +332,7 @@ function CodeViewerApp(props) {
                 "new_res_name": new_name,
                 "res_to_copy": _cProp("resource_name")
             };
-            await postPromise("host", "create_duplicate_code_task", result_dict, props.main_id);
+            await postPromise("host", "create_duplicate_code_task", result_dict, props.local_id);
             await _setResourceNameStatePromise(new_name);
             await _saveMe()
         } catch (e) {
@@ -370,13 +367,13 @@ function CodeViewerApp(props) {
                 <TacticNavbar is_authenticated={window.is_authenticated}
                               selected={null}
                               show_api_links={true}
-                              page_id={props.resource_viewer_id}
+                              global_id={props.global_id}
                               user_name={window.username}/>
             }
             <div className={outer_class} ref={top_ref} style={outer_style}
                  tabIndex="0" onKeyDown={handleKeyDown} onKeyUp={handleKeyUp}>
                 <ResourceViewerApp {...my_props}
-                                   resource_viewer_id={props.resource_viewer_id}
+                                   local_id={props.local_id}
                                    refreshTab={props.refreshTab}
                                    closeTab={props.closeTab}
                                    res_type="code"
@@ -416,6 +413,7 @@ function CodeViewerApp(props) {
 CodeViewerApp = memo(CodeViewerApp);
 
 function code_viewer_main() {
+    let local_id = "a" + guid();
     function gotProps(the_props) {
         let CodeViewerAppPlus = withSettings(withDialogs(withErrorDrawer(withStatus(withAssistant(CodeViewerApp)))));
         let the_element = <CodeViewerAppPlus {...the_props}
@@ -427,9 +425,13 @@ function code_viewer_main() {
         root.render(the_element)
     }
 
-    let target = window.is_repository ? "repository_view_code_in_context" : "view_code_in_context";
-    let data = {resource_name: resource_name, res_type: "code"};
-    code_viewer_props(data, null, gotProps, null);
+    let tsocket = new TacticSocket("main", 5000, "code_viewer", local_id, async () => {
+        tsocket.attachListener('handle-callback', (task_packet) => {
+            handleCallback(task_packet, local_id)
+        });
+        let data = {resource_name: resource_name, res_type: "code", local_id, tsocket};
+        code_viewer_props(data, null, gotProps);
+    })
 }
 
 

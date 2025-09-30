@@ -1,3 +1,5 @@
+import {TacticSocket} from "./tactic_socket";
+
 if (!window.in_context) {
     import("../tactic_css/tactic.scss");
     import("../tactic_css/resource_viewer.scss");
@@ -21,7 +23,7 @@ import {creator_props} from "./tile_maker_support";
 import {TacticMenubar} from "./menu_utilities"
 import {sendToRepository} from "./resource_viewer_react_app";
 import {HorizontalPanes} from "./resizing_allotment";
-import {postAjax, postPromise} from "./communication_react"
+import {postAjax, postPromise, handleCallback} from "./communication_react"
 import {withStatus, doFlash, StatusContext} from "./toaster"
 import {withAssistant} from "./assistant";
 import {ICON_BAR_WIDTH} from "./sizing_tools";
@@ -33,7 +35,7 @@ import {useCallbackStack, useConnection} from "./utilities_react";
 import {SettingsContext, withSettings} from "./settings";
 import {DialogContext, withDialogs} from "./modal_react";
 import {ErrorDrawerContext} from "./error_drawer";
-import {SelectedPaneContext} from "./utilities_react";
+import {SelectedPaneContext, guid} from "./utilities_react";
 
 import {usePropertyList, makeUndoableDispatch, getListItemFromidentifier} from "./property_list"
 import {useSearch} from "./search_reducer"
@@ -171,7 +173,7 @@ function CreatorApp(props) {
 
         function sendRemove() {
             navigator.sendBeacon("/delete_container_on_unload",
-                JSON.stringify({"container_id": props.module_viewer_id, "notify": false}));
+                JSON.stringify({"container_id": props.local_id, "notify": false}));
         }
 
         window.addEventListener("unload", sendRemove);
@@ -270,7 +272,7 @@ function CreatorApp(props) {
                 doFlash(data)
             });
             props.tsocket.attachListener('close-user-windows', (data) => {
-                if (!(data["originator"] == props.resource_viewer_id)) {
+                if (!(data["originator"] == props.global_id)) {
                     window.close()
                 }
             });
@@ -442,7 +444,7 @@ function CreatorApp(props) {
             await postPromise(
                 "host", "load_tile_module_task",
                 {"tile_module_name": _cProp("resource_name"), "user_id": window.user_id},
-                props.module_viewer_id);
+                props.local_id);
             statusFuncs.statusMessage("Loaded successfully");
             statusFuncs.stopSpinner()
         } catch (e) {
@@ -460,7 +462,7 @@ function CreatorApp(props) {
             await postPromise(
                 "host", "load_tile_module_task",
                 {"tile_module_name": _cProp("resource_name")},
-                props.module_viewer_id);
+                props.local_id);
             statusFuncs.statusMessage("Loaded successfully");
             statusFuncs.stopSpinner()
         } catch (e) {
@@ -472,7 +474,7 @@ function CreatorApp(props) {
         statusFuncs.startSpinner();
         let data;
         try {
-            data = await postPromise("host", "get_tile_names_task", {}, props.main_id);
+            data = await postPromise("host", "get_tile_names_task", {}, props.local_id);
             dialogFuncs.showModal("ModalDialog", {
                 title: "Save Module As",
                 field_title: "New Module Name",
@@ -611,7 +613,7 @@ function CreatorApp(props) {
             let result_dict = _getSaveDict();
             let data;
             try {
-                data = await postPromise(props.module_viewer_id, "update_module", result_dict, props.module_viewer_id);
+                data = await postPromise(props.local_id, "update_module", result_dict, props.local_id);
                 save_success(data);
                 resolve(data)
             } catch (e) {
@@ -787,7 +789,7 @@ function CreatorApp(props) {
     }
 
     function delete_my_container() {
-        postAjax("/delete_container_on_unload", {"container_id": props.module_viewer_id, "notify": false});
+        postAjax("/delete_container_on_unload", {"container_id": props.local_id, "notify": false});
     }
 
     function scrollToPane(itemIdentifier) {
@@ -868,7 +870,7 @@ function CreatorApp(props) {
                        pushCallback={pushCallback}
                        tsocket={props.tsocket}
                        extraSelfCompletions={extraSelfCompletionsRef.current}
-                       module_viewer_id={props.module_viewer_id}
+                       local_id={props.local_id}
                        show_search={false}/>
         )
     };
@@ -895,7 +897,7 @@ function CreatorApp(props) {
                        pushCallback={pushCallback}
                        tsocket={props.tsocket}
                        extraSelfCompletions={extraSelfCompletionsRef.current}
-                       module_viewer_id={props.module_viewer_id}
+                       local_id={props.local_id}
                        show_search={false}/>
         )
     };
@@ -921,7 +923,7 @@ function CreatorApp(props) {
                            pushCallback={pushCallback}
                            tsocket={props.tsocket}
                            extraSelfCompletions={extraSelfCompletionsRef.current}
-                           module_viewer_id={props.module_viewer_id}
+                           local_id={props.local_id}
                            show_search={false}/>
             )
         }
@@ -947,7 +949,7 @@ function CreatorApp(props) {
                            pushCallback={pushCallback}
                            tsocket={props.tsocket}
                            extraSelfCompletions={extraSelfCompletionsRef.current}
-                           module_viewer_id={props.module_viewer_id}
+                           local_id={props.local_id}
                            show_search={false}/>
             )
         }
@@ -973,7 +975,7 @@ function CreatorApp(props) {
                            pushCallback={pushCallback}
                            tsocket={props.tsocket}
                            extraSelfCompletions={extraSelfCompletionsRef.current}
-                           module_viewer_id={props.module_viewer_id}
+                           local_id={props.local_id}
                            show_search={false}/>
             )
         }
@@ -1362,7 +1364,7 @@ function CreatorApp(props) {
                 <TacticNavbar is_authenticated={window.is_authenticated}
                               selected={null}
                               show_api_links={true}
-                              page_id={props.module_viewer_id}
+                              global_id={props.global_id}
                               user_name={window.username}/>
             }
             <TacticMenubar menu_specs={menu_specs()}
@@ -1406,6 +1408,10 @@ function CreatorApp(props) {
 
 CreatorApp = memo(CreatorApp);
 
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 function tile_creator_main() {
     function gotProps(the_props) {
         let CreatorAppPlus = withSettings(withDialogs(withErrorDrawer(withStatus(withAssistant(CreatorApp)))));
@@ -1428,10 +1434,20 @@ function tile_creator_main() {
     }
 
     renderSpinnerMessage("Starting up ...", '#creator-root');
-    postAjax("initiate_creator_in_context", {"resource_name": window.module_name})
-        .then((data) => {
-            creator_props(data, null, gotProps, null)
-        })
+    let local_id = "a" + guid();
+    let tsocket = new TacticSocket("main", 5000, "creator", local_id, async () => {
+        tsocket.attachListener('handle-callback', (task_packet) => {
+            handleCallback(task_packet, local_id)
+        });
+
+        postPromise("host", "initiate_creator_in_context", {tile_module_name: window.module_name,
+            local_id}, local_id)
+            .then((data) => {
+                data.tsocket = tsocket;
+                data.local_id = local_id;
+                creator_props(data, null, gotProps, null)
+            })
+    });
 }
 
 

@@ -28,10 +28,10 @@ import {withAssistant} from "./assistant";
 import {handleCallback} from "./communication_react";
 import {base_columns} from "./library_widgets";
 
-export {LibraryHomeApp, library_id}
+export {LibraryHomeApp}
 const library_id = guid();
 if (!window.in_context) {
-    window.main_id = library_id;
+    window.global_id = library_id;
 }
 
 function LibraryHomeApp(props) {
@@ -58,7 +58,7 @@ function LibraryHomeApp(props) {
                 doFlash(data)
             });
             props.tsocket.attachListener('close-user-windows', (data) => {
-                if (!(data["originator"] == library_id)) {
+                if (!(data["originator"] == window.global_id)) {
                     window.close()
                 }
             });
@@ -112,7 +112,7 @@ function LibraryHomeApp(props) {
                               selected={null}
                               show_api_links={false}
                               extra_text={window.database_type == "Local" ? "" : window.database_type}
-                              page_id={library_id}
+                              global_id={global_id}
                               user_name={window.username}/>
             }
             <div className={outer_class} ref={top_ref} style={outer_style}>

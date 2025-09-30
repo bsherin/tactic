@@ -37,7 +37,7 @@ function SearchableConsole(props, inner_ref) {
   });
   (0, _react.useEffect)(() => {
     my_room.current = (0, _utilities_react.guid)();
-    tsocket.current = new _tactic_socket.TacticSocket("main", 5000, "searchable-console", props.main_id);
+    tsocket.current = new _tactic_socket.TacticSocket("main", 5000, "searchable-console", props.local_id);
     tsocket.current.socket.emit("join", {
       "room": my_room.current
     });
@@ -99,20 +99,20 @@ function SearchableConsole(props, inner_ref) {
       container_id: cont_id.current,
       since: log_since,
       max_lines: max_console_lines_ref.current
-    }, props.main_id);
+    }, props.local_id);
     set_log_content(res["log_text"]);
     let data = await (0, _communication_react.postPromise)(props.streaming_host, "StartLogStreaming", {
       container_id: cont_id.current,
       room: my_room.current,
       user_id: window.user_id
-    }, props.main_id);
+    }, props.local_id);
     gotStreamerId(data);
   }
   async function _stopLogStreaming(callback = null) {
     if (streamer_id && streamer_id.current) {
       await (0, _communication_react.postPromise)(props.streaming_host, "StopLogStreaming", {
         streamer_id: streamer_id.current
-      }, props.main_id);
+      }, props.local_id);
       if (callback) {
         callback();
       }
@@ -168,7 +168,7 @@ function SearchableConsole(props, inner_ref) {
   async function _logExec(command) {
     return await (0, _communication_react.postPromise)(cont_id.current, "os_command_exec", {
       "the_code": command
-    }, props.main_id);
+    }, props.local_id);
   }
   async function _commandSubmit(e) {
     e.preventDefault();

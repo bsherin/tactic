@@ -111,7 +111,7 @@ function TileComponent(props) {
     // need to know the size of the display area.
     function _broadcastTileSize() {
         postWithCallback(props.tile_id, "TileSizeChange",
-            {width: tdaWidth(), height: tdaHeight()}, null, null, props.main_id)
+            {width: tdaWidth(), height: tdaHeight()}, null, null, props.local_id)
     }
 
     function _resizeTileArea(dx, dy) {
@@ -200,7 +200,7 @@ function TileComponent(props) {
     function _standard_click_data() {
         return {
             tile_id: props.tile_id,
-            main_id: props.main_id,
+            local_id: props.local_id,
             doc_name: props.current_doc_name,
             active_row_id: props.selected_row
         }
@@ -255,7 +255,7 @@ function TileComponent(props) {
 
     async function spin_and_refresh() {
         _startSpinner();
-        await postPromise(props.tile_id, "RefreshTile", {}, props.main_id);
+        await postPromise(props.tile_id, "RefreshTile", {}, props.local_id);
         _stopSpinner();
     }
 
@@ -263,7 +263,7 @@ function TileComponent(props) {
         const data_dict = {"tile_id": props.tile_id, "tile_name": props.tile_name};
         try {
             _startSpinner();
-            let data = await postPromise(props.main_id, "reload_tile", data_dict, props.main_id);
+            let data = await postPromise(props.local_id, "reload_tile", data_dict, props.local_id);
             if (!data.success) {
                 return;
             }
@@ -295,7 +295,7 @@ function TileComponent(props) {
                 if (!dset.hasOwnProperty(key)) continue;
                 data_dict.dataset[key] = dset[key]
             }
-            postWithCallback(props.tile_id, "TileElementClick", data_dict, null, null, props.main_id);
+            postWithCallback(props.tile_id, "TileElementClick", data_dict, null, null, props.local_id);
             e.stopPropagation()
         });
         $(selector).on(click_event, '.word-clickable', function () {
@@ -314,12 +314,12 @@ function TileComponent(props) {
                 range.setEnd(node, range.endOffset + 1);
             } while (range.toString().indexOf(' ') == -1 && range.toString().trim() !== '' && range.endOffset < nlen);
             data_dict.clicked_text = range.toString().trim();
-            postWithCallback(props.tile_id, "TileWordClick", data_dict, null, null, props.main_id)
+            postWithCallback(props.tile_id, "TileWordClick", data_dict, null, null, props.local_id)
         });
         $(selector).on(click_event, '.cell-clickable', function () {
             let data_dict = _standard_click_data();
             data_dict.clicked_cell = $(this).text();
-            postWithCallback(props.tile_id, "TileCellClick", data_dict, null, null, props.main_id)
+            postWithCallback(props.tile_id, "TileCellClick", data_dict, null, null, props.local_id)
         });
         $(selector).on(click_event, '.row-clickable', function () {
             let data_dict = _standard_click_data();
@@ -329,12 +329,12 @@ function TileComponent(props) {
                 row_vals.push($(this).text())
             });
             data_dict["clicked_row"] = row_vals;
-            postWithCallback(props.tile_id, "TileRowClick", data_dict, null, null, props.main_id)
+            postWithCallback(props.tile_id, "TileRowClick", data_dict, null, null, props.local_id)
         });
         $(selector).on(click_event, 'button', function (e) {
             let data_dict = _standard_click_data();
             data_dict["button_value"] = e.target.value;
-            postWithCallback(props.tile_id, "TileButtonClick", data_dict, null, null, props.main_id)
+            postWithCallback(props.tile_id, "TileButtonClick", data_dict, null, null, props.local_id)
         });
         $(selector).on('submit', 'form', function (e) {
             let data_dict = _standard_click_data();
@@ -344,24 +344,24 @@ function TileComponent(props) {
                 form_data[the_form[i]["name"]] = the_form[i]["value"]
             }
             data_dict["form_data"] = form_data;
-            postWithCallback(props.tile_id, "TileFormSubmit", data_dict, null, null, props.main_id);
+            postWithCallback(props.tile_id, "TileFormSubmit", data_dict, null, null, props.local_id);
             return false
         });
         $(selector).on("change", 'select', function (e) {
             let data_dict = _standard_click_data();
             data_dict.select_value = e.target.value;
             data_dict.select_name = e.target.name;
-            postWithCallback(props.tile_id, "SelectChange", data_dict, null, null, props.main_id)
+            postWithCallback(props.tile_id, "SelectChange", data_dict, null, null, props.local_id)
         });
         $(selector).on('change', 'textarea', function (e) {
             let data_dict = _standard_click_data();
             data_dict["text_value"] = e.target.value;
-            postWithCallback(props.tile_id, "TileTextAreaChange", data_dict, null, null, props.main_id)
+            postWithCallback(props.tile_id, "TileTextAreaChange", data_dict, null, null, props.local_id)
         });
     }
 
     function logText() {
-        postWithCallback(props.tile_id, "LogTile", {}, null, null, props.main_id);
+        postWithCallback(props.tile_id, "LogTile", {}, null, null, props.local_id);
     }
 
     function _stopMe() {
@@ -376,7 +376,7 @@ function TileComponent(props) {
                     user_id: window.user_id,
                     tile_type: props.tile_type,
                     line_number: 0
-                }, props.main_id);
+                }, props.local_id);
                 window.open("", data["window_name"]);
             }
             catch (e) {
@@ -393,10 +393,10 @@ function TileComponent(props) {
 
     function _logParams() {
         const data_dict = {};
-        data_dict["main_id"] = props.main_id;
+        data_dict["local_id"] = props.local_id;
         data_dict["tile_id"] = props.tile_id;
         data_dict["tile_name"] = props.tile_name;
-        postWithCallback(props.tile_id, "LogParams", data_dict, null, null, props.main_id)
+        postWithCallback(props.tile_id, "LogParams", data_dict, null, null, props.local_id)
     }
 
     function _startResize() {
@@ -428,7 +428,7 @@ function TileComponent(props) {
         let the_widget;
         if (widgetKind in widgetDict) {
             let WidgetComponent = widgetDict[widgetKind];
-            the_widget = <WidgetComponent key={widgetId} widgetId={widgetId} main_id={props.main_id}
+            the_widget = <WidgetComponent key={widgetId} widgetId={widgetId} local_id={props.local_id}
                                           console_id={null}
                                           tile_id={props.tile_id}
                                           row={idx}
@@ -440,7 +440,7 @@ function TileComponent(props) {
                                           widgetData={widgetData} tsocket={props.tsocket}/>;
         } else {
             let WidgetComponent = widgetDict["text"];
-            the_widget = <WidgetComponent key={widgetId} widgetId={widgetId} main_id={props.main_id}
+            the_widget = <WidgetComponent key={widgetId} widgetId={widgetId} local_id={props.local_id}
                                           row={idx}
                                           tile_id={props.tile_id}
                                           console_id={null}
@@ -569,7 +569,7 @@ function TileComponent(props) {
                                 <div className={`tile-log-area ${props.show_log ? "show-me" : "hide-me"}`}
                                      style={{width: "100%", height: "100%", position: "relative"}}
                                      ref={log_ref}>
-                                    <SearchableConsole main_id={props.main_id}
+                                    <SearchableConsole local_id={props.local_id}
                                                        streaming_host="host"
                                                        container_id={props.tile_id}
                                                        ref={inner_log_ref}

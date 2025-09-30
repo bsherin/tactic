@@ -53,10 +53,10 @@ function FileImportDialog(props) {
   const errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
   (0, _utilities_react.useConstructor)(async () => {
     try {
-      let data = await (0, _communication_react.postPromise)("host", "get_resource_names", {
-        res_type
+      let data = await (0, _communication_react.postPromise)("host", "get_resource_names_task", {
+        res_type: props.res_type
       });
-      existing_names.current = data.resource_names;
+      existing_names.current = data.res_names;
       while (_name_exists(default_name)) {
         name_counter.current += 1;
         default_name.current = "new" + props.res_type + String(name_counter.current);

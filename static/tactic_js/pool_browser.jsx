@@ -11,7 +11,7 @@ import {LibraryMenubar} from "./library_menubars"
 import {CombinedMetadata, icon_dict} from "./combined_metadata";
 import {PoolTree, getBasename, splitFilePath, getFileParentPath, PoolContext} from "./pool_tree";
 import {HorizontalPanes} from "./resizing_allotment";
-import {getBlobPromise, postAjaxPromise, postPromise} from "./communication_react";
+import {getBlobPromise, postPromise} from "./communication_react";
 import {ErrorDrawerContext} from "./error_drawer";
 import {ICON_BAR_WIDTH} from "./sizing_tools";
 import {doFlash} from "./toaster";
@@ -235,7 +235,7 @@ function PoolBrowser(props) {
                 handleClose: dialogFuncs.hideModal,
             });
             const the_data = {dst, src};
-            await postromise("host", "duplicate_pool_file_task", the_data);
+            await postPromise("host", "duplicate_pool_file_task", the_data);
         } catch (e) {
             if (e != "canceled") {
                 errorDrawerFuncs.addFromError(`Error duplicating file`, e)

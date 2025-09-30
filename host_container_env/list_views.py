@@ -52,7 +52,7 @@ def import_list(library_id):
         result = {"success": "false", "title": "Error creating lists", "content": "No files received"}
         user_obj.send_import_report(result, library_id)
         return {"success": True}
-    result = self.import_as_list_full(file_list)
+    result = import_as_list_full(file_list)
     if result["success"] in ["false", "partial"]:
         user_obj.send_import_report(result, library_id)
     return {"success": True}

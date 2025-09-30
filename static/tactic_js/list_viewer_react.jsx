@@ -15,7 +15,7 @@ import { useHotkeys } from "@blueprintjs/core";
 
 import {ResourceViewerApp, copyToLibrary, sendToRepository} from "./resource_viewer_react_app";
 import {TacticSocket} from "./tactic_socket";
-import {postPromise} from "./communication_react"
+import {handleCallback, postPromise} from "./communication_react"
 import {withStatus} from "./toaster"
 import {withAssistant} from "./assistant";
 
@@ -35,24 +35,20 @@ export {list_viewer_props, ListViewerApp}
 
 function list_viewer_props(data, registerDirtyMethod, finalCallback) {
 
-    let resource_viewer_id = guid();
     if (!window.in_context) {
-        window.main_id = resource_viewer_id;
+        window.global_id = data.local_id;
     }
-    let tsocket = new TacticSocket("main", 5000, "list_viewer", resource_viewer_id, () => {
-        finalCallback({
-            resource_viewer_id: resource_viewer_id,
-            main_id: resource_viewer_id,
-            tsocket: tsocket,
-            split_tags: [],
-            created: "",
-            resource_name: data.resource_name,
-            the_content: [],
-            notes: [],
-            readOnly: false,
-            is_repository: false,
-            registerDirtyMethod: registerDirtyMethod,
-        })
+    finalCallback({
+        local_id: data.local_id,
+        tsocket: data.tsocket,
+        split_tags: [],
+        created: "",
+        resource_name: data.resource_name,
+        the_content: [],
+        notes: [],
+        readOnly: false,
+        is_repository: false,
+        registerDirtyMethod: registerDirtyMethod,
     })
 }
 
@@ -243,7 +239,7 @@ function ListViewerApp(props) {
         };
 
         try {
-            await postPromise("host", "update_list_task", result_dict, props.main_id);
+            await postPromise("host", "update_list_task", result_dict, props.local_id);
             savedContent.current = new_list_as_string;
             statusFuncs.statusMessage(`Saved list ${result_dict.list_name}`)
         }
@@ -260,7 +256,7 @@ function ListViewerApp(props) {
             return false
         }
         try {
-            let ln_result = await postPromise("host", "get_list_names_task", {}, props.main_id);
+            let ln_result = await postPromise("host", "get_list_names_task", {}, props.local_id);
             let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
                 title: "Save List As",
                 field_title: "New List Name",
@@ -273,7 +269,7 @@ function ListViewerApp(props) {
                 "new_res_name": new_name,
                 "res_to_copy": _cProp("resource_name")
             };
-            await postPromise("host", "create_duplicate_list_task", result_dict, props.main_id);
+            await postPromise("host", "create_duplicate_list_task", result_dict, props.local_id);
             _setResourceNameState(new_name, () => {
                 _saveMe();
             })
@@ -310,14 +306,14 @@ function ListViewerApp(props) {
                 <TacticNavbar is_authenticated={window.is_authenticated}
                               selected={null}
                               show_api_links={true}
-                              page_id={props.resource_viewer_id}
+                              global_id={props.global_id}
                               user_name={window.username}/>
             }
             <div className={outer_class} ref={top_ref} style={outer_style}
                 tabIndex="0" onKeyDown={handleKeyDown} onKeyUp={handleKeyUp} >
                 <ResourceViewerApp {...my_props}
                                    padTop={true}
-                                   resource_viewer_id={props.resource_viewer_id}
+                                   local_id={props.local_id}
                                    setResourceNameState={_setResourceNameState}
                                    refreshTab={props.refreshTab}
                                    closeTab={props.closeTab}
@@ -340,6 +336,7 @@ function ListViewerApp(props) {
 ListViewerApp = memo(ListViewerApp);
 
 async function list_viewer_main() {
+    let local_id = "a" + guid();
 
     function gotProps(the_props) {
         let ListViewerAppPlus = withSettings(withDialogs(withErrorDrawer(withStatus(withAssistant(ListViewerApp)))));
@@ -351,9 +348,13 @@ async function list_viewer_main() {
         const root = createRoot(domContainer);
         root.render(the_element)
     }
-
-    let data = {resource_name: resource_name, res_type: "list"};
-    list_viewer_props(data, null, gotProps);
+    let tsocket = new TacticSocket("main", 5000, "list_viewer", local_id, async () => {
+        tsocket.attachListener('handle-callback', (task_packet) => {
+            handleCallback(task_packet, local_id)
+        });
+        let data = {resource_name: resource_name, res_type: "list", local_id, tsocket};
+        list_viewer_props(data, null, gotProps);
+    })
 }
 
 if (!window.in_context) {

@@ -21,8 +21,8 @@ redis_rb = redis.StrictRedis(host="tactic-redis",
 
 
 # Ready block functions
-def create_ready_block(rb_id, username, id_list, main_id=None):
-    rb_set(username, rb_id, id_list, main_id)
+def create_ready_block(rb_id, username, id_list, local_id=None):
+    rb_set(username, rb_id, id_list, local_id)
     return
 
 
@@ -31,14 +31,14 @@ def delete_ready_block_participant(username, rb_key, participant):
     the_keys = rb_keys(username, rb_key)
     remaining_keys = 0
     for k in the_keys:
-        if not k == "main_id":
+        if not k == "local_id":
             v = rb_hget(username, rb_key, participant)
             remaining_keys += int(v)
 
     if remaining_keys == 0:
-        main_id = rb_hget(username, rb_key, "main_id")
+        local_id = rb_hget(username, rb_key, "local_id")
         rb_del(username, rb_key)
-        return the_keys, main_id
+        return the_keys, local_id
     else:
         return False, None
 
@@ -48,10 +48,10 @@ def rb_del(username, rb_key):
     return
 
 
-def rb_set(username, rb_key, id_list, main_id="__none__"):
+def rb_set(username, rb_key, id_list, local_id="__none__"):
     for the_id in id_list:
         redis_rb.hset("{}.ready_blocks.{}".format(username, rb_key), the_id, 1)
-    redis_rb.hset("{}.ready_blocks.{}".format(username, rb_key), "main_id", main_id)
+    redis_rb.hset("{}.ready_blocks.{}".format(username, rb_key), "local_id", local_id)
 
 
 def rb_hget(username, rb_key, participant):

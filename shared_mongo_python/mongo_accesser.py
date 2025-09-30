@@ -144,6 +144,15 @@ class MongoAccess(object):
     def resource_collection_name(self, res_type):
         return getattr(self, f"{res_type}_collection_name")
 
+    def get_name_field(self, res_type):
+        return getattr(self, f"{res_type}_name_field")
+
+    def get_resource_doc(self, res_type, res_name):
+        return getattr(self, f"get_{res_type}_doc")(res_name)
+
+    def get_resource_doc_from_id(self, res_type, res_id):
+        return getattr(self, f"get_{res_type}_doc_from_id")(res_id)
+
     def get_all_resource_names(self, res_type):
         colname = getattr(self, f"{res_type}_collection_name")
         name_key = name_keys[res_type]

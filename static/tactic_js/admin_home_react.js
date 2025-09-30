@@ -23,17 +23,18 @@ var _utilities_react = require("./utilities_react");
 var _library_menubars = require("./library_menubars");
 var _settings = require("./settings");
 function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function (e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, default: e }; if (null === e || "object" != typeof e && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (const t in e) "default" !== t && {}.hasOwnProperty.call(e, t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, t)) && (i.get || i.set) ? o(f, t, i) : f[t] = e[t]); return f; })(e, t); }
-window.library_id = (0, _utilities_react.guid)(); // I don't know why pycharm doesn't like this
+window.global_id = (0, _utilities_react.guid)(); // I don't know why pycharm doesn't like this
 
 let tsocket;
 function _administer_home_main() {
-  tsocket = new _tactic_socket.TacticSocket("main", 5000, "admin", window.library_id);
-  let AdministerHomeAppPlus = (0, _settings.withSettings)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(AdministerHomeApp))));
-  const domContainer = document.querySelector('#library-home-root');
-  const root = (0, _client.createRoot)(domContainer);
-  root.render(/*#__PURE__*/_react.default.createElement(AdministerHomeAppPlus, {
-    tsocket: tsocket
-  }));
+  tsocket = new _tactic_socket.TacticSocket("main", 5000, "admin", window.global_id, async () => {
+    let AdministerHomeAppPlus = (0, _settings.withSettings)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(AdministerHomeApp))));
+    const domContainer = document.querySelector('#library-home-root');
+    const root = (0, _client.createRoot)(domContainer);
+    root.render(/*#__PURE__*/_react.default.createElement(AdministerHomeAppPlus, {
+      tsocket: tsocket
+    }));
+  });
 }
 var res_types = ["container", "user"];
 var col_names = {
@@ -87,10 +88,10 @@ function AdministerHomeApp(props) {
   function initSocket() {
     props.tsocket.attachListener("window-open", data => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
     props.tsocket.attachListener('handle-callback', task_packet => {
-      (0, _communication_react.handleCallback)(task_packet, window.library_id);
+      (0, _communication_react.handleCallback)(task_packet, window.global_id);
     });
     props.tsocket.attachListener('close-user-windows', data => {
-      if (!(data["originator"] == window.library_id)) {
+      if (!(data["originator"] == window.global_id)) {
         window.close();
       }
     });
@@ -157,7 +158,7 @@ function AdministerHomeApp(props) {
     selected: null,
     show_api_links: false,
     extra_text: "",
-    page_id: window.library_id,
+    global_id: window.global_id,
     user_name: window.username
   }), /*#__PURE__*/_react.default.createElement(_resource_viewer_context.ViewerContext.Provider, {
     value: {
@@ -320,24 +321,20 @@ function UserMenubar(props) {
       handleCancel: null
     });
   }
-  async function createUserDatabase() {
+  async function dumpUserDatabase() {
     let user_id = props.selected_resource._id;
     statusFuncs.startSpinner();
-    try {
-      let data = await (0, _communication_react.postAjaxPromise)(`create_user_database/${user_id}`);
-      if (data["success"]) {
-        (0, _toaster.doFlash)(data);
-        statusFuncs.startSpinner();
-      } else {
-        statusFuncs.stopSpinner();
-        errorDrawerFuncs.addFromError("Error creating user database", data);
-      }
-    } catch (e) {
-      errorDrawerFuncs.addFromError("Error creating database", e);
+    (0, _communication_react.postPromise)("host", "create_user_database", {
+      user_id
+    }).then(data => {
+      (0, _toaster.doFlash)(data);
+      statusFuncs.startSpinner();
+    }).catch(e => {
+      errorDrawerFuncs.addFromError("Error creating user database", e);
       statusFuncs.stopSpinner();
-    }
+    });
   }
-  function _create_user_database() {
+  function _dump_user_database() {
     let username = props.selected_resource.username;
     const confirm_text = "Do you want to dump a database for " + String(username) + "?  ";
     dialogFuncs.showModal("ConfirmDialog", {
@@ -345,7 +342,7 @@ function UserMenubar(props) {
       text_body: confirm_text,
       cancel_text: "do nothing",
       submit_text: "create",
-      handleSubmit: createUserDatabase,
+      handleSubmit: dumpUserDatabase,
       handleClose: dialogFuncs.hideModal,
       handleCancel: null
     });
@@ -422,16 +419,6 @@ function UserMenubar(props) {
   function _create_user() {
     window.open($SCRIPT_ROOT + '/register');
   }
-
-  // function _duplicate_user (event) {
-  //     let username = props.selected_resource.username;
-  //     window.open($SCRIPT_ROOT + '/user_duplicate/' + username);
-  // }
-  //
-  // function _update_all_collections (event) {
-  //     window.open($SCRIPT_ROOT + '/update_all_collections');
-  // }
-
   function menu_specs() {
     return {
       Manage: [{
@@ -459,15 +446,10 @@ function UserMenubar(props) {
         icon_name: "database",
         click_handler: _create_seed_database
       }, {
-        name_text: "Create User Database",
+        name_text: "Dump a User's Database",
         icon_name: "database",
-        click_handler: _create_user_database
-      }
-      // {name_text: "Upgrade all users", icon_name: "reset",
-      //     click_handler: _upgrade_all_users},
-      // {name_text: "Remove All Duplicates", icon_name: "reset",
-      //     click_handler: _remove_all_duplicates},
-      ]
+        click_handler: _dump_user_database
+      }]
     };
   }
   return /*#__PURE__*/_react.default.createElement(_library_menubars.LibraryMenubar, {

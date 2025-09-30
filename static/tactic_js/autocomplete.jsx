@@ -47,7 +47,7 @@ function create_api() {
 const aiCompletionSection = {
     name: "AI",
     rank: -Infinity
-}
+};
 
 function aiCompletionSource(aiText, aiTextLabel) {
     return (context) => {

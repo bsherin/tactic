@@ -61,8 +61,8 @@ function FileImportDialog(props) {
 
     useConstructor(async () => {
         try {
-            let data = await postPromise("host", "get_resource_names", {res_type});
-            existing_names.current = data.resource_names;
+            let data = await postPromise("host", "get_resource_names_task", {res_type: props.res_type});
+            existing_names.current = data.res_names;
             while (_name_exists(default_name)) {
                     name_counter.current += 1;
                     default_name.current = "new" + props.res_type + String(name_counter.current)

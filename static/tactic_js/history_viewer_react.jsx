@@ -21,8 +21,7 @@ import {TacticSocket} from "./tactic_socket.js";
 import {useCallbackStack, useConnection, useStateAndRef} from "./utilities_react";
 import {withSettings} from "./settings";
 
-const resource_viewer_id = guid();
-window.main_id = resource_viewer_id;
+window.global_id = "a" + guid();
 
 async function history_viewer_main ()  {
     function gotProps(the_props) {
@@ -58,9 +57,9 @@ async function history_viewer_main ()  {
 }
 
 function history_viewer_props(data, registerDirtyMethod, finalCallback) {
-    let tsocket = new TacticSocket("main", 5000, "history_viewer", resource_viewer_id, ()=> {
+    let tsocket = new TacticSocket("main", 5000, "history_viewer", window.global_id, ()=> {
         finalCallback({
-            resource_viewer_id: resource_viewer_id,
+            local_id: window.global_id,
             tsocket: tsocket,
             history_list: [],
             resource_name: window.resource_name,
@@ -123,11 +122,11 @@ function HistoryViewerApp(props) {
 
     function initSocket() {
         props.tsocket.attachListener('handle-callback', (task_packet) => {
-            handleCallback(task_packet, resource_viewer_id)
+            handleCallback(task_packet, props.local_id)
         });
         props.tsocket.attachListener("window-open", (data) => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
         props.tsocket.attachListener('close-user-windows', (data) => {
-            if (!(data["originator"] == window.library_id)) {
+            if (!(data["originator"] == window.global_id)) {
                 window.close()
             }
         });
@@ -226,13 +225,11 @@ function HistoryViewerApp(props) {
                     <TacticNavbar is_authenticated={window.is_authenticated}
                                   selected={null}
                                   show_api_links={true}
-                                  page_id={props.resource_viewer_id}
+                                  global_id={props.global_id}
                                   user_name={window.username}/>
                 }
                 <MergeViewerApp connection_status={connection_status}
                                 initialized={initialized}
-                                page_id={props.resource_viewer_id}
-                                resource_viewer_id={props.resource_viewer_id}
                                 resource_name={props.resource_name}
                                 option_list={option_list}
                                 select_val={history_popup_val}

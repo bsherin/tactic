@@ -1,5 +1,4 @@
 import {get_ppi, renderSpinnerMessage} from "./utilities_react";
-import {TacticSocket} from "./tactic_socket";
 import {handleCallback, postWithCallback} from "./communication_react";
 
 export {notebook_props, notebookReducer}
@@ -7,20 +6,18 @@ export {notebook_props, notebookReducer}
 var ppi;
 
 function notebook_props(data, registerDirtyMethod, finalCallback) {
-    var tsocket;
     ppi = get_ppi();
-    let main_id = data.main_id;
+    let local_id = data.local_id;
+    let tsocket = data.tsocket;
     if (!window.in_context) {
-        window.main_id = main_id;
+        window.global_id = local_id;
     }
-
-    tsocket = new TacticSocket("main", 5000, "notebook_app", main_id, function (response) {
-        tsocket.socket.on("remove-ready-block", readyListener);
-        tsocket.socket.emit('client-ready', {
-            "room": main_id, "user_id": window.user_id, "participant": "client",
-            "rb_id": data.ready_block_id, "main_id": main_id
-        })
+    tsocket.socket.on("remove-ready-block", readyListener);
+    tsocket.socket.emit('client-ready', {
+        "room": local_id, "user_id": window.user_id, "participant": "client",
+        "rb_id": data.ready_block_id, "local_id": local_id
     });
+
     tsocket.socket.on('finish-post-load', _finish_post_load_in_context);
 
     function readyListener() {
@@ -36,7 +33,7 @@ function notebook_props(data, registerDirtyMethod, finalCallback) {
         }
         tsocket.socket.off("remove-ready-block", readyListener);
         tsocket.attachListener('handle-callback', (task_packet) => {
-            handleCallback(task_packet, main_id)
+            handleCallback(task_packet, local_id)
         });
         window.base_figure_url = data.base_figure_url;
         let data_dict = {
@@ -46,7 +43,7 @@ function notebook_props(data, registerDirtyMethod, finalCallback) {
             "ppi": ppi
         };
         if (is_totally_new) {
-            postWithCallback(main_id, "initialize_mainwindow", data_dict, _finish_post_load_in_context, null, main_id)
+            postWithCallback(local_id, "initialize_mainwindow", data_dict, _finish_post_load_in_context, null, local_id)
         } else {
             if (data.is_jupyter) {
                 data_dict["doc_type"] = "jupyter";
@@ -56,7 +53,7 @@ function notebook_props(data, registerDirtyMethod, finalCallback) {
             } else {
                 data_dict["unique_id"] = data.temp_data_id;
             }
-            postWithCallback(main_id, "initialize_project_mainwindow", data_dict, null, null, main_id)
+            postWithCallback(local_id, "initialize_project_mainwindow", data_dict, null, null, local_id)
         }
     }
 
@@ -72,7 +69,7 @@ function notebook_props(data, registerDirtyMethod, finalCallback) {
         if (data.is_project || opening_from_temp_id) {
             finalCallback({
                 is_project: true,
-                main_id: main_id,
+                local_id: local_id,
                 resource_name: data.project_name,
                 tsocket: tsocket,
                 interface_state: interface_state,
@@ -83,7 +80,7 @@ function notebook_props(data, registerDirtyMethod, finalCallback) {
         } else {
             finalCallback({
                 is_project: false,
-                main_id: main_id,
+                local_id: local_id,
                 resource_name: data.project_name,
                 tsocket: tsocket,
                 interface_state: null,

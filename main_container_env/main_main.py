@@ -42,7 +42,7 @@ class MainWorker(QWorker, ExceptionMixin, CopilotMixin):
         self.generate_heartbeats = True
 
     def ask_host(self, msg_type, task_data=None, callback_func=None):
-        task_data["main_id"] = self.my_id
+        task_data["local_id"] = self.my_id
         self.post_task("host", msg_type, task_data, callback_func)
         return
 
@@ -79,7 +79,7 @@ class MainWorker(QWorker, ExceptionMixin, CopilotMixin):
         emit_direct(message, data, namespace='/main', room=self.mwindow.user_id)
 
     def emit_to_main_client(self, message, data):
-        data["main_id"] = self.my_id
+        data["local_id"] = self.my_id  # probably not necessary
         emit_direct(message, data, namespace='/main', room=self.my_id)
 
     def emit_console_message(self, console_message, task_data=None, force_open=True):
@@ -88,7 +88,6 @@ class MainWorker(QWorker, ExceptionMixin, CopilotMixin):
         ldata = copy.copy(task_data)
         ldata["console_message"] = console_message
         ldata["force_open"] = force_open
-        ldata["main_id"] = self.my_id
         self.emit_to_main_client("console-message", ldata)
         return
 
@@ -96,7 +95,7 @@ class MainWorker(QWorker, ExceptionMixin, CopilotMixin):
         if data is None:
             data = {}
         data["export_viewer_message"] = message
-        data["main_id"] = self.my_id
+        data["local_id"] = self.my_id
         self.emit_to_main_client("export-viewer-message", data)
         return
 
@@ -193,7 +192,7 @@ class MainWorker(QWorker, ExceptionMixin, CopilotMixin):
 
     def ready(self):
         self.ask_host("participant_ready", {"rb_id": rb_id, "user_id": os.environ.get("OWNER"),
-                                            "participant": self.my_id, "main_id": self.my_id
+                                            "participant": self.my_id, "local_id": self.my_id
                                             })
         return
 

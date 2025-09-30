@@ -253,7 +253,7 @@ class QWorker(ExceptionMixin):
             if "room" in task_packet:
                 room = task_packet["room"]
             else:
-                room = task_packet["main_id"]
+                room = task_packet["global_id"]
                 task_packet["room"] = room
             if "namespace" in task_packet:
                 namespace = task_packet["namespace"]

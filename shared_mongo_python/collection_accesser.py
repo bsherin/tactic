@@ -4,6 +4,7 @@ import datetime
 import copy
 import os
 from bson import ObjectId
+from collections import OrderedDict
 
 from communication_utils import make_jsonizable_and_compress, debinarize_python_object
 
@@ -23,7 +24,7 @@ class CollectionAccess(object):
         )
         return doc if doc else None
 
-    def get_colletion_doc_from_id(self, collection_id):
+    def get_collection_doc_from_id(self, collection_id):
         doc = self.db[self.collection_collection_name].find_one(
             {"_id": ObjectId(collection_id)}, {"_id": 0}
         )
@@ -144,7 +145,7 @@ class CollectionAccess(object):
             raise NameExistsError("Collection name {} already exists".format(new_name))
         mdata = self.create_initial_metadata()
         mdata["number_of_docs"] = len(list(doc_dict.keys()))
-        mdata["type"] = doc_typ
+        mdata["type"] = doc_type
         mdata.update(collection_metadata)
         if document_metadata is None:
             document_metadata = {}

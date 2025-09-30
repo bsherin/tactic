@@ -12,7 +12,7 @@ import {SettingsContext} from "./settings"
 
 const StatusContext = createContext(null);
 
-const STATUS_BAR_HEIGHT = 25
+const STATUS_BAR_HEIGHT = 25;
 
 export {doFlash, withStatus, StatusContext, messageOrError, STATUS_BAR_HEIGHT}
 
@@ -124,38 +124,21 @@ function withStatus(WrappedComponent) {
             props.tsocket.attachListener("clear-status-msg", _clearStatusMessage);
         }
 
-        const getId = useCallback(() => {
-            if ("main_id" in props) {
-                return props.main_id
-            }
-            else {
-                return props.library_id
-            }
-        }, [props.main_id, props.library_id]);
-
         const _stopSpinner = useCallback((data) => {
-            if (data == null || (data.main_id == getId())) {
-                set_show_spinner(false)
-            }
+            set_show_spinner(false)
         }, []);
 
         const _startSpinner = useCallback((data) =>  {
-            if (data == null || (data.main_id == getId() )) {
-                set_show_spinner(true);
-            }
+            set_show_spinner(true);
         }, []);
 
         const _clearStatusMessage = useCallback((data) =>  {
-            if (data == null || (data.main_id == getId() )) {
-                set_status_message(null)
-            }
+            set_status_message(null)
         }, []);
 
         const _clearStatus = useCallback((data) => {
-            if (data == null || (data.main_id == getId())) {
-                set_show_spinner(false);
-                set_status_message(null)
-            }
+            set_show_spinner(false);
+            set_status_message(null)
         }, []);
 
         const _statusMessage = useCallback((message, timeout = null) => {

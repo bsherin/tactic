@@ -60,44 +60,49 @@ class TileTasksMixin:
             "resource_name": module_name,
             "read_only": False,
             "is_repository": False,
+            "local_id": data["local_id"]
         }
         return data
 
     @task_worthy
     def initiate_creator_in_context(self, data):
+        print("initiating creator in context with data: ", data)
         the_user = self.get_user_from_data(data)
         module_name = data["tile_module_name"]
         the_user.clear_old_recent_history(module_name)
-        id_info = self.initialize_module_viewer_container(module_name, the_user)
-        create_ready_block(id_info["rb_id"], the_user.username, [id_info["module_viewer_id"], "client"],
-                           id_info["module_viewer_id"])
+        local_id = data.get("local_id", str(uuid.uuid4()))
+        print("local_id is: ", local_id)
+        id_info = self.initialize_module_viewer_container(module_name, the_user, local_id, local_id)
+        create_ready_block(id_info["rb_id"], the_user.username, [id_info["local_id"], "client"],
+                           id_info["local_id"])
         mdata = the_user.get_processed_tile_metadata(module_name)
+        print("return local_id: ", id_info["local_id"])
         result = {
             "success": True,
             "kind": "creator-viewer",
             "res_type": "tile",
             "resource_name": module_name,
-            "module_viewer_id": id_info["module_viewer_id"],
-            "ready_block_id": id_info["rb_id"],
+            "local_id": local_id,
+            "ready_block_id": local_id,
             "tile_collection_name": id_info["tile_collection_name"],
             "mdata": mdata
         }
         return result
 
-    def initialize_module_viewer_container(self, module_name, the_user):
-        rb_id = str(uuid.uuid4())
+    def initialize_module_viewer_container(self, module_name, the_user, rb_id, local_id):
         openai_api_key = the_user.get_openai_api_key()
         environ = {"RB_ID": rb_id, "OPENAI_API_KEY": openai_api_key}
         vol_dict = {}
-        module_viewer_id, container_id = create_container("bsherin/tactic-module-viewer",
+        _, container_id = create_container("bsherin/tactic-module-viewer",
                                                           env_vars=environ,
                                                           volume_dict=vol_dict,
                                                           owner=the_user.get_id(),
                                                           username=the_user.username,
+                                                          special_unique_id=local_id,
                                                           other_name=module_name, register_container=True)
 
         the_content = {"module_name": module_name,
-                       "module_viewer_id": module_viewer_id,
+                       "local_id": local_id,
                        "container_id": container_id,
                        "rb_id": rb_id,
                        "tile_collection_name": the_user.tile_collection_name}
@@ -261,6 +266,7 @@ class TileTasksMixin:
 
     @task_worthy_manual_submit
     def load_tile_module_task(self, data, task_packet):
+        print("in load_tile_module_task with data: ", data)
         import loaded_tile_management
         the_user = self.get_user_from_data(data)
         def loaded_source(res_dict):
@@ -272,7 +278,7 @@ class TileTasksMixin:
                     _id = the_user.get_tile_id(tile_module_name)
                     self.update_selector_row({"name": tile_module_name, "doc_id": str(_id), "event_type": "update",
                                                       "icon:upload": "icon:error", "res_type": "tile"}, the_user)
-                if "main_id" not in task_packet:
+                if "local_id" not in task_packet:
                     task_packet["room"] = user_id
                 print(res_dict["message"])
                 if not task_packet["callback_type"] == "no_callback":
@@ -303,11 +309,7 @@ class TileTasksMixin:
                 {"name": tile_module_name, "doc_id": str(_id), "event_type": "update",
                  "icon:upload": "icon:upload", "res_type": "tile"}, the_user)
             print("updated selector row")
-            if "main_id" in task_packet:
-                umdata = {"main_id": task_packet["main_id"]}
-            else:
-                umdata = {}
-            socketio.emit('update-menus', umdata, namespace='/main', room=the_user.get_id())
+            socketio.emit('update-menus', {}, namespace='/main', room=the_user.get_id())
             print("emitted update-menus")
             if not task_packet["callback_type"] == "no_callback":
                 self.submit_response(task_packet, {"success": True, "message": "Tile module successfully loaded",
@@ -345,6 +347,7 @@ class TileTasksMixin:
 
     @task_worthy
     def load_user_default_tiles_task(self, data):
+        import loaded_tile_management
         error_list = loaded_tile_management.load_user_default_tiles(data["username"])
         return {"success": True, "tile_loading_errors": error_list}
 

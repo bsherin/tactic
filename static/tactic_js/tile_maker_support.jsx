@@ -1,5 +1,5 @@
 import {createContext} from "react";
-import {TacticSocket} from "./tactic_socket";
+// import {TacticSocket} from "./tactic_socket";
 import {isInt, renderSpinnerMessage} from "./utilities_react";
 import {handleCallback, postPromise} from "./communication_react";
 import _ from "lodash";
@@ -71,27 +71,25 @@ function creator_props(data, registerDirtyMethod, finalCallback) {
 
     let mdata = data.mdata;
     let module_name = data.resource_name;
-    let module_viewer_id = data.module_viewer_id;
-    window.name = module_viewer_id;
+    let local_id = data.local_id;
+    let tile_collection_name = data.tile_collection_name;
+    let tsocket = data.tsocket;
+    window.name = local_id;
 
     if (!window.in_context) {
-        window.main_id = module_viewer_id;
+        window.global_id = local_id;
     }
 
     async function readyListener() {
         await _everyone_ready_in_context(finalCallback);
     }
+    
 
-    var tsocket = new TacticSocket("main", 5000, "creator", module_viewer_id, function () {
-        tsocket.socket.on("remove-ready-block", readyListener);
-        tsocket.socket.emit('client-ready', {
-            "room": data.module_viewer_id, "user_id": window.user_id, "participant": "client",
-            "rb_id": data.ready_block_id, "main_id": data.module_viewer_id
-        })
+    tsocket.socket.on("remove-ready-block", readyListener);
+    tsocket.socket.emit('client-ready', {
+        "room": data.local_id, "user_id": window.user_id, "participant": "client",
+        "rb_id": data.ready_block_id, "local_id": data.local_id
     });
-
-    let tile_collection_name = data.tile_collection_name;
-
 
     async function _everyone_ready_in_context(finalCallback) {
         if (!window.in_context) {
@@ -99,17 +97,19 @@ function creator_props(data, registerDirtyMethod, finalCallback) {
         }
         let the_content = {
             "module_name": module_name,
-            "module_viewer_id": module_viewer_id,
+            "local_id": local_id,
             "tile_collection_name": tile_collection_name,
             "user_id": window.user_id,
             "version_string": window.version_string
         };
 
-        tsocket.attachListener('handle-callback', (task_packet) => {
-            handleCallback(task_packet, module_viewer_id)
-        });
-        let data_object = await postPromise(module_viewer_id, "initialize_parser",
-            the_content, module_viewer_id);
+        if (window.in_context) {
+            tsocket.attachListener('handle-callback', (task_packet) => {
+                handleCallback(task_packet, local_id)
+            });
+        }
+        let data_object = await postPromise(local_id, "initialize_parser",
+            the_content, local_id);
 
         if (!window.in_context) {
             renderSpinnerMessage("Creating the page...", '#creator-root');
@@ -128,9 +128,8 @@ function creator_props(data, registerDirtyMethod, finalCallback) {
         finalCallback(
             {
                 resource_name: module_name,
+                local_id: local_id,
                 tsocket: tsocket,
-                module_viewer_id: module_viewer_id,
-                main_id: module_viewer_id,
                 initial_line_number: initial_line_number,
                 render_content_info: parsed_data.render_content_info,
                 globals_info: parsed_data.globals_info,

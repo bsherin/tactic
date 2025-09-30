@@ -89,7 +89,7 @@ class TileWorker(QWorker):
         return {"success": True, "message": 'This is a tile communicating'}
 
     def ask_host(self, msg_type, task_data=None, callback_func=None):
-        task_data["main_id"] = self.tile_instance._main_id
+        task_data["local_id"] = self.tile_instance._main_id
         self.post_task("host", msg_type, task_data, callback_func)
         return
 
@@ -103,7 +103,7 @@ class TileWorker(QWorker):
 
     def emit_to_client(self, message, data):
         data["message"] = message
-        data["main_id"] = self.tile_instance._main_id
+        data["local_id"] = self.tile_instance._main_id
         self.ask_host("emit_to_client", data)
 
     def send_error_entry(self, title, content, line_number):

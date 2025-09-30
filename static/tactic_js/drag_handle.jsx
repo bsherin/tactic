@@ -16,7 +16,7 @@ function DragHandle(props) {
         barWidth: null,
         position_dict: {},
         ...props
-    }
+    };
     const startX = useRef(null);
     const startY = useRef(null);
     const lastX = useRef(null);

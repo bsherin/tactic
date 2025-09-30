@@ -1,4 +1,3 @@
-
 if (!window.in_context) {
     import("../tactic_css/tactic.scss");
     import ("../tactic_css/themeable.scss");
@@ -13,7 +12,7 @@ import { useHotkeys } from "@blueprintjs/core";
 
 import {ResourceViewerApp, copyToLibrary} from "./resource_viewer_react_app";
 import {TacticSocket} from "./tactic_socket";
-import {postAjaxPromise} from "./communication_react"
+import {handleCallback} from "./communication_react"
 import {withStatus} from "./toaster.js"
 
 import {ErrorDrawerContext, withErrorDrawer} from "./error_drawer.js";
@@ -30,14 +29,13 @@ export {text_viewer_props, TextViewerApp}
 
 function text_viewer_props(data, registerDirtyMethod, finalCallback) {
 
-    let resource_viewer_id = guid();
-    let tsocket = new TacticSocket("main", 5000, "text_viewer", resource_viewer_id);
-
+    if (!window.in_context) {
+        window.global_id = data.local_id;
+    }
 
     finalCallback({
-        resource_viewer_id: resource_viewer_id,
-        main_id: resource_viewer_id,
-        tsocket: tsocket,
+        local_id: data.local_id,
+        tsocket: data.tsocket,
         split_tags: [],
         file_path: data.file_path,
         resource_name: data.resource_name,
@@ -262,13 +260,13 @@ function TextViewerApp(props) {
                 <TacticNavbar is_authenticated={window.is_authenticated}
                               selected={null}
                               show_api_links={true}
-                              page_id={props.resource_viewer_id}
+                              global_id={props.global_id}
                               user_name={window.username}/>
             }
             <div className={outer_class} ref={top_ref} style={outer_style}
                 tabIndex="0" onKeyDown={handleKeyDown} onKeyUp={handleKeyUp} >
                 <ResourceViewerApp {...my_props}
-                                   resource_viewer_id={props.resource_viewer_id}
+                                   local_id={props.local_id}
                                    padTop={true}
                                    setResourceNameState={_setResourceNameState}
                                    refreshTab={props.refreshTab}
@@ -299,6 +297,7 @@ function TextViewerApp(props) {
 TextViewerApp = memo(TextViewerApp);
 
 async function text_viewer_main() {
+    let local_id = "a" + guid();
     function gotProps(the_props) {
         let TextViewerAppPlus = withSettings(withDialogs(withErrorDrawer(withStatus(TextViewerApp))));
         let the_element = <TextViewerAppPlus {...the_props}
@@ -310,9 +309,13 @@ async function text_viewer_main() {
         root.render(the_element)
     }
 
-    let target = window.is_repository ? "repository_view_list_in_context" : "view_list_in_context";
-    let data = await postAjaxPromise(target, {"resource_name": window.resource_name});
-    text_viewer_props(data, null, gotProps);
+    let tsocket = new TacticSocket("main", 5000, "list_viewer", local_id, async () => {
+        tsocket.attachListener('handle-callback', (task_packet) => {
+            handleCallback(task_packet, local_id)
+        });
+        let data = {resource_name: resource_name, res_type: "list", local_id, tsocket};
+        text_viewer_props(data, null, gotProps);
+    })
 }
 
 if (!window.in_context) {

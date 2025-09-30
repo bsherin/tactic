@@ -8,7 +8,7 @@ import {SearchForm, BpSelectorTable} from "./library_widgets";
 import {HorizontalPanes} from "./resizing_allotment";
 
 import {useCallbackStack, useStateAndRef} from "./utilities_react";
-import {postAjaxPromise} from "./communication_react"
+import {postPromise} from "./communication_react";
 
 import _ from 'lodash';
 import {SearchableConsole} from "./searchable_console";
@@ -248,7 +248,7 @@ function AdminPane(props) {
         right_pane = (
             <div className="d-flex d-inline" ref={console_text_ref}
                  style={{height: "100%", overflow: "hidden", marginRight: 10, position: "relative"}}>
-                <SearchableConsole main_id={window.library_id}
+                <SearchableConsole local_id={window.global_id}
                                    streaming_host="host"
                                    container_id={props.selected_resource.Id}
                                    ref={null}

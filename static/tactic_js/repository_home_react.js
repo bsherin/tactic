@@ -22,10 +22,11 @@ var _blueprint_navbar = require("./blueprint_navbar");
 var _settings = require("./settings");
 var _modal_react = require("./modal_react");
 var _repository_menubars = require("./repository_menubars");
-var _library_home_react = require("./library_home_react");
 var _sizing_tools = require("./sizing_tools");
 var _library_widgets = require("./library_widgets");
 function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function (e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, default: e }; if (null === e || "object" != typeof e && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (const t in e) "default" !== t && {}.hasOwnProperty.call(e, t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, t)) && (i.get || i.set) ? o(f, t, i) : f[t] = e[t]); return f; })(e, t); }
+const library_id = "a" + (0, _utilities_react.guid)();
+window.global_id = library_id;
 let tsocket;
 function RepositoryHomeApp(props) {
   const connection_status = (0, _utilities_react.useConnection)(props.tsocket, initSocket);
@@ -40,10 +41,10 @@ function RepositoryHomeApp(props) {
     tsocket.attachListener("window-open", data => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
     if (!window.in_context) {
       tsocket.attachListener('handle-callback', task_packet => {
-        (0, _communication_react.handleCallback)(task_packet, window.library_id);
+        (0, _communication_react.handleCallback)(task_packet, library_id);
       });
       tsocket.attachListener('close-user-windows', data => {
-        if (!(data["originator"] == window.library_id)) {
+        if (!(data["originator"] == window.global_id)) {
           window.close();
         }
       });
@@ -63,7 +64,7 @@ function RepositoryHomeApp(props) {
     MenubarClass: _repository_menubars.RepositoryAllMenubar
   }, props.errorDrawerFuncs, {
     errorDrawerFuncs: props.errorDrawerFuncs,
-    library_id: _library_home_react.library_id,
+    library_id: library_id,
     is_repository: true
   }));
   let outer_style = {
@@ -80,7 +81,7 @@ function RepositoryHomeApp(props) {
   return /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement(_blueprint_navbar.TacticNavbar, {
     is_authenticated: window.is_authenticated,
     selected: null,
-    page_id: _library_home_react.library_id,
+    global_id: window.global_id,
     show_api_links: false,
     extra_text: window.repository_type == "Local" ? "" : window.repository_type,
     user_name: window.username
@@ -93,7 +94,7 @@ function RepositoryHomeApp(props) {
 }
 exports.RepositoryHomeApp = RepositoryHomeApp = /*#__PURE__*/(0, _react.memo)(RepositoryHomeApp);
 function _repository_home_main() {
-  tsocket = new _tactic_socket.TacticSocket("main", 5000, "repository", _library_home_react.library_id);
+  tsocket = new _tactic_socket.TacticSocket("main", 5000, "repository", library_id);
   tsocket.socket.emit('join-repository', {});
   let RepositoryHomeAppPlus = (0, _settings.withSettings)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(RepositoryHomeApp))));
   const domContainer = document.querySelector('#library-home-root');

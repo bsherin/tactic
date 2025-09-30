@@ -199,7 +199,7 @@ function ConsoleComponent(props) {
 
     function initSocket() {
         function _handleConsoleMessage(data) {
-            if (data.main_id == props.main_id) {
+            if (data.local_id == props.local_id) {
                 // noinspection JSUnusedGlobalSymbols
                 let handlerDict = {
                     consoleLog: (data) => _addConsoleEntry(data.message, data.force_open, true),
@@ -241,7 +241,7 @@ function ConsoleComponent(props) {
 
     function _requestPseudoTileId() {
         if (pseudo_tile_id == null) {
-            postWithCallback(props.main_id, "get_pseudo_tile_id", {}, function (res) {
+            postWithCallback(props.local_id, "get_pseudo_tile_id", {}, function (res) {
                 set_pseudo_tile_id(res.pseudo_tile_id)
             })
         }
@@ -263,7 +263,7 @@ function ConsoleComponent(props) {
         async function gotBlob(blob) {
             const formData = new FormData();
             formData.append('image', blob, 'image.png');
-            formData.append("main_id", props.main_id);
+            formData.append("local_id", props.local_id);
             try {
                 await postFormDataPromise("print_blob_area_to_console", formData);
             } catch (e) {
@@ -275,7 +275,7 @@ function ConsoleComponent(props) {
     async function _addConsoleText(the_text, callback = null) {
         try {
             await postPromise("host", "print_text_area_to_console",
-                {"console_text": the_text, "user_id": window.user_id, "main_id": props.main_id}, props.main_id);
+                {"console_text": the_text, "user_id": window.user_id, "local_id": props.local_id}, props.local_id);
             if (callback != null) {
                 callback();
             }
@@ -291,7 +291,7 @@ function ConsoleComponent(props) {
     async function _addConsoleDivider(header_text, callback = null) {
         try {
             await postPromise("host", "print_divider_area_to_console",
-                {"header_text": header_text, "user_id": window.user_id, "main_id": props.main_id}, props.main_id);
+                {"header_text": header_text, "user_id": window.user_id, "local_id": props.local_id}, props.local_id);
             if (callback != null) {
                 callback();
             }
@@ -377,11 +377,11 @@ function ConsoleComponent(props) {
 
     function _copyAll() {
         const result_dict = {
-            "main_id": props.main_id,
+            "local_id": props.local_id,
             "console_items": props.console_items.current,
             "user_id": window.user_id,
         };
-        postWithCallback("host", "copy_console_cells", result_dict, null, null, props.main_id);
+        postWithCallback("host", "copy_console_cells", result_dict, null, null, props.local_id);
     }
 
     function _copyItems(id_list) {
@@ -403,16 +403,16 @@ function ConsoleComponent(props) {
             }
         }
         const result_dict = {
-            "main_id": props.main_id,
+            "local_id": props.local_id,
             "console_items": entry_list,
             "user_id": window.user_id,
         };
-        postWithCallback("host", "copy_console_cells", result_dict, null, null, props.main_id);
+        postWithCallback("host", "copy_console_cells", result_dict, null, null, props.local_id);
     }
 
     const _pasteCell = useCallback(async (unique_id = null) => {
         try {
-            let data = await postPromise("host", "get_copied_console_cells", {user_id: window.user_id}, props.main_id);
+            let data = await postPromise("host", "get_copied_console_cells", {user_id: window.user_id}, props.local_id);
             _addConsoleEntries(data.console_items, true, false, unique_id)
         } catch (e) {
             errorDrawerFuncs.addFromError(`Error getting copied cells`, e)
@@ -422,7 +422,7 @@ function ConsoleComponent(props) {
     async function _addConsoleTextLink(callback = null) {
         try {
             await postPromise("host", "print_link_area_to_console",
-                {"user_id": window.user_id, "main_id": props.main_id}, props.main_id);
+                {"user_id": window.user_id, "local_id": props.local_id}, props.local_id);
             if (callback) {
                 callback()
             }
@@ -472,9 +472,9 @@ function ConsoleComponent(props) {
         try {
             postWithCallback("host",
                 "print_code_area_to_console",
-                {console_text: the_text, user_id: window.user_id, main_id: props.main_id, force_open: force_open},
+                {console_text: the_text, user_id: window.user_id, local_id: props.local_id, force_open: force_open},
                 null, null,
-                props.main_id);
+                props.local_id);
         } catch (e) {
             errorDrawerFuncs.addFromError("Error creating code cell", e);
         }
@@ -482,11 +482,11 @@ function ConsoleComponent(props) {
 
     const _resetConsole = useCallback(() => {
         props.dispatch({type: "reset"});
-        postWithCallback(props.main_id, "clear_console_namespace", {}, null, null, props.main_id)
+        postWithCallback(props.local_id, "clear_console_namespace", {}, null, null, props.local_id)
     }, []);
 
     function _stopAll() {
-        postWithCallback(props.main_id, "stop_all_console_code", {}, null, null, props.main_id)
+        postWithCallback(props.local_id, "stop_all_console_code", {}, null, null, props.local_id)
     }
 
     const _clearConsole = useCallback(async () => {
@@ -1234,10 +1234,10 @@ function ConsoleComponent(props) {
         _clearCodeOutput(unique_id, async () => {
             _startSpinner(unique_id);
             let entry = get_console_item_entry(unique_id);
-            await postPromise(props.main_id, "exec_console_code", {
+            await postPromise(props.local_id, "exec_console_code", {
                 "the_code": entry.console_text,
                 "console_id": unique_id
-            }, props.main_id);
+            }, props.local_id);
             if (go_to_next) {
                 await _goToNextCell(unique_id)
             }
@@ -1351,7 +1351,7 @@ function ConsoleComponent(props) {
     }
 
     const extraProps = useMemo(() => {
-        return {main_id: props.main_id}
+        return {local_id: props.local_id}
     });
 
     return (
@@ -1428,15 +1428,15 @@ function ConsoleComponent(props) {
                 />
             }
             {!props.mState.console_is_shrunk && show_main_log &&
-                <SearchableConsole main_id={props.main_id}
+                <SearchableConsole local_id={props.local_id}
                                    streaming_host="host"
-                                   container_id={props.main_id}
+                                   container_id={props.local_id}
                                    outer_style={searchable_console_style}
                                    showCommandField={false}
                 />
             }
             {!props.mState.console_is_shrunk && show_pseudo_log &&
-                <SearchableConsole main_id={props.main_id}
+                <SearchableConsole local_id={props.local_id}
                                    streaming_host="host"
                                    container_id={pseudo_tile_id}
                                    outer_style={searchable_console_style}
@@ -1451,7 +1451,7 @@ function ConsoleComponent(props) {
                     <SortableComponent className="console-items-div"
                                        direction="vertical"
                                        style={empty_style}
-                                       main_id={props.main_id}
+                                       local_id={props.local_id}
                                        ElementComponent={TailoredSuperItem}
                                        key_field_name="unique_id"
                                        item_list={filtered_items}
@@ -1832,7 +1832,7 @@ function LogItem(props) {
         if (widgetKind in widgetDict) {
             let WidgetComponent = widgetDict[widgetKind];
             the_widget =(<div className="log-code-output  log-item-output" style={{paddingBottom: 5}} key={widgetId} >
-                <WidgetComponent key={widgetId} widgetId={widgetId} main_id={props.main_id}
+                <WidgetComponent key={widgetId} widgetId={widgetId} local_id={props.local_id}
                                           console_id={props.unique_id}
                                           dispatch={props.dispatch}
                                           widgetDict={widgetDict}
@@ -1841,7 +1841,7 @@ function LogItem(props) {
         } else {
             let WidgetComponent = widgetDict["text"];
             the_widget = (<div className="log-code-output log-item-output" style={{paddingBottom: 5}} key={widgetId} >
-                <WidgetComponent key={widgetId} widgetId={widgetId} main_id={props.main_id}
+                <WidgetComponent key={widgetId} widgetId={widgetId} local_id={props.local_id}
                                           console_id={props.unique_id}
                                           dispatch={props.dispatch}
                                           widgetData={`Widget kind not found ${widgetId}, ${widgetKind} ${widgetData}`} />
@@ -2141,7 +2141,7 @@ function ConsoleCodeItem(props) {
 
     const _stopMe = useCallback(() => {
         _stopMySpinner();
-        postWithCallback(props.main_id, "stop_console_code", {"console_id": props.unique_id}, null, null, props.main_id)
+        postWithCallback(props.local_id, "stop_console_code", {"console_id": props.unique_id}, null, null, props.local_id)
     }, []);
 
     function _stopMySpinner() {
@@ -2301,7 +2301,7 @@ function ConsoleCodeItem(props) {
                 let WidgetComponent = widgetDict[widgetKind];
                 the_widget = (<div className="log-code-output" style={{paddingBottom: 5}}>
                     <ErrorBoundary custom_message={`Error in output widget ${widgetId} of kind ${widgetKind}`}>
-                        <WidgetComponent key={widgetId} widgetId={widgetId} main_id={props.main_id}
+                        <WidgetComponent key={widgetId} widgetId={widgetId} local_id={props.local_id}
                                          console_id={props.unique_id}
                                          row={idx}
                                          dispatch={props.dispatch}
@@ -2312,7 +2312,7 @@ function ConsoleCodeItem(props) {
                 let WidgetComponent = widgetDict["text"];
                 the_widget = (<div className="log-code-output" style={{paddingBottom: 5}}>
                     <ErrorBoundary custom_message={`Error outputting not found messsage`}>
-                        <WidgetComponent key={widgetId} widgetId={widgetId} main_id={props.main_id}
+                        <WidgetComponent key={widgetId} widgetId={widgetId} local_id={props.local_id}
                                          row={idx}
                                          console_id={props.unique_id}
                                          dispatch={props.dispatch}
@@ -2400,7 +2400,7 @@ function ConsoleCodeItem(props) {
                                                       search_term={props.search_string}
                                                       flex_size={true}
                                                       tsocket={props.tsocket}
-                                                      container_id={props.main_id}
+                                                      local_id={props.local_id}
                                                       saveMe={null}/>
                                     <div className="button-div float-buttons d-flex flex-row">
                                         <GlyphButton handleClick={_deleteMe}
@@ -2779,7 +2779,7 @@ function ConsoleTextItem(props) {
                                                           search_term={props.search_string}
                                                           flex_size={true}
                                                           tsocket={props.tsocket}
-                                                          container_id={props.main_id}
+                                                          local_id={props.local_id}
                                                           saveMe={null}/>
                                     </Fragment>
                                 }

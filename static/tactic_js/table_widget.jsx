@@ -76,21 +76,24 @@ function compute_initial_column_widths(table_selector, header_list, data_list, m
     return result
 }
 
-const base_outer_style = {height: "100%", position: "relative",
-    overflow: "auto", display: "flex", flexDirection: "column"};
+const base_outer_style = {
+    height: "100%", position: "relative",
+    overflow: "auto", display: "flex", flexDirection: "column"
+};
 
 const tableDataDefault = {
-        value: [],
-        maxColumnWidth: null,
-        expandRows: false,
-        maxRows: 50,
-        className: "",
-        style: {},
+    value: [],
+    maxColumnWidth: null,
+    expandRows: false,
+    maxRows: 50,
+    className: "",
+    style: {},
 };
+
 function TableWidget(props) {
     props = {
         widgetId: null,
-        main_id: null,
+        local_id: null,
         console_id: null,
         tile_id: null,
         row: 0,
@@ -99,7 +102,7 @@ function TableWidget(props) {
         widgetData: {
             ...tableDataDefault,
             ...(props.widgetData || {}),
-          },
+        },
     };
 
     const [columnWidths, setColumnWidths] = useState(null);
@@ -114,7 +117,7 @@ function TableWidget(props) {
     const didRender = useRef(false);
 
     const [, widgetSet] = useWidget(
-        props.widgetId, props.main_id, props.console_id, props.tile_id,
+        props.widgetId, props.local_id, props.console_id, props.tile_id,
         "table",
         props.row, props.dispatch);
 
@@ -147,6 +150,7 @@ function TableWidget(props) {
         function footerChoice(val) {
             return {label: String(val), value: val}
         }
+
         const defaultChoices = [25, 100, 250, 500];
         let availableRows = props.widgetData["availableRows"];
         if (!availableRows) {

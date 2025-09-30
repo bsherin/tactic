@@ -163,8 +163,8 @@ class UserTasksMixin:
         chunk_dict = {}
         for n, r in enumerate(chunk_list):
             chunk_dict[n + chunk_start] = r
-        return jsonify(
-            {"success": True, "chunk_dict": chunk_dict, "num_rows": len(sorted_results)})
+        return {"success": True, "chunk_dict": chunk_dict, "num_rows": len(sorted_results)}
+
 
     @task_worthy
     def create_seed_database_task(self, data):

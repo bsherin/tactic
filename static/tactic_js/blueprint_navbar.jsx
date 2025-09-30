@@ -38,7 +38,7 @@ function TacticNavbar({extra_text = null, menus = null, selected = null, show_ap
     }
 
     function _handle_signout() {
-        window.open($SCRIPT_ROOT + "/logout/" + props.page_id, "_self");
+        window.open($SCRIPT_ROOT + "/logout/" + props.global_id, "_self");
         return false
     }
 

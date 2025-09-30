@@ -14,7 +14,7 @@ import {Regions} from "@blueprintjs/table";
 import {TacticSocket} from "./tactic_socket"
 import {doFlash} from "./toaster"
 import {TacticNavbar} from "./blueprint_navbar";
-import {handleCallback, postPromise, postAjaxPromise} from "./communication_react"
+import {handleCallback, postPromise} from "./communication_react"
 import {withStatus} from "./toaster";
 import {withDialogs} from "./modal_react";
 
@@ -31,16 +31,17 @@ import {SettingsContext, withSettings} from "./settings";
 import {DialogContext} from "./modal_react";
 import {StatusContext} from "./toaster"
 
-window.library_id = guid();  // I don't know why pycharm doesn't like this
+window.global_id = guid();  // I don't know why pycharm doesn't like this
 
 let tsocket;
 
 function _administer_home_main () {
-    tsocket = new TacticSocket("main", 5000, "admin", window.library_id);
-    let AdministerHomeAppPlus = withSettings(withDialogs(withErrorDrawer(withStatus(AdministerHomeApp))));
-    const domContainer = document.querySelector('#library-home-root');
-    const root = createRoot(domContainer);
-    root.render(<AdministerHomeAppPlus tsocket={tsocket}/>)
+    tsocket = new TacticSocket("main", 5000, "admin", window.global_id, async () => {
+        let AdministerHomeAppPlus = withSettings(withDialogs(withErrorDrawer(withStatus(AdministerHomeApp))));
+        const domContainer = document.querySelector('#library-home-root');
+        const root = createRoot(domContainer);
+        root.render(<AdministerHomeAppPlus tsocket={tsocket}/>)
+    })
 }
 
 var res_types = ["container", "user"];
@@ -106,10 +107,10 @@ function AdministerHomeApp(props) {
     function initSocket() {
         props.tsocket.attachListener("window-open", (data) => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
         props.tsocket.attachListener('handle-callback', (task_packet) => {
-            handleCallback(task_packet, window.library_id)
+            handleCallback(task_packet, window.global_id)
         });
         props.tsocket.attachListener('close-user-windows', (data) => {
-            if (!(data["originator"] == window.library_id)) {
+            if (!(data["originator"] == window.global_id)) {
                 window.close()
             }
         });
@@ -188,7 +189,7 @@ function AdministerHomeApp(props) {
                           selected={null}
                           show_api_links={false}
                           extra_text=""
-                          page_id={window.library_id}
+                          global_id={window.global_id}
                           user_name={window.username}/>
             <ViewerContext.Provider value={{readOnly: false}}>
                 <div className={outer_class} ref={top_ref} style={outer_style}>
@@ -341,27 +342,22 @@ function UserMenubar(props){
         });
     }
 
-    async function createUserDatabase() {
+    async function dumpUserDatabase() {
         let user_id = props.selected_resource._id;
         statusFuncs.startSpinner();
-        try {
-            let data = await postAjaxPromise(`create_user_database/${user_id}`);
-            if (data["success"]) {
+        postPromise("host", "create_user_database", {user_id})
+            .then((data) => {
                 doFlash(data);
                 statusFuncs.startSpinner();
-            }
-            else {
+            })
+            .catch((e) => {
+                errorDrawerFuncs.addFromError("Error creating user database", e);
                 statusFuncs.stopSpinner();
-                errorDrawerFuncs.addFromError("Error creating user database", data);
             }
-        }
-        catch (e) {
-            errorDrawerFuncs.addFromError("Error creating database", e);
-            statusFuncs.stopSpinner();
-        }
+        )
     }
 
-    function _create_user_database () {
+    function _dump_user_database () {
 
         let username = props.selected_resource.username;
         const confirm_text = "Do you want to dump a database for " + String(username) + "?  ";
@@ -370,7 +366,7 @@ function UserMenubar(props){
             text_body: confirm_text,
             cancel_text: "do nothing",
             submit_text: "create",
-            handleSubmit: createUserDatabase,
+            handleSubmit: dumpUserDatabase,
             handleClose: dialogFuncs.hideModal,
             handleCancel: null
         });
@@ -453,15 +449,6 @@ function UserMenubar(props){
         window.open($SCRIPT_ROOT + '/register');
     }
 
-    // function _duplicate_user (event) {
-    //     let username = props.selected_resource.username;
-    //     window.open($SCRIPT_ROOT + '/user_duplicate/' + username);
-    // }
-    //
-    // function _update_all_collections (event) {
-    //     window.open($SCRIPT_ROOT + '/update_all_collections');
-    // }
-
      function menu_specs() {
         return {
             Manage: [
@@ -477,12 +464,8 @@ function UserMenubar(props){
                     click_handler: _bump_all_alt_ids},
                 {name_text: "Create Seed Database", icon_name: "database",
                     click_handler: _create_seed_database},
-                {name_text: "Create User Database", icon_name: "database",
-                    click_handler: _create_user_database},
-                // {name_text: "Upgrade all users", icon_name: "reset",
-                //     click_handler: _upgrade_all_users},
-                // {name_text: "Remove All Duplicates", icon_name: "reset",
-                //     click_handler: _remove_all_duplicates},
+                {name_text: "Dump a User's Database", icon_name: "database",
+                    click_handler: _dump_user_database},
             ]
         };
     }

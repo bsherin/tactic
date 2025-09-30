@@ -17,14 +17,14 @@ function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r
 const PADDING = 20;
 async function copyToLibrary(res_type, resource_name, dialogFuncs, statusFuncs, errorDrawerFuncs) {
   try {
-    let data = await (0, _communication_react.postPromise)("host", "get_resource_names", {
+    let data = await (0, _communication_react.postPromise)("host", "get_resource_names_task", {
       res_type
     });
     let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
       title: `Import ${res_type}`,
       field_title: `New ${res_type} Name`,
       default_value: resource_name,
-      existing_names: data.resource_names,
+      existing_names: data.res_names,
       checkboxes: [],
       handleClose: dialogFuncs.hideModal
     });
@@ -51,7 +51,7 @@ async function sendToRepository(res_type, resource_name, dialogFuncs, statusFunc
       title: `Share ${res_type}`,
       field_title: `New ${res_type} Name`,
       default_value: resource_name,
-      existing_names: data.resource_names,
+      existing_names: data.res_names,
       checkboxes: [],
       handleClose: dialogFuncs.hideModal
     });
@@ -103,11 +103,11 @@ function ResourceViewerApp(props) {
   }, []);
   function initSocket() {
     props.tsocket.attachListener('handle-callback', task_packet => {
-      (0, _communication_react.handleCallback)(task_packet, props.resource_viewer_id);
+      (0, _communication_react.handleCallback)(task_packet, props.local_id);
     });
     if (!props.controlled) {
       props.tsocket.attachListener('close-user-windows', data => {
-        if (!(data["originator"] == props.resource_viewer_id)) {
+        if (!(data["originator"] == props.global_id)) {
           window.close();
         }
       });

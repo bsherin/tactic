@@ -5,13 +5,13 @@ export {TacticSocket}
 
 class TacticSocket {
 
-    constructor(name_space, retry_interval, identifier, main_id = null, on_initial_join = null) {
+    constructor(name_space, retry_interval, identifier, local_id = null, on_initial_join = null) {
 
         this.name_space = name_space;
         this.ident = identifier;
         this.recInterval = null;
         this.retry_interval = retry_interval;
-        this.main_id = main_id;
+        this.local_id = local_id;
         this.listeners = {};
         this.connectme();
         this.join_rooms(false, on_initial_join);
@@ -28,25 +28,26 @@ class TacticSocket {
 
     join_rooms(reconnect = false, on_join = null) {
         this.socket.emit('join', {"room": window.user_id});
-        if (this.main_id) {
-            // If I have a callback of null here it gets treated as an extra argument, which cases problems
+        if (this.local_id) {
+            // If I pass a callback of null to socket.emit it gets treated as an extra argument,
+            // which cases problems
             // So we have to split this isn't two cases, one with a callback and one without
             if (on_join) {
                 this.socket.emit('join', {
-                    "room": this.main_id,
+                    "room": this.local_id,
                     "user_id": window.user_id
                 }, on_join)
             }
             else {
                 this.socket.emit('join', {
-                    "room": this.main_id,
+                    "room": this.local_id,
                     "user_id": window.user_id
                 });
             }
         }
     }
 
-    // We have to be careful to get the very same instance of the listerner function
+    // We have to be careful to get the very same instance of the listener function
     // That requires storing it outside this component since the console can be unmounted
     attachListener(event, newListener) {
         if (event in this.listeners) {

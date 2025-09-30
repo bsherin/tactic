@@ -15,7 +15,7 @@ import {useCallbackStack } from "./utilities_react";
 import {withStatus} from "./toaster";
 import {SettingsContext} from "./settings";
 
-window.page_id = guid();
+window.global_id = guid();
 var tsocket;
 
 function _login_main() {
@@ -106,7 +106,7 @@ function LoginApp(props) {
                 <TacticNavbar is_authenticated={window.is_authenticated}
                               selected={null}
                               show_api_links={false}
-                              page_id={window.page_id}
+                              global_id={window.global_id}
                               user_name={window.username}/>
                 <div className={outer_class} style={{textAlign:"center", height: "100%"}}>
                     <div id="status-area"></div>

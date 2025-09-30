@@ -1072,7 +1072,7 @@ class APISupportTasksMixin:
     @task_worthy
     def get_function_with_metadata_task(self, data):
         function_name = data["function_name"]
-        function_dict = self.get_function_content_with_metadata(function_name)
+        function_dict = self.get_function_with_metadata(function_name)
         return {"function_data": make_python_object_jsonizable(function_dict)}
 
     @task_worthy

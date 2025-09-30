@@ -5,7 +5,6 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.LibraryHomeApp = LibraryHomeApp;
-exports.library_id = void 0;
 var _extends2 = _interopRequireDefault(require("@babel/runtime/helpers/extends"));
 var _react = _interopRequireWildcard(require("react"));
 var _client = require("react-dom/client");
@@ -33,9 +32,9 @@ if (!window.in_context) {
   Promise.resolve().then(() => _interopRequireWildcard(require("../tactic_css/resource_viewer.scss")));
   Promise.resolve().then(() => _interopRequireWildcard(require("../tactic_css/themeable.scss")));
 }
-const library_id = exports.library_id = (0, _utilities_react.guid)();
+const library_id = (0, _utilities_react.guid)();
 if (!window.in_context) {
-  window.main_id = library_id;
+  window.global_id = library_id;
 }
 function LibraryHomeApp(props) {
   const top_ref = (0, _react.useRef)(null);
@@ -56,7 +55,7 @@ function LibraryHomeApp(props) {
         (0, _toaster.doFlash)(data);
       });
       props.tsocket.attachListener('close-user-windows', data => {
-        if (!(data["originator"] == library_id)) {
+        if (!(data["originator"] == window.global_id)) {
           window.close();
         }
       });
@@ -105,7 +104,7 @@ function LibraryHomeApp(props) {
     selected: null,
     show_api_links: false,
     extra_text: window.database_type == "Local" ? "" : window.database_type,
-    page_id: library_id,
+    global_id: global_id,
     user_name: window.username
   }), /*#__PURE__*/_react.default.createElement("div", {
     className: outer_class,

@@ -1,6 +1,6 @@
 import re
 import os
-import datetime
+from datetime import datetime
 
 LIBRARY_CHUNK_SIZE = int(int(os.environ.get("LIBRARY_CHUNK_SIZE")) / 2)
 
@@ -146,7 +146,7 @@ class ContainerTasksMixin:
 
         search_spec = data["search_spec"]
         row_number = data["row_number"]
-        search_text = data['search_string']
+        search_text = search_spec['search_string']
         reg = re.compile(".*" + search_text + ".*", re.IGNORECASE)
 
         all_containers = cli.containers.list(all=True)
@@ -180,5 +180,4 @@ class ContainerTasksMixin:
         chunk_dict = {}
         for n, r in enumerate(chunk_list):
             chunk_dict[n + chunk_start] = r
-        return jsonify(
-            {"success": True, "chunk_dict": chunk_dict, "num_rows": len(sorted_results)})
+        return {"success": True, "chunk_dict": chunk_dict, "num_rows": len(sorted_results)}

@@ -29,24 +29,21 @@ if (!window.in_context) {
   Promise.resolve().then(() => _interopRequireWildcard(require("../tactic_css/themeable.scss")));
 }
 function module_viewer_props(data, registerDirtyMethod, finalCallback) {
-  let resource_viewer_id = (0, _utilities_react.guid)();
+  let tsocket = data.tsocket;
   if (!window.in_context) {
-    window.main_id = resource_viewer_id;
+    window.global_id = data.local_id;
   }
-  const tsocket = new _tactic_socket.TacticSocket("main", 5000, "module_viewer", resource_viewer_id, () => {
-    finalCallback({
-      resource_viewer_id: resource_viewer_id,
-      main_id: resource_viewer_id,
-      tsocket: tsocket,
-      split_tags: [],
-      created: "",
-      resource_name: data.resource_name,
-      the_content: "",
-      notes: "",
-      readOnly: false,
-      is_repository: false,
-      registerDirtyMethod: registerDirtyMethod
-    });
+  finalCallback({
+    local_id: data.local_id,
+    tsocket: tsocket,
+    split_tags: [],
+    created: "",
+    resource_name: data.resource_name,
+    the_content: "",
+    notes: "",
+    readOnly: false,
+    is_repository: false,
+    registerDirtyMethod: registerDirtyMethod
   });
 }
 function ModuleViewerApp(props) {
@@ -302,7 +299,7 @@ function ModuleViewerApp(props) {
     try {
       let data = await (0, _communication_react.postPromise)("host", "get_tile_names", {
         "user_id": window.user_id
-      }, props.main_id);
+      }, props.local_id);
       let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
         title: "Save Module As",
         field_title: "New Module Name",
@@ -339,7 +336,7 @@ function ModuleViewerApp(props) {
       await (0, _communication_react.postPromise)("host", "load_tile_module_task", {
         "tile_module_name": _cProp("resource_name"),
         "user_id": window.user_id
-      }, props.resource_viewer_id);
+      }, props.local_id);
       statusFuncs.statusMessage("Saved and loaded module");
       statusFuncs.stopSpinner();
     } catch (e) {
@@ -358,7 +355,7 @@ function ModuleViewerApp(props) {
       await (0, _communication_react.postPromise)("host", "load_tile_module_task", {
         "tile_module_name": _cProp("resource_name"),
         "user_id": window.user_id
-      }, props.resource_viewer_id);
+      }, props.local_id);
       statusFuncs.statusMessage("Loaded module");
       statusFuncs.stopSpinner();
     } catch (e) {
@@ -435,7 +432,7 @@ function ModuleViewerApp(props) {
     is_authenticated: window.is_authenticated,
     selected: null,
     show_api_links: true,
-    page_id: props.resource_viewer_id,
+    global_id: props.global_id,
     user_name: window.username
   }), /*#__PURE__*/_react.default.createElement("div", {
     className: outer_class,
@@ -445,7 +442,7 @@ function ModuleViewerApp(props) {
     onKeyDown: handleKeyDown,
     onKeyUp: handleKeyUp
   }, /*#__PURE__*/_react.default.createElement(_resource_viewer_react_app.ResourceViewerApp, (0, _extends2.default)({}, my_props, {
-    resource_viewer_id: my_props.resource_viewer_id,
+    local_id: my_props.local_id,
     refreshTab: props.refreshTab,
     closeTab: props.closeTab,
     res_type: "tile",
@@ -478,6 +475,7 @@ function ModuleViewerApp(props) {
 }
 exports.ModuleViewerApp = ModuleViewerApp = /*#__PURE__*/(0, _react.memo)(ModuleViewerApp);
 function module_viewer_main() {
+  let local_id = "a" + (0, _utilities_react.guid)();
   function gotProps(the_props) {
     let ModuleViewerAppPlus = (0, _settings.withSettings)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)((0, _assistant.withAssistant)(ModuleViewerApp)))));
     let the_element = /*#__PURE__*/_react.default.createElement(ModuleViewerAppPlus, (0, _extends2.default)({}, the_props, {
@@ -488,11 +486,18 @@ function module_viewer_main() {
     const root = (0, _client.createRoot)(domContainer);
     root.render(the_element);
   }
-  let data = {
-    resource_name: window.resource_name,
-    res_type: "list"
-  };
-  module_viewer_props(data, null, gotProps, null);
+  let tsocket = new _tactic_socket.TacticSocket("main", 5000, "module_viewer", local_id, async () => {
+    tsocket.attachListener('handle-callback', task_packet => {
+      (0, _communication_react.handleCallback)(task_packet, local_id);
+    });
+    let data = {
+      resource_name: resource_name,
+      res_type: "tile",
+      local_id,
+      tsocket
+    };
+    module_viewer_props(data, null, gotProps);
+  });
 }
 if (!window.in_context) {
   module_viewer_main();

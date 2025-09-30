@@ -61,7 +61,7 @@ function FreeformBody(props) {
     }
 
     function _handleBlur(new_data_text) {
-        postWithCallback(props.main_id, "add_freeform_document",
+        postWithCallback(props.local_id, "add_freeform_document",
             {document_name: props.mState.table_spec.current_doc_name, doc_text: new_data_text}, null)
     }
 
@@ -100,9 +100,9 @@ function MainTableCardHeader(props) {
     async function _handleFilter() {
         const data_dict = {"text_to_find": props.mState.search_text};
         try {
-            await postPromise(props.main_id, "UnfilterTable", data_dict);
+            await postPromise(props.local_id, "UnfilterTable", data_dict);
             if (props.search_text !== "") {
-                await postPromise(props.main_id, "FilterTable", data_dict);
+                await postPromise(props.local_id, "FilterTable", data_dict);
                 props.setMainStateValue({
                     "table_is_filtered": true,
                     "selected_regions": null,
@@ -118,7 +118,7 @@ function MainTableCardHeader(props) {
         props.handleSearchFieldChange(null);
         try {
             if (props.mState.table_is_filtered) {
-                await postPromise(props.main_id, "UnfilterTable", {selected_row: props.mState.selected_row});
+                await postPromise(props.local_id, "UnfilterTable", {selected_row: props.mState.selected_row});
                 props.setMainStateValue({
                     "table_is_filtered": false,
                     "selected_regions": null,

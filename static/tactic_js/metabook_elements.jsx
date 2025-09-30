@@ -213,7 +213,7 @@ function MetabookTextItem(props) {
                                                           search_term={null}
                                                           flex_size={true}
                                                           tsocket={props.tsocket}
-                                                          container_id={props.main_id}
+                                                          local_id={props.local_id}
                                                           saveMe={null}/>
                                     </Fragment>
                                 }

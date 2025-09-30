@@ -18,7 +18,7 @@ I just need to place a settrace whereever
    
 ```python
 import pydevd_pycharm
-pydevd_pycharm.settrace('docker.for.mac.localhost', port=21000, stdoutToServer=True, stderrToServer=True, suspend=True)
+pydevd_pycharm.settrace('host.docker.internal', port=21000, stdout_to_Server=True, stderr_to_server=True, suspend=True)
 ```
    
 2a. If I want to debug in only one of the host containers, then I will need this instead
@@ -28,7 +28,7 @@ import pydevd_pycharm
 import os
 myport = os.environ.get("MYPORT")
 if myport == str(5000):
-   pydevd_pycharm.settrace('docker.for.mac.localhost', port=21000, stdoutToServer=True, stderrToServer=True,
+   pydevd_pycharm.settrace('host.docker.internal', port=21000, stdout_to_server=True, stderr_to_server=True,
                            suspend=True)
 ```
 

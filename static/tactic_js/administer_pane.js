@@ -78,7 +78,7 @@ function AdminPane(props) {
         search_spec: search_spec,
         row_number: row_index
       };
-      let data = await postPromise("host", get_task, query);
+      let data = await (0, _communication_react.postPromise)("host", get_task, query);
       let new_data_dict;
       if (flush) {
         new_data_dict = data.chunk_dict;
@@ -243,7 +243,7 @@ function AdminPane(props) {
         position: "relative"
       }
     }, /*#__PURE__*/_react.default.createElement(_searchable_console.SearchableConsole, {
-      main_id: window.library_id,
+      local_id: window.global_id,
       streaming_host: "host",
       container_id: props.selected_resource.Id,
       ref: null,

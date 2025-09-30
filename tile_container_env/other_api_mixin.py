@@ -164,7 +164,7 @@ class OtherAPIMIxin:
                 temp_id = result["temp_id"]
                 data = {"message": "window-open",
                         "the_id": temp_id,
-                        "main_id": self._main_id}
+                        "local_id": self._main_id}
                 self._tworker.emit_to_client("window-open", data)
             except Exception as ex:
                 error_string = self._handle_exception(ex, "Error emitting to client", print_to_console=False)
@@ -187,7 +187,7 @@ class OtherAPIMIxin:
                 temp_id = result["temp_id"]
                 data = {"message": "window-open",
                         "the_id": temp_id,
-                        "main_id": self._main_id}
+                        "local_id": self._main_id}
                 self._tworker.emit_to_client("window-open", data)
             except Exception as ex:
                 self._handle_exception(ex, "Error emitting to client")

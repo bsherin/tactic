@@ -8,7 +8,7 @@ function fixOutputRowRecursively(wdict) {
     if (typeof wdict == "string") {
         new_wdict = {widgetId: guid(), widgetKind: "rawHtml", widgetData: {value: wdict}};
     } else if ("widgets" in wdict.widgetData) {
-        let new_wdict = {...wdict}
+        let new_wdict = {...wdict};
         new_wdict.widgetData.widgets = wdict.widgetData.widgets.map((w) => {
             fixOutputRowRecursively(w)
         });
@@ -135,7 +135,7 @@ function consoleItemsReducer(console_items, action) {
             new_items = console_items.map(t => {
                 if (t.unique_id === action.unique_id) {
                     let new_t = {...t};
-                    new_t["output_dict"] = action.new_value
+                    new_t["output_dict"] = action.new_value;
                     new_t = fixCodeOutputs(new_t);
                     return new_t
                     // return updateOutputText(new_t);
@@ -148,7 +148,7 @@ function consoleItemsReducer(console_items, action) {
             new_items = console_items.map(t => {
                 if (t.unique_id === action.unique_id) {
                     let new_t = {...t};
-                    new_t["output_dict"] = {}
+                    new_t["output_dict"] = {};
                     //return updateOutputText(new_t);
                     return new_t;
                 } else {
@@ -164,7 +164,7 @@ function consoleItemsReducer(console_items, action) {
                     if (t.type == "code") {
                         const sortedOutputKeys = Object.keys(new_t["output_dict"]).map(Number).sort((a, b) => a - b);
                         new_t["output_dict"] = sortedOutputKeys.map(key => {
-                            let d = new_t["output_dict"][key]
+                            let d = new_t["output_dict"][key];
                             let new_d = {...d};
                             if (d.widgetId == action.widgetId) {
                                 new_d.widgetData = {...new_t.widgetData, ...action.widgetData};
@@ -172,7 +172,7 @@ function consoleItemsReducer(console_items, action) {
                             } else {
                                 return d
                             }
-                        })
+                        });
                         return new_t;
                     } else if (t.type == "fixed") {
                         new_t.console_text = new_t.console_text.map(d => {
@@ -183,7 +183,7 @@ function consoleItemsReducer(console_items, action) {
                             } else {
                                 return d
                             }
-                        })
+                        });
                         return new_t;
                     }
                 } else {

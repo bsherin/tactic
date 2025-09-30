@@ -7,26 +7,23 @@ exports.mainReducer = mainReducer;
 exports.main_props = main_props;
 var _utilities_react = require("./utilities_react");
 var _communication_react = require("./communication_react");
-var _tactic_socket = require("./tactic_socket");
 let ppi;
 function main_props(data, registerDirtyMethod, finalCallback) {
-  var tsocket;
   ppi = (0, _utilities_react.get_ppi)();
-  let main_id = data.main_id;
+  let local_id = data.local_id;
+  let tsocket = data.tsocket;
   if (!window.in_context) {
-    window.main_id = main_id;
+    window.global_id = local_id;
   }
   let initial_tile_types;
   let initial_tile_icon_dict;
-  tsocket = new _tactic_socket.TacticSocket("main", 5000, "main_app", main_id, function (response) {
-    tsocket.socket.on("remove-ready-block", readyListener);
-    tsocket.socket.emit('client-ready', {
-      "room": main_id,
-      "user_id": window.user_id,
-      "participant": "client",
-      "rb_id": data.ready_block_id,
-      "main_id": main_id
-    });
+  tsocket.socket.on("remove-ready-block", readyListener);
+  tsocket.socket.emit('client-ready', {
+    "room": local_id,
+    "user_id": window.user_id,
+    "participant": "client",
+    "rb_id": data.ready_block_id,
+    "local_id": local_id
   });
   tsocket.attachListener('finish-post-load', _finish_post_load_in_context);
   function readyListener() {
@@ -38,7 +35,7 @@ function main_props(data, registerDirtyMethod, finalCallback) {
     }
     tsocket.socket.off("remove-ready-block", readyListener);
     tsocket.attachListener('handle-callback', task_packet => {
-      (0, _communication_react.handleCallback)(task_packet, main_id);
+      (0, _communication_react.handleCallback)(task_packet, local_id);
     });
     window.base_figure_url = data.base_figure_url;
     if (data.is_project) {
@@ -49,7 +46,7 @@ function main_props(data, registerDirtyMethod, finalCallback) {
         "user_id": window.user_id,
         "ppi": ppi
       };
-      (0, _communication_react.postWithCallback)(main_id, "initialize_project_mainwindow", data_dict, null, null, main_id);
+      (0, _communication_react.postWithCallback)(local_id, "initialize_project_mainwindow", data_dict, null, null, local_id);
     } else {
       let data_dict = {
         "collection_name": data.collection_name,
@@ -58,7 +55,7 @@ function main_props(data, registerDirtyMethod, finalCallback) {
         "user_id": window.user_id,
         "ppi": ppi
       };
-      (0, _communication_react.postWithCallback)(main_id, "initialize_mainwindow", data_dict, _finish_post_load_in_context, null, main_id);
+      (0, _communication_react.postWithCallback)(local_id, "initialize_mainwindow", data_dict, _finish_post_load_in_context, null, local_id);
     }
   }
   function _finish_post_load_in_context(fdata) {
@@ -83,7 +80,7 @@ function main_props(data, registerDirtyMethod, finalCallback) {
     if (data.doc_type == "none") {
       finalCallback({
         is_project: data.is_project,
-        main_id: main_id,
+        local_id: local_id,
         is_freeform: false,
         is_legacy_save: data.is_legacy_save,
         doc_type: data.doc_type,
@@ -105,7 +102,7 @@ function main_props(data, registerDirtyMethod, finalCallback) {
     } else if (data.is_freeform) {
       finalCallback({
         is_project: data.is_project,
-        main_id: main_id,
+        local_id: local_id,
         doc_type: data.doc_type,
         is_freeform: true,
         is_legacy_save: data.is_legacy_save,
@@ -127,7 +124,7 @@ function main_props(data, registerDirtyMethod, finalCallback) {
     } else {
       finalCallback({
         is_project: data.is_project,
-        main_id: main_id,
+        local_id: local_id,
         doc_type: data.doc_type,
         is_freeform: false,
         is_notebook: false,

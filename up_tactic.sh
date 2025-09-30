@@ -16,7 +16,7 @@ while :; do
       break
       ;;
   esac
-  shift
+  shift``
 done
 
 if [ $up_only == "False" ] ; then

@@ -1,5 +1,5 @@
 import React from "react";
-import { memo, useState, useContext, useRef } from 'react';
+import { memo, useState, useContext } from 'react';
 import PropTypes from 'prop-types';
 
 import {Menu, MenuItem, ContextMenuPopover, Tree} from "@blueprintjs/core";
@@ -98,7 +98,7 @@ function TagButtonList(props) {
         let full_list = [...prelist];
         full_list.push(name);
         let tag_string = full_list.join("/");
-        const base_class = "library-tree-node"
+        const base_class = "library-tree-node";
         return {
             id: tag_string,
             childNodes: [],

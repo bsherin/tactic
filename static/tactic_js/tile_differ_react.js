@@ -15,8 +15,7 @@ var _blueprint_navbar = require("./blueprint_navbar");
 var _tactic_socket = require("./tactic_socket");
 var _settings = require("./settings");
 function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function (e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, default: e }; if (null === e || "object" != typeof e && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (const t in e) "default" !== t && {}.hasOwnProperty.call(e, t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, t)) && (i.get || i.set) ? o(f, t, i) : f[t] = e[t]); return f; })(e, t); }
-const resource_viewer_id = (0, _utilities_react.guid)();
-window.main_id = resource_viewer_id;
+window.global_id = "a" + (0, _utilities_react.guid)();
 async function tile_differ_main() {
   function gotProps(the_props) {
     let TileDifferAppPlus = (0, _settings.withSettings)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(TileDifferApp)));
@@ -50,9 +49,9 @@ async function tile_differ_main() {
   }
 }
 function tile_differ_props(data, registerDirtyMethod, finalCallback) {
-  let tsocket = new _tactic_socket.TacticSocket("main", 5000, "differ", resource_viewer_id, () => {
+  let tsocket = new _tactic_socket.TacticSocket("main", 5000, "differ", window.global_id, () => {
     finalCallback({
-      resource_viewer_id: resource_viewer_id,
+      local_id: window.global_id,
       tsocket: tsocket,
       tile_list: [],
       resource_name: window.resource_name,
@@ -99,11 +98,11 @@ function TileDifferApp(props) {
   }, []);
   function initSocket() {
     props.tsocket.attachListener('handle-callback', task_packet => {
-      (0, _communication_react.handleCallback)(task_packet, resource_viewer_id);
+      (0, _communication_react.handleCallback)(task_packet, props.local_id);
     });
     props.tsocket.attachListener("window-open", data => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
     props.tsocket.attachListener('close-user-windows', data => {
-      if (!(data["originator"] == window.library_id)) {
+      if (!(data["originator"] == window.global_id)) {
         window.close();
       }
     });
@@ -153,13 +152,11 @@ function TileDifferApp(props) {
     is_authenticated: window.is_authenticated,
     selected: null,
     show_api_links: true,
-    page_id: props.resource_viewer_id,
+    global_id: props.global_id,
     user_name: window.username
   }), /*#__PURE__*/_react.default.createElement(_merge_viewer_app.MergeViewerApp, {
     connection_status: connection_status,
     initialized: initialized,
-    page_id: props.resource_viewer_id,
-    resource_viewer_id: props.resource_viewer_id,
     resource_name: window.resource_name,
     option_list: tile_list,
     select_val: tile_popup_val,

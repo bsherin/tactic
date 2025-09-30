@@ -13,26 +13,27 @@ var _account_fields = require("./account_fields");
 var _tactic_socket = require("./tactic_socket");
 function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function (e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, default: e }; if (null === e || "object" != typeof e && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (const t in e) "default" !== t && {}.hasOwnProperty.call(e, t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, t)) && (i.get || i.set) ? o(f, t, i) : f[t] = e[t]); return f; })(e, t); } //comments
 Promise.resolve().then(() => _interopRequireWildcard(require("../tactic_css/themeable.scss")));
-window.main_id = (0, _utilities_react.guid)();
+window.global_id = "a" + (0, _utilities_react.guid)();
 function _account_main() {
   if (window._show_message) (0, _toaster.doFlash)(window._message);
   const domContainer = document.querySelector('#root');
   const root = (0, _client.createRoot)(domContainer);
-  let tsocket = new _tactic_socket.TacticSocket("main", 5000, "code_viewer", window.main_id);
-  let AccountAppPlus = (0, _settings.withSettings)(AccountApp);
-  let the_element = /*#__PURE__*/_react.default.createElement(AccountAppPlus, {
-    controlled: false,
-    tsocket: tsocket
+  let tsocket = new _tactic_socket.TacticSocket("main", 5000, "code_viewer", window.global_id, async () => {
+    let AccountAppPlus = (0, _settings.withSettings)(AccountApp);
+    let the_element = /*#__PURE__*/_react.default.createElement(AccountAppPlus, {
+      controlled: false,
+      tsocket: tsocket
+    });
+    root.render(/*#__PURE__*/_react.default.createElement("div", {
+      style: {
+        display: "flex",
+        flexDirection: "column",
+        position: "relative",
+        height: "100%",
+        width: "100%"
+      }
+    }, the_element));
   });
-  root.render(/*#__PURE__*/_react.default.createElement("div", {
-    style: {
-      display: "flex",
-      flexDirection: "column",
-      position: "relative",
-      height: "100%",
-      width: "100%"
-    }
-  }, the_element));
 }
 function AccountApp(props) {
   const [fields, set_fields, fields_ref] = (0, _utilities_react.useStateAndRef)([]);
@@ -58,7 +59,7 @@ function AccountApp(props) {
     }
     let data = {};
     data["password"] = pwd;
-    (0, _communication_react.postAjax)("update_account_info", data, function (result) {
+    (0, _communication_react.postPromise)("host", "update_account_info", data).then(result => {
       if (result.success) {
         (0, _toaster.doFlash)({
           "message": "Password successfully updated",
@@ -123,7 +124,7 @@ function AccountApp(props) {
   function _submitUpdatedField(fname, fvalue) {
     let data = {};
     data[fname] = fvalue;
-    (0, _communication_react.postAjax)("update_account_info", data, function (result) {
+    (0, _communication_react.postPromise)("host", "update_account_info", data).then(result => {
       if (result.success) {
         if (fname == "password") {
           (0, _toaster.doFlash)({
@@ -140,7 +141,7 @@ function AccountApp(props) {
     });
   }
   function _submit_account_info() {
-    (0, _communication_react.postAjax)("update_account_info", fields_ref.current, function (result) {
+    (0, _communication_react.postPromise)("host", "update_account_info", fields_ref.current).then(result => {
       if (result.success) {
         (0, _toaster.doFlash)({
           "message": "Account successfully updated",
@@ -198,7 +199,7 @@ function AccountApp(props) {
     is_authenticated: window.is_authenticated,
     selected: null,
     show_api_links: false,
-    page_id: window.main_id,
+    global_id: window.global_id,
     user_name: window.username
   }), /*#__PURE__*/_react.default.createElement("div", {
     className: outer_class

@@ -20,6 +20,8 @@ cd "$ROOT_DIR"
 # Run docker compose based on argument
 if [ "$1" == "all" ] ; then
   sudo ROOT_DIR="$ROOT_DIR" docker compose --env-file develop.env --profile build_project build
+elif [ "$1" == "non_base" ] ; then
+  sudo ROOT_DIR="$ROOT_DIR" docker compose --env-file develop.env --profile build_non_base build
 elif [ "$1" == "host" ] ; then
   sudo ROOT_DIR="$ROOT_DIR" docker compose --env-file develop.env --profile build_project build "tactic_host1"
 else

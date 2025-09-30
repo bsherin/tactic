@@ -7,12 +7,6 @@ LIBRARY_CHUNK_SIZE = int(int(os.environ.get("LIBRARY_CHUNK_SIZE")) / 2)
 
 class HigherMongoTasksMixin:
 
-    def get_resource_doc(self, res_type, res_name, user_obj):
-        return getattr(user_obj, f"get_{res_type}_doc")(res_name)
-
-    def get_resource_doc_from_id(self, res_type, res_id, user_obj):
-        return getattr(user_obj, f"get_{res_type}_doc_from_id")(res_id)
-
     @task_worthy
     def get_resource_names_task(self, data):
         the_user = self.get_user_from_data(data)
@@ -67,11 +61,12 @@ class HigherMongoTasksMixin:
                         the_user.remove_code(row["name"])
                     case "metabook":
                         the_user.remove_metabook(row["name"])
-            return jsonify({"success": True, "message": "Resource(s) successfully deleted",
-                            "alert_type": "alert-success"})
+            return {"success": True, "message": "Resource(s) successfully deleted",
+                            "alert_type": "alert-success"}
 
         except Exception as ex:
-            return self.get_exception_for_ajax(ex, "Error deleting resources")
+            msg = self.get_traceback_message(ex, "Error deleting resources")
+            return {"success": False, "message": msg, "alert_type": "alert-warning"}
 
     @task_worthy
     def grab_all_list_chunk_task(self, data):

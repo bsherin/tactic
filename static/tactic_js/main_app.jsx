@@ -1,3 +1,4 @@
+import {TacticSocket} from "./tactic_socket";
 
 if (!window.in_context) {
     import("../tactic_css/tactic.scss");
@@ -26,11 +27,11 @@ import {tilesReducer, fixTileFrontContent} from "./tile_container_support"
 import {ExportsViewer} from "./export_viewer_react";
 import {ConsoleComponent} from "./console_component";
 import {consoleItemsReducer} from "./console_support";
-import {handleCallback, postWithCallback, postPromise, postAjaxPromise, postAjax} from "./communication_react";
+import {handleCallback, postWithCallback, postPromise, postAjax} from "./communication_react";
 import {doFlash} from "./toaster"
 import {withStatus} from "./toaster";
 import {withErrorDrawer} from "./error_drawer";
-import {renderSpinnerMessage, useConnection, useConstructor, useStateAndRef} from "./utilities_react";
+import {guid, renderSpinnerMessage, useConnection, useConstructor, useStateAndRef} from "./utilities_react";
 import {ICON_BAR_WIDTH} from "./sizing_tools";
 import {ErrorBoundary} from "./error_boundary";
 import {useCallbackStack, useReducerAndRef} from "./utilities_react";
@@ -142,8 +143,9 @@ function MainApp(props) {
         });
 
         tileDispatch({
-            type: "initialize",
-            new_items: iStateOrDefault("tile_list")}
+                type: "initialize",
+                new_items: iStateOrDefault("tile_list")
+            }
         )
     });
     useEffect(() => {
@@ -164,7 +166,7 @@ function MainApp(props) {
 
         function sendRemove() {
             console.log("got the beacon");
-            navigator.sendBeacon("/remove_mainwindow", JSON.stringify({"main_id": props.main_id}));
+            navigator.sendBeacon("/remove_mainwindow", JSON.stringify({local_id: props.local_id}));
         }
 
         window.addEventListener("unload", sendRemove);
@@ -220,11 +222,11 @@ function MainApp(props) {
     }
 
     function delete_my_containers() {
-        postAjax("/remove_mainwindow", {"main_id": props.main_id});
+        postAjax("/remove_mainwindow", {local_id: props.local_id});
     }
 
     async function _update_menus_listener() {
-        let data = await postPromise("host", "get_tile_types_task", {"user_id": window.user_id}, props.main_id);
+        let data = await postPromise("host", "get_tile_types_task", {"user_id": window.user_id}, props.local_id);
         mDispatch({
             type: "change_multiple_fields",
             newPartialState: {
@@ -235,7 +237,7 @@ function MainApp(props) {
     }
 
     async function _change_doc_listener(data) {
-        if (data.main_id == props.main_id) {
+        if (data.local_id == props.local_id) {
             let row_id = data.hasOwnProperty("row_id") ? data.row_id : null;
             let scroll_to_row = data.hasOwnProperty("scroll_to_row") ? data.scroll_to_row : true;
             let select_row = data.hasOwnProperty("select_row") ? data.select_row : true;
@@ -265,7 +267,7 @@ function MainApp(props) {
         });
         if (!window.in_context) {
             props.tsocket.attachListener('close-user-windows', function (data) {
-                if (!(data["originator"] == main_id)) {
+                if (!(data["originator"] == window.global_id)) {
                     window.close()
                 }
             });
@@ -289,7 +291,7 @@ function MainApp(props) {
         props.tsocket.attachListener("tile-finished-loading", _handleTileFinishedLoading);
         props.tsocket.attachListener('change-doc', _change_doc_listener);
         props.tsocket.attachListener('handle-callback', (task_packet) => {
-            handleCallback(task_packet, props.main_id)
+            handleCallback(task_packet, props.local_id)
         });
     }
 
@@ -367,10 +369,10 @@ function MainApp(props) {
         _setMainStateValue("show_table_spinner", true);
         if (isFreeform()) {
             try {
-                let data = await postPromise(props.main_id, "grab_freeform_data", {
+                let data = await postPromise(props.local_id, "grab_freeform_data", {
                     "doc_name": new_doc_name,
                     "set_visible_doc": true
-                }, props.main_id);
+                }, props.local_id);
                 statusFuncs.stopSpinner();
                 statusFuncs.clearStatusMessage();
                 let new_table_spec = {"current_doc_name": new_doc_name};
@@ -391,7 +393,7 @@ function MainApp(props) {
         } else {
             try {
                 const data_dict = {"doc_name": new_doc_name, "row_index": row_index, "set_visible_doc": true};
-                let data = await postPromise(props.main_id, "grab_chunk_by_row_index", data_dict, props.main_id);
+                let data = await postPromise(props.local_id, "grab_chunk_by_row_index", data_dict, props.local_id);
                 _setStateFromDataObject(data, new_doc_name, () => {
                     _setMainStateValue("show_table_spinner", false);
                     if (select_row) {
@@ -423,26 +425,26 @@ function MainApp(props) {
         });
         if (broadcast) {
             spec_update["doc_name"] = mState.table_spec.current_doc_name;
-            postWithCallback(props.main_id, "UpdateTableSpec", spec_update, null, null, props.main_id);
+            postWithCallback(props.local_id, "UpdateTableSpec", spec_update, null, null, props.local_id);
         }
     }
 
     const _broadcast_event_to_server = useCallback((event_name, data_dict, callback = null) => {
-        data_dict.main_id = props.main_id;
+        data_dict.local_id = props.local_id;
         data_dict.event_name = event_name;
         if (!("doc_name" in data_dict)) {
             data_dict.doc_name = mState.table_spec.current_doc_name;
         }
-        postWithCallback(props.main_id, "distribute_events_stub", data_dict, callback, null, props.main_id)
-    }, [props.main_id, mState.table_spec.current_doc_name]);
+        postWithCallback(props.local_id, "distribute_events_stub", data_dict, callback, null, props.local_id)
+    }, [props.local_id, mState.table_spec.current_doc_name]);
 
     function _broadcast_event_promise(event_name, data_dict) {
-        data_dict.main_id = props.main_id;
+        data_dict.local_id = props.local_id;
         data_dict.event_name = event_name;
         if (!("doc_name" in data_dict)) {
             data_dict.doc_name = mState.table_spec.current_doc_name;
         }
-        return postPromise(props.main_id, "distribute_events_stub", data_dict, props.main_id)
+        return postPromise(props.local_id, "distribute_events_stub", data_dict, props.local_id)
     }
 
     async function _tile_command(menu_id) {
@@ -465,9 +467,9 @@ function MainApp(props) {
                 tile_name: tile_name,
                 tile_type: menu_id,
                 user_id: window.user_id,
-                parent: props.main_id
+                parent: props.local_id
             };
-            let create_data = await postPromise(props.main_id, "create_tile", data_dict, props.main_id);
+            let create_data = await postPromise(props.local_id, "create_tile", data_dict, props.local_id);
             let new_tile_entry = _createTileEntry(tile_name,
                 menu_id,
                 create_data.tile_id,
@@ -536,7 +538,7 @@ function MainApp(props) {
     }
 
     function _handleTableMessage(data) {
-        if (data.main_id == props.main_id) {
+        if (data.local_id == props.local_id) {
             // noinspection JSUnusedGlobalSymbols
             let handlerDict = {
                 refill_table: _refill_table,
@@ -649,26 +651,26 @@ function MainApp(props) {
     }, []);
 
     async function _deleteRow() {
-        await postPromise(props.main_id, "delete_row", {
+        await postPromise(props.local_id, "delete_row", {
             "document_name": mState.table_spec.current_doc_name,
             "index": mState.selected_row
         })
     }
 
     async function _insertRow(index) {
-        await postPromise(props.main_id, "insert_row", {
+        await postPromise(props.local_id, "insert_row", {
             "document_name": mState.table_spec.current_doc_name,
             "index": index,
             "row_dict": {}
-        }, props.main_id)
+        }, props.local_id)
     }
 
     async function _duplicateRow() {
-        await postPromise(props.main_id, "insert_row", {
+        await postPromise(props.local_id, "insert_row", {
             "document_name": mState.table_spec.current_doc_name,
             "index": mState.selected_row,
             "row_dict": mState.data_text[mState.selected_row]
-        }, props.main_id)
+        }, props.local_id)
     }
 
     async function _deleteColumn(delete_in_all = false) {
@@ -689,7 +691,7 @@ function MainApp(props) {
             "doc_name": mState.table_spec.current_doc_name,
             "all_docs": delete_in_all
         };
-        await postPromise(props.main_id, "DeleteColumn", data_dict, props.main_id);
+        await postPromise(props.local_id, "DeleteColumn", data_dict, props.local_id);
     }
 
     async function _addColumn(add_in_all = false) {
@@ -746,8 +748,8 @@ function MainApp(props) {
 
     async function _grabNewChunkWithRow(row_index) {
         try {
-            let data = await postPromise(props.main_id, "grab_chunk_by_row_index",
-                {doc_name: mState.table_spec.current_doc_name, row_index: row_index}, props.main_id);
+            let data = await postPromise(props.local_id, "grab_chunk_by_row_index",
+                {doc_name: mState.table_spec.current_doc_name, row_index: row_index}, props.local_id);
             mDispatch({
                 type: "update_data_row_dict",
                 new_data_row_dict: data.data_row_dict
@@ -761,10 +763,10 @@ function MainApp(props) {
         try {
             const result_dict = {
                 "new_collection_name": null,
-                "main_id": props.main_id
+                "local_id": props.local_id
             };
 
-            let data_object = await postPromise(props.main_id, "remove_collection_from_project", result_dict, props.main_id);
+            let data_object = await postPromise(props.local_id, "remove_collection_from_project", result_dict, props.local_id);
             let table_spec = {
                 current_doc_name: ""
             };
@@ -786,7 +788,7 @@ function MainApp(props) {
     async function _changeCollection() {
         try {
             statusFuncs.startSpinner();
-            let data = await postPromise("host", "get_collection_names", {"user_id": user_id}, props.main_id);
+            let data = await postPromise("host", "get_collection_names", {"user_id": user_id}, props.local_id);
             let new_collection_name = await dialogFuncs.showModalPromise("SelectDialog", {
                 title: "Select New Collection",
                 select_label: "New Collection",
@@ -797,9 +799,9 @@ function MainApp(props) {
             });
             const result_dict = {
                 "new_collection_name": new_collection_name,
-                "main_id": props.main_id
+                "local_id": props.local_id
             };
-            let data_object = await postPromise(props.main_id, "change_collection", result_dict, props.main_id);
+            let data_object = await postPromise(props.local_id, "change_collection", result_dict, props.local_id);
             if (!window.in_context && !_cProp("is_project")) document.title = new_collection_name;
             window._collection_name = data_object.collection_name;
             let table_spec;
@@ -911,7 +913,7 @@ function MainApp(props) {
     }
     let menus = (
         <Fragment>
-            <ProjectMenu main_id={props.main_id}
+            <ProjectMenu local_id={props.local_id}
                          project_name={project_name}
                          is_notebook={props.is_notebook}
                          is_juptyer={props.is_jupyter}
@@ -927,14 +929,14 @@ function MainApp(props) {
                          hidden_items={["Export as Jupyter Notebook"]}
             />
             {mState.doc_type != "none" &&
-                <DocumentMenu main_id={props.main_id}
+                <DocumentMenu local_id={props.local_id}
                               documentNames={mState.doc_names}
                               currentDoc={mState.table_spec.current_doc_name}
 
                 />
             }
             {!isFreeform() && mState.doc_type != "none" &&
-                <ColumnMenu main_id={props.main_id}
+                <ColumnMenu local_id={props.local_id}
                             project_name={project_name}
                             is_notebook={props.is_notebook}
                             is_juptyer={props.is_jupyter}
@@ -951,7 +953,7 @@ function MainApp(props) {
                 />
             }
             {!isFreeform() && mState.doc_type != "none" &&
-                <RowMenu main_id={props.main_id}
+                <RowMenu local_id={props.local_id}
                          project_name={project_name}
                          is_notebook={props.is_notebook}
                          is_juptyer={props.is_jupyter}
@@ -967,7 +969,7 @@ function MainApp(props) {
                          disabled_items={disabled_row_items}
                 />
             }
-            <ViewMenu main_id={props.main_id}
+            <ViewMenu local_id={props.local_id}
                       project_name={project_name}
                       is_notebook={props.is_notebook}
                       is_juptyer={props.is_jupyter}
@@ -986,7 +988,7 @@ function MainApp(props) {
     let card_header;
     if (mState.doc_type != "none") {
         card_header = (
-            <MainTableCardHeader main_id={props.main_id}
+            <MainTableCardHeader local_id={props.local_id}
                                  toggleShrink={mState.doc_type == "none" ? null : _toggleTableShrink}
                                  mState={mState}
                                  setMainStateValue={_setMainStateValue}
@@ -1001,14 +1003,14 @@ function MainApp(props) {
 
 
         if (isFreeform()) {
-            card_body = <FreeformBody main_id={props.main_id}
+            card_body = <FreeformBody local_id={props.local_id}
                                       mState={mState}
                                       setMainStateValue={_setMainStateValue}
 
             />
         } else {
             card_body = (
-                <BlueprintTable main_id={props.main_id}
+                <BlueprintTable local_id={props.local_id}
                                 clearScroll={_clearTableScroll}
                                 initiateDataGrab={_initiateDataGrab}
                                 setCellContent={_setCellContent}
@@ -1023,7 +1025,7 @@ function MainApp(props) {
         }
     }
     let tile_pane = (
-        <TileContainer main_id={props.main_id}
+        <TileContainer local_id={props.local_id}
                        tsocket={props.tsocket}
                        tile_list={tile_list_ref}
                        current_doc_name={mState.table_spec.current_doc_name}
@@ -1038,7 +1040,7 @@ function MainApp(props) {
 
     let exports_pane;
     if (mState.show_exports_pane) {
-        exports_pane = <ExportsViewer main_id={props.main_id}
+        exports_pane = <ExportsViewer local_id={props.local_id}
                                       tsocket={props.tsocket}
                                       setUpdate={(ufunc) => {
                                           updateExportsList.current = ufunc
@@ -1053,7 +1055,7 @@ function MainApp(props) {
     let console_pane;
     if (mState.show_console_pane) {
         console_pane = (
-            <ConsoleComponent main_id={props.main_id}
+            <ConsoleComponent local_id={props.local_id}
                               tsocket={props.tsocket}
                               handleCreateViewer={props.handleCreateViewer}
                               controlled={props.controlled}
@@ -1086,8 +1088,8 @@ function MainApp(props) {
     if (mState.doc_type != "none") {
         table_pane = (
             <MainTableCard style={{padding: 0}}
-                card_body={card_body}
-                card_header={card_header}
+                           card_body={card_body}
+                           card_header={card_header}
             />
         )
     }
@@ -1096,12 +1098,12 @@ function MainApp(props) {
         top_pane = tile_pane
     } else {
         top_pane = (
-                <HorizontalPanes left_pane={table_pane}
-                                 right_pane={tile_pane}
-                                 show_handle={true}
-                                 initial_width_fraction={mState.horizontal_fraction}
-                                 handleSplitUpdate={_handleHorizontalFractionChange}
-                />
+            <HorizontalPanes left_pane={table_pane}
+                             right_pane={tile_pane}
+                             show_handle={true}
+                             initial_width_fraction={mState.horizontal_fraction}
+                             handleSplitUpdate={_handleHorizontalFractionChange}
+            />
         );
     }
     let extra_menubar_buttons = [];
@@ -1125,7 +1127,7 @@ function MainApp(props) {
                 <TacticNavbar is_authenticated={window.is_authenticated}
                               user_name={window.username}
                               menus={null}
-                              page_id={props.main_id}
+                              global_id={props.global_id}
                 />
             }
             <MetadataContext.Provider value={{
@@ -1165,7 +1167,7 @@ function MainApp(props) {
                         }
                         {!mState.console_is_zoomed && mState.console_is_shrunk &&
                             <div className="project-outer-padding"
-                                 style = {{
+                                 style={{
                                      flex: "1 1 0",
                                      minHeight: 0,
                                      overflow: "auto",
@@ -1237,22 +1239,36 @@ function main_main() {
     }
 
     renderSpinnerMessage("Starting up ...");
+    const local_id = "a" + guid();
+    window.global_id = local_id;
     let target;
+    let post_data;
+    const resource_name = window.project_name == "" ? window.collection_name : window.project_name;
     if (window.project_name == "") {
         if (window.collection_name == "") {
-            target = "new_project_in_context"
+            target = "initiate_new_project_in_context";
+            post_data = {local_id};
+
         } else {
-            target = "main_collection_in_context"
+            target = "initiate_collection_in_context";
+            post_data = {"collection_name": resource_name, local_id};
+
         }
     } else {
-        target = "main_project_in_context"
+        target = "initiate_project_in_context";
+        post_data = {"project_name": resource_name, local_id};
     }
-    const resource_name = window.project_name == "" ? window.collection_name : window.project_name;
-
-    postAjaxPromise(target, {"resource_name": resource_name})
-        .then((data) => {
-            main_props(data, null, gotProps, null)
-        })
+    let tsocket = new TacticSocket("main", 5000, "project", local_id, async () => {
+        tsocket.attachListener('handle-callback', (task_packet) => {
+            handleCallback(task_packet, local_id)
+        });
+        postPromise("host", target, post_data, local_id)
+            .then((data) => {
+                data.tsocket = tsocket;
+                data.local_id = local_id,
+                main_props(data, null, gotProps)
+            });
+    })
 }
 
 if (!window.in_context) {
