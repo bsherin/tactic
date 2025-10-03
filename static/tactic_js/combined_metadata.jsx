@@ -435,6 +435,9 @@ function CombinedMetadata(props) {
                     if (data["additional_mdata"].icon) {
                         updater["icon"] = data["additional_mdata"].icon
                     }
+                    else {
+                        updater["icon"] = "application";
+                    }
                     if (data["additional_mdata"].category) {
                         updater["category"] = data["additional_mdata"].category;
                         delete amdata.category
@@ -567,10 +570,10 @@ function CombinedMetadata(props) {
                                     value={mStateRef.current.category}/>
                     </FormGroup>
                 }
-                {isTile && mStateRef.current.icon != null &&
+                {isTile &&
                     <FormGroup label="Icon">
                         <IconSelector key={`${props.res_name}-${props.res_type}-icon-selector`}
-                                      icon_val={mStateRef.current.icon}
+                                      icon_val={mStateRef.current.icon ? mStateRef.current.icon : "application"}
                                       readOnly={props.readOnly}
                                       handleSelectChange={_handleIconChange}/>
                     </FormGroup>

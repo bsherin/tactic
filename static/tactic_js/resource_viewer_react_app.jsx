@@ -3,7 +3,6 @@ import {Fragment, useEffect, useRef, memo, useContext} from 'react';
 
 import {CombinedMetadata} from "./combined_metadata";
 import {HorizontalPanes} from "./resizing_allotment";
-import {handleCallback} from "./communication_react"
 import {TacticMenubar} from "./menu_utilities"
 import {doFlash, StatusContext} from "./toaster";
 import {useConnection} from "./utilities_react";
@@ -100,9 +99,6 @@ function ResourceViewerApp(props) {
     }, []);
 
     function initSocket() {
-        props.tsocket.attachListener('handle-callback', (task_packet) => {
-            handleCallback(task_packet, props.local_id)
-        });
 
         if (!props.controlled) {
             props.tsocket.attachListener('close-user-windows', (data) => {

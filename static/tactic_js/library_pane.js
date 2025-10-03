@@ -1010,9 +1010,6 @@ function LibraryPane(props) {
       errorDrawerFuncs.addFromError("Error importing document", e);
     }
   }
-  async function _creator_view() {
-    await _view_func("/view_in_creator/");
-  }
   function _showHistoryViewer() {
     window.open(`${$SCRIPT_ROOT}/show_history_viewer/${pStateRef.current.select_state.selected_resource.name}`);
   }
@@ -1211,7 +1208,6 @@ function LibraryPane(props) {
       showCollectionImport: _showCollectionImport,
       downloadCollection: _downloadCollection,
       new_in_creator: _new_in_creator,
-      creator_view: _creator_view,
       load_tile: _load_tile,
       unload_module: _unload_module,
       unload_all_tiles: _unload_all_tiles,

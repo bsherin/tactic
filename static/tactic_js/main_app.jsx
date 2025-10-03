@@ -291,9 +291,6 @@ function MainApp(props) {
         props.tsocket.attachListener("update-menus", _update_menus_listener);
         props.tsocket.attachListener("tile-finished-loading", _handleTileFinishedLoading);
         props.tsocket.attachListener('change-doc', _change_doc_listener);
-        props.tsocket.attachListener('handle-callback', (task_packet) => {
-            handleCallback(task_packet, props.local_id)
-        });
     }
 
     function isFreeform() {

@@ -2299,7 +2299,7 @@ function ConsoleCodeItem(props) {
             let widgetData = outputDict["widgetData"];
             if (widgetKind in widgetDict) {
                 let WidgetComponent = widgetDict[widgetKind];
-                the_widget = (<div className="log-code-output" style={{paddingBottom: 5}}>
+                the_widget = (<div key={widgetId} className="log-code-output" style={{paddingBottom: 5}}>
                     <ErrorBoundary custom_message={`Error in output widget ${widgetId} of kind ${widgetKind}`}>
                         <WidgetComponent key={widgetId} widgetId={widgetId} local_id={props.local_id}
                                          console_id={props.unique_id}
@@ -2310,7 +2310,7 @@ function ConsoleCodeItem(props) {
                 </div>)
             } else {
                 let WidgetComponent = widgetDict["text"];
-                the_widget = (<div className="log-code-output" style={{paddingBottom: 5}}>
+                the_widget = (<div key={widgetId} className="log-code-output" style={{paddingBottom: 5}}>
                     <ErrorBoundary custom_message={`Error outputting not found messsage`}>
                         <WidgetComponent key={widgetId} widgetId={widgetId} local_id={props.local_id}
                                          row={idx}
@@ -2335,7 +2335,7 @@ function ConsoleCodeItem(props) {
 
     // noinspection JSValidateTypes
     return (
-        <ContextMenu content={cm}>
+        <ContextMenu content={cm} key={props.unique_id}>
             <div className={panel_class + " d-flex flex-row"}
                  ref={elRef}
                  style={MB10_STYLE}

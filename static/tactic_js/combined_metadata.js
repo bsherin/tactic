@@ -383,6 +383,8 @@ function CombinedMetadata(props) {
       if (isTile) {
         if (data["additional_mdata"].icon) {
           updater["icon"] = data["additional_mdata"].icon;
+        } else {
+          updater["icon"] = "application";
         }
         if (data["additional_mdata"].category) {
           updater["category"] = data["additional_mdata"].category;
@@ -532,11 +534,11 @@ function CombinedMetadata(props) {
   }, /*#__PURE__*/_react.default.createElement(_core.InputGroup, {
     onChange: _handleCategoryChange,
     value: mStateRef.current.category
-  })), isTile && mStateRef.current.icon != null && /*#__PURE__*/_react.default.createElement(_core.FormGroup, {
+  })), isTile && /*#__PURE__*/_react.default.createElement(_core.FormGroup, {
     label: "Icon"
   }, /*#__PURE__*/_react.default.createElement(IconSelector, {
     key: `${props.res_name}-${props.res_type}-icon-selector`,
-    icon_val: mStateRef.current.icon,
+    icon_val: mStateRef.current.icon ? mStateRef.current.icon : "application",
     readOnly: props.readOnly,
     handleSelectChange: _handleIconChange
   })), !props.useFixedData && props.useNotes && mStateRef.current.notes != null && /*#__PURE__*/_react.default.createElement(_core.FormGroup, {

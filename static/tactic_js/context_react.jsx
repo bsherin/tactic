@@ -308,6 +308,10 @@ function ContextApp(props) {
                         local_id: new_viewer_id
                     };
                     break;
+                case "creator-tile":
+                    data = await postPromise("host", "initiate_creator_in_context",
+                            {tile_module_name: resource_name, local_id: new_viewer_id});
+                    break;
                 case "tile":
                     let ls_result = await postPromise("host", "get_last_saved_task", {tile_module_name: resource_name});
                     let last_saved = ls_result.last_saved;

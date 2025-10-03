@@ -37,6 +37,9 @@ let tsocket;
 
 function _administer_home_main () {
     tsocket = new TacticSocket("main", 5000, "admin", window.global_id, async () => {
+        tsocket.attachListener('handle-callback', (task_packet) => {
+            handleCallback(task_packet, window.global_id)
+        });
         let AdministerHomeAppPlus = withSettings(withDialogs(withErrorDrawer(withStatus(AdministerHomeApp))));
         const domContainer = document.querySelector('#library-home-root');
         const root = createRoot(domContainer);
@@ -106,9 +109,6 @@ function AdministerHomeApp(props) {
 
     function initSocket() {
         props.tsocket.attachListener("window-open", (data) => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
-        props.tsocket.attachListener('handle-callback', (task_packet) => {
-            handleCallback(task_packet, window.global_id)
-        });
         props.tsocket.attachListener('close-user-windows', (data) => {
             if (!(data["originator"] == window.global_id)) {
                 window.close()

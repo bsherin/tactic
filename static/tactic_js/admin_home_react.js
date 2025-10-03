@@ -28,6 +28,9 @@ window.global_id = (0, _utilities_react.guid)(); // I don't know why pycharm doe
 let tsocket;
 function _administer_home_main() {
   tsocket = new _tactic_socket.TacticSocket("main", 5000, "admin", window.global_id, async () => {
+    tsocket.attachListener('handle-callback', task_packet => {
+      (0, _communication_react.handleCallback)(task_packet, window.global_id);
+    });
     let AdministerHomeAppPlus = (0, _settings.withSettings)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(AdministerHomeApp))));
     const domContainer = document.querySelector('#library-home-root');
     const root = (0, _client.createRoot)(domContainer);
@@ -87,9 +90,6 @@ function AdministerHomeApp(props) {
   }, []);
   function initSocket() {
     props.tsocket.attachListener("window-open", data => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
-    props.tsocket.attachListener('handle-callback', task_packet => {
-      (0, _communication_react.handleCallback)(task_packet, window.global_id);
-    });
     props.tsocket.attachListener('close-user-windows', data => {
       if (!(data["originator"] == window.global_id)) {
         window.close();

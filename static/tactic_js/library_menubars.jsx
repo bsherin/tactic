@@ -188,7 +188,12 @@ function AllMenubar(props) {
                 {name_text: "divider1", icon_name: null, click_handler: "divider"},
                 {
                     name_text: "Open In Creator", icon_name: "document-open",
-                    click_handler: props.creator_view, res_type: "tile"
+                    click_handler: () => {
+                        props.view_resource({
+                            name: props.selected_resource.name,
+                            res_type: "creator-tile",
+                        }, "/view_in_creator/")},
+                    res_type: "tile"
                 },
                 {
                     name_text: "Edit Raw Tile", icon_name: "document-open",

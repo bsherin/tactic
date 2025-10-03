@@ -87,7 +87,7 @@ function notebook_props(data, registerDirtyMethod, finalCallback) {
         resource_name: data.project_name,
         tsocket: tsocket,
         interface_state: null,
-        is_notebook: trueg,
+        is_notebook: true,
         is_juptyer: data.is_jupyter,
         readOnly: data.read_only,
         is_repository: data.is_repository,

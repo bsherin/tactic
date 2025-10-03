@@ -62,9 +62,6 @@ function LibraryHomeApp(props) {
                     window.close()
                 }
             });
-            props.tsocket.attachListener('handle-callback', (task_packet) => {
-                handleCallback(task_packet, window.main_id)
-            });
         }
     }
 
@@ -125,14 +122,18 @@ function LibraryHomeApp(props) {
 LibraryHomeApp = memo(LibraryHomeApp);
 
 function _library_home_main() {
-    const tsocket = new TacticSocket("main", 5000, "library", library_id);
-    const LibraryHomeAppPlus = withSettings(withDialogs(withErrorDrawer(withStatus(withAssistant(LibraryHomeApp)))));
-    const domContainer = document.querySelector('#library-home-root');
-    const root = createRoot(domContainer);
-    root.render(
-        <LibraryHomeAppPlus tsocket={tsocket}
-                            controlled={false}/>
-    )
+    const tsocket = new TacticSocket("main", 5000, "library", library_id, ()=>{
+            tsocket.attachListener('handle-callback', (task_packet) => {
+                handleCallback(task_packet, library_id)
+            });
+        const LibraryHomeAppPlus = withSettings(withDialogs(withErrorDrawer(withStatus(withAssistant(LibraryHomeApp)))));
+        const domContainer = document.querySelector('#library-home-root');
+        const root = createRoot(domContainer);
+        root.render(
+            <LibraryHomeAppPlus tsocket={tsocket}
+                                controlled={false}/>
+        )
+    });
 }
 
 if (!window.in_context) {

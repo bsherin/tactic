@@ -2233,6 +2233,7 @@ function ConsoleCodeItem(props) {
       if (widgetKind in _widgets.widgetDict) {
         let WidgetComponent = _widgets.widgetDict[widgetKind];
         the_widget = /*#__PURE__*/_react.default.createElement("div", {
+          key: widgetId,
           className: "log-code-output",
           style: {
             paddingBottom: 5
@@ -2252,6 +2253,7 @@ function ConsoleCodeItem(props) {
       } else {
         let WidgetComponent = _widgets.widgetDict["text"];
         the_widget = /*#__PURE__*/_react.default.createElement("div", {
+          key: widgetId,
           className: "log-code-output",
           style: {
             paddingBottom: 5
@@ -2284,7 +2286,8 @@ function ConsoleCodeItem(props) {
 
   // noinspection JSValidateTypes
   return /*#__PURE__*/_react.default.createElement(_core.ContextMenu, {
-    content: cm
+    content: cm,
+    key: props.unique_id
   }, /*#__PURE__*/_react.default.createElement("div", {
     className: panel_class + " d-flex flex-row",
     ref: elRef,

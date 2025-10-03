@@ -59,9 +59,6 @@ function LibraryHomeApp(props) {
           window.close();
         }
       });
-      props.tsocket.attachListener('handle-callback', task_packet => {
-        (0, _communication_react.handleCallback)(task_packet, window.main_id);
-      });
     }
   }
   function updateColumns(new_columns) {
@@ -114,14 +111,18 @@ function LibraryHomeApp(props) {
 }
 exports.LibraryHomeApp = LibraryHomeApp = /*#__PURE__*/(0, _react.memo)(LibraryHomeApp);
 function _library_home_main() {
-  const tsocket = new _tactic_socket.TacticSocket("main", 5000, "library", library_id);
-  const LibraryHomeAppPlus = (0, _settings.withSettings)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster2.withStatus)((0, _assistant.withAssistant)(LibraryHomeApp)))));
-  const domContainer = document.querySelector('#library-home-root');
-  const root = (0, _client.createRoot)(domContainer);
-  root.render(/*#__PURE__*/_react.default.createElement(LibraryHomeAppPlus, {
-    tsocket: tsocket,
-    controlled: false
-  }));
+  const tsocket = new _tactic_socket.TacticSocket("main", 5000, "library", library_id, () => {
+    tsocket.attachListener('handle-callback', task_packet => {
+      (0, _communication_react.handleCallback)(task_packet, library_id);
+    });
+    const LibraryHomeAppPlus = (0, _settings.withSettings)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster2.withStatus)((0, _assistant.withAssistant)(LibraryHomeApp)))));
+    const domContainer = document.querySelector('#library-home-root');
+    const root = (0, _client.createRoot)(domContainer);
+    root.render(/*#__PURE__*/_react.default.createElement(LibraryHomeAppPlus, {
+      tsocket: tsocket,
+      controlled: false
+    }));
+  });
 }
 if (!window.in_context) {
   _library_home_main();

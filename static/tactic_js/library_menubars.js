@@ -222,7 +222,12 @@ function AllMenubar(props) {
       }, {
         name_text: "Open In Creator",
         icon_name: "document-open",
-        click_handler: props.creator_view,
+        click_handler: () => {
+          props.view_resource({
+            name: props.selected_resource.name,
+            res_type: "creator-tile"
+          }, "/view_in_creator/");
+        },
         res_type: "tile"
       }, {
         name_text: "Edit Raw Tile",

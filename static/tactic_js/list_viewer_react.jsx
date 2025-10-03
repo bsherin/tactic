@@ -111,7 +111,6 @@ function ListViewerApp(props) {
         if (props.controlled) {
             props.registerDirtyMethod(_dirty);
             // This postPromise can't go to the local stack because it's not ready in time
-
         }
         postPromise("host", "get_list_content_with_metadata_task", {"list_name": props.resource_name})
             .then(data => {
@@ -347,9 +346,9 @@ async function list_viewer_main() {
         root.render(the_element)
     }
     let tsocket = new TacticSocket("main", 5000, "list_viewer", local_id, async () => {
-        tsocket.attachListener('handle-callback', (task_packet) => {
-            handleCallback(task_packet, local_id)
-        });
+            tsocket.attachListener('handle-callback', (task_packet) => {
+                handleCallback(task_packet, local_id)
+            });
         let data = {resource_name: resource_name, res_type: "list", local_id, tsocket};
         data.read_only = window.read_only;
         data.is_repository = window.is_repository;

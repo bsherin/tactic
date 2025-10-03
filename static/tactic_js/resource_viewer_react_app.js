@@ -9,10 +9,10 @@ exports.sendToRepository = sendToRepository;
 var _react = _interopRequireWildcard(require("react"));
 var _combined_metadata = require("./combined_metadata");
 var _resizing_allotment = require("./resizing_allotment");
-var _communication_react = require("./communication_react");
 var _menu_utilities = require("./menu_utilities");
 var _toaster = require("./toaster");
 var _utilities_react = require("./utilities_react");
+var _communication_react = require("./communication_react");
 function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function (e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, default: e }; if (null === e || "object" != typeof e && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (const t in e) "default" !== t && {}.hasOwnProperty.call(e, t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, t)) && (i.get || i.set) ? o(f, t, i) : f[t] = e[t]); return f; })(e, t); }
 const PADDING = 20;
 async function copyToLibrary(res_type, resource_name, dialogFuncs, statusFuncs, errorDrawerFuncs) {
@@ -102,9 +102,6 @@ function ResourceViewerApp(props) {
     statusFuncs.stopSpinner();
   }, []);
   function initSocket() {
-    props.tsocket.attachListener('handle-callback', task_packet => {
-      (0, _communication_react.handleCallback)(task_packet, props.local_id);
-    });
     if (!props.controlled) {
       props.tsocket.attachListener('close-user-windows', data => {
         if (!(data["originator"] == props.global_id)) {

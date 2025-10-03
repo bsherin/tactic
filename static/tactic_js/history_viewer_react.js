@@ -55,6 +55,9 @@ async function history_viewer_main() {
 }
 function history_viewer_props(data, registerDirtyMethod, finalCallback) {
   let tsocket = new _tactic_socket.TacticSocket("main", 5000, "history_viewer", window.global_id, () => {
+    tsocket.attachListener('handle-callback', task_packet => {
+      (0, _communication_react.handleCallback)(task_packet, window.global_id);
+    });
     finalCallback({
       local_id: window.global_id,
       tsocket: tsocket,
@@ -110,9 +113,6 @@ function HistoryViewerApp(props) {
     });
   }, []);
   function initSocket() {
-    props.tsocket.attachListener('handle-callback', task_packet => {
-      (0, _communication_react.handleCallback)(task_packet, props.local_id);
-    });
     props.tsocket.attachListener("window-open", data => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
     props.tsocket.attachListener('close-user-windows', data => {
       if (!(data["originator"] == window.global_id)) {
