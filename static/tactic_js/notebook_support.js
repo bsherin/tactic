@@ -76,6 +76,8 @@ function notebook_props(data, registerDirtyMethod, finalCallback) {
         interface_state: interface_state,
         is_notebook: true,
         is_juptyer: data.is_jupyter,
+        readOnly: data.read_only,
+        is_repository: data.is_repository,
         registerDirtyMethod: registerDirtyMethod
       });
     } else {
@@ -85,8 +87,10 @@ function notebook_props(data, registerDirtyMethod, finalCallback) {
         resource_name: data.project_name,
         tsocket: tsocket,
         interface_state: null,
-        is_notebook: true,
+        is_notebook: trueg,
         is_juptyer: data.is_jupyter,
+        readOnly: data.read_only,
+        is_repository: data.is_repository,
         registerDirtyMethod: registerDirtyMethod
       });
     }

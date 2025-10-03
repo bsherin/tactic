@@ -23,6 +23,8 @@
     <script>
         window.user_id = "{{current_user.get_id()}}";
         window.has_openapi_key = "{{has_openapi_key}}" == "True";
+        window.read_only = "{{read_only}}" == "True";
+        window.is_repository = "{{is_repository}}" == "True";
         window.version_string = "{{tstring}}";
         window.collection_name = "{{collection_name}}";
         window.project_name = "{{project_name}}";

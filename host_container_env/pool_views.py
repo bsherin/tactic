@@ -67,7 +67,7 @@ def import_pool(library_id):
                 return jsonify({"success": False})
             result = {
                 "success": True,
-                "title": "File successful save",
+                "title": "File import successful",
                 "file_decoding_errors": {},
                 "failed_reads": {},
                 "successful_reads": [truepath]
@@ -82,7 +82,8 @@ def import_pool(library_id):
 
 @app.route('/download_pool_file', methods=['get', 'post'])
 @login_required
-def download_pool_file(self):
+def download_pool_file():
+    print("entering download_pool_file")
     try:
         path = request.args.get("src")
         true_path = user_to_true(path, current_user)
@@ -90,7 +91,7 @@ def download_pool_file(self):
             raise FileNotFoundError
         return send_file(true_path, as_attachment=True)
     except Exception as ex:
-        emsg = self.get_traceback_message(ex, "error in download_pool_file")
+        emsg = generic_exception_handler.get_traceback_message(ex, "error in download_pool_file")
         print(emsg)
         return jsonify({"success": False, "message": emsg})
 

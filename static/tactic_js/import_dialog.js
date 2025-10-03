@@ -53,6 +53,11 @@ function FileImportDialog(props) {
   const errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
   (0, _utilities_react.useConstructor)(async () => {
     try {
+      if (props.res_type == "pool") {
+        existing_names.current = [];
+        set_show(true);
+        return;
+      }
       let data = await (0, _communication_react.postPromise)("host", "get_resource_names_task", {
         res_type: props.res_type
       });

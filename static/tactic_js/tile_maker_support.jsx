@@ -130,6 +130,8 @@ function creator_props(data, registerDirtyMethod, finalCallback) {
                 resource_name: module_name,
                 local_id: local_id,
                 tsocket: tsocket,
+                readOnly: data.is_repository,
+                is_repository: data.is_repository,
                 initial_line_number: initial_line_number,
                 render_content_info: parsed_data.render_content_info,
                 globals_info: parsed_data.globals_info,

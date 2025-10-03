@@ -332,6 +332,8 @@ function main_main() {
     (0, _communication_react.postPromise)("host", target, post_data, local_id).then(data => {
       data.tsocket = tsocket;
       data.local_id = local_id;
+      data.readOnly = window.read_only;
+      data.is_repository = window.is_repository;
       (0, _notebook_support.notebook_props)(data, null, gotProps);
     });
   });

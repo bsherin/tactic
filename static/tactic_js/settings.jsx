@@ -6,7 +6,7 @@ import {Helmet} from 'react-helmet';
 import {Drawer, Classes} from "@blueprintjs/core";
 
 import {useStateAndRef, useCallbackStack} from "./utilities_react";
-import {postPromise, postAjaxPromise} from "./communication_react";
+import {postPromise, postAjax, postAjaxPromise} from "./communication_react";
 import {doFlash} from "./toaster";
 import {AccountTextField, AccountSelectField} from "./account_fields";
 export {SettingsContext, withSettings}

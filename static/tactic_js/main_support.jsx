@@ -97,6 +97,8 @@ function main_props(data, registerDirtyMethod, finalCallback) {
                     current_doc_name: ""
                 },
                 initial_doc_names: [],
+                readOnly: data.read_only,
+                is_repository: data.is_repository,
                 registerDirtyMethod: registerDirtyMethod,
             })
         }
@@ -120,6 +122,8 @@ function main_props(data, registerDirtyMethod, finalCallback) {
                     current_doc_name: fdata.doc_names[0]
                 },
                 initial_doc_names: fdata.doc_names,
+                readOnly: data.read_only,
+                is_repository: data.is_repository,
                 registerDirtyMethod: registerDirtyMethod,
             })
         } else {
@@ -147,6 +151,8 @@ function main_props(data, registerDirtyMethod, finalCallback) {
                 total_rows: fdata.total_rows,
                 initial_data_row_dict: fdata.data_row_dict,
                 initial_doc_names: fdata.doc_names,
+                readOnly: data.read_only,
+                is_repository: data.is_repository,
                 registerDirtyMethod: registerDirtyMethod,
             });
         }
@@ -183,7 +189,7 @@ function mainReducer(mState, action) {
             if (!new_cell_backgrounds.hasOwnProperty(action.row_id)) {
                 new_cell_backgrounds[action.row_id] = {}
             }
-            new_cell_backgrounds[action.row_id][action.column_header] = color;
+            new_cell_backgrounds[action.row_id][action.column_header] = action.color;
             newMstate.table_spec = {...mState.table_spec, cell_backgrounds: new_cell_backgrounds};
             break;
         case "set_cells_to_color_text":

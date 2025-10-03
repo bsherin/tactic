@@ -8,9 +8,10 @@ class PoolTasksMixin:
     @task_worthy
     def rename_pool_resource_task(self, data):
         try:
+            the_user = self.get_user_from_data(data)
             new_name = data["new_name"]
             old_path = data["old_path"]
-            true_old_path = self.user_to_true(old_path)
+            true_old_path = self.user_to_true(old_path, the_user)
             folder_path, fname = os.path.split(true_old_path)
             true_new_path = f"{folder_path}/{new_name}"
             if os.path.exists(true_new_path):
@@ -26,9 +27,10 @@ class PoolTasksMixin:
     @task_worthy
     def delete_pool_resource_task(self, data):
         try:
+            the_user = self.get_user_from_data(data)
             full_path = data["full_path"]
             is_directory = data["is_directory"]
-            true_full_path = self.user_to_true(full_path)
+            true_full_path = self.user_to_true(full_path, the_user)
             if not os.path.exists(true_full_path):
                 raise FileNotFoundError
             if is_directory:
@@ -45,8 +47,9 @@ class PoolTasksMixin:
     @task_worthy
     def save_text_file_task(self, data):
         try:
+            the_user = self.get_user_from_data(data)
             file_path = data["file_path"]
-            true_path = self.user_to_true(file_path)
+            true_path = self.user_to_true(file_path, the_user)
             the_content = data["the_content"]
             with open(true_path, "w") as f:
                 f.write(the_content)
@@ -59,8 +62,9 @@ class PoolTasksMixin:
     @task_worthy
     def create_pool_directory_task(self, data):
         try:
+            the_user = self.get_user_from_data(data)
             full_path = data["full_path"]
-            true_full_path = self.user_to_true(full_path)
+            true_full_path = self.user_to_true(full_path, the_user)
             if os.path.exists(true_full_path):
                 raise FileExistsError
             os.mkdir(true_full_path)
@@ -74,12 +78,13 @@ class PoolTasksMixin:
     @task_worthy
     def move_pool_resource_task(self, data):
         try:
+            the_user = self.get_user_from_data(data)
             dst = data["dst"]
             src = data["src"]
-            true_dst = self.user_to_true(dst)
+            true_dst = self.user_to_true(dst, the_user)
             if os.path.exists(dst):
                 raise FileExistsError
-            true_src = self.user_to_true(src)
+            true_src = self.user_to_true(src, the_user)
             shutil.move(true_src, true_dst)
         except Exception as ex:
             emsg = self.get_traceback_message(ex, "error moving resource")
@@ -91,10 +96,11 @@ class PoolTasksMixin:
     @task_worthy
     def duplicate_pool_file_task(self, data):
         try:
+            the_user = self.get_user_from_data(data)
             dst = data["dst"]
             src = data["src"]
-            true_dst = self.user_to_true(dst)
-            true_src = self.user_to_true(src)
+            true_dst = self.user_to_true(dst, the_user)
+            true_src = self.user_to_true(src, the_user)
             if os.path.exists(true_dst):
                 raise FileExistsError
             shutil.copy2(true_src, true_dst)

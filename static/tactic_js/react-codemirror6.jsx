@@ -350,7 +350,11 @@ function ReactCodemirror6(props) {
             highlightSelectionMatches(),
             indentUnit.of("    "),
             highlightField.init(),
-            readOnlyCompartment.current.of(EditorState.readOnly.of(props.readOnly)),
+            readOnlyCompartment.current.of([
+                EditorState.readOnly.of(props.readOnly),
+                EditorView.editable.of(!props.readOnly)
+            ]),
+
         ];
         if (props.show_line_numbers) {
             extensions = extensions.concat([
@@ -429,7 +433,10 @@ function ReactCodemirror6(props) {
     useEffect(() => {
         if (editorView.current) {
             editorView.current.dispatch({
-                effects: readOnlyCompartment.current.reconfigure(EditorState.readOnly.of(props.readOnly))
+                effects: readOnlyCompartment.current.reconfigure([
+                    EditorState.readOnly.of(props.readOnly),
+                    EditorView.editable.of(!props.readOnly)
+                ])
             });
             readOnlyRef.current = props.readOnly;
         }

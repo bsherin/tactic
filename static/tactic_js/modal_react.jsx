@@ -651,7 +651,7 @@ function SelectResourceDialog(props) {
     }, []);
 
     function _handleTypeChange(val) {
-        let get_url = `get_${val}_names`;
+        let get_url = `get_${val}_names_task`;
         let dict_hash = `${val}_names`;
         postWithCallback("host", get_url, {"user_id": user_id}, function (data) {
             set_show(true);

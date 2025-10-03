@@ -123,7 +123,7 @@ function ProjectMenu(props) {
 
     async function _exportAsPresentation() {
         try {
-            let data = await postPromise("host", "get_collection_names", {"user_id": user_id}, props.local_id);
+            let data = await postPromise("host", "get_collection_names_task", {"user_id": user_id}, props.local_id);
             let [use_dark_theme, save_as_collection, collection_name] = await dialogFuncs.showModalPromise(
                 "PresentationDialog", {
                 default_value: "NewPresentation",
@@ -188,7 +188,7 @@ function ProjectMenu(props) {
 
     async function _exportAsReport() {
         try {
-            let data = await postPromise("host", "get_collection_names", {"user_id": user_id}, props.local_id);
+            let data = await postPromise("host", "get_collection_names_task", {"user_id": user_id}, props.local_id);
             let [collapsible, include_summaries, use_dark_theme, save_as_collection, collection_name] =
                 await dialogFuncs.showModalPromise("ReportDialog", {
                     default_value: "NewReport",
@@ -306,7 +306,7 @@ function ProjectMenu(props) {
 
     async function _exportDataTable() {
         try {
-            let data = await postPromise("host", "get_collection_names", {"user_id": user_id});
+            let data = await postPromise("host", "get_collection_names_task", {"user_id": user_id});
             let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
                     title: "Export Data",
                     field_title: "New Collection NameName",

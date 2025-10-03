@@ -266,10 +266,13 @@ class TileAccess(object):
     def update_tile_from_doc(self, tile_module_name, doc, last_saved=None):
         if not self.tile_module_name_exists(tile_module_name):
             raise ValueError(f"tile with name {tile_module_name} does not exist.")
-        metadata = copy.copy(doc["metadata"])
+        metadata = self.get_tile_metadata(tile_module_name)
+        if "metadata" in doc:
+            metadata.update(doc["metadata"])
         metadata = self.update_metadata(metadata)
         if last_saved is not None:
             update_dict["last_saved"] = last_saved
+        doc["metadata"] = metadata
         self.db[self.tile_collection_name].update_one(
             {"tile_module_name": tile_module_name},
             {"$set": doc}
@@ -278,12 +281,12 @@ class TileAccess(object):
 
     def create_recent_checkpoint(self, module_name):
         try:
-            doc = self.get_recent_checkpoint(module_name)
+            doc = self.get_tile_doc(module_name)
             recent_history = doc.get("recent_history", [])
             recent_history.append({"updated": doc["metadata"]["updated"],
                                    "tile_module": doc["tile_module"]})
-            self. db[current_user.tile_collection_name].update_one({"tile_module_name": module_name},
-                                                                   {'$set': {"recent_history": recent_history}})
+            self.db[self.tile_collection_name].update_one({"tile_module_name": module_name},
+                                                          {'$set': {"recent_history": recent_history}})
             return
         except Exception as ex:
             msg = generic_exception_handler.get_traceback_message(ex, "Error checkpointing module to recent")

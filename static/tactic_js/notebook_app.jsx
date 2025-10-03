@@ -364,6 +364,8 @@ function main_main() {
             .then((data) => {
                 data.tsocket = tsocket;
                 data.local_id = local_id;
+                data.readOnly = window.read_only;
+                data.is_repository = window.is_repository;
                 notebook_props(data, null, gotProps)
             })
     })

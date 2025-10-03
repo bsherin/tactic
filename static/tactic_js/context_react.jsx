@@ -30,7 +30,7 @@ import {TacticNavbar} from "./blueprint_navbar";
 import {ErrorBoundary} from "./error_boundary";
 import {LibraryHomeApp} from "./library_home_react";
 import {PoolBrowser} from "./pool_browser";
-import {withPool} from "./pool_tree";
+import {withPool, getBasename} from "./pool_tree";
 import {guid} from "./utilities_react";
 import {module_viewer_props, ModuleViewerApp} from "./module_viewer_react";
 import {CreatorApp} from "./tile_maker_react";
@@ -291,9 +291,10 @@ function ContextApp(props) {
         if (["list", "code", "text"].includes(res_type)) {
             data = {
                 kind: `${res_type}-viewer`,
-                resource_name: resource_name,
+                resource_name: file_path == null ? resource_name : getBasename(file_path),
                 res_type: res_type,
                 local_id: new_viewer_id,
+                file_path: file_path
             };
         }
         else {
@@ -315,8 +316,13 @@ function ContextApp(props) {
                             {tile_module_name: resource_name, local_id: new_viewer_id});
                     }
                     else {
-                        data = await postPromise("host", "initiate_module_viewer_in_context", {tile_module_name: resource_name,
-                        local_id: new_viewer_id});
+                        data = {
+                            kind: "module-viewer",
+                            resource_name: resource_name,
+                            res_type: "tile",
+                            original_res_type: "raw-tile",
+                            local_id: new_viewer_id
+                        };
                     }
                     break;
                 case "collection":
@@ -349,6 +355,8 @@ function ContextApp(props) {
         data.original_res_type = res_type;
         data.file_path = file_path;
         data.tsocket = tsocket;
+        data.read_only = false;
+        data.is_repository = false;
         if (resolve) {
             resolve(data);
         }
@@ -461,7 +469,7 @@ function ContextApp(props) {
             lnew_panel.title = new_name;
         }
         lnew_panel.panel.resource_name = new_name;
-        tabPanelListDispatch({type: "update_item", identifier: the_id, lnew_panel});
+        tabPanelListDispatch({type: "update_item", identifier: the_id, new_item: lnew_panel});
         pushCallback(() => {
             _updateOpenResources(callback)
         });
@@ -513,7 +521,14 @@ function ContextApp(props) {
         await _addPanelPromise(new_id, data.kind, data.res_type, data.resource_name, "spinner");
         propDict[data.kind](data, drmethod, (new_panel) => {
             new_panel.original_res_type = res_type;
-            _updatePanel(new_id, {panel: new_panel}, callback);
+            if (callback != null) {
+                _updatePanel(new_id, {panel: new_panel}, () => {
+                    callback(data.local_id)
+                });
+            }
+            else {
+                _updatePanel(new_id, {panel: new_panel});
+            }
         });
     }, []);
 

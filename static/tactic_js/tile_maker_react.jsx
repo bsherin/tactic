@@ -1445,6 +1445,8 @@ function tile_creator_main() {
             .then((data) => {
                 data.tsocket = tsocket;
                 data.local_id = local_id;
+                data.read_only = window.read_only;
+                data.is_repository = window.is_repository;
                 creator_props(data, null, gotProps, null)
             })
     });

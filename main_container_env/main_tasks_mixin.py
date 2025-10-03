@@ -333,7 +333,7 @@ class LoadSaveTasksMixin:
         def got_save_dict(project_dict):
             print("in got_save_dict in main")
             save_dict, project_dict, self.mdata = (
-                self.prepare_project_datat(self.project_name, project_dict, self.doc_type,
+                self.prepare_project_data(self.project_name, project_dict, self.doc_type,
                                                 self.collection_name, interface_state, None, self.purgetiles, True))
             self.save_new_project(save_dict, project_dict)
             self.emit_clear_status()
@@ -364,7 +364,7 @@ class LoadSaveTasksMixin:
         # noinspection PyBroadException
         def got_save_dict(project_dict):
             doc, project_dict, self.mdata = (
-                self.prepare_project_datat(self.project_name, project_dict, "notebook", "",
+                self.prepare_project_data(self.project_name, project_dict, "notebook", "",
                                                 interface_state, None, False, True))
             self.save_new_project(doc, project_dict)
             self.emit_clear_status()
@@ -394,7 +394,7 @@ class LoadSaveTasksMixin:
     @task_worthy_manual_submit
     def update_project_task(self, data_dict, task_packet):
         # noinspection PyBroadException
-        print("entering update_project")
+        print("entering update_project tasl")
 
         def got_save_dict(project_dict):
 
@@ -623,7 +623,7 @@ class LoadSaveTasksMixin:
                          "cells": data_dict["cell_list"]}
             notebook_json = json.dumps(full_dict, indent=1, sort_keys=True)
             project_dict = {"jupyter_text": notebook_json}
-            save_dict, project_dict, _ = self.prepare_project_data(new_project_name, project_dict, "jupyter", "", None, None, False, True)
+            save_dict, project_dict, _ = self.prepare_project_data(new_project_name, project_dict, "jupyter", "", {}, None, False, True)
             self.save_new_project(save_dict, project_dict)
             _return_data = {"project_name": new_project_name,
                             "success": True,
@@ -641,10 +641,14 @@ class LoadSaveTasksMixin:
         self.emit_status_message("compiling save dictionary")
 
         def got_save_dict(console_dict):
-            console_dict["doc_type"] = "notebook"
-            console_dict["interface_state"] = {"console_items": data_dict["console_items"]}
-            unique_id = self.store_temp_data_with_compress(console_dict)
-            self.mworker.emit_to_main_client("notebook-open", {"message": "notebook-open", "temp_data_id": unique_id})
+            try:
+                console_dict["doc_type"] = "notebook"
+                console_dict["interface_state"] = {"console_items": data_dict["console_items"]}
+                unique_id = self.store_temp_data_with_compress(console_dict)
+                self.mworker.emit_to_main_client("notebook-open", {"message": "notebook-open", "temp_data_id": unique_id})
+            except Exception as ex:
+                error_string = self.get_traceback_message(ex)
+                self.mworker.send_error_entry("Error converting console to notebook", error_string)
             return
 
         self.mworker.post_task(self.mworker.my_id, "compile_save_dict", {}, got_save_dict)

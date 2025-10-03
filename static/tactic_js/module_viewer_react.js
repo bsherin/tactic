@@ -41,8 +41,8 @@ function module_viewer_props(data, registerDirtyMethod, finalCallback) {
     resource_name: data.resource_name,
     the_content: "",
     notes: "",
-    readOnly: false,
-    is_repository: false,
+    readOnly: data.read_only,
+    is_repository: data.is_repository,
     registerDirtyMethod: registerDirtyMethod
   });
 }
@@ -197,7 +197,7 @@ function ModuleViewerApp(props) {
           name_text: "Share",
           icon_name: "share",
           click_handler: async () => {
-            await (0, _resource_viewer_react_app.sendToRepository)("list", _cProp("resource_name"), dialogFuncs, statusFuncs, errorDrawerFuncs);
+            await (0, _resource_viewer_react_app.sendToRepository)("tile", _cProp("resource_name"), dialogFuncs, statusFuncs, errorDrawerFuncs);
           },
           tooltip: "Share to repository"
         }]
@@ -280,7 +280,7 @@ function ModuleViewerApp(props) {
       const new_code = code_content_ref.current;
       let result_dict;
       result_dict = {
-        "module_name": _cProp("resource_name"),
+        "tile_module_name": _cProp("resource_name"),
         "new_tile_module": new_code,
         "last_saved": "viewer"
       };
@@ -297,7 +297,7 @@ function ModuleViewerApp(props) {
   async function _saveModuleAs() {
     statusFuncs.startSpinner();
     try {
-      let data = await (0, _communication_react.postPromise)("host", "get_tile_names", {
+      let data = await (0, _communication_react.postPromise)("host", "get_tile_names_task", {
         "user_id": window.user_id
       }, props.local_id);
       let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
@@ -496,6 +496,8 @@ function module_viewer_main() {
       local_id,
       tsocket
     };
+    data.read_only = window.read_only;
+    data.is_repository = window.is_repository;
     module_viewer_props(data, null, gotProps);
   });
 }

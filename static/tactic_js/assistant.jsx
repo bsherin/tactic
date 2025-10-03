@@ -317,7 +317,7 @@ function ChatModule(props) {
             props.set_assistant_prompt_value("");
             assistantDrawerFuncs.set_chat_status("posted");
             await postPromise(assistantDrawerFuncs.assistant_id_ref.current, "post_prompt_stream",
-                {prompt: props.assistant_prompt_value_ref.current, global_id: window.global_id})
+                {prompt: props.assistant_prompt_value_ref.current, local_id: window.global_id})
         } catch (error) {
             console.log(error.message)
         }

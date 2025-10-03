@@ -21,6 +21,8 @@
     <script type="module" src="{{url_for('static', filename=module_source, v=version_string)}}"></script>
     <script>
         window.user_id = "{{current_user.get_id()}}";
+        window.read_only = "{{read_only}}" == "True";
+        window.is_repository = "{{is_repository}}" == "True";
         window.project_name = "{{project_name}}";
         window.temp_data_id = "{{temp_data_id}}"
     </script>

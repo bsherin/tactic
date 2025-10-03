@@ -12,13 +12,13 @@ import { useHotkeys } from "@blueprintjs/core";
 
 import {ResourceViewerApp, copyToLibrary} from "./resource_viewer_react_app";
 import {TacticSocket} from "./tactic_socket";
-import {handleCallback} from "./communication_react"
+import {handleCallback, postPromise} from "./communication_react"
 import {withStatus} from "./toaster.js"
 
 import {ErrorDrawerContext, withErrorDrawer} from "./error_drawer.js";
 import {guid} from "./utilities_react";
 import {TacticNavbar} from "./blueprint_navbar";
-import {useCallbackStack, useConstructor, useStateAndRef} from "./utilities_react";
+import {useCallbackStack, useStateAndRef} from "./utilities_react";
 import {SettingsContext, withSettings} from "./settings"
 import {DialogContext, withDialogs} from "./modal_react";
 import {StatusContext} from "./toaster";
@@ -36,16 +36,11 @@ function text_viewer_props(data, registerDirtyMethod, finalCallback) {
     finalCallback({
         local_id: data.local_id,
         tsocket: data.tsocket,
-        split_tags: [],
         file_path: data.file_path,
         resource_name: data.resource_name,
-        the_content: data.the_content,
-        notes: null,
         readOnly: data.read_only,
         is_repository: data.is_repository,
         registerDirtyMethod: registerDirtyMethod,
-        created: data.created,
-        updated: data.updated,
         size: data.size
     })
 }
@@ -87,14 +82,13 @@ function TextViewerApp(props) {
     const top_ref = useRef(null);
 
     const savedContent = useRef(props.the_content);
-    const savedTags = useRef(props.split_tags);
-    const savedNotes = useRef(props.notes);
 
     const [text_content, set_text_content, text_content_ref] = useStateAndRef(props.the_content);
-    const [, set_notes, notes_ref] = useStateAndRef(props.notes);
-    const [, set_tags, tags_ref] = useStateAndRef(props.split_tags);
 
     const [resource_name, set_resource_name] = useState(props.resource_name);
+
+    const [created, set_created] = useState(null);
+    const [updated, set_updated] = useState(null);
 
     const settingsContext = useContext(SettingsContext);
     const dialogFuncs = useContext(DialogContext);
@@ -125,7 +119,7 @@ function TextViewerApp(props) {
 
     const pushCallback = useCallbackStack("code_viewer");
 
-    useConstructor(() => {
+    useEffect(() => {
         if (!props.controlled) {
             window.addEventListener("beforeunload", function (e) {
                 if (_dirty()) {
@@ -134,7 +128,16 @@ function TextViewerApp(props) {
                 }
             })
         }
-    });
+        postPromise("host", "get_text_from_pool_task", {"file_path": props.file_path})
+            .then(data => {
+                const the_content = data["the_content"];
+                set_text_content(the_content);
+                set_created(data.created);
+                set_updated(data.updated);
+                savedContent.current = the_content;
+
+            })
+    }, []);
 
     function cPropGetters() {
         return {
@@ -187,19 +190,6 @@ function TextViewerApp(props) {
         }
     }
 
-    function _handleMetadataChange(state_stuff) {
-        for (let field in state_stuff) {
-            switch (field) {
-                case "tags":
-                    set_tags(state_stuff[field]);
-                    break;
-                case "notes":
-                    set_notes(state_stuff[field]);
-                    break;
-            }
-        }
-    }
-
     function _handleTextChange(event) {
         set_text_content(event.target.value);
     }
@@ -235,8 +225,7 @@ function TextViewerApp(props) {
     }
 
     function _dirty() {
-        return !((text_content_ref.current == savedContent.current) &&
-            (tags_ref.current == savedTags.current) && (notes_ref.current == savedNotes.current))
+        return text_content_ref.current != savedContent.current
     }
 
     let my_props = {...props};
@@ -274,10 +263,7 @@ function TextViewerApp(props) {
                                    res_type="list"
                                    resource_name={my_props.resource_name}
                                    menu_specs={menu_specs()}
-                                   handleStateChange={_handleMetadataChange}
-                                   created={props.created}
-                                   notes={null}
-                                   tags={null}
+                                   created={created}
                                    showErrorDrawerButton={false}
                                    additional_metadata={{
                                        path: props.file_path,
@@ -314,6 +300,8 @@ async function text_viewer_main() {
             handleCallback(task_packet, local_id)
         });
         let data = {resource_name: resource_name, res_type: "list", local_id, tsocket};
+        data.read_only = window.read_only;
+        data.is_repository = window.is_repository;
         text_viewer_props(data, null, gotProps);
     })
 }

@@ -109,6 +109,8 @@ def import_as_jupyter_full(file_list):
 def main_project(project_name):
     data_dict = {"project_name": project_name,
                  "is_new_notebook": "False",
+                 "read_only": "False",
+                 "is_repository": "False",
                  "develop": str(_develop),
                  "has_openapi_key": current_user.has_openapi_key,
                  "collection_name": "",

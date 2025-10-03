@@ -35,6 +35,8 @@ from higher_mongo_tasks_mixin import HigherMongoTasksMixin
 from user_tasks_mixin import UserTasksMixin
 from container_tasks_mixin import ContainerTasksMixin
 from across_accounts_mixin import AcrossAccountsTasksMixin
+from pool_tasks_mixin import PoolTasksMixin
+from account_tasks_mixin import AccountTasksMixin
 
 # inactive_container_time is the max time a tile can
 # go without making active contact with the megaplex.
@@ -57,7 +59,7 @@ MY_ID = os.environ.get("MY_ID")
 from qworker import max_pika_retries
 
 class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTasksMixin,ContainerTasksMixin,
-                 ProjectTasksMixin, CollectionTasksMixin, MetabookTasksMixin,
+                 ProjectTasksMixin, CollectionTasksMixin, MetabookTasksMixin, PoolTasksMixin, AccountTasksMixin,
                  AcrossAccountsTasksMixin, HigherMongoTasksMixin):
     def __init__(self):
         QWorker.__init__(self)
@@ -618,9 +620,10 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
 
     @task_worthy
     def copy_console_cells(self, data):
+        the_user = self.get_user_from_data(data)
         uid = "copied_cell_" + data["user_id"]
-        current_user.delete_temp_data(uid)
-        current_user.store_temp_data({"console_items": data["console_items"]}, uid)
+        the_user.delete_temp_data(uid)
+        the_user.store_temp_data({"console_items": data["console_items"]}, uid)
         return {"success": True}
 
     @task_worthy

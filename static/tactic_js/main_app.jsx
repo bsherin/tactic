@@ -94,6 +94,7 @@ function MainApp(props) {
     const statusFuncs = useContext(StatusContext);
 
     const [mState, mDispatch] = useReducer(mainReducer, {
+        update_index: 0,
         table_is_shrunk: props.doc_type == "none" || iStateOrDefault("table_is_shrunk"),
         console_width_fraction: iStateOrDefault("console_width_fraction"),
         horizontal_fraction: iStateOrDefault("horizontal_fraction"),
@@ -418,14 +419,17 @@ function MainApp(props) {
         _setMainStateValue("height_fraction", top_fraction)
     }
 
-    function _updateTableSpec(spec_update, broadcast = false) {
+    function _updateTableSpec(spec_update, broadcast = false, callback = null) {
         mDispatch({
             type: "update_table_spec",
             spec_update: spec_update
         });
         if (broadcast) {
             spec_update["doc_name"] = mState.table_spec.current_doc_name;
-            postWithCallback(props.local_id, "UpdateTableSpec", spec_update, null, null, props.local_id);
+            if (callback == null) {
+                callback = updateUpdateIndex;
+            }
+            postWithCallback(props.local_id, "UpdateTableSpec", spec_update, callback, null, props.local_id);
         }
     }
 
@@ -548,29 +552,32 @@ function MainApp(props) {
                 colorTxtInCell: (data) => _colorTextInCell(data.row_id, data.column_header, data.token_text, data.color_dict),
                 setFreeformContent: (data) => _setFreeformDoc(data.doc_name, data.new_content),
                 updateDocList: (data) => _updateDocList(data.doc_names, data.visible_doc),
-                setCellBackground: (data) => _setCellBackgroundColor(data.row, data.column_header, data.color)
+                setCellBackground: (data) => _setCellBackgroundColor(data.doc_name, data.row, data.column_header, data.color)
             };
             handlerDict[data["table_message"]](data)
         }
     }
 
-    const _setCellContent = useCallback((row_id, column_header, new_content, broadcast = false) => {
+    function _setCellContent(row_id, column_header, new_content, broadcast = false) {
         mDispatch({
             type: "set_cell_content",
             row_id: row_id,
             column_header: column_header,
             new_content: new_content
         });
-        let data = {id: row_id, column_header: column_header, new_content: new_content, cellchange: false};
+        let data = {doc_name: mState.table_spec.current_doc_name, id: row_id, column_header: column_header,
+            new_content: new_content, cellchange: false};
         if (broadcast) {
             _broadcast_event_to_server("SetCellContent", data, null)
         }
-    }, []);
+    }
 
-    function _setCellBackgroundColor(row_id, column_header) {
+    function _setCellBackgroundColor (doc_name, row_id, column_header, color) {
         mDispatch({
             type: "set_cell_background",
+            doc_name: doc_name,
             row_id: row_id,
+            color: color,
             column_header: column_header
         })
     }
@@ -586,7 +593,11 @@ function MainApp(props) {
     }
 
     function _refill_table(data_object) {
-        _setStateFromDataObject(data_object, data_object.doc_name);
+        _setStateFromDataObject(data_object, data_object.doc_name, updateUpdateIndex);
+    }
+
+    function updateUpdateIndex() {
+        _setMainStateValue("update_index", mState.update_index + 1);
     }
 
     function _moveColumn(tag_to_move, place_to_move) {
@@ -639,7 +650,7 @@ function MainApp(props) {
         hc_list.push(cname);
         const data_dict = {"column_name": mState.selected_column};
         await _broadcast_event_promise("HideColumnInAllDocs", data_dict, false);
-        _updateTableSpec({hidden_columns_list: hc_list, column_widths: cwidths});
+        _updateTableSpec({hidden_columns_list: hc_list, column_widths: cwidths}, true);
     }
 
     function _unhideAllColumns() {
@@ -655,6 +666,7 @@ function MainApp(props) {
             "document_name": mState.table_spec.current_doc_name,
             "index": mState.selected_row
         })
+            .then(updateUpdateIndex);
     }
 
     async function _insertRow(index) {
@@ -663,14 +675,16 @@ function MainApp(props) {
             "index": index,
             "row_dict": {}
         }, props.local_id)
+            .then(updateUpdateIndex)
     }
 
     async function _duplicateRow() {
         await postPromise(props.local_id, "insert_row", {
             "document_name": mState.table_spec.current_doc_name,
             "index": mState.selected_row,
-            "row_dict": mState.data_text[mState.selected_row]
+            "row_dict": mState.data_row_dict[mState.selected_row]
         }, props.local_id)
+            .then(updateUpdateIndex)
     }
 
     async function _deleteColumn(delete_in_all = false) {
@@ -691,7 +705,8 @@ function MainApp(props) {
             "doc_name": mState.table_spec.current_doc_name,
             "all_docs": delete_in_all
         };
-        await postPromise(props.local_id, "DeleteColumn", data_dict, props.local_id);
+        await postPromise(props.local_id, "DeleteColumn", data_dict, props.local_id)
+            .then(updateUpdateIndex)
     }
 
     async function _addColumn(add_in_all = false) {
@@ -716,7 +731,7 @@ function MainApp(props) {
                 "column_width": cwidth,
                 "all_docs": add_in_all
             };
-            _broadcast_event_to_server("CreateColumn", data_dict);
+            _broadcast_event_to_server("CreateColumn", data_dict, updateUpdateIndex);
         } catch (e) {
             if (e != "canceled") {
                 errorDrawerFuncs.addFromError(`Error adding column`, e)
@@ -788,7 +803,7 @@ function MainApp(props) {
     async function _changeCollection() {
         try {
             statusFuncs.startSpinner();
-            let data = await postPromise("host", "get_collection_names", {"user_id": user_id}, props.local_id);
+            let data = await postPromise("host", "get_collection_names_task", {"user_id": user_id}, props.local_id);
             let new_collection_name = await dialogFuncs.showModalPromise("SelectDialog", {
                 title: "Select New Collection",
                 select_label: "New Collection",
@@ -1266,6 +1281,8 @@ function main_main() {
             .then((data) => {
                 data.tsocket = tsocket;
                 data.local_id = local_id,
+                data.read_only = window.read_only;
+                data.is_repository = window.is_repository;
                 main_props(data, null, gotProps)
             });
     })

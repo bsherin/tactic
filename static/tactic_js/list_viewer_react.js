@@ -35,13 +35,11 @@ function list_viewer_props(data, registerDirtyMethod, finalCallback) {
   finalCallback({
     local_id: data.local_id,
     tsocket: data.tsocket,
-    split_tags: [],
     created: "",
     resource_name: data.resource_name,
     the_content: [],
-    notes: [],
-    readOnly: false,
-    is_repository: false,
+    readOnly: data.read_only,
+    is_repository: data.is_repository,
     registerDirtyMethod: registerDirtyMethod
   });
 }
@@ -317,6 +315,8 @@ async function list_viewer_main() {
       local_id,
       tsocket
     };
+    data.read_only = window.read_only;
+    data.is_repository = window.is_repository;
     list_viewer_props(data, null, gotProps);
   });
 }

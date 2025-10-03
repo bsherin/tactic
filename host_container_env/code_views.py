@@ -21,16 +21,17 @@ def view_code(code_name):
     javascript_source = url_for('static', filename=js_source_dict["code_viewer_react"])
     return render_template("library/resource_viewer_react.html",
                            resource_name=code_name,
+                           is_repository=False,
+                           read_only=False,
                            develop=str(_develop),
                            has_openapi_key=current_user.has_openapi_key,
                            javascript_source=javascript_source,
                            css_source=css_source("code_viewer_react"),
                            version_string=tstring)
 
-@app.route('/repository_view_code/<list_name>')
+@app.route('/repository_view_code/<code_name>')
 @login_required
-def repository_view_code(self, code_name):
-        user_obj = current_user
+def repository_view_code(code_name):
         javascript_source = url_for('static', filename=js_source_dict["code_viewer_react"])
         return render_template("library/resource_viewer_react.html",
                                resource_name=code_name,

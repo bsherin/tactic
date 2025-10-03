@@ -57,6 +57,10 @@ function BlueprintTable(props) {
         _updateRowHeights();
     }, [current_doc_name.current]);
 
+    useEffect(()=> {
+        _updateRowHeights()
+    }, [props.mState.update_index]);
+
     function hash_value() {
         let obj = {
             cwidths: props.mState.table_spec.column_widths,
@@ -262,6 +266,10 @@ function BlueprintTable(props) {
         props.updateTableSpec({column_widths: cwidths}, true);
     }
 
+    function updateUpdateIndex() {
+        props.setMainStateValue("update_index", props.mState.update_index + 1);
+    }
+
     function _onColumnsReordered(oldIndex, newIndex) {
         let col_to_move = props.filtered_column_names[oldIndex];
         let cnames = [...props.filtered_column_names];
@@ -341,11 +349,11 @@ function EnhancedEditableCell(props)  {
     }
 
     function _onChange(value) {
-        props.setCellContent(props.rowIndex, props.columnHeader, value, false)
+        props.setCellContent(props.rowIndex, props.columnHeader, value, true)
     }
 
     function _onCancel() {
-        props.setCellContent(props.rowIndex, props.columnHeader, saved_text, false);
+        props.setCellContent(props.rowIndex, props.columnHeader, saved_text, true);
         set_am_editing(false)
     }
 

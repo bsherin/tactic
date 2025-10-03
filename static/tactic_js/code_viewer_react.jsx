@@ -42,7 +42,7 @@ function code_viewer_props(data, registerDirtyMethod, finalCallback) {
         resource_name: data.resource_name,
         the_content: "",
         notes: "",
-        readOnly: data.is_repository,
+        readOnly: data.read_only,
         is_repository: data.is_repository,
         registerDirtyMethod: registerDirtyMethod,
     })
@@ -222,7 +222,7 @@ function CodeViewerApp(props) {
                         name_text: "Share",
                         icon_name: "share",
                         click_handler: async () => {
-                            await sendToRepository("list", _cProp("resource_name"), dialogFuncs, statusFuncs, errorDrawerFuncs)
+                            await sendToRepository("code", _cProp("resource_name"), dialogFuncs, statusFuncs, errorDrawerFuncs)
                         },
                         tooltip: "Share to repository"
                     },
@@ -319,7 +319,7 @@ function CodeViewerApp(props) {
         }
         statusFuncs.startSpinner();
         try {
-            let data = await postPromise("host", "get_code_names", {"user_id": window.user_id}, props.local_id);
+            let data = await postPromise("host", "get_code_names_task", {"user_id": window.user_id}, props.local_id);
             let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
                 title: "Save Code As",
                 field_title: "New Code Name",
@@ -430,6 +430,8 @@ function code_viewer_main() {
             handleCallback(task_packet, local_id)
         });
         let data = {resource_name: resource_name, res_type: "code", local_id, tsocket};
+        data.read_only = window.read_only;
+        data.is_repository = window.is_repository;
         code_viewer_props(data, null, gotProps);
     })
 }

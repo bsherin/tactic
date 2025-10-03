@@ -312,6 +312,7 @@ function CombinedMetadata(props) {
   const top_ref = (0, _react.useRef)();
   const listenderAttachedRef = (0, _react.useRef)(false);
   const [, mDispatch, mStateRef] = (0, _utilities_react.useImmerReducerAndRef)(_metadata_reducer.metadataReducer, initial_state);
+  const [isTile, setIsTile] = (0, _react.useState)(props.res_type === "tile");
   const pushCallback = (0, _utilities_react.useCallbackStack)();
   const updatedIdRef = (0, _react.useRef)(null);
   const [, doUpdate] = (0, _utilities_react.useDebounce)(state_stuff => {
@@ -332,6 +333,9 @@ function CombinedMetadata(props) {
       }
     };
   }, []);
+  (0, _react.useEffect)(() => {
+    setIsTile(props.res_type === "tile");
+  }, [props.res_type]);
   (0, _react.useEffect)(() => {
     if (props.tsocket && !listenderAttachedRef.current) {
       props.tsocket.attachListener("resource-updated", handleExternalUpdate);
@@ -376,10 +380,10 @@ function CombinedMetadata(props) {
       };
       let amdata = data["additional_mdata"];
       delete amdata.updated;
-      if (data["additional_mdata"].icon) {
-        updater["icon"] = data["additional_mdata"].icon;
-      }
-      if (props.res_type == "tile") {
+      if (isTile) {
+        if (data["additional_mdata"].icon) {
+          updater["icon"] = data["additional_mdata"].icon;
+        }
         if (data["additional_mdata"].category) {
           updater["category"] = data["additional_mdata"].category;
           delete amdata.category;
@@ -407,8 +411,8 @@ function CombinedMetadata(props) {
       "metadata": {
         "tags": "tags" in state_stuff ? state_stuff["tags"] : mStateRef.current.tags,
         "notes": "notes" in state_stuff ? state_stuff["notes"] : mStateRef.current.notes,
-        "icon": "icon" in state_stuff ? state_stuff["icon"] : mStateRef.current.icon,
-        "category": "category" in state_stuff ? state_stuff["category"] : mStateRef.current.category,
+        "icon": isTile && "icon" in state_stuff ? state_stuff["icon"] : mStateRef.current.icon,
+        "category": isTile && "category" in state_stuff ? state_stuff["category"] : mStateRef.current.category,
         "mdata_uid": (0, _utilities_react.guid)()
       }
     };
@@ -522,13 +526,13 @@ function CombinedMetadata(props) {
     readOnly: props.readOnly,
     handleChange: _handleTagsChange,
     res_type: props.res_type
-  })), !props.useFixedData && mStateRef.current.category != null && /*#__PURE__*/_react.default.createElement(_core.FormGroup, {
+  })), isTile && !props.useFixedData && mStateRef.current.category != null && /*#__PURE__*/_react.default.createElement(_core.FormGroup, {
     label: "Category",
     key: `${props.res_name}-${props.res_type}-cagegory`
   }, /*#__PURE__*/_react.default.createElement(_core.InputGroup, {
     onChange: _handleCategoryChange,
     value: mStateRef.current.category
-  })), mStateRef.current.icon != null && /*#__PURE__*/_react.default.createElement(_core.FormGroup, {
+  })), isTile && mStateRef.current.icon != null && /*#__PURE__*/_react.default.createElement(_core.FormGroup, {
     label: "Icon"
   }, /*#__PURE__*/_react.default.createElement(IconSelector, {
     key: `${props.res_name}-${props.res_type}-icon-selector`,

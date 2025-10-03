@@ -134,9 +134,9 @@ class TileTasksMixin:
             if doc is None:
                 return {"success": False, "message": "Tile not found."}
             history = doc.get("history", [])
-            history.append({"updated": tile_dict["metadata"]["updated"],
-                            "tile_module": tile_dict["tile_module"]})
-            self.update_tile_from_doc(module_name, {"history": history})
+            history.append({"updated": doc["metadata"]["updated"],
+                            "tile_module": doc["tile_module"]})
+            the_user.update_tile_from_doc(module_name, {"history": history})
             result = {"success": True, "message": "Module successfully saved and checkpointed",
                       "alert_type": "alert-success"}
         except Exception as ex:

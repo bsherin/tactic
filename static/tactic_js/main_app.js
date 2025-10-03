@@ -84,6 +84,7 @@ function MainApp(props) {
   const dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   const statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
   const [mState, mDispatch] = (0, _react.useReducer)(_main_support.mainReducer, {
+    update_index: 0,
     table_is_shrunk: props.doc_type == "none" || iStateOrDefault("table_is_shrunk"),
     console_width_fraction: iStateOrDefault("console_width_fraction"),
     horizontal_fraction: iStateOrDefault("horizontal_fraction"),
@@ -386,14 +387,17 @@ function MainApp(props) {
   function _handleVerticalSplitUpdate(top_height, bottom_height, top_fraction) {
     _setMainStateValue("height_fraction", top_fraction);
   }
-  function _updateTableSpec(spec_update, broadcast = false) {
+  function _updateTableSpec(spec_update, broadcast = false, callback = null) {
     mDispatch({
       type: "update_table_spec",
       spec_update: spec_update
     });
     if (broadcast) {
       spec_update["doc_name"] = mState.table_spec.current_doc_name;
-      (0, _communication_react.postWithCallback)(props.local_id, "UpdateTableSpec", spec_update, null, null, props.local_id);
+      if (callback == null) {
+        callback = updateUpdateIndex;
+      }
+      (0, _communication_react.postWithCallback)(props.local_id, "UpdateTableSpec", spec_update, callback, null, props.local_id);
     }
   }
   const _broadcast_event_to_server = (0, _react.useCallback)((event_name, data_dict, callback = null) => {
@@ -504,12 +508,12 @@ function MainApp(props) {
         colorTxtInCell: data => _colorTextInCell(data.row_id, data.column_header, data.token_text, data.color_dict),
         setFreeformContent: data => _setFreeformDoc(data.doc_name, data.new_content),
         updateDocList: data => _updateDocList(data.doc_names, data.visible_doc),
-        setCellBackground: data => _setCellBackgroundColor(data.row, data.column_header, data.color)
+        setCellBackground: data => _setCellBackgroundColor(data.doc_name, data.row, data.column_header, data.color)
       };
       handlerDict[data["table_message"]](data);
     }
   }
-  const _setCellContent = (0, _react.useCallback)((row_id, column_header, new_content, broadcast = false) => {
+  function _setCellContent(row_id, column_header, new_content, broadcast = false) {
     mDispatch({
       type: "set_cell_content",
       row_id: row_id,
@@ -517,6 +521,7 @@ function MainApp(props) {
       new_content: new_content
     });
     let data = {
+      doc_name: mState.table_spec.current_doc_name,
       id: row_id,
       column_header: column_header,
       new_content: new_content,
@@ -525,11 +530,13 @@ function MainApp(props) {
     if (broadcast) {
       _broadcast_event_to_server("SetCellContent", data, null);
     }
-  }, []);
-  function _setCellBackgroundColor(row_id, column_header) {
+  }
+  function _setCellBackgroundColor(doc_name, row_id, column_header, color) {
     mDispatch({
       type: "set_cell_background",
+      doc_name: doc_name,
       row_id: row_id,
+      color: color,
       column_header: column_header
     });
   }
@@ -543,7 +550,10 @@ function MainApp(props) {
     });
   }
   function _refill_table(data_object) {
-    _setStateFromDataObject(data_object, data_object.doc_name);
+    _setStateFromDataObject(data_object, data_object.doc_name, updateUpdateIndex);
+  }
+  function updateUpdateIndex() {
+    _setMainStateValue("update_index", mState.update_index + 1);
   }
   function _moveColumn(tag_to_move, place_to_move) {
     let colnames = [...mState.table_spec.column_names];
@@ -600,7 +610,7 @@ function MainApp(props) {
     _updateTableSpec({
       hidden_columns_list: hc_list,
       column_widths: cwidths
-    });
+    }, true);
   }
   function _unhideAllColumns() {
     _updateTableSpec({
@@ -614,21 +624,21 @@ function MainApp(props) {
     await (0, _communication_react.postPromise)(props.local_id, "delete_row", {
       "document_name": mState.table_spec.current_doc_name,
       "index": mState.selected_row
-    });
+    }).then(updateUpdateIndex);
   }
   async function _insertRow(index) {
     await (0, _communication_react.postPromise)(props.local_id, "insert_row", {
       "document_name": mState.table_spec.current_doc_name,
       "index": index,
       "row_dict": {}
-    }, props.local_id);
+    }, props.local_id).then(updateUpdateIndex);
   }
   async function _duplicateRow() {
     await (0, _communication_react.postPromise)(props.local_id, "insert_row", {
       "document_name": mState.table_spec.current_doc_name,
       "index": mState.selected_row,
-      "row_dict": mState.data_text[mState.selected_row]
-    }, props.local_id);
+      "row_dict": mState.data_row_dict[mState.selected_row]
+    }, props.local_id).then(updateUpdateIndex);
   }
   async function _deleteColumn(delete_in_all = false) {
     let fnames = _filteredColumnNames();
@@ -648,7 +658,7 @@ function MainApp(props) {
       "doc_name": mState.table_spec.current_doc_name,
       "all_docs": delete_in_all
     };
-    await (0, _communication_react.postPromise)(props.local_id, "DeleteColumn", data_dict, props.local_id);
+    await (0, _communication_react.postPromise)(props.local_id, "DeleteColumn", data_dict, props.local_id).then(updateUpdateIndex);
   }
   async function _addColumn(add_in_all = false) {
     try {
@@ -672,7 +682,7 @@ function MainApp(props) {
         "column_width": cwidth,
         "all_docs": add_in_all
       };
-      _broadcast_event_to_server("CreateColumn", data_dict);
+      _broadcast_event_to_server("CreateColumn", data_dict, updateUpdateIndex);
     } catch (e) {
       if (e != "canceled") {
         errorDrawerFuncs.addFromError(`Error adding column`, e);
@@ -740,7 +750,7 @@ function MainApp(props) {
   async function _changeCollection() {
     try {
       statusFuncs.startSpinner();
-      let data = await (0, _communication_react.postPromise)("host", "get_collection_names", {
+      let data = await (0, _communication_react.postPromise)("host", "get_collection_names_task", {
         "user_id": user_id
       }, props.local_id);
       let new_collection_name = await dialogFuncs.showModalPromise("SelectDialog", {
@@ -1185,7 +1195,9 @@ function main_main() {
     });
     (0, _communication_react.postPromise)("host", target, post_data, local_id).then(data => {
       data.tsocket = tsocket;
-      data.local_id = local_id, (0, _main_support.main_props)(data, null, gotProps);
+      data.local_id = local_id, data.read_only = window.read_only;
+      data.is_repository = window.is_repository;
+      (0, _main_support.main_props)(data, null, gotProps);
     });
   });
 }

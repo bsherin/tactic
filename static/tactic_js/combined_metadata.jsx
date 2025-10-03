@@ -352,6 +352,7 @@ function CombinedMetadata(props) {
     const listenderAttachedRef = useRef(false);
 
     const [, mDispatch, mStateRef] = useImmerReducerAndRef(metadataReducer, initial_state);
+    const [isTile, setIsTile] = useState(props.res_type === "tile");
 
     const pushCallback = useCallbackStack();
 
@@ -378,6 +379,11 @@ function CombinedMetadata(props) {
             }
         }
     }, []);
+
+    useEffect(() => {
+        setIsTile(props.res_type === "tile");
+
+    }, [props.res_type]);
 
     useEffect(() => {
         if (props.tsocket && !listenderAttachedRef.current) {
@@ -425,10 +431,10 @@ function CombinedMetadata(props) {
                 };
                 let amdata = data["additional_mdata"];
                 delete amdata.updated;
-                if (data["additional_mdata"].icon) {
-                    updater["icon"] = data["additional_mdata"].icon
-                }
-                if (props.res_type == "tile") {
+                if (isTile) {
+                    if (data["additional_mdata"].icon) {
+                        updater["icon"] = data["additional_mdata"].icon
+                    }
                     if (data["additional_mdata"].category) {
                         updater["category"] = data["additional_mdata"].category;
                         delete amdata.category
@@ -456,8 +462,8 @@ function CombinedMetadata(props) {
             "metadata": {
                 "tags": "tags" in state_stuff ? state_stuff["tags"] : mStateRef.current.tags,
                 "notes": "notes" in state_stuff ? state_stuff["notes"] : mStateRef.current.notes,
-                "icon": "icon" in state_stuff ? state_stuff["icon"] : mStateRef.current.icon,
-                "category": "category" in state_stuff ? state_stuff["category"] : mStateRef.current.category,
+                "icon": isTile && "icon" in state_stuff ? state_stuff["icon"] : mStateRef.current.icon,
+                "category": isTile && ("category" in state_stuff) ? state_stuff["category"] : mStateRef.current.category,
                 "mdata_uid": guid()
             }
         };
@@ -555,13 +561,13 @@ function CombinedMetadata(props) {
                     </FormGroup>
                 }
 
-                {!props.useFixedData && mStateRef.current.category != null &&
+                {isTile && !props.useFixedData && mStateRef.current.category != null &&
                     <FormGroup label="Category" key={`${props.res_name}-${props.res_type}-cagegory`}>
                         <InputGroup onChange={_handleCategoryChange}
                                     value={mStateRef.current.category}/>
                     </FormGroup>
                 }
-                {mStateRef.current.icon != null &&
+                {isTile && mStateRef.current.icon != null &&
                     <FormGroup label="Icon">
                         <IconSelector key={`${props.res_name}-${props.res_type}-icon-selector`}
                                       icon_val={mStateRef.current.icon}

@@ -22,6 +22,8 @@ def view_list(list_name):
     javascript_source = url_for('static', filename=js_source_dict["list_viewer_react"])
     return render_template("library/resource_viewer_react.html",
                            resource_name=list_name,
+                           is_repository=False,
+                           read_only=False,
                            develop=str(_develop),
                            has_openapi_key=current_user.has_openapi_key,
                            javascript_source=javascript_source,

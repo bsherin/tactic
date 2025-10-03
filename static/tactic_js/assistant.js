@@ -276,7 +276,7 @@ function ChatModule(props) {
       assistantDrawerFuncs.set_chat_status("posted");
       await (0, _communication_react.postPromise)(assistantDrawerFuncs.assistant_id_ref.current, "post_prompt_stream", {
         prompt: props.assistant_prompt_value_ref.current,
-        global_id: window.global_id
+        local_id: window.global_id
       });
     } catch (error) {
       console.log(error.message);

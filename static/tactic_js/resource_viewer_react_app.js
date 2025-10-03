@@ -43,7 +43,7 @@ async function copyToLibrary(res_type, resource_name, dialogFuncs, statusFuncs, 
 }
 async function sendToRepository(res_type, resource_name, dialogFuncs, statusFuncs, errorDrawerFuncs) {
   try {
-    let data = await (0, _communication_react.postPromise)("host", "get_resources_names_task", {
+    let data = await (0, _communication_react.postPromise)("host", "get_resource_names_task", {
       res_type,
       is_repository: true
     });

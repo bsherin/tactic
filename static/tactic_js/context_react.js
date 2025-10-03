@@ -265,9 +265,10 @@ function ContextApp(props) {
     if (["list", "code", "text"].includes(res_type)) {
       data = {
         kind: `${res_type}-viewer`,
-        resource_name: resource_name,
+        resource_name: file_path == null ? resource_name : (0, _pool_tree.getBasename)(file_path),
         res_type: res_type,
-        local_id: new_viewer_id
+        local_id: new_viewer_id,
+        file_path: file_path
       };
     } else {
       switch (res_type) {
@@ -291,10 +292,13 @@ function ContextApp(props) {
               local_id: new_viewer_id
             });
           } else {
-            data = await (0, _communication_react.postPromise)("host", "initiate_module_viewer_in_context", {
-              tile_module_name: resource_name,
+            data = {
+              kind: "module-viewer",
+              resource_name: resource_name,
+              res_type: "tile",
+              original_res_type: "raw-tile",
               local_id: new_viewer_id
-            });
+            };
           }
           break;
         case "collection":
@@ -338,6 +342,8 @@ function ContextApp(props) {
     data.original_res_type = res_type;
     data.file_path = file_path;
     data.tsocket = tsocket;
+    data.read_only = false;
+    data.is_repository = false;
     if (resolve) {
       resolve(data);
     } else {
@@ -464,7 +470,7 @@ function ContextApp(props) {
     tabPanelListDispatch({
       type: "update_item",
       identifier: the_id,
-      lnew_panel
+      new_item: lnew_panel
     });
     pushCallback(() => {
       _updateOpenResources(callback);
@@ -511,9 +517,17 @@ function ContextApp(props) {
     await _addPanelPromise(new_id, data.kind, data.res_type, data.resource_name, "spinner");
     propDict[data.kind](data, drmethod, new_panel => {
       new_panel.original_res_type = res_type;
-      _updatePanel(new_id, {
-        panel: new_panel
-      }, callback);
+      if (callback != null) {
+        _updatePanel(new_id, {
+          panel: new_panel
+        }, () => {
+          callback(data.local_id);
+        });
+      } else {
+        _updatePanel(new_id, {
+          panel: new_panel
+        });
+      }
     });
   }, []);
   function getIdList() {

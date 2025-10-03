@@ -139,7 +139,7 @@ class CollectionAccess(object):
 
 
     def create_complete_collection(self, new_name, doc_dict, doc_type, document_metadata=None,
-                                   header_list_dict=None, collection_metadata=None, temp_data=None):
+                                   header_list_dict=None, collection_metadata={}, temp_data=None):
 
         if temp_data is None and new_name in self.collection_names:
             raise NameExistsError("Collection name {} already exists".format(new_name))

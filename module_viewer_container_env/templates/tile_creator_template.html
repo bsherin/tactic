@@ -7,7 +7,6 @@ class {{class_name}}(TileBase):
     def __init__(self, main_id, tile_id, tile_name=None):
         import textwrap
         TileBase.__init__(self, main_id, tile_id, tile_name)
-        {% endif -%}
         {% if couple_save_attrs_and_exports -%}
         self.save_attrs += [exp["name"] for exp in self.exports]
         {% else %}

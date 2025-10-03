@@ -113,7 +113,7 @@ class Assistant(QWorker, ExceptionMixin, AssistantEventHandler):
                     self.chat_client.beta.threads.delete(self.chat_thread.id)
                 self.chat_thread = self.chat_client.beta.threads.create()
             except Exception as ex:
-                error_string = self.extract_short_error_message(ex, "error deleting thread")
+                error_string = self.get_traceback_message(ex, "error deleting thread")
                 print(error_string)
         return {"success": True}
 
@@ -167,7 +167,8 @@ class Assistant(QWorker, ExceptionMixin, AssistantEventHandler):
             return {"success": True}
 
         except Exception as ex:
-            print("got exception")
+            error_string = self.get_traceback_message(ex, "error posting prompt stream")
+            print(error_string)
             res = self.get_traceback_exception_dict(ex, "Error posting to open ai")
             if attempts == 0:
                 self.clean_up_chat()
@@ -192,24 +193,28 @@ class Assistant(QWorker, ExceptionMixin, AssistantEventHandler):
         return
 
     def clean_up_chat(self, signum=None, frame=None):
-        if self.chat_client is not None:
-            try:
-                if self.chat_thread is not None:
-                    self.chat_client.beta.threads.delete(self.chat_thread.id)
-            except Exception as ex:
-                error_string = self.extract_short_error_message(ex, "error deleting thread")
-                print(error_string)
-            try:
-                if self.chat_assistant is not None:
-                    self.chat_client.beta.assistants.delete(self.chat_assistant.id)
-            except Exception as ex:
-                error_string = self.extract_short_error_message(ex, "error deleting assistant")
-                print(error_string)
-        self.remove_old_tactic_assistants()  # shouldn't be nessesary, but just in case
-        self.chat_client = None
-        self.chat_assistant = None
-        self.chat_thread = None
-        self.current_run_id = None
+        try:
+            if self.chat_client is not None:
+                try:
+                    if self.chat_thread is not None:
+                        self.chat_client.beta.threads.delete(self.chat_thread.id)
+                except Exception as ex:
+                    error_string = self.extract_short_error_message(ex, "error deleting thread")
+                    print(error_string)
+                try:
+                    if self.chat_assistant is not None:
+                        self.chat_client.beta.assistants.delete(self.chat_assistant.id)
+                except Exception as ex:
+                    error_string = self.extract_short_error_message(ex, "error deleting assistant")
+                    print(error_string)
+            self.remove_old_tactic_assistants()  # shouldn't be nessesary, but just in case
+            self.chat_client = None
+            self.chat_assistant = None
+            self.chat_thread = None
+            self.current_run_id = None
+        except ExceptionMixin as ex:
+            error_string = self.get_traceback_message(ex, "error cleaning up chat")
+            print(error_string)
         return
 
     def remove_old_tactic_assistants(self):
@@ -221,6 +226,7 @@ class Assistant(QWorker, ExceptionMixin, AssistantEventHandler):
                     print("deleting assistant " + it.id)
                     client.beta.assistants.delete(it.id)
             except Exception as ex:
+                error_string = self.extract_short_error_message(ex, "error deleting assistant")
                 print("got error deleting assistant")
                 continue
         return

@@ -1,4 +1,7 @@
 from qworker import task_worthy
+import re
+import os
+import datetime
 
 class ListTasksMixin:
 
@@ -105,7 +108,7 @@ class ListTasksMixin:
         return {"success": True, "message": "Tag deleted from lists successfully."}
 
     @task_worthy
-    def intitiate_text_viewer_in_context(self, data):
+    def get_text_from_pool_task(self, data):
         the_user = self.get_user_from_data(data)
         file_path = data["file_path"]
 
@@ -130,19 +133,13 @@ class ListTasksMixin:
             fstat = os.stat(true_path)
             data = {
                 "success": True,
-                "kind": "text-viewer",
-                "res_type": "text",
                 "the_content": the_text,
                 "mdata": mdata,
-                "resource_name": fname,
-                "read_only": False,
-                "is_repository": False,
-                "file_path": file_path,
-                "created": current_user.get_timestrings(datetime.datetime.utcfromtimestamp(fstat.st_ctime))[0],
-                "updated": current_user.get_timestrings(datetime.datetime.utcfromtimestamp(fstat.st_mtime))[0],
+                "created": the_user.get_timestrings(datetime.datetime.utcfromtimestamp(fstat.st_ctime))[0],
+                "updated": the_user.get_timestrings(datetime.datetime.utcfromtimestamp(fstat.st_mtime))[0],
                 "size": fstat.st_size
             }
             return data
         except Exception as ex:
             emsg = self.get_traceback_message(ex, "Error in view_text_in_context")
-            return jsonify({"success": False, "message": emsg})
+            return {"success": False, "message": emsg}

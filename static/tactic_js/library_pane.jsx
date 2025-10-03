@@ -162,6 +162,7 @@ function LibraryPane(props) {
                 the_view = view_views(props.is_repository)[pStateRef.current.select_state.selected_resource.res_type]
             }
             statusFuncs.clearStatus();
+            if (the_view == null) return;
             window.open($SCRIPT_ROOT + the_view + pStateRef.current.select_state.selected_resource.name)
         }
     }, [pStateRef.current.select_state.selected_resource]);
@@ -479,8 +480,8 @@ function LibraryPane(props) {
                 }
             } else {
                 let view_view = view_views(props.is_repository)[row_dict.res_type];
-                if (view_view == null) return;
                 statusFuncs.clearStatus();
+                if (view_view == null) return;
                 window.open($SCRIPT_ROOT + view_view + row_dict.name)
             }
         });
@@ -621,6 +622,7 @@ function LibraryPane(props) {
                 the_view = view_views(props.is_repository)[selected_resource.res_type]
             }
             statusFuncs.clearStatus();
+            if (the_view == null) return;
             window.open($SCRIPT_ROOT + the_view + resource_name)
         }
     }
@@ -725,7 +727,7 @@ function LibraryPane(props) {
             let res_type = pStateRef.current.select_state.selected_resource.res_type;
             let res_name = pStateRef.current.select_state.selected_resource.name;
             try {
-                let data = await postPromise("host", "get_resource_names_tasks", {res_type});
+                let data = await postPromise("host", "get_resource_names_task", {res_type});
                 let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
                     title: `Import ${res_type}`,
                     field_title: "New Name",

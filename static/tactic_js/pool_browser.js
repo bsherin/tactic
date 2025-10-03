@@ -19,7 +19,6 @@ var _error_drawer = require("./error_drawer");
 var _sizing_tools = require("./sizing_tools");
 var _toaster = require("./toaster");
 var _modal_react = require("./modal_react");
-var _library_home_react = require("./library_home_react");
 function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function (e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, default: e }; if (null === e || "object" != typeof e && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (const t in e) "default" !== t && {}.hasOwnProperty.call(e, t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, t)) && (i.get || i.set) ? o(f, t, i) : f[t] = e[t]); return f; })(e, t); }
 function PoolBrowser(props) {
   const [, set_selected_resource, selected_resource_ref] = (0, _utilities_react.useStateAndRef)({
@@ -94,8 +93,8 @@ function PoolBrowser(props) {
     await (0, _communication_react.postPromise)("host", "print_code_area_to_console", {
       "console_text": code,
       "user_id": window.user_id,
-      "main_id": main_id
-    }, props.main_id);
+      "local_id": main_id
+    }, window.global_id);
   }
   async function openInNotebook(node = null) {
     if (!valueRef.current && !node) return;
@@ -137,10 +136,10 @@ function PoolBrowser(props) {
       });
       let data;
       if (checkResults["create_new_notebook"]) {
-        props.handleCreateViewer("new-notebook", null, async () => await sendNewCell(path, data.main_id, checkResults["read_as_dataframe"]));
+        props.handleCreateViewer("new-notebook", null, async main_id => await sendNewCell(path, main_id, checkResults["read_as_dataframe"]));
       } else {
         props.setSelectedTabId(open_projects_dict[selectedResource].id);
-        await sendNewCell(path, open_projects_dict[selectedResource].main_id, checkResults["read_as_dataframe"]);
+        await sendNewCell(path, open_projects_dict[selectedResource].local_id, checkResults["read_as_dataframe"]);
       }
     } catch (e) {
       errorDrawerFuncs.addFromError(`Error opening in notebook`, e);
@@ -206,7 +205,7 @@ function PoolBrowser(props) {
       const the_data = {
         full_path: full_path
       };
-      await (0, _communication_react.postPromise)("host", "create_pool_directory", the_data);
+      await (0, _communication_react.postPromise)("host", "create_pool_directory_task", the_data);
     } catch (e) {
       if (e != "canceled") {
         errorDrawerFuncs.addFromError(`Error adding directory`, e);
@@ -377,7 +376,7 @@ function PoolBrowser(props) {
     }
   }
   function _add_to_pool(myDropZone, setCurrentUrl) {
-    let new_url = `import_pool/${_library_home_react.library_id}`;
+    let new_url = `import_pool/${window.global_id}`;
     myDropZone.options.url = new_url;
     setCurrentUrl(new_url);
     myDropZone.processQueue();
@@ -624,7 +623,6 @@ function PoolBrowser(props) {
     setRootToBase: setRootToBase,
     setRoot: setRoot
   }, props.errorDrawerFuncs, {
-    library_id: props.library_id,
     controlled: props.controlled,
     tsocket: props.tsocket
   })), /*#__PURE__*/_react.default.createElement("div", {

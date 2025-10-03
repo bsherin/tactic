@@ -43,7 +43,7 @@ function code_viewer_props(data, registerDirtyMethod, finalCallback) {
     resource_name: data.resource_name,
     the_content: "",
     notes: "",
-    readOnly: data.is_repository,
+    readOnly: data.read_only,
     is_repository: data.is_repository,
     registerDirtyMethod: registerDirtyMethod
   });
@@ -200,7 +200,7 @@ function CodeViewerApp(props) {
           name_text: "Share",
           icon_name: "share",
           click_handler: async () => {
-            await (0, _resource_viewer_react_app.sendToRepository)("list", _cProp("resource_name"), dialogFuncs, statusFuncs, errorDrawerFuncs);
+            await (0, _resource_viewer_react_app.sendToRepository)("code", _cProp("resource_name"), dialogFuncs, statusFuncs, errorDrawerFuncs);
           },
           tooltip: "Share to repository"
         }]
@@ -291,7 +291,7 @@ function CodeViewerApp(props) {
     }
     statusFuncs.startSpinner();
     try {
-      let data = await (0, _communication_react.postPromise)("host", "get_code_names", {
+      let data = await (0, _communication_react.postPromise)("host", "get_code_names_task", {
         "user_id": window.user_id
       }, props.local_id);
       let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
@@ -404,6 +404,8 @@ function code_viewer_main() {
       local_id,
       tsocket
     };
+    data.read_only = window.read_only;
+    data.is_repository = window.is_repository;
     code_viewer_props(data, null, gotProps);
   });
 }

@@ -298,6 +298,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
         if unique_id is None:
             try:
                 project_dict = self.read_project_dict(project_name)
+                self.mdata = self.get_project_metadata(project_name)
             except Exception as ex:
                 error_string = self.handle_exception(ex, "<pre>Error loading project dict</pre>", print_to_console=True)
                 print(error_string)
@@ -307,7 +308,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
             doc = self.read_temp_data(unique_id)
             doc["metadata"] = {"save_style": "b64save_react"}
             project_dict = self.read_project_dict_from_doc(doc)
-            self.delete_temp_data(unique_id, fs=self.fs)
+            self.delete_temp_data(unique_id)
 
         error_messages = []
         if "doc_type" not in project_dict:  # legacy this is for backward compatibility
@@ -701,6 +702,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
         doc.set_background_color(the_id, column_header, color)
         if doc_name == self.visible_doc_name:
             data = {"row": the_id,
+                    "doc_name": doc_name,
                     "column_header": column_header,
                     "color": color}
             self.mworker.emit_table_message("setCellBackground", data)

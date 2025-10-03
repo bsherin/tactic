@@ -21,6 +21,8 @@ def show_history_viewer(module_name):
     javascript_source = url_for('static', filename=js_source_dict["history_viewer_react"])
     return render_template("library/resource_viewer_react.html",
                            resource_name=module_name,
+                           is_repository=False,
+                           read_only=False,
                            develop=str(_develop),
                            css_source=css_source("history_viewer_react"),
                            javascript_source=javascript_source,
@@ -48,6 +50,8 @@ def show_tile_differ(module_name, second_module_name):
     javascript_source = url_for('static', filename=js_source_dict["tile_differ_react"])
     return render_template("library/resource_viewer_react.html",
                            resource_name=module_name,
+                           is_repository=False,
+                           read_only=False,
                            second_resource_name=second_module_name,
                            develop=str(_develop),
                            javascript_source=javascript_source,

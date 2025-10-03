@@ -18,7 +18,7 @@ from tactic_app import app, socketio
 print("back in host_main")
 import users
 print("imported user")
-import auth_views, main_views, library_views, admin_views
+import auth_views, main_views, library_views, admin_views, pool_views
 import list_views, code_views, tile_views, project_views, collection_views
 import module_viewer_views
 print("imported views")

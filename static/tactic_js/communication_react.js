@@ -94,12 +94,7 @@ function getBlobPromise(target, data={}) {
                 responseType: 'blob' // Response type as blob
             },
             success: (data, status, xhr) => {
-                if ("success" in data && data.success == false) {
-                    reject(data)
-                }
-                else {
-                    resolve([data, status, xhr])
-                }
+                resolve([data, status, xhr])
             },
             error: function (xhr, status, error) {
                 reject(xhr.responseText);

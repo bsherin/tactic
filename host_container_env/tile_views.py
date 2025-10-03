@@ -26,6 +26,8 @@ def view_module(module_name):
     javascript_source = url_for('static', filename=js_source_dict["module_viewer_react"])
     return render_template("library/resource_viewer_react.html",
                            resource_name=module_name,
+                           is_repository=False,
+                           read_only=False,
                            develop=str(_develop),
                            has_openapi_key=current_user.has_openapi_key,
                            css_source=css_source("module_viewer_react"),
@@ -52,6 +54,8 @@ def get_api_html():
 def view_in_creator(module_name):
     return render_template("library/tile_creator_react.html",
                            module_name=module_name,
+                           is_repository=False,
+                           read_only=False,
                            line_number=0,
                            css_source=css_source("tile_creator_react"),
                            module_source=js_source_dict["tile_creator_react"],
