@@ -61,15 +61,12 @@ try:
         ANYONE_CAN_REGISTER = False
 
     print("creating, cleaning temp_data")
-    try:
-        db.create_collection("temp_data")
-    except CollectionInvalid:
-        # The collection already exists, so just ignore this
-        pass
-    for rec in db["temp_data"].find():
-        if "file_id" in rec:
-            fs.delete(rec["file_id"])
-    db["temp_data"].drop()
+    collection_names = db.list_collection_names()
+    if "temp_data" in collection_names:
+        for rec in db["temp_data"].find():
+            if "file_id" in rec:
+                fs.delete(rec["file_id"])
+        db["temp_data"].drop()
 
     login_manager = LoginManager()
     login_manager.session_protection = 'basic'
