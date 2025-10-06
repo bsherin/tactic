@@ -8,12 +8,15 @@ import json
 import os
 import sys
 import copy
+
+from rabbit_manage import get_pika_connection_with_retries
 import communication_utils
 from exception_mixin import ExceptionMixin, MessagePostException
 from threading import Lock
 import threading
 import ctypes
 import inspect
+
 
 thread = None
 thread_lock = Lock()
@@ -102,34 +105,22 @@ pika_channels = {}
 pika_connections = {}
 wait_workers = {}
 
-def get_pika_connection(retries=10):
+def add_qw_pika_connection():
     try:
         global pika_channels
         global pika_connections
         current_thread = my_thread()
-        params = pika.ConnectionParameters(
-            heartbeat=600,
-            blocked_connection_timeout=300,
-            host="megaplex",
-            port=5672,
-            virtual_host='/'
-        )
-        connection = pika.BlockingConnection(params)
-        channel = connection.channel()
+        connection, channel = get_pika_connection_with_retries(0, True)
+        if connection is None:
+            print("problem getting pika connection for thread " + current_thread)
+            return None
+        print("successfully added pika connection for thread " + current_thread)
         pika_connections[current_thread] = connection
         pika_channels[current_thread] = channel
-        return channel
+        return connection, channel
     except Exception as ex:
-        print("Couldn't connect to pika")
-        if retries == 0:
-            print("giving up on getting pika connection")
-            print(self.handle_exception(ex, "Here's the error"))
-            return None
-        else:
-            debug_log("sleeping ...")
-            time.sleep(3)
-            new_retries = retries - 1
-            get_pika_connection(retries=new_retries)
+        print("problem adding pika connection")
+        return None, None
 
 def my_thread():
     return threading.current_thread().name
@@ -138,6 +129,7 @@ def my_channel():
     if my_thread() in pika_channels:
         return pika_channels[my_thread()]
     else:
+        print("my_channel called but no channel for thread " + my_thread())
         return None
 
 def my_wait_worker():
@@ -167,12 +159,9 @@ class QWorker(ExceptionMixin):
 
     def start_background_thread(self, retries=10):
         try:
-            channel = get_pika_connection()
-            # if use_wait_tasks:
-            #     wait_queue = self.my_id + "_wait"
-            #     wait_worker = BlockingWaitWorker(wait_queue)
-            #     wait_workers[my_thread()] = wait_worker
-            if channel is None:
+            connection, channel = add_qw_pika_connection()
+            if connection is None:
+                debug_log("problem starting background thread: unable to create connection")
                 return
             channel.queue_declare(queue=self.my_id, durable=False, exclusive=False)
             channel.basic_consume(queue=self.my_id, auto_ack=True, on_message_callback=self.handle_delivery)
@@ -180,15 +169,7 @@ class QWorker(ExceptionMixin):
             self.ready()
             channel.start_consuming()
         except Exception as ex:
-            debug_log("problem starting background thread")
-            if retries == 0:
-                debug_log("giving up. No more processing of tasks by this qworker")
-                debug_log(self.handle_exception(ex, "Here's the error"))
-            else:
-                debug_log("sleeping ...")
-                time.sleep(3)
-                new_retries = retries - 1
-                self.start_background_thread(retries=new_retries)
+            debug_log(self.handle_exception(ex, "problem starting background thread"))
 
     def interrupt_and_restart(self):
         global thread
@@ -457,17 +438,12 @@ class BlockingWaitWorker(ExceptionMixin):
         self.current_callback_id = None
         self.initialize_me()
 
-    def initialize_me(self, retries=10):
+    def initialize_me(self):
         try:
-            params = pika.ConnectionParameters(
-                heartbeat=600,
-                blocked_connection_timeout=300,
-                host="megaplex",
-                port=5672,
-                virtual_host='/'
-            )
-            self.connection = pika.BlockingConnection(params)
-            self.channel = self.connection.channel()
+            self.connection, self.channel = get_pika_connection_with_retries(0, True)
+            if self.connection is None:
+                debug_log("Couldn't create pika connection for blocking worker")
+                return
             self.channel.queue_declare(queue=self.queue_name, durable=False, exclusive=False)
             self.callback_queue = self.queue_name
             self.channel.basic_consume(
@@ -476,14 +452,7 @@ class BlockingWaitWorker(ExceptionMixin):
                 auto_ack=True)
         except Exception as ex:
             debug_log("Couldn't start blocking worker")
-            if retries == 0:
-                print("giving up. No more processing of tasks by this qworker")
-                print(self.handle_exception(ex, "Here's the error"))
-            else:
-                print(self.handle_exception(ex, "Here's the error"))
-                time.sleep(3)
-                new_retries = retries - 1
-                self.initialize_me(retries=new_retries)
+            print(self.handle_exception(ex, "Here's the error"))
 
     def reset_me(self):
         self.connection.close()

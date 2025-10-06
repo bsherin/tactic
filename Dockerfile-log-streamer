@@ -2,6 +2,7 @@ ARG BASE_IMAGE
 FROM ${BASE_IMAGE}
 WORKDIR /code
 ADD ./log_streamer_env/requirements.txt /code/requirements.txt
+ADD ./shared_python/rabbit_manage.py /code/
 RUN pip install -r requirements.txt
 ADD ./log_streamer_env /code
 LABEL maintainer="Bruce L Sherin"

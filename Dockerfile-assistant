@@ -4,5 +4,5 @@ WORKDIR /code
 ADD ./assistant_container_env/requirements.txt /code/requirements.txt
 RUN pip install -r requirements.txt
 LABEL maintainer="Bruce L Sherin"
-ADD  ./assistant_container_env ./shared_python/exception_mixin.py ./shared_python/qworker.py ./shared_python/communication_utils.py /code/
+ADD  ./assistant_container_env ./shared_python/exception_mixin.py ./shared_python/qworker.py ./shared_python/communication_utils.py ./shared_python/rabbit_manage.py /code/
 CMD ["python", "-u", "assistant.py"]

@@ -10,9 +10,9 @@ import os
 import sys
 import copy
 from communication_utils import emit_direct, socketio
-import communication_utils
 from exception_mixin import ExceptionMixin, MessagePostException
 from threading import Lock
+from rabbit_manage import get_pika_connection, get_pika_connection_with_retries
 
 PAUSE_TIME = .01
 
@@ -91,15 +91,10 @@ class QWorker(ExceptionMixin):
 
     def start_background_thread(self, retries=0):
         try:
-            params = pika.ConnectionParameters(
-                heartbeat=600,
-                blocked_connection_timeout=300,
-                host="megaplex",
-                port=5672,
-                virtual_host='/'
-            )
-            self.connection = pika.BlockingConnection(params)
-            self.channel = self.connection.channel()
+            self.connection, self.channel = get_pika_connection_with_retries()
+            if self.connection is None or self.channel is None:
+                debug_log("Couldn't connect to pika in background thread. giving up")
+                return
             self.channel.queue_declare(queue=self.my_id, durable=False, exclusive=False)
             self.channel.basic_consume(queue=self.my_id, auto_ack=True, on_message_callback=self.handle_delivery)
             debug_log(' [*] Waiting for messages:')
@@ -107,14 +102,7 @@ class QWorker(ExceptionMixin):
             self.channel.start_consuming()
         except Exception as ex:
             debug_log("Couldn't connect to pika")
-            if retries > max_pika_retries:
-                debug_log("giving up. No more processing of tasks by this qworker")
-                debug_log(self.handle_exception(ex, "Here's the error"))
-            else:
-                debug_log("sleeping ...")
-                gevent.sleep(3)
-                new_retries = retries + 1
-                self.start_background_thread(retries=new_retries)
+            debug_log(self.handle_exception(ex, "Here's the error"))
 
     def interrupt_and_restart(self):
         global thread
@@ -352,35 +340,20 @@ class BlockingWaitWorker(ExceptionMixin):
 
     def initialize_me(self, retries=0):
         try:
-            params = pika.ConnectionParameters(
-                heartbeat=600,
-                blocked_connection_timeout=300,
-                host="megaplex",
-                port=5672,
-                virtual_host='/'
-            )
+            self.connection, self.channel = get_pika_connection_with_retries()
+            if self.connection is None:
+                debug_log("Couldn't create pika connection for blocking worker")
+                return
             self.my_id = self.queue_name
-            self.connection = pika.BlockingConnection(params)
-
-            self.channel = self.connection.channel()
-
             self.channel.queue_declare(queue=self.queue_name, durable=False, exclusive=False)
             self.callback_queue = self.queue_name
-
             self.channel.basic_consume(
                 queue=self.callback_queue,
                 on_message_callback=self.on_response,
                 auto_ack=True)
         except Exception as ex:
             debug_log("Couldn't connect to pika in Blocking worker")
-            if retries > max_pika_retries:
-                debug_log("giving up. No more processing of tasks by this qworker")
-                debug_log(self.handle_exception(ex, "Here's the error"))
-            else:
-                debug_log("sleeping ...")
-                gevent.sleep(3)
-                new_retries = retries + 1
-                self.initialize_me(retries=new_retries)
+            print(self.handle_exception(ex, "Here's the error"))
 
     def reset_me(self):
         self.connection.close()
@@ -392,7 +365,7 @@ class BlockingWaitWorker(ExceptionMixin):
             if self.channel.is_closed:  # If closed, take one crack at fixing
                 self.connection.close()
                 self.initialize_me()
-                time.sleep(1)
+                gevent.sleep(1)
             self.response = None
             self.current_callback_id = task_packet["callback_id"]
             self.corr_id = str(uuid.uuid4())
@@ -416,7 +389,7 @@ class BlockingWaitWorker(ExceptionMixin):
                 return "__ERROR__"
             else:
                 self.initialize_me()
-                time.sleep(1)
+                gevent.sleep(1)
                 self.post_blocking_wait(dest_id, task_packet, retries + 1)
 
     def handle_exception(self, ex, special_string=None):

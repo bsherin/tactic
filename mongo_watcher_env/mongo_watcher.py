@@ -6,8 +6,7 @@ import exception_mixin
 import json
 import pika
 import time
-
-max_pika_retries = 100
+from rabbit_manage import get_pika_connection_with_retries, get_pika_connection
 
 db, fs, repository_db, repository_fs = get_dbs()
 
@@ -53,34 +52,9 @@ kind_dict = {
 class Handler:
     def __init__(self):
         self.my_id = "mongo_watcher"
-        connection = self.get_pika_connection()
-        self.channel = connection.channel()
+        self.connection, self.channel = get_pika_connection_with_retries(0, True)
         self._timers = {}
         self._modification_times = {}
-
-    def get_pika_connection(self, retries=0):
-        try:
-            params = pika.ConnectionParameters(
-                heartbeat=600,
-                blocked_connection_timeout=300,
-                host="megaplex",
-                port=5672,
-                virtual_host='/'
-            )
-            connection = pika.BlockingConnection(params)
-        except Exception as exc:
-            print("Couldn't connect to pika")
-            if retries > max_pika_retries:
-                print("giving up. No more processing of tasks by this qworker")
-                print(self.get_traceback_message(exc, "Here's the error"))
-                return None
-            else:
-                print("trying to connect to pika, sleeping ...")
-                time.sleep(3)
-                new_retries = retries + 1
-                return self.get_pika_connection(retries=new_retries)
-        print("succesful connection")
-        return connection
 
     def post_mongo_event(self, event_type, _id, username, res_type):
         self.ask_host("mongo_event", {
@@ -136,7 +110,7 @@ class Handler:
         except Exception as exc:
             special_string = "Error handling task for task type {} for my_id {}".format(task_type, self.my_id)
             error_string = self.get_traceback_message(exc, special_string)
-            debug_log(error_string)
+            print(error_string)
             result = {"success": False, "message": error_string}
         return result
 
@@ -162,7 +136,7 @@ class Handler:
         except Exception as exc:
             print(self.get_traceback_message(exc, f"Exeption in post_packet with attempt={attempt}"))
             if attempt < 10:
-                connection = self.get_pika_connection()
+                connection, channel = get_pika_connection()
                 if connection is not None:
                     print("trying again")
                     self.channel = connection.channel()

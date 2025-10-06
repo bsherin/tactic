@@ -10,6 +10,7 @@ services:
     restart: always
     profiles:
       - start_project
+      - start_development
       - start_mongo_only
     networks:
       - tactic-net
@@ -28,6 +29,7 @@ services:
     container_name: tactic-redis
     profiles:
       - start_project
+      - start_development
     networks:
       - tactic-net
     ports:
@@ -44,7 +46,7 @@ services:
       - tactic-redis
     restart: always
     profiles:
-      - start_project
+      - start_development
     hostname: megaplex
     container_name: megaplex
     networks:
@@ -86,6 +88,7 @@ services:
         BASE_IMAGE: ${BASE_IMAGE}
     profiles:
       - start_project
+      - start_development
       - build_project
       - build_non_base
       - start_host
@@ -121,6 +124,7 @@ services:
       - REMOTE_PASSWORD=${REMOTE_PASSWORD}
       - REMOTE_KEY_FILE=${REMOTE_KEY_FILE}
       - ANYONE_CAN_REGISTER=${ANYONE_CAN_REGISTER}
+      - USE_AMAZON_MQ=${USE_AMAZON_MQ}
     volumes:
       - type: bind
         source: "/var/run/docker.sock"
@@ -144,6 +148,7 @@ services:
     image: bsherin/tactic-host:${IMG_SUFFIX}
     profiles:
       - start_project
+      - start_development
       - start_host
     restart: on-failure
     ports:
@@ -175,6 +180,7 @@ services:
       - REMOTE_USERNAME=${REMOTE_USERNAME}
       - REMOTE_PASSWORD=${REMOTE_PASSWORD}
       - REMOTE_KEY_FILE=${REMOTE_KEY_FILE}
+      - USE_AMAZON_MQ=${USE_AMAZON_MQ}
     volumes:
       - type: bind
         source: "/var/run/docker.sock"
@@ -200,6 +206,7 @@ services:
       - tactic_host1
     profiles:
       - start_project
+      - start_development
     restart: always
     init: true
     container_name: tile_test_container
@@ -226,6 +233,7 @@ services:
       - TRANSFORMERS_CACHE=hf_cache
       - TORCH_HOME=torch_cache
       - MPLCONFIGDIR=mpl_cache
+      - USE_AMAZON_MQ=${USE_AMAZON_MQ}
     volumes:
       - type: bind
         source: ${ROOT_DIR}/persist
@@ -251,7 +259,7 @@ services:
     image: bsherin/tactic-log-streamer:${IMG_SUFFIX}
     platform: ${PLATFORM}
     environment:
-      PYTHONUNBUFFERED: 0
+      - PYTHONUNBUFFERED=0
 
   tactic_assistant:
     build:
@@ -265,7 +273,7 @@ services:
     image: bsherin/tactic-assistant:${IMG_SUFFIX}
     platform: ${PLATFORM}
     environment:
-      PYTHONUNBUFFERED: 0
+      - PYTHONUNBUFFERED=0
 
   tactic_mongo_watcher:
     image: bsherin/tactic-mongo-watcher:${IMG_SUFFIX}
@@ -276,6 +284,7 @@ services:
         BASE_IMAGE: ${BASE_IMAGE}
     profiles:
       - start_project
+      - start_development
       - build_project
       - build_non_base
     restart: always
@@ -296,6 +305,7 @@ services:
       - REMOTE_USERNAME=${REMOTE_USERNAME}
       - REMOTE_PASSWORD=${REMOTE_PASSWORD}
       - REMOTE_KEY_FILE=${REMOTE_KEY_FILE}
+      - USE_AMAZON_MQ=${USE_AMAZON_MQ}
     volumes:
       - type: bind
         source: "${REMOTE_KEY_FILE}"
@@ -307,6 +317,7 @@ services:
     image: bsherin/tactic-pool-watcher:${IMG_SUFFIX}
     profiles:
       - start_project
+      - start_development
       - build_project
       - build_non_base
     build:
@@ -324,6 +335,8 @@ services:
       owner: host
       parent: host
       other_name: pool_watcher
+    environment:
+      - USE_AMAZON_MQ=${USE_AMAZON_MQ}
     volumes:
       - type: bind
         source: "${POOL_DIR}"

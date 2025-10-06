@@ -10,6 +10,7 @@ import re
 import pika
 import json
 import traceback
+from rabbit_manage import get_pika_connection_with_retries, USE_AMAZON_MQ
 
 forwarder_address = None
 forwarder_id = None
@@ -58,10 +59,6 @@ def get_address(container_identifier):
     new_network_name = "tactic-net"
     return cli.containers.get(container_identifier).attrs["NetworkSettings"]["Networks"][new_network_name]["IPAddress"]
 
-
-from rabbit_manage import get_queues
-
-
 # noinspection PyTypeChecker
 def get_my_address():
     res = subprocess.check_output(["hostname", "-i"]).decode()
@@ -99,7 +96,7 @@ def create_log_streamer_container(room, cont_id, user_id, username):
 def create_assistant_container(openai_api_key, parent, user_id, username):
     assistant_volume_dict = {"/var/run/docker.sock": {"bind": "/var/run/docker.sock", "mode": "rw"}}
     environ = {
-        "OPENAI_API_KEY": openai_api_key,
+        "OPENAI_API_KEY": openai_api_key
     }
     assistant_id, _container_id = create_container("bsherin/tactic-assistant", network_mode="bridge",
                                                     env_vars=environ,
@@ -188,6 +185,7 @@ def create_container(image_name, container_name=None, network_mode="bridge", hos
                "DEBUG_TILE_CONTAINER": DEBUG_TILE_CONTAINER,
                "PYTHONUNBUFFERED": "Yes",
                "USE_ARM64": USE_ARM64,
+               "USE_AMAZON_MQ": USE_AMAZON_MQ
                }
 
     if username is not None:
@@ -591,24 +589,11 @@ def connect_to_network(container, network):
     return cli.connect_container_to_network(container, network)
 
 
-def delete_all_queues(use_localhost=False):
-    delete_list_of_queues(get_queues(), use_localhost)
-    return
-
-
-def delete_list_of_queues(qlist, use_localhost=False):
-    if use_localhost:
-        params = pika.ConnectionParameters('localhost')
-    else:
-        params = pika.ConnectionParameters(
-            heartbeat=600,
-            blocked_connection_timeout=300,
-            host="megaplex",
-            port=5672,
-            virtual_host='/'
-        )
-    connection = pika.BlockingConnection(params)
-    channel = connection.channel()
+def delete_list_of_queues(qlist,):
+    connection, channel = get_pika_connection_with_retries()
+    if connection is None:
+        print("couldn't connect to pika in delete_list_of_queues")
+        return
     for q in qlist:
         try:
             channel.queue_delete(queue=q)
@@ -630,16 +615,11 @@ def post_task_noqworker(source_id, dest_id, task_type, task_data=None):
                   "reply_to": None,
                   "expiration": None}
     # result = send_request_to_megaplex("post_task", new_packet).json()
-    params = pika.ConnectionParameters(
-        heartbeat=600,
-        blocked_connection_timeout=300,
-        host="megaplex",
-        port=5672,
-        virtual_host='/'
-    )
     try:
-        connection = pika.BlockingConnection(params)
-        channel = connection.channel()
+        connection, channel = get_pika_connection_with_retries()
+        if connection is None:
+            print("could not connect to pika in post_task_noqworker")
+            return
         channel.queue_declare(queue=dest_id, durable=False, exclusive=False)
         # noinspection PyTypeChecker
         channel.basic_publish(exchange='',
@@ -650,8 +630,8 @@ def post_task_noqworker(source_id, dest_id, task_type, task_data=None):
                                   delivery_mode=1
                               ),
                               body=json.dumps(new_packet))
+        connection.close()
     except:
         print("got an exception in post_task_noqworker trying to publish")
-    # noinspection PyUnboundLocalVariable
-    connection.close()
+
     return

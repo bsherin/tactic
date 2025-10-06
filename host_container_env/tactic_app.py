@@ -11,17 +11,19 @@ import os
 
 from pymongo import MongoClient
 from pymongo.database import Database
+from pymongo.errors import CollectionInvalid
 import gridfs
 from flask_login import LoginManager
 from flask_socketio import SocketIO
 from flask_wtf import CSRFProtect
+from rabbit_manage import sleep_until_rabbit_alive, MESSAGE_QUEUE_ADDRESS
 import docker_functions as docker_functions
 from mongo_db_fs import get_dbs
 import communication_utils
 from communication_utils import send_request_to_container
 from integrated_docs import handler_methods
 from docker_functions import db_name, mongo_uri
-from rabbit_manage import sleep_until_rabbit_alive
+
 import exception_mixin as exception_mixin
 
 csrf = CSRFProtect()
@@ -59,13 +61,15 @@ try:
         ANYONE_CAN_REGISTER = False
 
     print("creating, cleaning temp_data")
-    if "temp_data" not in db.list_collection_names():
+    try:
         db.create_collection("temp_data")
-    else:
-        for rec in db["temp_data"].find():
-            if "file_id" in rec:
-                fs.delete(rec["file_id"])
-        db["temp_data"].drop()
+    except CollectionInvalid:
+        # The collection already exists, so just ignore this
+        pass
+    for rec in db["temp_data"].find():
+        if "file_id" in rec:
+            fs.delete(rec["file_id"])
+    db["temp_data"].drop()
 
     login_manager = LoginManager()
     login_manager.session_protection = 'basic'
@@ -83,7 +87,8 @@ try:
     print("starting login_manager")
     login_manager.init_app(app)
     print("starting socketio. connecting by name")
-    socketio = SocketIO(app, message_queue="megaplex", engineio_logger=True)
+    socketio = SocketIO(app, message_queue=MESSAGE_QUEUE_ADDRESS,
+                        engineio_logger=True)
 
     # This stuff with ProxyFix seems to be critical.
     # Without it, I get major errors when accessing via ssl on the server

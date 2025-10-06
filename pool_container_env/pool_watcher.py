@@ -6,8 +6,7 @@ import traceback
 import threading
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
-
-max_pika_retries = 100
+from rabbit_manage import get_pika_connection_with_retries
 
 class Watcher:
 
@@ -34,33 +33,9 @@ class Handler(FileSystemEventHandler):
     def __init__(self):
         FileSystemEventHandler.__init__(self)
         self.my_id = "pool_watcher"
-        connection = self.get_pika_connection()
-        self.channel = connection.channel()
+        self.connection, self.channel = get_pika_connection_with_retries(0, True)
         self._timers = {}
         self._modification_times = {}
-
-    def get_pika_connection(self, retries = 0):
-        try:
-            params = pika.ConnectionParameters(
-                heartbeat=600,
-                blocked_connection_timeout=300,
-                host="megaplex",
-                port=5672,
-                virtual_host='/'
-            )
-            connection = pika.BlockingConnection(params)
-        except Exception as ex:
-            print("Couldn't connect to pika")
-            if retries > max_pika_retries:
-                print("giving up. No more processing of tasks by this qworker")
-                print(self.get_traceback_message(ex, "Here's the error"))
-                return None
-            else:
-                print("trying to connect to pika, sleeping ...")
-                time.sleep(3)
-                new_retries = retries + 1
-                return self.get_pika_connection(retries=new_retries)
-        return connection
 
     def post_pool_event(self, event_type, path, is_directory, dest_path=None):
         self.ask_host("pool_event", {
@@ -122,9 +97,9 @@ class Handler(FileSystemEventHandler):
                                       body=json.dumps(task_packet))
         except:
             if attempt == 0:
-                connection = self.get_pika_connection()
+                connection, channel = get_pika_connection_with_retries(0, True)
                 if connection is not None:
-                    self.channel = connection.channel()
+                    self.channel = channel
                     self.post_packet(dest_id, task_packet, reply_to, callback_id, attempt=1)
         return
 

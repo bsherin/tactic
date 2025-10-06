@@ -1,6 +1,7 @@
 #!/bin/bash
 env_file="server.env"
 up_only="False"
+profile="start_project"
 
 # process arguments
 while :; do
@@ -11,6 +12,9 @@ while :; do
       ;;
     --up-only)
       up_only="True"
+      ;;
+    --develop)
+      profile="start_development"
       ;;
     *)
       break
@@ -32,4 +36,4 @@ if [ $up_only == "False" ] ; then
   fi
 fi
 
-sudo docker compose --env-file $env_file --profile start_project up --detach
+sudo docker compose --env-file $env_file --profile $profile up --detach

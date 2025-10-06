@@ -11,12 +11,11 @@ import pika
 from pickle import UnpicklingError
 from tile_base import TileBase, _task_worthy, _jsonizable_types
 from communication_utils import is_jsonizable, make_python_object_jsonizable, debinarize_python_object
-import document_object
-from document_object import ROWS_TO_PRINT, DetachedTacticCollection
+from document_object import DetachedTacticCollection
 from threading import Lock
 import threading
-from qworker_alt import task_worthy_methods, QWorker, stop_thread, debug_log
-from qworker_alt import get_pika_connection, my_channel, my_connection, simple_uid, close_connection
+from qworker_alt import stop_thread, debug_log
+from qworker_alt import add_qw_pika_connection, simple_uid, close_connection
 import time
 import json
 from widgets import is_html_table_class, is_widget_render
@@ -322,7 +321,7 @@ class PseudoTileClass(TileBase):
 
     def _get_export_info_thread(self, data):
         global executing_console_id
-        channel = get_pika_connection()
+        channel = add_qw_pika_connection()
         # self.emit_export_viewer_message("startMySpinner", data)
         try:
             ename = data["export_name"]
@@ -355,7 +354,7 @@ class PseudoTileClass(TileBase):
 
     def _eval_thread(self, data):
         global executing_console_id
-        channel = get_pika_connection()
+        channel = add_qw_pika_connection()
         # self.emit_export_viewer_message("startMySpinner", data)
         self._pipe_dict = data["pipe_dict"]
         pipe_val = self.get_pipe_value(data["export_name"])
@@ -476,7 +475,7 @@ class PseudoTileClass(TileBase):
 
     def exec_thread(self, data):
         global executing_console_id
-        channel = get_pika_connection()
+        channel = add_qw_pika_connection()
         try:
             if not Collection:
                 self._tworker.create_pseudo_tile_collection_object(data)

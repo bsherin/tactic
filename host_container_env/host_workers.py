@@ -5,7 +5,6 @@ import json
 
 from users import load_user, user_data_fields, User
 import gevent
-import pika
 from bson import ObjectId
 from communication_utils import make_python_object_jsonizable
 from communication_utils import make_jsonizable_and_compress
@@ -37,6 +36,7 @@ from container_tasks_mixin import ContainerTasksMixin
 from across_accounts_mixin import AcrossAccountsTasksMixin
 from pool_tasks_mixin import PoolTasksMixin
 from account_tasks_mixin import AccountTasksMixin
+from rabbit_manage import get_pika_connection_with_retries
 
 # inactive_container_time is the max time a tile can
 # go without making active contact with the megaplex.
@@ -69,15 +69,11 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
     def start_background_thread(self, retries=0):
         try:
             print("entering start_background_thread")
-            params = pika.ConnectionParameters(
-                heartbeat=600,
-                blocked_connection_timeout=300,
-                host="megaplex",
-                port=5672,
-                virtual_host='/'
-            )
-            self.connection = pika.BlockingConnection(params)
-            self.channel = self.connection.channel()
+            self.connection, self.channel = get_pika_connection_with_retries()
+            if self.connection is None or self.channel is None:
+                print("couldn't connect to pika, retrying ...")
+                print("giving up. No more processing of tasks by this qworker")
+                return
             self.channel.queue_declare(queue="host", durable=False, exclusive=False)
             self.channel.queue_declare(queue=self.my_id, durable=False, exclusive=False)
             self.channel.basic_consume(queue="host", auto_ack=True, on_message_callback=self.handle_delivery)
@@ -85,17 +81,8 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
             print(' [*] Waiting for messages:')
             self.channel.start_consuming()
         except Exception as ex:
-            debug_log("Couldn't connect to pika")
-            if retries > max_pika_retries:
-                print("giving up. No more processing of tasks by this qworker")
-                debug_log(self.handle_exception(ex, "Here's the error"))
-            else:
-                print("sleeping ...")
-                gevent.sleep(3)
-                new_retries = retries + 1
-                self.start_background_thread(retries=new_retries)
-
-
+            debug_log("Couldn't start background thread")
+            debug_log(self.handle_exception(ex, "Here's the error"))
 
     def user_to_true(self, user_path, user_obj):
         return re.sub("/mydisk", user_obj.pool_dir, user_path)

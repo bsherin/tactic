@@ -14,9 +14,8 @@ from exception_mixin import ExceptionMixin
 from threading import Lock
 import threading
 import copy
-from qworker_alt import QWorker, task_worthy, RETRIES, debug_log
-from qworker_alt import get_pika_connection, my_channel, my_connection, simple_uid, close_connection
-import qworker_alt
+from qworker_alt import QWorker, task_worthy, debug_log
+from qworker_alt import simple_uid
 import tile_env
 from tile_env import class_info
 from tile_env import exec_tile_code

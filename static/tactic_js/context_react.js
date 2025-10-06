@@ -581,7 +581,7 @@ function ContextApp(props) {
     }
     let data;
     try {
-      data = await getViewerDataForResSocket("tile", resource_name);
+      data = await getViewerDataForResSocket("tile", module_name);
       const new_id = `${data.kind}: ${data.resource_name}`;
       const drmethod = dmethod => {
         _registerDirtyMethod(new_id, dmethod);

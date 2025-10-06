@@ -6,5 +6,5 @@ RUN pip install -r requirements.txt
 ADD ./mongo_watcher_env /code
 ADD  ./shared_python/exception_mixin.py /code/
 LABEL maintainer="Bruce L Sherin"
-ADD ./shared_mongo_python/mongo_db_fs.py /code/
+ADD ./shared_mongo_python/mongo_db_fs.py ./shared_python/rabbit_manage.py /code/
 CMD ["python", "-u", "mongo_watcher.py"]
