@@ -26,6 +26,8 @@ ECS_SUBNETS=os.environ.get("ECS_SUBNETS")
 ECS_SECURITY_GROUPS= os.environ.get("ECS_SECURITY_GROUPS")
 ECS_ASSIGN_PUBLIC_IP= os.environ.get("ECS_ASSIGN_PUBLIC_IP")
 ECS_TILE_TASKDEF= os.environ.get("ECS_TILE_TASKDEF")
+AWS_REGION = os.environ.get("AWS_REGION")
+ECS_REGION = os.environ.get("ECS_REGION")
 
 _develop = ("DEVELOP" in os.environ) and (os.environ.get("DEVELOP") == "True")
 RETRIES = os.environ.get("RETRIES")
@@ -201,6 +203,9 @@ def create_container(image_name, container_name=None, network_mode="bridge", hos
                "ECS_SECURITY_GROUPS": ECS_SECURITY_GROUPS,
                "ECS_ASSIGN_PUBLIC_IP": ECS_ASSIGN_PUBLIC_IP,
                "ECS_TILE_TASKDEF": ECS_TILE_TASKDEF,
+               "AWS_REGION": AWS_REGION,
+               "ECS_REGION": ECS_REGION
+
            }
 
     if username is not None:
