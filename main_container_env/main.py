@@ -34,6 +34,7 @@ from across_accounts_accesser import AcrossAccountsAccess
 from doc_info import docInfo, FreeformDocInfo
 from qworker import debug_log
 from tactic_copilot_mixin import CopilotMixin
+from aws_task_helpers import run_tile_on_ecs
 
 # getting environment variables
 INITIAL_LEFT_FRACTION = .69
@@ -151,7 +152,42 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
     def dmsg(self, tname, msg):
         print("rot: {} {}".format(tname, msg))
 
+
     def create_tile_container(self, data):
+        use_ecs = os.getenv("USE_ECS_TILES", "False").lower() == "true"
+        if use_ecs:
+            print("** Using ECS for tile container creation **")
+            return self.create_tile_container_ecs(data)
+        else:
+            print("** Using traditional Docker for tile container creation **")
+            return self.create_tile_container_traditional(data)
+
+    def create_tile_container_ecs(self, data):
+
+        environ = {"PPI": data.get("ppi", 0), "USE_WAIT_TASKS": "True"}
+        environ["IS_PSEUDO_TILE"] = "True" if data.get("is_pseudo") else "False"
+
+        owner = data.get("user_id", "host")
+        parent = data.get("parent", "host")
+        other_name = data.get("other_name", "none")
+        tile_id = data.get("tile_id")
+        try:
+            unique_id, task_arn, ip = run_tile_on_ecs(
+                username=self.username,
+                tile_id=tile_id,
+                owner=owner,
+                parent=parent,
+                other_name=other_name,
+                extra_env=environ
+            )
+            # Keep your return shape
+            return {"success": True, "tile_id": unique_id, "tile_address": ip}
+        except ECSTileError as ex:
+            print("Error creating tile task on ECS")
+            return self.get_short_exception_dict(ex, "Error creating tile task on ECS")
+
+
+    def create_tile_container_traditional(self, data):
         try:
             environ = {"PPI": data["ppi"], "USE_WAIT_TASKS": "True"}
             if "is_pseudo" in data and data["is_pseudo"]:

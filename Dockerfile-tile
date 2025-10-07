@@ -1,31 +1,17 @@
 ARG BASE_IMAGE
 ARG WHEELS_IMAGE
 
-# ---- wheels stage (just provides /wheelhouse) ----
 FROM ${WHEELS_IMAGE} AS wheels
 
-# ---- app stage (your real runtime image) ----
 FROM ${BASE_IMAGE} AS app
 WORKDIR /code
 
-# Runtime lib that hdbscan uses for OpenMP
 RUN apt-get update && apt-get install -y --no-install-recommends \
       libgomp1 \
     && rm -rf /var/lib/apt/lists/*
 
-# copy wheels into the app image and install
 COPY --from=wheels /wheelhouse /wheelhouse
 RUN pip install --no-cache-dir /wheelhouse/*
-
-## (Optional) Java for Mallet — headless + no recommends to avoid bloat
-#RUN apt-get update && apt-get install -y --no-install-recommends \
-#      openjdk-17-jre-headless \
-#    && rm -rf /var/lib/apt/lists/*
-#
-## Copy only what you need (use .dockerignore at the build context root)
-#COPY ./Mallet/bin /opt/mallet/bin
-#COPY ./Mallet/lib /opt/mallet/lib
-#ENV MALLET_HOME=/opt/mallet PATH="$MALLET_HOME/bin:${PATH}"
 
 ADD ./tactic_dark.mplstyle /usr/local/lib/python3.11/site-packages/matplotlib/mpl-data/stylelib/
 COPY ./tile_container_env ./shared_python/volume_manager.py ./shared_python/exception_mixin.py \
@@ -34,11 +20,16 @@ COPY ./tile_container_env ./shared_python/volume_manager.py ./shared_python/exce
 
 RUN mkdir -p /root/nltk_data
 
-# (Optional) set shared cache dirs so you can mount volumes in compose
+# Keep defaults; ECS task will override these to EFS paths
 ENV HF_HOME=/var/cache/hf \
     TRANSFORMERS_CACHE=/var/cache/hf/transformers \
     NLTK_DATA=/root/nltk \
     MPLCONFIGDIR=/var/cache/matplotlib \
     TORCH_HOME=/var/cache/torch
+
+# --- New: copy entrypoint and use ENTRYPOINT + keep your original CMD ---
+COPY entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+ENTRYPOINT ["/app/entrypoint.sh"]
 
 CMD ["python", "-u", "tile_main.py"]

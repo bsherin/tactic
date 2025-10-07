@@ -10,8 +10,8 @@ print("entering rabbit_manage")
 if os.environ.get("USE_AMAZON_MQ") == "True" or os.environ.get("USE_AMAZON_MQ") is True:
     USE_AMAZON_MQ = True
     RABBIT_HOST = "b-d4163cd4-38d5-45f0-9bc1-87c04c48d2a4.mq.us-east-2.on.aws"  # broker hostname only
-    RABBIT_USER = "bsherin"
-    RABBIT_PASS = "manggeebmang"
+    RABBIT_USER = os.environ.get("RABBIT_USER")
+    RABBIT_PASS = os.environ.get("RABBIT_PASS")
     RABBIT_PORT = 5671
     MESSAGE_QUEUE_ADDRESS = f"amqps://{RABBIT_USER}:{RABBIT_PASS}@{RABBIT_HOST}:5671"
 else:
@@ -19,6 +19,8 @@ else:
     RABBIT_HOST = "megaplex"
     RABBIT_PORT = 5672
     MESSAGE_QUEUE_ADDRESS = "megaplex"
+    RABBIT_USER = ""
+    RABBIT_PASS = ""
 
 
 HEARBEAT = 600

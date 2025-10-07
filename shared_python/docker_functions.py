@@ -10,7 +10,7 @@ import re
 import pika
 import json
 import traceback
-from rabbit_manage import get_pika_connection_with_retries, USE_AMAZON_MQ
+from rabbit_manage import get_pika_connection_with_retries, USE_AMAZON_MQ, RABBIT_USER, RABBIT_PASS
 
 forwarder_address = None
 forwarder_id = None
@@ -20,6 +20,13 @@ print(os.environ)
 
 CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE"))
 mongo_uri = os.environ.get("MONGO_URI")
+
+USE_ECS_TILES=os.environ.get("USE_ECS_TILES") == "True" or os.environ.get("USE_ECS_TILES") is True
+ECS_SUBNETS=os.environ.get("ECS_SUBNETS")
+ECS_SECURITY_GROUPS= os.environ.get("ECS_SECURITY_GROUPS")
+ECS_ASSIGN_PUBLIC_IP= os.environ.get("ECS_ASSIGN_PUBLIC_IP")
+ECS_TILE_TASKDEF= os.environ.get("ECS_TILE_TASKDEF")
+
 _develop = ("DEVELOP" in os.environ) and (os.environ.get("DEVELOP") == "True")
 RETRIES = os.environ.get("RETRIES")
 tactic_image_names = ["bsherin/tactic-tile", "bsherin/tactic-main",
@@ -172,6 +179,7 @@ def create_container(image_name, container_name=None, network_mode="bridge", hos
         unique_id = special_unique_id
     else:
         unique_id = str(uuid.uuid4())
+
     environ = {"RETRIES": RETRIES,
                "CHUNK_SIZE": CHUNK_SIZE,
                "MY_ID": unique_id,
@@ -185,8 +193,15 @@ def create_container(image_name, container_name=None, network_mode="bridge", hos
                "DEBUG_TILE_CONTAINER": DEBUG_TILE_CONTAINER,
                "PYTHONUNBUFFERED": "Yes",
                "USE_ARM64": USE_ARM64,
-               "USE_AMAZON_MQ": USE_AMAZON_MQ
-               }
+               "USE_AMAZON_MQ": USE_AMAZON_MQ,
+               "RABBIT_USER": RABBIT_USER,
+               "RABBIT_PASS": RABBIT_PASS,
+               "USE_ECS_TILES": USE_ECS_TILES,
+               "ECS_SUBNETS": ECS_SUBNETS,
+               "ECS_SECURITY_GROUPS": ECS_SECURITY_GROUPS,
+               "ECS_ASSIGN_PUBLIC_IP": ECS_ASSIGN_PUBLIC_IP,
+               "ECS_TILE_TASKDEF": ECS_TILE_TASKDEF,
+           }
 
     if username is not None:
         environ["USERNAME"] = username

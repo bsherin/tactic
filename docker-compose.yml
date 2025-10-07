@@ -64,6 +64,7 @@ services:
       dockerfile: Dockerfile-base
     profiles:
       - build_project
+      - build_server_project
     image: bsherin/tactic-base:${IMG_SUFFIX}
     platform: ${PLATFORM}
 
@@ -90,6 +91,7 @@ services:
       - start_project
       - start_development
       - build_project
+      - build_server_project
       - build_non_base
       - start_host
     image: bsherin/tactic-host:${IMG_SUFFIX}
@@ -234,6 +236,13 @@ services:
       - TORCH_HOME=torch_cache
       - MPLCONFIGDIR=mpl_cache
       - USE_AMAZON_MQ=${USE_AMAZON_MQ}
+      - USE_ECS_TILES=${USE_ECS_TILES}
+      - ECS_SUBNETS=${ECS_SUBNETS}
+      - ECS_SECURITY_GROUPS=${ECS_SECURITY_GROUPS}
+      - ECS_ASSIGN_PUBLIC_IP=${ECS_ASSIGN_PUBLIC_IP}
+      - ECS_TILE_TASKDEF=${ECS_TILE_TASKDEF}
+      - RABBIT_USER=${RABBIT_USER}
+      - RABBIT_PASS=${RABBIT_PASS}
     volumes:
       - type: bind
         source: ${ROOT_DIR}/persist
@@ -255,6 +264,7 @@ services:
         BASE_IMAGE: ${BASE_IMAGE}
     profiles:
       - build_project
+      - build_server_project
       - build_non_base
     image: bsherin/tactic-log-streamer:${IMG_SUFFIX}
     platform: ${PLATFORM}
@@ -269,6 +279,7 @@ services:
         BASE_IMAGE: ${BASE_IMAGE}
     profiles:
       - build_project
+      - build_server_project
       - build_non_base
     image: bsherin/tactic-assistant:${IMG_SUFFIX}
     platform: ${PLATFORM}
@@ -286,6 +297,7 @@ services:
       - start_project
       - start_development
       - build_project
+      - build_server_project
       - build_non_base
     restart: always
     container_name: mongo_watcher
@@ -319,6 +331,7 @@ services:
       - start_project
       - start_development
       - build_project
+      - build_server_project
       - build_non_base
     build:
       context: .
@@ -354,6 +367,7 @@ services:
     platform: ${PLATFORM}
     profiles:
       - build_project
+      - build_server_project
       - build_non_base
 
   tactic_module_viewer:
@@ -366,6 +380,7 @@ services:
     image: bsherin/tactic-module-viewer:${IMG_SUFFIX}
     profiles:
       - build_project
+      - build_server_project
       - build_non_base
 
   tactic_tile:
@@ -374,13 +389,14 @@ services:
       dockerfile: Dockerfile-tile
       args:
         BASE_IMAGE: ${BASE_IMAGE}
-        WHEELS_IMAGE: bsherin/tactic-wheels:${IMG_SUFFIX}
+        WHEELS_IMAGE: ${WHEELS_IMAGE}
     depends_on:
       - tactic_wheels
     image: bsherin/tactic-tile:${IMG_SUFFIX}
     platform: ${PLATFORM}
     profiles:
       - build_project
+      - build_server_project
       - build_non_base
     environment:
       HF_HOME: /var/cache/hf

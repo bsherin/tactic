@@ -12,3 +12,4 @@ rabbitmq-admin
 pymongo
 ssh-pymongo
 openai
+boto3>=1.34.0
