@@ -396,7 +396,6 @@ services:
     platform: ${PLATFORM}
     profiles:
       - build_project
-      - build_server_project
       - build_non_base
     environment:
       HF_HOME: /var/cache/hf
