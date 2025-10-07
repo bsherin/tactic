@@ -34,7 +34,7 @@ from across_accounts_accesser import AcrossAccountsAccess
 from doc_info import docInfo, FreeformDocInfo
 from qworker import debug_log
 from tactic_copilot_mixin import CopilotMixin
-from aws_task_helpers import run_tile_on_ecs
+from aws_task_helpers import run_tile_on_ecs, ECSTileError
 
 # getting environment variables
 INITIAL_LEFT_FRACTION = .69
