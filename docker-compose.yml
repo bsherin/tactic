@@ -127,6 +127,13 @@ services:
       - REMOTE_KEY_FILE=${REMOTE_KEY_FILE}
       - ANYONE_CAN_REGISTER=${ANYONE_CAN_REGISTER}
       - USE_AMAZON_MQ=${USE_AMAZON_MQ}
+      - USE_ECS_TILES=${USE_ECS_TILES}
+      - ECS_SUBNETS=${ECS_SUBNETS}
+      - ECS_SECURITY_GROUPS=${ECS_SECURITY_GROUPS}
+      - ECS_ASSIGN_PUBLIC_IP=${ECS_ASSIGN_PUBLIC_IP}
+      - ECS_TILE_TASKDEF=${ECS_TILE_TASKDEF}
+      - RABBIT_USER=${RABBIT_USER}
+      - RABBIT_PASS=${RABBIT_PASS}
     volumes:
       - type: bind
         source: "/var/run/docker.sock"
@@ -183,6 +190,13 @@ services:
       - REMOTE_PASSWORD=${REMOTE_PASSWORD}
       - REMOTE_KEY_FILE=${REMOTE_KEY_FILE}
       - USE_AMAZON_MQ=${USE_AMAZON_MQ}
+      - USE_ECS_TILES=${USE_ECS_TILES}
+      - ECS_SUBNETS=${ECS_SUBNETS}
+      - ECS_SECURITY_GROUPS=${ECS_SECURITY_GROUPS}
+      - ECS_ASSIGN_PUBLIC_IP=${ECS_ASSIGN_PUBLIC_IP}
+      - ECS_TILE_TASKDEF=${ECS_TILE_TASKDEF}
+      - RABBIT_USER=${RABBIT_USER}
+      - RABBIT_PASS=${RABBIT_PASS}
     volumes:
       - type: bind
         source: "/var/run/docker.sock"
@@ -318,6 +332,13 @@ services:
       - REMOTE_PASSWORD=${REMOTE_PASSWORD}
       - REMOTE_KEY_FILE=${REMOTE_KEY_FILE}
       - USE_AMAZON_MQ=${USE_AMAZON_MQ}
+      - USE_ECS_TILES=${USE_ECS_TILES}
+      - ECS_SUBNETS=${ECS_SUBNETS}
+      - ECS_SECURITY_GROUPS=${ECS_SECURITY_GROUPS}
+      - ECS_ASSIGN_PUBLIC_IP=${ECS_ASSIGN_PUBLIC_IP}
+      - ECS_TILE_TASKDEF=${ECS_TILE_TASKDEF}
+      - RABBIT_USER=${RABBIT_USER}
+      - RABBIT_PASS=${RABBIT_PASS}
     volumes:
       - type: bind
         source: "${REMOTE_KEY_FILE}"
@@ -350,6 +371,13 @@ services:
       other_name: pool_watcher
     environment:
       - USE_AMAZON_MQ=${USE_AMAZON_MQ}
+      - USE_ECS_TILES=${USE_ECS_TILES}
+      - ECS_SUBNETS=${ECS_SUBNETS}
+      - ECS_SECURITY_GROUPS=${ECS_SECURITY_GROUPS}
+      - ECS_ASSIGN_PUBLIC_IP=${ECS_ASSIGN_PUBLIC_IP}
+      - ECS_TILE_TASKDEF=${ECS_TILE_TASKDEF}
+      - RABBIT_USER=${RABBIT_USER}
+      - RABBIT_PASS=${RABBIT_PASS}
     volumes:
       - type: bind
         source: "${POOL_DIR}"
