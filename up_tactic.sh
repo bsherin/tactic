@@ -36,4 +36,4 @@ if [ $up_only == "False" ] ; then
   fi
 fi
 
-ocker compose --env-file $env_file --profile $profile up --detach
+docker compose --env-file $env_file --profile $profile up --detach
