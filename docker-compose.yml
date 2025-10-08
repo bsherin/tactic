@@ -76,6 +76,7 @@ services:
         BASE_IMAGE: ${BASE_IMAGE}
     profiles:
       - build_project
+      - build_server_project
     image: bsherin/tactic-wheels:${IMG_SUFFIX}
     platform: ${PLATFORM}
     environment:
