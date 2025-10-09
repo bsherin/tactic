@@ -37,6 +37,9 @@ from across_accounts_mixin import AcrossAccountsTasksMixin
 from pool_tasks_mixin import PoolTasksMixin
 from account_tasks_mixin import AccountTasksMixin
 from rabbit_manage import get_pika_connection_with_retries
+from ecs_tile_backend import ECSTileBackend
+from docker_tile_backend import DockerTileBackend
+from tile_registry import TileContainerRegistry
 
 # inactive_container_time is the max time a tile can
 # go without making active contact with the megaplex.
@@ -53,18 +56,24 @@ health_check_time = 5 * 60
 import loaded_tile_management
 import os
 
+use_ecs = os.getenv("USE_ECS_TILES","false").lower() == "true"
+
 myport = os.environ.get("MYPORT")
-MY_ID = os.environ.get("MY_ID")
 
 from qworker import max_pika_retries
 
 class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTasksMixin,ContainerTasksMixin,
                  ProjectTasksMixin, CollectionTasksMixin, MetabookTasksMixin, PoolTasksMixin, AccountTasksMixin,
-                 AcrossAccountsTasksMixin, HigherMongoTasksMixin):
+                 AcrossAccountsTasksMixin, HigherMongoTasksMixin, TileContainerManagementTasksMixin):
     def __init__(self):
         QWorker.__init__(self)
         self.my_id = "host" + str(myport)
         self.repository_user = User.get_user_by_username("repository")
+        if use_ecs and self.my_id == "host5000":
+            self.tile_registry = TileContainerRegistry()
+            self.tile_backend = ECSTileBackend(self.tile_registry)
+        else:
+            self.tile_backend = DockerTileBackend(self.tile_registry)
 
     def start_background_thread(self, retries=0):
         try:
@@ -97,6 +106,7 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
     @task_worthy
     def add_error_drawer_entry_task(self, data):
         socketio.emit("add-error-drawer-entry", data, namespace='/main', room=data["user_id"])
+
 
     def add_error_drawer_entry(self, title, content, user_id):
         data = {"title": title, "content": content}
@@ -890,7 +900,7 @@ class HealthTracker:
             redis_ht.hset(container_id, "last_contact", current_timestamp())
 
     def check_health(self):
-        if MY_ID == "host5000":  ## Only initiate checks from one host
+        if self.my_id == "host5000":  ## Only initiate checks from one host
             current_time = current_timestamp()
             if (current_time - self.last_health_check) > health_check_time:
                 if not redis_ht.exists("last_health_check"):

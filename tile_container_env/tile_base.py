@@ -145,7 +145,6 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
         self.current_html = None
         self._old_stdout = None
         self._pipe_dict = None  # This is set when the form is created
-        self.my_address = None
         self._main_id = os.environ["PARENT"]
         self._tworker = _tworker
         self._collection = None  # I have to create this later to impose a post loop when creating the pseudo_tile

@@ -707,56 +707,6 @@ class LoadSaveTasksMixin:
 class TileCreationTasksMixin:
 
     @task_worthy_manual_submit
-    def create_tile(self, data_dict, task_packet):
-        print("entering create tile")
-        tile_name = data_dict["tile_name"]
-        local_task_packet = task_packet
-        print("about to create container, starting timer")
-        self.tstart = datetime.datetime.now()
-
-        create_container_dict = self.create_tile_container({"user_id": self.user_id, "parent": self.mworker.my_id,
-                                                            "other_name": tile_name, "ppi": self.ppi,
-                                                            "tile_id": None})
-
-        if not create_container_dict["success"]:
-            raise Exception("Error creating empty tile container")
-        print("got container, time is {}".format(self.microdsecs(self.tstart)))
-        self.tstart = datetime.datetime.now()
-
-        tile_container_id = create_container_dict["tile_id"]
-        self.tile_instances.append(tile_container_id)
-        self.tile_addresses[tile_container_id] = create_container_dict["tile_address"]
-        data_dict["tile_address"] = create_container_dict["tile_address"]
-        self.tile_id_dict[tile_name] = tile_container_id
-
-        data_dict["base_figure_url"] = self.base_figure_url
-        data_dict["doc_type"] = self.doc_type
-        print("about to get tile_code")
-        data_dict["tile_code"] = self.get_loaded_tile_code(data_dict["tile_type"])
-        print("got tile code")
-        data_dict["form_info"] = self.compile_form_info(tile_container_id)
-        print("compiled form info")
-
-        def instantiated_result(instantiate_result):
-            print("got instantiate result, time is {}".format(self.microdsecs(self.tstart)))
-            self.tstart = datetime.datetime.now()
-            if not instantiate_result["success"]:
-                debug_log("got an exception " + instantiate_result["message"])
-                self.mworker.submit_response(local_task_packet, instantiate_result)
-            exports = instantiate_result["exports"]
-            self.update_pipe_dict(exports, tile_container_id, tile_name)
-            self.tile_reload_dicts[tile_container_id] = instantiate_result["reload_dict"]
-            form_data = instantiate_result["form_data"]
-            self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task",
-                                   {"tile_id": tile_container_id})
-            response_data = {"success": True, "form_data": form_data, "tile_id": tile_container_id}
-            self.mworker.submit_response(local_task_packet, response_data)
-
-        print("about to load source and instantiate tid = " + str(tile_container_id))
-        self.mworker.post_task(tile_container_id, "load_source_and_instantiate", data_dict, instantiated_result)
-        return
-
-    @task_worthy_manual_submit
     def recreate_one_tile(self, data, task_packet):
         print("in recreate one tile")
         old_tile_id = data["old_tile_id"]
@@ -785,41 +735,145 @@ class TileCreationTasksMixin:
 
         tile_code = self.get_loaded_tile_code(tile_save_dict["tile_type"])
 
-        gtc_response = self.create_tile_container({"user_id": self.user_id, "parent": self.mworker.my_id,
-                                                   "other_name": tile_name, "ppi": self.ppi, "tile_id": old_tile_id})
-        if not gtc_response["success"]:
-            self.mworker.send_error_entry("Project recreation tphrc", gtc_response["message"])
-            self.mworker.submit_response(task_packet, {"old_tile_id": old_tile_id})
-            return
-
-        new_id.append(gtc_response["tile_id"])
-
-        self.tile_addresses[gtc_response["tile_id"]] = gtc_response["tile_address"]
-        tile_save_dict["new_base_figure_url"] = self.base_figure_url
-        tile_save_dict["my_address"] = gtc_response["tile_address"]
-        tile_save_dict["ppi"] = self.ppi
-        lsdata = {"tile_code": tile_code, "tile_save_dict": tile_save_dict}
-
-        def recreate_done(recreate_response):
-            if not recreate_response["success"]:
-                print("tile didn't recreate successfully")
-                self.tile_save_dicts[old_tile_id] = recreate_response["tile_save_dict"]
-                # self.tile_instances.append(new_id[0])
-                self.mworker.ask_host("delete_container", {"container_id": new_id[0], "notify": False})
-                self.mworker.submit_response(task_packet, {"old_tile_id": old_tile_id, "success": False})
+        def got_container(gtc_response):
+            if not gtc_response["success"]:
+                self.mworker.send_error_entry("Project recreation tphrc", gtc_response["message"])
+                self.mworker.submit_response(task_packet, {"old_tile_id": old_tile_id})
                 return
 
-            exports = recreate_response["exports"]
-            self.update_pipe_dict(exports, new_id[0], tile_name)
-            self.mworker.emit_export_viewer_message("update_exports_popup", {})
-            # self.tile_save_results[new_id[0]] = recreate_response
-            self.tile_instances.append(new_id[0])
-            self.tile_reload_dicts[new_id[0]] = recreate_response["reload_dict"]
-            self.mworker.submit_response(task_packet, {"old_tile_id": old_tile_id, "success": True})
-            return
+            new_id.append(gtc_response["tile_id"])
 
-        self.mworker.post_task(new_id[0], "load_source_and_recreate", lsdata, recreate_done,
-                               expiration=60, error_handler=handle_response_error)
+            tile_save_dict["new_base_figure_url"] = self.base_figure_url
+            tile_save_dict["ppi"] = self.ppi
+            lsdata = {"tile_code": tile_code, "tile_save_dict": tile_save_dict}
+
+            def recreate_done(recreate_response):
+                if not recreate_response["success"]:
+                    print("tile didn't recreate successfully")
+                    self.tile_save_dicts[old_tile_id] = recreate_response["tile_save_dict"]
+                    # self.tile_instances.append(new_id[0])
+                    self.mworker.ask_host("delete_container", {"container_id": new_id[0], "notify": False})
+                    self.mworker.submit_response(task_packet, {"old_tile_id": old_tile_id, "success": False})
+                    return
+
+                exports = recreate_response["exports"]
+                self.update_pipe_dict(exports, new_id[0], tile_name)
+                self.mworker.emit_export_viewer_message("update_exports_popup", {})
+                # self.tile_save_results[new_id[0]] = recreate_response
+                self.tile_instances.append(new_id[0])
+                self.tile_reload_dicts[new_id[0]] = recreate_response["reload_dict"]
+                self.mworker.submit_response(task_packet, {"old_tile_id": old_tile_id, "success": True})
+                return
+
+            self.mworker.post_task(new_id[0], "load_source_and_recreate", lsdata, recreate_done,
+                                   expiration=60, error_handler=handle_response_error)
+
+        self.create_tile_container({"user_id": self.user_id, "parent": self.mworker.my_id,
+                                   "other_name": tile_name, "ppi": self.ppi, "tile_id": old_tile_id},
+                                   callback=got_container)
+
+
+    def create_tile_container(self, other_name=None, tile_id=None, is_pseudo=False, callback=None):
+        mdata = {"ppi": self.ppi, is_pseudo: is_pseudo}
+        if other_name:
+            mdata["other_name"] = other_name
+        if tile_id:
+            mdata["tile_id"] = tile_id
+
+        self.mworker.post_task("host5000", "provide_tile", {
+            "username": self.username,
+            "owner": self.user_id,
+            "parent": self.mworker.my_id,
+            "meta": mdata
+        }, callback=callback)
+
+    def create_pseudo_tile(self, globals_dict=None):
+        print("entering create_pseudo_tile")
+        lgdict = globals_dict.copy() if globals_dict else {}
+
+        def got_container(data):
+            if not data["success"]:
+                raise Exception("Error creating empty tile container")
+            self.pseudo_tile_id = data["tile_id"]
+            data_dict = {"base_figure_url": self.base_figure_url,
+                         "doc_type": self.doc_type, "globals_dict": lgdict}
+            print("about to instantiate")
+
+            def instantiate_done(instantiate_result):
+                print("in instantiate_done in main")
+                if not instantiate_result["success"]:
+                    debug_log("got an exception " + instantiate_result["message"])
+                    raise Exception(instantiate_result["message"])
+                else:
+                    if len(instantiate_result["current_globals"]) == 0:
+                        if self.pseudo_tile_id in self._pipe_dict:
+                            del self._pipe_dict[self.pseudo_tile_id]
+                    else:
+                        self._pipe_dict[self.pseudo_tile_id] = {}
+                        tile_name = "__log__"
+                        for gname, gtype in instantiate_result["current_globals"]:
+                            self._pipe_dict[self.pseudo_tile_id][tile_name + "_" + gname] = {
+                                "export_name": gname,
+                                "export_tags": "",
+                                "tile_id": self.pseudo_tile_id,
+                                "type": gtype
+                            }
+
+                self.mworker.emit_export_viewer_message("update_exports_popup", {})
+                # self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task", {"tile_id": None})
+
+            self.mworker.post_task(self.pseudo_tile_id, "instantiate_as_pseudo_tile", data_dict, instantiate_done)
+
+        self.create_tile_container(other_name="pseudo_tile", is_pseudo=True, callback=got_container)
+        return {"success": True}
+
+    @task_worthy_manual_submit
+    def create_tile(self, data_dict, task_packet):
+        print("entering create tile")
+        tile_name = data_dict["tile_name"]
+        local_task_packet = task_packet
+        print("about to create container, starting timer")
+        self.tstart = datetime.datetime.now()
+
+        def got_container(create_container_dict):
+            if not create_container_dict["success"]:
+                raise Exception("Error creating empty tile container")
+            print("got container, time is {}".format(self.microdsecs(self.tstart)))
+            self.tstart = datetime.datetime.now()
+
+            tile_container_id = create_container_dict["tile_id"]
+            self.tile_instances.append(tile_container_id)
+            self.tile_id_dict[tile_name] = tile_container_id
+
+            data_dict["base_figure_url"] = self.base_figure_url
+            data_dict["doc_type"] = self.doc_type
+            print("about to get tile_code")
+            data_dict["tile_code"] = self.get_loaded_tile_code(data_dict["tile_type"])
+            print("got tile code")
+            data_dict["form_info"] = self.compile_form_info(tile_container_id)
+            print("compiled form info")
+
+            def instantiated_result(instantiate_result):
+                print("got instantiate result, time is {}".format(self.microdsecs(self.tstart)))
+                self.tstart = datetime.datetime.now()
+                if not instantiate_result["success"]:
+                    debug_log("got an exception " + instantiate_result["message"])
+                    self.mworker.submit_response(local_task_packet, instantiate_result)
+                exports = instantiate_result["exports"]
+                self.update_pipe_dict(exports, tile_container_id, tile_name)
+                self.tile_reload_dicts[tile_container_id] = instantiate_result["reload_dict"]
+                form_data = instantiate_result["form_data"]
+                self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task",
+                                       {"tile_id": tile_container_id})
+                response_data = {"success": True, "form_data": form_data, "tile_id": tile_container_id}
+                self.mworker.submit_response(local_task_packet, response_data)
+
+            print("about to load source and instantiate tid = " + str(tile_container_id))
+            self.mworker.post_task(tile_container_id, "load_source_and_instantiate", data_dict, instantiated_result)
+
+        self.create_tile_container(other_name=tile_name, callback=got_container)
+
+        return
 
     @task_worthy
     def update_tile_collection_objects_task(self, ddict):
@@ -934,7 +988,6 @@ class TileCreationTasksMixin:
                 self.mworker.submit_response(local_task_packet, {"success": False})
 
         reload_dict["form_info"] = form_info
-        reload_dict["tile_address"] = self.tile_addresses[tile_id]
         print("about to load_source")
         print("tile container status is {}".format(docker_functions.container_status(tile_id)))
         self.mworker.post_task(tile_id, "load_source_and_reinstantiate", {"tile_code": module_code,
@@ -1619,8 +1672,7 @@ class ConsoleTasksMixin:
                 self.emit_status_message("Notebook reset", 21)
 
             data_dict = {"base_figure_url": self.base_figure_url,
-                         "doc_type": self.doc_type, "globals_dict": {}, "img_dict": {},
-                         "tile_address": self.pseudo_tile_address}
+                         "doc_type": self.doc_type, "globals_dict": {}, "img_dict": {}}
             self.mworker.post_task(self.pseudo_tile_id, "instantiate_as_pseudo_tile", data_dict, instantiate_done)
 
         self.emit_status_message("Notebook reset", 21)

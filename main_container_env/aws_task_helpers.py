@@ -80,7 +80,6 @@ def run_tile_on_ecs(
     if not subnets or not sgs:
         raise ECSTileError("ECS_SUBNETS / ECS_SECURITY_GROUPS must be set.")
 
-    # Build up the environment (mirror your docker path)
     unique_id   = tile_id or str(uuid.uuid4())
     retries     = os.getenv("RETRIES", "0")
     chunk_size  = os.getenv("CHUNK_SIZE", "1048576")  # safe default if not set
@@ -94,17 +93,12 @@ def run_tile_on_ecs(
     # Anything your app previously passed in:
     env = {
         "RETRIES": retries,
-        "CHUNK_SIZE": chunk_size,
         "MY_ID": unique_id,
         "OWNER": owner,
         "PARENT": parent,
-        "DB_NAME": os.getenv("db_name", ""),
         "IMAGE_NAME": "bsherin/tactic-tile",
         # NOTE: You intentionally hid MONGO_URI from tiles before; keep that behavior:
         # "MONGO_URI": mongo_uri,
-        "DEVELOP": develop,
-        "DEBUG_MAIN_CONTAINER": debug_main,
-        "DEBUG_TILE_CONTAINER": debug_tile,
         "PYTHONUNBUFFERED": "Yes",
         "USE_ARM64": use_arm64,
         "USE_AMAZON_MQ": use_mq,
@@ -164,4 +158,4 @@ def run_tile_on_ecs(
     # Prefer private IP for intra-VPC; use public if you actually need it
     ip = priv_ip or pub_ip or ""
 
-    return unique_id, task_arn, ip
+    return unique_id, ip

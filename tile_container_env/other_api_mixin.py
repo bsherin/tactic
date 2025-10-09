@@ -139,8 +139,7 @@ class OtherAPIMIxin:
         else:
             result = self._tworker.post_and_wait(tile_id,
                                                  "_transfer_pipe_value",
-                                                 {"export_name": export_name,
-                                                  "requester_address": self.my_address},
+                                                 {"export_name": export_name},
                                                  timeout=60,
                                                  tries=self.RETRIES)
             encoded_val = result["encoded_val"]

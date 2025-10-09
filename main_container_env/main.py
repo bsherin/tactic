@@ -34,7 +34,7 @@ from across_accounts_accesser import AcrossAccountsAccess
 from doc_info import docInfo, FreeformDocInfo
 from qworker import debug_log
 from tactic_copilot_mixin import CopilotMixin
-from aws_task_helpers import run_tile_on_ecs, ECSTileError
+f# rom aws_task_helpers import run_tile_on_ecs, ECSTileError
 
 # getting environment variables
 INITIAL_LEFT_FRACTION = .69
@@ -97,8 +97,6 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
         self.pseudo_tile_id = None
         self.loaded_modules = None
         self.tile_id_dict = {}  # dict with the keys the names of tiles and ids as the values.
-        self.tile_addresses = {}
-        self.pseudo_tile_address = None
         self.tile_reload_dicts = {}
         self.tile_save_dicts = {}
 
@@ -152,75 +150,73 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
     def dmsg(self, tname, msg):
         print("rot: {} {}".format(tname, msg))
 
+    # def create_tile_container(self, data):
+    #     use_ecs = os.getenv("USE_ECS_TILES", "False").lower() == "true"
+    #     if use_ecs:
+    #         print("** Using ECS for tile container creation **")
+    #         return self.create_tile_container_ecs(data)
+    #     else:
+    #         print("** Using traditional Docker for tile container creation **")
+    #         return self.create_tile_container_traditional(data)
 
-    def create_tile_container(self, data):
-        use_ecs = os.getenv("USE_ECS_TILES", "False").lower() == "true"
-        if use_ecs:
-            print("** Using ECS for tile container creation **")
-            return self.create_tile_container_ecs(data)
-        else:
-            print("** Using traditional Docker for tile container creation **")
-            return self.create_tile_container_traditional(data)
-
-    def create_tile_container_ecs(self, data):
-
-        environ = {"PPI": data.get("ppi", 0), "USE_WAIT_TASKS": "True"}
-        environ["IS_PSEUDO_TILE"] = "True" if data.get("is_pseudo") else "False"
-
-        owner = data.get("user_id", "host")
-        parent = data.get("parent", "host")
-        other_name = data.get("other_name", "none")
-        tile_id = data.get("tile_id")
-        try:
-            unique_id, task_arn, ip = run_tile_on_ecs(
-                username=self.username,
-                tile_id=tile_id,
-                owner=owner,
-                parent=parent,
-                other_name=other_name,
-                extra_env=environ
-            )
-            # Keep your return shape
-            return {"success": True, "tile_id": unique_id, "tile_address": ip}
-        except ECSTileError as ex:
-            print("Error creating tile task on ECS")
-            return self.get_short_exception_dict(ex, "Error creating tile task on ECS")
-
-
-    def create_tile_container_traditional(self, data):
-        try:
-            environ = {"PPI": data["ppi"], "USE_WAIT_TASKS": "True"}
-            if "is_pseudo" in data and data["is_pseudo"]:
-                environ["IS_PSEUDO_TILE"] = "True"
-            else:
-                environ["IS_PSEUDO_TILE"] = "False"
-            user_host_persist_dir = true_host_persist_dir + "/tile_manager/" + self.username
-            # transformers_resource_dir = true_host_resources_dir + "/huggingface"
-            tile_volume_dict = {}
-            tile_volume_dict[user_host_persist_dir] = {"bind": "/code/persist", "mode": "rw"}
-            tile_volume_dict[true_host_resources_dir] = {"bind": "/root/resources", "mode": "ro"}
-            if true_user_host_pool_dir is not None:
-                tile_volume_dict[true_user_host_pool_dir] = {"bind": "/mydisk", "mode": "rw"}
-            tile_volume_dict["nltk_cache"] = {"bind" : "/root/nltk_data", "mode": "rw"}
-            tile_volume_dict["hf_cache"] = {"bind": "/var/cache/hf", "mode": "rw"}
-            tile_volume_dict["torch_cache"] = {"bind": "/var/cache/torch", "mode": "rw"}
-            tile_volume_dict["mpl_cache"] = {"bind": "/var/cache/matplotlib", "mode": "rw"}
-            tile_volume_dict["tmp"] = {"bind": "/tmp", "mode": "rw"}
-            tile_container_id, container_id = docker_functions.create_container("bsherin/tactic-tile",
-                                                                                network_mode="bridge",
-                                                                                owner=data["user_id"],
-                                                                                parent=data["parent"],
-                                                                                other_name=data["other_name"],
-                                                                                username=self.username,
-                                                                                env_vars=environ,
-                                                                                volume_dict=tile_volume_dict,
-                                                                                publish_all_ports=True,
-                                                                                special_unique_id=data["tile_id"])
-            tile_address = docker_functions.get_address(container_id)
-        except docker_functions.ContainerCreateError as ex:
-            print("Error creating tile container")
-            return self.get_short_exception_dict(ex, "Error creating empty tile container")
-        return {"success": True, "tile_id": tile_container_id, "tile_address": tile_address}
+    # def create_tile_container_ecs(self, data):
+    #
+    #     environ = {"PPI": data.get("ppi", 0), "USE_WAIT_TASKS": "True"}
+    #     environ["IS_PSEUDO_TILE"] = "True" if data.get("is_pseudo") else "False"
+    #
+    #     owner = data.get("user_id", "host")
+    #     parent = data.get("parent", "host")
+    #     other_name = data.get("other_name", "none")
+    #     tile_id = data.get("tile_id")
+    #     try:
+    #         unique_id, ip = run_tile_on_ecs(
+    #             username=self.username,
+    #             tile_id=tile_id,
+    #             owner=owner,
+    #             parent=parent,
+    #             other_name=other_name,
+    #             extra_env=environ
+    #         )
+    #         # Keep your return shape
+    #         return {"success": True, "tile_id": unique_id}
+    #     except ECSTileError as ex:
+    #         print("Error creating tile task on ECS")
+    #         return self.get_short_exception_dict(ex, "Error creating tile task on ECS")
+    #
+    #
+    # def create_tile_container_traditional(self, data):
+    #     try:
+    #         environ = {"PPI": data["ppi"], "USE_WAIT_TASKS": "True"}
+    #         if "is_pseudo" in data and data["is_pseudo"]:
+    #             environ["IS_PSEUDO_TILE"] = "True"
+    #         else:
+    #             environ["IS_PSEUDO_TILE"] = "False"
+    #         user_host_persist_dir = true_host_persist_dir + "/tile_manager/" + self.username
+    #         # transformers_resource_dir = true_host_resources_dir + "/huggingface"
+    #         tile_volume_dict = {}
+    #         tile_volume_dict[user_host_persist_dir] = {"bind": "/code/persist", "mode": "rw"}
+    #         tile_volume_dict[true_host_resources_dir] = {"bind": "/root/resources", "mode": "ro"}
+    #         if true_user_host_pool_dir is not None:
+    #             tile_volume_dict[true_user_host_pool_dir] = {"bind": "/mydisk", "mode": "rw"}
+    #         tile_volume_dict["nltk_cache"] = {"bind" : "/root/nltk_data", "mode": "rw"}
+    #         tile_volume_dict["hf_cache"] = {"bind": "/var/cache/hf", "mode": "rw"}
+    #         tile_volume_dict["torch_cache"] = {"bind": "/var/cache/torch", "mode": "rw"}
+    #         tile_volume_dict["mpl_cache"] = {"bind": "/var/cache/matplotlib", "mode": "rw"}
+    #         tile_volume_dict["tmp"] = {"bind": "/tmp", "mode": "rw"}
+    #         tile_container_id, container_id = docker_functions.create_container("bsherin/tactic-tile",
+    #                                                                             network_mode="bridge",
+    #                                                                             owner=data["user_id"],
+    #                                                                             parent=data["parent"],
+    #                                                                             other_name=data["other_name"],
+    #                                                                             username=self.username,
+    #                                                                             env_vars=environ,
+    #                                                                             volume_dict=tile_volume_dict,
+    #                                                                             publish_all_ports=True,
+    #                                                                             special_unique_id=data["tile_id"])
+    #     except docker_functions.ContainerCreateError as ex:
+    #         print("Error creating tile container")
+    #         return self.get_short_exception_dict(ex, "Error creating empty tile container")
+    #     return {"success": True, "tile_id": tile_container_id}
 
     def convert_legacy_console(self, project_dict):
         from bs4 import BeautifulSoup
@@ -491,7 +487,6 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
     def _delete_tile_instance(self, tile_id):
         print("in delete_tile_instance")
         self.tile_instances.remove(tile_id)
-        del self.tile_addresses[tile_id]
         for n, tid in self.tile_id_dict.items():
             if tid == tile_id:
                 del self.tile_id_dict[n]
@@ -565,50 +560,6 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
     def get_loaded_user_modules(self):
         return loaded_tile_management.get_loaded_user_modules(self.username)
 
-    def create_pseudo_tile(self, globals_dict=None):
-        print("entering create_pseudo_tile")
-
-        data = self.create_tile_container({"user_id": self.user_id, "parent": self.mworker.my_id, "is_pseudo": True,
-                                           "other_name": "pseudo_tile", "ppi": self.ppi, "tile_id": None})
-
-        if not data["success"]:
-            raise Exception("Error creating empty tile container")
-        self.pseudo_tile_id = data["tile_id"]
-        self.pseudo_tile_address = data["tile_address"]
-        if globals_dict is None:
-            globals_dict = {}
-        data_dict = {"base_figure_url": self.base_figure_url,
-                     "doc_type": self.doc_type, "globals_dict": globals_dict, "tile_address": data["tile_address"]}
-        print("about to instantiate")
-
-        def instantiate_done(instantiate_result):
-            # self.mworker.post_task(self.pseudo_tile_id, "create_pseudo_tile_collection_object",
-            #                        {"am_notebook": self.am_notebook_type})
-            print("in instantiate_done in main")
-            if not instantiate_result["success"]:
-                debug_log("got an exception " + instantiate_result["message"])
-                raise Exception(instantiate_result["message"])
-            else:
-                if len(instantiate_result["current_globals"]) == 0:
-                    if self.pseudo_tile_id in self._pipe_dict:
-                        del self._pipe_dict[self.pseudo_tile_id]
-                else:
-                    self._pipe_dict[self.pseudo_tile_id] = {}
-                    tile_name = "__log__"
-                    for gname, gtype in instantiate_result["current_globals"]:
-                        self._pipe_dict[self.pseudo_tile_id][tile_name + "_" + gname] = {
-                            "export_name": gname,
-                            "export_tags": "",
-                            "tile_id": self.pseudo_tile_id,
-                            "type": gtype
-                        }
-
-            self.mworker.emit_export_viewer_message("update_exports_popup", {})
-            # self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task", {"tile_id": None})
-
-        self.mworker.post_task(self.pseudo_tile_id, "instantiate_as_pseudo_tile", data_dict, instantiate_done)
-
-        return {"success": True}
 
     def get_tile_property(self, tile_id, prop_name, callback=None):
         if callback is None:

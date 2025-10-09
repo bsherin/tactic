@@ -2,8 +2,8 @@
   "family": "tactic-tile",
   "networkMode": "awsvpc",
   "requiresCompatibilities": ["FARGATE"],
-  "cpu": "1024",
-  "memory": "4096",
+  "cpu": "2048",
+  "memory": "10240",
   "runtimePlatform": { "cpuArchitecture": "X86_64", "operatingSystemFamily": "LINUX" },
   "executionRoleArn": "arn:aws:iam::924818964184:role/ecsTaskExecutionRole",
   "volumes": [
@@ -24,13 +24,13 @@
       "linuxParameters": { "initProcessEnabled": true },
       "environment": [
         { "name": "PYTHONUNBUFFERED", "value": "0" },
-
         { "name": "HF_HOME",      "value": "/mnt/efs/cache/hf" },
         { "name": "TORCH_HOME",   "value": "/mnt/efs/cache/torch" },
         { "name": "NLTK_DATA",    "value": "/mnt/efs/cache/nltk" },
         { "name": "MPLCONFIGDIR", "value": "/mnt/efs/cache/matplotlib" },
         { "name": "MYDISK_ROOT",  "value": "/mnt/efs/users" },
-
+        { "name": "IMAGE_NAME",  "value": "bsherin/tactic-tile" },
+        { "name": "USE_AMAZON_MQ", "value": "True"},
         { "name": "USE_WAIT_TASKS", "value": "True" },
         { "name": "IS_PSEUDO_TILE", "value": "False" }
 

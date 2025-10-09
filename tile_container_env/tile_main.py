@@ -31,6 +31,9 @@ from rabbit_manage import sleep_until_rabbit_alive
 import sys, os
 import time
 import widgets
+import requests
+
+use_ecs = os.getenv("USE_ECS_TILES","false").lower() == "true"
 
 sys.stdout = sys.stderr
 print("Waiting for rabbit")
@@ -40,6 +43,34 @@ print("Done waiting for rabbit with success " + str(success))
 kill_thread = None
 kill_thread_lock = Lock()
 
+def get_my_arn():
+    task_arn = os.getenv("ECS_TASK_ARN")
+    if task_arn:
+        return task_arn
+
+    # --- Fallback: ECS metadata endpoint (older ECS agent or Fargate < 1.4) ---
+    metadata_uri = os.getenv("ECS_CONTAINER_METADATA_URI_V4")
+    if metadata_uri:
+        try:
+            meta = requests.get(f"{metadata_uri}/task", timeout=1).json()
+            return meta["TaskARN"]
+        except Exception:
+            pass
+
+    return None
+
+def get_my_id():
+    task_arn = MY_ARN
+    if task_arn:
+        return task_arn.split("/")[-1]
+    return f"local-{os.getpid()}"
+
+if use_ecs:
+    MY_ARN = get_my_arn()
+    MY_ID = get_my_id()
+else:
+    MY_ID = os.environ.get("MY_ID", str(uuid.uuid4()))
+
 if IS_PSEUDO_TILE:
     from pseudo_tile_base import PseudoTileClass
     import pseudo_tile_base
@@ -47,7 +78,7 @@ if IS_PSEUDO_TILE:
 # noinspection PyUnusedLocal,PyProtectedMember,PyMissingConstructor
 class KillWorker(QWorker):
     def __init__(self):
-        self.my_id = "kill_" + os.environ.get("MY_ID")
+        self.my_id = "kill_" + MY_ID
         return
 
     def handle_delivery(self, channel, method, props, body):
@@ -82,10 +113,35 @@ class TileWorker(QWorker):
         self.get_megaplex_task_now = False
         self.use_svg = True
         self.generate_heartbeats = True
+        self._ready_acked = False
+        self._sent_initial_ready = False
+        self.my_id = MY_ARN
+
+    def ready(self):
+        if use_ecs:
+            threading.Thread(target=self._wait_for_ready_ack, daemon=True).start()
+
+    def _send_ready_once(self):
+        payload = {
+            "my_id": self.my_id,
+            "my_arn": MY_ARN,
+            "ts": current_timestamp()
+        }
+        self.post_task("host5000", "tile_ready", payload)
+        self._sent_initial_ready = True
+
+    def _wait_for_ready_ack(self, retry_every=5):
+        while not self._ready_acked:
+            if not self._sent_initial_ready:
+                self._send_ready_once()
+            time.sleep(retry_every)
+            if not self._ready_acked:
+                self._send_ready_once()
 
     @task_worthy
-    def hello(self, data_dict):
-        return {"success": True, "message": 'This is a tile communicating'}
+    def ack_ready(self, data):
+        self._ready_acked = True
+        return {"success": True}
 
     def ask_host(self, msg_type, task_data=None, callback_func=None):
         task_data["local_id"] = self.tile_instance._main_id
@@ -181,7 +237,6 @@ class TileWorker(QWorker):
             self.handler_instances["tilebase"] = self.tile_instance
             self.tile_instance.recreate_from_save(data)
             self.tile_instance.base_figure_url = data["new_base_figure_url"]
-            self.tile_instance.my_address = data["my_address"]
             self.tile_instance.user_id = os.environ["OWNER"]
             if "doc_type" in data:
                 self.tile_instance.doc_type = data["doc_type"]
@@ -268,7 +323,6 @@ class TileWorker(QWorker):
             for (attr, val) in reload_dict.items():
                 setattr(self.tile_instance, attr, val)
             form_data = self.tile_instance._create_form_data(reload_dict["form_info"])["form_data"]
-            self.tile_instance.my_address = reload_dict["tile_address"]
             self.tile_instance.user_id = os.environ["OWNER"]
             document_object.Collection.__fully_initialize__()
 
@@ -292,7 +346,6 @@ class TileWorker(QWorker):
             self.handler_instances["tilebase"] = self.tile_instance
             self.tile_instance.user_id = os.environ["OWNER"]
             self.tile_instance.base_figure_url = data["base_figure_url"]
-            self.tile_instance.my_address = data["tile_address"]
             if "doc_type" in data:
                 self.tile_instance.doc_type = data["doc_type"]
             else:
@@ -342,7 +395,6 @@ class TileWorker(QWorker):
             self.handler_instances["tilebase"] = self.tile_instance
             self.tile_instance.user_id = os.environ["OWNER"]
             self.tile_instance.base_figure_url = data["base_figure_url"]
-            self.tile_instance.my_address = data["tile_address"]
             if "doc_type" in data:
                 self.tile_instance.doc_type = data["doc_type"]
             else:
