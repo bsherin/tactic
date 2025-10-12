@@ -16,7 +16,7 @@ import gridfs
 from flask_login import LoginManager
 from flask_socketio import SocketIO
 from flask_wtf import CSRFProtect
-from rabbit_manage import sleep_until_rabbit_alive, MESSAGE_QUEUE_ADDRESS
+from rabbit_manage import sleep_until_rabbit_alive, MESSAGE_QUEUE_ADDRESS, SOCKETIO_OPTIONS
 import docker_functions as docker_functions
 from mongo_db_fs import get_dbs
 import communication_utils
@@ -84,7 +84,9 @@ try:
     print("starting login_manager")
     login_manager.init_app(app)
     print("starting socketio. connecting by name")
-    socketio = SocketIO(app, message_queue=MESSAGE_QUEUE_ADDRESS,
+    socketio = SocketIO(app,
+                        message_queue=MESSAGE_QUEUE_ADDRESS,
+                        message_queue_connection_options=SOCKETIO_OPTIONS,
                         engineio_logger=True)
 
     # This stuff with ProxyFix seems to be critical.

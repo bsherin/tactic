@@ -5,8 +5,11 @@ import docker
 import os
 import flask_socketio
 from flask_socketio import SocketIO
-from rabbit_manage import MESSAGE_QUEUE_ADDRESS
-socketio = SocketIO(message_queue=MESSAGE_QUEUE_ADDRESS)
+from rabbit_manage import MESSAGE_QUEUE_ADDRESS, SOCKETIO_OPTIONS
+socketio = SocketIO(
+    message_queue=MESSAGE_QUEUE_ADDRESS,
+    message_queue_connection_options=SOCKETIO_OPTIONS
+)
 
 cli = docker.DockerClient(base_url='unix://var/run/docker.sock')
 

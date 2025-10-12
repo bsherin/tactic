@@ -13,15 +13,7 @@ if os.environ.get("USE_AMAZON_MQ") == "True" or os.environ.get("USE_AMAZON_MQ") 
     RABBIT_USER = os.environ.get("RABBIT_USER")
     RABBIT_PASS = os.environ.get("RABBIT_PASS")
     RABBIT_PORT = 5671
-    base_address = f"amqps://{RABBIT_USER}:{RABBIT_PASS}@{RABBIT_HOST}:5671//"
-    MESSAGE_QUEUE_ADDRESS = (
-            base_address
-            + "?ssl=1"
-            + "&heartbeat=600"
-            + "&connection_attempts=20"
-            + "&retry_delay=5"
-            + "&socket_timeout=30"
-    )
+    MESSAGE_QUEUE_ADDRESS = f"amqps://{RABBIT_USER}:{RABBIT_PASS}@{RABBIT_HOST}:5671//"
 else:
     USE_AMAZON_MQ = False
     RABBIT_HOST = "megaplex"
@@ -30,7 +22,25 @@ else:
     RABBIT_USER = ""
     RABBIT_PASS = ""
 
-
+SOCKETIO_OPTIONS = {
+        # Enable TLS
+        "ssl": True,  # or dict for advanced TLS options
+        # AMQP heartbeat (supported by py-amqp via Kombu)
+        "heartbeat": 600,
+        # Transport (TCP) options for py-amqp
+        "transport_options": {
+            "socket_timeout": 30,  # read/write timeout
+            # Optional retry policy used by ensure_* helpers internally
+            "retry_policy": {
+                "interval_start": 0,
+                "interval_step": 2,
+                "interval_max": 5,
+                "max_retries": 20,  # “-1” would mean infinite
+            },
+        },
+        # Optional overall connect timeout (top-level)
+        "connect_timeout": 30,
+}
 HEARBEAT = 600
 BLOCKED_CONNECTION_TIMEOUT = 300
 

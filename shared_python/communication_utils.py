@@ -13,14 +13,17 @@ import zlib
 import uuid
 import pika
 from exception_mixin import generic_exception_handler
-from rabbit_manage import MESSAGE_QUEUE_ADDRESS
+from rabbit_manage import MESSAGE_QUEUE_ADDRESS, SOCKETIO_OPTIONS
 
 try:
     import flask_socketio
     from flask_socketio import SocketIO
 
 
-    socketio = SocketIO(message_queue=MESSAGE_QUEUE_ADDRESS)
+    socketio = SocketIO(
+        message_queue=MESSAGE_QUEUE_ADDRESS,
+        message_queue_connection_options=SOCKETIO_OPTIONS
+    )
 
     def emit_direct(event_name, data, namespace, room):
         socketio.emit(event_name, data, namespace=namespace, room=room)
