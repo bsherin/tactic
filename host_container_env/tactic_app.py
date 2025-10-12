@@ -45,6 +45,18 @@ def create_collection(self, collection_name):
     self.command("create", collection_name)
     return
 
+import logging
+class DropPubSubNoise(logging.Filter):
+    def filter(self, record):
+        msg = record.getMessage()
+        # Drop the specific noisy record
+        if NOISY in msg:
+            return False
+        # Also drop the recurring timeout/empty-loop noise from the same stack
+        if record.name in ('socketio', 'socketio.pubsub_manager', 'flask_socketio', 'kombu', 'amqp', 'engineio'):
+            if ('TimeoutError' in msg or '_queue.Empty' in msg or 'The read operation timed out' in msg):
+                return False
+        return True
 
 Database.create_collection = create_collection
 
@@ -75,6 +87,8 @@ try:
     print("creating app and confiruting")
     app = Flask(__name__)
     app.config.from_object('config')
+    app.logger.addFilter(DropPubSubNoise())
+    app.logger.setLevel(logging.WARNING)
 
     exception_mixin.app = app
 

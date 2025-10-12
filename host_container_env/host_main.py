@@ -4,29 +4,31 @@
 # Much of the setup is done in tactic_app.py
 # This avoids circular imports since the view functions make use
 # of things such as app, socketio, and db that are created in __init__.py
-
 import logging
 
-NOISY_LOG = 'Unexpected Error in pubsub listening thread'
+NOISY = 'Unexpected Error in pubsub listening thread'
 
 class DropPubSubNoise(logging.Filter):
     def filter(self, record):
-        # Kill that one recurring error and its traceback
-        if record.name == 'socketio.pubsub_manager' and NOISY_LOG in record.getMessage():
+        msg = record.getMessage()
+        # Drop the specific noisy record
+        if NOISY in msg:
             return False
+        # Also drop the recurring timeout/empty-loop noise from the same stack
+        if record.name in ('socketio', 'socketio.pubsub_manager', 'flask_socketio', 'kombu', 'amqp', 'engineio'):
+            if ('TimeoutError' in msg or '_queue.Empty' in msg or 'The read operation timed out' in msg):
+                return False
         return True
 
 root = logging.getLogger()
 root.addFilter(DropPubSubNoise())
 
-# Also make sure socketio/kombu loggers don’t raise the level back up
+# Clamp these loggers too (some handlers bypass root)
 for name in ('socketio', 'socketio.pubsub_manager', 'flask_socketio', 'kombu', 'amqp', 'engineio'):
     lg = logging.getLogger(name)
     lg.setLevel(logging.CRITICAL)
-    lg.propagate = False
-    if not lg.handlers:
-        lg.addHandler(logging.NullHandler())
-
+    lg.addFilter(DropPubSubNoise())
+    lg.propagate = True  # still let it hit root (filtered there too)
 import os
 from gevent import monkey, hub
 monkey.patch_all()
