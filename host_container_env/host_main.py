@@ -6,6 +6,17 @@
 # of things such as app, socketio, and db that are created in __init__.py
 import logging
 
+for name in ('socketio', 'flask_socketio', 'engineio', 'kombu', 'amqp'):
+    lg = logging.getLogger(name)
+    # remove any handlers those loggers already have
+    lg.handlers[:] = []
+    # add NullHandler so nothing gets emitted
+    lg.addHandler(logging.NullHandler())
+    # do not bubble up to root
+    lg.propagate = False
+    # belt & suspenders: clamp level
+    lg.setLevel(logging.CRITICAL)
+
 NOISY = 'Unexpected Error in pubsub listening thread'
 
 class DropPubSubNoise(logging.Filter):
