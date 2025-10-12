@@ -22,7 +22,9 @@ try:
 
     socketio = SocketIO(
         message_queue=MESSAGE_QUEUE_ADDRESS,
-        message_queue_connection_options=SOCKETIO_OPTIONS
+        message_queue_connection_options=SOCKETIO_OPTIONS,
+        logger=False,
+        engineio_logger=False
     )
 
     def emit_direct(event_name, data, namespace, room):
