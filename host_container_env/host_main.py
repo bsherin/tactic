@@ -4,14 +4,30 @@
 # Much of the setup is done in tactic_app.py
 # This avoids circular imports since the view functions make use
 # of things such as app, socketio, and db that are created in __init__.py
-import os
-print("entering host main revised")
-print("monkey patching done")
-from gevent import monkey; monkey.patch_all()
 import logging
-logging.getLogger('socketio').setLevel(logging.WARNING)
-logging.getLogger('socketio.pubsub_manager').setLevel(logging.ERROR)
-logging.getLogger('kombu').setLevel(logging.WARNING)
+
+# 1. Configure logging BEFORE anything else
+logging.basicConfig(level=logging.WARNING)
+for name in [
+    'socketio',
+    'flask_socketio',
+    'engineio',
+    'socketio.pubsub_manager',
+    'kombu',
+    'amqp',
+    'gevent',
+]:
+    lg = logging.getLogger(name)
+    lg.setLevel(logging.CRITICAL)
+    lg.propagate = False
+    if not lg.handlers:
+        lg.addHandler(logging.NullHandler())
+
+import os
+from gevent import monkey; monkey.patch_all()
+
+print("entering host main with suppressed logging")
+print("monkey patching done")
 import time
 from rabbit_manage import sleep_until_rabbit_alive
 print("Waiting for rabbit")

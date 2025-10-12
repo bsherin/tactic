@@ -85,9 +85,10 @@ try:
     login_manager.init_app(app)
     print("starting socketio. connecting by name")
     socketio = SocketIO(app,
+                        logger=False,
                         message_queue=MESSAGE_QUEUE_ADDRESS,
                         message_queue_connection_options=SOCKETIO_OPTIONS,
-                        engineio_logger=True)
+                        engineio_logger=False)
 
     # This stuff with ProxyFix seems to be critical.
     # Without it, I get major errors when accessing via ssl on the server
