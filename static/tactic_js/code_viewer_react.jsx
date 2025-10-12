@@ -110,6 +110,7 @@ function CodeViewerApp(props) {
                     if (_dirty()) {
                         e.preventDefault();
                     }
+                    props.tsocket.disconnect();
                 })
             }
         })
@@ -158,6 +159,7 @@ function CodeViewerApp(props) {
                 if (_dirty()) {
                     e.preventDefault();
                 }
+                props.tsocket.disconnect()
             })
 
         }

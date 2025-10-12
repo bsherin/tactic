@@ -71,6 +71,7 @@ function NotebookApp(props) {
           e.preventDefault();
           e.returnValue = '';
         }
+        props.tsocket.disconnect();
       });
     }
     function sendRemove() {

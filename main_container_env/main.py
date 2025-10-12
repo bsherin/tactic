@@ -17,8 +17,9 @@ from docker_functions import env_or_none
 import loaded_tile_management
 # from volume_manager import VolumeManager
 from mongo_accesser import MongoAccess
-from main_tasks_mixin import StateTasksMixin, LoadSaveTasksMixin, TileCreationTasksMixin, APISupportTasksMixin
+from main_tasks_mixin import StateTasksMixin, LoadSaveTasksMixin, APISupportTasksMixin
 from main_tasks_mixin import ExportsTasksMixin, ConsoleTasksMixin, DataSupportTasksMixin
+from main_tile_creation_tasks import TileCreationTasksMixin
 from exception_mixin import ExceptionMixin
 from mongo_db_fs import get_dbs
 from list_accesser import ListAccess
@@ -34,7 +35,7 @@ from across_accounts_accesser import AcrossAccountsAccess
 from doc_info import docInfo, FreeformDocInfo
 from qworker import debug_log
 from tactic_copilot_mixin import CopilotMixin
-f# rom aws_task_helpers import run_tile_on_ecs, ECSTileError
+from tile_info import TileInfo
 
 # getting environment variables
 INITIAL_LEFT_FRACTION = .69
@@ -91,14 +92,16 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
         self.visible_doc_name = None
         self._pipe_dict = {}
         self.selected_text = ""
-        self.project_dict = None
+        # self.project_dict = None
         # self.tile_save_results = None
         self.is_legacy_save = "is_legacy_save" in data_dict and data_dict["is_legacy_save"]
         self.pseudo_tile_id = None
         self.loaded_modules = None
-        self.tile_id_dict = {}  # dict with the keys the names of tiles and ids as the values.
-        self.tile_reload_dicts = {}
-        self.tile_save_dicts = {}
+        # self.tile_id_dict = {}  # dict with the keys the names of tiles and ids as the values.
+        # self.tile_reload_dicts = {}
+        # self.tile_save_dicts = {}
+
+        self.tile_info = TileInfo()
 
         self.ppi = data_dict["ppi"]
         self.username = os.environ.get("USERNAME")
@@ -106,7 +109,6 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
         self.user_id = os.environ.get("OWNER")
         if ("project_name" not in data_dict) or (data_dict["doc_type"] == "jupyter"):
             self.doc_type = data_dict["doc_type"]
-            self.tile_instances = []
             self.left_fraction = INITIAL_LEFT_FRACTION
             self.is_shrunk = False
             self.project_name = None
@@ -150,73 +152,6 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
     def dmsg(self, tname, msg):
         print("rot: {} {}".format(tname, msg))
 
-    # def create_tile_container(self, data):
-    #     use_ecs = os.getenv("USE_ECS_TILES", "False").lower() == "true"
-    #     if use_ecs:
-    #         print("** Using ECS for tile container creation **")
-    #         return self.create_tile_container_ecs(data)
-    #     else:
-    #         print("** Using traditional Docker for tile container creation **")
-    #         return self.create_tile_container_traditional(data)
-
-    # def create_tile_container_ecs(self, data):
-    #
-    #     environ = {"PPI": data.get("ppi", 0), "USE_WAIT_TASKS": "True"}
-    #     environ["IS_PSEUDO_TILE"] = "True" if data.get("is_pseudo") else "False"
-    #
-    #     owner = data.get("user_id", "host")
-    #     parent = data.get("parent", "host")
-    #     other_name = data.get("other_name", "none")
-    #     tile_id = data.get("tile_id")
-    #     try:
-    #         unique_id, ip = run_tile_on_ecs(
-    #             username=self.username,
-    #             tile_id=tile_id,
-    #             owner=owner,
-    #             parent=parent,
-    #             other_name=other_name,
-    #             extra_env=environ
-    #         )
-    #         # Keep your return shape
-    #         return {"success": True, "tile_id": unique_id}
-    #     except ECSTileError as ex:
-    #         print("Error creating tile task on ECS")
-    #         return self.get_short_exception_dict(ex, "Error creating tile task on ECS")
-    #
-    #
-    # def create_tile_container_traditional(self, data):
-    #     try:
-    #         environ = {"PPI": data["ppi"], "USE_WAIT_TASKS": "True"}
-    #         if "is_pseudo" in data and data["is_pseudo"]:
-    #             environ["IS_PSEUDO_TILE"] = "True"
-    #         else:
-    #             environ["IS_PSEUDO_TILE"] = "False"
-    #         user_host_persist_dir = true_host_persist_dir + "/tile_manager/" + self.username
-    #         # transformers_resource_dir = true_host_resources_dir + "/huggingface"
-    #         tile_volume_dict = {}
-    #         tile_volume_dict[user_host_persist_dir] = {"bind": "/code/persist", "mode": "rw"}
-    #         tile_volume_dict[true_host_resources_dir] = {"bind": "/root/resources", "mode": "ro"}
-    #         if true_user_host_pool_dir is not None:
-    #             tile_volume_dict[true_user_host_pool_dir] = {"bind": "/mydisk", "mode": "rw"}
-    #         tile_volume_dict["nltk_cache"] = {"bind" : "/root/nltk_data", "mode": "rw"}
-    #         tile_volume_dict["hf_cache"] = {"bind": "/var/cache/hf", "mode": "rw"}
-    #         tile_volume_dict["torch_cache"] = {"bind": "/var/cache/torch", "mode": "rw"}
-    #         tile_volume_dict["mpl_cache"] = {"bind": "/var/cache/matplotlib", "mode": "rw"}
-    #         tile_volume_dict["tmp"] = {"bind": "/tmp", "mode": "rw"}
-    #         tile_container_id, container_id = docker_functions.create_container("bsherin/tactic-tile",
-    #                                                                             network_mode="bridge",
-    #                                                                             owner=data["user_id"],
-    #                                                                             parent=data["parent"],
-    #                                                                             other_name=data["other_name"],
-    #                                                                             username=self.username,
-    #                                                                             env_vars=environ,
-    #                                                                             volume_dict=tile_volume_dict,
-    #                                                                             publish_all_ports=True,
-    #                                                                             special_unique_id=data["tile_id"])
-    #     except docker_functions.ContainerCreateError as ex:
-    #         print("Error creating tile container")
-    #         return self.get_short_exception_dict(ex, "Error creating empty tile container")
-    #     return {"success": True, "tile_id": tile_container_id}
 
     def convert_legacy_console(self, project_dict):
         from bs4 import BeautifulSoup
@@ -386,11 +321,12 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
             print("returned from create_pseudo_tile")
 
         if self.doc_type != "notebook":
-            tile_info_dict = {}
             print("looping over tile_instances")
             for old_tile_id, tile_save_dict in project_dict["tile_instances"].items():
-                tile_info_dict[old_tile_id] = tile_save_dict["tile_type"]
-            self.project_dict = project_dict
+                self.tile_info.add_tile(old_tile_id, tile_save_dict["tile_name"], tile_save_dict["tile_type"])
+                self.tile_info.set_save_dict(old_tile_id, tile_save_dict)
+                # tile_info_dict[old_tile_id] = tile_save_dict["tile_type"]
+            # self.project_dict = project_dict
             if self.doc_type == "none":
                 self.visible_doc_name = ""
             else:
@@ -408,7 +344,8 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
                 project_dict["interface_state"]["console_items"] = []
                 error_string = self.handle_exception(ex, "Error adding missing sections")
                 print(error_string)
-            return tile_info_dict, project_dict["loaded_modules"], project_dict["interface_state"], True
+            print("leaving recreate_from_save")
+            return project_dict["loaded_modules"], project_dict["interface_state"], True
         else:
             if unique_id is None and self.is_legacy_save:
                 project_dict["interface_state"] = {
@@ -424,7 +361,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
 
     def get_used_tile_types(self):
         result = []
-        for tile_id in self.tile_instances:
+        for tile_id in self.tile_info.tile_ids:
             result.append(self.get_tile_property(tile_id, "tile_type"))
         return result
 
@@ -475,7 +412,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
 
     @property
     def tile_ids(self):
-        return self.tile_instances
+        return self.tile_info.tile_ids
 
     @property
     def current_header_list(self):
@@ -486,11 +423,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
 
     def _delete_tile_instance(self, tile_id):
         print("in delete_tile_instance")
-        self.tile_instances.remove(tile_id)
-        for n, tid in self.tile_id_dict.items():
-            if tid == tile_id:
-                del self.tile_id_dict[n]
-                break
+        self.tile_info.remove_tile(tile_id)
 
         if tile_id in self._pipe_dict:
             del self._pipe_dict[tile_id]
@@ -587,7 +520,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
         return
 
     def rebuild_other_tile_forms(self, tile_id, form_info):
-        for tid in self.tile_instances:
+        for tid in self.tile_info.tile_ids:
             if tile_id is None or not tid == tile_id:
                 form_info["other_tile_names"] = self.get_other_tile_names(tid)
                 self.mworker.post_task(tid, "RebuildTileForms", form_info)
@@ -596,7 +529,8 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
 
     def compile_form_info(self, tile_id):
         if tile_id is None:
-            other_tile_names = list(self.tile_id_dict.keys())
+            other_tile_names = self.tile_info.tile_ids
+            # other_tile_names = list(self.tile_id_dict.keys())
         else:
             other_tile_names = self.get_other_tile_names(tile_id)
         print("got other_tile_names = " + str(other_tile_names))
@@ -618,7 +552,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
 
     def get_other_tile_names(self, tile_id):
         other_tile_names = []
-        for n, tid in self.tile_id_dict.items():
+        for n, tid in enumerate(self.tile_info.tile_names):
             if not tid == tile_id:
                 other_tile_names.append(n)
         return other_tile_names

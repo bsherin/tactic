@@ -87,6 +87,7 @@ function HistoryViewerApp(props) {
         e.preventDefault();
         e.returnValue = '';
       }
+      props.tsocket.disconnect();
     }
     window.addEventListener("beforeunload", beforeUnloadFunc);
     return () => {

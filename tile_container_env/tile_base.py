@@ -145,7 +145,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
         self.current_html = None
         self._old_stdout = None
         self._pipe_dict = None  # This is set when the form is created
-        self._main_id = os.environ["PARENT"]
+        self._main_id = None
         self._tworker = _tworker
         self._collection = None  # I have to create this later to impose a post loop when creating the pseudo_tile
         self._remote_tiles = None
@@ -563,7 +563,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
                     continue
         data = {"tile_type": self.tile_type, "user_id": self.user_id}
         result["tile_id"] = self._tworker.my_id
-        tmi_string = "{}.tile_module_index".format(os.environ.get("USERNAME"))
+        tmi_string = "{}.tile_module_index".format(self.username)
         result["module_name"] = redis_tm.hget(tmi_string, self.tile_type)
         return result
     # </editor-fold>
@@ -794,7 +794,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
         return
 
     def recreate_from_save(self, save_dict):
-        print("entering recreate from save in tile_base")
+        print("entering recreate from save in tile_base with save_dict " + str(save_dict))
         if "binary_attrs" not in save_dict:
             save_dict["binary_attrs"] = []
         for(attr, attr_val) in save_dict.items():
@@ -827,7 +827,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
                     setattr(self, attr, decoded_val)
                 else:
                     setattr(self, attr, attr_val)
-        self._main_id = os.environ["PARENT"]  # this is for backward compatibility with some old project saves
+        # self._main_id = os.environ["PARENT"]  # this is for backward compatibility with some old project saves
         return None
 
     def _render_me(self, form_info):

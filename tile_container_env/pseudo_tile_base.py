@@ -18,7 +18,7 @@ from qworker_alt import stop_thread, debug_log
 from qworker_alt import add_qw_pika_connection, simple_uid, close_connection
 import time
 import json
-from widgets import is_html_table_class, is_widget_render
+from widgets import is_html_table_class
 
 ethread = None
 executing_console_id = None
@@ -107,6 +107,7 @@ class ConsoleStringIO(StringIO):
             self.data["result_text"] = rw.render()
             self.data["console_message"] = "consoleCodePrint"
             self.data["counter"] = self.counter
+            print("about to emit consoleCodePrint with data in consolestringio write " + str(self.data))
             self.my_tile.emit_console_message("consoleCodePrint", self.data)
             self.counter += 1
         sys.stdout = sv_stdout
@@ -142,7 +143,7 @@ class PseudoTileClass(TileBase):
     def emit_console_message(self, console_message, task_data, force_open=True):
         ldata = copy.copy(task_data)
         ldata["console_message"] = console_message
-        ldata["force_open"] = force_open
+        ldata["force_open"] = force_open # This is the tile ID
         self._tworker.emit_to_client("console-message", ldata)
 
     def emit_export_viewer_message(self, export_viewer_message, task_data):
@@ -258,7 +259,7 @@ class PseudoTileClass(TileBase):
             except:
                 print("failed to recreate attribute " + attr)
         self._last_globals = self.get_user_globals()
-        self._main_id = os.environ["PARENT"]  # this is for backward compatibility with some old project saves
+        # self._main_id = os.environ["PARENT"]  # this is for backward compatibility with some old project saves
         return None
 
     @_task_worthy
@@ -474,6 +475,7 @@ class PseudoTileClass(TileBase):
         return
 
     def exec_thread(self, data):
+        print("in exec_thread with data " + str(data))
         global executing_console_id
         channel = add_qw_pika_connection()
         try:
@@ -505,6 +507,7 @@ class PseudoTileClass(TileBase):
             data["execution_count"] = self.execution_counter
             data["message"] = "success"
         except Exception as ex:
+            print(ex)
             data["execution_count"] = "*"
             data["message"] = self._handle_exception(ex, None, print_to_console=False)
             print(data["message"])
@@ -513,6 +516,7 @@ class PseudoTileClass(TileBase):
         current_globals = self.get_user_globals()
         self.check_globals()
         executing_console_id = None
+        print('posting check_exec_queue')
         self.post_event("check_exec_queue", {})
         close_connection()
         return
@@ -584,12 +588,15 @@ class PseudoTileClass(TileBase):
 
     @_task_worthy
     def exec_console_code(self, data):
+        print("got task exec_console_code")
         global ethread
         global exec_queue
         global executing_console_id
         if ethread and ethread.is_alive():
+            print("exec_thread is alive, adding to queue")
             exec_queue.append([self.exec_thread, copy.deepcopy(data)])
         else:
+            print("exec_thread is not alive, starting new thread")
             executing_console_id = data["console_id"]
             ethread = threading.Thread(target=self.exec_thread, args=[data], name=simple_uid())
             ethread.start()

@@ -74,8 +74,6 @@ color_palette_names = sorted(color_palette_names)
 color_palette_names.sort()
 color_palette_names = ["standard"] + color_palette_names
 
-PPI = int(os.environ["PPI"])
-
 
 class ColorMapper(object):
     def __init__(self, bottom_val, top_val, color_palette_name):

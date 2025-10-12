@@ -1,10 +1,5 @@
 
-# import pydevd_pycharm
-# pydevd_pycharm.settrace('docker.for.mac.localhost', port=21000, stdoutToServer=True, stderrToServer=True,
-#                         suspend=True)
 import os
-
-IS_PSEUDO_TILE = os.environ.get("IS_PSEUDO_TILE", "False").lower() == "true"
 
 import json
 import base64
@@ -69,11 +64,11 @@ if use_ecs:
     MY_ARN = get_my_arn()
     MY_ID = get_my_id()
 else:
+    MY_ARN = ""
     MY_ID = os.environ.get("MY_ID", str(uuid.uuid4()))
 
-if IS_PSEUDO_TILE:
-    from pseudo_tile_base import PseudoTileClass
-    import pseudo_tile_base
+from pseudo_tile_base import PseudoTileClass
+import pseudo_tile_base
 
 # noinspection PyUnusedLocal,PyProtectedMember,PyMissingConstructor
 class KillWorker(QWorker):
@@ -87,6 +82,9 @@ class KillWorker(QWorker):
             if task_packet["task_type"] == "StopMe":
                 tile_base._tworker.emit_tile_message("stopSpinner")
                 tile_base._tworker.interrupt_and_restart()
+            if task_packet["task_type"] == "restart":
+                os.execv(sys.executable, [sys.executable, "-u", "tile_main.py"])
+
         except Exception as ex:
             special_string = "Got error in kill handle delivery"
             debug_log(special_string)
@@ -115,7 +113,7 @@ class TileWorker(QWorker):
         self.generate_heartbeats = True
         self._ready_acked = False
         self._sent_initial_ready = False
-        self.my_id = MY_ARN
+        self.my_id = MY_ID
 
     def ready(self):
         if use_ecs:
@@ -137,6 +135,10 @@ class TileWorker(QWorker):
             time.sleep(retry_every)
             if not self._ready_acked:
                 self._send_ready_once()
+
+    @task_worthy
+    def restart(self, data):
+        os.execv(sys.executable, [sys.executable, "-u", "tile_main.py"])
 
     @task_worthy
     def ack_ready(self, data):
@@ -210,6 +212,7 @@ class TileWorker(QWorker):
 
     @task_worthy
     def load_source_and_recreate(self, data):
+        print("in load_source_and_recreate")
         result = self.load_source(data)
         if not result["success"]:
             print("didn't load successfully")
@@ -228,6 +231,7 @@ class TileWorker(QWorker):
 
     @task_worthy
     def recreate_from_save(self, data):
+        print("in recreate_from_save in tile_main")
         try:
             print("entering recreate_from_save. class_name is " + class_info["class_name"])
             self.tile_instance = class_info["tile_class"](None, None, tile_name=data["tile_name"])
@@ -235,6 +239,7 @@ class TileWorker(QWorker):
             widgets.Tile = self.tile_instance
             widgets.in_pseudo_tile = self.tile_instance.in_pseudo_tile
             self.handler_instances["tilebase"] = self.tile_instance
+            print("about to call recreate_from_save on tile_instance")
             self.tile_instance.recreate_from_save(data)
             self.tile_instance.base_figure_url = data["new_base_figure_url"]
             self.tile_instance.user_id = os.environ["OWNER"]
@@ -242,7 +247,9 @@ class TileWorker(QWorker):
                 self.tile_instance.doc_type = data["doc_type"]
             else:
                 self.tile_instance.doc_type = "table"
+            print('initializing document_object"')
             document_object.Collection.__fully_initialize__()
+            print("leaving recreate_from_save")
 
         except Exception as ex:
             result = self.handle_exception(ex, "Error loading source in tile_main recreate from save")
@@ -306,6 +313,7 @@ class TileWorker(QWorker):
     @task_worthy
     def reinstantiate_tile(self, reload_dict):
         try:
+            print("in reinstantiate_tile with keys: " + str(reload_dict.keys()))
             self.tile_instance = class_info["tile_class"](None, None, tile_name=reload_dict["tile_name"])
             tile_env.Tile = self.tile_instance
             widgets.Tile = self.tile_instance
@@ -338,23 +346,23 @@ class TileWorker(QWorker):
 
     @task_worthy
     def instantiate_as_pseudo_tile(self, data):
+        print("instantiate_as_pseudo_tile")
         try:
             self.tile_instance = PseudoTileClass()
             pseudo_tile_base.Tile = self.tile_instance
             widgets.Tile = self.tile_instance
             widgets.in_pseudo_tile = self.tile_instance.in_pseudo_tile
             self.handler_instances["tilebase"] = self.tile_instance
-            self.tile_instance.user_id = os.environ["OWNER"]
-            self.tile_instance.base_figure_url = data["base_figure_url"]
-            if "doc_type" in data:
-                self.tile_instance.doc_type = data["doc_type"]
-            else:
-                self.tile_instance.doc_type = "table"
+            debug_log('initiating pseudo tile with instance params: ' + str(data["instance_params"]))
+            for k, val in data["instance_params"].items():
+                setattr(self.tile_instance, k, val)
+
             # The if statement below is because older notebooks saves won't have the globals dict
             # There won't be many of these old notebooks
             if (data["globals_dict"] is not None) and (isinstance(data["globals_dict"], dict)):  # legacy
                 self.tile_instance.recreate_from_save(data["globals_dict"])
             result = {"success": True, "current_globals": self.tile_instance._last_globals}
+            print("return from instantiate as pseudo_tile")
             return result
         except Exception as ex:
             return self.handle_exception(ex, "Error initializing pseudo tile")
@@ -393,8 +401,10 @@ class TileWorker(QWorker):
             widgets.Tile = self.tile_instance
             widgets.in_pseudo_tile = self.tile_instance.in_pseudo_tile
             self.handler_instances["tilebase"] = self.tile_instance
-            self.tile_instance.user_id = os.environ["OWNER"]
-            self.tile_instance.base_figure_url = data["base_figure_url"]
+
+            for k, val in data["instance_params"].items():
+                setattr(self.tile_instance, k, val)
+
             if "doc_type" in data:
                 self.tile_instance.doc_type = data["doc_type"]
             else:

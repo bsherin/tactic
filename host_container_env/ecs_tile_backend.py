@@ -4,7 +4,7 @@ from typing import Dict, Tuple, Optional
 import boto3
 from botocore.config import Config
 
-from asbract_tile_backend import TileBackend
+from abstract_tile_backend import TileBackend
 from aws_task_helpers import run_tile_on_ecs, ECSTileError  # your helper we already built
 
 def _ecs():
@@ -18,7 +18,7 @@ class ECSTileBackend(TileBackend):
       - Ad-hoc: if none idle, launch one via run_tile_on_ecs().
     """
 
-    def __init__(self, tile_registry):
+    def __init__(self, tile_registry, worker):
         self.cluster = os.getenv("ECS_CLUSTER", "tactic-cluster")
         self.taskdef = os.getenv("ECS_TILE_TASKDEF", "tactic-tile")  # family only → will use latest ACTIVE rev
         # For ad-hoc launches we still need networking:
@@ -26,19 +26,15 @@ class ECSTileBackend(TileBackend):
         self.sgs     = [g.strip() for g in os.getenv("ECS_SECURITY_GROUPS", "").split(",") if g.strip()]
         self.assign_public = os.getenv("ECS_ASSIGN_PUBLIC_IP", "ENABLED")
         self.tile_registry = tile_registry
-
-    def _claim_idle_from_registry(self, owner, parent) -> Optional[Tuple[str, str]]:
-        return self.tile_registry.claim_tile(owner, parent)
+        self.workd = worker
 
     def _mark_in_registry(self, tile_id: str, status: str, meta: Optional[Dict] = None):
         self.tile_registry.mark(tile_id, status, meta)
         return
 
-    # --------------------------------------------------------------------------
-
     def launch(self, username: str, owner: Optional[str], parent: Optional[str], tile_id: Optional[str], meta: Dict) -> Tuple[str, str]:
         # 1) Try to claim a warm tile if your pool exists
-        tid, task_arn = self.claim_tile(username, owner, parent)
+        tid, task_arn = self.tile_registry.claim_tile(username, owner, parent)
         if tid:
             return tid
 
@@ -47,11 +43,7 @@ class ECSTileBackend(TileBackend):
             raise ECSTileError("No idle tiles and ECS_SUBNETS/ECS_SECURITY_GROUPS not set for ad-hoc launch.")
 
         env = {
-            "PPI": str(meta.get("ppi", 0)),
-            "USE_WAIT_TASKS": "True",
-            "IS_PSEUDO_TILE": "True" if meta.get("is_pseudo") else "False",
-            "USERNAME": username,
-            # Any other runtime env like BROKER_URL, REDIS_URL expected by tile
+            "CHUNK_SIZE": os.getenv("CHUNK_SIZE", 100),
         }
         for k in ("BROKER_URL", "REDIS_URL"):
             v = os.getenv(k)
@@ -67,11 +59,11 @@ class ECSTileBackend(TileBackend):
             extra_env=env
         )
         # You can optionally add this new tile to the registry as busy
-        self.mark_status(uid, "busy", owner=username, parent=parent)
+        self.tile_registry.mark_status(uid, "busy", owner=username, parent=parent)
         return uid
 
     def mark_busy(self, tile_id: str):
-        self.mark_status(tile_id, "busy")
+        self.tile_registry.mark_status(tile_id, "busy")
 
     def mark_idle(self, tile_id: str):
         # If you use task protection to prevent scale-in while active, be sure to disable it on idle:
@@ -85,43 +77,25 @@ class ECSTileBackend(TileBackend):
                 )
         except Exception:
             pass
-        self.mark_status(tile_id, "idle")
+        self.tile_registry.mark_status(tile_id, "idle")
 
     def restart(self, tile_id: str):
-        """
-        Preferred: have the tile execv itself on command (fast “deep clean”).
-        Fallback: stop the task and let the Service replace it.
-        """
-        # Example control plane:
-        # post_task_to_tile(tile_id, "self_reset", {})
-        try:
-            ecs = _ecs()
-            task_arn = self._lookup_task_arn(tile_id)
-            if task_arn:
-                ecs.update_task_protection(cluster=self.cluster, tasks=[task_arn], protectionEnabled=False)
-                ecs.stop_task(cluster=self.cluster, task=task_arn, reason="tile restart requested")
-        except Exception:
-            pass
+        tdata = self.tile_registry.get(tile_id)
+        self.worker.post_task(tile_id, "restart", {})
+        self.worker.post_task(f"kill_{tile_id}", "restart", {})
+        return tdata
 
     def terminate(self, tile_id: str):
-        """
-        If tiles are managed by a Service for a warm pool, your 'terminate' likely
-        means: mark idle and let autoscaler trim. If you truly want it gone now,
-        stop the task (Service will replace it; separately lower desiredCount).
-        """
         try:
             ecs = _ecs()
             task_arn = self._lookup_task_arn(tile_id)
             if task_arn:
                 ecs.update_task_protection(cluster=self.cluster, tasks=[task_arn], protectionEnabled=False)
-                ecs.stop_task(cluster=self.cluster, task=task_arn, reason="tile terminated")
+            ecs.stop_task(cluster=self.cluster, task=task_arn, reason="tile terminated")
         finally:
-            self._mark_in_registry(tile_id, "terminated")
+            pass
 
     # ---- You’ll implement these lookups in your host registry ----------------
     def _lookup_task_arn(self, tile_id: str) -> Optional[str]:
-        """
-        Your host should track tile_id -> taskArn (store on READY registration).
-        Stub returns None here.
-        """
+        self.tile_registry.get_arn(tile_id)
         return None

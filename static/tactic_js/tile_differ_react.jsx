@@ -92,6 +92,7 @@ function TileDifferApp(props) {
             if (_dirty()) {
                 e.preventDefault();
             }
+            props.tsocket.disconnect()
         });
     }, []);
 

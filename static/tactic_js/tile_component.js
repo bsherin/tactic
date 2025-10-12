@@ -249,6 +249,10 @@ function TileComponent(props) {
       _startSpinner();
       let data = await (0, _communication_react.postPromise)(props.local_id, "reload_tile", data_dict, props.local_id);
       if (!data.success) {
+        errorDrawerFuncs.addErrorDrawerEntry({
+          title: `Error reloading tile`,
+          content: data.message || "Unknown error"
+        });
         return;
       }
       if (data.form_data) {

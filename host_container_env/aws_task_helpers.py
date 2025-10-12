@@ -82,28 +82,19 @@ def run_tile_on_ecs(
 
     unique_id   = tile_id or str(uuid.uuid4())
     retries     = os.getenv("RETRIES", "0")
-    chunk_size  = os.getenv("CHUNK_SIZE", "1048576")  # safe default if not set
-    mongo_uri   = os.getenv("MONGO_URI", "")
     use_arm64   = os.getenv("USE_ARM64", "False")
     use_mq      = os.getenv("USE_AMAZON_MQ", "True")
-    develop     = os.getenv("DEVELOP", "False")
-    debug_main  = os.getenv("DEBUG_MAIN_CONTAINER", "False")
-    debug_tile  = os.getenv("DEBUG_TILE_CONTAINER", "False")
 
-    # Anything your app previously passed in:
     env = {
         "RETRIES": retries,
         "MY_ID": unique_id,
         "OWNER": owner,
         "PARENT": parent,
         "IMAGE_NAME": "bsherin/tactic-tile",
-        # NOTE: You intentionally hid MONGO_URI from tiles before; keep that behavior:
-        # "MONGO_URI": mongo_uri,
         "PYTHONUNBUFFERED": "Yes",
         "USE_ARM64": use_arm64,
         "USE_AMAZON_MQ": use_mq,
         "USERNAME": username,
-        # From your create_tile_container() caller:
         "IS_PSEUDO_TILE": str(extra_env.get("IS_PSEUDO_TILE", "False")) if extra_env else "False",
         "USE_WAIT_TASKS": str(extra_env.get("USE_WAIT_TASKS", "True")) if extra_env else "True",
         "PPI": str(extra_env.get("PPI", "0")) if extra_env else "0",

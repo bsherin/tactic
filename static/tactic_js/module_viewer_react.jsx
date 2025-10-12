@@ -107,6 +107,7 @@ function ModuleViewerApp(props) {
                     e.preventDefault();
                     e.returnValue = ''
                 }
+                props.tsocket.disconnect()
             })
         }
 

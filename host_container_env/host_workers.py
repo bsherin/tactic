@@ -40,6 +40,7 @@ from rabbit_manage import get_pika_connection_with_retries
 from ecs_tile_backend import ECSTileBackend
 from docker_tile_backend import DockerTileBackend
 from tile_registry import TileContainerRegistry
+from tile_container_management_mixin import TileContainerManagementMixin
 
 # inactive_container_time is the max time a tile can
 # go without making active contact with the megaplex.
@@ -64,16 +65,16 @@ from qworker import max_pika_retries
 
 class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTasksMixin,ContainerTasksMixin,
                  ProjectTasksMixin, CollectionTasksMixin, MetabookTasksMixin, PoolTasksMixin, AccountTasksMixin,
-                 AcrossAccountsTasksMixin, HigherMongoTasksMixin, TileContainerManagementTasksMixin):
+                 AcrossAccountsTasksMixin, HigherMongoTasksMixin, TileContainerManagementMixin):
     def __init__(self):
         QWorker.__init__(self)
         self.my_id = "host" + str(myport)
         self.repository_user = User.get_user_by_username("repository")
+        self.tile_registry = TileContainerRegistry()
         if use_ecs and self.my_id == "host5000":
-            self.tile_registry = TileContainerRegistry()
-            self.tile_backend = ECSTileBackend(self.tile_registry)
+            self.tile_backend = ECSTileBackend(self.tile_registry, self)
         else:
-            self.tile_backend = DockerTileBackend(self.tile_registry)
+            self.tile_backend = DockerTileBackend(self.tile_registry, self)
 
     def start_background_thread(self, retries=0):
         try:
@@ -281,7 +282,7 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
     @task_worthy
     def remove_mainwindow_task(self, data):
         local_id = data["local_id"]
-        destroy_child_containers(local_id)
+        self.destroy_child_tiles(local_id)
         destroy_container(local_id, notify=False)
         return {"success": True}
 
@@ -490,7 +491,6 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
 
     @task_worthy
     def emit_to_client(self, data):
-        print("*** in emit_to_client with message " + data["message"])
         from tactic_app import socketio
         if "room" in data:
             room = data["room"]
@@ -900,7 +900,7 @@ class HealthTracker:
             redis_ht.hset(container_id, "last_contact", current_timestamp())
 
     def check_health(self):
-        if self.my_id == "host5000":  ## Only initiate checks from one host
+        if tactic_app.host_worker.my_id == "host5000":  ## Only initiate checks from one host
             current_time = current_timestamp()
             if (current_time - self.last_health_check) > health_check_time:
                 if not redis_ht.exists("last_health_check"):

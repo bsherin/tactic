@@ -10,5 +10,5 @@ ADD  ./shared_python/volume_manager.py ./shared_python/exception_mixin.py ./shar
 ./shared_python/redis_tools.py ./shared_python/qworker.py ./shared_python/communication_utils.py \
 ./shared_python/docker_functions.py ./shared_python/loaded_tile_management.py \
 ./shared_python/rabbit_manage.py /code/
-# RUN pip install pydevd-pycharm~=201.6668.115
+RUN pip install pydevd-pycharm~=252.26830.99
 CMD ["python", "-u", "main_main.py"]

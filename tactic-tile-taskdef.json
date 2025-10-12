@@ -32,8 +32,9 @@
         { "name": "IMAGE_NAME",  "value": "bsherin/tactic-tile" },
         { "name": "USE_AMAZON_MQ", "value": "True"},
         { "name": "USE_WAIT_TASKS", "value": "True" },
-        { "name": "IS_PSEUDO_TILE", "value": "False" }
-
+        { "name": "IS_PSEUDO_TILE", "value": "False" },
+        { "name": "CHUNK_SIZE", "value": "100" },
+        { "name": "RETRIES", "value": "60" }
       ],
       "mountPoints": [
         { "sourceVolume": "efs-shared", "containerPath": "/mnt/efs", "readOnly": false }

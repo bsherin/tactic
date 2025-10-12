@@ -9,18 +9,23 @@ from abstract_tile_backend import TileBackend
 class DockerTileBackend(TileBackend):
     IMAGE = "bsherin/tactic-tile"  # your tag logic already handled inside create_container()
 
-    def __init__(self, tile_registry):
+    def __init__(self, tile_registry, worker):
         # Any local paths you need can be read from env or hardcoded for dev.
         self.resources_dir = os.getenv("TRUE_HOST_RESOURCES_DIR", "/srv/tactic/resources")
-        self.user_pool_dir = os.getenv("POOL_DIR", "/tacticdata4/pool")
-        self.tile_registry = None
+        # self.user_pool_dir = docker_functions.get_user_pool_dir()
+        # self.user_pool_dir = os.getenv("TRUE_HOST_POOL_DIR", "/tacticdata4/pool")
+        self.user_pool_dir = None
+        self.tile_registry = tile_registry
+        self.worker = worker
 
-    def launch(self, username: str, owner: Optional[str], parent: Optional[str], tile_id: Optional[str], meta: Dict) -> Tuple[str, str]:
+    def launch(self, username: str,
+               owner: Optional[str],
+               parent: Optional[str],
+               tile_id: Optional[str],
+               meta: Dict) -> Tuple[str, str]:
         env = {
-            "PPI": str(meta.get("ppi", 0)),
-            "USE_WAIT_TASKS": "True",
-            "IS_PSEUDO_TILE": "True" if meta.get("is_pseudo") else "False",
-            "USERNAME": username,
+            "CHUNK_SIZE": os.getenv("CHUNK_SIZE", 100),
+            "RETRIES": os.getenv("RETRIES", 60),
         }
 
         # Minimal volumes for local dev (match your compose if you like)
@@ -30,8 +35,6 @@ class DockerTileBackend(TileBackend):
         if self.user_pool_dir:
             volumes[self.user_pool_dir] = {"bind": "/mydisk", "mode": "rw"}
 
-        owner     = meta.get("owner", "host")
-        parent    = meta.get("parent", "host")
         other     = meta.get("other_name", "none")
         unique_id = tile_id or str(uuid.uuid4())
 
@@ -48,31 +51,27 @@ class DockerTileBackend(TileBackend):
             publish_all_ports=True,
             special_unique_id=unique_id
         )
+        self.tile_registry.mark_status(tile_container_id, "busy", None, username=username, owner=owner, parent=parent)
         return tile_container_id
 
     def mark_busy(self, tile_id: str):
         # no-op for local; your host registry tracks this
         return
 
+    def restart(self, tile_id: str):
+        tdata = self.tile_registry.get(tile_id)
+        self.worker.post_task(tile_id, "restart", {})
+        self.worker.post_task(f"kill_{tile_id}", "restart", {})
+        return tdata
+
     def mark_idle(self, tile_id: str):
         # no-op for local; your host registry tracks this
         return
 
-    def restart(self, tile_id: str):
-        """
-        Prefer to tell the tile to self-reset via MQ (execv) to mirror prod.
-        Fallback: if you have a helper to restart the container, call it here.
-        """
-        # Example (if you have a control path):
-        # post_task_to_tile(tile_id, "self_reset", {})
-        try:
-            docker_functions.restart_container_by_label("my_id", tile_id)  # if you have such a helper
-        except Exception:
-            pass
-
     def terminate(self, tile_id: str):
         # Same as restart: either signal the tile, or remove the container by label.
         try:
-            docker_functions.remove_container_by_label("my_id", tile_id)
+            cont = docker_functions.get_container(tile_id)
+            docker_functions.safe_remove(cont)
         except Exception:
             pass

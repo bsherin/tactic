@@ -1,8 +1,8 @@
 
 from gevent import monkey
-# import pydevd_pycharm
+import pydevd_pycharm
+pydevd_pycharm.settrace('host.docker.internal', port=21000, stdout_to_server=True, stderr_to_server=True, suspend=False)
 monkey.patch_all()
-# pydevd_pycharm.settrace('docker.for.mac.localhost', port=21000, stdoutToServer=True, stderrToServer=True, suspend=True)
 print("entering main_main")
 import os
 import uuid
@@ -119,7 +119,7 @@ class MainWorker(QWorker, ExceptionMixin, CopilotMixin):
         if tile_id is not None:
             self.ask_tile(tile_id, event_name, data_dict)
         else:
-            for tile_id in self.mwindow.tile_instances:
+            for tile_id in self.mwindow.tile_info.tile_ids:
                 self.ask_tile(tile_id, event_name, data_dict)
         if event_name in self.mwindow.update_events:
             self.post_task(self.my_id, event_name, data_dict)

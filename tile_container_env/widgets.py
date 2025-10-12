@@ -6,6 +6,8 @@ import sys
 import nltk
 import pandas as _pd
 
+PPI = 100
+
 Tile = None
 in_pseudo_tile = False
 
@@ -227,8 +229,6 @@ class Box(Widget):
     widget_kind = "box"
     extra_fields = ["style", "widgets"]
     defaults = {"style": None}
-
-PPI = int(os.environ["PPI"])
 
 class MatplotlibWidget(Widget):
     widget_kind = "matplotlib"

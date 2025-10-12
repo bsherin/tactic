@@ -126,6 +126,7 @@ function TextViewerApp(props) {
                     e.preventDefault();
                     e.returnValue = ''
                 }
+                props.tsocket.disconnect()
             })
         }
         postPromise("host", "get_text_from_pool_task", {"file_path": props.file_path})

@@ -161,6 +161,8 @@ class QWorker(ExceptionMixin):
 
     def post_task(self, dest_id, task_type, task_data=None, callback_func=None,
                   callback_data=None, expiration=None, error_handler=None, special_reply_to=None):
+        if dest_id is None:
+            print("Error: post_task called with no destination ID for task type {}".format(task_type))
         try:
             if callback_func is not None:
                 callback_id = str(uuid.uuid4())

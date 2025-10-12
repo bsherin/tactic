@@ -162,6 +162,7 @@ function CreatorApp(props) {
                 if (_dirty()) {
                     e.preventDefault();
                 }
+                props.tsocket.disconnect()
             });
             document.title = String(resource_name);
         }

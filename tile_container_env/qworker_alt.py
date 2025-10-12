@@ -36,10 +36,7 @@ blank_packet = {"source": None,
                 "callback_id": None}
 
 
-if "USE_WAIT_TASKS" in os.environ:
-    use_wait_tasks = os.environ.get("USE_WAIT_TASKS") == "True"
-else:
-    use_wait_tasks = False
+use_wait_tasks = True
 
 RETRIES = os.environ.get("RETRIES")
 

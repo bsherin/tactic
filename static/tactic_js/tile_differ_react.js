@@ -82,6 +82,7 @@ function TileDifferApp(props) {
       if (_dirty()) {
         e.preventDefault();
       }
+      props.tsocket.disconnect();
     });
   }, []);
   (0, _react.useEffect)(() => {
