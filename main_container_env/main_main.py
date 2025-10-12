@@ -1,7 +1,7 @@
 
 from gevent import monkey
-import pydevd_pycharm
-pydevd_pycharm.settrace('host.docker.internal', port=21000, stdout_to_server=True, stderr_to_server=True, suspend=False)
+# import pydevd_pycharm
+# pydevd_pycharm.settrace('host.docker.internal', port=21000, stdout_to_server=True, stderr_to_server=True, suspend=False)
 monkey.patch_all()
 print("entering main_main")
 import os

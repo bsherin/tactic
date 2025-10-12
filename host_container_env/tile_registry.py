@@ -5,10 +5,31 @@ if use_ecs:
     import boto3
     ecs = boto3.client("ecs", region_name=os.getenv("AWS_REGION","us-east-2"))
     CLUSTER = os.getenv("ECS_CLUSTER","tactic-cluster")
+    CW = boto3.client("cloudwatch", region_name=os.getenv("AWS_REGION", "us-east-2"))
+    NS = "Tactic"
+    SVC = "tactic-tile-pool"
+    DESIRED_IDLE = int(os.getenv("TILE_IDLE_BUFFER","3"))
 
-class TileContainerRegistry():
+class TileContainerRegistry:
     def __init__(self):
         self._registry = {}
+
+    def publish_metrics(self):
+        if use_ecs:
+            idle_deficit = max(0, DESIRED_IDLE - self.idle_tiles)
+            CW.put_metric_data(
+                Namespace=NS,
+                MetricData=[
+                    {"MetricName": "IdleTiles", "Dimensions": [{"Name": "ServiceName", "Value": SVC}],
+                     "Unit": "Count", "Value": self.idle_tiles},
+                    {"MetricName": "RunningTiles", "Dimensions": [{"Name": "ServiceName", "Value": SVC}],
+                     "Unit": "Count", "Value": self.running_tiles},
+                    {"MetricName": "IdleDeficit", "Dimensions": [{"Name": "ServiceName", "Value": SVC}],
+                     "Unit": "Count", "Value": idle_deficit},
+                ]
+            )
+        else:
+            print(f"Metrics publishing is disabled in non-ECS mode. {self.idle_tiles} idle tiles, {self.running_tiles} running tiles.")
 
     def mark_status(self, tile_id, status, task_arn=None, username=None, owner=None, parent=None):
         print("entering mark_status with tile_id:", tile_id, "status:", status, "task_arn:", task_arn, "username:", username, "owner:", owner, "parent:", parent)
@@ -26,6 +47,14 @@ class TileContainerRegistry():
                 self._registry[tile_id]["task_arn"] = task_arn
             self.set_task_protection(tile_id)
         print("leaving mark_status with registry:", self._registry)
+
+    @property
+    def running_tiles(self):
+        return len([tile_id for tile_id, d in self._registry.items() if d.get("status") == "busy"])
+
+    @property
+    def idle_tiles(self):
+        return len([tile_id for tile_id, d in self._registry.items() if d.get("status") == "idle"])
 
     def release_tile(self, tile_id):
         if tile_id in self._registry:

@@ -56,7 +56,7 @@ def task_worthy_manual_submit(m):
     return m
 
 
-heartbeat_time = 60
+heartbeat_time = 30
 
 
 def current_timestamp():
@@ -85,9 +85,20 @@ class QWorker(ExceptionMixin):
         self.connection = None
         self.generate_heartbeats = False
         self.last_heartbeat = current_timestamp()
+        self._hb_greenlet = None
+        self._stopping = False
         if use_wait_tasks:
             wait_queue = self.my_id + "_wait"
             self.wait_worker = BlockingWaitWorker(wait_queue)
+
+    def _heartbeat_loop(self):
+        # runs in its own greenlet
+        while not self._stopping:
+            try:
+                self.do_heartbeat()  # your existing method
+            except Exception as ex:
+                debug_log(self.handle_exception(ex, "heartbeat loop error"))
+            gevent.sleep(heartbeat_time)  # tick every 1s;
 
     def start_background_thread(self, retries=0):
         try:
@@ -98,20 +109,41 @@ class QWorker(ExceptionMixin):
             self.channel.queue_declare(queue=self.my_id, durable=False, exclusive=False)
             self.channel.basic_consume(queue=self.my_id, auto_ack=True, on_message_callback=self.handle_delivery)
             debug_log(' [*] Waiting for messages:')
+            # turn on app-level heartbeats once we're ready
+            if self._hb_greenlet is None:
+                self._hb_greenlet = gevent.spawn(self._heartbeat_loop)
             self.ready()
             self.channel.start_consuming()
         except Exception as ex:
             debug_log("Couldn't connect to pika")
             debug_log(self.handle_exception(ex, "Here's the error"))
+        finally:
+            # make sure the heartbeat loop stops if the consumer exits
+            self._stopping = True
+            if self._hb_greenlet is not None:
+                try:
+                    self._hb_greenlet.kill(block=False)
+                except Exception:
+                    pass
+                self._hb_greenlet = None
 
     def interrupt_and_restart(self):
-        global thread
-        global thread_lock
-        self.channel.queue_delete(queue=self.my_id)
-        self.connection.close()
+        global thread, thread_lock
+        try:
+            self.channel.queue_delete(queue=self.my_id)
+        except Exception:
+            pass
+        try:
+            self.connection.close()
+        except Exception:
+            pass
+        self._stopping = True
+        if self._hb_greenlet:
+            try: self._hb_greenlet.kill(block=False)
+            except Exception: pass
+            self._hb_greenlet = None
         thread.kill()
         thread = None
-        # thread_lock.release()
         self.start()
         return
 
@@ -119,6 +151,7 @@ class QWorker(ExceptionMixin):
         global thread
         with thread_lock:
             if thread is None:
+                self._stopping = False
                 thread = socketio.start_background_task(target=self.start_background_thread)
                 debug_log('Background thread started')
 
@@ -127,10 +160,7 @@ class QWorker(ExceptionMixin):
 
     def do_heartbeat(self):
         if self.generate_heartbeats:
-            current_time = current_timestamp()
-            if (current_time - self.last_heartbeat) > heartbeat_time:
-                self.post_task("host", "container_heartbeat", {"container_id": self.my_id})
-                self.last_heartbeat = current_time
+            self.post_task("host", "container_heartbeat", {"container_id": self.my_id})
         return
 
     def handle_delivery(self, channel, method, props, body):

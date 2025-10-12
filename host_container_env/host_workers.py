@@ -71,6 +71,7 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         self.my_id = "host" + str(myport)
         self.repository_user = User.get_user_by_username("repository")
         self.tile_registry = TileContainerRegistry()
+        self.generate_heartbeats = True
         if use_ecs and self.my_id == "host5000":
             self.tile_backend = ECSTileBackend(self.tile_registry, self)
         else:
@@ -89,10 +90,23 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
             self.channel.basic_consume(queue="host", auto_ack=True, on_message_callback=self.handle_delivery)
             self.channel.basic_consume(queue=self.my_id, auto_ack=True, on_message_callback=self.handle_delivery)
             print(' [*] Waiting for messages:')
+            if self._hb_greenlet is None:
+                self._hb_greenlet = gevent.spawn(self._heartbeat_loop)
             self.channel.start_consuming()
         except Exception as ex:
             debug_log("Couldn't start background thread")
             debug_log(self.handle_exception(ex, "Here's the error"))
+        finally:
+            self._stopping = True
+            if self._hb_greenlet is not None:
+                try:
+                    self._hb_greenlet.kill(block=False)
+                except Exception:
+                    pass
+                self._hb_greenlet = None
+
+    def do_heartbeat(self):
+        self.tile_registry.publish_metrics()
 
     def user_to_true(self, user_path, user_obj):
         return re.sub("/mydisk", user_obj.pool_dir, user_path)
