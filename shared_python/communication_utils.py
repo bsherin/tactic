@@ -20,7 +20,7 @@ try:
     from flask_socketio import SocketIO
 
 
-    socketio = SocketIO(message_queue=MQ_URL)
+    socketio = SocketIO(message_queue=MESSAGE_QUEUE_ADDRESS)
 
     def emit_direct(event_name, data, namespace, room):
         socketio.emit(event_name, data, namespace=namespace, room=room)
