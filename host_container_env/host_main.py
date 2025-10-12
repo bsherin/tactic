@@ -8,6 +8,10 @@ import os
 print("entering host main revised")
 print("monkey patching done")
 from gevent import monkey; monkey.patch_all()
+import logging
+logging.getLogger('socketio').setLevel(logging.WARNING)
+logging.getLogger('socketio.pubsub_manager').setLevel(logging.ERROR)
+logging.getLogger('kombu').setLevel(logging.WARNING)
 import time
 from rabbit_manage import sleep_until_rabbit_alive
 print("Waiting for rabbit")
