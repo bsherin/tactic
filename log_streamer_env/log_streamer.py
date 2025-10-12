@@ -7,8 +7,10 @@ import flask_socketio
 from flask_socketio import SocketIO
 from rabbit_manage import MESSAGE_QUEUE_ADDRESS, SOCKETIO_OPTIONS
 socketio = SocketIO(
-    message_queue=MESSAGE_QUEUE_ADDRESS,
-    message_queue_connection_options=SOCKETIO_OPTIONS
+    message_queue="redis://tactic-redis:6379/0",
+    channel="socketio",
+    logger=False,
+    engineio_logger=False,
 )
 
 cli = docker.DockerClient(base_url='unix://var/run/docker.sock')

@@ -3,6 +3,7 @@ Flask == 2.2.3
 Flask-SocketIO
 kombu
 pika
+redis
 gevent
 pymongo
 openai==1.78.1
