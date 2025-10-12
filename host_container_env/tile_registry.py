@@ -12,10 +12,12 @@ if use_ecs:
 
 class TileContainerRegistry:
     def __init__(self):
+        print("** initializing tile registery ***")
         self._registry = {}
 
     def publish_metrics(self):
         if use_ecs:
+            print(" *** publishing metrics to cloudwatch with idle_tiles:", self.idle_tiles, "running_tiles:", self.running_tiles)
             idle_deficit = max(0, DESIRED_IDLE - self.idle_tiles)
             CW.put_metric_data(
                 Namespace=NS,

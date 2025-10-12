@@ -4,19 +4,23 @@
 # Much of the setup is done in tactic_app.py
 # This avoids circular imports since the view functions make use
 # of things such as app, socketio, and db that are created in __init__.py
+
 import logging
 
-# 1. Configure logging BEFORE anything else
-logging.basicConfig(level=logging.WARNING)
-for name in [
-    'socketio',
-    'flask_socketio',
-    'engineio',
-    'socketio.pubsub_manager',
-    'kombu',
-    'amqp',
-    'gevent',
-]:
+NOISY_LOG = 'Unexpected Error in pubsub listening thread'
+
+class DropPubSubNoise(logging.Filter):
+    def filter(self, record):
+        # Kill that one recurring error and its traceback
+        if record.name == 'socketio.pubsub_manager' and NOISY_LOG in record.getMessage():
+            return False
+        return True
+
+root = logging.getLogger()
+root.addFilter(DropPubSubNoise())
+
+# Also make sure socketio/kombu loggers don’t raise the level back up
+for name in ('socketio', 'socketio.pubsub_manager', 'flask_socketio', 'kombu', 'amqp', 'engineio'):
     lg = logging.getLogger(name)
     lg.setLevel(logging.CRITICAL)
     lg.propagate = False
@@ -24,7 +28,15 @@ for name in [
         lg.addHandler(logging.NullHandler())
 
 import os
-from gevent import monkey; monkey.patch_all()
+from gevent import monkey, hub
+monkey.patch_all()
+
+# Silence benign queue-empty/timeouts in gevent hub
+try:
+    from queue import Empty as QueueEmpty
+except Exception:  # Py2 fallback if you still need it
+    from Queue import Empty as QueueEmpty
+hub.Hub.NOT_ERROR = hub.Hub.NOT_ERROR + (QueueEmpty,)
 
 print("entering host main with suppressed logging")
 print("monkey patching done")
