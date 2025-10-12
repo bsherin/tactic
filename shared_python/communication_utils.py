@@ -21,10 +21,10 @@ try:
 
 
     socketio = SocketIO(
-        message_queue=MESSAGE_QUEUE_ADDRESS,
-        message_queue_connection_options=SOCKETIO_OPTIONS,
+        message_queue="redis://tactic-redis:6379/0",
+        channel="socketio",
         logger=False,
-        engineio_logger=False
+        engineio_logger=False,
     )
 
     def emit_direct(event_name, data, namespace, room):

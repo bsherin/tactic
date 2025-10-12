@@ -99,9 +99,9 @@ try:
     login_manager.init_app(app)
     print("starting socketio. connecting by name")
     socketio = SocketIO(app,
+                        message_queue="redis://tactic-redis:6379/0",
+                        channel="socketio",
                         logger=False,
-                        message_queue=MESSAGE_QUEUE_ADDRESS,
-                        message_queue_connection_options=SOCKETIO_OPTIONS,
                         engineio_logger=False)
 
     # This stuff with ProxyFix seems to be critical.
