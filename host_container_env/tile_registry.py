@@ -94,7 +94,7 @@ class TileContainerRegistry:
                 self._registry[tile_id]["parent"] = parent
                 self.mark_status(tile_id, "busy")
                 return tile_id, self._registry[tile_id]["task_arn"]
-        return None
+        return None, None
 
     def get_number_of_idle_tiles(self):
         return sum(1 for status in self._registry.values() if status == "idle")

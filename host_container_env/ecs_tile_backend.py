@@ -36,8 +36,10 @@ class ECSTileBackend(TileBackend):
         # 1) Try to claim a warm tile if your pool exists
         tid, task_arn = self.tile_registry.claim_tile(username, owner, parent)
         if tid:
+            print("***Claimed warm tile: ***")
             return tid
 
+        print("***Warm tile pool empty, launching ad-hoc ECS tile...***")
         # 2) Fall back to ad-hoc on-demand run (optional)
         if not self.subnets or not self.sgs:
             raise ECSTileError("No idle tiles and ECS_SUBNETS/ECS_SECURITY_GROUPS not set for ad-hoc launch.")

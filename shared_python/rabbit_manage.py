@@ -13,7 +13,15 @@ if os.environ.get("USE_AMAZON_MQ") == "True" or os.environ.get("USE_AMAZON_MQ") 
     RABBIT_USER = os.environ.get("RABBIT_USER")
     RABBIT_PASS = os.environ.get("RABBIT_PASS")
     RABBIT_PORT = 5671
-    MESSAGE_QUEUE_ADDRESS = f"amqps://{RABBIT_USER}:{RABBIT_PASS}@{RABBIT_HOST}:5671"
+    base_address = f"amqps://{RABBIT_USER}:{RABBIT_PASS}@{RABBIT_HOST}:5671//"
+    MESSAGE_QUEUE_ADDRESS = (
+            base_address
+            + "?ssl=1"
+            + "&heartbeat=600"
+            + "&connection_attempts=20"
+            + "&retry_delay=5"
+            + "&socket_timeout=30"
+    )
 else:
     USE_AMAZON_MQ = False
     RABBIT_HOST = "megaplex"
