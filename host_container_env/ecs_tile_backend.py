@@ -52,7 +52,7 @@ class ECSTileBackend(TileBackend):
             if v:
                 env[k] = v
 
-        uid, task_arn, ip = run_tile_on_ecs(
+        uid, ip = run_tile_on_ecs(
             username=username,
             tile_id=tile_id,
             owner=owner,
