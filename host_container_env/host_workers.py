@@ -90,8 +90,8 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
             self.channel.basic_consume(queue="host", auto_ack=True, on_message_callback=self.handle_delivery)
             self.channel.basic_consume(queue=self.my_id, auto_ack=True, on_message_callback=self.handle_delivery)
             print(' [*] Waiting for messages:')
-            if self._hb_greenlet is None:
-                self._hb_greenlet = gevent.spawn(self._heartbeat_loop)
+            # if self._hb_greenlet is None:
+            #     self._hb_greenlet = gevent.spawn(self._heartbeat_loop)
             self.channel.start_consuming()
         except Exception as ex:
             debug_log("Couldn't start background thread")
