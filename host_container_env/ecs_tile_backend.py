@@ -96,5 +96,4 @@ class ECSTileBackend(TileBackend):
 
     # ---- You’ll implement these lookups in your host registry ----------------
     def _lookup_task_arn(self, tile_id: str) -> Optional[str]:
-        self.tile_registry.get_arn(tile_id)
-        return None
+        return self.tile_registry.get_arn(tile_id)
