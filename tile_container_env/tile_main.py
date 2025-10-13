@@ -38,42 +38,33 @@ print("Done waiting for rabbit with success " + str(success))
 kill_thread = None
 kill_thread_lock = Lock()
 
-def get_my_arn():
-    task_arn = os.getenv("ECS_TASK_ARN")
-    if task_arn:
-        return task_arn
-
-    # --- Fallback: ECS metadata endpoint (older ECS agent or Fargate < 1.4) ---
-    metadata_uri = os.getenv("ECS_CONTAINER_METADATA_URI_V4")
-    if metadata_uri:
-        try:
-            meta = requests.get(f"{metadata_uri}/task", timeout=1).json()
-            return meta["TaskARN"]
-        except Exception:
-            pass
-
-    return None
-
-def get_my_id():
-    task_arn = MY_ARN
-    if task_arn:
-        return task_arn.split("/")[-1]
-    return f"local-{os.getpid()}"
-
-if use_ecs:
-    MY_ARN = get_my_arn()
-    MY_ID = get_my_id()
-else:
-    MY_ARN = ""
-    MY_ID = os.environ.get("MY_ID", str(uuid.uuid4()))
-
 from pseudo_tile_base import PseudoTileClass
 import pseudo_tile_base
+
+def resolve_task_identity():
+    # Try env first (some setups inject it)
+    arn = os.getenv("ECS_TASK_ARN")
+
+    # Fallback to the ECS task metadata endpoint
+    if not arn:
+        uri = os.getenv("ECS_CONTAINER_METADATA_URI_V4") or os.getenv("ECS_CONTAINER_METADATA_URI")
+        if uri:
+            try:
+                data = requests.get(f"{uri}/task", timeout=2).json()
+                arn = data.get("TaskARN")
+            except Exception:
+                arn = None
+
+    if arn:
+        return arn, arn.split("/")[-1]
+    # Local/dev fallback
+    fallback_id = os.getenv("MY_ID") or f"local-{os.getpid()}"
+    return None, fallback_id
 
 # noinspection PyUnusedLocal,PyProtectedMember,PyMissingConstructor
 class KillWorker(QWorker):
     def __init__(self):
-        self.my_id = "kill_" + MY_ID
+        self.my_id = "kill_" + tile_base._tworker.my_id
         return
 
     def handle_delivery(self, channel, method, props, body):
@@ -113,7 +104,7 @@ class TileWorker(QWorker):
         self.generate_heartbeats = True
         self._ready_acked = False
         self._sent_initial_ready = False
-        self.my_id = MY_ID
+        self.my_arn, self.my_id = resolve_task_identity()
 
     def ready(self):
         threading.Thread(target=self._wait_for_ready_ack, daemon=True, name="wait_for_ready").start()
@@ -121,7 +112,7 @@ class TileWorker(QWorker):
     def _send_ready_once(self):
         payload = {
             "my_id": self.my_id,
-            "my_arn": MY_ARN,
+            "my_arn": self.my_arn  or ""
         }
         self.post_task("host5000", "tile_ready", payload)
         self._sent_initial_ready = True
