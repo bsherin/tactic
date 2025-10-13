@@ -1,18 +1,18 @@
 import os
 use_ecs = os.getenv("USE_ECS_TILES","false").lower() == "true"
 
-ECS_CLUSTER   = os.getenv("ECS_CLUSTER", "tactic-cluster")
-TILE_SERVICE  = os.getenv("ECS_TILE_SERVICE", "tactic-tile-pool")
-AWS_REGION    = os.getenv("AWS_REGION", "us-east-2")
-
 if use_ecs:
     import boto3
-    ecs = boto3.client("ecs", region_name=os.getenv("AWS_REGION","us-east-2"))
-    CLUSTER = os.getenv("ECS_CLUSTER","tactic-cluster")
+    from botocore.exceptions import ParamValidationError
+    TILE_SERVICE = os.getenv("ECS_TILE_SERVICE", "tactic-tile-pool")
+    AWS_REGION = os.getenv("AWS_REGION", "us-east-2")
+    DESIRED_IDLE = int(os.getenv("TILE_IDLE_BUFFER", "3"))
+    ECS_CLUSTER = os.getenv("ECS_CLUSTER", "tactic-cluster")
+    print("Using ECS tile pool with service:", TILE_SERVICE, "in cluster:", ECS_CLUSTER, "and region:", AWS_REGION)
+    ecs = boto3.client("ecs", region_name=os.getenv("AWS_REGION", "us-east-2"))
     CW = boto3.client("cloudwatch", region_name=os.getenv("AWS_REGION", "us-east-2"))
     NS = "Tactic"
     SVC = "tactic-tile-pool"
-    DESIRED_IDLE = int(os.getenv("TILE_IDLE_BUFFER","3"))
 
 class TileContainerRegistry:
     def __init__(self):
@@ -125,25 +125,24 @@ class TileContainerRegistry:
         }
 
     def task_to_tile_id(self, task):
-        # Make tile_id == ECS task ID (last token of ARN)
         return task["taskArn"].split("/")[-1]
 
     def list_running_tile_tasks(self):
         arns = []
-        next_token = None
-        while True:
-            resp = ecs.list_tasks(cluster=ECS_CLUSTER,
-                                  serviceName=TILE_SERVICE,
-                                  desiredStatus="RUNNING",
-                                  nextToken=next_token)
-            arns.extend(resp.get("taskArns", []))
-            next_token = resp.get("nextToken")
-            if not next_token:
-                break
+        try:
+            paginator = ecs.get_paginator("list_tasks")
+            for page in paginator.paginate(
+                    cluster=ECS_CLUSTER,
+                    serviceName=TILE_SERVICE,
+                    desiredStatus="RUNNING"
+            ):
+                arns.extend(page.get("taskArns", []))
+        except ParamValidationError as e:
+            raise RuntimeError(f"Param validation error calling list_tasks: {e}") from e
+
         if not arns:
             return []
 
-        # Describe in batches
         tasks = []
         for i in range(0, len(arns), 100):
             d = ecs.describe_tasks(cluster=ECS_CLUSTER, tasks=arns[i:i + 100])
