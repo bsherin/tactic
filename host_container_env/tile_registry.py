@@ -94,7 +94,7 @@ class TileContainerRegistry:
     def set_task_protection(self, tile_id):
         if self._registry[tile_id]["task_arn"]:
             ecs.update_task_protection(
-                cluster=CLUSTER,
+                cluster=ECS_CLUSTER,
                 tasks=[self._registry[tile_id]["task_arn"]],
                 protectionEnabled=self._registry[tile_id]["status"] == "busy"
             )
