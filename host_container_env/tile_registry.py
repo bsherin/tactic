@@ -154,11 +154,10 @@ class TileContainerRegistry:
         if not use_ecs:
             return
         print("doing tile reconciliation")
-        tasks = list_running_tile_tasks()
+        tasks = self.list_running_tile_tasks()
         if not tasks:
             return
         print("found running tiles:", len(tasks))
-        conn, ch = mq_channel()
         try:
             for t in tasks:
                 tile_id = task_to_tile_id(t)

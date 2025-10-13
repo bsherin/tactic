@@ -1,13 +1,14 @@
 #!/bin/bash
 if [ "$1" == "all" ] ; then
-	DOCKER_BUILDKIT=0 docker-compose build "tactic_base"
-	DOCKER_BUILDKIT=0 docker-compose build "tactic_host"
-	DOCKER_BUILDKIT=0 docker-compose build "tactic_main"
-	DOCKER_BUILDKIT=0 docker-compose build "tactic_module_viewer"
-	DOCKER_BUILDKIT=0 docker-compose build "tactic_tile"
-	DOCKER_BUILDKIT=0 docker-compose build "tactic_pool_watcher"
-	DOCKER_BUILDKIT=0 docker-compose build "tactic_mongo_watcher"
-	DOCKER_BUILDKIT=0 docker-compose build "tactic_log_streamer"
+  docker compose --env-file server.env build "tactic_base"
+  docker compose --env-file server.env build "tactic_host"
+  docker compose --env-file server.env build "tactic_main"
+	docker compose --env-file server.env build "tactic_module_viewer"
+	docker compose --env-file server.env build "tactic_tile"
+	docker compose --env-file server.env build "tactic_pool_watcher"
+	docker compose --env-file server.env build "tactic_mongo_watcher"
+	docker compose --env-file server.env build "tactic_log_streamer"
+	docker compose --env-file server.env build "tactic_assistant"
 else
-	DOCKER_BUILDKIT=0 docker-compose build "tactic_$1"
+	docker compose --env-file server.env build "tactic_$1"
 fi
