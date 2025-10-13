@@ -159,7 +159,7 @@ class TileContainerRegistry:
         print("found running tiles:", len(tasks))
         try:
             for t in tasks:
-                tile_id = task_to_tile_id(t)
+                tile_id = self.task_to_tile_id(t)
                 if tile_id not in self._registry:
                     self.mark_status(tile_id, "idle", task_arn=t["taskArn"])
         finally:
