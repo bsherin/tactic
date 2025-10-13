@@ -10,7 +10,7 @@ class TileContainerManagementMixin:
 
     @task_worthy
     def tile_ready(self, data):
-        print("Got tile ready")
+        print("Got tile ready with data:", data)
         if use_ecs:
             self.tile_registry.mark_status(data["my_id"], "idle", task_arn=data["my_arn"])
         self.post_task(data["my_id"], "ack_ready", {})
