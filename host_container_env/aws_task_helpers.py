@@ -149,4 +149,4 @@ def run_tile_on_ecs(
     # Prefer private IP for intra-VPC; use public if you actually need it
     ip = priv_ip or pub_ip or ""
 
-    return unique_id, ip
+    return unique_id, task_arn

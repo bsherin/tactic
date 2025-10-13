@@ -100,29 +100,14 @@ class TileContainerRegistry:
             )
 
     def claim_tile(self, username, owner, parent):
-        for tile_id, status in self._registry.items():
-            if status == "idle":
+        for tile_id, info in self._registry.items():
+            if info["status"] == "idle":
                 self._registry[tile_id]["username"] = username
                 self._registry[tile_id]["owner"] = owner # This is the user_id
                 self._registry[tile_id]["parent"] = parent
                 self.mark_status(tile_id, "busy")
                 return tile_id, self._registry[tile_id]["task_arn"]
         return None, None
-
-    def get_number_of_idle_tiles(self):
-        return sum(1 for status in self._registry.values() if status == "idle")
-
-    def get_number_of_busy_tiles(self):
-        return sum(1 for status in self._registry.values() if status == "busy")
-
-    def get_status_summary(self):
-        idle = self.get_number_of_idle_tiles()
-        busy = self.get_number_of_busy_tiles()
-        return {
-            "idle": idle,
-            "busy": busy,
-            "total": idle + busy
-        }
 
     def task_to_tile_id(self, task):
         return task["taskArn"].split("/")[-1]

@@ -28,16 +28,12 @@ class ECSTileBackend(TileBackend):
         self.tile_registry = tile_registry
         self.workd = worker
 
-    def _mark_in_registry(self, tile_id: str, status: str, meta: Optional[Dict] = None):
-        self.tile_registry.mark(tile_id, status, meta)
-        return
-
     def launch(self, username: str, owner: Optional[str], parent: Optional[str], tile_id: Optional[str], meta: Dict) -> Tuple[str, str]:
         # 1) Try to claim a warm tile if your pool exists
         tid, task_arn = self.tile_registry.claim_tile(username, owner, parent)
         if tid:
             print("***Claimed warm tile: ***")
-            return tid
+            return tid, task_arn
 
         print("***Warm tile pool empty, launching ad-hoc ECS tile...***")
         # 2) Fall back to ad-hoc on-demand run (optional)
@@ -52,7 +48,7 @@ class ECSTileBackend(TileBackend):
             if v:
                 env[k] = v
 
-        uid, ip = run_tile_on_ecs(
+        uid, task_arn = run_tile_on_ecs(
             username=username,
             tile_id=tile_id,
             owner=owner,
@@ -62,7 +58,7 @@ class ECSTileBackend(TileBackend):
         )
         # You can optionally add this new tile to the registry as busy
         self.tile_registry.mark_status(uid, "busy", owner=username, parent=parent)
-        return uid
+        return uid, task_arn
 
     def mark_busy(self, tile_id: str):
         self.tile_registry.mark_status(tile_id, "busy")
