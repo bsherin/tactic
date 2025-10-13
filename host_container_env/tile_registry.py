@@ -146,10 +146,12 @@ class TileContainerRegistry:
         print("found running tiles:", len(tasks))
         try:
             running_ids = [self.task_to_tile_id(t) for t in tasks]
+            ids_to_delete = []
             for tile_id, info in self._registry.items():
                 if tile_id not in running_ids:
-                    print(f"Tile container {tile_id} is no longer there, deleting from the registry.")
-                    del self._registry[tile_id]
+                    ids_to_delete.append(tile_id)
+            for tile_id in ids_to_delete:
+                del self._registry[tile_id]
             for t in tasks:
                 tile_id = self.task_to_tile_id(t)
                 if tile_id not in self._registry:
