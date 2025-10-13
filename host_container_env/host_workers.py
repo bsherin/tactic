@@ -106,6 +106,7 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
                 self._hb_greenlet = None
 
     def do_heartbeat(self):
+        self.tile_registry.reconcile_tiles()
         self.tile_registry.publish_metrics()
 
     def user_to_true(self, user_path, user_obj):
@@ -279,6 +280,9 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
 
     @task_worthy
     def destroy_a_users_containers(self, data):
+        owned_tiles = self.tile_registry.get_owned_tiles(data["user_id"])
+        for tile_id in owned_tiles:
+            self.destroy_tile(tile_id)
         destroy_user_containers(data["user_id"], data["notify"])
         return {"success": True}
 
@@ -456,11 +460,15 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
     @task_worthy
     def delete_container(self, data):
         container_id = data["container_id"]
+
         if "notify" in data:
             nfy = data["notify"]
         else:
             nfy = True
-        destroy_container(container_id, nfy)
+        if self.tile_registry.tile_exists(container_id):
+            self.destroy_tile(container_id, nfy)
+        else:
+            destroy_container(container_id, nfy)
         return {"success": True}
 
     @task_worthy
@@ -473,7 +481,10 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
     def delete_container_list(self, data):
         container_list = data["container_list"]
         for container_id in container_list:
-            destroy_container(container_id)
+            if self.tile_registry.tile_exists(container_id):
+                self.destroy_tile(container_id, notify=False)
+            else:
+                destroy_container(container_id)
         return {"success": True}
 
     def get_tile_types(self, user_id):
@@ -958,7 +969,10 @@ class HealthTracker:
                     print("found an old container")
                     cont_list.append(k)
         for cont_id in cont_list:
-            destroy_container(cont_id)
+            if tactic_app.host_worker.tile_registry.tile_exists(cont_id):
+                tactic_app.host_worker.destroy_tile(cont_id, notify=True)
+            else:
+                destroy_container(cont_id)
 
 tactic_app.health_tracker = HealthTracker()
 tactic_app.host_worker = HostWorker()

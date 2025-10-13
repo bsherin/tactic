@@ -55,7 +55,6 @@ def task_worthy_manual_submit(m):
     task_worthy_manual_submit_methods[m.__name__] = "this_worker"
     return m
 
-
 heartbeat_time = 30
 
 

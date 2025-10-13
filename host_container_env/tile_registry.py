@@ -1,6 +1,10 @@
 import os
 use_ecs = os.getenv("USE_ECS_TILES","false").lower() == "true"
 
+ECS_CLUSTER   = os.getenv("ECS_CLUSTER", "tactic-cluster")
+TILE_SERVICE  = os.getenv("ECS_TILE_SERVICE", "tactic-tile-pool")
+AWS_REGION    = os.getenv("AWS_REGION", "us-east-2")
+
 if use_ecs:
     import boto3
     ecs = boto3.client("ecs", region_name=os.getenv("AWS_REGION","us-east-2"))
@@ -14,6 +18,7 @@ class TileContainerRegistry:
     def __init__(self):
         print("** initializing tile registery ***")
         self._registry = {}
+        self.reconcile_tiles()
 
     def publish_metrics(self):
         if use_ecs:
@@ -58,6 +63,9 @@ class TileContainerRegistry:
     def idle_tiles(self):
         return len([tile_id for tile_id, d in self._registry.items() if d.get("status") == "idle"])
 
+    def tile_exists(self, tile_id):
+        return tile_id in self._registry
+
     def release_tile(self, tile_id):
         if tile_id in self._registry:
             self._registry[tile_id]["status"] = "idle"
@@ -70,6 +78,9 @@ class TileContainerRegistry:
     def get_children(self, parent_id):
         return [tile_id for tile_id, d in self._registry.items() if d.get("parent") == parent_id]
 
+    def get_owned_tiles(self, owner_id):
+        return [tile_id for tile_id, d in self._registry.items() if d.get("owner") == owner_id]
+
     def get(self, tile_id):
         return self._registry.get(tile_id, {})
 
@@ -81,7 +92,7 @@ class TileContainerRegistry:
             del self._registry[tile_id]
 
     def set_task_protection(self, tile_id):
-        if self._registry["tile_id"]["task_arn"]:
+        if self._registry[tile_id]["task_arn"]:
             ecs.update_task_protection(
                 cluster=CLUSTER,
                 tasks=[self._registry[tile_id]["task_arn"]],
@@ -92,7 +103,7 @@ class TileContainerRegistry:
         for tile_id, status in self._registry.items():
             if status == "idle":
                 self._registry[tile_id]["username"] = username
-                self._registry[tile_id]["owner"] = owner
+                self._registry[tile_id]["owner"] = owner # This is the user_id
                 self._registry[tile_id]["parent"] = parent
                 self.mark_status(tile_id, "busy")
                 return tile_id, self._registry[tile_id]["task_arn"]
@@ -112,3 +123,49 @@ class TileContainerRegistry:
             "busy": busy,
             "total": idle + busy
         }
+
+    def task_to_tile_id(self, task):
+        # Make tile_id == ECS task ID (last token of ARN)
+        return task["taskArn"].split("/")[-1]
+
+    def list_running_tile_tasks(self):
+        arns = []
+        next_token = None
+        while True:
+            resp = ecs.list_tasks(cluster=ECS_CLUSTER,
+                                  serviceName=TILE_SERVICE,
+                                  desiredStatus="RUNNING",
+                                  nextToken=next_token)
+            arns.extend(resp.get("taskArns", []))
+            next_token = resp.get("nextToken")
+            if not next_token:
+                break
+        if not arns:
+            return []
+
+        # Describe in batches
+        tasks = []
+        for i in range(0, len(arns), 100):
+            d = ecs.describe_tasks(cluster=ECS_CLUSTER, tasks=arns[i:i + 100])
+            tasks.extend(d.get("tasks", []))
+        return tasks
+
+    def reconcile_tiles(self):
+        if not use_ecs:
+            return
+        print("doing tile reconciliation")
+        tasks = list_running_tile_tasks()
+        if not tasks:
+            return
+        print("found running tiles:", len(tasks))
+        conn, ch = mq_channel()
+        try:
+            for t in tasks:
+                tile_id = task_to_tile_id(t)
+                if tile_id not in self._registry:
+                    self.mark_status(tile_id, "idle", task_arn=t["taskArn"])
+        finally:
+            try:
+                conn.close()
+            except Exception:
+                pass

@@ -10,7 +10,7 @@ class TileContainerManagementMixin:
 
     @task_worthy
     def tile_ready(self, data):
-        self.tile_registry.mark(data["my_id"], "idle", task_arn=data["my_arn"])
+        self.tile_registry.mark_status(data["my_id"], "idle", task_arn=data["my_arn"])
         self.post_task(the_id, "ack_ready", {})
 
     @task_worthy
@@ -23,10 +23,7 @@ class TileContainerManagementMixin:
         return {"success": True, "message": f"Tile {the_id} restarted"}
 
     def destroy_child_tiles(self, parent_id):
-        print("Destroying child tiles of:", parent_id)
         child_tiles = self.tile_registry.get_children(parent_id)
-        print("Found child tiles:", child_tiles)
-        print("registry before destruction:", self.tile_registry._registry)
         for child in child_tiles:
             self.destroy_tile(child)
         return {"success": True, "message": f"Destroyed {len(child_tiles)} child tiles of {parent_id}"}
@@ -47,10 +44,15 @@ class TileContainerManagementMixin:
 
         return {"success": False, "message": "Couldn't create tile"}
 
-    def destroy_tile(self, tile_id):
+    def destroy_tile(self, tile_id, notify=False):
         self.tile_backend.terminate(tile_id)
         tactic_app.health_tracker.deregister_container(tile_id)
         qlist = [tile_id, tile_id + "_wait", "kill_" + tile_id]
         delete_list_of_queues(qlist)
+        user_id = self.tile_registry.get(tile_id).get("owner", None)
         self.tile_registry.deregister(tile_id)
+        if notify and user_id is not None:
+            title = f"Tile {tile_id} has been destroyed."
+            message = f"Tile {tile_id} has been destroyed by the host."
+            self.add_error_drawer_entry(title, message, user_id)
         return {"success": True, "message": f"Tile {tile_id} destroyed"}
