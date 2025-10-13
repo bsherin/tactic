@@ -123,7 +123,6 @@ class TileWorker(QWorker):
         payload = {
             "my_id": self.my_id,
             "my_arn": MY_ARN,
-            "ts": current_timestamp()
         }
         self.post_task("host5000", "tile_ready", payload)
         self._sent_initial_ready = True
