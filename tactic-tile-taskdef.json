@@ -31,6 +31,7 @@
         { "name": "MYDISK_ROOT",  "value": "/mnt/efs/users" },
         { "name": "IMAGE_NAME",  "value": "bsherin/tactic-tile" },
         { "name": "USE_AMAZON_MQ", "value": "True"},
+        { "name": "USE_ECS_TILES", "value": "True"},
         { "name": "RABBIT_USER", "value": "bsherin"},
         { "name": "RABBIT_PASS", "value": "manggeebmang"},
         { "name": "USE_WAIT_TASKS", "value": "True" },

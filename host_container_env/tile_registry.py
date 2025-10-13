@@ -130,8 +130,10 @@ class TileContainerRegistry:
 
         tasks = []
         for i in range(0, len(arns), 100):
-            d = ecs.describe_tasks(cluster=ECS_CLUSTER, tasks=arns[i:i + 100])
-            tasks.extend(d.get("tasks", []))
+            resp = ecs.describe_tasks(cluster=ECS_CLUSTER, tasks=arns[i:i + 100])
+            for t in resp.get("tasks", []):
+                if t.get("lastStatus") == "RUNNING":
+                    tasks.append(t)
         return tasks
 
     def reconcile_tiles(self):

@@ -242,7 +242,6 @@ class TileWorker(QWorker):
             print("about to call recreate_from_save on tile_instance")
             self.tile_instance.recreate_from_save(data)
             self.tile_instance.base_figure_url = data["new_base_figure_url"]
-            self.tile_instance.user_id = os.environ["OWNER"]
             if "doc_type" in data:
                 self.tile_instance.doc_type = data["doc_type"]
             else:
@@ -331,7 +330,6 @@ class TileWorker(QWorker):
             for (attr, val) in reload_dict.items():
                 setattr(self.tile_instance, attr, val)
             form_data = self.tile_instance._create_form_data(reload_dict["form_info"])["form_data"]
-            self.tile_instance.user_id = os.environ["OWNER"]
             document_object.Collection.__fully_initialize__()
 
             if not self.tile_instance.exports:
