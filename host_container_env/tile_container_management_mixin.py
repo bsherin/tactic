@@ -10,8 +10,10 @@ class TileContainerManagementMixin:
 
     @task_worthy
     def tile_ready(self, data):
-        self.tile_registry.mark_status(data["my_id"], "idle", task_arn=data["my_arn"])
-        self.post_task(the_id, "ack_ready", {})
+        print("Got tile ready")
+        if use_ecs:
+            self.tile_registry.mark_status(data["my_id"], "idle", task_arn=data["my_arn"])
+        self.post_task(data["my_id"], "ack_ready", {})
 
     @task_worthy
     def restart_tile_container(self, data):

@@ -9,7 +9,7 @@ from exception_mixin import ExceptionMixin
 from threading import Lock
 import threading
 import copy
-from qworker_alt import QWorker, task_worthy, debug_log
+from qworker_alt import QWorker, task_worthy, debug_log, add_qw_pika_connection, close_connection
 from qworker_alt import simple_uid
 import tile_env
 from tile_env import class_info
@@ -116,8 +116,7 @@ class TileWorker(QWorker):
         self.my_id = MY_ID
 
     def ready(self):
-        if use_ecs:
-            threading.Thread(target=self._wait_for_ready_ack, daemon=True).start()
+        threading.Thread(target=self._wait_for_ready_ack, daemon=True, name="wait_for_ready").start()
 
     def _send_ready_once(self):
         payload = {
@@ -128,12 +127,15 @@ class TileWorker(QWorker):
         self._sent_initial_ready = True
 
     def _wait_for_ready_ack(self, retry_every=5):
+        channel = add_qw_pika_connection()
         while not self._ready_acked:
             if not self._sent_initial_ready:
                 self._send_ready_once()
             time.sleep(retry_every)
             if not self._ready_acked:
                 self._send_ready_once()
+        print("got the ack")
+        close_connection()
 
     @task_worthy
     def restart(self, data):
