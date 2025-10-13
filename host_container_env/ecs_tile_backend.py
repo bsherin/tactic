@@ -87,6 +87,7 @@ class ECSTileBackend(TileBackend):
         try:
             ecs = _ecs()
             task_arn = self._lookup_task_arn(tile_id)
+            print("in terminate with task_arn:", task_arn)
             if task_arn:
                 ecs.update_task_protection(cluster=self.cluster, tasks=[task_arn], protectionEnabled=False)
             ecs.stop_task(cluster=self.cluster, task=task_arn, reason="tile terminated")

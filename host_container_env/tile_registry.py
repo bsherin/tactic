@@ -85,7 +85,7 @@ class TileContainerRegistry:
         return self._registry.get(tile_id, {})
 
     def get_arn(self, tile_id):
-        return self._registry.get(tile_id, {}).get("task_arn")
+        return self._registry[tile_id]["task_arn"]
 
     def deregister(self, tile_id):
         if tile_id in self._registry:
