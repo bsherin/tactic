@@ -1,4 +1,5 @@
 import os
+import redis
 use_ecs = os.getenv("USE_ECS_TILES","false").lower() == "true"
 
 if use_ecs:
@@ -13,6 +14,8 @@ if use_ecs:
     CW = boto3.client("cloudwatch", region_name=os.getenv("AWS_REGION", "us-east-2"))
     NS = "Tactic"
     SVC = "tactic-tile-pool"
+    REDIS_URL = "redis://tactic-redis:6379/0"
+    r = redis.from_url(REDIS_URL)
 
 class TileContainerRegistry:
     def __init__(self):
