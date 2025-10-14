@@ -1,7 +1,10 @@
 import os
 import redis
 use_ecs = os.getenv("USE_ECS_TILES","false").lower() == "true"
+
+# I'm leaving some of the desired idle logic in for test, non-aws for the purposes of testing it.
 REDIS_URL = "redis://tactic-redis:6379/0"
+DESIRED_IDLE_DEFAULT = int(os.getenv("DESIRED_IDLE_DEFAULT", "3"))
 r = redis.from_url(REDIS_URL)
 
 if use_ecs:
@@ -9,7 +12,6 @@ if use_ecs:
     from botocore.exceptions import ParamValidationError
     TILE_SERVICE = os.getenv("ECS_TILE_SERVICE", "tactic-tile-pool")
     AWS_REGION = os.getenv("AWS_REGION", "us-east-2")
-    DESIRED_IDLE_DEFAULT = int(os.getenv("DESIRED_IDLE_DEFAULT", "3"))
     ECS_CLUSTER = os.getenv("ECS_CLUSTER", "tactic-cluster")
     print("Using ECS tile pool with service:", TILE_SERVICE, "in cluster:", ECS_CLUSTER, "and region:", AWS_REGION)
     ecs = boto3.client("ecs", region_name=os.getenv("AWS_REGION", "us-east-2"))
@@ -22,14 +24,10 @@ class TileContainerRegistry:
     def __init__(self):
         print("** initializing tile registery ***")
         self._registry = {}
-        self.desired_idle = 3
         self.registry_heartbeat()
 
 
     def pull_desired_idle(self):
-        if not use_ecs:
-            self.desired_idle = 1
-            return
         v = r.get("config:desired_idle")
         if v:
             self.desired_idle = int(v)
@@ -42,16 +40,19 @@ class TileContainerRegistry:
         r.set("config:desired_idle", self.desired_idle)
 
     def registry_heartbeat(self):
+        self.pull_desired_idle()
         if use_ecs:
-            self.pull_desired_idle()
             self.reconcile_tiles()
             self.publish_metrics()
 
     def publish_metrics(self):
         if use_ecs:
-            print(" *** publishing metrics to cloudwatch with idle_tiles:", self.idle_tiles, "running_tiles:", self.running_tiles)
+            print("*** entering publish metrics ***")
+            print("desired_idle:", self.desired_idle)
+            print("idle_tiles:", self.idle_tiles, "running_tiles:", self.running_tiles, )
             idle_deficit = max(0, self.desired_idle - self.idle_tiles)
             excess_idle = max(0, self.idle_tiles - self.desired_idle)
+            print("idle_deficit:", idle_deficit, "excess_idle:", excess_idle)
             CW.put_metric_data(
                 Namespace=NS,
                 MetricData=[

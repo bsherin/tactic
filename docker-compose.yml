@@ -37,6 +37,9 @@ services:
     environment:
       - MY_ID=tactic-redis
       - OWNER=host
+    command: ["redis-server", "--appendonly", "yes", "--appendfilename", "appendonly.aof", "--dir", "/data"]
+    volumes:
+      - tactic-redis-data:/data
 
   megaplex:
     image: rabbitmq:3.12-management
@@ -464,3 +467,4 @@ volumes:
     external: true
   mongo-volume:
     external: true
+  tactic-redis-data:
