@@ -47,8 +47,8 @@ class TileContainerRegistry:
     def publish_metrics(self):
         if use_ecs:
             print(" *** publishing metrics to cloudwatch with idle_tiles:", self.idle_tiles, "running_tiles:", self.running_tiles)
-            idle_deficit = max(0, DESIRED_IDLE - self.idle_tiles)
-            excess_idle = max(0, self.idle_tiles - DESIRED_IDLE)
+            idle_deficit = max(0, self.desired_idle - self.idle_tiles)
+            excess_idle = max(0, self.idle_tiles - self.desired_idle)
             CW.put_metric_data(
                 Namespace=NS,
                 MetricData=[
