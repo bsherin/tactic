@@ -2,8 +2,8 @@
   "family": "tactic-tile",
   "networkMode": "awsvpc",
   "requiresCompatibilities": ["FARGATE"],
-  "cpu": "2048",
-  "memory": "10240",
+  "cpu": "1024",
+  "memory": "8192",
   "runtimePlatform": { "cpuArchitecture": "X86_64", "operatingSystemFamily": "LINUX" },
   "executionRoleArn": "arn:aws:iam::924818964184:role/ecsTaskExecutionRole",
   "volumes": [

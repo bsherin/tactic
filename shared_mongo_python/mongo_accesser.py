@@ -48,55 +48,111 @@ class MongoAccess(object):
             return True
         return False
 
+    import re
+
     def grab_filtered_resources(self, res_type, col_name, name_field, content_field, additional_mdata_fields,
                                 search_text, search_spec, columns, is_repo=False):
-        all_tags = []
-        sort_field = search_spec["sort_field"]
+        def _ok_field(f):
+            return isinstance(f, str) and f.strip() != ""
+
+        # choose DB
         db_to_use = self.repository_db if is_repo else self.db
-        reg = re.compile(".*" + search_text + ".*", re.IGNORECASE)
-        or_list = [{name_field: reg}]
-        and_list = []
-        if search_spec["search_metadata"]:
-            or_list += [{"metadata.notes": reg}, {"metadata.tags": reg}, {"metadata.type": reg}]
+        sort_field = search_spec["sort_field"]
+
+        # compile a safe regex (literal search, case-insensitive), wrapped with .* ... .*
+        # if you want real regex power from search_text, drop re.escape.
+        reg = re.compile(".*" + re.escape(search_text) + ".*", re.IGNORECASE)
+
+        # ---- build OR clause safely
+        or_list = []
+        if _ok_field(name_field):
+            or_list.append({name_field: reg})
+
+        if search_spec.get("search_metadata"):
+            # fixed metadata fields
+            or_list += [
+                {"metadata.notes": reg},
+                {"metadata.tags": reg},
+                {"metadata.type": reg},
+            ]
+            # optional metadata fields
             if additional_mdata_fields:
                 for fld in additional_mdata_fields:
-                    or_list.append({"metadata." + fld: reg})
-        if search_spec["search_inside"]:
-            or_list += [{content_field: reg}]
-        and_list.append({"$or": or_list})
-        if not search_spec["show_hidden"]:
-            hidden_reg = "(^|/| )hidden($|/| )"
+                    if _ok_field(fld):
+                        or_list.append({f"metadata.{fld}": reg})
+
+        if search_spec.get("search_inside"):
+            if _ok_field(content_field):
+                or_list.append({content_field: reg})
+            else:
+                # optional: log so you know why inside-search was ignored for this type
+                # self.mworker.send_info("grab_filtered_resources", f"Ignoring search_inside: invalid content_field={content_field!r}")
+                pass
+
+        and_list = []
+        if or_list:
+            and_list.append({"$or": or_list})
+
+        # ---- hidden filtering
+        if not search_spec.get("show_hidden"):
+            hidden_reg = r"(^|/| )hidden($|/| )"
             and_list.append({"metadata.tags": {"$not": {"$regex": hidden_reg}}})
-        if search_spec["active_tag"]:
-            atag = search_spec['active_tag']
-            if atag[0] == "/":
+
+        # ---- active tag filter
+        if search_spec.get("active_tag"):
+            atag = search_spec["active_tag"]
+            if atag.startswith("/"):
                 atag = atag[1:]
-            tag_reg = f"(^|/| ){atag}($|/| )"
+            # escape the tag so special chars don't become regex tokens
+            tag_reg = rf"(^|/| ){re.escape(atag)}($|/| )"
             and_list.append({"metadata.tags": {"$regex": tag_reg}})
-        res = db_to_use[col_name].find({"$and": and_list},
-                                       {name_field: 1, "metadata": 1, "file_id": 1})
+
+        # final query (avoid {"$and": []} which would match everything, but is fine too)
+        query = {"$and": and_list} if and_list else {}
+
+        # projection — don't include invalid keys
+        projection = {"metadata": 1, "file_id": 1}
+        if _ok_field(name_field):
+            projection[name_field] = 1
+
+        res = db_to_use[col_name].find(query, projection)
+
+        # ---- collect results
+        all_tags = []
         filtered_res = []
         for doc in res:
             try:
-                if "metadata" in doc and doc["metadata"] is not None:
-                    mdata = doc["metadata"]
-                    doc_id = str(doc["_id"])
-                    all_tags += mdata["tags"].split()
-                    if "file_id" in doc and "size" in columns:
-                        rdict = self.build_res_dict(doc[name_field], mdata,
-                                                    doc["file_id"], res_type=res_type,
-                                                    doc_id=doc_id, sort_field=sort_field)
-                    else:
-                        rdict = self.build_res_dict(doc[name_field], mdata, None,
-                                                    res_type=res_type, doc_id=doc_id, sort_field=sort_field)
-                    if mdata and "tags" in mdata:
-                        rdict["hidden"] = self.has_hidden(mdata["tags"])
-                    else:
-                        rdict["hidden"] = False
-                    filtered_res.append(rdict)
+                mdata = doc.get("metadata") or {}
+                doc_id = str(doc.get("_id"))
+
+                # gather tags (robust to missing)
+                tags_str = mdata.get("tags", "")
+                if isinstance(tags_str, str):
+                    all_tags += tags_str.split()
+
+                # name value may be missing if name_field was invalid or absent in doc
+                name_val = doc.get(name_field) if _ok_field(name_field) else None
+
+                if "file_id" in doc and "size" in columns:
+                    rdict = self.build_res_dict(
+                        name_val, mdata, doc["file_id"],
+                        res_type=res_type, doc_id=doc_id, sort_field=sort_field
+                    )
+                else:
+                    rdict = self.build_res_dict(
+                        name_val, mdata, None,
+                        res_type=res_type, doc_id=doc_id, sort_field=sort_field
+                    )
+
+                rdict["hidden"] = self.has_hidden(tags_str) if isinstance(tags_str, str) else False
+                filtered_res.append(rdict)
+
             except Exception as ex:
-                msg = self.get_traceback_message(ex, f"Got problem with doc {str(doc[name_field])}")
+                # be careful not to KeyError while composing the error message
+                safe_name = doc.get(name_field) if _ok_field(name_field) else None
+                msg = self.get_traceback_message(ex, f"Got problem with doc {safe_name!r}")
                 print(msg)
+
         return filtered_res, all_tags
 
 
