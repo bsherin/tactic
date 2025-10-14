@@ -124,6 +124,7 @@ function AdministerHomeApp(props) {
     updatePaneStatePromise: _updatePaneStatePromise
   }, pane_states_ref.current["container"], {
     tsocket: tsocket,
+    extraControls: /*#__PURE__*/_react.default.createElement(AWSControls, null),
     columns: col_names.container,
     id_field: "Id"
   }));
@@ -136,6 +137,7 @@ function AdministerHomeApp(props) {
     updatePaneStatePromise: _updatePaneStatePromise
   }, pane_states_ref.current["user"], {
     tsocket: tsocket,
+    extraControls: null,
     columns: col_names.user,
     id_field: "_id"
   }));
@@ -203,6 +205,63 @@ function AdministerHomeApp(props) {
   })))))));
 }
 AdministerHomeApp = /*#__PURE__*/(0, _react.memo)(AdministerHomeApp);
+function AWSControls(props) {
+  const [desiredIdle, setDesiredIdle] = (0, _react.useState)(0);
+  const statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
+  const errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
+  (0, _react.useEffect)(() => {
+    grabDesiredIdle().then(data => {
+      if (data.success) {
+        setDesiredIdle(data.target_value);
+      } else {
+        errorDrawerFuncs.addFromError("Error getting desired idle tiles", data);
+      }
+    });
+  }, []);
+  async function postDesiredIdle(newVal) {
+    let data = await (0, _communication_react.postPromise)("host", "set_desired_idle_tiles", {
+      target_value: newVal
+    });
+    if (!data.success) {
+      errorDrawerFuncs.addFromError("Error setting desired idle tiles", data);
+    }
+    return data.success;
+  }
+  async function grabDesiredIdle(newVal) {
+    return await (0, _communication_react.postPromise)("host", "get_desired_idle_tiles", {});
+  }
+  async function onChange(newVal) {
+    let oldVal = desiredIdle;
+    if (newVal === oldVal) {
+      return;
+    }
+    setDesiredIdle(newVal);
+    let success = await postDesiredIdle(newVal);
+    if (!success) {
+      setDesiredIdle(oldVal);
+    }
+  }
+  return /*#__PURE__*/_react.default.createElement("div", {
+    className: "aws-controls",
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      width: 300,
+      margin: 25
+    }
+  }, /*#__PURE__*/_react.default.createElement("h4", null, "AWS Controls"), /*#__PURE__*/_react.default.createElement("div", {
+    style: {
+      width: 300
+    }
+  }, /*#__PURE__*/_react.default.createElement(_core.Label, null, "Desired Idle Tiles: ", desiredIdle, /*#__PURE__*/_react.default.createElement(_core.Slider, {
+    onChange: onChange,
+    min: 0,
+    max: 50,
+    stepSize: 1,
+    labelStepSize: 10,
+    value: desiredIdle
+  }))));
+}
 function ContainerMenubar(props) {
   const statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
   const errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);

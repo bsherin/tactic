@@ -8,7 +8,7 @@ import {useState, useEffect, useRef, memo, useContext} from "react";
 import { createRoot } from 'react-dom/client';
 import PropTypes from 'prop-types';
 
-import { Tabs, Tab, Tooltip, Icon, Position } from "@blueprintjs/core";
+import { Tabs, Tab, Tooltip, Icon, Position, Slider, Label } from "@blueprintjs/core";
 import {Regions} from "@blueprintjs/table";
 
 import {TacticSocket} from "./tactic_socket"
@@ -149,6 +149,7 @@ function AdministerHomeApp(props) {
                    updatePaneStatePromise={_updatePaneStatePromise}
                    {...pane_states_ref.current["container"]}
                    tsocket={tsocket}
+                   extraControls={<AWSControls />}
                    columns={col_names.container}
                    id_field="Id"
 
@@ -164,6 +165,7 @@ function AdministerHomeApp(props) {
                    updatePaneStatePromise={_updatePaneStatePromise}
                    {...pane_states_ref.current["user"]}
                    tsocket={tsocket}
+                   extraControls={null}
                    columns={col_names.user}
                    id_field="_id"
 
@@ -215,6 +217,66 @@ function AdministerHomeApp(props) {
 }
 
 AdministerHomeApp = memo(AdministerHomeApp);
+
+function AWSControls(props) {
+
+    const [desiredIdle, setDesiredIdle] = useState(0);
+    const statusFuncs = useContext(StatusContext);
+    const errorDrawerFuncs = useContext(ErrorDrawerContext);
+
+    useEffect(() => {
+        grabDesiredIdle().then((data) => {
+            if (data.success) {
+                setDesiredIdle(data.target_value);
+            } else {
+                errorDrawerFuncs.addFromError("Error getting desired idle tiles", data);
+            }
+        })
+    }, []);
+
+    async function postDesiredIdle(newVal) {
+        let data = await postPromise("host", "set_desired_idle_tiles", {target_value: newVal});
+        if (!data.success) {
+            errorDrawerFuncs.addFromError("Error setting desired idle tiles", data);
+        }
+        return data.success
+    }
+
+    async function grabDesiredIdle(newVal) {
+        return await postPromise("host", "get_desired_idle_tiles", {});
+    }
+
+    async function onChange(newVal) {
+        let oldVal = desiredIdle;
+        if (newVal === oldVal) {
+            return;
+        }
+        setDesiredIdle(newVal);
+        let success = await postDesiredIdle(newVal);
+        if (!success) {
+            setDesiredIdle(oldVal);
+        }
+    }
+
+    return (
+        <div className="aws-controls" style={{display: "flex", flexDirection: "column", width: 300, margin: 25}}>
+            <h4>AWS Controls</h4>
+            <div style={{width: 300}}>
+                <Label>
+                    Desired Idle Tiles: {desiredIdle}
+                    <Slider
+                        onChange={onChange}
+                        min={0}
+                        max={50}
+                        stepSize={1}
+                        labelStepSize={10}
+                        value={desiredIdle}
+                    />
+                </Label>
+            </div>
+        </div>
+    )
+}
 
 function ContainerMenubar(props) {
 

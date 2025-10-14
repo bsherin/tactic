@@ -1,6 +1,8 @@
 import os
 import redis
 use_ecs = os.getenv("USE_ECS_TILES","false").lower() == "true"
+REDIS_URL = "redis://tactic-redis:6379/0"
+r = redis.from_url(REDIS_URL)
 
 if use_ecs:
     import boto3
@@ -14,18 +16,19 @@ if use_ecs:
     CW = boto3.client("cloudwatch", region_name=os.getenv("AWS_REGION", "us-east-2"))
     NS = "Tactic"
     SVC = "tactic-tile-pool"
-    REDIS_URL = "redis://tactic-redis:6379/0"
-    r = redis.from_url(REDIS_URL)
+
 
 class TileContainerRegistry:
     def __init__(self):
         print("** initializing tile registery ***")
         self._registry = {}
+        self.desired_idle = 3
         self.registry_heartbeat()
 
 
-    def get_desired_idle(self):
+    def pull_desired_idle(self):
         if not use_ecs:
+            self.desired_idle = 1
             return
         v = r.get("config:desired_idle")
         if v:
@@ -40,7 +43,7 @@ class TileContainerRegistry:
 
     def registry_heartbeat(self):
         if use_ecs:
-            self.get_desired_idle()
+            self.pull_desired_idle()
             self.reconcile_tiles()
             self.publish_metrics()
 
@@ -66,7 +69,6 @@ class TileContainerRegistry:
             print(f"Metrics publishing is disabled in non-ECS mode. {self.idle_tiles} idle tiles, {self.running_tiles} running tiles.")
 
     def mark_status(self, tile_id, status, task_arn=None, username=None, owner=None, parent=None):
-        print("entering mark_status with tile_id:", tile_id, "status:", status, "task_arn:", task_arn, "username:", username, "owner:", owner, "parent:", parent)
         if tile_id not in self._registry:
             self._registry[tile_id] = {"status": "idle"}
         self._registry[tile_id]["status"] = status

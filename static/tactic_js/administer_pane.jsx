@@ -20,6 +20,7 @@ function AdminPane(props) {
     props = {
         is_repository: false,
         tsocket: null,
+        extraControls: null,
         ...props
     };
 
@@ -270,10 +271,10 @@ function AdminPane(props) {
 
     let left_pane = (
         <Fragment>
-            <div className="d-flex flex-row" style={{"maxHeight": "100%"}}>
+            <div style={{"maxHeight": "100%", display: "flex", flexDirection: "column"}}>
                 <div ref={table_ref}
                      style={{
-                         flex: "1 1 0",
+                         //flex: "1 1 0",
                          minWidth: 0,
                          overflowY: "auto",
                          marginTop: 15,
@@ -301,6 +302,7 @@ function AdminPane(props) {
 
                     />
                 </div>
+                {props.extraControls && props.extraControls}
             </div>
         </Fragment>
     );

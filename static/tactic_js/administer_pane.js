@@ -19,6 +19,7 @@ function AdminPane(props) {
   props = {
     is_repository: false,
     tsocket: null,
+    extraControls: null,
     ...props
   };
   const table_ref = (0, _react.useRef)(null);
@@ -257,14 +258,15 @@ function AdminPane(props) {
   }
   let MenubarClass = props.MenubarClass;
   let left_pane = /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement("div", {
-    className: "d-flex flex-row",
     style: {
-      "maxHeight": "100%"
+      "maxHeight": "100%",
+      display: "flex",
+      flexDirection: "column"
     }
   }, /*#__PURE__*/_react.default.createElement("div", {
     ref: table_ref,
     style: {
-      flex: "1 1 0",
+      //flex: "1 1 0",
       minWidth: 0,
       overflowY: "auto",
       marginTop: 15,
@@ -290,7 +292,7 @@ function AdminPane(props) {
     initiateDataGrab: _initiateDataGrab,
     columns: props.columns,
     identifier_field: props.id_field
-  }))));
+  })), props.extraControls && props.extraControls));
   return /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement(MenubarClass, {
     selected_resource: props.selected_resource,
     list_of_selected: props.list_of_selected,

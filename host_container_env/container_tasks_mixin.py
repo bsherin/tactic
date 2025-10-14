@@ -89,7 +89,7 @@ class ContainerTasksMixin:
         admin_user = self.get_user_from_data(data)
         if not admin_user.username == "admin":
             return {"success": False, "message": "not authorized", "alert_type": "alert-warning"}
-        val = self.tile_registry.get_desired_idle()
+        val = self.tile_registry.desired_idle
         return {"success": True, "target_value": val}
 
     @task_worthy
