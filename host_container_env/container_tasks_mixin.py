@@ -76,6 +76,23 @@ class ContainerTasksMixin:
         return {"success": True, "message": "Server successefully reset", "alert_type": "alert-success"}
 
     @task_worthy
+    def set_desired_idle_tiles(self, data):
+        admin_user = self.get_user_from_data(data)
+        target_value = data["target_value"]
+        if not admin_user.username == "admin":
+            return {"success": False, "message": "not authorized", "alert_type": "alert-warning"}
+        self.tile_registry.set_desired_idle(target_value)
+        return {"success": True, "message": "new idle value set", "alert_type": "alert-success"}
+
+    @task_worthy
+    def get_desired_idle_tiles(self, data):
+        admin_user = self.get_user_from_data(data)
+        if not admin_user.username == "admin":
+            return {"success": False, "message": "not authorized", "alert_type": "alert-warning"}
+        val = self.tile_registry.get_desired_idle()
+        return {"success": True, "target_value": val}
+
+    @task_worthy
     def kill_container_task(self, data):
         admin_user = self.get_user_from_data(data)
         cont_id = data["cont_id"]

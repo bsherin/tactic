@@ -6,7 +6,7 @@ if use_ecs:
     from botocore.exceptions import ParamValidationError
     TILE_SERVICE = os.getenv("ECS_TILE_SERVICE", "tactic-tile-pool")
     AWS_REGION = os.getenv("AWS_REGION", "us-east-2")
-    DESIRED_IDLE = int(os.getenv("TILE_IDLE_BUFFER", "3"))
+    DESIRED_IDLE_DEFAULT = int(os.getenv("DESIRED_IDLE_DEFAULT", "3"))
     ECS_CLUSTER = os.getenv("ECS_CLUSTER", "tactic-cluster")
     print("Using ECS tile pool with service:", TILE_SERVICE, "in cluster:", ECS_CLUSTER, "and region:", AWS_REGION)
     ecs = boto3.client("ecs", region_name=os.getenv("AWS_REGION", "us-east-2"))
@@ -18,12 +18,34 @@ class TileContainerRegistry:
     def __init__(self):
         print("** initializing tile registery ***")
         self._registry = {}
-        self.reconcile_tiles()
+        self.registry_heartbeat()
+
+
+    def get_desired_idle(self):
+        if not use_ecs:
+            return
+        v = r.get("config:desired_idle")
+        if v:
+            self.desired_idle = int(v)
+        else:
+            self.desired_idle = DESIRED_IDLE_DEFAULT
+        return
+
+    def set_desired_idle(self, new_val):
+        self.desired_idle = int(new_val)
+        r.set("config:desired_idle", self.desired_idle)
+
+    def registry_heartbeat(self):
+        if use_ecs:
+            self.get_desired_idle()
+            self.reconcile_tiles()
+            self.publish_metrics()
 
     def publish_metrics(self):
         if use_ecs:
             print(" *** publishing metrics to cloudwatch with idle_tiles:", self.idle_tiles, "running_tiles:", self.running_tiles)
             idle_deficit = max(0, DESIRED_IDLE - self.idle_tiles)
+            excess_idle = max(0, self.idle_tiles - DESIRED_IDLE)
             CW.put_metric_data(
                 Namespace=NS,
                 MetricData=[
@@ -33,6 +55,8 @@ class TileContainerRegistry:
                      "Unit": "Count", "Value": self.running_tiles},
                     {"MetricName": "IdleDeficit", "Dimensions": [{"Name": "ServiceName", "Value": SVC}],
                      "Unit": "Count", "Value": idle_deficit},
+                    {"MetricName": "ExcessIdle", "Dimensions": [{"Name": "ServiceName", "Value": SVC}],
+                     "Unit": "Count", "Value": excess_idle},
                 ]
             )
         else:

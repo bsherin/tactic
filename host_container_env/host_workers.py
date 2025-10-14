@@ -106,8 +106,7 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
                 self._hb_greenlet = None
 
     def do_heartbeat(self):
-        self.tile_registry.reconcile_tiles()
-        self.tile_registry.publish_metrics()
+        self.tile_registry.registry_heartbeat()
 
     def user_to_true(self, user_path, user_obj):
         return re.sub("/mydisk", user_obj.pool_dir, user_path)
