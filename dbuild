@@ -11,5 +11,5 @@ if [ "$1" == "all" ] ; then
 	docker compose --env-file server.env build "tactic_log_streamer"
 	docker compose --env-file server.env build "tactic_assistant"
 else
-	docker compose --env-file server.env build --profile build_project "tactic_$1"
+	docker compose --env-file server.env --profile build_project build "tactic_$1"
 fi
