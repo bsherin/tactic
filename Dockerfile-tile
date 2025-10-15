@@ -11,7 +11,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=wheels /wheelhouse /wheelhouse
-RUN pip install --no-cache-dir /wheelhouse/*
+
+RUN ls -lah /wheelhouse
+
+RUN set -euo pipefail; \
+    python -V; pip -V; ls -lah /wheelhouse | head -50; \
+    for f in /wheelhouse/*.whl /wheelhouse/*.tar.gz; do \
+        [ -e "$f" ] || continue; \
+        echo "Installing $f"; \
+        pip install --no-cache-dir --no-index --find-links=/wheelhouse "$f"; \
+    done
 
 ADD ./tactic_dark.mplstyle /usr/local/lib/python3.11/site-packages/matplotlib/mpl-data/stylelib/
 COPY ./tile_container_env ./shared_python/volume_manager.py ./shared_python/exception_mixin.py \
