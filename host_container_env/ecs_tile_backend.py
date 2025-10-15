@@ -34,7 +34,8 @@ class ECSTileBackend(TileBackend):
 
     def issue_user_s3_session(self, username: str, ttl_seconds: int = 7200):
         role_arn = f"arn:aws:iam::{os.getenv('ACCOUNT_ID', '924818964184')}:role/TacticTileS3SessionRole"
-        resp = STS.assume_role(
+        sts = _sts()
+        resp = sts.assume_role(
             RoleArn=role_arn,
             RoleSessionName=f"user-{username}-{int(time.time())}",
             DurationSeconds=ttl_seconds,
