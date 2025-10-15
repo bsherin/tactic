@@ -15,19 +15,16 @@ COPY --from=wheels /wheelhouse /wheelhouse
 RUN ls -lah /wheelhouse
 
 RUN set -eu; \
-    python -V; pip -V; \
-    ls -lah /wheelhouse | head -50 || true; \
-    found=0; \
-    for f in /wheelhouse/*.whl /wheelhouse/*.tar.gz; do \
-      if [ -e "$f" ]; then \
-        found=1; \
-        echo "Installing $f"; \
-        pip install --no-cache-dir --no-index --find-links=/wheelhouse "$f"; \
-      fi; \
-    done; \
-    if [ "$found" -eq 0 ]; then \
-      echo "No wheel/tar.gz files found in /wheelhouse"; \
-    fi
+    echo "== Python/pip versions =="; python -V; pip -V; \
+    echo "== Listing /wheelhouse =="; ls -lah /wheelhouse || true; \
+    # collect artifacts
+    find /wheelhouse -maxdepth 1 -type f \( -name '*.whl' -o -name '*.tar.gz' \) > /tmp/wheels.txt; \
+    if [ -s /tmp/wheels.txt ]; then \
+      echo "== Will install these =="; cat /tmp/wheels.txt; \
+      xargs -r -a /tmp/wheels.txt pip install --no-cache-dir --no-index --find-links=/wheelhouse; \
+    else \
+      echo "== No artifacts found in /wheelhouse =="; \
+    fi \
 
 ADD ./tactic_dark.mplstyle /usr/local/lib/python3.11/site-packages/matplotlib/mpl-data/stylelib/
 COPY ./tile_container_env ./shared_python/volume_manager.py ./shared_python/exception_mixin.py \
