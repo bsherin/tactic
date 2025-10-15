@@ -45,7 +45,7 @@ class ECSTileBackend(TileBackend):
         return {
             "AccessKeyId": creds["AccessKeyId"],
             "SecretAccessKey": creds["SecretAccessKey"],
-            "aws_session_token": creds["SessionToken"],
+            "SessionToken": creds["SessionToken"],
             "region": os.getenv("AWS_REGION", "us-east-2"),
         }
 
