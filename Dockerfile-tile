@@ -10,12 +10,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       libgomp1 \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=wheels /wheelhouse/ /wheelhouse/
-RUN set -eux; \
-    python -V; pip -V; uname -m; \
-    ls -l /wheelhouse || true; \
-    python -m pip install --upgrade "pip<25" setuptools wheel; \
-    python -m pip install --no-index --find-links=/wheelhouse /wheelhouse/*.whl
+COPY --from=wheels /wheelhouse /wheelhouse
+RUN pip install --no-cache-dir /wheelhouse/*
 
 ADD ./tactic_dark.mplstyle /usr/local/lib/python3.11/site-packages/matplotlib/mpl-data/stylelib/
 COPY ./tile_container_env ./shared_python/volume_manager.py ./shared_python/exception_mixin.py \
