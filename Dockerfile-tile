@@ -17,8 +17,12 @@ RUN ls -lah /wheelhouse
 COPY --from=wheels /wheelhouse /wheelhouse
 
 RUN set -eu; \
-    xargs -a <(find /wheelhouse -maxdepth 1 -type f \( -name '*.whl' -o -name '*.tar.gz' \)) \
-      pip install --no-cache-dir --no-index --find-links=/wheelhouse
+    files="$(find /wheelhouse -maxdepth 1 -type f \( -name '*.whl' -o -name '*.tar.gz' \))"; \
+    if [ -n "$files" ]; then \
+      echo "$files" | xargs -r pip install --no-cache-dir --no-index --find-links=/wheelhouse; \
+    else \
+      echo "No artifacts found in /wheelhouse"; \
+    fi
 
 ADD ./tactic_dark.mplstyle /usr/local/lib/python3.11/site-packages/matplotlib/mpl-data/stylelib/
 
