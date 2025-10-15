@@ -14,13 +14,20 @@ COPY --from=wheels /wheelhouse /wheelhouse
 
 RUN ls -lah /wheelhouse
 
-RUN set -euo pipefail; \
-    python -V; pip -V; ls -lah /wheelhouse | head -50; \
+RUN set -eu; \
+    python -V; pip -V; \
+    ls -lah /wheelhouse | head -50 || true; \
+    found=0; \
     for f in /wheelhouse/*.whl /wheelhouse/*.tar.gz; do \
-        [ -e "$f" ] || continue; \
+      if [ -e "$f" ]; then \
+        found=1; \
         echo "Installing $f"; \
         pip install --no-cache-dir --no-index --find-links=/wheelhouse "$f"; \
-    done
+      fi; \
+    done; \
+    if [ "$found" -eq 0 ]; then \
+      echo "No wheel/tar.gz files found in /wheelhouse"; \
+    fi
 
 ADD ./tactic_dark.mplstyle /usr/local/lib/python3.11/site-packages/matplotlib/mpl-data/stylelib/
 COPY ./tile_container_env ./shared_python/volume_manager.py ./shared_python/exception_mixin.py \
