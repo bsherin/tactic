@@ -17,7 +17,6 @@ RUN ls -lah /wheelhouse
 RUN set -eu; \
     echo "== Python/pip versions =="; python -V; pip -V; \
     echo "== Listing /wheelhouse =="; ls -lah /wheelhouse || true; \
-    # collect artifacts
     find /wheelhouse -maxdepth 1 -type f \( -name '*.whl' -o -name '*.tar.gz' \) > /tmp/wheels.txt; \
     if [ -s /tmp/wheels.txt ]; then \
       echo "== Will install these =="; cat /tmp/wheels.txt; \
