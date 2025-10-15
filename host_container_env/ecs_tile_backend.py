@@ -42,9 +42,12 @@ class ECSTileBackend(TileBackend):
             Tags=[{"Key": "userId", "Value": username}]
         )
         creds = resp["Credentials"]
-        creds["region"] = os.getenv("AWS_REGION", "us-east-2")
-        creds["expires"] = creds["Expiration"].isoformat()
-        return creds
+        return {
+            "AccessKeyId": creds["AccessKeyId"],
+            "SecretAccessKey": creds["SecretAccessKey"],
+            "aws_session_token": creds["SessionToken"],
+            "region": os.getenv("AWS_REGION", "us-east-2"),
+        }
 
     def launch(self, username: str, owner: Optional[str], parent: Optional[str], tile_id: Optional[str], meta: Dict) -> Tuple[str, str]:
         # 1) Try to claim a warm tile if your pool exists
