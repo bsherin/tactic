@@ -43,5 +43,3 @@ kombu
 docutils
 rabbitmq-admin
 pyarrow
-s3fs
-boto3
