@@ -206,6 +206,7 @@ class TileWorker(QWorker):
     def load_source_and_recreate(self, data):
         print("in load_source_and_recreate")
         result = self.load_source(data)
+        self.set_environ_from_creds(data["creds"])
         if not result["success"]:
             print("didn't load successfully")
             print("message " + result["message"])
@@ -339,6 +340,7 @@ class TileWorker(QWorker):
         print("instantiate_as_pseudo_tile")
         try:
             self.tile_instance = PseudoTileClass()
+            self.set_environ_from_creds(data["creds"])
             pseudo_tile_base.Tile = self.tile_instance
             widgets.Tile = self.tile_instance
             widgets.in_pseudo_tile = self.tile_instance.in_pseudo_tile
@@ -370,9 +372,19 @@ class TileWorker(QWorker):
         pseudo_tile_base.Settings = settings_object.Settings
         return data
 
+    def set_environ_from_creds(self, creds):
+        if not use_ecs:
+            return
+        os.environ["AWS_ACCESS_KEY_ID"] = creds["AccessKeyId"]
+        os.environ["AWS_SECRET_ACCESS_KEY"] = creds["SecretAccessKey"]
+        os.environ["AWS_SESSION_TOKEN"] = creds["SessionToken"]
+        os.environ["AWS_DEFAULT_REGION"] = "us-east-2"
+        return
+
     @task_worthy
     def load_source_and_instantiate(self, data):
         print("in load_source_and_instantiate")
+        self.set_environ_from_creds(data["creds"])
         result = self.load_source(data)
         if not result["success"]:
             return result

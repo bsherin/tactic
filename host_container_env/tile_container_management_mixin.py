@@ -33,7 +33,7 @@ class TileContainerManagementMixin:
     @task_worthy
     def provide_tile(self, data):
         print("in provide_tile with data:", data)
-        the_id, task_arn = self.tile_backend.launch(
+        the_id, task_arn, creds = self.tile_backend.launch(
             username=data["username"],
             owner=data["owner"],
             parent=data.get("parent", "host"),
@@ -42,7 +42,7 @@ class TileContainerManagementMixin:
         )
         print("Tile launched with ID:", the_id)
         if the_id:
-            return {"success": True, "the_id": the_id, "task_arn": task_arn}
+            return {"success": True, "the_id": the_id, "task_arn": task_arn, "creds": creds}
 
         return {"success": False, "message": "Couldn't create tile"}
 

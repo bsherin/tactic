@@ -52,7 +52,7 @@ class DockerTileBackend(TileBackend):
             special_unique_id=unique_id
         )
         self.tile_registry.mark_status(tile_container_id, "busy", None, username=username, owner=owner, parent=parent)
-        return tile_container_id, ""
+        return tile_container_id, "", {}
 
     def mark_busy(self, tile_id: str):
         # no-op for local; your host registry tracks this

@@ -241,15 +241,17 @@ class LoadSaveTasksMixin:
 
                     tiles_to_recreate = self.tile_info.tile_ids
                     for new_tile_id, tdict in self.tile_info.ti_dict.items():
-                        data_for_tile = {"old_tile_id": tdict["old_id"], "new_id": new_tile_id,
+                        data_for_tile = {"old_tile_id": tdict["old_id"], "new_id": new_tile_id, "creds": tdict["creds"],
                                          "tile_save_dict": tdict["tile_save_dict"]}
                         self.mworker.post_task(self.mworker.my_id, "recreate_one_tile", data_for_tile,
                                                track_recreated_tiles)
 
             new_ids = new_id_data["new_ids"]
+            new_creds = new_id_data["new_creds"]
             if len(new_ids) > 0:
                 for n, old_id in enumerate(self.tile_info.tile_ids):
                     self.tile_info.update_id(old_id, new_ids[n])
+                    self.tile_info.set_creds(new_ids[n], new_creds[n])
 
                 for tile_entry in interface_state["tile_list"]:
                     prior_id = tile_entry["tile_id"]

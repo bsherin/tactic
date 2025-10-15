@@ -11,6 +11,10 @@ def _ecs():
     region = os.getenv("ECS_REGION", os.getenv("AWS_REGION", "us-east-2"))
     return boto3.client("ecs", region_name=region, config=Config(retries={"max_attempts": 10, "mode": "standard"}))
 
+def _sts():
+    region = os.getenv("ECS_REGION", os.getenv("AWS_REGION", "us-east-2"))
+    return boto3.client("sts", region_name=region)
+
 class ECSTileBackend(TileBackend):
     """
     Works in two modes:
@@ -28,12 +32,30 @@ class ECSTileBackend(TileBackend):
         self.tile_registry = tile_registry
         self.workd = worker
 
+    def issue_user_s3_session(self, username: str, ttl_seconds: int = 7200):
+        role_arn = f"arn:aws:iam::{os.getenv('ACCOUNT_ID', '924818964184')}:role/TacticTileS3SessionRole"
+        resp = STS.assume_role(
+            RoleArn=role_arn,
+            RoleSessionName=f"user-{username}-{int(time.time())}",
+            DurationSeconds=ttl_seconds,
+            Tags=[{"Key": "userId", "Value": username}]
+        )
+        creds = resp["Credentials"]
+        return {
+            "aws_access_key_id": creds["AccessKeyId"],
+            "aws_secret_access_key": creds["SecretAccessKey"],
+            "aws_session_token": creds["SessionToken"],
+            "region": os.getenv("AWS_REGION", "us-east-2"),
+            "expires": creds["Expiration"].isoformat()
+        }
+
     def launch(self, username: str, owner: Optional[str], parent: Optional[str], tile_id: Optional[str], meta: Dict) -> Tuple[str, str]:
         # 1) Try to claim a warm tile if your pool exists
         tid, task_arn = self.tile_registry.claim_tile(username, owner, parent)
         if tid:
             print("***Claimed warm tile: ***")
-            return tid, task_arn
+            creds = self.issue_user_s3_session(username)
+            return tid, task_arn, creds
 
         print("***Warm tile pool empty, launching ad-hoc ECS tile...***")
         # 2) Fall back to ad-hoc on-demand run (optional)
@@ -58,7 +80,8 @@ class ECSTileBackend(TileBackend):
         )
         # You can optionally add this new tile to the registry as busy
         self.tile_registry.mark_status(uid, "busy", owner=username, parent=parent)
-        return uid, task_arn
+        creds = self.issue_user_s3_session(username)
+        return uid, task_arn, creds
 
     def mark_busy(self, tile_id: str):
         self.tile_registry.mark_status(tile_id, "busy")

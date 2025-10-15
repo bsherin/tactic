@@ -25,6 +25,7 @@ class TileCreationTasksMixin:
     @task_worthy_manual_submit
     def create_n_tile_containers(self, data, task_packet):
         new_ids = []
+        new_creds = []
         print("in create_n_tile_containers")
         number_to_create = data["number_to_create"]
         if "tile_names" in data:
@@ -40,10 +41,11 @@ class TileCreationTasksMixin:
             else:
                 print("got container in create_n with id {}".format(cresult["the_id"]))
                 new_ids.append(cresult["the_id"])
+                new_creds.append(cresult["creds"])
                 print("new_ids is now {}".format(new_ids))
                 if len(new_ids) == number_to_create:
                     print("all containers created, submitting response")
-                    self.mworker.submit_response(task_packet, {"success": True, "new_ids": new_ids})
+                    self.mworker.submit_response(task_packet, {"success": True, "new_ids": new_ids, "new_creds": new_creds})
         for n in range(number_to_create):
             self.create_tile_container(other_name=tile_names[n], callback=got_container)
         return
@@ -62,13 +64,12 @@ class TileCreationTasksMixin:
 
             tile_container_id = create_container_dict["the_id"]
             self.tile_info.add_tile(tile_container_id, tile_name)
-            # self.tile_instances.append(tile_container_id)
-            # self.tile_id_dict[tile_name] = tile_container_id
 
             additional_data = {
                 "tile_code": self.get_loaded_tile_code(data_dict["tile_type"]),
                 "form_info": self.compile_form_info(tile_container_id),
                 "tile_name": tile_name,
+                "creds": create_container_dict["creds"],
                 "instance_params": {
                     "base_figure_url": self.base_figure_url,
                     "doc_type": self.doc_type,
@@ -118,9 +119,11 @@ class TileCreationTasksMixin:
                 raise Exception("Error creating empty tile container")
             print("extracting pseudo tile id")
             self.pseudo_tile_id = data["the_id"]
+            creds = data["creds"]
             print("pseudo_tile_id is " + str(self.pseudo_tile_id))
             data_dict = {
                 "globals_dict": lgdict,
+                "creds": creds,
                 "instance_params": {
                     "base_figure_url": self.base_figure_url,
                     "user_id": self.user_id,
@@ -192,6 +195,7 @@ class TileCreationTasksMixin:
                 return
 
             new_id = gtc_response["the_id"]
+            creds = gtc_response["creds"]
 
             tile_save_dict["new_base_figure_url"] = self.base_figure_url
             tile_save_dict["ppi"] = self.ppi
@@ -203,7 +207,7 @@ class TileCreationTasksMixin:
             }
             tile_save_dict.update(additional_instance_params)
 
-            lsdata = {"tile_code": tile_code, "tile_save_dict": tile_save_dict}
+            lsdata = {"tile_code": tile_code, "tile_save_dict": tile_save_dict, "creds": creds}
 
             def recreate_done(recreate_response):
                 if not recreate_response["success"]:
@@ -234,7 +238,7 @@ class TileCreationTasksMixin:
         tile_code = self.get_loaded_tile_code(tile_save_dict["tile_type"])
         tile_name = tile_save_dict["tile_name"]
         if "new_id" in data:
-            got_container({"success": True, "the_id": data["new_id"]})
+            got_container({"success": True, "the_id": data["new_id"], "creds": data["creds"]})
         else:
             self.create_tile_container(other_name=tile_name,
                                        callback=got_container)

@@ -8,13 +8,14 @@ class TileInfo:
     def __init__(self):
         self.ti_dict = OrderedDict()
 
-    def add_tile(self, tile_id: str, tile_name: Optional[str] = None, tile_type: Optional[str] = None):
+    def add_tile(self, tile_id: str, tile_name: Optional[str] = None, tile_type: Optional[str] = None, creds: Optional[dict] = None):
         self.ti_dict[tile_id] = {
             "tile_name": tile_name,
             "tile_type": tile_type,
             "tile_reload_dict": None,
             "tile_save_dict": None,
-            "old_id": None
+            "old_id": None,
+            "creds": creds
         }
 
     def remove_tile(self, tile_id: str):
@@ -33,6 +34,18 @@ class TileInfo:
         else:
             raise KeyError(f"Tile ID {tile_id} not found.")
 
+    def set_creds(self, tile_id: str, creds: dict):
+        if tile_id in self.ti_dict:
+            self.ti_dict[tile_id]["creds"] = creds
+        else:
+            raise KeyError(f"Tile ID {tile_id} not found.")
+
+    def get_creds(self, tile_id: str) -> Optional[dict]:
+        if tile_id in self.ti_dict and "creds" in self.ti_dict[tile_id]:
+            return self.ti_dict[tile_id]["creds"]
+        else:
+            return None
+
     def set_save_dict(self, tile_id: str, save_dict: dict):
         if tile_id in self.ti_dict:
             self.ti_dict[tile_id]["tile_save_dict"] = save_dict
@@ -50,6 +63,8 @@ class TileInfo:
             return self.ti_dict[tile_id]["tile_save_dict"]
         else:
             return None
+
+
 
     def update_id(self, old_id: str, new_id: str):
         if old_id in self.ti_dict:
