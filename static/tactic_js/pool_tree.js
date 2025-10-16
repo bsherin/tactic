@@ -260,11 +260,6 @@ function PoolTree(props) {
     if (props.registerTreeRefreshFunc) {
       props.registerTreeRefreshFunc(getTree);
     }
-    getTree().then(() => {
-      if (!props.value && pool_context.workingPath) {
-        exposeNode(pool_context.workingPath, false);
-      }
-    });
   }, []);
   (0, _react.useEffect)(() => {
     getTree().then(() => {
@@ -286,6 +281,9 @@ function PoolTree(props) {
         return;
       }
       data["dtree"][0].isExpanded = true;
+      props.setRoot({
+        fullpath: data["dtree"][0].fullpath
+      });
       dispatch({
         type: "REPLACE_ALL",
         new_nodes: data["dtree"]
