@@ -141,4 +141,13 @@ class BotoS3:
                 raise FileNotFoundError(f"No such key: {path}")
             raise
 
+    def isdir(self, path: str) -> bool:
+        """Check if the path is a directory-like prefix."""
+        bucket, key = _split_s3_url(path)
+        if not key or key.endswith("/"):
+            prefix = key.rstrip("/") + "/"
+            resp = self.s3.list_objects_v2(Bucket=bucket, Prefix=prefix, MaxKeys=1)
+            return resp.get("KeyCount", 0) > 0
+        return False
+
 s3 = BotoS3()
