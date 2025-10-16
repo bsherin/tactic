@@ -119,11 +119,11 @@ class TileCreationTasksMixin:
                 raise Exception("Error creating empty tile container")
             print("extracting pseudo tile id")
             self.pseudo_tile_id = data["the_id"]
-            creds = data["creds"]
+            self.pseudo_tile_creds = data["creds"]
             print("pseudo_tile_id is " + str(self.pseudo_tile_id))
             data_dict = {
                 "globals_dict": lgdict,
-                "creds": creds,
+                "creds": self.pseudo_tile_creds,
                 "instance_params": {
                     "base_figure_url": self.base_figure_url,
                     "user_id": self.user_id,

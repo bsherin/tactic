@@ -1342,9 +1342,11 @@ class ConsoleTasksMixin:
     @task_worthy
     def clear_console_namespace(self, data):
         self.emit_status_message("Resetting notebook ...")
-        if self.pseudo_tile_id is not None:
-            self.mworker.post_task(self.pseudo_tile_id, "kill_me", {})
-            docker_functions.restart_container(self.pseudo_tile_id)
+        def container_restarted(crdata):
+            if not crdata["success"]:
+                debug_log("got an exception " + crdata["message"])
+                self.emit_status_message("Error resetting notebook", 7)
+                raise Exception(crdata["message"])
 
             def instantiate_done(instantiate_result):
                 if not instantiate_result["success"]:
@@ -1356,11 +1358,31 @@ class ConsoleTasksMixin:
                     self.updated_globals(instantiate_result)
                 self.emit_status_message("Notebook reset", 21)
 
-            data_dict = {"base_figure_url": self.base_figure_url,
-                         "doc_type": self.doc_type, "globals_dict": {}, "img_dict": {}}
-            self.mworker.post_task(self.pseudo_tile_id, "instantiate_as_pseudo_tile", data_dict, instantiate_done)
+            data_dict = {
+                "globals_dict": {},
+                "creds": self.pseudo_tile_creds,
+                "img_dict": {},
+                "instance_params": {
+                    "base_figure_url": self.base_figure_url,
+                    "user_id": self.user_id,
+                    "_main_id": self.mworker.my_id,
+                    "doc_type": self.doc_type,
+                    "username": self.username,
+                    "ppi": self.ppi
+                }
+            }
 
-        self.emit_status_message("Notebook reset", 21)
+            self.mworker.post_task(self.pseudo_tile_id,
+                                   "instantiate_as_pseudo_tile",
+                                   data_dict,
+                                   instantiate_done)
+            self.emit_status_message("Notebook reset", 21)
+
+        if self.pseudo_tile_id is not None:
+            self.mworker.post_task("host5000",
+                                   "restart_tile_container",
+                                   {"tile_id": self.pseudo_tile_id},
+                                   callback_func=container_restarted)
         return {"success": True}
 
 

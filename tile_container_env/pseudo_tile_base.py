@@ -107,7 +107,6 @@ class ConsoleStringIO(StringIO):
             self.data["result_text"] = rw.render()
             self.data["console_message"] = "consoleCodePrint"
             self.data["counter"] = self.counter
-            print("about to emit consoleCodePrint with data in consolestringio write " + str(self.data))
             self.my_tile.emit_console_message("consoleCodePrint", self.data)
             self.counter += 1
         sys.stdout = sv_stdout
@@ -271,9 +270,7 @@ class PseudoTileClass(TileBase):
     @_task_worthy
     def store_widgets(self, data):
         new_widgets = debinarize_python_object(data["binary_widgets"])
-        print("storing widgets " + str(new_widgets))
         self._widgets.update(new_widgets)
-        print("now widgets are " + str(self._widgets))
         return {"success": True}
 
     @_task_worthy
@@ -475,7 +472,6 @@ class PseudoTileClass(TileBase):
         return
 
     def exec_thread(self, data):
-        print("in exec_thread with data " + str(data))
         global executing_console_id
         channel = add_qw_pika_connection()
         try:
@@ -516,7 +512,6 @@ class PseudoTileClass(TileBase):
         current_globals = self.get_user_globals()
         self.check_globals()
         executing_console_id = None
-        print('posting check_exec_queue')
         self.post_event("check_exec_queue", {})
         close_connection()
         return
@@ -588,7 +583,6 @@ class PseudoTileClass(TileBase):
 
     @_task_worthy
     def exec_console_code(self, data):
-        print("got task exec_console_code")
         global ethread
         global exec_queue
         global executing_console_id
