@@ -894,14 +894,17 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         return stats
 
     def get_folder_size_ecs(self, folder_path):
+        print("get_folder_size_ecs called with folder_path " + folder_path)
         total_size = 0
         for dirpath, dirnames, filenames in s3.walk(folder_path):
             for f in filenames:
                 fp = os.path.join(dirpath, f)
                 total_size += s3.info(fp)["size"]
+        print("total size of folder " + folder_path + " is " + str(total_size))
         return total_size
 
     def get_file_stats_ecs(self, filepath, user_obj, is_directory=False):
+        print("entering get_file_stats_ecs with filepath " + filepath)
         user_pool_dir = f"s3://{BUCKET}/users/{user_obj.username}/"
         if not s3.lexists(user_pool_dir):
             return {"stats": None}
@@ -925,6 +928,7 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
             "updated_for_sort": updated_for_sort,
             "size_for_sort": raw_size
         }
+        print("returning stats from get_file_stats_ecs with stats " + str(stats))
         return stats
 
 
