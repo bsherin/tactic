@@ -60,10 +60,8 @@ import os
 use_ecs = os.getenv("USE_ECS_TILES","false").lower() == "true"
 
 if use_ecs:
-    import s3fs
-    import asyncio
-    S3_LOOP = asyncio.new_event_loop()
-    s3 = s3fs.S3FileSystem(asynchronous=False, loop=S3_LOOP)
+    from s3thread import S3FSRunner
+    s3 = S3FSRunner(max_workers=2)
 
 myport = os.environ.get("MYPORT")
 BUCKET = os.environ.get("BUCKET")
@@ -819,11 +817,13 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
 
     @task_worthy
     def GetPoolTree(self, data):
+        print("entering GetPoolTree")
         try:
             user_id = data["user_id"]
             user_obj = load_user(user_id)
             show_hidden = data["show_hidden"]
             if use_ecs:
+                print("using ecs for pooltree")
                 user_pool_dir = f"s3://{BUCKET}/users/{user_obj.username}/"
                 if not s3.lexists(user_pool_dir):
                     return {"dtree": None}
@@ -893,7 +893,6 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         for dirpath, dirnames, filenames in s3.walk(folder_path):
             for f in filenames:
                 fp = os.path.join(dirpath, f)
-                # Skip if it is a symbolic link
                 total_size += s3.info(fp)["size"]
         return total_size
 
@@ -902,7 +901,6 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         if not s3.lexists(user_pool_dir):
             return {"stats": None}
         truepath = re.sub("/mydisk", user_pool_dir, filepath)
-        fstat = s3.info(truepath)
         if is_directory:
             raw_size = self.get_folder_size_ecs(truepath)
         else:
