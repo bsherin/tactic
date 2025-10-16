@@ -747,6 +747,7 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         return None
 
     def folder_dict(self, path, basename, user_obj, child_nodes=[]):
+        print("folder_dict called with path " + path)
         base_dict = {
             "id": path,
             "icon": "folder-close",
@@ -766,6 +767,7 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         return base_dict
 
     def file_dict(self, path, basename, user_obj):
+        print("file_dict called with path " + path)
         base_dict = {
             "id": path,
             "icon": "document",
@@ -799,6 +801,7 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         return new_base_node
 
     def get_node_ecs(self, root, user_pool_dir, user_obj, show_hidden=False):
+        print("get_node_ecs called with root " + root)
         ammended_root = re.sub(user_pool_dir, "/mydisk", root)
         new_base_node = self.folder_dict(ammended_root, os.path.basename(root), user_obj)
         child_list = []
@@ -824,7 +827,9 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
             if use_ecs:
                 print("using ecs for pooltree")
                 user_pool_dir = f"s3://{BUCKET}/users/{user_obj.username}/"
+                print("got user pool dir " + user_pool_dir)
                 if not s3.lexists(user_pool_dir):
+                    print("user pool dir does not exist")
                     return {"dtree": None}
                 self.pool_visited = []
                 dtree = [self.get_node_ecs(user_pool_dir, user_pool_dir, user_obj, show_hidden)]
@@ -846,6 +851,7 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
                 })
         except Exception as ex:
             print(self.handle_exception(ex, "Error getting pooltree"))
+        print("returning from pooltree")
         return {"dtree": dtree}
 
     def get_folder_size(self, folder_path):
