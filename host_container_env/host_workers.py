@@ -900,7 +900,7 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         total_size = 0
         for dirpath, dirnames, filenames in s3.walk(folder_path):
             for f in filenames:
-                fp = os.path.join("s3://", f)
+                fp = os.path.join(dirpath, f)
                 total_size += s3.info(fp)["size"]
         print("total size of folder " + folder_path + " is " + str(total_size))
         return total_size
