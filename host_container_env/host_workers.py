@@ -802,7 +802,8 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
 
     def get_node_ecs(self, root, user_pool_dir, user_obj, show_hidden=False):
         print("get_node_ecs called with root " + root)
-        ammended_root = re.sub(user_pool_dir, "/mydisk", root)
+        # ammended_root = re.sub(user_pool_dir, "/mydisk", root)
+        ammended_root = root
         new_base_node = self.folder_dict(ammended_root, os.path.basename(root), user_obj)
         child_list = []
         for entry in s3.ls(root):
@@ -812,7 +813,8 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
             if s3.isdir(fpath):
                 child_list.append(self.get_node_ecs(fpath, user_pool_dir, user_obj, show_hidden))
             else:
-                ammended_path = re.sub(user_pool_dir, "/mydisk", fpath)
+                # ammended_path = re.sub(user_pool_dir, "/mydisk", fpath)
+                ammended_path = fpath
                 child_list.append(self.file_dict(ammended_path, entry, user_obj))
         new_base_node["childNodes"] = child_list
         return new_base_node
@@ -905,10 +907,10 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
 
     def get_file_stats_ecs(self, filepath, user_obj, is_directory=False):
         print("entering get_file_stats_ecs with filepath " + filepath)
-        user_pool_dir = f"s3://{BUCKET}/users/{user_obj.username}/"
         if not s3.lexists(user_pool_dir):
             return {"stats": None}
-        truepath = re.sub("/mydisk", user_pool_dir, filepath)
+        # truepath = re.sub("/mydisk", user_pool_dir, filepath)
+        truepath = filepath
         if is_directory:
             raw_size = self.get_folder_size_ecs(truepath)
         else:
