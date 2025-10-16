@@ -60,8 +60,7 @@ import os
 use_ecs = os.getenv("USE_ECS_TILES","false").lower() == "true"
 
 if use_ecs:
-    from s3thread import S3FSRunner
-    s3 = S3FSRunner(max_workers=2)
+    from s3thread import s3
 
 myport = os.environ.get("MYPORT")
 BUCKET = os.environ.get("BUCKET")
