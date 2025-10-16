@@ -807,7 +807,7 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         new_base_node = self.folder_dict(ammended_root, os.path.basename(root), user_obj)
         child_list = []
         for entry in s3.ls(root):
-            fpath = os.path.join(root, entry)
+            fpath = os.path.join("s3://", entry)
             if not show_hidden and entry.startswith("."):
                 continue
             if s3.isdir(fpath):
@@ -900,7 +900,7 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         total_size = 0
         for dirpath, dirnames, filenames in s3.walk(folder_path):
             for f in filenames:
-                fp = os.path.join(dirpath, f)
+                fp = os.path.join("s3://", f)
                 total_size += s3.info(fp)["size"]
         print("total size of folder " + folder_path + " is " + str(total_size))
         return total_size
