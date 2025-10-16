@@ -59,7 +59,12 @@ import os
 
 use_ecs = os.getenv("USE_ECS_TILES","false").lower() == "true"
 
+if use_ecs:
+    import s3fs
+    s3 = s3fs.S3FileSystem()
+
 myport = os.environ.get("MYPORT")
+BUCKET = os.environ.get("BUCKET")
 
 from qworker import max_pika_retries
 
@@ -754,7 +759,11 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
             "childNodes": child_nodes,
             "isSelected": False
         }
-        base_dict.update(self.get_file_stats(path, user_obj, is_directory=True))
+        if use_ecs:
+            fstats = self.get_file_stats_ecs(path, user_obj, is_directory=True)
+        else:
+            fstats = self.get_file_stats(path, user_obj, is_directory=True)
+        base_dict.update(fstats)
         return base_dict
 
     def file_dict(self, path, basename, user_obj):
@@ -767,7 +776,11 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
             "label": basename,
             "isSelected": False
         }
-        base_dict.update(self.get_file_stats(path, user_obj), is_directory=False)
+        if use_ecs:
+            fstats = self.get_file_stats_ecs(path, user_obj, is_directory=False)
+        else:
+            fstats = self.get_file_stats(path, user_obj, is_directory=False)
+        base_dict.update(fstats)
         return base_dict
 
     def get_node(self, root, user_pool_dir, user_obj, show_hidden=False):
@@ -786,22 +799,50 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         new_base_node["childNodes"] = child_list
         return new_base_node
 
+    def get_node_ecs(self, root, user_pool_dir, user_obj, show_hidden=False):
+        ammended_root = re.sub(user_pool_dir, "/mydisk", root)
+        new_base_node = self.folder_dict(ammended_root, os.path.basename(root), user_obj)
+        child_list = []
+        for entry in s3.ls(root):
+            fpath = os.path.join(root, entry)
+            if not show_hidden and entry.startswith("."):
+                continue
+            if s3.isdir(fpath):
+                child_list.append(self.get_node_ecs(fpath, user_pool_dir, user_obj, show_hidden))
+            else:
+                ammended_path = re.sub(user_pool_dir, "/mydisk", fpath)
+                child_list.append(self.file_dict(ammended_path, entry, user_obj))
+        new_base_node["childNodes"] = child_list
+        return new_base_node
+
     @task_worthy
     def GetPoolTree(self, data):
         try:
             user_id = data["user_id"]
             user_obj = load_user(user_id)
             show_hidden = data["show_hidden"]
-            user_pool_dir = f"/pool/{user_obj.username}"
-            if not os.path.exists(user_pool_dir):
-                return {"dtree": None}
-            self.pool_visited = []
-            dtree = [self.get_node(user_pool_dir, user_pool_dir, user_obj, show_hidden)]
-            dtree[0].update({
-                "path": "/mydisk",
-                "basename": "mydisk",
-                "label": "mydisk"
-            })
+            if use_ecs:
+                user_pool_dir = f"s3://{BUCKET}/users/{user_obj.username}/"
+                if not s3.lexists(user_pool_dir):
+                    return {"dtree": None}
+                self.pool_visited = []
+                dtree = [self.get_node_ecs(user_pool_dir, user_pool_dir, user_obj, show_hidden)]
+                dtree[0].update({
+                    "path": "/mydisk",
+                    "basename": "mydisk",
+                    "label": "mydisk"
+                })
+            else:
+                user_pool_dir = f"/pool/{user_obj.username}"
+                if not os.path.exists(user_pool_dir):
+                    return {"dtree": None}
+                self.pool_visited = []
+                dtree = [self.get_node(user_pool_dir, user_pool_dir, user_obj, show_hidden)]
+                dtree[0].update({
+                    "path": "/mydisk",
+                    "basename": "mydisk",
+                    "label": "mydisk"
+                })
         except Exception as ex:
             print(self.handle_exception(ex, "Error getting pooltree"))
         return {"dtree": dtree}
@@ -816,7 +857,6 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
                     total_size += os.path.getsize(fp)
         return total_size
 
-    @task_worthy
     def get_file_stats(self, filepath, user_obj, is_directory=False):
         user_pool_dir = f"/pool/{user_obj.username}"
         if not os.path.exists(user_pool_dir):
@@ -846,13 +886,41 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         }
         return stats
 
-    @task_worthy
-    def GetFileStats(self, data):
-        user_id = data["user_id"]
-        filepath = data["file_path"]
-        user_obj = load_user(user_id)
-        self.get_file_stats(filepath, user_obj)
-        return {"stats": stats}
+    def get_folder_size_ecs(self, folder_path):
+        total_size = 0
+        for dirpath, dirnames, filenames in s3.walk(folder_path):
+            for f in filenames:
+                fp = os.path.join(dirpath, f)
+                # Skip if it is a symbolic link
+                total_size += s3.info(fp)["size"]
+        return total_size
+
+    def get_file_stats_scs(self, filepath, user_obj, is_directory=False):
+        user_pool_dir = f"s3://{BUCKET}/users/{user_obj.username}/"
+        if not s3.lexists(user_pool_dir):
+            return {"stats": None}
+        truepath = re.sub("/mydisk", user_pool_dir, filepath)
+        fstat = s3.info(truepath)
+        if is_directory:
+            raw_size = self.get_folder_size_ecs(truepath)
+        else:
+            raw_size = s3.info(truepath)["size"]
+        if raw_size > 10**9:
+            size_str = f"{round(raw_size / 10**9, 1)} GB"
+        elif raw_size > 10 ** 6:
+            size_str = f"{round(raw_size / 10**6, 1)} MB"
+        elif raw_size > 10 ** 3:
+            size_str = f"{round(raw_size / 10**3, 1)} KB"
+        else:
+            size_str = f"{raw_size} bytes"
+        updated, updated_for_sort = user_obj.get_timestrings(s3.info(truepath)["LastModified"])
+        stats = {
+            "updated": updated,
+            "size": size_str,
+            "updated_for_sort": updated_for_sort,
+            "size_for_sort": raw_size
+        }
+        return stats
 
 
     def forward_client_post(self, task_packet):

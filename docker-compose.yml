@@ -143,6 +143,7 @@ services:
       - ECS_TILE_SERVICE=${ECS_TILE_SERVICE}
       - RABBIT_USER=${RABBIT_USER}
       - RABBIT_PASS=${RABBIT_PASS}
+      - BUCKET=${BUCKET}
     volumes:
       - type: bind
         source: "/var/run/docker.sock"
