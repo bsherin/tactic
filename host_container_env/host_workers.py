@@ -840,8 +840,8 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
                 dtree = [self.get_node_ecs(user_pool_dir,
                                            user_pool_dir,
                                            user_obj,
-                                           show_hidden,
-                                           depth=TREE_DEPTH)]
+                                           TREE_DEPTH,
+                                           show_hidden)]
                 dtree[0].update({
                     "path": "/mydisk",
                     "basename": "mydisk",
