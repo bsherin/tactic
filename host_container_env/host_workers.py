@@ -907,7 +907,7 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
 
     def get_file_stats_ecs(self, filepath, user_obj, is_directory=False):
         print("entering get_file_stats_ecs with filepath " + filepath)
-        user_pool_dir = f"/pool/{user_obj.username}"
+        user_pool_dir = f"s3://{BUCKET}/users/{user_obj.username}/"
         if not s3.lexists(user_pool_dir):
             return {"stats": None}
         # truepath = re.sub("/mydisk", user_pool_dir, filepath)
