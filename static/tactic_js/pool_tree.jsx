@@ -279,9 +279,11 @@ function PoolTree(props) {
 
     async function getTree() {
         try {
+            console.log("Getting pool tree");
             let data = await postPromise("host", "GetPoolTree",
                 {user_id: props.user_id, show_hidden: props.showHidden}
             );
+            console.log("returned from GetPoolTree", data);
             if (!data["dtree"]) {
                 doFlash("No pool storage available for this account.");
                 return
