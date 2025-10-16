@@ -65,6 +65,8 @@ if use_ecs:
 myport = os.environ.get("MYPORT")
 BUCKET = os.environ.get("BUCKET")
 
+TREE_DEPTH = 3
+
 from qworker import max_pika_retries
 
 class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTasksMixin,ContainerTasksMixin,
@@ -798,22 +800,28 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         new_base_node["childNodes"] = child_list
         return new_base_node
 
-    def get_node_ecs(self, root, user_pool_dir, user_obj, show_hidden=False):
+    def get_node_ecs(self, root, user_pool_dir, user_obj, tree_depth=1, show_hidden=False):
         # ammended_root = re.sub(user_pool_dir, "/mydisk", root)
         ammended_root = root
         new_base_node = self.folder_dict(ammended_root, os.path.basename(root), user_obj)
         child_list = []
-        for entry in s3.ls(root):
-            fpath = entry
-            if not show_hidden and entry.startswith("."):
-                continue
-            if s3.isdir(fpath):
-                print(f"*** found directory {fpath} **&")
-                child_list.append(self.get_node_ecs(fpath, user_pool_dir, user_obj, show_hidden))
-            else:
-                # ammended_path = re.sub(user_pool_dir, "/mydisk", fpath)
-                ammended_path = fpath
-                child_list.append(self.file_dict(ammended_path, entry, user_obj))
+        if tree_depth > 0:
+            for entry in s3.ls(root):
+                fpath = entry
+                entry_basename = os.path.basename(entry)
+                if not show_hidden and entry_basename.startswith("."):
+                    continue
+                if s3.isdir(fpath):
+                    print(f"*** found directory {fpath} **&")
+                    child_list.append(self.get_node_ecs(fpath,
+                                                        user_pool_dir,
+                                                        user_obj,
+                                                        tree_depth - 1,
+                                                        show_hidden))
+                else:
+                    # ammended_path = re.sub(user_pool_dir, "/mydisk", fpath)
+                    ammended_path = fpath
+                    child_list.append(self.file_dict(ammended_path, entry, user_obj))
         new_base_node["childNodes"] = child_list
         return new_base_node
 
@@ -829,7 +837,11 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
                     print("user pool dir does not exist")
                     return {"dtree": None}
                 self.pool_visited = []
-                dtree = [self.get_node_ecs(user_pool_dir, user_pool_dir, user_obj, show_hidden)]
+                dtree = [self.get_node_ecs(user_pool_dir,
+                                           user_pool_dir,
+                                           user_obj,
+                                           show_hidden,
+                                           depth=TREE_DEPTH)]
                 dtree[0].update({
                     "path": "/mydisk",
                     "basename": "mydisk",
