@@ -111,6 +111,7 @@ class BotoS3:
 
     def info(self, path: str) -> dict:
         """Return metadata for a single S3 object (similar to s3fs.info)."""
+        print("getting info with path:", path)
         bucket, key = _split_s3_url(path)
         if not key or key.endswith("/"):
             # It's a 'directory'-like prefix — emulate minimal info
