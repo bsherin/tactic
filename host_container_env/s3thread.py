@@ -26,22 +26,37 @@ class BotoS3:
 
     # --- s3fs-like helpers ---
     def lexists(self, path: str) -> bool:
+        """Return True if the object or prefix exists (directory or file)."""
         bucket, key = _split_s3_url(path)
-        if not key or key.endswith("/"):
-            prefix = key.rstrip("/") + "/"
-            resp = self.s3.list_objects_v2(Bucket=bucket, Prefix=prefix, MaxKeys=1)
-            return resp.get("KeyCount", 0) > 0
-        # try object head
+
+        # Empty key = bucket root always exists
+        if not key:
+            return True
+
+        # Try a direct head_object first (file or dir marker)
         try:
             self.s3.head_object(Bucket=bucket, Key=key)
             return True
-        except ClientError as e:
-            if e.response["Error"]["Code"] in ("404", "NoSuchKey", "NotFound"):
-                # maybe it's a “directory” prefix
-                prefix = key.rstrip("/") + "/"
-                resp = self.s3.list_objects_v2(Bucket=bucket, Prefix=prefix, MaxKeys=1)
-                return resp.get("KeyCount", 0) > 0
-            raise
+        except self.s3.exceptions.ClientError as e:
+            code = e.response.get("Error", {}).get("Code", "")
+            if code not in ("404", "NoSuchKey"):
+                raise
+
+        # Fallback: check if anything exists *under* this prefix
+        if not key.endswith("/"):
+            prefix = key + "/"
+        else:
+            prefix = key
+        resp = self.s3.list_objects_v2(Bucket=bucket, Prefix=prefix, MaxKeys=1)
+        return "Contents" in resp or "CommonPrefixes" in resp
+
+    def isdir(self, path: str) -> bool:
+        """Return True if the path corresponds to a prefix (directory-like)."""
+        bucket, key = _split_s3_url(path)
+        if not key.endswith("/"):
+            key = key + "/"
+        resp = self.s3.list_objects_v2(Bucket=bucket, Prefix=key, MaxKeys=1)
+        return "Contents" in resp or "CommonPrefixes" in resp
 
     def ls(self, path: str, detail: bool = False) -> List:
         bucket, key = _split_s3_url(path)
@@ -110,45 +125,43 @@ class BotoS3:
         return self.read_bytes(path).decode(encoding)
 
     def info(self, path: str) -> dict:
-        """Return metadata for a single S3 object (similar to s3fs.info)."""
-        print("getting info with path:", path)
+        """
+        Return metadata about an S3 object or prefix.
+        Works for both files and 'directories'.
+        """
         bucket, key = _split_s3_url(path)
-        if not key or key.endswith("/"):
-            # It's a 'directory'-like prefix — emulate minimal info
-            prefix = key.rstrip("/") + "/"
-            resp = self.s3.list_objects_v2(Bucket=bucket, Prefix=prefix, MaxKeys=1)
-            if resp.get("KeyCount", 0) == 0:
-                raise FileNotFoundError(f"No such key or prefix: {path}")
-            return {
-                "name": f"s3://{bucket}/{prefix}",
-                "type": "directory",
-                "size": 0,
-                "LastModified": None,
-            }
 
+        # Root always exists
+        if not key:
+            return {"name": path, "type": "directory"}
+
+        # --- Try to get object metadata (file or dir marker)
         try:
             resp = self.s3.head_object(Bucket=bucket, Key=key)
             return {
                 "name": path,
                 "type": "file",
                 "size": resp["ContentLength"],
-                "ETag": resp["ETag"],
-                "LastModified": resp["LastModified"],
-                "ContentType": resp.get("ContentType"),
+                "last_modified": resp["LastModified"].isoformat(),
+                "etag": resp.get("ETag"),
             }
         except self.s3.exceptions.ClientError as e:
-            code = e.response["Error"]["Code"]
-            if code in ("404", "NoSuchKey", "NotFound"):
-                raise FileNotFoundError(f"No such key: {path}")
-            raise
+            code = e.response.get("Error", {}).get("Code", "")
+            if code not in ("404", "NoSuchKey"):
+                raise
 
-    def isdir(self, path: str) -> bool:
-        """Check if the path is a directory-like prefix."""
-        bucket, key = _split_s3_url(path)
-        if not key or key.endswith("/"):
-            prefix = key.rstrip("/") + "/"
-            resp = self.s3.list_objects_v2(Bucket=bucket, Prefix=prefix, MaxKeys=1)
-            return resp.get("KeyCount", 0) > 0
-        return False
+        # --- Maybe it's a directory prefix (no trailing slash required)
+        prefix = key if key.endswith("/") else key + "/"
+        resp = self.s3.list_objects_v2(Bucket=bucket, Prefix=prefix, MaxKeys=1)
+        if "Contents" in resp or "CommonPrefixes" in resp:
+            return {
+                "name": path if path.endswith("/") else path + "/",
+                "type": "directory",
+                "size": 0,
+            }
+
+        # --- Nothing found
+        raise FileNotFoundError(f"S3 path not found: {path}")
+
 
 s3 = BotoS3()
