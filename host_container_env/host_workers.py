@@ -807,7 +807,7 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         new_base_node = self.folder_dict(ammended_root, os.path.basename(root), user_obj)
         child_list = []
         for entry in s3.ls(root):
-            fpath = os.path.join("s3://", entry)
+            fpath = entry
             if not show_hidden and entry.startswith("."):
                 continue
             if s3.isdir(fpath):
