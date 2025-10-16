@@ -821,7 +821,8 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
                 else:
                     # ammended_path = re.sub(user_pool_dir, "/mydisk", fpath)
                     ammended_path = fpath
-                    child_list.append(self.file_dict(ammended_path, entry, user_obj))
+                    basename = os.path.basename(entry)
+                    child_list.append(self.file_dict(ammended_path, basename, user_obj))
         new_base_node["childNodes"] = child_list
         return new_base_node
 

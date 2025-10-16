@@ -142,7 +142,7 @@ class BotoS3:
                 "name": path,
                 "type": "file",
                 "size": resp["ContentLength"],
-                "last_modified": resp["LastModified"].isoformat(),
+                "last_modified": resp["LastModified"],
                 "etag": resp.get("ETag"),
             }
         except self.s3.exceptions.ClientError as e:
