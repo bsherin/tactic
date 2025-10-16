@@ -895,7 +895,7 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
                 total_size += s3.info(fp)["size"]
         return total_size
 
-    def get_file_stats_scs(self, filepath, user_obj, is_directory=False):
+    def get_file_stats_ecs(self, filepath, user_obj, is_directory=False):
         user_pool_dir = f"s3://{BUCKET}/users/{user_obj.username}/"
         if not s3.lexists(user_pool_dir):
             return {"stats": None}
