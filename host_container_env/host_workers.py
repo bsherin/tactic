@@ -924,7 +924,7 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
             size_str = f"{round(raw_size / 10**3, 1)} KB"
         else:
             size_str = f"{raw_size} bytes"
-        updated, updated_for_sort = user_obj.get_timestrings(s3.info(truepath)["LastModified"])
+        updated, updated_for_sort = user_obj.get_timestrings(s3.info(truepath)["last_modified"])
         stats = {
             "updated": updated,
             "size": size_str,

@@ -158,6 +158,7 @@ class BotoS3:
                 "name": path if path.endswith("/") else path + "/",
                 "type": "directory",
                 "size": 0,
+                "last_modified": None,
             }
 
         # --- Nothing found
