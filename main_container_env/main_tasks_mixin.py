@@ -315,8 +315,7 @@ class LoadSaveTasksMixin:
                 self.show_error_window(tile_info_dict)
                 return
 
-            if self.pseudo_tile_id is None:
-                self.create_pseudo_tile()
+            self.create_pseudo_tile()
 
             self.emit_clear_status()
             self.mworker.emit_to_main_client("finish-post-load",

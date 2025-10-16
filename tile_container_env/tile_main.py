@@ -215,6 +215,7 @@ class TileWorker(QWorker):
 
     @task_worthy
     def load_source_and_reinstantiate(self, data):
+        self.set_environ_from_creds(data["creds"])
         result = self.load_source(data)
         if not result["success"]:
             print("didn't load successfully")

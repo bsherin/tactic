@@ -106,9 +106,12 @@ class TileCreationTasksMixin:
         return
 
     def create_pseudo_tile(self, globals_dict=None, callback=None):
-        if self.pseudo_tile_id is not None:
-            callback()
+        if self.pseudo_tile_id is not None or self.pseudo_creation_in_progress:
+            if callback is not None:
+                callback()
             return {"success": True}
+
+        self.pseudo_creation_in_progress = True
 
         print("entering create_pseudo_tile")
         lgdict = globals_dict.copy() if globals_dict else {}
@@ -116,6 +119,7 @@ class TileCreationTasksMixin:
         def got_container(data):
             print("in got container with data = " + str(data))
             if not data["success"]:
+                self.pseudo_creation_in_progress = False
                 raise Exception("Error creating empty tile container")
             print("extracting pseudo tile id")
             self.pseudo_tile_id = data["the_id"]
@@ -139,6 +143,7 @@ class TileCreationTasksMixin:
                 print("in instantiate_done in main in create_pseudo_tile")
                 if not instantiate_result["success"]:
                     debug_log("got an exception " + instantiate_result["message"])
+                    self.pseudo_creation_in_progress = False
                     raise Exception(instantiate_result["message"])
                 else:
                     if len(instantiate_result["current_globals"]) == 0:
@@ -155,6 +160,7 @@ class TileCreationTasksMixin:
                                 "type": gtype
                             }
                     print("about to call callback if its there")
+                    self.pseudo_creation_in_progress = False
                     if callback is not None:
                         print("calling callback")
                         callback()
@@ -307,8 +313,11 @@ class TileCreationTasksMixin:
                 "ppi": self.ppi,
             }
             reload_dict.update(additional_instance_params)
-            self.mworker.post_task(tile_id, "load_source_and_reinstantiate", {"tile_code": module_code,
-                                                                              "reload_dict": reload_dict},
+            self.mworker.post_task(tile_id,
+                                   "load_source_and_reinstantiate",
+                                   {"tile_code": module_code,
+                                    "creds": self.tile_info.get_creds(tile_id),
+                                    "reload_dict": reload_dict},
                                    reinstantiate_done)
 
         tile_type = reload_dict["tile_type"]

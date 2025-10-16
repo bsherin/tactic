@@ -96,6 +96,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
         # self.tile_save_results = None
         self.is_legacy_save = "is_legacy_save" in data_dict and data_dict["is_legacy_save"]
         self.pseudo_tile_id = None
+        self.pseudo_creation_in_progress = False
         self.loaded_modules = None
         # self.tile_id_dict = {}  # dict with the keys the names of tiles and ids as the values.
         # self.tile_reload_dicts = {}
@@ -316,7 +317,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
 
         if "pseudo_tile_instance" in project_dict:
             globals_dict = project_dict["pseudo_tile_instance"]
-            print("about to call create_pseudo_tile in recreate_from-save")
+            print("about to call create_pseudo_tile in recreate_from_save")
             self.create_pseudo_tile(globals_dict)
             print("returned from create_pseudo_tile")
 
