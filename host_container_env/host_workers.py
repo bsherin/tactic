@@ -747,7 +747,6 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         return None
 
     def folder_dict(self, path, basename, user_obj, child_nodes=[]):
-        print("folder_dict called with path " + path)
         base_dict = {
             "id": path,
             "icon": "folder-close",
@@ -767,7 +766,6 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         return base_dict
 
     def file_dict(self, path, basename, user_obj):
-        print("file_dict called with path " + path)
         base_dict = {
             "id": path,
             "icon": "document",
@@ -810,6 +808,7 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
             if not show_hidden and entry.startswith("."):
                 continue
             if s3.isdir(fpath):
+                print(f"*** found directory {fpath} **&")
                 child_list.append(self.get_node_ecs(fpath, user_pool_dir, user_obj, show_hidden))
             else:
                 # ammended_path = re.sub(user_pool_dir, "/mydisk", fpath)
