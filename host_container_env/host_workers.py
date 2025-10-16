@@ -801,7 +801,6 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         return new_base_node
 
     def get_node_ecs(self, root, user_pool_dir, user_obj, show_hidden=False):
-        print("get_node_ecs called with root " + root)
         # ammended_root = re.sub(user_pool_dir, "/mydisk", root)
         ammended_root = root
         new_base_node = self.folder_dict(ammended_root, os.path.basename(root), user_obj)
@@ -821,15 +820,12 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
 
     @task_worthy
     def GetPoolTree(self, data):
-        print("entering GetPoolTree")
         try:
             user_id = data["user_id"]
             user_obj = load_user(user_id)
             show_hidden = data["show_hidden"]
             if use_ecs:
-                print("using ecs for pooltree")
                 user_pool_dir = f"s3://{BUCKET}/users/{user_obj.username}/"
-                print("got user pool dir " + user_pool_dir)
                 if not s3.lexists(user_pool_dir):
                     print("user pool dir does not exist")
                     return {"dtree": None}
@@ -896,17 +892,17 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         return stats
 
     def get_folder_size_ecs(self, folder_path):
-        print("get_folder_size_ecs called with folder_path " + folder_path)
-        total_size = 0
-        for dirpath, dirnames, filenames in s3.walk(folder_path):
-            for f in filenames:
-                fp = os.path.join(dirpath, f)
-                total_size += s3.info(fp)["size"]
-        print("total size of folder " + folder_path + " is " + str(total_size))
-        return total_size
+        return 0
+        # print("get_folder_size_ecs called with folder_path " + folder_path)
+        # total_size = 0
+        # for dirpath, dirnames, filenames in s3.walk(folder_path):
+        #     for f in filenames:
+        #         fp = os.path.join(dirpath, f)
+        #         total_size += s3.info(fp)["size"]
+        # print("total size of folder " + folder_path + " is " + str(total_size))
+        # return total_size
 
     def get_file_stats_ecs(self, filepath, user_obj, is_directory=False):
-        print("entering get_file_stats_ecs with filepath " + filepath)
         user_pool_dir = f"s3://{BUCKET}/users/{user_obj.username}/"
         if not s3.lexists(user_pool_dir):
             return {"stats": None}
@@ -931,7 +927,6 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
             "updated_for_sort": updated_for_sort,
             "size_for_sort": raw_size
         }
-        print("returning stats from get_file_stats_ecs with stats " + str(stats))
         return stats
 
 
