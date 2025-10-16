@@ -61,7 +61,9 @@ use_ecs = os.getenv("USE_ECS_TILES","false").lower() == "true"
 
 if use_ecs:
     import s3fs
-    s3 = s3fs.S3FileSystem()
+    import asyncio
+    S3_LOOP = asyncio.new_event_loop()
+    s3 = s3fs.S3FileSystem(asynchronous=False, loop=S3_LOOP)
 
 myport = os.environ.get("MYPORT")
 BUCKET = os.environ.get("BUCKET")
