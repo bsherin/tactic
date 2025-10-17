@@ -2,8 +2,96 @@
 import os
 import shutil
 from qworker import task_worthy
+from users import load_user
+
+use_ecs = os.getenv("USE_ECS_TILES","false").lower() == "true"
 
 class PoolTasksMixin:
+
+    @task_worthy
+    def GetPoolTree(self, data):
+        user_id = data["user_id"]
+        user_obj = load_user(user_id)
+        show_hidden = data["show_hidden"]
+        if "base_path" in data:
+            base_path = data["base_path"]
+        else:
+            base_path = None
+        return self.pool_backend.get_tree(user_obj, show_hidden, base_path)
+
+    @task_worthy
+    def compress_pool_resource(self, data):
+        try:
+            full_path = data["full_path"]
+            user_id = data["user_id"]
+            user_obj = load_user(user_id)
+            true_path = self.user_to_true(full_path, user_obj)
+            if os.path.isfile(true_path):
+                self.compress_file_in_place(true_path, user_id)
+            else:
+                self.compress_directory_in_place(true_path, user_id)
+        except Exception as ex:
+            emsg = self.get_traceback_message(ex, "error compressing resource")
+            print(emsg)
+            return {"success": False, "message": emsg}
+
+        return {"success": True}
+
+    @task_worthy
+    def decompress_archive(self, data):
+        try:
+            full_path = data["full_path"]
+            user_id = data["user_id"]
+            user_obj = load_user(user_id)
+            true_path = self.user_to_true(full_path, user_obj)
+            self.decompress_archive_in_places(true_path, user_id)
+        except Exception as ex:
+            emsg = self.get_traceback_message(ex, "error decompressing archive")
+            print(emsg)
+            return {"success": False, "message": emsg}
+
+        return {"success": True}
+
+
+    @task_worthy
+    def pool_event(self, data):
+        try:
+            event_type = data["event_type"]
+            path = data["path"]
+            dest_path = data["dest_path"]
+            is_directory = data["is_directory"]
+            username = re.findall("/pool/(.*?)/", path)[0]
+            user_obj = User.get_user_by_username(username)
+            user_pool_dir = f"/pool/{user_obj.username}"
+            new_path = re.sub(user_pool_dir, "/mydisk", path)
+            event_data = {"event_type": event_type}
+            if is_directory:
+                new_path = new_path[:-1]
+                event_data["path"] = new_path
+                if event_type == "delete":
+                    folder_dict = {"fullpath": new_path}
+                elif dest_path is None:
+                    folder_dict = self.folder_dict(new_path, os.path.basename(new_path), user_obj)
+                else:
+                    new_dest_path = re.sub(user_pool_dir, "/mydisk", dest_path[:-1])
+                    event_data["dest_path"] = new_dest_path
+                    folder_dict = self.folder_dict(new_dest_path, os.path.basename(new_dest_path), user_obj)
+                event_data["folder_dict"] = folder_dict
+                socketio.emit('pool-directory-event', event_data, namespace='/main', room=user_obj.get_id())
+            else:
+                event_data["path"] = new_path
+                if event_type == "delete":
+                    file_dict = {"fullpath": new_path}
+                elif dest_path is None:
+                    file_dict = self.file_dict(new_path, os.path.basename(new_path), user_obj)
+                else:
+                    new_dest_path = re.sub(user_pool_dir, "/mydisk", dest_path)
+                    file_dict = self.file_dict(new_dest_path, os.path.basename(new_dest_path), user_obj)
+                event_data["file_dict"] = file_dict
+                socketio.emit('pool-file-event', event_data, namespace='/main', room=user_obj.get_id())
+        except Exception as ex:
+            print(self.handle_exception(ex, "Got error in pool_event"))
+        return {"success": True}
 
     @task_worthy
     def rename_pool_resource_task(self, data):

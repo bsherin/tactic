@@ -60,12 +60,11 @@ import os
 use_ecs = os.getenv("USE_ECS_TILES","false").lower() == "true"
 
 if use_ecs:
-    from s3thread import s3
+    from pool_backend_ecs import PoolBackendECS
+else:
+    from pool_backend import PoolBackend
 
 myport = os.environ.get("MYPORT")
-BUCKET = os.environ.get("BUCKET")
-
-TREE_DEPTH = 3
 
 from qworker import max_pika_retries
 
@@ -80,8 +79,10 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         self.generate_heartbeats = True
         if use_ecs and self.my_id == "host5000":
             self.tile_backend = ECSTileBackend(self.tile_registry, self)
+            self.pool_backend = PoolBackendECS()
         else:
             self.tile_backend = DockerTileBackend(self.tile_registry, self)
+            self.pool_backend = PoolBackend()
 
     def start_background_thread(self, retries=0):
         try:
@@ -185,39 +186,6 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         from tactic_app import handler_methods
         print(str(handler_methods))
         return {"success": True, "handler_methods": handler_methods}
-
-    @task_worthy
-    def compress_pool_resource(self, data):
-        try:
-            full_path = data["full_path"]
-            user_id = data["user_id"]
-            user_obj = load_user(user_id)
-            true_path = self.user_to_true(full_path, user_obj)
-            if os.path.isfile(true_path):
-                self.compress_file_in_place(true_path, user_id)
-            else:
-                self.compress_directory_in_place(true_path, user_id)
-        except Exception as ex:
-            emsg = self.get_traceback_message(ex, "error compressing resource")
-            print(emsg)
-            return {"success": False, "message": emsg}
-
-        return {"success": True}
-
-    @task_worthy
-    def decompress_archive(self, data):
-        try:
-            full_path = data["full_path"]
-            user_id = data["user_id"]
-            user_obj = load_user(user_id)
-            true_path = self.user_to_true(full_path, user_obj)
-            self.decompress_archive_in_places(true_path, user_id)
-        except Exception as ex:
-            emsg = self.get_traceback_message(ex, "error decompressing archive")
-            print(emsg)
-            return {"success": False, "message": emsg}
-
-        return {"success": True}
 
     @task_worthy
     def participant_ready(self, data):
@@ -420,46 +388,6 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
                               namespace='/main', room=user_id)
         except Exception as ex:
             print(self.handle_exception(ex, "Error in mongo_event"))
-        return {"success": True}
-
-    @task_worthy
-    def pool_event(self, data):
-        try:
-            event_type = data["event_type"]
-            path = data["path"]
-            dest_path = data["dest_path"]
-            is_directory = data["is_directory"]
-            username = re.findall("/pool/(.*?)/", path)[0]
-            user_obj = User.get_user_by_username(username)
-            user_pool_dir = f"/pool/{user_obj.username}"
-            new_path = re.sub(user_pool_dir, "/mydisk", path)
-            event_data = {"event_type": event_type}
-            if is_directory:
-                new_path = new_path[:-1]
-                event_data["path"] = new_path
-                if event_type == "delete":
-                    folder_dict = {"fullpath": new_path}
-                elif dest_path is None:
-                    folder_dict = self.folder_dict(new_path, os.path.basename(new_path), user_obj)
-                else:
-                    new_dest_path = re.sub(user_pool_dir, "/mydisk", dest_path[:-1])
-                    event_data["dest_path"] = new_dest_path
-                    folder_dict = self.folder_dict(new_dest_path, os.path.basename(new_dest_path), user_obj)
-                event_data["folder_dict"] = folder_dict
-                socketio.emit('pool-directory-event', event_data, namespace='/main', room=user_obj.get_id())
-            else:
-                event_data["path"] = new_path
-                if event_type == "delete":
-                    file_dict = {"fullpath": new_path}
-                elif dest_path is None:
-                    file_dict = self.file_dict(new_path, os.path.basename(new_path), user_obj)
-                else:
-                    new_dest_path = re.sub(user_pool_dir, "/mydisk", dest_path)
-                    file_dict = self.file_dict(new_dest_path, os.path.basename(new_dest_path), user_obj)
-                event_data["file_dict"] = file_dict
-                socketio.emit('pool-file-event', event_data, namespace='/main', room=user_obj.get_id())
-        except Exception as ex:
-            print(self.handle_exception(ex, "Got error in pool_event"))
         return {"success": True}
 
     @task_worthy
@@ -747,199 +675,6 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         else:
             print("no streamer to kill")
         return None
-
-    def folder_dict(self, path, basename, user_obj, child_nodes=[]):
-        base_dict = {
-            "id": path,
-            "icon": "folder-close",
-            "isDirectory": True,
-            "isExpanded": False,
-            "basename": basename,
-            "label": basename,
-            "fullpath": path,
-            "childNodes": child_nodes,
-            "isSelected": False
-        }
-        if use_ecs:
-            fstats = self.get_file_stats_ecs(path, user_obj, is_directory=True)
-        else:
-            fstats = self.get_file_stats(path, user_obj, is_directory=True)
-        base_dict.update(fstats)
-        return base_dict
-
-    def file_dict(self, path, basename, user_obj):
-        base_dict = {
-            "id": path,
-            "icon": "document",
-            "isDirectory": False,
-            "fullpath": path,
-            "basename": basename,
-            "label": basename,
-            "isSelected": False
-        }
-        if use_ecs:
-            fstats = self.get_file_stats_ecs(path, user_obj, is_directory=False)
-        else:
-            fstats = self.get_file_stats(path, user_obj, is_directory=False)
-        base_dict.update(fstats)
-        return base_dict
-
-    def get_node(self, root, user_pool_dir, user_obj, show_hidden=False):
-        ammended_root = re.sub(user_pool_dir, "/mydisk", root)
-        new_base_node = self.folder_dict(ammended_root, os.path.basename(root), user_obj)
-        child_list = []
-        for entry in os.listdir(root):
-            fpath = os.path.join(root, entry)
-            if not show_hidden and entry.startswith("."):
-                continue
-            if os.path.isdir(fpath):
-                child_list.append(self.get_node(fpath, user_pool_dir, user_obj, show_hidden))
-            else:
-                ammended_path = re.sub(user_pool_dir, "/mydisk", fpath)
-                child_list.append(self.file_dict(ammended_path, entry, user_obj))
-        new_base_node["childNodes"] = child_list
-        return new_base_node
-
-    def get_node_ecs(self, root, user_pool_dir, user_obj, tree_depth=1, show_hidden=False):
-        # ammended_root = re.sub(user_pool_dir, "/mydisk", root)
-        ammended_root = root
-        new_base_node = self.folder_dict(ammended_root, os.path.basename(root), user_obj)
-        child_list = []
-        if tree_depth > 0:
-            for entry in s3.ls(root):
-                fpath = entry
-                entry_basename = os.path.basename(entry)
-                if not show_hidden and entry_basename.startswith("."):
-                    continue
-                if s3.isdir(fpath):
-                    print(f"*** found directory {fpath} **&")
-                    child_list.append(self.get_node_ecs(fpath,
-                                                        user_pool_dir,
-                                                        user_obj,
-                                                        tree_depth - 1,
-                                                        show_hidden))
-                else:
-                    # ammended_path = re.sub(user_pool_dir, "/mydisk", fpath)
-                    ammended_path = fpath
-                    basename = os.path.basename(entry)
-                    child_list.append(self.file_dict(ammended_path, basename, user_obj))
-        new_base_node["childNodes"] = child_list
-        return new_base_node
-
-    @task_worthy
-    def GetPoolTree(self, data):
-        try:
-            user_id = data["user_id"]
-            user_obj = load_user(user_id)
-            show_hidden = data["show_hidden"]
-            if use_ecs:
-                user_pool_dir = f"s3://{BUCKET}/users/{user_obj.username}/"
-                if not s3.lexists(user_pool_dir):
-                    print("user pool dir does not exist")
-                    return {"dtree": None}
-                self.pool_visited = []
-                dtree = [self.get_node_ecs(user_pool_dir,
-                                           user_pool_dir,
-                                           user_obj,
-                                           TREE_DEPTH,
-                                           show_hidden)]
-                dtree[0].update({
-                    "path": "/mydisk",
-                    "basename": "mydisk",
-                    "label": "mydisk"
-                })
-            else:
-                user_pool_dir = f"/pool/{user_obj.username}"
-                if not os.path.exists(user_pool_dir):
-                    return {"dtree": None}
-                self.pool_visited = []
-                dtree = [self.get_node(user_pool_dir, user_pool_dir, user_obj, show_hidden)]
-                dtree[0].update({
-                    "path": "/mydisk",
-                    "basename": "mydisk",
-                    "label": "mydisk"
-                })
-        except Exception as ex:
-            print(self.handle_exception(ex, "Error getting pooltree"))
-        print("returning from pooltree")
-        return {"dtree": dtree}
-
-    def get_folder_size(self, folder_path):
-        total_size = 0
-        for dirpath, dirnames, filenames in os.walk(folder_path):
-            for f in filenames:
-                fp = os.path.join(dirpath, f)
-                # Skip if it is a symbolic link
-                if not os.path.islink(fp):
-                    total_size += os.path.getsize(fp)
-        return total_size
-
-    def get_file_stats(self, filepath, user_obj, is_directory=False):
-        user_pool_dir = f"/pool/{user_obj.username}"
-        if not os.path.exists(user_pool_dir):
-            return {"stats": None}
-        truepath = re.sub("/mydisk", user_pool_dir, filepath)
-        fstat = os.stat(truepath)
-        if is_directory:
-            raw_size = self.get_folder_size(truepath)
-        else:
-            raw_size = fstat.st_size
-        if raw_size > 10**9:
-            size_str = f"{round(raw_size / 10**9, 1)} GB"
-        elif raw_size > 10 ** 6:
-            size_str = f"{round(raw_size / 10**6, 1)} MB"
-        elif raw_size > 10 ** 3:
-            size_str = f"{round(raw_size / 10**3, 1)} KB"
-        else:
-            size_str = f"{raw_size} bytes"
-        updated, updated_for_sort = user_obj.get_timestrings(datetime.datetime.utcfromtimestamp(fstat.st_mtime))
-        stats = {
-            "created": user_obj.get_timestrings(datetime.datetime.utcfromtimestamp(fstat.st_ctime))[0],
-            "updated": updated,
-            "accessed": user_obj.get_timestrings(datetime.datetime.utcfromtimestamp(fstat.st_atime))[0],
-            "size": size_str,
-            "updated_for_sort": updated_for_sort,
-            "size_for_sort": raw_size
-        }
-        return stats
-
-    def get_folder_size_ecs(self, folder_path):
-        return 0
-        # print("get_folder_size_ecs called with folder_path " + folder_path)
-        # total_size = 0
-        # for dirpath, dirnames, filenames in s3.walk(folder_path):
-        #     for f in filenames:
-        #         fp = os.path.join(dirpath, f)
-        #         total_size += s3.info(fp)["size"]
-        # print("total size of folder " + folder_path + " is " + str(total_size))
-        # return total_size
-
-    def get_file_stats_ecs(self, filepath, user_obj, is_directory=False):
-        user_pool_dir = f"s3://{BUCKET}/users/{user_obj.username}/"
-        if not s3.lexists(user_pool_dir):
-            return {"stats": None}
-        # truepath = re.sub("/mydisk", user_pool_dir, filepath)
-        truepath = filepath
-        if is_directory:
-            raw_size = self.get_folder_size_ecs(truepath)
-        else:
-            raw_size = s3.info(truepath)["size"]
-        if raw_size > 10**9:
-            size_str = f"{round(raw_size / 10**9, 1)} GB"
-        elif raw_size > 10 ** 6:
-            size_str = f"{round(raw_size / 10**6, 1)} MB"
-        elif raw_size > 10 ** 3:
-            size_str = f"{round(raw_size / 10**3, 1)} KB"
-        else:
-            size_str = f"{raw_size} bytes"
-        updated, updated_for_sort = user_obj.get_timestrings(s3.info(truepath)["last_modified"])
-        stats = {
-            "updated": updated,
-            "size": size_str,
-            "updated_for_sort": updated_for_sort,
-            "size_for_sort": raw_size
-        }
-        return stats
 
 
     def forward_client_post(self, task_packet):

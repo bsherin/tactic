@@ -201,7 +201,7 @@ class User(UserMixin, MongoAccess, ListAccess, CodeAccess, TileAccess, TempDataA
 
     def get_timestrings(self, dt):
         if not isinstance(dt, datetime.datetime):
-            return "unknown", "unknown"
+            return "", ""
         localtime = self.localize_time(dt)
         datestring = self.dt_to_datestring(localtime)
         datestring_for_sort = self.dt_to_sortstring(dt)
