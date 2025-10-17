@@ -673,7 +673,7 @@ function PoolBreadcrumbs(props) {
   function pathToCrumbs(path) {
     let prefix = "";
     if (path.startsWith(s3_prefix)) {
-      path = path.slice(prefix.length);
+      path = path.slice(s3_prefix.length);
       prefix = s3_prefix;
     }
     let crumbs = [];
