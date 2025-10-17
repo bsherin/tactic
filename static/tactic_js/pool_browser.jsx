@@ -675,6 +675,8 @@ function PoolHiddenSwitch(props) {
     )
 }
 
+const s3_prefix = "s3://tactic-user-storage/users";
+
 function PoolBreadcrumbs(props) {
 
     function clickFunc(path) {
@@ -684,9 +686,15 @@ function PoolBreadcrumbs(props) {
     }
 
     function pathToCrumbs(path) {
+        let prefix = "";
+        if (path.startsWith(s3_prefix)) {
+            path = path.slice(prefix.length);
+            prefix = s3_prefix
+        }
+
         let crumbs = [];
         let parts = path.split("/");
-        let new_path = "";
+        let new_path = prefix;
         for (const item of parts) {
             if (item === "") {
                 continue
@@ -710,7 +718,6 @@ function PoolBreadcrumbs(props) {
     return (
         <Breadcrumbs className="pool-breadcrumbs" breadcrumbRenderer={renderBreadcrumb} items={crumbs}/>
     )
-
 }
 
 function PoolMenubar(props) {
