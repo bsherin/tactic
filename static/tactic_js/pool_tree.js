@@ -272,6 +272,7 @@ function PoolTree(props) {
   const pushCallback = (0, _utilities_react.useCallbackStack)();
   const pool_context = (0, _react.useContext)(PoolContext);
   const errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
+  const statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
   (0, _react.useEffect)(() => {
     initSocket();
     if (props.registerTreeRefreshFunc) {
@@ -461,12 +462,22 @@ function PoolTree(props) {
     });
   }
   async function handleNodeExpand(node) {
+    dispatch({
+      type: "SET_IS_EXPANDED",
+      node_id: node.id,
+      isExpanded: true
+    });
     if (!node.explored) {
+      statusFuncs.setStatus({
+        show_spinner: true,
+        status_message: "Opening folder"
+      });
       let data = await (0, _communication_react.postPromise)("host", "GetPoolTree", {
         user_id: props.user_id,
         show_hidden: props.showHidden,
         base_path: node.fullpath
       });
+      statusFuncs.clearStatus();
       console.log("returned from GetPoolTree", data);
       if (!data["dtree"]) {
         (0, _toaster.doFlash)("No pool storage available for this account.");
@@ -478,11 +489,6 @@ function PoolTree(props) {
         childNodes: data["dtree"][0].childNodes
       });
     }
-    dispatch({
-      type: "SET_IS_EXPANDED",
-      node_id: node.id,
-      isExpanded: true
-    });
     pool_context.setWorkingPath(node.fullpath);
   }
   function handleNodeClick(node) {

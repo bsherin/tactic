@@ -3,7 +3,7 @@ import {useState, useEffect, useRef, memo, Fragment, useContext, createContext} 
 import {TreeNode, Popover, Button, ContextMenuPopover, Classes, HTMLSelect} from "@blueprintjs/core";
 
 import _ from "lodash";
-import {doFlash} from "./toaster"
+import {doFlash, StatusContext} from "./toaster"
 import {useCallbackStack, useReducerAndRef, useStateAndRef} from "./utilities_react";
 import {postPromise} from "./communication_react";
 import {SettingsContext} from "./settings";
@@ -274,6 +274,7 @@ function PoolTree(props) {
 
     const pool_context = useContext(PoolContext);
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
+    const statusFuncs = useContext(StatusContext);
 
     useEffect(() => {
         initSocket();
@@ -472,10 +473,17 @@ function PoolTree(props) {
     }
 
     async function handleNodeExpand(node) {
+        dispatch({
+            type: "SET_IS_EXPANDED",
+            node_id: node.id,
+            isExpanded: true
+        });
         if (!node.explored) {
+            statusFuncs.setStatus({show_spinner: true, status_message: "Opening folder"});
             let data = await postPromise("host", "GetPoolTree",
                 {user_id: props.user_id, show_hidden: props.showHidden, base_path: node.fullpath}
             );
+            statusFuncs.clearStatus();
             console.log("returned from GetPoolTree", data);
             if (!data["dtree"]) {
                 doFlash("No pool storage available for this account.");
@@ -487,11 +495,6 @@ function PoolTree(props) {
                 childNodes: data["dtree"][0].childNodes
             })
         }
-        dispatch({
-            type: "SET_IS_EXPANDED",
-            node_id: node.id,
-            isExpanded: true
-        });
         pool_context.setWorkingPath(node.fullpath);
     }
 
