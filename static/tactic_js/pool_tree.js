@@ -66,6 +66,23 @@ function treeNodesReducer(nodes, action) {
         }
       });
       return newState2;
+    case "SET_CHILD_NODES":
+      const newStateSCN = _lodash.default.cloneDeep(nodes);
+      forEachNode(newStateSCN, node => {
+        if (node.id == action.node_id) {
+          node.childNodes = action.childNodes;
+          node.explored = true;
+        }
+      });
+      return newStateSCN;
+    case "SET_EXPLORED":
+      const newStateE = _lodash.default.cloneDeep(nodes);
+      forEachNode(newStateE, node => {
+        if (node.id == action.node_id) {
+          node.explored = action.explored;
+        }
+      });
+      return newStateE;
     case "MULTI_SET_IS_EXPANDED":
       const newState3 = _lodash.default.cloneDeep(nodes);
       forEachNode(newState3, node => {
@@ -443,7 +460,24 @@ function PoolTree(props) {
       isExpanded: false
     });
   }
-  function handleNodeExpand(node) {
+  async function handleNodeExpand(node) {
+    if (!node.explored) {
+      let data = await (0, _communication_react.postPromise)("host", "GetPoolTree", {
+        user_id: props.user_id,
+        show_hidden: props.showHidden,
+        base_path: node.fullpath
+      });
+      console.log("returned from GetPoolTree", data);
+      if (!data["dtree"]) {
+        (0, _toaster.doFlash)("No pool storage available for this account.");
+        return;
+      }
+      dispatch({
+        type: "SET_CHILD_NODES",
+        node_id: node.id,
+        childNodes: data["dtree"][0].childNodes
+      });
+    }
     dispatch({
       type: "SET_IS_EXPANDED",
       node_id: node.id,
