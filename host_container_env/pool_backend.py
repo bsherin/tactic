@@ -2,7 +2,9 @@ import os
 import re
 import datetime
 
-class PoolBackend:
+from exception_mixin import ExceptionMixin
+
+class PoolBackend(ExceptionMixin):
 
     def get_tree(self, user_obj, show_hidden=False, base_path=None):
         try:

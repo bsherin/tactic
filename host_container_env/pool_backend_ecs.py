@@ -12,7 +12,7 @@ class PoolBackendECS(PoolBackend):
     def get_tree(self, user_obj, show_hidden=False, base_path=None):
         try:
             user_pool_dir = f"s3://{BUCKET}/users/{user_obj.username}/"
-            if "base_path" is not None:
+            if base_path is not None:
                 base_path = base_path
             else:
                 base_path = user_pool_dir
