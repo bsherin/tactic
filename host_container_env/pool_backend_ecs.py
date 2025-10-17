@@ -11,7 +11,7 @@ class PoolBackendECS(PoolBackend):
 
     def get_tree(self, user_obj, show_hidden=False, base_path=None):
         try:
-            user_pool_dir = f"s3://{BUCKET}/users/{user_obj.username}/"
+            user_pool_dir = f"s3://{BUCKET}/users/{user_obj.username}"
             if base_path is not None:
                 base_path = base_path
             else:
@@ -61,7 +61,7 @@ class PoolBackendECS(PoolBackend):
         return 0
 
     def get_file_stats(self, filepath, user_obj, is_directory=False):
-        user_pool_dir = f"s3://{BUCKET}/users/{user_obj.username}/"
+        user_pool_dir = f"s3://{BUCKET}/users/{user_obj.username}"
         if not s3.lexists(user_pool_dir):
             return {"stats": None}
         # truepath = re.sub("/mydisk", user_pool_dir, filepath)
