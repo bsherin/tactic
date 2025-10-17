@@ -67,7 +67,7 @@ class PoolBackendECS(PoolBackend):
         # truepath = re.sub("/mydisk", user_pool_dir, filepath)
         truepath = filepath
         if is_directory:
-            raw_size = self.get_folder_size_ecs(truepath)
+            raw_size = self.get_folder_size(truepath)
         else:
             raw_size = s3.info(truepath)["size"]
         if raw_size > 10 ** 9:
