@@ -162,5 +162,5 @@ class PoolBackendECS(PoolBackend):
         content_type = request.form.get("content_type") or mimetypes.guess_type(filename)[
             0] or "application/octet-stream"
 
-        return boto_s3.upload(full_dest_path, content_type)
+        return boto_s3.upload(full_dest_path, content_type, current_user.username)
 

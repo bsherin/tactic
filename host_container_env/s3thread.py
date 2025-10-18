@@ -169,15 +169,14 @@ class BotoS3:
         obj = self.s3.get_object(Bucket=b, Key=k)
         return obj["Body"].read().decode(encoding)
 
-    def upload(self, dest_path, content_type):
-        """Upload local file -> s3://..."""
+    def upload(self, dest_path, content_type, username):
         bucket, key = _split_s3_url(dest_path)
         post = self.s3.generate_presigned_post(
             Bucket=bucket,
             Key=key,
             Fields={"Content-Type": content_type},
             Conditions=[
-                {"bucket": BUCKET},
+                {"bucket": bucket},
                 ["starts-with", "$key", f"users/{username}/"],
                 {"Content-Type": content_type},
                 ["content-length-range", 0, 1_000_000_000],  # adjust max size if you like
@@ -190,7 +189,7 @@ class BotoS3:
                 "url": post["url"],
                 "fields": post["fields"],
                 "key": key,
-                "bucket": BUCKET,
+                "bucket": bucket,
                 "content_type": content_type,
             },
         })
