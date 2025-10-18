@@ -1,5 +1,6 @@
 
 import os
+import mimetypes
 from flask import jsonify
 
 from pool_backend import PoolBackend
@@ -42,7 +43,6 @@ class PoolBackendECS(PoolBackend):
                 if not show_hidden and entry_basename.startswith("."):
                     continue
                 if s3.isdir(fpath):
-                    print(f"*** found directory {fpath} **&")
                     child_list.append(self.get_node(fpath,
                                                     user_pool_dir,
                                                     user_obj,
@@ -117,7 +117,7 @@ class PoolBackendECS(PoolBackend):
             raise IOError(f"Error reading file {file_path}: {str(ex)}")
 
     def rename_resource(self, old_path, new_name, hw, user_obj):
-        folder_path, fname = os.path.split(true_old_path)
+        folder_path, fname = os.path.split(old_path)
         new_path = f"{folder_path}/{new_name}"
         if s3.lexists(new_path):
             raise FileExistsError(f"Resource {new_name} already exists at {folder_path}.")
