@@ -177,7 +177,7 @@ function FileImportDialog(props) {
     }
   }
   async function _onSending(f, xhr, formData) {
-    if (!myDropzone.current.options.url.startsWith("s3://")) {
+    if (!current_value_ref.current.startsWith("s3://")) {
       f.previewElement.scrollIntoView(false);
       formData.append("extra_value", current_value_ref.current);
       if (props.chunking) {
