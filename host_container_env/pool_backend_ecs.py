@@ -150,7 +150,7 @@ class PoolBackendECS(PoolBackend):
         except Exception as ex:
             raise IOError(f"Error downloading resource {src}: {str(ex)}")
 
-    def get_s3_upload_info(self, dest_path, filename, content_type, he_user):
+    def get_s3_upload_info(self, dest_path, filename, content_type, the_user):
         # path the user chose in your UI (what you previously called extra_value)
         # e.g. "/users/<userId>/some/folder"
         full_dest_path = os.path.join(dest_path, filename)
