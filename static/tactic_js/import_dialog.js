@@ -176,11 +176,57 @@ function FileImportDialog(props) {
       props.after_upload();
     }
   }
-  function _onSending(f, xhr, formData) {
-    f.previewElement.scrollIntoView(false);
-    formData.append("extra_value", current_value_ref.current);
-    if (props.chunking) {
-      formData.append("dzuuid", f.upload.uuid);
+  async function _onSending(f, xhr, formData) {
+    if (!myDropzone.current.options.url.startsWith("s3://")) {
+      f.previewElement.scrollIntoView(false);
+      formData.append("extra_value", current_value_ref.current);
+      if (props.chunking) {
+        formData.append("dzuuid", f.upload.uuid);
+      }
+    } else {
+      xhr.abort();
+
+      // whatever path your UI chose goes here (what you used as request.form["extra_value"])
+      const extraValue = getChosenDestPathFromUI(); // e.g. "users/bsherinrem/some/folder"
+
+      // call your Flask endpoint to get a presigned POST
+      const resp = await fetch(`import_pool/${window.global_id}`, {
+        method: "POST",
+        body: new URLSearchParams({
+          filename: file.name,
+          content_type: file.type || "application/octet-stream",
+          extra_value: extraValue
+        })
+      }).then(r => r.json());
+      if (!resp.success) {
+        this.emit("error", file, resp.message || "Failed to get presign");
+        this.emit("complete", file);
+        return;
+      }
+      const {
+        url,
+        fields,
+        key
+      } = resp.upload;
+
+      // Build a new multipart/form-data request to S3 using the returned fields + file
+      const fd = new FormData();
+      Object.entries(fields).forEach(([k, v]) => fd.append(k, v));
+      fd.append("file", file);
+      try {
+        const s3res = await fetch(url, {
+          method: "POST",
+          body: fd
+        });
+        if (!s3res.ok) throw new Error(`S3 upload failed: ${s3res.status}`);
+        this.emit("success", file, {
+          key
+        });
+      } catch (e) {
+        this.emit("error", file, e.message);
+      } finally {
+        this.emit("complete", file);
+      }
     }
   }
   function _name_exists(name) {

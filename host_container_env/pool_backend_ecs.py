@@ -1,5 +1,6 @@
 
 import os
+from flask import jsonify
 
 from pool_backend import PoolBackend
 from s3thread import s3
@@ -86,3 +87,78 @@ class PoolBackendECS(PoolBackend):
             "size_for_sort": raw_size
         }
         return stats
+
+    def duplicate_file(self, src, dst, hw, user_obj):
+        s3.copy(src, dst)
+
+    def create_directory(self, full_path, hw, user_obj):
+        if not s3.lexists(full_path):
+            s3.mkdir(full_path)
+        else:
+            raise FileExistsError
+
+    def read_text(self, file_path, hw, user_obj):
+        if not s3.lexists(file_path):
+            raise FileNotFoundError(f"File {file_path} does not exist.")
+        try:
+            the_text = s3.read_text(file_path)
+            finfo = s3.info(file_path)
+            mdata = {}
+            data = {
+                "success": True,
+                "the_content": the_text,
+                "mdata": mdata,
+                "created": '',
+                "updated": user_obj.get_timestrings(finfo["last_modified"])[0],
+                "size": finfo["size"]
+            }
+            return data
+        except Exception as ex:
+            raise IOError(f"Error reading file {file_path}: {str(ex)}")
+
+    def rename_resource(self, old_path, new_name, hw, user_obj):
+        folder_path, fname = os.path.split(true_old_path)
+        new_path = f"{folder_path}/{new_name}"
+        if s3.lexists(new_path):
+            raise FileExistsError(f"Resource {new_name} already exists at {folder_path}.")
+        s3.rename(old_path, new_path)
+        return
+
+    def move_resource(self, src, dst, hw, user_obj):
+        if not s3.lexists(src):
+            raise FileNotFoundError(f"Source {src} does not exist.")
+        dst_path = os.path.join(dst, os.path.basename(src))
+        if s3.lexists(dst_path):
+            raise FileExistsError(f"Destination {dst_path} already exists.")
+        s3.rename(src, dst_path)
+        return
+
+    def delete_resource(self, src, hw, user_obj):
+        if not s3.lexists(src):
+            raise FileNotFoundError(f"Resource {src} does not exist.")
+        if s3.isdir(src):
+            s3.rmdir(src)
+        else:
+            s3.rm(src)
+        return
+
+    def download_resource(self, src, hw, user_obj):
+        if not s3.lexists(src):
+            raise FileNotFoundError(f"Resource {src} does not exist.")
+        try:
+            return s3.download(src)
+        except Exception as ex:
+            raise IOError(f"Error downloading resource {src}: {str(ex)}")
+
+    def upload_resource(self, request, hw, current_user):
+        # path the user chose in your UI (what you previously called extra_value)
+        # e.g. "/users/<userId>/some/folder"
+        dest_path = request.form.get("extra_value", "").strip("/")
+        if not dest_path:
+            return jsonify({"success": False, "message": "Missing destination"}), 400
+
+        content_type = request.form.get("content_type") or mimetypes.guess_type(filename)[
+            0] or "application/octet-stream"
+
+        return s3.upload(dest_path, content_type)
+

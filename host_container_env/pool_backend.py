@@ -1,7 +1,8 @@
 import os
 import re
 import datetime
-
+import shutil
+from flask import jsonify, send_file
 from exception_mixin import ExceptionMixin
 
 class PoolBackend(ExceptionMixin):
@@ -108,3 +109,123 @@ class PoolBackend(ExceptionMixin):
             "size_for_sort": raw_size
         }
         return stats
+
+    def duplicate_file(self, src, dst, hw, user_obj):
+        true_dst = hw.user_to_true(dst, user_obj)
+        true_src = hw.user_to_true(src, user_obj)
+        if os.path.exists(true_dst):
+            raise FileExistsError
+        shutil.copy2(true_src, true_dst)
+
+    def create_directory(self, full_path, hw, user_obj):
+        true_full_path = hw.user_to_true(full_path, user_obj)
+        if os.path.exists(true_full_path):
+            raise FileExistsError
+        os.mkdir(true_full_path)
+
+    def read_text(self, file_path, hw, user_obj):
+        def can_read_as_text(fpath):
+            try:
+                with open(fpath, 'r', encoding='utf-8') as f:
+                    f.read(1024)  # Attempt to read the first 1024 bytes
+                return True
+            except (UnicodeDecodeError, IOError):
+                return False
+
+        true_path = hw.user_to_true(file_path, user_obj)
+        if not can_read_as_text(true_path):
+            return {"success": False, "message": "Not a text file."}
+        with open(true_path, "r") as f:
+            the_text = f.read()
+        mdata = {}
+        _, fname = os.path.split(true_path)
+        fstat = os.stat(true_path)
+        data = {
+            "success": True,
+            "the_content": the_text,
+            "mdata": mdata,
+            "created": user_obj.get_timestrings(datetime.datetime.utcfromtimestamp(fstat.st_ctime))[0],
+            "updated": user_obj.get_timestrings(datetime.datetime.utcfromtimestamp(fstat.st_mtime))[0],
+            "size": fstat.st_size
+        }
+        return data
+
+    def rename_resource(self, old_path, new_name, hw, user_obj):
+        true_old_path = hw.user_to_true(old_path, user_obj)
+        folder_path, fname = os.path.split(true_old_path)
+        true_new_path = f"{folder_path}/{new_name}"
+        if os.path.exists(true_new_path):
+            raise FileExistsError
+        os.rename(true_old_path, true_new_path)
+
+    def move_resource(self, src, dst, hw, user_obj):
+        true_dst = hw.user_to_true(dst, user_obj)
+        true_src = hw.user_to_true(src, user_obj)
+        if os.path.exists(os.path.join(true_dst, os.path.basename(true_src))):
+            raise FileExistsError
+        shutil.move(true_src, true_dst)
+
+    def delete_resource(self, src, hw, user_obj):
+        true_path = hw.user_to_true(src, user_obj)
+        if not os.path.exists(true_path):
+            raise FileNotFoundError
+        if os.path.isdir(true_path):
+            shutil.rmtree(true_path)
+        else:
+            os.remove(true_path)
+
+    def download_resource(self, full_path, hw, user_obj):
+        true_path = hw.user_to_true(full_path, user_obj)
+        if not os.path.exists(true_path):
+            raise FileNotFoundError(f"Resource {true_path} does not exist.")
+        if not os.path.isfile(true_path):
+            raise IsADirectoryError(f"Resource {true_path} is a directory, not a file.")
+        return send_file(true_path, as_attachment=True)
+
+    def upload_resource(self, request, hw, current_user):
+        chunk_number = int(request.form.get('dzchunkindex'))
+        total_chunks = request.form.get('dztotalchunkcount')
+        print(f"got chunk_number {chunk_number} of {total_chunks}")
+        unique_name = request.form.get('dzuuid')
+        upload_dir = os.path.join('uploads', unique_name)
+        if not os.path.exists(upload_dir):
+            os.makedirs(upload_dir)
+        chunk_file = os.path.join(upload_dir, f'{chunk_number:04d}')
+        with open(chunk_file, 'wb') as f:
+            f.write(request.files['file'].read())
+
+        if len(os.listdir(upload_dir)) == int(total_chunks):
+            print("got last chunk")
+            fullpath = request.form.get("extra_value")
+            truepath = hw.user_to_true(fullpath, current_user)
+            try:
+                the_file = list(request.files.values())[0]
+                true_new_path = f"{truepath}/{the_file.filename}"
+                with open(true_new_path, 'wb') as assembled_file:
+                    for i in range(int(total_chunks)):
+                        chunk_part = os.path.join(upload_dir, f'{i:04d}')
+                        with open(chunk_part, 'rb') as chunk:
+                            assembled_file.write(chunk.read())
+                        os.remove(chunk_part)
+                os.rmdir(upload_dir)
+            except Exception as ex:
+                emsg = self.get_traceback_message(ex, "error in saving final file")
+                print(emsg)
+                result = {
+                    "success": False,
+                    "title": "Error saving final file",
+                    "file_decoding_errors": {truepath: emsg},
+                    "failed_reads": {truepath: emsg},
+                    "successful_reads": []
+                }
+                current_user.send_import_report(result, library_id)
+                return jsonify({"success": False})
+            result = {
+                "success": True,
+                "title": "File import successful",
+                "file_decoding_errors": {},
+                "failed_reads": {},
+                "successful_reads": [truepath]
+            }
+            current_user.send_import_report(result, library_id)
+        return jsonify({"success": True})

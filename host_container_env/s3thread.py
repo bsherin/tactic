@@ -18,13 +18,15 @@ def _split_s3_url(url: str) -> Tuple[str, str]:
         return parts[0], ""
     return parts[0], parts[1]
 
-
 class BotoS3:
     def __init__(self, session: Optional[boto3.session.Session] = None):
         self._session = session or boto3.session.Session()
         self.s3 = self._session.client("s3")
 
-    # --- s3fs-like helpers ---
+    @staticmethod
+    def _as_prefix(key: str) -> str:
+        return key if key.endswith("/") else key + "/"
+
     def lexists(self, path: str) -> bool:
         """Return True if the object or prefix exists (directory or file)."""
         bucket, key = _split_s3_url(path)
@@ -121,9 +123,6 @@ class BotoS3:
         resp = self.s3.get_object(Bucket=bucket, Key=key)
         return resp["Body"].read()
 
-    def read_text(self, path: str, encoding="utf-8") -> str:
-        return self.read_bytes(path).decode(encoding)
-
     def info(self, path: str) -> dict:
         """
         Return metadata about an S3 object or prefix.
@@ -164,5 +163,188 @@ class BotoS3:
         # --- Nothing found
         raise FileNotFoundError(f"S3 path not found: {path}")
 
+    def read_text(self, path: str, encoding: str = "utf-8") -> str:
+        b, k = _split_s3_url(path)
+        obj = self.s3.get_object(Bucket=b, Key=k)
+        return obj["Body"].read().decode(encoding)
+
+    def upload(self, dest_path, content_type):
+        """Upload local file -> s3://..."""
+        bucket, key = _split_s3_url(dest_path)
+        post = self.s3.generate_presigned_post(
+            Bucket=bucket,
+            Key=key,
+            Fields={"Content-Type": content_type},
+            Conditions=[
+                {"bucket": BUCKET},
+                ["starts-with", "$key", f"users/{username}/"],
+                {"Content-Type": content_type},
+                ["content-length-range", 0, 1_000_000_000],  # adjust max size if you like
+            ],
+            ExpiresIn=15 * 60,
+        )
+        return jsonify({
+            "success": True,
+            "upload": {
+                "url": post["url"],
+                "fields": post["fields"],
+                "key": key,
+                "bucket": BUCKET,
+                "content_type": content_type,
+            },
+        })
+
+    def download(self, url: str):
+        bucket, key = self._split_s3_url(url)
+        obj = self.s3.get_object(Bucket=bucket, Key=key)
+        file_stream = io.BytesIO(obj['Body'].read())
+        file_stream.seek(0)
+        filename = key.split("/")[-1] if key else bucket
+        return send_file(
+            file_stream,
+            as_attachment=True,
+            download_name=filename
+        )
+
+    def mkdir(self, url: str, create_placeholder: bool = True):
+        """Create a 'directory' prefix; optionally write a zero-byte marker at prefix/."""
+        b, k = self._split_s3_url(url)
+        pfx = self._as_prefix(k or "")
+        if create_placeholder:
+            self.s3.put_object(Bucket=b, Key=pfx, Body=b"")
+        return True
+
+    def rmdir(self, url: str, recursive: bool = False):
+        """Delete prefix. If not recursive, error when non-empty."""
+        b, k = self._split_s3_url(url)
+        pfx = self._as_prefix(k or "")
+        first = self.s3.list_objects_v2(Bucket=b, Prefix=pfx, MaxKeys=2)
+        if not first.get("KeyCount", 0):
+            # remove a stray placeholder if present
+            try:
+                self.s3.delete_object(Bucket=b, Key=pfx)
+            except Exception:
+                pass
+            return True
+        if not recursive:
+            raise OSError(f"Directory not empty: {url}")
+        self._delete_prefix(b, pfx)
+        return True
+
+    def rm(self, url: str, recursive: bool = False):
+        b, k = self._split_s3_url(url)
+        is_prefix = recursive or k.endswith("/")
+        if is_prefix:
+            self._delete_prefix(b, self._as_prefix(k))
+        else:
+            self.s3.delete_object(Bucket=b, Key=k)
+        return True
+
+    def _delete_prefix(self, bucket: str, prefix: str):
+        token = None
+        while True:
+            kwargs = {"Bucket": bucket, "Prefix": prefix}
+            if token:
+                kwargs["ContinuationToken"] = token
+            page = self.s3.list_objects_v2(**kwargs)
+            keys = [{"Key": obj["Key"]} for obj in page.get("Contents", [])]
+            if keys:
+                for i in range(0, len(keys), 1000):
+                    self.s3.delete_objects(Bucket=bucket, Delete={"Objects": keys[i:i + 1000], "Quiet": True})
+            token = page.get("NextContinuationToken")
+            if not token:
+                break
+
+    def rename(self, src_url: str, dst_url: str, overwrite: bool = False):
+        """Rename/move a single object OR a prefix (if src endswith('/'))."""
+        sb, sk = self._split_s3_url(src_url)
+        db, dk = self._split_s3_url(dst_url)
+
+        # prefix move
+        if not sk or sk.endswith("/"):
+            sp = self._as_prefix(sk or "")
+            dp = self._as_prefix(dk or "")
+            # if destination exists and not overwrite, guard
+            if not overwrite:
+                exists = self.s3.list_objects_v2(Bucket=db, Prefix=dp, MaxKeys=1).get("KeyCount", 0)
+                if exists:
+                    raise FileExistsError(f"Destination prefix exists: {dst_url}")
+
+            # list all under source, copy, then delete
+            token = None
+            copied = 0
+            keys_to_delete = []
+            while True:
+                kwargs = {"Bucket": sb, "Prefix": sp}
+                if token:
+                    kwargs["ContinuationToken"] = token
+                page = self.s3.list_objects_v2(**kwargs)
+                objects = page.get("Contents", [])
+                if not objects and token is None:
+                    # nothing to move; may still remove placeholder
+                    try:
+                        self.s3.delete_object(Bucket=sb, Key=sp)
+                    except Exception:
+                        pass
+                    return True
+                for obj in objects:
+                    src_key = obj["Key"]
+                    rel = src_key[len(sp):]
+                    dst_key = dp + rel
+                    if not overwrite:
+                        # optional: check existence; skip if exists or raise
+                        try:
+                            self.s3.head_object(Bucket=db, Key=dst_key)
+                            raise FileExistsError(f"Destination exists: s3://{db}/{dst_key}")
+                        except ClientError as e:
+                            if e.response.get("Error", {}).get("Code") not in ("404", "NotFound", "NoSuchKey"):
+                                raise
+                    self.s3.copy({"Bucket": sb, "Key": src_key}, db, dst_key)
+                    keys_to_delete.append({"Key": src_key})
+                    copied += 1
+                token = page.get("NextContinuationToken")
+                if not token:
+                    break
+
+            # delete originals (chunked)
+            for i in range(0, len(keys_to_delete), 1000):
+                self.s3.delete_objects(Bucket=sb, Delete={"Objects": keys_to_delete[i:i + 1000], "Quiet": True})
+            return True
+
+        # single object move
+        if not overwrite:
+            try:
+                self.s3.head_object(Bucket=db, Key=dk)
+                raise FileExistsError(f"Destination exists: {dst_url}")
+            except ClientError as e:
+                if e.response.get("Error", {}).get("Code") not in ("404", "NotFound", "NoSuchKey"):
+                    raise
+        self.s3.copy({"Bucket": sb, "Key": sk}, db, dk)
+        self.s3.delete_object(Bucket=sb, Key=sk)
+        return True
+
+    def copy(self, src_url: str, dst_url: str, overwrite: bool = False):
+        """
+        Duplicate a file (copy src -> dst) without deleting the source.
+        Works across buckets as well.
+        """
+        sb, sk = self._split_s3_url(src_url)
+        db, dk = self._split_s3_url(dst_url)
+
+        # If not overwriting, check if destination exists
+        if not overwrite:
+            try:
+                self.s3.head_object(Bucket=db, Key=dk)
+                raise FileExistsError(f"Destination exists: {dst_url}")
+            except ClientError as e:
+                code = e.response.get("Error", {}).get("Code", "")
+                if code not in ("404", "NotFound", "NoSuchKey"):
+                    raise
+
+        # Perform the copy
+        self.s3.copy({"Bucket": sb, "Key": sk}, db, dk)
+        return True
+
+    mv = rename
 
 s3 = BotoS3()
