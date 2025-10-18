@@ -1,6 +1,7 @@
 from __future__ import annotations
 from flask import jsonify, send_file
 import boto3
+from botocore.config import Config
 from botocore.exceptions import ClientError
 from urllib.parse import urlparse
 from typing import Iterable, Iterator, List, Tuple, Dict, Optional
@@ -22,7 +23,10 @@ def _split_s3_url(url: str) -> Tuple[str, str]:
 class BotoS3:
     def __init__(self, session: Optional[boto3.session.Session] = None):
         self._session = session or boto3.session.Session()
-        self.s3 = self._session.client("s3")
+        self.s3 = self._session.client(
+            "s3",
+            config=Config(signature_version="s3v4")
+        )
 
     @staticmethod
     def _as_prefix(key: str) -> str:
@@ -169,28 +173,26 @@ class BotoS3:
         obj = self.s3.get_object(Bucket=b, Key=k)
         return obj["Body"].read().decode(encoding)
 
-    def upload_info(self, dest_path, content_type, username):
+    def upload_info(self, dest_path, content_type):
         bucket, key = _split_s3_url(dest_path)
-        post = self.s3.generate_presigned_post(
+        conditions = [
+            {"bucket": bucket},
+            ["starts-with", "$key", key],
+            ["content-length-range", 1, max_mb * 1024 * 1024],
+        ]
+        fields = {"key": key, "success_action_status": "201"}
+        if content_type:
+            # accept whatever the browser sends (must also append this field in the form)
+            conditions.append(["starts-with", "$Content-Type", ""])
+            fields["Content-Type"] = content_type
+
+        return s3.generate_presigned_post(
             Bucket=bucket,
             Key=key,
-            Fields={"Content-Type": content_type},
-            Conditions=[
-                {"bucket": bucket},
-                ["starts-with", "$key", f"users/{username}/"],
-                {"Content-Type": content_type},
-                ["content-length-range", 0, 1_000_000_000],  # adjust max size if you like
-            ],
-            ExpiresIn=15 * 60,
+            Fields=fields,
+            Conditions=conditions,
+            ExpiresIn=expires_in,
         )
-        return {
-            "url": post["url"],
-            "fields": post["fields"],
-            "key": key,
-            "bucket": bucket,
-            "content_type": content_type,
-        }
-
     def download(self, url: str):
         bucket, key = _split_s3_url(url)
         obj = self.s3.get_object(Bucket=bucket, Key=key)

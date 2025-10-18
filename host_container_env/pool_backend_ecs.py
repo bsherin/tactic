@@ -155,5 +155,5 @@ class PoolBackendECS(PoolBackend):
         # e.g. "/users/<userId>/some/folder"
         full_dest_path = os.path.join(dest_path, filename)
 
-        return boto_s3.upload_info(full_dest_path, content_type, the_user.username)
+        return boto_s3.upload_info(full_dest_path, content_type)
 

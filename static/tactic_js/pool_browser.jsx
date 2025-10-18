@@ -401,6 +401,10 @@ function PoolBrowser(props) {
 
                 const {url, fields, key, bucket, content_type} = resp.upload_info;
 
+                for (let key of resp.upload_info.fields.keys()) {
+                    console.log(`S3 upload field: ${key} = ${resp.upload_info.fields[key]}`);
+                }
+
                 // Build a new multipart/form-data request to S3 using the returned fields + file
                 const fd = new FormData();
                 Object.entries(fields).forEach(([k, v]) => fd.append(k, v));
