@@ -378,7 +378,7 @@ function PoolBrowser(props) {
 
     function _add_to_pool(myDropZone, setCurrentUrl, current_value) {
         let new_url;
-        if (current_value.startWith("s3://")) {
+        if (current_value.startsWith("s3://")) {
             new_url = "nothing"
         }
         else {
