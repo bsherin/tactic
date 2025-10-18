@@ -182,7 +182,7 @@ class BotoS3:
             ["starts-with", "$key", key],
             ["content-length-range", 1, max_mb * 1024 * 1024],
         ]
-        fields = {"key": key, "success_action_status": "201"}
+        fields = {"key": key}
         if content_type:
             # accept whatever the browser sends (must also append this field in the form)
             conditions.append(["starts-with", "$Content-Type", ""])
