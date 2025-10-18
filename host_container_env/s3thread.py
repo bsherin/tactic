@@ -195,7 +195,7 @@ class BotoS3:
         })
 
     def download(self, url: str):
-        bucket, key = self._split_s3_url(url)
+        bucket, key = _split_s3_url(url)
         obj = self.s3.get_object(Bucket=bucket, Key=key)
         file_stream = io.BytesIO(obj['Body'].read())
         file_stream.seek(0)
@@ -208,7 +208,7 @@ class BotoS3:
 
     def mkdir(self, url: str, create_placeholder: bool = True):
         """Create a 'directory' prefix; optionally write a zero-byte marker at prefix/."""
-        b, k = self._split_s3_url(url)
+        b, k = _split_s3_url(url)
         pfx = self._as_prefix(k or "")
         if create_placeholder:
             self.s3.put_object(Bucket=b, Key=pfx, Body=b"")
@@ -216,7 +216,7 @@ class BotoS3:
 
     def rmdir(self, url: str, recursive: bool = False):
         """Delete prefix. If not recursive, error when non-empty."""
-        b, k = self._split_s3_url(url)
+        b, k = _split_s3_url(url)
         pfx = self._as_prefix(k or "")
         first = self.s3.list_objects_v2(Bucket=b, Prefix=pfx, MaxKeys=2)
         if not first.get("KeyCount", 0):
@@ -232,7 +232,7 @@ class BotoS3:
         return True
 
     def rm(self, url: str, recursive: bool = False):
-        b, k = self._split_s3_url(url)
+        b, k = _split_s3_url(url)
         is_prefix = recursive or k.endswith("/")
         if is_prefix:
             self._delete_prefix(b, self._as_prefix(k))
@@ -257,8 +257,8 @@ class BotoS3:
 
     def rename(self, src_url: str, dst_url: str, overwrite: bool = False):
         """Rename/move a single object OR a prefix (if src endswith('/'))."""
-        sb, sk = self._split_s3_url(src_url)
-        db, dk = self._split_s3_url(dst_url)
+        sb, sk = _split_s3_url(src_url)
+        db, dk = _split_s3_url(dst_url)
 
         # prefix move
         if not sk or sk.endswith("/"):
@@ -328,8 +328,8 @@ class BotoS3:
         Duplicate a file (copy src -> dst) without deleting the source.
         Works across buckets as well.
         """
-        sb, sk = self._split_s3_url(src_url)
-        db, dk = self._split_s3_url(dst_url)
+        sb, sk = _split_s3_url(src_url)
+        db, dk = _split_s3_url(dst_url)
 
         # If not overwriting, check if destination exists
         if not overwrite:
