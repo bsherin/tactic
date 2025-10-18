@@ -409,9 +409,10 @@ function PoolBrowser(props) {
                 try {
                     const s3res = await fetch(url, {method: "POST", body: fd});
                     if (!s3res.ok) {
+                        const errTxt = await s3res.text();
                         errorDrawerFuncs.addErrorDrawerEntry({
                             title: "S3 upload failed",
-                            content: s3res.status
+                            content: errTxt
                         });
                     }
                 } catch (e) {
