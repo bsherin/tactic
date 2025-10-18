@@ -401,7 +401,7 @@ function PoolBrowser(props) {
 
                 const {url, fields, key, bucket, content_type} = resp.upload_info;
 
-                for (let key of resp.upload_info.fields.keys()) {
+                for (let key of Object.keys(resp.upload_info.fields)) {
                     console.log(`S3 upload field: ${key} = ${resp.upload_info.fields[key]}`);
                 }
 
