@@ -187,7 +187,7 @@ class BotoS3:
             conditions.append(["starts-with", "$Content-Type", ""])
             fields["Content-Type"] = content_type
 
-        return s3.generate_presigned_post(
+        return self.s3.generate_presigned_post(
             Bucket=bucket,
             Key=key,
             Fields=fields,
