@@ -193,12 +193,12 @@ function FileImportDialog(props) {
         }
     }
 
-    async function _onSending(f, xhr, formData) {
+    async function _onSending(file, xhr, formData) {
         if (!current_value_ref.current.startsWith("s3://")) {
-            f.previewElement.scrollIntoView(false);
+            file.previewElement.scrollIntoView(false);
             formData.append("extra_value", current_value_ref.current);
             if (props.chunking) {
-                formData.append("dzuuid", f.upload.uuid)
+                formData.append("dzuuid", file.upload.uuid)
             }
         } else {
             xhr.abort();
