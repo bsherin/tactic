@@ -174,6 +174,7 @@ class BotoS3:
         return obj["Body"].read().decode(encoding)
 
     def upload_info(self, dest_path, content_type):
+        max_mb = 100  # max size for presigned upload
         bucket, key = _split_s3_url(dest_path)
         conditions = [
             {"bucket": bucket},
@@ -191,7 +192,7 @@ class BotoS3:
             Key=key,
             Fields=fields,
             Conditions=conditions,
-            ExpiresIn=expires_in,
+            ExpiresIn=15 * 60  # 15 minutes,
         )
     def download(self, url: str):
         bucket, key = _split_s3_url(url)
