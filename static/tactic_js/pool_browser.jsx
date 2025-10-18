@@ -376,8 +376,14 @@ function PoolBrowser(props) {
         }
     }
 
-    function _add_to_pool(myDropZone, setCurrentUrl) {
-        let new_url = `import_pool/${window.global_id}`;
+    function _add_to_pool(myDropZone, setCurrentUrl, current_value) {
+        let new_url;
+        if (current_value.startWith("s3://")) {
+            new_url = "nothing"
+        }
+        else {
+            new_url = `import_pool/${window.global_id}`;
+        }
         myDropZone.options.url = new_url;
         setCurrentUrl(new_url);
         myDropZone.processQueue();
