@@ -185,9 +185,7 @@ function FileImportDialog(props) {
       }
     } else {
       xhr.abort();
-
-      // whatever path your UI chose goes here (what you used as request.form["extra_value"])
-      const extraValue = getChosenDestPathFromUI(); // e.g. "users/bsherinrem/some/folder"
+      const extraValue = current_value_ref.current;
 
       // call your Flask endpoint to get a presigned POST
       const resp = await fetch(`import_pool/${window.global_id}`, {
