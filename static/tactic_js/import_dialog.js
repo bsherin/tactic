@@ -271,7 +271,7 @@ function FileImportDialog(props) {
     width: 75
   };
   var componentConfig = {
-    postUrl: "blah" // Must have this even though will never be used
+    postUrl: current_url.current // Must have this even though will never be used
   };
   var djsConfig = {
     uploadMultiple: false,

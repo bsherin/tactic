@@ -376,17 +376,52 @@ function PoolBrowser(props) {
         }
     }
 
-    function _add_to_pool(myDropZone, setCurrentUrl, current_value) {
-        let new_url;
-        if (current_value.startsWith("s3://")) {
-            new_url = null
+    async function _add_to_pool(myDropZone, setCurrentUrl, current_value) {
+        if (!current_value.startsWith("s3://")) {
+            let new_url = `import_pool/${window.global_id}`;
+            myDropZone.options.url = new_url;
+            setCurrentUrl(new_url);
+            myDropZone.processQueue();
         }
         else {
-            new_url = `import_pool/${window.global_id}`;
+            for (let file of myDropZone.getQueuedFiles()) {
+                let resp = await postPromise("host", "get_s3_upload_info_task", {
+                    filename: file.name,
+                    content_type: file.type || "application/octet-stream",
+                    dest_path: current_value
+                });
+
+                if (!resp.success) {
+                    errorDrawerFuncs.addErrorDrawerEntry({
+                        title: "Failed to get presign",
+                        content: resp.message
+                    });
+                    return;
+                }
+
+                const {url, fields, key, bucket, content_type} = resp.upload_info;
+
+                // Build a new multipart/form-data request to S3 using the returned fields + file
+                const fd = new FormData();
+                Object.entries(fields).forEach(([k, v]) => fd.append(k, v));
+                fd.append("file", file);
+
+                try {
+                    const s3res = await fetch(url, {method: "POST", body: fd});
+                    if (!s3res.ok) {
+                        errorDrawerFuncs.addErrorDrawerEntry({
+                            title: "S3 upload failed",
+                            content: s3res.status
+                        });
+                    }
+                } catch (e) {
+                    errorDrawerFuncs.addErrorDrawerEntry({
+                        title: "S3 upload failed",
+                        content: e.message
+                    });
+                }
+            }
         }
-        myDropZone.options.url = new_url;
-        setCurrentUrl(new_url);
-        myDropZone.processQueue();
     }
 
     function _showPoolImport(node = null) {

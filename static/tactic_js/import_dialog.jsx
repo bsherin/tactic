@@ -281,7 +281,7 @@ let progress_style = {
 };
 let size_style = {marginLeft: 5, width: 75};
 var componentConfig = {
-    postUrl: "blah",  // Must have this even though will never be used
+    postUrl: current_url.current,  // Must have this even though will never be used
 };
 var djsConfig = {
     uploadMultiple: false,
