@@ -25,6 +25,7 @@ class BotoS3:
         self._session = session or boto3.session.Session()
         self.s3 = self._session.client(
             "s3",
+            region_name="us-east-2",
             config=Config(signature_version="s3v4")
         )
 
