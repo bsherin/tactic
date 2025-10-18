@@ -205,15 +205,11 @@ function FileImportDialog(props) {
 
             const extraValue = current_value_ref.current;
 
-            // call your Flask endpoint to get a presigned POST
-            const resp = await fetch(`import_pool/${window.global_id}`, {
-                method: "POST",
-                body: new URLSearchParams({
-                    filename: file.name,
-                    content_type: file.type || "application/octet-stream",
-                    extra_value: extraValue
-                })
-            }).then(r => r.json());
+            const resp = await postPromise("host", "get_s3_upload_info_task", {
+                filename: file.name,
+                content_type: file.type || "application/octet-stream",
+                dest_path: current_value_ref.current
+            });
 
             if (!resp.success) {
                 this.emit("error", file, resp.message || "Failed to get presign");
@@ -221,7 +217,7 @@ function FileImportDialog(props) {
                 return;
             }
 
-            const {url, fields, key} = resp.upload;
+            const {url, fields, key, bucket, content_type} = resp.upload_info;
 
             // Build a new multipart/form-data request to S3 using the returned fields + file
             const fd = new FormData();
@@ -230,8 +226,9 @@ function FileImportDialog(props) {
 
             try {
                 const s3res = await fetch(url, {method: "POST", body: fd});
-                if (!s3res.ok) throw new Error(`S3 upload failed: ${s3res.status}`);
-
+                if (!s3res.ok) {
+                    this.emit("error", `S3 upload failed: ${s3res.status}`);
+                }
                 this.emit("success", file, {key});
             } catch (e) {
                 this.emit("error", file, e.message);

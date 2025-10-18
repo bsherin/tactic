@@ -150,17 +150,10 @@ class PoolBackendECS(PoolBackend):
         except Exception as ex:
             raise IOError(f"Error downloading resource {src}: {str(ex)}")
 
-    def upload_resource(self, request, hw, current_user):
+    def get_s3_upload_info(self, dest_path, filename, content_type, he_user):
         # path the user chose in your UI (what you previously called extra_value)
         # e.g. "/users/<userId>/some/folder"
-        dest_path = request.form.get("extra_value", "").strip("/")
-        if not dest_path:
-            return jsonify({"success": False, "message": "Missing destination"}), 400
-        the_file = list(request.files.values())[0]
-        filename = the_file.filename
         full_dest_path = os.path.join(dest_path, filename)
-        content_type = request.form.get("content_type") or mimetypes.guess_type(filename)[
-            0] or "application/octet-stream"
 
-        return boto_s3.upload(full_dest_path, content_type, current_user.username)
+        return boto_s3.upload_info(full_dest_path, content_type, the_user.username)
 

@@ -191,3 +191,17 @@ class PoolTasksMixin:
         except Exception as ex:
             emsg = self.get_traceback_message(ex, "Error in view_text_in_context")
             return {"success": False, "message": emsg}
+
+    @task_worthy
+    def get_s3_upload_info_task(self, data):
+        try:
+            the_user = self.get_user_from_data(data)
+            dest_path = data["dest_path"]
+            filename = data["filename"]
+            content_type = data["content_type"]
+            up_info = self.pool_backend.get_s3_upload_info(dest_path, filename, content_type, the_user)
+            return {"success": True, "upload_info": up_info}
+        except Exception as ex:
+            emsg = self.get_traceback_message(ex, "Error in get_s3_upload_info_task")
+            print(emsg)
+            return {"success": False, "message": emsg}

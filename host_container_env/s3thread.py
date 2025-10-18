@@ -169,7 +169,7 @@ class BotoS3:
         obj = self.s3.get_object(Bucket=b, Key=k)
         return obj["Body"].read().decode(encoding)
 
-    def upload(self, dest_path, content_type, username):
+    def upload_info(self, dest_path, content_type, username):
         bucket, key = _split_s3_url(dest_path)
         post = self.s3.generate_presigned_post(
             Bucket=bucket,
@@ -183,16 +183,13 @@ class BotoS3:
             ],
             ExpiresIn=15 * 60,
         )
-        return jsonify({
-            "success": True,
-            "upload": {
-                "url": post["url"],
-                "fields": post["fields"],
-                "key": key,
-                "bucket": bucket,
-                "content_type": content_type,
-            },
-        })
+        return {
+            "url": post["url"],
+            "fields": post["fields"],
+            "key": key,
+            "bucket": bucket,
+            "content_type": content_type,
+        }
 
     def download(self, url: str):
         bucket, key = _split_s3_url(url)
