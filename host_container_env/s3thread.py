@@ -348,4 +348,4 @@ class BotoS3:
 
     mv = rename
 
-s3 = BotoS3()
+boto_s3 = BotoS3()
