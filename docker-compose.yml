@@ -404,7 +404,6 @@ services:
   tactic_pool_watcher_s3:
     image: bsherin/tactic-pool-watcher-s3:${IMG_SUFFIX}
     profiles:
-      - start_project
       - build_server_project
       - build_non_base
     build:
