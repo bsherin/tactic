@@ -385,6 +385,7 @@ function PoolBrowser(props) {
         }
         else {
             for (let file of myDropZone.getQueuedFiles()) {
+                myDropZone.emit("processing", file);
                 let resp = await postPromise("host", "get_s3_upload_info_task", {
                     filename: file.name,
                     content_type: file.type || "application/octet-stream",
