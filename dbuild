@@ -6,7 +6,7 @@ if [ "$1" == "all" ] ; then
   docker compose --env-file server.env build "tactic_main"
 	docker compose --env-file server.env build "tactic_module_viewer"
 	docker compose --env-file server.env build "tactic_tile"
-	docker compose --env-file server.env build "tactic_pool_watcher"
+	docker compose --env-file server.env build "tactic_pool_watcher_s3"
 	docker compose --env-file server.env build "tactic_mongo_watcher"
 	docker compose --env-file server.env build "tactic_log_streamer"
 	docker compose --env-file server.env build "tactic_assistant"

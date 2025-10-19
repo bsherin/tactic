@@ -413,10 +413,8 @@ function PoolBrowser(props) {
           xhr.upload.onprogress = e => {
             if (e.lengthComputable) {
               const pct = e.loaded / e.total * 100;
-              // Dropzone expects: (file, progress, bytesSent)
               myDropZone.emit("uploadprogress", file, pct, e.loaded);
             } else {
-              // if not computable, you can still nudge progress:
               myDropZone.emit("uploadprogress", file, 50, 0);
             }
           };
@@ -442,21 +440,7 @@ function PoolBrowser(props) {
               content: "Network error"
             });
           };
-
-          // Kick off upload
           xhr.send(fd);
-          //     const s3res = await fetch(url, {method: "POST", body: fd});
-          // if (!s3res.ok) {
-          //     const errTxt = await s3res.text();
-          //     myDropZone.emit("error", file, errTxt);
-          //     errorDrawerFuncs.addErrorDrawerEntry({
-          //         title: "S3 upload failed",
-          //         content: errTxt
-          //     });
-          // }
-          // else {
-          //     myDropZone.emit("success", file);
-          // }
         } catch (e) {
           myDropZone.emit("error", file, e.message);
           errorDrawerFuncs.addErrorDrawerEntry({

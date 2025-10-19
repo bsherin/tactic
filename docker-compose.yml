@@ -365,10 +365,8 @@ services:
   tactic_pool_watcher:
     image: bsherin/tactic-pool-watcher:${IMG_SUFFIX}
     profiles:
-      - start_project
       - start_development
       - build_project
-      - build_server_project
       - build_non_base
     build:
       context: .
@@ -400,6 +398,36 @@ services:
       - type: bind
         source: "${POOL_DIR}"
         target: "/pool"
+    networks:
+      - tactic-net
+
+  tactic_pool_watcher_s3:
+    image: bsherin/tactic-pool-watcher-s3:${IMG_SUFFIX}
+    profiles:
+      - start_project
+      - build_server_project
+      - build_non_base
+    build:
+      context: .
+      dockerfile: Dockerfile-pool-watcher-s3
+      args:
+        BASE_IMAGE: ${BASE_IMAGE}
+    restart: always
+    container_name: pool_watcher_s3
+    init: true
+    platform: ${PLATFORM}
+    labels:
+      project: tactic
+      my_id: pool_watcher_s3
+      owner: host
+      parent: host
+      other_name: pool_watcher_s3
+    environment:
+      - AWS_REGION=${AWS_REGION}
+      - RABBIT_USER=${RABBIT_USER}
+      - RABBIT_PASS=${RABBIT_PASS}
+      - BUCKET=${BUCKET}
+      - SQS_QUEUE_URL=${SQS_QUEUE_URL}
     networks:
       - tactic-net
 
