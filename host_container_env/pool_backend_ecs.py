@@ -1,5 +1,6 @@
 
 import os
+import re
 import mimetypes
 from flask import jsonify
 from tactic_app import socketio
