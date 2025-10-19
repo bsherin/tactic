@@ -5,6 +5,8 @@ from urllib.parse import unquote_plus
 
 from rabbit_manage import get_pika_connection_with_retries
 
+print("pool_watcher_s3 starting...")
+
 S3_BUCKET = os.environ["BUCKET"]  # e.g. "tactic-user-storage"
 SQS_QUEUE_URL = os.environ["SQS_QUEUE_URL"]  # e.g. https://sqs.us-east-2.amazonaws.com/ACCT/tactic-user-storage-events
 AWS_REGION = os.environ.get("AWS_REGION", "us-east-2")
@@ -19,8 +21,9 @@ def is_dir_key(key: str) -> bool:
 class Handler:
     def __init__(self):
         self.my_id = "pool_watcher_s3"
+        print("my_id is", self.my_id)
         self.connection, self.channel = get_pika_connection_with_retries(0, True)
-        print("connected to RabbitMQ as")
+        print("connected to RabbitMQ")
         self.sqs = boto3.client("sqs", region_name=AWS_REGION)
         print("connected to SQS as", self.sqs.meta.region_name)
 
