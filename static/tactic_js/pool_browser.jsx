@@ -419,6 +419,9 @@ function PoolBrowser(props) {
                             content: errTxt
                         });
                     }
+                    else {
+                        myDropZone.emit("success", file);
+                    }
                 } catch (e) {
                     errorDrawerFuncs.addErrorDrawerEntry({
                         title: "S3 upload failed",
