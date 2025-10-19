@@ -1,6 +1,7 @@
 import os, json, time, threading, collections
 import boto3
 import pika
+import traceback
 from urllib.parse import unquote_plus
 
 from rabbit_manage import get_pika_connection_with_retries
@@ -39,7 +40,7 @@ class Handler:
         self.post_task("host", msg_type, task_data)
         return
 
-    def post_task(self, dest_id, task_type, task_data=None):
+    def post_task(self, dest_id, task_type, task_data=None, expiration=None):
         try:
             callback_id = None
             reply_to = None
