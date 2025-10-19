@@ -79,24 +79,21 @@ function PoolBrowser(props) {
                 code = `import pandas as pd\ndf = pd.read_csv("${path}")`
             } else if (ext === "parquet") {
                 code = `import pandas as pd\ndf = pd.read_parquet("${path}")`
-            }
-            else {
+            } else {
                 code = `import pandas as pd\ndf = pd.read_pickle("${path}")`
             }
-        }
-        else {
+        } else {
             if (ext == "pkl") {
                 code = `import pickle\nwith open("${path}", "rb") as f:\n    data = pickle.load(f)`
-            }
-            else {
+            } else {
                 code = `with open("${path}") as f:\n    txt = f.read()`
             }
         }
 
         await postPromise("host",
-                "print_code_area_to_console",
-                {"console_text": code, "user_id": window.user_id, "local_id": main_id},
-                window.global_id);
+            "print_code_area_to_console",
+            {"console_text": code, "user_id": window.user_id, "local_id": main_id},
+            window.global_id);
     }
 
     async function openInNotebook(node = null) {
@@ -110,8 +107,7 @@ function PoolBrowser(props) {
             let requireNewNotebook;
             if (openResources.length === 0) {
                 requireNewNotebook = true;
-            }
-            else {
+            } else {
                 requireNewNotebook = false;
                 for (let entry of openResources) {
                     if (entry.res_type === "project" || entry.res_type === "collection") {
@@ -121,22 +117,26 @@ function PoolBrowser(props) {
                 }
             }
             let [selectedResource, checkResults] = await dialogFuncs.showModalPromise("SelectDialog", {
-                    title: "Open resources in notebook",
-                    checkboxes: [
-                        {"checkname": "create_new_notebook", "checktext": "Create new notebook", "checked": requireNewNotebook, "disabled": requireNewNotebook},
-                        {"checkname": "read_as_dataframe", "checktext": "Read as dataframe", "checked": false},
-                    ],
-                    select_label: "Project",
-                    cancel_text: "Cancel",
-                    submit_text: "Open",
-                    option_list: open_projects,
-                    handleClose: dialogFuncs.hideModal,
-                });
+                title: "Open resources in notebook",
+                checkboxes: [
+                    {
+                        "checkname": "create_new_notebook",
+                        "checktext": "Create new notebook",
+                        "checked": requireNewNotebook,
+                        "disabled": requireNewNotebook
+                    },
+                    {"checkname": "read_as_dataframe", "checktext": "Read as dataframe", "checked": false},
+                ],
+                select_label: "Project",
+                cancel_text: "Cancel",
+                submit_text: "Open",
+                option_list: open_projects,
+                handleClose: dialogFuncs.hideModal,
+            });
             let data;
             if (checkResults["create_new_notebook"]) {
                 props.handleCreateViewer("new-notebook", null, async (main_id) => await sendNewCell(path, main_id, checkResults["read_as_dataframe"]))
-            }
-            else {
+            } else {
                 props.setSelectedTabId(open_projects_dict[selectedResource].id);
                 await sendNewCell(path, open_projects_dict[selectedResource].local_id, checkResults["read_as_dataframe"])
             }
@@ -248,9 +248,9 @@ function PoolBrowser(props) {
             await postPromise("host", "compress_pool_resource", {
                 full_path: sNode.fullpath,
                 force_forward: true,
-                user_id: window.user_id});
-        }
-        catch (e) {
+                user_id: window.user_id
+            });
+        } catch (e) {
             errorDrawerFuncs.addFromError(`Error compressing file or folder`, e)
         }
     }
@@ -262,9 +262,9 @@ function PoolBrowser(props) {
             await postPromise("host", "decompress_archive", {
                 full_path: sNode.fullpath,
                 force_forward: true,
-                user_id: window.user_id});
-        }
-        catch (e) {
+                user_id: window.user_id
+            });
+        } catch (e) {
             errorDrawerFuncs.addFromError(`Error decompressing archive`, e)
         }
     }
@@ -382,17 +382,14 @@ function PoolBrowser(props) {
             myDropZone.options.url = new_url;
             setCurrentUrl(new_url);
             myDropZone.processQueue();
-        }
-        else {
+        } else {
             for (let file of myDropZone.getQueuedFiles()) {
                 myDropZone.emit("processing", file);
-                myDropZone.emit("uploadProgress", file, 10, file.size);
                 let resp = await postPromise("host", "get_s3_upload_info_task", {
                     filename: file.name,
                     content_type: file.type || "application/octet-stream",
                     dest_path: current_value
                 });
-                myDropZone.emit("uploadProgress", file, 25, file.size);
 
                 if (!resp.success) {
                     myDropZone.emit("error", file, resp.message);
@@ -405,24 +402,61 @@ function PoolBrowser(props) {
 
                 const {url, fields, key, bucket, content_type} = resp.upload_info;
 
-                // Build a new multipart/form-data request to S3 using the returned fields + file
                 const fd = new FormData();
                 Object.entries(fields).forEach(([k, v]) => fd.append(k, v));
                 fd.append("file", file);
 
                 try {
-                    const s3res = await fetch(url, {method: "POST", body: fd});
-                    if (!s3res.ok) {
-                        const errTxt = await s3res.text();
-                        myDropZone.emit("error", file, errTxt);
+                    const xhr = new XMLHttpRequest();
+                    xhr.open("POST", url, true);
+                    xhr.upload.onprogress = (e) => {
+                        if (e.lengthComputable) {
+                            const pct = (e.loaded / e.total) * 100;
+                            // Dropzone expects: (file, progress, bytesSent)
+                            myDropZone.emit("uploadprogress", file, pct, e.loaded);
+                        } else {
+                            // if not computable, you can still nudge progress:
+                            myDropZone.emit("uploadprogress", file, 50, 0);
+                        }
+                    };
+                    xhr.onload = async () => {
+                        if (xhr.status >= 200 && xhr.status < 300) {
+                            // S3 presigned POST usually returns 204 or 201
+                            myDropZone.emit("success", file, xhr.responseText);
+                            myDropZone.emit("complete", file);
+                        } else {
+                            const msg = xhr.responseText || `Status ${xhr.status}`;
+                            myDropZone.emit("error", file, msg);
+                            errorDrawerFuncs.addErrorDrawerEntry({
+                                title: "S3 upload failed",
+                                content: msg
+                            });
+                        }
+                    };
+
+                    xhr.onerror = () => {
+                        myDropZone.emit("error", file, "Network error");
+                        myDropZone.emit("error", file, msg);
                         errorDrawerFuncs.addErrorDrawerEntry({
                             title: "S3 upload failed",
-                            content: errTxt
+                            content: "Network error"
                         });
-                    }
-                    else {
-                        myDropZone.emit("success", file);
-                    }
+                    };
+
+                    // Kick off upload
+                    xhr.send(fd);
+                    //     const s3res = await fetch(url, {method: "POST", body: fd});
+                    // if (!s3res.ok) {
+                    //     const errTxt = await s3res.text();
+                    //     myDropZone.emit("error", file, errTxt);
+                    //     errorDrawerFuncs.addErrorDrawerEntry({
+                    //         title: "S3 upload failed",
+                    //         content: errTxt
+                    //     });
+                    // }
+                    // else {
+                    //     myDropZone.emit("success", file);
+                    // }
                 } catch (e) {
                     myDropZone.emit("error", file, e.message);
                     errorDrawerFuncs.addErrorDrawerEntry({
@@ -526,22 +560,22 @@ function PoolBrowser(props) {
                           text="Go Home"/>
                 <MenuDivider/>
                 <MenuItem icon="clipboard"
-                  onClick={async () => {
-                      await _copy_func(props.node)
-                  }}
-                  text="Copy Path"/>
+                          onClick={async () => {
+                              await _copy_func(props.node)
+                          }}
+                          text="Copy Path"/>
                 {!props.node.isDirectory &&
                     <Fragment>
-                    <MenuItem icon="eye-open"
-                              onClick={async () => {
-                                  await viewTextFile(props.node)
-                              }}
-                              text="View as Text"/>
-                    <MenuItem icon="code"
-                              onClick={async () => {
-                                  await openInNotebook(props.node)
-                              }}
-                              text="Open in Notebook"/>
+                        <MenuItem icon="eye-open"
+                                  onClick={async () => {
+                                      await viewTextFile(props.node)
+                                  }}
+                                  text="View as Text"/>
+                        <MenuItem icon="code"
+                                  onClick={async () => {
+                                      await openInNotebook(props.node)
+                                  }}
+                                  text="Open in Notebook"/>
 
                     </Fragment>
                 }
@@ -682,21 +716,21 @@ function PoolBrowser(props) {
                          {...props.errorDrawerFuncs}
                          controlled={props.controlled}
                          tsocket={props.tsocket}/>
-                <div style={{
-                    flex: "1 1 0",
-                    display: "flex",
-                    minHeight: 0,
-                    position: "relative"
-                }}>
-                    <HorizontalPanes
-                        outer_hp_style={{}}
-                        show_handle={true}
-                        left_pane={left_pane}
-                        right_pane={right_pane}
-                        right_pane_overflow="auto"
-                        initial_width_fraction={.75}
-                    />
-                </div>
+            <div style={{
+                flex: "1 1 0",
+                display: "flex",
+                minHeight: 0,
+                position: "relative"
+            }}>
+                <HorizontalPanes
+                    outer_hp_style={{}}
+                    show_handle={true}
+                    left_pane={left_pane}
+                    right_pane={right_pane}
+                    right_pane_overflow="auto"
+                    initial_width_fraction={.75}
+                />
+            </div>
         </div>
     )
 }

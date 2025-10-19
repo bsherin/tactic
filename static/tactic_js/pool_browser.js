@@ -384,13 +384,11 @@ function PoolBrowser(props) {
     } else {
       for (let file of myDropZone.getQueuedFiles()) {
         myDropZone.emit("processing", file);
-        myDropZone.emit("uploadProgress", file, 10, file.size);
         let resp = await (0, _communication_react.postPromise)("host", "get_s3_upload_info_task", {
           filename: file.name,
           content_type: file.type || "application/octet-stream",
           dest_path: current_value
         });
-        myDropZone.emit("uploadProgress", file, 25, file.size);
         if (!resp.success) {
           myDropZone.emit("error", file, resp.message);
           errorDrawerFuncs.addErrorDrawerEntry({
@@ -406,26 +404,59 @@ function PoolBrowser(props) {
           bucket,
           content_type
         } = resp.upload_info;
-
-        // Build a new multipart/form-data request to S3 using the returned fields + file
         const fd = new FormData();
         Object.entries(fields).forEach(([k, v]) => fd.append(k, v));
         fd.append("file", file);
         try {
-          const s3res = await fetch(url, {
-            method: "POST",
-            body: fd
-          });
-          if (!s3res.ok) {
-            const errTxt = await s3res.text();
-            myDropZone.emit("error", file, errTxt);
+          const xhr = new XMLHttpRequest();
+          xhr.open("POST", url, true);
+          xhr.upload.onprogress = e => {
+            if (e.lengthComputable) {
+              const pct = e.loaded / e.total * 100;
+              // Dropzone expects: (file, progress, bytesSent)
+              myDropZone.emit("uploadprogress", file, pct, e.loaded);
+            } else {
+              // if not computable, you can still nudge progress:
+              myDropZone.emit("uploadprogress", file, 50, 0);
+            }
+          };
+          xhr.onload = async () => {
+            if (xhr.status >= 200 && xhr.status < 300) {
+              // S3 presigned POST usually returns 204 or 201
+              myDropZone.emit("success", file, xhr.responseText);
+              myDropZone.emit("complete", file);
+            } else {
+              const msg = xhr.responseText || `Status ${xhr.status}`;
+              myDropZone.emit("error", file, msg);
+              errorDrawerFuncs.addErrorDrawerEntry({
+                title: "S3 upload failed",
+                content: msg
+              });
+            }
+          };
+          xhr.onerror = () => {
+            myDropZone.emit("error", file, "Network error");
+            myDropZone.emit("error", file, msg);
             errorDrawerFuncs.addErrorDrawerEntry({
               title: "S3 upload failed",
-              content: errTxt
+              content: "Network error"
             });
-          } else {
-            myDropZone.emit("success", file);
-          }
+          };
+
+          // Kick off upload
+          xhr.send(fd);
+          //     const s3res = await fetch(url, {method: "POST", body: fd});
+          // if (!s3res.ok) {
+          //     const errTxt = await s3res.text();
+          //     myDropZone.emit("error", file, errTxt);
+          //     errorDrawerFuncs.addErrorDrawerEntry({
+          //         title: "S3 upload failed",
+          //         content: errTxt
+          //     });
+          // }
+          // else {
+          //     myDropZone.emit("success", file);
+          // }
         } catch (e) {
           myDropZone.emit("error", file, e.message);
           errorDrawerFuncs.addErrorDrawerEntry({
