@@ -113,12 +113,24 @@ function treeNodesReducer(nodes, action) {
       return newState8;
     case "MODIFY_FILE":
       const newStateMF = _lodash.default.cloneDeep(nodes);
+      let modified_file = false;
       forEachNode(newStateMF, node => {
         if (node.fullpath == action.fileDict.fullpath) {
           action.fileDict.isSelected = node.isSelected;
           updateNode(node, action.fileDict);
+          modified_file = true;
         }
       });
+      if (!modified_file) {
+        const [path] = splitFilePath(action.fileDict.fullpath);
+        forEachNode(newStateMF, node => {
+          if (node.isDirectory) {
+            if (node.fullpath == path) {
+              node.childNodes.push(action.fileDict);
+            }
+          }
+        });
+      }
       return newStateMF;
     case "MODIFY_DIRECTORY":
       const newStateMD = _lodash.default.cloneDeep(nodes);

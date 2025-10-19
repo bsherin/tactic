@@ -127,9 +127,7 @@ class Handler:
                         RECENT.append(sig)
 
                         if ev.startswith("ObjectCreated:"):
-                            # You can treat as "create" or "modify". Here: first time => create, else modify.
-                            was_seen = any(prev_k == k for (_, prev_k, _, _) in RECENT if prev_k == k)
-                            self.post_pool_event("modify" if was_seen else "create", k, is_dir_key(k))
+                            self.post_pool_event("modify", k, is_dir_key(k))
 
                         elif ev.startswith("ObjectRemoved:"):
                             self.post_pool_event("delete", k, is_dir_key(k))
