@@ -18,9 +18,11 @@ def is_dir_key(key: str) -> bool:
 
 class Handler:
     def __init__(self):
-        self.my_id = "pool_watcher"
+        self.my_id = "pool_watcher_s3"
         self.connection, self.channel = get_pika_connection_with_retries(0, True)
+        print("connected to RabbitMQ as")
         self.sqs = boto3.client("sqs", region_name=AWS_REGION)
+        print("connected to SQS as", self.sqs.meta.region_name)
 
     def post_pool_event(self, event_type, key, is_dir, dest_key=None):
         self.ask_host("pool_event", {
@@ -89,6 +91,7 @@ class Handler:
 
     def main(self):
         while True:
+            print("Waiting for SQS messages...")
             resp = self.sqs.receive_message(
                 QueueUrl=SQS_QUEUE_URL,
                 MaxNumberOfMessages=10,
@@ -97,6 +100,7 @@ class Handler:
             )
             msgs = resp.get("Messages", [])
             if not msgs:
+                print("No messages received, continuing...")
                 continue
 
             for m in msgs:
