@@ -101,11 +101,12 @@ class Handler:
 
             for m in msgs:
                 try:
+                    print("Processing SQS message:", m["MessageId"])
                     body = json.loads(m["Body"])
-                    # If routed via S3->SQS directly, body is already an S3 event record envelope
                     recs = body.get("Records", [])
                     for r in recs:
                         ev = r["eventName"]                 # e.g. "ObjectCreated:Put", "ObjectRemoved:Delete"
+                        print("Event:", ev)
                         b  = r["s3"]["bucket"]["name"]
                         k  = unquote_plus(r["s3"]["object"]["key"])
                         etag = r["s3"]["object"].get("eTag")
@@ -120,10 +121,10 @@ class Handler:
                         if ev.startswith("ObjectCreated:"):
                             # You can treat as "create" or "modify". Here: first time => create, else modify.
                             was_seen = any(prev_k == k for (_, prev_k, _, _) in RECENT if prev_k == k)
-                            post_pool_event(ch, "modify" if was_seen else "create", k, is_dir_key(k))
+                            self.post_pool_event("modify" if was_seen else "create", k, is_dir_key(k))
 
                         elif ev.startswith("ObjectRemoved:"):
-                            post_pool_event(ch, "delete", k, is_dir_key(k))
+                            self.post_pool_event("delete", k, is_dir_key(k))
 
                         # Optional: move synthesis logic could be added here if you want to correlate
                         # a recent copy+delete with same ETag and infer (src->dest).
