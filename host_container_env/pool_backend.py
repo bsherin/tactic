@@ -2,8 +2,11 @@ import os
 import re
 import datetime
 import shutil
+from tactic_app import socketio
 from flask import jsonify, send_file
 from exception_mixin import ExceptionMixin
+
+from users import User
 
 class PoolBackend(ExceptionMixin):
 
@@ -229,3 +232,34 @@ class PoolBackend(ExceptionMixin):
             }
             current_user.send_import_report(result, library_id)
         return jsonify({"success": True})
+
+    def process_pool_event(self, event_type, path, dest_path, is_directory):
+        username = re.findall("/pool/(.*?)/", path)[0]
+        user_obj = User.get_user_by_username(username)
+        user_pool_dir = f"/pool/{user_obj.username}"
+        new_path = re.sub(user_pool_dir, "/mydisk", path)
+        event_data = {"event_type": event_type}
+        if is_directory:
+            new_path = new_path[:-1]
+            event_data["path"] = new_path
+            if event_type == "delete":
+                folder_dict = {"fullpath": new_path}
+            elif dest_path is None:
+                folder_dict = self.folder_dict(new_path, os.path.basename(new_path), user_obj)
+            else:
+                new_dest_path = re.sub(user_pool_dir, "/mydisk", dest_path[:-1])
+                event_data["dest_path"] = new_dest_path
+                folder_dict = self.folder_dict(new_dest_path, os.path.basename(new_dest_path), user_obj)
+            event_data["folder_dict"] = folder_dict
+            socketio.emit('pool-directory-event', event_data, namespace='/main', room=user_obj.get_id())
+        else:
+            event_data["path"] = new_path
+            if event_type == "delete":
+                file_dict = {"fullpath": new_path}
+            elif dest_path is None:
+                file_dict = self.file_dict(new_path, os.path.basename(new_path), user_obj)
+            else:
+                new_dest_path = re.sub(user_pool_dir, "/mydisk", dest_path)
+                file_dict = self.file_dict(new_dest_path, os.path.basename(new_dest_path), user_obj)
+            event_data["file_dict"] = file_dict
+            socketio.emit('pool-file-event', event_data, namespace='/main', room=user_obj.get_id())
