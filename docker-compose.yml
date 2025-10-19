@@ -423,6 +423,7 @@ services:
       parent: host
       other_name: pool_watcher_s3
     environment:
+      - USE_AMAZON_MQ=${USE_AMAZON_MQ}
       - AWS_REGION=${AWS_REGION}
       - RABBIT_USER=${RABBIT_USER}
       - RABBIT_PASS=${RABBIT_PASS}
