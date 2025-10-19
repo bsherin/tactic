@@ -384,12 +384,15 @@ function PoolBrowser(props) {
     } else {
       for (let file of myDropZone.getQueuedFiles()) {
         myDropZone.emit("processing", file);
+        myDropZone.emit("uploadProgress", file, 10, file.size);
         let resp = await (0, _communication_react.postPromise)("host", "get_s3_upload_info_task", {
           filename: file.name,
           content_type: file.type || "application/octet-stream",
           dest_path: current_value
         });
+        myDropZone.emit("uploadProgress", file, 25, file.size);
         if (!resp.success) {
+          myDropZone.emit("error", file, resp.message);
           errorDrawerFuncs.addErrorDrawerEntry({
             title: "Failed to get presign",
             content: resp.message
@@ -403,9 +406,6 @@ function PoolBrowser(props) {
           bucket,
           content_type
         } = resp.upload_info;
-        for (let key of Object.keys(resp.upload_info.fields)) {
-          console.log(`S3 upload field: ${key} = ${resp.upload_info.fields[key]}`);
-        }
 
         // Build a new multipart/form-data request to S3 using the returned fields + file
         const fd = new FormData();
@@ -418,6 +418,7 @@ function PoolBrowser(props) {
           });
           if (!s3res.ok) {
             const errTxt = await s3res.text();
+            myDropZone.emit("error", file, errTxt);
             errorDrawerFuncs.addErrorDrawerEntry({
               title: "S3 upload failed",
               content: errTxt
@@ -426,6 +427,7 @@ function PoolBrowser(props) {
             myDropZone.emit("success", file);
           }
         } catch (e) {
+          myDropZone.emit("error", file, e.message);
           errorDrawerFuncs.addErrorDrawerEntry({
             title: "S3 upload failed",
             content: e.message
