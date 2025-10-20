@@ -147,7 +147,7 @@ function treeNodesReducer(nodes, action) {
                 const [path, ] = splitFilePath(action.folderDict.fullpath);
                 forEachNode(newStateMD, (node) => {
                     if (node.isDirectory) {
-                        if (node.fullpath == dpath) {
+                        if (node.fullpath == path) {
                             node.childNodes.push(action.folderDict)
                         }
                     }
