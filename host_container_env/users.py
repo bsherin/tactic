@@ -37,6 +37,11 @@ if USE_ALT_IDS:
 else:
     ID_FIELD = "_id"
 
+use_ecs = os.getenv("USE_ECS_TILES","false").lower() == "true"
+
+if use_ecs:
+    BUCKET = os.environ.get("BUCKET")
+    from s3thread import boto_s3
 
 @login_manager.user_loader
 def load_user(userid):
@@ -109,10 +114,14 @@ class User(UserMixin, MongoAccess, ListAccess, CodeAccess, TileAccess, TempDataA
 
     @property
     def pool_dir(self):
+        if use_ecs:
+            return f"s3://{BUCKET}/users/{self.username}"
         return f"/pool/{self.username}"
 
     @property
     def has_pool(self):
+        if use_ecs:
+            return boto_s3.lexists(self.pool_dir)
         return os.path.exists(self.pool_dir)
 
     @staticmethod

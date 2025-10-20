@@ -23,6 +23,7 @@ admin_user = User.get_user_by_username("admin")
 
 tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
 
+use_ecs = os.getenv("USE_ECS_TILES","false").lower() == "true"
 
 @app.route('/library')
 @login_required
@@ -55,6 +56,7 @@ def library():
 @login_required
 def context():
     return render_template('context_react.html',
+                           use_ecs=use_ecs,
                            database_type=database_type,
                            develop=str(_develop),
                            version_string=tstring,

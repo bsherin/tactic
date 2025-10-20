@@ -102,40 +102,40 @@ class TileWorker(QWorker):
         self.get_megaplex_task_now = False
         self.use_svg = True
         self.generate_heartbeats = True
-        self._ready_acked = False
-        self._sent_initial_ready = False
+        # self._ready_acked = False
+        # self._sent_initial_ready = False
         self.my_arn, self.my_id = resolve_task_identity()
 
-    def ready(self):
-        threading.Thread(target=self._wait_for_ready_ack, daemon=True, name="wait_for_ready").start()
-
-    def _send_ready_once(self):
-        payload = {
-            "my_id": self.my_id,
-            "my_arn": self.my_arn  or ""
-        }
-        self.post_task("host5000", "tile_ready", payload)
-        self._sent_initial_ready = True
-
-    def _wait_for_ready_ack(self, retry_every=5):
-        channel = add_qw_pika_connection()
-        while not self._ready_acked:
-            if not self._sent_initial_ready:
-                self._send_ready_once()
-            time.sleep(retry_every)
-            if not self._ready_acked:
-                self._send_ready_once()
-        print("got the ack")
-        close_connection()
+    # def ready(self):
+    #     threading.Thread(target=self._wait_for_ready_ack, daemon=True, name="wait_for_ready").start()
+    #
+    # def _send_ready_once(self):
+    #     payload = {
+    #         "my_id": self.my_id,
+    #         "my_arn": self.my_arn  or ""
+    #     }
+    #     self.post_task("host5000", "tile_ready", payload)
+    #     self._sent_initial_ready = True
+    #
+    # def _wait_for_ready_ack(self, retry_every=5):
+    #     channel = add_qw_pika_connection()
+    #     while not self._ready_acked:
+    #         if not self._sent_initial_ready:
+    #             self._send_ready_once()
+    #         time.sleep(retry_every)
+    #         if not self._ready_acked:
+    #             self._send_ready_once()
+    #     print("got the ack")
+    #     close_connection()
 
     @task_worthy
     def restart(self, data):
         os.execv(sys.executable, [sys.executable, "-u", "tile_main.py"])
 
-    @task_worthy
-    def ack_ready(self, data):
-        self._ready_acked = True
-        return {"success": True}
+    # @task_worthy
+    # def ack_ready(self, data):
+    #     self._ready_acked = True
+    #     return {"success": True}
 
     def ask_host(self, msg_type, task_data=None, callback_func=None):
         task_data["local_id"] = self.tile_instance._main_id

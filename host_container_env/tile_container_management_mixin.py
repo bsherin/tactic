@@ -8,12 +8,11 @@ use_ecs = os.getenv("USE_ECS_TILES","false").lower() == "true"
 
 class TileContainerManagementMixin:
 
-    @task_worthy
-    def tile_ready(self, data):
-        print("Got tile ready with data:", data)
-        if use_ecs:
-            self.tile_registry.mark_status(data["my_id"], "idle", task_arn=data["my_arn"])
-        self.post_task(data["my_id"], "ack_ready", {})
+    # @task_worthy
+    # def tile_ready(self, data):
+    #     if use_ecs:
+    #         self.tile_registry.mark_status(data["my_id"], "idle", task_arn=data["my_arn"])
+    #     self.post_task(data["my_id"], "ack_ready", {})
 
     @task_worthy
     def restart_tile_container(self, data):

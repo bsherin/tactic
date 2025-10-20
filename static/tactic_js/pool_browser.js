@@ -376,7 +376,7 @@ function PoolBrowser(props) {
     }
   }
   async function _add_to_pool(myDropZone, setCurrentUrl, current_value) {
-    if (!current_value.startsWith("s3://")) {
+    if (window.use_ecs) {
       let new_url = `import_pool/${window.global_id}`;
       myDropZone.options.url = new_url;
       setCurrentUrl(new_url);
@@ -581,7 +581,7 @@ function PoolBrowser(props) {
       },
       intent: "danger",
       text: "Delete Resource"
-    }), /*#__PURE__*/_react.default.createElement(_core.MenuDivider, null), /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
+    }), /*#__PURE__*/_react.default.createElement(_core.MenuDivider, null), window.use_ecs && /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
       icon: "archive",
       onClick: async () => {
         await _compress_file(props.node);
@@ -593,7 +593,7 @@ function PoolBrowser(props) {
         await _decompress_archive(props.node);
       },
       text: "Decompress archive"
-    }), /*#__PURE__*/_react.default.createElement(_core.MenuDivider, null), /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
+    }), /*#__PURE__*/_react.default.createElement(_core.MenuDivider, null)), /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
       icon: "cloud-upload",
       onClick: async () => {
         await _showPoolImport(props.node);
@@ -782,7 +782,7 @@ function PoolMenubar(props) {
     return [];
   }
   function menu_specs() {
-    return {
+    let mspec = {
       Navigate: [{
         name_text: "Go Home",
         icon_name: "home",
@@ -829,15 +829,6 @@ function PoolMenubar(props) {
         icon_name: "trash",
         click_handler: props.delete_func
       }],
-      Archive: [{
-        name_text: "Compress Resource",
-        icon_name: "archive",
-        click_handler: props.compress_file
-      }, {
-        name_text: "Decompress Archive",
-        icon_name: "unarchive",
-        click_handler: props.decompress_archive
-      }],
       Transfer: [{
         name_text: "Import To Pool",
         icon_name: "cloud-upload",
@@ -848,6 +839,18 @@ function PoolMenubar(props) {
         click_handler: props.download_file
       }]
     };
+    if (!window.use_ecs) {
+      mspec["Archive"] = [{
+        name_text: "Compress Resource",
+        icon_name: "archive",
+        click_handler: props.compress_file
+      }, {
+        name_text: "Decompress Archive",
+        icon_name: "unarchive",
+        click_handler: props.decompress_archive
+      }];
+    }
+    return mspec;
   }
   return /*#__PURE__*/_react.default.createElement(_library_menubars.LibraryMenubar, {
     sendContextMenuItems: props.sendContextMenuItems,

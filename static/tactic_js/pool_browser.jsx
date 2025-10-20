@@ -377,7 +377,7 @@ function PoolBrowser(props) {
     }
 
     async function _add_to_pool(myDropZone, setCurrentUrl, current_value) {
-        if (!current_value.startsWith("s3://")) {
+        if (window.use_ecs) {
             let new_url = `import_pool/${window.global_id}`;
             myDropZone.options.url = new_url;
             setCurrentUrl(new_url);
@@ -591,18 +591,23 @@ function PoolBrowser(props) {
                           }}
                           intent="danger"
                           text="Delete Resource"/>
+
                 <MenuDivider/>
-                <MenuItem icon="archive"
-                          onClick={async () => {
-                              await _compress_file(props.node)
-                          }}
-                          text="Compress Resource"/>
-                <MenuItem icon="unarchive"
-                          onClick={async () => {
-                              await _decompress_archive(props.node)
-                          }}
-                          text="Decompress archive"/>
-                <MenuDivider/>
+                {window.use_ecs &&
+                    <Fragment>
+                        <MenuItem icon="archive"
+                                  onClick={async () => {
+                                      await _compress_file(props.node)
+                                  }}
+                                  text="Compress Resource"/>
+                        <MenuItem icon="unarchive"
+                                  onClick={async () => {
+                                      await _decompress_archive(props.node)
+                                  }}
+                                  text="Decompress archive"/>
+                        <MenuDivider/>
+                    </Fragment>
+                }
                 <MenuItem icon="cloud-upload"
                           onClick={async () => {
                               await _showPoolImport(props.node)
@@ -803,7 +808,7 @@ function PoolMenubar(props) {
     }
 
     function menu_specs() {
-        return {
+        let mspec = {
             Navigate: [
                 {name_text: "Go Home", icon_name: "home", click_handler: props.setRootToBase},
                 {
@@ -825,15 +830,18 @@ function PoolMenubar(props) {
                 {name_text: "Create Directory", icon_name: "folder-close", click_handler: props.add_directory},
                 {name_text: "Delete Resource", icon_name: "trash", click_handler: props.delete_func},
             ],
-            Archive: [
-                {name_text: "Compress Resource", icon_name: "archive", click_handler: props.compress_file},
-                {name_text: "Decompress Archive", icon_name: "unarchive", click_handler: props.decompress_archive},
-            ],
             Transfer: [
                 {name_text: "Import To Pool", icon_name: "cloud-upload", click_handler: props.showPoolImport},
                 {name_text: "Download File", icon_name: "download", click_handler: props.download_file}
             ]
         };
+        if (!window.use_ecs) {
+            mspec["Archive"] = [
+                {name_text: "Compress Resource", icon_name: "archive", click_handler: props.compress_file},
+                {name_text: "Decompress Archive", icon_name: "unarchive", click_handler: props.decompress_archive},
+            ]
+        }
+        return mspec
     }
 
     return <LibraryMenubar sendContextMenuItems={props.sendContextMenuItems}

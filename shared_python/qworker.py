@@ -111,7 +111,7 @@ class QWorker(ExceptionMixin):
             # turn on app-level heartbeats once we're ready
             if self._hb_greenlet is None:
                 self._hb_greenlet = gevent.spawn(self._heartbeat_loop)
-            self.ready()
+            # self.ready()
             self.channel.start_consuming()
         except Exception as ex:
             debug_log("Couldn't connect to pika")
