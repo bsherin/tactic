@@ -216,20 +216,49 @@ class BotoS3:
         return True
 
     def rmdir(self, url: str, recursive: bool = False):
-        """Delete prefix. If not recursive, error when non-empty."""
+        """
+        Delete a 'directory' (prefix). If not recursive, error when non-empty.
+        Handles the 'directory marker' object correctly.
+        """
         b, k = _split_s3_url(url)
-        pfx = self._as_prefix(k or "")
+        pfx = self._as_prefix(k or "")  # ensure trailing '/'
+
+        # First page
         first = self.s3.list_objects_v2(Bucket=b, Prefix=pfx, MaxKeys=2)
-        if not first.get("KeyCount", 0):
-            # remove a stray placeholder if present
+
+        keycount = int(first.get("KeyCount", 0))
+        contents = first.get("Contents", [])
+
+        # Case A: truly empty -> try to remove stray marker and return
+        if keycount == 0:
+            # remove any stray marker keys if present (best-effort)
+            for marker in (pfx, pfx.rstrip("/")):
+                try:
+                    self.s3.delete_object(Bucket=b, Key=marker)
+                except Exception:
+                    pass
+            return True
+
+        # Case B: only a directory marker exists (and nothing else)
+        # (we asked for MaxKeys=2; if we only got 1 and it's exactly the marker, treat as empty)
+        if keycount == 1 and contents and contents[0]["Key"] in (pfx, pfx.rstrip("/")) and not first.get("IsTruncated"):
             try:
-                self.s3.delete_object(Bucket=b, Key=pfx)
+                self.s3.delete_object(Bucket=b, Key=contents[0]["Key"])
             except Exception:
                 pass
             return True
+
+        # Case C: there is real content under the prefix
         if not recursive:
             raise OSError(f"Directory not empty: {url}")
+
+        # Recursive delete everything under prefix (and marker, if any)
         self._delete_prefix(b, pfx)
+        # Best-effort: also remove a marker without trailing slash
+        try:
+            self.s3.delete_object(Bucket=b, Key=pfx.rstrip("/"))
+        except Exception:
+            pass
         return True
 
     def rm(self, url: str, recursive: bool = False):
@@ -241,20 +270,12 @@ class BotoS3:
             self.s3.delete_object(Bucket=b, Key=k)
         return True
 
-    def _delete_prefix(self, bucket: str, prefix: str):
-        token = None
-        while True:
-            kwargs = {"Bucket": bucket, "Prefix": prefix}
-            if token:
-                kwargs["ContinuationToken"] = token
-            page = self.s3.list_objects_v2(**kwargs)
-            keys = [{"Key": obj["Key"]} for obj in page.get("Contents", [])]
-            if keys:
-                for i in range(0, len(keys), 1000):
-                    self.s3.delete_objects(Bucket=bucket, Delete={"Objects": keys[i:i + 1000], "Quiet": True})
-            token = page.get("NextContinuationToken")
-            if not token:
-                break
+    def _delete_prefix(self, bucket: str, prefix: str, batch_size: int = 1000):
+        paginator = self.s3.get_paginator("list_objects_v2")
+        for page in paginator.paginate(Bucket=bucket, Prefix=prefix):
+            objs = [{"Key": o["Key"]} for o in page.get("Contents", [])]
+            for i in range(0, len(objs), batch_size):
+                self.s3.delete_objects(Bucket=bucket, Delete={"Objects": objs[i:i + batch_size]})
 
     def rename(self, src_url: str, dst_url: str, overwrite: bool = False):
         """Rename/move a single object OR a prefix (if src endswith('/'))."""
