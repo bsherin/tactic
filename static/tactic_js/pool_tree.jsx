@@ -133,14 +133,26 @@ function treeNodesReducer(nodes, action) {
             return newStateMF;
         case "MODIFY_DIRECTORY":
             const newStateMD = _.cloneDeep(nodes);
+            let modified_dir = false;
             forEachNode(newStateMD, (node) => {
                 if (node.fullpath == action.folderDict.fullpath) {
                     action.folderDict.isSelected = node.isSelected;
                     action.folderDict.isExpanded = node.isExpanded;
                     action.folderDict.childNodes = node.childNodes;
-                    updateNode(node, action.folderDict)
+                    updateNode(node, action.folderDict);
+                    modified_dir = true
                 }
             });
+            if (!modified_dir) {
+                const [path, ] = splitFilePath(action.folderDict.fullpath);
+                forEachNode(newStateMD, (node) => {
+                    if (node.isDirectory) {
+                        if (node.fullpath == dpath) {
+                            node.childNodes.push(action.folderDict)
+                        }
+                    }
+                });
+            }
             return newStateMD;
         case "REMOVE_NODE":
             const newState9 = _.cloneDeep(nodes);
@@ -169,10 +181,10 @@ function treeNodesReducer(nodes, action) {
             return newState10;
         case "ADD_DIRECTORY":
             const newState11 = _.cloneDeep(nodes);
-            const [dpath, ] = splitFilePath(action.folderDict.fullpath);
+            const [fpath, ] = splitFilePath(action.folderDict.fullpath);
             forEachNode(newState11, (node) => {
                 if (node.isDirectory) {
-                    if (node.fullpath == dpath) {
+                    if (node.fullpath == fpath) {
                         node.childNodes.push(action.folderDict)
                     }
                 }
