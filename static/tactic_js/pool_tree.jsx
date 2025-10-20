@@ -620,6 +620,10 @@ function PoolAddressSelector(props) {
     const [, setMaxPopoverHeight, maxPopoverHeightRef] = useStateAndRef(.4 * window.innerHeight);
     const [, setCurrentRootPath, currentRootPathRef] = useStateAndRef("");
 
+    function setRoot(node = null) {
+        setCurrentRootPath(node.fullpath)
+    }
+
     useEffect(() => {
         window.addEventListener("resize", resizePopover);
         setRefAcquired(false);
@@ -662,7 +666,7 @@ function PoolAddressSelector(props) {
             <PoolTree value={props.value}
                       showHidden={false}
                       currentRootPath={currentRootPathRef.current}
-                      setRoot={setCurrentRootPath}
+                      setRoot={setRoot}
                       sortField="name"
                       sortDirection="ascending"
                       tsocket={props.tsocket}
