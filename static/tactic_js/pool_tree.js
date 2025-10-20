@@ -490,16 +490,20 @@ function PoolTree(props) {
       isExpanded: true
     });
     if (!node.explored) {
-      statusFuncs.setStatus({
-        show_spinner: true,
-        status_message: "Opening folder"
-      });
+      if (statusFuncs) {
+        statusFuncs.setStatus({
+          show_spinner: true,
+          status_message: "Opening folder"
+        });
+      }
       let data = await (0, _communication_react.postPromise)("host", "GetPoolTree", {
         user_id: props.user_id,
         show_hidden: props.showHidden,
         base_path: node.fullpath
       });
-      statusFuncs.clearStatus();
+      if (statusFuncs) {
+        statusFuncs.clearStatus();
+      }
       if (!data["dtree"]) {
         (0, _toaster.doFlash)("No pool storage available for this account.");
         return;
