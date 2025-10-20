@@ -95,7 +95,6 @@ class Handler:
 
     def main(self):
         while True:
-            print("Waiting for SQS messages...")
             resp = self.sqs.receive_message(
                 QueueUrl=SQS_QUEUE_URL,
                 MaxNumberOfMessages=10,
@@ -104,7 +103,6 @@ class Handler:
             )
             msgs = resp.get("Messages", [])
             if not msgs:
-                print("No messages received, continuing...")
                 continue
 
             for m in msgs:

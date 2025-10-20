@@ -129,6 +129,7 @@ function TextViewerApp(props) {
                 props.tsocket.disconnect()
             })
         }
+        statusFuncs.setStatus({show_spinner: true, status_message: "Reading text file ..."});
         postPromise("host", "get_text_from_pool_task", {"file_path": props.file_path})
             .then(data => {
                 const the_content = data["the_content"];
@@ -136,7 +137,12 @@ function TextViewerApp(props) {
                 set_created(data.created);
                 set_updated(data.updated);
                 savedContent.current = the_content;
+                statusFuncs.clearStatus();
 
+            })
+            .catch(()=>{
+                errorDrawerFuncs.addFromError("Error reading text file", e);
+                statusFuncs.clearStatus()
             })
     }, []);
 

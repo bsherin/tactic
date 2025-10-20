@@ -32,7 +32,6 @@ class PoolBackendECS(PoolBackend):
                                    show_hidden)]
         except Exception as ex:
             print(self.handle_exception(ex, "Error getting pooltree"))
-        print("returning from pooltree")
         return {"dtree": dtree}
 
     def get_node(self, root, user_pool_dir, user_obj, tree_depth=1, show_hidden=False):
@@ -161,12 +160,8 @@ class PoolBackendECS(PoolBackend):
         return boto_s3.upload_info(full_dest_path, content_type)
 
     def process_pool_event(self, event_type, path, dest_path, is_directory):
-        print("in process_pool_event", event_type, path, dest_path, is_directory)
         username = re.findall("/users/(.*?)/", path)[0]
-        print("username is", username)
         user_obj = User.get_user_by_username(username)
-        # user_pool_dir = f"/pool/{user_obj.username}"
-        # new_path = re.sub(user_pool_dir, "/mydisk", path)
         new_path = path
         event_data = {"event_type": event_type}
         if is_directory:
@@ -177,7 +172,6 @@ class PoolBackendECS(PoolBackend):
             elif dest_path is None:
                 folder_dict = self.folder_dict(new_path, os.path.basename(new_path), user_obj)
             else:
-                # new_dest_path = re.sub(user_pool_dir, "/mydisk", dest_path[:-1])
                 new_dest_path = dest_path
                 event_data["dest_path"] = new_dest_path
                 folder_dict = self.folder_dict(new_dest_path, os.path.basename(new_dest_path), user_obj)
