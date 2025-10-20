@@ -615,7 +615,7 @@ function PoolAddressSelector(props) {
   const pop_ref = (0, _react.useRef)(null);
   const [refAcquired, setRefAcquired] = (0, _react.useState)(false);
   const [, setMaxPopoverHeight, maxPopoverHeightRef] = (0, _utilities_react.useStateAndRef)(.4 * window.innerHeight);
-  const [,, currentRootPathRef] = (0, _utilities_react.useStateAndRef)("/mydisk");
+  const [, setCurrentRootPath, currentRootPathRef] = (0, _utilities_react.useStateAndRef)("");
   (0, _react.useEffect)(() => {
     window.addEventListener("resize", resizePopover);
     setRefAcquired(false);
@@ -657,7 +657,7 @@ function PoolAddressSelector(props) {
     value: props.value,
     showHidden: false,
     currentRootPath: currentRootPathRef.current,
-    setRoot: null,
+    setRoot: setCurrentRootPath,
     sortField: "name",
     sortDirection: "ascending",
     tsocket: props.tsocket,
