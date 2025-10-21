@@ -4,6 +4,7 @@ import ssl
 import time
 import os
 import traceback
+import json
 
 print("entering rabbit_manage")
 
