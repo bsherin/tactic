@@ -141,8 +141,7 @@ services:
       - ECS_REGION=${ECS_REGION}
       - ECS_CLUSTER=${ECS_CLUSTER}
       - ECS_TILE_SERVICE=${ECS_TILE_SERVICE}
-      - RABBIT_USER=${RABBIT_USER}
-      - RABBIT_PASS=${RABBIT_PASS}
+      - MQ_SECRET_ARN=${MQ_SECRET_ARN}
       - BUCKET=${BUCKET}
     volumes:
       - type: bind
@@ -207,8 +206,7 @@ services:
       - ECS_TILE_TASKDEF=${ECS_TILE_TASKDEF}
       - AWS_REGION=${AWS_REGION}
       - ECS_REGION=${ECS_REGION}
-      - RABBIT_USER=${RABBIT_USER}
-      - RABBIT_PASS=${RABBIT_PASS}
+      - MQ_SECRET_ARN=${MQ_SECRET_ARN}
     volumes:
       - type: bind
         source: "/var/run/docker.sock"
@@ -269,8 +267,7 @@ services:
       - ECS_TILE_TASKDEF=${ECS_TILE_TASKDEF}
       - AWS_REGION=${AWS_REGION}
       - ECS_REGION=${ECS_REGION}
-      - RABBIT_USER=${RABBIT_USER}
-      - RABBIT_PASS=${RABBIT_PASS}
+      - MQ_SECRET_ARN=${MQ_SECRET_ARN}
     volumes:
       - type: bind
         source: ${ROOT_DIR}/persist
@@ -353,8 +350,7 @@ services:
       - ECS_TILE_TASKDEF=${ECS_TILE_TASKDEF}
       - AWS_REGION=${AWS_REGION}
       - ECS_REGION=${ECS_REGION}
-      - RABBIT_USER=${RABBIT_USER}
-      - RABBIT_PASS=${RABBIT_PASS}
+      - MQ_SECRET_ARN=${MQ_SECRET_ARN}
     volumes:
       - type: bind
         source: "${REMOTE_KEY_FILE}"
@@ -392,8 +388,7 @@ services:
       - ECS_TILE_TASKDEF=${ECS_TILE_TASKDEF}
       - AWS_REGION=${AWS_REGION}
       - ECS_REGION=${ECS_REGION}
-      - RABBIT_USER=${RABBIT_USER}
-      - RABBIT_PASS=${RABBIT_PASS}
+      - MQ_SECRET_ARN=""
     volumes:
       - type: bind
         source: "${POOL_DIR}"
@@ -424,8 +419,7 @@ services:
     environment:
       - USE_AMAZON_MQ=${USE_AMAZON_MQ}
       - AWS_REGION=${AWS_REGION}
-      - RABBIT_USER=${RABBIT_USER}
-      - RABBIT_PASS=${RABBIT_PASS}
+      - MQ_SECRET_ARN=${MQ_SECRET_ARN}
       - BUCKET=${BUCKET}
       - SQS_QUEUE_URL=${SQS_QUEUE_URL}
     networks:
@@ -472,11 +466,12 @@ services:
       - build_project
       - build_non_base
     environment:
-      HF_HOME: /var/cache/hf
-      NLTK_DATA: /root/nltk
-      MPLCONFIGDIR: /var/cache/matplotlib
-      TORCH_HOME: /var/cache/torch
-      PYTHONUNBUFFERED: 0
+      - HF_HOME=/var/cache/hf
+      - NLTK_DATA=/root/nltk
+      - MPLCONFIGDIR=/var/cache/matplotlib
+      - TORCH_HOME=/var/cache/torch
+      - PYTHONUNBUFFERED=0
+      - MQ_SECRET_ARN=${MQ_SECRET_ARN}
 
 networks:
   tactic-net:

@@ -2,3 +2,4 @@ pika
 pymongo
 ssh-pymongo
 flask
+boto3

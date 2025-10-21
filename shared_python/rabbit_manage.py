@@ -10,8 +10,33 @@ print("entering rabbit_manage")
 if os.environ.get("USE_AMAZON_MQ") == "True" or os.environ.get("USE_AMAZON_MQ") is True:
     USE_AMAZON_MQ = True
     RABBIT_HOST = "b-d4163cd4-38d5-45f0-9bc1-87c04c48d2a4.mq.us-east-2.on.aws"  # broker hostname only
-    RABBIT_USER = os.environ.get("RABBIT_USER")
-    RABBIT_PASS = os.environ.get("RABBIT_PASS")
+    if "RABBIT_PASS" not in os.environ:
+        import boto3
+
+        SECRET_ARN = os.getenv("MQ_SECRET_ARN",
+                               "arn:aws:secretsmanager:us-east-2:924818964184:secret:tactic/amazon-mq/credentials-OliLzo")
+        REGION = os.getenv("AWS_REGION", "us-east-2")
+
+
+        def load_secret_json(secret_arn: str):
+            sm = boto3.client("secretsmanager", region_name=REGION)
+            try:
+                r = sm.get_secret_value(SecretId=secret_arn)
+                if "SecretString" in r:
+                    return json.loads(r["SecretString"])
+                else:
+                    # binary not expected here, but handle anyway
+                    return json.loads(r["SecretBinary"].decode("utf-8"))
+            except Exception as e:
+                raise RuntimeError(f"Failed to fetch secret: {e}")
+
+
+        creds = load_secret_json(SECRET_ARN)
+        os.environ["RABBIT_USER"] = creds["username"]
+        os.environ["RABBIT_PASS"] = creds["password"]
+
+    RABBIT_USER = os.environ["RABBIT_USER"]
+    RABBIT_PASS = os.environ["RABBIT_PASS"]
     RABBIT_PORT = 5671
     MESSAGE_QUEUE_ADDRESS = f"amqps://{RABBIT_USER}:{RABBIT_PASS}@{RABBIT_HOST}:5671//"
 else:

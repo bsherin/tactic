@@ -7,3 +7,4 @@ redis
 gevent
 pymongo
 openai==1.78.1
+boto3

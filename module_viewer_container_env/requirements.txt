@@ -7,3 +7,4 @@ pika
 gevent
 pymongo
 openai
+boto3
