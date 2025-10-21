@@ -1410,13 +1410,11 @@ function ConsoleComponent(props) {
     search_helper_text: search_helper_text
   }), !props.mState.console_is_shrunk && show_main_log && /*#__PURE__*/_react.default.createElement(_searchable_console.SearchableConsole, {
     local_id: props.local_id,
-    streaming_host: "host",
     container_id: props.local_id,
     outer_style: searchable_console_style,
     showCommandField: false
   }), !props.mState.console_is_shrunk && show_pseudo_log && /*#__PURE__*/_react.default.createElement(_searchable_console.SearchableConsole, {
     local_id: props.local_id,
-    streaming_host: "host",
     container_id: pseudo_tile_id,
     outer_style: searchable_console_style,
     showCommandField: true

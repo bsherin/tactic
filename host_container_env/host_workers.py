@@ -10,7 +10,7 @@ from communication_utils import make_python_object_jsonizable
 from communication_utils import make_jsonizable_and_compress
 import docker_functions
 from docker_functions import create_container, destroy_container, destroy_child_containers, destroy_user_containers
-from docker_functions import get_log, restart_container, create_log_streamer_container
+from docker_functions import get_log, restart_container, create_log_streamer_container, container_exists
 from docker_functions import get_matching_user_containers, get_container, create_assistant_container, get_user_assistant
 from tactic_app import app, socketio
 from redis_tools import redis_ht, delete_ready_block_participant
@@ -276,19 +276,6 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         self.destroy_child_tiles(local_id)
         destroy_container(local_id, notify=False)
         return {"success": True}
-
-    @task_worthy
-    def get_container_log(self, data):
-        container_id = data["container_id"]
-        if "since" in data and data["since"] is not None:
-            dt = datetime.datetime.fromtimestamp(data["since"] / 1000)
-        else:
-            dt = None
-        log_text = bytes_to_string(get_log(container_id, since=dt))
-        if "max_lines" in data and data["max_lines"] is not None:
-            ltlist = log_text.split("\n")[-1 * data["max_lines"]:]
-            log_text = "\n".join(ltlist)
-        return {"success": True, "log_text": log_text}
 
     @task_worthy_manual_submit
     def load_module_if_necessary(self, data, task_packet):
@@ -625,27 +612,27 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
     def deregister_container(self, data):
         tactic_app.health_tracker.deregister_container(data["container_id"])
 
-    @task_worthy
-    def StartLogStreaming(self, data):
-        container_id = data["container_id"]
-        room = data["room"]
-        user_id = data["user_id"]
-        username = load_user(user_id).username
-        if container_id is not None:
-            streamer_id = create_log_streamer_container(room, container_id, user_id, username)
-        return {"streamer_id": streamer_id}
-
-    @task_worthy
-    def StopLogStreaming(self, data):
-        streamer_id = data["streamer_id"]
-        print("stopping log streamer " + str(streamer_id))
-        cont = get_container(streamer_id)
-        if cont is not None:
-            cont.kill(signal="SIGTERM")
-            return None
-        else:
-            print("no streamer to kill")
-        return None
+    # @task_worthy
+    # def StartLogStreaming(self, data):
+    #     cont_id = data["cont_id"]
+    #     room = data["room"]
+    #     is_ecs = not container_exists(cont_id)
+    #     if cont_id is not None:
+    #         streamer_id = str(uuid.uuid4())
+    #         self.post_task("log_streamer", "start_log_stream",
+    #                        {"room": room,
+    #                         "cont_id": cont_id,
+    #                         "unique_id": streamer_id,
+    #                         "is_ecs": is_ecs})
+    #     return {"success": True, "streamer_id": streamer_id}
+    #
+    # @task_worthy
+    # def StopLogStreaming(self, data):
+    #     streamer_id = data["streamer_id"]
+    #     print("stopping log streamer " + str(streamer_id))
+    #
+    #     self.post_task("log_streamer", "stop_log_stream", {"streamer_id": streamer_id} )
+    #     return {"success": True}
 
     @task_worthy
     def StartAssistant(self, data):

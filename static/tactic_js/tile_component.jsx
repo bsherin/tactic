@@ -574,7 +574,6 @@ function TileComponent(props) {
                                      style={{width: "100%", height: "100%", position: "relative"}}
                                      ref={log_ref}>
                                     <SearchableConsole local_id={props.local_id}
-                                                       streaming_host="host"
                                                        container_id={props.tile_id}
                                                        ref={inner_log_ref}
                                                        outer_style={tile_log_style}

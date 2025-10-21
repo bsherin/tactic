@@ -13,7 +13,6 @@ import zlib
 import uuid
 import pika
 from exception_mixin import generic_exception_handler
-from rabbit_manage import MESSAGE_QUEUE_ADDRESS, SOCKETIO_OPTIONS
 
 try:
     import flask_socketio

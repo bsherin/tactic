@@ -352,14 +352,6 @@ def container_id(container):
     else:
         return "system"
 
-
-# def get_container(tactic_id):
-#     conts = cli.containers.list(all=True)
-#     for cont in conts:
-#         if container_id(cont) == tactic_id:
-#             return cont
-#     return None
-
 def get_container(tactic_id):
     try:
         summaries = cli.api.containers(

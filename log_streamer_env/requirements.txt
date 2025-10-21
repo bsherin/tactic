@@ -5,3 +5,7 @@ Flask == 2.2.3
 Flask-SocketIO
 redis
 kombu
+boto3
+botocore
+pymongo
+pika

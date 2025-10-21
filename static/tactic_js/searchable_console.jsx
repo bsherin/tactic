@@ -106,23 +106,19 @@ function SearchableConsole(props, inner_ref) {
     }
 
     async function _getLogAndStartStreaming() {
-        function gotStreamerId(data) {
-            streamer_id.current = data.streamer_id
-        }
-
-        let res = await postPromise("host", "get_container_log",
-            {container_id: cont_id.current, since: log_since, max_lines: max_console_lines_ref.current},
+        let res = await postPromise("log_streamer", "get_container_log",
+            {cont_id: cont_id.current, since: log_since, max_lines: max_console_lines_ref.current},
             props.local_id);
         set_log_content(res["log_text"]);
-        let data = await postPromise(props.streaming_host, "StartLogStreaming",
-            {container_id: cont_id.current, room: my_room.current, user_id: window.user_id},
+        let data = await postPromise("log_streamer", "start_log_stream",
+            {cont_id: cont_id.current, room: my_room.current, user_id: window.user_id},
             props.local_id);
-        gotStreamerId(data);
+        streamer_id.current = my_room.current
     }
 
     async function _stopLogStreaming(callback = null) {
         if (streamer_id && streamer_id.current) {
-            await postPromise(props.streaming_host, "StopLogStreaming", {streamer_id: streamer_id.current}, props.local_id);
+            await postPromise("log_streamer", "stop_log_stream", {streamer_id: streamer_id.current}, props.local_id);
             if (callback) {
                 callback()
             }

@@ -291,10 +291,40 @@ services:
       - build_project
       - build_server_project
       - build_non_base
+      - start_project
+      - start_development
     image: bsherin/tactic-log-streamer:${IMG_SUFFIX}
+    container_name: tactic_log_streamer
     platform: ${PLATFORM}
+    env_file:
+      - "${ROOT_DIR}/env.list"
     environment:
       - PYTHONUNBUFFERED=0
+      - MY_ID=log_streamer
+      - OWNER=host
+      - PARENT=host
+      - AWS_ACCOUNT=${AWS_ACCOUNT}
+      - MONGO_URI=${MONGO_URI}
+      - USE_ARM64=${USE_ARM64}
+      - DEVELOP=${DEVELOP}
+      - USE_AMAZON_MQ=${USE_AMAZON_MQ}
+      - USE_ECS_TILES=${USE_ECS_TILES}
+      - ECS_SUBNETS=${ECS_SUBNETS}
+      - ECS_SECURITY_GROUPS=${ECS_SECURITY_GROUPS}
+      - ECS_ASSIGN_PUBLIC_IP=${ECS_ASSIGN_PUBLIC_IP}
+      - ECS_TILE_TASKDEF=${ECS_TILE_TASKDEF}
+      - AWS_REGION=${AWS_REGION}
+      - ECS_REGION=${ECS_REGION}
+      - ECS_CLUSTER=${ECS_CLUSTER}
+      - ECS_TILE_SERVICE=${ECS_TILE_SERVICE}
+      - MQ_SECRET_ARN=${MQ_SECRET_ARN}
+      - BUCKET=${BUCKET}
+    volumes:
+      - type: bind
+        source: "/var/run/docker.sock"
+        target: "/var/run/docker.sock"
+    networks:
+      - tactic-net
 
   tactic_assistant:
     build:

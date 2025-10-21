@@ -88,7 +88,6 @@ def get_pika_connection():
         )
 
     else:
-        print(f"getting pika connection with host {RABBIT_HOST} and port {RABBIT_PORT}")
         params = pika.ConnectionParameters(
             host=RABBIT_HOST,
             port=RABBIT_PORT,
@@ -102,7 +101,6 @@ def get_pika_connection():
 
 
 def get_pika_connection_with_retries(retries=0, use_time=False, max_retries=MAX_PIKA_RETRIES):
-    print("in get_pika_connection_with_retries, retries")
     if not use_time:
         import gevent
     try:
@@ -121,7 +119,6 @@ def get_pika_connection_with_retries(retries=0, use_time=False, max_retries=MAX_
                 gevent.sleep(3)
             new_retries = retries + 1
             return get_pika_connection_with_retries(new_retries, use_time, max_retries)
-    print("succesful connection")
     return connection, channel
 
 def sleep_until_rabbit_alive(max_tries=20):

@@ -568,7 +568,6 @@ function TileComponent(props) {
     ref: log_ref
   }, /*#__PURE__*/_react.default.createElement(_searchable_console.SearchableConsole, {
     local_id: props.local_id,
-    streaming_host: "host",
     container_id: props.tile_id,
     ref: inner_log_ref,
     outer_style: tile_log_style,
