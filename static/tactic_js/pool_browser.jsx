@@ -133,7 +133,6 @@ function PoolBrowser(props) {
                 option_list: open_projects,
                 handleClose: dialogFuncs.hideModal,
             });
-            let data;
             if (checkResults["create_new_notebook"]) {
                 props.handleCreateViewer("new-notebook", null, async (main_id) => await sendNewCell(path, main_id, checkResults["read_as_dataframe"]))
             } else {

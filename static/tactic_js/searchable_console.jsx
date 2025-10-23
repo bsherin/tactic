@@ -9,7 +9,6 @@ import {TacticSocket} from "./tactic_socket";
 
 export {SearchableConsole, ResponsiveFlex}
 
-
 function SearchableConsole(props, inner_ref) {
 
     const [search_string, set_search_string] = useState(null);

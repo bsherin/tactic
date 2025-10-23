@@ -1,4 +1,3 @@
-//comments
 import "../tactic_css/tactic.scss";
 import ("../tactic_css/themeable.scss");
 

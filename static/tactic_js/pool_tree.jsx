@@ -9,7 +9,6 @@ import {postPromise} from "./communication_react";
 import {SettingsContext} from "./settings";
 import {SearchForm} from "./library_widgets";
 import {ErrorDrawerContext} from "./error_drawer";
-
 export {PoolTree, PoolAddressSelector, getBasename, splitFilePath, getFileParentPath, withPool, PoolContext}
 
 const PoolContext = createContext({

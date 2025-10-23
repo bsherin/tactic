@@ -40,8 +40,8 @@ class TileContainerRegistry:
         r.set("config:desired_idle", self.desired_idle)
 
     def registry_heartbeat(self):
-        self.pull_desired_idle()
         if use_ecs:
+            self.pull_desired_idle()
             self.reconcile_tiles()
             self.publish_metrics()
 

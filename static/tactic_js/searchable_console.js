@@ -1,5 +1,6 @@
 "use strict";
 
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -11,67 +12,126 @@ var _search_form = require("./search_form");
 var _communication_react = require("./communication_react");
 var _utilities_react = require("./utilities_react");
 var _tactic_socket = require("./tactic_socket");
-function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function (e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, default: e }; if (null === e || "object" != typeof e && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (const t in e) "default" !== t && {}.hasOwnProperty.call(e, t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, t)) && (i.get || i.set) ? o(f, t, i) : f[t] = e[t]); return f; })(e, t); }
+function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t3 in e) "default" !== _t3 && {}.hasOwnProperty.call(e, _t3) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t3)) && (i.get || i.set) ? o(f, _t3, i) : f[_t3] = e[_t3]); return f; })(e, t); }
+function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
+function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
+function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
+function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
+function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
+function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, "_invoke", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError("Generator is already running"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = "next"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i["return"]) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine2(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, "Generator"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, "toString", function () { return "[object Generator]"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }
+function _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, "", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { if (r) i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n;else { var o = function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); }; o("next", 0), o("throw", 1), o("return", 2); } }, _regeneratorDefine2(e, r, n, t); }
+function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
+function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
+function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
+function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
+function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
+function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
 function SearchableConsole(props, inner_ref) {
-  const [search_string, set_search_string] = (0, _react.useState)(null);
-  const [search_helper_text, set_search_helper_text] = (0, _react.useState)(null);
-  const [filter, set_filter] = (0, _react.useState)(false);
-  const [console_command_value, set_console_command_value] = (0, _react.useState)("");
-  const [livescroll, set_livescroll] = (0, _react.useState)(true);
-  const [log_since, set_log_since] = (0, _react.useState)(null);
+  var _useState = (0, _react.useState)(null),
+    _useState2 = _slicedToArray(_useState, 2),
+    search_string = _useState2[0],
+    set_search_string = _useState2[1];
+  var _useState3 = (0, _react.useState)(null),
+    _useState4 = _slicedToArray(_useState3, 2),
+    search_helper_text = _useState4[0],
+    set_search_helper_text = _useState4[1];
+  var _useState5 = (0, _react.useState)(false),
+    _useState6 = _slicedToArray(_useState5, 2),
+    filter = _useState6[0],
+    set_filter = _useState6[1];
+  var _useState7 = (0, _react.useState)(""),
+    _useState8 = _slicedToArray(_useState7, 2),
+    console_command_value = _useState8[0],
+    set_console_command_value = _useState8[1];
+  var _useState9 = (0, _react.useState)(true),
+    _useState0 = _slicedToArray(_useState9, 2),
+    livescroll = _useState0[0],
+    set_livescroll = _useState0[1];
+  var _useState1 = (0, _react.useState)(null),
+    _useState10 = _slicedToArray(_useState1, 2),
+    log_since = _useState10[0],
+    set_log_since = _useState10[1];
 
   // I need to have these as refs because they are accessed within the _handleUpdateMessage
   // callback. So they would have the old value.
-  const [max_console_lines, set_max_console_lines, max_console_lines_ref] = (0, _utilities_react.useStateAndRef)(100);
-  const [, set_log_content, log_content_ref] = (0, _utilities_react.useStateAndRef)("");
-  const cont_id = (0, _react.useRef)(props.container_id);
-  const my_room = (0, _react.useRef)(null);
-  const streamer_id = (0, _react.useRef)(null);
-  const tsocket = (0, _react.useRef)(null);
-  const past_commands = (0, _react.useRef)([]);
-  const past_commands_index = (0, _react.useRef)(null);
-  (0, _react.useEffect)(() => {
+  var _useStateAndRef = (0, _utilities_react.useStateAndRef)(100),
+    _useStateAndRef2 = _slicedToArray(_useStateAndRef, 3),
+    max_console_lines = _useStateAndRef2[0],
+    set_max_console_lines = _useStateAndRef2[1],
+    max_console_lines_ref = _useStateAndRef2[2];
+  var _useStateAndRef3 = (0, _utilities_react.useStateAndRef)(""),
+    _useStateAndRef4 = _slicedToArray(_useStateAndRef3, 3),
+    set_log_content = _useStateAndRef4[1],
+    log_content_ref = _useStateAndRef4[2];
+  var cont_id = (0, _react.useRef)(props.container_id);
+  var my_room = (0, _react.useRef)(null);
+  var streamer_id = (0, _react.useRef)(null);
+  var tsocket = (0, _react.useRef)(null);
+  var past_commands = (0, _react.useRef)([]);
+  var past_commands_index = (0, _react.useRef)(null);
+  (0, _react.useEffect)(function () {
     if (livescroll && inner_ref && inner_ref.current) {
       inner_ref.current.scrollTo(0, inner_ref.current.scrollHeight);
     }
   });
-  (0, _react.useEffect)(() => {
+  (0, _react.useEffect)(function () {
     my_room.current = (0, _utilities_react.guid)();
     tsocket.current = new _tactic_socket.TacticSocket("main", 5000, "searchable-console", props.local_id);
     tsocket.current.socket.emit("join", {
       "room": my_room.current
     });
     function cleanup() {
-      _stopLogStreaming().then(() => {
+      _stopLogStreaming().then(function () {
         tsocket.current.disconnect();
       });
     }
     initSocket();
-    _getLogAndStartStreaming().then(() => {
+    _getLogAndStartStreaming().then(function () {
       window.addEventListener('beforeunload', cleanup);
     });
-    return () => {
+    return function () {
       cleanup();
       window.removeEventListener('beforeunload', cleanup);
     };
   }, []);
-  (0, _react.useEffect)(() => {
+  (0, _react.useEffect)(function () {
     if (!streamer_id.current) {
-      _getLogAndStartStreaming().then(() => {
+      _getLogAndStartStreaming().then(function () {
         console.log("streamer_id.current", streamer_id.current);
       });
     }
   }, [streamer_id.current]);
-  (0, _utilities_react.useDidMount)(async () => {
-    await _stopLogStreaming(_getLogAndStartStreaming);
-  }, [max_console_lines]);
-  (0, _utilities_react.useDidMount)(async () => {
-    await _stopLogStreaming();
-    cont_id.current = props.container_id;
-    set_log_since(null);
-    set_max_console_lines(100);
-    await _getLogAndStartStreaming();
-  }, [props.container_id]);
+  (0, _utilities_react.useDidMount)(/*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee() {
+    return _regenerator().w(function (_context) {
+      while (1) switch (_context.n) {
+        case 0:
+          _context.n = 1;
+          return _stopLogStreaming(_getLogAndStartStreaming);
+        case 1:
+          return _context.a(2);
+      }
+    }, _callee);
+  })), [max_console_lines]);
+  (0, _utilities_react.useDidMount)(/*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2() {
+    return _regenerator().w(function (_context2) {
+      while (1) switch (_context2.n) {
+        case 0:
+          _context2.n = 1;
+          return _stopLogStreaming();
+        case 1:
+          cont_id.current = props.container_id;
+          set_log_since(null);
+          set_max_console_lines(100);
+          _context2.n = 2;
+          return _getLogAndStartStreaming();
+        case 2:
+          return _context2.a(2);
+      }
+    }, _callee2);
+  })), [props.container_id]);
   function initSocket() {
     tsocket.current.attachListener("searchable-console-message", _handleUpdateMessage);
   }
@@ -84,71 +144,139 @@ function SearchableConsole(props, inner_ref) {
     _addToLog(data["new_line"]);
   }
   function _setLogSince() {
-    const now = new Date().getTime();
+    var now = new Date().getTime();
     set_log_since(now);
     set_log_content("");
   }
   function _setMaxConsoleLines(event) {
     set_max_console_lines(parseInt(event.target.value));
   }
-  async function _getLogAndStartStreaming() {
-    let res = await (0, _communication_react.postPromise)("log_streamer", "get_container_log", {
-      cont_id: cont_id.current,
-      since: log_since,
-      max_lines: max_console_lines_ref.current
-    }, props.local_id);
-    set_log_content(res["log_text"]);
-    let data = await (0, _communication_react.postPromise)("log_streamer", "start_log_stream", {
-      cont_id: cont_id.current,
-      room: my_room.current,
-      user_id: window.user_id
-    }, props.local_id);
-    streamer_id.current = my_room.current;
+  function _getLogAndStartStreaming() {
+    return _getLogAndStartStreaming2.apply(this, arguments);
   }
-  async function _stopLogStreaming(callback = null) {
-    if (streamer_id && streamer_id.current) {
-      await (0, _communication_react.postPromise)("log_streamer", "stop_log_stream", {
-        streamer_id: streamer_id.current
-      }, props.local_id);
-      if (callback) {
-        callback();
-      }
-    }
-    return null;
+  function _getLogAndStartStreaming2() {
+    _getLogAndStartStreaming2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3() {
+      var res, data;
+      return _regenerator().w(function (_context3) {
+        while (1) switch (_context3.n) {
+          case 0:
+            _context3.n = 1;
+            return (0, _communication_react.postPromise)("log_streamer", "get_container_log", {
+              cont_id: cont_id.current,
+              since: log_since,
+              max_lines: max_console_lines_ref.current
+            }, props.local_id);
+          case 1:
+            res = _context3.v;
+            set_log_content(res["log_text"]);
+            _context3.n = 2;
+            return (0, _communication_react.postPromise)("log_streamer", "start_log_stream", {
+              cont_id: cont_id.current,
+              room: my_room.current,
+              user_id: window.user_id
+            }, props.local_id);
+          case 2:
+            data = _context3.v;
+            streamer_id.current = my_room.current;
+          case 3:
+            return _context3.a(2);
+        }
+      }, _callee3);
+    }));
+    return _getLogAndStartStreaming2.apply(this, arguments);
+  }
+  function _stopLogStreaming() {
+    return _stopLogStreaming2.apply(this, arguments);
+  }
+  function _stopLogStreaming2() {
+    _stopLogStreaming2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee4() {
+      var callback,
+        _args4 = arguments;
+      return _regenerator().w(function (_context4) {
+        while (1) switch (_context4.n) {
+          case 0:
+            callback = _args4.length > 0 && _args4[0] !== undefined ? _args4[0] : null;
+            if (!(streamer_id && streamer_id.current)) {
+              _context4.n = 2;
+              break;
+            }
+            _context4.n = 1;
+            return (0, _communication_react.postPromise)("log_streamer", "stop_log_stream", {
+              streamer_id: streamer_id.current
+            }, props.local_id);
+          case 1:
+            if (callback) {
+              callback();
+            }
+          case 2:
+            return _context4.a(2, null);
+        }
+      }, _callee4);
+    }));
+    return _stopLogStreaming2.apply(this, arguments);
   }
   function _addToLog(new_line) {
-    set_log_content(prev_log_content => prev_log_content + new_line);
+    set_log_content(function (prev_log_content) {
+      return prev_log_content + new_line;
+    });
   }
   function _prepareText() {
-    let the_text = "";
+    var the_text = "";
     if (log_content_ref.current) {
       // without this can get an error if project saved with tile log showing
-      let tlist = log_content_ref.current.split(/\r?\n/);
+      var tlist = log_content_ref.current.split(/\r?\n/);
       tlist = tlist.slice(-1 * max_console_lines_ref.current);
       if (search_string) {
         if (filter) {
-          let new_tlist = [];
-          for (let t of tlist) {
-            if (t.includes(search_string)) {
-              new_tlist.push(t);
+          var new_tlist = [];
+          var _iterator = _createForOfIteratorHelper(tlist),
+            _step;
+          try {
+            for (_iterator.s(); !(_step = _iterator.n()).done;) {
+              var t = _step.value;
+              if (t.includes(search_string)) {
+                new_tlist.push(t);
+              }
             }
+          } catch (err) {
+            _iterator.e(err);
+          } finally {
+            _iterator.f();
           }
           tlist = new_tlist;
         }
-        for (let t of tlist) {
-          the_text = the_text + t + "<br>";
+        var _iterator2 = _createForOfIteratorHelper(tlist),
+          _step2;
+        try {
+          for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+            var _t = _step2.value;
+            the_text = the_text + _t + "<br>";
+          }
+        } catch (err) {
+          _iterator2.e(err);
+        } finally {
+          _iterator2.f();
         }
-        const regex = new RegExp(search_string, "gi");
+        var regex = new RegExp(search_string, "gi");
         the_text = String(the_text).replace(regex, function (matched) {
           return "<mark>" + matched + "</mark>";
         });
       } else {
-        for (let t of tlist) {
-          the_text = the_text + t + "<br>";
+        var _iterator3 = _createForOfIteratorHelper(tlist),
+          _step3;
+        try {
+          for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+            var _t2 = _step3.value;
+            the_text = the_text + _t2 + "<br>";
+          }
+        } catch (err) {
+          _iterator3.e(err);
+        } finally {
+          _iterator3.f();
         }
       }
     }
-    return `<div style="white-space:pre">${the_text}</div>`;
+    return "<div style=\"white-space:pre\">".concat(the_text, "</div>");
   }
   function _handleSearchFieldChange(event) {
     set_search_helper_text(null);
@@ -162,17 +290,46 @@ function SearchableConsole(props, inner_ref) {
     set_search_string(null);
     set_filter(false);
   }
-  async function _logExec(command) {
-    return await (0, _communication_react.postPromise)(cont_id.current, "os_command_exec", {
-      "the_code": command
-    }, props.local_id);
+  function _logExec(_x) {
+    return _logExec2.apply(this, arguments);
   }
-  async function _commandSubmit(e) {
-    e.preventDefault();
-    past_commands.current.push(console_command_value);
-    past_commands_index.current = null;
-    await _logExec(console_command_value);
-    set_console_command_value("");
+  function _logExec2() {
+    _logExec2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5(command) {
+      return _regenerator().w(function (_context5) {
+        while (1) switch (_context5.n) {
+          case 0:
+            _context5.n = 1;
+            return (0, _communication_react.postPromise)(cont_id.current, "os_command_exec", {
+              "the_code": command
+            }, props.local_id);
+          case 1:
+            return _context5.a(2, _context5.v);
+        }
+      }, _callee5);
+    }));
+    return _logExec2.apply(this, arguments);
+  }
+  function _commandSubmit(_x2) {
+    return _commandSubmit2.apply(this, arguments);
+  }
+  function _commandSubmit2() {
+    _commandSubmit2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6(e) {
+      return _regenerator().w(function (_context6) {
+        while (1) switch (_context6.n) {
+          case 0:
+            e.preventDefault();
+            past_commands.current.push(console_command_value);
+            past_commands_index.current = null;
+            _context6.n = 1;
+            return _logExec(console_command_value);
+          case 1:
+            set_console_command_value("");
+          case 2:
+            return _context6.a(2);
+        }
+      }, _callee6);
+    }));
+    return _commandSubmit2.apply(this, arguments);
   }
   function _setLiveScroll(event) {
     set_livescroll(event.target.checked);
@@ -181,8 +338,8 @@ function SearchableConsole(props, inner_ref) {
     set_console_command_value(event.target.value);
   }
   function _handleKeyDown(event) {
-    let charCode = event.keyCode;
-    let new_val;
+    var charCode = event.keyCode;
+    var new_val;
     if (charCode == 38) {
       // down arraw
       if (past_commands.current.length == 0) {
@@ -207,10 +364,10 @@ function SearchableConsole(props, inner_ref) {
     }
     set_console_command_value(new_val);
   }
-  let the_text = {
+  var the_text = {
     __html: _prepareText()
   };
-  const inner_style = {
+  var inner_style = {
     whiteSpace: "nowrap",
     fontSize: 12,
     fontFamily: "monospace",
@@ -218,17 +375,16 @@ function SearchableConsole(props, inner_ref) {
     minHeight: 0,
     overflow: "auto"
   };
-  const outer_style = {
+  var outer_style = _objectSpread({
     width: "100%",
     height: "100%",
     overflow: "hidden",
     display: "flex",
-    flexDirection: "column",
-    ...props.outer_style
-  };
-  const leftContent = /*#__PURE__*/_react.default.createElement(_core.ControlGroup, {
+    flexDirection: "column"
+  }, props.outer_style);
+  var leftContent = /*#__PURE__*/_react["default"].createElement(_core.ControlGroup, {
     vertical: false
-  }, /*#__PURE__*/_react.default.createElement(_core.Button, {
+  }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
     onClick: _setLogSince,
     style: {
       height: 30
@@ -236,13 +392,13 @@ function SearchableConsole(props, inner_ref) {
     variant: "minimal",
     size: "small",
     icon: "trash"
-  }), /*#__PURE__*/_react.default.createElement(_core.HTMLSelect, {
+  }), /*#__PURE__*/_react["default"].createElement(_core.HTMLSelect, {
     onChange: _setMaxConsoleLines,
     large: false,
     variant: "minimal",
     value: max_console_lines_ref.current,
     options: [100, 250, 500, 1000, 2000]
-  }), /*#__PURE__*/_react.default.createElement(_core.Switch, {
+  }), /*#__PURE__*/_react["default"].createElement(_core.Switch, {
     label: "livescroll",
     size: "medium",
     checked: livescroll,
@@ -253,7 +409,7 @@ function SearchableConsole(props, inner_ref) {
       alignSelf: "center"
     }
   }));
-  const rightContent = /*#__PURE__*/_react.default.createElement(_search_form.FilterSearchForm, {
+  var rightContent = /*#__PURE__*/_react["default"].createElement(_search_form.FilterSearchForm, {
     search_string: search_string,
     handleSearchFieldChange: _handleSearchFieldChange,
     handleFilter: _handleFilter,
@@ -263,48 +419,52 @@ function SearchableConsole(props, inner_ref) {
     search_helper_text: search_helper_text,
     margin_right: 25
   });
-  return /*#__PURE__*/_react.default.createElement("div", {
+  return /*#__PURE__*/_react["default"].createElement("div", {
     className: "searchable-console",
     style: outer_style
-  }, /*#__PURE__*/_react.default.createElement(ResponsiveFlex, {
+  }, /*#__PURE__*/_react["default"].createElement(ResponsiveFlex, {
     leftContent: leftContent,
     rightContent: rightContent
-  }), /*#__PURE__*/_react.default.createElement("div", {
+  }), /*#__PURE__*/_react["default"].createElement("div", {
     ref: inner_ref,
     style: inner_style,
     dangerouslySetInnerHTML: the_text
-  }), props.showCommandField && /*#__PURE__*/_react.default.createElement("form", {
+  }), props.showCommandField && /*#__PURE__*/_react["default"].createElement("form", {
     onSubmit: _commandSubmit
-  }, /*#__PURE__*/_react.default.createElement(_core.InputGroup, {
+  }, /*#__PURE__*/_react["default"].createElement(_core.InputGroup, {
     type: "text",
     className: "bp6-monospace-text",
     onChange: _onInputChange,
     size: "small",
     leftIcon: "chevron-right",
     fill: true,
-    onKeyDown: e => _handleKeyDown(e),
+    onKeyDown: function onKeyDown(e) {
+      return _handleKeyDown(e);
+    },
     value: console_command_value
   })));
 }
 exports.SearchableConsole = SearchableConsole = /*#__PURE__*/(0, _react.memo)(/*#__PURE__*/(0, _react.forwardRef)(SearchableConsole));
 function ResponsiveFlex(props) {
-  props = {
+  props = _objectSpread({
     gapThreshold: 100,
     leftContent: null,
-    rightContent: null,
-    ...props
-  };
-  const containerRef = (0, _react.useRef)(null);
-  const leftContentRef = (0, _react.useRef)(null);
-  const rightContentRef = (0, _react.useRef)(null);
-  const [hideRight, setHideRight] = (0, _react.useState)(false);
-  (0, _react.useEffect)(() => {
-    const observer = new ResizeObserver(([entry]) => {
-      const {
-        width
-      } = entry.contentRect;
-      const le_width = leftContentRef.current.getBoundingClientRect().width;
-      const re_width = rightContentRef.current.getBoundingClientRect().width;
+    rightContent: null
+  }, props);
+  var containerRef = (0, _react.useRef)(null);
+  var leftContentRef = (0, _react.useRef)(null);
+  var rightContentRef = (0, _react.useRef)(null);
+  var _useState11 = (0, _react.useState)(false),
+    _useState12 = _slicedToArray(_useState11, 2),
+    hideRight = _useState12[0],
+    setHideRight = _useState12[1];
+  (0, _react.useEffect)(function () {
+    var observer = new ResizeObserver(function (_ref3) {
+      var _ref4 = _slicedToArray(_ref3, 1),
+        entry = _ref4[0];
+      var width = entry.contentRect.width;
+      var le_width = leftContentRef.current.getBoundingClientRect().width;
+      var re_width = rightContentRef.current.getBoundingClientRect().width;
       if (width - (re_width + le_width) < props.gapThreshold) {
         setHideRight(true);
       } else {
@@ -314,9 +474,11 @@ function ResponsiveFlex(props) {
     if (containerRef.current) {
       observer.observe(containerRef.current);
     }
-    return () => observer.disconnect();
+    return function () {
+      return observer.disconnect();
+    };
   }, []);
-  return /*#__PURE__*/_react.default.createElement("div", {
+  return /*#__PURE__*/_react["default"].createElement("div", {
     ref: containerRef,
     style: {
       display: "flex",
@@ -325,9 +487,9 @@ function ResponsiveFlex(props) {
       width: "100%",
       position: "relative"
     }
-  }, /*#__PURE__*/_react.default.createElement("div", {
+  }, /*#__PURE__*/_react["default"].createElement("div", {
     ref: leftContentRef
-  }, props.leftContent), /*#__PURE__*/_react.default.createElement("div", {
+  }, props.leftContent), /*#__PURE__*/_react["default"].createElement("div", {
     style: {
       opacity: hideRight ? 0 : 1
     },

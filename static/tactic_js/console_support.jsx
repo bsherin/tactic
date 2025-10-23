@@ -1,5 +1,4 @@
 import {guid} from "./utilities_react";
-
 export {consoleItemsReducer}
 
 function fixOutputRowRecursively(wdict) {

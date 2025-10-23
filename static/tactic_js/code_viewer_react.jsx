@@ -7,7 +7,6 @@ import React from "react";
 import {Fragment, useState, useEffect, useRef, useMemo, memo, useContext, useCallback} from "react";
 import {createRoot} from 'react-dom/client';
 import {useHotkeys} from "@blueprintjs/core";
-
 import {ResourceViewerApp, copyToLibrary, sendToRepository} from "./resource_viewer_react_app";
 import {TacticSocket} from "./tactic_socket";
 import {ReactCodemirror6} from "./react-codemirror6";

@@ -1468,7 +1468,6 @@ function ConsoleComponent(props) {
         </Card>
     );
 }
-
 ConsoleComponent = memo(ConsoleComponent);
 
 function Shandle(props) {

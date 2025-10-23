@@ -4,7 +4,6 @@ import "../tactic_css/tactic.scss";
 import React from "react";
 import { Fragment, useState, useEffect, useRef, memo, useContext } from "react";
 import { createRoot } from 'react-dom/client';
-
 import { FormGroup, InputGroup, Button } from "@blueprintjs/core";
 
 import {doFlash, StatusContext} from "./toaster"

@@ -11,7 +11,6 @@ import "../tactic_css/tile_creator.scss";
 import "../tactic_css/resource_viewer.scss";
 import "../tactic_css/themeable.scss";
 
-
 import React from "react";
 import {useState, useEffect, useRef, useContext, Fragment, useCallback, useMemo} from "react";
 import {createRoot} from 'react-dom/client';

@@ -165,9 +165,7 @@ services:
   tactic_host2:
     image: bsherin/tactic-host:${IMG_SUFFIX}
     profiles:
-      - start_project
-      - start_development
-      - start_host
+      - unused
     restart: on-failure
     ports:
       - "5001:5000"

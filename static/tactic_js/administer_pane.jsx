@@ -1,7 +1,6 @@
 
 import React from "react";
 import {Fragment, useState, useRef, useEffect, memo, useContext} from "react";
-
 import {Regions} from "@blueprintjs/table";
 
 import {SearchForm, BpSelectorTable} from "./library_widgets";

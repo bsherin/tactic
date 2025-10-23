@@ -2,7 +2,6 @@
 
 import React from "react";
 import {useState, useEffect, useRef, memo, useContext} from "react";
-
 import {Icon, Card, Button, ButtonGroup, Spinner, PopoverPosition} from "@blueprintjs/core";
 import _ from 'lodash';
 
@@ -23,7 +22,6 @@ import {ErrorDrawerContext} from "./error_drawer";
 import {widgetDict} from "./widgets";
 
 export {TileComponent}
-
 
 const using_touch = "ontouchend" in document;
 

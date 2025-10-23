@@ -76,7 +76,6 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         self.my_id = "host" + str(myport)
         self.repository_user = User.get_user_by_username("repository")
         self.tile_registry = TileContainerRegistry()
-        self.generate_heartbeats = True
         if use_ecs and self.my_id == "host5000":
             self.tile_backend = ECSTileBackend(self.tile_registry, self)
             self.pool_backend = PoolBackendECS()

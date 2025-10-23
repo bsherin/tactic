@@ -20,7 +20,7 @@ import {postPromise} from "./communication_react";
 
 export {FileImportDialog}
 
-var defaultImportDialogWidth = 700;
+const defaultImportDialogWidth = 700;
 
 function FileImportDialog(props) {
     props = {

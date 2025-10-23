@@ -4,7 +4,6 @@ import "../tactic_css/tactic.scss";
 import React from "react";
 import {Fragment, memo} from "react";
 import { createRoot } from 'react-dom/client';
-
 import { FormGroup, InputGroup, Button } from "@blueprintjs/core";
 
 import {render_navbar} from "./blueprint_navbar";
