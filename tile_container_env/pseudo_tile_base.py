@@ -9,7 +9,7 @@ import types
 import pickle
 import pika
 from pickle import UnpicklingError
-from tile_base import TileBase, _task_worthy, _jsonizable_types
+from tile_base import TileBase, _task_worthy, _task_worthy_manual_submit, _jsonizable_types
 from communication_utils import is_jsonizable, make_python_object_jsonizable, debinarize_python_object
 from document_object import DetachedTacticCollection
 from threading import Lock
@@ -150,8 +150,8 @@ class PseudoTileClass(TileBase):
         ldata["export_viewer_message"] = export_viewer_message
         self._tworker.emit_to_client("export-viewer-message", ldata)
 
-    @_task_worthy
-    def compile_save_dict(self, data):
+    @_task_worthy_manual_submit
+    def compile_save_dict(self, data, task_packet):
         result = {"binary_attrs": [], "imports": []}
         is_lite = "lite_save" in data and data["lite_save"]
         if not is_lite:
@@ -198,7 +198,8 @@ class PseudoTileClass(TileBase):
         result["widgets"] = make_python_object_jsonizable(self._widgets)
         result["module_name"] = None
         result["execution_counter"] = self.execution_counter
-        return result
+        self._tworker.submit_response(task_packet, result)
+        return
 
     def recreate_from_save(self, save_dict):
         if "binary_attrs" not in save_dict:

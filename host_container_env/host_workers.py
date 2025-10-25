@@ -41,6 +41,7 @@ from ecs_tile_backend import ECSTileBackend
 from docker_tile_backend import DockerTileBackend
 from tile_registry import TileContainerRegistry
 from tile_container_management_mixin import TileContainerManagementMixin
+from loaded_tile_management import get_module_from_type
 
 # inactive_container_time is the max time a tile can
 # go without making active contact with the megaplex.
@@ -179,6 +180,13 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         if the_user is None:
             raise MongoAccessException(f"User with id {user_id} not found")
         return the_user
+
+    @task_worthy
+    def get_module_from_type_task(self, data):
+        username = data["username"]
+        tile_type = data["tile_type"]
+        module_name = get_module_from_type(username, tile_type)
+        return {"success": True, "module_name": module_name}
 
     @task_worthy
     def get_handler_methods(self, data):

@@ -289,13 +289,18 @@ services:
       - build_project
       - build_server_project
       - build_non_base
-      - start_project
       - start_development
     image: bsherin/tactic-log-streamer:${IMG_SUFFIX}
     container_name: tactic_log_streamer
     platform: ${PLATFORM}
     env_file:
       - "${ROOT_DIR}/env.list"
+    labels:
+      project: tactic
+      my_id: tactic_log_streamer
+      owner: host
+      parent: host
+      other_name: tactic_log_streamer
     environment:
       - PYTHONUNBUFFERED=0
       - MY_ID=log_streamer

@@ -27,7 +27,7 @@ RUN set -eu; \
 ADD ./tactic_dark.mplstyle /usr/local/lib/python3.11/site-packages/matplotlib/mpl-data/stylelib/
 
 COPY ./tile_container_env ./shared_python/volume_manager.py ./shared_python/exception_mixin.py \
-     ./shared_python/redis_tools.py ./shared_python/qworker.py ./shared_python/rabbit_manage.py \
+     ./shared_python/qworker.py ./shared_python/rabbit_manage.py \
      ./shared_python/communication_utils.py /code/
 
 RUN mkdir -p /root/nltk_data

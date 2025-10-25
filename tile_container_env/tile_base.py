@@ -14,7 +14,6 @@ import pickle
 from pickle import UnpicklingError
 from communication_utils import is_jsonizable, make_python_object_jsonizable, debinarize_python_object
 import Levenshtein
-from redis_tools import redis_tm
 from tile_o_plex import app
 from flask import render_template
 from data_access_mixin import DataAccessMixin
@@ -28,7 +27,7 @@ from document_object import ROWS_TO_PRINT, DetachedTacticCollection
 import document_object
 from qworker_alt import debug_log
 import copy
-from qworker_alt import task_worthy_methods
+from qworker_alt import task_worthy_methods, task_worthy_manual_submit_methods
 
 from widgets import kind_dict
 RETRIES = os.environ.get("RETRIES")
@@ -37,6 +36,10 @@ RETRIES = os.environ.get("RETRIES")
 # noinspection PyUnresolvedReferences
 def _task_worthy(m):
     task_worthy_methods[m.__name__] = "tilebase"
+    return m
+
+def _task_worthy_manual_submit(m):
+    task_worthy_manual_submit_methods[m.__name__] = "tilebase"
     return m
 
 
@@ -520,8 +523,8 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
         self.current_html = data["current_html"]
         return {"success": True}
 
-    @_task_worthy
-    def compile_save_dict(self, data):
+    @_task_worthy_manual_submit
+    def compile_save_dict(self, data, task_packet):
         result = {"my_class_for_recreate": "TileBase",
                   "binary_attrs": []}
         is_lite = "lite_save" in data and data["lite_save"]
@@ -563,9 +566,20 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
                     continue
         data = {"tile_type": self.tile_type, "user_id": self.user_id}
         result["tile_id"] = self._tworker.my_id
-        tmi_string = "{}.tile_module_index".format(self.username)
-        result["module_name"] = redis_tm.hget(tmi_string, self.tile_type)
-        return result
+        def got_module_name(mdata):
+            print("got module_name")
+            result["module_name"] = mdata["module_name"]
+            print("submitting response")
+            self._tworker.submit_response(task_packet, result)
+
+        # tmi_string = "{}.tile_module_index".format(self.username)
+        print("posting to tworker to get module name")
+        self._tworker.ask_host("get_module_from_type_task", {
+            "tile_type": self.tile_type,
+            "username": self.username
+        }, got_module_name)
+        return
+
     # </editor-fold>
 
     # <editor-fold desc="Tile Internal Machinery">
