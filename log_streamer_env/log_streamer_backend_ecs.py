@@ -127,7 +127,7 @@ class ECSLogTailer:
 
     def send_fn(self, msg):
         base_data = {"message": "updateLog", "container_id": self.task_id, "new_line": msg}
-        socketio.emit("searchable-console-message", base_data, namespace="/main", room=room)
+        socketio.emit("searchable-console-message", base_data, namespace="/main", room=self.room)
 
 
     def _run(self, inactivity_timeout_sec=60):
