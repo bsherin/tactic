@@ -19,6 +19,8 @@ for base_name in base_user_image_names:
 for base_name in base_user_image_names:
     tactic_user_image_names.append(f"{base_name}:arm64")
 
+use_ecs = os.getenv("USE_ECS_TILES","false").lower() == "true"
+
 class ContainerTasksMixin:
 
     @task_worthy
@@ -130,7 +132,7 @@ class ContainerTasksMixin:
                    "Image": image_name,
                    "Owner": owner_name,
                    "Status": cont.status,
-                   "Uptime": self.get_uptime_string_from_dt(info["created"])
+                   "Uptime": self.get_uptime_string(cont.attrs["Created"])
                    }
         return new_row
 
@@ -205,12 +207,12 @@ class ContainerTasksMixin:
                 if reg.match(new_row[k], re.IGNORECASE):
                     filtered_res.append(new_row)
                     break
-
-        for row in self.get_tile_container_chunk():
-            for k in match_keys:
-                if reg.match(row[k], re.IGNORECASE):
-                    filtered_res.append(row)
-                    break
+        if use_ecs:
+            for row in self.get_tile_container_chunk():
+                for k in match_keys:
+                    if reg.match(row[k], re.IGNORECASE):
+                        filtered_res.append(row)
+                        break
 
         if search_spec["sort_direction"] == "ascending":
             reverse = False
