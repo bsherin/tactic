@@ -130,7 +130,7 @@ class ECSLogTailer:
         socketio.emit("searchable-console-message", base_data, namespace="/main", room=self.room)
 
 
-    def _run(self, inactivity_timeout_sec=60):
+    def _run(self, inactivity_timeout_sec=600):
         """
         Tails logs for one ECS task's container and streams each line via send_fn.
         Stops when (a) task stops and no new logs for a poll, or (b) inactivity timeout.
@@ -193,7 +193,9 @@ class ECSLogTailer:
                                                             startFromHead=True, nextToken=next_token)
                                 if resp2.get("events"):
                                     for ev in resp2["events"]:
-                                        msg = ev.get("message", "").rstrip("\n")
+                                        msg = ev.get("message", "")
+                                        if not msg.endswith("\n"):
+                                            msg += "\n"
                                         self.send_fn(msg)
                                     next_token = resp2.get("nextForwardToken", next_token)
                                     continue
