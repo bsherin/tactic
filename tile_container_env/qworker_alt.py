@@ -391,7 +391,6 @@ class QWorker(ExceptionMixin):
         task_type = task_packet["task_type"]
         print("Handling task type {}".format(task_type))
         if task_type in task_worthy_methods:
-            print("task type {} is in task worthy methods".format(task_type))
             if task_worthy_methods[task_type] == "tilebase" and "tilebase" not in self.handler_instances:
                 debug_log("it seems like tilebase is not ready yet. skipping event {}".format(task_type))
                 response_data = None

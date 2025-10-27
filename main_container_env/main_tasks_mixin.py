@@ -1319,7 +1319,6 @@ class ConsoleTasksMixin:
             self.dict = self._pipe_dict
             data["pipe_dict"] = self.dict
             data["am_notebook"] = self.am_notebook_type
-            print(f"about to post exec_console_code task to {self.pseudo_tile_id} with data {str(data)}")
             self.mworker.post_task(self.pseudo_tile_id, "exec_console_code", data)
             self.mworker.submit_response(task_packet, {"success": True})
 

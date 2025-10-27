@@ -121,7 +121,6 @@ class FreeformDocInfo(DocInfoAbstract):
 # noinspection PyPep8Naming
 class docInfo(DocInfoAbstract):
     def __init__(self, name=None, header_list=None, metadata=None, data_rows=None, table_spec=None):
-        print("*** in docInfo with data_rows of type " + str(type(data_rows)))
 
         DocInfoAbstract.__init__(self, name, metadata)
         if table_spec is not None:  # This will be the case if we are recreating
@@ -131,7 +130,6 @@ class docInfo(DocInfoAbstract):
         self.data_rows = copy.deepcopy(data_rows)  # All the data rows in the doc
         self.current_data_rows = self.data_rows  # The current filtered set of data rows
         self.metadata["number_of_rows"] = len(data_rows.keys())
-        print("** leaving docInfo")
         return
 
     def set_background_color(self, row, column_header, color):

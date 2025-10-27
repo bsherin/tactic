@@ -196,24 +196,19 @@ class TileWorker(QWorker):
 
     @task_worthy
     def recreate_from_save(self, data):
-        print("in recreate_from_save in tile_main")
         try:
-            print("entering recreate_from_save. class_name is " + class_info["class_name"])
             self.tile_instance = class_info["tile_class"](None, None, tile_name=data["tile_name"])
             tile_env.Tile = self.tile_instance
             widgets.Tile = self.tile_instance
             widgets.in_pseudo_tile = self.tile_instance.in_pseudo_tile
             self.handler_instances["tilebase"] = self.tile_instance
-            print("about to call recreate_from_save on tile_instance")
             self.tile_instance.recreate_from_save(data)
             self.tile_instance.base_figure_url = data["new_base_figure_url"]
             if "doc_type" in data:
                 self.tile_instance.doc_type = data["doc_type"]
             else:
                 self.tile_instance.doc_type = "table"
-            print('initializing document_object"')
             document_object.Collection.__fully_initialize__()
-            print("leaving recreate_from_save")
 
         except Exception as ex:
             result = self.handle_exception(ex, "Error loading source in tile_main recreate from save")
@@ -277,7 +272,6 @@ class TileWorker(QWorker):
     @task_worthy
     def reinstantiate_tile(self, reload_dict):
         try:
-            print("in reinstantiate_tile with keys: " + str(reload_dict.keys()))
             self.tile_instance = class_info["tile_class"](None, None, tile_name=reload_dict["tile_name"])
             tile_env.Tile = self.tile_instance
             widgets.Tile = self.tile_instance
@@ -317,7 +311,6 @@ class TileWorker(QWorker):
             widgets.Tile = self.tile_instance
             widgets.in_pseudo_tile = self.tile_instance.in_pseudo_tile
             self.handler_instances["tilebase"] = self.tile_instance
-            debug_log('initiating pseudo tile with instance params: ' + str(data["instance_params"]))
             for k, val in data["instance_params"].items():
                 setattr(self.tile_instance, k, val)
 
@@ -326,7 +319,6 @@ class TileWorker(QWorker):
             if (data["globals_dict"] is not None) and (isinstance(data["globals_dict"], dict)):  # legacy
                 self.tile_instance.recreate_from_save(data["globals_dict"])
             result = {"success": True, "current_globals": self.tile_instance._last_globals}
-            print("return from instantiate as pseudo_tile")
             return result
         except Exception as ex:
             return self.handle_exception(ex, "Error initializing pseudo tile")

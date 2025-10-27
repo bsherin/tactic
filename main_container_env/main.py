@@ -262,7 +262,6 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
             return False
 
     def recreate_from_save(self, project_name, unique_id=None):
-        print("entering recreate_from_save in main")
         if unique_id is None:
             try:
                 project_dict = self.read_project_dict(project_name)
