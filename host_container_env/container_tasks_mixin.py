@@ -162,7 +162,7 @@ class ContainerTasksMixin:
 
     def get_tile_container_chunk(self):
         tile_chunks = []
-        for tile_id, info in self.tile_registry.items():
+        for tile_id, info in self.tile_registry.get_items():
             if "created" not in info or type(info["created"]) != datetime:
                 up_time = "unknown"
             else:

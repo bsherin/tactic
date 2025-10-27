@@ -45,6 +45,9 @@ class TileContainerRegistry:
             self.reconcile_tiles()
             self.publish_metrics()
 
+    def get_items(self):
+        return list(self._registry.items())
+
     def publish_metrics(self):
         if use_ecs:
             print("*** entering publish metrics ***")
