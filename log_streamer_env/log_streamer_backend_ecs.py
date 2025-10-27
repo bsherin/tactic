@@ -135,7 +135,8 @@ class ECSLogTailer:
         Tails logs for one ECS task's container and streams each line via send_fn.
         Stops when (a) task stops and no new logs for a poll, or (b) inactivity timeout.
         """
-
+        next_token = None
+        last_seen_ts = 0
         self.group, self.stream = resolve_log_stream_for_task(self.task_arn)
 
         # Initial announcement (optional)
