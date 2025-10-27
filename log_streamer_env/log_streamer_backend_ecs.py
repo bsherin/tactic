@@ -126,6 +126,8 @@ class ECSLogTailer:
 
 
     def send_fn(self, msg):
+        if not msg.endswith("\n"):
+            msg += "\n"
         base_data = {"message": "updateLog", "container_id": self.task_id, "new_line": msg}
         socketio.emit("searchable-console-message", base_data, namespace="/main", room=self.room)
 
@@ -173,8 +175,6 @@ class ECSLogTailer:
                         msg = ev.get("message", "")
                         ts = ev.get("timestamp", 0)
                         last_seen_ts = max(last_seen_ts, ts)
-                        if msg.endswith("\n"):
-                            msg = msg[:-1]
                         self.send_fn(msg)
 
                     next_token = next_token_new
@@ -194,8 +194,6 @@ class ECSLogTailer:
                                 if resp2.get("events"):
                                     for ev in resp2["events"]:
                                         msg = ev.get("message", "")
-                                        if not msg.endswith("\n"):
-                                            msg += "\n"
                                         self.send_fn(msg)
                                     next_token = resp2.get("nextForwardToken", next_token)
                                     continue
