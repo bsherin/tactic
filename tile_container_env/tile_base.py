@@ -808,7 +808,6 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
         return
 
     def recreate_from_save(self, save_dict):
-        print("entering recreate from save in tile_base with save_dict " + str(save_dict))
         if "binary_attrs" not in save_dict:
             save_dict["binary_attrs"] = []
         for(attr, attr_val) in save_dict.items():

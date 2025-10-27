@@ -130,13 +130,12 @@ class ContainerTasksMixin:
                    "Image": image_name,
                    "Owner": owner_name,
                    "Status": cont.status,
-                   "Uptime": self.get_uptime_string(cont.attrs["Created"])
+                   "Uptime": self.get_uptime_string_from_dt(info["created"])
                    }
         return new_row
 
-    def get_uptime_string(self, created_string):
-        cstring = re.sub(r"\..*$", "", created_string)  # get rid of microseconds and extra chars
-        dt = datetime.strptime(cstring, "%Y-%m-%dT%H:%M:%S")
+    @staticmethod
+    def get_uptime_string_from_dt(dt):
         n = datetime.now()
         td = n - dt
         if td.days >= 1:
@@ -153,6 +152,28 @@ class ContainerTasksMixin:
             minpart = secs / 60
             return f"{minutes + minpart:.1f} minutes"
         return f"{int(td.seconds)} seconds"
+
+    def get_uptime_string(self, created_string):
+        cstring = re.sub(r"\..*$", "", created_string)  # get rid of microseconds and extra chars
+        dt = datetime.strptime(cstring, "%Y-%m-%dT%H:%M:%S")
+        return self.get_uptime_string_from_dt(dt)
+
+    def get_tile_container_chunk(self):
+        tile_chunks = []
+        for tile_id, info in self.tile_registry.items():
+            if "created" not in info or type(info["created"]) != datetime:
+                up_time = "unknown"
+            else:
+                up_time = self.get_uptime_string_from_dt(info["created"])
+            new_row = {"Id": tile_id,
+                       "Other_name": "",
+                       "Name": "",
+                       "Image": "bsherin/tactic-tile:x86",
+                       "Owner": info["username"],
+                       "Status": info["status"],
+                       "Uptime": up_time}
+            tile_chunks.append(new_row)
+        return tile_chunks
 
     @task_worthy
     def grab_container_list_chunk_task(self, data):
@@ -183,6 +204,12 @@ class ContainerTasksMixin:
             for k in match_keys:
                 if reg.match(new_row[k], re.IGNORECASE):
                     filtered_res.append(new_row)
+                    break
+
+        for row in self.get_tile_container_chunk():
+            for k in match_keys:
+                if reg.match(row[k], re.IGNORECASE):
+                    filtered_res.append(row)
                     break
 
         if search_spec["sort_direction"] == "ascending":

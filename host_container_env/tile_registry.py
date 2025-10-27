@@ -69,7 +69,7 @@ class TileContainerRegistry:
         else:
             print(f"Metrics publishing is disabled in non-ECS mode. {self.idle_tiles} idle tiles, {self.running_tiles} running tiles.")
 
-    def mark_status(self, tile_id, status, task_arn=None, username=None, owner=None, parent=None):
+    def mark_status(self, tile_id, status, task_arn=None, username=None, owner=None, parent=None, created=None):
         if tile_id not in self._registry:
             self._registry[tile_id] = {"status": "idle"}
         self._registry[tile_id]["status"] = status
@@ -79,6 +79,7 @@ class TileContainerRegistry:
             self._registry[tile_id]["owner"] = owner
         if parent is not None:
             self._registry[tile_id]["parent"] = parent
+        self._registry[tile_id]["created_dt"] = created
         if use_ecs:
             if task_arn is not None:
                 self._registry[tile_id]["task_arn"] = task_arn
@@ -186,7 +187,7 @@ class TileContainerRegistry:
                 tile_id = self.task_to_tile_id(t)
                 if tile_id not in self._registry:
                     print("found new available tile container:", tile_id)
-                    self.mark_status(tile_id, "idle", task_arn=t["taskArn"])
+                    self.mark_status(tile_id, "idle", task_arn=t["taskArn"], created=t["createdAt"])
         finally:
             try:
                 conn.close()
