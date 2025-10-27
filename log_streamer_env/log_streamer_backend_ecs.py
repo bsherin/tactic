@@ -106,11 +106,10 @@ class ECSLogTailer:
         self.task_id = task_id
         self.room = room
         self.start_ms = start_ms
-        self.poll = poll
         self.batch_size = batch_size
         self._stop = threading.Event()
         self._t = None
-        self.poll_interval_sec = pool
+        self.poll_interval_sec = poll
         self.group = ""
         self.stream = ""
 

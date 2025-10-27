@@ -1240,11 +1240,16 @@ class ExportsTasksMixin:
 # noinspection PyUnusedLocal
 class ConsoleTasksMixin:
 
-    @task_worthy
-    def get_pseudo_tile_id(self, data):
+    @task_worthy_manual_submit
+    def get_pseudo_tile_id(self, data, task_packet):
+        def got_id():
+            self.mworker.submit_response(task_packet, {"success": True, "pseudo_tile_id": self.pseudo_tile_id})
+            return
         if self.pseudo_tile_id is None:
-            self.create_pseudo_tile()
-        return {"success": True, "pseudo_tile_id": self.pseudo_tile_id}
+            self.create_pseudo_tile(callback=got_id)
+        else:
+            got_id()
+        return
 
     @task_worthy
     def print_to_console_event(self, data):
