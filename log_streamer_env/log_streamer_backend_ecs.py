@@ -208,7 +208,7 @@ class ECSLogTailer:
                             self.send_fn(f"No new logs for {inactivity_timeout_sec}s; ending stream.")
                             break
 
-                time.sleep(poll_interval_sec)
+                time.sleep(self.poll_interval_sec)
 
             except ClientError as e:
                 code = e.response["Error"]["Code"]
