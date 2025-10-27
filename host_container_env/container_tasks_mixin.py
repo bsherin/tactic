@@ -138,7 +138,10 @@ class ContainerTasksMixin:
 
     @staticmethod
     def get_uptime_string_from_dt(dt):
-        n = datetime.now()
+        if dt.tzinfo is None:
+            n = datetime.now()
+        else:
+            n = datetime.now(dt.tzinfo)
         td = n - dt
         if td.days >= 1:
             daypart = td.seconds / 86400
