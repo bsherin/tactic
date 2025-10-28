@@ -66,8 +66,7 @@ function correctType(type, val, error_flag = "__ERROR__") {
     return result
 }
 
-
-function creator_props(data, registerDirtyMethod, finalCallback) {
+async function creator_props(data, registerDirtyMethod, finalCallback) {
 
     let mdata = data.mdata;
     let module_name = data.resource_name;
@@ -80,73 +79,56 @@ function creator_props(data, registerDirtyMethod, finalCallback) {
         window.global_id = local_id;
     }
 
-    async function readyListener() {
-        await _everyone_ready_in_context(finalCallback);
+    let the_content = {
+        "module_name": module_name,
+        "local_id": local_id,
+        "tile_collection_name": tile_collection_name,
+        "user_id": window.user_id,
+        "version_string": window.version_string
+    };
+
+    if (window.in_context) {
+        tsocket.attachListener('handle-callback', (task_packet) => {
+            handleCallback(task_packet, local_id)
+        });
     }
-    
+    let data_object = await postPromise("module_viewer", "initialize_parser",
+        the_content, local_id);
 
-    tsocket.socket.on("remove-ready-block", readyListener);
-    tsocket.socket.emit('client-ready', {
-        "room": data.local_id, "user_id": window.user_id, "participant": "client",
-        "rb_id": data.ready_block_id, "local_id": data.local_id
-    });
-
-    async function _everyone_ready_in_context(finalCallback) {
-        if (!window.in_context) {
-            renderSpinnerMessage("Everyone is ready, initializing...", '#creator-root');
-        }
-        let the_content = {
-            "module_name": module_name,
-            "local_id": local_id,
-            "tile_collection_name": tile_collection_name,
-            "user_id": window.user_id,
-            "version_string": window.version_string
-        };
-
-        if (window.in_context) {
-            tsocket.attachListener('handle-callback', (task_packet) => {
-                handleCallback(task_packet, local_id)
-            });
-        }
-        let data_object = await postPromise(local_id, "initialize_parser",
-            the_content, local_id);
-
-        if (!window.in_context) {
-            renderSpinnerMessage("Creating the page...", '#creator-root');
-        }
-
-        tsocket.socket.off("remove-ready-block", readyListener);
-        let parsed_data = data_object.the_content;
-        let all_handler_methods = data_object.all_handler_methods;
-        let initial_line_number = !window.in_context && window.line_number ? window.line_number : null;
-        let interface_state = null;
-        if ("interface_state" in mdata) {
-            interface_state = mdata.interface_state;
-            delete mdata.interface_state;
-        }
-
-        finalCallback(
-            {
-                resource_name: module_name,
-                local_id: local_id,
-                tsocket: tsocket,
-                readOnly: data.is_repository,
-                is_repository: data.is_repository,
-                initial_line_number: initial_line_number,
-                render_content_info: parsed_data.render_content_info,
-                globals_info: parsed_data.globals_info,
-                user_methods_list: parsed_data.user_methods_list,
-                javascript_functions_list: parsed_data.javascript_functions_list,
-                used_handler_methods_list: parsed_data.used_handler_methods_list,
-                mdata: mdata,
-                option_list: correctOptionListTypes(parsed_data.option_dict),
-                export_list: parsed_data.export_list,
-                additional_save_attrs: parsed_data.additional_save_attrs,
-                all_handler_methods: all_handler_methods,
-                registerDirtyMethod: registerDirtyMethod,
-                interface_state: interface_state,
-            }
-        );
+    if (!window.in_context) {
+        renderSpinnerMessage("Creating the page...", '#creator-root');
     }
+
+    let parsed_data = data_object.the_content;
+    let all_handler_methods = data_object.all_handler_methods;
+    let initial_line_number = !window.in_context && window.line_number ? window.line_number : null;
+    let interface_state = null;
+    if ("interface_state" in mdata) {
+        interface_state = mdata.interface_state;
+        delete mdata.interface_state;
+    }
+
+    finalCallback(
+        {
+            resource_name: module_name,
+            local_id: local_id,
+            tsocket: tsocket,
+            readOnly: data.is_repository,
+            is_repository: data.is_repository,
+            initial_line_number: initial_line_number,
+            render_content_info: parsed_data.render_content_info,
+            globals_info: parsed_data.globals_info,
+            user_methods_list: parsed_data.user_methods_list,
+            javascript_functions_list: parsed_data.javascript_functions_list,
+            used_handler_methods_list: parsed_data.used_handler_methods_list,
+            mdata: mdata,
+            option_list: correctOptionListTypes(parsed_data.option_dict),
+            export_list: parsed_data.export_list,
+            additional_save_attrs: parsed_data.additional_save_attrs,
+            all_handler_methods: all_handler_methods,
+            registerDirtyMethod: registerDirtyMethod,
+            interface_state: interface_state,
+        }
+    );
 }
 

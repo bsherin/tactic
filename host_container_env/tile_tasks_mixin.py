@@ -30,39 +30,39 @@ class TileTasksMixin:
         result["success"] = True
         return result
 
-    @task_worthy
-    def last_saved_view_in_context(self, data):
-        the_user = self.get_user_from_data(data)
-        module_name = data["tile_module_name"]
-        tile_dict = the_user.get_tile_doc(module_name)
-        if tile_dict is None:
-            return {"success": False, "message": "Tile not found."}
-        if "last_saved" in tile_dict and tile_dict["last_saved"] == "creator":
-            return self.view_in_creator_in_context(data)
-        if "last_saved" not in tile_dict or tile_dict["last_save"] is None:
-            return self.view_in_creator_in_context(data)
-        return self.view_module_in_context(data)
+    # @task_worthy
+    # def last_saved_view_in_context(self, data):
+    #     the_user = self.get_user_from_data(data)
+    #     module_name = data["tile_module_name"]
+    #     tile_dict = the_user.get_tile_doc(module_name)
+    #     if tile_dict is None:
+    #         return {"success": False, "message": "Tile not found."}
+    #     if "last_saved" in tile_dict and tile_dict["last_saved"] == "creator":
+    #         return self.view_in_creator_in_context(data)
+    #     if "last_saved" not in tile_dict or tile_dict["last_save"] is None:
+    #         return self.view_in_creator_in_context(data)
+    #     return self.view_module_in_context(data)
 
-    @task_worthy
-    def initiate_module_viewer_in_context(self):
-        the_user = self.get_user_from_data(data)
-        module_name = data["tile_module_name"]
-        the_user.clear_old_recent_history(module_name)
-        module_code = the_user.get_tile_content(module_name)
-        mdata = the_user.get_processed_tile_metadata(module_name)
-        mdata["icon"] = the_user.get_tile_icon_from_mdata(mdata)
-        data = {
-            "success": True,
-            "kind": "module-viewer",
-            "res_type": "tile",
-            "the_content": module_code,
-            "mdata": mdata,
-            "resource_name": module_name,
-            "read_only": False,
-            "is_repository": False,
-            "local_id": data["local_id"]
-        }
-        return data
+    # @task_worthy
+    # def initiate_module_viewer_in_context(self, data):
+    #     the_user = self.get_user_from_data(data)
+    #     module_name = data["tile_module_name"]
+    #     the_user.clear_old_recent_history(module_name)
+    #     module_code = the_user.get_tile_content(module_name)
+    #     mdata = the_user.get_processed_tile_metadata(module_name)
+    #     mdata["icon"] = the_user.get_tile_icon_from_mdata(mdata)
+    #     data = {
+    #         "success": True,
+    #         "kind": "module-viewer",
+    #         "res_type": "tile",
+    #         "the_content": module_code,
+    #         "mdata": mdata,
+    #         "resource_name": module_name,
+    #         "read_only": False,
+    #         "is_repository": False,
+    #         "local_id": data["local_id"]
+    #     }
+    #     return data
 
     @task_worthy
     def initiate_creator_in_context(self, data):
@@ -72,42 +72,51 @@ class TileTasksMixin:
         the_user.clear_old_recent_history(module_name)
         local_id = data.get("local_id", str(uuid.uuid4()))
         print("local_id is: ", local_id)
-        id_info = self.initialize_module_viewer_container(module_name, the_user, local_id, local_id)
-        create_ready_block(id_info["rb_id"], the_user.username, [id_info["local_id"], "client"],
-                           id_info["local_id"])
+
+        self.post_task("module_viewer", "start_session", {
+            "local_id": local_id,
+            "module_name": module_name,
+            "user_id": the_user.get_id(),
+            "username": the_user.username,
+            "openai_api_key": the_user.get_openai_api_key()
+        })
+
+
+        # id_info = self.initialize_module_viewer_container(module_name, the_user, local_id, local_id)
+        # create_ready_block(id_info["rb_id"], the_user.username, [id_info["local_id"], "client"],
+        #                    id_info["local_id"])
         mdata = the_user.get_processed_tile_metadata(module_name)
-        print("return local_id: ", id_info["local_id"])
         result = {
             "success": True,
             "kind": "creator-viewer",
             "res_type": "tile",
             "resource_name": module_name,
             "local_id": local_id,
-            "ready_block_id": local_id,
-            "tile_collection_name": id_info["tile_collection_name"],
+            "tile_collection_name": the_user.tile_collection_name,
             "mdata": mdata
         }
+        print("returning result from initiate_creator_in_context: ", result)
         return result
 
-    def initialize_module_viewer_container(self, module_name, the_user, rb_id, local_id):
-        openai_api_key = the_user.get_openai_api_key()
-        environ = {"RB_ID": rb_id, "OPENAI_API_KEY": openai_api_key}
-        vol_dict = {}
-        _, container_id = create_container("bsherin/tactic-module-viewer",
-                                                          env_vars=environ,
-                                                          volume_dict=vol_dict,
-                                                          owner=the_user.get_id(),
-                                                          username=the_user.username,
-                                                          special_unique_id=local_id,
-                                                          other_name=module_name, register_container=True)
-
-        the_content = {"module_name": module_name,
-                       "local_id": local_id,
-                       "container_id": container_id,
-                       "rb_id": rb_id,
-                       "tile_collection_name": the_user.tile_collection_name}
-
-        return the_content
+    # def initialize_module_viewer_container(self, module_name, the_user, rb_id, local_id):
+    #     openai_api_key = the_user.get_openai_api_key()
+    #     environ = {"RB_ID": rb_id, "OPENAI_API_KEY": openai_api_key}
+    #     vol_dict = {}
+    #     _, container_id = create_container("bsherin/tactic-module-viewer",
+    #                                                       env_vars=environ,
+    #                                                       volume_dict=vol_dict,
+    #                                                       owner=the_user.get_id(),
+    #                                                       username=the_user.username,
+    #                                                       special_unique_id=local_id,
+    #                                                       other_name=module_name, register_container=True)
+    #
+    #     the_content = {"module_name": module_name,
+    #                    "local_id": local_id,
+    #                    "container_id": container_id,
+    #                    "rb_id": rb_id,
+    #                    "tile_collection_name": the_user.tile_collection_name}
+    #
+    #     return the_content
 
     @task_worthy
     def update_tile_task(self, data):

@@ -22,23 +22,27 @@ import sys, os
 sys.stdout = sys.stderr
 import time
 
-rb_id = os.environ.get("RB_ID")
-
 
 # noinspection PyUnusedLocal
 class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin, MongoAccess, TileAccess):
     def __init__(self):
         QWorker.__init__(self)
-        self.tp = None
-        self.tstring = None
-        self.module_name = None
-        self.user_id = None
-        self.username = os.environ.get("USERNAME")
-        self.tile_instance = None
         self.generate_heartbeats = True
         db, fs, repository_db, repository_fs = get_dbs()
         self.db = db
         self.fs = fs
+        self.handler_methods = None
+        self.sessions = {}
+        return
+
+    def retrieve_handler_methods(self):
+        def got_methods(handler_result):
+            self.handler_methods = []
+            try:
+                self.handler_methods = handler_result["handler_methods"]
+            except Exception as nex:
+                print(self.extract_short_error_message(nex, "error getting handler methods"))
+        self.ask_host("get_handler_methods", {}, got_methods)
         return
 
     def ask_host(self, msg_type, task_data=None, callback_func=None):
@@ -51,40 +55,35 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin, MongoAccess, Til
         data["message"] = message
         self.ask_host("emit_to_client", data)
 
-    @task_worthy_manual_submit
-    def initialize_parser(self, data_dict, task_packet):
-        local_task_packet = task_packet
-        self.tstring = data_dict["version_string"]
-        self.module_name = data_dict["module_name"]
-        self.user_id = os.environ.get("OWNER")
-        tile_dict = self.get_tile_doc(self.module_name)
+    @task_worthy
+    def start_session(self, data_dict):
+        self.sessions[data_dict["local_id"]] = {
+            "user_id": data_dict["user_id"],
+            "module_name": data_dict["module_name"],
+            "username": data_dict["username"],
+            "openai_api_key": data_dict.get("openai_api_key", None),
+        }
+
+    @task_worthy
+    def initialize_parser(self, data_dict):
+        module_name = data_dict["module_name"]
+        local_id = data_dict["local_id"]
+        user_id = data_dict["user_id"]
+        tile_dict = self.get_tile_doc(module_name, username=self.sessions[local_id]["username"])
         module_code = tile_dict["tile_module"]
+        tp = TileParser(module_code, self.handler_methods)
+        result = {"success": True, "the_content": self.assemble_parse_information(tp),
+                  "all_handler_methods": self.handler_methods}
+        return result
 
-        def do_the_parse(handler_result):
-            self.handler_methods = []
-            try:
-                self.handler_methods = handler_result["handler_methods"]
-            except Exception as nex:
-                print(self.extract_short_error_message(nex, "error getting handler methods"))
-            self.tp = TileParser(module_code, self.handler_methods)
-            result = {"success": True, "the_content": self.assemble_parse_information(),
-                      "all_handler_methods": self.handler_methods}
-            self.submit_response(local_task_packet, result)
+    # @task_worthy
+    # def reintiailize_parser(self, data_dict):
+    #     module_code = data_dict["new_module_code"]
+    #     tp.reparse(module_code)
+    #     return {"success": True, "the_content": self.assemble_parse_information()}
 
-        self.ask_host("get_handler_methods", {"user_id": self.user_id, "local_id": self.my_id}, do_the_parse),
-        return
-
-    @task_worthy
-    def hello(self, data_dict):
-        return {"success": True, "message": 'This is a tile communicating'}
-
-    @task_worthy
-    def reintiailize_parser(self, data_dict):
-        module_code = data_dict["new_module_code"]
-        self.tp.reparse(module_code)
-        return {"success": True, "the_content": self.assemble_parse_information()}
-
-    def build_code(self, data_dict):
+    @staticmethod
+    def build_code(data_dict):
         export_list = data_dict["exports"]
         additional_save_attrs = [sattr["name"] for sattr in data_dict["additional_save_attrs"]]
         couple_save_attrs_and_exports = data_dict["mdata"]["couple_save_attrs_and_exports"]
@@ -146,39 +145,41 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin, MongoAccess, Til
                                         globals_code=globals_code,
                                         user_methods=user_methods_list_of_dicts,
                                         used_handler_methods=used_handler_methods_list_of_dicts,
-                                        standard_methods=standard_methods_list_of_dicts,
-                                        version_string=self.tstring)
+                                        standard_methods=standard_methods_list_of_dicts)
         return full_code
+
+    def get_username(self, local_id):
+        return self.sessions[local_id]["username"]
 
     @task_worthy
     def update_module(self, data_dict):
         try:
             module_name = data_dict["module_name"]
             module_code = self.build_code(data_dict)
-            self.tp.reparse(module_code)
+            tp = TileParser(module_code, self.handler_methods)
             standard_methods_line_numbers = {}
             render_content_line_numbers = {
-                "firstLineNumber": self.tp.get_starting_line("render_content"),
-                "lastLineNumber": self.tp.get_last_line("render_content")
+                "firstLineNumber": tp.get_starting_line("render_content"),
+                "lastLineNumber": tp.get_last_line("render_content")
             }
             draw_plot_line_numbers = {
-                "firstLineNumber": self.tp.get_starting_line("draw_plot"),
-                "lastLineNumber": self.tp.get_last_line("draw_plot")
+                "firstLineNumber": tp.get_starting_line("draw_plot"),
+                "lastLineNumber": tp.get_last_line("draw_plot")
             }
 
             standard_methods_line_numbers["render_content"] = render_content_line_numbers
             if draw_plot_line_numbers["firstLineNumber"] is not None:
                 standard_methods_line_numbers["draw_plot"] = draw_plot_line_numbers
-            user_methods_list = self.tp.get_user_methods_list()
+            user_methods_list = tp.get_user_methods_list()
             user_methods_line_numbers = {func["name"]: {
                 "firstLineNumber": func["body_start"],
                 "lastLineNumber": func["last_line"]} for func in user_methods_list}
-            used_handler_methods_list = self.tp.get_used_handler_methods_list()
+            used_handler_methods_list = tp.get_used_handler_methods_list()
             used_handler_methods_line_numbers = {func["name"]: {
                 "firstLineNumber": func["body_start"],
                 "lastLineNumber": func["last_line"]} for func in used_handler_methods_list}
-            self.update_tile(module_name, module_code, "creator")
-            self.create_recent_checkpoint(module_name)
+            self.update_tile(module_name, module_code, "creator", username=self.get_username(data_dict["local_id"]))
+            self.create_recent_checkpoint(module_name, username=self.get_username(data_dict["local_id"]))
             return {"success": True, "message": "Module Successfully Saved",
                     "alert_type": "alert-success", "render_content_line_numbers": render_content_line_numbers,
                     "standard_methods_line_numbers": standard_methods_line_numbers,
@@ -187,13 +188,13 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin, MongoAccess, Til
         except Exception as ex:
             return self.get_traceback_exception_dict(ex, "Error saving module")
 
-    def assemble_parse_information(self):
+    def assemble_parse_information(self, tp):
         print("*** assemble_parse_information called in module_viewer_main")
         try:
-            for option in self.tp.options:
-                if option["name"] in self.tp.defaults:
-                    option["default"] = self.tp.defaults[option["name"]]
-            func_dict = self.tp.methods
+            for option in tp.options:
+                if option["name"] in tp.defaults:
+                    option["default"] = tp.defaults[option["name"]]
+            func_dict = tp.methods
             if "render_content" in func_dict:
                 render_content_code = func_dict["render_content"]["method_body"]
                 render_content_code = remove_indents(render_content_code, 2)
@@ -209,9 +210,9 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin, MongoAccess, Til
                                   }
 
             javascript_functions_list = []
-            if "jscript" in self.tp.defaults:
+            if "jscript" in tp.defaults:
                 print("got jscript")
-                jscript = self.tp.defaults["jscript"]
+                jscript = tp.defaults["jscript"]
                 if type(jscript) == str:
                     javascript_functions_list.append(
                         {"name": "__raw_code__",
@@ -234,7 +235,7 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin, MongoAccess, Til
                              "lastLineNumber": len(func_info["code"].splitlines())
                              }
                         )
-            globals_code = self.tp.globals_code
+            globals_code = tp.globals_code
             globals_info = {"name": "globals",
                             "codeText": globals_code,
                             "argString": "",
@@ -243,7 +244,7 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin, MongoAccess, Til
                             "firstLineNumber": 1,
                             "lastLineNumber": len(globals_code.splitlines())
                             }
-            user_methods_list = self.tp.get_user_methods_list()
+            user_methods_list = tp.get_user_methods_list()
             user_methods_list = [{"name": func["name"],
                                   "codeText": remove_indents(func["method_body"], 2),
                                   "argString": func["arg_string"],
@@ -255,7 +256,7 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin, MongoAccess, Til
         except Exception as ex:
             print(self.extract_short_error_message(ex, "*** Error assembling user methods list  ***"))
             user_methods_list = []
-        used_handler_methods_list = self.tp.get_used_handler_methods_list()
+        used_handler_methods_list = tp.get_used_handler_methods_list()
         used_handler_methods_list = [{"name": func["name"],
                                       "codeText": remove_indents(func["method_body"], 2),
                                       "argString": func["arg_string"],
@@ -263,30 +264,30 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin, MongoAccess, Til
                                       "firstLineNumber": func["body_start"],
                                       "lastLineNumber": func["last_line"]
                                       } for func in used_handler_methods_list]
-        parsed_data = {"option_dict": self.tp.options, "export_list": self.tp.exports,
-                       "additional_save_attrs": self.tp.additional_save_attrs,
+        parsed_data = {"option_dict": tp.options, "export_list": tp.exports,
+                       "additional_save_attrs": tp.additional_save_attrs,
                        "render_content_info": render_content_info,
                        "javascript_functions_list": javascript_functions_list,
                        "globals_info": globals_info,
-                       "is_mpl": self.tp.is_mpl,
+                       "is_mpl": tp.is_mpl,
                        "user_methods_list": user_methods_list,
                        "used_handler_methods_list": used_handler_methods_list,
-                       "category": self.tp.category}
+                       "category": tp.category}
         return parsed_data
 
-    @task_worthy
-    def get_options(self, data_dict):
-        try:
-            the_class = class_info["tile_class"]
-            self.tile_instance = the_class(0, 0)
-            opt_dict = self.tile_instance.options
-            export_list = self.tile_instance.exports
-            if len(export_list) > 0:
-                if not isinstance(export_list[0], dict):  # legacy old exports specified as list of strings
-                    export_list = [{"name": exp, "tags": ""} for exp in export_list]
-        except Exception as ex:
-            return self.get_traceback_exception_dict(ex, "Error extracting options from source")
-        return {"success": True, "opt_dict": opt_dict, "export_list": export_list}
+    # @task_worthy
+    # def get_options(self, data_dict):
+    #     try:
+    #         the_class = class_info["tile_class"]
+    #         tile_instance = the_class(0, 0)
+    #         opt_dict = tile_instance.options
+    #         export_list = tile_instance.exports
+    #         if len(export_list) > 0:
+    #             if not isinstance(export_list[0], dict):  # legacy old exports specified as list of strings
+    #                 export_list = [{"name": exp, "tags": ""} for exp in export_list]
+    #     except Exception as ex:
+    #         return self.get_traceback_exception_dict(ex, "Error extracting options from source")
+    #     return {"success": True, "opt_dict": opt_dict, "export_list": export_list}
 
     @task_worthy
     def stop_me(self, data):
@@ -296,8 +297,7 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin, MongoAccess, Til
         return {"success": True}
 
     def ready(self):
-        self.ask_host("participant_ready", {"rb_id": rb_id, "user_id": os.environ.get("OWNER"),
-                                            "participant": self.my_id, "local_id": self.my_id})
+        self.retrieve_handler_methods()
         return
 
 

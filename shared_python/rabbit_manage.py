@@ -41,6 +41,7 @@ if os.environ.get("USE_AMAZON_MQ") == "True" or os.environ.get("USE_AMAZON_MQ") 
     RABBIT_PORT = 5671
     MESSAGE_QUEUE_ADDRESS = f"amqps://{RABBIT_USER}:{RABBIT_PASS}@{RABBIT_HOST}:5671//"
 else:
+    print("not using amazon mq")
     USE_AMAZON_MQ = False
     RABBIT_HOST = "megaplex"
     RABBIT_PORT = 5672

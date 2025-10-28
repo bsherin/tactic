@@ -588,7 +588,8 @@ function ReactCodemirror6(props) {
                 "code_str": code_str,
                 "change_counter": change_counter,
                 "mode": props.mode,
-                "cursor_position": cursorPos
+                "cursor_position": cursorPos,
+                "local_id": props.local_id
             })
             .then((data) => {
                 if (data.success) {

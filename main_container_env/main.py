@@ -34,7 +34,6 @@ from across_accounts_accesser import AcrossAccountsAccess
 
 from doc_info import docInfo, FreeformDocInfo
 from qworker import debug_log
-from tactic_copilot_mixin import CopilotMixin
 from tile_info import TileInfo
 
 # getting environment variables

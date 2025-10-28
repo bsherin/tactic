@@ -447,6 +447,7 @@ function ContextApp(props) {
               local_id: new_viewer_id
             };
           case 9:
+            console.log("got data for tile", data);
             return _context6.a(3, 24);
           case 10:
             _context6.n = 11;

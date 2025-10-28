@@ -39,6 +39,12 @@ class MainWorker(QWorker, ExceptionMixin, CopilotMixin):
         self.mwindow = None
         self.get_megaplex_task_now = False
         self.generate_heartbeats = True
+        self.sessions = {
+            self.my_id : {
+                "openai_api_key": os.environ.get("OPENAI_API_KEY"),
+                "client": None,
+            }
+        }
 
     def ask_host(self, msg_type, task_data=None, callback_func=None):
         task_data["local_id"] = self.my_id
@@ -189,11 +195,11 @@ class MainWorker(QWorker, ExceptionMixin, CopilotMixin):
         print("entering get_jupyter_cell_data")
         return {"cell_data": self.mwindow.jupyter_cells}
 
-    def ready(self):
-        self.ask_host("participant_ready", {"rb_id": rb_id, "user_id": os.environ.get("OWNER"),
-                                            "participant": self.my_id, "local_id": self.my_id
-                                            })
-        return
+    # def ready(self):
+    #     self.ask_host("participant_ready", {"rb_id": rb_id, "user_id": os.environ.get("OWNER"),
+    #                                         "participant": self.my_id, "local_id": self.my_id
+    #                                         })
+    #     return
 
 
 if __name__ == "__main__":

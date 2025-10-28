@@ -40,23 +40,23 @@ class TileParser(object):
         self.options = self.get_options_dict()
         self.extra_methods = self.get_extra_methods()
 
-    def reparse(self, new_module_code):
-        self.module_code = new_module_code
-        self.module_lines = self.module_code.splitlines()
-        self.globals_code = self.get_globals()
-        self.cnode = self.get_class_node()
-        self.class_name = self.cnode.name
-        self.base_classes = self.get_base_classes()
-        self.is_mpl = "MplFigure" in self.base_classes
-        self.is_d3 = "D3Tile" in self.base_classes
-        self.methods = self.get_methods()
-        self.assignments = self.get_assignments()
-        self.defaults = self.extract_defaults()
-        self.additional_save_attrs = self.extract_save_attrs()
-        self.exports = self.get_exports()
-        self.type = self.extract_type()
-        self.extra_methods = self.get_extra_methods()
-        return
+    # def reparse(self, new_module_code):
+    #     self.module_code = new_module_code
+    #     self.module_lines = self.module_code.splitlines()
+    #     self.globals_code = self.get_globals()
+    #     self.cnode = self.get_class_node()
+    #     self.class_name = self.cnode.name
+    #     self.base_classes = self.get_base_classes()
+    #     self.is_mpl = "MplFigure" in self.base_classes
+    #     self.is_d3 = "D3Tile" in self.base_classes
+    #     self.methods = self.get_methods()
+    #     self.assignments = self.get_assignments()
+    #     self.defaults = self.extract_defaults()
+    #     self.additional_save_attrs = self.extract_save_attrs()
+    #     self.exports = self.get_exports()
+    #     self.type = self.extract_type()
+    #     self.extra_methods = self.get_extra_methods()
+    #     return
 
     def get_globals(self):
         pattern = re.compile(r'(.*?)@user_tile', re.DOTALL)

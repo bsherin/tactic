@@ -612,9 +612,10 @@ function CreatorApp(props) {
     function doSavePromise() {
         return new Promise(async (resolve, reject) => {
             let result_dict = _getSaveDict();
+            result_dict["local_id"] = props.local_id;
             let data;
             try {
-                data = await postPromise(props.local_id, "update_module", result_dict, props.local_id);
+                data = await postPromise("module_viewer", "update_module", result_dict, props.local_id);
                 save_success(data);
                 resolve(data)
             } catch (e) {

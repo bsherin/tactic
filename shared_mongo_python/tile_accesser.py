@@ -22,12 +22,17 @@ class TileAccess(object):
     def tile_collection_name(self):
         return '{}.tiles'.format(self.username)
 
-    def get_tile_doc(self, tile_module_name):
-        print("getting tile doc for {}".format(tile_module_name))
-        doc = self.db[self.tile_collection_name].find_one(
+    def get_tile_doc(self, tile_module_name, username=None):
+        doc = self.db[self.get_tile_collection_name(username)].find_one(
             {"tile_module_name": tile_module_name}, {"_id": 0}
         )
         return doc if doc else None
+
+    def get_tile_collection_name(self, username=None):
+        if username is None:
+            return self.tile_collection_name
+        else:
+            return '{}.tiles'.format(username)
 
     def get_tile_doc_from_id(self, tile_id):
         doc = self.db[self.tile_collection_name].find_one(
@@ -57,8 +62,8 @@ class TileAccess(object):
         )
         return doc.get("tile_module", None) if doc else None
 
-    def get_tile_metadata(self, tile_module_name):
-        doc = self.db[self.tile_collection_name].find_one(
+    def get_tile_metadata(self, tile_module_name, username=None):
+        doc = self.db[self.get_tile_collection_name(username)].find_one(
             {"tile_module_name": tile_module_name}, {"metadata": 1, "_id": 0}
         )
         mdata = doc.get("metadata", None) if doc else None
@@ -107,13 +112,13 @@ class TileAccess(object):
                 result["search_context"] = search_context
             return result
 
-    def tile_module_name_exists(self, tile_module_name):
-        return self.db[self.tile_collection_name].find_one(
+    def tile_module_name_exists(self, tile_module_name, username=None):
+        return self.db[self.get_tile_collection_name(username)].find_one(
             {"tile_module_name": tile_module_name}, {"_id": 1}
         ) is not None
 
-    def get_tile_content_with_metadata(self, tile_module_name, process_metadata=False):
-        doc = self.db[self.tile_collection_name].find_one(
+    def get_tile_content_with_metadata(self, tile_module_name, process_metadata=False, username=None):
+        doc = self.db[self.get_tile_collection_name(username)].find_one(
             {"tile_module_name": tile_module_name}, {"_id": 0, "tile_module": 1, "metadata": 1, "tile_module_name": 1}
         )
         if doc is None:
@@ -248,8 +253,8 @@ class TileAccess(object):
         return
 
 
-    def update_tile(self, tile_module_name, new_tile_code, last_saved=None):
-        metadata = self.get_tile_metadata(tile_module_name)
+    def update_tile(self, tile_module_name, new_tile_code, last_saved=None, username=None):
+        metadata = self.get_tile_metadata(tile_module_name, username=username)
         if metadata is None:
             metadata = {}
         metadata = self.update_metadata(metadata)
@@ -257,7 +262,7 @@ class TileAccess(object):
                       "metadata": metadata}
         if last_saved is not None:
             update_dict["last_saved"] = last_saved
-        self.db[self.tile_collection_name].update_one(
+        self.db[self.get_tile_collection_name(username)].update_one(
             {"tile_module_name": tile_module_name},
             {"$set": update_dict}
         )
@@ -279,13 +284,13 @@ class TileAccess(object):
         )
         return
 
-    def create_recent_checkpoint(self, module_name):
+    def create_recent_checkpoint(self, module_name, username=None):
         try:
-            doc = self.get_tile_doc(module_name)
+            doc = self.get_tile_doc(module_name, username)
             recent_history = doc.get("recent_history", [])
             recent_history.append({"updated": doc["metadata"]["updated"],
                                    "tile_module": doc["tile_module"]})
-            self.db[self.tile_collection_name].update_one({"tile_module_name": module_name},
+            self.db[self.get_tile_collection_name(username)].update_one({"tile_module_name": module_name},
                                                           {'$set': {"recent_history": recent_history}})
             return
         except Exception as ex:

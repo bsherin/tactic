@@ -4,9 +4,6 @@ from qworker import task_worthy
 from openai import OpenAI
 import openai
 
-openai_api_key = os.environ.get("OPENAI_API_KEY")
-print(f"got openai_api_key: {openai_api_key}")
-
 class CopilotMixin(object):
 
     def extract_context(self, code_str, cursor_pos,
@@ -32,18 +29,19 @@ class CopilotMixin(object):
 
     @task_worthy
     def update_ai_complete(self, data_dict):
-        if not hasattr(self, "client"):
-            if openai_api_key is not None:
-                print("got openai_api_key")
-                self.client = OpenAI(
-                    api_key=openai_api_key
+        session = self.sessions.get(data_dict["local_id"], None)
+        if session is None:
+            return {"success": False, "message": "Session not found"}
+        if not hasattr(session, "client"):
+            if session["open_api_key"] is not None:
+                session["client"] = OpenAI(
+                    api_key=session["openai_api_key"]
                 )
             else:
-                print("no openai_api_key")
-                self.client = None
+                session["client"] = None
                 return {"success": False, "message": "OpenAI API key not set"}
 
-        if self.client is None:
+        if session["client"] is None:
             return {"success": False, "message": "OpenAI API key not set"}
         code_str = data_dict["code_str"]
 
@@ -55,7 +53,7 @@ class CopilotMixin(object):
         instructions += f"The text you respond with should be valid {mode} code that can immdiately just be pasted into the code exactly as it is. "
         instructions += "That means you should not include any comments or explanations. "
         instructions += "Also be careful not to include the code that appears at the end of the code you are completing. "
-        response = self.client.responses.create(
+        response = session["client"].responses.create(
             model="gpt-4o",
             instructions=instructions,
             input=f"Here is the code to complete:\n\n{context_code}"

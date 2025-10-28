@@ -23,7 +23,7 @@ def get_dump_dbs(dump_db_name):
 def get_dbs(get_repo=True):
     global repository_type
     global database_type
-    print("getting mongo client")
+    print("getting mongo client with mongo_uri " + mongo_uri)
     client = MongoClient(mongo_uri, serverSelectionTimeoutMS=30000)
     print("got the client")
     # force connection on a request as the

@@ -479,12 +479,32 @@ services:
       args:
         BASE_IMAGE: ${BASE_IMAGE}
     platform: ${PLATFORM}
+    labels:
+      project: tactic
+      my_id: module_viewer
+      owner: host
+      parent: host
+      other_name: module_viewer
     image: bsherin/tactic-module-viewer:${IMG_SUFFIX}
     profiles:
       - build_project
       - build_server_project
       - build_non_base
-
+      - start_project
+      - start_development
+    env_file:
+      - "${ROOT_DIR}/env.list"
+    environment:
+      - PYTHONUNBUFFERED=0
+      - MY_ID=module_viewer
+      - MONGO_URI=${MONGO_URI}
+      - OWNER=host
+      - PARENT=host
+      - USE_AMAZON_MQ=${USE_AMAZON_MQ}
+      - AWS_REGION=${AWS_REGION}
+      - MQ_SECRET_ARN=${MQ_SECRET_ARN}
+    networks:
+      - tactic-net
   tactic_tile:
     build:
       context: .

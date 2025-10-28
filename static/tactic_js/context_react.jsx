@@ -328,6 +328,7 @@ function ContextApp(props) {
                             local_id: new_viewer_id
                         };
                     }
+                    console.log("got data for tile", data);
                     break;
                 case "collection":
                     data = await postPromise("host", "initiate_collection_in_context", {collection_name: resource_name,
