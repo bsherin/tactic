@@ -5,7 +5,7 @@ def get_sms_parameter(name, default=None):
     Fetches a parameter from AWS Systems Manager Parameter Store.
     Returns the parameter value or default if not found.
     """
-    ssm = boto3.client('ssm', region="us-east-2")  # Adjust region as needed
+    ssm = boto3.client('ssm', region_name="us-east-2")  # Adjust region as needed
     try:
         response = ssm.get_parameter(Name=name, WithDecryption=True)
         return response['Parameter']['Value']
@@ -16,7 +16,8 @@ def get_sms_parameter(name, default=None):
         return default
 
 def load_secret_json(secret_arn: str):
-    sm = boto3.client("secretsmanager", region_name=REGION)
+    region = get_sms_parameter("MY_AWS_REGION")
+    sm = boto3.client("secretsmanager", region_name=region)
     try:
         r = sm.get_secret_value(SecretId=secret_arn)
         if "SecretString" in r:
