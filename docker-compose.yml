@@ -375,6 +375,7 @@ services:
       other_name: pool_watcher_s3
     environment:
       - USE_AMAZON_MQ=${USE_AMAZON_MQ}
+      - USE_ECS_TILES=${USE_ECS_TILES}
     networks:
       - tactic-net
 
