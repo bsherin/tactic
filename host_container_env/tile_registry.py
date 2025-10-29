@@ -4,21 +4,22 @@ use_ecs = os.getenv("USE_ECS_TILES","false").lower() == "true"
 
 # I'm leaving some of the desired idle logic in for test, non-aws for the purposes of testing it.
 REDIS_URL = "redis://tactic-redis:6379/0"
-DESIRED_IDLE_DEFAULT = int(os.getenv("DESIRED_IDLE_DEFAULT", "3"))
+DESIRED_IDLE_DEFAULT = 3
 r = redis.from_url(REDIS_URL)
 
 if use_ecs:
     import boto3
     from botocore.exceptions import ParamValidationError
-    TILE_SERVICE = os.getenv("ECS_TILE_SERVICE", "tactic-tile-pool")
-    AWS_REGION = os.getenv("AWS_REGION", "us-east-2")
-    ECS_CLUSTER = os.getenv("ECS_CLUSTER", "tactic-cluster")
+    from aws_task_helpers import get_sms_parameter
+    DESIRED_IDLE_DEFAULT = int(get_sms_parameter("desired_idle", DESIRED_IDLE_DEFAULT))
+    TILE_SERVICE = get_sms_parameter("ECS_TILE_SERVICE", "tactic-tile-pool")
+    AWS_REGION = get_sms_parameter("MY_AWS_REGION", "us-east-2")
+    ECS_CLUSTER = get_sms_parameter("ECS_CLUSTER", "tactic-cluster")
     print("Using ECS tile pool with service:", TILE_SERVICE, "in cluster:", ECS_CLUSTER, "and region:", AWS_REGION)
-    ecs = boto3.client("ecs", region_name=os.getenv("AWS_REGION", "us-east-2"))
-    CW = boto3.client("cloudwatch", region_name=os.getenv("AWS_REGION", "us-east-2"))
+    ecs = boto3.client("ecs", region_name=AWS_REGION)
+    CW = boto3.client("cloudwatch", region_name=AWS_REGION)
     NS = "Tactic"
-    SVC = "tactic-tile-pool"
-
+    SVC = TILE_SERVICE
 
 class TileContainerRegistry:
     def __init__(self):

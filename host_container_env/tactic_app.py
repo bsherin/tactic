@@ -16,7 +16,7 @@ import gridfs
 from flask_login import LoginManager
 from flask_socketio import SocketIO
 from flask_wtf import CSRFProtect
-from rabbit_manage import sleep_until_rabbit_alive, MESSAGE_QUEUE_ADDRESS, SOCKETIO_OPTIONS
+from rabbit_manage import sleep_until_rabbit_alive, SOCKETIO_OPTIONS
 import docker_functions as docker_functions
 from mongo_db_fs import get_dbs
 import communication_utils

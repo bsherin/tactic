@@ -5,12 +5,13 @@ import traceback
 from urllib.parse import unquote_plus
 
 from rabbit_manage import get_pika_connection_with_retries
+from aws_helpers import get_sms_parameter
 
 print("pool_watcher_s3 starting...")
 
-S3_BUCKET = os.environ["BUCKET"]  # e.g. "tactic-user-storage"
-SQS_QUEUE_URL = os.environ["SQS_QUEUE_URL"]  # e.g. https://sqs.us-east-2.amazonaws.com/ACCT/tactic-user-storage-events
-AWS_REGION = os.environ.get("AWS_REGION", "us-east-2")
+S3_BUCKET = get_sms_parameter("BUCKET")  # e.g. "tactic-user-storage"
+SQS_QUEUE_URL = get_sms_parameter("SQS_QUEUE_URL")  # e.g. https://sqs.us-east-2.amazonaws.com/ACCT/tactic-user-storage-events
+AWS_REGION = get_sms_parameter("AWS_REGION", "us-east-2")
 
 # optional de-dupe/debounce
 RECENT = collections.deque(maxlen=5000)

@@ -123,26 +123,9 @@ services:
       - TRUE_HOST_POOL_DIR=${POOL_DIR}
       - USE_ARM64=${USE_ARM64}
       - DEVELOP=${DEVELOP}
-      - USE_REMOTE_DATABASE=${USE_REMOTE_DB}
-      - USE_REMOTE_REPOSITORY=${USE_REMOTE_REPO}
-      - USE_REMOTE_REPOSITORY_KEY=${USE_REMOTE_REPO_KEY}
-      - REMOTE_USERNAME=${REMOTE_USERNAME}
-      - REMOTE_PASSWORD=${REMOTE_PASSWORD}
-      - REMOTE_KEY_FILE=${REMOTE_KEY_FILE}
       - ANYONE_CAN_REGISTER=${ANYONE_CAN_REGISTER}
       - USE_AMAZON_MQ=${USE_AMAZON_MQ}
       - USE_ECS_TILES=${USE_ECS_TILES}
-      - DESIRED_IDLE_DEFAULT=${DESIRED_IDLE_DEFAULT}
-      - ECS_SUBNETS=${ECS_SUBNETS}
-      - ECS_SECURITY_GROUPS=${ECS_SECURITY_GROUPS}
-      - ECS_ASSIGN_PUBLIC_IP=${ECS_ASSIGN_PUBLIC_IP}
-      - ECS_TILE_TASKDEF=${ECS_TILE_TASKDEF}
-      - AWS_REGION=${AWS_REGION}
-      - ECS_REGION=${ECS_REGION}
-      - ECS_CLUSTER=${ECS_CLUSTER}
-      - ECS_TILE_SERVICE=${ECS_TILE_SERVICE}
-      - MQ_SECRET_ARN=${MQ_SECRET_ARN}
-      - BUCKET=${BUCKET}
     volumes:
       - type: bind
         source: "/var/run/docker.sock"
@@ -156,9 +139,6 @@ services:
       - type: bind
         source: "${ROOT_DIR}/static"
         target: "/code/static"
-      - type: bind
-        source: "${REMOTE_KEY_FILE}"
-        target: "${REMOTE_KEY_FILE}"
     networks:
       - tactic-net
 
@@ -190,21 +170,8 @@ services:
       - TRUE_HOST_POOL_DIR=${POOL_DIR}
       - USE_ARM64=${USE_ARM64}
       - DEVELOP=${DEVELOP}
-      - USE_REMOTE_DATABASE=${USE_REMOTE_DB}
-      - USE_REMOTE_REPOSITORY=${USE_REMOTE_REPO}
-      - USE_REMOTE_REPOSITORY_KEY="${USE_REMOTE_REPO_KEY}
-      - REMOTE_USERNAME=${REMOTE_USERNAME}
-      - REMOTE_PASSWORD=${REMOTE_PASSWORD}
-      - REMOTE_KEY_FILE=${REMOTE_KEY_FILE}
       - USE_AMAZON_MQ=${USE_AMAZON_MQ}
       - USE_ECS_TILES=${USE_ECS_TILES}
-      - ECS_SUBNETS=${ECS_SUBNETS}
-      - ECS_SECURITY_GROUPS=${ECS_SECURITY_GROUPS}
-      - ECS_ASSIGN_PUBLIC_IP=${ECS_ASSIGN_PUBLIC_IP}
-      - ECS_TILE_TASKDEF=${ECS_TILE_TASKDEF}
-      - AWS_REGION=${AWS_REGION}
-      - ECS_REGION=${ECS_REGION}
-      - MQ_SECRET_ARN=${MQ_SECRET_ARN}
     volumes:
       - type: bind
         source: "/var/run/docker.sock"
@@ -218,9 +185,6 @@ services:
       - type: bind
         source: "${ROOT_DIR}/static"
         target: "/code/static"
-      - type: bind
-        source: "${REMOTE_KEY_FILE}"
-        target: "${REMOTE_KEY_FILE}"
     networks:
       - tactic-net
 
@@ -259,13 +223,6 @@ services:
       - MPLCONFIGDIR=mpl_cache
       - USE_AMAZON_MQ=${USE_AMAZON_MQ}
       - USE_ECS_TILES=False
-      - ECS_SUBNETS=${ECS_SUBNETS}
-      - ECS_SECURITY_GROUPS=${ECS_SECURITY_GROUPS}
-      - ECS_ASSIGN_PUBLIC_IP=${ECS_ASSIGN_PUBLIC_IP}
-      - ECS_TILE_TASKDEF=${ECS_TILE_TASKDEF}
-      - AWS_REGION=${AWS_REGION}
-      - ECS_REGION=${ECS_REGION}
-      - MQ_SECRET_ARN=${MQ_SECRET_ARN}
     volumes:
       - type: bind
         source: ${ROOT_DIR}/persist
@@ -313,16 +270,6 @@ services:
       - DEVELOP=${DEVELOP}
       - USE_AMAZON_MQ=${USE_AMAZON_MQ}
       - USE_ECS_TILES=${USE_ECS_TILES}
-      - ECS_SUBNETS=${ECS_SUBNETS}
-      - ECS_SECURITY_GROUPS=${ECS_SECURITY_GROUPS}
-      - ECS_ASSIGN_PUBLIC_IP=${ECS_ASSIGN_PUBLIC_IP}
-      - ECS_TILE_TASKDEF=${ECS_TILE_TASKDEF}
-      - AWS_REGION=${AWS_REGION}
-      - ECS_REGION=${ECS_REGION}
-      - ECS_CLUSTER=${ECS_CLUSTER}
-      - ECS_TILE_SERVICE=${ECS_TILE_SERVICE}
-      - MQ_SECRET_ARN=${MQ_SECRET_ARN}
-      - BUCKET=${BUCKET}
     volumes:
       - type: bind
         source: "/var/run/docker.sock"
@@ -370,25 +317,8 @@ services:
       other_name: mongo_watcher
     environment:
       - MONGO_URI=${MONGO_URI}
-      - USE_REMOTE_DATABASE=${USE_REMOTE_DB}
-      - USE_REMOTE_REPOSITORY=${USE_REMOTE_REPO}
-      - USE_REMOTE_REPOSITORY_KEY=${USE_REMOTE_REPO_KEY}
-      - REMOTE_USERNAME=${REMOTE_USERNAME}
-      - REMOTE_PASSWORD=${REMOTE_PASSWORD}
-      - REMOTE_KEY_FILE=${REMOTE_KEY_FILE}
       - USE_AMAZON_MQ=${USE_AMAZON_MQ}
       - USE_ECS_TILES=${USE_ECS_TILES}
-      - ECS_SUBNETS=${ECS_SUBNETS}
-      - ECS_SECURITY_GROUPS=${ECS_SECURITY_GROUPS}
-      - ECS_ASSIGN_PUBLIC_IP=${ECS_ASSIGN_PUBLIC_IP}
-      - ECS_TILE_TASKDEF=${ECS_TILE_TASKDEF}
-      - AWS_REGION=${AWS_REGION}
-      - ECS_REGION=${ECS_REGION}
-      - MQ_SECRET_ARN=${MQ_SECRET_ARN}
-    volumes:
-      - type: bind
-        source: "${REMOTE_KEY_FILE}"
-        target: "${REMOTE_KEY_FILE}"
     networks:
      - tactic-net
 
@@ -416,13 +346,6 @@ services:
     environment:
       - USE_AMAZON_MQ=${USE_AMAZON_MQ}
       - USE_ECS_TILES=${USE_ECS_TILES}
-      - ECS_SUBNETS=${ECS_SUBNETS}
-      - ECS_SECURITY_GROUPS=${ECS_SECURITY_GROUPS}
-      - ECS_ASSIGN_PUBLIC_IP=${ECS_ASSIGN_PUBLIC_IP}
-      - ECS_TILE_TASKDEF=${ECS_TILE_TASKDEF}
-      - AWS_REGION=${AWS_REGION}
-      - ECS_REGION=${ECS_REGION}
-      - MQ_SECRET_ARN=""
     volumes:
       - type: bind
         source: "${POOL_DIR}"
@@ -452,10 +375,6 @@ services:
       other_name: pool_watcher_s3
     environment:
       - USE_AMAZON_MQ=${USE_AMAZON_MQ}
-      - AWS_REGION=${AWS_REGION}
-      - MQ_SECRET_ARN=${MQ_SECRET_ARN}
-      - BUCKET=${BUCKET}
-      - SQS_QUEUE_URL=${SQS_QUEUE_URL}
     networks:
       - tactic-net
 
@@ -501,8 +420,6 @@ services:
       - OWNER=host
       - PARENT=host
       - USE_AMAZON_MQ=${USE_AMAZON_MQ}
-      - AWS_REGION=${AWS_REGION}
-      - MQ_SECRET_ARN=${MQ_SECRET_ARN}
     networks:
       - tactic-net
   tactic_tile:
@@ -525,8 +442,6 @@ services:
       - MPLCONFIGDIR=/var/cache/matplotlib
       - TORCH_HOME=/var/cache/torch
       - PYTHONUNBUFFERED=0
-      - MQ_SECRET_ARN=${MQ_SECRET_ARN}
-
 networks:
   tactic-net:
     driver: bridge

@@ -21,13 +21,25 @@ print(os.environ)
 CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE"))
 mongo_uri = os.environ.get("MONGO_URI")
 
-USE_ECS_TILES=os.environ.get("USE_ECS_TILES") == "True" or os.environ.get("USE_ECS_TILES") is True
-ECS_SUBNETS=os.environ.get("ECS_SUBNETS")
-ECS_SECURITY_GROUPS= os.environ.get("ECS_SECURITY_GROUPS")
-ECS_ASSIGN_PUBLIC_IP= os.environ.get("ECS_ASSIGN_PUBLIC_IP")
-ECS_TILE_TASKDEF= os.environ.get("ECS_TILE_TASKDEF")
-AWS_REGION = os.environ.get("AWS_REGION")
-ECS_REGION = os.environ.get("ECS_REGION")
+use_ecs = os.getenv("USE_ECS_TILES","false").lower() == "true"
+
+if use_ecs:
+    from aws_helpers import get_sms_parameter
+    ECS_SUBNETS = get_sms_parameter("ECS_SUBNETS")
+    ECS_SECURITY_GROUPS= get_sms_parameter("TILE_SECURITY_GROUPS")
+    ECS_ASSIGN_PUBLIC_IP= get_sms_parameter("ECS_ASSIGN_PUBLIC_IP")
+    ECS_TILE_TASKDEF= get_sms_parameter("ECS_TILE_TASKDEF")
+    AWS_REGION = get_sms_parameter("MY_AWS_REGION")
+    ECS_REGION = get_sms_parameter("ECS_REGION")
+    RABBIT_HOST = get_sms_parameter("RABBIT_HOST")
+else:
+    ECS_SUBNETS = None
+    ECS_SECURITY_GROUPS = None
+    ECS_ASSIGN_PUBLIC_IP = None
+    ECS_TILE_TASKDEF = None
+    AWS_REGION = ""
+    ECS_REGION = ""
+    RABBIT_HOST = "megaplex"
 
 _develop = ("DEVELOP" in os.environ) and (os.environ.get("DEVELOP") == "True")
 RETRIES = os.environ.get("RETRIES")
@@ -196,16 +208,16 @@ def create_container(image_name, container_name=None, network_mode="bridge", hos
                "PYTHONUNBUFFERED": "Yes",
                "USE_ARM64": USE_ARM64,
                "USE_AMAZON_MQ": USE_AMAZON_MQ,
+               "RABBIT_HOST": RABBIT_HOST,
                "RABBIT_USER": RABBIT_USER,
                "RABBIT_PASS": RABBIT_PASS,
-               "USE_ECS_TILES": USE_ECS_TILES,
+               "USE_ECS_TILES": user_ecs,
                "ECS_SUBNETS": ECS_SUBNETS,
                "ECS_SECURITY_GROUPS": ECS_SECURITY_GROUPS,
                "ECS_ASSIGN_PUBLIC_IP": ECS_ASSIGN_PUBLIC_IP,
                "ECS_TILE_TASKDEF": ECS_TILE_TASKDEF,
                "AWS_REGION": AWS_REGION,
                "ECS_REGION": ECS_REGION
-
            }
 
     if username is not None:

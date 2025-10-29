@@ -40,7 +40,8 @@ else:
 use_ecs = os.getenv("USE_ECS_TILES","false").lower() == "true"
 
 if use_ecs:
-    BUCKET = os.environ.get("BUCKET")
+    from aws_helpers import get_sms_parameter
+    BUCKET = get_sms_parameter("BUCKET")
     from s3thread import boto_s3
 
 @login_manager.user_loader

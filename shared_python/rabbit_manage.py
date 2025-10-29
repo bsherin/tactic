@@ -6,46 +6,30 @@ import os
 import traceback
 import json
 
+from aws_helpers import get_sms_parameter, load_secret_json
+
 print("entering rabbit_manage")
 
+
+
 if os.environ.get("USE_AMAZON_MQ") == "True" or os.environ.get("USE_AMAZON_MQ") is True:
+    import boto3
+
     USE_AMAZON_MQ = True
-    RABBIT_HOST = "b-d4163cd4-38d5-45f0-9bc1-87c04c48d2a4.mq.us-east-2.on.aws"  # broker hostname only
-    if "RABBIT_PASS" not in os.environ:
-        import boto3
+    RABBIT_HOST = get_sms_parameter("RABBIT_HOST")
+    SECRET_ARN = get_sms_parameter("MQ_SECRET_ARN")
+    REGION = get_sms_parameter("MY_AWS_REGION")
 
-        SECRET_ARN = os.getenv("MQ_SECRET_ARN",
-                               "arn:aws:secretsmanager:us-east-2:924818964184:secret:tactic/amazon-mq/credentials-OliLzo")
-        REGION = os.getenv("AWS_REGION", "us-east-2")
+    creds = load_secret_json(SECRET_ARN)
 
-
-        def load_secret_json(secret_arn: str):
-            sm = boto3.client("secretsmanager", region_name=REGION)
-            try:
-                r = sm.get_secret_value(SecretId=secret_arn)
-                if "SecretString" in r:
-                    return json.loads(r["SecretString"])
-                else:
-                    # binary not expected here, but handle anyway
-                    return json.loads(r["SecretBinary"].decode("utf-8"))
-            except Exception as e:
-                raise RuntimeError(f"Failed to fetch secret: {e}")
-
-
-        creds = load_secret_json(SECRET_ARN)
-        os.environ["RABBIT_USER"] = creds["username"]
-        os.environ["RABBIT_PASS"] = creds["password"]
-
-    RABBIT_USER = os.environ["RABBIT_USER"]
-    RABBIT_PASS = os.environ["RABBIT_PASS"]
+    RABBIT_USER = creds["username"]
+    RABBIT_PASS = creds["password"]
     RABBIT_PORT = 5671
-    MESSAGE_QUEUE_ADDRESS = f"amqps://{RABBIT_USER}:{RABBIT_PASS}@{RABBIT_HOST}:5671//"
 else:
     print("not using amazon mq")
-    USE_AMAZON_MQ = False
     RABBIT_HOST = "megaplex"
+    USE_AMAZON_MQ = False
     RABBIT_PORT = 5672
-    MESSAGE_QUEUE_ADDRESS = "megaplex"
     RABBIT_USER = ""
     RABBIT_PASS = ""
 

@@ -6,6 +6,9 @@ from botocore.exceptions import ClientError
 
 import flask_socketio
 from flask_socketio import SocketIO
+
+from aws_helpers import get_sms_parameter
+
 socketio = SocketIO(
     message_queue="redis://tactic-redis:6379/0",
     channel="socketio",
@@ -13,9 +16,9 @@ socketio = SocketIO(
     engineio_logger=False,
 )
 
-region = os.environ.get("AWS_REGION")
-cluster = os.getenv("ECS_CLUSTER", "tactic-cluster")
-account = os.environ.get("AWS_ACCOUNT")
+region = get_sms_parameter("MY_AWS_REGION")
+cluster = get_sms_parameter("ECS_CLUSTER", "tactic-cluster")
+account = get_sms_parameter("MY_AWS_ACCOUNT")
 
 logs = boto3.client("logs", region_name="us-east-2")
 ecs = boto3.client("ecs", region_name=region)
