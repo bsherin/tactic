@@ -80,7 +80,7 @@ def get_pika_connection():
             heartbeat=HEARBEAT,
             blocked_connection_timeout=BLOCKED_CONNECTION_TIMEOUT
         )
-    print("trying to connect to pika with params:", json.dumps(params.__dict__, indent=2))
+
     connection = pika.BlockingConnection(params)
     channel = connection.channel()
     return connection, channel
