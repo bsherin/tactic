@@ -8,10 +8,11 @@ import json
 
 from aws_helpers import get_sms_parameter, load_secret_json
 
-print("entering rabbit_manage")
+print("entering rabbit_manage updated")
 
 
 if os.environ.get("USE_AMAZON_MQ") == "True" or os.environ.get("USE_AMAZON_MQ") is True:
+    print("using amazon mq")
     import boto3
 
     USE_AMAZON_MQ = True
@@ -19,12 +20,14 @@ if os.environ.get("USE_AMAZON_MQ") == "True" or os.environ.get("USE_AMAZON_MQ") 
     SECRET_ARN = get_sms_parameter("MQ_SECRET_ARN")
     REGION = get_sms_parameter("MY_AWS_REGION")
 
+    print("using amazon mq with host:", RABBIT_HOST)
+
     creds = load_secret_json(SECRET_ARN)
 
     RABBIT_USER = creds["username"]
     RABBIT_PASS = creds["password"]
     RABBIT_PORT = 5671
-    print("using amazon mq with host:", RABBIT_HOST, "and port:", RABBIT_PORT, "and user:", RABBIT_USER)
+    print("using amazon mq with user:", RABBIT_USER)
 else:
     print("not using amazon mq")
     RABBIT_HOST = "megaplex"
