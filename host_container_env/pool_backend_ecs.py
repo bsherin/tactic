@@ -10,7 +10,7 @@ from aws_helpers import get_sms_parameter
 
 from users import User
 
-BUCKET = get_sms_paramter("BUCKET")
+BUCKET = get_sms_parameter("BUCKET")
 TREE_DEPTH = 1
 
 class PoolBackendECS(PoolBackend):
