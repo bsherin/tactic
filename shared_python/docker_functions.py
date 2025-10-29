@@ -211,7 +211,7 @@ def create_container(image_name, container_name=None, network_mode="bridge", hos
                "RABBIT_HOST": RABBIT_HOST,
                "RABBIT_USER": RABBIT_USER,
                "RABBIT_PASS": RABBIT_PASS,
-               "USE_ECS_TILES": user_ecs,
+               "USE_ECS_TILES": use_ecs,
                "ECS_SUBNETS": ECS_SUBNETS,
                "ECS_SECURITY_GROUPS": ECS_SECURITY_GROUPS,
                "ECS_ASSIGN_PUBLIC_IP": ECS_ASSIGN_PUBLIC_IP,
