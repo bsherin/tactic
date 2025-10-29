@@ -1,4 +1,5 @@
 import boto3
+import json
 
 def get_sms_parameter(name, default=None):
     """
