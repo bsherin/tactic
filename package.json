@@ -6,7 +6,6 @@
     "build-code": "NODE_OPTIONS=--openssl-legacy-provider webpack --mode=development",
     "build-production": "NODE_OPTIONS=--openssl-legacy-provider webpack --mode=production",
     "convertjsx": "/usr/local/bin/npx babel --presets=@babel/preset-env,@babel/preset-react --plugins=@babel/plugin-proposal-class-properties",
-    "push-images": "push_images.sh",
     "dc": "docker-compose -f ./docker-compose.yml build",
     "preinstall": "npx npm-force-resolutions"
   },
