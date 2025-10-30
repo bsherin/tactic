@@ -410,7 +410,6 @@ services:
       - build_project
       - build_server_project
       - build_non_base
-      - start_project
       - start_development
     env_file:
       - "${ROOT_DIR}/env.list"
