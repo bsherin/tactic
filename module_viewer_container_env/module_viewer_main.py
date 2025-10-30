@@ -1,10 +1,10 @@
 import ast
 
-from gevent import monkey
+# from gevent import monkey
+#monkey.patch_all()
 
 from tactic_copilot_mixin import CopilotMixin
 
-monkey.patch_all()
 import datetime
 import re
 # noinspection PyUnresolvedReferences
