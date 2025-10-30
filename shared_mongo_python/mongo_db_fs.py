@@ -10,6 +10,8 @@ else:
 
 mongo_uri = os.environ.get("MONGO_URI")
 
+print("*** mongo_uri is " + mongo_uri + " ***")
+
 repository_type = "not set"
 database_type = "not set"
 
