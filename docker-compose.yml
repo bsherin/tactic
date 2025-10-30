@@ -101,7 +101,7 @@ services:
     image: bsherin/tactic-host:${IMG_SUFFIX}
     restart: on-failure
     ports:
-      - "5000:5000"
+      - "80:5000"
     hostname: none
     container_name: tactic_host5000
     platform: ${PLATFORM}
