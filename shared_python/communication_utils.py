@@ -14,6 +14,9 @@ import uuid
 import pika
 from exception_mixin import generic_exception_handler
 
+socketio = None
+emit_direct = None
+
 try:
     import flask_socketio
     from flask_socketio import SocketIO
