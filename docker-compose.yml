@@ -4,7 +4,9 @@ services:
     image: mongo:5.0
     hostname: ${MONGO_URI}
     container_name: ${MONGO_URI}
-    command: --replSet "rs0"
+    command: >
+      --bind_ip 0.0.0.0
+      --replSet rs0
     labels:
       project: tactic_aux
     restart: always
