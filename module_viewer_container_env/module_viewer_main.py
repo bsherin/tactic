@@ -27,6 +27,7 @@ import time
 class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin, MongoAccess, TileAccess):
     def __init__(self):
         QWorker.__init__(self)
+        self.use_emit_direct = False
         self.generate_heartbeats = True
         db, fs, repository_db, repository_fs = get_dbs()
         self.db = db
@@ -49,11 +50,6 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin, MongoAccess, Til
         task_data["local_id"] = self.my_id
         self.post_task("host", msg_type, task_data, callback_func)
         return
-
-    def emit_to_client(self, message, data):
-        data["local_id"] = self.my_id
-        data["message"] = message
-        self.ask_host("emit_to_client", data)
 
     @task_worthy
     def start_session(self, data_dict):

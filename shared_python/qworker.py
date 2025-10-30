@@ -86,6 +86,7 @@ class QWorker(ExceptionMixin):
         self.last_heartbeat = current_timestamp()
         self._hb_greenlet = None
         self._stopping = False
+        self.use_emit_direct = True
         if use_wait_tasks:
             wait_queue = self.my_id + "_wait"
             self.wait_worker = BlockingWaitWorker(wait_queue)
@@ -263,22 +264,29 @@ class QWorker(ExceptionMixin):
         else:
             return resp
 
+    def emit_to_client(self, message, data):
+        data["local_id"] = self.my_id
+        data["message"] = message
+        self.ask_host("emit_to_client", data)
+
     def submit_response(self, task_packet, response_data=None):
         if response_data is not None:
             task_packet["response_data"] = response_data
         task_packet["status"] = "submitted_response"
         if "client_post" in task_packet:
-
-            if "room" in task_packet:
-                room = task_packet["room"]
+            if self.use_emit_direct:
+                if "room" in task_packet:
+                    room = task_packet["room"]
+                else:
+                    room = task_packet["global_id"]
+                    task_packet["room"] = room
+                if "namespace" in task_packet:
+                    namespace = task_packet["namespace"]
+                else:
+                    namespace = "/main"
+                emit_direct("handle-callback", task_packet, namespace=namespace, room=room)
             else:
-                room = task_packet["global_id"]
-                task_packet["room"] = room
-            if "namespace" in task_packet:
-                namespace = task_packet["namespace"]
-            else:
-                namespace = "/main"
-            emit_direct("handle-callback", task_packet, namespace=namespace, room=room)
+                self.emit_to_client("handle-callback", task_packet)
         else:
             reply_to = task_packet["reply_to"]
             self.post_packet(reply_to, task_packet, callback_id=task_packet["callback_id"])
