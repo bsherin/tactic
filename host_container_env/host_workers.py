@@ -789,6 +789,9 @@ class HealthTracker:
             else:
                 destroy_container(cont_id)
 
+print("creating healthtracker")
 tactic_app.health_tracker = HealthTracker()
+print("creating host worker")
 tactic_app.host_worker = HostWorker()
+print("starting host worker")
 tactic_app.host_worker.start()

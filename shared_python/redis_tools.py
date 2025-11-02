@@ -27,22 +27,22 @@ else:
 redis_0 = redis.Redis(host=REDIS_HOST,
                       username=REDIS_USERNAME,
                       password=REDIS_PASSWORD,
-                      port=REDIS_PORT, db=0, decode_responses=True)
+                      port=REDIS_PORT, db=0, decode_responses=True, ssl=True)
 
 redis_tm = redis.Redis(host=REDIS_HOST,
                        username=REDIS_USERNAME,
                        password=REDIS_PASSWORD,
-                       port=REDIS_PORT, db=1, decode_responses=True)
+                       port=REDIS_PORT, db=1, decode_responses=True, ssl=True)
 
 redis_ht = redis.Redis(host=REDIS_HOST,
                        username=REDIS_USERNAME,
                        password=REDIS_PASSWORD,
-                       port=REDIS_PORT, db=2, decode_responses=True)
+                       port=REDIS_PORT, db=2, decode_responses=True, ssl=True)
 
 redis_rb = redis.Redis(host=REDIS_HOST,
                        username=REDIS_USERNAME,
                        password=REDIS_PASSWORD,
-                       port=REDIS_PORT, db=3, decode_responses=True)
+                       port=REDIS_PORT, db=3, decode_responses=True, ssl=True)
 
 
 # Ready block functions
