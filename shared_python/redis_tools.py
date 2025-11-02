@@ -15,34 +15,36 @@ if use_ecs:
     REDIS_PASSWORD = get_sms_parameter("REDIS_PASSWORD")
 
     MESSAGE_QUEUE = message_queue=f"rediss://{REDIS_USERNAME}:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}/0"
+    USE_SSL = True
     print("got message queue:", MESSAGE_QUEUE)
 else:
     REDIS_HOST = "tactic-redis"
     REDIS_PORT = 6379
     REDIS_USERNAME = None
     REDIS_PASSWORD = None
+    USE_SSL = False
     MESSAGE_QUEUE = "redis://tactic-redis:6379/0"
 
 
 redis_0 = redis.Redis(host=REDIS_HOST,
                       username=REDIS_USERNAME,
                       password=REDIS_PASSWORD,
-                      port=REDIS_PORT, db=0, decode_responses=True, ssl=True)
+                      port=REDIS_PORT, db=0, decode_responses=True, ssl=USE_SSL)
 
 redis_tm = redis.Redis(host=REDIS_HOST,
                        username=REDIS_USERNAME,
                        password=REDIS_PASSWORD,
-                       port=REDIS_PORT, db=1, decode_responses=True, ssl=True)
+                       port=REDIS_PORT, db=1, decode_responses=True, ssl=USE_SSL)
 
 redis_ht = redis.Redis(host=REDIS_HOST,
                        username=REDIS_USERNAME,
                        password=REDIS_PASSWORD,
-                       port=REDIS_PORT, db=2, decode_responses=True, ssl=True)
+                       port=REDIS_PORT, db=2, decode_responses=True, ssl=USE_SSL)
 
 redis_rb = redis.Redis(host=REDIS_HOST,
                        username=REDIS_USERNAME,
                        password=REDIS_PASSWORD,
-                       port=REDIS_PORT, db=3, decode_responses=True, ssl=True)
+                       port=REDIS_PORT, db=3, decode_responses=True, ssl=USE_SSL)
 
 
 # Ready block functions
