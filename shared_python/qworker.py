@@ -1,15 +1,23 @@
 
 from __future__ import print_function
-import gevent
+import os
+
+use_gevent = os.environ.get("USE_GEVENT", "True").lower() == "true"
+
+if use_gevent:
+    import gevent
+    from communication_utils import emit_direct, socketio
+else:
+    import threading
 import pika
 import uuid
 import time
 import datetime
 import json
-import os
+
 import sys
 import copy
-from communication_utils import emit_direct, socketio
+
 from exception_mixin import ExceptionMixin, MessagePostException
 from threading import Lock
 from rabbit_manage import get_pika_connection, get_pika_connection_with_retries
@@ -74,6 +82,13 @@ def debug_log(msg):
     sys.stdout = save_stdout
     return
 
+def sleep_func(t):
+    if use_gevent:
+        gevent.sleep(t)
+    else:
+        time.sleep(t)
+    return
+
 
 # noinspection PyTypeChecker,PyUnusedLocal,PyMissingConstructor
 class QWorker(ExceptionMixin):
@@ -86,7 +101,7 @@ class QWorker(ExceptionMixin):
         self.last_heartbeat = current_timestamp()
         self._hb_greenlet = None
         self._stopping = False
-        self.use_emit_direct = True
+        self.use_emit_direct = use_gevent
         if use_wait_tasks:
             wait_queue = self.my_id + "_wait"
             self.wait_worker = BlockingWaitWorker(wait_queue)
@@ -98,7 +113,7 @@ class QWorker(ExceptionMixin):
                 self.do_heartbeat()  # your existing method
             except Exception as ex:
                 debug_log(self.handle_exception(ex, "heartbeat loop error"))
-            gevent.sleep(heartbeat_time)  # tick every 1s;
+            sleep_func(heartbeat_time)  # tick every 1s;
 
     def start_background_thread(self, retries=0):
         try:
@@ -110,8 +125,8 @@ class QWorker(ExceptionMixin):
             self.channel.basic_consume(queue=self.my_id, auto_ack=True, on_message_callback=self.handle_delivery)
             debug_log(' [*] Waiting for messages:')
             # turn on app-level heartbeats once we're ready
-            if self._hb_greenlet is None:
-                self._hb_greenlet = gevent.spawn(self._heartbeat_loop)
+            # if self._hb_greenlet is None:
+            #     self._hb_greenlet = gevent.spawn(self._heartbeat_loop)
             self.ready()
             self.channel.start_consuming()
         except Exception as ex:
@@ -152,7 +167,11 @@ class QWorker(ExceptionMixin):
         with thread_lock:
             if thread is None:
                 self._stopping = False
-                thread = socketio.start_background_task(target=self.start_background_thread)
+                if use_gevent:
+                    thread = socketio.start_background_task(target=self.start_background_thread)
+                else:
+                    thread = threading.Thread(target=self.start_background_thread)
+                    thread.start()
                 debug_log('Background thread started')
 
     def ready(self):
@@ -170,7 +189,7 @@ class QWorker(ExceptionMixin):
                 self.handle_response(task_packet)
             else:
                 self.handle_event(task_packet)
-            gevent.sleep(PAUSE_TIME)
+            sleep_func(PAUSE_TIME)
         except Exception as ex:
             special_string = "Got error in handle delivery"
             debug_log(special_string)
@@ -226,7 +245,7 @@ class QWorker(ExceptionMixin):
                           "expiration": expiration}
             # self.channel.queue_declare(queue=dest_id, durable=False, exclusive=False)
             self.post_packet(dest_id, new_packet, reply_to, callback_id)
-            gevent.sleep(PAUSE_TIME)
+            sleep_func(PAUSE_TIME)
             result = {"success": True}
 
         except Exception as ex:
@@ -254,7 +273,7 @@ class QWorker(ExceptionMixin):
 
         # noinspection PyNoneFunctionAssignment@
         resp = self.wait_worker.post_blocking_wait(dest_id, new_packet)
-        gevent.sleep(PAUSE_TIME)
+        sleep_func(PAUSE_TIME)
         if resp == "__ERROR__":
             error_string = "Got post_blocking_wait error with msg_type {}, destination {}, and source {}".format(task_type,
                                                                                                                  dest_id,
@@ -404,7 +423,7 @@ class BlockingWaitWorker(ExceptionMixin):
             if self.channel.is_closed:  # If closed, take one crack at fixing
                 self.connection.close()
                 self.initialize_me()
-                gevent.sleep(1)
+                sleep_func(1)
             self.response = None
             self.current_callback_id = task_packet["callback_id"]
             self.corr_id = str(uuid.uuid4())
@@ -428,7 +447,7 @@ class BlockingWaitWorker(ExceptionMixin):
                 return "__ERROR__"
             else:
                 self.initialize_me()
-                gevent.sleep(1)
+                sleep_func(1)
                 self.post_blocking_wait(dest_id, task_packet, retries + 1)
 
     def handle_exception(self, ex, special_string=None):

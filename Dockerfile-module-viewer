@@ -5,6 +5,6 @@ ADD ./module_viewer_container_env/requirements.txt /code/requirements.txt
 RUN pip install -r requirements.txt
 LABEL maintainer="Bruce L Sherin"
 ADD ./shared_mongo_python /code
-ADD  ./module_viewer_container_env ./shared_python/exception_mixin.py ./shared_python/tactic_copilot_mixin.py \
+ADD  ./module_viewer_container_env ./shared_python/exception_mixin.py ./shared_python/tactic_copilot_mixin.py ./shared_python/qworker.py \
 ./shared_python/communication_utils.py ./shared_python/rabbit_manage.py ./shared_python/aws_helpers.py /code/
 CMD ["python", "-u", "module_viewer_main.py"]

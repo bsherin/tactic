@@ -128,6 +128,7 @@ services:
       - ANYONE_CAN_REGISTER=${ANYONE_CAN_REGISTER}
       - USE_AMAZON_MQ=${USE_AMAZON_MQ}
       - USE_ECS_TILES=${USE_ECS_TILES}
+      - USE_GEVENT=True
     volumes:
       - type: bind
         source: "/var/run/docker.sock"
@@ -174,6 +175,7 @@ services:
       - DEVELOP=${DEVELOP}
       - USE_AMAZON_MQ=${USE_AMAZON_MQ}
       - USE_ECS_TILES=${USE_ECS_TILES}
+      - USE_GEVENT=True
     volumes:
       - type: bind
         source: "/var/run/docker.sock"
@@ -225,6 +227,7 @@ services:
       - MPLCONFIGDIR=mpl_cache
       - USE_AMAZON_MQ=${USE_AMAZON_MQ}
       - USE_ECS_TILES=False
+      - USE_GEVENT=False
     volumes:
       - type: bind
         source: ${ROOT_DIR}/persist
@@ -272,6 +275,7 @@ services:
       - DEVELOP=${DEVELOP}
       - USE_AMAZON_MQ=${USE_AMAZON_MQ}
       - USE_ECS_TILES=${USE_ECS_TILES}
+      - USE_GEVENT=True
     volumes:
       - type: bind
         source: "/var/run/docker.sock"
@@ -293,6 +297,7 @@ services:
     platform: ${PLATFORM}
     environment:
       - PYTHONUNBUFFERED=0
+      - USE_GEVENT=True
 
   tactic_mongo_watcher:
     image: bsherin/tactic-mongo-watcher:${IMG_SUFFIX}
@@ -422,6 +427,7 @@ services:
       - OWNER=host
       - PARENT=host
       - USE_AMAZON_MQ=${USE_AMAZON_MQ}
+      - USE_GEVENT=False
     networks:
       - tactic-net
   tactic_tile:

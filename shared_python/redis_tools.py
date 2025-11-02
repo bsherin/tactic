@@ -1,23 +1,47 @@
 
 import redis
 import json
+import os
+
+use_ecs = os.getenv("USE_ECS_TILES","false").lower() == "true"
 
 print("getting redis client")
-print("*** Using updated Redis config2 ***")
-redis_tm = redis.StrictRedis(host="tactic-redis",
-                             port=6379,
-                             db=1,
-                             decode_responses=True)
 
-redis_ht = redis.StrictRedis(host="tactic-redis",
-                             port=6379,
-                             db=2,
-                             decode_responses=True)
+if use_ecs:
+    from aws_helpers import get_sms_parameter
+    REDIS_HOST = get_sms_parameter("REDIS_HOST")
+    REDIS_PORT = get_sms_parameter("REDIS_PORT", 6379)
+    REDIS_USERNAME = get_sms_parameter("REDIS_USERNAME")
+    REDIS_PASSWORD = get_sms_parameter("REDIS_PASSWORD")
 
-redis_rb = redis.StrictRedis(host="tactic-redis",
-                             port=6379,
-                             db=3,
-                             decode_responses=True)
+    MESSAGE_QUEUE = message_queue=f"rediss://{REDIS_USER}:{REDIS_PASS}@{REDIS_HOST}:6379/0"
+else:
+    REDIS_HOST = "tactic-redis"
+    REDIS_PORT = 6379
+    REDIS_USERNAME = None
+    REDIS_PASSWORD = None
+    MESSAGE_QUEUE = "redis://tactic-redis:6379/0"
+
+
+redis_0 = redis.Redis(host=REDIS_HOST,
+                      username=REDIS_USERNAME,
+                      password=REDIS_PASSWORD,
+                      port=REDIS_PORT, db=0, decode_responses=True)
+
+redis_tm = redis.Redis(host=REDIS_HOST,
+                       username=REDIS_USERNAME,
+                       password=REDIS_PASSWORD,
+                       port=REDIS_PORT, db=1, decode_responses=True)
+
+redis_ht = redis.Redis(host=REDIS_HOST,
+                       username=REDIS_USERNAME,
+                       password=REDIS_PASSWORD,
+                       port=REDIS_PORT, db=2, decode_responses=True)
+
+redis_rb = redis.Redis(host=REDIS_HOST,
+                       username=REDIS_USERNAME,
+                       password=REDIS_PASSWORD,
+                       port=REDIS_PORT, db=3, decode_responses=True)
 
 
 # Ready block functions

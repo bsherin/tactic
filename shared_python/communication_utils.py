@@ -20,10 +20,11 @@ emit_direct = None
 try:
     import flask_socketio
     from flask_socketio import SocketIO
+    from redis_tools import MESSAGE_QUEUE
 
 
     socketio = SocketIO(
-        message_queue="redis://tactic-redis:6379/0",
+        message_queue=MESSAGE_QUEUE,
         channel="socketio",
         logger=False,
         engineio_logger=False,

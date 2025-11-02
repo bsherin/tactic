@@ -25,6 +25,7 @@ from integrated_docs import handler_methods
 from docker_functions import db_name, mongo_uri
 
 import exception_mixin as exception_mixin
+from redis_tools import MESSAGE_QUEUE
 
 csrf = CSRFProtect()
 
@@ -84,7 +85,7 @@ try:
     login_manager.init_app(app)
     print("starting socketio. connecting by name")
     socketio = SocketIO(app,
-                        message_queue="redis://tactic-redis:6379/0",
+                        message_queue=MESSAGE_QUEUE,
                         channel="socketio",
                         logger=False,
                         engineio_logger=False)

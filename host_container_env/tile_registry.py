@@ -3,9 +3,9 @@ import redis
 use_ecs = os.getenv("USE_ECS_TILES","false").lower() == "true"
 
 # I'm leaving some of the desired idle logic in for test, non-aws for the purposes of testing it.
-REDIS_URL = "redis://tactic-redis:6379/0"
+
 DESIRED_IDLE_DEFAULT = 3
-r = redis.from_url(REDIS_URL)
+from redis_tools import redis_0 as r
 
 if use_ecs:
     import boto3
@@ -154,7 +154,7 @@ class TileContainerRegistry:
             for page in paginator.paginate(
                     cluster=ECS_CLUSTER,
                     serviceName=TILE_SERVICE,
-                    desiredStatus="RUNNING"
+                       desiredStatus="RUNNING"
             ):
                 arns.extend(page.get("taskArns", []))
         except ParamValidationError as e:
