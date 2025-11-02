@@ -10,11 +10,12 @@ print("getting redis client")
 if use_ecs:
     from aws_helpers import get_sms_parameter
     REDIS_HOST = get_sms_parameter("REDIS_HOST")
-    REDIS_PORT = get_sms_parameter("REDIS_PORT", 6379)
+    REDIS_PORT = int(get_sms_parameter("REDIS_PORT", 6379))
     REDIS_USERNAME = get_sms_parameter("REDIS_USERNAME")
     REDIS_PASSWORD = get_sms_parameter("REDIS_PASSWORD")
 
-    MESSAGE_QUEUE = message_queue=f"rediss://{REDIS_USERNAME}:{REDIS_PASSWORD}@{REDIS_HOST}:6379/0"
+    MESSAGE_QUEUE = message_queue=f"rediss://{REDIS_USERNAME}:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}/0"
+    print("got message queue:", MESSAGE_QUEUE)
 else:
     REDIS_HOST = "tactic-redis"
     REDIS_PORT = 6379

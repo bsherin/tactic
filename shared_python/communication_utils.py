@@ -21,7 +21,7 @@ try:
     import flask_socketio
     from flask_socketio import SocketIO
     from redis_tools import MESSAGE_QUEUE
-
+    print("in communication utils with message queue:", MESSAGE_QUEUE)
 
     socketio = SocketIO(
         message_queue=MESSAGE_QUEUE,
