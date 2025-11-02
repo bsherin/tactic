@@ -30,7 +30,6 @@ services:
     hostname: tactic-redis
     container_name: tactic-redis
     profiles:
-      - start_project
       - start_development
     networks:
       - tactic-net
