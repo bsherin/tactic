@@ -4,6 +4,6 @@ export CLUSTER=tactic-cluster
 
 aws ecs update-service \
   --region "${AWS_REGION}" \
-  --cluster "${TACTIC_CLUSTER}" \
+  --cluster "${CLUSTER}" \
   --service "${SERVICE}" \
   --force-new-deployment
