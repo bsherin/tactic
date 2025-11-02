@@ -14,7 +14,7 @@ if use_ecs:
     REDIS_USERNAME = get_sms_parameter("REDIS_USERNAME")
     REDIS_PASSWORD = get_sms_parameter("REDIS_PASSWORD")
 
-    MESSAGE_QUEUE = message_queue=f"rediss://{REDIS_USER}:{REDIS_PASS}@{REDIS_HOST}:6379/0"
+    MESSAGE_QUEUE = message_queue=f"rediss://{REDIS_USERNAME}:{REDIS_PASSWORD}@{REDIS_HOST}:6379/0"
 else:
     REDIS_HOST = "tactic-redis"
     REDIS_PORT = 6379
