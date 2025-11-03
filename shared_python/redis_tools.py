@@ -163,7 +163,7 @@ class ReadyBlockManager(RedisManager):
         return self.get_hash_entry(username, f"ready_blocks.{rb_key}", participant)
 
     def delete_ready_block(self, username, rb_key):
-        self.cli.delete(username, f"ready_blocks.{rb_key}")
+        self.delete(username, f"ready_blocks.{rb_key}")
         return
 
 ready_block_manager = ReadyBlockManager(redis_client)
