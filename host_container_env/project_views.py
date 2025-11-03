@@ -8,9 +8,7 @@ from flask import jsonify, request, url_for, render_template, send_file
 from flask_login import login_required, current_user
 from tactic_app import app
 from docker_functions import create_container, main_container_info
-import loaded_tile_management
 from file_handling import read_freeform_file
-from redis_tools import create_ready_block
 
 from js_source_management import js_source_dict, _develop, css_source
 

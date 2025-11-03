@@ -3,7 +3,7 @@ import re
 from flask import url_for
 from qworker import task_worthy
 
-from redis_tools import create_ready_block
+from redis_tools import ready_block_manager
 
 from docker_functions import main_container_info
 
@@ -31,7 +31,7 @@ class ProjectTasksMixin:
 
         is_legacy_save = "save_style" in mdata and mdata["save_style"] != "b64save_react"
 
-        create_ready_block(rb_id, the_user.username, [local_id, "client"], local_id)
+        ready_block_manager.create_ready_block(rb_id, the_user.username, [local_id, "client"], local_id)
         is_notebook = doc_type == 'notebook' or doc_type == 'jupyter'
         if is_notebook:
             viewer = "notebook-viewer"
@@ -88,7 +88,7 @@ class ProjectTasksMixin:
                                                                        the_user.username,
                                                                        openai_api_key = the_user.get_openai_api_key(),
                                                                         special_unique_id=local_id)
-        create_ready_block(rb_id, the_user.username, [local_id, "client"], local_id)
+        ready_block_manager.create_ready_block(rb_id, the_user.username, [local_id, "client"], local_id)
         data_dict = {"success": True,
                      "kind": "notebook-viewer",
                      "res_type": "project",
@@ -118,7 +118,7 @@ class ProjectTasksMixin:
                                                                    the_user.username,
                                                                    openai_api_key = the_user.get_openai_api_key(),
                                                                    special_unique_id=local_id,)
-        create_ready_block(rb_id, the_user.username, [local_id, "client"], local_id)
+        ready_block_manager.create_ready_block(rb_id, the_user.username, [local_id, "client"], local_id)
         doc_type = "none"
         tile_types, icon_dict = self.get_tile_types(the_user.get_id())
         data = {

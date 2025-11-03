@@ -8,7 +8,6 @@ from flask import jsonify, render_template, url_for, request
 
 from tactic_app import app
 from file_handling import load_a_list
-import loaded_tile_management
 from file_handling import read_freeform_file
 
 import datetime

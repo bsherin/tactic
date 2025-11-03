@@ -8,7 +8,6 @@ from tactic_app import app  # global_stuff
 
 from flask import render_template, jsonify, url_for, request
 from flask_login import login_required, current_user
-import loaded_tile_management
 
 from js_source_management import js_source_dict, _develop, css_source
 

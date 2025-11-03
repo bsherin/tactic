@@ -2,7 +2,7 @@ import uuid
 from flask import url_for
 from qworker import task_worthy
 
-from redis_tools import create_ready_block
+from redis_tools import ready_block_manager
 
 from docker_functions import main_container_info
 
@@ -18,7 +18,7 @@ class CollectionTasksMixin:
                                                                    user_obj.username,
                                                                    openai_api_key = user_obj.get_openai_api_key(),
                                                                    special_unique_id=local_id)
-        create_ready_block(rb_id, user_obj.username, [local_id, "client"], local_id)
+        ready_block_manager.create_ready_block(rb_id, user_obj.username, [local_id, "client"], local_id)
         doc_dict, doc_mddict, hl_dict, mdata = user_obj.get_all_collection_info(short_collection_name)
         if "_id" in mdata:
             del(mdata["_id"])

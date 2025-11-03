@@ -19,7 +19,7 @@ from tactic_app import app, socketio, csrf, db, fs
 from wtforms.validators import ValidationError
 from tactic_app import ANYONE_CAN_REGISTER
 import tactic_app
-import loaded_tile_management
+from loaded_tile_management import loaded_tile_manager
 from mongo_db_fs import db_name
 
 from js_source_management import js_source_dict, _develop, css_source
@@ -130,7 +130,7 @@ def attempt_login():
 def logout(global_id):
     user_id = current_user.get_id()
     socketio.emit('close-user-windows', {"originator": global_id}, namespace='/main', room=user_id)
-    loaded_tile_management.remove_user(current_user.username)
+    loaded_tile_manager.remove_user(current_user.username)
     # The containers should be gone by this point. But make sure.
     tactic_app.host_worker.post_task("host", "destroy_a_users_containers", {"user_id": user_id, "notify": False})
     logout_user()

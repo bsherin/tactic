@@ -15,11 +15,8 @@ import openpyxl
 from openpyxl.styles import Alignment, Font
 from openpyxl.utils import get_column_letter
 import io
-from redis_tools import create_ready_block
 
 from js_source_management import js_source_dict, _develop, css_source
-
-import loaded_tile_management
 
 ILLEGAL_CHARACTERS_RE = re.compile(r'[\000-\010]|[\013-\014]|[\016-\037]')
 

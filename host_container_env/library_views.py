@@ -18,7 +18,6 @@ from users import User
 from js_source_management import js_source_dict, _develop, css_source
 
 
-import loaded_tile_management
 admin_user = User.get_user_by_username("admin")
 
 tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")

@@ -180,13 +180,13 @@ class TileAccess(object):
         return all_tags
 
     def grab_filtered_tiles(self, search_text, search_spec, columns, is_repo=False):
-        import loaded_tile_management
+        from loaded_tile_management import loaded_tile_manager
         flist, all_tags = self.grab_filtered_resources("tile", self.tile_collection_name, "tile_module_name",
                                                         "tile_module", self.tile_additional_mdata_fields, search_text, search_spec,
                                                          columns, is_repo=is_repo)
         if not is_repo:
-            failed_loads = set(loaded_tile_management.get_failed_loads_list(self.username))
-            successful_loads = set(loaded_tile_management.get_loaded_user_modules(self.username))
+            failed_loads = set(loaded_tile_manager.get_failed_loads_list(self.username))
+            successful_loads = set(loaded_tile_manager.get_loaded_user_modules(self.username))
         else:
             failed_loads = []
             successful_loads = []

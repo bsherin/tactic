@@ -12,9 +12,6 @@ from tactic_app import app
 from docker_functions import create_container
 
 from js_source_management import js_source_dict, _develop, css_source
-from redis_tools import create_ready_block
-
-import loaded_tile_management
 
 import datetime
 tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")

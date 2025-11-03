@@ -43,7 +43,7 @@ class UserTasksMixin:
         username = self.get_username_true_id(userid)
         if username is not None:
             user_instance = User.get_user_by_username(username)
-            loaded_tile_management.remove_user(username)
+            loaded_tile_manager.remove_user(username)
             tactic_app.host_worker.post_task("host", "destroy_a_users_containers",
                                              {"user_id": user_instance.get_id(), "notify": True})
             tactic_app.host_worker.post_task("host", "flash_to_user", {

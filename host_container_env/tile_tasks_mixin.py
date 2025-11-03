@@ -3,7 +3,6 @@ import os
 import re
 
 from qworker import task_worthy, task_worthy_manual_submit
-from redis_tools import create_ready_block
 from tactic_app import socketio
 from exception_mixin import TileModuleNotFoundError
 
@@ -81,10 +80,6 @@ class TileTasksMixin:
             "openai_api_key": the_user.get_openai_api_key()
         })
 
-
-        # id_info = self.initialize_module_viewer_container(module_name, the_user, local_id, local_id)
-        # create_ready_block(id_info["rb_id"], the_user.username, [id_info["local_id"], "client"],
-        #                    id_info["local_id"])
         mdata = the_user.get_processed_tile_metadata(module_name)
         result = {
             "success": True,
@@ -250,10 +245,10 @@ class TileTasksMixin:
 
     @task_worthy
     def unload_all_tiles_task(self, data):
-        import loaded_tile_management
+        from loaded_tile_management import loaded_tile_manager
         the_user = self.get_user_from_data(data)
         try:
-            loaded_tile_management.unload_user_tiles(the_user.username)
+            loaded_tile_manager.unload_user_tiles(the_user.username)
             self.refresh_selector_list(data["user_id"])
             socketio.emit('update-menus', {}, namespace='/main', room=the_user.get_id())
             return {"message": "Tiles successfully unloaded", "success": True}
@@ -263,10 +258,10 @@ class TileTasksMixin:
 
     @task_worthy
     def unload_one_module_task(self, data):
-        import loaded_tile_management
+        from loaded_tile_management import loaded_tile_manager
         the_user = self.get_user_from_data(data)
         tile_module_name = data["tile_module_name"]
-        loaded_tile_management.unload_one_module(the_user.username, tile_module_name)
+        loaded_tile_manager.unload_one_module(the_user.username, tile_module_name)
         _id = the_user.get_tile_id(tile_module_name)
         self.update_selector_row({"name": tile_module_name, "doc_id": str(_id), "event_type": "update",
                                   "icon:upload": "", "res_type": "tile"}, the_user)
@@ -276,14 +271,14 @@ class TileTasksMixin:
     @task_worthy_manual_submit
     def load_tile_module_task(self, data, task_packet):
         print("in load_tile_module_task with data: ", data)
-        import loaded_tile_management
+        from loaded_tile_management import loaded_tile_manager
         the_user = self.get_user_from_data(data)
         def loaded_source(res_dict):
             print("got loaded_source")
             if not res_dict["success"]:
                 print("load_source didn't return success")
                 if "show_failed_loads" in data and data["show_failed_loads"]:
-                    loaded_tile_management.add_failed_load(tile_module_name, the_user.username)
+                    loaded_tile_manager.add_failed_load(tile_module_name, the_user.username)
                     _id = the_user.get_tile_id(tile_module_name)
                     self.update_selector_row({"name": tile_module_name, "doc_id": str(_id), "event_type": "update",
                                                       "icon:upload": "icon:error", "res_type": "tile"}, the_user)
@@ -304,7 +299,7 @@ class TileTasksMixin:
             else:
                 is_default = False
             print("about to call add_user_tile_module")
-            loaded_tile_management.add_user_tile_module(the_user.username,
+            loaded_tile_manager.add_user_tile_module(the_user.username,
                                                         category,
                                                         res_dict["tile_name"],
                                                         tile_module,
@@ -356,8 +351,8 @@ class TileTasksMixin:
 
     @task_worthy
     def load_user_default_tiles_task(self, data):
-        import loaded_tile_management
-        error_list = loaded_tile_management.load_user_default_tiles(data["username"])
+        from loaded_tile_management import loaded_tile_manager
+        error_list = loaded_tile_manager.load_user_default_tiles(data["username"])
         return {"success": True, "tile_loading_errors": error_list}
 
     @task_worthy

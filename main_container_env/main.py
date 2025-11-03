@@ -14,7 +14,7 @@ from communication_utils import debinarize_python_object, emit_direct
 from communication_utils import make_jsonizable_and_compress
 import docker_functions
 from docker_functions import env_or_none
-import loaded_tile_management
+from loaded_tile_management import loaded_tile_manager
 # from volume_manager import VolumeManager
 from mongo_accesser import MongoAccess
 from main_tasks_mixin import StateTasksMixin, LoadSaveTasksMixin, APISupportTasksMixin
@@ -487,10 +487,10 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
 
     def get_loaded_tile_code(self, tile_type):
         print("in get_tile_code in main")
-        return loaded_tile_management.get_tile_code(tile_type, self.username)
+        return loaded_tile_manager.get_tile_code(tile_type, self.username)
 
     def get_loaded_user_modules(self):
-        return loaded_tile_management.get_loaded_user_modules(self.username)
+        return loaded_tile_manager.get_loaded_user_modules(self.username)
 
 
     def get_tile_property(self, tile_id, prop_name, callback=None):

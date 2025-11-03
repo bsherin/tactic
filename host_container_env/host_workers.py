@@ -13,7 +13,7 @@ from docker_functions import create_container, destroy_container, destroy_child_
 from docker_functions import get_log, restart_container, create_log_streamer_container, container_exists
 from docker_functions import get_matching_user_containers, get_container, create_assistant_container, get_user_assistant
 from tactic_app import app, socketio
-from redis_tools import redis_client, delete_ready_block_participant
+from redis_tools import redis_client, ready_block_manager
 import datetime
 from mongo_accesser import bytes_to_string, MongoAccessException
 import tactic_app
@@ -41,7 +41,8 @@ from ecs_tile_backend import ECSTileBackend
 from docker_tile_backend import DockerTileBackend
 from tile_registry import TileContainerRegistry
 from tile_container_management_mixin import TileContainerManagementMixin
-from loaded_tile_management import get_module_from_type
+from redis_tools import RedisManager, redis_client
+from loaded_tile_management import loaded_tile_manager
 
 # inactive_container_time is the max time a tile can
 # go without making active contact with the megaplex.
@@ -54,8 +55,6 @@ old_container_time = 3 * 24 * 3600
 # how frequently we will look for dead containers and dead mainwindows
 health_check_time = 5 * 60
 
-
-import loaded_tile_management
 import os
 
 use_ecs = os.getenv("USE_ECS_TILES","false").lower() == "true"
@@ -185,7 +184,7 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
     def get_module_from_type_task(self, data):
         username = data["username"]
         tile_type = data["tile_type"]
-        module_name = get_module_from_type(username, tile_type)
+        module_name = loaded_tile_manager.get_module_from_type(username, tile_type)
         return {"success": True, "module_name": module_name}
 
     @task_worthy
@@ -200,7 +199,7 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         user_obj = load_user(user_id)
         rb_id = data["rb_id"]
         participant = data["participant"]
-        result, local_id = delete_ready_block_participant(user_obj.username, rb_id, participant)
+        result, local_id = ready_block_manager.delete_ready_block_participant(user_obj.username, rb_id, participant)
         if result:
             print("** all participants ready **")
             for pid in result:
@@ -296,7 +295,7 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         user_obj = load_user(user_id)
         tile_module_name = data["tile_module_name"]
         data["user_id"] = user_id
-        if data["tile_module_name"] in loaded_tile_management.get_loaded_user_modules(user_obj.username):
+        if data["tile_module_name"] in loaded_tile_manager.get_loaded_user_modules(user_obj.username):
             self.submit_response(task_packet, {"success": True, "module_name": tile_module_name})
             return
         else:
@@ -310,7 +309,7 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
             self.submit_response(task_packet, result_data)
             return
 
-        if data["tile_type"] in loaded_tile_management.get_loaded_tile_types(username):
+        if data["tile_type"] in loaded_tile_manager.get_loaded_tile_types(username):
             self.submit_response(task_packet, {"success": True})
             return
         else:
@@ -324,7 +323,7 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         user_id = data_dict["user_id"]
         user_obj = load_user(user_id)
         for old_tile_id, tile_type in tile_info_dict.items():
-            result[old_tile_id] = loaded_tile_management.get_tile_code(tile_type, user_obj.username)
+            result[old_tile_id] = loaded_tile_manager.get_tile_code(tile_type, user_obj.username)
         return result
 
     def update_selector_row(self, res_dict, the_user):
@@ -416,7 +415,7 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
 
     def get_tile_types(self, user_id):
         the_user = load_user(user_id)
-        tile_types = loaded_tile_management.get_user_available_tile_types(the_user.username)
+        tile_types = loaded_tile_manager.get_user_available_tile_types(the_user.username)
         icon_dict = {}
         for cat_types in tile_types.values():
             for ttype in cat_types:
@@ -715,14 +714,20 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
             self.handle_exception(ex, special_string)
         return
 
-class HealthTracker:
-    def __init__(self):
+class HealthTracker(RedisManager):
+    def __init__(self, client):
+        self.prefix = "ht"
+        RedisManager.__init__(self, client)
         self.last_health_check = current_timestamp()  # I don't want to be hitting redis constantly
-        if not redis_client.exists("ht.last_health_check"):
-            redis_client.set("ht.last_health_check", current_timestamp())
+        if not self.exists(None, "last_health_check"):
+            self.set(None, "last_health_check", current_timestamp())
+
+    def expand_key(self, username, key):
+        full_key = f"{self.prefix}.{key}"
+        return full_key
 
     def is_container_health_data(self, k):
-        return redis_client.type(k) == "hash" and redis_client.hexists(k, "am_health_data")
+        return self.cli.type(k) == "hash" and self.cli.hexists(k, "am_health_data")
 
     def register_container(self, container_id):
         ctime = current_timestamp()
@@ -731,53 +736,53 @@ class HealthTracker:
             "last_contact": ctime,
             "am_health_data": "True"
         }
-        redis_client.hmset(f"ht.{container_id}", starting_data)
+        self.set_hash_dict(None, container_id, starting_data)
 
     def register_container_heartbeat(self, container_id):
-        if not redis_client.exists(f"ht.{container_id}"):
-            self.register_container(f"ht.{container_id}")
+        if not self.exists(None, container_id):
+            self.register_container(container_id)
         else:
-            redis_client.hset(f"ht.{container_id}", "last_contact", current_timestamp())
+            self.set_hash_entry(None, container_id, "last_contact", current_timestamp())
 
     def check_health(self):
         if tactic_app.host_worker.my_id == "host5000":  ## Only initiate checks from one host
             current_time = current_timestamp()
             if (current_time - self.last_health_check) > health_check_time:
-                if not redis_client.exists("ht.last_health_check"):
+                if not self.exists(None, "last_health_check"):
                     # we want to see if another worker has done a check more recently
-                    last_worker_check = float(redis_client.get("ht.last_health_check"))
+                    last_worker_check = float(self.get(None, "last_health_check"))
                     if (current_time - last_worker_check) < health_check:
                         return
                 self.check_for_dead_containers()
-                redis_client.set("ht.last_health_check", current_time)
+                self.set(None, "last_health_check", current_time)
         return
 
     def deregister_container(self, container_id):
         print(f"deregister_container with container_id {container_id}")
-        if redis_client.exists(f"ht.{container_id}"):
+        if self.exists(None, container_id):
             print(f"deleting health data for container_id {container_id}")
-            redis_client.delete(f"ht.{container_id}")
+            self.delete(None, container_id)
         else:
             print(f"no health data found for container_id {container_id}")
 
     def update_contact(self, container_id):
-        if redis_client.exists(f"ht.{container_id}"):
-            redis_client.hset(f"ht.{container_id}", "last_contact", current_timestamp())
+        if self.exists(None, container_id):
+            self.set_has_entry(None, container_id, "last_contact", current_timestamp())
 
     def last_contact(self, container_id):
-        return float(redis_client.hget(f"ht.{container_id}", "last_contact"))
+        return float(self.get_hash_entry(None, container_id, "last_contact"))
 
     def created(self, container_id):
-        return float(redis_client.hget(f"ht.{container_id}", "created"))
+        return float(self.get_hash_entry(None, container_id, "created"))
 
-
-    def k_to_cont_id(self, k):
+    @staticmethod
+    def k_to_cont_id(k):
         return re.findall(r"ht\.(.*)", k)[0]
 
     def check_for_dead_containers(self):
         current_time = current_timestamp()
         cont_list = []
-        all_keys = redis_client.keys("ht.*")
+        all_keys = self.scan_keys_with_prefix(None, "*")
         for k in all_keys:
             if self.is_container_health_data(k):
                 cid = self.k_to_cont_id(k)
@@ -795,7 +800,7 @@ class HealthTracker:
                 destroy_container(cont_id)
 
 print("creating healthtracker")
-tactic_app.health_tracker = HealthTracker()
+tactic_app.health_tracker = HealthTracker(redis_client)
 print("creating host worker")
 tactic_app.host_worker = HostWorker()
 print("starting host worker")
