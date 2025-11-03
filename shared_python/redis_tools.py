@@ -78,6 +78,19 @@ class RedisManager:
             value_dict = {k: json.dumps(v) if isinstance(v, dict) else v for k, v in value_dict.items()}
         self.cli.hmset(full_redis_key, value_dict)
 
+    def get_hash_dict(self, username, redis_key):
+        full_redis_key = self.expand_key(username, redis_key)
+        value = self.cli.hgetall(full_redis_key)
+        if value:
+            # Convert values to JSON if they are strings
+            for k, v in value.items():
+                try:
+                    value[k] = json.loads(v) if isinstance(v, str) else v
+                except json.JSONDecodeError:
+                    pass
+            return value
+        return {}
+
     def get_hash_entry(self, username, redis_key, hash_key):
         full_redis_key = self.expand_key(username, redis_key)
         value = self.cli.hget(full_redis_key, hash_key)
@@ -117,6 +130,23 @@ class RedisManager:
         full_pattern = self.expand_key(username, pattern)
         return self.scan_keys(full_pattern)
 
+class SessionManager(RedisManager):
+
+    def expand_key(self, username, key):
+        full_key = f"{self.prefix}.{key}"
+        return full_key
+
+    def set_session(self, session_id, session_data):
+        self.set_hash_dict(None, session_id, session_data)
+
+    def get_session(self, session_id):
+        return self.get_hash_dict(None, session_id)
+
+    def delete_session(self, session_id):
+        self.delete(None, session_id)
+
+    def get_session_value(self, session_id, key):
+        return self.get_hash_entry(None, session_id, key)
 
 class ReadyBlockManager(RedisManager):
     def __init__(self, client):

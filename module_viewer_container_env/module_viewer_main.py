@@ -10,18 +10,24 @@ import re
 # noinspection PyUnresolvedReferences
 from qworker import QWorker, task_worthy, task_worthy_manual_submit
 from flask import render_template, Flask
+
 from tile_code_parser import TileParser, remove_indents, insert_indents
 import exception_mixin
 from exception_mixin import ExceptionMixin
 from mongo_accesser import MongoAccess
 from tile_accesser import TileAccess
 from mongo_db_fs import get_dbs
+from redis_tools import SessionManager, redis_client
 
 import sys, os
 
 sys.stdout = sys.stderr
 import time
 
+class ModuleViewerSessionManager(SessionManager):
+    def __init__(self, client):
+        self.prefix = "mv"
+        SessionManager.__init__(self, client)
 
 # noinspection PyUnusedLocal
 class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin, MongoAccess, TileAccess):
@@ -33,7 +39,7 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin, MongoAccess, Til
         self.db = db
         self.fs = fs
         self.handler_methods = None
-        self.sessions = {}
+        self.session_manager = ModuleViewerSessionManager(redis_client)
         return
 
     def retrieve_handler_methods(self):
@@ -53,19 +59,28 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin, MongoAccess, Til
 
     @task_worthy
     def start_session(self, data_dict):
-        self.sessions[data_dict["local_id"]] = {
+        session_data = {
             "user_id": data_dict["user_id"],
             "module_name": data_dict["module_name"],
             "username": data_dict["username"],
             "openai_api_key": data_dict.get("openai_api_key", None),
         }
+        self.session_manager.set_session(data_dict["local_id"], session_data)
+        return {"success": True}
+
+    @task_worthy
+    def end_session(self, data_dict):
+        local_id = data_dict["local_id"]
+        self.session_manager.delete_session(local_id)
+        return {"success": True}
 
     @task_worthy
     def initialize_parser(self, data_dict):
         module_name = data_dict["module_name"]
         local_id = data_dict["local_id"]
         user_id = data_dict["user_id"]
-        tile_dict = self.get_tile_doc(module_name, username=self.sessions[local_id]["username"])
+        username = self.get_username(local_id)
+        tile_dict = self.get_tile_doc(module_name, username=username)
         module_code = tile_dict["tile_module"]
         tp = TileParser(module_code, self.handler_methods)
         result = {"success": True, "the_content": self.assemble_parse_information(tp),
@@ -145,7 +160,7 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin, MongoAccess, Til
         return full_code
 
     def get_username(self, local_id):
-        return self.sessions[local_id]["username"]
+        return self.session_manager.get_session_value(local_id, "username")
 
     @task_worthy
     def update_module(self, data_dict):
@@ -303,6 +318,7 @@ if __name__ == "__main__":
     print("entering main")
     mworker = ModuleViewerWorker()
     print("mworker is created, about to start my_id is " + str(mworker.my_id))
+
     mworker.start()
     print("mworker started, my_id is " + str(mworker.my_id))
     while True:

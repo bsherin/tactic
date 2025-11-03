@@ -210,6 +210,8 @@ function CreatorApp(props) {
             undoStackRef.current = [];
             searchStateRef.current = [];
             extraSelfCompletionsRef.current = [];
+            postPromise("module_viewer", "end_session", {"local_id": props.local_id})
+                .then(()=>{})
         })
     }, []);
 
