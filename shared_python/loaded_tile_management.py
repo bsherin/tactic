@@ -4,7 +4,7 @@ import copy
 import datetime
 import os
 import re
-from redis_tools import redis_tm, hadd, hdel, hexists, hget, hkeys, hset, vset
+from redis_tools import redis_client, hadd, hdel, hexists, hget, hkeys, hset, vset
 
 
 def get_repository_tiles_matching_tag(tag):
@@ -41,18 +41,18 @@ def add_failed_load(module_name, username):
 
 
 def remove_user(username):
-    all_keys = redis_tm.keys("{}.*".format(username))
+    all_keys = redis_client.keys("*.{}.*".format(username))
     if len(all_keys) > 0:
-        redis_tm.delete(*all_keys)
+        redis_client.delete(*all_keys)
 
 
 def tile_type_string(username):
-    return "{}\.user_tiles\.(.*)?\.(.*)".format(username)
+    return "tm\.{}\.user_tiles\.(.*)?\.(.*)".format(username)
 
 
 def get_user_available_tile_types(username, nested=False):
     tile_types = {}
-    all_keys = redis_tm.keys("{}.user_tiles.*".format(username))
+    all_keys = redis_client.keys("tm.{}.user_tiles.*".format(username))
 
     try:
         for k in all_keys:
@@ -88,7 +88,7 @@ def create_initial_metadata():
 
 def get_loaded_user_tiles_list(username):
     loaded_tiles = []
-    all_keys = redis_tm.keys("{}.user_tiles.*".format(username))
+    all_keys = redis_client.keys("tm.{}.user_tiles.*".format(username))
     for k in all_keys:
         sstring = tile_type_string(username)
         _cat, tile_type = re.findall(sstring, k)[0]
@@ -119,10 +119,10 @@ def get_nondefault_tiles_list(username):
 
 def unload_user_tiles(username):
 
-    kstr = "{}.*".format(username)
-    all_keys = redis_tm.keys(kstr)
+    kstr = "tm.{}.*".format(username)
+    all_keys = redis_client.keys(kstr)
     for k in all_keys:
-        redis_tm.delete(k)
+        redis_client.delete(k)
     load_user_default_tiles(username)
 
 
@@ -153,12 +153,12 @@ def get_loaded_user_modules(username):
 
 def unload_one_tile(username, tile_name, tile_module_name):
 
-    all_user_tiles_keys = redis_tm.keys("{}.user_tiles.*".format(username))
+    all_user_tiles_keys = redis_client.keys("tm.{}.user_tiles.*".format(username))
     for k in all_user_tiles_keys:
         sstring = tile_type_string(username)
         _cat, tile_type = re.findall(sstring, k)[0]
         if tile_name == tile_type:
-            redis_tm.delete(k)
+            redis_client.delete(k)
 
     if hexists(username, "loaded_user_modules"):
         if tile_module_name in hkeys(username, "loaded_user_modules"):
@@ -171,13 +171,13 @@ def unload_one_tile(username, tile_name, tile_module_name):
 
 
 def unload_one_module(username, tile_module_name):
-    all_user_tiles_keys = redis_tm.keys("{}.user_tiles.*".format(username))
+    all_user_tiles_keys = redis_client.keys("tm.{}.user_tiles.*".format(username))
     for k in all_user_tiles_keys:
         sstring = tile_type_string(username)
         _cat, tile_type = re.findall(sstring, k)[0]
         mod = get_module_from_type(username, tile_type)
         if mod == tile_module_name:
-            redis_tm.delete(k)
+            redis_client.delete(k)
         if hexists(username, "tile_module_index"):
             if tile_type in hkeys(username, "tile_module_index"):
                 hdel(username, "tile_module_index", tile_type)
@@ -207,9 +207,9 @@ def add_user_tile_module(username, category, tile_name, tile_module, tile_module
 
 def get_tile_code(tile_type, username):
     print("in get_tile_code in loaded_tile_management with username {}, tile_type {}".format(username, tile_type))
-    klist = redis_tm.keys("{}.user_tiles.*.{}".format(username, tile_type))
+    klist = redis_client.keys("tm.{}.user_tiles.*.{}".format(username, tile_type))
     print("got klist " + str(klist))
     if len(klist) > 0:
-        return redis_tm.get(klist[0])
+        return redis_client.get(klist[0])
     else:
         return None

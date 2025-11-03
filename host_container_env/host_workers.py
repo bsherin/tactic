@@ -13,7 +13,7 @@ from docker_functions import create_container, destroy_container, destroy_child_
 from docker_functions import get_log, restart_container, create_log_streamer_container, container_exists
 from docker_functions import get_matching_user_containers, get_container, create_assistant_container, get_user_assistant
 from tactic_app import app, socketio
-from redis_tools import redis_ht, delete_ready_block_participant
+from redis_tools import redis_client, delete_ready_block_participant
 import datetime
 from mongo_accesser import bytes_to_string, MongoAccessException
 import tactic_app
@@ -718,11 +718,11 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
 class HealthTracker:
     def __init__(self):
         self.last_health_check = current_timestamp()  # I don't want to be hitting redis constantly
-        if not redis_ht.exists("last_health_check"):
-            redis_ht.set("last_health_check", current_timestamp())
+        if not redis_client.exists("ht.last_health_check"):
+            redis_client.set("ht.last_health_check", current_timestamp())
 
     def is_container_health_data(self, k):
-        return redis_ht.type(k) == "hash" and redis_ht.hexists(k, "am_health_data")
+        return redis_client.type(k) == "hash" and redis_client.hexists(k, "am_health_data")
 
     def register_container(self, container_id):
         ctime = current_timestamp()
@@ -731,53 +731,58 @@ class HealthTracker:
             "last_contact": ctime,
             "am_health_data": "True"
         }
-        redis_ht.hmset(container_id, starting_data)
+        redis_client.hmset(f"ht.{container_id}", starting_data)
 
     def register_container_heartbeat(self, container_id):
-        if not redis_ht.exists(container_id):
-            self.register_container(container_id)
+        if not redis_client.exists(f"ht.{container_id}"):
+            self.register_container(f"ht.{container_id}")
         else:
-            redis_ht.hset(container_id, "last_contact", current_timestamp())
+            redis_client.hset(f"ht.{container_id}", "last_contact", current_timestamp())
 
     def check_health(self):
         if tactic_app.host_worker.my_id == "host5000":  ## Only initiate checks from one host
             current_time = current_timestamp()
             if (current_time - self.last_health_check) > health_check_time:
-                if not redis_ht.exists("last_health_check"):
+                if not redis_client.exists("ht.last_health_check"):
                     # we want to see if another worker has done a check more recently
-                    last_worker_check = float(redis_ht.get("last_health_check"))
+                    last_worker_check = float(redis_client.get("ht.last_health_check"))
                     if (current_time - last_worker_check) < health_check:
                         return
                 self.check_for_dead_containers()
-                redis_ht.set("last_health_check", current_time)
+                redis_client.set("ht.last_health_check", current_time)
         return
 
     def deregister_container(self, container_id):
         print(f"deregister_container with container_id {container_id}")
-        if redis_ht.exists(container_id):
+        if redis_client.exists(f"ht.{container_id}"):
             print(f"deleting health data for container_id {container_id}")
-            redis_ht.delete(container_id)
+            redis_client.delete(f"ht.{container_id}")
         else:
             print(f"no health data found for container_id {container_id}")
 
     def update_contact(self, container_id):
-        if redis_ht.exists(container_id):
-            redis_ht.hset(container_id, "last_contact", current_timestamp())
+        if redis_client.exists(f"ht.{container_id}"):
+            redis_client.hset(f"ht.{container_id}", "last_contact", current_timestamp())
 
     def last_contact(self, container_id):
-        return float(redis_ht.hget(container_id, "last_contact"))
+        return float(redis_client.hget(f"ht.{container_id}", "last_contact"))
 
     def created(self, container_id):
-        return float(redis_ht.hget(container_id, "created"))
+        return float(redis_client.hget(f"ht.{container_id}", "created"))
+
+
+    def k_to_cont_id(self, k):
+        return re.findall(r"ht\.(.*)", k)[0]
 
     def check_for_dead_containers(self):
         current_time = current_timestamp()
         cont_list = []
-        all_keys = redis_ht.keys()
+        all_keys = redis_client.keys("ht.*")
         for k in all_keys:
             if self.is_container_health_data(k):
-                if (current_time - self.last_contact(k)) > inactive_container_time:
-                    print(f"found an inactive container {k}")
+                cid = self.k_to_cont_id(k)
+                if (current_time - self.last_contact(cid)) > inactive_container_time:
+                    print(f"found an inactive container {cid}")
                     cont_list.append(k)
                     continue
                 if (current_time - self.created(k)) > old_container_time:

@@ -5,7 +5,7 @@ use_ecs = os.getenv("USE_ECS_TILES","false").lower() == "true"
 # I'm leaving some of the desired idle logic in for test, non-aws for the purposes of testing it.
 
 DESIRED_IDLE_DEFAULT = 3
-from redis_tools import redis_0 as r
+from redis_tools import redis_client as r
 
 if use_ecs:
     import boto3
