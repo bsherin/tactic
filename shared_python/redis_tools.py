@@ -60,9 +60,13 @@ class RedisManager:
         self.cli.delete(full_key)
 
     def delete_all(self):
-        all_keys = self.scan_keys(f"{self.prefix}.*")
-        if all_keys:
-            self.cli.delete(*all_keys)
+        # non-blocking deletion per key, works across slots
+        pattern = f"{self.prefix}.*"
+        for k in self.cli.scan_iter(match=pattern, count=1000):
+            try:
+                self.cli.unlink(k)  # fall back to delete if older Redis
+            except Exception:
+                self.cli.delete(k)
 
     def exists(self, username, key):
         full_key = self.expand_key(username, key)

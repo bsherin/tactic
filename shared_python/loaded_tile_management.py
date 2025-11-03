@@ -44,8 +44,8 @@ class LoadedTileManager(RedisManager):
 
     def remove_user(self, username):
         all_keys = self.scan_keys_with_prefix(username, "*")
-        if len(all_keys) > 0:
-            self.cli.delete(*all_keys)
+        for k in all_keys:
+            self.cli.delete(k)
 
     @staticmethod
     def tile_type_string(username):
