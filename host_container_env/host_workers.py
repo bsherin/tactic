@@ -773,7 +773,6 @@ class HealthTracker(RedisManager):
         return float(self.get_hash_entry(None, container_id, "last_contact"))
 
     def created(self, container_id):
-        print("** checking created time for container " + str(container_id))
         if not self.exists(None, container_id):
             raise ValueError(f"No health data found for container {container_id}")
         return float(self.get_hash_entry(None, container_id, "created"))
@@ -793,7 +792,7 @@ class HealthTracker(RedisManager):
                     print(f"found an inactive container {cid}")
                     cont_list.append(k)
                     continue
-                if (current_time - self.created(k)) > old_container_time:
+                if (current_time - self.created(cid)) > old_container_time:
                     print("found an old container")
                     cont_list.append(k)
         for cont_id in cont_list:
