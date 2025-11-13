@@ -185,57 +185,60 @@ function FileImportDialog(props) {
     // I think, perhaps when messages are shown in the dialog.
 
     function _uploadComplete(f) {
-        if (myDropzone.current.getQueuedFiles().length > 0) {
-            myDropzone.current.options.url = current_url.current;
-            myDropzone.current.processQueue()
-        } else if (props.after_upload) {
-            props.after_upload()
+        if (!window.use_s3) {
+            if (myDropzone.current.getQueuedFiles().length > 0) {
+                myDropzone.current.options.url = current_url.current;
+                myDropzone.current.processQueue()
+            } else if (props.after_upload) {
+                props.after_upload()
+            }
         }
     }
 
     async function _onSending(file, xhr, formData) {
-        if (!window.use_ecs) {
+        if (!window.use_s3) {
             file.previewElement.scrollIntoView(false);
             formData.append("extra_value", current_value_ref.current);
             if (props.chunking) {
                 formData.append("dzuuid", file.upload.uuid)
             }
-        } else {
-            xhr.abort();
-
-            const extraValue = current_value_ref.current;
-
-            const resp = await postPromise("host", "get_s3_upload_info_task", {
-                filename: file.name,
-                content_type: file.type || "application/octet-stream",
-                dest_path: current_value_ref.current
-            });
-
-            if (!resp.success) {
-                this.emit("error", file, resp.message || "Failed to get presign");
-                this.emit("complete", file);
-                return;
-            }
-
-            const {url, fields, key, bucket, content_type} = resp.upload_info;
-
-            // Build a new multipart/form-data request to S3 using the returned fields + file
-            const fd = new FormData();
-            Object.entries(fields).forEach(([k, v]) => fd.append(k, v));
-            fd.append("file", file);
-
-            try {
-                const s3res = await fetch(url, {method: "POST", body: fd});
-                if (!s3res.ok) {
-                    this.emit("error", `S3 upload failed: ${s3res.status}`);
-                }
-                this.emit("success", file, {key});
-            } catch (e) {
-                this.emit("error", file, e.message);
-            } finally {
-                this.emit("complete", file);
-            }
         }
+        // else {
+        //     xhr.abort();
+        //
+        //     const extraValue = current_value_ref.current;
+        //
+        //     const resp = await postPromise("host", "get_s3_upload_info_task", {
+        //         filename: file.name,
+        //         content_type: file.type || "application/octet-stream",
+        //         dest_path: current_value_ref.current
+        //     });
+        //
+        //     if (!resp.success) {
+        //         this.emit("error", file, resp.message || "Failed to get presign");
+        //         this.emit("complete", file);
+        //         return;
+        //     }
+        //
+        //     const {url, fields, key, bucket, content_type} = resp.upload_info;
+        //
+        //     // Build a new multipart/form-data request to S3 using the returned fields + file
+        //     const fd = new FormData();
+        //     Object.entries(fields).forEach(([k, v]) => fd.append(k, v));
+        //     fd.append("file", file);
+        //
+        //     try {
+        //         const s3res = await fetch(url, {method: "POST", body: fd});
+        //         if (!s3res.ok) {
+        //             this.emit("error", `S3 upload failed: ${s3res.status}`);
+        //         }
+        //         this.emit("success", file, {key});
+        //     } catch (e) {
+        //         this.emit("error", file, e.message);
+        //     } finally {
+        //         this.emit("complete", file);
+        //     }
+        // }
     }
 
 function _name_exists(name) {
@@ -317,7 +320,7 @@ var djsConfig = {
         'X-CSRF-TOKEN': window.csrftoken
     }
 };
-var eventHandlers;
+let eventHandlers;
 eventHandlers = {
     init: _initCallback,
     complete: _uploadComplete,

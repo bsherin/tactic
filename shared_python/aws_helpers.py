@@ -1,12 +1,24 @@
-import boto3
 import json
+import os
+import boto3
+from botocore.config import Config
 
-def get_sms_parameter(name, default=None):
-    """
-    Fetches a parameter from AWS Systems Manager Parameter Store.
-    Returns the parameter value or default if not found.
-    """
-    ssm = boto3.client('ssm', region_name="us-east-2")  # Adjust region as needed
+AWS_REGION = "us-east-2"  # Default region, can be overridden by environment variable
+on_aws = os.getenv("RUNNING_ON_AWS", "true").lower() == "true"
+
+def get_ssm_parameter(name, default=None):
+
+    if on_aws:
+        ssm = boto3.client('ssm', region_name="us-east-2")  # Adjust region as needed
+    else:
+        ssm = boto3.client(
+            "ssm",
+            endpoint_url="http://host.docker.internal:4566",
+            aws_access_key_id="test",
+            aws_secret_access_key="test",
+            region_name="us-east-2",
+            config=Config(s3={"addressing_style": "path"})
+        )
     try:
         response = ssm.get_parameter(Name=name, WithDecryption=True)
         return response['Parameter']['Value']
@@ -16,8 +28,22 @@ def get_sms_parameter(name, default=None):
         print(f"Error fetching parameter {name}: {e}")
         return default
 
+def get_s3_client():
+    cfg = Config(region_name=AWS_REGION, s3={"addressing_style": "path"}, signature_version="s3v4")
+    if on_aws:
+        s3 = boto3.client("s3", confg=cfg)
+    else:
+        s3 = boto3.client(
+            "s3",
+            endpoint_url="http://host.docker.internal:4566",
+            aws_access_key_id="test",
+            aws_secret_access_key="test",
+            config=cfg
+        )
+    return s3
+
 def load_secret_json(secret_arn: str):
-    region = get_sms_parameter("MY_AWS_REGION")
+    region = get_ssm_parameter("MY_AWS_REGION")
     sm = boto3.client("secretsmanager", region_name=region)
     try:
         r = sm.get_secret_value(SecretId=secret_arn)

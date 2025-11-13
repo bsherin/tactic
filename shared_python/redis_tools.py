@@ -8,11 +8,11 @@ use_ecs = os.getenv("USE_ECS_TILES","false").lower() == "true"
 print("getting redis client")
 
 if use_ecs:
-    from aws_helpers import get_sms_parameter
-    REDIS_HOST = get_sms_parameter("REDIS_HOST")
-    REDIS_PORT = int(get_sms_parameter("REDIS_PORT", 6379))
-    REDIS_USERNAME = get_sms_parameter("REDIS_USERNAME")
-    REDIS_PASSWORD = get_sms_parameter("REDIS_PASSWORD")
+    from aws_helpers import get_ssm_parameter
+    REDIS_HOST = get_ssm_parameter("REDIS_HOST")
+    REDIS_PORT = int(get_ssm_parameter("REDIS_PORT", 6379))
+    REDIS_USERNAME = get_ssm_parameter("REDIS_USERNAME")
+    REDIS_PASSWORD = get_ssm_parameter("REDIS_PASSWORD")
 
     MESSAGE_QUEUE = message_queue=f"rediss://{REDIS_USERNAME}:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}"
     USE_SSL = True
@@ -29,6 +29,12 @@ redis_client = redis.Redis(host=REDIS_HOST,
                       username=REDIS_USERNAME,
                       password=REDIS_PASSWORD,
                       port=REDIS_PORT, decode_responses=True, ssl=USE_SSL)
+
+def get_no_decode_redis_client():
+    return redis.Redis(host=REDIS_HOST,
+                       username=REDIS_USERNAME,
+                       password=REDIS_PASSWORD,
+                       port=REDIS_PORT, decode_responses=False, ssl=USE_SSL)
 
 class RedisManager:
     def __init__(self, cli):
@@ -61,8 +67,8 @@ class RedisManager:
 
     def delete_all(self):
         # non-blocking deletion per key, works across slots
-        pattern = f"{self.prefix}.*"
-        for k in self.cli.scan_iter(match=pattern, count=1000):
+        pattern = f"*"
+        for k in self.cli.scan_iter(match=pattern, count=5000):
             try:
                 self.cli.unlink(k)  # fall back to delete if older Redis
             except Exception:
@@ -147,6 +153,9 @@ class SessionManager(RedisManager):
 
     def get_session_value(self, session_id, key):
         return self.get_hash_entry(None, session_id, key)
+
+    def set_session_value(self, session_id, key, value):
+        self.set_hash_entry(None, session_id, key, value)
 
 class ReadyBlockManager(RedisManager):
     def __init__(self, client):

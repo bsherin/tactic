@@ -23,14 +23,14 @@ FocusStyleManager.onlyShowFocusOnTabs();
 import {SelectedPaneContext} from "./utilities_react";
 import {TacticSocket} from "./tactic_socket";
 import {OpenOmnibar} from "./TacticOmnibar";
-import {handleCallback, postPromise} from "./communication_react";
+import {handleCallback, postPromise, postPromiseMain} from "./communication_react";
 import {doFlash, StatusContext, withStatus} from "./toaster";
 import {TacticNavbar} from "./blueprint_navbar";
 import {ErrorBoundary} from "./error_boundary";
 import {LibraryHomeApp} from "./library_home_react";
 import {PoolBrowser} from "./pool_browser";
 import {withPool, getBasename} from "./pool_tree";
-import {guid} from "./utilities_react";
+import {guid, get_ppi} from "./utilities_react";
 import {module_viewer_props, ModuleViewerApp} from "./module_viewer_react";
 import {CreatorApp} from "./tile_maker_react";
 import {creator_props} from "./tile_maker_support"
@@ -331,12 +331,14 @@ function ContextApp(props) {
                     console.log("got data for tile", data);
                     break;
                 case "collection":
-                    data = await postPromise("host", "initiate_collection_in_context", {collection_name: resource_name,
-                        local_id: new_viewer_id});
+                    data = await postPromiseMain(props.local_id, "initialize_session_from_collection",
+                            {collection_name: resource_name, base_figure_url: window.base_figure_url,
+                            username: window.username, ppi: get_ppi()})
                     break;
                 case "project":
-                    data = await postPromise("host", "initiate_project_in_context", {project_name: resource_name,
-                        local_id: new_viewer_id});
+                    data = await postPromise("main_service", "initialize_session_from_save", {project_name: resource_name,
+                        base_figure_url: window.base_figure_url,
+                        local_id: new_viewer_id, username: window.username, ppi: get_ppi()});
                     break;
                 case "new-notebook":
                     if (temp_data_id) {

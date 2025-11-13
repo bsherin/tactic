@@ -24,8 +24,7 @@ class RemoteTiles:
         return self.names
 
     def _get_other_tile_data(self):
-        return _tworker.post_and_wait(_tworker.tile_instance._main_id, "OtherTileData",
-                                      {"tile_id": _tworker.tile_instance._tworker.my_id})
+        return _tworker.post_and_wait_to_main("OtherTileData", {"tile_id": _tworker.tile_instance._tworker.my_id})
 
     def __getitem__(self, x):
         self._get_other_tile_data_if_necessary()
@@ -121,7 +120,7 @@ class RemotePipes:
         return self.names
 
     def _get_other_tile_data(self):
-        return _tworker.post_and_wait(_tworker.tile_instance._main_id, "OtherTileData", {"tile_id": _tworker.my_id})
+        return _tworker.post_and_wait_to_main("OtherTileData", {"tile_id": _tworker.my_id})
 
     def __getitem__(self, pipe_key):
         return _tworker.tile_instance.get_pipe_value(pipe_key)

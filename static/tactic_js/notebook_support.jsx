@@ -3,101 +3,54 @@ import {handleCallback, postWithCallback} from "./communication_react";
 
 export {notebook_props, notebookReducer}
 
-var ppi;
-
 function notebook_props(data, registerDirtyMethod, finalCallback) {
-    ppi = get_ppi();
     let local_id = data.local_id;
     let tsocket = data.tsocket;
     if (!window.in_context) {
         window.global_id = local_id;
     }
-    tsocket.socket.on("remove-ready-block", readyListener);
-    tsocket.socket.emit('client-ready', {
-        "room": local_id, "user_id": window.user_id, "participant": "client",
-        "rb_id": data.ready_block_id, "local_id": local_id
+    tsocket.attachListener('handle-callback', (task_packet) => {
+        handleCallback(task_packet, local_id)
     });
-
-    tsocket.socket.on('finish-post-load', _finish_post_load_in_context);
-
-    function readyListener() {
-        _everyone_ready_in_context(finalCallback)
-    }
 
     let is_totally_new = !data.is_jupyter && !data.is_project && (data.temp_data_id == "");
     let opening_from_temp_id = data.temp_data_id != "";
 
-    function _everyone_ready_in_context() {
-        if (!window.in_context) {
-            renderSpinnerMessage("Everyone is ready, initializing...");
-        }
-        tsocket.socket.off("remove-ready-block", readyListener);
-        tsocket.attachListener('handle-callback', (task_packet) => {
-            handleCallback(task_packet, local_id)
-        });
-        window.base_figure_url = data.base_figure_url;
-        let data_dict = {
-            "doc_type": "notebook",
-            "base_figure_url": data.base_figure_url,
-            "user_id": window.user_id,
-            "ppi": ppi
-        };
-        if (is_totally_new) {
-            postWithCallback(local_id, "initialize_mainwindow", data_dict, _finish_post_load_in_context, null, local_id)
-        } else {
-            if (data.is_jupyter) {
-                data_dict["doc_type"] = "jupyter";
-                data_dict["project_name"] = data.project_name;
-            } else if (data.is_project) {
-                data_dict["project_name"] = data.project_name;
-            } else {
-                data_dict["unique_id"] = data.temp_data_id;
-            }
-            postWithCallback(local_id, "initialize_project_mainwindow", data_dict, null, null, local_id)
-        }
+    let interface_state;
+    if (data.is_project || opening_from_temp_id) {
+        interface_state = data.interface_state
     }
-
-    function _finish_post_load_in_context(fdata) {
-        if (!window.in_context) {
-            renderSpinnerMessage("Creating the page...");
-        }
-        tsocket.socket.off("finish-post-load", _finish_post_load_in_context);
-        var interface_state;
-        if (data.is_project || opening_from_temp_id) {
-            interface_state = fdata.interface_state
-        }
-        if (data.is_project || opening_from_temp_id) {
-            finalCallback({
-                is_project: true,
-                local_id: local_id,
-                resource_name: data.project_name,
-                tsocket: tsocket,
-                interface_state: interface_state,
-                is_notebook: true,
-                is_juptyer: data.is_jupyter,
-                readOnly: data.read_only,
-                is_repository: data.is_repository,
-                registerDirtyMethod: registerDirtyMethod,
-            })
-        } else {
-            finalCallback({
-                is_project: false,
-                local_id: local_id,
-                resource_name: data.project_name,
-                tsocket: tsocket,
-                interface_state: null,
-                is_notebook: true,
-                is_juptyer: data.is_jupyter,
-                readOnly: data.read_only,
-                is_repository: data.is_repository,
-                registerDirtyMethod: registerDirtyMethod,
-            })
-        }
+    if (data.is_project || opening_from_temp_id) {
+        finalCallback({
+            is_project: true,
+            local_id: local_id,
+            resource_name: data.project_name,
+            tsocket: tsocket,
+            interface_state: interface_state,
+            is_notebook: true,
+            is_juptyer: data.is_jupyter,
+            readOnly: data.read_only,
+            is_repository: data.is_repository,
+            registerDirtyMethod: registerDirtyMethod,
+        })
+    } else {
+        finalCallback({
+            is_project: false,
+            local_id: local_id,
+            resource_name: data.project_name,
+            tsocket: tsocket,
+            interface_state: null,
+            is_notebook: true,
+            is_juptyer: data.is_jupyter,
+            readOnly: data.read_only,
+            is_repository: data.is_repository,
+            registerDirtyMethod: registerDirtyMethod,
+        })
     }
 }
 
 function notebookReducer(mState, action) {
-    var newMstate;
+    let newMstate;
     if (action.type == "change_field") {
         newMstate = {...mState};
         newMstate[action.field] = action.new_value;

@@ -33,7 +33,7 @@ class Handler(FileSystemEventHandler):
     def __init__(self):
         FileSystemEventHandler.__init__(self)
         self.my_id = "pool_watcher"
-        self.connection, self.channel = get_pika_connection_with_retries(0, True)
+        self.connection, self.channel = get_pika_connection_with_retries(0)
         self._timers = {}
         self._modification_times = {}
 
@@ -97,7 +97,7 @@ class Handler(FileSystemEventHandler):
                                       body=json.dumps(task_packet))
         except:
             if attempt == 0:
-                connection, channel = get_pika_connection_with_retries(0, True)
+                connection, channel = get_pika_connection_with_retries(0)
                 if connection is not None:
                     self.channel = channel
                     self.post_packet(dest_id, task_packet, reply_to, callback_id, attempt=1)

@@ -66,7 +66,7 @@ def import_as_list_full(file_list):
 
     for the_file in file_list:
         filename, file_extension = os.path.splitext(the_file.filename)
-        list_name = user_obj.make_name_unique(filename, user_obj.list_names)
+        list_name = user_obj.make_name_unique(filename, user_obj.list_names())
         filename = filename.encode("ascii", "ignore").decode()
 
         (success, result_txt, encoding, decoding_problems) = read_freeform_file(the_file)

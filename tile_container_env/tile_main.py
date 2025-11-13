@@ -113,6 +113,16 @@ class TileWorker(QWorker):
         self.post_task("host", msg_type, task_data, callback_func)
         return
 
+    def post_and_wait_to_main(self, msg_type, task_data):
+        task_data["sid"] = self.tile_instance._main_id
+        self.post_and_wait("main_service", msg_type, task_data)
+
+    def post_to_main(self, task_type, task_data=None, callback_func=None,
+                     callback_data=None, expiration=None, error_handler=None, special_reply_to=None):
+        task_data["sid"] = self.tile_instance._main_id
+        self.post_task("main_service", task_type, task_data, callback_func,
+                       callback_data, expiration, error_handler, special_reply_to)
+
     def emit_tile_message(self, message, data=None):
         if data is None:
             data = {}
@@ -182,6 +192,7 @@ class TileWorker(QWorker):
             print("didn't load successfully")
             print("message " + result["message"])
             return {"success": False, "tile_save_dict": data["tile_save_dict"]}
+        print('about to call recreate_from_save')
         return self.recreate_from_save(data["tile_save_dict"])
 
     @task_worthy
@@ -197,21 +208,27 @@ class TileWorker(QWorker):
     @task_worthy
     def recreate_from_save(self, data):
         try:
+            print("in recreate_from_save in tile_main")
             self.tile_instance = class_info["tile_class"](None, None, tile_name=data["tile_name"])
             tile_env.Tile = self.tile_instance
             widgets.Tile = self.tile_instance
             widgets.in_pseudo_tile = self.tile_instance.in_pseudo_tile
             self.handler_instances["tilebase"] = self.tile_instance
+            print("calling recreate_from-save in tile_base")
             self.tile_instance.recreate_from_save(data)
+            print("back from recreate_from_save in tile_base ")
             self.tile_instance.base_figure_url = data["new_base_figure_url"]
             if "doc_type" in data:
                 self.tile_instance.doc_type = data["doc_type"]
             else:
                 self.tile_instance.doc_type = "table"
-            document_object.Collection.__fully_initialize__()
-
+            print("initializing document_object")
+            if self.tile_instance.doc_type in ["table", "freeform"]:
+                document_object.Collection.__fully_initialize__()
+            print("done initializing document_object")
         except Exception as ex:
             result = self.handle_exception(ex, "Error loading source in tile_main recreate from save")
+        print("about to return from recreate_from_save in tile_main")
         return {"success": True,
                 "is_shrunk": self.tile_instance.is_shrunk,
                 "saved_size": self.tile_instance.full_tile_height,
@@ -255,17 +272,20 @@ class TileWorker(QWorker):
                 "reload_dict": self.get_reload_dict()}
 
     def get_reload_dict(self):
+        print("entering get_reload_dict")
         tile_type = self.tile_instance.tile_type
         reload_attrs = self.tile_instance._current_reload_attrs
         current_options = self.tile_instance._current_options
         reload_attrs.update(current_options)
         reload_attrs["old_option_names"] = list(current_options.keys())
         reload_attrs["original_option_names"] = [opt["name"] for opt in self.tile_instance.options]
+        print("leaving get_reload_dict")
         return reload_attrs
 
     def send_updated_reload_dict(self):
-        self.post_task(self.tile_instance._main_id, "update_reload_dict",
+        self.post_task("main_service", "update_reload_dict",
                        {"tile_id": self.my_id,
+                        "sid": self.tile_instance._main_id,
                         "reload_dict": self.get_reload_dict()})
         return
 

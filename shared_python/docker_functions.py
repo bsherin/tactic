@@ -24,14 +24,14 @@ mongo_uri = os.environ.get("MONGO_URI")
 use_ecs = os.getenv("USE_ECS_TILES","false").lower() == "true"
 
 if use_ecs:
-    from aws_helpers import get_sms_parameter
-    ECS_SUBNETS = get_sms_parameter("ECS_SUBNETS")
-    ECS_SECURITY_GROUPS= get_sms_parameter("TILE_SECURITY_GROUPS")
-    ECS_ASSIGN_PUBLIC_IP= get_sms_parameter("ECS_ASSIGN_PUBLIC_IP")
-    ECS_TILE_TASKDEF= get_sms_parameter("ECS_TILE_TASKDEF")
-    AWS_REGION = get_sms_parameter("MY_AWS_REGION")
-    ECS_REGION = get_sms_parameter("ECS_REGION")
-    RABBIT_HOST = get_sms_parameter("RABBIT_HOST")
+    from aws_helpers import get_ssm_parameter
+    ECS_SUBNETS = get_ssm_parameter("ECS_SUBNETS")
+    ECS_SECURITY_GROUPS= get_ssm_parameter("TILE_SECURITY_GROUPS")
+    ECS_ASSIGN_PUBLIC_IP= get_ssm_parameter("ECS_ASSIGN_PUBLIC_IP")
+    ECS_TILE_TASKDEF= get_ssm_parameter("ECS_TILE_TASKDEF")
+    AWS_REGION = get_ssm_parameter("MY_AWS_REGION")
+    ECS_REGION = get_ssm_parameter("ECS_REGION")
+    RABBIT_HOST = get_ssm_parameter("RABBIT_HOST")
 else:
     ECS_SUBNETS = None
     ECS_SECURITY_GROUPS = None

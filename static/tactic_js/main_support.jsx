@@ -1,168 +1,118 @@
-import {get_ppi, renderSpinnerMessage} from "./utilities_react";
-import {handleCallback} from "./communication_react";
-import {postWithCallback} from "./communication_react";
 
-let ppi;
+import {handleCallback} from "./communication_react";
 
 export {main_props, mainReducer}
 
 function main_props(data, registerDirtyMethod, finalCallback) {
-    ppi = get_ppi();
+
     let local_id = data.local_id;
     let tsocket = data.tsocket;
     if (!window.in_context) {
         window.global_id = local_id;
     }
-    let initial_tile_types;
-    let initial_tile_icon_dict;
-    tsocket.socket.on("remove-ready-block", readyListener);
-    tsocket.socket.emit('client-ready', {
-        "room": local_id, "user_id": window.user_id,
-        "participant": "client", "rb_id": data.ready_block_id, "local_id": local_id
+
+    tsocket.attachListener('handle-callback', (task_packet) => {
+        handleCallback(task_packet, local_id)
     });
 
-    tsocket.attachListener('finish-post-load', _finish_post_load_in_context);
-
-    function readyListener() {
-        _everyone_ready_in_context(finalCallback)
-    }
-
-    function _everyone_ready_in_context() {
-        if (!window.in_context) {
-            renderSpinnerMessage("Everyone is ready, initializing...");
+    window.base_figure_url = data.base_figure_url;
+    let interface_state;
+    if (data.is_project) {
+        interface_state = data.interface_state;
+        // legacy below lines needed for older saves
+        if (!("show_exports_pane" in interface_state)) {
+            interface_state["show_exports_pane"] = true
         }
-        tsocket.socket.off("remove-ready-block", readyListener);
-        tsocket.attachListener('handle-callback', (task_packet) => {
-            handleCallback(task_packet, local_id)
+        if (!("show_console_pane" in interface_state)) {
+            interface_state["show_console_pane"] = true
+        }
+        for (let entry of interface_state.tile_list) {
+            entry.finished_loading = false
+        }
+    }
+    if (data.doc_type == "none") {
+        finalCallback({
+            is_project: data.is_project,
+            local_id: local_id,
+            is_freeform: false,
+            is_legacy_save: data.is_legacy_save,
+            doc_type: data.doc_type,
+            resource_name: data.is_project ? data.project_name : "",
+
+            is_notebook: false,
+            is_jupyter: false,
+            tsocket: tsocket,
+            short_collection_name: "",
+            initial_tile_types: data.tile_types,
+            initial_tile_icon_dict: data.icon_dict,
+            interface_state: interface_state,
+            initial_data_text: data.data_text,
+            initial_table_spec: {
+                current_doc_name: ""
+            },
+            initial_doc_names: [],
+            readOnly: data.read_only,
+            is_repository: data.is_repository,
+            registerDirtyMethod: registerDirtyMethod,
+        })
+    } else if (data.is_freeform) {
+        finalCallback({
+            is_project: data.is_project,
+            local_id: local_id,
+            doc_type: data.doc_type,
+            is_freeform: true,
+            is_legacy_save: data.is_legacy_save,
+            resource_name: data.is_project ? data.project_name : data.short_collection_name,
+            is_notebook: false,
+            is_jupyter: false,
+            tsocket: tsocket,
+            short_collection_name: data.short_collection_name,
+            initial_tile_types: data.tile_types,
+            initial_tile_icon_dict: data.icon_dict,
+            interface_state: interface_state,
+            initial_data_text: data.data_text,
+            initial_table_spec: {
+                current_doc_name: data.doc_names[0]
+            },
+            initial_doc_names: data.doc_names,
+            readOnly: data.read_only,
+            is_repository: data.is_repository,
+            registerDirtyMethod: registerDirtyMethod,
+        })
+    } else {
+        finalCallback({
+            is_project: data.is_project,
+            local_id: local_id,
+            doc_type: data.doc_type,
+            is_freeform: false,
+            is_notebook: false,
+            is_jupyter: false,
+            is_legacy_save: data.is_legacy_save,
+            tsocket: tsocket,
+            resource_name: data.is_project ? data.project_name : data.short_collection_name,
+            short_collection_name: data.short_collection_name,
+            initial_tile_types: data.tile_types,
+            initial_tile_icon_dict: data.icon_dict,
+            initial_table_spec: {
+                column_names: data.table_spec.header_list,
+                column_widths: data.table_spec.column_widths,
+                cell_backgrounds: data.table_spec.cell_backgrounds,
+                hidden_columns_list: data.table_spec.hidden_columns_list,
+                current_doc_name: data.doc_names[0]
+            },
+            interface_state: interface_state,
+            total_rows: data.total_rows,
+            initial_data_row_dict: data.data_row_dict,
+            initial_doc_names: data.doc_names,
+            readOnly: data.read_only,
+            is_repository: data.is_repository,
+            registerDirtyMethod: registerDirtyMethod,
         });
-        window.base_figure_url = data.base_figure_url;
-        if (data.is_project) {
-            let data_dict = {
-                "project_name": data.project_name,
-                "doc_type": data.doc_type,
-                "base_figure_url": data.base_figure_url,
-                "user_id": window.user_id,
-                "ppi": ppi
-            };
-            postWithCallback(local_id, "initialize_project_mainwindow", data_dict, null, null, local_id)
-        } else {
-            let data_dict = {
-                "collection_name": data.collection_name,
-                "doc_type": data.doc_type,
-                "base_figure_url": data.base_figure_url,
-                "user_id": window.user_id,
-                "ppi": ppi
-            };
-            postWithCallback(local_id, "initialize_mainwindow", data_dict, _finish_post_load_in_context, null, local_id)
-        }
     }
-
-    function _finish_post_load_in_context(fdata) {
-        if (!window.in_context) {
-            renderSpinnerMessage("Creating the page...");
-        }
-        tsocket.socket.off("finish-post-load", _finish_post_load_in_context);
-        var interface_state;
-        if (data.is_project) {
-            interface_state = fdata.interface_state;
-            // legacy below lines needed for older saves
-            if (!("show_exports_pane" in interface_state)) {
-                interface_state["show_exports_pane"] = true
-            }
-            if (!("show_console_pane" in interface_state)) {
-                interface_state["show_console_pane"] = true
-            }
-            for (let entry of interface_state.tile_list) {
-                entry.finished_loading = false
-            }
-        }
-        if (data.doc_type == "none") {
-            finalCallback({
-                is_project: data.is_project,
-                local_id: local_id,
-                is_freeform: false,
-                is_legacy_save: data.is_legacy_save,
-                doc_type: data.doc_type,
-                resource_name: data.is_project ? data.project_name : "",
-
-                is_notebook: false,
-                is_jupyter: false,
-                tsocket: tsocket,
-                short_collection_name: "",
-                initial_tile_types: data.tile_types,
-                initial_tile_icon_dict: data.icon_dict,
-                interface_state: interface_state,
-                initial_data_text: fdata.data_text,
-                initial_table_spec: {
-                    current_doc_name: ""
-                },
-                initial_doc_names: [],
-                readOnly: data.read_only,
-                is_repository: data.is_repository,
-                registerDirtyMethod: registerDirtyMethod,
-            })
-        }
-        else if (data.is_freeform) {
-            finalCallback({
-                is_project: data.is_project,
-                local_id: local_id,
-                doc_type: data.doc_type,
-                is_freeform: true,
-                is_legacy_save: data.is_legacy_save,
-                resource_name: data.is_project ? data.project_name : data.short_collection_name,
-                is_notebook: false,
-                is_jupyter: false,
-                tsocket: tsocket,
-                short_collection_name: data.short_collection_name,
-                initial_tile_types: data.tile_types,
-                initial_tile_icon_dict: data.icon_dict,
-                interface_state: interface_state,
-                initial_data_text: fdata.data_text,
-                initial_table_spec: {
-                    current_doc_name: fdata.doc_names[0]
-                },
-                initial_doc_names: fdata.doc_names,
-                readOnly: data.read_only,
-                is_repository: data.is_repository,
-                registerDirtyMethod: registerDirtyMethod,
-            })
-        } else {
-            finalCallback({
-                is_project: data.is_project,
-                local_id: local_id,
-                doc_type: data.doc_type,
-                is_freeform: false,
-                is_notebook: false,
-                is_jupyter: false,
-                is_legacy_save: data.is_legacy_save,
-                tsocket: tsocket,
-                resource_name: data.is_project ? data.project_name : data.short_collection_name,
-                short_collection_name: data.short_collection_name,
-                initial_tile_types: data.tile_types,
-                initial_tile_icon_dict: data.icon_dict,
-                initial_table_spec: {
-                    column_names: fdata.table_spec.header_list,
-                    column_widths: fdata.table_spec.column_widths,
-                    cell_backgrounds: fdata.table_spec.cell_backgrounds,
-                    hidden_columns_list: fdata.table_spec.hidden_columns_list,
-                    current_doc_name: fdata.doc_names[0]
-                },
-                interface_state: interface_state,
-                total_rows: fdata.total_rows,
-                initial_data_row_dict: fdata.data_row_dict,
-                initial_doc_names: fdata.doc_names,
-                readOnly: data.read_only,
-                is_repository: data.is_repository,
-                registerDirtyMethod: registerDirtyMethod,
-            });
-        }
-
-    }
-
 }
 
 function mainReducer(mState, action) {
-    var newMstate;
+    let newMstate;
     switch (action.type) {
         case "change_field":
             newMstate = {...mState};

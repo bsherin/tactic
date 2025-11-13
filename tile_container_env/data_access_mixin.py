@@ -13,7 +13,7 @@ class DataAccessMixin:
 
     def get_collection_info(self):
         self._save_stdout()
-        result = self._tworker.post_and_wait(self._main_id, "get_collection_info")
+        result = self._tworker.post_and_wait_to_main("get_collection_info_task", {})
         self._restore_stdout()
         return result
 
@@ -31,7 +31,7 @@ class DataAccessMixin:
 
     def get_document_data(self, document_name):
         self._save_stdout()
-        result = self._tworker.post_and_wait(self._main_id, "get_document_data", {"document_name": document_name})
+        result = self._tworker.post_and_wait_to_main("get_document_data", {"document_name": document_name})
         self._restore_stdout()
         return result
 
@@ -40,7 +40,7 @@ class DataAccessMixin:
 
     def get_document_metadata(self, document_name):
         self._save_stdout()
-        result = self._tworker.post_and_wait(self._main_id, "get_document_metadata", {"document_name": document_name})
+        result = self._tworker.post_and_wait_to_main("get_document_metadata", {"document_name": document_name})
         self._restore_stdout()
         return result
 
@@ -50,7 +50,7 @@ class DataAccessMixin:
 
     def set_document_metadata(self, document_name, metadata):
         self._save_stdout()
-        self._tworker.post_task(self._main_id, "set_document_metadata", {"document_name": document_name,
+        self._tworker.post_to_main("set_document_metadata", {"document_name": document_name,
                                                                          "metadata": metadata})
         self._restore_stdout()
         return
@@ -60,14 +60,14 @@ class DataAccessMixin:
 
     def get_document_data_as_list(self, document_name):
         self._save_stdout()
-        result = self._tworker.post_and_wait(self._main_id, "get_document_data_as_list",
+        result = self._tworker.post_and_wait_to_main("get_document_data_as_list",
                                              {"document_name": document_name})
         self._restore_stdout()
         return result["data_list"]
 
     def get_column_names(self, document_name):
         self._save_stdout()
-        result = self._tworker.post_and_wait(self._main_id, "get_column_names", {"document_name": document_name})
+        result = self._tworker.post_and_wait_to_main("get_column_names", {"document_name": document_name})
         self._restore_stdout()
         return result["header_list"]
 
@@ -79,7 +79,7 @@ class DataAccessMixin:
 
     def get_number_rows(self, document_name):
         self._save_stdout()
-        result = self._tworker.post_and_wait(self._main_id, "get_number_rows", {"document_name": document_name})
+        result = self._tworker.post_and_wait_to_main(self._main_id, "get_number_rows", {"document_name": document_name})
         self._restore_stdout()
         return result["number_rows"]
 
@@ -89,14 +89,14 @@ class DataAccessMixin:
     def get_row(self, document_name, row_id):
         self._save_stdout()
         data = {"document_name": document_name, "row_id": row_id}
-        result = self._tworker.post_and_wait(self._main_id, "get_row", data)
+        result = self._tworker.post_and_wait_to_main("get_row", data)
         self._restore_stdout()
         return result
 
     def get_rows(self, document_name, start, stop):
         self._save_stdout()
         data = {"document_name": document_name, "start": start, "stop": stop}
-        result = self._tworker.post_and_wait(self._main_id, "get_rows", data)
+        result = self._tworker.post_and_wait_to_main("get_rows", data)
         self._restore_stdout()
         return result
 
@@ -105,7 +105,7 @@ class DataAccessMixin:
 
     def get_line(self, document_name, line_number):
         data = {"document_name": document_name, "line_number": line_number}
-        result = self._tworker.post_and_wait(self._main_id, "get_line", data)
+        result = self._tworker.post_and_wait_to_main("get_line", data)
         return result
 
     def gc(self, document_name, row_id, column_name):
@@ -114,7 +114,7 @@ class DataAccessMixin:
     def get_cell(self, document_name, row_id, column_name):
         self._save_stdout()
         data = {"document_name": document_name, "row_id": row_id, "column_name": column_name}
-        result = self._tworker.post_and_wait(self._main_id, "get_cell", data)
+        result = self._tworker.post_and_wait_to_main("get_cell", data)
         self._restore_stdout()
         return result["the_cell"]
 
@@ -126,10 +126,10 @@ class DataAccessMixin:
 
         if document_name is not None:
             task_data = {"column_name": column_name, "doc_name": document_name}
-            result = self._tworker.post_and_wait(self._main_id, "get_column_data_for_doc", task_data)
+            result = self._tworker.post_and_wait_to_main("get_column_data_for_doc", task_data)
         else:
             task_data = {"column_name": column_name}
-            result = self._tworker.post_and_wait(self._main_id, "get_column_data", task_data)
+            result = self._tworker.post_and_wait_to_main("get_column_data", task_data)
 
         self._restore_stdout()
         return result
@@ -142,7 +142,7 @@ class DataAccessMixin:
         result = {}
         for doc_name in self._get_main_property("doc_names"):
             task_data = {"column_name": column_name, "doc_name": doc_name}
-            result[doc_name] = self._tworker.post_and_wait(self._main_id, "get_column_data_for_doc", task_data)
+            result[doc_name] = self._tworker.post_and_wait_to_main("get_column_data_for_doc", task_data)
         self._restore_stdout()
         return result
 
@@ -159,7 +159,7 @@ class DataAccessMixin:
             "new_content": text,
             "cellchange": cellchange
         }
-        self._tworker.post_task(self._main_id, "SetCellContent", task_data)
+        self._tworker.post_to_main("SetCellContent", task_data)
         self._restore_stdout()
         return
 
@@ -173,7 +173,7 @@ class DataAccessMixin:
                      "row_id": row_id,
                      "column_name": column_name,
                      "color": color}
-        self._tworker.post_task(self._main_id, "SetCellBackground", task_data)
+        self._tworker.post_to_main("SetCellBackground", task_data)
         self._restore_stdout()
         return
 
@@ -191,7 +191,7 @@ class DataAccessMixin:
             cfunc = None
         else:
             cfunc = lambda resp: callback_func(resp["response"])
-        self._tworker.post_task(self._main_id, "SendTileMessage", task_data,
+        self._tworker.post_to_main("SendTileMessage", task_data,
                                 callback_func=cfunc)
         self._restore_stdout()
         return
@@ -208,7 +208,7 @@ class DataAccessMixin:
             "new_content": data_list_or_dict,
             "cellchange": cellchange
         }
-        self._tworker.post_task(self._main_id, "SetColumnData", task_data)
+        self._tworker.post_to_main("SetColumnData", task_data)
         self._restore_stdout()
         return
 
@@ -223,14 +223,14 @@ class DataAccessMixin:
                      "column_header": column_name,
                      "token_text": tokenized_text,
                      "color_dict": color_dict}
-        self._tworker.post_task(self._main_id, "ColorTextInCell", data_dict)
+        self._tworker.post_to_main("ColorTextInCell", data_dict)
         self._restore_stdout()
         return
 
     def insert_row(self, docname, position, row_dict):
         self._save_stdout()
         number_rows = self.get_number_rows(docname)
-        result = self._tworker.post_and_wait(self._main_id, "insert_row",
+        result = self._tworker.post_and_wait_to_main("insert_row",
                                              {"document_name": docname, "index": position, "row_dict": row_dict})
 
         if not result["success"]:
@@ -243,7 +243,7 @@ class DataAccessMixin:
     def delete_row(self, docname, position):
         self._save_stdout()
         number_rows = self.get_number_rows(docname)
-        result = self._tworker.post_and_wait(self._main_id, "delete_row",
+        result = self._tworker.post_and_wait_to_main("main_service", "delete_row",
                                              {"document_name": docname, "index": position})
 
         if not result["success"]:
@@ -255,7 +255,7 @@ class DataAccessMixin:
 
     def remove_document(self, docname):
         self._save_stdout()
-        result = self._tworker.post_and_wait(self._main_id, "remove_document",
+        result = self._tworker.post_and_wait_to_main("remove_document",
                                              {"document_name": docname})
 
         if not result["success"]:
@@ -267,7 +267,7 @@ class DataAccessMixin:
 
     def rename_document(self, oldname, newname):
         self._save_stdout()
-        result = self._tworker.post_and_wait(self._main_id, "rename_document",
+        result = self._tworker.post_and_wait_to_main("rename_document",
                                              {"old_document_name": oldname,
                                               "new_document_name": newname})
         if not result["success"]:
@@ -279,8 +279,8 @@ class DataAccessMixin:
 
     def add_document(self, docname, column_names, dict_list):
         self._save_stdout()
-        result = self._tworker.post_and_wait(self._main_id, "add_document",
-                                             {"document_name": docname, "column_names": column_names, "dict_list": dict_list})
+        result = self._tworker.post_and_wait_to_main("add_document",
+                                                     {"document_name": docname, "column_names": column_names, "dict_list": dict_list})
 
         if not result["success"]:
             self._restore_stdout()
@@ -291,7 +291,7 @@ class DataAccessMixin:
 
     def add_freeform_document(self, docname, doc_text):
         self._save_stdout()
-        result = self._tworker.post_and_wait(self._main_id, "add_freeform_document",
+        result = self._tworker.post_and_wait_to_main("add_freeform_document",
                                              {"document_name": docname, "doc_text": doc_text})
 
         if not result["success"]:

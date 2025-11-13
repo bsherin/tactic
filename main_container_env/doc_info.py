@@ -99,9 +99,6 @@ class FreeformDocInfo(DocInfoAbstract):
     def get_rows(self, start, stop):
         return self.all_sorted_data_rows[start:stop]
 
-    def get_actual_row(self, row_id):
-        return row_id
-
     def compile_save_dict(self):
         result = DocInfoAbstract.compile_save_dict(self)
         result.update({"data_text": self.data_text,
@@ -182,7 +179,7 @@ class docInfo(DocInfoAbstract):
     def compile_save_dict(self):
         result = DocInfoAbstract.compile_save_dict(self)
         result.update({"data_rows": self.data_rows,
-                       "my_class_for_recreate": "docInfo"})
+                           "my_class_for_recreate": "docInfo"})
         return result
 
     @staticmethod

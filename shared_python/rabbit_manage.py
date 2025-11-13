@@ -6,19 +6,20 @@ import os
 import traceback
 import json
 
-from aws_helpers import get_sms_parameter, load_secret_json
+from aws_helpers import get_ssm_parameter, load_secret_json
 
 print("entering rabbit_manage updated")
 
+use_gevent = os.environ.get("USE_GEVENT", "False").lower() == "true"
 
 if os.environ.get("USE_AMAZON_MQ") == "True" or os.environ.get("USE_AMAZON_MQ") is True:
     print("using amazon mq")
     import boto3
 
     USE_AMAZON_MQ = True
-    RABBIT_HOST = get_sms_parameter("RABBIT_HOST")
-    SECRET_ARN = get_sms_parameter("MQ_SECRET_ARN")
-    REGION = get_sms_parameter("MY_AWS_REGION")
+    RABBIT_HOST = get_ssm_parameter("RABBIT_HOST")
+    SECRET_ARN = get_ssm_parameter("MQ_SECRET_ARN")
+    REGION = get_ssm_parameter("MY_AWS_REGION")
 
     print("using amazon mq with host:", RABBIT_HOST)
 
@@ -49,7 +50,7 @@ SOCKETIO_OPTIONS = {
                 "interval_start": 0,
                 "interval_step": 2,
                 "interval_max": 5,
-                "max_retries": 20,  # “-1” would mean infinite
+                "max_retries": 20,  # “-1” would mean infiniteg
             },
         },
         # Optional overall connect timeout (top-level)
@@ -89,8 +90,8 @@ def get_pika_connection():
     return connection, channel
 
 
-def get_pika_connection_with_retries(retries=0, use_time=False, max_retries=MAX_PIKA_RETRIES):
-    if not use_time:
+def get_pika_connection_with_retries(retries=0, max_retries=MAX_PIKA_RETRIES):
+    if use_gevent:
         import gevent
     try:
         connection, channel = get_pika_connection()
@@ -102,12 +103,12 @@ def get_pika_connection_with_retries(retries=0, use_time=False, max_retries=MAX_
             return None, None
         else:
             print("trying to connect to pika, sleeping ...")
-            if use_time:
+            if not use_gevent:
                 time.sleep(3)
             else:
                 gevent.sleep(3)
             new_retries = retries + 1
-            return get_pika_connection_with_retries(new_retries, use_time, max_retries)
+            return get_pika_connection_with_retries(new_retries, max_retries)
     return connection, channel
 
 def sleep_until_rabbit_alive(max_tries=20):

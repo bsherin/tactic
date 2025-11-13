@@ -6,14 +6,14 @@ from botocore.config import Config
 
 from abstract_tile_backend import TileBackend
 from aws_task_helpers import run_tile_on_ecs, ECSTileError  # your helper we already built
-from aws_helpers import get_sms_parameter
+from aws_helpers import get_ssm_parameter
 
 def _ecs():
-    region = get_sms_parameter("ECS_REGION")
+    region = get_ssm_parameter("ECS_REGION")
     return boto3.client("ecs", region_name=region, config=Config(retries={"max_attempts": 10, "mode": "standard"}))
 
 def _sts():
-    region = get_sms_parameter("ECS_REGION")
+    region = get_ssm_parameter("ECS_REGION")
     return boto3.client("sts", region_name=region)
 
 class ECSTileBackend(TileBackend):
@@ -24,12 +24,12 @@ class ECSTileBackend(TileBackend):
     """
 
     def __init__(self, tile_registry, worker):
-        self.cluster = get_sms_parameter("ECS_CLUSTER", "tactic-cluster")
-        self.taskdef = get_sms_parameter("ECS_TILE_TASKDEF", "tactic-tile")  # family only → will use latest ACTIVE rev
+        self.cluster = get_ssm_parameter("ECS_CLUSTER", "tactic-cluster")
+        self.taskdef = get_ssm_parameter("ECS_TILE_TASKDEF", "tactic-tile")  # family only → will use latest ACTIVE rev
         # For ad-hoc launches we still need networking:
-        self.subnets = [s.strip() for s in get_sms_parameter("ECS_SUBNETS", "").split(",") if s.strip()]
-        self.sgs     = [g.strip() for g in get_sms_parameter("TILE_SECURITY_GROUPS", "").split(",") if g.strip()]
-        self.assign_public = get_sms_parameter("ECS_ASSIGN_PUBLIC_IP", "ENABLED")
+        self.subnets = [s.strip() for s in get_ssm_parameter("ECS_SUBNETS", "").split(",") if s.strip()]
+        self.sgs     = [g.strip() for g in get_ssm_parameter("TILE_SECURITY_GROUPS", "").split(",") if g.strip()]
+        self.assign_public = get_ssm_parameter("ECS_ASSIGN_PUBLIC_IP", "ENABLED")
         self.tile_registry = tile_registry
         self.workd = worker
 

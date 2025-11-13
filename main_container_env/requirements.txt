@@ -1,9 +1,7 @@
 docker
 markdown
-gevent
 Werkzeug == 2.2.2
 Flask == 2.2.3
-Flask-SocketIO
 kombu
 beautifulsoup4
 pika
@@ -13,3 +11,6 @@ pymongo
 ssh-pymongo
 openai
 boto3>=1.34.0
+msgpack
+numpy
+pandas

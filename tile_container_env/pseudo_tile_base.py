@@ -540,7 +540,7 @@ class PseudoTileClass(TileBase):
         if self.globals_have_changed(current_globals):
             self._last_globals = current_globals
             data = {"current_globals": current_globals, "globals_changed": True}
-            self._tworker.post_task(self._main_id, "updated_globals", data)
+            self._tworker.post_to_main("updated_globals", data)
         return
 
     @_task_worthy

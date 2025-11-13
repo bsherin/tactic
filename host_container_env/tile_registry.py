@@ -10,11 +10,11 @@ from redis_tools import redis_client as r
 if use_ecs:
     import boto3
     from botocore.exceptions import ParamValidationError
-    from aws_task_helpers import get_sms_parameter
-    DESIRED_IDLE_DEFAULT = int(get_sms_parameter("desired_idle", DESIRED_IDLE_DEFAULT))
-    TILE_SERVICE = get_sms_parameter("ECS_TILE_SERVICE", "tactic-tile-pool")
-    AWS_REGION = get_sms_parameter("MY_AWS_REGION", "us-east-2")
-    ECS_CLUSTER = get_sms_parameter("ECS_CLUSTER", "tactic-cluster")
+    from aws_task_helpers import get_ssm_parameter
+    DESIRED_IDLE_DEFAULT = int(get_ssm_parameter("desired_idle", DESIRED_IDLE_DEFAULT))
+    TILE_SERVICE = get_ssm_parameter("ECS_TILE_SERVICE", "tactic-tile-pool")
+    AWS_REGION = get_ssm_parameter("MY_AWS_REGION", "us-east-2")
+    ECS_CLUSTER = get_ssm_parameter("ECS_CLUSTER", "tactic-cluster")
     print("Using ECS tile pool with service:", TILE_SERVICE, "in cluster:", ECS_CLUSTER, "and region:", AWS_REGION)
     ecs = boto3.client("ecs", region_name=AWS_REGION)
     CW = boto3.client("cloudwatch", region_name=AWS_REGION)

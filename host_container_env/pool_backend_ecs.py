@@ -6,11 +6,11 @@ from flask import jsonify
 from tactic_app import socketio
 from pool_backend import PoolBackend
 from s3thread import boto_s3
-from aws_helpers import get_sms_parameter
+from aws_helpers import get_ssm_parameter
 
 from users import User
 
-BUCKET = get_sms_parameter("BUCKET")
+BUCKET = get_ssm_parameter("BUCKET")
 TREE_DEPTH = 1
 
 class PoolBackendECS(PoolBackend):

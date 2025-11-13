@@ -376,7 +376,7 @@ function PoolBrowser(props) {
     }
 
     async function _add_to_pool(myDropZone, setCurrentUrl, current_value) {
-        if (window.use_ecs) {
+        if (!window.use_s3) {
             let new_url = `import_pool/${window.global_id}`;
             myDropZone.options.url = new_url;
             setCurrentUrl(new_url);
@@ -433,6 +433,7 @@ function PoolBrowser(props) {
 
                     xhr.onerror = () => {
                         myDropZone.emit("error", file, "Network error");
+                        const msg = xhr.responseText || `Status ${xhr.status}`;
                         myDropZone.emit("error", file, msg);
                         errorDrawerFuncs.addErrorDrawerEntry({
                             title: "S3 upload failed",

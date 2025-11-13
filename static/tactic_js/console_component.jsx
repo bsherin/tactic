@@ -44,7 +44,7 @@ mdi.use(markdownItLatex);
 import {GlyphButton} from "./blueprint_react_widgets";
 import {ReactCodemirror6} from "./react-codemirror6";
 import {SortableComponent} from "./sortable_container";
-import {postWithCallback, postFormDataPromise, postPromise} from "./communication_react"
+import {postWithCallback, postFormDataPromise, postPromise, postWithCallbackMain} from "./communication_react"
 import {icon_dict} from "./combined_metadata";
 import {view_views} from "./library_pane";
 import {TacticMenubar} from "./menu_utilities";
@@ -241,7 +241,7 @@ function ConsoleComponent(props) {
 
     function _requestPseudoTileId() {
         if (pseudo_tile_id == null) {
-            postWithCallback(props.local_id, "get_pseudo_tile_id", {}, function (res) {
+            postWithCallbackMain(props.local_id, "get_pseudo_tile_id", {}, function (res) {
                 set_pseudo_tile_id(res.pseudo_tile_id)
             })
         }
@@ -482,11 +482,11 @@ function ConsoleComponent(props) {
 
     const _resetConsole = useCallback(() => {
         props.dispatch({type: "reset"});
-        postWithCallback(props.local_id, "clear_console_namespace", {}, null, null, props.local_id)
+        postWithCallback("main_service", "clear_console_namespace", {local_id: props.local_id}, null, null, props.local_id)
     }, []);
 
     function _stopAll() {
-        postWithCallback(props.local_id, "stop_all_console_code", {}, null, null, props.local_id)
+        postWithCallback("main_service", "stop_all_console_code", {local_id: props.local_id}, null, null, props.local_id)
     }
 
     const _clearConsole = useCallback(async () => {
@@ -1234,8 +1234,9 @@ function ConsoleComponent(props) {
         _clearCodeOutput(unique_id, async () => {
             _startSpinner(unique_id);
             let entry = get_console_item_entry(unique_id);
-            await postPromise(props.local_id, "exec_console_code", {
+            await postPromise("main_service", "exec_console_code", {
                 "the_code": entry.console_text,
+                "local_id": props.local_id,
                 "console_id": unique_id
             }, props.local_id);
             if (go_to_next) {
@@ -2138,7 +2139,7 @@ function ConsoleCodeItem(props) {
 
     const _stopMe = useCallback(() => {
         _stopMySpinner();
-        postWithCallback(props.local_id, "stop_console_code", {"console_id": props.unique_id}, null, null, props.local_id)
+        postWithCallback("main_service", "stop_console_code", {"console_id": props.unique_id, "local_id": props.local_id}, null, null, props.local_id)
     }, []);
 
     function _stopMySpinner() {

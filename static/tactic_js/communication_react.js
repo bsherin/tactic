@@ -1,7 +1,8 @@
 
 import {guid} from "./utilities_react.js";
 
-export {handleCallback, postAjax, postAjaxPromise, postWithCallback, postPromise, postFormDataPromise, getBlobPromise}
+export {handleCallback, postAjax, postAjaxPromise, postWithCallback, postPromise, postPromiseMain,
+    postWithCallbackMain, postFormDataPromise, getBlobPromise}
 
 let callbacks = {};
 
@@ -120,6 +121,31 @@ function postPromise(dest_id, task_type, task_data, room=null) {
         }
         postWithCallback(dest_id, task_type, task_data, tentResolve, errorCallback, room)
     })
+}
+
+function postPromiseMain(local_id, task_type, task_data, room=null) {
+    return new Promise(function(resolve, reject) {
+        function tentResolve(data) {
+            if (data && "success" in data && !data.success) {
+                reject(data)
+            }
+            else {
+                resolve(data)
+            }
+        }
+        function errorCallback(qXHR, textStatus, errorThrown){
+            reject({success: false, message: errorThrown,
+                title: "Post Ajax Failure: {}".format(textStatus)})
+        }
+        postWithCallbackMain(local_id, task_type, task_data, tentResolve, errorCallback, room)
+    })
+}
+
+function postWithCallbackMain(local_id, task_type, task_data, callback_func, error_callback=null, room=null) {
+    task_data["local_id"] = local_id
+    task_data["sid"] = local_id
+    const dest_id = "main_service"
+    postWithCallback(dest_id, task_type, task_data, callback_func, error_callback, room)
 }
 
 function postWithCallback(dest_id, task_type, task_data, callback_func, error_callback=null, room=null){

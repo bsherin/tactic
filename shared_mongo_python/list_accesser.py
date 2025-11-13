@@ -9,18 +9,19 @@ class ListAccess(object):
     list_content_field = "the_list"
     list_additional_mdata_fields = None
 
-    @property
-    def list_collection_name(self):
-        return '{}.lists'.format(self.username)
+    def list_collection_name(self, username=None):
+        if username is None:
+            username = self.username
+        return '{}.lists'.format(username)
 
     def get_list_doc(self, list_name):
-        doc = self.db[self.list_collection_name].find_one(
+        doc = self.db[self.list_collection_name()].find_one(
             {"list_name": list_name}, {"_id": 0}
         )
         return doc if doc else None
 
     def get_list_doc_from_id(self, list_id):
-        doc = self.db[self.list_collection_name].find_one(
+        doc = self.db[self.list_collection_name()].find_one(
             {"_id": ObjectId(list_id)}, {"_id": 0}
         )
         return doc if doc else None
@@ -28,17 +29,17 @@ class ListAccess(object):
     def remove_list(self, list_name):
         if not self.list_name_exists(list_name):
             raise ValueError(f"List with name {list_name} does not exist.")
-        self.db[self.list_collection_name].delete_one({"list_name": list_name})
+        self.db[self.list_collection_name()].delete_one({"list_name": list_name})
         return
 
     def get_list_content(self, list_name):
-        doc = self.db[self.list_collection_name].find_one(
+        doc = self.db[self.list_collection_name()].find_one(
             {"list_name": list_name}, {"the_list": 1, "_id": 0}
         )
         return doc.get("the_list", None) if doc else None
 
     def get_list_metadata(self, list_name):
-        doc = self.db[self.list_collection_name].find_one(
+        doc = self.db[self.list_collection_name()].find_one(
             {"list_name": list_name}, {"metadata": 1, "_id": 0}
         )
         return doc.get("metadata", None) if doc else None
@@ -60,12 +61,14 @@ class ListAccess(object):
             return result
 
     def list_name_exists(self, list_name):
-        return self.db[self.list_collection_name].find_one(
+        return self.db[self.list_collection_name()].find_one(
             {"list_name": list_name}, {"_id": 1}
         ) is not None
 
-    def get_list_content_with_metadata(self, list_name, process_metadata=False):
-        doc = self.db[self.list_collection_name].find_one(
+    def get_list_content_with_metadata(self, list_name, process_metadata=False, username=None):
+        if username is None:
+            username = self.username
+        doc = self.db[self.list_collection_name(username)].find_one(
             {"list_name": list_name}, {"_id": 0, "the_list": 1, "metadata": 1, "list_name": 1}
         )
         if doc is None:
@@ -80,11 +83,12 @@ class ListAccess(object):
             "list_name": list_name
         }
 
-    @property
-    def list_names(self):
+    def list_names(self, username=None):
+        if username is None:
+            username = self.username
         names = [
             doc["list_name"]
-            for doc in self.db[self.list_collection_name].find(
+            for doc in self.db[self.list_collection_name(username)].find(
                 {}, {"list_name": 1, "_id": 0}
             )
         ]
@@ -93,17 +97,16 @@ class ListAccess(object):
     @property
     def list_names_with_metadata(self):
         my_list_names = []
-        for doc in self.db[self.list_collection_name].find({}, {"_id": 0, "metadata": 1, "list_name": 1}):
+        for doc in self.db[self.list_collection_name()].find({}, {"_id": 0, "metadata": 1, "list_name": 1}):
             if "metadata" in doc:
                 my_list_names.append([doc["list_name"], doc["metadata"]])
             else:
                 my_list_names.append([doc["list_name"], None])
         return sorted(my_list_names, key=self.sort_data_list_key)
 
-    @property
-    def list_tags_dict(self):
+    def list_tags_dict(self, username):
         tags = {}
-        for doc in self.db[self.list_collection_name].find({}, {"_id": 0, "metadata": 1, "list_name": 1}):
+        for doc in self.db['{}.lists'.format(username)].find({}, {"_id": 0, "metadata": 1, "list_name": 1}):
             if "metadata" in doc:
                 tags[doc["list_name"]] = doc["metadata"]["tags"]
             else:
@@ -123,7 +126,7 @@ class ListAccess(object):
         return all_tags
 
     def grab_filtered_lists(self, search_text, search_spec, columns, is_repo=False):
-        flist, all_tags =  self.grab_filtered_resources("list", self.list_collection_name, "list_name",
+        flist, all_tags =  self.grab_filtered_resources("list", self.list_collection_name(), "list_name",
                                                         "the_list", self.list_additional_mdata_fields, search_text, search_spec,
                                                         columns, is_repo=is_repo)
         for val in flist:
@@ -146,7 +149,7 @@ class ListAccess(object):
         else:
             metadata = self.create_initial_metadata()
             the_list = []
-        self.db[self.list_collection_name].insert_one({
+        self.db[self.list_collection_name()].insert_one({
             "list_name": list_name,
             "the_list": the_list,
             "metadata": metadata})
@@ -159,7 +162,7 @@ class ListAccess(object):
             metadata = self.create_initial_metadata()
         else:
             metadata = self.update_metadata(metadata, True)
-        self.db[self.list_collection_name].insert_one({
+        self.db[self.list_collection_name()].insert_one({
             "list_name": list_name,
             "the_list": the_list,
             "metadata": metadata})
@@ -170,7 +173,7 @@ class ListAccess(object):
             raise ValueError(f"List with name {list_name} already exists.")
         metadata = self.update_metadata(the_doc["metadata"], True)
 
-        self.db[self.list_collection_name].insert_one({
+        self.db[self.list_collection_name()].insert_one({
             "list_name": list_name,
             "the_list": the_doc["the_list"],
             "metadata": metadata})
@@ -184,7 +187,7 @@ class ListAccess(object):
         if metadata is None:
             metadata = {}
         metadata = self.update_metadata(metadata)
-        self.db[self.list_collection_name].update_one(
+        self.db[self.list_collection_name()].update_one(
             {"list_name": list_name},
             {"$set": {"the_list": new_list, "metadata": metadata}}
         )
@@ -195,7 +198,7 @@ class ListAccess(object):
             raise ValueError(f"List with name {old_name} does not exist.")
         if self.list_name_exists(new_name):
             raise ValueError(f"List with name {new_name} already exists.")
-        self.db[self.list_collection_name].update_one(
+        self.db[self.list_collection_name()].update_one(
             {"list_name": old_name},
             {"$set": {"list_name": new_name}}
         )
@@ -208,7 +211,7 @@ class ListAccess(object):
         if mdata is None:
             mdata = {}
         mdata.update(metadata)
-        self.db[self.list_collection_name].update_one(
+        self.db[self.list_collection_name()].update_one(
             {"list_name": list_name},
             {"$set": {"metadata": mdata}}
         )
@@ -217,7 +220,7 @@ class ListAccess(object):
     def rename_tags_in_lists(self, tag_changes):
         if not tag_changes:
             return
-        for doc in self.db[self.list_collection_name].find({}, {"_id": 0, "metadata": 1, "list_name": 1}):
+        for doc in self.db[self.list_collection_name()].find({}, {"_id": 0, "metadata": 1, "list_name": 1}):
             mdata = doc.get("metadata", None)
             if mdata is not None and "tags" in mdata:
                 taglist = mdata["tags"].split()
@@ -226,7 +229,7 @@ class ListAccess(object):
                         taglist.remove(old_tag)
                         if new_tag not in taglist:
                             taglist.append(new_tag)
-                        self.db[self.list_collection_name].update_one(
+                        self.db[self.list_collection_name()].update_one(
                             {"list_name": doc["list_name"]},
                             {"$set": {"metadata.tags": " ".join(taglist)}}
                         )
@@ -235,13 +238,13 @@ class ListAccess(object):
     def delete_tag_in_lists(self, tag):
         if not tag:
             return
-        for doc in self.db[self.list_collection_name].find({}, {"_id": 0, "metadata": 1, "list_name": 1}):
+        for doc in self.db[self.list_collection_name()].find({}, {"_id": 0, "metadata": 1, "list_name": 1}):
             mdata = doc.get("metadata", None)
             if mdata and "tags" in mdata:
                 taglist = mdata["tags"].split()
                 if tag in taglist:
                     taglist.remove(tag)
-                    self.db[self.list_collection_name].update_one(
+                    self.db[self.list_collection_name()].update_one(
                         {"list_name": doc["list_name"]},
                         {"$set": {"metadata.tags": " ".join(taglist)}}
                     )

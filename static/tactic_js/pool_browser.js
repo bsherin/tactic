@@ -842,7 +842,7 @@ function PoolBrowser(props) {
       return _regenerator().w(function (_context28) {
         while (1) switch (_context28.n) {
           case 0:
-            if (!window.use_ecs) {
+            if (window.use_s3) {
               _context28.n = 1;
               break;
             }
@@ -904,7 +904,7 @@ function PoolBrowser(props) {
                         }
                       };
                       xhr.onload = /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee26() {
-                        var _msg;
+                        var msg;
                         return _regenerator().w(function (_context26) {
                           while (1) switch (_context26.n) {
                             case 0:
@@ -913,11 +913,11 @@ function PoolBrowser(props) {
                                 myDropZone.emit("success", file, xhr.responseText);
                                 myDropZone.emit("complete", file);
                               } else {
-                                _msg = xhr.responseText || "Status ".concat(xhr.status);
-                                myDropZone.emit("error", file, _msg);
+                                msg = xhr.responseText || "Status ".concat(xhr.status);
+                                myDropZone.emit("error", file, msg);
                                 errorDrawerFuncs.addErrorDrawerEntry({
                                   title: "S3 upload failed",
-                                  content: _msg
+                                  content: msg
                                 });
                               }
                             case 1:
@@ -927,6 +927,7 @@ function PoolBrowser(props) {
                       }));
                       xhr.onerror = function () {
                         myDropZone.emit("error", file, "Network error");
+                        var msg = xhr.responseText || "Status ".concat(xhr.status);
                         myDropZone.emit("error", file, msg);
                         errorDrawerFuncs.addErrorDrawerEntry({
                           title: "S3 upload failed",

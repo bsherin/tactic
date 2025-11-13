@@ -27,29 +27,29 @@ const widgetDict = {
 function useWidget(widgetId, local_id, console_id, tile_id) {
 
     function widgetGet(data) {
-        let ndata = {widgetId, ...data};
+        let ndata = {widgetId, ...data, local_id: local_id};
         if (tile_id) {
             return postPromise(tile_id, "widget_get", ndata, local_id)
         }
-        return postPromise(local_id, "widget_get",
+        return postPromise("main_service", "widget_get",
             ndata, local_id)
     }
 
     function widgetAction(value, callback = null) {
-        let ndata = {widgetId, value};
+        let ndata = {widgetId, value, local_id: local_id};
         if (tile_id) {
             postWithCallback(tile_id, "widget_action", ndata, callback, null, local_id);
         } else {
-            postWithCallback(local_id, "widget_action", ndata, callback, null, local_id);
+            postWithCallback("main_service", "widget_action", ndata, callback, null, local_id);
         }
     }
 
     function widgetSet(widgetData, callback = null) {
-        let ndata = {widgetId, widgetData: widgetData};
+        let ndata = {widgetId, widgetData: widgetData, local_id: local_id};
         if (tile_id) {
             return postWithCallback(tile_id, "widget_set", ndata, callback, null, local_id);
         } else {
-            postWithCallback(local_id, "widget_set", ndata, callback, null, local_id);
+            postWithCallback("main_service", "widget_set", ndata, callback, null, local_id);
         }
 
     }

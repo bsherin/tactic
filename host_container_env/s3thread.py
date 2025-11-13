@@ -1,4 +1,5 @@
 from __future__ import annotations
+import os
 from flask import jsonify, send_file
 import boto3
 from botocore.config import Config
@@ -8,6 +9,7 @@ from typing import Iterable, Iterator, List, Tuple, Dict, Optional
 import datetime as dt
 import io
 
+on_aws = os.getenv("RUNNING_ON_AWS","false").lower() == "true"
 
 def _split_s3_url(url: str) -> Tuple[str, str]:
     # accepts s3://bucket/key or "bucket/key"
@@ -23,11 +25,21 @@ def _split_s3_url(url: str) -> Tuple[str, str]:
 class BotoS3:
     def __init__(self, session: Optional[boto3.session.Session] = None):
         self._session = session or boto3.session.Session()
-        self.s3 = self._session.client(
-            "s3",
-            region_name="us-east-2",
-            config=Config(signature_version="s3v4")
-        )
+        if on_aws:
+            self.s3 = self._session.client(
+                "s3",
+                region_name="us-east-2",
+                config=Config(signature_version="s3v4")
+            )
+        else:
+            self.s3 = self._session.client(
+                "s3",
+                endpoint_url="http://host.docker.internal:4566",
+                region_name="us-east-2",
+                aws_access_key_id="test",
+                aws_secret_access_key="test",
+                config = Config(s3={"addressing_style": "path"})
+            )
 
     @staticmethod
     def _as_prefix(key: str) -> str:
@@ -188,13 +200,19 @@ class BotoS3:
             conditions.append(["starts-with", "$Content-Type", ""])
             fields["Content-Type"] = content_type
 
-        return self.s3.generate_presigned_post(
+        resp = self.s3.generate_presigned_post(
             Bucket=bucket,
             Key=key,
             Fields=fields,
             Conditions=conditions,
             ExpiresIn=15 * 60  # 15 minutes,
         )
+        if not on_aws:
+            resp["url"] = resp["url"].replace(
+                "http://host.docker.internal:4566",
+                "http://0.0.0.0:4566"
+            )
+        return resp
     def download(self, url: str):
         bucket, key = _split_s3_url(url)
         obj = self.s3.get_object(Bucket=bucket, Key=key)

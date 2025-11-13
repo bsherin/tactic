@@ -1,10 +1,11 @@
-
 from communication_utils import debinarize_python_object
 import io
 # noinspection PyPackageRequirements
 import pandas as _pd
+
 try:
     import nltk
+
     # nltk.data.path.append("/root/resources/nltk_data")
     nltk_available = True
 except:
@@ -13,14 +14,14 @@ except:
 
 from document_object import TacticDocument, TacticRow, DetachedTacticRow
 
-
 import collections
 import six
 
+
 def iterable(arg):
     return (
-        isinstance(arg, collections.abc.Iterable)
-        and not isinstance(arg, six.string_types)
+            isinstance(arg, collections.abc.Iterable)
+            and not isinstance(arg, six.string_types)
     )
 
 
@@ -93,16 +94,16 @@ class OtherAPIMIxin:
 
     def log_it(self, message, force_open=True, is_error=False, summary=None):
         self._save_stdout()
-        self._tworker.post_task(self._main_id, "print_to_console_event", {"print_string": message,
-                                                                          "force_open": force_open,
-                                                                          "is_error": is_error,
-                                                                          "summary": summary})
+        self._tworker.post_to_main("print_to_console_event", {"print_string": message,
+                                                              "force_open": force_open,
+                                                              "is_error": is_error,
+                                                              "summary": summary})
         self._restore_stdout()
         return
 
     def get_container_log(self):
         self._save_stdout()
-        result = self._tworker.post_and_wait(self._main_id, "get_container_log", {"container_id": self._tworker.my_id})
+        result = self._tworker.post_and_wait_to_main("get_container_log", {"container_id": self._tworker.my_id})
         self._restore_stdout()
         return result["log_text"]
 
@@ -123,7 +124,7 @@ class OtherAPIMIxin:
         tile_id = None
         if export_name is None:  # then assume the first argument is a pipe_key
             pipe_key = key_or_tile_name
-            for(tile_id, tile_entry) in self._pipe_dict.items():
+            for (tile_id, tile_entry) in self._pipe_dict.items():
                 if pipe_key in tile_entry:
                     tile_id = tile_entry[pipe_key]["tile_id"]
                     export_name = tile_entry[pipe_key]["export_name"]
@@ -146,6 +147,7 @@ class OtherAPIMIxin:
             val = debinarize_python_object(encoded_val)
         self._restore_stdout()
         return val
+
     # </editor-fold>
 
     # <editor-fold desc="Odd utility methods">
@@ -158,6 +160,7 @@ class OtherAPIMIxin:
 
     def download_collection(self, collection_name, file_name=None):
         self._save_stdout()
+
         def got_id(result):
             try:
                 temp_id = result["temp_id"]
@@ -172,15 +175,16 @@ class OtherAPIMIxin:
 
         if file_name is None:
             file_name = collection_name
-        self._tworker.post_task(self._main_id, "store_temp_data_task",
-                                {"type": "collection_download",
-                                 "collection_name": collection_name,
-                                 "file_name": file_name}, got_id)
+        self._tworker.post_to_main("store_temp_data_task",
+                                   {"type": "collection_download",
+                                    "collection_name": collection_name,
+                                    "file_name": file_name}, got_id)
         self._restore_stdout()
         return
 
     def download_data(self, the_data, file_name=None):
         self._save_stdout()
+
         def got_id(result):
             try:
                 temp_id = result["temp_id"]
@@ -191,12 +195,13 @@ class OtherAPIMIxin:
             except Exception as ex:
                 self._handle_exception(ex, "Error emitting to client")
             return
+
         if file_name is None:
             file_name = "data_file"
-        self._tworker.post_task(self._main_id, "store_temp_data_task",
-                                {"type": "data_download",
-                                 "the_data": the_data,
-                                 "file_name": file_name}, got_id)
+        self._tworker.post_to_main("store_temp_data_task",
+                                   {"type": "data_download",
+                                    "the_data": the_data,
+                                    "file_name": file_name}, got_id)
         self._restore_stdout()
         return
 

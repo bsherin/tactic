@@ -37,7 +37,7 @@ class ListTasksMixin:
     @task_worthy
     def get_list_names_task(self, data):
         the_user = self.get_user_from_data(data)
-        return {"list_names": the_user.list_names}
+        return {"list_names": the_user.list_names()}
 
     @task_worthy
     def create_duplicate_list_task(self, data):

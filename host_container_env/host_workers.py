@@ -58,8 +58,9 @@ health_check_time = 5 * 60
 import os
 
 use_ecs = os.getenv("USE_ECS_TILES","false").lower() == "true"
+use_s3 = os.getenv("USE_S3","false").lower() == "true"
 
-if use_ecs:
+if use_s3:
     from pool_backend_ecs import PoolBackendECS
 else:
     from pool_backend import PoolBackend
@@ -72,7 +73,7 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
                  ProjectTasksMixin, CollectionTasksMixin, MetabookTasksMixin, PoolTasksMixin, AccountTasksMixin,
                  AcrossAccountsTasksMixin, HigherMongoTasksMixin, TileContainerManagementMixin):
     def __init__(self):
-        QWorker.__init__(self)
+        QWorker.__init__(self, service_name="host", generate_heartbeats=True)
         self.my_id = "host" + str(myport)
         self.repository_user = User.get_user_by_username("repository")
         self.tile_registry = TileContainerRegistry()
@@ -81,35 +82,33 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
             self.pool_backend = PoolBackendECS()
         else:
             self.tile_backend = DockerTileBackend(self.tile_registry, self)
-            self.pool_backend = PoolBackend()
+            self.pool_backend = PoolBackendECS()
 
-    def start_background_thread(self, retries=0):
-        try:
-            print("entering start_background_thread")
-            self.connection, self.channel = get_pika_connection_with_retries()
-            if self.connection is None or self.channel is None:
-                print("couldn't connect to pika, retrying ...")
-                print("giving up. No more processing of tasks by this qworker")
-                return
-            self.channel.queue_declare(queue="host", durable=False, exclusive=False)
-            self.channel.queue_declare(queue=self.my_id, durable=False, exclusive=False)
-            self.channel.basic_consume(queue="host", auto_ack=True, on_message_callback=self.handle_delivery)
-            self.channel.basic_consume(queue=self.my_id, auto_ack=True, on_message_callback=self.handle_delivery)
-            print(' [*] Waiting for messages:')
-            if self._hb_greenlet is None:
-                self._hb_greenlet = gevent.spawn(self._heartbeat_loop)
-            self.channel.start_consuming()
-        except Exception as ex:
-            debug_log("Couldn't start background thread")
-            debug_log(self.handle_exception(ex, "Here's the error"))
-        finally:
-            self._stopping = True
-            if self._hb_greenlet is not None:
-                try:
-                    self._hb_greenlet.kill(block=False)
-                except Exception:
-                    pass
-                self._hb_greenlet = None
+    # def start_background_thread(self, retries=0):
+    #     try:
+    #         self.connection, self.channel = get_pika_connection_with_retries()
+    #         if self.connection is None or self.channel is None:
+    #             print("couldn't connect to pika, retrying ...")
+    #             return
+    #         self.channel.queue_declare(queue="host", durable=False, exclusive=False)
+    #         self.channel.queue_declare(queue=self.my_id, durable=False, exclusive=False)
+    #         self.channel.basic_consume(queue="host", auto_ack=True, on_message_callback=self.handle_delivery)
+    #         self.channel.basic_consume(queue=self.my_id, auto_ack=True, on_message_callback=self.handle_delivery)
+    #         print(' [*] Waiting for messages:')
+    #         if self._hb_greenlet is None:
+    #             self._hb_greenlet = gevent.spawn(self._heartbeat_loop)
+    #         self.channel.start_consuming()
+    #     except Exception as ex:
+    #         debug_log("Couldn't start background thread")
+    #         debug_log(self.handle_exception(ex, "Here's the error"))
+    #     finally:
+    #         self._stopping = True
+    #         if self._hb_greenlet is not None:
+    #             try:
+    #                 self._hb_greenlet.kill(block=False)
+    #             except Exception:
+    #                 pass
+    #             self._hb_greenlet = None
 
     def do_heartbeat(self):
         self.tile_registry.registry_heartbeat()
@@ -118,7 +117,7 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         return re.sub("/mydisk", user_obj.pool_dir, user_path)
 
     def emit_status_message(self, message, user_id, timeout=4):
-        data = {"message": message, "timeout": timeout}
+        data = {"status_message": message, "timeout": timeout}
         socketio.emit('show-status-msg', data, namespace='/main', room=user_id)
 
     def emit_clear_status(self, user_id):
@@ -179,6 +178,13 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         if the_user is None:
             raise MongoAccessException(f"User with id {user_id} not found")
         return the_user
+
+    @task_worthy
+    def get_openai_api_key(self, data):
+        user_id = data["user_id"]
+        user_obj = load_user(user_id)
+        key = user_obj.get_openai_api_key()
+        return {"success": True, "api_key": key}
 
     @task_worthy
     def get_module_from_type_task(self, data):
@@ -750,7 +756,11 @@ class HealthTracker(RedisManager):
             if (current_time - self.last_health_check) > health_check_time:
                 if not self.exists(None, "last_health_check"):
                     # we want to see if another worker has done a check more recently
-                    last_worker_check = float(self.get(None, "last_health_check"))
+                    last_check = self.get(None, "last_health_check")
+                    if last_check is None:
+                        self.set(None, "last_health_check", current_time)
+                        return
+                    last_worker_check = float(last_check)
                     if (current_time - last_worker_check) < health_check:
                         return
                 self.check_for_dead_containers()

@@ -12,24 +12,23 @@ class ProjectAccess(object):
     project_content_field = "searchable_text"
     project_additional_mdata_fields = ["collection_name", "loaded_tiles", "type"]
 
-    @property
-    def project_collection_name(self):
-        return '{}.projects'.format(self.username)
+    def project_collection_name(self, username=None):
+        if username is None:
+            username = self.username
+        return '{}.projects'.format(username)
 
-    def get_project_doc(self, project_name):
-        doc = self.db[self.project_collection_name].find_one(
+    def get_project_doc(self, project_name, username=None):
+        if username is None:
+            username = self.username
+        doc = self.db['{}.projects'.format(username)].find_one(
             {"project_name": project_name}, {"_id": 0}
         )
         return doc if doc else None
 
-    def get_project_doc_from_id(self, project_id):
-        doc = self.db[self.project_collection_name].find_one(
-            {"_id": ObjectId(project_id)}, {"_id": 0}
-        )
-        return doc if doc else None
-
-    def read_project_dict(self, project_name, include_metadata=True):
-        return self.read_project_dict_from_doc(self.get_project_doc(project_name), include_metadata)
+    def read_project_dict(self, project_name, username=None, include_metadata=True):
+        if username is None:
+            username = self.username
+        return self.read_project_dict_from_doc(self.get_project_doc(project_name, username), include_metadata)
 
     def read_project_dict_from_doc(self, doc, include_metadata=False):
         if doc is None or "file_id" not in doc:
@@ -55,7 +54,7 @@ class ProjectAccess(object):
         save_dict = self.get_project_doc(project_name)
         if "file_id" in save_dict:
             self.fs.delete(save_dict["file_id"])
-        self.db[self.project_collection_name].delete_one({"project_name": project_name})
+        self.db[self.project_collection_name()].delete_one({"project_name": project_name})
         return
 
     def delete_all_projects(self):
@@ -64,13 +63,18 @@ class ProjectAccess(object):
         return
 
     def get_project_content(self, project_name):
-        doc = self.db[self.project_collection_name].find_one(
+        doc = self.db[self.project_collection_name()].find_one(
             {"project_name": project_name}, {"searchable_text": 1, "_id": 0}
         )
         return doc.get("searchable_text", None) if doc else None
 
-    def get_project_metadata(self, project_name):
-        doc = self.db[self.project_collection_name].find_one(
+    def get_project_metadata(self, project_name, username=None):
+        if username is None:
+            collection_name  = self.project_collection_name()
+        else:
+            collection_name = '{}.projects'.format(username)
+
+        doc = self.db[collection_name].find_one(
             {"project_name": project_name}, {"metadata": 1, "_id": 0}
         )
         return doc.get("metadata", None) if doc else None
@@ -92,12 +96,12 @@ class ProjectAccess(object):
             return result
 
     def project_name_exists(self, project_name):
-        return self.db[self.project_collection_name].find_one(
+        return self.db[self.project_collection_name()].find_one(
             {"project_name": project_name}, {"_id": 1}
         ) is not None
 
     def get_project_content_with_metadata(self, project_name, process_metadata=False):
-        doc = self.db[self.project_collection_name].find_one(
+        doc = self.db[self.project_collection_name()].find_one(
             {"project_name": project_name}, {"_id": 0, "searchable_text": 1, "metadata": 1, "project_name": 1}
         )
         if doc is None:
@@ -116,7 +120,7 @@ class ProjectAccess(object):
     def project_names(self):
         names = [
             doc["project_name"]
-            for doc in self.db[self.project_collection_name].find(
+            for doc in self.db[self.project_collection_name()].find(
                 {}, {"project_name": 1, "_id": 0}
             )
         ]
@@ -125,7 +129,7 @@ class ProjectAccess(object):
     @property
     def project_names_with_metadata(self):
         my_project_names = []
-        for doc in self.db[self.project_collection_name].find({}, {"_id": 0, "metadata": 1, "project_name": 1}):
+        for doc in self.db[self.project_collection_name()].find({}, {"_id": 0, "metadata": 1, "project_name": 1}):
             if "metadata" in doc:
                 my_project_names.append([doc["project_name"], doc["metadata"]])
             else:
@@ -135,7 +139,7 @@ class ProjectAccess(object):
     @property
     def project_tags_dict(self):
         tags = {}
-        for doc in self.db[self.project_collection_name].find({}, {"_id": 0, "metadata": 1, "project_name": 1}):
+        for doc in self.db[self.project_collection_name()].find({}, {"_id": 0, "metadata": 1, "project_name": 1}):
             if "metadata" in doc:
                 tags[doc["project_name"]] = doc["metadata"]["tags"]
             else:
@@ -155,7 +159,7 @@ class ProjectAccess(object):
         return all_tags
 
     def grab_filtered_projects(self, search_text, search_spec, columns, is_repo=False):
-        flist, all_tags =  self.grab_filtered_resources("project", self.project_collection_name, "project_name",
+        flist, all_tags =  self.grab_filtered_resources("project", self.project_collection_name(), "project_name",
                                                         "searchable_text", self.project_additional_mdata_fields, search_text, search_spec,
                                                         columns, is_repo=is_repo)
         icon_dict = {"table": "icon:projects",
@@ -181,7 +185,7 @@ class ProjectAccess(object):
 
         pdict = make_jsonizable_and_compress(project_dict)
         save_dict["file_id"] = self.fs.put(pdict)
-        self.db[self.project_collection_name].insert_one(save_dict)
+        self.db[self.project_collection_name()].insert_one(save_dict)
 
     def create_assistant_save(self, new_name, interface_state):
         project_dict = {"doc_type": "notebook", "project_name": new_name}
@@ -195,7 +199,7 @@ class ProjectAccess(object):
                      "project_name": new_name}
         pdict = make_jsonizable_and_compress(project_dict)
         save_dict["file_id"] = self.fs.put(pdict)
-        self.db[self.project_collection_name].insert_one(save_dict)
+        self.db[self.project_collection_name()].insert_one(save_dict)
         return
 
     @staticmethod
@@ -208,14 +212,15 @@ class ProjectAccess(object):
                 text += citem["console_text"] + "\n"
         return text
 
-    def prepare_project_data(self, project_name, project_dict, doc_type, collection_name, interface_state,
+    def prepare_project_data(self, sid, project_name, project_dict, doc_type, collection_name, interface_state,
                              mdata=None, purgetiles=False, is_new_project=True):
+        sess = self.get_session(sid)
         if mdata is None:
             mdata = self.create_initial_metadata()
         else:
             mdata = self.update_metadata(mdata)
         mdata["type"] = doc_type
-        if not self.doc_type == "notebook":
+        if not doc_type == "notebook":
             mdata["collection_name"] = collection_name
             mdata["loaded_tiles"] = project_dict["used_tile_types"]
             mdata["type"] = doc_type
@@ -229,7 +234,7 @@ class ProjectAccess(object):
             save_dict = {"metadata": mdata,
                          "project_name": project_name,}
         else:
-            save_dict = self.db[self.project_collection_name].find_one({"project_name": project_name})
+            save_dict = self.db[self.project_collection_name(sess.username)].find_one({"project_name": project_name})
             save_dict["metadata"] = mdata
         if "console_items" in interface_state:
             save_dict["searchable_text"] = self.get_text_from_console_items(
@@ -238,23 +243,23 @@ class ProjectAccess(object):
             save_dict["searchable_text"] = ""
         return save_dict, project_dict, mdata
 
-    def save_new_project(self, doc, project_dict):
+    def save_new_project(self, sid, doc, project_dict):
         # This is only called in main. That means that emit_status_message is available
         # and doesn't need a user_id
-        self.emit_status_message("Pickle, convert, compress")
+        self.emit_status_message(sid, "Pickle, convert, compress")
         pdict = make_jsonizable_and_compress(project_dict)
-        self.emit_status_message("Writing the data")
+        self.emit_status_message(sid, "Writing the data")
         doc["file_id"] = self.fs.put(pdict)
-        self.db[self.project_collection_name].insert_one(doc)
+        self.db[self.project_collection_name(self.get_session(sid).username)].insert_one(doc)
         return
 
-    def update_project(self, doc, project_dict):
-        self.emit_status_message("Pickle, convert, compress")
+    def update_project(self, sid, doc, project_dict):
+        self.emit_status_message(sid, "Pickle, convert, compress")
         pdict = make_jsonizable_and_compress(project_dict)
-        self.emit_status_message("Writing the data")
+        self.emit_status_message(sid, "Writing the data")
         old_file_id = doc.get("file_id", None)
         doc["file_id"] = self.fs.put(pdict)
-        self.db[self.project_collection_name].update_one(
+        self.db[self.project_collection_name(self.get_session(sid).username)].update_one(
             {"project_name": doc["project_name"]},
             {"$set": doc}
         )
@@ -284,7 +289,7 @@ class ProjectAccess(object):
         project_dict["project_name"] = new_project_name
         pdict = make_jsonizable_and_compress(project_dict)
         new_save_dict["file_id"] = self.fs.put(pdict)
-        self.db[self.project_collection_name].insert_one(new_save_dict)
+        self.db[self.project_collection_name()].insert_one(new_save_dict)
         return
 
     def rename_project(self, old_name, new_name):
@@ -292,7 +297,7 @@ class ProjectAccess(object):
             raise ValueError(f"project with name {old_name} does not exist.")
         if self.project_name_exists(new_name):
             raise ValueError(f"project with name {new_name} already exists.")
-        self.db[self.project_collection_name].update_one(
+        self.db[self.project_collection_name()].update_one(
             {"project_name": old_name},
             {"$set": {"project_name": new_name}}
         )
@@ -305,7 +310,7 @@ class ProjectAccess(object):
         if mdata is None:
             mdata = {}
         mdata.update(metadata)
-        self.db[self.project_collection_name].update_one(
+        self.db[self.project_collection_name()].update_one(
             {"project_name": project_name},
             {"$set": {"metadata": mdata}}
         )
@@ -314,7 +319,7 @@ class ProjectAccess(object):
     def rename_tags_in_projects(self, tag_changes):
         if not tag_changes:
             return
-        for doc in self.db[self.project_collection_name].find({}, {"_id": 0, "metadata": 1, "project_name": 1}):
+        for doc in self.db[self.project_collection_name()].find({}, {"_id": 0, "metadata": 1, "project_name": 1}):
             mdata = doc.get("metadata", None)
             if mdata is not None and "tags" in mdata:
                 taglist = mdata["tags"].split()
@@ -323,7 +328,7 @@ class ProjectAccess(object):
                         taglist.remove(old_tag)
                         if new_tag not in taglist:
                             taglist.append(new_tag)
-                        self.db[self.project_collection_name].update_one(
+                        self.db[self.project_collection_name()].update_one(
                             {"project_name": doc["project_name"]},
                             {"$set": {"metadata.tags": " ".join(taglist)}}
                         )
@@ -332,13 +337,13 @@ class ProjectAccess(object):
     def delete_tag_in_projects(self, tag):
         if not tag:
             return
-        for doc in self.db[self.project_collection_name].find({}, {"_id": 0, "metadata": 1, "project_name": 1}):
+        for doc in self.db[self.project_collection_name()].find({}, {"_id": 0, "metadata": 1, "project_name": 1}):
             mdata = doc.get("metadata", None)
             if mdata and "tags" in mdata:
                 taglist = mdata["tags"].split()
                 if tag in taglist:
                     taglist.remove(tag)
-                    self.db[self.project_collection_name].update_one(
+                    self.db[self.project_collection_name()].update_one(
                         {"project_name": doc["project_name"]},
                         {"$set": {"metadata.tags": " ".join(taglist)}}
                     )

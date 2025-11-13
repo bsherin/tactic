@@ -111,7 +111,7 @@ class CodeTasksMixin:
     def get_class_tags_dict_task(self, data):
         user_id = data["user_id"]
         the_user = load_user(user_id)
-        return {"class_names": the_user.class_tags_dict}
+        return {"class_names": the_user.class_tags_dict()}
 
     @task_worthy
     def get_all_code_tags_task(self, data):

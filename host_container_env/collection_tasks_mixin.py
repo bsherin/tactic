@@ -60,7 +60,7 @@ class CollectionTasksMixin:
     @task_worthy
     def get_collection_names_task(self, data):
         the_user = self.get_user_from_data(data)
-        return {"collection_names": the_user.collection_names}
+        return {"collection_names": the_user.collection_names()}
 
     @task_worthy
     def create_duplicate_collection_task(self, data):

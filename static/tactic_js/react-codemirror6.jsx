@@ -295,7 +295,7 @@ function ReactCodemirror6(props) {
                     setAIText(null);
                     setAITextLabel(null);
                     awaitingSuggestionRef.current = true;
-                    doAIUpdate(update.state.doc.toString(), changeCounterRef.current);
+                    // (update.state.doc.toString(), changeCounterRef.current);
                 } else {
                     setAIText(null);
                     setAITextLabel(null);

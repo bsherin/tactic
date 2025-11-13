@@ -65,6 +65,8 @@ class LoadedTileManager(RedisManager):
             if len(list(tile_types.keys())) == 0:
                 print("user tiles don't seem to be loaded. so load them")
                 self.load_user_default_tiles(username)
+                if nested:
+                    return {}
                 return self.get_user_available_tile_types(username, nested=True)
 
         except AttributeError:

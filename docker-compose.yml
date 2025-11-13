@@ -127,6 +127,8 @@ services:
       - ANYONE_CAN_REGISTER=${ANYONE_CAN_REGISTER}
       - USE_AMAZON_MQ=${USE_AMAZON_MQ}
       - USE_ECS_TILES=${USE_ECS_TILES}
+      - RUNNING_ON_AWS=${RUNNING_ON_AWS}
+      - USE_S3=${USE_S3}
       - USE_GEVENT=True
     volumes:
       - type: bind
@@ -174,6 +176,8 @@ services:
       - DEVELOP=${DEVELOP}
       - USE_AMAZON_MQ=${USE_AMAZON_MQ}
       - USE_ECS_TILES=${USE_ECS_TILES}
+      - RUNNING_ON_AWS=${RUNNING_ON_AWS}
+      - USE_S3=${USE_S3}
       - USE_GEVENT=True
     volumes:
       - type: bind
@@ -226,6 +230,8 @@ services:
       - MPLCONFIGDIR=mpl_cache
       - USE_AMAZON_MQ=${USE_AMAZON_MQ}
       - USE_ECS_TILES=False
+      - RUNNING_ON_AWS=${RUNNING_ON_AWS}
+      - USE_S3=${USE_S3}
       - USE_GEVENT=False
     volumes:
       - type: bind
@@ -274,6 +280,8 @@ services:
       - DEVELOP=${DEVELOP}
       - USE_AMAZON_MQ=${USE_AMAZON_MQ}
       - USE_ECS_TILES=${USE_ECS_TILES}
+      - RUNNING_ON_AWS=${RUNNING_ON_AWS}
+      - USE_S3=${USE_S3}
       - USE_GEVENT=True
     volumes:
       - type: bind
@@ -325,13 +333,13 @@ services:
       - MONGO_URI=${MONGO_URI}
       - USE_AMAZON_MQ=${USE_AMAZON_MQ}
       - USE_ECS_TILES=${USE_ECS_TILES}
+      - RUNNING_ON_AWS=${RUNNING_ON_AWS}
     networks:
      - tactic-net
 
   tactic_pool_watcher:
     image: bsherin/tactic-pool-watcher:${IMG_SUFFIX}
     profiles:
-      - start_development
       - build_project
       - build_non_base
     build:
@@ -362,6 +370,7 @@ services:
   tactic_pool_watcher_s3:
     image: bsherin/tactic-pool-watcher-s3:${IMG_SUFFIX}
     profiles:
+      - start_development
       - build_server_project
       - build_non_base
     build:
@@ -382,6 +391,7 @@ services:
     environment:
       - USE_AMAZON_MQ=${USE_AMAZON_MQ}
       - USE_ECS_TILES=${USE_ECS_TILES}
+      - RUNNING_ON_AWS=${RUNNING_ON_AWS}
     networks:
       - tactic-net
 
@@ -393,10 +403,34 @@ services:
         BASE_IMAGE: ${BASE_IMAGE}
     image: bsherin/tactic-main:${IMG_SUFFIX}
     platform: ${PLATFORM}
+    labels:
+      project: tactic
+      my_id: main_service
+      owner: host
+      parent: host
+      other_name: main_service
     profiles:
       - build_project
+      - start_development
       - build_server_project
       - build_non_base
+    env_file:
+      - ${ROOT_DIR}/env.list
+    environment:
+      - MY_ID=main_service
+      - MONGO_URI=${MONGO_URI}
+      - USE_AMAZON_MQ=${USE_AMAZON_MQ}
+      - USE_ECS_TILES=${USE_ECS_TILES}
+      - RUNNING_ON_AWS=${RUNNING_ON_AWS}
+      - USE_S3=${USE_S3}
+      - USE_GEVENT=False
+      - DEBUG=${DEBUG}
+    volumes:
+      - type: bind
+        source: "/var/run/docker.sock"
+        target: "/var/run/docker.sock"
+    networks:
+      - tactic-net
 
   tactic_module_viewer:
     build:

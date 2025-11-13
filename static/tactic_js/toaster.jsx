@@ -154,7 +154,7 @@ function withStatus(WrappedComponent) {
         }, []);
 
         const _statusMessageFromData  = useCallback((data) => {
-            set_status_message(data.message);
+            set_status_message(data.status_message);
             pushCallback(() => {
                 if (data.hasOwnProperty("timeout") && data.timeout != null) {
                     setTimeout(_clearStatusMessage, data.timeout * 1000);

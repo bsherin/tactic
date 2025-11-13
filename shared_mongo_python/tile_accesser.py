@@ -18,9 +18,10 @@ class TileAccess(object):
     tile_content_field = "tile_module"
     tile_additional_mdata_fields = None
 
-    @property
-    def tile_collection_name(self):
-        return '{}.tiles'.format(self.username)
+    def tile_collection_name(self, username=None):
+        if username is None:
+            username = self.username
+        return '{}.tiles'.format(username)
 
     def get_tile_doc(self, tile_module_name, username=None):
         doc = self.db[self.get_tile_collection_name(username)].find_one(
@@ -29,19 +30,16 @@ class TileAccess(object):
         return doc if doc else None
 
     def get_tile_collection_name(self, username=None):
-        if username is None:
-            return self.tile_collection_name
-        else:
-            return '{}.tiles'.format(username)
+        return self.tile_collection_name(username)
 
     def get_tile_doc_from_id(self, tile_id):
-        doc = self.db[self.tile_collection_name].find_one(
+        doc = self.db[self.tile_collection_name()].find_one(
             {"_id": ObjectId(tile_id)}, {"_id": 0}
         )
         return doc if doc else None
 
     def get_tile_id(self, tile_module_name):
-        doc = self.db[self.tile_collection_name].find_one(
+        doc = self.db[self.tile_collection_name()].find_one(
             {"tile_module_name": tile_module_name}, {"_id": 1}
         )
         return str(doc["_id"]) if doc else None
@@ -51,13 +49,13 @@ class TileAccess(object):
         return doc.get("last_saved", "creator") if doc else None
 
     def remove_tile(self, tile_module_name):
-        self.db[self.tile_collection_name].delete_one(
+        self.db[self.tile_collection_name()].delete_one(
             {"tile_module_name": tile_module_name}
         )
         return
 
     def get_tile_content(self, tile_module_name):
-        doc = self.db[self.tile_collection_name].find_one(
+        doc = self.db[self.tile_collection_name()].find_one(
             {"tile_module_name": tile_module_name}, {"tile_module": 1, "_id": 0}
         )
         return doc.get("tile_module", None) if doc else None
@@ -141,7 +139,7 @@ class TileAccess(object):
     def tile_module_names(self):
         names = [
             doc["tile_module_name"]
-            for doc in self.db[self.tile_collection_name].find(
+            for doc in self.db[self.tile_collection_name()].find(
                 {}, {"tile_module_name": 1, "_id": 0}
             )
         ]
@@ -150,7 +148,7 @@ class TileAccess(object):
     @property
     def tile_module_names_with_metadata(self):
         my_tile_module_names = []
-        for doc in self.db[self.tile_collection_name].find({}, {"_id": 0, "metadata": 1, "tile_module_name": 1}):
+        for doc in self.db[self.tile_collection_name()].find({}, {"_id": 0, "metadata": 1, "tile_module_name": 1}):
             if "metadata" in doc:
                 my_tile_module_names.append([doc["tile_module_name"], doc["metadata"]])
             else:
@@ -160,7 +158,7 @@ class TileAccess(object):
     @property
     def tile_tags_dict(self):
         tags = {}
-        for doc in self.db[self.tile_collection_name].find({}, {"_id": 0, "metadata": 1, "tile_module_name": 1}):
+        for doc in self.db[self.tile_collection_name()].find({}, {"_id": 0, "metadata": 1, "tile_module_name": 1}):
             if "metadata" in doc:
                 tags[doc["tile_module_name"]] = doc["metadata"]["tags"]
             else:
@@ -181,7 +179,7 @@ class TileAccess(object):
 
     def grab_filtered_tiles(self, search_text, search_spec, columns, is_repo=False):
         from loaded_tile_management import loaded_tile_manager
-        flist, all_tags = self.grab_filtered_resources("tile", self.tile_collection_name, "tile_module_name",
+        flist, all_tags = self.grab_filtered_resources("tile", self.tile_collection_name(), "tile_module_name",
                                                         "tile_module", self.tile_additional_mdata_fields, search_text, search_spec,
                                                          columns, is_repo=is_repo)
         if not is_repo:
@@ -219,7 +217,7 @@ class TileAccess(object):
         else:
             metadata = self.create_initial_metadata()
             tile_module = []
-        self.db[self.tile_collection_name].insert_one({
+        self.db[self.tile_collection_name()].insert_one({
             "tile_module_name": tile_module_name,
             "tile_module": tile_module,
             "metadata": metadata})
@@ -232,7 +230,7 @@ class TileAccess(object):
             metadata = self.create_initial_metadata()
         else:
             metadata = self.update_metadata(metadata, True)
-        self.db[self.tile_collection_name].insert_one({
+        self.db[self.tile_collection_name()].insert_one({
             "tile_module_name": tile_module_name,
             "tile_module": tile_module,
             "metadata": metadata})
@@ -245,7 +243,7 @@ class TileAccess(object):
         metadata = self.update_metadata(metadata, True)
         tile_module = doc["tile_module"]
 
-        self.db[self.tile_collection_name].insert_one({
+        self.db[self.tile_collection_name()].insert_one({
             "tile_module_name": tile_module_name,
             "tile_module": tile_module,
             "last_saved": last_saved,
@@ -278,7 +276,7 @@ class TileAccess(object):
         if last_saved is not None:
             update_dict["last_saved"] = last_saved
         doc["metadata"] = metadata
-        self.db[self.tile_collection_name].update_one(
+        self.db[self.tile_collection_name()].update_one(
             {"tile_module_name": tile_module_name},
             {"$set": doc}
         )
@@ -302,7 +300,7 @@ class TileAccess(object):
             raise ValueError(f"tile with name {old_name} does not exist.")
         if self.tile_module_name_exists(new_name):
             raise ValueError(f"tile with name {new_name} already exists.")
-        self.db[self.tile_collection_name].update_one(
+        self.db[self.tile_collection_name()].update_one(
             {"tile_module_name": old_name},
             {"$set": {"tile_module_name": new_name}}
         )
@@ -315,7 +313,7 @@ class TileAccess(object):
         if mdata is None:
             mdata = {}
         mdata.update(metadata)
-        self.db[self.tile_collection_name].update_one(
+        self.db[self.tile_collection_name()].update_one(
             {"tile_module_name": tile_module_name},
             {"$set": {"metadata": mdata}}
         )
@@ -324,7 +322,7 @@ class TileAccess(object):
     def rename_tags_in_tiles(self, tag_changes):
         if not tag_changes:
             return
-        for doc in self.db[self.tile_collection_name].find({}, {"_id": 0, "metadata": 1, "tile_module_name": 1}):
+        for doc in self.db[self.tile_collection_name()].find({}, {"_id": 0, "metadata": 1, "tile_module_name": 1}):
             mdata = doc.get("metadata", None)
             if mdata is not None and "tags" in mdata:
                 taglist = mdata["tags"].split()
@@ -333,7 +331,7 @@ class TileAccess(object):
                         taglist.remove(old_tag)
                         if new_tag not in taglist:
                             taglist.append(new_tag)
-                        self.db[self.tile_collection_name].update_one(
+                        self.db[self.tile_collection_name()].update_one(
                             {"tile_module_name": doc["tile_module_name"]},
                             {"$set": {"metadata.tags": " ".join(taglist)}}
                         )
@@ -342,20 +340,20 @@ class TileAccess(object):
     def delete_tag_in_tiles(self, tag):
         if not tag:
             return
-        for doc in self.db[self.tile_collection_name].find({}, {"_id": 0, "metadata": 1, "tile_module_name": 1}):
+        for doc in self.db[self.tile_collection_name()].find({}, {"_id": 0, "metadata": 1, "tile_module_name": 1}):
             mdata = doc.get("metadata", None)
             if mdata and "tags" in mdata:
                 taglist = mdata["tags"].split()
                 if tag in taglist:
                     taglist.remove(tag)
-                    self.db[self.tile_collection_name].update_one(
+                    self.db[self.tile_collection_name()].update_one(
                         {"tile_module_name": doc["tile_module_name"]},
                         {"$set": {"metadata.tags": " ".join(taglist)}}
                     )
         return
 
     def set_recent_history(self, module_name, recent_history):
-        self.db[self.tile_collection_name].update_one({"tile_module_name": module_name},
+        self.db[self.tile_collection_name()].update_one({"tile_module_name": module_name},
                                                       {'$set': {"recent_history": recent_history}})
 
     def clear_old_recent_history(self, module_name):

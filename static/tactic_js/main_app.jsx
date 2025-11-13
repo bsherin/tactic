@@ -27,7 +27,7 @@ import {tilesReducer, fixTileFrontContent} from "./tile_container_support"
 import {ExportsViewer} from "./export_viewer_react";
 import {ConsoleComponent} from "./console_component";
 import {consoleItemsReducer} from "./console_support";
-import {handleCallback, postWithCallback, postPromise, postAjax} from "./communication_react";
+import {handleCallback, postPromise, postPromiseMain, postWithCallbackMain, postAjax} from "./communication_react";
 import {doFlash} from "./toaster"
 import {withStatus} from "./toaster";
 import {withErrorDrawer} from "./error_drawer";
@@ -172,10 +172,13 @@ function MainApp(props) {
         }
 
         window.addEventListener("unload", sendRemove);
+        postPromiseMain(props.local_id, "recreate_tiles", {})
+            .then(()=>{console.log("finished tile recreation")})
         return (() => {
             delete_my_containers();
             window.removeEventListener("unload", sendRemove);
         })
+
     }, []);
 
     useEffect(() => {
@@ -368,7 +371,7 @@ function MainApp(props) {
         _setMainStateValue("show_table_spinner", true);
         if (isFreeform()) {
             try {
-                let data = await postPromise(props.local_id, "grab_freeform_data", {
+                let data = await postPromiseMain(props.local_id, "grab_freeform_data", {
                     "doc_name": new_doc_name,
                     "set_visible_doc": true
                 }, props.local_id);
@@ -392,7 +395,7 @@ function MainApp(props) {
         } else {
             try {
                 const data_dict = {"doc_name": new_doc_name, "row_index": row_index, "set_visible_doc": true};
-                let data = await postPromise(props.local_id, "grab_chunk_by_row_index", data_dict, props.local_id);
+                let data = await postPromiseMain(props.local_id, "grab_chunk_by_row_index", data_dict, props.local_id);
                 _setStateFromDataObject(data, new_doc_name, () => {
                     _setMainStateValue("show_table_spinner", false);
                     if (select_row) {
@@ -427,7 +430,7 @@ function MainApp(props) {
             if (callback == null) {
                 callback = updateUpdateIndex;
             }
-            postWithCallback(props.local_id, "UpdateTableSpec", spec_update, callback, null, props.local_id);
+            postWithCallbackMain(props.local_id, "UpdateTableSpec", spec_update, callback, null, props.local_id);
         }
     }
 
@@ -437,7 +440,7 @@ function MainApp(props) {
         if (!("doc_name" in data_dict)) {
             data_dict.doc_name = mState.table_spec.current_doc_name;
         }
-        postWithCallback(props.local_id, "distribute_events_stub", data_dict, callback, null, props.local_id)
+        postWithCallbackMain(props.local_id, "distribute_events_stub", data_dict, callback, null, props.local_id)
     }, [props.local_id, mState.table_spec.current_doc_name]);
 
     function _broadcast_event_promise(event_name, data_dict) {
@@ -446,7 +449,7 @@ function MainApp(props) {
         if (!("doc_name" in data_dict)) {
             data_dict.doc_name = mState.table_spec.current_doc_name;
         }
-        return postPromise(props.local_id, "distribute_events_stub", data_dict, props.local_id)
+        return postPromiseMain(props.local_id, "distribute_events_stub", data_dict, props.local_id)
     }
 
     async function _tile_command(menu_id) {
@@ -471,7 +474,7 @@ function MainApp(props) {
                 user_id: window.user_id,
                 parent: props.local_id
             };
-            let create_data = await postPromise(props.local_id, "create_tile", data_dict, props.local_id);
+            let create_data = await postPromiseMain(props.local_id, "create_tile", data_dict, props.local_id);
             let new_tile_entry = _createTileEntry(tile_name,
                 menu_id,
                 create_data.tile_id,
@@ -660,7 +663,7 @@ function MainApp(props) {
     }, []);
 
     async function _deleteRow() {
-        await postPromise(props.local_id, "delete_row", {
+        await postPromiseMain(props.local_id, "delete_row", {
             "document_name": mState.table_spec.current_doc_name,
             "index": mState.selected_row
         })
@@ -668,7 +671,7 @@ function MainApp(props) {
     }
 
     async function _insertRow(index) {
-        await postPromise(props.local_id, "insert_row", {
+        await postPromiseMain(props.local_id, "insert_row", {
             "document_name": mState.table_spec.current_doc_name,
             "index": index,
             "row_dict": {}
@@ -677,7 +680,7 @@ function MainApp(props) {
     }
 
     async function _duplicateRow() {
-        await postPromise(props.local_id, "insert_row", {
+        await postPromiseMain(props.local_id, "insert_row", {
             "document_name": mState.table_spec.current_doc_name,
             "index": mState.selected_row,
             "row_dict": mState.data_row_dict[mState.selected_row]
@@ -703,7 +706,7 @@ function MainApp(props) {
             "doc_name": mState.table_spec.current_doc_name,
             "all_docs": delete_in_all
         };
-        await postPromise(props.local_id, "DeleteColumn", data_dict, props.local_id)
+        await postPromiseMain(props.local_id, "delete_column", data_dict, props.local_id)
             .then(updateUpdateIndex)
     }
 
@@ -761,7 +764,7 @@ function MainApp(props) {
 
     async function _grabNewChunkWithRow(row_index) {
         try {
-            let data = await postPromise(props.local_id, "grab_chunk_by_row_index",
+            let data = await postPromiseMain(props.local_id, "grab_chunk_by_row_index",
                 {doc_name: mState.table_spec.current_doc_name, row_index: row_index}, props.local_id);
             mDispatch({
                 type: "update_data_row_dict",
@@ -779,7 +782,7 @@ function MainApp(props) {
                 "local_id": props.local_id
             };
 
-            let data_object = await postPromise(props.local_id, "remove_collection_from_project", result_dict, props.local_id);
+            let data_object = await postPromiseMain(props.local_id, "remove_collection_from_project", result_dict, props.local_id);
             let table_spec = {
                 current_doc_name: ""
             };
@@ -814,7 +817,7 @@ function MainApp(props) {
                 "new_collection_name": new_collection_name,
                 "local_id": props.local_id
             };
-            let data_object = await postPromise(props.local_id, "change_collection", result_dict, props.local_id);
+            let data_object = await postPromiseMain(props.local_id, "change_collection", result_dict, props.local_id);
             if (!window.in_context && !_cProp("is_project")) document.title = new_collection_name;
             window._collection_name = data_object.collection_name;
             let table_spec;

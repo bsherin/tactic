@@ -16,6 +16,9 @@ while :; do
     --develop)
       profile="start_development"
       ;;
+    --debug)
+      env_file="develop_debug.env"
+      ;;
     *)
       break
       ;;

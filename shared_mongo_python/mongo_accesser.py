@@ -187,7 +187,7 @@ class MongoAccess(object):
 
     @property
     def all_names_with_metadata(self):
-        col_names_with_metadata = [d + ["collection"] for d in self.collection_names_with_metadata]
+        col_names_with_metadata = [d + ["collection"] for d in self.collection_names_with_metadata()]
         proj_names_with_metadata = [d + ["project"] for d in self.project_names_with_metadata]
         list_names_with_metadata = [d + ["list"] for d in self.list_names_with_metadata]
         tile_names_with_metadata = [d + ["tile"] for d in self.tile_module_names_with_metadata]
@@ -216,12 +216,14 @@ class MongoAccess(object):
         names = [doc[name_key] for doc in coll.find({}, {name_key: 1, "_id": 0})]
         return names
 
-    def get_filtered_resource_names(self, res_type, tag_filter=None, search_filter=None):
+    def get_filtered_resource_names(self, res_type, tag_filter=None, search_filter=None, username=None):
+        if username is None:
+            username = self.username
         if tag_filter is not None:
             tag_filter = tag_filter.lower()
         if search_filter is not None:
             search_filter = search_filter.lower()
-        cname = getattr(self, f"{res_type}_collection_name")
+        cname = getattr(self, f"{res_type}_collection_name")(username)
         name_key = name_keys[res_type]
         if cname not in self.db.list_collection_names():
             self.db.create_collection(cname)

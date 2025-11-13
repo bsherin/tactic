@@ -8,7 +8,7 @@ import markdownItLatex from 'markdown-it-latex'
 const mdi = markdownIt({html: true});
 mdi.use(markdownItLatex);
 
-import {postPromise, postAjaxPromise} from "./communication_react"
+import {postPromise, postAjaxPromise, postPromiseMain} from "./communication_react"
 import {MenuComponent, ToolMenu} from "./menu_utilities";
 
 import {DialogContext} from "./modal_react";
@@ -74,10 +74,10 @@ function ProjectMenu(props) {
             result_dict.interface_state = save_state;
             let data_object;
             if (props.is_notebook) {
-                await postPromise(props.local_id, "save_new_notebook_project_task", result_dict, props.local_id);
+                await postPromiseMain(props.local_id, "save_new_notebook_project_task", result_dict, props.local_id);
             } else {
                 result_dict["purgetiles"] = true;
-                await postPromise(props.local_id, "save_new_project_task", result_dict, props.local_id);
+                await postPromiseMain(props.local_id, "save_new_project_task", result_dict, props.local_id);
             }
             props.setProjectName(new_name, () => {
                 if (!window.in_context) {
@@ -109,7 +109,7 @@ function ProjectMenu(props) {
             result_dict.interface_state = save_state;
 
             statusFuncs.startSpinner();
-            await postPromise(props.local_id, "update_project_task", result_dict, props.local_id);
+            await postPromiseMain(props.local_id, "update_project_task", result_dict, props.local_id);
             props.updateLastSave();
             statusFuncs.statusMessage(`Saved project ${props.project_name}`);
             statusFuncs.stopSpinner();
@@ -169,7 +169,7 @@ function ProjectMenu(props) {
                 "local_id": props.local_id,
                 "cell_list": cell_list,
             };
-            let data_object = await postPromise(props.local_id, "export_as_presentation",
+            let data_object = await postPromiseMain(props.local_id, "export_as_presentation",
                 result_dict, props.local_id);
             statusFuncs.clearStatusMessage();
             if (save_as_collection) {
@@ -235,7 +235,7 @@ function ProjectMenu(props) {
                 "local_id": props.local_id,
                 "cell_list": cell_list,
             };
-            let data_object = await postPromise(props.local_id, "export_as_report", result_dict, props.local_id);
+            let data_object = await postPromiseMain(props.local_id, "export_as_report", result_dict, props.local_id);
 
             statusFuncs.clearStatusMessage();
             if (save_as_collection) {
@@ -289,7 +289,7 @@ function ProjectMenu(props) {
                 "local_id": props.local_id,
                 "cell_list": cell_list
             };
-            let data_object = await postPromise(props.local_id, "export_to_jupyter_notebook",
+            let data_object = await postPromiseMain(props.local_id, "export_to_jupyter_notebook",
                 result_dict, props.local_id);
             statusFuncs.statusMessage("Exported jupyter notebook");
             statusFuncs.stopSpinner();
@@ -337,7 +337,7 @@ function ProjectMenu(props) {
                 "console_items": props.console_items,
                 "user_id": window.user_id,
             };
-            await postPromise(props.local_id, "console_to_notebook", result_dict, props.local_id)
+            await postPromiseMain(props.local_id, "console_to_notebook", result_dict, props.local_id)
         }
         catch (e) {
             errorDrawerFuncs.addFromError("Error converting to notebook", e);
@@ -421,7 +421,7 @@ function DocumentMenu(props) {
                 checkboxes: [],
                 handleClose: dialogFuncs.hideModal,
             });
-            await postPromise(props.local_id, "new_blank_document", {
+            await postPromiseMain(props.local_id, "new_blank_document", {
                     model_document_name: props.currentDoc,
                     new_document_name: new_name
                 }, props.local_id);
@@ -446,7 +446,7 @@ function DocumentMenu(props) {
                 checkboxes: [],
                 handleClose: dialogFuncs.hideModal,
             });
-            await postPromise(props.local_id, "duplicate_document", {
+            await postPromiseMain(props.local_id, "duplicate_document", {
                     original_document_name: props.currentDoc,
                     new_document_name: new_name
                 }, props.local_id);
@@ -471,7 +471,7 @@ function DocumentMenu(props) {
                 checkboxes: [],
                 handleClose: dialogFuncs.hideModal,
             });
-            await postPromise(props.local_id, "rename_document", {
+            await postPromiseMain(props.local_id, "rename_document", {
                     old_document_name: props.currentDoc,
                     new_document_name: new_name
                 }, props.local_id);

@@ -14,7 +14,7 @@ class UserAccess(object):
 
     def username_exists(self, username, alt_db=None):
         db = alt_db if alt_db else self.db
-        return db[self.list_collection_name].find_one(
+        return db[self.list_collection_name()].find_one(
             {"username": username}, {"_id": 1}
         ) is not None
 
@@ -42,11 +42,11 @@ class UserAccess(object):
         try:
             self.db.drop_collection(target_user.list_collection_name)
             self.db.drop_collection(target_user.tile_collection_name)
-            self.db.drop_collection(target_user.code_collection_name)
+            self.db.drop_collection(target_user.code_collection_name())
             target_user.delete_all_data_collections()  # have to do this because of gridfs pointers
-            self.db.drop_collection(target_user.collection_collection_name)
+            self.db.drop_collection(target_user.collection_collection_name())
             target_user.delete_all_projects()  # have to do this because of gridfs pointers
-            self.db.drop_collection(target_user.project_collection_name)
+            self.db.drop_collection(target_user.project_collection_name())
             self.db.user_collection.delete_one({"_id": ObjectId(target_user.get_true_id())})
             return {"success": True, "message": "User successfully removed."}
         except Exception as ex:

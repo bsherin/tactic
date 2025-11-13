@@ -1,7 +1,7 @@
 
 import sys, copy, re, datetime, os
 
-from flask import render_template, request, jsonify, send_file
+from flask import render_template, request, jsonify, send_file, url_for
 from flask_login import login_required, current_user
 from flask_socketio import join_room
 import markdown
@@ -23,6 +23,7 @@ admin_user = User.get_user_by_username("admin")
 tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
 
 use_ecs = os.getenv("USE_ECS_TILES","false").lower() == "true"
+use_s3 = os.getenv("USE_S3","false").lower() == "true"
 
 @app.route('/library')
 @login_required
@@ -56,6 +57,7 @@ def library():
 def context():
     return render_template('context_react.html',
                            use_ecs=use_ecs,
+                           use_s3=use_s3,
                            database_type=database_type,
                            develop=str(_develop),
                            version_string=tstring,
@@ -63,6 +65,7 @@ def context():
                            has_openapi_key=current_user.has_openapi_key,
                            page_title="context",
                            css_source=css_source("context_react"),
+                           base_figure_url=url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1],
                            module_source=js_source_dict["context_react"])
 
 

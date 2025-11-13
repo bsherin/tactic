@@ -265,36 +265,36 @@ def remove_duplicate_collections(user_obj=None):
     ### Had data collections updated to the new compact format where they all live in a single collection
     ### This is just what is needed for the minimal thing of running the update
     ### There's also some stuff in mongo_accesser
-
-    def upgrade_user_collections(self, user_obj=None):
-        print("*** entering upgrade_user_collections ***")
-        if user_obj is None:
-            user_obj = current_user
-        string_start = user_obj.username + ".data_collection."
-        cfilter = {"name": {"$regex": string_start + "(.*)"}}
-        old_cnames = self.db.list_collection_names(filter=cfilter)
-        failed_conversions = []
-        for old_cname in old_cnames:
-            try:
-                print("converting " + old_cname)
-                if old_cname == user_obj.username + ".data_collections":
-                    continue
-                short_name = re.search(string_start + "(.*)", old_cname).group(1)
-                if short_name not in user_obj.data_collection_names:
-                    print("converting " + short_name)
-                    doc_dict, dm_dict, hl_dict, coll_mdata = user_obj.get_all_collection_info_legacy(short_name)
-                    new_save_dict = {"metadata": coll_mdata,
-                                     "collection_name": short_name}
-                    collection_dict = {"doc_dict": doc_dict,
-                                       "doc_mdata_dict": dm_dict,
-                                       "header_list_dic": hl_dict}
-                    cdict = make_jsonizable_and_compress(collection_dict)
-                    new_save_dict["file_id"] = self.fs.put(cdict)
-                    self.db[user_obj.collection_collection_name].insert_one(new_save_dict)
-                    print("removing " + short_name)
-                    user_obj.remove_collection_legacy(short_name)
-            except Exception as ex:
-                failed_conversions.append(old_cname)
-                print(self.get_traceback_message(ex))
-        print("failed conversions " + str(failed_conversions))
-        return {"success": True}
+    #
+    # def upgrade_user_collections(self, user_obj=None):
+    #     print("*** entering upgrade_user_collections ***")
+    #     if user_obj is None:
+    #         user_obj = current_user
+    #     string_start = user_obj.username + ".data_collection."
+    #     cfilter = {"name": {"$regex": string_start + "(.*)"}}
+    #     old_cnames = self.db.list_collection_names(filter=cfilter)
+    #     failed_conversions = []
+    #     for old_cname in old_cnames:
+    #         try:
+    #             print("converting " + old_cname)
+    #             if old_cname == user_obj.username + ".data_collections":
+    #                 continue
+    #             short_name = re.search(string_start + "(.*)", old_cname).group(1)
+    #             if short_name not in user_obj.data_collection_names:
+    #                 print("converting " + short_name)
+    #                 doc_dict, dm_dict, hl_dict, coll_mdata = user_obj.get_all_collection_info_legacy(short_name)
+    #                 new_save_dict = {"metadata": coll_mdata,
+    #                                  "collection_name": short_name}
+    #                 collection_dict = {"doc_dict": doc_dict,
+    #                                    "doc_mdata_dict": dm_dict,
+    #                                    "header_list_dic": hl_dict}
+    #                 cdict = make_jsonizable_and_compress(collection_dict)
+    #                 new_save_dict["file_id"] = self.fs.put(cdict)
+    #                 self.db[user_obj.collection_collection_name].insert_one(new_save_dict)
+    #                 print("removing " + short_name)
+    #                 user_obj.remove_collection_legacy(short_name)
+    #         except Exception as ex:
+    #             failed_conversions.append(old_cname)
+    #             print(self.get_traceback_message(ex))
+    #     print("failed conversions " + str(failed_conversions))
+    #     return {"success": True}

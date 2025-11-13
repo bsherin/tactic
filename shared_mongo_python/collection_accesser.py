@@ -14,43 +14,49 @@ class CollectionAccess(object):
     collection_content_field = None
     collection_additional_mdata_fields = ["type", "number_of_docs"]
 
-    @property
-    def collection_collection_name(self):
-        return '{}.data_collections'.format(self.username)
+    def collection_collection_name(self, username=None):
+        username = username if username else self.username
+        return '{}.data_collections'.format(username)
 
-    def get_collection_doc(self, collection_name):
-        doc = self.db[self.collection_collection_name].find_one(
+    def get_collection_doc(self, collection_name, username=None):
+        username = username if username else self.username
+        doc = self.db[self.collection_collection_name(username)].find_one(
             {"collection_name": collection_name}, {"_id": 0}
         )
         return doc if doc else None
 
-    def get_collection_doc_from_id(self, collection_id):
-        doc = self.db[self.collection_collection_name].find_one(
+    def get_collection_doc_from_id(self, collection_id, username=None):
+        username = username if username else self.username
+        doc = self.db[self.collection_collection_name(username)].find_one(
             {"_id": ObjectId(collection_id)}, {"_id": 0}
         )
         return doc if doc else None
 
-    def remove_collection(self, collection_name):
+    def remove_collection(self, collection_name, username=None):
+        username = username if username else self.username
         save_dict = self.get_collection_doc(collection_name)
         if "file_id" in save_dict:
             self.fs.delete(save_dict["file_id"])
-        self.db[self.collection_collection_name].delete_one({"collection_name": collection_name})
+        self.db[self.collection_collection_name(username)].delete_one({"collection_name": collection_name})
         return
 
 
-    def delete_all_data_collections(self):
-        for dcol in self.collection_names:
+    def delete_all_data_collections(self, username=None):
+        username = username if username else self.username
+        for dcol in self.collection_names(username):
             self.remove_collection(dcol)
         return
 
-    def get_collection_metadata(self, collection_name):
-        doc = self.db[self.collection_collection_name].find_one(
+    def get_collection_metadata(self, collection_name, username=None):
+        username = username if username else self.username
+        doc = self.db[self.collection_collection_name(username)].find_one(
             {"collection_name": collection_name}, {"metadata": 1, "_id": 0}
         )
         return doc.get("metadata", None) if doc else None
 
-    def get_processed_collection_metadata(self, collection_name, search_inside=False, search_string=None):
-        mdata = self.get_collection_metadata(collection_name)
+    def get_processed_collection_metadata(self, collection_name, search_inside=False, search_string=None, username=None):
+        username = username if username else self.username
+        mdata = self.get_collection_metadata(collection_name, username)
         if mdata is None:
             return None
         else:
@@ -65,52 +71,55 @@ class CollectionAccess(object):
                 result["search_context"] = search_context
             return result
 
-    def collection_name_exists(self, collection_name):
-        return self.db[self.collection_collection_name].find_one(
+    def collection_name_exists(self, collection_name, username=None):
+        username = username if username else self.username
+        return self.db[self.collection_collection_name(username)].find_one(
             {"collection_name": collection_name}, {"_id": 1}
         ) is not None
 
 
-    def get_doc_type(self, coll_name):
-        coll_mdata = self.get_collection_metadata(coll_name)
+    def get_doc_type(self, coll_name, username=None):
+        username = username if username else self.username
+        coll_mdata = self.get_collection_metadata(coll_name, username)
         if "type" in coll_mdata and coll_mdata["type"] == "freeform":
             doc_type = "freeform"
         else:
             doc_type = "table"
         return doc_type
 
-    @property
-    def collection_names(self):
+    def collection_names(self, username=None):
+        username = username if username else self.username
         names = [
             doc["collection_name"]
-            for doc in self.db[self.collection_collection_name].find(
+            for doc in self.db[self.collection_collection_name(username)].find(
                 {}, {"collection_name": 1, "_id": 0}
             )
         ]
         return names
 
-    @property
-    def collection_names_with_metadata(self):
+    def collection_names_with_metadata(self, username=None):
+        username = username if username else self.username
         my_collection_names = []
-        for doc in self.db[self.collection_collection_name].find({}, {"_id": 0, "metadata": 1, "collection_name": 1}):
+        for doc in self.db[self.collection_collection_name(username)].find({}, {"_id": 0, "metadata": 1, "collection_name": 1}):
             if "metadata" in doc:
                 my_collection_names.append([doc["collection_name"], doc["metadata"]])
             else:
                 my_collection_names.append([doc["collection_name"], None])
         return sorted(my_collection_names, key=self.sort_data_list_key)
 
-    @property
-    def collection_tags_dict(self):
+    def collection_tags_dict(self, username):
+        username = username if username else self.username
         tags = {}
-        for doc in self.db[self.collection_collection_name].find({}, {"_id": 0, "metadata": 1, "collection_name": 1}):
+        for doc in self.db['{}.data_collections'.format(username)].find({}, {"_id": 0, "metadata": 1, "collection_name": 1}):
             if "metadata" in doc:
                 tags[doc["collection_name"]] = doc["metadata"]["tags"]
             else:
                 tags[doc["collection_name"]] = ""
         return tags
 
-    def get_all_collection_tags(self, show_hidden=True):
-        res_list = self.collection_names_with_metadata
+    def get_all_collection_tags(self, show_hidden=True, username=None):
+        username = username if username else self.username
+        res_list = self.collection_names_with_metadata(username)
         result = []
         for res_item in res_list:
             mdata = res_item[1]
@@ -121,8 +130,9 @@ class CollectionAccess(object):
             all_tags = list(filter(lambda tag: not re.search("(^|/| )hidden($|/| )", tag), all_tags))
         return all_tags
 
-    def grab_filtered_collections(self, search_text, search_spec, columns, is_repo=False):
-        flist, all_tags = self.grab_filtered_resources("collection", self.collection_collection_name, "collection_name",
+    def grab_filtered_collections(self, search_text, search_spec, columns, is_repo=False, username=None):
+        username = username if username else self.username
+        flist, all_tags = self.grab_filtered_resources("collection", self.collection_collection_name(username), "collection_name",
                                                         None, self.collection_additional_mdata_fields, search_text, search_spec,
                                                         columns, is_repo=is_repo)
 
@@ -139,9 +149,9 @@ class CollectionAccess(object):
 
 
     def create_complete_collection(self, new_name, doc_dict, doc_type, document_metadata=None,
-                                   header_list_dict=None, collection_metadata={}, temp_data=None):
-
-        if temp_data is None and new_name in self.collection_names:
+                                   header_list_dict=None, collection_metadata={}, temp_data=None, username=None):
+        username = username if username else self.username
+        if temp_data is None and new_name in self.collection_names(username):
             raise NameExistsError("Collection name {} already exists".format(new_name))
         mdata = self.create_initial_metadata()
         mdata["number_of_docs"] = len(list(doc_dict.keys()))
@@ -174,13 +184,14 @@ class CollectionAccess(object):
             unique_id = self.store_temp_data(new_save_dict)
             return {"success": True, "message": "Collection created", "temp_id": unique_id}
         else:
-            self.db[self.collection_collection_name].insert_one(new_save_dict)
+            self.db[self.collection_collection_name(username)].insert_one(new_save_dict)
 
         if "_id" in mdata:
             del mdata["_id"]  # without this can get an error submitting the result
         return {"success": True, "message": "Collection created"}
 
-    def create_empty_collection(self, collection_name, doc_type, csv_options=None):
+    def create_empty_collection(self, collection_name, doc_type, csv_options=None, username=None):
+        username = username if username else self.username
         collection_mdata = {}
         if csv_options is not None:
             collection_mdata["csv_options"] = csv_options
@@ -194,34 +205,36 @@ class CollectionAccess(object):
             result = {"success": False, "message": msg}
         return result
 
-    def rename_collection(self, old_name, new_name):
-        if not self.collection_name_exists(old_name):
+    def rename_collection(self, old_name, new_name, username=None):
+        username = username if username else self.username
+        if not self.collection_name_exists(old_name, username):
             raise ValueError(f"collection with name {old_name} does not exist.")
-        if self.collection_name_exists(new_name):
+        if self.collection_name_exists(new_name, username):
             raise ValueError(f"collection with name {new_name} already exists.")
-        self.db[self.collection_collection_name].update_one(
+        self.db[self.collection_collection_name(username)].update_one(
             {"collection_name": old_name},
             {"$set": {"collection_name": new_name}}
         )
         return
 
-    def save_collection_metadata(self, collection_name, metadata):
-        if not self.collection_name_exists(collection_name):
+    def save_collection_metadata(self, collection_name, metadata, username=None):
+        username = username if username else self.username
+        if not self.collection_name_exists(collection_name, username):
             raise ValueError(f"collection with name {collection_name} does not exist.")
-        mdata = self.get_collection_metadata(collection_name)
+        mdata = self.get_collection_metadata(collection_name, username)
         if mdata is None:
             mdata = {}
         mdata.update(metadata)
-        self.db[self.collection_collection_name].update_one(
+        self.db[self.collection_collection_name(username)].update_one(
             {"collection_name": collection_name},
             {"$set": {"metadata": mdata}}
         )
         return
 
-    def rename_tags_in_collections(self, tag_changes):
+    def rename_tags_in_collections(self, tag_changes, username=None):
         if not tag_changes:
             return
-        for doc in self.db[self.collection_collection_name].find({}, {"_id": 0, "metadata": 1, "collection_name": 1}):
+        for doc in self.db[self.collection_collection_name(username)].find({}, {"_id": 0, "metadata": 1, "collection_name": 1}):
             mdata = doc.get("metadata", None)
             if mdata is not None and "tags" in mdata:
                 taglist = mdata["tags"].split()
@@ -230,28 +243,28 @@ class CollectionAccess(object):
                         taglist.remove(old_tag)
                         if new_tag not in taglist:
                             taglist.append(new_tag)
-                        self.db[self.collection_collection_name].update_one(
+                        self.db[self.collection_collection_name(username)].update_one(
                             {"collection_name": doc["collection_name"]},
                             {"$set": {"metadata.tags": " ".join(taglist)}}
                         )
         return
 
-    def delete_tag_in_collections(self, tag):
+    def delete_tag_in_collections(self, tag, username=None):
         if not tag:
             return
-        for doc in self.db[self.collection_collection_name].find({}, {"_id": 0, "metadata": 1, "collection_name": 1}):
+        for doc in self.db[self.collection_collection_name(username)].find({}, {"_id": 0, "metadata": 1, "collection_name": 1}):
             mdata = doc.get("metadata", None)
             if mdata and "tags" in mdata:
                 taglist = mdata["tags"].split()
                 if tag in taglist:
                     taglist.remove(tag)
-                    self.db[self.collection_collection_name].update_one(
+                    self.db[self.collection_collection_name(username)].update_one(
                         {"collection_name": doc["collection_name"]},
                         {"$set": {"metadata.tags": " ".join(taglist)}}
                     )
         return
 
-    def append_freeform_documents(self, collection_name, file_list):
+    def append_freeform_documents(self, collection_name, file_list, username=None):
         from file_handling import read_freeform_file
         user_obj = current_user
         new_doc_dict = {}
@@ -273,7 +286,7 @@ class CollectionAccess(object):
 
         for dname, doc in new_doc_dict.items():
             try:
-                _ = self.append_documents_to_collection(collection_name, {dname: doc}, "freeform")
+                _ = self.append_documents_to_collection(collection_name, {dname: doc}, "freeform", username=username)
             except Exception as ex:
                 msg = self.get_traceback_message(ex, "Error appending document {}".format(dname))
                 failed_reads[dname] = msg
@@ -374,11 +387,12 @@ class CollectionAccess(object):
                 "failed_reads": failed_reads}
 
     def append_documents_to_collection(self, collection_name, doc_dict, doc_type,
-                                       header_list_dict=None, doc_mddict=None):
-        name_exists = collection_name in self.collection_names
+                                       header_list_dict=None, doc_mddict=None, username=None):
+        username = username if username else self.username
+        name_exists = collection_name in self.collection_names(username)
         if not name_exists:
             raise NonexistentNameError("Base collection name {} doesn't exists".format(collection_name))
-        old_doc_dict, old_doc_mddict, old_hl_dict, old_mdata = self.get_all_collection_info(collection_name)
+        old_doc_dict, old_doc_mddict, old_hl_dict, old_mdata = self.get_all_collection_info(collection_name, username)
 
         ndoc_mddict = {}
         if doc_mddict is not None:
@@ -422,19 +436,20 @@ class CollectionAccess(object):
                            "header_list_dic": old_hl_dict}
         cdict = make_jsonizable_and_compress(collection_dict)
         new_save_dict["file_id"] = self.fs.put(cdict)
-        old_save_dict = self.db[self.collection_collection_name].find_one({"collection_name": collection_name})
+        old_save_dict = self.db[self.collection_collection_name(username)].find_one({"collection_name": collection_name})
         self.fs.delete(old_save_dict["file_id"])
-        self.db[self.collection_collection_name].update_one({"collection_name": collection_name},
+        self.db[self.collection_collection_name(username)].update_one({"collection_name": collection_name},
                                                             {'$set': new_save_dict})
         return {"success": True}
 
 
-    def get_all_collection_info(self, short_collection_name, return_lists=True, temp_id=None):
-        if temp_id is None and short_collection_name not in self.collection_names:
+    def get_all_collection_info(self, short_collection_name, return_lists=True, temp_id=None, username=None):
+        username = username if username else self.username
+        if temp_id is None and short_collection_name not in self.collection_names(username):
             raise NonexistentNameError("")
         else:
             if temp_id is None:
-                save_dict = self.get_collection_doc(short_collection_name)
+                save_dict = self.get_collection_doc(short_collection_name, username=username)
             else:
                 save_dict = self.read_temp_data(self.db, temp_id)
             collection_metadata = save_dict["metadata"]

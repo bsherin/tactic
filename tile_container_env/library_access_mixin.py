@@ -28,7 +28,7 @@ class LibraryAccessMixin:
     def get_user_list(self, the_list):
         self._save_stdout()
         # result = self._tworker.post_and_wait("host", "get_list", {"user_id": self.user_id, "list_name": the_list})
-        raw_result = self._tworker.post_and_wait(self._main_id, "get_list_with_metadata_task", {"list_name": the_list})
+        raw_result = self._tworker.post_and_wait_to_main("get_list_with_metadata_task", {"list_name": the_list})
         result = debinarize_python_object(raw_result["list_data"])
         self._restore_stdout()
         if result is None:
@@ -54,7 +54,7 @@ class LibraryAccessMixin:
 
     def get_user_collection(self, collection_name):
         self._save_stdout()
-        result = self._tworker.post_and_wait(self._main_id, "get_user_collection",
+        result = self._tworker.post_and_wait_to_main("get_user_collection",
                                              {"user_id": self.user_id, "collection_name": collection_name})
         self._restore_stdout()
         if result["the_collection"] is None:
@@ -63,35 +63,35 @@ class LibraryAccessMixin:
 
     def get_user_code(self, code_name):
         self._save_stdout()
-        result = self._tworker.post_and_wait(self._main_id, "get_user_code",
+        result = self._tworker.post_and_wait_to_main("get_user_code",
                                              {"user_id": self.user_id, "code_name": code_name})
         self._restore_stdout()
         return result["the_code"]
 
     def get_collection_names(self):
         self._save_stdout()
-        result = self._tworker.post_and_wait(self._main_id, "get_collection_names",
+        result = self._tworker.post_and_wait_to_main("get_collection_names",
                                              {"user_id": self.user_id})
         self._restore_stdout()
         return result["collection_names"]
 
     def get_list_names(self):
         self._save_stdout()
-        result = self._tworker.post_and_wait(self._main_id, "get_list_names",
+        result = self._tworker.post_and_wait_to_main("get_list_names",
                                              {"user_id": self.user_id})
         self._restore_stdout()
         return result["list_names"]
 
     def get_function_names(self, tag=None):
         self._save_stdout()
-        result = self._tworker.post_and_wait(self._main_id, "get_function_names_task",
+        result = self._tworker.post_and_wait_to_main("get_function_names_task",
                                             {"tag_filter": tag, "search_filter": None})
         self._restore_stdout()
         return result["function_names"]
 
     def get_class_names(self, tag=None):
         self._save_stdout()
-        result = self._tworker.post_and_wait(self._main_id, "get_class_names_task",
+        result = self._tworker.post_and_wait_to_main("get_class_names_task",
                                              {"tag_filter": tag, "search_filter": None})
         self._restore_stdout()
         return result["class_names"]
@@ -140,7 +140,7 @@ class LibraryAccessMixin:
         self._save_stdout()
         data = self.assemble_collection_data("", doc_dict, doc_type, doc_metadata)
         data["temp_data"] = {"type": temp_type, "file_name": file_name}
-        result = self._tworker.post_and_wait(self._main_id, "create_collection_task", data)
+        result = self._tworker.post_and_wait_to_main("create_collection_task", data)
         self._restore_stdout()
         if not result["success"]:
             raise Exception(result["message"])
@@ -151,7 +151,7 @@ class LibraryAccessMixin:
         self._save_stdout()
         data = self.assemble_collection_data(name, doc_dict, doc_type, doc_metadata,
                                              header_list_dict, collection_metadata)
-        result = self._tworker.post_and_wait(self._main_id, "create_collection_task", data)
+        result = self._tworker.post_and_wait_to_main("create_collection_task", data)
         self._restore_stdout()
         if not result["success"]:
             raise Exception(result["message"])

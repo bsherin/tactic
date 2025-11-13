@@ -4,7 +4,7 @@ import {Fragment, useState, useEffect, useRef, memo, useContext} from "react";
 import { Card, Button, InputGroup, Spinner, ButtonGroup, FormGroup, Divider} from "@blueprintjs/core";
 
 import {GlyphButton, SelectList} from "./blueprint_react_widgets";
-import {postWithCallback, postPromise} from "./communication_react"
+import {postWithCallback, postWithCallbackMain, postPromise, postPromiseMain} from "./communication_react"
 import {useCallbackStack, useStateAndRef} from "./utilities_react";
 import {ErrorDrawerContext} from "./error_drawer";
 import {widgetDict} from "./widgets";
@@ -190,7 +190,7 @@ function ExportsViewer(props) {
 
     async function _updateExportsList() {
         try {
-            let data = await postPromise(props.local_id, "get_full_pipe_dict", {}, props.local_id);
+            let data = await postPromiseMain(props.local_id, "get_full_pipe_dict", {local_id: props.local_id}, props.local_id);
             set_pipe_dict(data.pipe_dict)
         }
         catch (e) {
@@ -220,18 +220,18 @@ function ExportsViewer(props) {
         _showMySpinner();
         let send_data = {
             "export_name": selected_export_ref.current,
-            "tail": tail_value,
+            "tail": tail_value
         };
         if (key_list) {
             send_data.key = key_list_value
         }
-        postWithCallback(props.local_id, "evaluate_export", send_data, null,null, props.local_id);
+        postWithCallbackMain(props.local_id, "evaluate_export", send_data, null,null, props.local_id);
         if (e) e.preventDefault();
     }
 
     function _stopMe() {
         _stopMySpinner();
-        postWithCallback(props.local_id, "stop_evaluate_export", {}, null, null, props.local_id);
+        postWithCallbackMain(props.local_id, "stop_evaluate_export", {}, null, null, props.local_id);
     }
 
     function _showMySpinner() {
@@ -278,7 +278,7 @@ function ExportsViewer(props) {
         set_selected_export(fullname);
         set_selected_export_tilename(tilename);
         set_selected_export_short_name(shortname);
-        postWithCallback(props.local_id, "get_export_info", {"export_name": fullname}, null, null, props.local_id);
+        postWithCallbackMain(props.local_id, "get_export_info", {"export_name": fullname}, null, null, props.local_id);
     }
 
     function _handleKeyListChange(new_value) {

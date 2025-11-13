@@ -1,10 +1,13 @@
 
-from gevent import monkey
-# import pydevd_pycharm
-# pydevd_pycharm.settrace('host.docker.internal', port=21000, stdout_to_server=True, stderr_to_server=True, suspend=False)
-monkey.patch_all()
-print("entering main_main")
 import os
+
+if os.environ.get("DEBUG", "False").lower() == "true":
+    print("got debug mode")
+    import pydevd_pycharm
+    pydevd_pycharm.settrace('host.docker.internal', port=21000)
+
+print("entering main_main")
+
 import uuid
 import datetime
 import flask
@@ -19,9 +22,7 @@ from communication_utils import emit_direct
 
 from main import mainWindow
 
-# noinspection PyUnresolvedReferences
 from qworker import QWorker, task_worthy, callback_dict, callback_data_dict, error_handler_dict
-# noinspection PyUnresolvedReferences
 import qworker
 
 import sys
@@ -35,23 +36,20 @@ rb_id = os.environ.get("RB_ID")
 
 class MainWorker(QWorker, ExceptionMixin, CopilotMixin):
     def __init__(self, ):
-        QWorker.__init__(self)
-        self.mwindow = None
+        QWorker.__init__(self, service_name="main_service")
+        self.mwindow = mainWindow(self)
+        self.handler_instances["mainwindow"] = self.mwindow
         self.get_megaplex_task_now = False
-        self.generate_heartbeats = True
-        self.sessions = {
-            self.my_id : {
-                "openai_api_key": os.environ.get("OPENAI_API_KEY"),
-                "client": None,
-            }
-        }
 
-    def ask_host(self, msg_type, task_data=None, callback_func=None):
-        task_data["local_id"] = self.my_id
+    def ask_host(self, sid, msg_type, task_data=None, callback_func=None):
+        if task_data is None:
+            task_data = {}
+        task_data["local_id"] = sid
         self.post_task("host", msg_type, task_data, callback_func)
         return
 
-    def is_container_local(self, the_id):
+    @staticmethod
+    def is_container_local(the_id):
         return the_id not in ["host", "client"]
 
     def handle_response(self, task_packet):
@@ -72,134 +70,121 @@ class MainWorker(QWorker, ExceptionMixin, CopilotMixin):
         self.post_task(tile_id, msg_type, task_data, callback_func)
         return
 
-    def emit_table_message(self, message, data=None):
+    def emit_table_message(self, sid, message, data=None):
         if data is None:
             data = {}
         data["table_message"] = message
-        self.emit_to_main_client("table-message", data)
+        self.emit_to_main_client(sid, "table-message", data)
         return
 
-    def emit_to_user(self, message, data=None):
-        print("Emitting to user with message: {} and data {}".format(message, str(data)))
-        emit_direct(message, data, namespace='/main', room=self.mwindow.user_id)
+    def emit_to_client(self, message, task_packet):
+        task_packet["message"] = message
+        self.post_task("host", "emit_to_client", task_packet)
 
-    def emit_to_main_client(self, message, data):
-        data["local_id"] = self.my_id  # probably not necessary
-        emit_direct(message, data, namespace='/main', room=self.my_id)
+    def emit_to_user(self, sid, message, data=None):
+        sess = self.mwindow.get_session(sid)
+        user_id = sess.user_id
+        data["message"] = message
+        data["room"] = user_id
+        self.ask_host(sid, "emit_to_client", data)
 
-    def emit_console_message(self, console_message, task_data=None, force_open=True):
+    def emit_to_main_client(self, sid, message, data):
+        data["message"] = message
+        self.ask_host(sid, "emit_to_client", data)
+
+    def emit_console_message(self, sid, console_message, task_data=None, force_open=True):
         if task_data is None:
             task_data = {}
         ldata = copy.copy(task_data)
         ldata["console_message"] = console_message
         ldata["force_open"] = force_open
-        self.emit_to_main_client("console-message", ldata)
+        self.emit_to_main_client(sid, "console-message", ldata)
         return
 
-    def emit_export_viewer_message(self, message, data=None):
+    def emit_export_viewer_message(self, sid, message, data=None):
         if data is None:
             data = {}
         data["export_viewer_message"] = message
-        data["local_id"] = self.my_id
-        self.emit_to_main_client("export-viewer-message", data)
+        data["local_id"] = sid
+        self.emit_to_main_client(sid, "export-viewer-message", data)
         return
 
-    def send_error_entry(self, title, content, line_number=None):
-        self.emit_to_user("add-error-drawer-entry",
+    def send_error_entry(self, sid, title, content, line_number=None):
+        self.emit_to_user(sid, "add-error-drawer-entry",
                           {"message": "add-error-drawer-entry",
                            "title": title, "content": content, "line_number": line_number})
         return {"success": True}
 
-    def print_to_console(self, message, force_open=False, is_error=False, summary=None):
+    def print_to_console(self, sid, message, force_open=False, is_error=False, summary=None):
 
-        self.ask_host("print_to_console", {"message": message,
-                                           "force_open": force_open,
-                                           "is_error": is_error,
-                                           "user_id": self.mwindow.user_id,
-                                           "summary": summary})
+        self.ask_host(sid, "print_to_console", {"message": message,
+                       "force_open": force_open,
+                       "is_error": is_error,
+                       "user_id": self.mwindow.user_id,
+                       "summary": summary})
         return {"success": True}
 
-    def distribute_event(self, event_name, data_dict=None, tile_id=None):
+    def distribute_event(self, sid, event_name, data_dict=None, tile_id=None):
         if data_dict is None:
             data_dict = {}
+        data_dict["local_id"] = sid
         if tile_id is not None:
             self.ask_tile(tile_id, event_name, data_dict)
         else:
-            for tile_id in self.mwindow.tile_info.tile_ids:
+            sess = self.mwindow.get_session(sid)
+            tile_info = sess.tile_info
+            for tile_id in tile_info.tile_ids:
                 self.ask_tile(tile_id, event_name, data_dict)
         if event_name in self.mwindow.update_events:
-            self.post_task(self.my_id, event_name, data_dict)
+            self.post_task("main_service", event_name, data_dict)
         return True
 
-    @task_worthy
-    def hello(self):
-        return {"success": True, "message": 'This is mainwindow communicating'}
+    # @task_worthy
+    # def initialize_mainwindow(self, data_dict):
+    #     try:
+    #         print("data_dict is " + str(data_dict))
+    #
+    #         # missing: project_collection_name, mongo_uri, base_figure_url
+    #
+    #         self.mwindow = mainWindow(self, data_dict)
+    #         self.handler_instances["mainwindow"] = self.mwindow
+    #
+    #         task_data = {"success": True,
+    #                      "message": "finish-post-load",
+    #                      "collection_name": self.mwindow.collection_name,
+    #                      "doc_names": self.mwindow.doc_names,
+    #                      "console_html": ""}
+    #         if data_dict["doc_type"] in ["notebook", "none"]:
+    #             return task_data
+    #         print("ready to grab chunk")
+    #         if data_dict["doc_type"] == "table":
+    #             task_data.update(self.mwindow.grab_chunk_by_row_index({"doc_name": self.mwindow.doc_names[0], "row_index": 0, "set_visible_doc": True}))
+    #         else:
+    #             task_data.update(self.mwindow.grab_freeform_data({"doc_name": self.mwindow.doc_names[0], "set_visible_doc": True}))
+    #         # self.ask_host("emit_to_client", task_data)
+    #         print("got the chunk")
+    #         return task_data
+    #     except Exception as Ex:
+    #         emsg = self.handle_exception(Ex, "Error initializing mainwindow")
+    #         print(str(emsg))
+    #         return emsg
 
-    @task_worthy
-    def initialize_mainwindow(self, data_dict):
-        try:
-            print("entering intialize mainwindow")
-            print("data_dict is " + str(data_dict))
-
-            # missing: project_collection_name, mongo_uri, base_figure_url
-
-            self.mwindow = mainWindow(self, data_dict)
-            self.handler_instances["mainwindow"] = self.mwindow
-
-            task_data = {"success": True,
-                         "message": "finish-post-load",
-                         "collection_name": self.mwindow.collection_name,
-                         "doc_names": self.mwindow.doc_names,
-                         "console_html": ""}
-            if data_dict["doc_type"] in ["notebook", "none"]:
-                return task_data
-            print("ready to grab chunk")
-            if data_dict["doc_type"] == "table":
-                task_data.update(self.mwindow.grab_chunk_by_row_index({"doc_name": self.mwindow.doc_names[0], "row_index": 0, "set_visible_doc": True}))
-            else:
-                task_data.update(self.mwindow.grab_freeform_data({"doc_name": self.mwindow.doc_names[0], "set_visible_doc": True}))
-            # self.ask_host("emit_to_client", task_data)
-            print("got the chunk")
-            return task_data
-        except Exception as Ex:
-            emsg = self.handle_exception(Ex, "Error initializing mainwindow")
-            print(str(emsg))
-            return emsg
-
-    @task_worthy
-    def initialize_project_mainwindow(self, data_dict):
-        try:
-            print("entering intialize project mainwindow")
-            self.mwindow = mainWindow(self, data_dict)
-            self.handler_instances["mainwindow"] = self.mwindow
-            if data_dict["doc_type"] == "jupyter":
-                self.post_task(self.my_id, "do_full_jupyter_recreation", data_dict)
-            elif data_dict["doc_type"] == "notebook":
-                self.post_task(self.my_id, "do_full_notebook_recreation", data_dict)
-            else:
-                self.post_task(self.my_id, "do_full_recreation", data_dict)
-            print("leaving initialize_project_mainwindow")
-            return {"success": True}
-        except Exception as ex:
-            return self.handle_exception(ex, "Error initializing project mainwindow")
-
-    # noinspection PyUnusedLocal
-    @task_worthy
-    def get_saved_console_code(self, data_dict):
-        print("entering saved console code")
-        return {"saved_console_code": self.mwindow.console_cm_code}
-
-    # noinspection PyUnusedLocal
-    @task_worthy
-    def get_jupyter_cell_data(self, data_dict):
-        print("entering get_jupyter_cell_data")
-        return {"cell_data": self.mwindow.jupyter_cells}
-
-    # def ready(self):
-    #     self.ask_host("participant_ready", {"rb_id": rb_id, "user_id": os.environ.get("OWNER"),
-    #                                         "participant": self.my_id, "local_id": self.my_id
-    #                                         })
-    #     return
+    # @task_worthy
+    # def initialize_project_mainwindow(self, data_dict):
+    #     try:
+    #         print("entering intialize project mainwindow")
+    #         self.mwindow = mainWindow(self, data_dict)
+    #         self.handler_instances["mainwindow"] = self.mwindow
+    #         if data_dict["doc_type"] == "jupyter":
+    #             self.post_task(self.my_id, "do_full_jupyter_recreation", data_dict)
+    #         elif data_dict["doc_type"] == "notebook":
+    #             self.post_task(self.my_id, "do_full_notebook_recreation", data_dict)
+    #         else:
+    #             self.post_task(self.my_id, "do_full_recreation", data_dict)
+    #         print("leaving initialize_project_mainwindow")
+    #         return {"success": True}
+    #     except Exception as ex:
+    #         return self.handle_exception(ex, "Error initializing project mainwindow")
 
 
 if __name__ == "__main__":

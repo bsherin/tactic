@@ -7,7 +7,7 @@ import {Text, FormGroup, Spinner, InputGroup, ButtonGroup, Button, Card, Switch}
 import {GlyphButton} from "./blueprint_react_widgets";
 import {ReactCodemirror6} from "./react-codemirror6";
 import {BpSelect} from "./selector_advanced";
-import {postPromise, postWithCallback} from "./communication_react"
+import {postPromiseMain, postWithCallbackMain} from "./communication_react"
 import {ResponsiveFlex} from "./searchable_console";
 
 export {MainTableCard, MainTableCardHeader, FreeformBody}
@@ -61,7 +61,7 @@ function FreeformBody(props) {
     }
 
     function _handleBlur(new_data_text) {
-        postWithCallback(props.local_id, "add_freeform_document",
+        postWithCallbackMain(props.local_id, "add_freeform_document",
             {document_name: props.mState.table_spec.current_doc_name, doc_text: new_data_text}, null)
     }
 
@@ -100,9 +100,9 @@ function MainTableCardHeader(props) {
     async function _handleFilter() {
         const data_dict = {"text_to_find": props.mState.search_text};
         try {
-            await postPromise(props.local_id, "UnfilterTable", data_dict);
+            await postPromiseMain(props.local_id, "UnfilterTable", data_dict);
             if (props.search_text !== "") {
-                await postPromise(props.local_id, "FilterTable", data_dict);
+                await postPromiseMain(props.local_id, "FilterTable", data_dict);
                 props.setMainStateValue({
                     "table_is_filtered": true,
                     "selected_regions": null,
@@ -118,7 +118,7 @@ function MainTableCardHeader(props) {
         props.handleSearchFieldChange(null);
         try {
             if (props.mState.table_is_filtered) {
-                await postPromise(props.local_id, "UnfilterTable", {selected_row: props.mState.selected_row});
+                await postPromiseMain(props.local_id, "UnfilterTable", {selected_row: props.mState.selected_row});
                 props.setMainStateValue({
                     "table_is_filtered": false,
                     "selected_regions": null,

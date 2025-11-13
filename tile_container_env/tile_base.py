@@ -30,6 +30,7 @@ import copy
 from qworker_alt import task_worthy_methods, task_worthy_manual_submit_methods
 
 from widgets import kind_dict
+
 RETRIES = os.environ.get("RETRIES")
 
 
@@ -37,6 +38,7 @@ RETRIES = os.environ.get("RETRIES")
 def _task_worthy(m):
     task_worthy_methods[m.__name__] = "tilebase"
     return m
+
 
 def _task_worthy_manual_submit(m):
     task_worthy_manual_submit_methods[m.__name__] = "tilebase"
@@ -54,7 +56,6 @@ _jsonizable_types = {
     "NoneType": type(None)
 }
 
-
 _code_names = {"classes": {},
                "functions": {}}
 
@@ -67,16 +68,20 @@ def global_import(*argv):
         globals()[imp] = __import__(imp, globals(), locals(), [], 0)
     return
 
+
 # This too
 def escape_html(html):
     return (
         str(html).replace("&", "&amp;")
-            .replace("<", "&lt;")
-            .replace(">", "&gt;")
-            .replace('"', "&quot;")
-            .replace("'", "&#39;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+        .replace('"', "&quot;")
+        .replace("'", "&#39;")
     )
+
+
 xh = escape_html
+
 
 def user_function(the_func):
     _code_names["functions"][the_func.__name__] = the_func
@@ -441,15 +446,17 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
 
                 match option["type"]:
                     case "column_select":
-                         form_item["option_list"] = data["current_header_list"]
+                        form_item["option_list"] = data["current_header_list"]
                     case "column_select":
                         form_item["option_list"] = data["current_header_list"]
                     case "tokenizer_select":  # for backward compatibility
                         form_item["option_list"] = self._get_sorted_match_list(["tokenizer"], data["function_names"])
                     case "weight_function_select":  # for backward compatibility
-                        form_item["option_list"] = self._get_sorted_match_list(["weight_function"], data["function_names"])
-                    case  "cluster_metric":  # for backward comptibility
-                        form_item["option_list"] = self._get_sorted_match_list(["cluster_metric"], data["function_names"])
+                        form_item["option_list"] = self._get_sorted_match_list(["weight_function"],
+                                                                               data["function_names"])
+                    case "cluster_metric":  # for backward comptibility
+                        form_item["option_list"] = self._get_sorted_match_list(["cluster_metric"],
+                                                                               data["function_names"])
                     case "pipe_select":
                         form_item["starting_value"] = self._find_best_pipe_match(starting_value, att_name, option_tags)
                         form_item["pipe_dict"] = {}
@@ -471,7 +478,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
                         form_item["option_list"] = data["doc_names"]
                     case "list_select":
                         form_item["option_list"] = self._get_sorted_match_list(option_tags, data["list_names"])
-                    case"collection_select":
+                    case "collection_select":
                         form_item["option_list"] = self._get_sorted_match_list(option_tags, data["collection_names"])
                     case "function_select":
                         form_item["option_list"] = self._get_sorted_match_list(option_tags, data["function_names"])
@@ -566,6 +573,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
                     continue
         data = {"tile_type": self.tile_type, "user_id": self.user_id}
         result["tile_id"] = self._tworker.my_id
+
         def got_module_name(mdata):
             print("got module_name")
             result["module_name"] = mdata["module_name"]
@@ -735,11 +743,11 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
 
     def distribute_event(self, event_name, data_dict):
         data_dict["event_name"] = event_name
-        self._tworker.post_task(self._main_id, "distribute_events_stub", data_dict)
+        self._tworker.post_to_main("distribute_events_stub", data_dict)
 
     def _get_main_property(self, prop_name):
         data_dict = {"property": prop_name}
-        result = self._tworker.post_and_wait(self._main_id, "get_property", data_dict)
+        result = self._tworker.post_and_wait_to_main("get_property", data_dict)
         return result["val"]
 
     def _hide_options(self):
@@ -756,6 +764,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
         return False
 
     def get_export_type_info(self):
+        print("in get_export_type_info")
         exports_with_type_info = []
         for exp in self.exports:
             new_exp = copy.deepcopy(exp)
@@ -764,6 +773,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
             else:
                 new_exp["type"] = "unknown"
             exports_with_type_info.append(new_exp)
+        print("leaving get_export_type_info")
         return exports_with_type_info
 
     def convert_content_to_widget_list(self, content):
@@ -794,10 +804,10 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
             current_exports = self.get_export_type_info()
             if self.exports_have_changed(current_exports):
                 self._last_exports = current_exports
-                self._tworker.post_task(self._main_id, "update_pipe_dict_task",
-                                        {"exports": current_exports,
-                                         "tile_id": self._tworker.my_id,
-                                         "tile_name": self.tile_name})
+                self._tworker.post_to_main("update_pipe_dict_task",
+                                           {"exports": current_exports,
+                                            "tile_id": self._tworker.my_id,
+                                            "tile_name": self.tile_name})
                 message = {"html": new_html, "exports_changed": True}
             else:
                 message = {"html": new_html, "exports_changed": False}
@@ -810,16 +820,16 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
     def recreate_from_save(self, save_dict):
         if "binary_attrs" not in save_dict:
             save_dict["binary_attrs"] = []
-        for(attr, attr_val) in save_dict.items():
+        for (attr, attr_val) in save_dict.items():
             print("processing attribute {}".format(attr))
             if type(attr_val) == dict and hasattr(attr_val, "recreate_from_save"):
                 cls = getattr(sys.modules[__name__], attr_val["my_class_for_recreate"])
                 setattr(self, attr, cls.recreate_from_save(attr_val))
-            elif((type(attr_val) == dict) and (len(attr_val) > 0) and
-                 hasattr(list(attr_val.values())[0], "recreate_from_save")):
+            elif ((type(attr_val) == dict) and (len(attr_val) > 0) and
+                  hasattr(list(attr_val.values())[0], "recreate_from_save")):
                 cls = getattr(sys.modules[__name__], list(attr_val.values())[0]["my_class_for_recreate"])
                 res = {}
-                for(key, val) in attr_val.items():
+                for (key, val) in attr_val.items():
                     res[key] = cls.recreate_from_save(val)
                 setattr(self, attr, res)
             else:
@@ -866,8 +876,8 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
                          "front_width": self.front_width,
                          "back_height": self.back_height,
                          "back_width": self.back_width,
-                         "tile_log_height":  self.tile_log_height,
-                         "tile_log_width":  self.tile_log_width,
+                         "tile_log_height": self.tile_log_height,
+                         "tile_log_width": self.tile_log_width,
                          "tda_height": self.tda_height,
                          "tda_width": self.tda_width,
                          "is_strunk": self.is_shrunk,
@@ -895,6 +905,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
 
     def _set_tile_size(self, owidth, oheight):
         self._tworker.emit_tile_message("setTileSize", {"width": owidth, "height": oheight})
+
     # </editor-fold>
 
     # <editor-fold desc="Default Handlers">
@@ -989,12 +1000,12 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
             new_v.runner_type = "console"
             new_widgets[k] = new_v
 
-        self._tworker.post_task(self._main_id, "print_tile_to_console_event",
-                                {"current_html" :self.current_html,
-                                 "binary_widgets": make_python_object_jsonizable(new_widgets),
-                                 "force_open": "true",
-                                 "is_error": "false",
-                                 "summary": summary})
+        self._tworker.post_to_main("print_tile_to_console_event",
+                                   {"current_html": self.current_html,
+                                    "binary_widgets": make_python_object_jsonizable(new_widgets),
+                                    "force_open": "true",
+                                    "is_error": "false",
+                                    "summary": summary})
         return
 
     def handle_tile_word_click(self, clicked_word, doc_name, active_row_id=None):
@@ -1025,8 +1036,8 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
     # because its simpler having the execing machinery here.
     def get_user_function_with_metadata(self, function_name):
         self._save_stdout()
-        raw_result = self._tworker.post_and_wait(self._main_id, "get_function_with_metadata_task",
-                                                 {"function_name": function_name})
+        raw_result = self._tworker.post_and_wait_to_main("get_function_with_metadata_task",
+                                                         {"function_name": function_name})
 
         result = debinarize_python_object(raw_result["function_data"])
 
@@ -1042,8 +1053,8 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
 
     def get_user_class_with_metadata(self, class_name):
         self._save_stdout()
-        raw_result = self._tworker.post_and_wait(self._main_id, "get_class_with_metadata_task",
-                                                 {"class_name": class_name})
+        raw_result = self._tworker.post_and_wait_to_main("get_class_with_metadata_task",
+                                                         {"class_name": class_name})
 
         result = debinarize_python_object(raw_result["class_data"])
         if result is None:

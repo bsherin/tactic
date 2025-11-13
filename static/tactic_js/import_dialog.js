@@ -18,7 +18,7 @@ var _pool_tree = require("./pool_tree");
 var _settings = require("./settings");
 var _communication_react = require("./communication_react");
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
-function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t3 in e) "default" !== _t3 && {}.hasOwnProperty.call(e, _t3) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t3)) && (i.get || i.set) ? o(f, _t3, i) : f[_t3] = e[_t3]); return f; })(e, t); }
+function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t2 in e) "default" !== _t2 && {}.hasOwnProperty.call(e, _t2) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t2)) && (i.get || i.set) ? o(f, _t2, i) : f[_t2] = e[_t2]); return f; })(e, t); }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _toConsumableArray(r) { return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread(); }
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
@@ -259,11 +259,13 @@ function FileImportDialog(props) {
   // I think, perhaps when messages are shown in the dialog.
 
   function _uploadComplete(f) {
-    if (myDropzone.current.getQueuedFiles().length > 0) {
-      myDropzone.current.options.url = current_url.current;
-      myDropzone.current.processQueue();
-    } else if (props.after_upload) {
-      props.after_upload();
+    if (!window.use_s3) {
+      if (myDropzone.current.getQueuedFiles().length > 0) {
+        myDropzone.current.options.url = current_url.current;
+        myDropzone.current.processQueue();
+      } else if (props.after_upload) {
+        props.after_upload();
+      }
     }
   }
   function _onSending(_x, _x2, _x3) {
@@ -271,77 +273,56 @@ function FileImportDialog(props) {
   }
   function _onSending2() {
     _onSending2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2(file, xhr, formData) {
-      var extraValue, resp, _resp$upload_info, url, fields, key, bucket, content_type, fd, s3res, _t2;
       return _regenerator().w(function (_context2) {
         while (1) switch (_context2.n) {
           case 0:
-            if (window.use_ecs) {
-              _context2.n = 1;
-              break;
+            if (!window.use_s3) {
+              file.previewElement.scrollIntoView(false);
+              formData.append("extra_value", current_value_ref.current);
+              if (props.chunking) {
+                formData.append("dzuuid", file.upload.uuid);
+              }
             }
-            file.previewElement.scrollIntoView(false);
-            formData.append("extra_value", current_value_ref.current);
-            if (props.chunking) {
-              formData.append("dzuuid", file.upload.uuid);
-            }
-            _context2.n = 8;
-            break;
+            // else {
+            //     xhr.abort();
+            //
+            //     const extraValue = current_value_ref.current;
+            //
+            //     const resp = await postPromise("host", "get_s3_upload_info_task", {
+            //         filename: file.name,
+            //         content_type: file.type || "application/octet-stream",
+            //         dest_path: current_value_ref.current
+            //     });
+            //
+            //     if (!resp.success) {
+            //         this.emit("error", file, resp.message || "Failed to get presign");
+            //         this.emit("complete", file);
+            //         return;
+            //     }
+            //
+            //     const {url, fields, key, bucket, content_type} = resp.upload_info;
+            //
+            //     // Build a new multipart/form-data request to S3 using the returned fields + file
+            //     const fd = new FormData();
+            //     Object.entries(fields).forEach(([k, v]) => fd.append(k, v));
+            //     fd.append("file", file);
+            //
+            //     try {
+            //         const s3res = await fetch(url, {method: "POST", body: fd});
+            //         if (!s3res.ok) {
+            //             this.emit("error", `S3 upload failed: ${s3res.status}`);
+            //         }
+            //         this.emit("success", file, {key});
+            //     } catch (e) {
+            //         this.emit("error", file, e.message);
+            //     } finally {
+            //         this.emit("complete", file);
+            //     }
+            // }
           case 1:
-            xhr.abort();
-            extraValue = current_value_ref.current;
-            _context2.n = 2;
-            return (0, _communication_react.postPromise)("host", "get_s3_upload_info_task", {
-              filename: file.name,
-              content_type: file.type || "application/octet-stream",
-              dest_path: current_value_ref.current
-            });
-          case 2:
-            resp = _context2.v;
-            if (resp.success) {
-              _context2.n = 3;
-              break;
-            }
-            this.emit("error", file, resp.message || "Failed to get presign");
-            this.emit("complete", file);
-            return _context2.a(2);
-          case 3:
-            _resp$upload_info = resp.upload_info, url = _resp$upload_info.url, fields = _resp$upload_info.fields, key = _resp$upload_info.key, bucket = _resp$upload_info.bucket, content_type = _resp$upload_info.content_type; // Build a new multipart/form-data request to S3 using the returned fields + file
-            fd = new FormData();
-            Object.entries(fields).forEach(function (_ref2) {
-              var _ref3 = _slicedToArray(_ref2, 2),
-                k = _ref3[0],
-                v = _ref3[1];
-              return fd.append(k, v);
-            });
-            fd.append("file", file);
-            _context2.p = 4;
-            _context2.n = 5;
-            return fetch(url, {
-              method: "POST",
-              body: fd
-            });
-          case 5:
-            s3res = _context2.v;
-            if (!s3res.ok) {
-              this.emit("error", "S3 upload failed: ".concat(s3res.status));
-            }
-            this.emit("success", file, {
-              key: key
-            });
-            _context2.n = 7;
-            break;
-          case 6:
-            _context2.p = 6;
-            _t2 = _context2.v;
-            this.emit("error", file, _t2.message);
-          case 7:
-            _context2.p = 7;
-            this.emit("complete", file);
-            return _context2.f(7);
-          case 8:
             return _context2.a(2);
         }
-      }, _callee2, this, [[4, 6, 7, 8]]);
+      }, _callee2);
     }));
     return _onSending2.apply(this, arguments);
   }

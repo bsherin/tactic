@@ -5,17 +5,19 @@ import traceback
 from urllib.parse import unquote_plus
 
 from rabbit_manage import get_pika_connection_with_retries
-from aws_helpers import get_sms_parameter
+from aws_helpers import get_ssm_parameter
 
 print("*** pool_watcher_s3 revised starting... ***")
 
-S3_BUCKET = get_sms_parameter("BUCKET")  # e.g. "tactic-user-storage"
-SQS_QUEUE_URL = get_sms_parameter("SQS_QUEUE_URL")  # e.g. https://sqs.us-east-2.amazonaws.com/ACCT/tactic-user-storage-events
-AWS_REGION = get_sms_parameter("AWS_REGION", "us-east-2")
+S3_BUCKET = get_ssm_parameter("BUCKET")  # e.g. "tactic-user-storage"
+SQS_QUEUE_URL = get_ssm_parameter("SQS_QUEUE_URL")  # e.g. https://sqs.us-east-2.amazonaws.com/ACCT/tactic-user-storage-events
+AWS_REGION = get_ssm_parameter("MY_AWS_REGION", "us-east-2")
 
 # optional de-dupe/debounce
 RECENT = collections.deque(maxlen=5000)
 SEEN  = {}
+
+on_aws = os.getenv("RUNNING_ON_AWS","false").lower() == "true"
 
 def is_dir_key(key: str) -> bool:
     return key.endswith('/')
@@ -24,9 +26,18 @@ class Handler:
     def __init__(self):
         self.my_id = "pool_watcher_s3"
         print("my_id is", self.my_id)
-        self.connection, self.channel = get_pika_connection_with_retries(0, True)
+        self.connection, self.channel = get_pika_connection_with_retries(0)
         print("connected to RabbitMQ")
-        self.sqs = boto3.client("sqs", region_name=AWS_REGION)
+        if on_aws:
+            self.sqs = boto3.client("sqs", region_name=AWS_REGION)
+        else:
+            self.sqs = boto3.client(
+                "sqs",
+                endpoint_url="http://host.docker.internal:4566",
+                aws_access_key_id="test",
+                aws_secret_access_key="test",
+                region_name=AWS_REGION,
+            )
         print("connected to SQS as", self.sqs.meta.region_name)
 
     def post_pool_event(self, event_type, key, is_dir, dest_key=None):
@@ -87,7 +98,7 @@ class Handler:
                                       body=json.dumps(task_packet))
         except:
             if attempt == 0:
-                connection, channel = get_pika_connection_with_retries(0, True)
+                connection, channel = get_pika_connection_with_retries(0)
                 if connection is not None:
                     self.channel = channel
                     self.post_packet(dest_id, task_packet,

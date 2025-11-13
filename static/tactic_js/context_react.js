@@ -451,18 +451,23 @@ function ContextApp(props) {
             return _context6.a(3, 24);
           case 10:
             _context6.n = 11;
-            return (0, _communication_react.postPromise)("host", "initiate_collection_in_context", {
+            return (0, _communication_react.postPromiseMain)(props.local_id, "initialize_session_from_collection", {
               collection_name: resource_name,
-              local_id: new_viewer_id
+              base_figure_url: window.base_figure_url,
+              username: window.username,
+              ppi: (0, _utilities_react.get_ppi)()
             });
           case 11:
             data = _context6.v;
             return _context6.a(3, 24);
           case 12:
             _context6.n = 13;
-            return (0, _communication_react.postPromise)("host", "initiate_project_in_context", {
+            return (0, _communication_react.postPromise)("main_service", "initialize_session_from_save", {
               project_name: resource_name,
-              local_id: new_viewer_id
+              base_figure_url: window.base_figure_url,
+              local_id: new_viewer_id,
+              username: window.username,
+              ppi: (0, _utilities_react.get_ppi)()
             });
           case 13:
             data = _context6.v;

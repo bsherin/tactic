@@ -1,4 +1,3 @@
-
 from communication_utils import make_python_object_jsonizable
 
 
@@ -26,8 +25,8 @@ class FilteringMixin:
     def get_matching_documents(self, filter_function):
         self._save_stdout()
         filter_function = make_python_object_jsonizable(filter_function)
-        result = self._tworker.post_and_wait(self._main_id, "get_matching_documents",
-                                             {"filter_function": filter_function})
+        result = self._tworker.post_and_wait_to_main("get_matching_documents",
+                                                     {"filter_function": filter_function})
         self._restore_stdout()
         return result
 
@@ -67,8 +66,8 @@ class FilteringMixin:
                     for rnum, rtxt in enumerate(data_list):
                         if filter_function(rtxt):
                             result[docname].append(rnum)
-        self._tworker.post_task(self._main_id, "display_matching_rows",
-                                {"result": result, "document_name": document_name})
+        self._tworker.post_to_main("display_matching_rows",
+                                   {"result": result, "document_name": document_name})
         self._restore_stdout()
         return
 
@@ -98,7 +97,7 @@ class FilteringMixin:
 
     def display_all_rows(self):
         self._save_stdout()
-        self._tworker.post_task(self._main_id, "UnfilterTable")
+        self._tworker.post_to_main("UnfilterTable")
         self._restore_stdout()
         return
 
@@ -130,6 +129,6 @@ class FilteringMixin:
         task_data = {"new_data": new_data,
                      "doc_name": document_name,
                      "cellchange": cellchange}
-        self._tworker.post_and_wait(self._main_id, "SetDocument", task_data)
+        self._tworker.post_and_wait_to_main("SetDocument", task_data)
         self._restore_stdout()
         return

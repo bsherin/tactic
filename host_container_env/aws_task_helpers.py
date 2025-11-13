@@ -2,7 +2,7 @@
 import os, time, uuid, json
 import boto3
 from botocore.config import Config
-from aws_helpers import get_sms_parameter
+from aws_helpers import get_ssm_parameter
 
 
 class ECSTileError(Exception):
@@ -25,7 +25,7 @@ def _now():
     return int(time.time())
 
 def _ecs_client():
-    region = get_sms_parameter("ECS_REGION")
+    region = get_ssm_parameter("ECS_REGION")
     return boto3.client("ecs", region_name=region, config=Config(retries={"max_attempts": 10, "mode": "standard"}))
 
 def _describe_task_ip(cluster, task_arn, timeout_s=120):
@@ -73,11 +73,11 @@ def run_tile_on_ecs(
     """
     ecs = _ecs_client()
 
-    cluster   = get_sms_parameter("ECS_CLUSTER", "tactic-cluster")
-    taskdef   = get_sms_parameter("ECS_TILE_TASKDEF", "tactic-tile")
-    subnets   = [s.strip() for s in get_sms_parameter("ECS_SUBNETS", "").split(",") if s.strip()]
-    sgs       = [g.strip() for g in get_sms_parameter("TILE_SECURITY_GROUPS", "").split(",") if g.strip()]
-    assign_ip = get_sms_parameter("ECS_ASSIGN_PUBLIC_IP", "ENABLED")  # ENABLED for your public subnets
+    cluster   = get_ssm_parameter("ECS_CLUSTER", "tactic-cluster")
+    taskdef   = get_ssm_parameter("ECS_TILE_TASKDEF", "tactic-tile")
+    subnets   = [s.strip() for s in get_ssm_parameter("ECS_SUBNETS", "").split(",") if s.strip()]
+    sgs       = [g.strip() for g in get_ssm_parameter("TILE_SECURITY_GROUPS", "").split(",") if g.strip()]
+    assign_ip = get_ssm_parameter("ECS_ASSIGN_PUBLIC_IP", "ENABLED")  # ENABLED for your public subnets
 
     if not subnets or not sgs:
         raise ECSTileError("ECS_SUBNETS / ECS_SECURITY_GROUPS must be set.")

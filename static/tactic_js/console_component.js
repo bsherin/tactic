@@ -320,7 +320,7 @@ function ConsoleComponent(props) {
   }
   function _requestPseudoTileId() {
     if (pseudo_tile_id == null) {
-      (0, _communication_react.postWithCallback)(props.local_id, "get_pseudo_tile_id", {}, function (res) {
+      (0, _communication_react.postWithCallbackMain)(props.local_id, "get_pseudo_tile_id", {}, function (res) {
         set_pseudo_tile_id(res.pseudo_tile_id);
       });
     }
@@ -790,10 +790,14 @@ function ConsoleComponent(props) {
     props.dispatch({
       type: "reset"
     });
-    (0, _communication_react.postWithCallback)(props.local_id, "clear_console_namespace", {}, null, null, props.local_id);
+    (0, _communication_react.postWithCallback)("main_service", "clear_console_namespace", {
+      local_id: props.local_id
+    }, null, null, props.local_id);
   }, []);
   function _stopAll() {
-    (0, _communication_react.postWithCallback)(props.local_id, "stop_all_console_code", {}, null, null, props.local_id);
+    (0, _communication_react.postWithCallback)("main_service", "stop_all_console_code", {
+      local_id: props.local_id
+    }, null, null, props.local_id);
   }
   var _clearConsole = (0, _react.useCallback)(/*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee8() {
     var confirm_text, _t3;
@@ -1809,8 +1813,9 @@ function ConsoleComponent(props) {
             _startSpinner(unique_id);
             entry = get_console_item_entry(unique_id);
             _context13.n = 1;
-            return (0, _communication_react.postPromise)(props.local_id, "exec_console_code", {
+            return (0, _communication_react.postPromise)("main_service", "exec_console_code", {
               "the_code": entry.console_text,
+              "local_id": props.local_id,
               "console_id": unique_id
             }, props.local_id);
           case 1:
@@ -2700,8 +2705,9 @@ function ConsoleCodeItem(props) {
 
   var _stopMe = (0, _react.useCallback)(function () {
     _stopMySpinner();
-    (0, _communication_react.postWithCallback)(props.local_id, "stop_console_code", {
-      "console_id": props.unique_id
+    (0, _communication_react.postWithCallback)("main_service", "stop_console_code", {
+      "console_id": props.unique_id,
+      "local_id": props.local_id
     }, null, null, props.local_id);
   }, []);
   function _stopMySpinner() {

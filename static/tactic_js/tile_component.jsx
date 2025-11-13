@@ -261,7 +261,7 @@ function TileComponent(props) {
         const data_dict = {"tile_id": props.tile_id, "tile_name": props.tile_name};
         try {
             _startSpinner();
-            let data = await postPromise(props.local_id, "reload_tile", data_dict, props.local_id);
+            let data = await postPromiseMain(props.local_id, "reload_tile", data_dict, props.local_id);
             if (!data.success) {
                 errorDrawerFuncs.addErrorDrawerEntry({
                     title: `Error reloading tile`,

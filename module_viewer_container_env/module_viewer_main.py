@@ -10,6 +10,7 @@ import re
 # noinspection PyUnresolvedReferences
 from qworker import QWorker, task_worthy, task_worthy_manual_submit
 from flask import render_template, Flask
+import uuid
 
 from tile_code_parser import TileParser, remove_indents, insert_indents
 import exception_mixin
@@ -24,6 +25,26 @@ import sys, os
 sys.stdout = sys.stderr
 import time
 
+class SessionAccessor(object):
+    def __init__(self, ss, sid):
+        object.__setattr__(self, "ss", ss)
+        object.__setattr__(self, "sid", sid)
+
+    def __getattr__(self, name):
+        return self.get_val(name)
+
+    def __setattr__(self, name, value):
+        if name in {"ss", "sid"}:
+            object.__setattr__(self, name, value)
+        else:
+            self.set_val(name, value)
+
+    def get_val(self, name):
+        return self.ss.get_session_value(self.sid, name)
+
+    def set_val(self, name, value):
+        self.ss.set_session_value(self.sid, name, value)
+
 class ModuleViewerSessionManager(SessionManager):
     def __init__(self, client):
         self.prefix = "mv"
@@ -32,9 +53,9 @@ class ModuleViewerSessionManager(SessionManager):
 # noinspection PyUnusedLocal
 class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin, MongoAccess, TileAccess):
     def __init__(self):
-        QWorker.__init__(self)
+        QWorker.__init__(self, service_name="module_viewer")
+        self.my_id = "module_viewer" + str(uuid.uuid4())
         self.use_emit_direct = False
-        self.generate_heartbeats = True
         db, fs, repository_db, repository_fs = get_dbs()
         self.db = db
         self.fs = fs
@@ -57,14 +78,21 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin, MongoAccess, Til
         self.post_task("host", msg_type, task_data, callback_func)
         return
 
+    def get_session(self, sid):
+        return SessionAccessor(self.session_manager, sid)
+
     @task_worthy
     def start_session(self, data_dict):
+        openai_api_key = data_dict.get("openai_api_key", None)
+        cli = None if openai_api_key is None else "unset"
         session_data = {
             "user_id": data_dict["user_id"],
             "module_name": data_dict["module_name"],
             "username": data_dict["username"],
             "openai_api_key": data_dict.get("openai_api_key", None),
+            "client": cli
         }
+        print("starting session with session_data ", session_data)
         self.session_manager.set_session(data_dict["local_id"], session_data)
         return {"success": True}
 
@@ -80,6 +108,7 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin, MongoAccess, Til
         local_id = data_dict["local_id"]
         user_id = data_dict["user_id"]
         username = self.get_username(local_id)
+        print("got username ", username)
         tile_dict = self.get_tile_doc(module_name, username=username)
         module_code = tile_dict["tile_module"]
         tp = TileParser(module_code, self.handler_methods)

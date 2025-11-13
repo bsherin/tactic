@@ -92,8 +92,12 @@ def sleep_func(t):
 
 # noinspection PyTypeChecker,PyUnusedLocal,PyMissingConstructor
 class QWorker(ExceptionMixin):
-    def __init__(self):
-        self.my_id = os.environ.get("MY_ID")
+    def __init__(self, service_name=None, generate_heartbeats=False):
+        self.service_name = service_name
+        if service_name is None:
+            self.my_id = os.environ.get("MY_ID")
+        else:
+            self.my_id = service_name + str(uuid.uuid4())[:4]
         self.handler_instances = {"this_worker": self}
         self.channel = None
         self.connection = None
@@ -102,6 +106,8 @@ class QWorker(ExceptionMixin):
         self._hb_greenlet = None
         self._stopping = False
         self.use_emit_direct = use_gevent
+
+        self.generate_heartbeats = generate_heartbeats
         if use_wait_tasks:
             wait_queue = self.my_id + "_wait"
             self.wait_worker = BlockingWaitWorker(wait_queue)
@@ -115,7 +121,7 @@ class QWorker(ExceptionMixin):
                 debug_log(self.handle_exception(ex, "heartbeat loop error"))
             sleep_func(heartbeat_time)  # tick every 1s;
 
-    def start_background_thread(self, retries=0):
+    def start_background_thread(self, retries=0,):
         try:
             self.connection, self.channel = get_pika_connection_with_retries()
             if self.connection is None or self.channel is None:
@@ -123,10 +129,13 @@ class QWorker(ExceptionMixin):
                 return
             self.channel.queue_declare(queue=self.my_id, durable=False, exclusive=False)
             self.channel.basic_consume(queue=self.my_id, auto_ack=True, on_message_callback=self.handle_delivery)
+            if self.service_name is not None:
+                self.channel.queue_declare(queue=self.service_name, durable=False, exclusive=False)
+                self.channel.basic_consume(queue=self.service_name, auto_ack=True, on_message_callback=self.handle_delivery)
             debug_log(' [*] Waiting for messages:')
-            # turn on app-level heartbeats once we're ready
-            # if self._hb_greenlet is None:
-            #     self._hb_greenlet = gevent.spawn(self._heartbeat_loop)
+            if self.generate_heartbeats:
+                if self._hb_greenlet is None:
+                    self._hb_greenlet = gevent.spawn(self._heartbeat_loop)
             self.ready()
             self.channel.start_consuming()
         except Exception as ex:
@@ -135,7 +144,7 @@ class QWorker(ExceptionMixin):
         finally:
             # make sure the heartbeat loop stops if the consumer exits
             self._stopping = True
-            if self._hb_greenlet is not None:
+            if self.generate_heartbeats and self._hb_greenlet is not None:
                 try:
                     self._hb_greenlet.kill(block=False)
                 except Exception:
@@ -344,6 +353,8 @@ class QWorker(ExceptionMixin):
     # noinspection PyUnboundLocalVariable
     def handle_event(self, task_packet):
         task_type = task_packet["task_type"]
+        if type(task_type) is dict:
+            print(f"got task type {task_type} and task_id {task_packet}")
         if task_type in task_worthy_methods:
             try:
                 response_data = getattr(self.handler_instances[task_worthy_methods[task_type]], task_type)(task_packet["task_data"])

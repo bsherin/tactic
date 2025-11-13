@@ -1,0 +1,18 @@
+cat > policy_raw.json <<'JSON'
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": "*",
+      "Action": "SQS:SendMessage",
+      "Resource": "arn:aws:sqs:us-east-2:000000000000:tactic-storage-events",
+      "Condition": {
+        "ArnEquals": {
+          "aws:SourceArn": "arn:aws:s3:::tactic-user-storage"
+        }
+      }
+    }
+  ]
+}
+JSON

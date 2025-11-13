@@ -107,7 +107,7 @@ def add_qw_pika_connection():
         global pika_channels
         global pika_connections
         current_thread = my_thread()
-        connection, channel = get_pika_connection_with_retries(0, True)
+        connection, channel = get_pika_connection_with_retries(0)
         if connection is None:
             print("problem getting pika connection for thread " + current_thread)
             return None
@@ -438,7 +438,7 @@ class BlockingWaitWorker(ExceptionMixin):
 
     def initialize_me(self):
         try:
-            self.connection, self.channel = get_pika_connection_with_retries(0, True)
+            self.connection, self.channel = get_pika_connection_with_retries(0)
             if self.connection is None:
                 debug_log("Couldn't create pika connection for blocking worker")
                 return

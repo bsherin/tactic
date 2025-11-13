@@ -3,7 +3,6 @@ Flask == 2.2.3
 kombu
 pika
 redis
-gevent
 pymongo
 openai
 boto3

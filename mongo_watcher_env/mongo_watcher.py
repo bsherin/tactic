@@ -52,7 +52,7 @@ kind_dict = {
 class Handler:
     def __init__(self):
         self.my_id = "mongo_watcher"
-        self.connection, self.channel = get_pika_connection_with_retries(0, True)
+        self.connection, self.channel = get_pika_connection_with_retries(0)
         self._timers = {}
         self._modification_times = {}
 
