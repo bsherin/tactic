@@ -44,6 +44,8 @@ from tile_container_management_mixin import TileContainerManagementMixin
 from redis_tools import RedisManager, redis_client
 from loaded_tile_management import loaded_tile_manager
 
+loaded_tile_manager.delete_all()
+
 # inactive_container_time is the max time a tile can
 # go without making active contact with the megaplex.
 # we will let containers hang around for quite a while.

@@ -39,7 +39,7 @@ def get_no_decode_redis_client():
 class RedisManager:
     def __init__(self, cli):
         self.cli = cli
-        self.delete_all()
+        # self.delete_all()
 
     def set(self, username, key, value):
         full_key = self.expand_key(username, key)
