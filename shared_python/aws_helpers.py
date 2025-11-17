@@ -31,7 +31,7 @@ def get_ssm_parameter(name, default=None):
 def get_s3_client():
     cfg = Config(region_name=AWS_REGION, s3={"addressing_style": "path"}, signature_version="s3v4")
     if on_aws:
-        s3 = boto3.client("s3", confg=cfg)
+        s3 = boto3.client("s3", config=cfg)
     else:
         s3 = boto3.client(
             "s3",
