@@ -1,6 +1,6 @@
 from unittest import case
 
-from session_store_s3 import SessionStoreS3
+from session_store_s3 import SessionStoreS3, SessionAccessor
 
 from collection_info import FreeformCollectionInfo, TableCollectionInfo
 from tile_info import TileInfo
@@ -8,21 +8,7 @@ from tile_info import TileInfo
 
 INITIAL_LEFT_FRACTION = .69
 
-class MainSessionAccessor(object):
-    def __init__(self, ss, sid):
-        object.__setattr__(self, "ss", ss)
-        object.__setattr__(self, "sid", sid)
-
-    def __getattr__(self, name):
-        return self.get_val(name)
-
-    def __setattr__(self, name, value):
-        if name in {"ss", "sid"}:
-            object.__setattr__(self, name, value)
-        else:
-            self.set_val(name, value)
-
-
+class MainSessionAccessor(SessionAccessor):
     @property
     def tile_info(self):
         return TileInfo(self.ss, self.sid)
@@ -38,76 +24,84 @@ class MainSessionAccessor(object):
         match name:
             case "tile_info":
                 return self.tile_info
+            case "collection_info":
+                return self.collection_info
             case _:
-                return self.ss.get(self.sid, name)
-
-    def set_val(self, name, value):
-        self.ss.set(self.sid, name, value)
+                return SessionAccessor.get_val(self, name)
 
     @property
     def am_notebook_type(self):
-        return self.doc_type in ["freeform", "table"]
+        return self.doc_type in ["jupyter", "notebook"]
 
 
 class MainSessionStore(SessionStoreS3):
-    recreate_values = {
-        "username": None,
-        "user_id": None,
-        "doc_type": "table",
-        "is_legacy_save": False,
-        "project_name": None,
-        "left_fraction": INITIAL_LEFT_FRACTION,
-        "is_shrunk": False,
-        "collection_name": "",
-        "short_collection_name": "",
-        "ppi": None,
-        "base_figure_url": ""
+    defaults = {
+        "username": {"default": None},
+        "user_id": {"default": None},
+        "doc_type": {"default": "table"},
+        "is_legacy_save": {"default": False},
+        "project_name":  {"default": None},
+        "left_fraction": {"default": INITIAL_LEFT_FRACTION},
+        "is_shrunk": {"default": False},
+        "collection_name": {"default": ""},
+        "short_collection_name": {"default": ""},
+        "ppi":  {"default": None},
+        "base_figure_url": {"default": ""},
+        "pipe_dict": {"default": {}},
+        "pseudo_creation_in_progress": {"default": False},
+        "ppid":  {"default": None},
+        "selected_text": {"default": ""},
+        "pseudo_tile_id":  {"default": None},
+        "pseudo_tile_creds":  {"default": None},
+        "openai_api_key": {"default": "unset"},
+        "purgetiles": {"default": True},
     }
-    doc_info_keys = ["metadata", "data_text", "data_rows", "current_data_rows"]
+
+    recreate_values = [
+        "username",
+        "user_id",
+        "doc_type",
+        "is_legacy_save",
+        "project_name",
+        "left_fraction",
+        "is_shrunk",
+        "collection_name",
+        "short_collection_name",
+        "ppi",
+        "base_figure_url"
+    ]
     mapped_values = {
         "loaded_modules": "used_modules"
     }
-    table_spec_keys = ["doc_name", "header_list", "column_widths", "cell_backgrounds", "hidden_columns_list"]
 
-    inits = {
-        "pipe_dict": {},
-        "pseudo_creation_in_progress": False,
-        "ppid": None,
-        "selected_text": "",
-        "pseudo_tile_id": None,
-        "pseudo_tile_creds": None,
-        "openai_api_key": "unset",
-        "openai_client": "unset",
-        "purgetiles": True
-    }
+    large_params = ["collection_info\..*\.current_data_rows",
+                    "collection_info\..*\.data_rows",
+                    "collection_info\..*\.data_text",
+                    "tile_info\..*\.tile_save_dict",]
+
+    tile_reload_attrs = ["tile_name", "tile_type", "base_figure_url", "doc_type",
+                     "width", "height", "configured"]
 
     @property
     def init_functions(self):
         return {
             "visible_doc_name": self.initial_visible_doc,
-            "doc_names": self.get_doc_names,
+            "doc_names": self.extract_doc_names,
         }
 
-    @staticmethod
-    def tinfo_base(tile_id):
-        return f"tile_info.{tile_id}"
+    def reload_dict_from_save_dict(self, sid, save_dict):
+        rdict = {}
+        for attr in self.tile_reload_attrs:
+            rdict[attr] = save_dict.get(attr, None)
+        rdict["user_id"] = self.get_val(sid, "user_id")
+        return rdict
 
-    @staticmethod
-    def dinfo_base(doc_name):
-        return f"doc_info.{doc_name}"
-
-    def set(self, sid, key, value):
-        self.put_small(sid, key, value)
-
-    def get(self, sid, key):
-        return self.get_small(sid, key)
-
-    def initialize(self, sid, sdict):
-        for key, default in self.recreate_values.items():
+    def initialize_session(self, sid, sdict=None):
+        SessionStoreS3.initialize_session(self, sid, None)
+        for key in self.recreate_values:
             if key in sdict:
                 self.put_small(sid, key, sdict[key])
-            else:
-                self.put_small(sid, key, default)
+
         if "tile_instances" in sdict:
             tile_info = TileInfo(self, sid)
             for old_tile_id, tile_save_dict in sdict["tile_instances"].items():
@@ -122,14 +116,12 @@ class MainSessionStore(SessionStoreS3):
                 collection_info.add_doc(doc_name, dinfo)
         for key, new_key in self.mapped_values.items():
             if key in sdict:
-                self.put_small(sid, new_key, sdict[key])
+                self.put_val(sid, new_key, sdict[key])
             else:
-                self.put_small(sid, new_key, None)
-        for key, value in self.inits.items():
-            self.put_small(sid, key, value)
+                self.put_val(sid, new_key, None)
         for key, func in self.init_functions.items():
             val = func(sdict)
-            self.put_small(sid, key, val)
+            self.put_val(sid, key, val)
 
     @staticmethod
     def initial_visible_doc(sdict):
@@ -139,26 +131,8 @@ class MainSessionStore(SessionStoreS3):
             return None
 
     @staticmethod
-    def get_doc_names(sdict):
+    def extract_doc_names(sdict):
         if "doc_dict" in sdict:
             return list(sdict["doc_dict"].keys())
         else:
             return []
-
-    def set_from_dict(self, sid, data_dict):
-        for key, value in data_dict.items():
-            self.put_small(sid, key, value)
-
-    def set_doc_info(self, sid, doc_name, key, value):
-        base_name = self.dinfo_base(doc_name)
-        if key in ["current_data_rows", "data_rows", "data_text"]:
-            self.put_large_object(sid, f"{base_name}.{key}", value)
-        else:
-            self.put_hsmall(sid, base_name, key, value)
-
-    def get_doc_info(self, sid, doc_name, key):
-        base_name = self.dinfo_base(doc_name)
-        if key in ["current_data_rows", "data_rows", "data_text"]:
-            return self.get_large_object(sid, f"{base_name}.{key}")
-        else:
-            return self.get_hsmall(sid, base_name, key)

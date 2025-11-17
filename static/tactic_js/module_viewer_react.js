@@ -678,6 +678,7 @@ function ModuleViewerApp(props) {
     searchNext: _searchNext,
     highlight_active_line: true,
     current_search_number: current_search_number,
+    parentService: "module_viewer",
     setSearchMatches: _setSearchMatches
   }))));
 }

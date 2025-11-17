@@ -176,6 +176,8 @@ function MainApp(props) {
             .then(()=>{console.log("finished tile recreation")})
         return (() => {
             delete_my_containers();
+            postPromiseMain(props.local_id, "end_session_task", {})
+                .then(()=>{})
             window.removeEventListener("unload", sendRemove);
         })
 

@@ -82,12 +82,6 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
 
         self.ss = MainSessionStore()
 
-    def set(self, sid, key, value):
-        self.ss.set(sid, key, value)
-
-    def get(self, sid, key):
-        return self.ss.get(sid, key)
-
     def get_session(self, sid):
         return MainSessionAccessor(self.ss, sid)
 
@@ -310,7 +304,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
                     interface_state["console_items"] = self.check_for_output_text(self.add_missing_section_ends(sdict["interface_state"]["console_items"]))
                 except Exception as ex:
                     interface_state["console_items"] = []
-                    error_string = self.handle_exception(ex, "Error adding missing sections")
+                    error_string = self.handle_exception(sid, ex, "Error adding missing sections")
                     print(error_string)
             print("leaving recreate_from_save")
             return sdict, interface_state, globals_dict
@@ -325,7 +319,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
                 interface_state["console_items"] =  self.check_for_output_text(self.add_missing_section_ends(sdict["interface_state"]["console_items"]))
             except Exception as ex:
                 interface_state["console_items"] = []
-                error_string = self.handle_exception(ex, "Error adding missing sections")
+                error_string = self.handle_exception(sid, ex, "Error adding missing sections")
                 print(error_string)
             return sdict, interface_state, globals_dict
 

@@ -249,6 +249,7 @@ function ReactCodemirror6(props) {
         className: "",
         restrict_edits_to_range: false,
         getEditableRanges: null,
+        parentService: null,
         ...props
     };
 
@@ -291,11 +292,11 @@ function ReactCodemirror6(props) {
                 lastUserDocRef.current = newDoc;
                 handleChange(newDoc);
                 changeCounterRef.current = changeCounterRef.current + 1;
-                if (window.has_openapi_key && (settingsContext.settingsRef.current["use_ai_code_suggestions"] == "yes") && props.local_id) {
+                if (window.has_openapi_key && props.parentService && (settingsContext.settingsRef.current["use_ai_code_suggestions"] == "yes") && props.local_id) {
                     setAIText(null);
                     setAITextLabel(null);
                     awaitingSuggestionRef.current = true;
-                    // (update.state.doc.toString(), changeCounterRef.current);
+                    doAIUpdate(update.state.doc.toString(), changeCounterRef.current);
                 } else {
                     setAIText(null);
                     setAITextLabel(null);
@@ -583,7 +584,7 @@ function ReactCodemirror6(props) {
     function getAIUpdate(new_code, change_counter) {
         let code_str = new_code;
         const cursorPos = editorView.current.state.selection.main.head;
-        postPromise(props.local_id, "update_ai_complete",
+        postPromise(props.parentService, "update_ai_complete",
             {
                 "code_str": code_str,
                 "change_counter": change_counter,

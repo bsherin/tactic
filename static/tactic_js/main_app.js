@@ -201,6 +201,7 @@ function MainApp(props) {
     });
     return function () {
       delete_my_containers();
+      (0, _communication_react.postPromiseMain)(props.local_id, "end_session_task", {}).then(function () {});
       window.removeEventListener("unload", sendRemove);
     };
   }, []);

@@ -14,6 +14,7 @@ class DataAccessMixin:
     def get_collection_info(self):
         self._save_stdout()
         result = self._tworker.post_and_wait_to_main("get_collection_info_task", {})
+        print("in get_collection_info with result {}".format(result))
         self._restore_stdout()
         return result
 
@@ -79,7 +80,7 @@ class DataAccessMixin:
 
     def get_number_rows(self, document_name):
         self._save_stdout()
-        result = self._tworker.post_and_wait_to_main(self._main_id, "get_number_rows", {"document_name": document_name})
+        result = self._tworker.post_and_wait_to_main(self.sid, "get_number_rows", {"document_name": document_name})
         self._restore_stdout()
         return result["number_rows"]
 

@@ -109,17 +109,17 @@ class TileWorker(QWorker):
         os.execv(sys.executable, [sys.executable, "-u", "tile_main.py"])
 
     def ask_host(self, msg_type, task_data=None, callback_func=None):
-        task_data["local_id"] = self.tile_instance._main_id
+        task_data["local_id"] = self.tile_instance.sid
         self.post_task("host", msg_type, task_data, callback_func)
         return
 
     def post_and_wait_to_main(self, msg_type, task_data):
-        task_data["sid"] = self.tile_instance._main_id
-        self.post_and_wait("main_service", msg_type, task_data)
+        task_data["sid"] = self.tile_instance.sid
+        return self.post_and_wait("main_service", msg_type, task_data)
 
     def post_to_main(self, task_type, task_data=None, callback_func=None,
                      callback_data=None, expiration=None, error_handler=None, special_reply_to=None):
-        task_data["sid"] = self.tile_instance._main_id
+        task_data["sid"] = self.tile_instance.sid
         self.post_task("main_service", task_type, task_data, callback_func,
                        callback_data, expiration, error_handler, special_reply_to)
 
@@ -133,7 +133,7 @@ class TileWorker(QWorker):
 
     def emit_to_client(self, message, data):
         data["message"] = message
-        data["local_id"] = self.tile_instance._main_id
+        data["local_id"] = self.tile_instance.sid
         self.ask_host("emit_to_client", data)
 
     def send_error_entry(self, title, content, line_number):
@@ -285,7 +285,7 @@ class TileWorker(QWorker):
     def send_updated_reload_dict(self):
         self.post_task("main_service", "update_reload_dict",
                        {"tile_id": self.my_id,
-                        "sid": self.tile_instance._main_id,
+                        "sid": self.tile_instance.sid,
                         "reload_dict": self.get_reload_dict()})
         return
 

@@ -10,7 +10,7 @@ import {GlyphButton} from "./blueprint_react_widgets";
 import {DragHandle} from "./drag_handle"
 
 
-import {postWithCallback, postPromise} from "./communication_react"
+import {postWithCallback, postPromise, postPromiseMain} from "./communication_react"
 import {useCallbackStack} from "./utilities_react";
 import {ErrorBoundary} from "./error_boundary";
 import {MenuComponent} from "./menu_utilities"

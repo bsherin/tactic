@@ -79,21 +79,13 @@ async function creator_props(data, registerDirtyMethod, finalCallback) {
         window.global_id = local_id;
     }
 
-    let the_content = {
-        "module_name": module_name,
-        "local_id": local_id,
-        "tile_collection_name": tile_collection_name,
-        "user_id": window.user_id,
-        "version_string": window.version_string
-    };
-
     if (window.in_context) {
         tsocket.attachListener('handle-callback', (task_packet) => {
             handleCallback(task_packet, local_id)
         });
     }
     let data_object = await postPromise("module_viewer", "initialize_parser",
-        the_content, local_id);
+        {local_id: local_id}, local_id);
 
     if (!window.in_context) {
         renderSpinnerMessage("Creating the page...", '#creator-root');

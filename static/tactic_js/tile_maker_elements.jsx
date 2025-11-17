@@ -794,6 +794,7 @@ function SignatureHeader(props) {
                                   className="creator-code-header"
                                   handleChange={null}
                                   no_width={true}
+                                  parentService="module_viewer"
                                   code_content={code_content}/> :
                 <ReactCodemirror6 readOnly={!props.allowSignatureChange}
                                   mode={props.mode}
@@ -805,6 +806,7 @@ function SignatureHeader(props) {
                                   restrict_edits_to_range={props.allowSignatureChange}
                                   className="creator-code-header"
                                   no_width={true}
+                                  parentService="module_viewer"
                                   handleChange={handleChange}
                                   code_content={code_content}/>
             }
@@ -946,6 +948,7 @@ function CmElement(props) {
                               no_width={true}
                               extraSelfCompletions={props.cmState.mode == "python" ? props.extraSelfCompletions : []}
                               local_id={props.local_id}
+                              parentService="module_viewer"
                               highlight_active_line={true}/>
         </div>
     )

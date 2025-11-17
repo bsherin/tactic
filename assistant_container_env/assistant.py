@@ -1,10 +1,9 @@
-from gevent import monkey; monkey.patch_all()
-import gevent
+import os
+
 import signal
-import sys, os
+import sys
 import time
 from flask import Flask
-from communication_utils import socketio
 import exception_mixin
 from exception_mixin import ExceptionMixin
 from threading import Lock

@@ -83,32 +83,8 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         else:
             self.tile_backend = DockerTileBackend(self.tile_registry, self)
             self.pool_backend = PoolBackendECS()
-
-    # def start_background_thread(self, retries=0):
-    #     try:
-    #         self.connection, self.channel = get_pika_connection_with_retries()
-    #         if self.connection is None or self.channel is None:
-    #             print("couldn't connect to pika, retrying ...")
-    #             return
-    #         self.channel.queue_declare(queue="host", durable=False, exclusive=False)
-    #         self.channel.queue_declare(queue=self.my_id, durable=False, exclusive=False)
-    #         self.channel.basic_consume(queue="host", auto_ack=True, on_message_callback=self.handle_delivery)
-    #         self.channel.basic_consume(queue=self.my_id, auto_ack=True, on_message_callback=self.handle_delivery)
-    #         print(' [*] Waiting for messages:')
-    #         if self._hb_greenlet is None:
-    #             self._hb_greenlet = gevent.spawn(self._heartbeat_loop)
-    #         self.channel.start_consuming()
-    #     except Exception as ex:
-    #         debug_log("Couldn't start background thread")
-    #         debug_log(self.handle_exception(ex, "Here's the error"))
-    #     finally:
-    #         self._stopping = True
-    #         if self._hb_greenlet is not None:
-    #             try:
-    #                 self._hb_greenlet.kill(block=False)
-    #             except Exception:
-    #                 pass
-    #             self._hb_greenlet = None
+        if self.my_id == "host5000":
+            self.clear_session_storage()
 
     def do_heartbeat(self):
         self.tile_registry.registry_heartbeat()
@@ -122,6 +98,13 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
 
     def emit_clear_status(self, user_id):
         socketio.emit('clear-status-msg', {}, namespace='/main', room=user_id)
+
+    @staticmethod
+    def clear_session_storage():
+        from session_store_s3 import SessionStoreS3
+        ss = SessionStoreS3()
+        ss.end_all_sessions()
+        return
 
     @task_worthy
     def add_error_drawer_entry_task(self, data):
@@ -623,28 +606,6 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
     @task_worthy
     def deregister_container(self, data):
         tactic_app.health_tracker.deregister_container(data["container_id"])
-
-    # @task_worthy
-    # def StartLogStreaming(self, data):
-    #     cont_id = data["cont_id"]
-    #     room = data["room"]
-    #     is_ecs = not container_exists(cont_id)
-    #     if cont_id is not None:
-    #         streamer_id = str(uuid.uuid4())
-    #         self.post_task("log_streamer", "start_log_stream",
-    #                        {"room": room,
-    #                         "cont_id": cont_id,
-    #                         "unique_id": streamer_id,
-    #                         "is_ecs": is_ecs})
-    #     return {"success": True, "streamer_id": streamer_id}
-    #
-    # @task_worthy
-    # def StopLogStreaming(self, data):
-    #     streamer_id = data["streamer_id"]
-    #     print("stopping log streamer " + str(streamer_id))
-    #
-    #     self.post_task("log_streamer", "stop_log_stream", {"streamer_id": streamer_id} )
-    #     return {"success": True}
 
     @task_worthy
     def StartAssistant(self, data):

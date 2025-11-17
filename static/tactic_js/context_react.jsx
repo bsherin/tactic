@@ -331,9 +331,9 @@ function ContextApp(props) {
                     console.log("got data for tile", data);
                     break;
                 case "collection":
-                    data = await postPromiseMain(props.local_id, "initialize_session_from_collection",
+                    data = await postPromise("main_service", "initialize_session_from_collection",
                             {collection_name: resource_name, base_figure_url: window.base_figure_url,
-                            username: window.username, ppi: get_ppi()})
+                                local_id: new_viewer_id, username: window.username, ppi: get_ppi()})
                     break;
                 case "project":
                     data = await postPromise("main_service", "initialize_session_from_save", {project_name: resource_name,
@@ -342,14 +342,18 @@ function ContextApp(props) {
                     break;
                 case "new-notebook":
                     if (temp_data_id) {
-                        data = await postPromise("host", "initiate_new_notebook_in_context", {temp_data_id: temp_data_id,
-                            local_id: new_viewer_id});
+                        data = await postPromise("main_service", "initialize_session_for_new_notebook", {temp_data_id: temp_data_id,
+                            local_id: new_viewer_id, username: window.username, ppi: get_ppi()});
                     } else {
-                        data = await postPromise("host", "initiate_new_notebook_in_context", {local_id: new_viewer_id});
+                        data = await postPromise("main_service", "initialize_session_for_new_notebook", {
+                            base_figure_url: window.base_figure_url,
+                            local_id: new_viewer_id, username: window.username, ppi: get_ppi()});
                     }
                     break;
                 case "new-project":
-                    data = await postPromise("host", "initiate_new_project_in_context", {local_id: new_viewer_id});
+                    data = await postPromise("main_service", "initialize_session_for_new_project",
+                        {base_figure_url: window.base_figure_url,
+                        local_id: new_viewer_id, username: window.username, ppi: get_ppi()});
                     break;
                 case "text":
                     data = await postPromise("host", "initiate_text_viewer_in_context", {"file_path": file_path});

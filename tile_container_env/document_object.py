@@ -918,7 +918,7 @@ class TacticCollection:
         temp_id = result["temp_id"]
         data = {"message": "window-open",
                 "the_id": temp_id,
-                "main_id": _tworker.tile_instance._main_id}
+                "main_id": _tworker.tile_instance.sid}
         _tworker.emit_to_client("window-open", data)
         return
 

@@ -32,17 +32,12 @@ class CopilotMixin(object):
         sess = self.get_session(data_dict["local_id"])
         if sess is None:
             return {"success": False, "message": "Session not found"}
-        if session.openai_client is None:
-            return {"success": False, "message": "OpenAI client not found"}
-
-        if sess.openai_client == "unset":
-            if sess.openai_api_key is not None:
-                sess.openai_client = OpenAI(
-                    api_key=sess.openai_api_key
-                )
-            else:
-                sess.openai_client = None
-                return {"success": False, "message": "OpenAI API key not set"}
+        if sess.openai_api_key is not None:
+            openai_client = OpenAI(
+                api_key=sess.openai_api_key
+            )
+        else:
+            return {"success": False, "message": "OpenAI API key not set"}
 
         code_str = data_dict["code_str"]
 
@@ -54,7 +49,7 @@ class CopilotMixin(object):
         instructions += f"The text you respond with should be valid {mode} code that can immdiately just be pasted into the code exactly as it is. "
         instructions += "That means you should not include any comments or explanations. "
         instructions += "Also be careful not to include the code that appears at the end of the code you are completing. "
-        response = sess.openai_client.responses.create(
+        response = openai_client.responses.create(
             model="gpt-4o",
             instructions=instructions,
             input=f"Here is the code to complete:\n\n{context_code}"

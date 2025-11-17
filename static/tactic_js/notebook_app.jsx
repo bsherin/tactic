@@ -22,7 +22,7 @@ import {withStatus} from "./toaster";
 import {renderSpinnerMessage, useConnection, useStateAndRef} from "./utilities_react";
 import {ICON_BAR_WIDTH} from "./sizing_tools";
 
-import {postAjax, postPromise, handleCallback} from "./communication_react"
+import {postAjax, postPromise, handleCallback, postPromiseMain} from "./communication_react"
 import {ExportsViewer} from "./export_viewer_react";
 import {HorizontalPanes} from "./resizing_allotment";
 import {withErrorDrawer} from "./error_drawer";
@@ -99,6 +99,8 @@ function NotebookApp(props) {
 
         return (() => {
             delete_my_containers();
+            postPromiseMain(props.local_id, "end_session_task", {})
+                .then(()=>{})
             window.removeEventListener("unload", sendRemove);
         })
     }, []);

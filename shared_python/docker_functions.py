@@ -117,7 +117,8 @@ def create_log_streamer_container(room, cont_id, user_id, username):
 def create_assistant_container(openai_api_key, parent, user_id, username):
     assistant_volume_dict = {"/var/run/docker.sock": {"bind": "/var/run/docker.sock", "mode": "rw"}}
     environ = {
-        "OPENAI_API_KEY": openai_api_key
+        "OPENAI_API_KEY": openai_api_key,
+        "USE_GEVENT": "False"
     }
     assistant_id, _container_id = create_container("bsherin/tactic-assistant", network_mode="bridge",
                                                     env_vars=environ,

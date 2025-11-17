@@ -25,6 +25,13 @@ class ProjectAccess(object):
         )
         return doc if doc else None
 
+    def get_project_doc_from_id(self, project_id, username=None):
+        username = username if username else self.username
+        doc = self.db[self.project_collection_name(username)].find_one(
+            {"_id": ObjectId(project_id)}, {"_id": 0}
+        )
+        return doc if doc else None
+
     def read_project_dict(self, project_name, username=None, include_metadata=True):
         if username is None:
             username = self.username

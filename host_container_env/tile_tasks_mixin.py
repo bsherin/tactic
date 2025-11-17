@@ -87,7 +87,7 @@ class TileTasksMixin:
             "res_type": "tile",
             "resource_name": module_name,
             "local_id": local_id,
-            "tile_collection_name": the_user.tile_collection_name,
+            "tile_collection_name": the_user.tile_collection_name(),
             "mdata": mdata
         }
         print("returning result from initiate_creator_in_context: ", result)

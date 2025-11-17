@@ -6,3 +6,4 @@ redis
 pymongo
 openai
 boto3
+msgpack

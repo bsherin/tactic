@@ -1,8 +1,5 @@
 import ast
 
-# from gevent import monkey
-#monkey.patch_all()
-
 from tactic_copilot_mixin import CopilotMixin
 
 import datetime
@@ -18,37 +15,12 @@ from exception_mixin import ExceptionMixin
 from mongo_accesser import MongoAccess
 from tile_accesser import TileAccess
 from mongo_db_fs import get_dbs
-from redis_tools import SessionManager, redis_client
+from module_viewer_session import ModuleViewerSessionStore, ModuleViewerSessionAccessor
 
 import sys, os
 
 sys.stdout = sys.stderr
 import time
-
-class SessionAccessor(object):
-    def __init__(self, ss, sid):
-        object.__setattr__(self, "ss", ss)
-        object.__setattr__(self, "sid", sid)
-
-    def __getattr__(self, name):
-        return self.get_val(name)
-
-    def __setattr__(self, name, value):
-        if name in {"ss", "sid"}:
-            object.__setattr__(self, name, value)
-        else:
-            self.set_val(name, value)
-
-    def get_val(self, name):
-        return self.ss.get_session_value(self.sid, name)
-
-    def set_val(self, name, value):
-        self.ss.set_session_value(self.sid, name, value)
-
-class ModuleViewerSessionManager(SessionManager):
-    def __init__(self, client):
-        self.prefix = "mv"
-        SessionManager.__init__(self, client)
 
 # noinspection PyUnusedLocal
 class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin, MongoAccess, TileAccess):
@@ -60,7 +32,7 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin, MongoAccess, Til
         self.db = db
         self.fs = fs
         self.handler_methods = None
-        self.session_manager = ModuleViewerSessionManager(redis_client)
+        self.ss = ModuleViewerSessionStore()
         return
 
     def retrieve_handler_methods(self):
@@ -79,37 +51,30 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin, MongoAccess, Til
         return
 
     def get_session(self, sid):
-        return SessionAccessor(self.session_manager, sid)
+        return ModuleViewerSessionAccessor(self.ss, sid)
 
     @task_worthy
     def start_session(self, data_dict):
-        openai_api_key = data_dict.get("openai_api_key", None)
-        cli = None if openai_api_key is None else "unset"
         session_data = {
             "user_id": data_dict["user_id"],
             "module_name": data_dict["module_name"],
             "username": data_dict["username"],
             "openai_api_key": data_dict.get("openai_api_key", None),
-            "client": cli
         }
-        print("starting session with session_data ", session_data)
-        self.session_manager.set_session(data_dict["local_id"], session_data)
+        self.ss.initialize_session(data_dict["local_id"], session_data)
         return {"success": True}
 
     @task_worthy
     def end_session(self, data_dict):
         local_id = data_dict["local_id"]
-        self.session_manager.delete_session(local_id)
+        self.ss.end_session(local_id)
         return {"success": True}
 
     @task_worthy
     def initialize_parser(self, data_dict):
-        module_name = data_dict["module_name"]
-        local_id = data_dict["local_id"]
-        user_id = data_dict["user_id"]
-        username = self.get_username(local_id)
-        print("got username ", username)
-        tile_dict = self.get_tile_doc(module_name, username=username)
+        sid = data_dict["local_id"]
+        sess = self.get_session(sid)
+        tile_dict = self.get_tile_doc(sess.module_name, username=sess.username)
         module_code = tile_dict["tile_module"]
         tp = TileParser(module_code, self.handler_methods)
         result = {"success": True, "the_content": self.assemble_parse_information(tp),
@@ -189,7 +154,8 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin, MongoAccess, Til
         return full_code
 
     def get_username(self, local_id):
-        return self.session_manager.get_session_value(local_id, "username")
+        sess = self.get_session(local_id)
+        return sess.username
 
     @task_worthy
     def update_module(self, data_dict):

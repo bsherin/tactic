@@ -32,15 +32,10 @@ class CollectionInfo:
             self.ss.r.rename(old_key, new_key)
 
     def set_param(self, doc_name, param_name, value):
-        if param_name in self.large_params:
-            self.ss.put_hlarge(self.sid, self.ci_base(doc_name), param_name, value)
-        else:
-            self.ss.put_hsmall(self.sid, self.ci_base(doc_name), param_name, value)
+        self.ss.put_val_hash(self.sid, self.ci_base(doc_name), param_name, value)
 
     def get_param(self, doc_name, param_name):
-        if param_name in self.large_params:
-            return self.ss.get_hlarge(self.sid, self.ci_base(doc_name), param_name)
-        return self.ss.get_hsmall(self.sid, self.ci_base(doc_name), param_name)
+        return self.ss.get_val_hash(self.sid, self.ci_base(doc_name), param_name)
 
     def set_multi(self, doc_name, pdict):
         for k, v in pdict.items():
@@ -55,6 +50,12 @@ class CollectionInfo:
         for param_name in self.table_spec_params.keys():
             ts_dict[param_name] = self.get_table_spec_param(doc_name, param_name)
         return ts_dict
+
+    def set_table_spec_param(self, doc_name, param_name, value):
+        self.ss.put_small_hash(self.sid, self.ts_base(doc_name), param_name, value)
+
+    def get_table_spec_param(self, doc_name, param_name):
+        return self.ss.get_small_hash(self.sid, self.ts_base(doc_name), param_name)
 
     def get_doc_metadata(self, doc_name):
         return self.get_param(doc_name, "metadata")
@@ -110,6 +111,8 @@ class CollectionInfo:
                 if isinstance(key, bytes):
                     key = key.decode("utf-8")
                 doc_name = key.split("collection_info.", 1)[1]
+                if doc_name.endswith("table_spec"):
+                    continue
                 doc_names.append(doc_name)
             if cursor == 0:
                 break
@@ -117,12 +120,19 @@ class CollectionInfo:
 
 class FreeformCollectionInfo(CollectionInfo):
 
+    defaults = {
+        "metadata": {},
+        "data_text": {},
+        "table_spec.doc_name": ""
+    }
+
     def add_doc(self, doc_name, dinfo):
         ddict = {
             "metadata": dinfo["metadata"],
             "data_text": dinfo["data_text"],
         }
         self.set_multi(doc_name, ddict)
+        self.set_table_spec_param(doc_name, "doc_name", doc_name)
         if "table_spec" in ddict:
             self.set_table_spec_from_dict(doc_name, ddict["table_spec"])
 
@@ -221,18 +231,12 @@ class TableCollectionInfo(CollectionInfo):
         omit_list = [*hidden_columns_list, "__id__"]
         return [cname for cname in header_list if cname not in omit_list]
 
-    def set_table_spec_param(self, doc_name, param_name, value):
-        self.ss.put_hsmall(self.sid, self.ts_base(doc_name), param_name, value)
-
-    def get_table_spec_param(self, doc_name, param_name):
-        return self.ss.get_hsmall(self.sid, self.ts_base(doc_name), param_name)
-
     def set_background_color(self, doc_name, row, column_header, color):
         cell_bgs = self.get_table_spec_param(doc_name, "cell_backgrounds")
         if not str(row) in cell_backgrounds:
-            cell_backgrounds[str(row)] = {}
+            cell_bgs[str(row)] = {}
         cell_backgrounds[str(row)][column_header] = color
-        self.set_table_spec_param(doc_name, "cell_backgrounds", cell_backgrounds)
+        self.set_table_spec_param(doc_name, "cell_backgrounds", cell_bgs)
 
     def get_header_list(self, doc_name):
         return self.get_table_spec_param(doc_name, "header_list")
@@ -283,7 +287,7 @@ class TableCollectionInfo(CollectionInfo):
         data_rows = self.get_data_rows(doc_name)
         sorted_int_keys = sorted([int(key) for key in data_rows.keys()])
         for r in sorted_int_keys:
-            result.append(self.data_rows[str(r)])
+            result.append(data_rows[str(r)])
         return result
 
     def data_rows_int_keys(self, doc_name):

@@ -25,13 +25,13 @@ class TileInfo:
         self.set_multi(tile_id, tdict)
 
     def set_param(self, tile_id, param_name, value):
-        self.ss.put_hsmall(self.sid, self.ti_base(tile_id), param_name, value)
+        self.ss.put_val_hash(self.sid, self.ti_base(tile_id), param_name, value)
 
     def get_param(self, tile_id, param_name):
-        return self.ss.get_hsmall(self.sid, self.ti_base(tile_id), param_name)
+        return self.ss.get_val_hash(self.sid, self.ti_base(tile_id), param_name)
 
     def get_tile_params(self, tile_id):
-        return self.ss.get_hsmall_all(self.sid, self.ti_base(tile_id))
+        return self.ss.get_hash_all(self.sid, self.ti_base(tile_id))
 
     def set_multi(self, tile_id, pdict):
         for k, v in pdict.items():

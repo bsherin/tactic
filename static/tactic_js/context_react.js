@@ -451,9 +451,10 @@ function ContextApp(props) {
             return _context6.a(3, 24);
           case 10:
             _context6.n = 11;
-            return (0, _communication_react.postPromiseMain)(props.local_id, "initialize_session_from_collection", {
+            return (0, _communication_react.postPromise)("main_service", "initialize_session_from_collection", {
               collection_name: resource_name,
               base_figure_url: window.base_figure_url,
+              local_id: new_viewer_id,
               username: window.username,
               ppi: (0, _utilities_react.get_ppi)()
             });
@@ -478,9 +479,11 @@ function ContextApp(props) {
               break;
             }
             _context6.n = 15;
-            return (0, _communication_react.postPromise)("host", "initiate_new_notebook_in_context", {
+            return (0, _communication_react.postPromise)("main_service", "initialize_session_for_new_notebook", {
               temp_data_id: temp_data_id,
-              local_id: new_viewer_id
+              local_id: new_viewer_id,
+              username: window.username,
+              ppi: (0, _utilities_react.get_ppi)()
             });
           case 15:
             data = _context6.v;
@@ -488,8 +491,11 @@ function ContextApp(props) {
             break;
           case 16:
             _context6.n = 17;
-            return (0, _communication_react.postPromise)("host", "initiate_new_notebook_in_context", {
-              local_id: new_viewer_id
+            return (0, _communication_react.postPromise)("main_service", "initialize_session_for_new_notebook", {
+              base_figure_url: window.base_figure_url,
+              local_id: new_viewer_id,
+              username: window.username,
+              ppi: (0, _utilities_react.get_ppi)()
             });
           case 17:
             data = _context6.v;
@@ -497,8 +503,11 @@ function ContextApp(props) {
             return _context6.a(3, 24);
           case 19:
             _context6.n = 20;
-            return (0, _communication_react.postPromise)("host", "initiate_new_project_in_context", {
-              local_id: new_viewer_id
+            return (0, _communication_react.postPromise)("main_service", "initialize_session_for_new_project", {
+              base_figure_url: window.base_figure_url,
+              local_id: new_viewer_id,
+              username: window.username,
+              ppi: (0, _utilities_react.get_ppi)()
             });
           case 20:
             data = _context6.v;

@@ -2399,6 +2399,7 @@ function ConsoleCodeItem(props) {
                                                       flex_size={true}
                                                       tsocket={props.tsocket}
                                                       local_id={props.local_id}
+                                                      parentService="main_service"
                                                       saveMe={null}/>
                                     <div className="button-div float-buttons d-flex flex-row">
                                         <GlyphButton handleClick={_deleteMe}
@@ -2778,6 +2779,7 @@ function ConsoleTextItem(props) {
                                                           flex_size={true}
                                                           tsocket={props.tsocket}
                                                           local_id={props.local_id}
+                                                          parentService="main_service"
                                                           saveMe={null}/>
                                     </Fragment>
                                 }

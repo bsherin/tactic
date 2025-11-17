@@ -78,7 +78,7 @@ class TileCreationTasksMixin:
                     "base_figure_url": sess.base_figure_url,
                     "doc_type": sess.doc_type,
                     "user_id": sess.user_id,
-                    "_main_id": sid,
+                    "sid": sid,
                     "username": sess.username,
                     "ppi": sess.ppi,
                 }
@@ -109,7 +109,7 @@ class TileCreationTasksMixin:
     def create_pseudo_tile(self, sid, globals_dict=None, callback=None):
         sess = self.get_session(sid)
 
-        if self.get(sid, "pseudo_tile_id") is not None or self.get(sid, "pseudo_creation_in_progress"):
+        if sess.pseudo_tile_id is not None or sess.pseudo_creation_in_progress:
             if callback is not None:
                 callback()
             return {"success": True}
@@ -129,9 +129,9 @@ class TileCreationTasksMixin:
                 "globals_dict": lgdict,
                 "creds": data["creds"],
                 "instance_params": {
-                    "base_figure_url": self.base_figure_url,
+                    "base_figure_url": sess.base_figure_url,
                     "user_id": sess.user_id,
-                    "_main_id": sid,
+                    "sid": sid,
                     "doc_type": sess.doc_type,
                     "username": sess.username,
                     "ppi": sess.ppi,
@@ -204,7 +204,7 @@ class TileCreationTasksMixin:
         tile_save_dict["ppi"] = sess.ppi
         additional_instance_params = {
             "user_id": sess.user_id,
-            "_main_id": sid,
+            "sid": sid,
             "username": sess.username,
             "ppi": sess.ppi,
         }
@@ -236,7 +236,7 @@ class TileCreationTasksMixin:
 
     @task_worthy_manual_submit
     def reload_tile(self, ddict, task_packet):
-        sid = data_dict["sid"]
+        sid = ddict["sid"]
         sess = self.get_session(sid)
         tile_info = sess.tile_info
         def recreated_tile(rcdata):
@@ -254,7 +254,7 @@ class TileCreationTasksMixin:
 
         local_task_packet = task_packet
         tile_id = bytes_to_string(ddict["tile_id"])
-        form_info = self.compile_form_info(tile_id)
+        form_info = self.compile_form_info(sid, tile_id)
         reload_dict = tile_info.get_reload_dict(tile_id)
         save_dict = tile_info.get_save_dict(tile_id)
 
@@ -280,7 +280,7 @@ class TileCreationTasksMixin:
                     exports = reinst_result["exports"]
                     tile_info.set_reload_dict(tile_id, reinst_result["reload_dict"])
                     self.update_pipe_dict(sid, exports, tile_id, ddict["tile_name"])
-                    form_info["pipe_dict"] = self._pipe_dict
+                    form_info["pipe_dict"] = sess.pipe_dict
                     self.rebuild_other_tile_forms(sid, tile_id, form_info)
                     self.mworker.emit_export_viewer_message(sid, "update_exports_popup", {})
                     final_result = {"success": True, "form_data": reinst_result["form_data"],
@@ -293,7 +293,7 @@ class TileCreationTasksMixin:
             reload_dict["form_info"] = form_info
             additional_instance_params = {
                 "user_id": sess.user_id,
-                "_main_id": sess.mworker.my_id,
+                "sid": sid,
                 "username": sess.username,
                 "ppi": sess.ppi,
             }
@@ -301,12 +301,12 @@ class TileCreationTasksMixin:
             self.mworker.post_task(tile_id,
                                    "load_source_and_reinstantiate",
                                    {"tile_code": module_code,
-                                    "creds": self.tile_info.get_creds(tile_id),
+                                    "creds": tile_info.get_creds(tile_id),
                                     "reload_dict": reload_dict},
                                    reinstantiate_done)
 
         tile_type = reload_dict["tile_type"]
-        module_code = self.get_loaded_tile_code(tile_type)
+        module_code = self.get_loaded_tile_code(sid, tile_type)
         self.mworker.post_task("host5000", "restart_tile_container", {"tile_id": tile_id}, container_restarted)
 
     @task_worthy
@@ -322,14 +322,14 @@ class TileCreationTasksMixin:
             if sess.pseudo_tile_id is not None:
                 self.mworker.post_task(sess.pseudo_tile_id, "RebuildCollectionObject", ddict)
         except Exception as ex:
-            error_string = self.handle_exception(ex, "Error updating collection objects")
+            error_string = self.handle_exception(sid, ex, "Error updating collection objects")
             print(error_string)
             return
 
     @task_worthy
     def rebuild_tile_forms_task(self, ddict):
         sid = ddict["sid"]
-        sess= self.get_session(sid)
+        sess = self.get_session(sid)
         try:
             if sess.am_notebook_type:
                 return
@@ -355,7 +355,7 @@ class TileCreationTasksMixin:
                          "collection_names": self.collection_tags_dict(username),
                          "other_tile_names": other_tile_names}
         except Exception as ex:
-            error_string = self.handle_exception(ex, "Error assembling form info")
+            error_string = self.handle_exception(sid, ex, "Error assembling form info")
             print(error_string)
             return
         try:
@@ -367,7 +367,7 @@ class TileCreationTasksMixin:
             if sess.pseudo_tile_id is not None:
                 self.mworker.post_task(sess.pseudo_tile_id, "RebuildTileForms", {})
         except Exception as ex:
-            error_string = self.handle_exception(ex, "Error rebuilding the forms")
+            error_string = self.handle_exception(sid, ex, "Error rebuilding the forms")
             print(error_string)
         return
 

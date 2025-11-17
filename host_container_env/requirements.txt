@@ -25,3 +25,4 @@ pymongo
 ssh-pymongo
 s3fs
 boto3>=1.34.0
+msgpack

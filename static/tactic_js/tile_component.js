@@ -366,7 +366,7 @@ function TileComponent(props) {
             _context7.p = 1;
             _startSpinner();
             _context7.n = 2;
-            return postPromiseMain(props.local_id, "reload_tile", data_dict, props.local_id);
+            return (0, _communication_react.postPromiseMain)(props.local_id, "reload_tile", data_dict, props.local_id);
           case 2:
             data = _context7.v;
             if (data.success) {

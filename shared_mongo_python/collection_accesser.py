@@ -451,7 +451,7 @@ class CollectionAccess(object):
             if temp_id is None:
                 save_dict = self.get_collection_doc(short_collection_name, username=username)
             else:
-                save_dict = self.read_temp_data(self.db, temp_id)
+                save_dict = self.read_temp_data(temp_id)
             collection_metadata = save_dict["metadata"]
             if "type" in collection_metadata and collection_metadata["type"] == "freeform":
                 doc_type = "freeform"

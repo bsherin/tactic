@@ -304,7 +304,8 @@ services:
     platform: ${PLATFORM}
     environment:
       - PYTHONUNBUFFERED=0
-      - USE_GEVENT=True
+      - USE_GEVENT=False
+      - DEBUG=${DEBUG}
 
   tactic_mongo_watcher:
     image: bsherin/tactic-mongo-watcher:${IMG_SUFFIX}
@@ -460,6 +461,7 @@ services:
       - OWNER=host
       - PARENT=host
       - USE_AMAZON_MQ=${USE_AMAZON_MQ}
+      - RUNNING_ON_AWS=${RUNNING_ON_AWS}
       - USE_GEVENT=False
     networks:
       - tactic-net

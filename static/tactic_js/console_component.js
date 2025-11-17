@@ -2988,6 +2988,7 @@ function ConsoleCodeItem(props) {
     flex_size: true,
     tsocket: props.tsocket,
     local_id: props.local_id,
+    parentService: "main_service",
     saveMe: null
   }), /*#__PURE__*/_react["default"].createElement("div", {
     className: "button-div float-buttons d-flex flex-row"
@@ -3386,6 +3387,7 @@ function ConsoleTextItem(props) {
     flex_size: true,
     tsocket: props.tsocket,
     local_id: props.local_id,
+    parentService: "main_service",
     saveMe: null
   })), really_show_markdown && !hasOnlyWhitespace() && /*#__PURE__*/_react["default"].createElement("div", {
     className: "text-panel-output markdown-heading-sizes",

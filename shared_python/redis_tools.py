@@ -136,27 +136,6 @@ class RedisManager:
         full_pattern = self.expand_key(username, pattern)
         return self.scan_keys(full_pattern)
 
-class SessionManager(RedisManager):
-
-    def expand_key(self, username, key):
-        full_key = f"{self.prefix}.{key}"
-        return full_key
-
-    def set_session(self, session_id, session_data):
-        self.set_hash_dict(None, session_id, session_data)
-
-    def get_session(self, session_id):
-        return self.get_hash_dict(None, session_id)
-
-    def delete_session(self, session_id):
-        self.delete(None, session_id)
-
-    def get_session_value(self, session_id, key):
-        return self.get_hash_entry(None, session_id, key)
-
-    def set_session_value(self, session_id, key, value):
-        self.set_hash_entry(None, session_id, key, value)
-
 class ReadyBlockManager(RedisManager):
     def __init__(self, client):
         self.prefix = "rb"

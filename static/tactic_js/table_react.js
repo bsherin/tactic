@@ -86,6 +86,7 @@ function FreeformBody(props) {
     soft_wrap: props.mState.soft_wrap,
     mode: "text",
     controlled: true,
+    parentService: "main_service",
     setCMObject: _setCMObject,
     readOnly: !props.mState.spreadsheet_mode
   }));

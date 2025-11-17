@@ -104,6 +104,10 @@ class LibraryAccessMixin:
                                  header_list_dict=None, collection_metadata=None):
         if header_list_dict is None:
             header_list_dict = {}
+        if collection_metadata is None:
+            collection_metadata = {}
+        if doc_metadata is None:
+            doc_metadata = {}
         if doc_type == "table":
             for fname, dlist in doc_dict.items():
                 if fname not in header_list_dict:

@@ -48,6 +48,9 @@ class MainWorker(QWorker, ExceptionMixin, CopilotMixin):
         self.post_task("host", msg_type, task_data, callback_func)
         return
 
+    def get_session(self, sid):
+        return self.mwindow.get_session(sid)
+
     @staticmethod
     def is_container_local(the_id):
         return the_id not in ["host", "client"]
@@ -138,53 +141,6 @@ class MainWorker(QWorker, ExceptionMixin, CopilotMixin):
         if event_name in self.mwindow.update_events:
             self.post_task("main_service", event_name, data_dict)
         return True
-
-    # @task_worthy
-    # def initialize_mainwindow(self, data_dict):
-    #     try:
-    #         print("data_dict is " + str(data_dict))
-    #
-    #         # missing: project_collection_name, mongo_uri, base_figure_url
-    #
-    #         self.mwindow = mainWindow(self, data_dict)
-    #         self.handler_instances["mainwindow"] = self.mwindow
-    #
-    #         task_data = {"success": True,
-    #                      "message": "finish-post-load",
-    #                      "collection_name": self.mwindow.collection_name,
-    #                      "doc_names": self.mwindow.doc_names,
-    #                      "console_html": ""}
-    #         if data_dict["doc_type"] in ["notebook", "none"]:
-    #             return task_data
-    #         print("ready to grab chunk")
-    #         if data_dict["doc_type"] == "table":
-    #             task_data.update(self.mwindow.grab_chunk_by_row_index({"doc_name": self.mwindow.doc_names[0], "row_index": 0, "set_visible_doc": True}))
-    #         else:
-    #             task_data.update(self.mwindow.grab_freeform_data({"doc_name": self.mwindow.doc_names[0], "set_visible_doc": True}))
-    #         # self.ask_host("emit_to_client", task_data)
-    #         print("got the chunk")
-    #         return task_data
-    #     except Exception as Ex:
-    #         emsg = self.handle_exception(Ex, "Error initializing mainwindow")
-    #         print(str(emsg))
-    #         return emsg
-
-    # @task_worthy
-    # def initialize_project_mainwindow(self, data_dict):
-    #     try:
-    #         print("entering intialize project mainwindow")
-    #         self.mwindow = mainWindow(self, data_dict)
-    #         self.handler_instances["mainwindow"] = self.mwindow
-    #         if data_dict["doc_type"] == "jupyter":
-    #             self.post_task(self.my_id, "do_full_jupyter_recreation", data_dict)
-    #         elif data_dict["doc_type"] == "notebook":
-    #             self.post_task(self.my_id, "do_full_notebook_recreation", data_dict)
-    #         else:
-    #             self.post_task(self.my_id, "do_full_recreation", data_dict)
-    #         print("leaving initialize_project_mainwindow")
-    #         return {"success": True}
-    #     except Exception as ex:
-    #         return self.handle_exception(ex, "Error initializing project mainwindow")
 
 
 if __name__ == "__main__":
