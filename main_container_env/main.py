@@ -1,4 +1,5 @@
 # from gevent import monkey; monkey.patch_all()
+print("entering main.py")
 import sys
 import re
 import uuid

@@ -1,3 +1,4 @@
+print("entering mongo_db_fs.py")
 import os
 from pymongo import MongoClient
 import gridfs

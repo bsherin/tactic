@@ -21,6 +21,7 @@ import copy
 from communication_utils import emit_direct
 
 from main import mainWindow
+print("back in main_main")
 
 from qworker import QWorker, task_worthy, callback_dict, callback_data_dict, error_handler_dict
 import qworker
@@ -32,7 +33,7 @@ queue_check_time = 60  # How often, in seconds, to inspect the queues
 
 import os
 
-
+print("about to define mainworker class")
 class MainWorker(QWorker, ExceptionMixin, CopilotMixin):
     def __init__(self, ):
         QWorker.__init__(self, service_name="main_service")
@@ -143,6 +144,7 @@ class MainWorker(QWorker, ExceptionMixin, CopilotMixin):
 
 
 if __name__ == "__main__":
+    print("in __main__")
     app = Flask(__name__)
     exception_mixin.app = app
     print("entering main")
