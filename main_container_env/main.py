@@ -12,8 +12,6 @@ import datetime
 import os
 from communication_utils import debinarize_python_object, emit_direct
 from communication_utils import make_jsonizable_and_compress
-import docker_functions
-from docker_functions import env_or_none
 from loaded_tile_management import loaded_tile_manager
 from mongo_accesser import MongoAccess
 from main_tasks_mixin import StateTasksMixin, LoadSaveTasksMixin, APISupportTasksMixin
@@ -45,11 +43,6 @@ if "DB_NAME" in os.environ:
     db_name = os.environ.get("DB_NAME")
 else:
     db_name = "tacticdb"
-
-
-true_host_persist_dir = os.environ.get("TRUE_HOST_PERSIST_DIR")
-true_host_resources_dir = os.environ.get("TRUE_HOST_RESOURCES_DIR")
-true_user_host_pool_dir = env_or_none("TRUE_USER_HOST_POOL_DIR")
 
 # noinspection PyPep8Naming,PyUnusedLocal,PyTypeChecker,PyMissingConstructor
 class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationTasksMixin, APISupportTasksMixin,

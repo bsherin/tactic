@@ -31,7 +31,6 @@ import time
 queue_check_time = 60  # How often, in seconds, to inspect the queues
 
 import os
-rb_id = os.environ.get("RB_ID")
 
 
 class MainWorker(QWorker, ExceptionMixin, CopilotMixin):

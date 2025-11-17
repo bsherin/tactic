@@ -10,7 +10,6 @@ from qworker import task_worthy_methods, task_worthy_manual_submit_methods
 from loaded_tile_management import loaded_tile_manager
 from communication_utils import make_python_object_jsonizable, debinarize_python_object
 from communication_utils import make_jsonizable_and_compress
-import docker_functions
 from mongo_accesser import bytes_to_string, NameExistsError
 from qworker import debug_log
 import base64
@@ -1397,12 +1396,6 @@ class APISupportTasksMixin:
     def SetCellBackground(self, data):
         self._set_cell_background(data["sid"], data["doc_name"], data["row_id"], data["column_name"], data["color"])
         return None
-
-    @task_worthy
-    def get_container_log(self, data):
-        container_id = data["container_id"]
-        log_text = docker_functions.get_log(container_id).decode()
-        return {"success": True, "log_text": log_text}
 
 
 # noinspection PyUnusedLocal

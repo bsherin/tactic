@@ -130,32 +130,6 @@ def create_assistant_container(openai_api_key, parent, user_id, username):
 
 class MainContainerTracker(object):
 
-    def create_main_container(self, other_name, user_id, username, openai_api_key, special_unique_id=None):
-        main_volume_dict = {"/var/run/docker.sock": {"bind": "/var/run/docker.sock", "mode": "rw"}}
-        user_host_persist_dir = true_host_persist_dir + "/tile_manager/" + username
-        main_volume_dict[user_host_persist_dir] = {"bind": "/code/persist", "mode": "ro"}
-        main_volume_dict[true_host_pool_dir] = {"bind": "/pool", "mode": "rw"}
-        rb_id = str(uuid.uuid4())
-        environ = {
-            "USE_WAIT_TASKS": "True",
-            "RB_ID": rb_id,
-            "OPENAI_API_KEY": openai_api_key,
-            "TRUE_HOST_PERSIST_DIR": true_host_persist_dir,
-            "TRUE_HOST_RESOURCES_DIR": true_host_resources_dir,
-            "TRUE_HOST_POOL_DIR": true_host_pool_dir,
-            "TRUE_USER_HOST_POOL_DIR": get_user_pool_dir(username)
-        }
-
-        tactic_cont_id, _container_id = create_container("bsherin/tactic-main", network_mode="bridge",
-                                                  env_vars=environ,
-                                                  owner=user_id, other_name=other_name, username=username,
-                                                  volume_dict=main_volume_dict,
-                                                  publish_all_ports=True,
-                                                  special_unique_id=special_unique_id
-                                                  )
-
-        return tactic_cont_id, rb_id
-
     def extract_port(self, container_identifier):
         return cli.containers.get(container_identifier).attrs["NetworkSettings"]["Ports"]["5000/tcp"]
 

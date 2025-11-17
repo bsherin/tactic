@@ -2,7 +2,7 @@
 from __future__ import print_function
 import os
 
-use_gevent = os.environ.get("USE_GEVENT", "True").lower() == "true"
+use_gevent = os.environ.get("USE_GEVENT", "False").lower() == "true"
 
 if use_gevent:
     import gevent

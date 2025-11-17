@@ -3,7 +3,6 @@ import copy
 import datetime
 import copy
 from main_tasks_mixin import task_worthy, task_worthy_manual_submit
-import docker_functions
 from mongo_accesser import bytes_to_string
 from qworker import debug_log
 import base64
