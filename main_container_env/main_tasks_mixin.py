@@ -247,9 +247,11 @@ class LoadSaveTasksMixin:
         sdict["user_id"] = user_id
         sdict["ppi"] = data["ppi"]
         doc_type = sdict["doc_type"]
-
+        print("about to initialize the session")
         self.ss.initialize_session(local_id, sdict)
+        print("initialized the session")
         sess = self.get_session(local_id)
+        print("got the session")
         self.create_pseudo_tile(local_id, globals_dict)
         print('returned from create_pseudo_tile')
         doc_type = sess.doc_type
@@ -260,6 +262,7 @@ class LoadSaveTasksMixin:
 
         self.mworker.ask_host(local_id, "get_openai_api_key", {"user_id": user_id}, got_openai_api_key)
 
+        print("got the collection_info")
         collection_info = sess.collection_info
 
         data_dict = {
