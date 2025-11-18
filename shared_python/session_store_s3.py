@@ -113,7 +113,9 @@ class SessionStoreS3:
     # ----- public API -----
 
     def initialize_session(self, sid, sdict=None):
+        print("entering initialize_session in session_store_s3")
         for k, v in self.defaults.items():
+            print(f"got default key {k}")
             if type(v) == dict and "is_hash" in v and v["is_hash"]:
                 if sdict is not None and k in sdict:
                     self.put_hash_all(self, k, sdict[k])
@@ -161,6 +163,7 @@ class SessionStoreS3:
         self.delete_s3_prefix(prefix)
 
     def put_val(self, sid: str, name: str, obj: Any):
+        print(f"in put_val with name {name} and sid {sid}")
         if self.is_large(name):
             self.put_large(sid, name, obj)
         else:
@@ -197,6 +200,7 @@ class SessionStoreS3:
         return result
 
     def put_hash_all(self, sid: str, base_name: str, hdict: dict):
+        print(f"in put_hash_all with base_name {base_name}")
         keys = hdict.keys()
         result = {}
         for k in keys:
@@ -204,6 +208,7 @@ class SessionStoreS3:
         return result
 
     def put_small(self, sid: str, name: str, obj: Any, ttl: int = 86_400):
+        print("in put_small with name {name} and sid {sid}")
         data = self._pack(obj)
         if len(data) > SMALL_LIMIT:
             print(f"*** got size too big for {name} with size {len(data)}")
@@ -263,6 +268,7 @@ class SessionStoreS3:
         return self.put_large_bytes_hash(sid, base_name, key, raw)
 
     def put_large(self, sid, key, obj):
+        print(f"in put large with key {key}")
         import pickle
         raw = pickle.dumps(obj, protocol=pickle.HIGHEST_PROTOCOL)
         return self.put_large_bytes(sid, key, raw)

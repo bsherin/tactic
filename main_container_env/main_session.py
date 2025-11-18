@@ -97,7 +97,7 @@ class MainSessionStore(SessionStoreS3):
         return rdict
 
     def initialize_session(self, sid, sdict=None):
-        print("entering initialize_session")
+        print("entering initialize_session in main_session")
         SessionStoreS3.initialize_session(self, sid, None)
         print("called the super initialize")
         for key in self.recreate_values:
