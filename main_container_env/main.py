@@ -211,9 +211,12 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
         return self.get_session(sid).tile_info
 
     def recreate_from_save(self, sid, project_name, username, unique_id=None):
+        print("entering recreate_from_save")
         if unique_id is None:
             try:
+                print('reading the project_dict')
                 project_dict = self.read_project_dict(project_name, username)
+                print("getting project metadata")
                 mdata = self.get_project_metadata(project_name, username)
             except Exception as ex:
                 error_string = self.handle_exception(sid, ex, "<pre>Error loading project dict</pre>", print_to_console=True)
@@ -241,7 +244,9 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
             }
             return sdict, interface_state, {}
 
+        print("about to loop over rpoject_dict items")
         for (attr, attr_val) in project_dict.items():
+            print(f"got attr {attr}")
             if str(attr) not in ["tile_instances","pseudo_tile_instance", "pseudo_tile_id", "doc_dict"]:
                 try:
                     if type(attr_val) == dict and ("my_class_for_recreate" in attr_val):
@@ -267,7 +272,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
                     print(self.extract_short_error_message(ex, "error with attr " + str(attr)))
             if "doc_dict" in project_dict:
                 sdict["doc_dict"] = project_dict["doc_dict"]
-
+        print("done looping over attributes")
         if sdict["doc_type"] == "notebook":
             save_attrs = self.notebook_save_attrs
         else:
@@ -315,7 +320,9 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
                 interface_state["console_items"] = []
                 error_string = self.handle_exception(sid, ex, "Error adding missing sections")
                 print(error_string)
+            print("leaving recreate from_save")
             return sdict, interface_state, globals_dict
+
 
     # utility methods
 

@@ -242,6 +242,7 @@ class LoadSaveTasksMixin:
         project_name = data["project_name"]
         self.base_figure_url = data.get("base_figure_url", "")
         local_id = data.get("local_id", str(uuid.uuid4()))
+        print("about to call recreate_from-save")
         sdict, interface_state, globals_dict = self.recreate_from_save(local_id, project_name, username)
         sdict["username"] = username
         sdict["user_id"] = user_id
