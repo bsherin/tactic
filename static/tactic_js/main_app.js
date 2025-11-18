@@ -1586,29 +1586,7 @@ function main_main() {
   (0, _utilities_react.renderSpinnerMessage)("Starting up ...");
   var local_id = "a" + (0, _utilities_react.guid)();
   window.global_id = local_id;
-  var target;
-  var post_data;
   var resource_name = window.project_name == "" ? window.collection_name : window.project_name;
-  if (window.project_name == "") {
-    if (window.collection_name == "") {
-      target = "initiate_new_project_in_context";
-      post_data = {
-        local_id: local_id
-      };
-    } else {
-      target = "initiate_collection_in_context";
-      post_data = {
-        "collection_name": resource_name,
-        local_id: local_id
-      };
-    }
-  } else {
-    target = "initiate_project_in_context";
-    post_data = {
-      "project_name": resource_name,
-      local_id: local_id
-    };
-  }
   var tsocket = new _tactic_socket.TacticSocket("main", 5000, "project", local_id, /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee17() {
     return _regenerator().w(function (_context17) {
       while (1) switch (_context17.n) {
@@ -1616,17 +1594,68 @@ function main_main() {
           tsocket.attachListener('handle-callback', function (task_packet) {
             (0, _communication_react.handleCallback)(task_packet, local_id);
           });
-          (0, _communication_react.postPromise)("host", target, post_data, local_id).then(function (data) {
-            data.tsocket = tsocket;
-            data.local_id = local_id, data.read_only = window.read_only;
-            data.is_repository = window.is_repository;
-            (0, _main_support.main_props)(data, null, gotProps);
-          });
+          if (window.project_name == "") {
+            if (window.collection_name != "") {
+              (0, _communication_react.postPromise)("main_service", "initialize_session_from_collection", {
+                collection_name: resource_name,
+                base_figure_url: window.base_figure_url,
+                local_id: local_id,
+                username: window.username,
+                ppi: (0, _utilities_react.get_ppi)()
+              }).then(function (data) {
+                data.tsocket = tsocket;
+                data.local_id = local_id;
+                data.read_only = window.read_only;
+                data.is_repository = window.is_repository;
+                (0, _main_support.main_props)(data, null, gotProps);
+              });
+            } else {
+              (0, _communication_react.postPromise)("main_service", "initialize_session_for_new_project", {
+                base_figure_url: window.base_figure_url,
+                local_id: local_id,
+                username: window.username,
+                ppi: (0, _utilities_react.get_ppi)()
+              }).then(function (data) {
+                data.tsocket = tsocket;
+                data.local_id = local_id;
+                data.read_only = window.read_only;
+                data.is_repository = window.is_repository;
+                (0, _main_support.main_props)(data, null, gotProps);
+              });
+            }
+          } else {
+            (0, _communication_react.postPromise)("main_service", "initialize_session_from_save", {
+              project_name: resource_name,
+              base_figure_url: window.base_figure_url,
+              local_id: local_id,
+              username: window.username,
+              ppi: (0, _utilities_react.get_ppi)()
+            }).then(function (data) {
+              data.tsocket = tsocket;
+              data.local_id = local_id, data.read_only = window.read_only;
+              data.is_repository = window.is_repository;
+              (0, _main_support.main_props)(data, null, gotProps);
+            });
+          }
         case 1:
           return _context17.a(2);
       }
     }, _callee17);
   })));
+
+  // let tsocket = new TacticSocket("main", 5000, "project", local_id, async () => {
+  //     tsocket.attachListener('handle-callback', (task_packet) => {
+  //         handleCallback(task_packet, local_id)
+  //     });
+  //     postPromise("host", target, post_data, local_id)
+  //         .then((data) => {
+  //             data.tsocket = tsocket;
+  //             data.local_id = local_id,
+  //             data.read_only = window.read_only;
+  //             data.is_repository = window.is_repository;
+  //             main_props(data, null, gotProps)
+  //         });
+  // })
 }
 if (!window.in_context) {
   main_main();

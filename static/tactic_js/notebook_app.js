@@ -350,30 +350,44 @@ function main_main() {
   }
   (0, _utilities_react.renderSpinnerMessage)("Starting up ...");
   var local_id = "a" + (0, _utilities_react.guid)();
-  var target = window.is_new_notebook ? "initate_new_notebook_in_context" : "initiate_project_in_context";
+  window.global_id = local_id;
   var resource_name = window.is_new_notebook ? "" : window.project_name;
   var tsocket = new _tactic_socket.TacticSocket("main", 5000, "notebook", local_id, /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee() {
-    var post_data;
     return _regenerator().w(function (_context) {
       while (1) switch (_context.n) {
         case 0:
           tsocket.attachListener('handle-callback', function (task_packet) {
             (0, _communication_react.handleCallback)(task_packet, local_id);
           });
-          post_data = {
-            "project_name": resource_name,
-            local_id: local_id
-          };
           if (window.is_new_notebook) {
-            post_data.temp_data_id = window.temp_data_id;
+            (0, _communication_react.postPromise)("main_service", "initialize_session_for_new_notebook", {
+              temp_data_id: temp_data_id,
+              base_figure_url: window.base_figure_url,
+              local_id: local_id,
+              username: window.username,
+              ppi: (0, _utilities_react.get_ppi)()
+            }).then(function (data) {
+              data.tsocket = tsocket;
+              data.local_id = local_id;
+              data.read_only = window.read_only;
+              data.is_repository = window.is_repository;
+              (0, _notebook_support.notebook_props)(data, null, gotProps);
+            });
+          } else {
+            (0, _communication_react.postPromise)("main_service", "initialize_session_from_save", {
+              project_name: resource_name,
+              base_figure_url: window.base_figure_url,
+              local_id: local_id,
+              username: window.username,
+              ppi: (0, _utilities_react.get_ppi)()
+            }).then(function (data) {
+              data.tsocket = tsocket;
+              data.local_id = local_id;
+              data.read_only = window.read_only;
+              data.is_repository = window.is_repository;
+              (0, _notebook_support.notebook_props)(data, null, gotProps);
+            });
           }
-          (0, _communication_react.postPromise)("host", target, post_data, local_id).then(function (data) {
-            data.tsocket = tsocket;
-            data.local_id = local_id;
-            data.readOnly = window.read_only;
-            data.is_repository = window.is_repository;
-            (0, _notebook_support.notebook_props)(data, null, gotProps);
-          });
         case 1:
           return _context.a(2);
       }

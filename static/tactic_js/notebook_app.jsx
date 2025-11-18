@@ -1,5 +1,5 @@
 import {TacticSocket} from "./tactic_socket";
-import {guid} from "./utilities_react";
+import {get_ppi, guid} from "./utilities_react";
 
 if (!window.in_context) {
     import("../tactic_css/tactic.scss");
@@ -351,26 +351,42 @@ function main_main() {
 
     renderSpinnerMessage("Starting up ...");
     const local_id = "a" + guid();
-    var target = window.is_new_notebook ? "initate_new_notebook_in_context" : "initiate_project_in_context";
-    var resource_name = window.is_new_notebook ? "" : window.project_name;
+    window.global_id = local_id;
+    let resource_name = window.is_new_notebook ? "" : window.project_name;
 
     let tsocket = new TacticSocket("main", 5000, "notebook", local_id, async () => {
         tsocket.attachListener('handle-callback', (task_packet) => {
             handleCallback(task_packet, local_id)
         });
-        let post_data = {"project_name": resource_name, local_id};
         if (window.is_new_notebook) {
-            post_data.temp_data_id = window.temp_data_id
+            postPromise("main_service", "initialize_session_for_new_notebook", {
+                temp_data_id: temp_data_id,
+                base_figure_url: window.base_figure_url,
+                local_id: local_id, username: window.username, ppi: get_ppi()
+            })
+                .then((data) => {
+                    data.tsocket = tsocket;
+                    data.local_id = local_id;
+                    data.read_only = window.read_only;
+                    data.is_repository = window.is_repository;
+                    notebook_props(data, null, gotProps)
+                })
+        }
+        else {
+            postPromise("main_service", "initialize_session_from_save", {
+                project_name: resource_name,
+                base_figure_url: window.base_figure_url,
+                local_id: local_id, username: window.username, ppi: get_ppi()
+            })
+                .then((data) => {
+                    data.tsocket = tsocket;
+                    data.local_id = local_id;
+                    data.read_only = window.read_only;
+                    data.is_repository = window.is_repository;
+                    notebook_props(data, null, gotProps)
+                })
         }
 
-        postPromise("host", target, post_data, local_id)
-            .then((data) => {
-                data.tsocket = tsocket;
-                data.local_id = local_id;
-                data.readOnly = window.read_only;
-                data.is_repository = window.is_repository;
-                notebook_props(data, null, gotProps)
-            })
     })
 }
 

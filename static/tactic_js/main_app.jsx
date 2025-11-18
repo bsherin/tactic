@@ -31,7 +31,7 @@ import {handleCallback, postPromise, postPromiseMain, postWithCallbackMain, post
 import {doFlash} from "./toaster"
 import {withStatus} from "./toaster";
 import {withErrorDrawer} from "./error_drawer";
-import {guid, renderSpinnerMessage, useConnection, useConstructor, useStateAndRef} from "./utilities_react";
+import {get_ppi, guid, renderSpinnerMessage, useConnection, useConstructor, useStateAndRef} from "./utilities_react";
 import {ICON_BAR_WIDTH} from "./sizing_tools";
 import {ErrorBoundary} from "./error_boundary";
 import {useCallbackStack, useReducerAndRef} from "./utilities_react";
@@ -1259,36 +1259,68 @@ function main_main() {
     renderSpinnerMessage("Starting up ...");
     const local_id = "a" + guid();
     window.global_id = local_id;
-    let target;
-    let post_data;
     const resource_name = window.project_name == "" ? window.collection_name : window.project_name;
-    if (window.project_name == "") {
-        if (window.collection_name == "") {
-            target = "initiate_new_project_in_context";
-            post_data = {local_id};
-
-        } else {
-            target = "initiate_collection_in_context";
-            post_data = {"collection_name": resource_name, local_id};
-
-        }
-    } else {
-        target = "initiate_project_in_context";
-        post_data = {"project_name": resource_name, local_id};
-    }
     let tsocket = new TacticSocket("main", 5000, "project", local_id, async () => {
         tsocket.attachListener('handle-callback', (task_packet) => {
             handleCallback(task_packet, local_id)
         });
-        postPromise("host", target, post_data, local_id)
-            .then((data) => {
-                data.tsocket = tsocket;
-                data.local_id = local_id,
-                data.read_only = window.read_only;
-                data.is_repository = window.is_repository;
-                main_props(data, null, gotProps)
-            });
+        if (window.project_name == "") {
+            if (window.collection_name != "") {
+                postPromise("main_service", "initialize_session_from_collection", {
+                    collection_name: resource_name,
+                    base_figure_url: window.base_figure_url,
+                    local_id: local_id, username: window.username, ppi: get_ppi()
+                })
+                    .then((data) => {
+                        data.tsocket = tsocket;
+                        data.local_id = local_id;
+                        data.read_only = window.read_only;
+                        data.is_repository = window.is_repository;
+                        main_props(data, null, gotProps)
+                    })
+
+            } else {
+                postPromise("main_service", "initialize_session_for_new_project", {
+                    base_figure_url: window.base_figure_url,
+                    local_id: local_id, username: window.username, ppi: get_ppi()
+                })
+                    .then((data) => {
+                        data.tsocket = tsocket;
+                        data.local_id = local_id;
+                        data.read_only = window.read_only;
+                        data.is_repository = window.is_repository;
+                        main_props(data, null, gotProps)
+                    })
+            }
+        } else {
+            postPromise("main_service", "initialize_session_from_save", {
+                project_name: resource_name,
+                base_figure_url: window.base_figure_url,
+                local_id: local_id, username: window.username, ppi: get_ppi()
+            })
+                .then((data) => {
+                    data.tsocket = tsocket;
+                    data.local_id = local_id,
+                    data.read_only = window.read_only;
+                    data.is_repository = window.is_repository;
+                    main_props(data, null, gotProps)
+                })
+        }
     })
+
+    // let tsocket = new TacticSocket("main", 5000, "project", local_id, async () => {
+    //     tsocket.attachListener('handle-callback', (task_packet) => {
+    //         handleCallback(task_packet, local_id)
+    //     });
+    //     postPromise("host", target, post_data, local_id)
+    //         .then((data) => {
+    //             data.tsocket = tsocket;
+    //             data.local_id = local_id,
+    //             data.read_only = window.read_only;
+    //             data.is_repository = window.is_repository;
+    //             main_props(data, null, gotProps)
+    //         });
+    // })
 }
 
 if (!window.in_context) {
