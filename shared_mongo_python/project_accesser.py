@@ -65,7 +65,7 @@ class ProjectAccess(object):
         return
 
     def delete_all_projects(self):
-        for proj in self.project_names:
+        for proj in self.project_names():
             self.remove_project(proj)
         return
 
@@ -123,7 +123,6 @@ class ProjectAccess(object):
             "project_name": project_name
         }
 
-    @property
     def project_names(self):
         names = [
             doc["project_name"]
@@ -188,7 +187,7 @@ class ProjectAccess(object):
         mdata["save_style"] = "b64save_react"
         save_dict = {"metadata": mdata,
                      "project_name": jupyter_name}
-        project_dict = {"jupyter_text": jupyter_text}
+        project_dict = {"jupyter_text": jupyter_text, "doc_type": "jupyter"}
 
         pdict = make_jsonizable_and_compress(project_dict)
         save_dict["file_id"] = self.fs.put(pdict)

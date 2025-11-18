@@ -837,9 +837,6 @@ function ConsoleComponent(props) {
   function _togglePseudoLog() {
     set_show_pseudo_log(!show_pseudo_log);
   }
-  function _toggleMainLog() {
-    set_show_main_log(!show_main_log);
-  }
   var _setFocusedItem = (0, _react.useCallback)(function (unique_id) {
     var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
     set_console_item_with_focus(unique_id);
@@ -1743,21 +1740,17 @@ function ConsoleComponent(props) {
         click_handler: _resetConsole
       }]
     };
-    if (!(show_pseudo_log || show_main_log)) {
-      ms["Consoles"] = [{
+    if (!show_pseudo_log) {
+      ms["Console"] = [{
         name_text: "Show Log Console",
         icon_name: "console",
         click_handler: _togglePseudoLog
-      }, {
-        name_text: "Show Main Console",
-        icon_name: "console",
-        click_handler: _toggleMainLog
       }];
     } else {
-      ms["Consoles"] = [{
+      ms["Console"] = [{
         name_text: "Hide Console",
         icon_name: "console",
-        click_handler: show_main_log ? _toggleMainLog : _togglePseudoLog
+        click_handler: _togglePseudoLog
       }];
     }
     return ms;
@@ -1932,7 +1925,7 @@ function ConsoleComponent(props) {
     suggestionGlyphs.push({
       intent: "primary",
       icon: "console",
-      handleClick: show_main_log ? _toggleMainLog : _togglePseudoLog
+      handleClick: _togglePseudoLog
     });
   }
   var extraProps = (0, _react.useMemo)(function () {

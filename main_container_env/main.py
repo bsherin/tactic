@@ -11,6 +11,7 @@ import pymongo
 import gridfs
 import datetime
 import os
+import json
 from communication_utils import debinarize_python_object, emit_direct
 from communication_utils import make_jsonizable_and_compress
 from loaded_tile_management import loaded_tile_manager
@@ -214,9 +215,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
         print("entering recreate_from_save")
         if unique_id is None:
             try:
-                print('reading the project_dict')
                 project_dict = self.read_project_dict(project_name, username)
-                print("getting project metadata")
                 mdata = self.get_project_metadata(project_name, username)
             except Exception as ex:
                 error_string = self.handle_exception(sid, ex, "<pre>Error loading project dict</pre>", print_to_console=True)
@@ -244,9 +243,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
             }
             return sdict, interface_state, {}
 
-        print("about to loop over rpoject_dict items")
         for (attr, attr_val) in project_dict.items():
-            print(f"got attr {attr}")
             if str(attr) not in ["tile_instances","pseudo_tile_instance", "pseudo_tile_id", "doc_dict"]:
                 try:
                     if type(attr_val) == dict and ("my_class_for_recreate" in attr_val):
@@ -272,7 +269,6 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
                     print(self.extract_short_error_message(ex, "error with attr " + str(attr)))
             if "doc_dict" in project_dict:
                 sdict["doc_dict"] = project_dict["doc_dict"]
-        print("done looping over attributes")
         if sdict["doc_type"] == "notebook":
             save_attrs = self.notebook_save_attrs
         else:

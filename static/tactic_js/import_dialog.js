@@ -576,3 +576,4 @@ function FileImportDialog(props) {
     className: "bp6-dialog-body"
   }, log_items))));
 }
+exports.FileImportDialog = FileImportDialog = (0, _error_drawer.withErrorDrawer)(FileImportDialog);

@@ -10,7 +10,7 @@ class HigherMongoTasksMixin:
     @task_worthy
     def get_resource_names_task(self, data):
         the_user = self.get_user_from_data(data)
-        res_names = getattr(the_user, f"{data['res_type']}_names")
+        res_names = getattr(the_user, f"{data['res_type']}_names")()
         return {"res_names": res_names}
 
     @task_worthy

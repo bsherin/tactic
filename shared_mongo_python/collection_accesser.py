@@ -266,7 +266,6 @@ class CollectionAccess(object):
 
     def append_freeform_documents(self, collection_name, file_list, username=None):
         from file_handling import read_freeform_file
-        user_obj = current_user
         new_doc_dict = {}
         file_decoding_errors = OrderedDict()
         successful_reads = []

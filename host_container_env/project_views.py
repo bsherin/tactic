@@ -40,21 +40,16 @@ def download_jupyter(project_name, new_name):
 @app.route('/import_jupyter/<library_id>', methods=['get', 'post'])
 @login_required
 def import_jupyter(library_id):
-    print("in import_jupyter")
     user_obj = current_user
     file_list = []
-    print("getting files from request")
     for the_file in request.files.values():
         print("got a file")
         file_list.append(the_file)
-    print("got " + str(len(file_list)) + " files")
     if len(file_list) == 0:
         result = {"success": "false", "title": "Error creating notebooks", "content": "No files received"}
         user_obj.send_import_report(result, library_id)
         return {"success": True}
-    print("calling import_as_jupyter_full")
     result = import_as_jupyter_full(file_list)
-    print("import_as_jupyter_full returned " + str(result))
     if result["success"] in ["false", "partial"]:
         user_obj.send_import_report(result, library_id)
     return {"success": True}
@@ -67,7 +62,7 @@ def import_as_jupyter_full(file_list):
     successful_reads = []
     for the_file in file_list:
         filename, file_extension = os.path.splitext(the_file.filename)
-        jupyter_name = user_obj.make_name_unique(filename, user_obj.project_names)
+        jupyter_name = user_obj.make_name_unique(filename, user_obj.project_names())
         print("got file " + filename)
         filename = filename.encode("ascii", "ignore").decode()
         (success, result_txt, encoding, decoding_problems) = read_freeform_file(the_file)

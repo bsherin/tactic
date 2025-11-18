@@ -242,19 +242,14 @@ class LoadSaveTasksMixin:
         project_name = data["project_name"]
         self.base_figure_url = data.get("base_figure_url", "")
         local_id = data.get("local_id", str(uuid.uuid4()))
-        print("about to call recreate_from-save")
         sdict, interface_state, globals_dict = self.recreate_from_save(local_id, project_name, username)
         sdict["username"] = username
         sdict["user_id"] = user_id
         sdict["ppi"] = data["ppi"]
         doc_type = sdict["doc_type"]
-        print("about to initialize the session")
         self.ss.initialize_session(local_id, sdict)
-        print("initialized the session")
         sess = self.get_session(local_id)
-        print("got the session")
         self.create_pseudo_tile(local_id, globals_dict)
-        print('returned from create_pseudo_tile')
         doc_type = sess.doc_type
         is_notebook = doc_type == 'notebook' or doc_type == 'jupyter'
 
@@ -263,7 +258,6 @@ class LoadSaveTasksMixin:
 
         self.mworker.ask_host(local_id, "get_openai_api_key", {"user_id": user_id}, got_openai_api_key)
 
-        print("got the collection_info")
         collection_info = sess.collection_info
 
         data_dict = {

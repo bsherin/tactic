@@ -148,7 +148,7 @@ class ProjectTasksMixin:
     @task_worthy
     def get_project_names_task(self, data):
         the_user = self.get_user_from_data(data)
-        return {"project_names": the_user.project_names}
+        return {"project_names": the_user.project_names()}
 
     @task_worthy
     def create_duplicate_project_task(self, data):

@@ -514,10 +514,6 @@ function ConsoleComponent(props) {
         set_show_pseudo_log(!show_pseudo_log);
     }
 
-    function _toggleMainLog() {
-        set_show_main_log(!show_main_log);
-    }
-
     const _setFocusedItem = useCallback((unique_id, callback = null) => {
         set_console_item_with_focus(unique_id);
         if (unique_id) {
@@ -1172,15 +1168,14 @@ function ConsoleComponent(props) {
                 {name_text: "Reset All", icon_name: "reset", click_handler: _resetConsole}],
         };
 
-        if (!(show_pseudo_log || show_main_log)) {
-            ms["Consoles"] = [
-                {name_text: "Show Log Console", icon_name: "console", click_handler: _togglePseudoLog},
-                {name_text: "Show Main Console", icon_name: "console", click_handler: _toggleMainLog}]
+        if (!(show_pseudo_log)) {
+            ms["Console"] = [
+                {name_text: "Show Log Console", icon_name: "console", click_handler: _togglePseudoLog}]
         } else {
-            ms["Consoles"] = [
+            ms["Console"] = [
                 {
                     name_text: "Hide Console", icon_name: "console",
-                    click_handler: show_main_log ? _toggleMainLog : _togglePseudoLog
+                    click_handler: _togglePseudoLog
                 }]
         }
 
@@ -1348,7 +1343,7 @@ function ConsoleComponent(props) {
     let suggestionGlyphs = [];
     if (show_pseudo_log || show_main_log) {
         suggestionGlyphs.push(
-            {intent: "primary", icon: "console", handleClick: show_main_log ? _toggleMainLog : _togglePseudoLog})
+            {intent: "primary", icon: "console", handleClick: _togglePseudoLog})
     }
 
     const extraProps = useMemo(() => {

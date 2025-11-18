@@ -12,7 +12,7 @@ import {
 import {BpSelect} from "./combined_metadata";
 import {useConstructor, useStateAndRef} from "./utilities_react";
 import {renderToStaticMarkup} from "react-dom/server";
-import {ErrorDrawerContext, ErrorItem} from "./error_drawer";
+import {ErrorDrawerContext, ErrorItem, withErrorDrawer} from "./error_drawer";
 import {PoolAddressSelector} from "./pool_tree";
 
 import {SettingsContext} from "./settings";
@@ -470,3 +470,5 @@ return (
     </Dialog>
 )
 }
+
+FileImportDialog = withErrorDrawer(FileImportDialog)

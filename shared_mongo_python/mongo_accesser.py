@@ -1,5 +1,6 @@
 import re
 import datetime
+from datetime import datetime, timezone
 import zlib
 from bson import ObjectId
 from communication_utils import debinarize_python_object, make_jsonizable_and_compress
@@ -34,16 +35,19 @@ class NonexistentNameError(MongoAccessException):
 
 class MongoAccess(object):
 
-    def update_metadata(self, mdata, update_created=False):
-        mdata["updated"] = datetime.datetime.utcnow()
+    @staticmethod
+    def update_metadata(mdata, update_created=False):
+        mdata["updated"] = datetime.now(timezone.utc)
         if update_created:
             mdata["datetime"] = mdata["updated"]
         return mdata
 
-    def sort_data_list_key(self, item):
+    @staticmethod
+    def sort_data_list_key(item):
         return str.lower(str(item[0]))
 
-    def has_hidden(self, tag_string):
+    @staticmethod
+    def has_hidden(tag_string):
         if re.search("(^|/| )hidden($|/| )", tag_string):
             return True
         return False
@@ -165,37 +169,21 @@ class MongoAccess(object):
         end = min(len(text), index + len(search) + margin)
         return text[start:end]
 
-    def create_initial_metadata(self):
-        mdata = {"datetime": datetime.datetime.utcnow(),
-                 "updated": datetime.datetime.utcnow(),
+    @staticmethod
+    def create_initial_metadata():
+        mdata = {"datetime": datetime.now(timezone.utc),
+                 "updated": datetime.now(timezone.utc),
                  "tags": "",
                  "notes": ""}
         return mdata
 
-    def sort_rows(self, row_dict):
+    @staticmethod
+    def sort_rows(row_dict):
         result = []
         sorted_int_keys = sorted([int(key) for key in row_dict.keys()])
         for r in sorted_int_keys:
             result.append(row_dict[str(r)])
         return result
-
-    @property
-    def all_names(self):
-        names = (self.list_names + self.project_names +
-                 self.tile_names + self.list_names + self.code_names + self.metadata_names)
-        return sorted(names, key=str.lower)
-
-    @property
-    def all_names_with_metadata(self):
-        col_names_with_metadata = [d + ["collection"] for d in self.collection_names_with_metadata()]
-        proj_names_with_metadata = [d + ["project"] for d in self.project_names_with_metadata]
-        list_names_with_metadata = [d + ["list"] for d in self.list_names_with_metadata]
-        tile_names_with_metadata = [d + ["tile"] for d in self.tile_module_names_with_metadata]
-        code_names_with_metadata = [d + ["code"] for d in self.code_names_with_metadata]
-        metabook_names_with_metadata = [d + ["metabook"] for d in self.metabook_names_with_metadata]
-        names_with_metadata = col_names_with_metadata + proj_names_with_metadata + list_names_with_metadata + \
-            tile_names_with_metadata + code_names_with_metadata + metabook_names_with_metadata
-        return sorted(names_with_metadata, key=self.sort_data_list_key)
 
     def resource_collection_name(self, res_type):
         return getattr(self, f"{res_type}_collection_name")
@@ -256,6 +244,8 @@ class MongoAccess(object):
         return ltext, fsize
 
     def build_res_dict(self, name, mdata, file_id=None, res_type=None, doc_id=None, sort_field=None):
+        datestring_for_sort = ""
+        updatestring_for_sort = ""
         if mdata is None:
             datestring = ""
             tagstring = ""
@@ -300,6 +290,8 @@ class MongoAccess(object):
         if file_id is not None:
             size_text, size = self.get_fs_file_siz_info(file_id)
             return_data["size"] = size_text
+        else:
+            size = 0
         if sort_field is not None:
             match sort_field:
                 case "created":
