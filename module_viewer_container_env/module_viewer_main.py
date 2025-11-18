@@ -182,7 +182,8 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin, MongoAccess, Til
             used_handler_methods_line_numbers = {func["name"]: {
                 "firstLineNumber": func["body_start"],
                 "lastLineNumber": func["last_line"]} for func in used_handler_methods_list}
-            self.update_tile(module_name, module_code, "creator", username=self.get_username(data_dict["local_id"]))
+            username = self.get_username(data_dict["local_id"])
+            self.update_tile(module_name, module_code, "creator", metadata=data_dict["mdata"], username=username)
             self.create_recent_checkpoint(module_name, username=self.get_username(data_dict["local_id"]))
             return {"success": True, "message": "Module Successfully Saved",
                     "alert_type": "alert-success", "render_content_line_numbers": render_content_line_numbers,

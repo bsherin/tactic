@@ -431,7 +431,7 @@ function CombinedMetadata(props) {
                 };
                 let amdata = data["additional_mdata"];
                 delete amdata.updated;
-                if (isTile) {
+                if (props.res_type == "tile") {
                     if (data["additional_mdata"].icon) {
                         updater["icon"] = data["additional_mdata"].icon
                     }
@@ -478,8 +478,11 @@ function CombinedMetadata(props) {
         }
     }
 
-    async function _handleMetadataChange(state_stuff, post_immediate=true) {
+    async function _handleMetadataChange(state_stuff, post_immediate=true, isExternal=false) {
         mDispatch({type: "update_item", "new_item": state_stuff});
+        if (isExternal) {
+            return
+        }
         if (post_immediate) {
             await postChanges(state_stuff)
         }
@@ -495,8 +498,8 @@ function CombinedMetadata(props) {
         })
     }
 
-    async function _handleNotesChange(new_text) {
-        await _handleMetadataChange({"notes": new_text}, false);
+    async function _handleNotesChange(new_text, isExternal) {
+        await _handleMetadataChange({"notes": new_text}, false, isExternal);
     }
 
     async function _handleTagsChange(tag_list) {

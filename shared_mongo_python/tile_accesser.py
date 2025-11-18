@@ -251,13 +251,18 @@ class TileAccess(object):
         return
 
 
-    def update_tile(self, tile_module_name, new_tile_code, last_saved=None, username=None):
-        metadata = self.get_tile_metadata(tile_module_name, username=username)
-        if metadata is None:
-            metadata = {}
-        metadata = self.update_metadata(metadata)
+    def update_tile(self, tile_module_name, new_tile_code, last_saved=None, metadata=None, username=None):
+        new_metadata = self.get_tile_metadata(tile_module_name, username=username)
+
+        if new_metadata is None:
+            new_metadata  = {}
+        if metadata:
+            new_metadata.update(metadata)
+        new_metadata = self.update_metadata(new_metadata)
+        if "additional_mdata" in new_metadata:
+            del new_metadata["additional_mdata"]
         update_dict = {"tile_module": new_tile_code,
-                      "metadata": metadata}
+                      "metadata": new_metadata}
         if last_saved is not None:
             update_dict["last_saved"] = last_saved
         self.db[self.get_tile_collection_name(username)].update_one(
@@ -306,14 +311,16 @@ class TileAccess(object):
         )
         return
 
-    def save_tile_metadata(self, tile_module_name, metadata):
-        if not self.tile_module_name_exists(tile_module_name):
+    def save_tile_metadata(self, tile_module_name, metadata, username=None):
+        if not self.tile_module_name_exists(tile_module_name, username=username):
             raise ValueError(f"tile with name {tile_module_name} does not exist.")
-        mdata = self.get_tile_metadata(tile_module_name)
+        mdata = self.get_tile_metadata(tile_module_name, username=username)
         if mdata is None:
             mdata = {}
         mdata.update(metadata)
-        self.db[self.tile_collection_name()].update_one(
+        if "additional_mdata" in mdata:
+            del mdata["additional_mdata"]
+        self.db[self.tile_collection_name(username)].update_one(
             {"tile_module_name": tile_module_name},
             {"$set": {"metadata": mdata}}
         )

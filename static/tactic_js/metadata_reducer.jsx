@@ -49,6 +49,16 @@ function useMetadata(initial) {
     if (!initial.hasOwnProperty("couple_save_attrs_and_exports")) {
         initial.couple_save_attrs_and_exports = true;
     }
+    if (initial["additional_mdata"].icon) {
+        initial.icon = initial["additional_mdata"].icon
+    }
+    else {
+        initial.icon = "application";
+    }
+    if (initial["additional_mdata"].category) {
+        initial.category = initial["additional_mdata"].category;
+    }
+
     const [metadata, metadataDispatch] = useImmerReducer(metadataReducer, initial);
     const metadataRef = useRef(metadata);
     metadataRef.current = metadata;

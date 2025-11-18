@@ -702,7 +702,7 @@ function SignatureHeader(props) {
             const match = lineText.match(/^function\s+(\w+)\s*/);
             if (!match) return [];
 
-            const [, funcName, argsStr] = match;
+            const [, funcName, ] = match;
 
             // Find function name range
             const shortLineText = lineText.slice(9);

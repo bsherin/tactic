@@ -588,6 +588,8 @@ function CreatorApp(props) {
     function _getSaveDict() {
         let mdata = {...metadataRef.current};
         delete mdata.allTags;
+        delete mdata["additional_mdata"]
+        mdata["mdata_uid"] = guid()
         const visibleMethods = visibleTabListRef.current.map((identifier) => {
             return getNameFromIdentifier(identifier)
         });

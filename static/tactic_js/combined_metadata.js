@@ -1,6 +1,5 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -27,15 +26,37 @@ var _icon_info = require("./icon_info");
 var _error_boundary = require("./error_boundary");
 var _reactCodemirror = require("./react-codemirror6");
 var _communication_react = require("./communication_react");
-function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function (e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, default: e }; if (null === e || "object" != typeof e && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (const t in e) "default" !== t && {}.hasOwnProperty.call(e, t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, t)) && (i.get || i.set) ? o(f, t, i) : f[t] = e[t]); return f; })(e, t); }
-_core2.default.registerLanguage('javascript', _javascript.default);
-_core2.default.registerLanguage('python', _python.default);
-const mdi = (0, _markdownIt.default)({
+function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
+function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t2 in e) "default" !== _t2 && {}.hasOwnProperty.call(e, _t2) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t2)) && (i.get || i.set) ? o(f, _t2, i) : f[_t2] = e[_t2]); return f; })(e, t); }
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, "_invoke", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError("Generator is already running"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = "next"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i["return"]) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine2(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, "Generator"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, "toString", function () { return "[object Generator]"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }
+function _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, "", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { if (r) i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n;else { var o = function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); }; o("next", 0), o("throw", 1), o("return", 2); } }, _regeneratorDefine2(e, r, n, t); }
+function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
+function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
+function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
+function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
+function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
+function _toConsumableArray(r) { return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread(); }
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
+function _iterableToArray(r) { if ("undefined" != typeof Symbol && null != r[Symbol.iterator] || null != r["@@iterator"]) return Array.from(r); }
+function _arrayWithoutHoles(r) { if (Array.isArray(r)) return _arrayLikeToArray(r); }
+function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
+function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
+function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
+function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
+function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
+function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+_core2["default"].registerLanguage('javascript', _javascript["default"]);
+_core2["default"].registerLanguage('python', _python["default"]);
+var mdi = (0, _markdownIt["default"])({
   html: true,
-  highlight: function (str, lang) {
-    if (lang && _core2.default.getLanguage(lang)) {
+  highlight: function highlight(str, lang) {
+    if (lang && _core2["default"].getLanguage(lang)) {
       try {
-        return '<pre><code class="hljs">' + _core2.default.highlight(str, {
+        return '<pre><code class="hljs">' + _core2["default"].highlight(str, {
           language: lang,
           ignoreIllegals: true
         }).value + '</code></pre>';
@@ -44,8 +65,8 @@ const mdi = (0, _markdownIt.default)({
     return '<pre><code class="hljs">' + mdi.utils.escapeHtml(str) + '</code></pre>';
   }
 });
-mdi.use(_markdownItLatex.default);
-let icon_dict = exports.icon_dict = {
+mdi.use(_markdownItLatex["default"]);
+var icon_dict = exports.icon_dict = {
   all: "cube",
   collection: "database",
   project: "projects",
@@ -56,21 +77,20 @@ let icon_dict = exports.icon_dict = {
   poolDir: "folder-close",
   poolFile: "document"
 };
-const renderCreateNewTag = (query, active, handleClick) => {
-  return /*#__PURE__*/_react.default.createElement(_core.MenuItem, {
+var renderCreateNewTag = function renderCreateNewTag(query, active, handleClick) {
+  return /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
     icon: "add",
     key: "create_item",
-    text: `Create "${query}"`,
+    text: "Create \"".concat(query, "\""),
     active: active,
     onClick: handleClick,
     shouldDismissPopover: false
   });
 };
 function NativeTags(props) {
-  props = {
-    all_tags: [],
-    ...props
-  };
+  props = _objectSpread({
+    all_tags: []
+  }, props);
   function renderTag(item) {
     return item;
   }
@@ -78,12 +98,12 @@ function NativeTags(props) {
     return name;
   }
   function _handleDelete(tag, i) {
-    let new_tlist = [...props.tags];
+    var new_tlist = _toConsumableArray(props.tags);
     new_tlist.splice(i, 1);
     props.handleChange(new_tlist);
   }
   function _handleAddition(tag) {
-    let new_tlist = [...props.tags];
+    var new_tlist = _toConsumableArray(props.tags);
     new_tlist.push(tag);
     props.handleChange(new_tlist);
   }
@@ -91,16 +111,16 @@ function NativeTags(props) {
     if (query.length === 0) {
       return false;
     }
-    let re = new RegExp(`^${query}`);
+    var re = new RegExp("^".concat(query));
     return re.test(item);
   }
   if (props.readOnly) {
-    return /*#__PURE__*/_react.default.createElement(_core.TagInput, {
+    return /*#__PURE__*/_react["default"].createElement(_core.TagInput, {
       values: props.tags,
       disabled: true
     });
   }
-  return /*#__PURE__*/_react.default.createElement(_select.MultiSelect, {
+  return /*#__PURE__*/_react["default"].createElement(_select.MultiSelect, {
     allowCreate: true,
     openOnKeyDown: true,
     createNewItemFromQuery: _createItemFromQuery,
@@ -120,24 +140,28 @@ function NativeTags(props) {
 }
 exports.NativeTags = NativeTags = /*#__PURE__*/(0, _react.memo)(NativeTags);
 function NotesField(props) {
-  props = {
+  props = _objectSpread({
     handleBlur: null,
     setCMObject: null,
-    handleChange: null,
-    ...props
-  };
-  const setFocusFunc = (0, _react.useRef)(null);
-  const settingsContext = (0, _react.useContext)(_settings.SettingsContext);
-  (0, _react.useEffect)(() => {}, [props.mStateRef.current.notes]);
-  (0, _react.useEffect)(() => {
+    handleChange: null
+  }, props);
+  var setFocusFunc = (0, _react.useRef)(null);
+  var settingsContext = (0, _react.useContext)(_settings.SettingsContext);
+  (0, _react.useEffect)(function () {}, [props.mStateRef.current.notes]);
+  (0, _react.useEffect)(function () {
     // console.log("theme changed")  // This is to force re-rendering because of highlight.js theme change
   }, [settingsContext.settings.theme]);
-  const [mdHeight] = (0, _react.useState)(500);
-  const [showMarkdown, setShowMarkdown] = (0, _react.useState)(hasOnlyWhitespace() ? false : props.show_markdown_initial);
-  const awaitingFocus = (0, _react.useRef)(false);
-  const cmObject = (0, _react.useRef)(null);
-  const mdRef = (0, _react.useRef)(null);
-  (0, _react.useEffect)(() => {
+  var _useState = (0, _react.useState)(500),
+    _useState2 = _slicedToArray(_useState, 1),
+    mdHeight = _useState2[0];
+  var _useState3 = (0, _react.useState)(hasOnlyWhitespace() ? false : props.show_markdown_initial),
+    _useState4 = _slicedToArray(_useState3, 2),
+    showMarkdown = _useState4[0],
+    setShowMarkdown = _useState4[1];
+  var awaitingFocus = (0, _react.useRef)(false);
+  var cmObject = (0, _react.useRef)(null);
+  var mdRef = (0, _react.useRef)(null);
+  (0, _react.useEffect)(function () {
     if (awaitingFocus.current) {
       focusNotes();
       awaitingFocus.current = false;
@@ -146,8 +170,8 @@ function NotesField(props) {
       setShowMarkdown(!hasOnlyWhitespace());
     }
   });
-  (0, _react.useEffect)(() => {
-    return () => {
+  (0, _react.useEffect)(function () {
+    return function () {
       if (cmObject.current) {
         cmObject.current.destroy();
         cmObject.current = null;
@@ -155,7 +179,7 @@ function NotesField(props) {
       setFocusFunc.current = null;
     };
   }, []);
-  (0, _react.useEffect)(() => {
+  (0, _react.useEffect)(function () {
     setShowMarkdown(!hasOnlyWhitespace());
   }, [props.res_name, props.res_type]);
   function hasOnlyWhitespace() {
@@ -189,27 +213,27 @@ function NotesField(props) {
       cmObject.current = cmobject;
     }
   }
-  const registerSetFocusFunc = (0, _react.useCallback)(theFunc => {
+  var registerSetFocusFunc = (0, _react.useCallback)(function (theFunc) {
     setFocusFunc.current = theFunc;
   }, []);
-  let really_show_markdown = hasOnlyWhitespace() ? false : showMarkdown;
-  let md_style = {
+  var really_show_markdown = hasOnlyWhitespace() ? false : showMarkdown;
+  var md_style = {
     display: really_show_markdown ? "block" : "none",
     maxHeight: mdHeight,
     fontSize: 13
   };
-  let converted_markdown;
+  var converted_markdown;
   if (really_show_markdown) {
     converted_markdown = mdi.render(props.mStateRef.current.notes);
   }
-  let converted_dict = {
+  var converted_dict = {
     __html: converted_markdown
   };
-  return /*#__PURE__*/_react.default.createElement(_react.Fragment, null, /*#__PURE__*/_react.default.createElement("div", {
+  return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
     style: {
       display: really_show_markdown ? "none" : "block"
     }
-  }, /*#__PURE__*/_react.default.createElement(_reactCodemirror.ReactCodemirror6, {
+  }, /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror6, {
     handleChange: props.handleChange,
     className: "notes-field",
     readOnly: props.readOnly,
@@ -223,7 +247,7 @@ function NotesField(props) {
     no_height: true,
     no_width: true,
     saveMe: null
-  })), /*#__PURE__*/_react.default.createElement("div", {
+  })), /*#__PURE__*/_react["default"].createElement("div", {
     ref: mdRef,
     style: md_style,
     onClick: _hideMarkdown,
@@ -232,38 +256,47 @@ function NotesField(props) {
   }));
 }
 exports.NotesField = NotesField = /*#__PURE__*/(0, _react.memo)(NotesField);
-let icon_dlist = [];
-let icon_entry_dict = {};
-const cat_order = ['data', 'action', 'table', 'interface', 'editor', 'file', 'media', 'miscellaneous'];
-for (let category of cat_order) {
-  let cat_entry = {
+var icon_dlist = [];
+var icon_entry_dict = {};
+var cat_order = ['data', 'action', 'table', 'interface', 'editor', 'file', 'media', 'miscellaneous'];
+for (var _i = 0, _cat_order = cat_order; _i < _cat_order.length; _i++) {
+  var category = _cat_order[_i];
+  var cat_entry = {
     text: category,
     display_text: category,
     isgroup: true
   };
   icon_dlist.push(cat_entry);
-  for (let entry of _icon_info.tile_icon_dict[category]) {
-    let new_entry = {
-      text: entry.tags + ", " + category + ", " + entry.iconName,
-      val: entry.iconName,
-      icon: entry.iconName,
-      display_text: entry.displayName,
-      isgroup: false
-    };
-    cat_entry.text = cat_entry.text + ", " + entry.tags + ", " + entry.iconName;
-    icon_dlist.push(new_entry);
-    icon_entry_dict[new_entry.val] = new_entry;
+  var _iterator = _createForOfIteratorHelper(_icon_info.tile_icon_dict[category]),
+    _step;
+  try {
+    for (_iterator.s(); !(_step = _iterator.n()).done;) {
+      var entry = _step.value;
+      var new_entry = {
+        text: entry.tags + ", " + category + ", " + entry.iconName,
+        val: entry.iconName,
+        icon: entry.iconName,
+        display_text: entry.displayName,
+        isgroup: false
+      };
+      cat_entry.text = cat_entry.text + ", " + entry.tags + ", " + entry.iconName;
+      icon_dlist.push(new_entry);
+      icon_entry_dict[new_entry.val] = new_entry;
+    }
+  } catch (err) {
+    _iterator.e(err);
+  } finally {
+    _iterator.f();
   }
 }
-function IconSelector({
-  handleSelectChange,
-  icon_val,
-  readOnly
-}) {
-  let value = icon_entry_dict[icon_val] ? icon_entry_dict[icon_val] : icon_entry_dict["application"];
-  return /*#__PURE__*/_react.default.createElement(_error_boundary.ErrorBoundary, null, /*#__PURE__*/_react.default.createElement(_selector_advanced.BpSelectAdvanced, {
+function IconSelector(_ref) {
+  var handleSelectChange = _ref.handleSelectChange,
+    icon_val = _ref.icon_val,
+    readOnly = _ref.readOnly;
+  var value = icon_entry_dict[icon_val] ? icon_entry_dict[icon_val] : icon_entry_dict["application"];
+  return /*#__PURE__*/_react["default"].createElement(_error_boundary.ErrorBoundary, null, /*#__PURE__*/_react["default"].createElement(_selector_advanced.BpSelectAdvanced, {
     options: icon_dlist,
-    onChange: item => {
+    onChange: function onChange(item) {
       handleSelectChange(item.val);
     },
     readOnly: readOnly,
@@ -272,8 +305,8 @@ function IconSelector({
   }));
 }
 exports.IconSelector = IconSelector = /*#__PURE__*/(0, _react.memo)(IconSelector);
-const ignore_fields = ["doc_type", "res_type"];
-const initial_state = {
+var ignore_fields = ["doc_type", "res_type"];
+var initial_state = {
   allTags: [],
   tags: null,
   created: null,
@@ -285,7 +318,7 @@ const initial_state = {
   search_context: null
 };
 function CombinedMetadata(props) {
-  props = {
+  props = _objectSpread({
     expandWidth: true,
     tabSelectCounter: 0,
     useTags: true,
@@ -306,43 +339,50 @@ function CombinedMetadata(props) {
     alt_category: null,
     setCMObject: null,
     search_string: "",
-    search_inside: false,
-    ...props
-  };
-  const top_ref = (0, _react.useRef)();
-  const listenderAttachedRef = (0, _react.useRef)(false);
-  const [, mDispatch, mStateRef] = (0, _utilities_react.useImmerReducerAndRef)(_metadata_reducer.metadataReducer, initial_state);
-  const [isTile, setIsTile] = (0, _react.useState)(props.res_type === "tile");
-  const pushCallback = (0, _utilities_react.useCallbackStack)();
-  const updatedIdRef = (0, _react.useRef)(null);
-  const [, doUpdate] = (0, _utilities_react.useDebounce)(state_stuff => {
-    postChanges(state_stuff).then(() => {});
-  });
-  const latestPropsRef = (0, _react.useRef)(props);
-  (0, _react.useEffect)(() => {
+    search_inside: false
+  }, props);
+  var top_ref = (0, _react.useRef)();
+  var listenderAttachedRef = (0, _react.useRef)(false);
+  var _useImmerReducerAndRe = (0, _utilities_react.useImmerReducerAndRef)(_metadata_reducer.metadataReducer, initial_state),
+    _useImmerReducerAndRe2 = _slicedToArray(_useImmerReducerAndRe, 3),
+    mDispatch = _useImmerReducerAndRe2[1],
+    mStateRef = _useImmerReducerAndRe2[2];
+  var _useState5 = (0, _react.useState)(props.res_type === "tile"),
+    _useState6 = _slicedToArray(_useState5, 2),
+    isTile = _useState6[0],
+    setIsTile = _useState6[1];
+  var pushCallback = (0, _utilities_react.useCallbackStack)();
+  var updatedIdRef = (0, _react.useRef)(null);
+  var _useDebounce = (0, _utilities_react.useDebounce)(function (state_stuff) {
+      postChanges(state_stuff).then(function () {});
+    }),
+    _useDebounce2 = _slicedToArray(_useDebounce, 2),
+    doUpdate = _useDebounce2[1];
+  var latestPropsRef = (0, _react.useRef)(props);
+  (0, _react.useEffect)(function () {
     latestPropsRef.current = props;
   }, [props]);
-  (0, _react.useEffect)(() => {
+  (0, _react.useEffect)(function () {
     if (props.tsocket) {
       props.tsocket.attachListener("resource-updated", handleExternalUpdate);
       listenderAttachedRef.current = true;
     }
-    return () => {
+    return function () {
       if (props.tsocket) {
         props.tsocket.detachListener("resource-updated");
       }
     };
   }, []);
-  (0, _react.useEffect)(() => {
+  (0, _react.useEffect)(function () {
     setIsTile(props.res_type === "tile");
   }, [props.res_type]);
-  (0, _react.useEffect)(() => {
+  (0, _react.useEffect)(function () {
     if (props.tsocket && !listenderAttachedRef.current) {
       props.tsocket.attachListener("resource-updated", handleExternalUpdate);
       listenderAttachedRef.current = true;
     }
   }, [props.tsocket]);
-  (0, _react.useEffect)(() => {
+  (0, _react.useEffect)(function () {
     grabMetadata();
   }, [props.res_name, props.res_type]);
   function handleExternalUpdate(data) {
@@ -353,12 +393,12 @@ function CombinedMetadata(props) {
   function grabMetadata() {
     if (props.useFixedData || props.res_name == null || props.res_type == null) return;
     if (!props.readOnly) {
-      let data_dict = {
+      var data_dict = {
         res_type: props.res_type,
         is_repository: false,
         show_hidden: true
       };
-      (0, _communication_react.postPromise)("host", "get_all_tags_task", data_dict).then(data => {
+      (0, _communication_react.postPromise)("host", "get_all_tags_task", data_dict).then(function (data) {
         mDispatch({
           "type": "set_all_tags",
           "value": data.tag_list
@@ -371,16 +411,16 @@ function CombinedMetadata(props) {
       search_string: props.search_string,
       search_inside: props.search_inside,
       is_repository: props.is_repository
-    }).then(data => {
-      let updater = {
+    }).then(function (data) {
+      var updater = {
         "tags": data.tags,
         "notes": data.notes,
         "created": data["datestring"],
         "updated": data["additional_mdata"].updated
       };
-      let amdata = data["additional_mdata"];
+      var amdata = data["additional_mdata"];
       delete amdata.updated;
-      if (isTile) {
+      if (props.res_type == "tile") {
         if (data["additional_mdata"].icon) {
           updater["icon"] = data["additional_mdata"].icon;
         } else {
@@ -397,153 +437,279 @@ function CombinedMetadata(props) {
         }
       }
       updater["additionalMdata"] = amdata;
-      updater["search_context"] = data?.search_context;
+      updater["search_context"] = data === null || data === void 0 ? void 0 : data.search_context;
       mDispatch({
         type: "update_item",
         new_item: updater
       });
-    }).catch(e => {
+    })["catch"](function (e) {
       console.log("error getting metadata", e);
     });
   }
-  async function postChanges(state_stuff) {
-    const result_dict = {
-      "res_type": latestPropsRef.current.res_type,
-      "res_name": latestPropsRef.current.res_name,
-      "metadata": {
-        "tags": "tags" in state_stuff ? state_stuff["tags"] : mStateRef.current.tags,
-        "notes": "notes" in state_stuff ? state_stuff["notes"] : mStateRef.current.notes,
-        "icon": isTile && "icon" in state_stuff ? state_stuff["icon"] : mStateRef.current.icon,
-        "category": isTile && "category" in state_stuff ? state_stuff["category"] : mStateRef.current.category,
-        "mdata_uid": (0, _utilities_react.guid)()
-      }
-    };
-    try {
-      await (0, _communication_react.postPromise)("host", "save_metadata_task", result_dict);
-      updatedIdRef.current = result_dict["mdata_uid"];
-    } catch (e) {
-      console.log("error saving metadata ", e);
-    }
+  function postChanges(_x) {
+    return _postChanges.apply(this, arguments);
   }
-  async function _handleMetadataChange(state_stuff, post_immediate = true) {
-    mDispatch({
-      type: "update_item",
-      "new_item": state_stuff
-    });
-    if (post_immediate) {
-      await postChanges(state_stuff);
-    } else {
-      doUpdate(state_stuff);
-    }
+  function _postChanges() {
+    _postChanges = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee(state_stuff) {
+      var result_dict, _t;
+      return _regenerator().w(function (_context) {
+        while (1) switch (_context.n) {
+          case 0:
+            result_dict = {
+              "res_type": latestPropsRef.current.res_type,
+              "res_name": latestPropsRef.current.res_name,
+              "metadata": {
+                "tags": "tags" in state_stuff ? state_stuff["tags"] : mStateRef.current.tags,
+                "notes": "notes" in state_stuff ? state_stuff["notes"] : mStateRef.current.notes,
+                "icon": isTile && "icon" in state_stuff ? state_stuff["icon"] : mStateRef.current.icon,
+                "category": isTile && "category" in state_stuff ? state_stuff["category"] : mStateRef.current.category,
+                "mdata_uid": (0, _utilities_react.guid)()
+              }
+            };
+            _context.p = 1;
+            _context.n = 2;
+            return (0, _communication_react.postPromise)("host", "save_metadata_task", result_dict);
+          case 2:
+            updatedIdRef.current = result_dict["mdata_uid"];
+            _context.n = 4;
+            break;
+          case 3:
+            _context.p = 3;
+            _t = _context.v;
+            console.log("error saving metadata ", _t);
+          case 4:
+            return _context.a(2);
+        }
+      }, _callee, null, [[1, 3]]);
+    }));
+    return _postChanges.apply(this, arguments);
   }
-  async function appendToNotes(text) {
-    mDispatch({
-      type: "append_to_notes",
-      "value": text
-    });
-    pushCallback(async () => {
-      await postChanges({
-        "notes": mStateRef.current.notes
-      });
-    });
+  function _handleMetadataChange(_x2) {
+    return _handleMetadataChange2.apply(this, arguments);
   }
-  async function _handleNotesChange(new_text) {
-    await _handleMetadataChange({
-      "notes": new_text
-    }, false);
+  function _handleMetadataChange2() {
+    _handleMetadataChange2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2(state_stuff) {
+      var post_immediate,
+        isExternal,
+        _args2 = arguments;
+      return _regenerator().w(function (_context2) {
+        while (1) switch (_context2.n) {
+          case 0:
+            post_immediate = _args2.length > 1 && _args2[1] !== undefined ? _args2[1] : true;
+            isExternal = _args2.length > 2 && _args2[2] !== undefined ? _args2[2] : false;
+            mDispatch({
+              type: "update_item",
+              "new_item": state_stuff
+            });
+            if (!isExternal) {
+              _context2.n = 1;
+              break;
+            }
+            return _context2.a(2);
+          case 1:
+            if (!post_immediate) {
+              _context2.n = 3;
+              break;
+            }
+            _context2.n = 2;
+            return postChanges(state_stuff);
+          case 2:
+            _context2.n = 4;
+            break;
+          case 3:
+            doUpdate(state_stuff);
+          case 4:
+            return _context2.a(2);
+        }
+      }, _callee2);
+    }));
+    return _handleMetadataChange2.apply(this, arguments);
   }
-  async function _handleTagsChange(tag_list) {
-    await _handleMetadataChange({
-      "tags": tag_list.join(" ")
-    });
+  function appendToNotes(_x3) {
+    return _appendToNotes.apply(this, arguments);
   }
-  async function _handleCategoryChange(event) {
-    await _handleMetadataChange({
-      "category": event.target.value
-    });
+  function _appendToNotes() {
+    _appendToNotes = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee4(text) {
+      return _regenerator().w(function (_context4) {
+        while (1) switch (_context4.n) {
+          case 0:
+            mDispatch({
+              type: "append_to_notes",
+              "value": text
+            });
+            pushCallback(/*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3() {
+              return _regenerator().w(function (_context3) {
+                while (1) switch (_context3.n) {
+                  case 0:
+                    _context3.n = 1;
+                    return postChanges({
+                      "notes": mStateRef.current.notes
+                    });
+                  case 1:
+                    return _context3.a(2);
+                }
+              }, _callee3);
+            })));
+          case 1:
+            return _context4.a(2);
+        }
+      }, _callee4);
+    }));
+    return _appendToNotes.apply(this, arguments);
   }
-  async function _handleIconChange(icon) {
-    await _handleMetadataChange({
-      "icon": icon
-    });
+  function _handleNotesChange(_x4, _x5) {
+    return _handleNotesChange2.apply(this, arguments);
   }
-  let additional_items;
+  function _handleNotesChange2() {
+    _handleNotesChange2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5(new_text, isExternal) {
+      return _regenerator().w(function (_context5) {
+        while (1) switch (_context5.n) {
+          case 0:
+            _context5.n = 1;
+            return _handleMetadataChange({
+              "notes": new_text
+            }, false, isExternal);
+          case 1:
+            return _context5.a(2);
+        }
+      }, _callee5);
+    }));
+    return _handleNotesChange2.apply(this, arguments);
+  }
+  function _handleTagsChange(_x6) {
+    return _handleTagsChange2.apply(this, arguments);
+  }
+  function _handleTagsChange2() {
+    _handleTagsChange2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6(tag_list) {
+      return _regenerator().w(function (_context6) {
+        while (1) switch (_context6.n) {
+          case 0:
+            _context6.n = 1;
+            return _handleMetadataChange({
+              "tags": tag_list.join(" ")
+            });
+          case 1:
+            return _context6.a(2);
+        }
+      }, _callee6);
+    }));
+    return _handleTagsChange2.apply(this, arguments);
+  }
+  function _handleCategoryChange(_x7) {
+    return _handleCategoryChange2.apply(this, arguments);
+  }
+  function _handleCategoryChange2() {
+    _handleCategoryChange2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee7(event) {
+      return _regenerator().w(function (_context7) {
+        while (1) switch (_context7.n) {
+          case 0:
+            _context7.n = 1;
+            return _handleMetadataChange({
+              "category": event.target.value
+            });
+          case 1:
+            return _context7.a(2);
+        }
+      }, _callee7);
+    }));
+    return _handleCategoryChange2.apply(this, arguments);
+  }
+  function _handleIconChange(_x8) {
+    return _handleIconChange2.apply(this, arguments);
+  }
+  function _handleIconChange2() {
+    _handleIconChange2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee8(icon) {
+      return _regenerator().w(function (_context8) {
+        while (1) switch (_context8.n) {
+          case 0:
+            _context8.n = 1;
+            return _handleMetadataChange({
+              "icon": icon
+            });
+          case 1:
+            return _context8.a(2);
+        }
+      }, _callee8);
+    }));
+    return _handleIconChange2.apply(this, arguments);
+  }
+  var additional_items;
   if (props.useFixedData) {
     additional_items = [];
-    for (let field in props.fixedData) {
-      let md = props.fixedData[field];
-      additional_items.push(/*#__PURE__*/_react.default.createElement(_core.FormGroup, {
+    for (var field in props.fixedData) {
+      var md = props.fixedData[field];
+      additional_items.push(/*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
         label: field + ": ",
         className: "metadata-form_group",
         key: field,
         inline: true
-      }, /*#__PURE__*/_react.default.createElement("span", {
+      }, /*#__PURE__*/_react["default"].createElement("span", {
         className: "bp6-ui-text metadata-field"
       }, String(md))));
     }
   } else if (mStateRef.current.additionalMdata != null) {
     additional_items = [];
-    for (let field in mStateRef.current.additionalMdata) {
-      let md = mStateRef.current.additionalMdata[field];
-      if (Array.isArray(md)) {
-        md = md.join(", ");
-      } else if (field == "collection_name") {
-        let sresult = /\.\w*$/.exec(md);
-        if (sresult != null) md = sresult[0].slice(1);
+    for (var _field in mStateRef.current.additionalMdata) {
+      var _md = mStateRef.current.additionalMdata[_field];
+      if (Array.isArray(_md)) {
+        _md = _md.join(", ");
+      } else if (_field == "collection_name") {
+        var sresult = /\.\w*$/.exec(_md);
+        if (sresult != null) _md = sresult[0].slice(1);
       }
-      additional_items.push(/*#__PURE__*/_react.default.createElement(_core.FormGroup, {
-        label: field + ": ",
+      additional_items.push(/*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
+        label: _field + ": ",
         className: "metadata-form_group",
-        key: field,
+        key: _field,
         inline: true
-      }, /*#__PURE__*/_react.default.createElement("span", {
+      }, /*#__PURE__*/_react["default"].createElement("span", {
         className: "bp6-ui-text metadata-field"
-      }, String(md))));
+      }, String(_md))));
     }
   }
-  let ostyle = props.outer_style ? _lodash.default.cloneDeep(props.outer_style) : {
+  var ostyle = props.outer_style ? _lodash["default"].cloneDeep(props.outer_style) : {
     height: "100%"
   };
   ostyle["width"] = "100%";
   ostyle["overflow"] = "auto";
-  let split_tags = !mStateRef.current.tags || mStateRef.current.tags == "" ? [] : mStateRef.current.tags.split(" ");
-  const MetadataNotesButtons = props.notes_buttons;
-  return /*#__PURE__*/_react.default.createElement(_error_boundary.ErrorBoundary, null, /*#__PURE__*/_react.default.createElement(_core.Card, {
+  var split_tags = !mStateRef.current.tags || mStateRef.current.tags == "" ? [] : mStateRef.current.tags.split(" ");
+  var MetadataNotesButtons = props.notes_buttons;
+  return /*#__PURE__*/_react["default"].createElement(_error_boundary.ErrorBoundary, null, /*#__PURE__*/_react["default"].createElement(_core.Card, {
     ref: top_ref,
     elevation: props.elevation,
     className: "combined-metadata accent-bg",
     style: ostyle
-  }, props.res_name != null && /*#__PURE__*/_react.default.createElement(_core.H4, null, /*#__PURE__*/_react.default.createElement(_core.Icon, {
+  }, props.res_name != null && /*#__PURE__*/_react["default"].createElement(_core.H4, null, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
     icon: icon_dict[props.res_type],
     style: {
       marginRight: 6,
       marginBottom: 2
     }
-  }), props.res_name), !props.useFixedData && props.useTags && mStateRef.current.tags != null && mStateRef.current.allTags.length > 0 && /*#__PURE__*/_react.default.createElement(_core.FormGroup, {
+  }), props.res_name), !props.useFixedData && props.useTags && mStateRef.current.tags != null && mStateRef.current.allTags.length > 0 && /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
     label: "Tags"
-  }, /*#__PURE__*/_react.default.createElement(NativeTags, {
-    key: `${props.res_name}-${props.res_type}-tags`,
+  }, /*#__PURE__*/_react["default"].createElement(NativeTags, {
+    key: "".concat(props.res_name, "-").concat(props.res_type, "-tags"),
     tags: split_tags,
     all_tags: mStateRef.current.allTags,
     readOnly: props.readOnly,
     handleChange: _handleTagsChange,
     res_type: props.res_type
-  })), isTile && !props.useFixedData && mStateRef.current.category != null && /*#__PURE__*/_react.default.createElement(_core.FormGroup, {
+  })), isTile && !props.useFixedData && mStateRef.current.category != null && /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
     label: "Category",
-    key: `${props.res_name}-${props.res_type}-cagegory`
-  }, /*#__PURE__*/_react.default.createElement(_core.InputGroup, {
+    key: "".concat(props.res_name, "-").concat(props.res_type, "-cagegory")
+  }, /*#__PURE__*/_react["default"].createElement(_core.InputGroup, {
     onChange: _handleCategoryChange,
     value: mStateRef.current.category
-  })), isTile && /*#__PURE__*/_react.default.createElement(_core.FormGroup, {
+  })), isTile && /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
     label: "Icon"
-  }, /*#__PURE__*/_react.default.createElement(IconSelector, {
-    key: `${props.res_name}-${props.res_type}-icon-selector`,
+  }, /*#__PURE__*/_react["default"].createElement(IconSelector, {
+    key: "".concat(props.res_name, "-").concat(props.res_type, "-icon-selector"),
     icon_val: mStateRef.current.icon ? mStateRef.current.icon : "application",
     readOnly: props.readOnly,
     handleSelectChange: _handleIconChange
-  })), !props.useFixedData && props.useNotes && mStateRef.current.notes != null && /*#__PURE__*/_react.default.createElement(_core.FormGroup, {
+  })), !props.useFixedData && props.useNotes && mStateRef.current.notes != null && /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
     label: "Notes"
-  }, /*#__PURE__*/_react.default.createElement(NotesField, {
+  }, /*#__PURE__*/_react["default"].createElement(NotesField, {
     key: "metadata-notes",
     mStateRef: mStateRef,
     currentNotes: mStateRef.current.notes,
@@ -554,28 +720,28 @@ function CombinedMetadata(props) {
     show_markdown_initial: true,
     setCMObject: props.setCMObject,
     handleBlur: props.handleNotesBlur
-  }), props.notes_buttons && /*#__PURE__*/_react.default.createElement(MetadataNotesButtons, {
+  }), props.notes_buttons && /*#__PURE__*/_react["default"].createElement(MetadataNotesButtons, {
     appendToNotes: appendToNotes
-  })), props.search_inside && mStateRef.current.search_context && /*#__PURE__*/_react.default.createElement(_core.FormGroup, {
+  })), props.search_inside && mStateRef.current.search_context && /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
     label: "Search Context",
     readOnly: true
-  }, /*#__PURE__*/_react.default.createElement(_core.TextArea, {
+  }, /*#__PURE__*/_react["default"].createElement(_core.TextArea, {
     value: mStateRef.current.search_context,
     fill: true,
     autoResize: true
-  })), mStateRef.current.created != null && /*#__PURE__*/_react.default.createElement(_core.FormGroup, {
+  })), mStateRef.current.created != null && /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
     label: "Created: ",
     className: "metadata-form_group",
     inline: true
-  }, /*#__PURE__*/_react.default.createElement("span", {
+  }, /*#__PURE__*/_react["default"].createElement("span", {
     className: "bp6-ui-text metadata-field"
-  }, mStateRef.current.created)), mStateRef.current.updated != null && /*#__PURE__*/_react.default.createElement(_core.FormGroup, {
+  }, mStateRef.current.created)), mStateRef.current.updated != null && /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
     label: "Updated: ",
     className: "metadata-form_group",
     inline: true
-  }, /*#__PURE__*/_react.default.createElement("span", {
+  }, /*#__PURE__*/_react["default"].createElement("span", {
     className: "bp6-ui-text metadata-field"
-  }, mStateRef.current.updated)), additional_items && additional_items.length > 0 && additional_items, /*#__PURE__*/_react.default.createElement("div", {
+  }, mStateRef.current.updated)), additional_items && additional_items.length > 0 && additional_items, /*#__PURE__*/_react["default"].createElement("div", {
     style: {
       height: 100
     }

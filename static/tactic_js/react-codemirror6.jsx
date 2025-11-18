@@ -286,41 +286,55 @@ function ReactCodemirror6(props) {
         completionCompartment.current = new Compartment();
         lineNumberCompartment.current = new Compartment();
 
-        const updateListener = EditorView.updateListener.of((update) => {
-            if (update.docChanged) {
-                const newDoc = update.state.doc.toString();
-                lastUserDocRef.current = newDoc;
-                handleChange(newDoc);
-                changeCounterRef.current = changeCounterRef.current + 1;
-                if (window.has_openapi_key && props.parentService && (settingsContext.settingsRef.current["use_ai_code_suggestions"] == "yes") && props.local_id) {
-                    setAIText(null);
-                    setAITextLabel(null);
-                    awaitingSuggestionRef.current = true;
-                    doAIUpdate(update.state.doc.toString(), changeCounterRef.current);
-                } else {
-                    setAIText(null);
-                    setAITextLabel(null);
-                    awaitingSuggestionRef.current = true
-                }
-                if (props.restrict_edits_to_range) {
-                    const line = update.state.doc.toString();
-                    const ranges = props.getEditableRanges(line);
-                    update.view.dispatch({
-                        effects: restrictCompartment.current.reconfigure([
-                            restrictEditsToRange(ranges),
-                            highlightEditableRanges(ranges)]
-                        )
-                    });
-                }
-            }
-            if (update.focusChanged) {
-                if (update.view.hasFocus) {
-                    handleFocus();
-                } else {
-                    handleBlur();
-                }
-            }
-        });
+const updateListener = EditorView.updateListener.of((update) => {
+    if (update.docChanged) {
+        // Detect whether this change came from an external update
+        const isExternal = update.transactions.some(tr => tr.annotation(ExternalUpdate));
+
+        const newDoc = update.state.doc.toString();
+
+        // Keep range restrictions up to date for *all* changes
+        if (props.restrict_edits_to_range) {
+            const ranges = props.getEditableRanges(newDoc);
+            update.view.dispatch({
+                effects: restrictCompartment.current.reconfigure([
+                    restrictEditsToRange(ranges),
+                    highlightEditableRanges(ranges)
+                ])
+            });
+        }
+        lastUserDocRef.current = newDoc;
+        handleChange(newDoc, isExternal);
+        changeCounterRef.current = changeCounterRef.current + 1;
+
+        if (window.has_openapi_key &&
+            props.parentService &&
+            (settingsContext.settingsRef.current["use_ai_code_suggestions"] == "yes") &&
+            props.local_id) {
+            setAIText(null);
+            setAITextLabel(null);
+            awaitingSuggestionRef.current = true;
+            doAIUpdate(newDoc, changeCounterRef.current);
+        } else {
+            setAIText(null);
+            setAITextLabel(null);
+            awaitingSuggestionRef.current = true;
+        }
+
+        //  Only treat as "user change" if it wasn't an ExternalUpdate
+        if (!isExternal) {
+
+        }
+    }
+
+    if (update.focusChanged) {
+        if (update.view.hasFocus) {
+            handleFocus();
+        } else {
+            handleBlur();
+        }
+    }
+});
        let extensions = [
             updateListener,
             completionCompartment.current.of(autocompletion({...autocompletionArgRef.current})),
@@ -623,9 +637,9 @@ function ReactCodemirror6(props) {
         }
     }
 
-    function handleChange(value) {
+    function handleChange(value, isExternal) {
         if (props.handleChange) {
-            props.handleChange(value);
+            props.handleChange(value, isExternal);
         }
     }
 
