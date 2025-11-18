@@ -26,8 +26,6 @@ import time
 class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin, MongoAccess, TileAccess):
     def __init__(self):
         QWorker.__init__(self, service_name="module_viewer")
-        self.my_id = "module_viewer" + str(uuid.uuid4())
-        self.use_emit_direct = False
         db, fs, repository_db, repository_fs = get_dbs()
         self.db = db
         self.fs = fs
