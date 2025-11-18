@@ -236,6 +236,7 @@ class LoadSaveTasksMixin:
 
     @task_worthy_manual_submit
     def initialize_session_from_save(self, data, task_packet):
+        print("entering initialize_session_from_save")
         user_id = data["user_id"]
         username = data["username"]
         project_name = data["project_name"]
