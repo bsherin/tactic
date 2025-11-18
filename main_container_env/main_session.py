@@ -97,16 +97,19 @@ class MainSessionStore(SessionStoreS3):
         return rdict
 
     def initialize_session(self, sid, sdict=None):
+        print("entering initialize_session")
         SessionStoreS3.initialize_session(self, sid, None)
+        print("called the super initialize")
         for key in self.recreate_values:
             if key in sdict:
                 self.put_small(sid, key, sdict[key])
-
+        print("did the recreate_values")
         if "tile_instances" in sdict:
             tile_info = TileInfo(self, sid)
             for old_tile_id, tile_save_dict in sdict["tile_instances"].items():
                 tile_info.add_tile(old_tile_id, tile_save_dict["tile_name"], tile_save_dict["tile_type"])
                 tile_info.set_save_dict(old_tile_id, tile_save_dict)
+        print("did the tile instance stuff")
         if "doc_dict" in sdict:
             if sdict["doc_type"] == "freeform":
                 collection_info = FreeformCollectionInfo(self, sid)
@@ -114,14 +117,17 @@ class MainSessionStore(SessionStoreS3):
                 collection_info = TableCollectionInfo(self, sid)
             for doc_name, dinfo in sdict["doc_dict"].items():
                 collection_info.add_doc(doc_name, dinfo)
+        print("did the doc stuff")
         for key, new_key in self.mapped_values.items():
             if key in sdict:
                 self.put_val(sid, new_key, sdict[key])
             else:
                 self.put_val(sid, new_key, None)
+        print("did the mapped values")
         for key, func in self.init_functions.items():
             val = func(sdict)
             self.put_val(sid, key, val)
+        print('did the init-functions')
 
     @staticmethod
     def initial_visible_doc(sdict):
