@@ -13,8 +13,8 @@ fi
 
 export ROOT_DIR="$PROJECT_DIR"
 echo "Using ROOT_DIR=$ROOT_DIR"
-export DOCKER_BUILDKIT=0
-export COMPOSE_DOCKER_CLI_BUILD=0
+export DOCKER_BUILDKIT=1
+export COMPOSE_DOCKER_CLI_BUILD=2
 
 # shellcheck disable=SC2164
 cd "$ROOT_DIR"
