@@ -192,7 +192,6 @@ function CreatorApp(props) {
             otherCmObjects.current = [];
             clearUndoStack(undoStackRef);
 
-            window.removeEventListener("unload", sendRemove);
             errorDrawerFuncs.setGoToLineNumber(null);
             visibleTabListRef.current = null;
             methodsToOpenRef.current = null;
