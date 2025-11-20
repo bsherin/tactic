@@ -161,24 +161,27 @@ function SearchableConsole(props, inner_ref) {
         while (1) switch (_context3.n) {
           case 0:
             _context3.n = 1;
+            return _stopLogStreaming();
+          case 1:
+            _context3.n = 2;
             return (0, _communication_react.postPromise)("log_streamer", "get_container_log", {
               cont_id: cont_id.current,
               since: log_since,
               max_lines: max_console_lines_ref.current
             }, props.local_id);
-          case 1:
+          case 2:
             res = _context3.v;
             set_log_content(res["log_text"]);
-            _context3.n = 2;
+            _context3.n = 3;
             return (0, _communication_react.postPromise)("log_streamer", "start_log_stream", {
               cont_id: cont_id.current,
               room: my_room.current,
               user_id: window.user_id
             }, props.local_id);
-          case 2:
-            data = _context3.v;
-            streamer_info.current = data.streamer_info;
           case 3:
+            data = _context3.v;
+            streamer_info.current = data.stream_in;
+          case 4:
             return _context3.a(2);
         }
       }, _callee3);
@@ -205,6 +208,7 @@ function SearchableConsole(props, inner_ref) {
               streamer_id: streamer_info.current.stream_id
             }, props.local_id);
           case 1:
+            streamer_info.current = null;
             if (callback) {
               callback();
             }
