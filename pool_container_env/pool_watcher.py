@@ -92,7 +92,7 @@ class Handler(FileSystemEventHandler):
                                       properties=pika.BasicProperties(
                                           reply_to=reply_to,
                                           correlation_id=callback_id,
-                                          delivery_mode=1
+                                          delivery_mode=2
                                       ),
                                       body=json.dumps(task_packet))
         except:

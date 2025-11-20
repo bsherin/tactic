@@ -24,7 +24,7 @@ def is_dir_key(key: str) -> bool:
 
 class Handler:
     def __init__(self):
-        self.my_id = "pool_watcher_s3"
+        self.my_id = "pool_watcher"
         print("my_id is", self.my_id)
         self.connection, self.channel = get_pika_connection_with_retries(0)
         print("connected to RabbitMQ")
@@ -93,7 +93,7 @@ class Handler:
                                       properties=pika.BasicProperties(
                                           reply_to=reply_to,
                                           correlation_id=callback_id,
-                                          delivery_mode=1
+                                          delivery_mode=2
                                       ),
                                       body=json.dumps(task_packet))
         except:

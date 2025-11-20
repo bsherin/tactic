@@ -130,6 +130,7 @@ services:
       - RUNNING_ON_AWS=${RUNNING_ON_AWS}
       - USE_S3=${USE_S3}
       - USE_GEVENT=True
+      - RECYCLE_TILES=${RECYCLE_TILES}
     volumes:
       - type: bind
         source: "/var/run/docker.sock"

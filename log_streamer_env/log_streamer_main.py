@@ -18,7 +18,7 @@ if use_ecs:
 
 class LogStreamer(QWorker, ExceptionMixin):
     def __init__(self):
-        QWorker.__init__(self)
+        QWorker.__init__(self, service_name="log_streamer")
         self.tailers = {}
         return
 
@@ -50,7 +50,8 @@ class LogStreamer(QWorker, ExceptionMixin):
         cont_id = data["cont_id"]
         is_ecs = get_container(cont_id) is None
         print(f"got is_ecs {is_ecs} in start_log_stream")
-        streamer_id = room
+        stream_id = room
+        stream_info = {"stream_id": stream_id, "stream_host": self.my_id}
         if is_ecs:
             if use_ecs:
                 new_tailer = ECSLogTailer(room, cont_id)
@@ -59,9 +60,9 @@ class LogStreamer(QWorker, ExceptionMixin):
         else:
             new_tailer = LogTailer(room, cont_id)
 
-        self.tailers[streamer_id] = new_tailer
+        self.tailers[stream_id] = new_tailer
         new_tailer.start()
-        return {"success": True}
+        return {"success": True, "stream_in": stream_info}
 
     @task_worthy
     def stop_log_stream(self, data):

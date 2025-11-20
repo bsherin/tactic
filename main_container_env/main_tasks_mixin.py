@@ -1625,7 +1625,8 @@ class ConsoleTasksMixin:
     @task_worthy
     def clear_console_namespace(self, data):
         sid = data["local_id"]
-        self.emit_status_message("Resetting notebook ...")
+        sess = self.get_session(sid)
+        self.emit_status_message(sid, "Resetting notebook ...")
         def container_restarted(crdata):
             if not crdata["success"]:
                 debug_log("got an exception " + crdata["message"])
@@ -1641,7 +1642,7 @@ class ConsoleTasksMixin:
                     instantiate_result["globals_changed"] = True
                     instantiate_result["sid"] = sid
                     self.updated_globals(instantiate_result)
-                self.emit_status_message("Notebook reset", 21)
+                self.emit_status_message(sid, "Notebook reset", 21)
 
             data_dict = {
                 "globals_dict": {},
@@ -1661,12 +1662,11 @@ class ConsoleTasksMixin:
                                    "instantiate_as_pseudo_tile",
                                    data_dict,
                                    instantiate_done)
-            self.emit_status_message("Notebook reset", 21)
 
         if sess.pseudo_tile_id is not None:
             self.mworker.post_task("host5000",
                                    "restart_tile_container",
-                                   {"tile_id": self.pseudo_tile_id},
+                                   {"tile_id": sess.pseudo_tile_id},
                                    callback_func=container_restarted)
         return {"success": True}
 

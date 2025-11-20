@@ -4,7 +4,8 @@ import os
 from docker_functions import delete_list_of_queues
 import tactic_app
 
-use_ecs = os.getenv("USE_ECS_TILES","false").lower() == "true"
+use_ecs = os.getenv("USE_ECS_TILES", "false").lower() == "true"
+recycle_tiles = os.getenv("RECYCLE_TILES", "false").lower() == "true"
 
 class TileContainerManagementMixin:
 
@@ -46,10 +47,14 @@ class TileContainerManagementMixin:
         return {"success": False, "message": "Couldn't create tile"}
 
     def destroy_tile(self, tile_id, notify=False):
+        # qlist = [tile_id, tile_id + "_wait", "kill_" + tile_id]
+        if recycle_tiles:
+            # delete_list_of_queues(qlist)
+            self.tile_backend.restart(tile_id)
+            self.tile_registry.release_tile(tile_id)
+            return {"success": True, "message": f"Tile {tile_id} released"}
         self.tile_backend.terminate(tile_id)
         tactic_app.health_tracker.deregister_container(tile_id)
-        qlist = [tile_id, tile_id + "_wait", "kill_" + tile_id]
-        delete_list_of_queues(qlist)
         user_id = self.tile_registry.get(tile_id).get("owner", None)
         self.tile_registry.deregister(tile_id)
         if notify and user_id is not None:

@@ -68,7 +68,7 @@ function SearchableConsole(props, inner_ref) {
     log_content_ref = _useStateAndRef4[2];
   var cont_id = (0, _react.useRef)(props.container_id);
   var my_room = (0, _react.useRef)(null);
-  var streamer_id = (0, _react.useRef)(null);
+  var streamer_info = (0, _react.useRef)(null);
   var tsocket = (0, _react.useRef)(null);
   var past_commands = (0, _react.useRef)([]);
   var past_commands_index = (0, _react.useRef)(null);
@@ -98,12 +98,12 @@ function SearchableConsole(props, inner_ref) {
     };
   }, []);
   (0, _react.useEffect)(function () {
-    if (!streamer_id.current) {
+    if (!streamer_info.current) {
       _getLogAndStartStreaming().then(function () {
-        console.log("streamer_id.current", streamer_id.current);
+        console.log("streamer_inf.current", streamer_info.current);
       });
     }
-  }, [streamer_id.current]);
+  }, [streamer_info.current]);
   (0, _utilities_react.useDidMount)(/*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee() {
     return _regenerator().w(function (_context) {
       while (1) switch (_context.n) {
@@ -137,7 +137,7 @@ function SearchableConsole(props, inner_ref) {
   }
   function _handleUpdateMessage(data) {
     if (data.message == "streamerExited") {
-      streamer_id.current = null;
+      streamer_info.current = null;
       return;
     }
     if (data.message != "updateLog") return;
@@ -177,7 +177,7 @@ function SearchableConsole(props, inner_ref) {
             }, props.local_id);
           case 2:
             data = _context3.v;
-            streamer_id.current = my_room.current;
+            streamer_info.current = data.streamer_info;
           case 3:
             return _context3.a(2);
         }
@@ -196,13 +196,13 @@ function SearchableConsole(props, inner_ref) {
         while (1) switch (_context4.n) {
           case 0:
             callback = _args4.length > 0 && _args4[0] !== undefined ? _args4[0] : null;
-            if (!(streamer_id && streamer_id.current)) {
+            if (!(streamer_info && streamer_info.current)) {
               _context4.n = 2;
               break;
             }
             _context4.n = 1;
-            return (0, _communication_react.postPromise)("log_streamer", "stop_log_stream", {
-              streamer_id: streamer_id.current
+            return (0, _communication_react.postPromise)(streamer_info.current.stream_host, "stop_log_stream", {
+              streamer_id: streamer_info.current.stream_id
             }, props.local_id);
           case 1:
             if (callback) {

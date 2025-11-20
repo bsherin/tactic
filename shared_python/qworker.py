@@ -20,7 +20,7 @@ import copy
 
 from exception_mixin import ExceptionMixin, MessagePostException
 from threading import Lock
-from rabbit_manage import get_pika_connection, get_pika_connection_with_retries
+from rabbit_manage import get_pika_connection, get_pika_connection_with_retries, declare_queue
 
 PAUSE_TIME = .01
 
@@ -127,11 +127,11 @@ class QWorker(ExceptionMixin):
             if self.connection is None or self.channel is None:
                 debug_log("Couldn't connect to pika in background thread. giving up")
                 return
-            self.channel.queue_declare(queue=self.my_id, durable=False, exclusive=False)
-            self.channel.basic_consume(queue=self.my_id, auto_ack=True, on_message_callback=self.handle_delivery)
+            declare_queue(self.channel, self.my_id,)
+            self.channel.basic_consume(queue=self.my_id, auto_ack=False, on_message_callback=self.handle_delivery)
             if self.service_name is not None:
-                self.channel.queue_declare(queue=self.service_name, durable=False, exclusive=False)
-                self.channel.basic_consume(queue=self.service_name, auto_ack=True, on_message_callback=self.handle_delivery)
+                declare_queue(self.channel, self.service_name)
+                self.consume_without_ack(self.service_name, self.handle_delivery)
             debug_log(' [*] Waiting for messages:')
             if self.generate_heartbeats:
                 if self._hb_greenlet is None:
@@ -151,12 +151,19 @@ class QWorker(ExceptionMixin):
                     pass
                 self._hb_greenlet = None
 
+    def consume_without_ack(self, qname, on_message_callback):
+        self.channel.basic_consume(
+            queue=qname,
+            auto_ack=False,
+            on_message_callback=on_message_callback,
+        )
+
     def interrupt_and_restart(self):
         global thread, thread_lock
-        try:
-            self.channel.queue_delete(queue=self.my_id)
-        except Exception:
-            pass
+        # try:
+        #     self.channel.queue_delete(queue=self.my_id)
+        # except Exception:
+        #     pass
         try:
             self.connection.close()
         except Exception:
@@ -193,6 +200,7 @@ class QWorker(ExceptionMixin):
 
     def handle_delivery(self, channel, method, props, body):
         try:
+            channel.basic_ack(delivery_tag=method.delivery_tag)
             task_packet = json.loads(body)
             if task_packet["status"] in response_statuses:
                 self.handle_response(task_packet)
@@ -206,13 +214,13 @@ class QWorker(ExceptionMixin):
         return
 
     def post_packet(self, dest_id, task_packet, reply_to=None, callback_id=None):
-        self.channel.queue_declare(queue=dest_id, durable=False, exclusive=False)
+        declare_queue(self.channel, dest_id)
         self.channel.basic_publish(exchange='',
                                    routing_key=dest_id,
                                    properties=pika.BasicProperties(
                                        reply_to=reply_to,
                                        correlation_id=callback_id,
-                                       delivery_mode=1
+                                       delivery_mode=2
                                    ),
                                    body=json.dumps(task_packet))
         return
@@ -253,6 +261,7 @@ class QWorker(ExceptionMixin):
                           "reply_to": reply_to,
                           "expiration": expiration}
             # self.channel.queue_declare(queue=dest_id, durable=False, exclusive=False)
+            declare_queue(self.channel, dest_id)
             self.post_packet(dest_id, new_packet, reply_to, callback_id)
             sleep_func(PAUSE_TIME)
             result = {"success": True}
@@ -398,7 +407,9 @@ class QWorker(ExceptionMixin):
         return
 
     def handle_exception(self, ex, special_string=None):
-        return self.get_traceback_message(ex, special_string)
+        res = self.get_traceback_message(ex, special_string)
+        print(res)
+        return res
 
 
 # noinspection PyUnusedLocal,PyMissingConstructor
@@ -439,14 +450,15 @@ class BlockingWaitWorker(ExceptionMixin):
             self.response = None
             self.current_callback_id = task_packet["callback_id"]
             self.corr_id = str(uuid.uuid4())
-            self.channel.queue_declare(queue=dest_id, durable=False, exclusive=False)
+            declare_queue(self.channel, dest_id)
+            # self.channel.queue_declare(queue=dest_id, durable=False, exclusive=False)
             self.channel.basic_publish(
                 exchange='',
                 routing_key=dest_id,
                 properties=pika.BasicProperties(
                     reply_to=self.callback_queue,
                     correlation_id=self.corr_id,
-                    delivery_mode=1
+                    delivery_mode=2
                 ),
                 body=json.dumps(task_packet))
             while self.response is None:

@@ -10,7 +10,7 @@ import re
 import pika
 import json
 import traceback
-from rabbit_manage import get_pika_connection_with_retries, USE_AMAZON_MQ, RABBIT_USER, RABBIT_PASS
+from rabbit_manage import get_pika_connection_with_retries, USE_AMAZON_MQ, RABBIT_USER, RABBIT_PASS, declare_queue
 
 forwarder_address = None
 forwarder_id = None
@@ -600,6 +600,7 @@ def delete_list_of_queues(qlist,):
             print("problem deleting a queue")
     connection.close()
 
+service_names = ["host", "main_service", "log_streamer"]
 
 # noinspection PyArgumentEqualDefault
 def post_task_noqworker(source_id, dest_id, task_type, task_data=None):
@@ -619,14 +620,14 @@ def post_task_noqworker(source_id, dest_id, task_type, task_data=None):
         if connection is None:
             print("could not connect to pika in post_task_noqworker")
             return
-        channel.queue_declare(queue=dest_id, durable=False, exclusive=False)
+        declare_queue(channel, dest_id)
         # noinspection PyTypeChecker
         channel.basic_publish(exchange='',
                               routing_key=dest_id,
                               properties=pika.BasicProperties(
                                   reply_to=None,
                                   correlation_id=None,
-                                  delivery_mode=1
+                                  delivery_mode=2
                               ),
                               body=json.dumps(new_packet))
         connection.close()

@@ -1,7 +1,7 @@
 import React, {memo, useContext, useEffect, useState, useCallback, useMemo} from "react";
 import _ from "lodash";
 import {useCallbackStack} from "./utilities_react";
-import {postWithCallback} from "./communication_react";
+import {postWithCallbackMain} from "./communication_react";
 import {SortableComponent} from "./sortable_container";
 import {SettingsContext} from "./settings";
 
@@ -74,7 +74,7 @@ function TileContainer(props) {
             local_id: props.local_id,
             tile_id: tile_id
         };
-        postWithCallback(props.local_id, "RemoveTile", data_dict, null, null, props.local_id);
+        postWithCallbackMain("RemoveTile", data_dict, null, null, props.local_id);
     }, []);
 
     const _setTileValue = useCallback((tile_id, field, value, callback = null) => {

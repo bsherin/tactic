@@ -23,7 +23,7 @@ import {creator_props} from "./tile_maker_support";
 import {TacticMenubar} from "./menu_utilities"
 import {sendToRepository} from "./resource_viewer_react_app";
 import {HorizontalPanes} from "./resizing_allotment";
-import {postAjax, postPromise, handleCallback} from "./communication_react"
+import {postPromise, handleCallback} from "./communication_react"
 import {withStatus, doFlash, StatusContext} from "./toaster"
 import {withAssistant} from "./assistant";
 import {ICON_BAR_WIDTH} from "./sizing_tools";
@@ -71,8 +71,8 @@ function CreatorApp(props) {
     const [, setMethodsToOpen, methodsToOpenRef] = useStateAndRef(props.interface_state != null && "visibleMethodList" in props.interface_state ?
         props.interface_state.visibleMethodList : ["render_content"]);
 
-    const [renderContentInfo, setRenderContentInfo, renderContentInfoRef] = useStateAndRef(props.render_content_info);
-    const [globalsInfo, setGlobalsInfo, globalsInfoRef] = useStateAndRef(props.globals_info);
+    const [, setRenderContentInfo, renderContentInfoRef] = useStateAndRef(props.render_content_info);
+    const [, setGlobalsInfo, globalsInfoRef] = useStateAndRef(props.globals_info);
 
     const [, optionDispatchBase, option_list_ref] = usePropertyList(props.option_list, INITIAL_FORM_PANE_HEIGHT, {special_list: []});
     const [, exportDispatchBase, export_list_ref] = usePropertyList(props.export_list, INITIAL_FORM_PANE_HEIGHT, {tags: ""});
@@ -172,12 +172,6 @@ function CreatorApp(props) {
 
         errorDrawerFuncs.setGoToLineNumber(_selectLineNumber);
 
-        function sendRemove() {
-            navigator.sendBeacon("/delete_container_on_unload",
-                JSON.stringify({"container_id": props.local_id, "notify": false}));
-        }
-
-        window.addEventListener("unload", sendRemove);
         statusFuncs.stopSpinner();
         requestAnimationFrame(() => {
             requestAnimationFrame(() => {
@@ -198,7 +192,6 @@ function CreatorApp(props) {
             otherCmObjects.current = [];
             clearUndoStack(undoStackRef);
 
-            delete_my_container();
             window.removeEventListener("unload", sendRemove);
             errorDrawerFuncs.setGoToLineNumber(null);
             visibleTabListRef.current = null;
@@ -792,10 +785,6 @@ function CreatorApp(props) {
                 }
             }
         }
-    }
-
-    function delete_my_container() {
-        postAjax("/delete_container_on_unload", {"container_id": props.local_id, "notify": false});
     }
 
     function scrollToPane(itemIdentifier) {
@@ -1413,10 +1402,6 @@ function CreatorApp(props) {
 }
 
 CreatorApp = memo(CreatorApp);
-
-function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
 
 function tile_creator_main() {
     function gotProps(the_props) {

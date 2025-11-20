@@ -24,7 +24,7 @@ function SearchableConsole(props, inner_ref) {
     const [, set_log_content, log_content_ref] = useStateAndRef("");
     const cont_id = useRef(props.container_id);
     const my_room = useRef(null);
-    const streamer_id = useRef(null);
+    const streamer_info = useRef(null);
 
     const tsocket = useRef(null);
 
@@ -60,14 +60,14 @@ function SearchableConsole(props, inner_ref) {
     }, []);
 
     useEffect(() => {
-        if (!streamer_id.current) {
+        if (!streamer_info.current) {
             _getLogAndStartStreaming()
                 .then(() => {
-                    console.log("streamer_id.current", streamer_id.current);
+                    console.log("streamer_inf.current", streamer_info.current);
                 });
         }
 
-    }, [streamer_id.current]);
+    }, [streamer_info.current]);
 
     useDidMount(async () => {
         await _stopLogStreaming(_getLogAndStartStreaming)
@@ -87,7 +87,7 @@ function SearchableConsole(props, inner_ref) {
 
     function _handleUpdateMessage(data) {
         if (data.message == "streamerExited") {
-            streamer_id.current = null;
+            streamer_info.current = null;
             return;
         }
         if (data.message != "updateLog") return;
@@ -112,12 +112,13 @@ function SearchableConsole(props, inner_ref) {
         let data = await postPromise("log_streamer", "start_log_stream",
             {cont_id: cont_id.current, room: my_room.current, user_id: window.user_id},
             props.local_id);
-        streamer_id.current = my_room.current
+        streamer_info.current = data.streamer_info
     }
 
     async function _stopLogStreaming(callback = null) {
-        if (streamer_id && streamer_id.current) {
-            await postPromise("log_streamer", "stop_log_stream", {streamer_id: streamer_id.current}, props.local_id);
+        if (streamer_info && streamer_info.current) {
+            await postPromise(streamer_info.current.stream_host, "stop_log_stream",
+                {streamer_id: streamer_info.current.stream_id}, props.local_id);
             if (callback) {
                 callback()
             }

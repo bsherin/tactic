@@ -78,7 +78,7 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         QWorker.__init__(self, service_name="host", generate_heartbeats=True)
         self.my_id = "host" + str(myport)
         self.repository_user = User.get_user_by_username("repository")
-        self.tile_registry = TileContainerRegistry()
+        self.tile_registry = TileContainerRegistry(self)
         if use_ecs:
             self.tile_backend = ECSTileBackend(self.tile_registry, self)
             self.pool_backend = PoolBackendECS()
@@ -271,7 +271,6 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
     def remove_mainwindow_task(self, data):
         local_id = data["local_id"]
         self.destroy_child_tiles(local_id)
-        destroy_container(local_id, notify=False)
         return {"success": True}
 
     @task_worthy_manual_submit

@@ -8,6 +8,9 @@ import json
 
 from aws_helpers import get_ssm_parameter, load_secret_json
 
+
+service_names = ["host", "main_service", "log_streamer"]
+
 print("entering rabbit_manage updated")
 
 use_gevent = os.environ.get("USE_GEVENT", "False").lower() == "true"
@@ -89,6 +92,27 @@ def get_pika_connection():
     channel = connection.channel()
     return connection, channel
 
+def declare_queue(channel, qname):
+    if qname in service_names or qname.startswith("tile_"):
+        declare_durable_queue(channel, qname)
+    else:
+        declare_regular_queue(channel, qname)
+
+def declare_durable_queue(channel, qname):
+    channel.queue_declare(
+        queue=qname,
+        durable=True,
+        auto_delete=False,
+        exclusive=False
+    )
+
+def declare_regular_queue(channel, qname):
+    channel.queue_declare(
+        queue=qname,
+        durable=False,
+        auto_delete=False,
+        exclusive=False
+    )
 
 def get_pika_connection_with_retries(retries=0, max_retries=MAX_PIKA_RETRIES):
     if use_gevent:

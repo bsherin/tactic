@@ -1,5 +1,6 @@
 import os
 import redis
+from rabbit_manage import declare_durable_queue
 use_ecs = os.getenv("USE_ECS_TILES","false").lower() == "true"
 
 # I'm leaving some of the desired idle logic in for test, non-aws for the purposes of testing it.
@@ -22,9 +23,10 @@ if use_ecs:
     SVC = TILE_SERVICE
 
 class TileContainerRegistry:
-    def __init__(self):
+    def __init__(self, host_worker):
         print("** initializing tile registery ***")
         self._registry = {}
+        self.host_worker = host_worker
         self.registry_heartbeat()
 
 
@@ -76,6 +78,7 @@ class TileContainerRegistry:
     def mark_status(self, tile_id, status, task_arn=None, username=None, owner=None, parent=None, created=None):
         if tile_id not in self._registry:
             self._registry[tile_id] = {"status": "idle"}
+            declare_durable_queue(self.host_worker.channel, tile_id)
         self._registry[tile_id]["status"] = status
         if username is not None:
             self._registry[tile_id]["username"] = username
@@ -141,11 +144,14 @@ class TileContainerRegistry:
                 self._registry[tile_id]["owner"] = owner # This is the user_id
                 self._registry[tile_id]["parent"] = parent
                 self.mark_status(tile_id, "busy")
-                return tile_id, self._registry[tile_id]["task_arn"]
+                if use_ecs:
+                    return tile_id, self._registry[tile_id]["task_arn"]
+                else:
+                    return tile_id, ""
         return None, None
 
     def task_to_tile_id(self, task):
-        return task["taskArn"].split("/")[-1]
+        return f'tile_{task["taskArn"].split("/")[-1]}'
 
     def list_running_tile_tasks(self):
         arns = []
@@ -187,6 +193,7 @@ class TileContainerRegistry:
                     ids_to_delete.append(tile_id)
             for tile_id in ids_to_delete:
                 del self._registry[tile_id]
+                self.host_worker.channel.queue_delete(tile_id)
             for t in tasks:
                 tile_id = self.task_to_tile_id(t)
                 if tile_id not in self._registry:

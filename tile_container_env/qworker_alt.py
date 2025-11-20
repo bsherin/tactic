@@ -9,7 +9,7 @@ import os
 import sys
 import copy
 
-from rabbit_manage import get_pika_connection_with_retries
+from rabbit_manage import get_pika_connection_with_retries, declare_queue
 import communication_utils
 from exception_mixin import ExceptionMixin, MessagePostException
 from threading import Lock
@@ -160,18 +160,26 @@ class QWorker(ExceptionMixin):
             if connection is None:
                 debug_log("problem starting background thread: unable to create connection")
                 return
-            channel.queue_declare(queue=self.my_id, durable=False, exclusive=False)
-            channel.basic_consume(queue=self.my_id, auto_ack=True, on_message_callback=self.handle_delivery)
+            declare_queue(channel, self.my_id)
+            self.consume_without_ack(channel, self.my_id, self.handle_delivery)
             debug_log(' [*] Waiting for messages:')
             self.ready()
             channel.start_consuming()
         except Exception as ex:
             debug_log(self.handle_exception(ex, "problem starting background thread"))
 
+    @staticmethod
+    def consume_without_ack(channel, qname, on_message_callback):
+        channel.basic_consume(
+            queue=qname,
+            auto_ack=False,
+            on_message_callback=on_message_callback,
+        )
+
     def interrupt_and_restart(self):
         global thread
         global thread_lock
-        my_channel().queue_delete(queue=self.my_id)
+        # my_channel().queue_delete(queue=self.my_id)
         my_connection().close()
         stop_thread(thread)
         print("stopped thread")
@@ -202,6 +210,7 @@ class QWorker(ExceptionMixin):
         return
 
     def handle_delivery(self, channel, method, props, body):
+        channel.basic_ack(delivery_tag=method.delivery_tag)
         try:
             task_packet = json.loads(body)
             if task_packet["status"] in response_statuses:
@@ -212,17 +221,18 @@ class QWorker(ExceptionMixin):
             special_string = "Got error in handle delivery"
             debug_log(special_string)
             debug_log(self.handle_exception(ex, special_string))
+
         return
 
     def post_packet(self, dest_id, task_packet, reply_to=None, callback_id=None):
         channel = my_channel()
-        channel.queue_declare(queue=dest_id, durable=False, exclusive=False)
+        declare_queue(channel, dest_id)
         channel.basic_publish(exchange='',
                               routing_key=dest_id,
                               properties=pika.BasicProperties(
                                   reply_to=reply_to,
                                   correlation_id=callback_id,
-                                  delivery_mode=1
+                                  delivery_mode=2
                               ),
                               body=json.dumps(task_packet))
         return
@@ -322,14 +332,14 @@ class QWorker(ExceptionMixin):
             self.wait_response = None
             self.current_callback_id = task_packet["callback_id"]
             self.corr_id = str(uuid.uuid4())
-            channel.queue_declare(queue=dest_id, durable=False, exclusive=False)
+            declare_queue(channel, dest_id)
             channel.basic_publish(
                 exchange='',
                 routing_key=dest_id,
                 properties=pika.BasicProperties(
                     reply_to=self.callback_queue,
                     correlation_id=self.corr_id,
-                    delivery_mode=1
+                    delivery_mode=2
                 ),
                 body=json.dumps(task_packet))
             while self.wait_response is None:
@@ -467,14 +477,15 @@ class BlockingWaitWorker(ExceptionMixin):
             channel = self.channel
             self.current_callback_id = task_packet["callback_id"]
             self.corr_id = str(uuid.uuid4())
-            channel.queue_declare(queue=dest_id, durable=False, exclusive=False)
+            declare_queue(channel, dest_id)
+            # channel.queue_declare(queue=dest_id, durable=False, exclusive=False)
             channel.basic_publish(
                 exchange='',
                 routing_key=dest_id,
                 properties=pika.BasicProperties(
                     reply_to=self.callback_queue,
                     correlation_id=self.corr_id,
-                    delivery_mode=1
+                    delivery_mode=2
                 ),
                 body=json.dumps(task_packet))
             while self.response is None:

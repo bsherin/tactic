@@ -23,12 +23,14 @@ class DockerTileBackend(TileBackend):
                parent: Optional[str],
                tile_id: Optional[str],
                meta: Dict) -> Tuple[str, str]:
+        tid, _ = self.tile_registry.claim_tile(username, owner, parent)
+        if tid:
+            return tid, "", {}
         env = {
             "CHUNK_SIZE": os.getenv("CHUNK_SIZE", 100),
             "RETRIES": os.getenv("RETRIES", 60),
         }
 
-        # Minimal volumes for local dev (match your compose if you like)
         volumes = {
             self.resources_dir: {"bind": "/root/resources", "mode": "ro"},
         }
@@ -36,9 +38,8 @@ class DockerTileBackend(TileBackend):
             volumes[self.user_pool_dir] = {"bind": "/mydisk", "mode": "rw"}
 
         other     = meta.get("other_name", "none")
-        unique_id = tile_id or str(uuid.uuid4())
+        unique_id = tile_id or f"tile_{str(uuid.uuid4())}"
 
-        # Your existing function already sets labels, tags, arch, etc.
         tile_container_id, docker_id = docker_functions.create_container(
             "bsherin/tactic-tile",
             network_mode="bridge",
@@ -55,21 +56,20 @@ class DockerTileBackend(TileBackend):
         return tile_container_id, "", {}
 
     def mark_busy(self, tile_id: str):
-        # no-op for local; your host registry tracks this
+        self.tile_registry.mark_status(tile_id, "busy")
         return
 
     def restart(self, tile_id: str):
         tdata = self.tile_registry.get(tile_id)
         self.worker.post_task(tile_id, "restart", {})
-        self.worker.post_task(f"kill_{tile_id}", "restart", {})
+        # self.worker.post_task(f"kill_{tile_id}", "restart", {})
         return tdata
 
     def mark_idle(self, tile_id: str):
-        # no-op for local; your host registry tracks this
+        self.tile_registry.mark_status(tile_id, "idle")
         return
 
     def terminate(self, tile_id: str):
-        # Same as restart: either signal the tile, or remove the container by label.
         try:
             cont = docker_functions.get_container(tile_id)
             docker_functions.safe_remove(cont)
