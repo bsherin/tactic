@@ -178,6 +178,9 @@ class TileContainerRegistry:
         return tasks
 
     def reconcile_tiles(self):
+        if self.host_worker.channel is None:
+            print("in reconcile_tiles, channel isn't ready yet")
+            return
         if not use_ecs:
             return
         print("doing tile reconciliation")

@@ -127,7 +127,7 @@ class QWorker(ExceptionMixin):
             if self.connection is None or self.channel is None:
                 debug_log("Couldn't connect to pika in background thread. giving up")
                 return
-            declare_queue(self.channel, self.my_id,)
+            declare_queue(self.channel, self.my_id)
             self.channel.basic_consume(queue=self.my_id, auto_ack=False, on_message_callback=self.handle_delivery)
             if self.service_name is not None:
                 declare_queue(self.channel, self.service_name)

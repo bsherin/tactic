@@ -9,7 +9,7 @@ import json
 from aws_helpers import get_ssm_parameter, load_secret_json
 
 
-service_names = ["host", "main_service", "log_streamer"]
+service_names = ["host", "main_service", "log_streamer", "module_viewer"]
 
 print("entering rabbit_manage updated")
 
