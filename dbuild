@@ -1,5 +1,5 @@
 #!/bin/bash
-export DOCKER_BUILDKIT=1
+export DOCKER_BUILDKIT=0
 if [ "$1" == "all" ] ; then
   docker compose --env-file server.env build --no-cache "tactic_base"
   docker compose --env-file server.env build --no-cache "tactic_host"
