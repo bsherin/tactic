@@ -1,8 +1,6 @@
 docker
-gevent
 Werkzeug == 2.2.2
 Flask == 2.2.3
-Flask-SocketIO
 redis
 kombu
 boto3

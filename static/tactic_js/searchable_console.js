@@ -67,7 +67,7 @@ function SearchableConsole(props, inner_ref) {
     set_log_content = _useStateAndRef4[1],
     log_content_ref = _useStateAndRef4[2];
   var cont_id = (0, _react.useRef)(props.container_id);
-  var my_room = (0, _react.useRef)(null);
+  var sc_id = (0, _react.useRef)(null);
   var streamer_info = (0, _react.useRef)(null);
   var tsocket = (0, _react.useRef)(null);
   var past_commands = (0, _react.useRef)([]);
@@ -78,14 +78,13 @@ function SearchableConsole(props, inner_ref) {
     }
   });
   (0, _react.useEffect)(function () {
-    my_room.current = (0, _utilities_react.guid)();
-    tsocket.current = new _tactic_socket.TacticSocket("main", 5000, "searchable-console", props.local_id);
-    tsocket.current.socket.emit("join", {
-      "room": my_room.current
-    });
+    sc_id.current = (0, _utilities_react.guid)();
+    // tsocket.current = new TacticSocket("main", 5000, "searchable-console", props.local_id);
+    // tsocket.current.socket.emit("join", {"room": my_room.current});
+
     function cleanup() {
       _stopLogStreaming().then(function () {
-        tsocket.current.disconnect();
+        props.tsocket.detachListener("searchable-console-message");
       });
     }
     initSocket();
@@ -97,13 +96,17 @@ function SearchableConsole(props, inner_ref) {
       window.removeEventListener('beforeunload', cleanup);
     };
   }, []);
-  (0, _react.useEffect)(function () {
-    if (!streamer_info.current) {
-      _getLogAndStartStreaming().then(function () {
-        console.log("streamer_inf.current", streamer_info.current);
-      });
-    }
-  }, [streamer_info.current]);
+
+  // useEffect(() => {
+  //     if (!streamer_info.current) {
+  //         _getLogAndStartStreaming()
+  //             .then(() => {
+  //                 console.log("streamer_inf.current", streamer_info.current);
+  //             });
+  //     }
+  //
+  // }, [streamer_info.current]);
+
   (0, _utilities_react.useDidMount)(/*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee() {
     return _regenerator().w(function (_context) {
       while (1) switch (_context.n) {
@@ -133,14 +136,15 @@ function SearchableConsole(props, inner_ref) {
     }, _callee2);
   })), [props.container_id]);
   function initSocket() {
-    tsocket.current.attachListener("searchable-console-message", _handleUpdateMessage);
+    props.tsocket.attachListener("searchable-console-message", _handleUpdateMessage);
   }
   function _handleUpdateMessage(data) {
-    if (data.message == "streamerExited") {
+    if (data["sc_id"] != sc_id.current) return;
+    if (data["console_message"] == "streamerExited") {
       streamer_info.current = null;
       return;
     }
-    if (data.message != "updateLog") return;
+    if (data["console_message"] != "updateLog") return;
     _addToLog(data["new_line"]);
   }
   function _setLogSince() {
@@ -160,28 +164,36 @@ function SearchableConsole(props, inner_ref) {
       return _regenerator().w(function (_context3) {
         while (1) switch (_context3.n) {
           case 0:
-            _context3.n = 1;
-            return _stopLogStreaming();
+            if (props.container_id) {
+              _context3.n = 1;
+              break;
+            }
+            return _context3.a(2);
           case 1:
             _context3.n = 2;
+            return _stopLogStreaming();
+          case 2:
+            _context3.n = 3;
             return (0, _communication_react.postPromise)("log_streamer", "get_container_log", {
               cont_id: cont_id.current,
               since: log_since,
-              max_lines: max_console_lines_ref.current
-            }, props.local_id);
-          case 2:
-            res = _context3.v;
-            set_log_content(res["log_text"]);
-            _context3.n = 3;
-            return (0, _communication_react.postPromise)("log_streamer", "start_log_stream", {
-              cont_id: cont_id.current,
-              room: my_room.current,
-              user_id: window.user_id
+              max_lines: max_console_lines_ref.current,
+              local_id: props.local_id
             }, props.local_id);
           case 3:
-            data = _context3.v;
-            streamer_info.current = data.stream_in;
+            res = _context3.v;
+            set_log_content(res["log_text"]);
+            _context3.n = 4;
+            return (0, _communication_react.postPromise)("log_streamer", "start_log_stream", {
+              cont_id: cont_id.current,
+              local_id: props.local_id,
+              sc_id: sc_id.current,
+              user_id: window.user_id
+            }, props.local_id);
           case 4:
+            data = _context3.v;
+            streamer_info.current = data.stream_info;
+          case 5:
             return _context3.a(2);
         }
       }, _callee3);

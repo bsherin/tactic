@@ -1,21 +1,16 @@
 import time
 import threading
 import os
+import re
 import boto3
 from botocore.exceptions import ClientError
 
-import flask_socketio
-from flask_socketio import SocketIO
 
 from aws_helpers import get_ssm_parameter
-from redis_tools import MESSAGE_QUEUE
+from rabbit_manage import get_pika_connection_with_retries, declare_queue
 
-socketio = SocketIO(
-    message_queue=MESSAGE_QUEUE,
-    channel="socketio",
-    logger=False,
-    engineio_logger=False,
-)
+from qworker_alt import add_qw_pika_connection, close_connection, simple_uid
+
 
 region = get_ssm_parameter("MY_AWS_REGION")
 cluster = get_ssm_parameter("ECS_CLUSTER", "tactic-cluster")
@@ -26,10 +21,12 @@ ecs = boto3.client("ecs", region_name=region)
 
 
 def id_from_arn(arn):
-    return arn.rsplit("/", 1)[-1]
+    return f'tile_{arn.split("/")[-1]}'
 
 
 def arn_from_id(id):
+    if id.startswith("tile_"):
+        re.sub("tile_", "", id)
     return f"arn:aws:ecs:{region}:{account}:task/{cluster}/{id}"
 
 
@@ -104,11 +101,13 @@ def get_container_log_ecs(cont_id, since=None):
     return text
 
 class ECSLogTailer:
-    def __init__(self, room, task_id,
+    def __init__(self, ls_worker, local_id, sc_id, task_id,
                  start_ms=None, poll=1.5, batch_size=200):
+        self.ls_worker = ls_worker
+        self.sc_id = sc_id
+        self.local_id = local_id
         self.task_arn = arn_from_id(task_id)
         self.task_id = task_id
-        self.room = room
         self.start_ms = start_ms
         self.batch_size = batch_size
         self._stop = threading.Event()
@@ -120,7 +119,7 @@ class ECSLogTailer:
     def start(self):
         if self._t and self._t.is_alive():
             return
-        self._t = threading.Thread(target=self._run, name=f"tail-{self.stream}", daemon=True)
+        self._t = threading.Thread(target=self._run, name=simple_uid(), daemon=True)
         self._t.start()
 
     def stop(self, timeout=3):
@@ -132,9 +131,9 @@ class ECSLogTailer:
     def send_fn(self, msg):
         if not msg.endswith("\n"):
             msg += "\n"
-        base_data = {"message": "updateLog", "container_id": self.task_id, "new_line": msg}
-        socketio.emit("searchable-console-message", base_data, namespace="/main", room=self.room)
-
+        base_data = {"console_message": "updateLog", "local_id": self.local_id,
+                     "container_id": self.task_id, "new_line": msg, "sc_id": self.sc_id}
+        self.ls_worker.ask_hos("searchable-console-message", base_data)
 
     def _run(self, inactivity_timeout_sec=600):
         """
@@ -144,6 +143,7 @@ class ECSLogTailer:
         next_token = None
         last_seen_ts = 0
         self.group, self.stream = resolve_log_stream_for_task(self.task_arn)
+        channel = add_qw_pika_connection()
 
         # Initial announcement (optional)
         self.send_fn(f"[log-tail] Following {self.group} :: {self.stream}")
@@ -224,3 +224,4 @@ class ECSLogTailer:
             except Exception as e:
                 self.send_fn(f"Stopping due to error: {e.__class__.__name__}: {e}")
                 break
+            close_connection()

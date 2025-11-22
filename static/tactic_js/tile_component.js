@@ -758,7 +758,7 @@ function TileComponent(props) {
     tile_id: props.tile_id,
     updateValue: _updateOptionValue,
     handleSubmit: _handleSubmitOptions
-  })), /*#__PURE__*/_react["default"].createElement("div", {
+  })), props.show_log && /*#__PURE__*/_react["default"].createElement("div", {
     className: "tile-log-area ".concat(props.show_log ? "show-me" : "hide-me"),
     style: {
       width: "100%",
@@ -770,6 +770,7 @@ function TileComponent(props) {
     local_id: props.local_id,
     container_id: props.tile_id,
     ref: inner_log_ref,
+    tsocket: props.tsocket,
     outer_style: tile_log_style,
     showCommandField: true
   })), /*#__PURE__*/_react["default"].createElement("div", {

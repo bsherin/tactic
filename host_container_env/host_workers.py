@@ -442,7 +442,6 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
             namespace = data["namespace"]
         else:
             namespace = "/main"
-        print("about to do socketio.emit")
         socketio.emit(data["message"], data, namespace=namespace, room=room)
 
         return {"success": True}

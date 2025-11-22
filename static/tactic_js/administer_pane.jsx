@@ -249,6 +249,7 @@ function AdminPane(props) {
             <div className="d-flex d-inline" ref={console_text_ref}
                  style={{height: "100%", overflow: "hidden", marginRight: 10, position: "relative"}}>
                 <SearchableConsole local_id={window.global_id}
+                                   tsocket={props.tsocket}
                                    container_id={props.selected_resource.Id}
                                    ref={null}
                                    outer_style={{

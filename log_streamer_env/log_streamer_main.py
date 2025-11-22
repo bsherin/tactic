@@ -1,10 +1,14 @@
-from gevent import monkey; monkey.patch_all()
+
 import os
+if os.environ.get("DEBUG_LOG_STREAMER", "False").lower() == "true":
+    print("got debug mode")
+    import pydevd_pycharm
+    pydevd_pycharm.settrace('host.docker.internal', port=21000)
+
+from flask import Flask
 import time
 import uuid
-from flask import Flask
-
-from qworker import QWorker, task_worthy
+from qworker_alt import QWorker, task_worthy
 from exception_mixin import ExceptionMixin
 from docker_functions import get_container
 import exception_mixin
@@ -18,15 +22,16 @@ if use_ecs:
 
 class LogStreamer(QWorker, ExceptionMixin):
     def __init__(self):
-        QWorker.__init__(self, service_name="log_streamer")
+        QWorker.__init__(self)
+        self.my_id = "log_streamer"
         self.tailers = {}
         return
 
     @task_worthy
     def get_container_log(self, data):
         cont_id = data["cont_id"]
+        local_id = data["local_id"]
         is_ecs = get_container(cont_id) is None
-        print(f"got is_ecs {is_ecs}")
         if "since" in data and data["since"] is not None:
             dt = datetime.datetime.fromtimestamp(data["since"] / 1000)
         else:
@@ -35,34 +40,51 @@ class LogStreamer(QWorker, ExceptionMixin):
             if use_ecs:
                 log_text = get_container_log_ecs(cont_id)
             else:
-                log_text = "container not found"
+                log_text = "container not found getting log"
         else:
             log_text = get_container_log(cont_id, dt)
         if "max_lines" in data and data["max_lines"] is not None:
             ltlist = log_text.split("\n")[-1 * data["max_lines"]:]
             log_text = "\n".join(ltlist)
-        return {"success": True, "log_text": log_text}
+        return {"success": True, "log_text": log_text, "local_id": local_id}
 
+    def emit_to_client(self, message, data):
+        if "room" in data and not "local_id" in data:
+            data["local_id"] = data["room"]
+        data["message"] = message
+        self.ask_host("emit_to_client", data)
+
+    def ask_host(self, msg_type, task_data=None):
+        self.post_task("host", msg_type, task_data)
+        return
 
     @task_worthy
     def start_log_stream(self, data):
-        room = data["room"]
+        sc_id = data["sc_id"]
+        local_id = data["local_id"]
         cont_id = data["cont_id"]
+        if cont_id.startswith("log_streamer"):
+            return {"success": False, "message": "can't stream the log streamer"}
         is_ecs = get_container(cont_id) is None
-        print(f"got is_ecs {is_ecs} in start_log_stream")
-        stream_id = room
+        stream_id = sc_id
         stream_info = {"stream_id": stream_id, "stream_host": self.my_id}
-        if is_ecs:
-            if use_ecs:
-                new_tailer = ECSLogTailer(room, cont_id)
+        try:
+            if is_ecs:
+                if use_ecs:
+                    new_tailer = ECSLogTailer(self, local_id, sc_id, cont_id)
+                else:
+                    return {"success": False, "message": "container not found starting stream"}
             else:
-                return {"success": False, "message": "container not found"}
-        else:
-            new_tailer = LogTailer(room, cont_id)
+                new_tailer = LogTailer(self, local_id, sc_id, cont_id)
 
-        self.tailers[stream_id] = new_tailer
-        new_tailer.start()
-        return {"success": True, "stream_in": stream_info}
+            self.tailers[stream_id] = new_tailer
+            new_tailer.start()
+        except Exception as e:
+            import traceback
+            print("ERROR in start_log_stream:", e)
+            print(traceback.format_exc())
+            return {"success": False, "message": f"error starting log stream: {e}"}
+        return {"success": True, "stream_info": stream_info, "local_id": local_id}
 
     @task_worthy
     def stop_log_stream(self, data):

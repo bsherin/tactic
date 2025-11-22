@@ -23,7 +23,7 @@ function SearchableConsole(props, inner_ref) {
     const [max_console_lines, set_max_console_lines, max_console_lines_ref] = useStateAndRef(100);
     const [, set_log_content, log_content_ref] = useStateAndRef("");
     const cont_id = useRef(props.container_id);
-    const my_room = useRef(null);
+    const sc_id = useRef(null);
     const streamer_info = useRef(null);
 
     const tsocket = useRef(null);
@@ -38,13 +38,13 @@ function SearchableConsole(props, inner_ref) {
     });
 
     useEffect(() => {
-        my_room.current = guid();
-        tsocket.current = new TacticSocket("main", 5000, "searchable-console", props.local_id);
-        tsocket.current.socket.emit("join", {"room": my_room.current});
+        sc_id.current = guid();
+        // tsocket.current = new TacticSocket("main", 5000, "searchable-console", props.local_id);
+        // tsocket.current.socket.emit("join", {"room": my_room.current});
 
         function cleanup() {
             _stopLogStreaming().then(() => {
-                tsocket.current.disconnect()
+                props.tsocket.detachListener("searchable-console-message")
             });
         }
 
@@ -59,15 +59,15 @@ function SearchableConsole(props, inner_ref) {
         })
     }, []);
 
-    useEffect(() => {
-        if (!streamer_info.current) {
-            _getLogAndStartStreaming()
-                .then(() => {
-                    console.log("streamer_inf.current", streamer_info.current);
-                });
-        }
-
-    }, [streamer_info.current]);
+    // useEffect(() => {
+    //     if (!streamer_info.current) {
+    //         _getLogAndStartStreaming()
+    //             .then(() => {
+    //                 console.log("streamer_inf.current", streamer_info.current);
+    //             });
+    //     }
+    //
+    // }, [streamer_info.current]);
 
     useDidMount(async () => {
         await _stopLogStreaming(_getLogAndStartStreaming)
@@ -82,15 +82,16 @@ function SearchableConsole(props, inner_ref) {
     }, [props.container_id]);
 
     function initSocket() {
-        tsocket.current.attachListener("searchable-console-message", _handleUpdateMessage);
+        props.tsocket.attachListener("searchable-console-message", _handleUpdateMessage);
     }
 
     function _handleUpdateMessage(data) {
-        if (data.message == "streamerExited") {
+        if (data["sc_id"] != sc_id.current) return;
+        if (data["console_message"] == "streamerExited") {
             streamer_info.current = null;
             return;
         }
-        if (data.message != "updateLog") return;
+        if (data["console_message"] != "updateLog") return;
         _addToLog(data["new_line"]);
     }
 
@@ -105,15 +106,17 @@ function SearchableConsole(props, inner_ref) {
     }
 
     async function _getLogAndStartStreaming() {
+        if (!props.container_id) return;
         await _stopLogStreaming();
         let res = await postPromise("log_streamer", "get_container_log",
-            {cont_id: cont_id.current, since: log_since, max_lines: max_console_lines_ref.current},
+            {cont_id: cont_id.current, since: log_since, max_lines: max_console_lines_ref.current,
+                local_id: props.local_id},
             props.local_id);
         set_log_content(res["log_text"]);
         let data = await postPromise("log_streamer", "start_log_stream",
-            {cont_id: cont_id.current, room: my_room.current, user_id: window.user_id},
+            {cont_id: cont_id.current, local_id: props.local_id, sc_id: sc_id.current, user_id: window.user_id},
             props.local_id);
-        streamer_info.current = data.stream_in
+        streamer_info.current = data.stream_info
     }
 
     async function _stopLogStreaming(callback = null) {

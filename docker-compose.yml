@@ -283,7 +283,8 @@ services:
       - USE_ECS_TILES=${USE_ECS_TILES}
       - RUNNING_ON_AWS=${RUNNING_ON_AWS}
       - USE_S3=${USE_S3}
-      - USE_GEVENT=True
+      - DEBUG_LOG_STREAMER=${DEBUG_LOG_STREAMER}
+      - USE_GEVENT=False
     volumes:
       - type: bind
         source: "/var/run/docker.sock"

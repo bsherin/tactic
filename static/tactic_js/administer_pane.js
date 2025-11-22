@@ -490,6 +490,7 @@ function AdminPane(props) {
       }
     }, /*#__PURE__*/_react["default"].createElement(_searchable_console.SearchableConsole, {
       local_id: window.global_id,
+      tsocket: props.tsocket,
       container_id: props.selected_resource.Id,
       ref: null,
       outer_style: {

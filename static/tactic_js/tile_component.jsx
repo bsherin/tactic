@@ -568,16 +568,19 @@ function TileComponent(props) {
                                               updateValue={_updateOptionValue}
                                               handleSubmit={_handleSubmitOptions}/>
                                 </div>
+                            {props.show_log &&
                                 <div className={`tile-log-area ${props.show_log ? "show-me" : "hide-me"}`}
                                      style={{width: "100%", height: "100%", position: "relative"}}
                                      ref={log_ref}>
                                     <SearchableConsole local_id={props.local_id}
                                                        container_id={props.tile_id}
                                                        ref={inner_log_ref}
+                                                       tsocket={props.tsocket}
                                                        outer_style={tile_log_style}
                                                        showCommandField={true}
                                     />
                                 </div>
+                            }
                                 <div className={`tile-display-area front ${show_front ? "show-me" : "hide-me"}`}
                                      style={{
                                          width: "100%",

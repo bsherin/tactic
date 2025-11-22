@@ -1423,15 +1423,9 @@ function ConsoleComponent(props) {
                     search_helper_text={search_helper_text}
                 />
             }
-            {!props.mState.console_is_shrunk && show_main_log &&
-                <SearchableConsole local_id={props.local_id}
-                                   container_id={props.local_id}
-                                   outer_style={searchable_console_style}
-                                   showCommandField={false}
-                />
-            }
             {!props.mState.console_is_shrunk && show_pseudo_log &&
                 <SearchableConsole local_id={props.local_id}
+                                   tsocket={props.tsocket}
                                    container_id={pseudo_tile_id}
                                    outer_style={searchable_console_style}
                                    showCommandField={true}

@@ -1,20 +1,13 @@
-from gevent import monkey
-monkey.patch_all()
 import threading
 import docker
 import os
-import flask_socketio
-from flask_socketio import SocketIO
-from redis_tools import MESSAGE_QUEUE
+import pika
+
+from rabbit_manage import get_pika_connection_with_retries, declare_queue
 
 from docker_functions import get_log, container_id, get_container
 
-socketio = SocketIO(
-    message_queue=MESSAGE_QUEUE,
-    channel="socketio",
-    logger=False,
-    engineio_logger=False,
-)
+from qworker_alt import add_qw_pika_connection, close_connection, simple_uid
 
 cli = docker.DockerClient(base_url='unix://var/run/docker.sock')
 
@@ -30,8 +23,10 @@ def get_container_log(cont_id, since=None):
 
 
 class LogTailer:
-    def __init__(self, room, cont_id):
-        self.room = room
+    def __init__(self, ls_worker, local_id, sc_id, cont_id):
+        self.ls_worker = ls_worker
+        self.sc_id = sc_id
+        self.local_id = local_id
         self.cont_id = cont_id
         self.cont = get_container(cont_id)
         self._stop = threading.Event()
@@ -40,7 +35,7 @@ class LogTailer:
     def start(self):
         if self._t and self._t.is_alive():
             return
-        self._t = threading.Thread(target=self._run, name=f"tail-{self.room}", daemon=True)
+        self._t = threading.Thread(target=self._run, name=simple_uid(), daemon=True)
         self._t.start()
 
     def stop(self, timeout=3):
@@ -49,11 +44,13 @@ class LogTailer:
             self._t.join(timeout=timeout)
 
     def send_fn(self, msg):
-        base_data = {"message": "updateLog", "container_id": self.cont_id, "new_line": msg}
-        socketio.emit("searchable-console-message", base_data, namespace="/main", room=self.room)
+        base_data = {"console_message": "updateLog", "local_id": self.local_id,
+                     "container_id": self.cont_id, "new_line": msg, "sc_id": self.sc_id}
+        self.ls_worker.emit_to_client("searchable-console-message", base_data)
 
     def _run(self):
         if self.cont is not None:
+            channel = add_qw_pika_connection()
             for line in self.cont.logs(stream=True, tail=0):
                 # Shouldn't do anything here that will cause something to be entered in the log of a
                 # container being streamed. That will give an infinite loop.
@@ -63,4 +60,5 @@ class LogTailer:
         else:
             print("cont was None")
         self.send_fn("stream exited")
+        close_connection()
         print("exiting")

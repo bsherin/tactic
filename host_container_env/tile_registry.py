@@ -27,6 +27,7 @@ class TileContainerRegistry:
         print("** initializing tile registery ***")
         self._registry = {}
         self.host_worker = host_worker
+        self.pull_desired_idle()
         self.registry_heartbeat()
 
 
