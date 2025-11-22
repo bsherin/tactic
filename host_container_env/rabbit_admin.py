@@ -61,4 +61,4 @@ def delete_host_wait_queues():
     # input("Press Enter to continue...")
 
     for qname in to_delete:
-        delete_queue(name)
+        delete_queue(qname)
