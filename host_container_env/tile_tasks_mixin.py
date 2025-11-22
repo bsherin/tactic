@@ -270,7 +270,7 @@ class TileTasksMixin:
 
     @task_worthy_manual_submit
     def load_tile_module_task(self, data, task_packet):
-        print("in load_tile_module_task with data: ", data)
+        print("entering load_tile_module_task")
         from loaded_tile_management import loaded_tile_manager
         the_user = self.get_user_from_data(data)
         def loaded_source(res_dict):
@@ -289,16 +289,13 @@ class TileTasksMixin:
                     self.submit_response(task_packet, {"success": False, "message": res_dict["message"],
                                                        "alert_type": "alert-warning"})
                 return
-            print("load_source returned success")
             mdata = the_user.get_tile_metadata(res_dict["tile_name"])
-            print("got tile metadata")
             category = mdata["category"] if "category" in mdata else "basic"
 
             if "is_default" in data:
                 is_default = data["is_default"]
             else:
                 is_default = False
-            print("about to call add_user_tile_module")
             loaded_tile_manager.add_user_tile_module(the_user.username,
                                                         category,
                                                         res_dict["tile_name"],
@@ -306,15 +303,11 @@ class TileTasksMixin:
                                                         tile_module_name,
                                                         is_default,
                                                         )
-            print("returned from add_user_tile_module")
             _id = the_user.get_tile_id(tile_module_name)
-            print("got _id " + str(_id))
             self.update_selector_row(
                 {"name": tile_module_name, "doc_id": str(_id), "event_type": "update",
                  "icon:upload": "icon:upload", "res_type": "tile"}, the_user)
-            print("updated selector row")
             socketio.emit('update-menus', {}, namespace='/main', room=the_user.get_id())
-            print("emitted update-menus")
             if not task_packet["callback_type"] == "no_callback":
                 self.submit_response(task_packet, {"success": True, "message": "Tile module successfully loaded",
                                                    "alert_type": "alert-success"})

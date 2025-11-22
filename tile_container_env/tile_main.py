@@ -155,8 +155,10 @@ class TileWorker(QWorker):
 
     @task_worthy
     def load_source(self, data_dict):
+        print("entering load source")
         tile_code = data_dict["tile_code"]
         result = exec_tile_code(tile_code)
+        print(f"got the load source result {str(result)}")
         return result
 
     @task_worthy

@@ -270,7 +270,7 @@ class QWorker(ExceptionMixin):
             result = {"success": True}
 
         except Exception as ex:
-            special_string = "Error handling callback for task type {} for my_id {}".format(task_type, self.my_id)
+            special_string = "Error handling post_task for task type {} for my_id {}".format(task_type, self.my_id)
             error_string = self.handle_exception(ex, special_string)
             print(error_string)
             debug_log(error_string)
