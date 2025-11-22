@@ -21,7 +21,7 @@ ecs = boto3.client("ecs", region_name=region)
 
 
 def id_from_arn(arn):
-    return f'tile_{arn.split("/")[-1]}'
+    return arn.split("/")[-1]
 
 
 def arn_from_id(tid):
