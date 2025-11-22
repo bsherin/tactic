@@ -80,12 +80,15 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         QWorker.__init__(self, service_name="host", generate_heartbeats=True, special_id=my_id)
         self.repository_user = User.get_user_by_username("repository")
         self.tile_registry = TileContainerRegistry(self)
+
         if use_ecs:
             self.tile_backend = ECSTileBackend(self.tile_registry, self)
             self.pool_backend = PoolBackendECS()
         else:
             self.tile_backend = DockerTileBackend(self.tile_registry, self)
             self.pool_backend = PoolBackendECS()
+
+
         if self.my_id == "host5000":
             self.clear_session_storage()
             delete_host_wait_queues()

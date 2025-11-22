@@ -39,7 +39,7 @@ def delete_queue(qname: str):
         f"{API_STR}/queues/%2F/{qname}",
         auth=HTTPBasicAuth(RABBIT_USER, RABBIT_PASS)
     )
-    print(r.status_code, r.text)
+    print(f"deleting queue {qname} got status {r.status_code}")
 
 def delete_host_wait_queues():
     queues = list_queues()

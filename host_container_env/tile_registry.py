@@ -1,6 +1,7 @@
 import os
 import redis
 from rabbit_manage import declare_durable_queue
+from rabbit_admin import list_queues, delete_queue
 use_ecs = os.getenv("USE_ECS_TILES","false").lower() == "true"
 
 # I'm leaving some of the desired idle logic in for test, non-aws for the purposes of testing it.
@@ -29,6 +30,7 @@ class TileContainerRegistry:
         self.host_worker = host_worker
         self.pull_desired_idle()
         self.registry_heartbeat()
+        self.remove_obsolete_queues()
 
 
     def pull_desired_idle(self):
@@ -178,6 +180,28 @@ class TileContainerRegistry:
                     tasks.append(t)
         return tasks
 
+    def remove_obsolete_queues(self):
+        if self.host_worker.channel is None:
+            print("in remove_obsolete_queues, channel isn't ready yet")
+            return
+        if not use_ecs:
+            return
+        print("removing obsolete queues")
+
+        tasks = self.list_running_tile_tasks()
+        if not tasks:
+            return
+        running_ids = [self.task_to_tile_id(t) for t in tasks]
+        all_queues = list_queues()
+        for qname in all_queues:
+            if qname.startswith("tile_"):
+                if qname not in running_ids:
+                    delete_queue(qname)
+            if qname.startswith("kill_tile_"):
+                partial_qname = re.sub("kill_", "", qname)
+                if partial_qname not in running_ids:
+                    delete_queue(qname)
+
     def reconcile_tiles(self):
         if self.host_worker.channel is None:
             print("in reconcile_tiles, channel isn't ready yet")
@@ -189,23 +213,17 @@ class TileContainerRegistry:
         if not tasks:
             return
         print("found running tiles:", len(tasks))
-        try:
-            running_ids = [self.task_to_tile_id(t) for t in tasks]
-            ids_to_delete = []
-            for tile_id, info in self._registry.items():
-                if tile_id not in running_ids:
-                    ids_to_delete.append(tile_id)
-            for tile_id in ids_to_delete:
-                del self._registry[tile_id]
-                self.host_worker.channel.queue_delete(tile_id)
-                self.host_worker.channel.queue_delete(f"kill_{tile_id}")
-            for t in tasks:
-                tile_id = self.task_to_tile_id(t)
-                if tile_id not in self._registry:
-                    print("found new available tile container:", tile_id)
-                    self.mark_status(tile_id, "idle", task_arn=t["taskArn"], created=t["createdAt"])
-        finally:
-            try:
-                conn.close()
-            except Exception:
-                pass
+        running_ids = [self.task_to_tile_id(t) for t in tasks]
+        ids_to_delete = []
+        for tile_id, info in self._registry.items():
+            if tile_id not in running_ids:
+                ids_to_delete.append(tile_id)
+        for tile_id in ids_to_delete:
+            del self._registry[tile_id]
+            self.host_worker.channel.queue_delete(tile_id)
+            self.host_worker.channel.queue_delete(f"kill_{tile_id}")
+        for t in tasks:
+            tile_id = self.task_to_tile_id(t)
+            if tile_id not in self._registry:
+                print("found new available tile container:", tile_id)
+                self.mark_status(tile_id, "idle", task_arn=t["taskArn"], created=t["createdAt"])
