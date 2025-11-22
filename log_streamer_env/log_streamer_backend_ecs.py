@@ -24,10 +24,10 @@ def id_from_arn(arn):
     return f'tile_{arn.split("/")[-1]}'
 
 
-def arn_from_id(id):
-    if id.startswith("tile_"):
-        re.sub("tile_", "", id)
-    return f"arn:aws:ecs:{region}:{account}:task/{cluster}/{id}"
+def arn_from_id(tid):
+    if tid.startswith("tile_"):
+        tid = re.sub("tile_", "", tid)
+    return f"arn:aws:ecs:{region}:{account}:task/{cluster}/{tid}"
 
 
 def resolve_log_stream_for_task(task_arn, container_name=None):
