@@ -197,6 +197,7 @@ class TileContainerRegistry:
         if not tasks:
             return
         running_ids = [self.task_to_tile_id(t) for t in tasks]
+        running_ids.append("tile_test_container")
         all_queues = list_queues()
         for q in all_queues:
             qname = q["name"]
