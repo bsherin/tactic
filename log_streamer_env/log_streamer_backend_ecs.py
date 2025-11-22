@@ -136,7 +136,7 @@ class ECSLogTailer:
             msg += "\n"
         base_data = {"console_message": "updateLog", "local_id": self.local_id,
                      "container_id": self.task_id, "new_line": msg, "sc_id": self.sc_id}
-        self.ls_worker.ask_hos("searchable-console-message", base_data)
+        self.ls_worker.ask_host("searchable-console-message", base_data)
 
     def _run(self, inactivity_timeout_sec=600):
         """
