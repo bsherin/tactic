@@ -1,4 +1,5 @@
 import os
+import re
 import redis
 from rabbit_manage import declare_durable_queue
 from rabbit_admin import list_queues, delete_queue
