@@ -31,7 +31,7 @@ class ECSTileBackend(TileBackend):
         self.sgs     = [g.strip() for g in get_ssm_parameter("TILE_SECURITY_GROUPS", "").split(",") if g.strip()]
         self.assign_public = get_ssm_parameter("ECS_ASSIGN_PUBLIC_IP", "ENABLED")
         self.tile_registry = tile_registry
-        self.workd = worker
+        self.worker = worker
 
     def issue_user_s3_session(self, username: str, ttl_seconds: int = 7200):
         role_arn = f"arn:aws:iam::{os.getenv('ACCOUNT_ID', '924818964184')}:role/TacticTileS3SessionRole"
