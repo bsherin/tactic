@@ -104,6 +104,7 @@ class TileWorker(QWorker):
         self.use_svg = True
         self.generate_heartbeats = True
         self.my_arn, self.my_id = resolve_task_identity()
+        print(f"my_id = {self.my_id}")
 
     @task_worthy
     def restart(self, data):

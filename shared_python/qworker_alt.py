@@ -163,6 +163,7 @@ class QWorker(ExceptionMixin):
             declare_queue(channel, self.my_id)
             self.consume_without_ack(channel, self.my_id, self.handle_delivery)
             debug_log(' [*] Waiting for messages:')
+            debug_log(f"consuming from queue {self.my_id}")
             self.ready()
             channel.start_consuming()
         except Exception as ex:
