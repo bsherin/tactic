@@ -78,7 +78,9 @@ def resolve_log_stream_for_task(task_arn, container_name=None):
     return group, stream
 
 def get_container_log_ecs(cont_id, since=None):
+    print(f"in get_container_log_ecs with cont_id={cont_id}")
     arn = arn_from_id(cont_id)
+    print(f"got arn {arn}")
     group, log_stream = resolve_log_stream_for_task(arn)
     events = []
     next_token = None
