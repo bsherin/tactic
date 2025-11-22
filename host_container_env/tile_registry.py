@@ -197,7 +197,8 @@ class TileContainerRegistry:
             return
         running_ids = [self.task_to_tile_id(t) for t in tasks]
         all_queues = list_queues()
-        for qname in all_queues:
+        for q in all_queues:
+            qname = q["name"]
             if qname.startswith("tile_"):
                 if qname not in running_ids:
                     delete_queue(qname)
