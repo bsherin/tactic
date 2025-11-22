@@ -212,6 +212,7 @@ class ECSLogTailer:
                         # Inactivity watchdog
                         quiet_for = time.time() * 1000 - last_seen_ts
                         if quiet_for >= inactivity_timeout_sec * 1000:
+                            print("closing because of inactivity timeout")
                             self.send_fn(f"No new logs for {inactivity_timeout_sec}s; ending stream.")
                             break
 
@@ -227,4 +228,5 @@ class ECSLogTailer:
             except Exception as e:
                 self.send_fn(f"Stopping due to error: {e.__class__.__name__}: {e}")
                 break
-            close_connection()
+            print("closing connection because existing self._run")
+        close_connection()
