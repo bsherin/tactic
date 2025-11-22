@@ -132,6 +132,7 @@ class ECSLogTailer:
 
 
     def send_fn(self, msg):
+        print("entering send_fn")
         if not msg.endswith("\n"):
             msg += "\n"
         base_data = {"console_message": "updateLog", "local_id": self.local_id,
@@ -228,5 +229,4 @@ class ECSLogTailer:
             except Exception as e:
                 self.send_fn(f"Stopping due to error: {e.__class__.__name__}: {e}")
                 break
-            print("closing connection because existing self._run")
         close_connection()
