@@ -28,6 +28,7 @@ class TileContainerRegistry:
         print("** initializing tile registery ***")
         self._registry = {}
         self.host_worker = host_worker
+        self.removed_obsolete_queues = False
         self.pull_desired_idle()
         self.registry_heartbeat()
         self.remove_obsolete_queues()
@@ -50,6 +51,8 @@ class TileContainerRegistry:
             self.pull_desired_idle()
             self.reconcile_tiles()
             self.publish_metrics()
+            if not self.removed_obsolete_queues:
+                self.remove_obsolete_queues()
 
     def get_items(self):
         return list(self._registry.items())
@@ -181,10 +184,11 @@ class TileContainerRegistry:
         return tasks
 
     def remove_obsolete_queues(self):
+        if not use_ecs:
+            self.removed_obsolete_queues = True
+            return
         if self.host_worker.channel is None:
             print("in remove_obsolete_queues, channel isn't ready yet")
-            return
-        if not use_ecs:
             return
         print("removing obsolete queues")
 
@@ -201,6 +205,8 @@ class TileContainerRegistry:
                 partial_qname = re.sub("kill_", "", qname)
                 if partial_qname not in running_ids:
                     delete_queue(qname)
+        self.removed_obsolete_queues = True
+
 
     def reconcile_tiles(self):
         if self.host_worker.channel is None:
