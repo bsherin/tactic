@@ -37,6 +37,7 @@ from across_accounts_mixin import AcrossAccountsTasksMixin
 from pool_tasks_mixin import PoolTasksMixin
 from account_tasks_mixin import AccountTasksMixin
 from rabbit_manage import get_pika_connection_with_retries
+from rabbit_admin import delete_host_wait_queues
 from ecs_tile_backend import ECSTileBackend
 from docker_tile_backend import DockerTileBackend
 from tile_registry import TileContainerRegistry
@@ -75,8 +76,8 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
                  ProjectTasksMixin, CollectionTasksMixin, MetabookTasksMixin, PoolTasksMixin, AccountTasksMixin,
                  AcrossAccountsTasksMixin, HigherMongoTasksMixin, TileContainerManagementMixin):
     def __init__(self):
-        QWorker.__init__(self, service_name="host", generate_heartbeats=True)
-        self.my_id = "host" + str(myport)
+        my_id = "host" + str(myport)
+        QWorker.__init__(self, service_name="host", generate_heartbeats=True, special_id=my_id)
         self.repository_user = User.get_user_by_username("repository")
         self.tile_registry = TileContainerRegistry(self)
         if use_ecs:
@@ -87,6 +88,7 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
             self.pool_backend = PoolBackendECS()
         if self.my_id == "host5000":
             self.clear_session_storage()
+            delete_host_wait_queues()
 
     def do_heartbeat(self):
         self.tile_registry.registry_heartbeat()

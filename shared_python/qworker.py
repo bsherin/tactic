@@ -92,12 +92,16 @@ def sleep_func(t):
 
 # noinspection PyTypeChecker,PyUnusedLocal,PyMissingConstructor
 class QWorker(ExceptionMixin):
-    def __init__(self, service_name=None, generate_heartbeats=False):
+    def __init__(self, service_name=None, generate_heartbeats=False, special_id=None):
         self.service_name = service_name
-        if service_name is None:
-            self.my_id = os.environ.get("MY_ID")
+        if special_id:
+            self.my_id = special_id
         else:
-            self.my_id = service_name + str(uuid.uuid4())[:4]
+            if service_name is None:
+                self.my_id = os.environ.get("MY_ID", str(uuid.uuid4())[:4])
+            else:
+                self._my_id = service_name + str(uuid.uuid4())[:4]
+
         self.handler_instances = {"this_worker": self}
         self.channel = None
         self.connection = None
@@ -109,8 +113,7 @@ class QWorker(ExceptionMixin):
 
         self.generate_heartbeats = generate_heartbeats
         if use_wait_tasks:
-            wait_queue = self.my_id + "_wait"
-            self.wait_worker = BlockingWaitWorker(wait_queue)
+            self.wait_queue_id = self.my_id + "_wait"
 
     def _heartbeat_loop(self):
         # runs in its own greenlet
@@ -278,7 +281,7 @@ class QWorker(ExceptionMixin):
     def post_and_wait(self, dest_id, task_type, task_data=None, sleep_time=.1,
                       timeout=10, tries=RETRIES, alt_address=None):
         callback_id = str(uuid.uuid4())
-
+        wait_worker = BlockingWaitWorker(self.wait_queue_id)
         new_packet = {"source": self.my_id,
                       "callback_type": "wait",
                       "callback_id": callback_id,
@@ -287,17 +290,20 @@ class QWorker(ExceptionMixin):
                       "task_type": task_type,
                       "task_data": task_data,
                       "response_data": None,
-                      "reply_to": self.wait_worker.my_id,
+                      "reply_to": wait_worker.my_id,
                       "expiration": None}
 
         # noinspection PyNoneFunctionAssignment@
-        resp = self.wait_worker.post_blocking_wait(dest_id, new_packet)
+
+        resp = wait_worker.post_blocking_wait(dest_id, new_packet)
         sleep_func(PAUSE_TIME)
+        self.channel.queue_delete(self.wait_queue_id)
         if resp == "__ERROR__":
             error_string = "Got post_blocking_wait error with msg_type {}, destination {}, and source {}".format(task_type,
                                                                                                                  dest_id,
                                                                                                                  self.my_id)
             debug_log(error_string)
+
             raise MessagePostException(error_string)
         else:
             return resp

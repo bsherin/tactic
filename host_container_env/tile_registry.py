@@ -198,6 +198,7 @@ class TileContainerRegistry:
             for tile_id in ids_to_delete:
                 del self._registry[tile_id]
                 self.host_worker.channel.queue_delete(tile_id)
+                self.host_worker.channel.queue_delete(f"kill_{tile_id}")
             for t in tasks:
                 tile_id = self.task_to_tile_id(t)
                 if tile_id not in self._registry:
