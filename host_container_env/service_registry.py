@@ -49,7 +49,7 @@ class ServiceRegistry:
         return tasks
 
     def remove_obsolete_queues(self):
-        print("got extra_valid_ids: {}".format(extra_valid_ids))
+        print("got extra_valid_ids: {}".format(self.extra_valid_ids))
         if not use_ecs:
             self.removed_obsolete_queues = True
             return
