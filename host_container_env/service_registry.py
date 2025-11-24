@@ -18,19 +18,17 @@ class ServiceRegistry:
         self.service_name = service_name
         self.removed_obsolete_queues = False
 
-    @staticmethod
-    def task_to_id(task):
+    def task_to_id(self, task):
         return f'{self.id_prefix}{task["taskArn"].split("/")[-1]}'
 
-    @staticmethod
-    def list_running_service_tasks():
+    def list_running_service_tasks(self):
         arns = []
         try:
             paginator = ecs.get_paginator("list_tasks")
             for page in paginator.paginate(
                     cluster=ECS_CLUSTER,
                     serviceName=self.service_name,
-                       desiredStatus="RUNNING"
+                    desiredStatus="RUNNING"
             ):
                 arns.extend(page.get("taskArns", []))
         except ParamValidationError as e:
