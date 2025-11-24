@@ -148,11 +148,19 @@ def close_connection():
 
 # noinspection PyTypeChecker,PyUnusedLocal,PyMissingConstructor
 class QWorker(ExceptionMixin):
-    def __init__(self):
-        self.my_id = os.environ.get("MY_ID")
+    def __init__(self, service_name=None, special_id=None):
+        self.service_name = service_name
+        if special_id:
+            self.my_id = special_id
+        else:
+            if service_name is None:
+                self.my_id = os.environ.get("MY_ID", str(uuid.uuid4())[:4])
+            else:
+                self.my_id = service_name + str(uuid.uuid4())[:4]
         self.handler_instances = {"this_worker": self}
         self.generate_heartbeats = False
         self.last_heartbeat = current_timestamp()
+        self.wait_queue_id = "wait_" + self.my_id
 
     def start_background_thread(self, retries=10):
         try:
@@ -162,6 +170,9 @@ class QWorker(ExceptionMixin):
                 return
             declare_queue(channel, self.my_id)
             self.consume_without_ack(channel, self.my_id, self.handle_delivery)
+            if self.service_name is not None:
+                declare_queue(channel, self.service_name)
+                self.consume_without_ack(channel, self.service_name, self.handle_delivery)
             debug_log(' [*] Waiting for messages:')
             debug_log(f"consuming from queue {self.my_id}")
             self.ready()
@@ -284,13 +295,8 @@ class QWorker(ExceptionMixin):
     # noinspection PyUnusedLocal
     def post_and_wait(self, dest_id, task_type, task_data=None, sleep_time=.1,
                       timeout=10, tries=RETRIES, alt_address=None):
-        wait_worker = my_wait_worker()
-        if wait_worker is None:
-            wait_queue = my_thread() + "_wait"
-            wait_worker = BlockingWaitWorker(wait_queue)
-            wait_workers[my_thread()] = wait_worker
         callback_id = str(uuid.uuid4())
-
+        wait_worker = BlockingWaitWorker(self.wait_queue_id)
         new_packet = {"source": self.my_id,
                       "callback_type": "wait",
                       "callback_id": callback_id,
@@ -305,6 +311,8 @@ class QWorker(ExceptionMixin):
         # noinspection PyNoneFunctionAssignment@
 
         resp = wait_worker.post_blocking_wait(dest_id, new_packet)
+        channel = my_channel()
+        channel.queue_delete(self.wait_queue_id)
         if resp == "__ERROR__":
             error_string = "Got post_blocking_wait error with msg_type {}, destination {}, and source {}".format(task_type,
                                                                                                                  dest_id,
@@ -313,16 +321,6 @@ class QWorker(ExceptionMixin):
             raise MessagePostException(error_string)
         else:
             return resp
-
-    def on_wait_esponse(self, ch, method, props, body):
-        the_body = json.loads(body)
-        # It's possible there's an old response if the user killed a thread earlier
-        # If so, we'll ignore it
-        if the_body["callback_id"] == self.current_callback_id:
-            self.wait_response = the_body["response_data"]
-        else:
-            self.wait_response = None
-
 
     def post_blocking_wait(self, dest_id, task_packet, retries=10):
         max_retries = 3
@@ -479,7 +477,6 @@ class BlockingWaitWorker(ExceptionMixin):
             self.current_callback_id = task_packet["callback_id"]
             self.corr_id = str(uuid.uuid4())
             declare_queue(channel, dest_id)
-            # channel.queue_declare(queue=dest_id, durable=False, exclusive=False)
             channel.basic_publish(
                 exchange='',
                 routing_key=dest_id,

@@ -114,7 +114,8 @@ class Handler:
             result = {"success": False, "message": error_string}
         return result
 
-    def get_traceback_message(self, e, special_string=None):
+    @staticmethod
+    def get_traceback_message(e, special_string=None):
         if special_string is None:
             template = "An exception of type {0} occured. Arguments:\n{1!r}\n"
         else:

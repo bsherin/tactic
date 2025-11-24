@@ -10,7 +10,7 @@ from communication_utils import make_python_object_jsonizable
 from communication_utils import make_jsonizable_and_compress
 import docker_functions
 from docker_functions import create_container, destroy_container, destroy_child_containers, destroy_user_containers
-from docker_functions import get_log, restart_container, create_log_streamer_container, container_exists
+from docker_functions import get_log, restart_container, container_exists
 from docker_functions import get_matching_user_containers, get_container, create_assistant_container, get_user_assistant
 from tactic_app import app, socketio
 from redis_tools import redis_client, ready_block_manager
@@ -37,10 +37,10 @@ from across_accounts_mixin import AcrossAccountsTasksMixin
 from pool_tasks_mixin import PoolTasksMixin
 from account_tasks_mixin import AccountTasksMixin
 from rabbit_manage import get_pika_connection_with_retries
-from rabbit_admin import delete_host_wait_queues
+from rabbit_admin import delete_wait_queues
 from ecs_tile_backend import ECSTileBackend
 from docker_tile_backend import DockerTileBackend
-from tile_registry import TileContainerRegistry
+from tile_registry import TileContainerRegistry, MainContainerRegistry, ModuleViewerRegistry, publish_queue_metrics
 from tile_container_management_mixin import TileContainerManagementMixin
 from redis_tools import RedisManager, redis_client
 from loaded_tile_management import loaded_tile_manager
@@ -57,6 +57,8 @@ old_container_time = 3 * 24 * 3600
 
 # how frequently we will look for dead containers and dead mainwindows
 health_check_time = 5 * 60
+
+periodic_check_interval = 10
 
 import os
 
@@ -80,6 +82,9 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         QWorker.__init__(self, service_name="host", generate_heartbeats=True, special_id=my_id)
         self.repository_user = User.get_user_by_username("repository")
         self.tile_registry = TileContainerRegistry(self)
+        self.main_registry = MainContainerRegistry(self)
+        self.module_viewer_registry = ModuleViewerRegistry(self)
+        self.periodic_check_counter = 0
 
         if use_ecs:
             self.tile_backend = ECSTileBackend(self.tile_registry, self)
@@ -91,19 +96,51 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
 
         if self.my_id == "host5000":
             self.clear_session_storage()
-            delete_host_wait_queues()
+            delete_wait_queues()
+            self.do_periodic_check()
 
     def do_heartbeat(self):
         self.tile_registry.registry_heartbeat()
+        self.main_registry.registry_heartbeat()
+        self.module_viewer_registry.registry_heartbeat()
+        self.periodic_check_counter += 1
+        if self.periodic_check_counter > periodic_check_interval:
+            self.periodic_check_counter = 0
+            self.do_periodic_check()
 
-    def user_to_true(self, user_path, user_obj):
+    @staticmethod
+    def do_periodic_check():
+        print("doing a periodic check")
+        publish_queue_metrics()
+
+    @staticmethod
+    def pull_queue_count():
+        v = redis_client.get("metric:queue_count")
+        if v:
+            return int(v)
+        else:
+            return 0
+
+    @task_worthy
+    def get_queue_count(self, data):
+        admin_user = self.get_user_from_data(data)
+        if not admin_user.username == "admin":
+            return {"success": False, "message": "not authorized", "alert_type": "alert-warning"}
+        publish_queue_metrics()
+        val = self.pull_queue_count()
+        return {"success": True, "target_value": val}
+
+    @staticmethod
+    def user_to_true(user_path, user_obj):
         return re.sub("/mydisk", user_obj.pool_dir, user_path)
 
-    def emit_status_message(self, message, user_id, timeout=4):
+    @staticmethod
+    def emit_status_message(message, user_id, timeout=4):
         data = {"status_message": message, "timeout": timeout}
         socketio.emit('show-status-msg', data, namespace='/main', room=user_id)
 
-    def emit_clear_status(self, user_id):
+    @staticmethod
+    def emit_clear_status(user_id):
         socketio.emit('clear-status-msg', {}, namespace='/main', room=user_id)
 
     @staticmethod
@@ -117,8 +154,8 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
     def add_error_drawer_entry_task(self, data):
         socketio.emit("add-error-drawer-entry", data, namespace='/main', room=data["user_id"])
 
-
-    def add_error_drawer_entry(self, title, content, user_id):
+    @staticmethod
+    def add_error_drawer_entry(title, content, user_id):
         data = {"title": title, "content": content}
         socketio.emit("add-error-drawer-entry", data, namespace='/main', room=user_id)
 

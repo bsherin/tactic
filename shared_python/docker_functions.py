@@ -101,19 +101,6 @@ def get_user_pool_dir(username):
     else:
         return f"{true_host_pool_dir}/{username}"
 
-def create_log_streamer_container(room, cont_id, user_id, username):
-    streamer_volume_dict = {"/var/run/docker.sock": {"bind": "/var/run/docker.sock", "mode": "rw"}}
-    environ = {
-        "ROOM": room,
-        "CONT_ID": cont_id,
-    }
-    streamer_id, _container_id = create_container("bsherin/tactic-log-streamer", network_mode="bridge",
-                                                  env_vars=environ,
-                                                  owner=user_id, other_name=None, username=username,
-                                                  volume_dict=streamer_volume_dict,
-                                                  publish_all_ports=True, remove=True)
-    return streamer_id
-
 def create_assistant_container(openai_api_key, parent, user_id, username):
     assistant_volume_dict = {"/var/run/docker.sock": {"bind": "/var/run/docker.sock", "mode": "rw"}}
     environ = {
@@ -599,8 +586,6 @@ def delete_list_of_queues(qlist,):
         except:
             print("problem deleting a queue")
     connection.close()
-
-service_names = ["host", "main_service", "log_streamer"]
 
 # noinspection PyArgumentEqualDefault
 def post_task_noqworker(source_id, dest_id, task_type, task_data=None):

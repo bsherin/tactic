@@ -16,6 +16,7 @@ from mongo_accesser import MongoAccess
 from tile_accesser import TileAccess
 from mongo_db_fs import get_dbs
 from module_viewer_session import ModuleViewerSessionStore, ModuleViewerSessionAccessor
+from aws_helpers import resolve_task_identity, get_ssm_parameter
 
 import sys, os
 
@@ -25,7 +26,9 @@ import time
 # noinspection PyUnusedLocal
 class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin, MongoAccess, TileAccess):
     def __init__(self):
-        QWorker.__init__(self, service_name="module_viewer")
+        id_prefix = get_ssm_parameter("MODULE_VIEWER_PREFIX", "module_viewer_")
+        self.my_arn, self.my_id = resolve_task_identity(id_prefix)
+        QWorker.__init__(self, service_name="module_viewer", special_id=self.my_id)
         db, fs, repository_db, repository_fs = get_dbs()
         self.db = db
         self.fs = fs
@@ -78,12 +81,6 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin, MongoAccess, Til
         result = {"success": True, "the_content": self.assemble_parse_information(tp),
                   "all_handler_methods": self.handler_methods}
         return result
-
-    # @task_worthy
-    # def reintiailize_parser(self, data_dict):
-    #     module_code = data_dict["new_module_code"]
-    #     tp.reparse(module_code)
-    #     return {"success": True, "the_content": self.assemble_parse_information()}
 
     @staticmethod
     def build_code(data_dict):

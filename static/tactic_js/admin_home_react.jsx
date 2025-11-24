@@ -8,7 +8,7 @@ import {useState, useEffect, useRef, memo, useContext} from "react";
 import { createRoot } from 'react-dom/client';
 import PropTypes from 'prop-types';
 
-import { Tabs, Tab, Tooltip, Icon, Position, Slider, Label } from "@blueprintjs/core";
+import {Tabs, Tab, Tooltip, Icon, Position, Slider, Label, FormGroup, Button} from "@blueprintjs/core";
 import {Regions} from "@blueprintjs/table";
 
 import {TacticSocket} from "./tactic_socket"
@@ -221,6 +221,7 @@ AdministerHomeApp = memo(AdministerHomeApp);
 function AWSControls(props) {
 
     const [desiredIdle, setDesiredIdle] = useState(0);
+    const [numberOfQueues, setNumberOfQueues] = useState(0)
     const statusFuncs = useContext(StatusContext);
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
 
@@ -232,7 +233,23 @@ function AWSControls(props) {
                 errorDrawerFuncs.addFromError("Error getting desired idle tiles", data);
             }
         })
+        updateQueueCount().then((data) => {
+            if (data.success) {
+                setNumberOfQueues(data.target_value);
+            } else {
+                errorDrawerFuncs.addFromError("Error getting desired idle tiles", data);
+            }
+        })
     }, []);
+
+    async function updateQueueCount() {
+        let data = await grabQueueCounnt()
+        if (data.success) {
+            setNumberOfQueues(data.target_value);
+        } else {
+            errorDrawerFuncs.addFromError("Error getting desired idle tiles", data);
+        }
+    }
 
     async function postDesiredIdle(newVal) {
         let data = await postPromise("host", "set_desired_idle_tiles", {target_value: newVal});
@@ -244,6 +261,10 @@ function AWSControls(props) {
 
     async function grabDesiredIdle(newVal) {
         return await postPromise("host", "get_desired_idle_tiles", {});
+    }
+
+    async function grabQueueCounnt() {
+        return await postPromise("host", "get_queue_count", {})
     }
 
     async function onChange(newVal) {
@@ -273,6 +294,10 @@ function AWSControls(props) {
                         value={desiredIdle}
                     />
                 </Label>
+                <FormGroup label="Number of Queues" className="metadata-form_group" inline={true}>
+                    <span className="bp6-ui-text metadata-field">{String(numberOfQueues)}</span>
+                    <Button onClick={updateQueueCount} icon="refresh"/>
+                </FormGroup>
             </div>
         </div>
     )

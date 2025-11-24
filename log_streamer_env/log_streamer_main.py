@@ -22,8 +22,7 @@ if use_ecs:
 
 class LogStreamer(QWorker, ExceptionMixin):
     def __init__(self):
-        QWorker.__init__(self)
-        self.my_id = "log_streamer"
+        QWorker.__init__(self, service_name="log_streamer", special_id="log_streamer_1")
         self.tailers = {}
         return
 

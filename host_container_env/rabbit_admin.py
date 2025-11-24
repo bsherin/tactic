@@ -27,7 +27,6 @@ else:
     RABBIT_PASS = "guest"
     API_STR = f"http://{RABBIT_HOST}:15672/api"
 
-
 def list_queues():
     resp = requests.get(f"{API_STR}/queues/%2F", auth=HTTPBasicAuth(RABBIT_USER, RABBIT_PASS))
     resp.raise_for_status()
@@ -41,12 +40,12 @@ def delete_queue(qname: str):
     )
     print(f"deleting queue {qname} got status {r.status_code}")
 
-def delete_host_wait_queues():
+def delete_wait_queues():
     queues = list_queues()
     to_delete = [
         q["name"]
         for q in queues
-        if q["name"].startswith("host") and q["name"].endswith("_wait")
+        if q["name"].endswith("_wait") or q["name"].startswith("wait_")
     ]
 
     if not to_delete:
@@ -56,9 +55,6 @@ def delete_host_wait_queues():
     print("Will delete these queues:")
     for name in to_delete:
         print("  ", name)
-
-    # safety: uncomment prompt if you want
-    # input("Press Enter to continue...")
 
     for qname in to_delete:
         delete_queue(qname)

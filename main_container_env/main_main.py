@@ -15,6 +15,7 @@ from flask import Flask
 import exception_mixin
 from exception_mixin import ExceptionMixin
 from tactic_copilot_mixin import CopilotMixin
+from aws_helpers import resolve_task_identity, get_ssm_parameter
 
 import json
 import copy
@@ -36,7 +37,9 @@ import os
 print("about to define mainworker class")
 class MainWorker(QWorker, ExceptionMixin, CopilotMixin):
     def __init__(self, ):
-        QWorker.__init__(self, service_name="main_service")
+        id_prefix = get_ssm_parameter("MAIN_ID_PREFIX", "main_service_")
+        self.my_arn, self.my_id = resolve_task_identity(id_prefix)
+        QWorker.__init__(self, service_name="main_service", special_id=self.my_id)
         self.mwindow = mainWindow(self)
         self.handler_instances["mainwindow"] = self.mwindow
         self.get_megaplex_task_now = False

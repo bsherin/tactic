@@ -12,6 +12,7 @@ import copy
 from qworker_alt import QWorker, task_worthy, debug_log, add_qw_pika_connection, close_connection
 from qworker_alt import simple_uid
 import tile_env
+from aws_helpers import resolve_task_identity, get_ssm_parameter
 from tile_env import class_info
 from tile_env import exec_tile_code
 import tile_base
@@ -41,30 +42,11 @@ kill_thread_lock = Lock()
 from pseudo_tile_base import PseudoTileClass
 import pseudo_tile_base
 
-def resolve_task_identity():
-    # Try env first (some setups inject it)
-    arn = os.getenv("ECS_TASK_ARN")
-
-    # Fallback to the ECS task metadata endpoint
-    if not arn:
-        uri = os.getenv("ECS_CONTAINER_METADATA_URI_V4") or os.getenv("ECS_CONTAINER_METADATA_URI")
-        if uri:
-            try:
-                data = requests.get(f"{uri}/task", timeout=2).json()
-                arn = data.get("TaskARN")
-            except Exception:
-                arn = None
-
-    if arn:
-        return arn, f'tile_{arn.split("/")[-1]}'
-    # Local/dev fallback
-    fallback_id = os.getenv("MY_ID") or f"tile_local-{os.getpid()}"
-    return None, fallback_id
-
 # noinspection PyUnusedLocal,PyProtectedMember,PyMissingConstructor
 class KillWorker(QWorker):
     def __init__(self):
         self.my_id = "kill_" + tile_base._tworker.my_id
+        self.service_name = None
         return
 
     def handle_delivery(self, channel, method, props, body):
@@ -95,7 +77,9 @@ class KillWorker(QWorker):
 # noinspection PyProtectedMember,PyUnusedLocal
 class TileWorker(QWorker):
     def __init__(self):
-        QWorker.__init__(self)
+        id_prefix = get_ssm_parameter("TILE_ID_PREFIX", "tile_")
+        self.my_arn, self.my_id = resolve_task_identity(id_prefix)
+        QWorker.__init__(self, special_id=self.my_id)
         self.tile_instance = None
         tile_env.Tile = None
         widgets.Tile = None
@@ -103,7 +87,7 @@ class TileWorker(QWorker):
         self.get_megaplex_task_now = False
         self.use_svg = True
         self.generate_heartbeats = True
-        self.my_arn, self.my_id = resolve_task_identity()
+
         print(f"my_id = {self.my_id}")
 
     @task_worthy

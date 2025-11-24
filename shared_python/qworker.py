@@ -89,7 +89,6 @@ def sleep_func(t):
         time.sleep(t)
     return
 
-
 # noinspection PyTypeChecker,PyUnusedLocal,PyMissingConstructor
 class QWorker(ExceptionMixin):
     def __init__(self, service_name=None, generate_heartbeats=False, special_id=None):
@@ -100,7 +99,7 @@ class QWorker(ExceptionMixin):
             if service_name is None:
                 self.my_id = os.environ.get("MY_ID", str(uuid.uuid4())[:4])
             else:
-                self._my_id = service_name + str(uuid.uuid4())[:4]
+                self.my_id = service_name + str(uuid.uuid4())[:4]
 
         self.handler_instances = {"this_worker": self}
         self.channel = None
@@ -113,7 +112,7 @@ class QWorker(ExceptionMixin):
 
         self.generate_heartbeats = generate_heartbeats
         if use_wait_tasks:
-            self.wait_queue_id = self.my_id + "_wait"
+            self.wait_queue_id = "wait_" + self.my_id
 
     def _heartbeat_loop(self):
         # runs in its own greenlet
@@ -131,7 +130,7 @@ class QWorker(ExceptionMixin):
                 debug_log("Couldn't connect to pika in background thread. giving up")
                 return
             declare_queue(self.channel, self.my_id)
-            self.channel.basic_consume(queue=self.my_id, auto_ack=False, on_message_callback=self.handle_delivery)
+            self.consume_without_ack(self.my_id, on_message_callback=self.handle_delivery)
             if self.service_name is not None:
                 declare_queue(self.channel, self.service_name)
                 self.consume_without_ack(self.service_name, self.handle_delivery)
@@ -422,6 +421,7 @@ class QWorker(ExceptionMixin):
 class BlockingWaitWorker(ExceptionMixin):
     def __init__(self, queue_name):
         self.queue_name = queue_name
+        self.my_id = self.queue_name
         self.current_callback_id = None
         self.initialize_me()
 
@@ -431,7 +431,6 @@ class BlockingWaitWorker(ExceptionMixin):
             if self.connection is None:
                 debug_log("Couldn't create pika connection for blocking worker")
                 return
-            self.my_id = self.queue_name
             self.channel.queue_declare(queue=self.queue_name, durable=False, exclusive=False)
             self.callback_queue = self.queue_name
             self.channel.basic_consume(
@@ -457,7 +456,6 @@ class BlockingWaitWorker(ExceptionMixin):
             self.current_callback_id = task_packet["callback_id"]
             self.corr_id = str(uuid.uuid4())
             declare_queue(self.channel, dest_id)
-            # self.channel.queue_declare(queue=dest_id, durable=False, exclusive=False)
             self.channel.basic_publish(
                 exchange='',
                 routing_key=dest_id,

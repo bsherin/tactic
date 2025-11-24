@@ -406,7 +406,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
         if tile_id in pipe_dict:
             del pipe_dict[tile_id]
             sess.pipe_dict = pipe_dict
-            self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task", {"sid": sid, "tile_id": None})
+            self.mworker.post_task("main_service", "rebuild_tile_forms_task", {"sid": sid, "tile_id": None})
 
         self.mworker.ask_host("delete_container", {"container_id": tile_id, "notify": False})
         self.mworker.emit_export_viewer_message(sid, "update_exports_popup", {})

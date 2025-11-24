@@ -420,7 +420,6 @@ services:
     env_file:
       - ${ROOT_DIR}/env.list
     environment:
-      - MY_ID=main_service
       - MONGO_URI=${MONGO_URI}
       - USE_AMAZON_MQ=${USE_AMAZON_MQ}
       - USE_ECS_TILES=${USE_ECS_TILES}
@@ -458,7 +457,6 @@ services:
       - "${ROOT_DIR}/env.list"
     environment:
       - PYTHONUNBUFFERED=0
-      - MY_ID=module_viewer
       - MONGO_URI=${MONGO_URI}
       - OWNER=host
       - PARENT=host

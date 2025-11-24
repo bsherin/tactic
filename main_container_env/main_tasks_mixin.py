@@ -314,7 +314,7 @@ class LoadSaveTasksMixin:
                 self.mworker.submit_response(task_packet, data_dict)
                 return
 
-            self.mworker.post_task(self.mworker.my_id, "get_new_tile_ids", {"sid": local_id}, got_new_ids)
+            self.mworker.post_task("main_service", "get_new_tile_ids", {"sid": local_id}, got_new_ids)
 
         self.mworker.post_task("host", "get_tile_types_task", {"user_id": user_id}, got_tile_types)
         return
@@ -338,7 +338,7 @@ class LoadSaveTasksMixin:
         tile_names = tile_info.tile_names
         if len(tile_names) == 0:
             got_new_ids({"success": True, "new_ids": [], "new_creds": []})
-        self.mworker.post_task(self.mworker.my_id, "create_n_tile_containers",
+        self.mworker.post_task("main_service", "create_n_tile_containers",
                                {"sid": data["sid"], "number_to_create": len(tile_names), "tile_names": tile_names},
                                callback_func=got_new_ids)
 
@@ -867,9 +867,9 @@ class LoadSaveTasksMixin:
         sess.short_collection_name = ""
         sess.visible_doc_name = ""
         sess.collection_info.delete_all_docs()
-        self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task",
+        self.mworker.post_task("main_service", "rebuild_tile_forms_task",
                                {"tile_id": None, "sid": sid})
-        self.mworker.post_task(self.mworker.my_id, "update_tile_collection_objects_task",
+        self.mworker.post_task("main_service", "update_tile_collection_objects_task",
                                {"doc_type": sess.doc_type, "sid": sid})
         return {"success": True}
 
@@ -1744,7 +1744,7 @@ class DataSupportTasksMixin:
             original_doc_name = data["original_document_name"]
             collection_info.duplicate_doc(original_doc_name, new_doc_name)
             sess.visible_doc_name = new_doc_name
-            self.mworker.post_task(self.mworker.my_id, "rebuild_tile_forms_task",
+            self.mworker.post_task("main_service", "rebuild_tile_forms_task",
                                    {"tile_id": None, "sid": sid})
             doc_names = collection_info.doc_names
             doc_names.sort()
