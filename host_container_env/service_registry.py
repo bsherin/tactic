@@ -68,11 +68,11 @@ class ServiceRegistry:
         all_queues = list_queues()
         for q in all_queues:
             qname = q["name"]
-            if qname.startswith("tile_"):
+            if qname.startswith(self.id_prefix):
                 if qname not in running_ids:
                     print("removing queue %s" % qname)
                     delete_queue(qname)
-            if qname.startswith("kill_tile_"):
+            if qname.startswith(f"kill_{self.id_prefix}"):
                 partial_qname = re.sub("kill_", "", qname)
                 if partial_qname not in running_ids:
                     delete_queue(qname)

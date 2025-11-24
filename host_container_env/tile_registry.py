@@ -86,7 +86,7 @@ class TileContainerRegistry(ServiceRegistry):
         ServiceRegistry.__init__(self, worker, id_prefix=TILE_ID_PREFIX, service_name=TILE_SERVICE)
         self.pull_desired_idle()
         self.registry_heartbeat()
-        self.remove_obsolete_queues()
+        self.remove_obsolete_queues(extra_valid_ids=["tile_test_container"])
 
     def pull_desired_idle(self):
         v = r.get("config:desired_idle")
