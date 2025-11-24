@@ -13,11 +13,12 @@ if use_ecs:
     ecs = boto3.client("ecs", region_name=AWS_REGION)
 
 class ServiceRegistry:
-    def __init__(self, worker, id_prefix="", service_name=""):
+    def __init__(self, worker, id_prefix="", service_name="", extra_valid_ids=None):
         self.id_prefix = id_prefix
         self._registry = {}
         self.worker = worker
         self.service_name = service_name
+        self.extra_valid_ids = extra_valid_ids
         self.removed_obsolete_queues = False
 
     def task_to_id(self, task):
@@ -47,7 +48,7 @@ class ServiceRegistry:
                     tasks.append(t)
         return tasks
 
-    def remove_obsolete_queues(self, extra_valid_ids=None):
+    def remove_obsolete_queues(self):
         print("got extra_valid_ids: {}".format(extra_valid_ids))
         if not use_ecs:
             self.removed_obsolete_queues = True
@@ -63,8 +64,8 @@ class ServiceRegistry:
             return
         print(f"found {len(tasks)} running service tasks")
         running_ids = [self.task_to_id(t) for t in tasks]
-        if extra_valid_ids:
-            running_ids += extra_valid_ids
+        if self.extra_valid_ids:
+            running_ids += self.extra_valid_ids
         print("running ids:", running_ids)
         all_queues = list_queues()
         for q in all_queues:

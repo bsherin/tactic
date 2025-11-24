@@ -73,7 +73,9 @@ def publish_queue_metrics():
 
 class MainContainerRegistry(ServiceRegistry):
     def __init__(self, worker):
-        ServiceRegistry.__init__(self, worker, id_prefix=MAIN_ID_PREFIX, service_name=MAIN_SERVICE)
+        ServiceRegistry.__init__(self, worker,
+                                 id_prefix=MAIN_ID_PREFIX,
+                                 service_name=MAIN_SERVICE)
         self.remove_obsolete_queues()
 
 class ModuleViewerRegistry(ServiceRegistry):
@@ -83,10 +85,14 @@ class ModuleViewerRegistry(ServiceRegistry):
 
 class TileContainerRegistry(ServiceRegistry):
     def __init__(self, worker):
-        ServiceRegistry.__init__(self, worker, id_prefix=TILE_ID_PREFIX, service_name=TILE_SERVICE)
+        ServiceRegistry.__init__(self, worker,
+                                 id_prefix=TILE_ID_PREFIX,
+                                 service_name=TILE_SERVICE,
+                                 extra_valid_ids=["tile_test_container"]
+                                 )
         self.pull_desired_idle()
         self.registry_heartbeat()
-        self.remove_obsolete_queues(extra_valid_ids=["tile_test_container"])
+        self.remove_obsolete_queues()
 
     def pull_desired_idle(self):
         v = r.get("config:desired_idle")
