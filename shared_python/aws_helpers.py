@@ -1,5 +1,6 @@
 import json
 import os
+
 import boto3
 from botocore.config import Config
 
@@ -31,6 +32,7 @@ def get_ssm_parameter(name, default=None):
 
 
 def resolve_task_identity(id_prefix):
+    import requests
     # Try env first (some setups inject it)
     arn = os.getenv("ECS_TASK_ARN")
 
@@ -41,10 +43,12 @@ def resolve_task_identity(id_prefix):
             try:
                 data = requests.get(f"{uri}/task", timeout=2).json()
                 arn = data.get("TaskARN")
-            except Exception:
+            except Exception as e:
+                print(f"got an error when resolving ECS task ARN {e}")
                 arn = None
 
     if arn:
+        print("successfully resolved ECS task ARN")
         return arn, f'{id_prefix}{arn.split("/")[-1]}'
     # Local/dev fallback
     fallback_id = os.getenv("MY_ID") or f"{id_prefix}{os.getpid()}"
