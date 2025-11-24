@@ -1,4 +1,5 @@
 import os
+import re
 from rabbit_admin import list_queues, delete_queue
 
 use_ecs = os.getenv("USE_ECS_TILES","false").lower() == "true"
