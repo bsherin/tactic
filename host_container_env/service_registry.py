@@ -51,7 +51,7 @@ class ServiceRegistry:
         if not use_ecs:
             self.removed_obsolete_queues = True
             return
-        if self.host_worker.channel is None:
+        if self.worker.channel is None:
             print("in remove_obsolete_queues, channel isn't ready yet")
             return
         print("removing obsolete queues")
