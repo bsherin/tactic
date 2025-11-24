@@ -211,9 +211,8 @@ class TileContainerRegistry(ServiceRegistry):
                     return tile_id, ""
         return None, None
 
-    @staticmethod
-    def list_running_tile_tasks():
-        return self.list_running_service_tasks(TILE_SERVICE)
+    def list_running_tile_tasks(self):
+        return self.list_running_service_tasks()
 
     def reconcile_tiles(self):
         if self.worker.channel is None:
