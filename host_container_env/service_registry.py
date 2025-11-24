@@ -58,15 +58,19 @@ class ServiceRegistry:
 
         tasks = self.list_running_service_tasks()
         if not tasks:
+            print("no running service tasks found")
             return
+        print(f"found {len(tasks)} running service tasks")
         running_ids = [self.task_to_id(t) for t in tasks]
         if extra_valid_ids:
             running_ids += extra_valid_ids
+        print("running ids:", running_ids)
         all_queues = list_queues()
         for q in all_queues:
             qname = q["name"]
             if qname.startswith("tile_"):
                 if qname not in running_ids:
+                    print("removing queue %s" % qname)
                     delete_queue(qname)
             if qname.startswith("kill_tile_"):
                 partial_qname = re.sub("kill_", "", qname)
