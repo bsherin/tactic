@@ -2,7 +2,7 @@ import os
 import re
 import redis
 from rabbit_manage import declare_durable_queue
-from rabbit_admin import list_queues, delete_queue
+from rabbit_admin import list_queues
 from service_registry import ServiceRegistry
 from aws_helpers import get_ssm_parameter
 import boto3
@@ -69,7 +69,6 @@ def publish_queue_metrics():
             }
         ],
     )
-
 
 
 class MainContainerRegistry(ServiceRegistry):
