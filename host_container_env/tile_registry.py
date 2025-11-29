@@ -16,6 +16,10 @@ from redis_tools import redis_client as r
 
 AWS_REGION = get_ssm_parameter("MY_AWS_REGION", "us-east-2")
 
+USER_IDLE_SECS = 60 * 60
+HEARTBEAT_STALE_SECS = 30 * 60
+BUSY_UNTIL_SECS = 60 * 60
+
 
 if use_ecs:
     from botocore.exceptions import ParamValidationError

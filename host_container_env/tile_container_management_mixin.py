@@ -47,9 +47,7 @@ class TileContainerManagementMixin:
         return {"success": False, "message": "Couldn't create tile"}
 
     def destroy_tile(self, tile_id, notify=False):
-        # qlist = [tile_id, tile_id + "_wait", "kill_" + tile_id]
         if recycle_tiles:
-            # delete_list_of_queues(qlist)
             self.tile_backend.restart(tile_id)
             self.tile_registry.release_tile(tile_id)
             return {"success": True, "message": f"Tile {tile_id} released"}

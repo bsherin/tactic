@@ -104,7 +104,6 @@ class QWorker(ExceptionMixin):
         self.handler_instances = {"this_worker": self}
         self.channel = None
         self.connection = None
-        self.generate_heartbeats = False
         self.last_heartbeat = current_timestamp()
         self._hb_greenlet = None
         self._stopping = False
@@ -118,7 +117,7 @@ class QWorker(ExceptionMixin):
         # runs in its own greenlet
         while not self._stopping:
             try:
-                self.do_heartbeat()  # your existing method
+                self.do_heartbeat()
             except Exception as ex:
                 debug_log(self.handle_exception(ex, "heartbeat loop error"))
             sleep_func(heartbeat_time)  # tick every 1s;
@@ -196,8 +195,6 @@ class QWorker(ExceptionMixin):
         return
 
     def do_heartbeat(self):
-        if self.generate_heartbeats:
-            self.post_task("host", "container_heartbeat", {"container_id": self.my_id})
         return
 
     def handle_delivery(self, channel, method, props, body):

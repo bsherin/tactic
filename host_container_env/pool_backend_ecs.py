@@ -71,17 +71,19 @@ class PoolBackendECS(PoolBackend):
         # truepath = re.sub("/mydisk", user_pool_dir, filepath)
         truepath = filepath
         if is_directory:
-            raw_size = self.get_folder_size(truepath)
+            # raw_size = self.get_folder_size(truepath)
+            raw_size = 0
+            size_str = ""
         else:
             raw_size = boto_s3.info(truepath)["size"]
-        if raw_size > 10 ** 9:
-            size_str = f"{round(raw_size / 10 ** 9, 1)} GB"
-        elif raw_size > 10 ** 6:
-            size_str = f"{round(raw_size / 10 ** 6, 1)} MB"
-        elif raw_size > 10 ** 3:
-            size_str = f"{round(raw_size / 10 ** 3, 1)} KB"
-        else:
-            size_str = f"{raw_size} bytes"
+            if raw_size > 10 ** 9:
+                size_str = f"{round(raw_size / 10 ** 9, 1)} GB"
+            elif raw_size > 10 ** 6:
+                size_str = f"{round(raw_size / 10 ** 6, 1)} MB"
+            elif raw_size > 10 ** 3:
+                size_str = f"{round(raw_size / 10 ** 3, 1)} KB"
+            else:
+                size_str = f"{raw_size} bytes"
         updated, updated_for_sort = user_obj.get_timestrings(boto_s3.info(truepath)["last_modified"])
         stats = {
             "updated": updated,

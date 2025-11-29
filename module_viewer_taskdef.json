@@ -1,0 +1,66 @@
+{
+    "containerDefinitions": [
+        {
+            "cpu": 0,
+            "environment": [
+                {
+                    "name": "MY_ID",
+                    "value": "module_viewer"
+                },
+                {
+                    "name": "USE_ECS_TILES",
+                    "value": "False"
+                },
+                {
+                    "name": "MONGO_URI",
+                    "value": "mongodb://host.docker.internal:27017/tacticdb?directConnection=true"
+                },
+                {
+                    "name": "USE_AMAZON_MQ",
+                    "value": "True"
+                }
+            ],
+            "essential": true,
+
+            "image": "000000000000.dkr.ecr.us-east-2.localhost.localstack.cloud:4566/tactic-module-viewer:x86",
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/tactic-module-viewer",
+                    "awslogs-create-group": "true",
+                    "awslogs-region": "us-east-2",
+                    "awslogs-stream-prefix": "ecs"
+                }
+            },
+            "mountPoints": [],
+            "name": "tactic-module-viewer",
+            "portMappings": [
+                {
+                    "appProtocol": "http",
+                    "containerPort": 80,
+                    "hostPort": 80,
+                    "name": "tactic-module-viewer-80-tcp",
+                    "protocol": "tcp"
+                }
+            ],
+            "systemControls": [],
+            "volumesFrom": []
+        }
+    ],
+    "cpu": "512",
+    "executionRoleArn": "arn:aws:iam::000000000000:role/ecsTaskExecutionRole",
+    "family": "tactic-module-viewer",
+    "memory": "2048",
+    "networkMode": "awsvpc",
+    "placementConstraints": [],
+    "requiresCompatibilities": [
+        "FARGATE"
+    ],
+    "runtimePlatform": {
+        "cpuArchitecture": "ARM64",
+        "operatingSystemFamily": "LINUX"
+    },
+    "taskRoleArn": "arn:aws:iam::000000000000:role/TacticModuleViewerTaskRole",
+    "volumes": [],
+    "tags": []
+}

@@ -7,10 +7,9 @@ import docker_functions  # your module
 from abstract_tile_backend import TileBackend
 
 class DockerTileBackend(TileBackend):
-    IMAGE = "bsherin/tactic-tile"  # your tag logic already handled inside create_container()
+    IMAGE = "bsherin/tactic-tile"
 
     def __init__(self, tile_registry, worker):
-        # Any local paths you need can be read from env or hardcoded for dev.
         self.resources_dir = os.getenv("TRUE_HOST_RESOURCES_DIR", "/srv/tactic/resources")
         # self.user_pool_dir = docker_functions.get_user_pool_dir()
         # self.user_pool_dir = os.getenv("TRUE_HOST_POOL_DIR", "/tacticdata4/pool")

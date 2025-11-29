@@ -93,26 +93,6 @@ class TileTasksMixin:
         print("returning result from initiate_creator_in_context: ", result)
         return result
 
-    # def initialize_module_viewer_container(self, module_name, the_user, rb_id, local_id):
-    #     openai_api_key = the_user.get_openai_api_key()
-    #     environ = {"RB_ID": rb_id, "OPENAI_API_KEY": openai_api_key}
-    #     vol_dict = {}
-    #     _, container_id = create_container("bsherin/tactic-module-viewer",
-    #                                                       env_vars=environ,
-    #                                                       volume_dict=vol_dict,
-    #                                                       owner=the_user.get_id(),
-    #                                                       username=the_user.username,
-    #                                                       special_unique_id=local_id,
-    #                                                       other_name=module_name, register_container=True)
-    #
-    #     the_content = {"module_name": module_name,
-    #                    "local_id": local_id,
-    #                    "container_id": container_id,
-    #                    "rb_id": rb_id,
-    #                    "tile_collection_name": the_user.tile_collection_name}
-    #
-    #     return the_content
-
     @task_worthy
     def update_tile_task(self, data):
         try:
