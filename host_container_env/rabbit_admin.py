@@ -18,7 +18,7 @@ if os.environ.get("USE_AMAZON_MQ") == "True" or os.environ.get("USE_AMAZON_MQ") 
 
     RABBIT_USER = creds["username"]
     RABBIT_PASS = creds["password"]
-    API_STR = f"https://{RABBIT_HOST}:15672/api"
+    API_STR = f"http://{RABBIT_HOST}:15672/api"
 else:
     print("not using amazon mq")
     RABBIT_HOST = "megaplex"
