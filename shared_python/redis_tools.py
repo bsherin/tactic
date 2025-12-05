@@ -15,7 +15,7 @@ if use_ecs:
     # REDIS_USERNAME = get_ssm_parameter("REDIS_USERNAME")
     # REDIS_PASSWORD = get_ssm_parameter("REDIS_PASSWORD")
 
-    MESSAGE_QUEUE = message_queue=f"rediss://{REDIS_USERNAME}:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}"
+    MESSAGE_QUEUE = message_queue=f"redis://{REDIS_HOST}:{REDIS_PORT}"
     USE_SSL = False
     print("got message queue:", MESSAGE_QUEUE)
 else:
