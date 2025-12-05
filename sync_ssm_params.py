@@ -37,7 +37,7 @@ import boto3
 from botocore.exceptions import BotoCoreError, ClientError
 
 
-def load_config(path: Path) -> dict:
+def load_config(path):
     if not path.exists():
         raise FileNotFoundError(f"Config file not found: {path}")
     with path.open("r", encoding="utf-8") as f:
@@ -49,7 +49,7 @@ def load_config(path: Path) -> dict:
     return data
 
 
-def make_ssm_client(args, region: str):
+def make_ssm_client(args, region):
     if args.target == "localstack":
         endpoint = "http://localhost:4566"  # LocalStack endpoint
         ssm = boto3.client(
@@ -64,7 +64,7 @@ def make_ssm_client(args, region: str):
     return ssm
 
 
-def build_param_name(base_name: str, path_prefix: str | None) -> str:
+def build_param_name(base_name: str, path_prefix):
     if not path_prefix:
         return base_name
     prefix = path_prefix.rstrip("/")

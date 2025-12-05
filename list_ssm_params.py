@@ -50,7 +50,7 @@ def make_ssm_client(args):
     return ssm
 
 
-def fetch_parameter_names(ssm, path: str | None) -> List[str]:
+def fetch_parameter_names(ssm, path):
     """Returns list of parameter names"""
     names = []
 
@@ -76,7 +76,7 @@ def fetch_parameter_names(ssm, path: str | None) -> List[str]:
     return sorted(names)
 
 
-def fetch_details(ssm, names: List[str]):
+def fetch_details(ssm, names):
     """Fetch full details (incl SecureString values) in batches"""
     all_params = []
 
