@@ -20,7 +20,7 @@
     },
     {
       "name": "RABBIT_HOST",
-      "value": ",
+      "value": "rabbitmq.tactic.local",
       "type": "String"
     },
     {
