@@ -8,7 +8,7 @@ to AWS SSM (either real AWS or LocalStack).
 Example usage:
 
   # Real AWS, default profile, names as-is
-  python sync_ssm_params.py \
+  python3 sync_ssm_params.py \
       --config ssm_params.json \
       --target aws \
       --overwrite
@@ -60,7 +60,7 @@ def make_ssm_client(args, region):
             region_name="us-east-2"
         )
     else:
-        ssm = boto3.client("ssm", region_name=REGION)
+        ssm = boto3.client("ssm", region_name=region)
     return ssm
 
 
