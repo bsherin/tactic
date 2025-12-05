@@ -71,7 +71,8 @@ class LoadSaveTasksMixin:
         global_ids = data["global_ids"]
         open_sessions = self.ss.get_unique_sids()
         for sid in open_sessions:
-            if sid not in global_ids:
+            gid = self.ss.get_val(sid, "global_id")
+            if gid not in global_ids:
                 self.end_main_session_task({"sid": sid})
 
     @task_worthy
