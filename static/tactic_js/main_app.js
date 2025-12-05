@@ -181,6 +181,10 @@ function MainApp(props) {
         if (_dirty()) {
           e.preventDefault();
         }
+        (0, _communication_react.postWithCallback)("host", "end_client_session_task", {
+          global_id: window.global_id,
+          force_forward: true
+        });
         props.tsocket.disconnect();
       });
     }
@@ -200,8 +204,11 @@ function MainApp(props) {
       console.log("finished tile recreation");
     });
     return function () {
-      delete_my_containers();
-      (0, _communication_react.postPromiseMain)(props.local_id, "end_session_task", {}).then(function () {});
+      if (props.controlled) {
+        (0, _communication_react.postWithCallbackMain)(props.local_id, "end_main_session_task", {
+          sid: props.local_id
+        });
+      }
       window.removeEventListener("unload", sendRemove);
     };
   }, []);
@@ -243,11 +250,6 @@ function MainApp(props) {
       }
     }
     return false;
-  }
-  function delete_my_containers() {
-    (0, _communication_react.postAjax)("/remove_mainwindow", {
-      local_id: props.local_id
-    });
   }
   function _update_menus_listener() {
     return _update_menus_listener2.apply(this, arguments);
@@ -358,6 +360,11 @@ function MainApp(props) {
     props.tsocket.attachListener("update-menus", _update_menus_listener);
     props.tsocket.attachListener("tile-finished-loading", _handleTileFinishedLoading);
     props.tsocket.attachListener('change-doc', _change_doc_listener);
+    if (!props.controlled) {
+      props.tsocket.attachListener("endSession", function () {
+        dialogFuncs.showModal("EndSessionDialog", {});
+      });
+    }
   }
   function isFreeform() {
     return mState.doc_type == "freeform";
@@ -1492,8 +1499,7 @@ function MainApp(props) {
   return /*#__PURE__*/_react["default"].createElement(_error_boundary.ErrorBoundary, null, !window.in_context && /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
     is_authenticated: window.is_authenticated,
     user_name: window.username,
-    menus: null,
-    global_id: props.global_id
+    menus: null
   }), /*#__PURE__*/_react["default"].createElement(_metadata_drawer.MetadataContext.Provider, {
     value: {
       showMetadata: showMetadata,
@@ -1566,7 +1572,7 @@ function MainApp(props) {
 exports.MainApp = MainApp = /*#__PURE__*/(0, _react.memo)(MainApp);
 function main_main() {
   function gotProps(the_props) {
-    var MainAppPlus = (0, _pool_tree.withPool)((0, _settings.withSettings)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)((0, _assistant.withAssistant)(MainApp))))));
+    var MainAppPlus = (0, _utilities_react.withRegisterActivity)((0, _pool_tree.withPool)((0, _settings.withSettings)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)((0, _assistant.withAssistant)(MainApp)))))));
     var the_element = /*#__PURE__*/_react["default"].createElement(MainAppPlus, _extends({}, the_props, {
       controlled: false,
       changeName: null
@@ -1598,6 +1604,7 @@ function main_main() {
             if (window.collection_name != "") {
               (0, _communication_react.postPromise)("main_service", "initialize_session_from_collection", {
                 collection_name: resource_name,
+                global_id: window.global_id,
                 base_figure_url: window.base_figure_url,
                 local_id: local_id,
                 username: window.username,
@@ -1612,6 +1619,7 @@ function main_main() {
             } else {
               (0, _communication_react.postPromise)("main_service", "initialize_session_for_new_project", {
                 base_figure_url: window.base_figure_url,
+                global_id: window.global_id,
                 local_id: local_id,
                 username: window.username,
                 ppi: (0, _utilities_react.get_ppi)()
@@ -1626,6 +1634,7 @@ function main_main() {
           } else {
             (0, _communication_react.postPromise)("main_service", "initialize_session_from_save", {
               project_name: resource_name,
+              global_id: window.global_id,
               base_figure_url: window.base_figure_url,
               local_id: local_id,
               username: window.username,

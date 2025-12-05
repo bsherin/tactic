@@ -60,16 +60,35 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin, MongoAccess, Til
             "user_id": data_dict["user_id"],
             "module_name": data_dict["module_name"],
             "username": data_dict["username"],
+            "global_id": data_dict["global_id"],
             "openai_api_key": data_dict.get("openai_api_key", None),
         }
         self.ss.initialize_session(data_dict["local_id"], session_data)
         return {"success": True}
 
     @task_worthy
-    def end_session(self, data_dict):
+    def end_module_viewer_session_task(self, data_dict):
         local_id = data_dict["local_id"]
         self.ss.end_session(local_id)
         return {"success": True}
+
+    @task_worthy
+    def client_session_ended(self, data):
+        global_id = data["global_id"]
+        sids = self.ss.get_unique_sids()
+        for sid in sids:
+            gid = self.ss.get_val(sid, "global_id")
+            if gid == global_id:
+                self.ss.end_session(sid)
+
+    @task_worthy
+    def updated_global_ids(self, data):
+        global_ids = data["global_ids"]
+        open_sessions = self.ss.get_open_sessions()
+        for sid in open_sessions:
+            if sid not in global_ids:
+                self.ss.end_session(sid)
+
 
     @task_worthy
     def initialize_parser(self, data_dict):

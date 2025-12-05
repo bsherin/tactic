@@ -14,6 +14,7 @@ class ModuleViewerSessionStore(SessionStoreS3):
         "user_id": {"default": None},
         "module_name": {"default": None},
         "openai_api_key": {"default": None},
+        "global_id": {"default": None}
     }
 
     large_params = []

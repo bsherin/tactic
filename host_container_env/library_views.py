@@ -25,6 +25,8 @@ tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
 use_ecs = os.getenv("USE_ECS_TILES","false").lower() == "true"
 use_s3 = os.getenv("USE_S3","false").lower() == "true"
 
+from tactic_app import CLIENT_ACTIVITY_INTERVAL_SECS
+
 @app.route('/library')
 @login_required
 def library():
@@ -65,6 +67,7 @@ def context():
                            has_openapi_key=current_user.has_openapi_key,
                            page_title="context",
                            css_source=css_source("context_react"),
+                           client_activity_interval_secs=CLIENT_ACTIVITY_INTERVAL_SECS,
                            base_figure_url=url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1],
                            module_source=js_source_dict["context_react"])
 

@@ -178,6 +178,7 @@ def attempt_register():
 
 
 @app.route('/attempt_duplicate', methods=['GET', 'POST'])
+@login_required
 def attempt_duplicate():
     if not (current_user.get_id() == admin_user.get_id()):
         return jsonify({"success": False, "message": "not authorized", "alert_type": "alert-warning"})
@@ -257,6 +258,7 @@ def update_account_info():
     return jsonify(result_dict)
 
 @app.route('/update_settings', methods=['GET', 'POST'])
+@login_required
 def update_settings():
     data = request.json
     print("in update_settings with data = ", data)

@@ -23,7 +23,7 @@ import {creator_props} from "./tile_maker_support";
 import {TacticMenubar} from "./menu_utilities"
 import {sendToRepository} from "./resource_viewer_react_app";
 import {HorizontalPanes} from "./resizing_allotment";
-import {postPromise, handleCallback} from "./communication_react"
+import {postPromise, handleCallback, postWithCallback} from "./communication_react"
 import {withStatus, doFlash, StatusContext} from "./toaster"
 import {withAssistant} from "./assistant";
 import {ICON_BAR_WIDTH} from "./sizing_tools";
@@ -31,11 +31,12 @@ import {withErrorDrawer} from "./error_drawer";
 import {renderSpinnerMessage, convertExtraKeys, useStateAndRef} from "./utilities_react"
 import {TacticNavbar} from "./blueprint_navbar";
 import {ErrorBoundary} from "./error_boundary";
-import {useCallbackStack, useConnection} from "./utilities_react";
+import {useCallbackStack, useConnection, withRegisterActivity} from "./utilities_react";
+import {SelectedPaneContext, guid, useRegisterActivity} from "./utilities_react";
 import {SettingsContext, withSettings} from "./settings";
 import {DialogContext, withDialogs} from "./modal_react";
 import {ErrorDrawerContext} from "./error_drawer";
-import {SelectedPaneContext, guid} from "./utilities_react";
+
 
 import {usePropertyList, makeUndoableDispatch, getListItemFromidentifier} from "./property_list"
 import {useSearch} from "./search_reducer"
@@ -162,6 +163,7 @@ function CreatorApp(props) {
                 if (_dirty()) {
                     e.preventDefault();
                 }
+                postWithCallback("host", "end_client_session_task", {global_id: window.global_id, force_forward: true})
                 props.tsocket.disconnect()
             });
             document.title = String(resource_name);
@@ -202,8 +204,9 @@ function CreatorApp(props) {
             undoStackRef.current = [];
             searchStateRef.current = [];
             extraSelfCompletionsRef.current = [];
-            postPromise("module_viewer", "end_session", {"local_id": props.local_id})
-                .then(()=>{})
+            if (props.controlled) {
+                postWithCallback("module_viewer", "end_module_viewer_session_task", {"local_id": props.local_id})
+            }
         })
     }, []);
 
@@ -267,10 +270,13 @@ function CreatorApp(props) {
                 doFlash(data)
             });
             props.tsocket.attachListener('close-user-windows', (data) => {
-                if (!(data["originator"] == props.global_id)) {
+                if (!(data["originator"] == window.global_id)) {
                     window.close()
                 }
             });
+            props.tsocket.attachListener("endSession", function () {
+                dialogFuncs.showModal("EndSessionDialog", {})
+            })
         }
     }
 
@@ -1358,7 +1364,6 @@ function CreatorApp(props) {
                 <TacticNavbar is_authenticated={window.is_authenticated}
                               selected={null}
                               show_api_links={true}
-                              global_id={props.global_id}
                               user_name={window.username}/>
             }
             <TacticMenubar menu_specs={menu_specs()}
@@ -1404,7 +1409,7 @@ CreatorApp = memo(CreatorApp);
 
 function tile_creator_main() {
     function gotProps(the_props) {
-        let CreatorAppPlus = withSettings(withDialogs(withErrorDrawer(withStatus(withAssistant(CreatorApp)))));
+        let CreatorAppPlus = withRegisterActivity(withSettings(withDialogs(withErrorDrawer(withStatus(withAssistant(CreatorApp))))));
         let the_element = <CreatorAppPlus {...the_props}
                                           controlled={false}
                                           changeName={null}
@@ -1431,7 +1436,7 @@ function tile_creator_main() {
         });
 
         postPromise("host", "initiate_creator_in_context", {tile_module_name: window.module_name,
-            local_id}, local_id)
+            global_id: window.global_id, local_id}, local_id)
             .then((data) => {
                 data.tsocket = tsocket;
                 data.local_id = local_id;

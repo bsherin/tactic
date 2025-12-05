@@ -1,0 +1,93 @@
+{
+  "defaults": {
+    "region": "us-east-2"
+  },
+  "parameters": [
+    {
+      "name": "BUCKET",
+      "value": "tactic-user-storage",
+      "type": "String"
+    },
+    {
+      "name": "SESSION_BUCKET",
+      "value": "tactic-session-storage",
+      "type": "String"
+    },
+    {
+      "name": "MY_AWS_REGION",
+      "value": "us-east-2",
+      "type": "String"
+    },
+    {
+      "name": "RABBIT_HOST",
+      "value": ",
+      "type": "String"
+    },
+    {
+      "name": "SQS_QUEUE_URL",
+      "local_value": "http://sqs.us-east-2.localhost.localstack.cloud:4566/000000000000/tactic-storage-events",
+      "value": "https://sqs.us-east-2.amazonaws.com/924818964184/tactic-user-storage-events",
+      "type": "String"
+    },
+    {
+      "name": "CLIENT_SESSION_TIMEOUT_SECS",
+      "value": "3600",
+      "type": "String"
+    },
+    {
+      "name": "TILE_HEARTBEAT_TIMEOUT_SECS",
+      "value": "600",
+      "type": "String"
+    },
+    {
+      "name": "HEARTBEAT_INTERVAL_SECS",
+      "value": "60",
+      "type": "String"
+    },
+    {
+      "name": "HOST_UTILITY_INTERVAL_SECS",
+      "value": "60",
+      "type": "String"
+    },
+    {
+      "name": "METRIC_PUBLISH_INTERVAL_SECS",
+      "value": "180",
+      "type": "String"
+    },
+    {
+      "name": "CLIENT_ACTIVITY_INTERVAL_SECS",
+      "value": "60",
+      "type": "String"
+    },
+    {
+      "name": "TILE_SERVICE",
+      "value": "tactic-tile-pool",
+      "type": "String"
+    },
+    {
+      "name": "MAIN_SERVICE",
+      "value": "tactic-tile-pool",
+      "type": "String"
+    },
+    {
+      "name": "MODULE_VIEWER_SERVICE",
+      "value": "tactic-module-viewer",
+      "type": "String"
+    },
+    {
+      "name": "TILE_ID_PREFIX",
+      "value": "tile_",
+      "type": "String"
+    },
+    {
+      "name": "MAIN_ID_PREFIX",
+      "value": "main_service_",
+      "type": "String"
+    },
+    {
+      "name": "MODULE_VIEWER_PREFIX",
+      "value": "module_viewer_",
+      "type": "String"
+    }
+  ]
+}

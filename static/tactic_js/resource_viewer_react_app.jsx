@@ -7,6 +7,7 @@ import {TacticMenubar} from "./menu_utilities"
 import {doFlash, StatusContext} from "./toaster";
 import {useConnection} from "./utilities_react";
 import {postPromise} from "./communication_react";
+import {DialogContext} from "./modal_react";
 
 export {ResourceViewerApp, copyToLibrary, sendToRepository}
 
@@ -90,6 +91,7 @@ function ResourceViewerApp(props) {
     const top_ref = useRef(null);
 
     const statusFuncs = useContext(StatusContext);
+    const dialogFuncs = useContext(DialogContext)
 
     // Only used when not in context
     const connection_status = useConnection(props.tsocket, initSocket);
@@ -102,13 +104,16 @@ function ResourceViewerApp(props) {
 
         if (!props.controlled) {
             props.tsocket.attachListener('close-user-windows', (data) => {
-                if (!(data["originator"] == props.global_id)) {
+                if (!(data["originator"] == window.global_id)) {
                     window.close()
                 }
             });
             props.tsocket.attachListener("doFlashUser", function (data) {
                 doFlash(data)
             });
+            props.tsocket.attachListener("endSession", function () {
+                dialogFuncs.showModal("EndSessionDialog", {})
+            })
         }
     }
 

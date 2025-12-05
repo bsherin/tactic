@@ -54,12 +54,34 @@ class StateTasksMixin:
 
 # noinspection PyUnusedLocal
 class LoadSaveTasksMixin:
-    @task_worthy
 
-    def end_session_task(self, data):
+    @task_worthy
+    def end_main_session_task(self, data):
         sess = self.get_session(data["sid"])
         sess.end_session()
+        self.mworker.post_task("host", "destroy_child_tiles_task", {"local_id": data["sid"]})
         return
+
+    @task_worthy
+    def get_open_sessions_task(self, data):
+        return {"success": True, "sids": self.ss.get_unique_sids()}
+
+    @task_worthy
+    def updated_global_ids(self, data):
+        global_ids = data["global_ids"]
+        open_sessions = self.ss.get_unique_sids()
+        for sid in open_sessions:
+            if sid not in global_ids:
+                self.end_main_session_task({"sid": sid})
+
+    @task_worthy
+    def client_session_ended(self, data):
+        global_id = data["global_id"]
+        sids = self.ss.get_unique_sids()
+        for sid in sids:
+            gid = self.ss.get_val(sid, "global_id")
+            if gid == global_id:
+                self.end_main_session_task({"sid": sid})
 
     @task_worthy_manual_submit
     def initialize_session_for_new_notebook(self, data, task_packet):
@@ -73,6 +95,7 @@ class LoadSaveTasksMixin:
             "username": username,
             "base_figure_url": data.get("base_figure_url", ""),
             "doc_type": "notebook",
+            "global_id": data["global_id"]
         }
 
         self.ss.initialize_session(local_id, sdict)
@@ -125,6 +148,7 @@ class LoadSaveTasksMixin:
             "short_collection_name": "",
             "collection_name": "",
             "doc_type": doc_type,
+            "global_id": data["global_id"]
         }
         self.ss.initialize_session(local_id, sdict)
         sess = self.get_session(local_id)
@@ -181,6 +205,7 @@ class LoadSaveTasksMixin:
             "short_collection_name": short_collection_name,
             "collection_name": short_collection_name,
             "doc_type": doc_type,
+            "global_id": data["global_id"]
         }
         self.ss.initialize_session(local_id, sdict)
         sess = self.get_session(local_id)
@@ -246,6 +271,7 @@ class LoadSaveTasksMixin:
         sdict["username"] = username
         sdict["user_id"] = user_id
         sdict["ppi"] = data["ppi"]
+        sdict["global_id"] = data["global_id"]
         doc_type = sdict["doc_type"]
         self.ss.initialize_session(local_id, sdict)
         sess = self.get_session(local_id)

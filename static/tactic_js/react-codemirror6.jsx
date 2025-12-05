@@ -1,6 +1,6 @@
 import React, {Fragment, useEffect, useRef, memo, useContext} from "react";
 import {Button, ButtonGroup} from "@blueprintjs/core";
-import {propsAreEqual, useStateAndRef} from "./utilities_react";
+import {propsAreEqual, useStateAndRef, useRegisterActivity} from "./utilities_react";
 import {SettingsContext} from "./settings";
 import {SearchForm} from "./library_widgets";
 import {indentWithTab, indentLess} from "@codemirror/commands"
@@ -286,56 +286,56 @@ function ReactCodemirror6(props) {
         completionCompartment.current = new Compartment();
         lineNumberCompartment.current = new Compartment();
 
-const updateListener = EditorView.updateListener.of((update) => {
-    if (update.docChanged) {
-        // Detect whether this change came from an external update
-        const isExternal = update.transactions.some(tr => tr.annotation(ExternalUpdate));
+        const updateListener = EditorView.updateListener.of((update) => {
+            if (update.docChanged) {
+                // Detect whether this change came from an external update
+                const isExternal = update.transactions.some(tr => tr.annotation(ExternalUpdate));
 
-        const newDoc = update.state.doc.toString();
+                const newDoc = update.state.doc.toString();
 
-        // Keep range restrictions up to date for *all* changes
-        if (props.restrict_edits_to_range) {
-            const ranges = props.getEditableRanges(newDoc);
-            update.view.dispatch({
-                effects: restrictCompartment.current.reconfigure([
-                    restrictEditsToRange(ranges),
-                    highlightEditableRanges(ranges)
-                ])
-            });
-        }
-        lastUserDocRef.current = newDoc;
-        handleChange(newDoc, isExternal);
-        changeCounterRef.current = changeCounterRef.current + 1;
+                // Keep range restrictions up to date for *all* changes
+                if (props.restrict_edits_to_range) {
+                    const ranges = props.getEditableRanges(newDoc);
+                    update.view.dispatch({
+                        effects: restrictCompartment.current.reconfigure([
+                            restrictEditsToRange(ranges),
+                            highlightEditableRanges(ranges)
+                        ])
+                    });
+                }
+                lastUserDocRef.current = newDoc;
+                handleChange(newDoc, isExternal);
+                changeCounterRef.current = changeCounterRef.current + 1;
 
-        if (window.has_openapi_key &&
-            props.parentService &&
-            (settingsContext.settingsRef.current["use_ai_code_suggestions"] == "yes") &&
-            props.local_id) {
-            setAIText(null);
-            setAITextLabel(null);
-            awaitingSuggestionRef.current = true;
-            doAIUpdate(newDoc, changeCounterRef.current);
-        } else {
-            setAIText(null);
-            setAITextLabel(null);
-            awaitingSuggestionRef.current = true;
-        }
+                if (window.has_openapi_key &&
+                    props.parentService &&
+                    (settingsContext.settingsRef.current["use_ai_code_suggestions"] == "yes") &&
+                    props.local_id) {
+                    setAIText(null);
+                    setAITextLabel(null);
+                    awaitingSuggestionRef.current = true;
+                    doAIUpdate(newDoc, changeCounterRef.current);
+                } else {
+                    setAIText(null);
+                    setAITextLabel(null);
+                    awaitingSuggestionRef.current = true;
+                }
 
-        //  Only treat as "user change" if it wasn't an ExternalUpdate
-        if (!isExternal) {
+                //  Only treat as "user change" if it wasn't an ExternalUpdate
+                if (!isExternal) {
 
-        }
-    }
+                }
+            }
 
-    if (update.focusChanged) {
-        if (update.view.hasFocus) {
-            handleFocus();
-        } else {
-            handleBlur();
-        }
-    }
-});
-       let extensions = [
+            if (update.focusChanged) {
+                if (update.view.hasFocus) {
+                    handleFocus();
+                } else {
+                    handleBlur();
+                }
+            }
+        });
+        let extensions = [
             updateListener,
             completionCompartment.current.of(autocompletion({...autocompletionArgRef.current})),
             keymap.of([
@@ -384,8 +384,8 @@ const updateListener = EditorView.updateListener.of((update) => {
         if (props.restrict_edits_to_range) {
             let ranges = props.getEditableRanges(props.code_content);
             extensions.push(restrictCompartment.current.of([
-                 restrictEditsToRange(ranges),
-                 highlightEditableRanges(ranges)
+                restrictEditsToRange(ranges),
+                highlightEditableRanges(ranges)
             ]));
         }
 
@@ -759,7 +759,7 @@ const updateListener = EditorView.updateListener.of((update) => {
                     justifyContent: "flex-end",
                     width: "100%",
                     marginTop: 5,
-                    height:  SEARCH_HEIGHT,
+                    height: SEARCH_HEIGHT,
                 }}>
                     <SearchForm update_search_state={props.updateSearchState}
                                 search_string={props.search_term}
@@ -786,7 +786,7 @@ const updateListener = EditorView.updateListener.of((update) => {
 
     return (
         <Fragment>
-            {props.show_fold_button  &&
+            {props.show_fold_button &&
                 <ButtonGroup variant="minimal" style={bgstyle}>
                     <Button size="small" icon="collapse-all" text="fold" onClick={_foldAll}/>
                     <Button size="small" icon="expand-all" text="unfold" onClick={_unfoldAll}/>

@@ -9,12 +9,6 @@ recycle_tiles = os.getenv("RECYCLE_TILES", "false").lower() == "true"
 
 class TileContainerManagementMixin:
 
-    # @task_worthy
-    # def tile_ready(self, data):
-    #     if use_ecs:
-    #         self.tile_registry.mark_status(data["my_id"], "idle", task_arn=data["my_arn"])
-    #     self.post_task(data["my_id"], "ack_ready", {})
-
     @task_worthy
     def restart_tile_container(self, data):
         the_id = data["tile_id"]
@@ -24,15 +18,13 @@ class TileContainerManagementMixin:
         self.tile_backend.restart(the_id)
         return {"success": True, "message": f"Tile {the_id} restarted"}
 
-    def destroy_child_tiles(self, parent_id):
-        child_tiles = self.tile_registry.get_children(parent_id)
-        for child in child_tiles:
-            self.destroy_tile(child)
-        return {"success": True, "message": f"Destroyed {len(child_tiles)} child tiles of {parent_id}"}
+    @task_worthy
+    def destroy_child_tiles_task(self, data):
+        self.tile_registry.release_child_tiles(data["local_id"])
+        return {"success": True, "message": f"Destroyed child tiles of {data['local_id']}"}
 
     @task_worthy
     def provide_tile(self, data):
-        print("in provide_tile with data:", data)
         the_id, task_arn, creds = self.tile_backend.launch(
             username=data["username"],
             owner=data["owner"],
@@ -40,20 +32,18 @@ class TileContainerManagementMixin:
             tile_id=None,
             meta=data.get("meta", {})
         )
-        print("Tile launched with ID:", the_id)
         if the_id:
             return {"success": True, "the_id": the_id, "task_arn": task_arn, "creds": creds}
 
         return {"success": False, "message": "Couldn't create tile"}
 
-    def destroy_tile(self, tile_id, notify=False):
-        if recycle_tiles:
+    def destroy_tile(self, tile_id, notify=False, force_terminate=False):
+        if recycle_tiles and not force_terminate:
             self.tile_backend.restart(tile_id)
             self.tile_registry.release_tile(tile_id)
             return {"success": True, "message": f"Tile {tile_id} released"}
         self.tile_backend.terminate(tile_id)
-        tactic_app.health_tracker.deregister_container(tile_id)
-        user_id = self.tile_registry.get(tile_id).get("owner", None)
+        user_id = self.tile_registry.get_container_info(tile_id, "owner")
         self.tile_registry.deregister(tile_id)
         if notify and user_id is not None:
             title = f"Tile {tile_id} has been destroyed."

@@ -69,12 +69,6 @@ def on_join(data):
         print("user joined room " + room)
     return True
 
-@socketio.on('client-ready', namespace='/main')
-@authenticated_only
-def on_client_ready(data):
-    tactic_app.host_worker.participant_ready(data)
-    return
-
 
 @app.route('/delete_container_on_unload', methods=["POST"])
 @login_required
@@ -94,7 +88,8 @@ def remove_mainwindow():
     print("in remove_mainwindow")
     try:
         data = json.loads(request.data)
-        tactic_app.host_worker.remove_mainwindow_task(data)
+        data["sid"] = data["local_id"]
+        tactic_app.host_worker.post_task("main_service", "end_main_session_task", data)
     except Exception as ex:
         print(generic_exception_handler.get_traceback_exception_dict(ex))
     return jsonify({"success": True})
@@ -151,6 +146,7 @@ def load_temp_page(the_id):
 # This isn't done with a task because of some slight trickiness
 # because we're dealing with a blob.
 @app.route("/print_blob_area_to_console", methods=['get', 'post'])
+@login_required
 def print_blob_area_to_console():
     from tactic_app import socketio
     bytes_object = request.files['image'].read()

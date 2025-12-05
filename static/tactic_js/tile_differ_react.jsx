@@ -6,19 +6,20 @@ import {Fragment, useState, useEffect, memo, useRef, useContext} from "react";
 import { createRoot } from 'react-dom/client';
 import {MergeViewerApp} from "./merge_viewer_app";
 import {doFlash, StatusContext} from "./toaster"
-import {handleCallback, postPromise} from "./communication_react"
+import {handleCallback, postPromise, postWithCallback} from "./communication_react"
 import {ErrorDrawerContext, withErrorDrawer} from "./error_drawer";
 import {withStatus} from "./toaster";
-import {guid, useConnection, useStateAndRef, useCallbackStack} from "./utilities_react";
+import {guid, useConnection, useStateAndRef, useCallbackStack, withRegisterActivity} from "./utilities_react";
 import {TacticNavbar} from "./blueprint_navbar";
 import {TacticSocket} from "./tactic_socket";
 import {withSettings} from "./settings";
+import {DialogContext, withDialogs} from "./modal_react";
 
 window.global_id = "a" + guid();
 
 async function tile_differ_main() {
     function gotProps(the_props) {
-        let TileDifferAppPlus = withSettings(withErrorDrawer(withStatus(TileDifferApp)));
+        let TileDifferAppPlus = withRegisterActivity(withSettings(withDialogs(withErrorDrawer(withStatus(TileDifferApp)))));
         let the_element = <TileDifferAppPlus {...the_props}
                                              controlled={false}
                                              changeName={null}
@@ -85,6 +86,7 @@ function TileDifferApp(props) {
 
     const statusFuncs = useContext(StatusContext);
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
+    const dialogFuncs = useContext(DialogContext)
     const pushCallback = useCallbackStack();
 
     useEffect(() => {
@@ -92,6 +94,7 @@ function TileDifferApp(props) {
             if (_dirty()) {
                 e.preventDefault();
             }
+            postWithCallback("host", "end_client_session_task", {global_id: window.global_id, force_forward: true})
             props.tsocket.disconnect()
         });
     }, []);
@@ -121,6 +124,11 @@ function TileDifferApp(props) {
             }
         });
         props.tsocket.attachListener('doflashUser', doFlash);
+        if (!window.in_context) {
+            props.tsocket.attachListener("endSession", function () {
+                dialogFuncs.showModal("EndSessionDialog", {})
+            })
+        }
     }
 
     async function getRightTileCode(tile_name) {
@@ -174,7 +182,6 @@ function TileDifferApp(props) {
             <TacticNavbar is_authenticated={window.is_authenticated}
                           selected={null}
                           show_api_links={true}
-                          global_id={props.global_id}
                           user_name={window.username}/>
         }
 

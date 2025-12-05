@@ -7,7 +7,7 @@ import PropTypes from 'prop-types';
 import {Cell, EditableCell, RowHeaderCell, Column, Table, Regions, RegionCardinality} from "@blueprintjs/table";
 import hash from "object-hash"
 
-import {useCallbackStack} from "./utilities_react";
+import {useCallbackStack, useRegisterActivity} from "./utilities_react";
 
 export {BlueprintTable, compute_added_column_width, compute_initial_column_widths}
 

@@ -28,6 +28,7 @@ class DockerTileBackend(TileBackend):
         env = {
             "CHUNK_SIZE": os.getenv("CHUNK_SIZE", 100),
             "RETRIES": os.getenv("RETRIES", 60),
+            "RUNNING_ON_AWS": False
         }
 
         volumes = {
@@ -51,7 +52,7 @@ class DockerTileBackend(TileBackend):
             publish_all_ports=True,
             special_unique_id=unique_id
         )
-        self.tile_registry.mark_status(tile_container_id, "busy", None, username=username, owner=owner, parent=parent)
+        self.tile_registry.mark_status(tile_container_id, "busy", None, username=username, owner=owner, parent=parent, register_heartbeat=True)
         return tile_container_id, "", {}
 
     def mark_busy(self, tile_id: str):
@@ -59,7 +60,7 @@ class DockerTileBackend(TileBackend):
         return
 
     def restart(self, tile_id: str):
-        tdata = self.tile_registry.get(tile_id)
+        tdata = self.tile_registry.get_container_dict(tile_id)
         self.worker.post_task(tile_id, "restart", {})
         # self.worker.post_task(f"kill_{tile_id}", "restart", {})
         return tdata

@@ -202,6 +202,10 @@ function CodeViewerApp(props) {
         if (_dirty()) {
           e.preventDefault();
         }
+        (0, _communication_react.postWithCallback)("host", "end_client_session_task", {
+          global_id: window.global_id,
+          force_forward: true
+        });
         props.tsocket.disconnect();
       });
     }
@@ -469,7 +473,6 @@ function CodeViewerApp(props) {
     is_authenticated: window.is_authenticated,
     selected: null,
     show_api_links: true,
-    global_id: props.global_id,
     user_name: window.username
   }), /*#__PURE__*/_react["default"].createElement("div", {
     className: outer_class,
@@ -515,7 +518,7 @@ exports.CodeViewerApp = CodeViewerApp = /*#__PURE__*/(0, _react.memo)(CodeViewer
 function code_viewer_main() {
   var local_id = "a" + (0, _utilities_react.guid)();
   function gotProps(the_props) {
-    var CodeViewerAppPlus = (0, _settings.withSettings)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)((0, _assistant.withAssistant)(CodeViewerApp)))));
+    var CodeViewerAppPlus = (0, _utilities_react.withRegisterActivity)((0, _settings.withSettings)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)((0, _assistant.withAssistant)(CodeViewerApp))))));
     var the_element = /*#__PURE__*/_react["default"].createElement(CodeViewerAppPlus, _extends({}, the_props, {
       controlled: false,
       changeName: null

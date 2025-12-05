@@ -34,7 +34,7 @@ function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present,
 function _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, "", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { if (r) i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n;else { var o = function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); }; o("next", 0), o("throw", 1), o("return", 2); } }, _regeneratorDefine2(e, r, n, t); }
 function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
 function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
-window.global_id = (0, _utilities_react.guid)(); // I don't know why pycharm doesn't like this
+window.global_id = "a" + (0, _utilities_react.guid)(); // I don't know why pycharm doesn't like this
 
 var tsocket;
 function _administer_home_main() {
@@ -46,7 +46,7 @@ function _administer_home_main() {
           tsocket.attachListener('handle-callback', function (task_packet) {
             (0, _communication_react.handleCallback)(task_packet, window.global_id);
           });
-          AdministerHomeAppPlus = (0, _settings.withSettings)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(AdministerHomeApp))));
+          AdministerHomeAppPlus = (0, _utilities_react.withRegisterActivity)((0, _settings.withSettings)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)(AdministerHomeApp)))));
           domContainer = document.querySelector('#library-home-root');
           root = (0, _client.createRoot)(domContainer);
           root.render(/*#__PURE__*/_react["default"].createElement(AdministerHomeAppPlus, {
@@ -105,11 +105,10 @@ function AdministerHomeApp(props) {
   var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
   var top_ref = (0, _react.useRef)(null);
   var pushCallback = (0, _utilities_react.useCallbackStack)();
+  var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   (0, _react.useEffect)(function () {
     initSocket();
     statusFuncs.stopSpinner();
-    // window.addEventListener("resize", _update_window_dimensions);
-    // _update_window_dimensions();
     return function () {
       props.tsocket.disconnect();
     };
@@ -124,6 +123,9 @@ function AdministerHomeApp(props) {
       }
     });
     props.tsocket.attachListener('doflashUser', _toaster.doFlash);
+    props.tsocket.attachListener("endSession", function () {
+      dialogFuncs.showModal("EndSessionDialog", {});
+    });
   }
   function _updatePaneState(res_type, state_update) {
     var callback = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
@@ -189,7 +191,6 @@ function AdministerHomeApp(props) {
     selected: null,
     show_api_links: false,
     extra_text: "",
-    global_id: window.global_id,
     user_name: window.username
   }), /*#__PURE__*/_react["default"].createElement(_resource_viewer_context.ViewerContext.Provider, {
     value: {
@@ -243,7 +244,6 @@ function AWSControls(props) {
     _useState6 = _slicedToArray(_useState5, 2),
     numberOfQueues = _useState6[0],
     setNumberOfQueues = _useState6[1];
-  var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
   var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
   (0, _react.useEffect)(function () {
     grabDesiredIdle().then(function (data) {

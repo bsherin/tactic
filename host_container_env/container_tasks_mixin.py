@@ -102,7 +102,7 @@ class ContainerTasksMixin:
         if not admin_user.username == "admin":
             return {"success": False, "message": "not authorized", "alert_type": "alert-warning"}
         try:
-            if self.tile_registry.is_tile(cont_id):
+            if self.tile_registry.exists(cont_id):
                 self.destroy_tile(cont_id, notify=False)
             else:
                 destroy_container(cont_id)

@@ -98,7 +98,6 @@ function RegisterApp(props) {
             <TacticNavbar is_authenticated={window.is_authenticated}
                           selected={null}
                           show_api_links={true}
-                          global_id={window.global_id}
                           user_name={window.username}/>
             <div className={outer_class}  style={outer_style}>
                 <form onSubmit={e => {

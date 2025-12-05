@@ -7,7 +7,7 @@ import {Icon, Card, ContextMenu, EditableText, Spinner, MenuDivider, Divider} fr
 import {Menu, MenuItem, ButtonGroup, Button} from "@blueprintjs/core";
 import {useHotkeys} from "@blueprintjs/core";
 import {ErrorBoundary} from "./error_boundary";
-import {SelectedPaneContext, guid} from "./utilities_react";
+import {SelectedPaneContext, guid, useRegisterActivity} from "./utilities_react";
 import {widgetDict} from "./widgets";
 import _ from 'lodash';
 
@@ -111,9 +111,9 @@ function ConsoleComponent(props) {
     const selectedPane = useContext(SelectedPaneContext);
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
 
+
     useEffect(() => {
         initSocket();
-        // _requestPseudoTileId();
         if (props.console_items.current.length == 0) {
             _addCodeArea("", false)
         }

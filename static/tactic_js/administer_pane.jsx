@@ -6,7 +6,7 @@ import {Regions} from "@blueprintjs/table";
 import {SearchForm, BpSelectorTable} from "./library_widgets";
 import {HorizontalPanes} from "./resizing_allotment";
 
-import {useCallbackStack, useStateAndRef} from "./utilities_react";
+import {useCallbackStack, useStateAndRef, useRegisterActivity} from "./utilities_react";
 import {postPromise} from "./communication_react";
 
 import _ from 'lodash';
@@ -22,7 +22,6 @@ function AdminPane(props) {
         extraControls: null,
         ...props
     };
-
     const table_ref = useRef(null);
     const console_text_ref = useRef(null);
     const previous_search_spec = useRef(null);
@@ -58,7 +57,7 @@ function AdminPane(props) {
     }
 
      async function _onTableSelection(regions) {
-        if (regions.length == 0) return;  // Without this get an error when clicking on a body cell
+                if (regions.length == 0) return;  // Without this get an error when clicking on a body cell
         let selected_rows = [];
         let revised_regions = [];
         for (let region of regions) {

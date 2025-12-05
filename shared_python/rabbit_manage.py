@@ -30,7 +30,7 @@ if os.environ.get("USE_AMAZON_MQ") == "True" or os.environ.get("USE_AMAZON_MQ") 
 
     RABBIT_USER = creds["username"]
     RABBIT_PASS = creds["password"]
-    RABBIT_PORT = 5671
+    RABBIT_PORT = 5672
     print("using amazon mq with user:", RABBIT_USER)
 else:
     print("not using amazon mq")

@@ -87,6 +87,7 @@ function NotebookApp(props) {
     mDispatch = _useReducer2[1];
   var settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
+  var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   var pushCallback = (0, _utilities_react.useCallbackStack)();
   (0, _utilities_react.useConstructor)(function () {
     dispatch({
@@ -103,6 +104,10 @@ function NotebookApp(props) {
           e.preventDefault();
           e.returnValue = '';
         }
+        (0, _communication_react.postWithCallback)("host", "end_client_session_task", {
+          global_id: window.global_id,
+          force_forward: true
+        });
         props.tsocket.disconnect();
       });
     }
@@ -119,8 +124,11 @@ function NotebookApp(props) {
       document.title = mState.resource_name;
     }
     return function () {
-      delete_my_containers();
-      (0, _communication_react.postPromiseMain)(props.local_id, "end_session_task", {}).then(function () {});
+      if (props.controlled) {
+        (0, _communication_react.postWithCallbackMain)(props.local_id, "end_main_session_task", {
+          sid: props.local_id
+        });
+      }
       window.removeEventListener("unload", sendRemove);
     };
   }, []);
@@ -153,11 +161,6 @@ function NotebookApp(props) {
     }
     return false;
   }
-  function delete_my_containers() {
-    (0, _communication_react.postAjax)("/remove_mainwindow", {
-      "local_id": props.local_id
-    });
-  }
   function initSocket() {
     props.tsocket.attachListener("window-open", function (data) {
       window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data["the_id"]));
@@ -170,6 +173,9 @@ function NotebookApp(props) {
         if (!(data["originator"] == window.global_id)) {
           window.close();
         }
+      });
+      props.tsocket.attachListener("endSession", function () {
+        dialogFuncs.showModal("EndSessionDialog", {});
       });
     }
   }
@@ -283,8 +289,7 @@ function NotebookApp(props) {
   return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, !window.in_context && /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
     is_authenticated: window.is_authenticated,
     user_name: window.username,
-    menus: null,
-    global_id: props.global_id
+    menus: null
   }), /*#__PURE__*/_react["default"].createElement(_metadata_drawer.MetadataContext.Provider, {
     value: {
       showMetadata: showMetadata,
@@ -331,7 +336,7 @@ function NotebookApp(props) {
 exports.NotebookApp = NotebookApp = /*#__PURE__*/(0, _react.memo)(NotebookApp);
 function main_main() {
   function gotProps(the_props) {
-    var NotebookAppPlus = (0, _settings.withSettings)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)((0, _assistant.withAssistant)(NotebookApp)))));
+    var NotebookAppPlus = (0, _utilities_react.withRegisterActivity)((0, _settings.withSettings)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)((0, _assistant.withAssistant)(NotebookApp))))));
     var the_element = /*#__PURE__*/_react["default"].createElement(NotebookAppPlus, _extends({}, the_props, {
       controlled: false,
       changeName: null
@@ -362,6 +367,7 @@ function main_main() {
           if (window.is_new_notebook) {
             (0, _communication_react.postPromise)("main_service", "initialize_session_for_new_notebook", {
               temp_data_id: temp_data_id,
+              global_id: window.global_id,
               base_figure_url: window.base_figure_url,
               local_id: local_id,
               username: window.username,
@@ -376,6 +382,7 @@ function main_main() {
           } else {
             (0, _communication_react.postPromise)("main_service", "initialize_session_from_save", {
               project_name: resource_name,
+              global_id: window.global_id,
               base_figure_url: window.base_figure_url,
               local_id: local_id,
               username: window.username,

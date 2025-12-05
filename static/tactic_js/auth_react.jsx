@@ -14,15 +14,14 @@ import {useCallbackStack } from "./utilities_react";
 import {withStatus} from "./toaster";
 import {SettingsContext} from "./settings";
 
-window.global_id = guid();
-var tsocket;
+window.global_id = "a" + guid();
 
 function _login_main() {
     if (window._show_message) doFlash(window._message);
     const domContainer = document.querySelector('#root');
     const root = createRoot(domContainer);
     let LoginAppPlus = withStatus(LoginApp);
-    //let useDark = get_theme_cookie() == "dark";
+
     root.render(
         <SettingsContext.Provider value={{
             settings: null,
@@ -41,7 +40,6 @@ function LoginApp(props) {
     const [username_warning_text, set_username_warning_text] = useState("");
     const [password_warning_text, set_password_warning_text] = useState("");
     const statusFuncs = useContext(StatusContext);
-    const pushCallback = useCallbackStack();
 
     const inputRef = useRef(null);
 

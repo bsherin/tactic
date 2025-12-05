@@ -17,19 +17,19 @@ import {doFlash} from "./toaster.js";
 import {LibraryPane} from "./library_pane";
 import {withStatus} from "./toaster";
 import {withErrorDrawer} from "./error_drawer";
-import {guid, useConnection } from "./utilities_react";
+import {guid, useConnection, withRegisterActivity} from "./utilities_react";
 import {TacticNavbar} from "./blueprint_navbar";
 import {AllMenubar} from "./library_menubars"
 import {SettingsContext, withSettings} from "./settings";
 import {ICON_BAR_WIDTH} from "./sizing_tools";
-import {withDialogs} from "./modal_react";
+import {DialogContext, withDialogs} from "./modal_react";
 import {StatusContext} from "./toaster"
 import {withAssistant} from "./assistant";
 import {handleCallback} from "./communication_react";
 import {base_columns} from "./library_widgets";
 
 export {LibraryHomeApp}
-const library_id = guid();
+const library_id = "a" + guid();
 if (!window.in_context) {
     window.global_id = library_id;
 }
@@ -42,6 +42,7 @@ function LibraryHomeApp(props) {
     const [columns, setColumns] = useState([]);
 
     const connection_status = useConnection(props.tsocket, initSocket);
+   const dialogFuncs = useContext(DialogContext);
 
     useEffect(() => {
         statusFuncs.stopSpinner(null);
@@ -62,6 +63,9 @@ function LibraryHomeApp(props) {
                     window.close()
                 }
             });
+            props.tsocket.attachListener("endSession", function () {
+                dialogFuncs.showModal("EndSessionDialog", {})
+            })
         }
     }
 
@@ -109,7 +113,6 @@ function LibraryHomeApp(props) {
                               selected={null}
                               show_api_links={false}
                               extra_text={window.database_type == "Local" ? "" : window.database_type}
-                              global_id={global_id}
                               user_name={window.username}/>
             }
             <div className={outer_class} ref={top_ref} style={outer_style}>
@@ -126,7 +129,7 @@ function _library_home_main() {
             tsocket.attachListener('handle-callback', (task_packet) => {
                 handleCallback(task_packet, library_id)
             });
-        const LibraryHomeAppPlus = withSettings(withDialogs(withErrorDrawer(withStatus(withAssistant(LibraryHomeApp)))));
+        const LibraryHomeAppPlus = withRegisterActivity(withSettings(withDialogs(withErrorDrawer(withStatus(withAssistant(LibraryHomeApp))))));
         const domContainer = document.querySelector('#library-home-root');
         const root = createRoot(domContainer);
         root.render(

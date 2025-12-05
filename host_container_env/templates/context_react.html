@@ -29,6 +29,7 @@
         window.version_string="{{version_string}}";
         window.has_pool = "{{has_pool}}" == "True";
         window.base_figure_url = "{{base_figure_url}}";
+        window.activity_interval = parseInt("{{client_activity_interval_secs}}")
     </script>
     <script type="module" src="{{url_for('static', filename=module_source, v=version_string)}}"></script>
 

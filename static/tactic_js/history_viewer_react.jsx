@@ -11,21 +11,22 @@ import { createRoot } from 'react-dom/client';
 
 import {MergeViewerApp} from "./merge_viewer_app";
 import {doFlash, StatusContext} from "./toaster.js"
-import {handleCallback, postPromise} from "./communication_react.js"
+import {handleCallback, postPromise, postWithCallback} from "./communication_react.js"
 import {withErrorDrawer, ErrorDrawerContext} from "./error_drawer.js";
 import {withStatus} from "./toaster.js";
 
 import {guid} from "./utilities_react.js";
 import {TacticNavbar} from "./blueprint_navbar";
 import {TacticSocket} from "./tactic_socket.js";
-import {useCallbackStack, useConnection, useStateAndRef} from "./utilities_react";
+import {useCallbackStack, useConnection, useStateAndRef, withRegisterActivity} from "./utilities_react";
 import {withSettings} from "./settings";
+import {withDialogs, DialogContext} from "./modal_react";
 
 window.global_id = "a" + guid();
 
 async function history_viewer_main ()  {
     function gotProps(the_props) {
-        let HistoryViewerAppPlus = withSettings(withErrorDrawer(withStatus(HistoryViewerApp)));
+        let HistoryViewerAppPlus = withRegisterActivity(withSettings(withDialogs(withErrorDrawer(withStatus(HistoryViewerApp)))));
         let the_element = <HistoryViewerAppPlus {...the_props}
                                              controlled={false}
                                              changeName={null}/>;
@@ -88,6 +89,7 @@ function HistoryViewerApp(props) {
 
     const statusFuncs = useContext(StatusContext);
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
+    const dialogFuncs = useContext(DialogContext)
 
     const pushCallback = useCallbackStack();
 
@@ -97,6 +99,7 @@ function HistoryViewerApp(props) {
                 e.preventDefault();
                 e.returnValue = ''
             }
+            postWithCallback("host", "end_client_session_task", {global_id: window.global_id, force_forward: true})
             props.tsocket.disconnect()
         }
         window.addEventListener("beforeunload", beforeUnloadFunc);
@@ -132,6 +135,9 @@ function HistoryViewerApp(props) {
             }
         });
         props.tsocket.attachListener('doflashUser', doFlash);
+        props.tsocket.attachListener("endSession", function () {
+            dialogFuncs.showModal("EndSessionDialog", {})
+        })
     }
 
     function getCheckpointCode(updatestring_for_sort) {
@@ -226,7 +232,6 @@ function HistoryViewerApp(props) {
                     <TacticNavbar is_authenticated={window.is_authenticated}
                                   selected={null}
                                   show_api_links={true}
-                                  global_id={props.global_id}
                                   user_name={window.username}/>
                 }
                 <MergeViewerApp connection_status={connection_status}

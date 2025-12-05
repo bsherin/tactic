@@ -91,7 +91,7 @@ def sleep_func(t):
 
 # noinspection PyTypeChecker,PyUnusedLocal,PyMissingConstructor
 class QWorker(ExceptionMixin):
-    def __init__(self, service_name=None, generate_heartbeats=False, special_id=None):
+    def __init__(self, service_name=None, special_id=None):
         self.service_name = service_name
         if special_id:
             self.my_id = special_id
@@ -104,23 +104,11 @@ class QWorker(ExceptionMixin):
         self.handler_instances = {"this_worker": self}
         self.channel = None
         self.connection = None
-        self.last_heartbeat = current_timestamp()
         self._hb_greenlet = None
         self._stopping = False
         self.use_emit_direct = use_gevent
-
-        self.generate_heartbeats = generate_heartbeats
         if use_wait_tasks:
             self.wait_queue_id = "wait_" + self.my_id
-
-    def _heartbeat_loop(self):
-        # runs in its own greenlet
-        while not self._stopping:
-            try:
-                self.do_heartbeat()
-            except Exception as ex:
-                debug_log(self.handle_exception(ex, "heartbeat loop error"))
-            sleep_func(heartbeat_time)  # tick every 1s;
 
     def start_background_thread(self, retries=0,):
         try:
@@ -134,9 +122,6 @@ class QWorker(ExceptionMixin):
                 declare_queue(self.channel, self.service_name)
                 self.consume_without_ack(self.service_name, self.handle_delivery)
             debug_log(' [*] Waiting for messages:')
-            if self.generate_heartbeats:
-                if self._hb_greenlet is None:
-                    self._hb_greenlet = gevent.spawn(self._heartbeat_loop)
             self.ready()
             self.channel.start_consuming()
         except Exception as ex:

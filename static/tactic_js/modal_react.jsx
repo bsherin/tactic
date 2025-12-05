@@ -26,7 +26,7 @@ export {DialogContext, withDialogs}
 
 const DialogContext = createContext(null);
 
-const dialogDict = {ModalDialog, PresentationDialog, ReportDialog,
+const dialogDict = {ModalDialog, PresentationDialog, ReportDialog, EndSessionDialog,
     SelectDialog, SelectAddressDialog, SelectResourceDialog, ConfirmDialog, FileImportDialog};
 
 function withDialogs(WrappedComponent) {
@@ -764,4 +764,40 @@ function ConfirmDialog(props) {
 }
 
 ConfirmDialog = memo(ConfirmDialog);
+
+function EndSessionDialog(props) {
+    const [show, set_show] = useState(false);
+
+    useEffect(() => {
+        set_show(true);
+    }, []);
+
+    function _submitHandler(event) {
+        set_show(false);
+        window.open($SCRIPT_ROOT + "/logout/" + window.global_id, "_self");
+    }
+
+    const settingsContext = useContext(SettingsContext);
+
+    return (
+        <Dialog isOpen={show}
+                className={settingsContext.isDark() ? "bp6-dark" : ""}
+                title={props.title}
+                autoFocus={true}
+                enforceFocus={true}
+                usePortal={false}
+                canEscapeKeyClose={true}>
+            <DialogBody>
+                <p>Your session has timed out.</p>
+            </DialogBody>
+            <DialogFooter actions={
+                <Fragment>
+                    <Button type="submit" intent={Intent.PRIMARY}
+                            onClick={_submitHandler}>Log out</Button>
+                </Fragment>
+            }/>
+        </Dialog>
+    )
+
+}
 

@@ -4,17 +4,19 @@
 
 import _ from 'lodash';
 import React from "react";
-import {useState, useEffect, useRef, useReducer, createContext} from "react";
+import {useState, useEffect, useRef, useReducer, createContext, useCallback, memo} from "react";
 import {createRoot} from 'react-dom/client';
 import {Spinner, Text} from "@blueprintjs/core";
+import {postPromise} from "./communication_react";
 
 import {useImmerReducer} from 'use-immer';
 
 export {propsAreEqual, arrayMove, arraysMatch, get_ppi, isInt, hasAnyKey, copyToClipboard, getFileExtension};
 export {remove_duplicates, guid, scrollMeIntoView, renderSpinnerMessage};
 export {
-    useConstructor, useCallbackStack, useStateAndRef, useReducerAndRef, useConnection,
-    useStateAndRefAndCounter, useDidMount, useImmerReducerAndRef, useDeepCompareEffect, useWidget
+    useConstructor, useCallbackStack, useStateAndRef, useReducerAndRef, useConnection, useRegisterActivity,
+    useStateAndRefAndCounter, useDidMount, useImmerReducerAndRef, useDeepCompareEffect, useWidget,
+    withRegisterActivity
 };
 
 export {debounce, throttle, useDebounce, SelectedPaneContext, convertExtraKeys}
@@ -99,18 +101,6 @@ function useCallbackStack(myId = "") {
     }
 }
 
-// function useDeepCompareEffect(callback, dependencies) {
-//     const currentDependenciesRef = useRef();
-//     const changeCounter = useRef(0);
-//
-//   if (!_.isEqual(currentDependenciesRef.current, dependencies)) {
-//       currentDependenciesRef.current = dependencies;
-//       changeCounter.current += 1;
-//   }
-//
-//   useEffect(callback, [changeCounter.current]);
-// }
-
 function useDeepCompareEffect(callback, dependencies) {
     const currentDependenciesRef = useRef();
 
@@ -121,6 +111,85 @@ function useDeepCompareEffect(callback, dependencies) {
     useEffect(() => {
         return callback();
     }, [currentDependenciesRef.current]);
+}
+
+const RegisterActivityContext = React.createContext(null);
+
+const activity_interval_msecs = window.activity_interval * 1000
+function useLocalRegisterActivity() {
+    const current_timer = useRef(null);
+    const waiting = useRef(false);
+
+    const registerActivity = useCallback(() => {
+        if (waiting.current) {
+            return
+        }
+        waiting.current = true;
+
+        current_timer.current = setTimeout(() => {
+            waiting.current = false;
+            postPromise("host", "register_client_interaction", {
+                global_id: window.global_id,
+            })
+                .then(()=>{})
+        }, activity_interval_msecs);
+    }, []);
+
+    return [waiting, registerActivity];
+}
+
+function useRegisterActivity() {
+    const contextValue = React.useContext(RegisterActivityContext);
+    if (contextValue) {
+        return contextValue;
+    }
+    // return useLocalRegisterActivity();
+    return [false, ()=>{}]
+}
+
+function useRegisterActivityNew() {
+    const contextValue = React.useContext(RegisterActivityContext);
+    if (contextValue) {
+        return contextValue;
+    }
+    return useLocalRegisterActivity();
+}
+
+function ActivityTracker() {
+    const [, registerActivityNew] = useRegisterActivityNew();
+
+    useEffect(() => {
+        const handler = () => {
+            registerActivityNew();
+        };
+
+        const events = ["click", "keydown", "mousedown", "touchstart", "scroll"];
+
+        events.forEach((evt) =>
+            window.addEventListener(evt, handler, { passive: true })
+        );
+
+        return () => {
+            events.forEach((evt) =>
+                window.removeEventListener(evt, handler)
+            );
+        };
+    }, [registerActivityNew]);
+
+    return null; // nothing to render
+}
+
+function withRegisterActivity(WrappedComponent) {
+    function WithRegisterActivity(props) {
+        const value = useLocalRegisterActivity();
+        return (
+            <RegisterActivityContext.Provider value={value}>
+                <ActivityTracker/>
+                <WrappedComponent {...props}/>
+            </RegisterActivityContext.Provider>
+        )
+    }
+    return memo(WithRegisterActivity)
 }
 
 export default useDeepCompareEffect;

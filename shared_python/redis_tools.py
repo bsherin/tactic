@@ -2,6 +2,7 @@
 import redis
 import json
 import os
+import re
 
 use_ecs = os.getenv("USE_ECS_TILES","false").lower() == "true"
 
@@ -36,19 +37,27 @@ def get_no_decode_redis_client():
                        password=REDIS_PASSWORD,
                        port=REDIS_PORT, decode_responses=False, ssl=USE_SSL)
 
-class RedisManager:
+class RedisManager(object):
+    prefix = ""
+
     def __init__(self, cli):
         self.cli = cli
-        # self.delete_all()
 
-    def set(self, username, key, value):
-        full_key = self.expand_key(username, key)
+    def expand_key(self, key, narrower=None):
+        if narrower is None:
+            full_key = f"{self.prefix}.{key}"
+        else:
+            full_key = f"{self.prefix}.{narrower}.{key}"
+        return full_key
+
+    def set(self, kay, value, narrower=None):
+        full_key = self.expand_key(kay, narrower)
         if isinstance(value, dict):
             value = json.dumps(value)
         self.cli.set(full_key, value)
 
-    def get(self, username, key):
-        full_key = self.expand_key(username, key)
+    def get(self, key, narrower=None):
+        full_key = self.expand_key(key, narrower)
         value = self.cli.get(full_key)
         if value is not None:
             try:
@@ -57,35 +66,31 @@ class RedisManager:
                 return value
         return None
 
-    def expand_key(self, username, key):
-        full_key = f"{self.prefix}.{username}.{key}"
-        return full_key
-
-    def delete(self, username, key):
-        full_key = self.expand_key(username, key)
+    def delete(self, key, narrower=None):
+        full_key = self.expand_key(key, narrower)
         self.cli.delete(full_key)
 
     def delete_all(self):
         # non-blocking deletion per key, works across slots
-        pattern = f"*"
+        pattern = f"{self.prefix}.*"
         for k in self.cli.scan_iter(match=pattern, count=5000):
             try:
                 self.cli.unlink(k)  # fall back to delete if older Redis
             except Exception:
                 self.cli.delete(k)
 
-    def exists(self, username, key):
-        full_key = self.expand_key(username, key)
-        return self.cli.exists(full_key) > 0
+    def exists(self, key, narrower=None):
+        full_key = self.expand_key(key, narrower)
+        return self.cli.exists(full_key)
 
-    def set_hash_dict(self, username, redis_key, value_dict):
-        full_redis_key = self.expand_key(username, redis_key)
+    def set_hash_dict(self, redis_key, value_dict, narrower=None):
+        full_redis_key = self.expand_key(redis_key, narrower)
         if isinstance(value_dict, dict):
             value_dict = {k: json.dumps(v) if isinstance(v, dict) else v for k, v in value_dict.items()}
         self.cli.hmset(full_redis_key, value_dict)
 
-    def get_hash_dict(self, username, redis_key):
-        full_redis_key = self.expand_key(username, redis_key)
+    def get_hash_dict(self, redis_key, narrower=None):
+        full_redis_key = self.expand_key(redis_key, narrower)
         value = self.cli.hgetall(full_redis_key)
         if value:
             # Convert values to JSON if they are strings
@@ -97,30 +102,30 @@ class RedisManager:
             return value
         return {}
 
-    def get_hash_entry(self, username, redis_key, hash_key):
-        full_redis_key = self.expand_key(username, redis_key)
+    def get_hash_entry(self, redis_key, hash_key, narrower=None):
+        full_redis_key = self.expand_key(redis_key, narrower)
         value = self.cli.hget(full_redis_key, hash_key)
         return value
 
-    def set_hash_entry(self, username, redis_key, hash_key, value):
-        full_redis_key = self.expand_key(username, redis_key)
+    def set_hash_entry(self, redis_key, hash_key, value, narrower=None):
+        full_redis_key = self.expand_key(redis_key, narrower)
         if isinstance(value, dict):
             value = json.dumps(value)
         self.cli.hset(full_redis_key, hash_key, value)
 
-    def get_hash_keys(self, username, redis_key):
-        full_redis_key = self.expand_key(username, redis_key)
+    def get_hash_keys(self, redis_key, narrower=None):
+        full_redis_key = self.expand_key(redis_key, narrower)
         return self.cli.hkeys(full_redis_key)
 
-    def delete_hash_entry(self, username, redis_key, hash_key):
-        full_redis_key = self.expand_key(username, redis_key)
+    def delete_hash_entry(self, redis_key, hash_key, narrower=None):
+        full_redis_key = self.expand_key(redis_key, narrower)
         self.cli.hdel(full_redis_key, hash_key)
 
-    def increment_hash_entry(self, username, redis_key, hash_key, increment=1):
-        full_redis_key = self.expand_key(username, redis_key)
+    def increment_hash_entry(self, redis_key, hash_key, increment=1, narrower=None):
+        full_redis_key = self.expand_key(redis_key, narrower)
         return self.cli.hincrby(full_redis_key, hash_key, increment)
 
-    def scan_keys(self, pattern, batch=1000, limit=None):
+    def scan_keys(self, pattern, batch=1000, limit=None, tail_only=False):
         cursor = 0
         out = []
         while True:
@@ -130,58 +135,29 @@ class RedisManager:
                 return out[:limit]
             if cursor == 0:
                 break
+        if tail_only:
+            new_out = []
+            for key in out:
+                new_out.append(self.get_tail(key))
+            out = new_out
         return out
 
-    def scan_keys_with_prefix(self, username, pattern):
-        full_pattern = self.expand_key(username, pattern)
-        return self.scan_keys(full_pattern)
+    def get_keys_with_base(self, base, narrower=None, tail_only=False):
+        full_redis_key = self.expand_key(base, narrower)
+        self.scan_keys(f"{full_redis_key}.*", tail_only=tail_only)
 
-class ReadyBlockManager(RedisManager):
-    def __init__(self, client):
-        self.prefix = "rb"
-        RedisManager.__init__(self, client)
+    @staticmethod
+    def get_tail(kstring):
+        matches = re.findall(r"\.([^.]*)$", kstring)
+        if not matches:
+            return ""
+        return matches[0]
 
-    def create_ready_block(self, rb_id, username, id_list, local_id=None):
-        for the_id in id_list:
-            self.set_ready_block_participant(username, rb_id, the_id, 1)
-        self.set_local_id(username, rb_id, local_id)
-        return
+    def scan_keys_with_prefix(self, pattern, narrower=None, tail_only=False):
+        full_pattern = self.expand_key(pattern, narrower)
+        return self.scan_keys(full_pattern, tail_only=tail_only)
 
-    def delete_ready_block_participant(self, username, rb_key, participant):
-        self.set_ready_block_participant(username, rb_key, participant, 0)
-        the_keys = self.get_ready_block_participants(username, rb_key)
-        remaining_keys = 0
-        for k in the_keys:
-            if not k == "local_id":
-                v = self.get_ready_block_participant(username, rb_key, participant)
-                remaining_keys += int(v)
-
-        if remaining_keys == 0:
-            local_id = self.get_local_id(username, rb_key)
-            self.delete_ready_block(username, rb_key)
-            return the_keys, local_id
-        else:
-            return False, None
-
-    def get_local_id(self, username, rb_key):
-        return self.get_hash_entry(username, f"ready_blocks.{rb_key}", "local_id")
-
-    def set_local_id(self, username, rb_key, local_id):
-        self.set_hash_entry(username, f"ready_blocks.{rb_key}", "local_id", local_id)
-        return
-
-    def set_ready_block_participant(self, username, rb_key, participant, value):
-        self.set_hash_entry(username, f"ready_blocks.{rb_key}", participant, value)
-        return
-
-    def get_ready_block_participants(self, username, rb_key):
-        return self.get_hash_keys(username, f"ready_blocks.{rb_key}")
-
-    def get_ready_block_participant(self, username, rb_key, participant):
-        return self.get_hash_entry(username, f"ready_blocks.{rb_key}", participant)
-
-    def delete_ready_block(self, username, rb_key):
-        self.delete(username, f"ready_blocks.{rb_key}")
-        return
-
-ready_block_manager = ReadyBlockManager(redis_client)
+    def delete_keys_with_prefix(self, pattern, narrower=None):
+        all_keys = self.scan_keys_with_prefix(pattern, narrower)
+        for k in all_keys:
+            self.cli.delete(k)

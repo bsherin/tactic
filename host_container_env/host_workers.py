@@ -13,13 +13,12 @@ from docker_functions import create_container, destroy_container, destroy_child_
 from docker_functions import get_log, restart_container, container_exists
 from docker_functions import get_matching_user_containers, get_container, create_assistant_container, get_user_assistant
 from tactic_app import app, socketio
-from redis_tools import redis_client, ready_block_manager
+from redis_tools import redis_client
 import datetime
 from mongo_accesser import bytes_to_string, MongoAccessException
 import tactic_app
 import uuid
 import sys
-import copy
 import time
 import os
 import re
@@ -40,30 +39,20 @@ from rabbit_manage import get_pika_connection_with_retries
 from rabbit_admin import delete_wait_queues
 from ecs_tile_backend import ECSTileBackend
 from docker_tile_backend import DockerTileBackend
-from tile_registry import TileContainerRegistry, MainContainerRegistry, ModuleViewerRegistry, publish_queue_metrics
+from registries import TileContainerRegistry, MainContainerRegistry, ModuleViewerRegistry, publish_queue_metrics
+from client_session import ClientSessionRegistry
 from tile_container_management_mixin import TileContainerManagementMixin
 from redis_tools import RedisManager, redis_client
 from loaded_tile_management import loaded_tile_manager
+from aws_helpers import get_ssm_parameter
 
 loaded_tile_manager.delete_all()
 
-# inactive_container_time is the max time a tile can
-# go without making active contact with the megaplex.
-# we will let containers hang around for quite a while.
-inactive_container_time = 10 * 3600
-
-# old_container_time is the max time a tile can exist after being created.
-old_container_time = 3 * 24 * 3600
-
-# how frequently we will look for dead containers and dead mainwindows
-health_check_time = 5 * 60
-
-periodic_check_interval = 10
-
-import os
-
 use_ecs = os.getenv("USE_ECS_TILES","false").lower() == "true"
 use_s3 = os.getenv("USE_S3","false").lower() == "true"
+
+utility_interval = int(get_ssm_parameter("HOST_UTILITY_INTERVAL_SECS", 60))
+publishing_interval = int(get_ssm_parameter("METRIC_PUBLISH_INTERVAL_SECS", 180))
 
 if use_s3:
     from pool_backend_ecs import PoolBackendECS
@@ -74,17 +63,52 @@ myport = os.environ.get("MYPORT")
 
 from qworker import max_pika_retries
 
+class HostUtilityWorker:
+    def __init__(self, worker):
+        self.worker = worker
+        self.connection, self.channel = get_pika_connection_with_retries()
+        self.utility_interval = int(get_ssm_parameter("HOST_UTILITY_INTERVAL_SECS", 60))
+        self.last_publish = time.time()
+        self.last_global_ids = []
+
+    def utility_loop(self):
+        while True:
+            self.do_utilities()
+            time.sleep(self.utility_interval)
+
+    def do_utilities(self):
+        print("doing utilities")
+        if self.worker.channel is None:
+            print("pika channel not ready yet")
+            return
+        self.worker.client_session_registry.registry_heartbeat()
+        self.worker.main_registry.registry_heartbeat()
+        self.worker.module_viewer_registry.registry_heartbeat()
+
+        self.worker.publish_metrics()
+        current_gobal_ids = self.worker.client_session_registry.get_open_sessions()
+        if not current_gobal_ids == self.last_global_ids:
+            self.last_global_ids = current_gobal_ids
+            self.worker.post_task("main_service", "updated_global_ids", {"global_ids": self.last_global_ids})
+            self.worker.post_task("module_viewer", "updated_global_ids", {"global_ids": self.last_global_ids})
+        self.worker.tile_registry.registry_heartbeat()
+
+    def start(self):
+        socketio.start_background_task(target=self.utility_loop)
+
+
 class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTasksMixin,ContainerTasksMixin,
                  ProjectTasksMixin, CollectionTasksMixin, MetabookTasksMixin, PoolTasksMixin, AccountTasksMixin,
                  AcrossAccountsTasksMixin, HigherMongoTasksMixin, TileContainerManagementMixin):
     def __init__(self):
         my_id = "host" + str(myport)
-        QWorker.__init__(self, service_name="host", generate_heartbeats=True, special_id=my_id)
+        QWorker.__init__(self, service_name="host", special_id=my_id)
         self.repository_user = User.get_user_by_username("repository")
         self.tile_registry = TileContainerRegistry(self)
         self.main_registry = MainContainerRegistry(self)
         self.module_viewer_registry = ModuleViewerRegistry(self)
-        self.periodic_check_counter = 0
+        self.client_session_registry = ClientSessionRegistry(self)
+        self.last_publish = -99
 
         if use_ecs:
             self.tile_backend = ECSTileBackend(self.tile_registry, self)
@@ -97,21 +121,13 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         if self.my_id == "host5000":
             self.clear_session_storage()
             delete_wait_queues()
-            self.do_periodic_check()
+            self.publish_metrics()
 
-    def do_heartbeat(self):
-        self.tile_registry.registry_heartbeat()
-        self.main_registry.registry_heartbeat()
-        self.module_viewer_registry.registry_heartbeat()
-        self.periodic_check_counter += 1
-        if self.periodic_check_counter > periodic_check_interval:
-            self.periodic_check_counter = 0
-            self.do_periodic_check()
-
-    @staticmethod
-    def do_periodic_check():
-        print("doing a periodic check")
-        publish_queue_metrics()
+    def publish_metrics(self):
+        now = time.time()
+        if (now - self.last_publish) > publishing_interval:
+            publish_queue_metrics()
+            self.last_publish = now
 
     @staticmethod
     def pull_queue_count():
@@ -227,28 +243,14 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         return {"success": True, "handler_methods": handler_methods}
 
     @task_worthy
-    def participant_ready(self, data):
-        user_id = data["user_id"]
-        user_obj = load_user(user_id)
-        rb_id = data["rb_id"]
-        participant = data["participant"]
-        result, local_id = ready_block_manager.delete_ready_block_participant(user_obj.username, rb_id, participant)
-        if result:
-            print("** all participants ready **")
-            for pid in result:
-                if pid == "local_id":
-                    continue
-                if pid == "client":
-                    print(str(data))
-                    socketio.emit("remove-ready-block", {local_id: local_id}, namespace='/main', room=local_id)
-                else:
-                    self.post_task(pid, "remove_ready_block", data)
+    def register_tile_heartbeat(self, data):
+        tile_id = data["tile_id"]
+        self.tile_registry.register_tile_heartbeat(tile_id)
 
     @task_worthy
-    def container_heartbeat(self, data):
-        container_id = data["container_id"]
-        tactic_app.health_tracker.register_container_heartbeat(container_id)
-        return
+    def register_client_interaction(self, data):
+        global_id = data["global_id"]
+        self.client_session_registry.register_client_interaction(global_id)
 
     @task_worthy
     def set_user_theme(self, data):
@@ -308,12 +310,6 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         else:
             socketio.emit("focus-me", {"line_number": data["line_number"]}, namespace='/main', room=matching_ids[0])
             return {"success": True, "window_name": matching_ids[0]}
-
-    @task_worthy
-    def remove_mainwindow_task(self, data):
-        local_id = data["local_id"]
-        self.destroy_child_tiles(local_id)
-        return {"success": True}
 
     @task_worthy_manual_submit
     def load_module_if_necessary(self, data, task_packet):
@@ -423,7 +419,7 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
             nfy = data["notify"]
         else:
             nfy = True
-        if self.tile_registry.tile_exists(container_id):
+        if self.tile_registry.exists(container_id):
             self.destroy_tile(container_id, nfy)
         else:
             destroy_container(container_id, nfy)
@@ -439,7 +435,7 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
     def delete_container_list(self, data):
         container_list = data["container_list"]
         for container_id in container_list:
-            if self.tile_registry.tile_exists(container_id):
+            if self.tile_registry.exists(container_id):
                 self.destroy_tile(container_id, notify=False)
             else:
                 destroy_container(container_id)
@@ -528,6 +524,23 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
     def flash_to_user(self, data):
         socketio.emit("doFlashUser", data, namespace='/main', room=data["user_id"])
         return {"success": True}
+
+    @task_worthy
+    def get_open_client_sessions_task(self, data):
+        open_client_sessions = self.client_session_registry.get_open_client_sessions()
+        return {"success": True, "open_sessions": open_client_sessions}
+
+    @task_worthy
+    def end_client_session_task(self, data):
+        global_id = data["global_id"]
+        self.end_client_session(global_id, False)
+
+    def end_client_session(self, global_id, emit=True):
+        if emit:
+            socketio.emit("endSession", {}, namespace='/main', room=global_id)
+        self.client_session_registry.delete(global_id)
+        self.post_task("module_viewer", "client_session_ended", {"global_id": global_id})
+        self.post_task("main_service", "client_session_ended", {"global_id": global_id})
 
     @task_worthy
     def print_text_area_to_console(self, data):
@@ -642,14 +655,6 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         return ddict
 
     @task_worthy
-    def register_container(self, data):
-        tactic_app.health_tracker.register_container(data["container_id"])
-
-    @task_worthy
-    def deregister_container(self, data):
-        tactic_app.health_tracker.deregister_container(data["container_id"])
-
-    @task_worthy
     def StartAssistant(self, data):
         parent_id = data["parent_id"]
         user_id = data["user_id"]
@@ -689,13 +694,13 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         if not force_post and (dest_id == "host" or dest_id == self.my_id):
             super(HostWorker, self).handle_event(task_packet)
         else:
+            if not self.channel:
+                return
             self.post_packet(dest_id, task_packet, reply_to="host", callback_id=task_packet["callback_id"])
-        tactic_app.health_tracker.check_health()
         return
 
     def handle_event(self, task_packet):
         super(HostWorker, self).handle_event(task_packet)
-        tactic_app.health_tracker.check_health()
         return
 
     def handle_response(self, task_packet):
@@ -703,7 +708,6 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
             self.handle_client_response(task_packet)
         else:
             super(HostWorker, self).handle_response(task_packet)
-        tactic_app.health_tracker.check_health()
 
     def handle_client_response(self, task_packet):
         try:
@@ -723,100 +727,9 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
             self.handle_exception(ex, special_string)
         return
 
-class HealthTracker(RedisManager):
-    def __init__(self, client):
-        self.prefix = "ht"
-        RedisManager.__init__(self, client)
-        self.last_health_check = current_timestamp()  # I don't want to be hitting redis constantly
-        if not self.exists(None, "last_health_check"):
-            self.set(None, "last_health_check", current_timestamp())
-
-    def expand_key(self, username, key):
-        full_key = f"{self.prefix}.{key}"
-        return full_key
-
-    def is_container_health_data(self, k):
-        return self.cli.type(k) == "hash" and self.cli.hexists(k, "am_health_data")
-
-    def register_container(self, container_id):
-        ctime = current_timestamp()
-        starting_data = {
-            "created": ctime,
-            "last_contact": ctime,
-            "am_health_data": "True"
-        }
-        self.set_hash_dict(None, container_id, starting_data)
-
-    def register_container_heartbeat(self, container_id):
-        if not self.exists(None, container_id):
-            self.register_container(container_id)
-        else:
-            self.set_hash_entry(None, container_id, "last_contact", current_timestamp())
-
-    def check_health(self):
-        if tactic_app.host_worker.my_id == "host5000":  ## Only initiate checks from one host
-            current_time = current_timestamp()
-            if (current_time - self.last_health_check) > health_check_time:
-                if not self.exists(None, "last_health_check"):
-                    # we want to see if another worker has done a check more recently
-                    last_check = self.get(None, "last_health_check")
-                    if last_check is None:
-                        self.set(None, "last_health_check", current_time)
-                        return
-                    last_worker_check = float(last_check)
-                    if (current_time - last_worker_check) < health_check:
-                        return
-                self.check_for_dead_containers()
-                self.set(None, "last_health_check", current_time)
-        return
-
-    def deregister_container(self, container_id):
-        print(f"deregister_container with container_id {container_id}")
-        if self.exists(None, container_id):
-            print(f"deleting health data for container_id {container_id}")
-            self.delete(None, container_id)
-        else:
-            print(f"no health data found for container_id {container_id}")
-
-    def update_contact(self, container_id):
-        if self.exists(None, container_id):
-            self.set_has_entry(None, container_id, "last_contact", current_timestamp())
-
-    def last_contact(self, container_id):
-        return float(self.get_hash_entry(None, container_id, "last_contact"))
-
-    def created(self, container_id):
-        if not self.exists(None, container_id):
-            raise ValueError(f"No health data found for container {container_id}")
-        return float(self.get_hash_entry(None, container_id, "created"))
-
-    @staticmethod
-    def k_to_cont_id(k):
-        return re.findall(r"ht\.(.*)", k)[0]
-
-    def check_for_dead_containers(self):
-        current_time = current_timestamp()
-        cont_list = []
-        all_keys = self.scan_keys_with_prefix(None, "*")
-        for k in all_keys:
-            if self.is_container_health_data(k):
-                cid = self.k_to_cont_id(k)
-                if (current_time - self.last_contact(cid)) > inactive_container_time:
-                    print(f"found an inactive container {cid}")
-                    cont_list.append(k)
-                    continue
-                if (current_time - self.created(cid)) > old_container_time:
-                    print("found an old container")
-                    cont_list.append(k)
-        for cont_id in cont_list:
-            if tactic_app.host_worker.tile_registry.tile_exists(cont_id):
-                tactic_app.host_worker.destroy_tile(cont_id, notify=True)
-            else:
-                destroy_container(cont_id)
-
-print("creating healthtracker")
-tactic_app.health_tracker = HealthTracker(redis_client)
 print("creating host worker")
 tactic_app.host_worker = HostWorker()
+tactic_app.utility_worker = HostUtilityWorker(tactic_app.host_worker)
 print("starting host worker")
 tactic_app.host_worker.start()
+tactic_app.utility_worker.start()

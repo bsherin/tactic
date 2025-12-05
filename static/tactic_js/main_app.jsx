@@ -27,14 +27,14 @@ import {tilesReducer, fixTileFrontContent} from "./tile_container_support"
 import {ExportsViewer} from "./export_viewer_react";
 import {ConsoleComponent} from "./console_component";
 import {consoleItemsReducer} from "./console_support";
-import {handleCallback, postPromise, postPromiseMain, postWithCallbackMain, postAjax} from "./communication_react";
+import {handleCallback, postPromise, postPromiseMain, postWithCallbackMain, postWithCallback} from "./communication_react";
 import {doFlash} from "./toaster"
 import {withStatus} from "./toaster";
 import {withErrorDrawer} from "./error_drawer";
 import {get_ppi, guid, renderSpinnerMessage, useConnection, useConstructor, useStateAndRef} from "./utilities_react";
 import {ICON_BAR_WIDTH} from "./sizing_tools";
 import {ErrorBoundary} from "./error_boundary";
-import {useCallbackStack, useReducerAndRef} from "./utilities_react";
+import {useCallbackStack, useReducerAndRef, withRegisterActivity} from "./utilities_react";
 import {SettingsContext, withSettings} from "./settings";
 import {withPool} from "./pool_tree"
 import {withAssistant} from "./assistant";
@@ -157,6 +157,7 @@ function MainApp(props) {
                 if (_dirty()) {
                     e.preventDefault();
                 }
+                postWithCallback("host", "end_client_session_task", {global_id: window.global_id, force_forward: true})
                 props.tsocket.disconnect()
             });
         }
@@ -175,9 +176,9 @@ function MainApp(props) {
         postPromiseMain(props.local_id, "recreate_tiles", {})
             .then(()=>{console.log("finished tile recreation")})
         return (() => {
-            delete_my_containers();
-            postPromiseMain(props.local_id, "end_session_task", {})
-                .then(()=>{})
+            if (props.controlled) {
+                postWithCallbackMain(props.local_id, "end_main_session_task", {sid: props.local_id})
+            }
             window.removeEventListener("unload", sendRemove);
         })
 
@@ -226,10 +227,6 @@ function MainApp(props) {
             }
         }
         return false
-    }
-
-    function delete_my_containers() {
-        postAjax("/remove_mainwindow", {local_id: props.local_id});
     }
 
     async function _update_menus_listener() {
@@ -297,6 +294,11 @@ function MainApp(props) {
         props.tsocket.attachListener("update-menus", _update_menus_listener);
         props.tsocket.attachListener("tile-finished-loading", _handleTileFinishedLoading);
         props.tsocket.attachListener('change-doc', _change_doc_listener);
+        if (!props.controlled) {
+            props.tsocket.attachListener("endSession", function () {
+                dialogFuncs.showModal("EndSessionDialog", {})
+            })
+        }
     }
 
     function isFreeform() {
@@ -1145,7 +1147,6 @@ function MainApp(props) {
                 <TacticNavbar is_authenticated={window.is_authenticated}
                               user_name={window.username}
                               menus={null}
-                              global_id={props.global_id}
                 />
             }
             <MetadataContext.Provider value={{
@@ -1237,7 +1238,7 @@ MainApp = memo(MainApp);
 
 function main_main() {
     function gotProps(the_props) {
-        let MainAppPlus = withPool(withSettings(withDialogs(withErrorDrawer(withStatus(withAssistant(MainApp))))));
+        let MainAppPlus = withRegisterActivity(withPool(withSettings(withDialogs(withErrorDrawer(withStatus(withAssistant(MainApp)))))));
         let the_element = <MainAppPlus {...the_props}
                                        controlled={false}
                                        changeName={null}
@@ -1267,7 +1268,7 @@ function main_main() {
         if (window.project_name == "") {
             if (window.collection_name != "") {
                 postPromise("main_service", "initialize_session_from_collection", {
-                    collection_name: resource_name,
+                    collection_name: resource_name, global_id: window.global_id,
                     base_figure_url: window.base_figure_url,
                     local_id: local_id, username: window.username, ppi: get_ppi()
                 })
@@ -1281,7 +1282,7 @@ function main_main() {
 
             } else {
                 postPromise("main_service", "initialize_session_for_new_project", {
-                    base_figure_url: window.base_figure_url,
+                    base_figure_url: window.base_figure_url, global_id: window.global_id,
                     local_id: local_id, username: window.username, ppi: get_ppi()
                 })
                     .then((data) => {
@@ -1294,7 +1295,7 @@ function main_main() {
             }
         } else {
             postPromise("main_service", "initialize_session_from_save", {
-                project_name: resource_name,
+                project_name: resource_name, global_id: window.global_id,
                 base_figure_url: window.base_figure_url,
                 local_id: local_id, username: window.username, ppi: get_ppi()
             })

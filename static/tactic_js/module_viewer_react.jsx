@@ -12,7 +12,7 @@ import {useHotkeys} from "@blueprintjs/core";
 import {ResourceViewerApp, copyToLibrary, sendToRepository} from "./resource_viewer_react_app";
 import {TacticSocket} from "./tactic_socket";
 import {ReactCodemirror6} from "./react-codemirror6";
-import {postPromise, handleCallback} from "./communication_react"
+import {postPromise, handleCallback, postWithCallback} from "./communication_react"
 import {ErrorDrawerContext, withErrorDrawer} from "./error_drawer";
 import {withStatus, StatusContext} from "./toaster";
 import {withAssistant} from "./assistant";
@@ -20,7 +20,7 @@ import {withAssistant} from "./assistant";
 import {ICON_BAR_WIDTH} from "./sizing_tools";
 import {guid} from "./utilities_react";
 import {TacticNavbar} from "./blueprint_navbar";
-import {useCallbackStack, useStateAndRef} from "./utilities_react";
+import {useCallbackStack, useStateAndRef, withRegisterActivity} from "./utilities_react";
 import {SettingsContext, withSettings} from "./settings";
 import {DialogContext, withDialogs} from "./modal_react";
 import {SelectedPaneContext, convertExtraKeys} from "./utilities_react";
@@ -107,6 +107,7 @@ function ModuleViewerApp(props) {
                     e.preventDefault();
                     e.returnValue = ''
                 }
+                postWithCallback("host", "end_client_session_task", {global_id: window.global_id, force_forward: true})
                 props.tsocket.disconnect()
             })
         }
@@ -461,7 +462,6 @@ function ModuleViewerApp(props) {
                 <TacticNavbar is_authenticated={window.is_authenticated}
                               selected={null}
                               show_api_links={true}
-                              global_id={props.global_id}
                               user_name={window.username}/>
             }
             <div className={outer_class} ref={top_ref} style={outer_style}
@@ -509,7 +509,7 @@ ModuleViewerApp = memo(ModuleViewerApp);
 function module_viewer_main() {
     let local_id = "a" + guid();
     function gotProps(the_props) {
-        let ModuleViewerAppPlus = withSettings(withDialogs(withErrorDrawer(withStatus(withAssistant(ModuleViewerApp)))));
+        let ModuleViewerAppPlus = withRegisterActivity(withSettings(withDialogs(withErrorDrawer(withStatus(withAssistant(ModuleViewerApp))))));
         let the_element = <ModuleViewerAppPlus {...the_props}
                                                controlled={false}
                                                changeName={null}

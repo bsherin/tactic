@@ -21,14 +21,12 @@ function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) 
 function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
 function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
 function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
-window.global_id = (0, _utilities_react.guid)();
-var tsocket;
+window.global_id = "a" + (0, _utilities_react.guid)();
 function _login_main() {
   if (window._show_message) (0, _toaster.doFlash)(window._message);
   var domContainer = document.querySelector('#root');
   var root = (0, _client.createRoot)(domContainer);
   var LoginAppPlus = (0, _toaster.withStatus)(LoginApp);
-  //let useDark = get_theme_cookie() == "dark";
   root.render(/*#__PURE__*/_react["default"].createElement(_settings.SettingsContext.Provider, {
     value: {
       settings: null,
@@ -62,7 +60,6 @@ function LoginApp(props) {
     password_warning_text = _useState8[0],
     set_password_warning_text = _useState8[1];
   var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
-  var pushCallback = (0, _utilities_react.useCallbackStack)();
   var inputRef = (0, _react.useRef)(null);
   (0, _react.useEffect)(function () {
     inputRef.current.focus();

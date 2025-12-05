@@ -20,10 +20,10 @@ import {FocusStyleManager} from "@blueprintjs/core";
 
 FocusStyleManager.onlyShowFocusOnTabs();
 
-import {SelectedPaneContext} from "./utilities_react";
+import {SelectedPaneContext, useRegisterActivity, withRegisterActivity} from "./utilities_react";
 import {TacticSocket} from "./tactic_socket";
 import {OpenOmnibar} from "./TacticOmnibar";
-import {handleCallback, postPromise, postPromiseMain} from "./communication_react";
+import {handleCallback, postPromise, postWithCallback} from "./communication_react";
 import {doFlash, StatusContext, withStatus} from "./toaster";
 import {TacticNavbar} from "./blueprint_navbar";
 import {ErrorBoundary} from "./error_boundary";
@@ -81,7 +81,7 @@ const panelRootDict = {
     "notebook-viewer": "main-root"
 };
 
-window.global_id = guid();
+window.global_id = "a" + guid();
 
 let tsocket = new TacticSocket("main", 5000, "context", window.global_id);
 
@@ -108,7 +108,7 @@ if (window.has_pool) {
 }
 
 function _context_main() {
-    const ContextAppPlus = withPool(withSettings(withDialogs(withErrorDrawer(withStatus(withAssistant(ContextApp))))));
+    const ContextAppPlus = withRegisterActivity(withPool(withSettings(withDialogs(withErrorDrawer(withStatus(withAssistant(ContextApp)))))));
     const domContainer = document.querySelector('#context-root');
     const root = createRoot(domContainer);
     root.render(
@@ -185,6 +185,7 @@ function ContextApp(props) {
         window.addEventListener("beforeunload", function (e) {
             e.preventDefault();
             e.returnValue = 'Are you sure you want to close? All changes will be lost.';
+            postWithCallback("host", "end_client_session_task", {global_id: window.global_id, force_forward: true})
             tsocket.disconnect()
         });
     }, []);
@@ -211,6 +212,9 @@ function ContextApp(props) {
         props.tsocket.attachListener('handle-callback', (task_packet) => {
             handleCallback(task_packet,  props.local_id)
         });
+        props.tsocket.attachListener("endSession", function () {
+            dialogFuncs.showModal("EndSessionDialog", {})
+        })
     }
 
     function getItemFromdentifier(identifier) {
@@ -310,14 +314,14 @@ function ContextApp(props) {
                     break;
                 case "creator-tile":
                     data = await postPromise("host", "initiate_creator_in_context",
-                            {tile_module_name: resource_name, local_id: new_viewer_id});
+                            {tile_module_name: resource_name, local_id: new_viewer_id, global_id: window.global_id});
                     break;
                 case "tile":
                     let ls_result = await postPromise("host", "get_last_saved_task", {tile_module_name: resource_name});
                     let last_saved = ls_result.last_saved;
                     if (last_saved == "creator") {
                         data = await postPromise("host", "initiate_creator_in_context",
-                            {tile_module_name: resource_name, local_id: new_viewer_id});
+                            {tile_module_name: resource_name, local_id: new_viewer_id, global_id: window.global_id});
                     }
                     else {
                         data = {
@@ -332,27 +336,27 @@ function ContextApp(props) {
                     break;
                 case "collection":
                     data = await postPromise("main_service", "initialize_session_from_collection",
-                            {collection_name: resource_name, base_figure_url: window.base_figure_url,
+                            {collection_name: resource_name, base_figure_url: window.base_figure_url, global_id: window.global_id,
                                 local_id: new_viewer_id, username: window.username, ppi: get_ppi()})
                     break;
                 case "project":
                     data = await postPromise("main_service", "initialize_session_from_save", {project_name: resource_name,
-                        base_figure_url: window.base_figure_url,
+                        base_figure_url: window.base_figure_url, global_id: window.global_id,
                         local_id: new_viewer_id, username: window.username, ppi: get_ppi()});
                     break;
                 case "new-notebook":
                     if (temp_data_id) {
                         data = await postPromise("main_service", "initialize_session_for_new_notebook", {temp_data_id: temp_data_id,
-                            local_id: new_viewer_id, username: window.username, ppi: get_ppi()});
+                            local_id: new_viewer_id, global_id: window.global_id, username: window.username, ppi: get_ppi()});
                     } else {
                         data = await postPromise("main_service", "initialize_session_for_new_notebook", {
-                            base_figure_url: window.base_figure_url,
+                            base_figure_url: window.base_figure_url, global_id: window.global_id,
                             local_id: new_viewer_id, username: window.username, ppi: get_ppi()});
                     }
                     break;
                 case "new-project":
                     data = await postPromise("main_service", "initialize_session_for_new_project",
-                        {base_figure_url: window.base_figure_url,
+                        {base_figure_url: window.base_figure_url, global_id: window.global_id,
                         local_id: new_viewer_id, username: window.username, ppi: get_ppi()});
                     break;
                 case "text":
@@ -855,7 +859,6 @@ function ContextApp(props) {
                           selected={null}
                           show_api_links={false}
                           extra_text={window.database_type === "Local" ? "" : window.database_type}
-                          global_id={props.global_id}
                           user_name={window.username}/>
             <div className={outer_class} tabIndex="0" style={outer_style} ref={top_ref}
                  id="context-container"

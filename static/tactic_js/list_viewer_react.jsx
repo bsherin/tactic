@@ -15,7 +15,7 @@ import { useHotkeys } from "@blueprintjs/core";
 
 import {ResourceViewerApp, copyToLibrary, sendToRepository} from "./resource_viewer_react_app";
 import {TacticSocket} from "./tactic_socket";
-import {handleCallback, postPromise} from "./communication_react"
+import {handleCallback, postPromise, postWithCallback} from "./communication_react"
 import {withStatus} from "./toaster"
 import {withAssistant} from "./assistant";
 
@@ -23,7 +23,7 @@ import {withSettings} from "./settings"
 import {ErrorDrawerContext, withErrorDrawer} from "./error_drawer";
 import {guid} from "./utilities_react";
 import {TacticNavbar} from "./blueprint_navbar";
-import {useCallbackStack, useStateAndRef} from "./utilities_react";
+import {useCallbackStack, useStateAndRef, withRegisterActivity} from "./utilities_react";
 import {SettingsContext} from "./settings"
 import {DialogContext, withDialogs} from "./modal_react";
 import {StatusContext} from "./toaster";
@@ -145,6 +145,7 @@ function ListViewerApp(props) {
                 if (_dirty()) {
                     e.preventDefault();
                 }
+                postWithCallback("host", "end_client_session_task", {global_id: window.global_id, force_forward: true})
             });
         }
     }, []);
@@ -303,7 +304,6 @@ function ListViewerApp(props) {
                 <TacticNavbar is_authenticated={window.is_authenticated}
                               selected={null}
                               show_api_links={true}
-                              global_id={props.global_id}
                               user_name={window.username}/>
             }
             <div className={outer_class} ref={top_ref} style={outer_style}
@@ -336,7 +336,7 @@ async function list_viewer_main() {
     let local_id = "a" + guid();
 
     function gotProps(the_props) {
-        let ListViewerAppPlus = withSettings(withDialogs(withErrorDrawer(withStatus(withAssistant(ListViewerApp)))));
+        let ListViewerAppPlus = withRegisterActivity(withSettings(withDialogs(withErrorDrawer(withStatus(withAssistant(ListViewerApp))))));
         let the_element = <ListViewerAppPlus {...the_props}
                                              controlled={false}
                                              changeName={null}

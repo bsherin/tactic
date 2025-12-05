@@ -217,7 +217,7 @@ class TileCreationTasksMixin:
             if not recreate_response["success"]:
                 tile_info = sess.tile_info
                 tile_info.set_save_dict(tile_id, recreate_response["tile_save_dict"])
-                self.mworker.ask_host("delete_container", {"container_id": new_id, "notify": False})
+                self.mworker.ask_host("delete_container", {"container_id": tile_id, "notify": False})
                 self.mworker.submit_response(task_packet, {"tile_id": tile_id})
                 return
 

@@ -17,6 +17,10 @@ SQS_QUEUE_URL = get_ssm_parameter("SQS_QUEUE_URL")
 AWS_REGION = get_ssm_parameter("MY_AWS_REGION", "us-east-2")
 on_aws = os.getenv("RUNNING_ON_AWS","false").lower() == "true"
 
+class SessionNotFoundError(Exception):
+    pass
+
+
 class SessionAccessor(object):
     def __init__(self, ss, sid):
         object.__setattr__(self, "ss", ss)
@@ -40,6 +44,11 @@ class SessionAccessor(object):
     def end_session(self):
         self.ss.end_session(self.sid)
 
+    @classmethod
+    def create(cls, ss, sid):
+        if not ss.session_exists(sid):
+            raise SessionNotFoundError("Module viewer session not found")
+        return cls(ss, sid)
 
 class SessionStoreS3:
     defaults = {}
@@ -112,6 +121,21 @@ class SessionStoreS3:
 
     # ----- public API -----
 
+
+    def get_global_id_sids(self, global_id):
+        sids = self.get_unique_sids()
+        result = []
+        for sid in sids:
+            gid = self.ss.get_val(sid, "global_id")
+            if gid == global_id:
+                result.append(sid)
+        return result
+
+    def end_global_id_sesssions(self, global_id):
+        sids = self.get_global_id_sids(global_id)
+        for sid in sids:
+            self.end_session(sid)
+
     def initialize_session(self, sid, sdict=None):
         for k, v in self.defaults.items():
             if type(v) == dict and "is_hash" in v and v["is_hash"]:
@@ -124,6 +148,24 @@ class SessionStoreS3:
                     self.put_val(sid, k, sdict[k])
                 else:
                     self.put_val(sid, k, v["default"])
+
+    def session_exists(self, sid):
+        pattern = f"sess.{{{sid}}}.*"
+        exists = any(self.r.scan_iter(match=pattern))
+        return exists
+
+    def get_unique_sids(self):
+        sid_pattern = re.compile(r"sess\.\{([^}]+)\}")
+        sids = set()
+        for key in self.r.scan_iter(match="sess.{*}*"):
+            # redis-py returns bytes by default
+            if isinstance(key, bytes):
+                key = key.decode()
+
+            m = sid_pattern.match(key)
+            if m:
+                sids.add(m.group(1))
+        return list(sids)
 
     def end_session(self, sid, batch=1000):
         pattern = f"sess.{{{sid}}}.*"

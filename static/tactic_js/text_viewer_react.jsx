@@ -12,13 +12,13 @@ import { useHotkeys } from "@blueprintjs/core";
 
 import {ResourceViewerApp, copyToLibrary} from "./resource_viewer_react_app";
 import {TacticSocket} from "./tactic_socket";
-import {handleCallback, postPromise} from "./communication_react"
+import {handleCallback, postPromise, postWithCallback} from "./communication_react"
 import {withStatus} from "./toaster.js"
 
 import {ErrorDrawerContext, withErrorDrawer} from "./error_drawer.js";
 import {guid} from "./utilities_react";
 import {TacticNavbar} from "./blueprint_navbar";
-import {useCallbackStack, useStateAndRef} from "./utilities_react";
+import {useCallbackStack, useStateAndRef, withRegisterActivity} from "./utilities_react";
 import {SettingsContext, withSettings} from "./settings"
 import {DialogContext, withDialogs} from "./modal_react";
 import {StatusContext} from "./toaster";
@@ -126,6 +126,7 @@ function TextViewerApp(props) {
                     e.preventDefault();
                     e.returnValue = ''
                 }
+                postWithCallback("host", "end_client_session_task", {global_id: window.global_id, force_forward: true})
                 props.tsocket.disconnect()
             })
         }
@@ -256,7 +257,6 @@ function TextViewerApp(props) {
                 <TacticNavbar is_authenticated={window.is_authenticated}
                               selected={null}
                               show_api_links={true}
-                              global_id={props.global_id}
                               user_name={window.username}/>
             }
             <div className={outer_class} ref={top_ref} style={outer_style}
@@ -292,7 +292,7 @@ TextViewerApp = memo(TextViewerApp);
 async function text_viewer_main() {
     let local_id = "a" + guid();
     function gotProps(the_props) {
-        let TextViewerAppPlus = withSettings(withDialogs(withErrorDrawer(withStatus(TextViewerApp))));
+        let TextViewerAppPlus = withRegisterActivity(withSettings(withDialogs(withErrorDrawer(withStatus(TextViewerApp)))));
         let the_element = <TextViewerAppPlus {...the_props}
                                              controlled={false}
                                              changeName={null}

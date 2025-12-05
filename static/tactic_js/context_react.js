@@ -93,7 +93,7 @@ var panelRootDict = {
   "main-viewer": "main-root",
   "notebook-viewer": "main-root"
 };
-window.global_id = (0, _utilities_react.guid)();
+window.global_id = "a" + (0, _utilities_react.guid)();
 var tsocket = new _tactic_socket.TacticSocket("main", 5000, "context", window.global_id);
 var classDict = {
   "module-viewer": _module_viewer_react.ModuleViewerApp,
@@ -115,7 +115,7 @@ if (window.has_pool) {
   });
 }
 function _context_main() {
-  var ContextAppPlus = (0, _pool_tree.withPool)((0, _settings.withSettings)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)((0, _assistant.withAssistant)(ContextApp))))));
+  var ContextAppPlus = (0, _utilities_react.withRegisterActivity)((0, _pool_tree.withPool)((0, _settings.withSettings)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)((0, _assistant.withAssistant)(ContextApp)))))));
   var domContainer = document.querySelector('#context-root');
   var root = (0, _client.createRoot)(domContainer);
   root.render(/*#__PURE__*/_react["default"].createElement(ContextAppPlus, {
@@ -224,6 +224,10 @@ function ContextApp(props) {
     window.addEventListener("beforeunload", function (e) {
       e.preventDefault();
       e.returnValue = 'Are you sure you want to close? All changes will be lost.';
+      (0, _communication_react.postWithCallback)("host", "end_client_session_task", {
+        global_id: window.global_id,
+        force_forward: true
+      });
       tsocket.disconnect();
     });
   }, []);
@@ -246,6 +250,9 @@ function ContextApp(props) {
     });
     props.tsocket.attachListener('handle-callback', function (task_packet) {
       (0, _communication_react.handleCallback)(task_packet, props.local_id);
+    });
+    props.tsocket.attachListener("endSession", function () {
+      dialogFuncs.showModal("EndSessionDialog", {});
     });
   }
   function getItemFromdentifier(identifier) {
@@ -412,7 +419,8 @@ function ContextApp(props) {
             _context6.n = 4;
             return (0, _communication_react.postPromise)("host", "initiate_creator_in_context", {
               tile_module_name: resource_name,
-              local_id: new_viewer_id
+              local_id: new_viewer_id,
+              global_id: window.global_id
             });
           case 4:
             data = _context6.v;
@@ -432,7 +440,8 @@ function ContextApp(props) {
             _context6.n = 7;
             return (0, _communication_react.postPromise)("host", "initiate_creator_in_context", {
               tile_module_name: resource_name,
-              local_id: new_viewer_id
+              local_id: new_viewer_id,
+              global_id: window.global_id
             });
           case 7:
             data = _context6.v;
@@ -454,6 +463,7 @@ function ContextApp(props) {
             return (0, _communication_react.postPromise)("main_service", "initialize_session_from_collection", {
               collection_name: resource_name,
               base_figure_url: window.base_figure_url,
+              global_id: window.global_id,
               local_id: new_viewer_id,
               username: window.username,
               ppi: (0, _utilities_react.get_ppi)()
@@ -466,6 +476,7 @@ function ContextApp(props) {
             return (0, _communication_react.postPromise)("main_service", "initialize_session_from_save", {
               project_name: resource_name,
               base_figure_url: window.base_figure_url,
+              global_id: window.global_id,
               local_id: new_viewer_id,
               username: window.username,
               ppi: (0, _utilities_react.get_ppi)()
@@ -482,6 +493,7 @@ function ContextApp(props) {
             return (0, _communication_react.postPromise)("main_service", "initialize_session_for_new_notebook", {
               temp_data_id: temp_data_id,
               local_id: new_viewer_id,
+              global_id: window.global_id,
               username: window.username,
               ppi: (0, _utilities_react.get_ppi)()
             });
@@ -493,6 +505,7 @@ function ContextApp(props) {
             _context6.n = 17;
             return (0, _communication_react.postPromise)("main_service", "initialize_session_for_new_notebook", {
               base_figure_url: window.base_figure_url,
+              global_id: window.global_id,
               local_id: new_viewer_id,
               username: window.username,
               ppi: (0, _utilities_react.get_ppi)()
@@ -505,6 +518,7 @@ function ContextApp(props) {
             _context6.n = 20;
             return (0, _communication_react.postPromise)("main_service", "initialize_session_for_new_project", {
               base_figure_url: window.base_figure_url,
+              global_id: window.global_id,
               local_id: new_viewer_id,
               username: window.username,
               ppi: (0, _utilities_react.get_ppi)()
@@ -1211,7 +1225,6 @@ function ContextApp(props) {
     selected: null,
     show_api_links: false,
     extra_text: window.database_type === "Local" ? "" : window.database_type,
-    global_id: props.global_id,
     user_name: window.username
   }), /*#__PURE__*/_react["default"].createElement("div", {
     className: outer_class,

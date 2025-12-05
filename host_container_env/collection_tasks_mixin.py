@@ -2,56 +2,9 @@ import uuid
 from flask import url_for
 from qworker import task_worthy
 
-from redis_tools import ready_block_manager
-
 from docker_functions import main_container_info
 
 class CollectionTasksMixin:
-
-    @task_worthy
-    def initiate_collection_in_context(self, data):
-        user_obj = self.get_user_from_data(data)
-        user_id = data["user_id"]
-        local_id = data.get("local_id", str(uuid.uuid4()))
-        short_collection_name = data["collection_name"]
-        _, rb_id = main_container_info.create_main_container(short_collection_name, user_obj.get_id(),
-                                                                   user_obj.username,
-                                                                   openai_api_key = user_obj.get_openai_api_key(),
-                                                                   special_unique_id=local_id)
-        ready_block_manager.create_ready_block(rb_id, user_obj.username, [local_id, "client"], local_id)
-        doc_dict, doc_mddict, hl_dict, mdata = user_obj.get_all_collection_info(short_collection_name)
-        if "_id" in mdata:
-            del(mdata["_id"])
-        if "type" in mdata and mdata["type"] == "freeform":
-            doc_type = "freeform"
-        else:
-            doc_type = "table"
-        is_legacy_save = "save_style" in mdata and mdata["save_style"] != "b64save_react"
-        doc_names = list(doc_dict.keys())
-        tile_types, icon_dict = self.get_tile_types(user_id)
-        data = {
-            "success": True,
-            "kind": "main-viewer",
-            "res_type": "collection",
-            "short_collection_name": short_collection_name,
-            "resource_name": short_collection_name,
-            "collection_name": short_collection_name,
-            "local_id": local_id,
-            "ready_block_id": rb_id,
-            "is_project": False,
-            "is_legacy_save": is_legacy_save,
-            "project_name": "",
-            "tile_types": tile_types,
-            "icon_dict": icon_dict,
-            "doc_names": doc_names,
-            "base_figure_url": url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1],
-            "temp_data_id": "",
-            "console_html": "",
-            "doc_type": doc_type,
-            "is_table": doc_type == "table",
-            "is_freeform": doc_type == "freeform"
-        }
-        return data
 
     @task_worthy
     def update_collectio_task(self, data):  # This is called from the list viewer

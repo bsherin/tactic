@@ -148,7 +148,7 @@ def create_container(image_name, container_name=None, network_mode="bridge", hos
                      lwait_until_running=True, owner="host", parent="host",
                      env_vars=None, port_bindings=None, wait_retries=50,
                      other_name="none", volume_dict=None, username=None,
-                     detach=True, register_container=True, publish_all_ports=False,
+                     detach=True, publish_all_ports=False,
                      restart_policy=None, special_unique_id=None, remove=False):
 
     if special_unique_id is not None:
@@ -249,9 +249,6 @@ def create_container(image_name, container_name=None, network_mode="bridge", hos
             print("sleeping while waiting for container {} to run".format(str(cont_id)))
             time.sleep(0.1)
 
-    if register_container:
-        print("posting register_container to the host with id {}".format(unique_id))
-        post_task_noqworker("host", "host", "register_container", {"container_id": unique_id})
     print("leaving create_container")
     return unique_id, cont_id
 
@@ -325,6 +322,16 @@ def container_id(container):
         return container.attrs["Config"]["Labels"]["my_id"]
     else:
         return "system"
+
+def get_tile_container_ids():
+    all_containers = cli.containers.list()
+    container_ids = []
+    for container in all_containers:
+        image_name = container_image(container)
+        if "tactic-tile" in image_name:
+            if not container.name == "tile_test_container":
+                container_ids.append(container_id(container))
+    return container_ids
 
 def get_container(tactic_id):
     try:
@@ -514,12 +521,10 @@ def destroy_container(tactic_id, notify=True):
         message = None
         if cont is None:
             print(f"container ${tactic_id} not found, but still need to deregister")
-            post_task_noqworker("host", "host", "deregister_container", {"container_id": tactic_id})
             return 1
         else:
             print(f"container ${tactic_id} found")
             cont_type = get_container_type(cont)
-            post_task_noqworker("host", "host", "deregister_container", {"container_id": tactic_id})
 
             if notify:
                 if cont_type == "main" or cont_type == "module_viewer":

@@ -1,6 +1,8 @@
 import os
 import re
+import time
 from rabbit_admin import list_queues, delete_queue
+from redis_tools import RedisManager, redis_client
 
 use_ecs = os.getenv("USE_ECS_TILES","false").lower() == "true"
 
@@ -12,14 +14,19 @@ if use_ecs:
     ECS_CLUSTER = get_ssm_parameter("ECS_CLUSTER", "tactic-cluster")
     ecs = boto3.client("ecs", region_name=AWS_REGION)
 
-class ServiceRegistry:
-    def __init__(self, worker, id_prefix="", service_name="", extra_valid_ids=None):
-        self.id_prefix = id_prefix
-        self._registry = {}
+class ServiceRegistry(RedisManager):
+    id_prefix = ""
+    prefix = ""
+    service_name = ""
+    extra_valid_ids = None
+
+    def __init__(self, worker):
+        super().__init__(redis_client)
         self.worker = worker
-        self.service_name = service_name
-        self.extra_valid_ids = extra_valid_ids
         self.removed_obsolete_queues = False
+
+    def expand_key(self, cont_id, narrower=None):
+        return f"service.{self.service_name}.{cont_id}"
 
     def task_to_id(self, task):
         return f'{self.id_prefix}{task["taskArn"].split("/")[-1]}'
@@ -48,15 +55,52 @@ class ServiceRegistry:
                     tasks.append(t)
         return tasks
 
+    def set_container_dict(self, cont_id, container_info):
+        self.set_hash_dict(cont_id, container_info)
+
+    def set_container_info(self, cont_id, hash_key, value):
+        self.set_hash_entry(cont_id, hash_key, value)
+
+    def set_container_info_from_dict(self, cont_id, info_dict):
+        for k, v in info_dict.items():
+            if v is None:
+                self.delete_hash_entry(cont_id, k)
+            else:
+                self.set_container_info(cont_id, k, v)
+
+    def container_ids(self):
+        return self.scan_keys(f"service.{self.service_name}.*", tail_only=True)
+
+    def get_container_info(self, cont_id, hash_key):
+        return self.get_hash_entry(cont_id, hash_key)
+
+    def get_container_dict(self, cont_id):
+        return self.get_hash_dict(cont_id)
+
+    def get(self, tile_id):
+        return self.get_container_dict(tile_id)
+
+    def get_arn(self, tile_id):
+        return self.get_container_info(tile_id, "task_arn")
+
+    def get_items(self):
+        container_ids = self.container_ids()
+        citems = [(cont_id, self.get_container_dict(cont_id)) for cont_id in container_ids]
+        return citems
+
+    def register_interaction(self, cont_id):
+        self.set_container_info(cont_it, "last_interaction", str(time.time()))
+
+    def register_container_heartbeat(self, cont_id):
+        self.set_container_info(cont_id, "last_heartbeat", str(time.time()))
+
     def remove_obsolete_queues(self):
-        print("got extra_valid_ids: {}".format(self.extra_valid_ids))
         if not use_ecs:
             self.removed_obsolete_queues = True
             return
         if self.worker.channel is None:
             print("in remove_obsolete_queues, channel isn't ready yet")
             return
-        print("removing obsolete queues")
 
         tasks = self.list_running_service_tasks()
         if not tasks:

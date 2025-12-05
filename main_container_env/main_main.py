@@ -8,8 +8,6 @@ if os.environ.get("DEBUG", "False").lower() == "true":
 
 print("entering main_main")
 
-import uuid
-import datetime
 import flask
 from flask import Flask
 import exception_mixin
@@ -17,7 +15,6 @@ from exception_mixin import ExceptionMixin
 from tactic_copilot_mixin import CopilotMixin
 from aws_helpers import resolve_task_identity, get_ssm_parameter
 
-import json
 import copy
 from communication_utils import emit_direct
 
@@ -27,12 +24,9 @@ print("back in main_main")
 from qworker import QWorker, task_worthy, callback_dict, callback_data_dict, error_handler_dict
 import qworker
 
-import sys
 import time
 
 queue_check_time = 60  # How often, in seconds, to inspect the queues
-
-import os
 
 print("about to define mainworker class")
 class MainWorker(QWorker, ExceptionMixin, CopilotMixin):

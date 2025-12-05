@@ -12,11 +12,11 @@ import {handleCallback} from "./communication_react"
 import {LibraryPane} from "./library_pane"
 import {withStatus} from "./toaster";
 import {withErrorDrawer} from "./error_drawer";
-import {useConnection, guid} from "./utilities_react";
+import {useConnection, guid, withRegisterActivity} from "./utilities_react";
 import {TacticNavbar} from "./blueprint_navbar";
 
 import {SettingsContext, withSettings} from "./settings";
-import {withDialogs} from "./modal_react";
+import {withDialogs, DialogContext} from "./modal_react";
 import {StatusContext} from "./toaster"
 
 import {RepositoryAllMenubar} from "./repository_menubars";
@@ -36,6 +36,7 @@ function RepositoryHomeApp(props) {
     const connection_status = useConnection(props.tsocket, initSocket);
     const settingsContext = useContext(SettingsContext);
     const statusFuncs = useContext(StatusContext);
+    const dialogFuncs = useContext(DialogContext)
 
     const top_ref = useRef(null);
 
@@ -52,6 +53,9 @@ function RepositoryHomeApp(props) {
                     window.close()
                 }
             });
+            tsocket.attachListener("endSession", function () {
+                dialogFuncs.showModal("EndSessionDialog", {})
+            })
         }
     }
 
@@ -88,7 +92,6 @@ function RepositoryHomeApp(props) {
         <Fragment>
             <TacticNavbar is_authenticated={window.is_authenticated}
                           selected={null}
-                          global_id={window.global_id}
                           show_api_links={false}
                           extra_text={window.repository_type == "Local" ? "" : window.repository_type}
                           user_name={window.username}/>
@@ -108,7 +111,7 @@ function _repository_home_main() {
             handleCallback(task_packet, library_id)
         });
         tsocket.socket.emit('join-repository', {});
-        let RepositoryHomeAppPlus = withSettings(withDialogs(withErrorDrawer(withStatus(RepositoryHomeApp))));
+        let RepositoryHomeAppPlus = withRegisterActivity(withSettings(withDialogs(withErrorDrawer(withStatus(RepositoryHomeApp)))));
         const domContainer = document.querySelector('#library-home-root');
         const root = createRoot(domContainer);
         root.render(

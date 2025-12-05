@@ -23,6 +23,7 @@ import communication_utils
 from communication_utils import send_request_to_container
 from integrated_docs import handler_methods
 from docker_functions import db_name, mongo_uri
+from aws_helpers import get_ssm_parameter
 
 import exception_mixin as exception_mixin
 from redis_tools import MESSAGE_QUEUE
@@ -39,7 +40,6 @@ fs = None
 repository_fs = None
 socketio = None
 host_worker = None
-health_tracker = None
 
 
 def create_collection(self, collection_name):
@@ -52,6 +52,7 @@ Database.create_collection = create_collection
 try:
     CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE"))
     LIBRARY_CHUNK_SIZE = int(os.environ.get("LIBRARY_CHUNK_SIZE"))
+    CLIENT_ACTIVITY_INTERVAL_SECS = int(get_ssm_parameter("CLIENT_ACTIVITY_INTERVAL_SECS"))
 
     db, fs, repository_db, repository_fs = get_dbs()
 

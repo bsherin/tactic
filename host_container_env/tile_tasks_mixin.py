@@ -77,6 +77,7 @@ class TileTasksMixin:
             "module_name": module_name,
             "user_id": the_user.get_id(),
             "username": the_user.username,
+            "global_id": data["global_id"],
             "openai_api_key": the_user.get_openai_api_key()
         })
 
@@ -254,7 +255,6 @@ class TileTasksMixin:
         from loaded_tile_management import loaded_tile_manager
         the_user = self.get_user_from_data(data)
         def loaded_source(res_dict):
-            print("got loaded_source")
             if not res_dict["success"]:
                 print("load_source didn't return success")
                 if "show_failed_loads" in data and data["show_failed_loads"]:
@@ -308,14 +308,11 @@ class TileTasksMixin:
                     print(self.extract_short_error_message(ex, special_string))
 
             else:
-                print("posting load_source")
                 pattern = re.compile(r'.*?(@user_tile.*)', re.DOTALL)
                 result = pattern.match(tile_module)
                 tile_module_no_globals = result.groups()[0]
-                print("just about to post load_source")
                 self.post_task("tile_test_container", "load_source",
                                {"tile_code": tile_module_no_globals}, loaded_source)
-                print("posted load_source")
         except Exception as ex:
             print(self.extract_short_error_message(ex, "Error loading tile"))
             if not task_packet["callback_type"] == "no_callback":

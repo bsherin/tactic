@@ -11,6 +11,7 @@ var _blueprint_navbar = require("./blueprint_navbar");
 var _settings = require("./settings");
 var _account_fields = require("./account_fields");
 var _tactic_socket = require("./tactic_socket");
+var _modal_react = require("./modal_react");
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
@@ -42,7 +43,7 @@ function _account_main() {
     return _regenerator().w(function (_context) {
       while (1) switch (_context.n) {
         case 0:
-          AccountAppPlus = (0, _settings.withSettings)(AccountApp);
+          AccountAppPlus = (0, _utilities_react.withRegisterActivity)((0, _settings.withSettings)(AccountApp));
           the_element = /*#__PURE__*/_react["default"].createElement(AccountAppPlus, {
             controlled: false,
             tsocket: tsocket
@@ -81,12 +82,19 @@ function AccountApp(props) {
     password_helper = _useState6[0],
     set_password_helper = _useState6[1];
   var settingsContext = (0, _react.useContext)(_settings.SettingsContext);
+  var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   var pushCallback = (0, _utilities_react.useCallbackStack)();
   (0, _react.useEffect)(function () {
+    initSocket();
     (0, _communication_react.postAjax)("get_account_info", {}, function (data) {
       set_fields(data.field_list);
     });
   }, []);
+  function initSocket() {
+    props.tsocket.attachListener("endSession", function () {
+      dialogFuncs.showModal("EndSessionDialog", {});
+    });
+  }
   function _submitPassword() {
     var pwd = password;
     if (pwd != confirm_password) {

@@ -23,15 +23,15 @@ import {AdminPane} from "./administer_pane"
 import {ICON_BAR_WIDTH} from "./sizing_tools";
 import {ViewerContext} from "./resource_viewer_context";
 import {ErrorDrawerContext, withErrorDrawer} from "./error_drawer";
-import {guid} from "./utilities_react";
+import {guid, withRegisterActivity} from "./utilities_react";
 import {LibraryMenubar} from "./library_menubars";
-import {useCallbackStack, useStateAndRef} from "./utilities_react";
+import {useCallbackStack, useStateAndRef, useRegisterActivity} from "./utilities_react";
 
 import {SettingsContext, withSettings} from "./settings";
 import {DialogContext} from "./modal_react";
 import {StatusContext} from "./toaster"
 
-window.global_id = guid();  // I don't know why pycharm doesn't like this
+window.global_id = "a" + guid();  // I don't know why pycharm doesn't like this
 
 let tsocket;
 
@@ -40,7 +40,7 @@ function _administer_home_main () {
         tsocket.attachListener('handle-callback', (task_packet) => {
             handleCallback(task_packet, window.global_id)
         });
-        let AdministerHomeAppPlus = withSettings(withDialogs(withErrorDrawer(withStatus(AdministerHomeApp))));
+        let AdministerHomeAppPlus = withRegisterActivity(withSettings(withDialogs(withErrorDrawer(withStatus(AdministerHomeApp)))));
         const domContainer = document.querySelector('#library-home-root');
         const root = createRoot(domContainer);
         root.render(<AdministerHomeAppPlus tsocket={tsocket}/>)
@@ -96,12 +96,11 @@ function AdministerHomeApp(props) {
 
     const pushCallback = useCallbackStack();
 
+    const dialogFuncs = useContext(DialogContext)
 
     useEffect(() => {
         initSocket();
         statusFuncs.stopSpinner();
-        // window.addEventListener("resize", _update_window_dimensions);
-        // _update_window_dimensions();
         return (() => {
             props.tsocket.disconnect()
         })
@@ -115,6 +114,9 @@ function AdministerHomeApp(props) {
             }
         });
         props.tsocket.attachListener('doflashUser', doFlash);
+        props.tsocket.attachListener("endSession", function () {
+            dialogFuncs.showModal("EndSessionDialog", {})
+        })
     }
 
     function _updatePaneState (res_type, state_update, callback=null) {
@@ -132,6 +134,7 @@ function AdministerHomeApp(props) {
     }
 
     function _handleTabChange(newTabId) {
+
         set_selected_tab_id(newTabId);
     }
 
@@ -191,7 +194,6 @@ function AdministerHomeApp(props) {
                           selected={null}
                           show_api_links={false}
                           extra_text=""
-                          global_id={window.global_id}
                           user_name={window.username}/>
             <ViewerContext.Provider value={{readOnly: false}}>
                 <div className={outer_class} ref={top_ref} style={outer_style}>
@@ -222,7 +224,6 @@ function AWSControls(props) {
 
     const [desiredIdle, setDesiredIdle] = useState(0);
     const [numberOfQueues, setNumberOfQueues] = useState(0)
-    const statusFuncs = useContext(StatusContext);
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
 
     useEffect(() => {

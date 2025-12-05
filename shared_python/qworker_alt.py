@@ -146,6 +146,51 @@ def close_connection():
     del pika_connections[my_thread()]
     return
 
+class HeartbeatGenerator:
+    def __init__(self, worker):
+        from aws_helpers import get_ssm_parameter
+        self.connection, self.channel = add_qw_pika_connection()
+        self.worker = worker
+        self.tile_id = self.worker.my_id
+        self.task_data = { "tile_id": self.tile_id}
+        self.heartbeat_interval = int(get_ssm_parameter("HEARTBEAT_INTERVAL_SECS", 60))
+
+    def heartbeat_loop(self):
+        while True:
+            self.post_heartbeat()
+            time.sleep(self.heartbeat_interval)
+
+    def post_heartbeat(self):
+        try:
+            new_packet = {"source": self.tile_id,
+                          "status": "presend",
+                          "callback_type": "no_callback",
+                          "dest": "host",
+                          "task_type": "register_tile_heartbeat",
+                          "task_data": self.task_data,
+                          "callback_id": None,
+                          "response_data": None,
+                          "reply_to": None,
+                          "expiration": None}
+            self.channel.basic_publish(exchange='',
+                                      routing_key="host",
+                                      properties=pika.BasicProperties(
+                                          reply_to=None,
+                                          correlation_id=None,
+                                          delivery_mode=2
+                                  ),
+                                  body=json.dumps(new_packet))
+            result = {"success": True}
+
+        except Exception:
+            error_string = "Error posting heartbeat data"
+            debug_log(error_string)
+            result = {"success": False, "message": error_string}
+        return result
+
+    def start_heartbeat(self):
+        threading.Thread(target=self.heartbeat_loop).start()
+
 # noinspection PyTypeChecker,PyUnusedLocal,PyMissingConstructor
 class QWorker(ExceptionMixin):
     def __init__(self, service_name=None, special_id=None):
@@ -158,7 +203,6 @@ class QWorker(ExceptionMixin):
             else:
                 self.my_id = service_name + str(uuid.uuid4())[:4]
         self.handler_instances = {"this_worker": self}
-        self.generate_heartbeats = False
         self.last_heartbeat = current_timestamp()
         self.wait_queue_id = "wait_" + self.my_id
 
@@ -211,14 +255,6 @@ class QWorker(ExceptionMixin):
                 debug_log('Background thread started')
 
     def ready(self):
-        return
-
-    def do_heartbeat(self):
-        if self.generate_heartbeats:
-            current_time = current_timestamp()
-            if (current_time - self.last_heartbeat) > heartbeat_time:
-                self.post_task("host", "container_heartbeat", {"container_id": self.my_id})
-                self.last_heartbeat = current_time
         return
 
     def handle_delivery(self, channel, method, props, body):

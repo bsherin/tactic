@@ -41,7 +41,7 @@ const mdi = markdownIt({
 mdi.use(markdownItLatex);
 import _ from 'lodash';
 
-import {useDebounce, guid, useImmerReducerAndRef, useCallbackStack} from "./utilities_react";
+import {useDebounce, guid, useImmerReducerAndRef, useCallbackStack, useRegisterActivity} from "./utilities_react";
 import {tile_icon_dict} from "./icon_info";
 import {ErrorBoundary} from "./error_boundary";
 import {ReactCodemirror6} from "./react-codemirror6";
@@ -191,12 +191,14 @@ function NotesField(props) {
     }
 
     function focusNotes() {
+
         if (setFocusFunc.current) {
             setFocusFunc.current()
         }
     }
 
     function _hideMarkdown() {
+
         if (props.readOnly) return;
         awaitingFocus.current = true;  // We can't set focus until the input is visible
         setShowMarkdown(false);

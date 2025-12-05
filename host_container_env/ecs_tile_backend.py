@@ -78,7 +78,7 @@ class ECSTileBackend(TileBackend):
             extra_env=env
         )
         tile_id = f"tile_{uid}"
-        self.tile_registry.mark_status(tile_id, "busy", owner=username, parent=parent)
+        self.tile_registry.mark_status(tile_id, "busy", owner=username, parent=parent, register_heartbeat=True)
         creds = self.issue_user_s3_session(username)
         return uid, task_arn, creds
 

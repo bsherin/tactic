@@ -15,6 +15,8 @@ import {
 import {MenuComponent} from "./main_menus_react.js";
 import {SettingsContext} from "./settings"
 
+import {useRegisterActivity} from "./utilities_react";
+
 export {render_navbar, TacticNavbar}
 
 const context_url = $SCRIPT_ROOT + '/context';
@@ -38,7 +40,7 @@ function TacticNavbar({extra_text = null, menus = null, selected = null, show_ap
     }
 
     function _handle_signout() {
-        window.open($SCRIPT_ROOT + "/logout/" + props.global_id, "_self");
+        window.open($SCRIPT_ROOT + "/logout/" + window.global_id, "_self");
         return false
     }
 

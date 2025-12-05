@@ -34,7 +34,7 @@ import {useState, useEffect, memo, useContext, createContext, Fragment} from "re
 import {Button, Drawer, ButtonGroup} from "@blueprintjs/core";
 import {Card, CardList, TextArea, ControlGroup} from "@blueprintjs/core";
 
-import {useStateAndRef, useCallbackStack} from "./utilities_react";
+import {useStateAndRef, useCallbackStack, useRegisterActivity} from "./utilities_react";
 import {postPromise} from "./communication_react";
 import {SettingsContext} from "./settings";
 import {ErrorDrawerContext} from "./error_drawer";
@@ -63,6 +63,7 @@ function withAssistant(WrappedComponent, lposition = "right", assistant_drawer_s
         const [, set_assistant_prompt_value, assistant_prompt_value_ref] = useStateAndRef("");
 
         const errorDrawerFuncs = useContext(ErrorDrawerContext);
+
 
         useEffect(()=>{
             if (window.has_openapi_key) {

@@ -33,7 +33,7 @@ import {ErrorBoundary} from "./error_boundary";
 
 import {BpSelectAdvanced} from "./selector_advanced";
 import {ReactCodemirror6} from "./react-codemirror6";
-import {guid, isInt} from "./utilities_react"
+import {guid, isInt, useRegisterActivity} from "./utilities_react"
 import {MakerPaneContext} from "./tile_maker_support";
 import {LabeledFormField, LabeledSelectList, LabeledTextArea} from "./blueprint_react_widgets";
 import {NativeTags, IconSelector, NotesField} from "./combined_metadata";
@@ -301,6 +301,7 @@ function MetadataModule(props) {
     useEffect(() => {
         get_all_tags()
     }, []);
+
 
     function get_all_tags() {
         let data_dict = {
@@ -1030,7 +1031,9 @@ function NavSection(props) {
                         className='nav-section-button'
                         icon={props.icon}
                         size="medium"
-                        onClick={() => setIsOpen(!isOpen)}>
+                        onClick={() => {
+                            setIsOpen(!isOpen)
+                        }}>
                     {props.title}
                 </Button>
                 {props.right_button != null && props.right_button}
@@ -1062,7 +1065,6 @@ function DirectNavSection(props) {
         ...props
     };
     const mpContext = useContext(MakerPaneContext);
-
     const className = "direct-nav-section-button";
 
     return (
@@ -1223,7 +1225,9 @@ function SortableNavSection(props) {
                         <Button className="nav-section-button"
                                 variant="minimal"
                                 icon={props.icon} size="medium"
-                                onClick={() => setIsOpen(!isOpen)}>
+                                onClick={() => {
+                                    setIsOpen(!isOpen)
+                                }}>
                             {props.title}
                         </Button>
                         {isOpen &&
@@ -1236,7 +1240,9 @@ function SortableNavSection(props) {
                         <Button className="nav-section-button"
                                 variant="minimal"
                                 icon={props.icon} size="medium"
-                                onClick={() => setIsOpen(!isOpen)}>
+                                onClick={() => {
+                                    setIsOpen(!isOpen)
+                                }}>
                             {props.title}
                         </Button>
                         <Button icon="plus" size="small" variant="minimal" onClick={createItem}/>

@@ -38,6 +38,7 @@ class MainSessionStore(SessionStoreS3):
     defaults = {
         "username": {"default": None},
         "user_id": {"default": None},
+        "global_id": {"default": None},
         "doc_type": {"default": "table"},
         "is_legacy_save": {"default": False},
         "project_name":  {"default": None},
@@ -101,6 +102,8 @@ class MainSessionStore(SessionStoreS3):
         for key in self.recreate_values:
             if key in sdict:
                 self.put_small(sid, key, sdict[key])
+        if "global_id" in sdict:
+            self.put_small(sid, "global_id", sdict["global_id"])
         if "tile_instances" in sdict:
             tile_info = TileInfo(self, sid)
             for old_tile_id, tile_save_dict in sdict["tile_instances"].items():

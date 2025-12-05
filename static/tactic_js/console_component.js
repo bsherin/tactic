@@ -160,7 +160,6 @@ function ConsoleComponent(props) {
   var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
   (0, _react.useEffect)(function () {
     initSocket();
-    // _requestPseudoTileId();
     if (props.console_items.current.length == 0) {
       _addCodeArea("", false);
     }

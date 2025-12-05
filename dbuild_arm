@@ -23,7 +23,7 @@ cd "$ROOT_DIR"
 if [ "$1" == "all" ] ; then
   sudo ROOT_DIR="$ROOT_DIR" docker compose --env-file develop.env --profile build_project build
 elif [ "$1" == "non_base" ] ; then
-  sudo ROOT_DIR="$ROOT_DIR" docker compose --env-file develop.env --profile build_project build "tactic_host"
+  sudo ROOT_DIR="$ROOT_DIR" docker compose --env-file develop.env --profile build_project build "tactic_host1"
   sudo ROOT_DIR="$ROOT_DIR" docker compose --env-file develop.env --profile build_project build "tactic_main"
   sudo ROOT_DIR="$ROOT_DIR" docker compose --env-file develop.env --profile build_project build "tactic_module_viewer"
   sudo ROOT_DIR="$ROOT_DIR" docker compose --env-file develop.env --profile build_project build "tactic_tile"

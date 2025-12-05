@@ -1,4 +1,4 @@
-# ecs_tile_launcher.py
+
 import os, time, uuid, json
 import boto3
 from botocore.config import Config
@@ -68,9 +68,6 @@ def run_tile_on_ecs(
     other_name,
     extra_env
 ):
-    """
-    Launch a single tile task on ECS/Fargate and return (tile_unique_id, task_arn, ip_address).
-    """
     ecs = _ecs_client()
 
     cluster   = get_ssm_parameter("ECS_CLUSTER", "tactic-cluster")

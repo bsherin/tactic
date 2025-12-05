@@ -8,15 +8,16 @@ import { createRoot } from 'react-dom/client';
 import { Button } from "@blueprintjs/core";
 
 import {doFlash} from "./toaster"
-import {postPromise, postAjax} from "./communication_react";
+import {postPromise, postAjax, handleCallback} from "./communication_react";
 
-import {guid, useCallbackStack, useStateAndRef} from "./utilities_react";
+import {guid, useCallbackStack, useStateAndRef, withRegisterActivity, useRegisterActivity} from "./utilities_react";
 import {TacticNavbar} from "./blueprint_navbar";
 
 import {withSettings, SettingsContext} from "./settings";
 
 import {AccountTextField, AccountSelectField} from "./account_fields";
 import {TacticSocket} from "./tactic_socket";
+import {DialogContext} from "./modal_react";
 
 window.global_id = "a" + guid();
 
@@ -25,7 +26,7 @@ function _account_main() {
     const domContainer = document.querySelector('#root');
     const root = createRoot(domContainer);
     let tsocket = new TacticSocket("main", 5000, "code_viewer", window.global_id, async ()=> {
-        let AccountAppPlus = withSettings(AccountApp);
+        let AccountAppPlus = withRegisterActivity(withSettings(AccountApp));
         let the_element = <AccountAppPlus controlled={false} tsocket={tsocket}/>;
         root.render(
             <div style={{
@@ -48,15 +49,22 @@ function AccountApp(props) {
     const [password_helper, set_password_helper] = useState(null);
 
     const settingsContext = useContext(SettingsContext);
+    const dialogFuncs = useContext(DialogContext);
 
     const pushCallback = useCallbackStack();
 
     useEffect(()=>{
+        initSocket();
         postAjax("get_account_info", {}, (data)=> {
             set_fields(data.field_list);
         })
     }, []);
 
+    function initSocket() {
+        props.tsocket.attachListener("endSession", function () {
+            dialogFuncs.showModal("EndSessionDialog", {})
+        })
+    }
 
     function _submitPassword() {
         let pwd = password;

@@ -10,7 +10,7 @@ from threading import Lock
 import threading
 import copy
 from qworker_alt import QWorker, task_worthy, debug_log, add_qw_pika_connection, close_connection
-from qworker_alt import simple_uid
+from qworker_alt import simple_uid, HeartbeatGenerator
 import tile_env
 from aws_helpers import resolve_task_identity, get_ssm_parameter
 from tile_env import class_info
@@ -18,7 +18,7 @@ from tile_env import exec_tile_code
 import tile_base
 import document_object
 import remote_tile_object
-from tile_base import clear_and_exec_user_code, TileBase
+from tile_base import clear_and_exec_user_code
 import library_object
 import settings_object
 from communication_utils import make_python_object_jsonizable
@@ -27,7 +27,6 @@ from rabbit_manage import sleep_until_rabbit_alive
 import sys, os
 import time
 import widgets
-import requests
 
 use_ecs = os.getenv("USE_ECS_TILES","false").lower() == "true"
 
@@ -414,6 +413,8 @@ if __name__ == "__main__":
     tile_base._tworker.start()
     kill_worker = KillWorker()
     kill_worker.start()
+    heartbeat_generator = HeartbeatGenerator(tile_base._tworker)
+    heartbeat_generator.start_heartbeat()
     print("tworker started, my_id is " + str(tile_base._tworker.my_id))
     while True:
         time.sleep(1000)
