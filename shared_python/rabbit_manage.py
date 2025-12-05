@@ -74,7 +74,7 @@ def get_pika_connection():
             port=RABBIT_PORT,  # TLS AMQP for Amazon MQ
             virtual_host="/",
             credentials=credentials,
-            ssl_options=pika.SSLOptions(ssl.create_default_context()),
+            ssl_options=None,
             heartbeat=HEARBEAT,
             blocked_connection_timeout=BLOCKED_CONNECTION_TIMEOUT
         )
