@@ -12,14 +12,19 @@ SERVICES = [
     "tactic-module-viewer",
     "tactic-pool-watcher-s3",
     "tactic-tile-pool",
+    "tactic-rabbitmq",
+    "tactic-redis",
+
 ]
 
 # Fill these with your preferred "daytime" capacities
-BASELINE_CAPACITY: Dict[str, Dict[str, int]] = {
+BASELINE_CAPACITY = {
     "tactic-main-service":       {"min": 1, "max": 2, "desired": 1},
     "tactic-module-viewer":      {"min": 1, "max": 2, "desired": 1},
     "tactic-pool-watcher-s3":    {"min": 1, "max": 2, "desired": 1},
     "tactic-tile-pool":          {"min": 0, "max": 10, "desired": 3},
+    "tactic-rabbitmq":           {"min": 1, "max": 1, "desired": 1},
+    "tactic-redis":              {"min": 1, "max": 1, "desired": 1},
 }
 
 ecs = boto3.client("ecs", region_name=REGION)

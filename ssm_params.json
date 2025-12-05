@@ -23,6 +23,11 @@
       "value": "rabbitmq.tactic.local",
       "type": "String"
     },
+      {
+      "name": "REDIS_HOST",
+      "value": "redis.tactic.local",
+      "type": "String"
+    },
     {
       "name": "SQS_QUEUE_URL",
       "local_value": "http://sqs.us-east-2.localhost.localstack.cloud:4566/000000000000/tactic-storage-events",

@@ -12,11 +12,11 @@ if use_ecs:
     from aws_helpers import get_ssm_parameter
     REDIS_HOST = get_ssm_parameter("REDIS_HOST")
     REDIS_PORT = int(get_ssm_parameter("REDIS_PORT", 6379))
-    REDIS_USERNAME = get_ssm_parameter("REDIS_USERNAME")
-    REDIS_PASSWORD = get_ssm_parameter("REDIS_PASSWORD")
+    # REDIS_USERNAME = get_ssm_parameter("REDIS_USERNAME")
+    # REDIS_PASSWORD = get_ssm_parameter("REDIS_PASSWORD")
 
     MESSAGE_QUEUE = message_queue=f"rediss://{REDIS_USERNAME}:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}"
-    USE_SSL = True
+    USE_SSL = False
     print("got message queue:", MESSAGE_QUEUE)
 else:
     REDIS_HOST = "tactic-redis"
@@ -27,14 +27,10 @@ else:
     MESSAGE_QUEUE = "redis://tactic-redis:6379"
 
 redis_client = redis.Redis(host=REDIS_HOST,
-                      username=REDIS_USERNAME,
-                      password=REDIS_PASSWORD,
                       port=REDIS_PORT, decode_responses=True, ssl=USE_SSL)
 
 def get_no_decode_redis_client():
     return redis.Redis(host=REDIS_HOST,
-                       username=REDIS_USERNAME,
-                       password=REDIS_PASSWORD,
                        port=REDIS_PORT, decode_responses=False, ssl=USE_SSL)
 
 class RedisManager(object):
