@@ -17,7 +17,7 @@ const EXTRAWORDS_LIST = ["global_import", "escape_html", "xh", "ds", "Collection
     "Settings", "Settings.names",
     "Tiles", "Pipes"];
 
-var self_commands = [];
+let self_commands = [];
 
 function create_api() {
     let self = this;

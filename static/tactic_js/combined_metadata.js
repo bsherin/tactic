@@ -246,7 +246,8 @@ function NotesField(props) {
     code_content: props.mStateRef.current.notes,
     no_height: true,
     no_width: true,
-    saveMe: null
+    saveMe: null,
+    tsocket: props.tsocket
   })), /*#__PURE__*/_react["default"].createElement("div", {
     ref: mdRef,
     style: md_style,
@@ -719,6 +720,7 @@ function CombinedMetadata(props) {
     handleChange: _handleNotesChange,
     show_markdown_initial: true,
     setCMObject: props.setCMObject,
+    tsocket: props.tsocket,
     handleBlur: props.handleNotesBlur
   }), props.notes_buttons && /*#__PURE__*/_react["default"].createElement(MetadataNotesButtons, {
     appendToNotes: appendToNotes

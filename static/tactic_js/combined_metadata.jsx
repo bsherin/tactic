@@ -259,6 +259,7 @@ function NotesField(props) {
                     no_height={true}
                     no_width={true}
                     saveMe={null}
+                    tsocket={props.tsocket}
                 />
             </div>
             <div ref={mdRef}
@@ -594,6 +595,7 @@ function CombinedMetadata(props) {
                                     handleChange={_handleNotesChange}
                                     show_markdown_initial={true}
                                     setCMObject={props.setCMObject}
+                                    tsocket={props.tsocket}
                                     handleBlur={props.handleNotesBlur}
                         />
                         {props.notes_buttons &&

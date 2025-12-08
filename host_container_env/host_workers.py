@@ -467,7 +467,6 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
     @task_worthy
     def emit_to_client(self, data):
         from tactic_app import socketio
-        print(f"in emit_to_client with data: {str(data)}")
         if "room" in data:
             room = data["room"]
         else:
@@ -487,6 +486,16 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
 
         socketio.emit("export-viewer-message", data, namespace='/main', room=data["local_id"])
         return {"success": True}
+
+    @task_worthy
+    def get_api_dict_task(self, data):
+        from integrated_docs import api_dict_by_category, api_dict_by_name, ordered_api_categories
+        from integrated_docs import object_api_dict_by_category, ordered_object_categories
+        return {"success": True, "api_dict_by_name": api_dict_by_name,
+                        "api_dict_by_category": api_dict_by_category,
+                        "ordered_api_categories": ordered_api_categories,
+                        "object_api_dict_by_category": object_api_dict_by_category,
+                        "ordered_object_categories": ordered_object_categories}
 
     @task_worthy
     def print_to_console(self, data):

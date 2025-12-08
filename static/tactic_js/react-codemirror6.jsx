@@ -19,9 +19,12 @@ import {
     EditorState,
 } from "@codemirror/state";
 import {
-    selfCompletionSource, generalCompletionSource, aiCompletionSource, loadingSource,
+    selfCompletionSource, generalCompletionSource,
     topLevelExtraCompletions, dotAccessCompletions
 } from "./autocomplete";
+
+import {ghostTextField, ghostTextPlugin,
+    acceptGhostText, setGhostText, computeGhostSuffix} from "./ghost_text";
 import {useDebounce, guid} from "./utilities_react";
 
 import {
@@ -143,9 +146,9 @@ const triggerAutocompleteKeymap = [
         key: "Alt-/",
         run: (view) => {
             startCompletion(view);
-            return true; // ✅ Signal that we handled the key
+            return true; // Signal that we handled the key
         },
-        preventDefault: true // ✅ Block browser/OS from inserting +
+        preventDefault: true // Block browser/OS from inserting
     }
 ];
 
@@ -153,12 +156,15 @@ const tabAcceptKeymap = [
     {
         key: "Tab",
         run: (view) => {
+            if (acceptGhostText(view)) {
+                return true;
+            }
             const status = completionStatus(view.state);
             if (status === "active") {
                 return acceptCompletion(view);
             }
             return indentWithTab.run(view);
-        },
+            },
         preventDefault: true
     },
     {
@@ -275,9 +281,8 @@ function ReactCodemirror6(props) {
     const activeStreamChangeCounterRef = useRef(null);
     const awaitingSuggestionRef = useRef(true);
 
-    const [aiText, setAIText, aiTextRef] = useStateAndRef(null);
-    const [, setAITextLabel, aiTextLabelRef] = useStateAndRef(null);
-    const [, doAIUpdate] = useDebounce(getAIUpdate, 2000);
+    const [, setAIText, aiTextRef] = useStateAndRef(null);
+    const [, doAIUpdate] = useDebounce(getAIUpdate, 1000);
 
     const settingsContext = useContext(SettingsContext);
 
@@ -317,12 +322,10 @@ function ReactCodemirror6(props) {
                     (settingsContext.settingsRef.current["use_ai_code_suggestions"] == "yes") &&
                     props.local_id) {
                     setAIText(null);
-                    setAITextLabel(null);
                     awaitingSuggestionRef.current = true;
                     doAIUpdate(newDoc);
                 } else {
                     setAIText(null);
-                    setAITextLabel(null);
                     awaitingSuggestionRef.current = true;
                 }
 
@@ -374,7 +377,8 @@ function ReactCodemirror6(props) {
                 EditorState.readOnly.of(props.readOnly),
                 EditorView.editable.of(!props.readOnly)
             ]),
-
+            ghostTextField,
+            ghostTextPlugin,
         ];
         if (props.show_line_numbers) {
             extensions = extensions.concat([
@@ -411,7 +415,6 @@ function ReactCodemirror6(props) {
         if (!props.tsocket) return;
         if (!props.local_id) return;
 
-        // Stable reference
         const listener = (data) => handleAutocompleteDelta(data);
 
         props.tsocket.attachListener("AutocompleteDelta", listener);
@@ -425,7 +428,6 @@ function ReactCodemirror6(props) {
         return () => {
             const view = editorView.current;
 
-            // 1. Reconfigure compartments
             for (let comp of [themeCompartment, completionCompartment, lineNumberCompartment, readOnlyCompartment, restrictCompartment]) {
                 if (comp.current) {
                     view?.dispatch({
@@ -434,11 +436,11 @@ function ReactCodemirror6(props) {
                 }
             }
 
-            // 2. Unregister external refs
+            // Unregister external refs
             if (props.setCMObject) props.setCMObject(null);
             if (props.registerSetFocusFunc) props.registerSetFocusFunc(null);
 
-            // 3. Destroy editor
+            // Destroy editor
             try {
                 if (view && typeof view.destroy === "function") {
                     view.destroy();
@@ -447,7 +449,7 @@ function ReactCodemirror6(props) {
                 console.warn("Error during editorView destroy:", e);
             }
 
-            // 4. Null local refs
+            // Null local refs
             editorView.current = null;
             if (containerNodeRef.current) {
                 containerNodeRef.current.innerHTML = "";
@@ -508,14 +510,6 @@ function ReactCodemirror6(props) {
             sources = [
                 generalCompletionSource(),]
         }
-        if (settingsContext.settingsRef.current["use_ai_code_suggestions"] == "yes") {
-            if (!aiTextRef.current) {
-                sources.unshift(loadingSource);
-            } else {
-                sources.unshift(aiCompletionSource(aiTextRef.current, aiTextLabelRef.current))
-            }
-        }
-        // noinspection JSUnusedGlobalSymbols
         autocompletionArgRef.current =
             {
                 optionClass: (completion) => {
@@ -531,7 +525,7 @@ function ReactCodemirror6(props) {
                 effects: completionCompartment.current.reconfigure(autocompletion({...autocompletionArgRef.current}))
             });
         }
-    }, [props.extraSelfCompletions, aiText, settingsContext.settingsRef.current["use_ai_code_suggestions"]]);
+    }, [props.extraSelfCompletions, settingsContext.settingsRef.current["use_ai_code_suggestions"]]);
 
     useEffect(() => {
         // This controlled stuff never quite worked perfectly inside the CombinedMetadata notes field
@@ -615,31 +609,28 @@ function ReactCodemirror6(props) {
         }
     }, [props.search_term, props.current_search_number, props.regex_search]);
 
-function handleAutocompleteDelta(data) {
-    if (data.cmUniqueId !== cmUniqueId.current) {
-        return
-    }
-    if (data.change_counter !== activeStreamChangeCounterRef.current) {
-        console.log(`got mismatched change counter`)
-        return;
-    }
-    awaitingSuggestionRef.current = false;
+    function handleAutocompleteDelta(data) {
+        if (data.cmUniqueId !== cmUniqueId.current) {
+            return
+        }
+        if (data.room !== props.local_id) return;
+        if (data.change_counter !== activeStreamChangeCounterRef.current) return;
 
-    let current_text =
-        aiTextRef.current == null
-            ? data.text
-            : aiTextRef.current + data.text;
+        let current_text;
+        if (aiTextRef.current == null) {
+            current_text = data["text"];
+        } else {
+            current_text = aiTextRef.current + data["text"];
+        }
 
-    setAIText(current_text);
+        setAIText(current_text);
 
-    if (data["display_label"] != null) {
-        setAITextLabel(data["display_label"]);
+        if (editorView.current) {
+            closeCompletion(editorView.current);
+            const trimmed = computeGhostSuffix(current_text, editorView.current);
+            setGhostText(editorView.current, trimmed);
+        }
     }
-
-    if (editorView.current) {
-        startCompletion(editorView.current);
-    }
-}
 
     function getAIUpdate(new_code) {
         const change_counter = changeCounterRef.current;
@@ -648,7 +639,9 @@ function handleAutocompleteDelta(data) {
         let code_str = new_code;
         const cursorPos = editorView.current.state.selection.main.head;
         setAIText(null);
-        setAITextLabel(null);
+        if (editorView.current) {
+            setGhostText(editorView.current, ""); // clear stale suggestion
+        }
         postPromise(props.parentService, "update_ai_complete",
             {
                 "code_str": code_str,
@@ -658,17 +651,13 @@ function handleAutocompleteDelta(data) {
                 "local_id": props.local_id,
                 "cmUniqueId": cmUniqueId.current
             })
-            .then((data) => {
-                
+            .then(() => {
+
             })
             .catch((error) => {
                 console.log("Error getting ai autcomplete", error);
                 setAIText(null);
-                setAITextLabel(null);
             })
-        if (editorView.current) {
-            startCompletion(editorView.current);
-        }
     }
 
     function isDark() {

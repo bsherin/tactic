@@ -37,6 +37,7 @@ class MainWorker(QWorker, ExceptionMixin, CopilotMixin):
         self.mwindow = mainWindow(self)
         self.handler_instances["mainwindow"] = self.mwindow
         self.get_megaplex_task_now = False
+        self.api_spec = None
 
     def ask_host(self, sid, msg_type, task_data=None, callback_func=None):
         if task_data is None:

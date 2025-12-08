@@ -30,6 +30,7 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin, MongoAccess, Til
         self.fs = fs
         self.handler_methods = None
         self.ss = ModuleViewerSessionStore()
+        self.api_spec = None
         return
 
     def retrieve_handler_methods(self):

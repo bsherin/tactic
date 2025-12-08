@@ -14,10 +14,6 @@ log = logging.getLogger(__name__)
 
 
 class StreamWorker:
-    """
-    Runs the OpenAI streaming call in a background thread and forwards
-    deltas to the host via RabbitMQ, which then emits them to the client.
-    """
     def __init__(self, local_id, change_counter, client, instructions, context_code, model_name, cm_unique_id):
         self.connection, self.channel = get_pika_connection_with_retries(0)
         self.client = client
@@ -34,7 +30,6 @@ class StreamWorker:
         chunks = []
 
         try:
-            # Create the streaming response *inside* this thread
             stream = self.client.responses.create(
                 model=self.model_name,
                 instructions=self.instructions,
@@ -84,8 +79,6 @@ class StreamWorker:
                             "cmUniqueId": self.cm_unique_id,
                         },
                     )
-                else:
-                    print(f"StreamWorker: got some other kind of event {getattr(event, 'type', None)}")
 
         except RateLimitError as e:
             log.warning("OpenAI rate limit for autocomplete (stream worker): %s", e)
@@ -172,7 +165,31 @@ class StreamWorker:
         )
 
 
-class CopilotMixin(object):
+class CopilotMixin:
+    @staticmethod
+    def _get_api_spec(api_dict, max_entries=50, max_doc_chars=80):
+        try:
+            lines = []
+            api_dict_by_category = api_dict.get("api_dict_by_category", {})
+            ordered_api_categories = api_dict.get("ordered_api_categories", [])
+            for cat in ordered_api_categories:
+                lines.append(f"Category: {cat}")
+                for entry in api_dict_by_category[cat]:
+                    name = entry.get("name", "")
+                    sig = entry.get("signature", "")
+                    #doc = (entry.get("docstring") or "").strip().replace("\n", " ")
+                    # if max_doc_chars:
+                    #     doc = doc[:max_doc_chars]
+                    lines.append(f"- {name}{sig}")
+                    if len(lines) >= max_entries:
+                        break
+                if len(lines) >= max_entries:
+                    break
+            print(lines[:25])
+            return "\n".join(lines)
+        except Exception as e:
+            log.warning("Could not build API spec for session: %s", e)
+            return ""
 
     @staticmethod
     def extract_context(code_str, cursor_pos,
@@ -211,6 +228,11 @@ class CopilotMixin(object):
 
     @task_worthy
     def update_ai_complete(self, data_dict):
+        if self.api_spec is None:
+            print("No API spec available, fetching...")
+            api_dict = self.post_and_wait("host", "get_api_dict_task", {})
+            self.api_spec = self._get_api_spec(api_dict)
+            print("API spec fetched successfully.")
         cm_unique_id = data_dict.get("cmUniqueId")
         local_id = data_dict.get("local_id")
 
@@ -243,6 +265,14 @@ class CopilotMixin(object):
             "- Do NOT include markdown, backticks, quotes, or any other formatting.\n"
             "- Just return the raw code continuation.\n"
         )
+
+        if self.api_spec:
+            instructions += (
+                "\n\nYou are coding against the Tactic API. "
+                "Prefer to use these functions and respect their signatures when relevant:\n"
+                f"{self.api_spec}\n"
+            )
+
 
         model_name = "gpt-5.1"  # or "gpt-4.1" / "gpt-4o" / "gpt-4o-mini"
 

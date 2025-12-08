@@ -80,6 +80,13 @@ body {
     height: 100%;
 }
 
+
+.cm-ghostText {
+    opacity: 0.4;
+    font-style: italic;
+    pointer-events: none;
+}
+
 table {
     caption {
         caption-side: top;
