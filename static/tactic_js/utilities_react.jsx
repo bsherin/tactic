@@ -143,24 +143,22 @@ function useRegisterActivity() {
     if (contextValue) {
         return contextValue;
     }
-    // return useLocalRegisterActivity();
-    return [false, ()=>{}]
-}
-
-function useRegisterActivityNew() {
-    const contextValue = React.useContext(RegisterActivityContext);
-    if (contextValue) {
-        return contextValue;
-    }
     return useLocalRegisterActivity();
 }
 
 function ActivityTracker() {
-    const [, registerActivityNew] = useRegisterActivityNew();
+    const [, registerActivity] = useRegisterActivity();
+
+    useEffect(()=>{
+        postPromise("host", "register_client_interaction", {
+                global_id: window.global_id,
+            })
+            .then(()=>{})
+    }, [])
 
     useEffect(() => {
         const handler = () => {
-            registerActivityNew();
+            registerActivity();
         };
 
         const events = ["click", "keydown", "mousedown", "touchstart", "scroll"];
@@ -174,7 +172,7 @@ function ActivityTracker() {
                 window.removeEventListener(evt, handler)
             );
         };
-    }, [registerActivityNew]);
+    }, [registerActivity]);
 
     return null; // nothing to render
 }

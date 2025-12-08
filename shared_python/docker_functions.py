@@ -27,7 +27,6 @@ if use_ecs:
     from aws_helpers import get_ssm_parameter
     ECS_SUBNETS = get_ssm_parameter("ECS_SUBNETS")
     ECS_SECURITY_GROUPS= get_ssm_parameter("TILE_SECURITY_GROUPS")
-    ECS_ASSIGN_PUBLIC_IP= get_ssm_parameter("ECS_ASSIGN_PUBLIC_IP")
     ECS_TILE_TASKDEF= get_ssm_parameter("ECS_TILE_TASKDEF")
     AWS_REGION = get_ssm_parameter("MY_AWS_REGION")
     ECS_REGION = get_ssm_parameter("ECS_REGION")
@@ -35,7 +34,6 @@ if use_ecs:
 else:
     ECS_SUBNETS = None
     ECS_SECURITY_GROUPS = None
-    ECS_ASSIGN_PUBLIC_IP = None
     ECS_TILE_TASKDEF = None
     AWS_REGION = ""
     ECS_REGION = ""
@@ -176,7 +174,6 @@ def create_container(image_name, container_name=None, network_mode="bridge", hos
                "USE_ECS_TILES": use_ecs,
                "ECS_SUBNETS": ECS_SUBNETS,
                "ECS_SECURITY_GROUPS": ECS_SECURITY_GROUPS,
-               "ECS_ASSIGN_PUBLIC_IP": ECS_ASSIGN_PUBLIC_IP,
                "ECS_TILE_TASKDEF": ECS_TILE_TASKDEF,
                "AWS_REGION": AWS_REGION,
                "ECS_REGION": ECS_REGION
@@ -198,14 +195,10 @@ def create_container(image_name, container_name=None, network_mode="bridge", hos
     if image_name == "bsherin/tactic-tile":  # We don't want people to be able to see the mongo_uri
         del environ["MONGO_URI"]
 
-    print("in create container with image_name " + image_name)
-    print("USE_ARM64 is " + str(USE_ARM64))
     if USE_ARM64 and image_name in tactic_image_names:
         image_name += ":arm64"
-        print("changed image name to " + image_name)
     else:
         image_name += ":x86"
-        print("changed image name to " + image_name)
 
     run_args = {
         "image": image_name,
@@ -220,8 +213,6 @@ def create_container(image_name, container_name=None, network_mode="bridge", hos
         "remove": remove
     }
 
-    print("got run args")
-
     if container_name is not None:
         run_args["name"] = container_name
     if host_name is not None:
@@ -230,14 +221,10 @@ def create_container(image_name, container_name=None, network_mode="bridge", hos
     if restart_policy is not None:
         run_args["restart_policy"] = restart_policy
 
-
-    print("***Got image name " + image_name)
     container = cli.containers.run(**run_args)
-    print("did the run")
 
     cont_id = container.id
     container = cli.containers.get(cont_id)
-    print("got container")
     retries = 0
     if lwait_until_running:
         while not container.status == "running":
@@ -249,7 +236,6 @@ def create_container(image_name, container_name=None, network_mode="bridge", hos
             print("sleeping while waiting for container {} to run".format(str(cont_id)))
             time.sleep(0.1)
 
-    print("leaving create_container")
     return unique_id, cont_id
 
 
@@ -387,10 +373,8 @@ def container_exists(name):
 
 
 def wait_until_stopped(tactic_id, wait_retries=30):
-    print("in wait_until_stopped")
     container = get_container(tactic_id)
     retries = 0
-    print("container.status is {}".format(container.status))
     while container.status == "running":
         container = get_container(tactic_id)
         retries += 1
@@ -398,7 +382,6 @@ def wait_until_stopped(tactic_id, wait_retries=30):
             print("container failed to stop")
             return
         time.sleep(0.1)
-    print("leaving wait_until_stopped")
     return
 
 
@@ -406,7 +389,6 @@ def wait_until_running(tactic_id, wait_retries=30):
     print("in wait_until_running")
     container = get_container(tactic_id)
     retries = 0
-    print("container.status is {}".format(container.status))
     while not container.status == "running":
         retries += 1
         if retries > wait_retries:

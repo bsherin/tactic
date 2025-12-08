@@ -1347,7 +1347,7 @@ function ConsoleComponent(props) {
     }
 
     const extraProps = useMemo(() => {
-        return {local_id: props.local_id}
+        return {local_id: props.local_id, tsocket: props.tsocket}
     });
 
     return (

@@ -74,7 +74,6 @@ def run_tile_on_ecs(
     taskdef   = get_ssm_parameter("ECS_TILE_TASKDEF", "tactic-tile")
     subnets   = [s.strip() for s in get_ssm_parameter("ECS_SUBNETS", "").split(",") if s.strip()]
     sgs       = [g.strip() for g in get_ssm_parameter("TILE_SECURITY_GROUPS", "").split(",") if g.strip()]
-    assign_ip = get_ssm_parameter("ECS_ASSIGN_PUBLIC_IP", "ENABLED")  # ENABLED for your public subnets
 
     if not subnets or not sgs:
         raise ECSTileError("ECS_SUBNETS / ECS_SECURITY_GROUPS must be set.")

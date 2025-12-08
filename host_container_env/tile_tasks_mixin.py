@@ -251,7 +251,6 @@ class TileTasksMixin:
 
     @task_worthy_manual_submit
     def load_tile_module_task(self, data, task_packet):
-        print("entering load_tile_module_task")
         from loaded_tile_management import loaded_tile_manager
         the_user = self.get_user_from_data(data)
         def loaded_source(res_dict):
@@ -298,7 +297,6 @@ class TileTasksMixin:
             tile_module_name = data["tile_module_name"]
 
             try:
-                print("getting the module")
                 tile_module = the_user.get_tile_content(tile_module_name)
             except TileModuleNotFoundError as ex:
                 special_string = "Error finding the tile module " + tile_module_name

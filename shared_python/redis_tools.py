@@ -12,8 +12,6 @@ if use_ecs:
     from aws_helpers import get_ssm_parameter
     REDIS_HOST = get_ssm_parameter("REDIS_HOST")
     REDIS_PORT = int(get_ssm_parameter("REDIS_PORT", 6379))
-    # REDIS_USERNAME = get_ssm_parameter("REDIS_USERNAME")
-    # REDIS_PASSWORD = get_ssm_parameter("REDIS_PASSWORD")
 
     MESSAGE_QUEUE = message_queue=f"redis://{REDIS_HOST}:{REDIS_PORT}"
     USE_SSL = False

@@ -118,7 +118,6 @@ class Assistant(QWorker, ExceptionMixin, AssistantEventHandler):
 
     @task_worthy
     def get_past_messages(self, data_dict):
-        print("in get past messages")
         try:
             if self.chat_client is None:
                 print("no chat client")
@@ -142,7 +141,6 @@ class Assistant(QWorker, ExceptionMixin, AssistantEventHandler):
     @task_worthy
     def post_prompt_stream(self, data_dict, attempts=0):
         try:
-            print("in post prompt stream")
             if self.chat_client is None:
                 client_exists = self.initialize_assistant()
                 if not client_exists:
@@ -162,7 +160,6 @@ class Assistant(QWorker, ExceptionMixin, AssistantEventHandler):
                 event_handler=StreamEventHandler(self, data_dict["local_id"]),
             ) as stream:
                 stream.until_done()
-            print("leaving post prompt stream")
             return {"success": True}
 
         except Exception as ex:

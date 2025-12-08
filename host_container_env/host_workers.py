@@ -77,9 +77,8 @@ class HostUtilityWorker:
             time.sleep(self.utility_interval)
 
     def do_utilities(self):
-        print("doing utilities")
         if self.worker.channel is None:
-            print("pika channel not ready yet")
+            print("pika channel not ready yet in do_utilities")
             return
         self.worker.client_session_registry.registry_heartbeat()
         self.worker.main_registry.registry_heartbeat()
@@ -260,7 +259,6 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
 
     @task_worthy
     def get_settings_object_settings(self, data):
-        print("in get_settings_object_settings")
         user_id = data["user_id"]
         user_obj = load_user(user_id)
         user_data = user_obj.user_data_dict
@@ -364,14 +362,12 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
 
     @task_worthy
     def mongo_event(self, data):
-        print(f"got mongo_event with data {str(data)}")
         try:
             event_type = data["event_type"]
             username = data["username"]
             res_type = data["res_type"]
             if res_type == "user":
                 return {"success": True}
-            print(f"got event {event_type} for {username} res_type {res_type}")
             _id = ObjectId(data["id"])
 
             user_obj = User.get_user_by_username(username)
@@ -471,6 +467,7 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
     @task_worthy
     def emit_to_client(self, data):
         from tactic_app import socketio
+        print(f"in emit_to_client with data: {str(data)}")
         if "room" in data:
             room = data["room"]
         else:

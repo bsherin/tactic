@@ -139,10 +139,8 @@ class TileWorker(QWorker):
 
     @task_worthy
     def load_source(self, data_dict):
-        print("entering load source")
         tile_code = data_dict["tile_code"]
         result = exec_tile_code(tile_code)
-        print(f"got the load source result {str(result)}")
         return result
 
     @task_worthy
@@ -172,7 +170,6 @@ class TileWorker(QWorker):
 
     @task_worthy
     def load_source_and_recreate(self, data):
-        print("in load_source_and_recreate")
         result = self.load_source(data)
         self.set_environ_from_creds(data["creds"])
         if not result["success"]:
@@ -194,7 +191,6 @@ class TileWorker(QWorker):
     @task_worthy
     def recreate_from_save(self, data):
         try:
-            print("in recreate_from_save in tile_main")
             self.tile_instance = class_info["tile_class"](None, None, tile_name=data["tile_name"])
             tile_env.Tile = self.tile_instance
             widgets.Tile = self.tile_instance
@@ -302,7 +298,6 @@ class TileWorker(QWorker):
 
     @task_worthy
     def instantiate_as_pseudo_tile(self, data):
-        print("instantiate_as_pseudo_tile")
         try:
             self.tile_instance = PseudoTileClass()
             self.set_environ_from_creds(data["creds"])
@@ -346,7 +341,6 @@ class TileWorker(QWorker):
 
     @task_worthy
     def load_source_and_instantiate(self, data):
-        print("in load_source_and_instantiate")
         self.set_environ_from_creds(data["creds"])
         result = self.load_source(data)
         if not result["success"]:
@@ -360,7 +354,6 @@ class TileWorker(QWorker):
     @task_worthy
     def instantiate_tile_class(self, data):
         try:
-            print("entering instantiate_tile_class")
             self.tile_instance = class_info["tile_class"](None, None, tile_name=data["tile_name"])
             tile_env.Tile = self.tile_instance
             widgets.Tile = self.tile_instance

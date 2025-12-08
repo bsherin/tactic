@@ -24,7 +24,6 @@ class PoolBackend(ExceptionMixin):
             })
         except Exception as ex:
             print(self.handle_exception(ex, "Error getting pooltree"))
-        print("returning from pooltree")
         return {"dtree": dtree}
 
     def get_node(self, root, user_pool_dir, user_obj, show_hidden=False):
@@ -188,7 +187,6 @@ class PoolBackend(ExceptionMixin):
     def upload_resource(self, request, hw, current_user):
         chunk_number = int(request.form.get('dzchunkindex'))
         total_chunks = request.form.get('dztotalchunkcount')
-        print(f"got chunk_number {chunk_number} of {total_chunks}")
         unique_name = request.form.get('dzuuid')
         upload_dir = os.path.join('uploads', unique_name)
         if not os.path.exists(upload_dir):
@@ -198,7 +196,6 @@ class PoolBackend(ExceptionMixin):
             f.write(request.files['file'].read())
 
         if len(os.listdir(upload_dir)) == int(total_chunks):
-            print("got last chunk")
             fullpath = request.form.get("extra_value")
             truepath = hw.user_to_true(fullpath, current_user)
             try:

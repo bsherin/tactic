@@ -106,11 +106,9 @@ class ServiceRegistry(RedisManager):
         if not tasks:
             print("no running service tasks found")
             return
-        print(f"found {len(tasks)} running service tasks")
         running_ids = [self.task_to_id(t) for t in tasks]
         if self.extra_valid_ids:
             running_ids += self.extra_valid_ids
-        print("running ids:", running_ids)
         all_queues = list_queues()
         for q in all_queues:
             qname = q["name"]

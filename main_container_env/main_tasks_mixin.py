@@ -101,7 +101,6 @@ class LoadSaveTasksMixin:
 
         self.ss.initialize_session(local_id, sdict)
         sess = self.get_session(local_id)
-        print('returned from create_pseudo_tile')
         doc_type = sess.doc_type
         is_notebook = doc_type == 'notebook' or doc_type == 'jupyter'
 
@@ -184,7 +183,6 @@ class LoadSaveTasksMixin:
         }
 
         def got_tile_types(ttdata):
-            print("in got_tile_types in initialize_session")
             data_dict["tile_types"] = ttdata["tile_types"]
             data_dict["icon_dict"] = ttdata["icon_dict"]
             self.mworker.submit_response(task_packet, data_dict)

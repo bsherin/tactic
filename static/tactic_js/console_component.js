@@ -1929,7 +1929,8 @@ function ConsoleComponent(props) {
   }
   var extraProps = (0, _react.useMemo)(function () {
     return {
-      local_id: props.local_id
+      local_id: props.local_id,
+      tsocket: props.tsocket
     };
   });
   return /*#__PURE__*/_react["default"].createElement(_core.Card, {

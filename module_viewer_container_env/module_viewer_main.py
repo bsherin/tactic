@@ -1,9 +1,5 @@
-import ast
 
 from tactic_copilot_mixin import CopilotMixin
-
-import datetime
-import re
 # noinspection PyUnresolvedReferences
 from qworker import QWorker, task_worthy, task_worthy_manual_submit
 from flask import render_template, Flask
@@ -18,7 +14,7 @@ from mongo_db_fs import get_dbs
 from module_viewer_session import ModuleViewerSessionStore, ModuleViewerSessionAccessor
 from aws_helpers import resolve_task_identity, get_ssm_parameter
 
-import sys, os
+import sys
 
 sys.stdout = sys.stderr
 import time
@@ -52,7 +48,7 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin, MongoAccess, Til
         return
 
     def get_session(self, sid):
-        return ModuleViewerSessionAccessor(self.ss, sid)
+        return ModuleViewerSessionAccessor.create(self.ss, sid)
 
     @task_worthy
     def start_session(self, data_dict):
@@ -211,7 +207,6 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin, MongoAccess, Til
             return self.get_traceback_exception_dict(ex, "Error saving module")
 
     def assemble_parse_information(self, tp):
-        print("*** assemble_parse_information called in module_viewer_main")
         try:
             for option in tp.options:
                 if option["name"] in tp.defaults:

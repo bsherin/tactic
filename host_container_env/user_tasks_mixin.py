@@ -175,9 +175,6 @@ class UserTasksMixin:
         seed_db, seed_fs = get_dump_dbs(seed_db_name)
         result_dict = User.create_new({"username": "repository", "password": "abcd"}, seed_db)
         if result_dict["success"]:
-            print("created seed user in seed db")
-            # seed_user_result = seed_db.user_collection.find_one({"username": "seed"})
-            print("got result_dict", str(result_dict))
             seed_user = User(result_dict)
             seed_user.db = seed_db
             seed_user.fs = seed_fs

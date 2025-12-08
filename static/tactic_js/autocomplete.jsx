@@ -54,26 +54,14 @@ function aiCompletionSource(aiText, aiTextLabel) {
         if (!aiText) {
             return {from: context.pos, to: context.pos, options: []};
         }
-        // Get the first line of aiText
-        let aiLines = aiText.split('\n');
-        const firstLine = aiLines[0];
-        let options = [{
-            label: firstLine,
+        const options = [{
+            label: aiText,
+            displayLabel: aiTextLabel,
             type: "suggestion",
-            info: firstLine,
+            info: aiText,
             section: aiCompletionSection,
             boost: 99
         }];
-        if (aiLines.length > 1) {
-            options.push({
-                label: aiText,
-                displayLabel: aiTextLabel,
-                type: "suggestion",
-                info: aiText,
-                section: aiCompletionSection,
-                boost: 99
-            });
-        }
 
         return {
             from: context.pos,

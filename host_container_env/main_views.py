@@ -99,7 +99,6 @@ def remove_mainwindow():
 @login_required
 def post_from_client():
     task_packet = request.json
-    print("in post_from_client with task_type {}".format(task_packet["task_type"]))
     tactic_app.host_worker.forward_client_post(task_packet)
     return jsonify({"success": True})
 

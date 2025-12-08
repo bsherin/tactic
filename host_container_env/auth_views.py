@@ -261,7 +261,6 @@ def update_account_info():
 @login_required
 def update_settings():
     data = request.json
-    print("in update_settings with data = ", data)
     result_dict = current_user.update_settings(data)
     return jsonify(result_dict)
 

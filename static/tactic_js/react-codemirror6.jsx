@@ -1,6 +1,6 @@
 import React, {Fragment, useEffect, useRef, memo, useContext} from "react";
 import {Button, ButtonGroup} from "@blueprintjs/core";
-import {propsAreEqual, useStateAndRef, useRegisterActivity} from "./utilities_react";
+import {propsAreEqual, useStateAndRef} from "./utilities_react";
 import {SettingsContext} from "./settings";
 import {SearchForm} from "./library_widgets";
 import {indentWithTab, indentLess} from "@codemirror/commands"
@@ -22,7 +22,7 @@ import {
     selfCompletionSource, generalCompletionSource, aiCompletionSource, loadingSource,
     topLevelExtraCompletions, dotAccessCompletions
 } from "./autocomplete";
-import {useDebounce} from "./utilities_react";
+import {useDebounce, guid} from "./utilities_react";
 
 import {
     gutter, GutterMarker, highlightActiveLineGutter, highlightSpecialChars, drawSelection,
@@ -39,7 +39,8 @@ import {
     closeBracketsKeymap,
     completionKeymap,
     acceptCompletion,
-    completionStatus
+    completionStatus,
+    closeCompletion
 } from '@codemirror/autocomplete';
 
 import {startCompletion} from "@codemirror/autocomplete";
@@ -266,10 +267,12 @@ function ReactCodemirror6(props) {
     const theme = useRef(null);
     const highlightStyle = useRef(null);
     const autocompletionArgRef = useRef({});
+    const cmUniqueId = useRef(null)
 
     const lastUserDocRef = useRef(props.code_content);
 
     const changeCounterRef = useRef(0);
+    const activeStreamChangeCounterRef = useRef(null);
     const awaitingSuggestionRef = useRef(true);
 
     const [aiText, setAIText, aiTextRef] = useStateAndRef(null);
@@ -279,6 +282,7 @@ function ReactCodemirror6(props) {
     const settingsContext = useContext(SettingsContext);
 
     useEffect(() => {
+        cmUniqueId.current = guid();
         if (props.registerSetFocusFunc) {
             props.registerSetFocusFunc(setFocus);
         }
@@ -292,6 +296,7 @@ function ReactCodemirror6(props) {
                 const isExternal = update.transactions.some(tr => tr.annotation(ExternalUpdate));
 
                 const newDoc = update.state.doc.toString();
+                closeCompletion(update.view);
 
                 // Keep range restrictions up to date for *all* changes
                 if (props.restrict_edits_to_range) {
@@ -314,7 +319,7 @@ function ReactCodemirror6(props) {
                     setAIText(null);
                     setAITextLabel(null);
                     awaitingSuggestionRef.current = true;
-                    doAIUpdate(newDoc, changeCounterRef.current);
+                    doAIUpdate(newDoc);
                 } else {
                     setAIText(null);
                     setAITextLabel(null);
@@ -401,6 +406,20 @@ function ReactCodemirror6(props) {
             props.setCMObject(editorView.current);
         }
     }, []);
+
+    useEffect(() => {
+        if (!props.tsocket) return;
+        if (!props.local_id) return;
+
+        // Stable reference
+        const listener = (data) => handleAutocompleteDelta(data);
+
+        props.tsocket.attachListener("AutocompleteDelta", listener);
+
+        return () => {
+            props.tsocket.detachListener("AutocompleteDelta", listener);
+        };
+    }, [props.tsocket, props.local_id]);
 
     useEffect(() => {
         return () => {
@@ -490,7 +509,7 @@ function ReactCodemirror6(props) {
                 generalCompletionSource(),]
         }
         if (settingsContext.settingsRef.current["use_ai_code_suggestions"] == "yes") {
-            if (awaitingSuggestionRef.current) {
+            if (!aiTextRef.current) {
                 sources.unshift(loadingSource);
             } else {
                 sources.unshift(aiCompletionSource(aiTextRef.current, aiTextLabelRef.current))
@@ -504,7 +523,8 @@ function ReactCodemirror6(props) {
                 },
                 override: sources,
                 closeOnBlur: true,
-                defaultKeymap: false
+                defaultKeymap: false,
+                activateOnTyping: false
             };
         if (editorView.current) {
             editorView.current.dispatch({
@@ -595,33 +615,60 @@ function ReactCodemirror6(props) {
         }
     }, [props.search_term, props.current_search_number, props.regex_search]);
 
-    function getAIUpdate(new_code, change_counter) {
+function handleAutocompleteDelta(data) {
+    if (data.cmUniqueId !== cmUniqueId.current) {
+        return
+    }
+    if (data.change_counter !== activeStreamChangeCounterRef.current) {
+        console.log(`got mismatched change counter`)
+        return;
+    }
+    awaitingSuggestionRef.current = false;
+
+    let current_text =
+        aiTextRef.current == null
+            ? data.text
+            : aiTextRef.current + data.text;
+
+    setAIText(current_text);
+
+    if (data["display_label"] != null) {
+        setAITextLabel(data["display_label"]);
+    }
+
+    if (editorView.current) {
+        startCompletion(editorView.current);
+    }
+}
+
+    function getAIUpdate(new_code) {
+        const change_counter = changeCounterRef.current;
+        activeStreamChangeCounterRef.current = change_counter;
+
         let code_str = new_code;
         const cursorPos = editorView.current.state.selection.main.head;
+        setAIText(null);
+        setAITextLabel(null);
         postPromise(props.parentService, "update_ai_complete",
             {
                 "code_str": code_str,
                 "change_counter": change_counter,
                 "mode": props.mode,
                 "cursor_position": cursorPos,
-                "local_id": props.local_id
+                "local_id": props.local_id,
+                "cmUniqueId": cmUniqueId.current
             })
             .then((data) => {
-                if (data.success) {
-                    if (data.change_counter === changeCounterRef.current) {
-                        setAIText(data["suggestion"]);
-                        setAITextLabel(data["display_label"]);
-                        awaitingSuggestionRef.current = false
-                    }
-                } else {
-                    setAIText(null);
-                    setAITextLabel(null);
-                }
+                
             })
-            .catch(() => {
+            .catch((error) => {
+                console.log("Error getting ai autcomplete", error);
                 setAIText(null);
                 setAITextLabel(null);
             })
+        if (editorView.current) {
+            startCompletion(editorView.current);
+        }
     }
 
     function isDark() {

@@ -172,23 +172,20 @@ function useRegisterActivity() {
   if (contextValue) {
     return contextValue;
   }
-  // return useLocalRegisterActivity();
-  return [false, function () {}];
-}
-function useRegisterActivityNew() {
-  var contextValue = _react["default"].useContext(RegisterActivityContext);
-  if (contextValue) {
-    return contextValue;
-  }
   return useLocalRegisterActivity();
 }
 function ActivityTracker() {
-  var _useRegisterActivityN = useRegisterActivityNew(),
-    _useRegisterActivityN2 = _slicedToArray(_useRegisterActivityN, 2),
-    registerActivityNew = _useRegisterActivityN2[1];
+  var _useRegisterActivity = useRegisterActivity(),
+    _useRegisterActivity2 = _slicedToArray(_useRegisterActivity, 2),
+    registerActivity = _useRegisterActivity2[1];
+  (0, _react.useEffect)(function () {
+    (0, _communication_react.postPromise)("host", "register_client_interaction", {
+      global_id: window.global_id
+    }).then(function () {});
+  }, []);
   (0, _react.useEffect)(function () {
     var handler = function handler() {
-      registerActivityNew();
+      registerActivity();
     };
     var events = ["click", "keydown", "mousedown", "touchstart", "scroll"];
     events.forEach(function (evt) {
@@ -201,7 +198,7 @@ function ActivityTracker() {
         return window.removeEventListener(evt, handler);
       });
     };
-  }, [registerActivityNew]);
+  }, [registerActivity]);
   return null; // nothing to render
 }
 function withRegisterActivity(WrappedComponent) {

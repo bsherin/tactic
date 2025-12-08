@@ -78,7 +78,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
         self.ss = MainSessionStore()
 
     def get_session(self, sid):
-        return MainSessionAccessor(self.ss, sid)
+        return MainSessionAccessor.create(self.ss, sid)
 
     def am_notebook_type(self, sid):
         sess = self.get_session(sid)
@@ -323,14 +323,12 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
     # utility methods
 
     def build_doc_dict(self, sid):
-        print("*** in _build_doc_dict **")
         sess = self.get_session(sid)
         result = {}
         coll_dict, dm_dict, hl_dict, coll_mdata = self.get_all_collection_info(sess.short_collection_name,
                                                                                username=sess.username,
                                                                                return_lists=False)
 
-        print("*** got all collection info ***")
         collection_info = sess.collection_info
         doc_type = sess.doc_type
         for fname in coll_dict.keys():

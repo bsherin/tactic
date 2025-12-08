@@ -29,7 +29,6 @@ class ECSTileBackend(TileBackend):
         # For ad-hoc launches we need networking:
         self.subnets = [s.strip() for s in get_ssm_parameter("ECS_SUBNETS", "").split(",") if s.strip()]
         self.sgs     = [g.strip() for g in get_ssm_parameter("TILE_SECURITY_GROUPS", "").split(",") if g.strip()]
-        self.assign_public = get_ssm_parameter("ECS_ASSIGN_PUBLIC_IP", "ENABLED")
         self.tile_registry = tile_registry
         self.worker = worker
 

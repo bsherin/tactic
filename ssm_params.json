@@ -14,6 +14,16 @@
       "type": "String"
     },
     {
+      "name": "ECS_CLUSTER",
+      "value": "tactic-cluster",
+      "type": "String"
+    },
+    {
+      "name": "MY_AWS_REGION",
+      "value": "us-east-2",
+      "type": "String"
+    },
+    {
       "name": "MY_AWS_REGION",
       "value": "us-east-2",
       "type": "String"
@@ -23,9 +33,19 @@
       "value": "rabbitmq.tactic.local",
       "type": "String"
     },
+    {
+      "name": "ECS_SUBNETS",
+      "value": "subnet-0661f2bf4d7cd59ad,subnet-06c4d407205b8fb0e,subnet-0823884fde6354db4",
+      "type": "String"
+    },
       {
       "name": "REDIS_HOST",
       "value": "redis.tactic.local",
+      "type": "String"
+    },
+    {
+      "name": "REDIS_PORT",
+      "value": "6379",
       "type": "String"
     },
     {
@@ -34,9 +54,14 @@
       "value": "https://sqs.us-east-2.amazonaws.com/924818964184/tactic-user-storage-events",
       "type": "String"
     },
-    {
+       {
       "name": "CLIENT_SESSION_TIMEOUT_SECS",
       "value": "3600",
+      "type": "String"
+    },
+    {
+      "name": "DESIRED_IDLE_TILES",
+      "value": "3",
       "type": "String"
     },
     {
@@ -65,18 +90,28 @@
       "type": "String"
     },
     {
-      "name": "TILE_SERVICE",
+      "name": "ECS_TILE_SERVICE",
       "value": "tactic-tile-pool",
       "type": "String"
     },
     {
-      "name": "MAIN_SERVICE",
-      "value": "tactic-tile-pool",
+      "name": "ECS_TILE_TASKDEF",
+      "value": "tactic-tile",
       "type": "String"
     },
     {
-      "name": "MODULE_VIEWER_SERVICE",
+      "name": "TILE_SECURITY_GROUPS",
+      "value": "sg-0695dab9974a1b96a,sg-0ef5c917959848e80",
+      "type": "String"
+    },
+    {
+      "name": "ECS_MODULE_VIEWER_SERVICE",
       "value": "tactic-module-viewer",
+      "type": "String"
+    },
+    {
+      "name": "ECS_POOL_WATCHER_SERVICE",
+      "value": "tactic-pool-watcher-s3",
       "type": "String"
     },
     {

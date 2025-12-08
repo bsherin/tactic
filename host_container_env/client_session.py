@@ -22,7 +22,6 @@ class ClientSessionRegistry(RedisManager):
         return self.get_hash_entry(global_id, hash_key)
 
     def register_client_interaction(self, global_id):
-        print("*** got client interaction ***")
         self.set_session_info(global_id, "last_interaction", str(time.time()))
 
     def get_last_interaction(self, global_id):

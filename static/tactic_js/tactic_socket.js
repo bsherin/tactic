@@ -24,6 +24,13 @@ class TacticSocket {
         const protocol = window.location.protocol;
         this.socket = io.connect(`${protocol}//${document.domain}:${location.port}/${this.name_space}`);
         this.counter = 0;
+        // The liens below are useful for debugging.
+        // this.socket.onAny((event, ...args) => {
+        //     console.log(
+        //             `[TSOCKET ${this.ident}] onAny: event=`, event,
+        //             "args=", args
+        //         );
+        // });
     }
 
     join_rooms(reconnect = false, on_join = null) {
@@ -50,19 +57,33 @@ class TacticSocket {
     // We have to be careful to get the very same instance of the listener function
     // That requires storing it outside this component since the console can be unmounted
     attachListener(event, newListener) {
-        if (event in this.listeners) {
-            this.socket.off(event, this.listeners[event]);
+        // Lazily create a fan-out handler for this event
+        if (!(event in this.listeners)) {
+            this.listeners[event] = new Set();
+            this.socket.on(event, (data) => {
+                // Fan-out to all registered listeners
+                for (const fn of this.listeners[event]) {
+                    try {
+                        fn(data);
+                    } catch (e) {
+                        console.error(`Error in listener for ${event}`, e);
+                    }
+                }
+            });
         }
-        this.socket.on(event, newListener);
-        this.listeners[event] = newListener
+        this.listeners[event].add(newListener);
     }
 
-    detachListener(event) {
-        if (event in this.listeners) {
-            this.socket.off(event, this.listeners[event]);
-            delete this.listeners[event]
+    detachListener(event, listener) {
+        if (!(event in this.listeners)) return;
+        if (listener) {
+            this.listeners[event].delete(listener);
+        } else {
+            // optional: clear all listeners for this event if no listener passed
+            this.listeners[event].clear();
         }
     }
+
 
     disconnect() {
         this.stopListening();
@@ -70,9 +91,11 @@ class TacticSocket {
     }
 
     stopListening() {
+        // If you really want to remove all underlying handlers:
         for (let event in this.listeners) {
-            this.socket.off(event, this.listeners[event])
+            this.listeners[event].clear();
         }
+        // You can keep the single socket.on per event; no need to call off().
     }
 
     restoreListeners() {

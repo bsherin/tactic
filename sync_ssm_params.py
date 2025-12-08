@@ -136,11 +136,11 @@ def main():
         print(f"Warning: duplicate parameter 'name' values found in config: {dups}", file=sys.stderr)
 
     for p in config["parameters"]:
+        base_name = p["name"]
         if args.target == "localstack" and "local_value" in p:
-            base_name = p["local_value"]
+            value = str(p["local_value"])
         else:
-            base_name = p["name"]
-        value = str(p["value"])
+            value = str(p["value"])
         ptype = p.get("type", "String")
 
         param_name = build_param_name(base_name, args.path_prefix)
@@ -151,9 +151,6 @@ def main():
             "Type": ptype,
             "Overwrite": args.overwrite,
         }
-
-        # Optional: allow per-parameter KMS key in JSON:
-        # { "name": "...", "value": "...", "type": "SecureString", "key_id": "alias/your-key" }
         if ptype == "SecureString" and "key_id" in p:
             put_kwargs["KeyId"] = p["key_id"]
 
