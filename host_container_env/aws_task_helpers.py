@@ -111,7 +111,7 @@ def run_tile_on_ecs(
         "awsvpcConfiguration": {
             "subnets": subnets,
             "securityGroups": sgs,
-            "assignPublicIp": assign_ip
+            "assignPublicIp": False
         }
     }
 

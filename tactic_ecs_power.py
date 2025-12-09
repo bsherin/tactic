@@ -6,6 +6,7 @@ from typing import Dict
 
 REGION = os.getenv("AWS_REGION", "us-east-2")
 CLUSTER = os.getenv("ECS_CLUSTER_NAME", "tactic-cluster")
+# PROFILE = os.getenv("AWS_PROFILE", "default")
 
 SERVICES = [
     "tactic-main-service",
