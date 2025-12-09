@@ -30,11 +30,11 @@ const mdi = markdownIt({
 });
 mdi.use(markdownItLatex);
 
-import {useState, useEffect, memo, useContext, createContext, Fragment} from "react";
+import {useState, useEffect, useRef, memo, useContext, createContext, Fragment} from "react";
 import {Button, Drawer, ButtonGroup} from "@blueprintjs/core";
 import {Card, CardList, TextArea, ControlGroup} from "@blueprintjs/core";
 
-import {useStateAndRef, useCallbackStack, useRegisterActivity} from "./utilities_react";
+import {useStateAndRef, useCallbackStack} from "./utilities_react";
 import {postPromise} from "./communication_react";
 import {SettingsContext} from "./settings";
 import {ErrorDrawerContext} from "./error_drawer";
@@ -58,32 +58,30 @@ function withAssistant(WrappedComponent, lposition = "right", assistant_drawer_s
         const [show_drawer, set_show_drawer] = useState(false);
         const [, set_item_list, item_list_ref] = useStateAndRef([]);
         const [, set_stream_text, stream_text_ref] = useStateAndRef("");
-        const [, set_assistant_id, assistant_id_ref] = useStateAndRef(null);
         const [, set_chat_status, chat_status_ref] = useStateAndRef(window.has_openapi_key ? "idle" : null);
         const [, set_assistant_prompt_value, assistant_prompt_value_ref] = useStateAndRef("");
+
+        const initialized = useRef(false);
 
         const errorDrawerFuncs = useContext(ErrorDrawerContext);
 
 
-        useEffect(()=>{
-            if (window.has_openapi_key) {
-                getAssistant();
-            }
-            return (() => {
-            })
-        }, []);
+        // useEffect(()=>{
+        //     if (window.has_openapi_key) {
+        //         getAssistant();
+        //     }
+        //     return (() => {
+        //     })
+        // }, []);
 
         useEffect(()=>{
-            if (show_drawer) {
+            if (show_drawer && window.has_openapi_key && !initialized.current) {
                 getAssistant()
             }
         },[show_drawer]);
 
-        const pushCallback = useCallbackStack();
-
         function getPastMessages() {
-            if (assistant_id_ref.current == null) return;
-            postPromise(assistant_id_ref.current, "get_past_messages", {})
+            postPromise("assistant", "get_past_messages", {local_id: window.global_id})
                 .then((data) => {
                     for (let msg of data["messages"]) {
                         if (msg["kind"] == "assistant") {
@@ -92,6 +90,7 @@ function withAssistant(WrappedComponent, lposition = "right", assistant_drawer_s
                         }
                     }
                     set_item_list(data["messages"])
+                    initialized.current = true;
                 })
                 .catch((data)=>{
                         errorDrawerFuncs.addErrorDrawerEntry({
@@ -101,14 +100,14 @@ function withAssistant(WrappedComponent, lposition = "right", assistant_drawer_s
         }
 
         function getAssistant() {
-            postPromise("host", "GetAssistant", {user_id: window.user_id,})
+            postPromise("assistant", "start_session", {
+                user_id: window.user_id,
+                global_id: window.global_id,
+                local_id: window.global_id
+            })
                 .then((response) => {
-                    if (response.assistant_id == null) {
-                        startAssistant()
-                    } else if (response.assistant_id != assistant_id_ref.current) {
-                        set_assistant_id(response.assistant_id);
-                        pushCallback(getPastMessages)
-
+                    if (response.status == "exists") {
+                        getPastMessages();
                     }
                 })
                  .catch((data)=>{
@@ -118,22 +117,16 @@ function withAssistant(WrappedComponent, lposition = "right", assistant_drawer_s
                  })
         }
 
-        function startAssistant() {
-            postPromise("host", "StartAssistant", {parent_id: window.global_id, user_id: window.user_id})
-                .then((response) => {
-                    set_assistant_id(response.assistant_id)
-                });
-        }
 
-        function _close(data) {
+        function _close() {
             set_show_drawer(false);
         }
 
-        function _open(data) {
+        function _open() {
             set_show_drawer(true)
         }
 
-        function _toggle(data) {
+        function _toggle() {
             set_show_drawer(!show_drawer)
         }
 
@@ -152,7 +145,6 @@ function withAssistant(WrappedComponent, lposition = "right", assistant_drawer_s
             set_stream_text: set_stream_text,
             chat_status_ref: chat_status_ref,
             set_chat_status: set_chat_status,
-            assistant_id_ref: assistant_id_ref,
             show_drawer: show_drawer
         };
         return (
@@ -301,7 +293,7 @@ function ChatModule(props) {
 
     async function _cancelPrompt() {
         try {
-            await postPromise(assistantDrawerFuncs.assistant_id_ref.current, "cancel_run_task", {})
+            await postPromise("assistant", "cancel_run_task", {local_id: window.global_id});
         } catch (error) {
             console.log(error.message)
         }
@@ -317,7 +309,7 @@ function ChatModule(props) {
             _addEntry({kind: "user", text: props.assistant_prompt_value_ref.current});
             props.set_assistant_prompt_value("");
             assistantDrawerFuncs.set_chat_status("posted");
-            await postPromise(assistantDrawerFuncs.assistant_id_ref.current, "post_prompt_stream",
+            await postPromise("assistant", "post_prompt_stream",
                 {prompt: props.assistant_prompt_value_ref.current, local_id: window.global_id})
         } catch (error) {
             console.log(error.message)
@@ -333,10 +325,10 @@ function ChatModule(props) {
 
     async function _clearThread() {
         try {
-            await postPromise(assistantDrawerFuncs.assistant_id_ref.current, "clear_thread", {});
+            await postPromise("assistant", "clear_thread", {local_id: window.global_id});
             assistantDrawerFuncs.set_item_list([])
         } catch (e) {
-            errorDrawerFuncs.addFromError(title, e)
+            errorDrawerFuncs.addFromError("error clearing thread", e)
         }
     }
 
@@ -355,7 +347,7 @@ function ChatModule(props) {
             });
             await postPromise("host", "SaveAssistantThread", {
                 room: window.global_id,
-                assistant_id: assistantDrawerFuncs.assistant_id_ref.current,
+                local_id: window.global_id,
                 new_name: new_name,
                 user_id: window.user_id});
             statusFuncs.clearStatusMessage();

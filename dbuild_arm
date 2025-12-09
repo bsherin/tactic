@@ -21,19 +21,19 @@ cd "$ROOT_DIR"
 
 # Run docker compose based on argument
 if [ "$1" == "all" ] ; then
-  sudo ROOT_DIR="$ROOT_DIR" docker compose --env-file develop.env --profile build_project build
+  ROOT_DIR="$ROOT_DIR" docker compose --env-file develop.env --profile build_project build
 elif [ "$1" == "non_base" ] ; then
-  sudo ROOT_DIR="$ROOT_DIR" docker compose --env-file develop.env --profile build_project build "tactic_host1"
-  sudo ROOT_DIR="$ROOT_DIR" docker compose --env-file develop.env --profile build_project build "tactic_main"
-  sudo ROOT_DIR="$ROOT_DIR" docker compose --env-file develop.env --profile build_project build "tactic_module_viewer"
-  sudo ROOT_DIR="$ROOT_DIR" docker compose --env-file develop.env --profile build_project build "tactic_tile"
-  sudo ROOT_DIR="$ROOT_DIR" docker compose --env-file develop.env --profile build_project build "tactic_log_streamer"
-  sudo ROOT_DIR="$ROOT_DIR" docker compose --env-file develop.env --profile build_project build "tactic_assistant"
-  sudo ROOT_DIR="$ROOT_DIR" docker compose --env-file develop.env --profile build_project build "tactic_mongo_watcher"
-  sudo ROOT_DIR="$ROOT_DIR" docker compose --env-file develop.env --profile build_project build "tactic_pool_watcher"
+  ROOT_DIR="$ROOT_DIR" docker compose --env-file develop.env --profile build_project build "tactic_host1"
+  ROOT_DIR="$ROOT_DIR" docker compose --env-file develop.env --profile build_project build "tactic_main"
+  ROOT_DIR="$ROOT_DIR" docker compose --env-file develop.env --profile build_project build "tactic_module_viewer"
+  ROOT_DIR="$ROOT_DIR" docker compose --env-file develop.env --profile build_project build "tactic_tile"
+  ROOT_DIR="$ROOT_DIR" docker compose --env-file develop.env --profile build_project build "tactic_log_streamer"
+  ROOT_DIR="$ROOT_DIR" docker compose --env-file develop.env --profile build_project build "tactic_assistant"
+  ROOT_DIR="$ROOT_DIR" docker compose --env-file develop.env --profile build_project build "tactic_mongo_watcher"
+  ROOT_DIR="$ROOT_DIR" docker compose --env-file develop.env --profile build_project build "tactic_pool_watcher"
 
 elif [ "$1" == "host" ] ; then
-  sudo ROOT_DIR="$ROOT_DIR" docker compose --env-file develop.env --profile build_project build "tactic_host1"
+  ROOT_DIR="$ROOT_DIR" docker compose --env-file develop.env --profile build_project build "tactic_host1"
 else
-  sudo ROOT_DIR="$ROOT_DIR" docker compose --env-file develop.env --profile build_project build "tactic_$1"
+  ROOT_DIR="$ROOT_DIR" docker compose --env-file develop.env --profile build_project build "tactic_$1"
 fi

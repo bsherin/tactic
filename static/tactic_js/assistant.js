@@ -84,34 +84,34 @@ function withAssistant(WrappedComponent) {
       _useStateAndRef4 = _slicedToArray(_useStateAndRef3, 3),
       set_stream_text = _useStateAndRef4[1],
       stream_text_ref = _useStateAndRef4[2];
-    var _useStateAndRef5 = (0, _utilities_react.useStateAndRef)(null),
+    var _useStateAndRef5 = (0, _utilities_react.useStateAndRef)(window.has_openapi_key ? "idle" : null),
       _useStateAndRef6 = _slicedToArray(_useStateAndRef5, 3),
-      set_assistant_id = _useStateAndRef6[1],
-      assistant_id_ref = _useStateAndRef6[2];
-    var _useStateAndRef7 = (0, _utilities_react.useStateAndRef)(window.has_openapi_key ? "idle" : null),
+      set_chat_status = _useStateAndRef6[1],
+      chat_status_ref = _useStateAndRef6[2];
+    var _useStateAndRef7 = (0, _utilities_react.useStateAndRef)(""),
       _useStateAndRef8 = _slicedToArray(_useStateAndRef7, 3),
-      set_chat_status = _useStateAndRef8[1],
-      chat_status_ref = _useStateAndRef8[2];
-    var _useStateAndRef9 = (0, _utilities_react.useStateAndRef)(""),
-      _useStateAndRef0 = _slicedToArray(_useStateAndRef9, 3),
-      set_assistant_prompt_value = _useStateAndRef0[1],
-      assistant_prompt_value_ref = _useStateAndRef0[2];
+      set_assistant_prompt_value = _useStateAndRef8[1],
+      assistant_prompt_value_ref = _useStateAndRef8[2];
+    var initialized = (0, _react.useRef)(false);
     var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
+
+    // useEffect(()=>{
+    //     if (window.has_openapi_key) {
+    //         getAssistant();
+    //     }
+    //     return (() => {
+    //     })
+    // }, []);
+
     (0, _react.useEffect)(function () {
-      if (window.has_openapi_key) {
-        getAssistant();
-      }
-      return function () {};
-    }, []);
-    (0, _react.useEffect)(function () {
-      if (show_drawer) {
+      if (show_drawer && window.has_openapi_key && !initialized.current) {
         getAssistant();
       }
     }, [show_drawer]);
-    var pushCallback = (0, _utilities_react.useCallbackStack)();
     function getPastMessages() {
-      if (assistant_id_ref.current == null) return;
-      (0, _communication_react.postPromise)(assistant_id_ref.current, "get_past_messages", {}).then(function (data) {
+      (0, _communication_react.postPromise)("assistant", "get_past_messages", {
+        local_id: window.global_id
+      }).then(function (data) {
         var _iterator = _createForOfIteratorHelper(data["messages"]),
           _step;
         try {
@@ -128,6 +128,7 @@ function withAssistant(WrappedComponent) {
           _iterator.f();
         }
         set_item_list(data["messages"]);
+        initialized.current = true;
       })["catch"](function (data) {
         errorDrawerFuncs.addErrorDrawerEntry({
           title: "Error getting past messages",
@@ -136,14 +137,13 @@ function withAssistant(WrappedComponent) {
       });
     }
     function getAssistant() {
-      (0, _communication_react.postPromise)("host", "GetAssistant", {
-        user_id: window.user_id
+      (0, _communication_react.postPromise)("assistant", "start_session", {
+        user_id: window.user_id,
+        global_id: window.global_id,
+        local_id: window.global_id
       }).then(function (response) {
-        if (response.assistant_id == null) {
-          startAssistant();
-        } else if (response.assistant_id != assistant_id_ref.current) {
-          set_assistant_id(response.assistant_id);
-          pushCallback(getPastMessages);
+        if (response.status == "exists") {
+          getPastMessages();
         }
       })["catch"](function (data) {
         errorDrawerFuncs.addErrorDrawerEntry({
@@ -152,21 +152,13 @@ function withAssistant(WrappedComponent) {
         });
       });
     }
-    function startAssistant() {
-      (0, _communication_react.postPromise)("host", "StartAssistant", {
-        parent_id: window.global_id,
-        user_id: window.user_id
-      }).then(function (response) {
-        set_assistant_id(response.assistant_id);
-      });
-    }
-    function _close(data) {
+    function _close() {
       set_show_drawer(false);
     }
-    function _open(data) {
+    function _open() {
       set_show_drawer(true);
     }
-    function _toggle(data) {
+    function _toggle() {
       set_show_drawer(!show_drawer);
     }
     function _onClose() {
@@ -183,7 +175,6 @@ function withAssistant(WrappedComponent) {
       set_stream_text: set_stream_text,
       chat_status_ref: chat_status_ref,
       set_chat_status: set_chat_status,
-      assistant_id_ref: assistant_id_ref,
       show_drawer: show_drawer
     };
     return /*#__PURE__*/_react["default"].createElement(AssistantContext.Provider, {
@@ -237,10 +228,10 @@ function ChatModule(props) {
   var control_ref = /*#__PURE__*/_react["default"].createRef();
   var list_ref = /*#__PURE__*/_react["default"].createRef();
   var stream_dict_ref = /*#__PURE__*/_react["default"].createRef();
-  var _useStateAndRef1 = (0, _utilities_react.useStateAndRef)(0),
-    _useStateAndRef10 = _slicedToArray(_useStateAndRef1, 3),
-    set_response_counter = _useStateAndRef10[1],
-    response_counter_ref = _useStateAndRef10[2];
+  var _useStateAndRef9 = (0, _utilities_react.useStateAndRef)(0),
+    _useStateAndRef0 = _slicedToArray(_useStateAndRef9, 3),
+    set_response_counter = _useStateAndRef0[1],
+    response_counter_ref = _useStateAndRef0[2];
   var assistantDrawerFuncs = (0, _react.useContext)(AssistantContext);
   var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
   var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
@@ -340,7 +331,9 @@ function ChatModule(props) {
           case 0:
             _context2.p = 0;
             _context2.n = 1;
-            return (0, _communication_react.postPromise)(assistantDrawerFuncs.assistant_id_ref.current, "cancel_run_task", {});
+            return (0, _communication_react.postPromise)("assistant", "cancel_run_task", {
+              local_id: window.global_id
+            });
           case 1:
             _context2.n = 3;
             break;
@@ -376,7 +369,7 @@ function ChatModule(props) {
             props.set_assistant_prompt_value("");
             assistantDrawerFuncs.set_chat_status("posted");
             _context3.n = 1;
-            return (0, _communication_react.postPromise)(assistantDrawerFuncs.assistant_id_ref.current, "post_prompt_stream", {
+            return (0, _communication_react.postPromise)("assistant", "post_prompt_stream", {
               prompt: props.assistant_prompt_value_ref.current,
               local_id: window.global_id
             });
@@ -427,7 +420,9 @@ function ChatModule(props) {
           case 0:
             _context5.p = 0;
             _context5.n = 1;
-            return (0, _communication_react.postPromise)(assistantDrawerFuncs.assistant_id_ref.current, "clear_thread", {});
+            return (0, _communication_react.postPromise)("assistant", "clear_thread", {
+              local_id: window.global_id
+            });
           case 1:
             assistantDrawerFuncs.set_item_list([]);
             _context5.n = 3;
@@ -435,7 +430,7 @@ function ChatModule(props) {
           case 2:
             _context5.p = 2;
             _t3 = _context5.v;
-            errorDrawerFuncs.addFromError(title, _t3);
+            errorDrawerFuncs.addFromError("error clearing thread", _t3);
           case 3:
             return _context5.a(2);
         }
@@ -448,7 +443,7 @@ function ChatModule(props) {
   }
   function _saveThreadAs2() {
     _saveThreadAs2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6() {
-      var data, new_name, _title, _t4;
+      var data, new_name, title, _t4;
       return _regenerator().w(function (_context6) {
         while (1) switch (_context6.n) {
           case 0:
@@ -472,7 +467,7 @@ function ChatModule(props) {
             _context6.n = 4;
             return (0, _communication_react.postPromise)("host", "SaveAssistantThread", {
               room: window.global_id,
-              assistant_id: assistantDrawerFuncs.assistant_id_ref.current,
+              local_id: window.global_id,
               new_name: new_name,
               user_id: window.user_id
             });
@@ -486,8 +481,8 @@ function ChatModule(props) {
             _context6.p = 5;
             _t4 = _context6.v;
             if (_t4 != "canceled") {
-              _title = "title" in _t4 ? _t4.title : "Error saving thread";
-              errorDrawerFuncs.addFromError(_title, _t4);
+              title = "title" in _t4 ? _t4.title : "Error saving thread";
+              errorDrawerFuncs.addFromError(title, _t4);
             }
             statusFuncs.clearStatusMessage();
             statusFuncs.stopSpinner();

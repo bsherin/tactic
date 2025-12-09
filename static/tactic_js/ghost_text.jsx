@@ -123,6 +123,7 @@ function acceptGhostText(view) {
         changes: { from: pos, insert: ghost.text },
         effects: setGhostTextEffect.of({ text: "", pos: null })
     });
+    setGhostText(view, "");
     return true;
 }
 function computeGhostSuffix(fullSuggestion, view) {
@@ -180,6 +181,17 @@ function computeGhostSuffix(fullSuggestion, view) {
         if (firstCh !== " " && firstCh !== "\n" && firstCh !== "\t") {
             result = " " + result;
         }
+    }
+
+    // If the previous line ends with ":", and the ghost text begins with
+    // indentation but no newline, we should insert a newline.
+    const lineText = doc.sliceString(line.from, line.to).trimEnd();
+    const endsBlock = lineText.endsWith(":");
+    const startsIndented = /^[ \t]+/.test(result);
+    const startsNewline = result.startsWith("\n");
+
+    if (endsBlock && startsIndented && !startsNewline) {
+        result = "\n" + result;
     }
 
     return result;

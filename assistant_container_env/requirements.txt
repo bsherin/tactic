@@ -3,6 +3,7 @@ Flask == 2.2.3
 kombu
 pika
 redis
+msgpack
 gevent
 pymongo
 openai==1.78.1

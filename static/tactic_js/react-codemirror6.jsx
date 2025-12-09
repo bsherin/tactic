@@ -279,10 +279,9 @@ function ReactCodemirror6(props) {
 
     const changeCounterRef = useRef(0);
     const activeStreamChangeCounterRef = useRef(null);
-    const awaitingSuggestionRef = useRef(true);
 
     const [, setAIText, aiTextRef] = useStateAndRef(null);
-    const [, doAIUpdate] = useDebounce(getAIUpdate, 1000);
+    const [, doAIUpdate] = useDebounce(getAIUpdate, 2000);
 
     const settingsContext = useContext(SettingsContext);
 
@@ -322,11 +321,12 @@ function ReactCodemirror6(props) {
                     (settingsContext.settingsRef.current["use_ai_code_suggestions"] == "yes") &&
                     props.local_id) {
                     setAIText(null);
-                    awaitingSuggestionRef.current = true;
+                    if (editorView.current) {
+                        setGhostText(editorView.current, "");
+                    }
                     doAIUpdate(newDoc);
                 } else {
                     setAIText(null);
-                    awaitingSuggestionRef.current = true;
                 }
 
                 //  Only treat as "user change" if it wasn't an ExternalUpdate
@@ -624,7 +624,6 @@ function ReactCodemirror6(props) {
         }
 
         setAIText(current_text);
-
         if (editorView.current) {
             closeCompletion(editorView.current);
             const trimmed = computeGhostSuffix(current_text, editorView.current);
@@ -638,9 +637,11 @@ function ReactCodemirror6(props) {
 
         let code_str = new_code;
         const cursorPos = editorView.current.state.selection.main.head;
+
+        // the AI and ghost text should already be cleared. but just in case.
         setAIText(null);
         if (editorView.current) {
-            setGhostText(editorView.current, ""); // clear stale suggestion
+            setGhostText(editorView.current, "");
         }
         postPromise(props.parentService, "update_ai_complete",
             {

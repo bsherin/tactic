@@ -1,12 +1,9 @@
-import io, json, time, uuid
+import json, time
 from typing import Any, Optional
-import pickle
 import os
 import re
 import datetime
 import msgpack
-import boto3
-import redis
 from redis_tools import get_no_decode_redis_client
 from aws_helpers import get_s3_client, get_ssm_parameter
 

@@ -102,9 +102,8 @@ class ProjectTasksMixin:
                 return {"success": False}
 
         try:
-            assistant_id = data["assistant_id"]
             new_name = data["new_name"]
-            self.post_task(assistant_id, "get_past_messages", {}, got_past_messages)
+            self.post_task("assistant", "get_past_messages", {"local_id": data["local_id"]}, got_past_messages)
         except Exception as ex:
             print(self.handle_exception(ex, "Error posting get_past_message"))
             return {"success": False}
