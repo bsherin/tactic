@@ -195,7 +195,6 @@ class MetabookAccess(object):
             "metabook_name": metabook_name
         }
 
-    @property
     def metabook_names(self):
         names = [
             doc["metabook_name"]
@@ -205,7 +204,6 @@ class MetabookAccess(object):
         ]
         return names
 
-    @property
     def metabook_names_with_metadata(self):
         my_metabook_names = []
         for doc in self.db[self.metabook_collection_name].find({}, {"_id": 0, "metadata": 1, "metabook_name": 1}):
@@ -226,7 +224,7 @@ class MetabookAccess(object):
         return tags
 
     def get_all_metabook_tags(self, show_hidden=True):
-        res_list = self.metabook_names_with_metadata
+        res_list = self.metabook_names_with_metadata()
         result = []
         for res_item in res_list:
             mdata = res_item[1]

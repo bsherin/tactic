@@ -34,7 +34,7 @@ var library_id = "a" + (0, _utilities_react.guid)();
 window.global_id = library_id;
 var tsocket;
 function RepositoryHomeApp(props) {
-  var connection_status = (0, _utilities_react.useConnection)(props.tsocket, initSocket);
+  var connection_status = (0, _tactic_socket.useConnection)(props.tsocket, initSocket);
   var settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
   var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);

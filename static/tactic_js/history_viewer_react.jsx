@@ -17,8 +17,8 @@ import {withStatus} from "./toaster.js";
 
 import {guid} from "./utilities_react.js";
 import {TacticNavbar} from "./blueprint_navbar";
-import {TacticSocket} from "./tactic_socket.js";
-import {useCallbackStack, useConnection, useStateAndRef, withRegisterActivity} from "./utilities_react";
+import {TacticSocket, useConnection} from "./tactic_socket.js";
+import {useCallbackStack, useStateAndRef, withRegisterActivity} from "./utilities_react";
 import {withSettings} from "./settings";
 import {withDialogs, DialogContext} from "./modal_react";
 
@@ -100,11 +100,9 @@ function HistoryViewerApp(props) {
                 e.returnValue = ''
             }
             postWithCallback("host", "end_client_session_task", {global_id: window.global_id, force_forward: true})
-            props.tsocket.disconnect()
         }
         window.addEventListener("beforeunload", beforeUnloadFunc);
         return (() => {
-            props.tsocket.disconnect();
             window.removeEventListener("beforeunload", beforeUnloadFunc)
         })
     }, []);
@@ -127,15 +125,15 @@ function HistoryViewerApp(props) {
 
     }, []);
 
-    function initSocket() {
-        props.tsocket.attachListener("window-open", (data) => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
-        props.tsocket.attachListener('close-user-windows', (data) => {
+    function initSocket(theSocket) {
+        theSocket.attachListener("window-open", (data) => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
+        theSocket.attachListener('close-user-windows', (data) => {
             if (!(data["originator"] == window.global_id)) {
                 window.close()
             }
         });
-        props.tsocket.attachListener('doflashUser', doFlash);
-        props.tsocket.attachListener("endSession", function () {
+        theSocket.attachListener('doflashUser', doFlash);
+        theSocket.attachListener("endSession", function () {
             dialogFuncs.showModal("EndSessionDialog", {})
         })
     }

@@ -11,7 +11,7 @@ import PropTypes from 'prop-types';
 import {Tabs, Tab, Tooltip, Icon, Position, Slider, Label, FormGroup, Button} from "@blueprintjs/core";
 import {Regions} from "@blueprintjs/table";
 
-import {TacticSocket} from "./tactic_socket"
+import {TacticSocket, useListeners} from "./tactic_socket"
 import {doFlash} from "./toaster"
 import {TacticNavbar} from "./blueprint_navbar";
 import {handleCallback, postPromise} from "./communication_react"
@@ -25,7 +25,7 @@ import {ViewerContext} from "./resource_viewer_context";
 import {ErrorDrawerContext, withErrorDrawer} from "./error_drawer";
 import {guid, withRegisterActivity} from "./utilities_react";
 import {LibraryMenubar} from "./library_menubars";
-import {useCallbackStack, useStateAndRef, useRegisterActivity} from "./utilities_react";
+import {useCallbackStack, useStateAndRef} from "./utilities_react";
 
 import {SettingsContext, withSettings} from "./settings";
 import {DialogContext} from "./modal_react";
@@ -98,23 +98,21 @@ function AdministerHomeApp(props) {
 
     const dialogFuncs = useContext(DialogContext)
 
+    useListeners(props.tsocket, initSocket);
+
     useEffect(() => {
-        initSocket();
         statusFuncs.stopSpinner();
-        return (() => {
-            props.tsocket.disconnect()
-        })
     }, []);
 
-    function initSocket() {
-        props.tsocket.attachListener("window-open", (data) => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
-        props.tsocket.attachListener('close-user-windows', (data) => {
+    function initSocket(theSocket) {
+        theSocket.attachListener("window-open", (data) => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
+        theSocket.attachListener('close-user-windows', (data) => {
             if (!(data["originator"] == window.global_id)) {
                 window.close()
             }
         });
-        props.tsocket.attachListener('doflashUser', doFlash);
-        props.tsocket.attachListener("endSession", function () {
+        theSocket.attachListener('doflashUser', doFlash);
+        theSocket.attachListener("endSession", function () {
             dialogFuncs.showModal("EndSessionDialog", {})
         })
     }

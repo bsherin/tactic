@@ -116,7 +116,7 @@ function TileDifferApp(props) {
     _useState0 = _slicedToArray(_useState9, 2),
     initialized = _useState0[0],
     setInitialized = _useState0[1];
-  var connection_status = (0, _utilities_react.useConnection)(props.tsocket, initSocket);
+  var connection_status = (0, _tactic_socket.useConnection)(props.tsocket, initSocket);
   var savedContent = (0, _react.useRef)(props.edit_content);
   var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
   var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
@@ -149,18 +149,18 @@ function TileDifferApp(props) {
       });
     });
   }, []);
-  function initSocket() {
-    props.tsocket.attachListener("window-open", function (data) {
+  function initSocket(theSocket) {
+    theSocket.attachListener("window-open", function (data) {
       return window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data["the_id"]));
     });
-    props.tsocket.attachListener('close-user-windows', function (data) {
+    theSocket.attachListener('close-user-windows', function (data) {
       if (!(data["originator"] == window.global_id)) {
         window.close();
       }
     });
-    props.tsocket.attachListener('doflashUser', _toaster.doFlash);
+    theSocket.attachListener('doflashUser', _toaster.doFlash);
     if (!window.in_context) {
-      props.tsocket.attachListener("endSession", function () {
+      theSocket.attachListener("endSession", function () {
         dialogFuncs.showModal("EndSessionDialog", {});
       });
     }

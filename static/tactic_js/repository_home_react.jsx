@@ -12,7 +12,8 @@ import {handleCallback} from "./communication_react"
 import {LibraryPane} from "./library_pane"
 import {withStatus} from "./toaster";
 import {withErrorDrawer} from "./error_drawer";
-import {useConnection, guid, withRegisterActivity} from "./utilities_react";
+import {guid, withRegisterActivity} from "./utilities_react";
+import {useConnection} from "./tactic_socket";
 import {TacticNavbar} from "./blueprint_navbar";
 
 import {SettingsContext, withSettings} from "./settings";

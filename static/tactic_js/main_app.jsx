@@ -1,4 +1,4 @@
-import {TacticSocket} from "./tactic_socket";
+import {TacticSocket, useConnection} from "./tactic_socket";
 
 if (!window.in_context) {
     import("../tactic_css/tactic.scss");
@@ -31,7 +31,7 @@ import {handleCallback, postPromise, postPromiseMain, postWithCallbackMain, post
 import {doFlash} from "./toaster"
 import {withStatus} from "./toaster";
 import {withErrorDrawer} from "./error_drawer";
-import {get_ppi, guid, renderSpinnerMessage, useConnection, useConstructor, useStateAndRef} from "./utilities_react";
+import {get_ppi, guid, renderSpinnerMessage, useConstructor, useStateAndRef} from "./utilities_react";
 import {ICON_BAR_WIDTH} from "./sizing_tools";
 import {ErrorBoundary} from "./error_boundary";
 import {useCallbackStack, useReducerAndRef, withRegisterActivity} from "./utilities_react";
@@ -265,24 +265,24 @@ function MainApp(props) {
         _setTileValue(data.tile_id, "finished_loading", true)
     }
 
-    function initSocket() {
-        props.tsocket.attachListener("window-open", data => {
+    function initSocket(theSocket) {
+        theSocket.attachListener("window-open", data => {
             window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`)
         });
         if (!window.in_context) {
-            props.tsocket.attachListener('close-user-windows', function (data) {
+            theSocket.attachListener('close-user-windows', function (data) {
                 if (!(data["originator"] == window.global_id)) {
                     window.close()
                 }
             });
-            props.tsocket.attachListener("notebook-open", function (data) {
+            theSocket.attachListener("notebook-open", function (data) {
                 window.open($SCRIPT_ROOT + "/new_notebook_with_data/" + data.temp_data_id)
             });
-            props.tsocket.attachListener("doFlashUser", function (data) {
+            theSocket.attachListener("doFlashUser", function (data) {
                 doFlash(data)
             });
         } else {
-            props.tsocket.attachListener("notebook-open", async function (data) {
+            theSocket.attachListener("notebook-open", async function (data) {
                 try {
                     props.handleCreateViewer("new-notebook", null, null, data.temp_data_id)
                 } catch (e) {
@@ -290,12 +290,12 @@ function MainApp(props) {
                 }
             })
         }
-        props.tsocket.attachListener('table-message', _handleTableMessage);
-        props.tsocket.attachListener("update-menus", _update_menus_listener);
-        props.tsocket.attachListener("tile-finished-loading", _handleTileFinishedLoading);
-        props.tsocket.attachListener('change-doc', _change_doc_listener);
+        theSocket.attachListener('table-message', _handleTableMessage);
+        theSocket.attachListener("update-menus", _update_menus_listener);
+        theSocket.attachListener("tile-finished-loading", _handleTileFinishedLoading);
+        theSocket.attachListener('change-doc', _change_doc_listener);
         if (!props.controlled) {
-            props.tsocket.attachListener("endSession", function () {
+            theSocket.attachListener("endSession", function () {
                 dialogFuncs.showModal("EndSessionDialog", {})
             })
         }

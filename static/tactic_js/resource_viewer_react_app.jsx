@@ -5,7 +5,7 @@ import {CombinedMetadata} from "./combined_metadata";
 import {HorizontalPanes} from "./resizing_allotment";
 import {TacticMenubar} from "./menu_utilities"
 import {doFlash, StatusContext} from "./toaster";
-import {useConnection} from "./utilities_react";
+import {useConnection} from "./tactic_socket";
 import {postPromise} from "./communication_react";
 import {DialogContext} from "./modal_react";
 
@@ -100,18 +100,18 @@ function ResourceViewerApp(props) {
         statusFuncs.stopSpinner();
     }, []);
 
-    function initSocket() {
+    function initSocket(theSocket) {
 
         if (!props.controlled) {
-            props.tsocket.attachListener('close-user-windows', (data) => {
+            theSocket.attachListener('close-user-windows', (data) => {
                 if (!(data["originator"] == window.global_id)) {
                     window.close()
                 }
             });
-            props.tsocket.attachListener("doFlashUser", function (data) {
+            theSocket.attachListener("doFlashUser", function (data) {
                 doFlash(data)
             });
-            props.tsocket.attachListener("endSession", function () {
+            theSocket.attachListener("endSession", function () {
                 dialogFuncs.showModal("EndSessionDialog", {})
             })
         }

@@ -8,6 +8,7 @@ var _react = _interopRequireWildcard(require("react"));
 var _core = require("@blueprintjs/core");
 var _error_boundary = require("./error_boundary");
 var _utilities_react = require("./utilities_react");
+var _tactic_socket = require("./tactic_socket");
 var _widgets = require("./widgets");
 var _lodash = _interopRequireDefault(require("lodash"));
 var _core2 = _interopRequireDefault(require("highlight.js/lib/core"));
@@ -159,7 +160,6 @@ function ConsoleComponent(props) {
   var selectedPane = (0, _react.useContext)(_utilities_react.SelectedPaneContext);
   var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
   (0, _react.useEffect)(function () {
-    initSocket();
     if (props.console_items.current.length == 0) {
       _addCodeArea("", false);
     }
@@ -251,64 +251,56 @@ function ConsoleComponent(props) {
   var _useHotkeys = (0, _core.useHotkeys)(hotkeys),
     handleKeyDown = _useHotkeys.handleKeyDown,
     handleKeyUp = _useHotkeys.handleKeyUp;
-  function initSocket() {
-    function _handleConsoleMessage(data) {
-      if (data.local_id == props.local_id) {
-        // noinspection JSUnusedGlobalSymbols
-        var handlerDict = {
-          consoleLog: function consoleLog(data) {
-            return _addConsoleEntry(data.message, data.force_open, true);
-          },
-          consoleLogMultiple: function consoleLogMultiple(data) {
-            return _addConsoleEntries(data.message, data.force_open, true);
-          },
-          createLink: function () {
-            var _createLink = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3(data) {
-              var unique_id;
-              return _regenerator().w(function (_context3) {
-                while (1) switch (_context3.n) {
-                  case 0:
-                    unique_id = data.message.unique_id;
-                    _context3.n = 1;
-                    return _addConsoleEntry(data.message, data.force_open, false, null, function () {
-                      _insertLinkInItem(unique_id);
-                    });
-                  case 1:
-                    return _context3.a(2);
-                }
-              }, _callee3);
-            }));
-            function createLink(_x) {
-              return _createLink.apply(this, arguments);
-            }
-            return createLink;
-          }(),
-          stopConsoleSpinner: function stopConsoleSpinner(data) {
-            var execution_count = "execution_count" in data ? data.execution_count : null;
-            _stopConsoleSpinner(data.console_id, execution_count);
-          },
-          consoleCodePrint: function consoleCodePrint(data) {
-            return _appendConsoleItemOutput(data);
-          },
-          consoleCodeOverwrite: function consoleCodeOverwrite(data) {
-            return _setConsoleItemOutput(data);
-          },
-          consoleCodeWidget: function consoleCodeWidget(data) {
-            return _appendWidgetToConsoleItem(data);
-          },
-          consoleWidgetUpdate: function consoleWidgetUpdate(data) {
-            return updateWidgetData(data);
+  (0, _tactic_socket.useSocketListener)(props.tsocket, "console-message", function (data) {
+    if (data.local_id == props.local_id) {
+      var handlerDict = {
+        consoleLog: function consoleLog(data) {
+          return _addConsoleEntry(data.message, data.force_open, true);
+        },
+        consoleLogMultiple: function consoleLogMultiple(data) {
+          return _addConsoleEntries(data.message, data.force_open, true);
+        },
+        createLink: function () {
+          var _createLink = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3(data) {
+            var unique_id;
+            return _regenerator().w(function (_context3) {
+              while (1) switch (_context3.n) {
+                case 0:
+                  unique_id = data.message.unique_id;
+                  _context3.n = 1;
+                  return _addConsoleEntry(data.message, data.force_open, false, null, function () {
+                    _insertLinkInItem(unique_id);
+                  });
+                case 1:
+                  return _context3.a(2);
+              }
+            }, _callee3);
+          }));
+          function createLink(_x) {
+            return _createLink.apply(this, arguments);
           }
-        };
-        handlerDict[data["console_message"]](data);
-      }
+          return createLink;
+        }(),
+        stopConsoleSpinner: function stopConsoleSpinner(data) {
+          var execution_count = "execution_count" in data ? data.execution_count : null;
+          _stopConsoleSpinner(data.console_id, execution_count);
+        },
+        consoleCodePrint: function consoleCodePrint(data) {
+          return _appendConsoleItemOutput(data);
+        },
+        consoleCodeOverwrite: function consoleCodeOverwrite(data) {
+          return _setConsoleItemOutput(data);
+        },
+        consoleCodeWidget: function consoleCodeWidget(data) {
+          return _appendWidgetToConsoleItem(data);
+        },
+        consoleWidgetUpdate: function consoleWidgetUpdate(data) {
+          return updateWidgetData(data);
+        }
+      };
+      handlerDict[data["console_message"]](data);
     }
-
-    // We have to careful to get the very same instance of the listerner function
-    // That requires storing it outside of this component since the console can be unmounted
-
-    props.tsocket.attachListener("console-message", _handleConsoleMessage);
-  }
+  }, []);
   function updateWidgetData(data) {
     props.dispatch({
       type: "update_widget_data",

@@ -8,6 +8,7 @@ import {GlyphButton} from "./blueprint_react_widgets";
 
 import {useStateAndRef} from "./utilities_react";
 import {SettingsContext} from "./settings";
+import {useSocketListener} from "./tactic_socket";
 
 const ErrorDrawerContext = createContext(null);
 export {withErrorDrawer, ErrorItem, ErrorDrawerContext}
@@ -27,7 +28,6 @@ function withErrorDrawer(WrappedComponent, lposition = "right", error_drawer_siz
         const goToModule = useRef(null);
 
         useEffect(() => {
-            initSocket();
             return (() => {
                 goToLineNumber.current = null;
                 ucounter.current = null;
@@ -36,9 +36,15 @@ function withErrorDrawer(WrappedComponent, lposition = "right", error_drawer_siz
         }, []);
 
 
-        function initSocket() {
-            props.tsocket.attachListener('add-error-drawer-entry', _addEntry);
-        }
+        const _addEntry = useCallback((data, open = true) => {
+            ucounter.current = ucounter.current + 1;
+            const newcontents = {...contents_ref.current};
+            newcontents[String(ucounter.current)] = data;
+            set_contents(newcontents);
+            set_show_drawer(open);
+        }, [contents_ref.current, ucounter.current]);
+
+        useSocketListener(props.tsocket, 'add-error-drawer-entry', _addEntry);
 
         const _registerGoToModule = useCallback((the_func) =>{
             goToModule.current = the_func
@@ -61,14 +67,6 @@ function withErrorDrawer(WrappedComponent, lposition = "right", error_drawer_siz
                 set_show_drawer((prev_show_drawer)=>!prev_show_drawer)
             }
         }, [local_id.current]);
-
-        const _addEntry = useCallback((data, open = true) => {
-            ucounter.current = ucounter.current + 1;
-            const newcontents = {...contents_ref.current};
-            newcontents[String(ucounter.current)] = data;
-            set_contents(newcontents);
-            set_show_drawer(open);
-        }, [contents_ref.current, ucounter.current]);
 
         const _addFromError = useCallback((title, data, open = true) =>{
             let content = "";

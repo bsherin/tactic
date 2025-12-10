@@ -17,6 +17,7 @@ var _error_drawer = require("./error_drawer");
 var _pool_tree = require("./pool_tree");
 var _settings = require("./settings");
 var _communication_react = require("./communication_react");
+var _tactic_socket = require("./tactic_socket");
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t2 in e) "default" !== _t2 && {}.hasOwnProperty.call(e, _t2) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t2)) && (i.get || i.set) ? o(f, _t2, i) : f[_t2] = e[_t2]); return f; })(e, t); }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
@@ -163,11 +164,11 @@ function FileImportDialog(props) {
       set_current_value(props.initial_address);
     }
     _updatePickerSize();
-    initSocket();
   }, []);
   (0, _react.useEffect)(function () {
     _updatePickerSize();
   });
+  (0, _tactic_socket.useSocketListener)(props.tsocket, "upload_response", _handleResponse);
   function _handleResponse(entry) {
     if (entry.resource_name && entry["success"] in ["success", "partial"]) {
       existing_names.current.push(entry.resource_name);
@@ -189,9 +190,6 @@ function FileImportDialog(props) {
         set_current_picker_width(picker_ref.current.offsetWidth);
       }
     }
-  }
-  function initSocket() {
-    props.tsocket.attachListener("upload-response", _handleResponse);
   }
   function _checkbox_change_handler(event) {
     var val = event.target.checked;

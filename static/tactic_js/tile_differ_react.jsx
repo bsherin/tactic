@@ -9,9 +9,9 @@ import {doFlash, StatusContext} from "./toaster"
 import {handleCallback, postPromise, postWithCallback} from "./communication_react"
 import {ErrorDrawerContext, withErrorDrawer} from "./error_drawer";
 import {withStatus} from "./toaster";
-import {guid, useConnection, useStateAndRef, useCallbackStack, withRegisterActivity} from "./utilities_react";
+import {guid, useStateAndRef, useCallbackStack, withRegisterActivity} from "./utilities_react";
 import {TacticNavbar} from "./blueprint_navbar";
-import {TacticSocket} from "./tactic_socket";
+import {TacticSocket, useConnection} from "./tactic_socket";
 import {withSettings} from "./settings";
 import {DialogContext, withDialogs} from "./modal_react";
 
@@ -116,16 +116,16 @@ function TileDifferApp(props) {
 
     }, []);
 
-    function initSocket() {
-        props.tsocket.attachListener("window-open", (data) => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
-        props.tsocket.attachListener('close-user-windows', (data) => {
+    function initSocket(theSocket) {
+        theSocket.attachListener("window-open", (data) => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
+        theSocket.attachListener('close-user-windows', (data) => {
             if (!(data["originator"] == window.global_id)) {
                 window.close()
             }
         });
-        props.tsocket.attachListener('doflashUser', doFlash);
+        theSocket.attachListener('doflashUser', doFlash);
         if (!window.in_context) {
-            props.tsocket.attachListener("endSession", function () {
+            theSocket.attachListener("endSession", function () {
                 dialogFuncs.showModal("EndSessionDialog", {})
             })
         }

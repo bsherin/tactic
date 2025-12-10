@@ -212,13 +212,10 @@ function ContextApp(props) {
     handleKeyUp = _useHotkeys.handleKeyUp;
   var pushCallback = (0, _utilities_react.useCallbackStack)("context");
   (0, _react.useEffect)(function () {
-    initSocket();
     _addContextOmniItems();
     errorDrawerFuncs.registerGoToModule(_goToModule);
-    return function () {
-      tsocket.disconnect();
-    };
   }, []);
+  (0, _tactic_socket.useListeners)(props.tsocket, initSocket);
   (0, _react.useEffect)(function () {
     // for mount
     window.addEventListener("beforeunload", function (e) {
@@ -236,22 +233,22 @@ function ContextApp(props) {
     new_dirty_methods[tab_id] = dirty_method;
     set_dirty_methods(new_dirty_methods);
   }
-  function initSocket() {
-    props.tsocket.attachListener("window-open", function (data) {
+  function initSocket(theSocket) {
+    theSocket.attachListener("window-open", function (data) {
       window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data["the_id"]));
     });
-    props.tsocket.attachListener('close-user-windows', function (data) {
+    theSocket.attachListener('close-user-windows', function (data) {
       if (!(data["originator"] === window.global_id)) {
         window.close();
       }
     });
-    props.tsocket.attachListener("doFlashUser", function (data) {
+    theSocket.attachListener("doFlashUser", function (data) {
       (0, _toaster.doFlash)(data);
     });
-    props.tsocket.attachListener('handle-callback', function (task_packet) {
+    theSocket.attachListener('handle-callback', function (task_packet) {
       (0, _communication_react.handleCallback)(task_packet, props.local_id);
     });
-    props.tsocket.attachListener("endSession", function () {
+    theSocket.attachListener("endSession", function () {
       dialogFuncs.showModal("EndSessionDialog", {});
     });
   }

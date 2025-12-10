@@ -16,6 +16,7 @@ var _javascript = _interopRequireDefault(require("highlight.js/lib/languages/jav
 var _python = _interopRequireDefault(require("highlight.js/lib/languages/python"));
 var _core2 = require("@blueprintjs/core");
 var _utilities_react = require("./utilities_react");
+var _tactic_socket = require("./tactic_socket");
 var _communication_react = require("./communication_react");
 var _settings = require("./settings");
 var _error_drawer = require("./error_drawer");
@@ -94,15 +95,6 @@ function withAssistant(WrappedComponent) {
       assistant_prompt_value_ref = _useStateAndRef8[2];
     var initialized = (0, _react.useRef)(false);
     var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
-
-    // useEffect(()=>{
-    //     if (window.has_openapi_key) {
-    //         getAssistant();
-    //     }
-    //     return (() => {
-    //     })
-    // }, []);
-
     (0, _react.useEffect)(function () {
       if (show_drawer && window.has_openapi_key && !initialized.current) {
         getAssistant();
@@ -238,7 +230,6 @@ function ChatModule(props) {
   var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
   var pushCallback = (0, _utilities_react.useCallbackStack)();
   (0, _react.useEffect)(function () {
-    initSocket();
     stream_dict_ref.current = {};
   }, []);
   (0, _react.useEffect)(function () {
@@ -246,10 +237,26 @@ function ChatModule(props) {
       list_ref.current.scrollTo(0, list_ref.current.scrollHeight);
     }
   });
-  function initSocket() {
-    props.tsocket.attachListener("chat_status", _handleChatStatus);
-    props.tsocket.attachListener("chat_delta", _handleChatDelta);
-  }
+  (0, _tactic_socket.useSocketListener)(props.tsocket, "chat_status", function (data) {
+    if (idle_statuses.includes(data.status)) {
+      assistantDrawerFuncs.set_chat_status("idle");
+      if (Object.keys(stream_dict_ref.current).length == 0) return;
+      var current_stream_text = assistantDrawerFuncs.stream_text_ref.current;
+      assistantDrawerFuncs.set_stream_text({});
+      _handleChatEnd(current_stream_text);
+    } else {
+      assistantDrawerFuncs.set_chat_status(data.status);
+    }
+  }, []);
+  (0, _tactic_socket.useSocketListener)(props.tsocket, "chat_delta", function (data) {
+    var current_stream_dict = stream_dict_ref.current;
+    current_stream_dict[data.counter] = data.delta;
+    var new_text = stream_dict_to_string();
+    assistantDrawerFuncs.set_stream_text(new_text);
+    pushCallback(function () {
+      set_response_counter(response_counter_ref.current + 1);
+    });
+  }, []);
   function _onInputChange(event) {
     props.set_assistant_prompt_value(event.target.value);
   }
@@ -261,15 +268,6 @@ function ChatModule(props) {
       return stream_dict_ref.current[key];
     }).join('');
   }
-  function _handleChatDelta(data) {
-    var current_stream_dict = stream_dict_ref.current;
-    current_stream_dict[data.counter] = data.delta;
-    var new_text = stream_dict_to_string();
-    assistantDrawerFuncs.set_stream_text(new_text);
-    pushCallback(function () {
-      set_response_counter(response_counter_ref.current + 1);
-    });
-  }
   function _handleChatEnd(stream_text) {
     stream_dict_ref.current = {};
     stream_text = formatLatexEquations(stream_text);
@@ -280,17 +278,6 @@ function ChatModule(props) {
     }]);
     assistantDrawerFuncs.set_item_list(new_item_list);
     assistantDrawerFuncs.set_chat_status("idle");
-  }
-  function _handleChatStatus(data) {
-    if (idle_statuses.includes(data.status)) {
-      assistantDrawerFuncs.set_chat_status("idle");
-      if (Object.keys(stream_dict_ref.current).length == 0) return;
-      var current_stream_text = assistantDrawerFuncs.stream_text_ref.current;
-      assistantDrawerFuncs.set_stream_text({});
-      _handleChatEnd(current_stream_text);
-    } else {
-      assistantDrawerFuncs.set_chat_status(data.status);
-    }
   }
   function _handleButton(_x) {
     return _handleButton2.apply(this, arguments);

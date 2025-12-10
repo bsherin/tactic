@@ -19,6 +19,7 @@ var _error_drawer = require("./error_drawer");
 var _library_table_pane = require("./library_table_pane");
 var _library_pane_reducer = require("./library_pane_reducer");
 var _library_widgets = require("./library_widgets");
+var _tactic_socket = require("./tactic_socket");
 function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t21 in e) "default" !== _t21 && {}.hasOwnProperty.call(e, _t21) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t21)) && (i.get || i.set) ? o(f, _t21, i) : f[_t21] = e[_t21]); return f; })(e, t); }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
@@ -363,19 +364,13 @@ function LibraryPane(props) {
     handleKeyDown = _useHotkeys.handleKeyDown,
     handleKeyUp = _useHotkeys.handleKeyUp;
   (0, _react.useEffect)(function () {
-    initSocket();
     _grabNewChunkWithRow(0).then(function () {});
   }, []);
   var pushCallback = (0, _utilities_react.useCallbackStack)("library_home");
-  function initSocket() {
-    if (props.tsocket != null && !props.is_repository) {
-      props.tsocket.attachListener("update-selector-row", _handleRowUpdate);
-      props.tsocket.attachListener("refresh-selector", _refresh_func);
-    } else if (props.tsocket != null && props.is_repository) {
-      props.tsocket.attachListener("update-repository-selector-row", _handleRowUpdate);
-      props.tsocket.attachListener("refresh-repository-selector", _refresh_func);
-    }
-  }
+  (0, _tactic_socket.useSocketListener)(props.tsocket, "update-selector-row", _handleRowUpdate, props.tsocket && !props.is_repository);
+  (0, _tactic_socket.useSocketListener)(props.tsocket, "refresh-selector", _refresh_func, props.tsocket != null && !props.is_repository);
+  (0, _tactic_socket.useSocketListener)(props.tsocket, "update-repository-selector-row", _handleRowUpdate, props.tsocket != null && props.is_repository);
+  (0, _tactic_socket.useSocketListener)(props.tsocket, "refresh-repository-selector", _refresh_func, props.tsocket != null && props.is_repository);
   function _renderBodyContextMenu(menu_context) {
     if (event) {
       event.preventDefault();

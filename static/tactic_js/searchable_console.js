@@ -135,9 +135,7 @@ function SearchableConsole(props, inner_ref) {
       }
     }, _callee2);
   })), [props.container_id]);
-  function initSocket() {
-    props.tsocket.attachListener("searchable-console-message", _handleUpdateMessage);
-  }
+  (0, _tactic_socket.useSocketListener)(props.tsocket, "searchable-console-message", _handleUpdateMessage);
   function _handleUpdateMessage(data) {
     if (data["sc_id"] != sc_id.current) return;
     if (data["console_message"] == "streamerExited") {

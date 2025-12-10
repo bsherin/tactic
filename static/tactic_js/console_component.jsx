@@ -7,7 +7,8 @@ import {Icon, Card, ContextMenu, EditableText, Spinner, MenuDivider, Divider} fr
 import {Menu, MenuItem, ButtonGroup, Button} from "@blueprintjs/core";
 import {useHotkeys} from "@blueprintjs/core";
 import {ErrorBoundary} from "./error_boundary";
-import {SelectedPaneContext, guid, useRegisterActivity} from "./utilities_react";
+import {SelectedPaneContext, guid} from "./utilities_react";
+import {useSocketListener} from "./tactic_socket";
 import {widgetDict} from "./widgets";
 import _ from 'lodash';
 
@@ -113,7 +114,6 @@ function ConsoleComponent(props) {
 
 
     useEffect(() => {
-        initSocket();
         if (props.console_items.current.length == 0) {
             _addCodeArea("", false)
         }
@@ -197,38 +197,30 @@ function ConsoleComponent(props) {
 
     const {handleKeyDown, handleKeyUp} = useHotkeys(hotkeys);
 
-    function initSocket() {
-        function _handleConsoleMessage(data) {
-            if (data.local_id == props.local_id) {
-                // noinspection JSUnusedGlobalSymbols
-                let handlerDict = {
-                    consoleLog: (data) => _addConsoleEntry(data.message, data.force_open, true),
-                    consoleLogMultiple: (data) => _addConsoleEntries(data.message, data.force_open, true),
-                    createLink: async (data) => {
-                        let unique_id = data.message.unique_id;
-                        await _addConsoleEntry(data.message, data.force_open, false, null, () => {
-                            _insertLinkInItem(unique_id)
-                        })
-                    },
-                    stopConsoleSpinner: (data) => {
-                        let execution_count = "execution_count" in data ? data.execution_count : null;
-                        _stopConsoleSpinner(data.console_id, execution_count)
-                    },
-                    consoleCodePrint: (data) => _appendConsoleItemOutput(data),
-                    consoleCodeOverwrite: (data) => _setConsoleItemOutput(data),
-                    consoleCodeWidget: (data) => _appendWidgetToConsoleItem(data),
-                    consoleWidgetUpdate: (data) => updateWidgetData(data),
+    useSocketListener(props.tsocket, "console-message", (data)=> {
+        if (data.local_id == props.local_id) {
+            let handlerDict = {
+                consoleLog: (data) => _addConsoleEntry(data.message, data.force_open, true),
+                consoleLogMultiple: (data) => _addConsoleEntries(data.message, data.force_open, true),
+                createLink: async (data) => {
+                    let unique_id = data.message.unique_id;
+                    await _addConsoleEntry(data.message, data.force_open, false, null, () => {
+                        _insertLinkInItem(unique_id)
+                    })
+                },
+                stopConsoleSpinner: (data) => {
+                    let execution_count = "execution_count" in data ? data.execution_count : null;
+                    _stopConsoleSpinner(data.console_id, execution_count)
+                },
+                consoleCodePrint: (data) => _appendConsoleItemOutput(data),
+                consoleCodeOverwrite: (data) => _setConsoleItemOutput(data),
+                consoleCodeWidget: (data) => _appendWidgetToConsoleItem(data),
+                consoleWidgetUpdate: (data) => updateWidgetData(data),
 
-                };
-                handlerDict[data["console_message"]](data)
-            }
+            };
+            handlerDict[data["console_message"]](data)
         }
-
-        // We have to careful to get the very same instance of the listerner function
-        // That requires storing it outside of this component since the console can be unmounted
-
-        props.tsocket.attachListener("console-message", _handleConsoleMessage);
-    }
+    }, [])
 
     function updateWidgetData(data) {
         props.dispatch({

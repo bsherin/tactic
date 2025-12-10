@@ -2,7 +2,7 @@
 env_file="server.env"
 up_only="False"
 profile="start_project"
-]
+
 # process arguments
 while :; do
   case $1 in

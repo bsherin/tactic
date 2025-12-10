@@ -12,7 +12,7 @@ var _combined_metadata = require("./combined_metadata");
 var _resizing_allotment = require("./resizing_allotment");
 var _menu_utilities = require("./menu_utilities");
 var _toaster = require("./toaster");
-var _utilities_react = require("./utilities_react");
+var _tactic_socket = require("./tactic_socket");
 var _communication_react = require("./communication_react");
 var _modal_react = require("./modal_react");
 function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t3 in e) "default" !== _t3 && {}.hasOwnProperty.call(e, _t3) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t3)) && (i.get || i.set) ? o(f, _t3, i) : f[_t3] = e[_t3]); return f; })(e, t); }
@@ -158,21 +158,21 @@ function ResourceViewerApp(props) {
   var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
 
   // Only used when not in context
-  var connection_status = (0, _utilities_react.useConnection)(props.tsocket, initSocket);
+  var connection_status = (0, _tactic_socket.useConnection)(props.tsocket, initSocket);
   (0, _react.useEffect)(function () {
     statusFuncs.stopSpinner();
   }, []);
-  function initSocket() {
+  function initSocket(theSocket) {
     if (!props.controlled) {
-      props.tsocket.attachListener('close-user-windows', function (data) {
+      theSocket.attachListener('close-user-windows', function (data) {
         if (!(data["originator"] == window.global_id)) {
           window.close();
         }
       });
-      props.tsocket.attachListener("doFlashUser", function (data) {
+      theSocket.attachListener("doFlashUser", function (data) {
         (0, _toaster.doFlash)(data);
       });
-      props.tsocket.attachListener("endSession", function () {
+      theSocket.attachListener("endSession", function () {
         dialogFuncs.showModal("EndSessionDialog", {});
       });
     }

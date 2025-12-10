@@ -132,7 +132,6 @@ class ProjectAccess(object):
         ]
         return names
 
-    @property
     def project_names_with_metadata(self):
         my_project_names = []
         for doc in self.db[self.project_collection_name()].find({}, {"_id": 0, "metadata": 1, "project_name": 1}):
@@ -153,7 +152,7 @@ class ProjectAccess(object):
         return tags
 
     def get_all_project_tags(self, show_hidden=True):
-        res_list = self.project_names_with_metadata
+        res_list = self.project_names_with_metadata()
         result = []
         for res_item in res_list:
             mdata = res_item[1]

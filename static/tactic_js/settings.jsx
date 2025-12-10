@@ -9,6 +9,7 @@ import {useStateAndRef, useCallbackStack} from "./utilities_react";
 import {postPromise, postAjax, postAjaxPromise} from "./communication_react";
 import {doFlash} from "./toaster";
 import {AccountTextField, AccountSelectField} from "./account_fields";
+import {useSocketListener} from "./tactic_socket";
 export {SettingsContext, withSettings}
 
 const HIGHLIGHT_THEMES = {
@@ -32,7 +33,6 @@ function withSettings(WrappedComponent, lposition = "right", settings_drawer_siz
         const [, setSettings, settingsRef] = useStateAndRef(INITIAL_SETTINGS);
 
         useEffect(() => {
-            initSocket(props.tsocket);
             postAjaxPromise('get_with_settings_settings', {})
                 .then((data) => {
                     setSettings(data.settings);
@@ -45,6 +45,10 @@ function withSettings(WrappedComponent, lposition = "right", settings_drawer_siz
             })
         }, []);
 
+        useSocketListener(props.tsocket, 'user-settings-updated', (data) => {
+            setSettings({...settingsRef.current, ...data.updates});
+        });
+
         const _onClose = useCallback(()=>{
             setShowSettingsDrawer(false);
         }, []);
@@ -53,11 +57,6 @@ function withSettings(WrappedComponent, lposition = "right", settings_drawer_siz
             return "theme" in settingsRef.current && settingsRef.current.theme === "dark"
         }, [settingsRef.current]);
 
-        function initSocket() {
-            props.tsocket.attachListener('user-settings-updated', (data) => {
-                setSettings({...settingsRef.current, ...data.updates});
-            });
-        }
 
         function toggleSettingsDrawer() {
             setShowSettingsDrawer(!showSettingsDrawer)

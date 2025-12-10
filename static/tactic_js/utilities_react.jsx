@@ -205,26 +205,6 @@ const useConstructor = (callback = () => {
 };
 
 
-function useConnection(tsocket, initSocket) {
-    if (!tsocket) return null;
-    const [connection_status, set_connection_status] = useState(null);
-
-    function socketNotifier(connected) {
-        set_connection_status(connected ? "up" : "down")
-    }
-
-    useEffect(() => {
-        initSocket(tsocket);
-        tsocket.notifier = socketNotifier;
-        socketNotifier(tsocket.socket.connected);
-        return (() => {
-            tsocket.disconnect();
-            tsocket.notifier = null;
-        })
-    }, []);
-    return connection_status
-}
-
 function useStateAndRef(initial) {
     const [value, setValue] = useState(initial);
     const valueRef = useRef(value);

@@ -94,7 +94,6 @@ class ListAccess(object):
         ]
         return names
 
-    @property
     def list_names_with_metadata(self):
         my_list_names = []
         for doc in self.db[self.list_collection_name()].find({}, {"_id": 0, "metadata": 1, "list_name": 1}):

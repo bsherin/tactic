@@ -85,16 +85,16 @@ function AccountApp(props) {
   var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   var pushCallback = (0, _utilities_react.useCallbackStack)();
   (0, _react.useEffect)(function () {
-    initSocket();
     (0, _communication_react.postAjax)("get_account_info", {}, function (data) {
       set_fields(data.field_list);
     });
+    return function () {
+      props.tsocket.disconnect();
+    };
   }, []);
-  function initSocket() {
-    props.tsocket.attachListener("endSession", function () {
-      dialogFuncs.showModal("EndSessionDialog", {});
-    });
-  }
+  (0, _tactic_socket.useSocketListener)(props.tsocket, "endSession", function () {
+    dialogFuncs.showModal("EndSessionDialog", {});
+  }, []);
   function _submitPassword() {
     var pwd = password;
     if (pwd != confirm_password) {

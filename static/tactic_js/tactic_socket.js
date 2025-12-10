@@ -1,7 +1,54 @@
 
 import io from 'socket.io-client';
+import {useEffect, useState, useCallback} from "react";
 
-export {TacticSocket}
+export {TacticSocket, useSocketListener, useConnection, useListeners};
+
+function useSocketListener(tsocket, event, handler, condition = true) {
+    if (!tsocket || !condition) return;
+    const stableHandler = useCallback(handler, []);
+
+    useEffect(() => {
+        if (!tsocket) return;
+        tsocket.attachListener(event, stableHandler);
+        return () => {
+            tsocket.detachListener(event, stableHandler);
+        };
+    }, [tsocket, event, stableHandler]);
+}
+
+function useConnection(tsocket, initSocket) {
+    if (!tsocket) return null;
+    const [connection_status, set_connection_status] = useState(null);
+
+    function socketNotifier(connected) {
+        set_connection_status(connected ? "up" : "down")
+    }
+
+    useEffect(() => {
+        initSocket(tsocket);
+        tsocket.notifier = socketNotifier;
+        socketNotifier(tsocket.socket.connected);
+        return (() => {
+            tsocket.disconnect();
+            tsocket.notifier = null;
+        })
+    }, []);
+    return connection_status
+}
+
+function useListeners(tsocket, initSocket) {
+    if (!tsocket) return null;
+
+    useEffect(() => {
+        initSocket(tsocket);
+        return (() => {
+            tsocket.disconnect();
+        })
+    }, []);
+}
+
+
 
 class TacticSocket {
 
@@ -13,6 +60,7 @@ class TacticSocket {
         this.retry_interval = retry_interval;
         this.local_id = local_id;
         this.listeners = {};
+        this.socketHandlers = {};
         this.connectme();
         this.join_rooms(false, on_initial_join);
         this.watchForDisconnect();
@@ -24,7 +72,7 @@ class TacticSocket {
         const protocol = window.location.protocol;
         this.socket = io.connect(`${protocol}//${document.domain}:${location.port}/${this.name_space}`);
         this.counter = 0;
-        // The liens below are useful for debugging.
+        // The lines below are useful for debugging.
         // this.socket.onAny((event, ...args) => {
         //     console.log(
         //             `[TSOCKET ${this.ident}] onAny: event=`, event,
@@ -54,10 +102,8 @@ class TacticSocket {
         }
     }
 
-    // We have to be careful to get the very same instance of the listener function
-    // That requires storing it outside this component since the console can be unmounted
-    attachListener(event, newListener) {
-        // Lazily create a fan-out handler for this event
+
+    attachListenerOLd(event, newListener) {
         if (!(event in this.listeners)) {
             this.listeners[event] = new Set();
             this.socket.on(event, (data) => {
@@ -73,6 +119,28 @@ class TacticSocket {
         }
         this.listeners[event].add(newListener);
     }
+
+
+    attachListener(event, newListener) {
+        if (!(event in this.listeners)) {
+            this.listeners[event] = new Set();
+
+            const handler = (data) => {
+                for (const fn of this.listeners[event]) {
+                    try {
+                        fn(data);
+                    } catch (e) {
+                        console.error(`Error in listener for ${event}`, e);
+                    }
+                }
+            };
+
+            this.socketHandlers[event] = handler;
+            this.socket.on(event, handler);
+        }
+        this.listeners[event].add(newListener);
+    }
+
 
     detachListener(event, listener) {
         if (!(event in this.listeners)) return;
@@ -91,18 +159,20 @@ class TacticSocket {
     }
 
     stopListening() {
-        // If you really want to remove all underlying handlers:
         for (let event in this.listeners) {
             this.listeners[event].clear();
         }
-        // You can keep the single socket.on per event; no need to call off().
+        for (const event in this.socketHandlers) {
+            this.socket.off(event, this.socketHandlers[event]);
+        }
     }
 
     restoreListeners() {
-        for (let event in this.listeners) {
-            this.attachListener(event, this.listeners[event])
-        }
+    // re-attach the socket handlers to the *current* socket
+    for (const event in this.socketHandlers) {
+        this.socket.on(event, this.socketHandlers[event]);
     }
+}
 
     notify(connected){
         if (this.notifier) {

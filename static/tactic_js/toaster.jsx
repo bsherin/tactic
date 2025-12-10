@@ -3,6 +3,7 @@
 import React from "react";
 import { createRoot } from 'react-dom/client';
 import {useState, useEffect, useRef, memo, useContext, createContext, useCallback} from "react";
+import {useSocketListener} from "./tactic_socket";
 
 import {OverlayToaster, Position, Spinner} from "@blueprintjs/core";
 import {GlyphButton} from "./blueprint_react_widgets";
@@ -112,17 +113,6 @@ function withStatus(WrappedComponent) {
 
         const pushCallback = useCallbackStack();
 
-        useEffect(() => {
-            if (props.tsocket) {
-                initSocket();
-            }
-        }, []);
-
-        function initSocket() {
-            props.tsocket.attachListener('stop-spinner', _stopSpinner);
-            props.tsocket.attachListener('show-status-msg', _statusMessageFromData);
-            props.tsocket.attachListener("clear-status-msg", _clearStatusMessage);
-        }
 
         const _stopSpinner = useCallback((data) => {
             set_show_spinner(false)
@@ -140,6 +130,7 @@ function withStatus(WrappedComponent) {
             set_show_spinner(false);
             set_status_message(null)
         }, []);
+
 
         const _statusMessage = useCallback((message, timeout = null) => {
             set_status_message(message);
@@ -162,6 +153,13 @@ function withStatus(WrappedComponent) {
             });
 
         }, []);
+
+        useSocketListener(props.tsocket, 'stop-spinner', _stopSpinner);
+        useSocketListener(props.tsocket, 'show-status-msg', _statusMessageFromData);
+        useSocketListener(props.tsocket, 'clear-status-msg', _clearStatusMessage);
+
+
+
 
         const _setStatus  = useCallback((sstate, callback = null) => {
             if ("show_spinner" in sstate) {

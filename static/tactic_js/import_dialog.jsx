@@ -17,6 +17,7 @@ import {PoolAddressSelector} from "./pool_tree";
 
 import {SettingsContext} from "./settings";
 import {postPromise} from "./communication_react";
+import {useSocketListener} from "./tactic_socket";
 
 export {FileImportDialog}
 
@@ -90,12 +91,13 @@ function FileImportDialog(props) {
             set_current_value(props.initial_address)
         }
         _updatePickerSize();
-        initSocket()
     }, []);
 
     useEffect(() => {
         _updatePickerSize();
     });
+
+    useSocketListener(props.tsocket, "upload_response", _handleResponse);
 
     function _handleResponse(entry) {
         if (entry.resource_name && entry["success"] in ["success", "partial"]) {
@@ -116,10 +118,6 @@ function FileImportDialog(props) {
                 set_current_picker_width(picker_ref.current.offsetWidth)
             }
         }
-    }
-
-    function initSocket() {
-        props.tsocket.attachListener("upload-response", _handleResponse);
     }
 
     function _checkbox_change_handler(event) {

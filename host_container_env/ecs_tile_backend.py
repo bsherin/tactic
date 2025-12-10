@@ -32,7 +32,8 @@ class ECSTileBackend(TileBackend):
         self.tile_registry = tile_registry
         self.worker = worker
 
-    def issue_user_s3_session(self, username: str, ttl_seconds: int = 7200):
+    @staticmethod
+    def issue_user_s3_session(username: str, ttl_seconds: int = 7200):
         role_arn = f"arn:aws:iam::{os.getenv('ACCOUNT_ID', '924818964184')}:role/TacticTileS3SessionRole"
         sts = _sts()
         resp = sts.assume_role(

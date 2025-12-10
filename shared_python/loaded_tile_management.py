@@ -1,9 +1,5 @@
 
 print ("in gtm")
-import copy
-import datetime
-import os
-import re
 from redis_tools import RedisManager, redis_client
 
 class LoadedTileManager(RedisManager):
@@ -71,7 +67,7 @@ class LoadedTileManager(RedisManager):
                 return self.get_user_available_tile_types(username, nested=True)
             for k in all_keys:
                 tile_type = self.get_tail(k)
-                tile_data = self.get_hash_dict(k)
+                tile_data = self.get_hash_dict(f"user_tiles.{tile_type}", narrower=username)
                 cat = tile_data.get("category", "nocat")
                 if cat not in tile_types:
                     tile_types[cat] = []
@@ -103,7 +99,7 @@ class LoadedTileManager(RedisManager):
             return []
 
     def get_module_from_type(self, username, tile_type):
-        return self.get_hash_entry(f"user_tiles.{tile_type}", "module_name", username)
+        return self.get_hash_entry(f"user_tiles.{tile_type}", "module_name", narrower=username)
 
     def get_loaded_user_modules(self, username):
         keys = self.get_keys_with_base("user_tiles.*", narrower=username)

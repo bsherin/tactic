@@ -4,6 +4,7 @@ import {useCallbackStack} from "./utilities_react";
 import {postWithCallbackMain} from "./communication_react";
 import {SortableComponent} from "./sortable_container";
 import {SettingsContext} from "./settings";
+import {useSocketListener} from "./tactic_socket";
 
 import {TileComponent} from "./tile_component";
 
@@ -14,20 +15,29 @@ function TileContainer(props) {
     const settingsContext = useContext(SettingsContext);
     const [dragging, setDragging] = useState(false);
 
-    useEffect(() => {
-        initSocket();
-    }, []);
-
     const pushCallback = useCallbackStack();
 
     function _handleTileSourceChange(data) {
         _markSourceChange(data.tile_type)
     }
-
-    function initSocket() {
-        props.tsocket.attachListener("tile-message", _handleTileMessage);
-        props.tsocket.attachListener('tile-source-change', _handleTileSourceChange);
+    function _handleTileMessage(data) {
+        let tile_id = data.tile_id;
+        if (tileIndex(tile_id) != -1) {
+            let handlerDict = {
+                startSpinner: (tile_id,) => _setTileValue(tile_id, "show_spinner", true),
+                stopSpinner: (tile_id,) => _setTileValue(tile_id, "show_spinner", false),
+                displayTileContent: _displayTileContent,
+                displayTileContentWithJavascript: _displayTileContentWithJavascript,
+                tileWidgetUpdate: updateWidgetData
+            };
+            if (data["tile_message"] in handlerDict) {
+                handlerDict[data["tile_message"]](tile_id, data)
+            }
+        }
     }
+
+    useSocketListener(props.tsocket, 'tile-source-change', _handleTileSourceChange);
+    useSocketListener(props.tsocket, 'tile-message', _handleTileMessage);
 
     function _resortTiles(oldIndex, newIndex) {
 
@@ -110,22 +120,6 @@ function TileContainer(props) {
             javascript_code: null,
             javascript_arg_dict: null
         })
-    }
-
-    function _handleTileMessage(data) {
-        let tile_id = data.tile_id;
-        if (tileIndex(tile_id) != -1) {
-            let handlerDict = {
-                startSpinner: (tile_id,) => _setTileValue(tile_id, "show_spinner", true),
-                stopSpinner: (tile_id,) => _setTileValue(tile_id, "show_spinner", false),
-                displayTileContent: _displayTileContent,
-                displayTileContentWithJavascript: _displayTileContentWithJavascript,
-                tileWidgetUpdate: updateWidgetData
-            };
-            if (data["tile_message"] in handlerDict) {
-                handlerDict[data["tile_message"]](tile_id, data)
-            }
-        }
     }
 
     function updateWidgetData(tile_id, data) {

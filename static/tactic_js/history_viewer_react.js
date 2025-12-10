@@ -118,7 +118,7 @@ function HistoryViewerApp(props) {
   var _useState9 = (0, _react.useState)(props.resource_name),
     _useState0 = _slicedToArray(_useState9, 1),
     resource_name = _useState0[0];
-  var connection_status = (0, _utilities_react2.useConnection)(props.tsocket, initSocket);
+  var connection_status = (0, _tactic_socket.useConnection)(props.tsocket, initSocket);
   var savedContent = (0, _react.useRef)("");
   var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
   var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
@@ -134,11 +134,9 @@ function HistoryViewerApp(props) {
         global_id: window.global_id,
         force_forward: true
       });
-      props.tsocket.disconnect();
     }
     window.addEventListener("beforeunload", beforeUnloadFunc);
     return function () {
-      props.tsocket.disconnect();
       window.removeEventListener("beforeunload", beforeUnloadFunc);
     };
   }, []);
@@ -160,17 +158,17 @@ function HistoryViewerApp(props) {
       });
     });
   }, []);
-  function initSocket() {
-    props.tsocket.attachListener("window-open", function (data) {
+  function initSocket(theSocket) {
+    theSocket.attachListener("window-open", function (data) {
       return window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data["the_id"]));
     });
-    props.tsocket.attachListener('close-user-windows', function (data) {
+    theSocket.attachListener('close-user-windows', function (data) {
       if (!(data["originator"] == window.global_id)) {
         window.close();
       }
     });
-    props.tsocket.attachListener('doflashUser', _toaster.doFlash);
-    props.tsocket.attachListener("endSession", function () {
+    theSocket.attachListener('doflashUser', _toaster.doFlash);
+    theSocket.attachListener("endSession", function () {
       dialogFuncs.showModal("EndSessionDialog", {});
     });
   }

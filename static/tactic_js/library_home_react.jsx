@@ -12,12 +12,12 @@ import React from "react";
 import { createRoot } from 'react-dom/client';
 import {Fragment, useEffect, useRef, memo, useContext, useState} from "react";
 
-import {TacticSocket} from "./tactic_socket";
+import {TacticSocket, useConnection} from "./tactic_socket";
 import {doFlash} from "./toaster.js";
 import {LibraryPane} from "./library_pane";
 import {withStatus} from "./toaster";
 import {withErrorDrawer} from "./error_drawer";
-import {guid, useConnection, withRegisterActivity} from "./utilities_react";
+import {guid, withRegisterActivity} from "./utilities_react";
 import {TacticNavbar} from "./blueprint_navbar";
 import {AllMenubar} from "./library_menubars"
 import {SettingsContext, withSettings} from "./settings";
@@ -42,7 +42,7 @@ function LibraryHomeApp(props) {
     const [columns, setColumns] = useState([]);
 
     const connection_status = useConnection(props.tsocket, initSocket);
-   const dialogFuncs = useContext(DialogContext);
+    const dialogFuncs = useContext(DialogContext);
 
     useEffect(() => {
         statusFuncs.stopSpinner(null);
@@ -52,18 +52,18 @@ function LibraryHomeApp(props) {
         setColumns([...base_columns, ...settingsContext.settingsRef.current.library_columns]);
     }, [settingsContext.settingsRef.current.library_columns]);
 
-    function initSocket() {
-        props.tsocket.attachListener("window-open", data => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
+    function initSocket(theSocket) {
+        theSocket.attachListener("window-open", data => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
         if (!window.in_context) {
-            props.tsocket.attachListener("doFlashUser", function (data) {
+            theSocket.attachListener("doFlashUser", function (data) {
                 doFlash(data)
             });
-            props.tsocket.attachListener('close-user-windows', (data) => {
+            theSocket.attachListener('close-user-windows', (data) => {
                 if (!(data["originator"] == window.global_id)) {
                     window.close()
                 }
             });
-            props.tsocket.attachListener("endSession", function () {
+            theSocket.attachListener("endSession", function () {
                 dialogFuncs.showModal("EndSessionDialog", {})
             })
         }

@@ -35,6 +35,7 @@ import {Button, Drawer, ButtonGroup} from "@blueprintjs/core";
 import {Card, CardList, TextArea, ControlGroup} from "@blueprintjs/core";
 
 import {useStateAndRef, useCallbackStack} from "./utilities_react";
+import {useSocketListener} from "./tactic_socket";
 import {postPromise} from "./communication_react";
 import {SettingsContext} from "./settings";
 import {ErrorDrawerContext} from "./error_drawer";
@@ -65,14 +66,6 @@ function withAssistant(WrappedComponent, lposition = "right", assistant_drawer_s
 
         const errorDrawerFuncs = useContext(ErrorDrawerContext);
 
-
-        // useEffect(()=>{
-        //     if (window.has_openapi_key) {
-        //         getAssistant();
-        //     }
-        //     return (() => {
-        //     })
-        // }, []);
 
         useEffect(()=>{
             if (show_drawer && window.has_openapi_key && !initialized.current) {
@@ -225,7 +218,6 @@ function ChatModule(props) {
     const pushCallback = useCallbackStack();
 
     useEffect(() => {
-        initSocket();
         stream_dict_ref.current = {};
     }, []);
 
@@ -235,40 +227,7 @@ function ChatModule(props) {
         }
     });
 
-    function initSocket() {
-        props.tsocket.attachListener("chat_status", _handleChatStatus);
-        props.tsocket.attachListener("chat_delta", _handleChatDelta);
-    }
-
-    function _onInputChange(event) {
-        props.set_assistant_prompt_value(event.target.value);
-    }
-
-    function stream_dict_to_string() {
-        const sortedKeys = Object.keys(stream_dict_ref.current).sort((a, b) => a - b);
-        return sortedKeys.map(key => stream_dict_ref.current[key]).join('');
-    }
-
-    function _handleChatDelta(data) {
-        let current_stream_dict = stream_dict_ref.current;
-        current_stream_dict[data.counter] = data.delta;
-        const new_text = stream_dict_to_string();
-        assistantDrawerFuncs.set_stream_text(new_text);
-        pushCallback(() => {
-            set_response_counter(response_counter_ref.current + 1)
-        })
-    }
-
-    function _handleChatEnd(stream_text) {
-        stream_dict_ref.current = {};
-        stream_text = formatLatexEquations(stream_text);
-        let converted_markdown = mdi.render(stream_text);
-        const new_item_list = [...assistantDrawerFuncs.item_list_ref.current, {kind: "response", text: converted_markdown}];
-        assistantDrawerFuncs.set_item_list(new_item_list);
-        assistantDrawerFuncs.set_chat_status("idle");
-    }
-
-    function _handleChatStatus(data) {
+    useSocketListener(props.tsocket, "chat_status", (data) => {
         if (idle_statuses.includes(data.status)) {
             assistantDrawerFuncs.set_chat_status("idle");
             if (Object.keys(stream_dict_ref.current).length == 0) return;
@@ -279,6 +238,35 @@ function ChatModule(props) {
         else {
             assistantDrawerFuncs.set_chat_status(data.status)
         }
+    }, [])
+
+    useSocketListener(props.tsocket, "chat_delta", (data) => {
+        let current_stream_dict = stream_dict_ref.current;
+        current_stream_dict[data.counter] = data.delta;
+        const new_text = stream_dict_to_string();
+        assistantDrawerFuncs.set_stream_text(new_text);
+        pushCallback(() => {
+            set_response_counter(response_counter_ref.current + 1)
+        })
+    }, []);
+
+    function _onInputChange(event) {
+        props.set_assistant_prompt_value(event.target.value);
+    }
+
+    function stream_dict_to_string() {
+        const sortedKeys = Object.keys(stream_dict_ref.current).sort((a, b) => a - b);
+        return sortedKeys.map(key => stream_dict_ref.current[key]).join('');
+    }
+
+
+    function _handleChatEnd(stream_text) {
+        stream_dict_ref.current = {};
+        stream_text = formatLatexEquations(stream_text);
+        let converted_markdown = mdi.render(stream_text);
+        const new_item_list = [...assistantDrawerFuncs.item_list_ref.current, {kind: "response", text: converted_markdown}];
+        assistantDrawerFuncs.set_item_list(new_item_list);
+        assistantDrawerFuncs.set_chat_status("idle");
     }
 
     async function _handleButton(event) {

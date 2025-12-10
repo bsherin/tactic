@@ -1,4 +1,4 @@
-import {TacticSocket} from "./tactic_socket";
+import {TacticSocket, useConnection} from "./tactic_socket";
 import {get_ppi, guid} from "./utilities_react";
 
 if (!window.in_context) {
@@ -19,7 +19,7 @@ import {ConsoleComponent} from "./console_component";
 import {consoleItemsReducer} from "./console_support";
 import {doFlash, StatusContext} from "./toaster"
 import {withStatus} from "./toaster";
-import {renderSpinnerMessage, useConnection, useStateAndRef, withRegisterActivity} from "./utilities_react";
+import {renderSpinnerMessage, useStateAndRef, withRegisterActivity} from "./utilities_react";
 import {ICON_BAR_WIDTH} from "./sizing_tools";
 
 import {
@@ -147,23 +147,23 @@ function NotebookApp(props) {
         return false
     }
 
-    function initSocket() {
+    function initSocket(theSocket) {
 
-        props.tsocket.attachListener("window-open", data => {
+        theSocket.attachListener("window-open", data => {
             window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`)
         });
 
         if (!window.in_context) {
-            props.tsocket.attachListener("doFlashUser", function (data) {
+            theSocket.attachListener("doFlashUser", function (data) {
                 doFlash(data)
             });
 
-            props.tsocket.attachListener('close-user-windows', function (data) {
+            theSocket.attachListener('close-user-windows', function (data) {
                 if (!(data["originator"] == window.global_id)) {
                     window.close()
                 }
             });
-            props.tsocket.attachListener("endSession", function () {
+            theSocket.attachListener("endSession", function () {
                 dialogFuncs.showModal("EndSessionDialog", {})
             })
         }

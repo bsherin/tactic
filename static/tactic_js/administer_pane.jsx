@@ -6,8 +6,9 @@ import {Regions} from "@blueprintjs/table";
 import {SearchForm, BpSelectorTable} from "./library_widgets";
 import {HorizontalPanes} from "./resizing_allotment";
 
-import {useCallbackStack, useStateAndRef, useRegisterActivity} from "./utilities_react";
+import {useCallbackStack, useStateAndRef} from "./utilities_react";
 import {postPromise} from "./communication_react";
+import {useSocketListener} from "./tactic_socket";
 
 import _ from 'lodash';
 import {SearchableConsole} from "./searchable_console";
@@ -37,16 +38,28 @@ function AdminPane(props) {
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
 
     useEffect(() => {
-        initSocket();
         _grabNewChunkWithRow(0, true, null, true).then(() => {});
     }, []);
 
-    function initSocket() {
-        if (props.tsocket != null) {
-            props.tsocket.attachListener(`update-${props.res_type}-selector-row`, _handleRowUpdate);
-            props.tsocket.attachListener(`refresh-${props.res_type}-selector`, _refresh_func);
+    function _handleRowUpdate(res_dict) {
+        let res_idval = res_dict.Id;
+        let ind = get_data_dict_index(res_idval);
+        let new_data_dict = _.cloneDeep(data_dict_ref.current);
+        let the_row = new_data_dict[ind];
+        for (let field in res_dict) {
+            the_row[field] = res_dict[field];
         }
+        if (res_name == props.selected_resource.name) {
+            props.updatePaneState({"selected_resource": the_row})
+        }
+        set_data_dict(new_data_dict);
     }
+    async function _refresh_func(callback=null) {
+        await _grabNewChunkWithRow(0, true, null, true, callback)
+    }
+
+    useSocketListener(props.tsocket, `update-${props.res_type}-selector-row`, _handleRowUpdate);
+    useSocketListener(props.tsocket, `refresh-${props.res_type}-selector`, _refresh_func);
 
     function _getSearchSpec(){
         return {
@@ -114,20 +127,6 @@ function AdminPane(props) {
     function _initiateDataGrab(row_index) {
         set_awaiting_data(true);
         pushCallback(async () => { await _grabNewChunkWithRow(row_index)});
-    }
-
-    function _handleRowUpdate(res_dict) {
-        let res_idval = res_dict.Id;
-        let ind = get_data_dict_index(res_idval);
-        let new_data_dict = _.cloneDeep(data_dict_ref.current);
-        let the_row = new_data_dict[ind];
-        for (let field in res_dict) {
-            the_row[field] = res_dict[field];
-        }
-        if (res_name == props.selected_resource.name) {
-            props.updatePaneState({"selected_resource": the_row})
-        }
-        set_data_dict(new_data_dict);
     }
 
     function _updatePaneState(new_state, callback) {
@@ -214,10 +213,6 @@ function AdminPane(props) {
             })
         }
 
-    }
-
-    async function _refresh_func(callback=null) {
-        await _grabNewChunkWithRow(0, true, null, true, callback)
     }
 
     async function _setConsoleText(the_text) {

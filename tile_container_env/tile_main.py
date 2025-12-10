@@ -1,6 +1,11 @@
 
 import os
 
+## clear old credentials just in case they have lingered
+def clear_user_creds():
+    for k in ("AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_SESSION_TOKEN"):
+        os.environ.pop(k, None)
+
 import json
 import base64
 from flask import Flask
@@ -24,7 +29,7 @@ import settings_object
 from communication_utils import make_python_object_jsonizable
 import uuid
 from rabbit_manage import sleep_until_rabbit_alive
-import sys, os
+import sys
 import time
 import widgets
 
@@ -91,6 +96,7 @@ class TileWorker(QWorker):
 
     @task_worthy
     def restart(self, data):
+        clear_user_creds()
         os.execv(sys.executable, [sys.executable, "-u", "tile_main.py"])
 
     def ask_host(self, msg_type, task_data=None, callback_func=None):
@@ -330,7 +336,8 @@ class TileWorker(QWorker):
         pseudo_tile_base.Settings = settings_object.Settings
         return data
 
-    def set_environ_from_creds(self, creds):
+    @staticmethod
+    def set_environ_from_creds(creds):
         if not use_ecs:
             return
         os.environ["AWS_ACCESS_KEY_ID"] = creds["AccessKeyId"]

@@ -31,12 +31,12 @@ import {withErrorDrawer} from "./error_drawer";
 import {renderSpinnerMessage, convertExtraKeys, useStateAndRef} from "./utilities_react"
 import {TacticNavbar} from "./blueprint_navbar";
 import {ErrorBoundary} from "./error_boundary";
-import {useCallbackStack, useConnection, withRegisterActivity} from "./utilities_react";
-import {SelectedPaneContext, guid, useRegisterActivity} from "./utilities_react";
+import {useCallbackStack, withRegisterActivity} from "./utilities_react";
+import {SelectedPaneContext, guid} from "./utilities_react";
 import {SettingsContext, withSettings} from "./settings";
 import {DialogContext, withDialogs} from "./modal_react";
 import {ErrorDrawerContext} from "./error_drawer";
-
+import {useConnection} from "./tactic_socket";
 
 import {usePropertyList, makeUndoableDispatch, getListItemFromidentifier} from "./property_list"
 import {useSearch} from "./search_reducer"
@@ -259,22 +259,22 @@ function CreatorApp(props) {
 
     }, [option_list_ref.current, umListRef.current]);
 
-    function initSocket() {
-        props.tsocket.attachListener('focus-me', (data) => {
+    function initSocket(theSocket) {
+        theSocket.attachListener('focus-me', (data) => {
             window.focus();
             _selectLineNumber(data.line_number)
         });
 
         if (!window.in_context) {
-            props.tsocket.attachListener("doFlashUser", function (data) {
+            theSocket.attachListener("doFlashUser", function (data) {
                 doFlash(data)
             });
-            props.tsocket.attachListener('close-user-windows', (data) => {
+            theSocket.attachListener('close-user-windows', (data) => {
                 if (!(data["originator"] == window.global_id)) {
                     window.close()
                 }
             });
-            props.tsocket.attachListener("endSession", function () {
+            theSocket.attachListener("endSession", function () {
                 dialogFuncs.showModal("EndSessionDialog", {})
             })
         }

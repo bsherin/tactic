@@ -14,6 +14,7 @@ var _select = require("@blueprintjs/select");
 var _settings = require("./settings");
 var _metadata_reducer = require("./metadata_reducer");
 var _selector_advanced = require("./selector_advanced");
+var _tactic_socket = require("./tactic_socket");
 var _core2 = _interopRequireDefault(require("highlight.js/lib/core"));
 var _javascript = _interopRequireDefault(require("highlight.js/lib/languages/javascript"));
 var _python = _interopRequireDefault(require("highlight.js/lib/languages/python"));
@@ -343,7 +344,6 @@ function CombinedMetadata(props) {
     search_inside: false
   }, props);
   var top_ref = (0, _react.useRef)();
-  var listenderAttachedRef = (0, _react.useRef)(false);
   var _useImmerReducerAndRe = (0, _utilities_react.useImmerReducerAndRef)(_metadata_reducer.metadataReducer, initial_state),
     _useImmerReducerAndRe2 = _slicedToArray(_useImmerReducerAndRe, 3),
     mDispatch = _useImmerReducerAndRe2[1],
@@ -363,26 +363,10 @@ function CombinedMetadata(props) {
   (0, _react.useEffect)(function () {
     latestPropsRef.current = props;
   }, [props]);
-  (0, _react.useEffect)(function () {
-    if (props.tsocket) {
-      props.tsocket.attachListener("resource-updated", handleExternalUpdate);
-      listenderAttachedRef.current = true;
-    }
-    return function () {
-      if (props.tsocket) {
-        props.tsocket.detachListener("resource-updated");
-      }
-    };
-  }, []);
+  (0, _tactic_socket.useSocketListener)(props.tsocket, "resource-updated", handleExternalUpdate);
   (0, _react.useEffect)(function () {
     setIsTile(props.res_type === "tile");
   }, [props.res_type]);
-  (0, _react.useEffect)(function () {
-    if (props.tsocket && !listenderAttachedRef.current) {
-      props.tsocket.attachListener("resource-updated", handleExternalUpdate);
-      listenderAttachedRef.current = true;
-    }
-  }, [props.tsocket]);
   (0, _react.useEffect)(function () {
     grabMetadata();
   }, [props.res_name, props.res_type]);
@@ -700,6 +684,7 @@ function CombinedMetadata(props) {
     key: "".concat(props.res_name, "-").concat(props.res_type, "-cagegory")
   }, /*#__PURE__*/_react["default"].createElement(_core.InputGroup, {
     onChange: _handleCategoryChange,
+    disabled: props.readOnly,
     value: mStateRef.current.category
   })), isTile && /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
     label: "Icon"

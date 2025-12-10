@@ -4,8 +4,9 @@ import {Fragment, useState, useEffect, useRef, memo, useContext} from "react";
 import { Card, Button, InputGroup, Spinner, ButtonGroup, FormGroup, Divider} from "@blueprintjs/core";
 
 import {GlyphButton, SelectList} from "./blueprint_react_widgets";
-import {postWithCallback, postWithCallbackMain, postPromise, postPromiseMain} from "./communication_react"
+import {postWithCallbackMain, postPromise, postPromiseMain} from "./communication_react"
 import {useCallbackStack, useStateAndRef} from "./utilities_react";
+import {useSocketListener} from "./tactic_socket";
 import {ErrorDrawerContext} from "./error_drawer";
 import {widgetDict} from "./widgets";
 
@@ -163,17 +164,7 @@ function ExportsViewer(props) {
 
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
 
-    useEffect(() => {
-        initSocket();
-        props.setUpdate(_updateExportsList);
-        _updateExportsList().then(() => {});
-    }, []);
-
-    function initSocket() {
-        props.tsocket.attachListener("export-viewer-message", _handleExportViewerMessage);
-    }
-
-    function _handleExportViewerMessage(data) {
+    useSocketListener(props.tsocket, "export-viewer-message", (data) => {
         if (data.local_id == props.local_id) {
             let handlerDict = {
                 update_exports_popup: _updateExportsList,
@@ -186,7 +177,12 @@ function ExportsViewer(props) {
             };
             handlerDict[data["export_viewer_message"]](data)
         }
-    }
+    });
+
+    useEffect(() => {
+        props.setUpdate(_updateExportsList);
+        _updateExportsList().then(() => {});
+    }, []);
 
     async function _updateExportsList() {
         try {

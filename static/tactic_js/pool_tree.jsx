@@ -10,6 +10,7 @@ import {SettingsContext} from "./settings";
 import {SearchForm} from "./library_widgets";
 import {ErrorDrawerContext} from "./error_drawer";
 export {PoolTree, PoolAddressSelector, getBasename, splitFilePath, getFileParentPath, withPool, PoolContext}
+import {useSocketListener} from "./tactic_socket";
 
 const PoolContext = createContext({
     workingPath: null,
@@ -300,7 +301,6 @@ function PoolTree(props) {
     const statusFuncs = useContext(StatusContext);
 
     useEffect(() => {
-        initSocket();
         if (props.registerTreeRefreshFunc) {
             props.registerTreeRefreshFunc(getTree)
         }
@@ -361,83 +361,79 @@ function PoolTree(props) {
         exposeNode(fullpath)
     }
 
-    function initSocket() {
-        if (props.tsocket) {
-            props.tsocket.attachListener("pool-directory-event", (data) => {
-                const event_type = data["event_type"];
-                let folderDict = data["folder_dict"];
-                folderDict.id = folderDict.fullpath;
-                switch (event_type) {
-                    case "modify":
-                        dispatch({
-                            type: "MODIFY_DIRECTORY",
-                            folderDict: folderDict
-                        });
-                        break;
-                    case "create":
-                        dispatch({
-                            type: "ADD_DIRECTORY",
-                            folderDict: folderDict
-                        });
-                        focusNode(folderDict.fullpath, nodes_ref.current);
-                        break;
-                    case "delete":
-                        dispatch({
-                            type: "REMOVE_NODE",
-                            fullpath: folderDict.fullpath
-                        });
-                        break;
-                    case "move":
-                        dispatch({
-                            type: "MOVE_DIRECTORY",
-                            src: data.path,
-                            dst: getFileParentPath(folderDict.fullpath),
-                            folderDict: folderDict
-                        });
-                        break;
-                    default:
-                        break;
-                }
-            });
-            props.tsocket.attachListener("pool-file-event", (data) => {
-                const event_type = data["event_type"];
-                let fileDict = data["file_dict"];
-                fileDict.id = fileDict.fullpath;
-                switch (event_type) {
-                    case "modify":
-                        dispatch({
-                            type: "MODIFY_FILE",
-                            fileDict: fileDict
-                        });
-                        break;
-                    case "create":
-                        dispatch({
-                            type: "ADD_FILE",
-                            fileDict: fileDict
-                        });
-                        focusNode(fileDict.fullpath, nodes_ref.current);
-                        break;
-                    case "delete":
-                        dispatch({
-                            type: "REMOVE_NODE",
-                            fullpath: fileDict.fullpath
-                        });
-                        break;
-                    case "move":
-                        dispatch({
-                            type: "MOVE_FILE",
-                            src: data.path,
-                            dst: getFileParentPath(fileDict.fullpath),
-                            fileDict: fileDict
-                        });
-                        break;
-                    default:
-                        break;
-                }
-
-            })
+    useSocketListener(props.tsocket, "pool-directory-event", (data) => {
+        const event_type = data["event_type"];
+        let folderDict = data["folder_dict"];
+        folderDict.id = folderDict.fullpath;
+        switch (event_type) {
+            case "modify":
+                dispatch({
+                    type: "MODIFY_DIRECTORY",
+                    folderDict: folderDict
+                });
+                break;
+            case "create":
+                dispatch({
+                    type: "ADD_DIRECTORY",
+                    folderDict: folderDict
+                });
+                focusNode(folderDict.fullpath, nodes_ref.current);
+                break;
+            case "delete":
+                dispatch({
+                    type: "REMOVE_NODE",
+                    fullpath: folderDict.fullpath
+                });
+                break;
+            case "move":
+                dispatch({
+                    type: "MOVE_DIRECTORY",
+                    src: data.path,
+                    dst: getFileParentPath(folderDict.fullpath),
+                    folderDict: folderDict
+                });
+                break;
+            default:
+                break;
         }
-    }
+    })
+
+    useSocketListener(props.tsocket, "pool-file-event", (data) => {
+        const event_type = data["event_type"];
+        let fileDict = data["file_dict"];
+        fileDict.id = fileDict.fullpath;
+        switch (event_type) {
+            case "modify":
+                dispatch({
+                    type: "MODIFY_FILE",
+                    fileDict: fileDict
+                });
+                break;
+            case "create":
+                dispatch({
+                    type: "ADD_FILE",
+                    fileDict: fileDict
+                });
+                focusNode(fileDict.fullpath, nodes_ref.current);
+                break;
+            case "delete":
+                dispatch({
+                    type: "REMOVE_NODE",
+                    fullpath: fileDict.fullpath
+                });
+                break;
+            case "move":
+                dispatch({
+                    type: "MOVE_FILE",
+                    src: data.path,
+                    dst: getFileParentPath(fileDict.fullpath),
+                    fileDict: fileDict
+                });
+                break;
+            default:
+                break;
+        }
+    })
 
     function exposeBaseNode() {
         if (nodes_ref.current.length == 0) return;

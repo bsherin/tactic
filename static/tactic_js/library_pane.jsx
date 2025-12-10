@@ -19,6 +19,7 @@ import {ErrorDrawerContext} from "./error_drawer";
 import {LibraryTablePane} from "./library_table_pane";
 import {paneReducer, get_index, get_index_from_id} from "./library_pane_reducer";
 import {ResourceFilter, ColumnSelector, all_columns} from "./library_widgets";
+import {useSocketListener} from "./tactic_socket";
 
 export {LibraryPane, view_views, res_types}
 
@@ -216,21 +217,19 @@ function LibraryPane(props) {
    const { handleKeyDown, handleKeyUp } = useHotkeys(hotkeys);
 
     useEffect(() => {
-        initSocket();
         _grabNewChunkWithRow(0).then(() => {});
     }, []);
 
     const pushCallback = useCallbackStack("library_home");
 
-    function initSocket() {
-        if ((props.tsocket != null) && (!props.is_repository)) {
-            props.tsocket.attachListener(`update-selector-row`, _handleRowUpdate);
-            props.tsocket.attachListener(`refresh-selector`, _refresh_func);
-        } else if ((props.tsocket != null) && (props.is_repository)) {
-            props.tsocket.attachListener(`update-repository-selector-row`, _handleRowUpdate);
-            props.tsocket.attachListener(`refresh-repository-selector`, _refresh_func);
-        }
-    }
+    useSocketListener(props.tsocket, "update-selector-row", _handleRowUpdate,
+        props.tsocket && !props.is_repository);
+    useSocketListener(props.tsocket, "refresh-selector", _refresh_func,
+        props.tsocket != null && !props.is_repository);
+    useSocketListener(props.tsocket, "update-repository-selector-row", _handleRowUpdate,
+        props.tsocket != null && props.is_repository)
+    useSocketListener(props.tsocket, "refresh-repository-selector", _refresh_func,
+        props.tsocket != null && props.is_repository)
 
     function _renderBodyContextMenu(menu_context) {
         if (event) {

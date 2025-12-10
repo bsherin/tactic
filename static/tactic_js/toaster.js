@@ -10,6 +10,7 @@ exports.messageOrError = messageOrError;
 exports.withStatus = withStatus;
 var _react = _interopRequireWildcard(require("react"));
 var _client = require("react-dom/client");
+var _tactic_socket = require("./tactic_socket");
 var _core = require("@blueprintjs/core");
 var _blueprint_react_widgets = require("./blueprint_react_widgets");
 var _utilities_react = require("./utilities_react");
@@ -128,16 +129,6 @@ function withStatus(WrappedComponent) {
       leftEdge = _useState8[0],
       setLeftEdge = _useState8[1];
     var pushCallback = (0, _utilities_react.useCallbackStack)();
-    (0, _react.useEffect)(function () {
-      if (props.tsocket) {
-        initSocket();
-      }
-    }, []);
-    function initSocket() {
-      props.tsocket.attachListener('stop-spinner', _stopSpinner);
-      props.tsocket.attachListener('show-status-msg', _statusMessageFromData);
-      props.tsocket.attachListener("clear-status-msg", _clearStatusMessage);
-    }
     var _stopSpinner = (0, _react.useCallback)(function (data) {
       set_show_spinner(false);
     }, []);
@@ -171,6 +162,9 @@ function withStatus(WrappedComponent) {
         }
       });
     }, []);
+    (0, _tactic_socket.useSocketListener)(props.tsocket, 'stop-spinner', _stopSpinner);
+    (0, _tactic_socket.useSocketListener)(props.tsocket, 'show-status-msg', _statusMessageFromData);
+    (0, _tactic_socket.useSocketListener)(props.tsocket, 'clear-status-msg', _clearStatusMessage);
     var _setStatus = (0, _react.useCallback)(function (sstate) {
       var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
       if ("show_spinner" in sstate) {

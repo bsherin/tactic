@@ -20,6 +20,7 @@ var _communication_react = require("./communication_react");
 var _settings = require("./settings");
 var _library_widgets = require("./library_widgets");
 var _error_drawer = require("./error_drawer");
+var _tactic_socket = require("./tactic_socket");
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t2 in e) "default" !== _t2 && {}.hasOwnProperty.call(e, _t2) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t2)) && (i.get || i.set) ? o(f, _t2, i) : f[_t2] = e[_t2]); return f; })(e, t); }
 function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
@@ -407,7 +408,6 @@ function PoolTree(props) {
   var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
   var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
   (0, _react.useEffect)(function () {
-    initSocket();
     if (props.registerTreeRefreshFunc) {
       props.registerTreeRefreshFunc(getTree);
     }
@@ -490,82 +490,78 @@ function PoolTree(props) {
     });
     exposeNode(fullpath);
   }
-  function initSocket() {
-    if (props.tsocket) {
-      props.tsocket.attachListener("pool-directory-event", function (data) {
-        var event_type = data["event_type"];
-        var folderDict = data["folder_dict"];
-        folderDict.id = folderDict.fullpath;
-        switch (event_type) {
-          case "modify":
-            dispatch({
-              type: "MODIFY_DIRECTORY",
-              folderDict: folderDict
-            });
-            break;
-          case "create":
-            dispatch({
-              type: "ADD_DIRECTORY",
-              folderDict: folderDict
-            });
-            focusNode(folderDict.fullpath, nodes_ref.current);
-            break;
-          case "delete":
-            dispatch({
-              type: "REMOVE_NODE",
-              fullpath: folderDict.fullpath
-            });
-            break;
-          case "move":
-            dispatch({
-              type: "MOVE_DIRECTORY",
-              src: data.path,
-              dst: getFileParentPath(folderDict.fullpath),
-              folderDict: folderDict
-            });
-            break;
-          default:
-            break;
-        }
-      });
-      props.tsocket.attachListener("pool-file-event", function (data) {
-        var event_type = data["event_type"];
-        var fileDict = data["file_dict"];
-        fileDict.id = fileDict.fullpath;
-        switch (event_type) {
-          case "modify":
-            dispatch({
-              type: "MODIFY_FILE",
-              fileDict: fileDict
-            });
-            break;
-          case "create":
-            dispatch({
-              type: "ADD_FILE",
-              fileDict: fileDict
-            });
-            focusNode(fileDict.fullpath, nodes_ref.current);
-            break;
-          case "delete":
-            dispatch({
-              type: "REMOVE_NODE",
-              fullpath: fileDict.fullpath
-            });
-            break;
-          case "move":
-            dispatch({
-              type: "MOVE_FILE",
-              src: data.path,
-              dst: getFileParentPath(fileDict.fullpath),
-              fileDict: fileDict
-            });
-            break;
-          default:
-            break;
-        }
-      });
+  (0, _tactic_socket.useSocketListener)(props.tsocket, "pool-directory-event", function (data) {
+    var event_type = data["event_type"];
+    var folderDict = data["folder_dict"];
+    folderDict.id = folderDict.fullpath;
+    switch (event_type) {
+      case "modify":
+        dispatch({
+          type: "MODIFY_DIRECTORY",
+          folderDict: folderDict
+        });
+        break;
+      case "create":
+        dispatch({
+          type: "ADD_DIRECTORY",
+          folderDict: folderDict
+        });
+        focusNode(folderDict.fullpath, nodes_ref.current);
+        break;
+      case "delete":
+        dispatch({
+          type: "REMOVE_NODE",
+          fullpath: folderDict.fullpath
+        });
+        break;
+      case "move":
+        dispatch({
+          type: "MOVE_DIRECTORY",
+          src: data.path,
+          dst: getFileParentPath(folderDict.fullpath),
+          folderDict: folderDict
+        });
+        break;
+      default:
+        break;
     }
-  }
+  });
+  (0, _tactic_socket.useSocketListener)(props.tsocket, "pool-file-event", function (data) {
+    var event_type = data["event_type"];
+    var fileDict = data["file_dict"];
+    fileDict.id = fileDict.fullpath;
+    switch (event_type) {
+      case "modify":
+        dispatch({
+          type: "MODIFY_FILE",
+          fileDict: fileDict
+        });
+        break;
+      case "create":
+        dispatch({
+          type: "ADD_FILE",
+          fileDict: fileDict
+        });
+        focusNode(fileDict.fullpath, nodes_ref.current);
+        break;
+      case "delete":
+        dispatch({
+          type: "REMOVE_NODE",
+          fullpath: fileDict.fullpath
+        });
+        break;
+      case "move":
+        dispatch({
+          type: "MOVE_FILE",
+          src: data.path,
+          dst: getFileParentPath(fileDict.fullpath),
+          fileDict: fileDict
+        });
+        break;
+      default:
+        break;
+    }
+  });
   function exposeBaseNode() {
     if (nodes_ref.current.length == 0) return;
     dispatch({

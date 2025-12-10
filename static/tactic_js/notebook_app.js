@@ -63,7 +63,7 @@ function NotebookApp(props) {
   }, props);
   var last_save = (0, _react.useRef)({});
   var updateExportsList = (0, _react.useRef)(null);
-  var connection_status = (0, _utilities_react.useConnection)(props.tsocket, initSocket);
+  var connection_status = (0, _tactic_socket.useConnection)(props.tsocket, initSocket);
   var _useStateAndRef = (0, _utilities_react.useStateAndRef)([]),
     _useStateAndRef2 = _slicedToArray(_useStateAndRef, 3),
     set_console_selected_items = _useStateAndRef2[1],
@@ -161,20 +161,20 @@ function NotebookApp(props) {
     }
     return false;
   }
-  function initSocket() {
-    props.tsocket.attachListener("window-open", function (data) {
+  function initSocket(theSocket) {
+    theSocket.attachListener("window-open", function (data) {
       window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data["the_id"]));
     });
     if (!window.in_context) {
-      props.tsocket.attachListener("doFlashUser", function (data) {
+      theSocket.attachListener("doFlashUser", function (data) {
         (0, _toaster.doFlash)(data);
       });
-      props.tsocket.attachListener('close-user-windows', function (data) {
+      theSocket.attachListener('close-user-windows', function (data) {
         if (!(data["originator"] == window.global_id)) {
           window.close();
         }
       });
-      props.tsocket.attachListener("endSession", function () {
+      theSocket.attachListener("endSession", function () {
         dialogFuncs.showModal("EndSessionDialog", {});
       });
     }

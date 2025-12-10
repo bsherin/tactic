@@ -9,6 +9,7 @@ import {MultiSelect} from "@blueprintjs/select";
 import {SettingsContext} from "./settings";
 import {metadataReducer} from "./metadata_reducer";
 import {BpSelectAdvanced, renderSuggestion} from "./selector_advanced";
+import {useSocketListener} from "./tactic_socket";
 
 import hljs from 'highlight.js/lib/core';
 import javascript from 'highlight.js/lib/languages/javascript';
@@ -352,7 +353,6 @@ function CombinedMetadata(props) {
         ...props
     };
     const top_ref = useRef();
-    const listenderAttachedRef = useRef(false);
 
     const [, mDispatch, mStateRef] = useImmerReducerAndRef(metadataReducer, initial_state);
     const [isTile, setIsTile] = useState(props.res_type === "tile");
@@ -371,29 +371,12 @@ function CombinedMetadata(props) {
             latestPropsRef.current = props;
     }, [props]);
 
-    useEffect(() => {
-        if (props.tsocket) {
-            props.tsocket.attachListener("resource-updated", handleExternalUpdate);
-            listenderAttachedRef.current = true;
-        }
-        return () => {
-            if (props.tsocket) {
-                props.tsocket.detachListener("resource-updated");
-            }
-        }
-    }, []);
+    useSocketListener(props.tsocket, "resource-updated", handleExternalUpdate);
 
     useEffect(() => {
         setIsTile(props.res_type === "tile");
 
     }, [props.res_type]);
-
-    useEffect(() => {
-        if (props.tsocket && !listenderAttachedRef.current) {
-            props.tsocket.attachListener("resource-updated", handleExternalUpdate);
-            listenderAttachedRef.current = true;
-        }
-    }, [props.tsocket]);
 
     useEffect(() => {
         grabMetadata()
@@ -573,6 +556,7 @@ function CombinedMetadata(props) {
                 {isTile && !props.useFixedData && mStateRef.current.category != null &&
                     <FormGroup label="Category" key={`${props.res_name}-${props.res_type}-cagegory`}>
                         <InputGroup onChange={_handleCategoryChange}
+                                    disabled={props.readOnly}
                                     value={mStateRef.current.category}/>
                     </FormGroup>
                 }

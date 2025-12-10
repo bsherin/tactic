@@ -10,6 +10,7 @@ import {markdown} from "@codemirror/lang-markdown"
 import {indentUnit} from "@codemirror/language";
 import {HighlightStyle, foldAll, unfoldAll} from "@codemirror/language"
 import {EditorView, Decoration, ViewPlugin} from "@codemirror/view";
+import {useSocketListener} from "./tactic_socket";
 import {
     StateField,
     StateEffect,
@@ -411,18 +412,7 @@ function ReactCodemirror6(props) {
         }
     }, []);
 
-    useEffect(() => {
-        if (!props.tsocket) return;
-        if (!props.local_id) return;
-
-        const listener = (data) => handleAutocompleteDelta(data);
-
-        props.tsocket.attachListener("AutocompleteDelta", listener);
-
-        return () => {
-            props.tsocket.detachListener("AutocompleteDelta", listener);
-        };
-    }, [props.tsocket, props.local_id]);
+    useSocketListener(props.tsocket, "handle-autocomplete-delta", handleAutocompleteDelta, props.local_id);
 
     useEffect(() => {
         return () => {

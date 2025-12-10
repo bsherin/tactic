@@ -5,7 +5,7 @@ import {Button, ControlGroup, HTMLSelect, InputGroup, Switch} from "@blueprintjs
 import {FilterSearchForm} from "./search_form";
 import {postPromise} from "./communication_react";
 import {guid, useStateAndRef, useDidMount} from "./utilities_react";
-import {TacticSocket} from "./tactic_socket";
+import {useSocketListener} from "./tactic_socket";
 
 export {SearchableConsole, ResponsiveFlex}
 
@@ -81,9 +81,7 @@ function SearchableConsole(props, inner_ref) {
         await _getLogAndStartStreaming()
     }, [props.container_id]);
 
-    function initSocket() {
-        props.tsocket.attachListener("searchable-console-message", _handleUpdateMessage);
-    }
+    useSocketListener(props.tsocket, "searchable-console-message", _handleUpdateMessage);
 
     function _handleUpdateMessage(data) {
         if (data["sc_id"] != sc_id.current) return;

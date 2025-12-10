@@ -106,24 +106,21 @@ function AdministerHomeApp(props) {
   var top_ref = (0, _react.useRef)(null);
   var pushCallback = (0, _utilities_react.useCallbackStack)();
   var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
+  (0, _tactic_socket.useListeners)(props.tsocket, initSocket);
   (0, _react.useEffect)(function () {
-    initSocket();
     statusFuncs.stopSpinner();
-    return function () {
-      props.tsocket.disconnect();
-    };
   }, []);
-  function initSocket() {
-    props.tsocket.attachListener("window-open", function (data) {
+  function initSocket(theSocket) {
+    theSocket.attachListener("window-open", function (data) {
       return window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data["the_id"]));
     });
-    props.tsocket.attachListener('close-user-windows', function (data) {
+    theSocket.attachListener('close-user-windows', function (data) {
       if (!(data["originator"] == window.global_id)) {
         window.close();
       }
     });
-    props.tsocket.attachListener('doflashUser', _toaster.doFlash);
-    props.tsocket.attachListener("endSession", function () {
+    theSocket.attachListener('doflashUser', _toaster.doFlash);
+    theSocket.attachListener("endSession", function () {
       dialogFuncs.showModal("EndSessionDialog", {});
     });
   }

@@ -69,7 +69,7 @@ function LibraryHomeApp(props) {
     _useState2 = _slicedToArray(_useState, 2),
     columns = _useState2[0],
     setColumns = _useState2[1];
-  var connection_status = (0, _utilities_react.useConnection)(props.tsocket, initSocket);
+  var connection_status = (0, _tactic_socket.useConnection)(props.tsocket, initSocket);
   var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   (0, _react.useEffect)(function () {
     statusFuncs.stopSpinner(null);
@@ -77,20 +77,20 @@ function LibraryHomeApp(props) {
   (0, _react.useEffect)(function () {
     setColumns([].concat(_toConsumableArray(_library_widgets.base_columns), _toConsumableArray(settingsContext.settingsRef.current.library_columns)));
   }, [settingsContext.settingsRef.current.library_columns]);
-  function initSocket() {
-    props.tsocket.attachListener("window-open", function (data) {
+  function initSocket(theSocket) {
+    theSocket.attachListener("window-open", function (data) {
       return window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data["the_id"]));
     });
     if (!window.in_context) {
-      props.tsocket.attachListener("doFlashUser", function (data) {
+      theSocket.attachListener("doFlashUser", function (data) {
         (0, _toaster.doFlash)(data);
       });
-      props.tsocket.attachListener('close-user-windows', function (data) {
+      theSocket.attachListener('close-user-windows', function (data) {
         if (!(data["originator"] == window.global_id)) {
           window.close();
         }
       });
-      props.tsocket.attachListener("endSession", function () {
+      theSocket.attachListener("endSession", function () {
         dialogFuncs.showModal("EndSessionDialog", {});
       });
     }

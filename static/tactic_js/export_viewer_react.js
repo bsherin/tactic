@@ -10,6 +10,7 @@ var _core = require("@blueprintjs/core");
 var _blueprint_react_widgets = require("./blueprint_react_widgets");
 var _communication_react = require("./communication_react");
 var _utilities_react = require("./utilities_react");
+var _tactic_socket = require("./tactic_socket");
 var _error_drawer = require("./error_drawer");
 var _widgets = require("./widgets");
 function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t3 in e) "default" !== _t3 && {}.hasOwnProperty.call(e, _t3) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t3)) && (i.get || i.set) ? o(f, _t3, i) : f[_t3] = e[_t3]); return f; })(e, t); }
@@ -250,15 +251,7 @@ function ExportsViewer(props) {
     setInitialWidgetData = _useState28[1];
   var pushCallback = (0, _utilities_react.useCallbackStack)();
   var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
-  (0, _react.useEffect)(function () {
-    initSocket();
-    props.setUpdate(_updateExportsList);
-    _updateExportsList().then(function () {});
-  }, []);
-  function initSocket() {
-    props.tsocket.attachListener("export-viewer-message", _handleExportViewerMessage);
-  }
-  function _handleExportViewerMessage(data) {
+  (0, _tactic_socket.useSocketListener)(props.tsocket, "export-viewer-message", function (data) {
     if (data.local_id == props.local_id) {
       var handlerDict = {
         update_exports_popup: _updateExportsList,
@@ -273,7 +266,11 @@ function ExportsViewer(props) {
       };
       handlerDict[data["export_viewer_message"]](data);
     }
-  }
+  });
+  (0, _react.useEffect)(function () {
+    props.setUpdate(_updateExportsList);
+    _updateExportsList().then(function () {});
+  }, []);
   function _updateExportsList() {
     return _updateExportsList2.apply(this, arguments);
   }

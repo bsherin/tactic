@@ -10,6 +10,7 @@ var _library_widgets = require("./library_widgets");
 var _resizing_allotment = require("./resizing_allotment");
 var _utilities_react = require("./utilities_react");
 var _communication_react = require("./communication_react");
+var _tactic_socket = require("./tactic_socket");
 var _lodash = _interopRequireDefault(require("lodash"));
 var _searchable_console = require("./searchable_console");
 var _error_drawer = require("./error_drawer");
@@ -60,15 +61,45 @@ function AdminPane(props) {
   var pushCallback = (0, _utilities_react.useCallbackStack)();
   var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
   (0, _react.useEffect)(function () {
-    initSocket();
     _grabNewChunkWithRow(0, true, null, true).then(function () {});
   }, []);
-  function initSocket() {
-    if (props.tsocket != null) {
-      props.tsocket.attachListener("update-".concat(props.res_type, "-selector-row"), _handleRowUpdate);
-      props.tsocket.attachListener("refresh-".concat(props.res_type, "-selector"), _refresh_func);
+  function _handleRowUpdate(res_dict) {
+    var res_idval = res_dict.Id;
+    var ind = get_data_dict_index(res_idval);
+    var new_data_dict = _lodash["default"].cloneDeep(data_dict_ref.current);
+    var the_row = new_data_dict[ind];
+    for (var field in res_dict) {
+      the_row[field] = res_dict[field];
     }
+    if (res_name == props.selected_resource.name) {
+      props.updatePaneState({
+        "selected_resource": the_row
+      });
+    }
+    set_data_dict(new_data_dict);
   }
+  function _refresh_func() {
+    return _refresh_func2.apply(this, arguments);
+  }
+  function _refresh_func2() {
+    _refresh_func2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3() {
+      var callback,
+        _args3 = arguments;
+      return _regenerator().w(function (_context3) {
+        while (1) switch (_context3.n) {
+          case 0:
+            callback = _args3.length > 0 && _args3[0] !== undefined ? _args3[0] : null;
+            _context3.n = 1;
+            return _grabNewChunkWithRow(0, true, null, true, callback);
+          case 1:
+            return _context3.a(2);
+        }
+      }, _callee3);
+    }));
+    return _refresh_func2.apply(this, arguments);
+  }
+  (0, _tactic_socket.useSocketListener)(props.tsocket, "update-".concat(props.res_type, "-selector-row"), _handleRowUpdate);
+  (0, _tactic_socket.useSocketListener)(props.tsocket, "refresh-".concat(props.res_type, "-selector"), _refresh_func);
   function _getSearchSpec() {
     return {
       search_string: props.search_string,
@@ -80,16 +111,16 @@ function AdminPane(props) {
     return _onTableSelection2.apply(this, arguments);
   }
   function _onTableSelection2() {
-    _onTableSelection2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3(regions) {
+    _onTableSelection2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee4(regions) {
       var selected_rows, revised_regions, _iterator, _step, region, first_row, last_row, i;
-      return _regenerator().w(function (_context3) {
-        while (1) switch (_context3.n) {
+      return _regenerator().w(function (_context4) {
+        while (1) switch (_context4.n) {
           case 0:
             if (!(regions.length == 0)) {
-              _context3.n = 1;
+              _context4.n = 1;
               break;
             }
-            return _context3.a(2);
+            return _context4.a(2);
           case 1:
             // Without this get an error when clicking on a body cell
             selected_rows = [];
@@ -113,16 +144,16 @@ function AdminPane(props) {
             } finally {
               _iterator.f();
             }
-            _context3.n = 2;
+            _context4.n = 2;
             return _handleRowSelection(selected_rows);
           case 2:
             _updatePaneState({
               selectedRegions: revised_regions
             });
           case 3:
-            return _context3.a(2);
+            return _context4.a(2);
         }
-      }, _callee3);
+      }, _callee4);
     }));
     return _onTableSelection2.apply(this, arguments);
   }
@@ -130,7 +161,7 @@ function AdminPane(props) {
     return _grabNewChunkWithRow2.apply(this, arguments);
   }
   function _grabNewChunkWithRow2() {
-    _grabNewChunkWithRow2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee4(row_index) {
+    _grabNewChunkWithRow2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5(row_index) {
       var flush,
         spec_update,
         select,
@@ -139,16 +170,16 @@ function AdminPane(props) {
         query,
         data,
         new_data_dict,
-        _args4 = arguments,
+        _args5 = arguments,
         _t;
-      return _regenerator().w(function (_context4) {
-        while (1) switch (_context4.n) {
+      return _regenerator().w(function (_context5) {
+        while (1) switch (_context5.n) {
           case 0:
-            flush = _args4.length > 1 && _args4[1] !== undefined ? _args4[1] : false;
-            spec_update = _args4.length > 2 && _args4[2] !== undefined ? _args4[2] : null;
-            select = _args4.length > 3 && _args4[3] !== undefined ? _args4[3] : false;
-            callback = _args4.length > 4 && _args4[4] !== undefined ? _args4[4] : null;
-            _context4.p = 1;
+            flush = _args5.length > 1 && _args5[1] !== undefined ? _args5[1] : false;
+            spec_update = _args5.length > 2 && _args5[2] !== undefined ? _args5[2] : null;
+            select = _args5.length > 3 && _args5[3] !== undefined ? _args5[3] : false;
+            callback = _args5.length > 4 && _args5[4] !== undefined ? _args5[4] : null;
+            _context5.p = 1;
             search_spec = _getSearchSpec();
             if (spec_update) {
               search_spec = Object.assign(search_spec, spec_update);
@@ -157,10 +188,10 @@ function AdminPane(props) {
               search_spec: search_spec,
               row_number: row_index
             };
-            _context4.n = 2;
+            _context5.n = 2;
             return (0, _communication_react.postPromise)("host", get_task, query);
           case 2:
-            data = _context4.v;
+            data = _context5.v;
             if (flush) {
               new_data_dict = data.chunk_dict;
             } else {
@@ -177,16 +208,16 @@ function AdminPane(props) {
                 _selectRow(row_index);
               }
             });
-            _context4.n = 4;
+            _context5.n = 4;
             break;
           case 3:
-            _context4.p = 3;
-            _t = _context4.v;
+            _context5.p = 3;
+            _t = _context5.v;
             errorDrawerFuncs.addFromError("Error grabbing row chunk", _t);
           case 4:
-            return _context4.a(2);
+            return _context5.a(2);
         }
-      }, _callee4, null, [[1, 3]]);
+      }, _callee5, null, [[1, 3]]);
     }));
     return _grabNewChunkWithRow2.apply(this, arguments);
   }
@@ -225,21 +256,6 @@ function AdminPane(props) {
       }, _callee2);
     })));
   }
-  function _handleRowUpdate(res_dict) {
-    var res_idval = res_dict.Id;
-    var ind = get_data_dict_index(res_idval);
-    var new_data_dict = _lodash["default"].cloneDeep(data_dict_ref.current);
-    var the_row = new_data_dict[ind];
-    for (var field in res_dict) {
-      the_row[field] = res_dict[field];
-    }
-    if (res_name == props.selected_resource.name) {
-      props.updatePaneState({
-        "selected_resource": the_row
-      });
-    }
-    set_data_dict(new_data_dict);
-  }
   function _updatePaneState(new_state, callback) {
     props.updatePaneState(props.res_type, new_state, callback);
   }
@@ -247,16 +263,16 @@ function AdminPane(props) {
     return _updatePaneStatePromise2.apply(this, arguments);
   }
   function _updatePaneStatePromise2() {
-    _updatePaneStatePromise2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5(new_state) {
-      return _regenerator().w(function (_context5) {
-        while (1) switch (_context5.n) {
+    _updatePaneStatePromise2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6(new_state) {
+      return _regenerator().w(function (_context6) {
+        while (1) switch (_context6.n) {
           case 0:
-            _context5.n = 1;
+            _context6.n = 1;
             return props.updatePaneStatePromise(props.res_type, new_state);
           case 1:
-            return _context5.a(2);
+            return _context6.a(2);
         }
-      }, _callee5);
+      }, _callee6);
     }));
     return _updatePaneStatePromise2.apply(this, arguments);
   }
@@ -283,20 +299,20 @@ function AdminPane(props) {
     return _handleRowClick2.apply(this, arguments);
   }
   function _handleRowClick2() {
-    _handleRowClick2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6(row_dict) {
-      return _regenerator().w(function (_context6) {
-        while (1) switch (_context6.n) {
+    _handleRowClick2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee7(row_dict) {
+      return _regenerator().w(function (_context7) {
+        while (1) switch (_context7.n) {
           case 0:
-            _context6.n = 1;
+            _context7.n = 1;
             return _updatePaneStatePromise({
               selected_resource: row_dict,
               multi_select: false,
               list_of_selected: [row_dict[props.id_field]]
             });
           case 1:
-            return _context6.a(2);
+            return _context7.a(2);
         }
-      }, _callee6);
+      }, _callee7);
     }));
     return _handleRowClick2.apply(this, arguments);
   }
@@ -304,18 +320,18 @@ function AdminPane(props) {
     return _handleRowSelection2.apply(this, arguments);
   }
   function _handleRowSelection2() {
-    _handleRowSelection2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee7(selected_rows) {
+    _handleRowSelection2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee8(selected_rows) {
       var row_dict;
-      return _regenerator().w(function (_context7) {
-        while (1) switch (_context7.n) {
+      return _regenerator().w(function (_context8) {
+        while (1) switch (_context8.n) {
           case 0:
             row_dict = selected_rows[0];
-            _context7.n = 1;
+            _context8.n = 1;
             return _handleRowClick(row_dict);
           case 1:
-            return _context7.a(2);
+            return _context8.a(2);
         }
-      }, _callee7);
+      }, _callee8);
     }));
     return _handleRowSelection2.apply(this, arguments);
   }
@@ -323,23 +339,23 @@ function AdminPane(props) {
     return _update_search_state2.apply(this, arguments);
   }
   function _update_search_state2() {
-    _update_search_state2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee8(new_state) {
-      return _regenerator().w(function (_context8) {
-        while (1) switch (_context8.n) {
+    _update_search_state2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee9(new_state) {
+      return _regenerator().w(function (_context9) {
+        while (1) switch (_context9.n) {
           case 0:
-            _context8.n = 1;
+            _context9.n = 1;
             return _updatePaneStatePromise(new_state);
           case 1:
             if (!search_spec_changed(new_state)) {
-              _context8.n = 2;
+              _context9.n = 2;
               break;
             }
-            _context8.n = 2;
+            _context9.n = 2;
             return _grabNewChunkWithRow(0, true, new_state, true);
           case 2:
-            return _context8.a(2);
+            return _context9.a(2);
         }
-      }, _callee8);
+      }, _callee9);
     }));
     return _update_search_state2.apply(this, arguments);
   }
@@ -361,28 +377,28 @@ function AdminPane(props) {
     return _set_sort_state2.apply(this, arguments);
   }
   function _set_sort_state2() {
-    _set_sort_state2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee9(column_name, sort_field, direction) {
+    _set_sort_state2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee0(column_name, sort_field, direction) {
       var spec_update;
-      return _regenerator().w(function (_context9) {
-        while (1) switch (_context9.n) {
+      return _regenerator().w(function (_context0) {
+        while (1) switch (_context0.n) {
           case 0:
             spec_update = {
               sort_field: column_name,
               sort_direction: direction
             };
-            _context9.n = 1;
+            _context0.n = 1;
             return _updatePaneState(spec_update);
           case 1:
             if (!search_spec_changed(spec_update)) {
-              _context9.n = 2;
+              _context0.n = 2;
               break;
             }
-            _context9.n = 2;
+            _context0.n = 2;
             return _grabNewChunkWithRow(0, true, spec_update, true);
           case 2:
-            return _context9.a(2);
+            return _context0.a(2);
         }
-      }, _callee9);
+      }, _callee0);
     }));
     return _set_sort_state2.apply(this, arguments);
   }
@@ -390,22 +406,22 @@ function AdminPane(props) {
     return _selectRow2.apply(this, arguments);
   }
   function _selectRow2() {
-    _selectRow2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee0(new_index) {
+    _selectRow2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee1(new_index) {
       var new_regions;
-      return _regenerator().w(function (_context0) {
-        while (1) switch (_context0.n) {
+      return _regenerator().w(function (_context1) {
+        while (1) switch (_context1.n) {
           case 0:
             if (Object.keys(data_dict_ref.current).includes(String(new_index))) {
-              _context0.n = 3;
+              _context1.n = 3;
               break;
             }
-            _context0.n = 1;
+            _context1.n = 1;
             return _grabNewChunkWithRowPromise(new_index, false, null, false);
           case 1:
-            _context0.n = 2;
+            _context1.n = 2;
             return _selectRow(new_index);
           case 2:
-            _context0.n = 4;
+            _context1.n = 4;
             break;
           case 3:
             new_regions = [_table.Regions.row(new_index)];
@@ -415,31 +431,11 @@ function AdminPane(props) {
               selectedRegions: new_regions
             });
           case 4:
-            return _context0.a(2);
-        }
-      }, _callee0);
-    }));
-    return _selectRow2.apply(this, arguments);
-  }
-  function _refresh_func() {
-    return _refresh_func2.apply(this, arguments);
-  }
-  function _refresh_func2() {
-    _refresh_func2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee1() {
-      var callback,
-        _args1 = arguments;
-      return _regenerator().w(function (_context1) {
-        while (1) switch (_context1.n) {
-          case 0:
-            callback = _args1.length > 0 && _args1[0] !== undefined ? _args1[0] : null;
-            _context1.n = 1;
-            return _grabNewChunkWithRow(0, true, null, true, callback);
-          case 1:
             return _context1.a(2);
         }
       }, _callee1);
     }));
-    return _refresh_func2.apply(this, arguments);
+    return _selectRow2.apply(this, arguments);
   }
   function _setConsoleText(_x10) {
     return _setConsoleText2.apply(this, arguments);

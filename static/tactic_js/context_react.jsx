@@ -20,8 +20,8 @@ import {FocusStyleManager} from "@blueprintjs/core";
 
 FocusStyleManager.onlyShowFocusOnTabs();
 
-import {SelectedPaneContext, useRegisterActivity, withRegisterActivity} from "./utilities_react";
-import {TacticSocket} from "./tactic_socket";
+import {SelectedPaneContext, withRegisterActivity} from "./utilities_react";
+import {TacticSocket, useListeners} from "./tactic_socket";
 import {OpenOmnibar} from "./TacticOmnibar";
 import {handleCallback, postPromise, postWithCallback} from "./communication_react";
 import {doFlash, StatusContext, withStatus} from "./toaster";
@@ -173,13 +173,11 @@ function ContextApp(props) {
     const pushCallback = useCallbackStack("context");
 
     useEffect(() => {
-        initSocket();
         _addContextOmniItems();
         errorDrawerFuncs.registerGoToModule(_goToModule);
-        return (() => {
-            tsocket.disconnect()
-        })
     }, []);
+
+    useListeners(props.tsocket, initSocket);
 
     useEffect(() => {  // for mount
         window.addEventListener("beforeunload", function (e) {
@@ -196,23 +194,23 @@ function ContextApp(props) {
         set_dirty_methods(new_dirty_methods)
     }
 
-    function initSocket() {
-        props.tsocket.attachListener("window-open", data => {
+    function initSocket(theSocket) {
+        theSocket.attachListener("window-open", data => {
                 window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`)
             }
         );
-        props.tsocket.attachListener('close-user-windows', data => {
+        theSocket.attachListener('close-user-windows', data => {
             if (!(data["originator"] === window.global_id)) {
                 window.close()
             }
         });
-        props.tsocket.attachListener("doFlashUser", function (data) {
+        theSocket.attachListener("doFlashUser", function (data) {
             doFlash(data)
         });
-        props.tsocket.attachListener('handle-callback', (task_packet) => {
+        theSocket.attachListener('handle-callback', (task_packet) => {
             handleCallback(task_packet,  props.local_id)
         });
-        props.tsocket.attachListener("endSession", function () {
+        theSocket.attachListener("endSession", function () {
             dialogFuncs.showModal("EndSessionDialog", {})
         })
     }

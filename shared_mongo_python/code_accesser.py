@@ -81,7 +81,6 @@ class CodeAccess(object):
             "code_name": code_name
         }
 
-    @property
     def code_names(self):
         names = [
             doc["code_name"]
@@ -91,7 +90,6 @@ class CodeAccess(object):
         ]
         return names
 
-    @property
     def code_names_with_metadata(self):
         my_code_names = []
         for doc in self.db[self.code_collection_name()].find({}, {"_id": 0, "metadata": 1, "code_name": 1}):
@@ -208,7 +206,7 @@ class CodeAccess(object):
         return function_dict
 
     def get_all_code_tags(self, show_hidden=True):
-        res_list = self.code_names_with_metadata
+        res_list = self.code_names_with_metadata()
         result = []
         for res_item in res_list:
             mdata = res_item[1]

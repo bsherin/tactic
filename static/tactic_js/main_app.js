@@ -161,7 +161,7 @@ function MainApp(props) {
     _useReducer2 = _slicedToArray(_useReducer, 2),
     mState = _useReducer2[0],
     mDispatch = _useReducer2[1];
-  var connection_status = (0, _utilities_react.useConnection)(props.tsocket, initSocket);
+  var connection_status = (0, _tactic_socket.useConnection)(props.tsocket, initSocket);
   var pushCallback = (0, _utilities_react.useCallbackStack)();
   (0, _utilities_react.useConstructor)(function () {
     dispatch({
@@ -319,24 +319,24 @@ function MainApp(props) {
   function _handleTileFinishedLoading(data) {
     _setTileValue(data.tile_id, "finished_loading", true);
   }
-  function initSocket() {
-    props.tsocket.attachListener("window-open", function (data) {
+  function initSocket(theSocket) {
+    theSocket.attachListener("window-open", function (data) {
       window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data["the_id"]));
     });
     if (!window.in_context) {
-      props.tsocket.attachListener('close-user-windows', function (data) {
+      theSocket.attachListener('close-user-windows', function (data) {
         if (!(data["originator"] == window.global_id)) {
           window.close();
         }
       });
-      props.tsocket.attachListener("notebook-open", function (data) {
+      theSocket.attachListener("notebook-open", function (data) {
         window.open($SCRIPT_ROOT + "/new_notebook_with_data/" + data.temp_data_id);
       });
-      props.tsocket.attachListener("doFlashUser", function (data) {
+      theSocket.attachListener("doFlashUser", function (data) {
         (0, _toaster.doFlash)(data);
       });
     } else {
-      props.tsocket.attachListener("notebook-open", /*#__PURE__*/function () {
+      theSocket.attachListener("notebook-open", /*#__PURE__*/function () {
         var _ref = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee(data) {
           return _regenerator().w(function (_context) {
             while (1) switch (_context.n) {
@@ -356,12 +356,12 @@ function MainApp(props) {
         };
       }());
     }
-    props.tsocket.attachListener('table-message', _handleTableMessage);
-    props.tsocket.attachListener("update-menus", _update_menus_listener);
-    props.tsocket.attachListener("tile-finished-loading", _handleTileFinishedLoading);
-    props.tsocket.attachListener('change-doc', _change_doc_listener);
+    theSocket.attachListener('table-message', _handleTableMessage);
+    theSocket.attachListener("update-menus", _update_menus_listener);
+    theSocket.attachListener("tile-finished-loading", _handleTileFinishedLoading);
+    theSocket.attachListener('change-doc', _change_doc_listener);
     if (!props.controlled) {
-      props.tsocket.attachListener("endSession", function () {
+      theSocket.attachListener("endSession", function () {
         dialogFuncs.showModal("EndSessionDialog", {});
       });
     }
