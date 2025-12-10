@@ -105,6 +105,7 @@ class TileInfo:
     def id_exists(self, tile_id: str) -> bool:
         return tile_id in self.tile_ids
 
+    @property
     def tile_names(self):
         tile_ids = self.tile_ids
         tnames = []
