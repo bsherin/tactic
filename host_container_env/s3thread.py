@@ -187,7 +187,7 @@ class BotoS3:
         return obj["Body"].read().decode(encoding)
 
     def upload_info(self, dest_path, content_type):
-        max_mb = 100  # max size for presigned upload
+        max_mb = 1000  # max size for presigned upload
         bucket, key = _split_s3_url(dest_path)
         conditions = [
             {"bucket": bucket},
