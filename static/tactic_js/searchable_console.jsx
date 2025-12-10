@@ -48,7 +48,6 @@ function SearchableConsole(props, inner_ref) {
             });
         }
 
-        initSocket();
         _getLogAndStartStreaming()
             .then(() => {
                 window.addEventListener('beforeunload', cleanup)

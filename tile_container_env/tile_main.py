@@ -6,6 +6,8 @@ def clear_user_creds():
     for k in ("AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_SESSION_TOKEN"):
         os.environ.pop(k, None)
 
+clear_user_creds()
+
 import json
 import base64
 from flask import Flask

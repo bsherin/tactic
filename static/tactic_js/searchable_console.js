@@ -87,7 +87,6 @@ function SearchableConsole(props, inner_ref) {
         props.tsocket.detachListener("searchable-console-message");
       });
     }
-    initSocket();
     _getLogAndStartStreaming().then(function () {
       window.addEventListener('beforeunload', cleanup);
     });
