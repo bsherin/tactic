@@ -206,7 +206,7 @@ class TileContainerRegistry(ServiceRegistry):
         if parent is not None:
             self.set_container_info(tile_id, "parent", parent)
         if created is not None:
-            self.set_container_info(tile_id, "created", string(created))
+            self.set_container_info(tile_id, "created", str(created))
         if use_ecs:
             if task_arn is not None:
                 self.set_container_info(tile_id, "task_arn", task_arn)
