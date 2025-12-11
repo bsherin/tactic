@@ -20,7 +20,9 @@ import copy
 
 from exception_mixin import ExceptionMixin, MessagePostException
 from threading import Lock
-from rabbit_manage import get_pika_connection, get_pika_connection_with_retries, declare_queue
+from rabbit_manage import get_pika_connection_with_retries, declare_queue
+
+MAX_PIKA_RETRIES = None
 
 PAUSE_TIME = .01
 
@@ -70,7 +72,6 @@ def current_timestamp():
     return datetime.datetime.timestamp(datetime.datetime.utcnow())
 
 
-max_pika_retries = 10
 base_stdout = sys.stdout
 
 
@@ -104,38 +105,40 @@ class QWorker(ExceptionMixin):
         self.handler_instances = {"this_worker": self}
         self.channel = None
         self.connection = None
-        self._hb_greenlet = None
-        self._stopping = False
         self.use_emit_direct = use_gevent
         if use_wait_tasks:
             self.wait_queue_id = "wait_" + self.my_id
 
-    def start_background_thread(self, retries=0,):
-        try:
-            self.connection, self.channel = get_pika_connection_with_retries()
-            if self.connection is None or self.channel is None:
-                debug_log("Couldn't connect to pika in background thread. giving up")
-                return
-            declare_queue(self.channel, self.my_id)
-            self.consume_without_ack(self.my_id, on_message_callback=self.handle_delivery)
-            if self.service_name is not None:
-                declare_queue(self.channel, self.service_name)
-                self.consume_without_ack(self.service_name, self.handle_delivery)
-            debug_log(' [*] Waiting for messages:')
-            self.ready()
-            self.channel.start_consuming()
-        except Exception as ex:
-            debug_log("Couldn't connect to pika")
-            debug_log(self.handle_exception(ex, "Here's the error"))
-        finally:
-            # make sure the heartbeat loop stops if the consumer exits
-            self._stopping = True
-            if self.generate_heartbeats and self._hb_greenlet is not None:
+    def start_background_thread(self):
+        while True:
+            try:
+                self.connection, self.channel = get_pika_connection_with_retries(MAX_PIKA_RETRIES)
+                if self.connection is None or self.channel is None:
+                    debug_log("Couldn't connect to pika in background thread. giving up")
+                    sleep_func(5)
+                    continue
+                declare_queue(self.channel, self.my_id)
+                self.consume_without_ack(self.my_id, on_message_callback=self.handle_delivery)
+                if self.service_name is not None:
+                    declare_queue(self.channel, self.service_name)
+                    self.consume_without_ack(self.service_name, self.handle_delivery)
+                debug_log(' [*] Waiting for messages:')
+                self.ready()
+                self.channel.start_consuming()
+            except (pika.exceptions.AMQPError, OSError) as ex:
+                debug_log(f"Lost connection to RabbitMQ ({ex!r}). Will attempt to reconnect.")
                 try:
-                    self._hb_greenlet.kill(block=False)
+                    if self.connection and not self.connection.is_closed:
+                        self.connection.close()
                 except Exception:
                     pass
-                self._hb_greenlet = None
+                sleep_func(5)
+                continue
+            except Exception as ex:
+                debug_log("Unexpected error in background thread for QWorker")
+                debug_log(self.handle_exception(ex, "Here's the error"))
+                sleep_func(5)
+                continue
 
     def consume_without_ack(self, qname, on_message_callback):
         self.channel.basic_consume(
@@ -146,19 +149,12 @@ class QWorker(ExceptionMixin):
 
     def interrupt_and_restart(self):
         global thread, thread_lock
-        # try:
-        #     self.channel.queue_delete(queue=self.my_id)
-        # except Exception:
-        #     pass
         try:
             self.connection.close()
-        except Exception:
+        except Exception as ex:
+            debug_log("Error closing connection in interrupt_and_restart")
+            debug_log(self.handle_exception(ex, "Here's the error"))
             pass
-        self._stopping = True
-        if self._hb_greenlet:
-            try: self._hb_greenlet.kill(block=False)
-            except Exception: pass
-            self._hb_greenlet = None
         thread.kill()
         thread = None
         self.start()
@@ -168,7 +164,6 @@ class QWorker(ExceptionMixin):
         global thread
         with thread_lock:
             if thread is None:
-                self._stopping = False
                 if use_gevent:
                     thread = socketio.start_background_task(target=self.start_background_thread)
                 else:
@@ -198,6 +193,7 @@ class QWorker(ExceptionMixin):
         return
 
     def post_packet(self, dest_id, task_packet, reply_to=None, callback_id=None):
+        self._ensure_channel()
         declare_queue(self.channel, dest_id)
         self.channel.basic_publish(exchange='',
                                    routing_key=dest_id,
@@ -208,6 +204,19 @@ class QWorker(ExceptionMixin):
                                    ),
                                    body=json.dumps(task_packet))
         return
+
+    def _ensure_channel(self):
+        if self.connection is None or self.channel is None:
+            self.connection, self.channel = get_pika_connection_with_retries(MAX_PIKA_RETRIES)
+            return
+
+        if self.connection.is_closed or self.channel.is_closed:
+            try:
+                self.connection.close()
+            except Exception as ex:
+                debug_log(f"Error closing connection in _ensure_channel {ex!r}")
+                pass
+            self.connection, self.channel = get_pika_connection_with_retries(MAX_PIKA_RETRIES)
 
     def post_task(self, dest_id, task_type, task_data=None, callback_func=None,
                   callback_data=None, expiration=None, error_handler=None, special_reply_to=None):
@@ -332,9 +341,11 @@ class QWorker(ExceptionMixin):
                 if callback_type == "callback_with_context":
                     cdata = callback_data_dict[task_packet["callback_id"]]
                     del callback_data_dict[task_packet["callback_id"]]
-                    error_handler(task_packet, cdata)
+                    if error_handler is not None:
+                        error_handler(task_packet, cdata)
                 else:
-                    error_handler(task_packet)
+                    if error_handler is not None:
+                        error_handler(task_packet)
             elif callback_type == "callback_with_context":
                 cdata = callback_data_dict[task_packet["callback_id"]]
                 del callback_data_dict[task_packet["callback_id"]]
@@ -409,7 +420,7 @@ class BlockingWaitWorker(ExceptionMixin):
 
     def initialize_me(self, retries=0):
         try:
-            self.connection, self.channel = get_pika_connection_with_retries()
+            self.connection, self.channel = get_pika_connection_with_retries(MAX_PIKA_RETRIES)
             if self.connection is None:
                 debug_log("Couldn't create pika connection for blocking worker")
                 return
@@ -430,8 +441,7 @@ class BlockingWaitWorker(ExceptionMixin):
     def post_blocking_wait(self, dest_id, task_packet, retries=0):
         max_retries = 3
         try:
-            if self.channel.is_closed:  # If closed, take one crack at fixing
-                self.connection.close()
+            if self.channel is None or self.channel.is_closed:
                 self.initialize_me()
                 sleep_func(1)
             self.response = None
@@ -448,17 +458,16 @@ class BlockingWaitWorker(ExceptionMixin):
                 ),
                 body=json.dumps(task_packet))
             while self.response is None:
-                self.connection.process_data_events()
+                self.connection.process_data_events(time_limit=1)
             self.current_callback_id = None
             return self.response
         except Exception as ex:
             debug_log(self.handle_exception(ex, "Got an exception in post_blocking wait"))
             if retries > max_retries:
                 return "__ERROR__"
-            else:
-                self.initialize_me()
-                sleep_func(1)
-                self.post_blocking_wait(dest_id, task_packet, retries + 1)
+            self.initialize_me()
+            sleep_func(1)
+            return self.post_blocking_wait(dest_id, task_packet, retries + 1)
 
     def handle_exception(self, ex, special_string=None):
         return self.extract_short_error_message(ex, special_string)

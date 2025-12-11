@@ -62,8 +62,6 @@ SOCKETIO_OPTIONS = {
 HEARBEAT = 600
 BLOCKED_CONNECTION_TIMEOUT = 300
 
-MAX_PIKA_RETRIES = 20
-
 print("got USE_AMAZON_MQ is " + str(USE_AMAZON_MQ))
 
 def get_pika_connection():
@@ -114,26 +112,51 @@ def declare_regular_queue(channel, qname):
         exclusive=False
     )
 
-def get_pika_connection_with_retries(retries=0, max_retries=MAX_PIKA_RETRIES):
+# def get_pika_connection_with_retries(retries=0, max_retries=MAX_PIKA_RETRIES):
+#     if use_gevent:
+#         import gevent
+#     try:
+#         connection, channel = get_pika_connection()
+#     except Exception as exc:
+#         print("Failed attempt to connect to pika")
+#         if retries > max_retries:
+#             print("giving up. No more processing of tasks by this qworker")
+#             print(get_traceback_message(exc, "Here's the error"))
+#             return None, None
+#         else:
+#             print("trying to connect to pika, sleeping ...")
+#             if not use_gevent:
+#                 time.sleep(3)
+#             else:
+#                 gevent.sleep(3)
+#             new_retries = retries + 1
+#             return get_pika_connection_with_retries(new_retries, max_retries)
+#     return connection, channel
+
+def get_pika_connection_with_retries(max_retries=None):
     if use_gevent:
         import gevent
-    try:
-        connection, channel = get_pika_connection()
-    except Exception as exc:
-        print("Failed attempt to connect to pika")
-        if retries > max_retries:
-            print("giving up. No more processing of tasks by this qworker")
-            print(get_traceback_message(exc, "Here's the error"))
-            return None, None
-        else:
+
+    attempt = 0
+    while True:
+        try:
+            connection, channel = get_pika_connection()
+            return connection, channel
+        except Exception as exc:
+            attempt += 1
+            print("Failed attempt to connect to pika")
+
+            if max_retries is not None and attempt > max_retries:
+                print("giving up. No more processing of tasks by this qworker")
+                print(get_traceback_message(exc, "Here's the error"))
+                return None, None
+
             print("trying to connect to pika, sleeping ...")
             if not use_gevent:
                 time.sleep(3)
             else:
                 gevent.sleep(3)
-            new_retries = retries + 1
-            return get_pika_connection_with_retries(new_retries, max_retries)
-    return connection, channel
+
 
 def sleep_until_rabbit_alive(max_tries=20):
     if USE_AMAZON_MQ:

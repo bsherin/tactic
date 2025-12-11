@@ -3,6 +3,10 @@ import redis
 import json
 import os
 import re
+from redis.exceptions import ConnectionError, TimeoutError
+import threading
+import time
+
 
 use_ecs = os.getenv("USE_ECS_TILES","false").lower() == "true"
 
@@ -24,12 +28,98 @@ else:
     USE_SSL = False
     MESSAGE_QUEUE = "redis://tactic-redis:6379"
 
-redis_client = redis.Redis(host=REDIS_HOST,
-                      port=REDIS_PORT, decode_responses=True, ssl=USE_SSL)
-
 def get_no_decode_redis_client():
-    return redis.Redis(host=REDIS_HOST,
-                       port=REDIS_PORT, decode_responses=False, ssl=USE_SSL)
+    return ResilientRedisClient(
+        host=REDIS_HOST,
+        port=REDIS_PORT,
+        decode_responses=False,
+        ssl=USE_SSL,
+    )
+
+class ResilientRedisClient:
+    """
+    A thin proxy around redis.Redis that:
+      - recreates the underlying client on connection errors
+      - retries operations a few times before giving up
+    """
+
+    def __init__(
+        self,
+        host: str,
+        port: int,
+        decode_responses: bool = True,
+        ssl: bool = False,
+        max_retries: int = 3,
+        reconnect_backoff: float = 0.5,
+    ):
+        self._host = host
+        self._port = port
+        self._decode_responses = decode_responses
+        self._ssl = ssl
+        self._max_retries = max_retries
+        self._reconnect_backoff = reconnect_backoff
+        self._lock = threading.Lock()
+        self._client = self._create_client()
+
+    def _create_client(self) -> redis.Redis:
+        # You can tune these timeouts if you like
+        return redis.Redis(
+            host=self._host,
+            port=self._port,
+            decode_responses=self._decode_responses,
+            ssl=self._ssl,
+            socket_connect_timeout=2,   # fail fast on connect
+            socket_timeout=5,           # fail reasonably fast on command
+            health_check_interval=30,   # ping periodically
+        )
+
+    def _reset_client(self):
+        with self._lock:
+            try:
+                # Close the old client's connections, if any
+                self._client.close()
+            except Exception:
+                pass
+            self._client = self._create_client()
+
+    def __getattr__(self, name):
+        """
+        Proxy attribute access to the underlying redis.Redis instance.
+
+        If the attribute is callable (most Redis commands), wrap it in
+        a retry loop that refreshes the client on connection errors.
+        """
+        underlying_attr = getattr(self._client, name)
+
+        if not callable(underlying_attr):
+            # e.g. .connection_pool – just return it directly
+            return underlying_attr
+
+        def wrapped(*args, **kwargs):
+            last_exc = None
+            for attempt in range(self._max_retries):
+                try:
+                    # Always fetch the method from the *current* client
+                    method = getattr(self._client, name)
+                    return method(*args, **kwargs)
+                except (ConnectionError, TimeoutError) as exc:
+                    last_exc = exc
+                    # Recreate the client and retry
+                    self._reset_client()
+                    time.sleep(self._reconnect_backoff * (attempt + 1))
+            # If we exhausted retries, raise the last exception
+            raise last_exc
+
+        return wrapped
+
+
+# This line replaces your old redis.Redis(...) global
+redis_client = ResilientRedisClient(
+    host=REDIS_HOST,
+    port=REDIS_PORT,
+    decode_responses=True,
+    ssl=USE_SSL,
+)
 
 class RedisManager(object):
     prefix = ""

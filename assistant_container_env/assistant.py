@@ -305,6 +305,15 @@ class Assistant(QWorker, ExceptionMixin, AssistantEventHandler):
         return {"success": True}
 
     @task_worthy
+    def updated_global_ids(self, data):
+        global_ids = data["global_ids"]
+        open_sessions = self.ss.get_unique_sids()
+        for sid in open_sessions:
+            gid = self.ss.get_val(sid, "global_id")
+            if gid not in global_ids:
+                self.ss.end_session(sid)
+
+    @task_worthy
     def end_session(self, data):
         sid = data.get("local_id", None)
         if sid is not None:

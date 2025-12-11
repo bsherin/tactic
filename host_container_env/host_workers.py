@@ -61,8 +61,6 @@ else:
 
 myport = os.environ.get("MYPORT")
 
-from qworker import max_pika_retries
-
 class HostUtilityWorker:
     def __init__(self, worker):
         self.worker = worker
@@ -90,6 +88,7 @@ class HostUtilityWorker:
             self.last_global_ids = current_gobal_ids
             self.worker.post_task("main_service", "updated_global_ids", {"global_ids": self.last_global_ids})
             self.worker.post_task("module_viewer", "updated_global_ids", {"global_ids": self.last_global_ids})
+            self.worker.post_task("assistant", "updated_global_ids", {"global_ids": self.last_global_ids})
         self.worker.tile_registry.registry_heartbeat()
 
     def start(self):
@@ -659,36 +658,6 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         ddict["success"] = True
         ddict["html"] = the_html
         return ddict
-
-    @task_worthy
-    def StartAssistant(self, data):
-        parent_id = data["parent_id"]
-        user_id = data["user_id"]
-        user = load_user(user_id)
-        username = user.username
-        openai_api_key = user.get_openai_api_key()
-        assistant_id = create_assistant_container(openai_api_key, parent_id, user_id, username)
-        return {"assistant_id": assistant_id}
-
-    @task_worthy
-    def GetAssistant(self, data):
-        user_id = data["user_id"]
-        cont_id = get_user_assistant(user_id)
-        return {"assistant_id": cont_id}
-
-
-    @task_worthy
-    def StopAssistant(self, data):
-        assistant_id = data["assistant_id"]
-        print("stopping assistant " + str(assistant_id))
-        cont = get_container(assistant_id)
-        if cont is not None:
-            cont.kill(signal="SIGTERM")
-            return None
-        else:
-            print("no streamer to kill")
-        return None
-
 
     def forward_client_post(self, task_packet):
         dest_id = task_packet["dest"]

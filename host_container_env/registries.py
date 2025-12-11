@@ -288,12 +288,10 @@ class TileContainerRegistry(ServiceRegistry):
             return
         if use_ecs:
             tasks = self.list_running_tile_tasks()
-            print("found running tiles:", len(tasks))
             running_ids = [self.task_to_id(t) for t in tasks]
             for t in tasks:
                 tile_id = self.task_to_id(t)
                 if not self.exists(tile_id):
-                    print("found new available tile container:", tile_id)
                     self.mark_status(tile_id, "idle", task_arn=t["taskArn"], created=t["createdAt"], register_heartbeat=True)
         else:
             running_ids = self.list_docker_tile_containers()
@@ -303,7 +301,7 @@ class TileContainerRegistry(ServiceRegistry):
         ids_to_delete = []
         tile_ids = self.container_ids()
         for tile_id in tile_ids:
-            if tile_id not in running_ids and not tile_id == "tile_test_container":
+            if tile_id not in running_ids:
                 ids_to_delete.append(tile_id)
         for tile_id in ids_to_delete:
             self.delete(tile_id)

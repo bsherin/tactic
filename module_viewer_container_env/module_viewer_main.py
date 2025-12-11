@@ -87,7 +87,6 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin, MongoAccess, Til
             if gid not in global_ids:
                 self.ss.end_session(sid)
 
-
     @task_worthy
     def initialize_parser(self, data_dict):
         sid = data_dict["local_id"]
