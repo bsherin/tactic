@@ -20,6 +20,7 @@ class TileContainerManagementMixin:
 
     @task_worthy
     def destroy_child_tiles_task(self, data):
+        print("got destroy_child_tiles task", data)
         self.tile_registry.release_child_tiles(data["local_id"])
         return {"success": True, "message": f"Destroyed child tiles of {data['local_id']}"}
 

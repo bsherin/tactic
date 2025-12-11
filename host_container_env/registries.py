@@ -182,6 +182,7 @@ class TileContainerRegistry(ServiceRegistry):
 
     def release_child_tiles(self, parent_id):
         tile_ids = self.get_children(parent_id)
+        print(f"releasing child tiles {str(tile_ids)}")
         for tile_id in tile_ids:
             self.worker.destroy_tile(tile_id)
 

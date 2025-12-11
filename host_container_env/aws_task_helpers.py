@@ -111,7 +111,7 @@ def run_tile_on_ecs(
         "awsvpcConfiguration": {
             "subnets": subnets,
             "securityGroups": sgs,
-            "assignPublicIp": False
+            "assignPublicIp": "DISABLED"
         }
     }
 
@@ -130,7 +130,7 @@ def run_tile_on_ecs(
                 }
             ]
         }
-        # You can add tags=[...] here if you want "labels" equivalents.
+        # add tags=[...] here fo r"labels" equivalents.
     )
 
     failures = resp.get("failures")
