@@ -218,7 +218,7 @@ function LibraryPane(props) {
 
     useEffect(() => {
         _grabNewChunkWithRow(0).then(() => {});
-    }, []);
+    }, [props.columns]);
 
     const pushCallback = useCallbackStack("library_home");
 

@@ -365,7 +365,7 @@ function LibraryPane(props) {
     handleKeyUp = _useHotkeys.handleKeyUp;
   (0, _react.useEffect)(function () {
     _grabNewChunkWithRow(0).then(function () {});
-  }, []);
+  }, [props.columns]);
   var pushCallback = (0, _utilities_react.useCallbackStack)("library_home");
   (0, _tactic_socket.useSocketListener)(props.tsocket, "update-selector-row", _handleRowUpdate, props.tsocket && !props.is_repository);
   (0, _tactic_socket.useSocketListener)(props.tsocket, "refresh-selector", _refresh_func, props.tsocket != null && !props.is_repository);
