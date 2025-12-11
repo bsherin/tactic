@@ -66,7 +66,8 @@ class TileCreationTasksMixin:
             self.tstart = datetime.datetime.now()
 
             tile_container_id = create_container_dict["the_id"]
-            tile_info.add_tile(tile_container_id, tile_name)
+            tile_info.add_tile(tile_container_id, tile_name, data_dict["tile_type"])
+            tile_info.set_creds(tile_container_id, create_container_dict["creds"])
 
             additional_data = {
                 "tile_code": self.get_loaded_tile_code(sid, data_dict["tile_type"]),

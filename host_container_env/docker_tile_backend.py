@@ -6,6 +6,13 @@ from typing import Dict, Tuple, Optional
 import docker_functions  # your module
 from abstract_tile_backend import TileBackend
 
+creds = {
+        "AccessKeyId": "ak",
+        "SecretAccessKey": "sak",
+        "SessionToken": "token",
+        "region": "us-east-2",
+}
+
 class DockerTileBackend(TileBackend):
     IMAGE = "bsherin/tactic-tile"
 
@@ -24,7 +31,7 @@ class DockerTileBackend(TileBackend):
                meta: Dict) -> Tuple[str, str]:
         tid, _ = self.tile_registry.claim_tile(username, owner, parent)
         if tid:
-            return tid, "", {}
+            return tid, "", creds
         env = {
             "CHUNK_SIZE": os.getenv("CHUNK_SIZE", 100),
             "RETRIES": os.getenv("RETRIES", 60),
@@ -53,7 +60,7 @@ class DockerTileBackend(TileBackend):
             special_unique_id=unique_id
         )
         self.tile_registry.mark_status(tile_container_id, "busy", None, username=username, owner=owner, parent=parent, register_heartbeat=True)
-        return tile_container_id, "", {}
+        return tile_container_id, "", creds
 
     def mark_busy(self, tile_id: str):
         self.tile_registry.mark_status(tile_id, "busy")
