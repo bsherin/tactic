@@ -141,8 +141,7 @@ class OtherAPIMIxin:
             result = self._tworker.post_and_wait(tile_id,
                                                  "_transfer_pipe_value",
                                                  {"export_name": export_name},
-                                                 timeout=60,
-                                                 tries=self.RETRIES)
+                                                 timeout=60)
             encoded_val = result["encoded_val"]
             val = debinarize_python_object(encoded_val)
         self._restore_stdout()

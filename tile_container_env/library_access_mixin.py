@@ -27,7 +27,6 @@ class LibraryAccessMixin:
 
     def get_user_list(self, the_list):
         self._save_stdout()
-        # result = self._tworker.post_and_wait("host", "get_list", {"user_id": self.user_id, "list_name": the_list})
         raw_result = self._tworker.post_and_wait_to_main("get_list_with_metadata_task", {"list_name": the_list})
         result = debinarize_python_object(raw_result["list_data"])
         self._restore_stdout()

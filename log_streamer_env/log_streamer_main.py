@@ -1,9 +1,5 @@
 
 import os
-if os.environ.get("DEBUG_LOG_STREAMER", "False").lower() == "true":
-    print("got debug mode")
-    import pydevd_pycharm
-    pydevd_pycharm.settrace('host.docker.internal', port=21000)
 
 from flask import Flask
 import time
@@ -11,13 +7,13 @@ import uuid
 from qworker_alt import QWorker, task_worthy
 from exception_mixin import ExceptionMixin
 from docker_functions import get_container
+from aws_helpers import get_ssm_parameter
 import exception_mixin
+from aws_detection import on_aws
 
 from log_streamer_backend import LogTailer, get_container_log
 
-use_ecs = os.getenv("USE_ECS_TILES","false").lower() == "true"
-
-if use_ecs:
+if on_aws:
     from log_streamer_backend_ecs import ECSLogTailer, get_container_log_ecs
 
 class LogStreamer(QWorker, ExceptionMixin):
@@ -36,7 +32,7 @@ class LogStreamer(QWorker, ExceptionMixin):
         else:
             dt = None
         if is_ecs:
-            if use_ecs:
+            if on_aws:
                 log_text = get_container_log_ecs(cont_id)
             else:
                 log_text = "container not found getting log"
@@ -69,7 +65,7 @@ class LogStreamer(QWorker, ExceptionMixin):
         stream_info = {"stream_id": stream_id, "stream_host": self.my_id}
         try:
             if is_ecs:
-                if use_ecs:
+                if on_aws:
                     new_tailer = ECSLogTailer(self, local_id, sc_id, cont_id)
                 else:
                     return {"success": False, "message": "container not found starting stream"}

@@ -8,7 +8,7 @@ ADD ./main_container_env /code
 ADD ./shared_mongo_python /code
 ADD  ./shared_python/exception_mixin.py ./shared_python/tactic_copilot_mixin.py \
 ./shared_python/redis_tools.py ./shared_python/qworker.py ./shared_python/session_store_s3.py ./shared_python/communication_utils.py \
-./shared_python/loaded_tile_management.py ./shared_python/main_session.py \
+./shared_python/loaded_tile_management.py ./shared_python/main_session.py ./shared_python/aws_detection.py \
 ./shared_python/rabbit_manage.py ./shared_python/aws_helpers.py /code/
 # RUN python -m pip install --no-cache-dir "pydevd-pycharm==253.28086.55"
 CMD ["python", "-u", "main_main.py"]

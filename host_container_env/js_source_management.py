@@ -1,6 +1,6 @@
 import os
 
-_develop = ("DEVELOP" in os.environ) and (os.environ.get("DEVELOP") == "True")
+_develop = ("USE_DEVELOPMENT_BUNDLES" in os.environ) and (os.environ.get("USE_DEVELOPMENT_BUNDLES").lower() == "true")
 
 if _develop:
     js_source_dict = {"main_app": 'tactic_js_dev/main_app.bundle.js',

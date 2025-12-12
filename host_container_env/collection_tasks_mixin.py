@@ -2,8 +2,6 @@ import uuid
 from flask import url_for
 from qworker import task_worthy
 
-from docker_functions import main_container_info
-
 class CollectionTasksMixin:
 
     @task_worthy

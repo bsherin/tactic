@@ -5,11 +5,12 @@ import boto3
 from botocore.config import Config
 from botocore.exceptions import ClientError
 from urllib.parse import urlparse
-from typing import Iterable, Iterator, List, Tuple, Dict, Optional
-import datetime as dt
+from typing import Iterator, List, Tuple, Optional
+from aws_helpers import get_ssm_parameter
+from aws_detection import on_aws
 import io
 
-on_aws = os.getenv("RUNNING_ON_AWS","false").lower() == "true"
+MAX_S3_UPLOAD_MB = int(get_ssm_parameter("MAX_S3_UPLOAD_MB", "1000"))
 
 def _split_s3_url(url: str) -> Tuple[str, str]:
     # accepts s3://bucket/key or "bucket/key"
@@ -187,12 +188,11 @@ class BotoS3:
         return obj["Body"].read().decode(encoding)
 
     def upload_info(self, dest_path, content_type):
-        max_mb = 1000  # max size for presigned upload
         bucket, key = _split_s3_url(dest_path)
         conditions = [
             {"bucket": bucket},
             ["starts-with", "$key", key],
-            ["content-length-range", 1, max_mb * 1024 * 1024],
+            ["content-length-range", 1, MAX_S3_UPLOAD_MB * 1024 * 1024],
         ]
         fields = {"key": key}
         if content_type:

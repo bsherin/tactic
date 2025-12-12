@@ -1,12 +1,11 @@
 
 import pika
-import ssl
 import time
 import os
 import traceback
-import json
 
 from aws_helpers import get_ssm_parameter, load_secret_json
+from aws_detection import on_aws
 
 
 service_names = ["host", "main_service", "log_streamer", "module_viewer"]
@@ -15,11 +14,9 @@ print("entering rabbit_manage updated")
 
 use_gevent = os.environ.get("USE_GEVENT", "False").lower() == "true"
 
-if os.environ.get("USE_AMAZON_MQ") == "True" or os.environ.get("USE_AMAZON_MQ") is True:
-    print("using amazon mq")
-    import boto3
+if on_aws:
+    print("on aws")
 
-    USE_AMAZON_MQ = True
     RABBIT_HOST = get_ssm_parameter("RABBIT_HOST")
     SECRET_ARN = get_ssm_parameter("MQ_SECRET_ARN")
     REGION = get_ssm_parameter("MY_AWS_REGION")
@@ -35,7 +32,6 @@ if os.environ.get("USE_AMAZON_MQ") == "True" or os.environ.get("USE_AMAZON_MQ") 
 else:
     print("not using amazon mq")
     RABBIT_HOST = "megaplex"
-    USE_AMAZON_MQ = False
     RABBIT_PORT = 5672
     RABBIT_USER = ""
     RABBIT_PASS = ""
@@ -62,10 +58,8 @@ SOCKETIO_OPTIONS = {
 HEARBEAT = 600
 BLOCKED_CONNECTION_TIMEOUT = 300
 
-print("got USE_AMAZON_MQ is " + str(USE_AMAZON_MQ))
-
 def get_pika_connection():
-    if USE_AMAZON_MQ:
+    if on_aws:
         credentials = pika.PlainCredentials(RABBIT_USER, RABBIT_PASS)
         params = pika.ConnectionParameters(
             host=RABBIT_HOST,  # was "megaplex"
@@ -159,7 +153,7 @@ def get_pika_connection_with_retries(max_retries=None):
 
 
 def sleep_until_rabbit_alive(max_tries=20):
-    if USE_AMAZON_MQ:
+    if on_aws:
         return True
     from rabbitmq_admin import AdminAPI
     api = AdminAPI(url="http://megaplex:15672", auth=('guest', 'guest'))

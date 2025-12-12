@@ -6,13 +6,13 @@ import datetime
 import msgpack
 from redis_tools import get_no_decode_redis_client
 from aws_helpers import get_s3_client, get_ssm_parameter
+from aws_detection import on_aws
 
 SMALL_LIMIT = 256_000  # bytes
 
 S3_BUCKET = get_ssm_parameter("SESSION_BUCKET")
 SQS_QUEUE_URL = get_ssm_parameter("SQS_QUEUE_URL")
 AWS_REGION = get_ssm_parameter("MY_AWS_REGION", "us-east-2")
-on_aws = os.getenv("RUNNING_ON_AWS","false").lower() == "true"
 
 class SessionNotFoundError(Exception):
     pass
@@ -44,7 +44,7 @@ class SessionAccessor(object):
     @classmethod
     def create(cls, ss, sid):
         if not ss.session_exists(sid):
-            raise SessionNotFoundError("Module viewer session not found")
+            raise SessionNotFoundError("Session not found")
         return cls(ss, sid)
 
 class SessionStoreS3:

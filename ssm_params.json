@@ -4,6 +4,28 @@
   },
   "parameters": [
     {
+      "name": "USE_ARM64",
+      "local_value": "True",
+      "value": "False",
+      "type": "String"
+    },
+    {
+      "name": "RUNNING_ON_AWS",
+      "local_value": "False",
+      "value": "True",
+      "type": "String"
+    },
+    {
+      "name": "RECYCLE_TILES",
+      "value": "True",
+      "type": "String"
+    },
+    {
+      "name": "USE_S3",
+      "value": "True",
+      "type": "String"
+    },
+    {
       "name": "BUCKET",
       "value": "tactic-user-storage",
       "type": "String"
@@ -16,11 +38,6 @@
     {
       "name": "ECS_CLUSTER",
       "value": "tactic-cluster",
-      "type": "String"
-    },
-    {
-      "name": "MY_AWS_REGION",
-      "value": "us-east-2",
       "type": "String"
     },
     {
@@ -127,6 +144,42 @@
     {
       "name": "MODULE_VIEWER_PREFIX",
       "value": "module_viewer_",
+      "type": "String"
+    }
+    ,
+    {
+      "name": "COLLECTION_CHUNK_SIZE",
+      "value": "50",
+      "type": "String"
+    },
+    {
+      "name": "LIBRARY_CHUNK_SIZE",
+      "value": "25",
+      "type": "String"
+    },
+    {
+      "name": "MONGO_URI",
+      "value": "tactic-mongo",
+      "type": "String"
+    },
+    {
+      "name": "DB_NAME",
+      "value": "tacticdb",
+      "type": "String"
+    },
+    {
+      "name": "MAX_S3_UPLOAD_MB",
+      "value": "1000",
+      "type": "String"
+    },
+    {
+      "name": "USE_ECS_TILES",
+      "value": "False",
+      "type": "String"
+    },
+    {
+      "name": "ANYONE_CAN_REGISTER",
+      "value": "False",
       "type": "String"
     }
   ]

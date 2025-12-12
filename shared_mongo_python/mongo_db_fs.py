@@ -3,13 +3,11 @@ import os
 from pymongo import MongoClient
 import gridfs
 import exception_mixin
+from aws_helpers import get_ssm_parameter
 
-if "DB_NAME" in os.environ:
-    db_name = os.environ.get("DB_NAME")
-else:
-    db_name = "tacticdb"
+db_name = get_ssm_parameter("DB_NAME", "tacticdb")
 
-mongo_uri = os.environ.get("MONGO_URI")
+mongo_uri = get_ssm_parameter("MONGO_URI", "tactic-mongo")
 
 print("*** mongo_uri is " + mongo_uri + " ***")
 

@@ -136,6 +136,7 @@ class StreamWorker:
         thread.start()
 
     def emit_to_client(self, message, data):
+        print(f"Emitting to client from AI streamworker: {message} with data: {data}")
         data["message"] = message
         self.post_packet("host", "emit_to_client", data)
 

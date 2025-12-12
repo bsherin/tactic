@@ -2,12 +2,12 @@ import os
 import requests
 from requests.auth import HTTPBasicAuth
 from aws_helpers import get_ssm_parameter, load_secret_json
+from aws_detection import on_aws
 
-if os.environ.get("USE_AMAZON_MQ") == "True" or os.environ.get("USE_AMAZON_MQ") is True:
+if on_aws:
     print("using amazon mq")
     import boto3
 
-    USE_AMAZON_MQ = True
     RABBIT_HOST = get_ssm_parameter("RABBIT_HOST")
     SECRET_ARN = get_ssm_parameter("MQ_SECRET_ARN")
     REGION = get_ssm_parameter("MY_AWS_REGION")
@@ -22,7 +22,6 @@ if os.environ.get("USE_AMAZON_MQ") == "True" or os.environ.get("USE_AMAZON_MQ") 
 else:
     print("not using amazon mq")
     RABBIT_HOST = "megaplex"
-    USE_AMAZON_MQ = False
     RABBIT_USER = "guest"
     RABBIT_PASS = "guest"
     API_STR = f"http://{RABBIT_HOST}:15672/api"

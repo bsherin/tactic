@@ -1215,7 +1215,7 @@ function PoolBrowser(props) {
       })),
       intent: "danger",
       text: "Delete Resource"
-    }), /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, null), window.use_ecs && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
+    }), /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, null), window.on_aws && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
       icon: "archive",
       onClick: /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee1() {
         return _regenerator().w(function (_context1) {
@@ -1517,7 +1517,7 @@ function PoolMenubar(props) {
         click_handler: props.download_file
       }]
     };
-    if (!window.use_ecs) {
+    if (!window.on_aws) {
       mspec["Archive"] = [{
         name_text: "Compress Resource",
         icon_name: "archive",

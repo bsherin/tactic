@@ -5,7 +5,6 @@ import tempfile
 import zipfile
 from flask_login import login_required, current_user
 from flask import jsonify, render_template, url_for, request, send_file
-from docker_functions import main_container_info
 from tactic_app import app
 from communication_utils import make_python_object_jsonizable, debinarize_python_object, make_jsonizable_and_compress
 from mongo_accesser import MongoAccessException, NonexistentNameError
@@ -19,8 +18,6 @@ import io
 from js_source_management import js_source_dict, _develop, css_source
 
 ILLEGAL_CHARACTERS_RE = re.compile(r'[\000-\010]|[\013-\014]|[\016-\037]')
-
-LIBRARY_CHUNK_SIZE = int(int(os.environ.get("LIBRARY_CHUNK_SIZE")) / 2)
 
 AUTOSPLIT = False
 AUTOSPLIT_SIZE = 10000

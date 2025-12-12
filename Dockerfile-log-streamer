@@ -5,7 +5,9 @@ ADD ./log_streamer_env/requirements.txt /code/requirements.txt
 ADD ./shared_python/rabbit_manage.py /code/
 RUN pip install -r requirements.txt
 ADD ./log_streamer_env /code
-ADD  ./shared_python/exception_mixin.py ./shared_python/qworker_alt.py ./shared_python/redis_tools.py ./shared_python/communication_utils.py ./shared_python/aws_helpers.py ./shared_python/docker_functions.py ./shared_python/rabbit_manage.py /code/
+ADD  ./shared_python/exception_mixin.py ./shared_python/qworker_alt.py ./shared_python/redis_tools.py \
+./shared_python/aws_helpers.py ./shared_python/aws_detection.py \
+./shared_python/communication_utils.py ./shared_python/aws_helpers.py ./shared_python/docker_functions.py ./shared_python/rabbit_manage.py /code/
 LABEL maintainer="Bruce L Sherin"
 # RUN python -m pip install --no-cache-dir "pydevd-pycharm==253.28086.55"
 CMD ["python", "-u", "log_streamer_main.py"]

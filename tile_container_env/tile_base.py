@@ -31,8 +31,6 @@ from qworker_alt import task_worthy_methods, task_worthy_manual_submit_methods
 
 from widgets import kind_dict
 
-RETRIES = os.environ.get("RETRIES")
-
 
 # noinspection PyUnresolvedReferences
 def _task_worthy(m):
@@ -156,8 +154,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
         self._main_id = None
         self._tworker = _tworker
         self._collection = None  # I have to create this later to impose a post loop when creating the pseudo_tile
-        self._remote_tiles = None
-        self.RETRIES = RETRIES  # This is here so that it can be easily accessible form the mixins
+        self._remote_tiles = None  # This is here so that it can be easily accessible form the mixins
         self._std_out_nesting = 0
         self._last_exports = {}
         self._widgets = {}

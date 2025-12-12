@@ -3,10 +3,10 @@ import re
 import time
 from rabbit_admin import list_queues, delete_queue
 from redis_tools import RedisManager, redis_client
+from aws_helpers import get_ssm_parameter
+from aws_detection import on_aws
 
-use_ecs = os.getenv("USE_ECS_TILES","false").lower() == "true"
-
-if use_ecs:
+if on_aws:
     import boto3
     from botocore.exceptions import ParamValidationError
     from aws_helpers import get_ssm_parameter
@@ -95,7 +95,7 @@ class ServiceRegistry(RedisManager):
         self.set_container_info(cont_id, "last_heartbeat", str(time.time()))
 
     def remove_obsolete_queues(self):
-        if not use_ecs:
+        if not on_aws:
             self.removed_obsolete_queues = True
             return
         if self.worker.channel is None:
@@ -123,6 +123,6 @@ class ServiceRegistry(RedisManager):
         self.removed_obsolete_queues = True
 
     def registry_heartbeat(self):
-        if use_ecs:
+        if on_aws:
             if not self.removed_obsolete_queues:
                 self.remove_obsolete_queues()

@@ -593,7 +593,7 @@ function PoolBrowser(props) {
                           text="Delete Resource"/>
 
                 <MenuDivider/>
-                {window.use_ecs &&
+                {window.on_aws &&
                     <Fragment>
                         <MenuItem icon="archive"
                                   onClick={async () => {
@@ -835,7 +835,7 @@ function PoolMenubar(props) {
                 {name_text: "Download File", icon_name: "download", click_handler: props.download_file}
             ]
         };
-        if (!window.use_ecs) {
+        if (!window.on_aws) {
             mspec["Archive"] = [
                 {name_text: "Compress Resource", icon_name: "archive", click_handler: props.compress_file},
                 {name_text: "Decompress Archive", icon_name: "unarchive", click_handler: props.decompress_archive},

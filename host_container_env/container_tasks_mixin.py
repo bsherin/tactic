@@ -1,13 +1,15 @@
 import re
 import os
 from datetime import datetime
+from aws_task_helpers import get_ssm_parameter
 
-LIBRARY_CHUNK_SIZE = int(int(os.environ.get("LIBRARY_CHUNK_SIZE")) / 2)
+LIBRARY_CHUNK_SIZE = int(get_ssm_parameter("LIBRARY_CHUNK_SIZE", "25"))
 
 from qworker import task_worthy
 
 from docker_functions import cli, restart_container, destroy_container, container_id, container_owner
 from docker_functions import container_other_name, container_memory_usage
+from aws_detection import on_aws
 
 from users import load_user
 
@@ -18,8 +20,6 @@ for base_name in base_user_image_names:
     tactic_user_image_names.append(f"{base_name}:x86")
 for base_name in base_user_image_names:
     tactic_user_image_names.append(f"{base_name}:arm64")
-
-use_ecs = os.getenv("USE_ECS_TILES","false").lower() == "true"
 
 class ContainerTasksMixin:
 
@@ -210,7 +210,7 @@ class ContainerTasksMixin:
                 if reg.match(new_row[k], re.IGNORECASE):
                     filtered_res.append(new_row)
                     break
-        if use_ecs:
+        if on_aws:
             for row in self.get_tile_container_chunk():
                 for k in match_keys:
                     if reg.match(row[k], re.IGNORECASE):

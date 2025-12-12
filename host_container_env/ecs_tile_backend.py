@@ -61,9 +61,6 @@ class ECSTileBackend(TileBackend):
         if not self.subnets or not self.sgs:
             raise ECSTileError("No idle tiles and ECS_SUBNETS/ECS_SECURITY_GROUPS not set for ad-hoc launch.")
 
-        env = {
-            "CHUNK_SIZE": os.getenv("CHUNK_SIZE", 100),
-        }
         for k in ("BROKER_URL", "REDIS_URL"):
             v = os.getenv(k)
             if v:
@@ -75,7 +72,6 @@ class ECSTileBackend(TileBackend):
             owner=owner,
             parent=parent,
             other_name=meta.get("other_name", "none"),
-            extra_env=env
         )
         tile_id = f"tile_{uid}"
         self.tile_registry.mark_status(tile_id, "busy", owner=username, parent=parent, register_heartbeat=True)

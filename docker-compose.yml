@@ -2,8 +2,8 @@ services:
 
   tactic-mongo:
     image: mongo:5.0
-    hostname: ${MONGO_URI}
-    container_name: ${MONGO_URI}
+    hostname: tactic-mongo
+    container_name: tactic-mongo
     command: >
       --bind_ip 0.0.0.0
       --replSet rs0
@@ -117,20 +117,10 @@ services:
       - ${ROOT_DIR}/env.list
     environment:
       - MY_ID=host5000
-      - MONGO_URI=${MONGO_URI}
       - MYPORT=5000
-      - TRUE_HOST_PERSIST_DIR=${ROOT_DIR}/persist
-      - TRUE_HOST_RESOURCES_DIR=${ROOT_DIR}/resources
-      - TRUE_HOST_POOL_DIR=${POOL_DIR}
-      - USE_ARM64=${USE_ARM64}
-      - DEVELOP=${DEVELOP}
-      - ANYONE_CAN_REGISTER=${ANYONE_CAN_REGISTER}
-      - USE_AMAZON_MQ=${USE_AMAZON_MQ}
-      - USE_ECS_TILES=${USE_ECS_TILES}
+      - USE_DEVELOPMENT_BUNDLES=${USE_DEVELOPMENT_BUNDLES}
       - RUNNING_ON_AWS=${RUNNING_ON_AWS}
-      - USE_S3=${USE_S3}
       - USE_GEVENT=True
-      - RECYCLE_TILES=${RECYCLE_TILES}
     volumes:
       - type: bind
         source: "/var/run/docker.sock"
@@ -168,18 +158,10 @@ services:
       - "${ROOT_DIR}/env.list"
     environment:
       - MY_ID=host5001
-      - MONGO_URI=${MONGO_URI}
       - MYPORT=5001
-      - TRUE_HOST_PERSIST_DIR=${ROOT_DIR}/persist
-      - TRUE_HOST_RESOURCES_DIR=${ROOT_DIR}/resources
-      - TRUE_HOST_POOL_DIR=${POOL_DIR}
-      - USE_ARM64=${USE_ARM64}
-      - DEVELOP=${DEVELOP}
-      - USE_AMAZON_MQ=${USE_AMAZON_MQ}
-      - USE_ECS_TILES=${USE_ECS_TILES}
-      - RUNNING_ON_AWS=${RUNNING_ON_AWS}
-      - USE_S3=${USE_S3}
+      - USE_DEVELOPMENT_BUNDLES=${USE_DEVELOPMENT_BUNDLES}
       - USE_GEVENT=True
+      - RUNNING_ON_AWS=${RUNNING_ON_AWS}
     volumes:
       - type: bind
         source: "/var/run/docker.sock"
@@ -218,21 +200,14 @@ services:
     environment:
       - MY_ID=tile_test_container
       - PPI=0
-      - MONGO_URI=${MONGO_URI}
+      - RUNNING_ON_AWS=${RUNNING_ON_AWS}
       - OWNER=host
       - PARENT=host
-      - USERNAME=
-      - TRUE_HOST_PERSIST_DIR=${ROOT_DIR}/persist
-      - TRUE_HOST_RESOURCES_DIR=${ROOT_DIR}/resources
       - NLTK_DATA=nltk_cache
       - HF_HOME=hf_cache
       - TRANSFORMERS_CACHE=hf_cache
       - TORCH_HOME=torch_cache
       - MPLCONFIGDIR=mpl_cache
-      - USE_AMAZON_MQ=${USE_AMAZON_MQ}
-      - USE_ECS_TILES=False
-      - RUNNING_ON_AWS=${RUNNING_ON_AWS}
-      - USE_S3=${USE_S3}
       - USE_GEVENT=False
     volumes:
       - type: bind
@@ -273,17 +248,10 @@ services:
     environment:
       - PYTHONUNBUFFERED=0
       - MY_ID=log_streamer
+      - RUNNING_ON_AWS=${RUNNING_ON_AWS}
       - OWNER=host
       - PARENT=host
-      - AWS_ACCOUNT=${AWS_ACCOUNT}
-      - MONGO_URI=${MONGO_URI}
-      - USE_ARM64=${USE_ARM64}
       - DEVELOP=${DEVELOP}
-      - USE_AMAZON_MQ=${USE_AMAZON_MQ}
-      - USE_ECS_TILES=${USE_ECS_TILES}
-      - RUNNING_ON_AWS=${RUNNING_ON_AWS}
-      - USE_S3=${USE_S3}
-      - DEBUG_LOG_STREAMER=${DEBUG_LOG_STREAMER}
       - USE_GEVENT=False
     volumes:
       - type: bind
@@ -316,19 +284,12 @@ services:
       - "${ROOT_DIR}/env.list"
     environment:
       - PYTHONUNBUFFERED=0
-      - USE_GEVENT=False
       - DEBUG=${DEBUG}
+      - RUNNING_ON_AWS=${RUNNING_ON_AWS}
       - MY_ID=assistant
       - OWNER=host
       - PARENT=host
-      - AWS_ACCOUNT=${AWS_ACCOUNT}
-      - USE_ARM64=${USE_ARM64}
       - DEVELOP=${DEVELOP}
-      - USE_AMAZON_MQ=${USE_AMAZON_MQ}
-      - USE_ECS_TILES=${USE_ECS_TILES}
-      - RUNNING_ON_AWS=${RUNNING_ON_AWS}
-      - USE_S3=${USE_S3}
-      - DEBUG_LOG_STREAMER=${DEBUG_LOG_STREAMER}
       - USE_GEVENT=False
     volumes:
       - type: bind
@@ -361,9 +322,6 @@ services:
       parent: host
       other_name: mongo_watcher
     environment:
-      - MONGO_URI=${MONGO_URI}
-      - USE_AMAZON_MQ=${USE_AMAZON_MQ}
-      - USE_ECS_TILES=${USE_ECS_TILES}
       - RUNNING_ON_AWS=${RUNNING_ON_AWS}
     networks:
      - tactic-net
@@ -388,9 +346,6 @@ services:
       owner: host
       parent: host
       other_name: pool_watcher
-    environment:
-      - USE_AMAZON_MQ=${USE_AMAZON_MQ}
-      - USE_ECS_TILES=${USE_ECS_TILES}
     volumes:
       - type: bind
         source: "${POOL_DIR}"
@@ -420,8 +375,6 @@ services:
       parent: host
       other_name: pool_watcher_s3
     environment:
-      - USE_AMAZON_MQ=${USE_AMAZON_MQ}
-      - USE_ECS_TILES=${USE_ECS_TILES}
       - RUNNING_ON_AWS=${RUNNING_ON_AWS}
     networks:
       - tactic-net
@@ -448,13 +401,9 @@ services:
     env_file:
       - ${ROOT_DIR}/env.list
     environment:
-      - MONGO_URI=${MONGO_URI}
-      - USE_AMAZON_MQ=${USE_AMAZON_MQ}
-      - USE_ECS_TILES=${USE_ECS_TILES}
-      - RUNNING_ON_AWS=${RUNNING_ON_AWS}
-      - USE_S3=${USE_S3}
       - USE_GEVENT=False
       - DEBUG=${DEBUG}
+      - RUNNING_ON_AWS=${RUNNING_ON_AWS}
     volumes:
       - type: bind
         source: "/var/run/docker.sock"
@@ -485,12 +434,10 @@ services:
       - "${ROOT_DIR}/env.list"
     environment:
       - PYTHONUNBUFFERED=0
-      - MONGO_URI=${MONGO_URI}
       - OWNER=host
       - PARENT=host
-      - USE_AMAZON_MQ=${USE_AMAZON_MQ}
-      - RUNNING_ON_AWS=${RUNNING_ON_AWS}
       - USE_GEVENT=False
+      - RUNNING_ON_AWS=${RUNNING_ON_AWS}
     networks:
       - tactic-net
   tactic_tile:
@@ -513,6 +460,7 @@ services:
       - MPLCONFIGDIR=/var/cache/matplotlib
       - TORCH_HOME=/var/cache/torch
       - PYTHONUNBUFFERED=0
+      - RUNNING_ON_AWS=${RUNNING_ON_AWS}
 networks:
   tactic-net:
     driver: bridge

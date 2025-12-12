@@ -34,8 +34,7 @@ from rabbit_manage import sleep_until_rabbit_alive
 import sys
 import time
 import widgets
-
-use_ecs = os.getenv("USE_ECS_TILES","false").lower() == "true"
+from aws_detection import on_aws
 
 sys.stdout = sys.stderr
 print("Waiting for rabbit")
@@ -340,7 +339,7 @@ class TileWorker(QWorker):
 
     @staticmethod
     def set_environ_from_creds(creds):
-        if not use_ecs:
+        if not on_aws:
             return
         os.environ["AWS_ACCESS_KEY_ID"] = creds["AccessKeyId"]
         os.environ["AWS_SECRET_ACCESS_KEY"] = creds["SecretAccessKey"]

@@ -17,9 +17,7 @@ class DockerTileBackend(TileBackend):
     IMAGE = "bsherin/tactic-tile"
 
     def __init__(self, tile_registry, worker):
-        self.resources_dir = os.getenv("TRUE_HOST_RESOURCES_DIR", "/srv/tactic/resources")
-        # self.user_pool_dir = docker_functions.get_user_pool_dir()
-        # self.user_pool_dir = os.getenv("TRUE_HOST_POOL_DIR", "/tacticdata4/pool")
+        # self.resources_dir = os.getenv("TRUE_HOST_RESOURCES_DIR", "/srv/tactic/resources")
         self.user_pool_dir = None
         self.tile_registry = tile_registry
         self.worker = worker
@@ -33,16 +31,14 @@ class DockerTileBackend(TileBackend):
         if tid:
             return tid, "", creds
         env = {
-            "CHUNK_SIZE": os.getenv("CHUNK_SIZE", 100),
-            "RETRIES": os.getenv("RETRIES", 60),
             "RUNNING_ON_AWS": False
         }
 
-        volumes = {
-            self.resources_dir: {"bind": "/root/resources", "mode": "ro"},
-        }
-        if self.user_pool_dir:
-            volumes[self.user_pool_dir] = {"bind": "/mydisk", "mode": "rw"}
+        # volumes = {
+        #     self.resources_dir: {"bind": "/root/resources", "mode": "ro"},
+        # }
+        # if self.user_pool_dir:
+        #     volumes[self.user_pool_dir] = {"bind": "/mydisk", "mode": "rw"}
 
         other     = meta.get("other_name", "none")
         unique_id = tile_id or f"tile_{str(uuid.uuid4())}"
@@ -55,9 +51,9 @@ class DockerTileBackend(TileBackend):
             other_name=other,
             username=username,
             env_vars=env,
-            volume_dict=volumes,
             publish_all_ports=True,
-            special_unique_id=unique_id
+            special_unique_id=unique_id,
+
         )
         self.tile_registry.mark_status(tile_container_id, "busy", None, username=username, owner=owner, parent=parent, register_heartbeat=True)
         return tile_container_id, "", creds

@@ -6,14 +6,12 @@ import re
 from redis.exceptions import ConnectionError, TimeoutError
 import threading
 import time
-
-
-use_ecs = os.getenv("USE_ECS_TILES","false").lower() == "true"
+from aws_helpers import get_ssm_parameter
+from aws_detection import on_aws
 
 print("getting redis client")
 
-if use_ecs:
-    from aws_helpers import get_ssm_parameter
+if on_aws:
     REDIS_HOST = get_ssm_parameter("REDIS_HOST")
     REDIS_PORT = int(get_ssm_parameter("REDIS_PORT", 6379))
 

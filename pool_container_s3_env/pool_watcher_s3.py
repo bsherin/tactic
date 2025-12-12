@@ -6,6 +6,7 @@ from urllib.parse import unquote_plus
 
 from rabbit_manage import get_pika_connection_with_retries
 from aws_helpers import get_ssm_parameter
+from aws_detection import on_aws
 
 print("*** pool_watcher_s3 revised starting... ***")
 
@@ -16,8 +17,6 @@ AWS_REGION = get_ssm_parameter("MY_AWS_REGION", "us-east-2")
 # optional de-dupe/debounce
 RECENT = collections.deque(maxlen=5000)
 SEEN  = {}
-
-on_aws = os.getenv("RUNNING_ON_AWS","false").lower() == "true"
 
 def is_dir_key(key: str) -> bool:
     return key.endswith('/')

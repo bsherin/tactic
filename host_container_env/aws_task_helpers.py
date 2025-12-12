@@ -79,23 +79,16 @@ def run_tile_on_ecs(
         raise ECSTileError("ECS_SUBNETS / ECS_SECURITY_GROUPS must be set.")
 
     unique_id   = tile_id or str(uuid.uuid4())
-    retries     = os.getenv("RETRIES", "0")
-    use_arm64   = os.getenv("USE_ARM64", "False")
-    use_mq      = os.getenv("USE_AMAZON_MQ", "True")
 
     env = {
-        "RETRIES": retries,
         "MY_ID": unique_id,
         "OWNER": owner,
         "PARENT": parent,
         "IMAGE_NAME": "bsherin/tactic-tile",
         "PYTHONUNBUFFERED": "Yes",
-        "USE_ARM64": use_arm64,
-        "USE_AMAZON_MQ": use_mq,
         "USERNAME": username,
-        "IS_PSEUDO_TILE": str(extra_env.get("IS_PSEUDO_TILE", "False")) if extra_env else "False",
-        "USE_WAIT_TASKS": str(extra_env.get("USE_WAIT_TASKS", "True")) if extra_env else "True",
-        "PPI": str(extra_env.get("PPI", "0")) if extra_env else "0",
+        "USE_WAIT_TASKS": "True",
+        "PPI": "0",
         "OTHER_NAME": other_name,
     }
 

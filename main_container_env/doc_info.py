@@ -3,8 +3,6 @@ import copy, os
 from communication_utils import debinarize_python_object
 from mongo_accesser import PROTECTED_METADATA_KEYS
 
-CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE"))
-
 
 class TableSpec(object):
     def __init__(self, doc_name=None, header_list=None, table_width=None, column_widths=None,

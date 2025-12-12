@@ -9,7 +9,7 @@ from aws_helpers import get_ssm_parameter
 from docker_functions import get_tile_container_ids
 import boto3
 import datetime
-use_ecs = os.getenv("USE_ECS_TILES","false").lower() == "true"
+from aws_detection import on_aws
 
 # I'm leaving some of the desired idle logic in for test, non-aws for the purposes of testing it.
 
@@ -27,8 +27,7 @@ MODULE_VIEWER_PREFIX = get_ssm_parameter("MODULE_VIEWER_PREFIX", "module_viewer_
 
 TILE_HEARTBEAT_TIMEOUT_SECS = float(get_ssm_parameter("TILE_HEARTBEAT_TIMEOUT_SECS", "600"))
 
-if use_ecs:
-    from aws_task_helpers import get_ssm_parameter
+if on_aws:
     DESIRED_IDLE_DEFAULT = int(get_ssm_parameter("desired_idle", DESIRED_IDLE_DEFAULT))
 
 
@@ -118,13 +117,13 @@ class TileContainerRegistry(ServiceRegistry):
         self.reconcile_tiles()
         if not self.removed_obsolete_queues:
             self.remove_obsolete_queues()
-        if use_ecs:
+        if on_aws:
             self.pull_desired_idle()
             self.publish_metrics()
         self.sweep_tiles()
 
     def publish_metrics(self):
-        if use_ecs:
+        if on_aws:
             print("desired_idle:", self.desired_idle)
             print("idle_tiles:", self.idle_tiles, "running_tiles:", self.running_tiles, )
             idle_deficit = max(0, self.desired_idle - self.idle_tiles)
@@ -207,7 +206,7 @@ class TileContainerRegistry(ServiceRegistry):
             self.set_container_info(tile_id, "parent", parent)
         if created is not None:
             self.set_container_info(tile_id, "created", str(created))
-        if use_ecs:
+        if on_aws:
             if task_arn is not None:
                 self.set_container_info(tile_id, "task_arn", task_arn)
             self.set_task_protection(tile_id)
@@ -237,7 +236,7 @@ class TileContainerRegistry(ServiceRegistry):
             "owner": None,
             "parent": None
         })
-        if use_ecs:
+        if on_aws:
             self.set_task_protection(tile_id)
 
     def get_children(self, parent_id):
@@ -270,7 +269,7 @@ class TileContainerRegistry(ServiceRegistry):
                     "parent": parent
                 })
                 self.mark_status(tile_id, "busy")
-                if use_ecs:
+                if on_aws:
                     return tile_id, self.get_arn(tile_id)
                 else:
                     return tile_id, ""
@@ -287,7 +286,7 @@ class TileContainerRegistry(ServiceRegistry):
         if self.worker.channel is None:
             print("in reconcile_tiles, channel isn't ready yet")
             return
-        if use_ecs:
+        if on_aws:
             tasks = self.list_running_tile_tasks()
             running_ids = [self.task_to_id(t) for t in tasks]
             for t in tasks:

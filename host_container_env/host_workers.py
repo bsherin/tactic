@@ -1,7 +1,6 @@
 from qworker import QWorker, task_worthy, task_worthy_manual_submit, current_timestamp, debug_log
 from flask import render_template, url_for
 from flask_login import current_user
-import json
 
 from users import load_user, user_data_fields, User
 import gevent
@@ -9,9 +8,9 @@ from bson import ObjectId
 from communication_utils import make_python_object_jsonizable
 from communication_utils import make_jsonizable_and_compress
 import docker_functions
-from docker_functions import create_container, destroy_container, destroy_child_containers, destroy_user_containers
+from docker_functions import destroy_container, destroy_child_containers, destroy_user_containers
 from docker_functions import get_log, restart_container, container_exists
-from docker_functions import get_matching_user_containers, get_container, create_assistant_container, get_user_assistant
+from docker_functions import get_matching_user_containers, get_container, get_user_assistant
 from tactic_app import app, socketio
 from redis_tools import redis_client
 import datetime
@@ -45,11 +44,11 @@ from tile_container_management_mixin import TileContainerManagementMixin
 from redis_tools import RedisManager, redis_client
 from loaded_tile_management import loaded_tile_manager
 from aws_helpers import get_ssm_parameter
+from aws_detection import on_aws
 
 loaded_tile_manager.delete_all()
 
-use_ecs = os.getenv("USE_ECS_TILES","false").lower() == "true"
-use_s3 = os.getenv("USE_S3","false").lower() == "true"
+use_s3 = get_ssm_parameter("USE_S3", "true").lower() == "true"
 
 utility_interval = int(get_ssm_parameter("HOST_UTILITY_INTERVAL_SECS", 60))
 publishing_interval = int(get_ssm_parameter("METRIC_PUBLISH_INTERVAL_SECS", 180))
@@ -108,7 +107,7 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         self.client_session_registry = ClientSessionRegistry(self)
         self.last_publish = -99
 
-        if use_ecs:
+        if on_aws:
             self.tile_backend = ECSTileBackend(self.tile_registry, self)
             self.pool_backend = PoolBackendECS()
         else:
@@ -685,6 +684,7 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
             super(HostWorker, self).handle_response(task_packet)
 
     def handle_client_response(self, task_packet):
+        print("Handling client response for task type {}".format(task_packet["task_type"]))
         try:
             if "room" in task_packet:
                 room = task_packet["room"]

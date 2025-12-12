@@ -7,7 +7,7 @@ from collections import OrderedDict
 from flask import jsonify, request, url_for, render_template, send_file
 from flask_login import login_required, current_user
 from tactic_app import app
-from docker_functions import create_container, main_container_info
+from docker_functions import create_container
 from file_handling import read_freeform_file
 
 from js_source_management import js_source_dict, _develop, css_source

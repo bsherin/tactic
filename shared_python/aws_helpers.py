@@ -3,10 +3,11 @@ import os
 
 import boto3
 from botocore.config import Config
+from aws_detection import on_aws
 
 AWS_REGION = "us-east-2"  # Default region, can be overridden by environment variable
 ECS_CLUSTER = "tactic-cluster"
-on_aws = os.getenv("RUNNING_ON_AWS", "true").lower() == "true"
+
 
 
 def get_ssm_parameter(name, default=None):
@@ -29,7 +30,6 @@ def get_ssm_parameter(name, default=None):
     except Exception as e:
         print(f"Error fetching parameter {name}: {e}")
         return default
-
 
 def resolve_task_identity(id_prefix):
     import requests

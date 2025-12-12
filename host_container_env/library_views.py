@@ -12,6 +12,8 @@ from communication_utils import make_jsonizable_and_compress
 from exception_mixin import generic_exception_handler
 from docker_functions import ContainerCreateError
 from mongo_db_fs import repository_type, database_type
+from aws_helpers import get_ssm_parameter
+from aws_detection import on_aws
 
 from users import User
 
@@ -22,8 +24,7 @@ admin_user = User.get_user_by_username("admin")
 
 tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
 
-use_ecs = os.getenv("USE_ECS_TILES","false").lower() == "true"
-use_s3 = os.getenv("USE_S3","false").lower() == "true"
+use_s3 = get_ssm_parameter("USE_S3","true").lower() == "true"
 
 from tactic_app import CLIENT_ACTIVITY_INTERVAL_SECS
 
@@ -58,7 +59,7 @@ def library():
 @login_required
 def context():
     return render_template('context_react.html',
-                           use_ecs=use_ecs,
+                           on_aws=on_aws,
                            use_s3=use_s3,
                            database_type=database_type,
                            develop=str(_develop),

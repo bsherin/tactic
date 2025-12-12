@@ -4,8 +4,6 @@ from flask import Flask
 from werkzeug.middleware.proxy_fix import ProxyFix
 import pymongo
 import sys
-import subprocess
-import re
 import os
 
 
@@ -20,9 +18,7 @@ from rabbit_manage import sleep_until_rabbit_alive, SOCKETIO_OPTIONS
 import docker_functions as docker_functions
 from mongo_db_fs import get_dbs
 import communication_utils
-from communication_utils import send_request_to_container
 from integrated_docs import handler_methods
-from docker_functions import db_name, mongo_uri
 from aws_helpers import get_ssm_parameter
 
 import exception_mixin as exception_mixin
@@ -50,16 +46,11 @@ Database.create_collection = create_collection
 
 # noinspection PyUnresolvedReferences
 try:
-    CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE"))
-    LIBRARY_CHUNK_SIZE = int(os.environ.get("LIBRARY_CHUNK_SIZE"))
     CLIENT_ACTIVITY_INTERVAL_SECS = int(get_ssm_parameter("CLIENT_ACTIVITY_INTERVAL_SECS"))
 
     db, fs, repository_db, repository_fs = get_dbs()
 
-    if ("ANYONE_CAN_REGISTER" in os.environ) and (os.environ.get("ANYONE_CAN_REGISTER") == "True"):
-        ANYONE_CAN_REGISTER = True
-    else:
-        ANYONE_CAN_REGISTER = False
+    ANYONE_CAN_REGISTER = get_ssm_parameter("ANYONE_CAN_REGISTER", "False").lower() == "true"
 
     print("creating, cleaning temp_data")
     collection_names = db.list_collection_names()

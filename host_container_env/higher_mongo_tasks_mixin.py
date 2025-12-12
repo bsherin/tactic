@@ -3,7 +3,9 @@ import os
 from qworker import task_worthy
 
 from mongo_accesser import res_types
-LIBRARY_CHUNK_SIZE = int(int(os.environ.get("LIBRARY_CHUNK_SIZE")) / 2)
+from aws_helpers import get_ssm_parameter
+
+LIBRARY_CHUNK_SIZE = int(get_ssm_parameter("LIBRARY_CHUNK_SIZE", "25"))
 
 class HigherMongoTasksMixin:
 

@@ -5,8 +5,6 @@ import re
 from qworker import task_worthy
 from users import load_user
 
-use_ecs = os.getenv("USE_ECS_TILES","false").lower() == "true"
-
 class PoolTasksMixin:
 
     @task_worthy

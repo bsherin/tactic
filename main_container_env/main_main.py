@@ -1,10 +1,10 @@
 
 import os
-
-if os.environ.get("DEBUG", "False").lower() == "true":
-    print("got debug mode")
-    import pydevd_pycharm
-    pydevd_pycharm.settrace('host.docker.internal', port=21000)
+#
+# if os.environ.get("DEBUG", "False").lower() == "true":
+#     print("got debug mode")
+#     import pydevd_pycharm
+#     pydevd_pycharm.settrace('host.docker.internal', port=21000)
 
 print("entering main_main")
 

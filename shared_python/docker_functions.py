@@ -1,16 +1,14 @@
-from __future__ import print_function
 import docker
-import time
 import os
 import sys
 import uuid
-import datetime
 import subprocess
 import re
 import pika
 import json
 import traceback
-from rabbit_manage import get_pika_connection_with_retries, USE_AMAZON_MQ, RABBIT_USER, RABBIT_PASS, declare_queue
+from rabbit_manage import get_pika_connection_with_retries, declare_queue
+from aws_detection import on_aws
 
 forwarder_address = None
 forwarder_id = None
@@ -18,13 +16,11 @@ sys.stdout = sys.stderr
 
 print(os.environ)
 
-CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE"))
-mongo_uri = os.environ.get("MONGO_URI")
+from aws_helpers import get_ssm_parameter
 
-use_ecs = os.getenv("USE_ECS_TILES","false").lower() == "true"
+mongo_uri = get_ssm_parameter("MONGO_URI", "tactic-mongo")
 
-if use_ecs:
-    from aws_helpers import get_ssm_parameter
+if on_aws:
     ECS_SUBNETS = get_ssm_parameter("ECS_SUBNETS")
     ECS_SECURITY_GROUPS= get_ssm_parameter("TILE_SECURITY_GROUPS")
     ECS_TILE_TASKDEF= get_ssm_parameter("ECS_TILE_TASKDEF")
@@ -39,34 +35,12 @@ else:
     ECS_REGION = ""
     RABBIT_HOST = "megaplex"
 
-_develop = ("DEVELOP" in os.environ) and (os.environ.get("DEVELOP") == "True")
-RETRIES = os.environ.get("RETRIES")
 tactic_image_names = ["bsherin/tactic-tile", "bsherin/tactic-main",
                       "bsherin/tactic-module-viewer", "bsherin/tactic-host",
                       "bsherin/tactic-log-streamer", "bsherin/tactic-assistant",
                       ]
 
-if "DEBUG_MAIN_CONTAINER" in os.environ:
-    DEBUG_MAIN_CONTAINER = os.environ.get("DEBUG_MAIN_CONTAINER")
-else:
-    DEBUG_MAIN_CONTAINER = False
-
-if "DEBUG_TILE_CONTAINER" in os.environ:
-    DEBUG_TILE_CONTAINER = os.environ.get("DEBUG_TILE_CONTAINER")
-else:
-    DEBUG_TILE_CONTAINER = False
-
-
-if "DB_NAME" in os.environ:
-    db_name = os.environ.get("DB_NAME")
-else:
-    db_name = "tacticdb"
-
-print("in docker_functions with use_arm64 " + str(os.environ.get("USE_ARM64")))
-if "USE_ARM64" in os.environ:
-    USE_ARM64 = os.environ.get("USE_ARM64") == "True" or os.environ.get("USE_ARM64") is True
-else:
-    USE_ARM64 = False
+USE_ARM64 = get_ssm_parameter("USE_ARM64", default="False").lower() == "true"
 
 print("got use_arm64 is " + str(USE_ARM64))
 
@@ -87,41 +61,6 @@ def get_my_address():
 def env_or_none(var):
     return os.environ.get(var) if var in os.environ else None
 
-true_host_persist_dir = env_or_none("TRUE_HOST_PERSIST_DIR")
-true_host_resources_dir = env_or_none("TRUE_HOST_RESOURCES_DIR")
-true_host_pool_dir = env_or_none("TRUE_HOST_POOL_DIR")
-true_user_host_pool_dir = env_or_none("TRUE_USER_HOST_POOL_DIR")
-
-
-def get_user_pool_dir(username):
-    if true_host_pool_dir is None or username not in os.listdir("/pool"):
-        return None
-    else:
-        return f"{true_host_pool_dir}/{username}"
-
-def create_assistant_container(openai_api_key, parent, user_id, username):
-    assistant_volume_dict = {"/var/run/docker.sock": {"bind": "/var/run/docker.sock", "mode": "rw"}}
-    environ = {
-        "OPENAI_API_KEY": openai_api_key,
-        "USE_GEVENT": "False"
-    }
-    assistant_id, _container_id = create_container("bsherin/tactic-assistant", network_mode="bridge",
-                                                    env_vars=environ,
-                                                    parent=parent,
-                                                    owner=user_id, other_name=None, username=username,
-                                                    volume_dict=assistant_volume_dict,
-                                                    publish_all_ports=True, remove=True)
-    return assistant_id
-
-class MainContainerTracker(object):
-
-    def extract_port(self, container_identifier):
-        return cli.containers.get(container_identifier).attrs["NetworkSettings"]["Ports"]["5000/tcp"]
-
-
-main_container_info = MainContainerTracker()
-
-
 class ContainerCreateError(Exception):
     pass
 
@@ -138,7 +77,7 @@ def get_container_type(cont):
     for arg in cont.attrs["Args"]:
         if arg in cont_type_dict:
             return cont_type_dict[arg]
-    return
+    return None
 
 
 # noinspection PyUnusedLocal
@@ -154,46 +93,21 @@ def create_container(image_name, container_name=None, network_mode="bridge", hos
     else:
         unique_id = str(uuid.uuid4())
 
-    environ = {"RETRIES": RETRIES,
-               "CHUNK_SIZE": CHUNK_SIZE,
-               "MY_ID": unique_id,
+    environ = {"MY_ID": unique_id,
                "OWNER": owner,
                "PARENT": parent,
-               "DB_NAME": db_name,
                "IMAGE_NAME": image_name,
-               "MONGO_URI": mongo_uri,
-               "DEVELOP": _develop,
-               "DEBUG_MAIN_CONTAINER": DEBUG_MAIN_CONTAINER,
-               "DEBUG_TILE_CONTAINER": DEBUG_TILE_CONTAINER,
                "PYTHONUNBUFFERED": "Yes",
-               "USE_ARM64": USE_ARM64,
-               "USE_AMAZON_MQ": USE_AMAZON_MQ,
-               "RABBIT_HOST": RABBIT_HOST,
-               "RABBIT_USER": RABBIT_USER,
-               "RABBIT_PASS": RABBIT_PASS,
-               "USE_ECS_TILES": use_ecs,
-               "ECS_SUBNETS": ECS_SUBNETS,
-               "ECS_SECURITY_GROUPS": ECS_SECURITY_GROUPS,
-               "ECS_TILE_TASKDEF": ECS_TILE_TASKDEF,
-               "AWS_REGION": AWS_REGION,
-               "ECS_REGION": ECS_REGION
            }
 
     if username is not None:
         environ["USERNAME"] = username
-
-    if DEBUG_MAIN_CONTAINER or DEBUG_TILE_CONTAINER:
-        environ["PYCHARM_DEBUG"] = True
-        environ["GEVENT_SUPPORT"] = True
 
     if env_vars is not None:
         for key, val in env_vars.items():
             environ[key] = val
 
     labels = {"my_id": unique_id, "owner": owner, "parent": parent, "other_name": other_name, "project": "tactic"}
-
-    if image_name == "bsherin/tactic-tile":  # We don't want people to be able to see the mongo_uri
-        del environ["MONGO_URI"]
 
     if USE_ARM64 and image_name in tactic_image_names:
         image_name += ":arm64"
@@ -293,15 +207,6 @@ def container_memory_usage(container, convert_to_mib=True):
             return musage
     except:
         return None
-
-
-def create_network(network_name):
-    return cli.create_network(network_name, "bridge")
-
-
-def remove_network(network_name):
-    return cli.remove_network(network_name)
-
 
 def container_id(container):
     if "my_id" in container.attrs["Config"]["Labels"]:
@@ -556,11 +461,6 @@ def destroy_child_containers(parent_id):
         if container_parent(cont) == parent_id:
             uid = container_id(cont)
             destroy_container(uid, notify=False)
-
-
-def connect_to_network(container, network):
-    return cli.connect_container_to_network(container, network)
-
 
 def delete_list_of_queues(qlist,):
     connection, channel = get_pika_connection_with_retries()

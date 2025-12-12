@@ -1,4 +1,4 @@
-import React, {Fragment, useEffect, useRef, memo, useContext} from "react";
+import React, {Fragment, useEffect, useRef, memo, useContext, useCallback} from "react";
 import {Button, ButtonGroup} from "@blueprintjs/core";
 import {propsAreEqual, useStateAndRef} from "./utilities_react";
 import {SettingsContext} from "./settings";
@@ -412,7 +412,29 @@ function ReactCodemirror6(props) {
         }
     }, []);
 
-    useSocketListener(props.tsocket, "handle-autocomplete-delta", handleAutocompleteDelta, props.local_id);
+    const handleAutocompleteDelta = useCallback((data) =>{
+        if (data.cmUniqueId !== cmUniqueId.current) {
+            return
+        }
+        if (data.room !== props.local_id) return;
+        if (data.change_counter !== activeStreamChangeCounterRef.current) return;
+
+        let current_text;
+        if (aiTextRef.current == null) {
+            current_text = data["text"];
+        } else {
+            current_text = aiTextRef.current + data["text"];
+        }
+
+        setAIText(current_text);
+        if (editorView.current) {
+            closeCompletion(editorView.current);
+            const trimmed = computeGhostSuffix(current_text, editorView.current);
+            setGhostText(editorView.current, trimmed);
+        }
+    })
+
+    useSocketListener(props.tsocket, "AutocompleteDelta", handleAutocompleteDelta);
 
     useEffect(() => {
         return () => {
@@ -598,28 +620,6 @@ function ReactCodemirror6(props) {
             console.log("Error in _doHighlight", e);
         }
     }, [props.search_term, props.current_search_number, props.regex_search]);
-
-    function handleAutocompleteDelta(data) {
-        if (data.cmUniqueId !== cmUniqueId.current) {
-            return
-        }
-        if (data.room !== props.local_id) return;
-        if (data.change_counter !== activeStreamChangeCounterRef.current) return;
-
-        let current_text;
-        if (aiTextRef.current == null) {
-            current_text = data["text"];
-        } else {
-            current_text = aiTextRef.current + data["text"];
-        }
-
-        setAIText(current_text);
-        if (editorView.current) {
-            closeCompletion(editorView.current);
-            const trimmed = computeGhostSuffix(current_text, editorView.current);
-            setGhostText(editorView.current, trimmed);
-        }
-    }
 
     function getAIUpdate(new_code) {
         const change_counter = changeCounterRef.current;

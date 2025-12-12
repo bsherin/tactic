@@ -35,8 +35,6 @@ try:
 except ModuleNotFoundError as err:
     print("no flask_socketio")
 
-RETRIES = os.environ.get("RETRIES")
-
 megaplex = None
 
 def is_jsonizable(dat):
@@ -71,25 +69,4 @@ def debinarize_python_object(bdat):
     else:
         dat = base64.b64decode(bdat)
     return pickle.loads(bytes(dat))
-
-def send_request_to_container(taddress, msg_type, data_dict=None, wait_for_success=True,
-                              timeout=3, tries=RETRIES, wait_time=.1):
-    last_fail = ""
-    port = "5000"
-
-    if wait_for_success:
-        for attempt in range(tries):
-            try:
-                res = requests.post("http://{0}:{1}/{2}".format(taddress, port, msg_type),
-                                    timeout=timeout, json=data_dict)
-                return res
-            except Exception as ex:
-                last_fail = generic_exception_handler.get_traceback_message(ex)
-                time.sleep(wait_time)
-                continue
-        error_string = "Send container request timed out with msg_type {} " \
-                       "and address {}. Last error message was {}".format(msg_type, taddress, last_fail)
-        raise Exception(error_string)
-    else:
-        return requests.post("http://{0}:5000/{1}".format(taddress, msg_type), timeout=timeout, json=data_dict)
 

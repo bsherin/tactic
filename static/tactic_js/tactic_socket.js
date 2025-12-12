@@ -1,53 +1,61 @@
-
 import io from 'socket.io-client';
-import {useEffect, useState, useCallback} from "react";
+import {useEffect, useState, useCallback, useRef} from "react";
 
 export {TacticSocket, useSocketListener, useConnection, useListeners};
 
 function useSocketListener(tsocket, event, handler, condition = true) {
-    if (!tsocket || !condition) return;
-    const stableHandler = useCallback(handler, []);
+    const handlerRef = useRef(handler);
+    handlerRef.current = handler;
+
+    const stableHandler = useCallback((data) => {
+        handlerRef.current?.(data);
+    }, []);
 
     useEffect(() => {
-        if (!tsocket) return;
+        if (!tsocket || !condition) return;
         tsocket.attachListener(event, stableHandler);
+
         return () => {
             tsocket.detachListener(event, stableHandler);
         };
-    }, [tsocket, event, stableHandler]);
+    }, [tsocket, event, condition, stableHandler]);
 }
 
 function useConnection(tsocket, initSocket) {
-    if (!tsocket) return null;
     const [connection_status, set_connection_status] = useState(null);
 
-    function socketNotifier(connected) {
-        set_connection_status(connected ? "up" : "down")
-    }
+    const socketNotifier = useCallback((connected) => {
+        set_connection_status(connected ? "up" : "down");
+    }, []);
+    const initRef = useRef(initSocket);
 
     useEffect(() => {
-        initSocket(tsocket);
+        if (!tsocket) return;
+
+        initRef.current?.(tsocket);
         tsocket.notifier = socketNotifier;
         socketNotifier(tsocket.socket.connected);
-        return (() => {
+
+        return () => {
             tsocket.disconnect();
             tsocket.notifier = null;
-        })
-    }, []);
-    return connection_status
+        };
+    }, [tsocket, socketNotifier]);
+
+    return tsocket ? connection_status : null;
 }
 
 function useListeners(tsocket, initSocket) {
-    if (!tsocket) return null;
-
+    const initRef = useRef(initSocket);
     useEffect(() => {
-        initSocket(tsocket);
-        return (() => {
-            tsocket.disconnect();
-        })
-    }, []);
-}
+        if (!tsocket) return;
 
+        initRef.current?.(tsocket);
+        return () => {
+            tsocket.disconnect();
+        };
+    }, [tsocket]);
+}
 
 
 class TacticSocket {
@@ -75,9 +83,9 @@ class TacticSocket {
         // The lines below are useful for debugging.
         // this.socket.onAny((event, ...args) => {
         //     console.log(
-        //             `[TSOCKET ${this.ident}] onAny: event=`, event,
-        //             "args=", args
-        //         );
+        //         `[TSOCKET ${this.ident}] onAny: event=`, event,
+        //         "args=", args
+        //     );
         // });
     }
 
@@ -92,8 +100,7 @@ class TacticSocket {
                     "room": this.local_id,
                     "user_id": window.user_id
                 }, on_join)
-            }
-            else {
+            } else {
                 this.socket.emit('join', {
                     "room": this.local_id,
                     "user_id": window.user_id
@@ -168,13 +175,13 @@ class TacticSocket {
     }
 
     restoreListeners() {
-    // re-attach the socket handlers to the *current* socket
-    for (const event in this.socketHandlers) {
-        this.socket.on(event, this.socketHandlers[event]);
+        // re-attach the socket handlers to the *current* socket
+        for (const event in this.socketHandlers) {
+            this.socket.on(event, this.socketHandlers[event]);
+        }
     }
-}
 
-    notify(connected){
+    notify(connected) {
         if (this.notifier) {
             this.notifier(connected)
         }
@@ -182,13 +189,11 @@ class TacticSocket {
 
     watchForDisconnect() {
         let self = this;
-        this.attachListener("connect", ()=>{
-            console.log(`tactic:${this.ident} connected`);
+        this.attachListener("connect", () => {
             this.notify(true)
         });
         this.attachListener("disconnect", (reason) => {
             if (reason == "io client disconnect") return;
-            console.log(`tactic:${this.ident} disconnected for reason ${reason}`);
             this.notify(false);
             // doFlash({"message": "lost server connection " + reason, timeout: null, "is_disconnect_message": true})
             self.socket.close();

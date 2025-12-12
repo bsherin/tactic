@@ -30,6 +30,7 @@ from metabook_accesser import MetabookAccess
 from node_accesser import NodeAccess
 from temp_data_accesser import TempDataAccess
 from across_accounts_accesser import AcrossAccountsAccess
+from aws_helpers import get_ssm_parameter
 
 from main_session import MainSessionStore, MainSessionAccessor
 from collection_info import CollectionInfo, FreeformCollectionInfo
@@ -41,10 +42,7 @@ from tile_info import TileInfo
 INITIAL_LEFT_FRACTION = .69
 
 
-if "DB_NAME" in os.environ:
-    db_name = os.environ.get("DB_NAME")
-else:
-    db_name = "tacticdb"
+db_name = get_ssm_parameter("DB_NAME", "tacticdb")
 
 # noinspection PyPep8Naming,PyUnusedLocal,PyTypeChecker,PyMissingConstructor
 class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationTasksMixin, APISupportTasksMixin,

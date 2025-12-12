@@ -12,9 +12,9 @@ from communication_utils import make_python_object_jsonizable, debinarize_python
 from communication_utils import make_jsonizable_and_compress
 from mongo_accesser import bytes_to_string, NameExistsError
 from qworker import debug_log
-import base64
+from aws_helpers import get_ssm_parameter
 
-CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE"))
+COLLECTION_CHUNK_SIZE = int(get_ssm_parameter("COLLECTION_CHUNK_SIZE", "50"))
 
 def task_worthy(m):
     task_worthy_methods[m.__name__] = "mainwindow"
@@ -1932,9 +1932,9 @@ class DataSupportTasksMixin:
     def grab_chunk(self, sid, doc_name, row_index):
         sess = self.get_session(sid)
         collection_info = sess.collection_info
-        chunk_number = int(int(row_index) / CHUNK_SIZE)
-        chunk_start = chunk_number * CHUNK_SIZE
-        data_to_send = collection_info.sorted_data_rows(doc_name)[chunk_start:chunk_start + CHUNK_SIZE]
+        chunk_number = int(int(row_index) / COLLECTION_CHUNK_SIZE)
+        chunk_start = chunk_number * COLLECTION_CHUNK_SIZE
+        data_to_send = collection_info.sorted_data_rows(doc_name)[chunk_start:chunk_start + COLLECTION_CHUNK_SIZE]
         data_row_dict = {}
         for n, row in enumerate(data_to_send):
             data_row_dict[chunk_start + n] = row

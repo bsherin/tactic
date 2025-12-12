@@ -1,10 +1,13 @@
 # These classes provide a more natural interface for getting and setting data in a project collection
 
-import os
 import copy
 # noinspection PyPackageRequirements
 import pandas as _pd
-CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE"))
+
+from aws_helpers import get_ssm_parameter
+
+COLLECTION_CHUNK_SIZE = int(get_ssm_parameter("COLLECTION_CHUNK_SIZE", "50"))
+
 _protected_column_names = ["__id__", "__filename__"]
 
 ROWS_TO_PRINT = 25
@@ -486,7 +489,7 @@ class TacticDocument:
 
     def _get_chunk(self):
         dict_list = _tworker.tile_instance.get_rows(self._docname, self._current_chunk_start,
-                                                    self._current_chunk_start + CHUNK_SIZE)
+                                                    self._current_chunk_start + COLLECTION_CHUNK_SIZE)
         self._row_list = [TacticRow(n + self._current_chunk_start, self._docname, rdict)
                           for n, rdict in enumerate(dict_list)]
         return
@@ -530,10 +533,10 @@ class TacticDocument:
         return
 
     def _r_in_chunk(self, r):
-        return (r >= self._current_chunk_start) and (r < self._current_chunk_start + CHUNK_SIZE)
+        return (r >= self._current_chunk_start) and (r < self._current_chunk_start + COLLECTION_CHUNK_SIZE)
 
     def _get_chunk_start(self, r):
-        return int(r / CHUNK_SIZE) * CHUNK_SIZE
+        return int(r / COLLECTION_CHUNK_SIZE) * COLLECTION_CHUNK_SIZE
 
     def _relative_r(self, r):
         return r - self._current_chunk_start
@@ -579,7 +582,7 @@ class TacticDocument:
                 return []
             if self._r_in_chunk(start) and self._r_in_chunk(stop):
                 return self._row_list[self._relative_r(start):self._relative_r(stop)]
-            elif (stop - start) < CHUNK_SIZE:
+            elif (stop - start) < COLLECTION_CHUNK_SIZE:
                 self._current_chunk_start = start
                 self._get_chunk()
                 return self._row_list[:(stop - start)]

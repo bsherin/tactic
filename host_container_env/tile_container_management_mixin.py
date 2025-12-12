@@ -2,10 +2,9 @@
 from qworker import task_worthy
 import os
 from docker_functions import delete_list_of_queues
-import tactic_app
+from aws_helpers import get_ssm_parameter
 
-use_ecs = os.getenv("USE_ECS_TILES", "false").lower() == "true"
-recycle_tiles = os.getenv("RECYCLE_TILES", "false").lower() == "true"
+recycle_tiles = get_ssm_parameter("RECYCLE_TILES", "true").lower() == "true"
 
 class TileContainerManagementMixin:
 

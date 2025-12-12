@@ -29,6 +29,8 @@ from exception_mixin import ExceptionMixin
 from user_fields import user_data_fields
 from user_accesser import UserAccess
 from across_accounts_accesser import AcrossAccountsAccess
+from aws_helpers import get_ssm_parameter
+from aws_detection import on_aws
 
 
 USE_ALT_IDS = True
@@ -37,10 +39,9 @@ if USE_ALT_IDS:
 else:
     ID_FIELD = "_id"
 
-use_ecs = os.getenv("USE_ECS_TILES","false").lower() == "true"
 
-if use_ecs:
-    from aws_helpers import get_ssm_parameter
+if on_aws:
+
     BUCKET = get_ssm_parameter("BUCKET")
     from s3thread import boto_s3
 
@@ -115,13 +116,13 @@ class User(UserMixin, MongoAccess, ListAccess, CodeAccess, TileAccess, TempDataA
 
     @property
     def pool_dir(self):
-        if use_ecs:
+        if on_aws:
             return f"s3://{BUCKET}/users/{self.username}"
         return f"/pool/{self.username}"
 
     @property
     def has_pool(self):
-        if use_ecs:
+        if on_aws:
             return boto_s3.lexists(self.pool_dir)
         return os.path.exists(self.pool_dir)
 

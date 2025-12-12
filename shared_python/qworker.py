@@ -49,8 +49,6 @@ if "USE_WAIT_TASKS" in os.environ:
 else:
     use_wait_tasks = False
 
-RETRIES = os.environ.get("RETRIES")
-
 
 task_worthy_methods = {}
 task_worthy_manual_submit_methods = {}
@@ -269,7 +267,7 @@ class QWorker(ExceptionMixin):
 
     # noinspection PyUnusedLocal
     def post_and_wait(self, dest_id, task_type, task_data=None, sleep_time=.1,
-                      timeout=10, tries=RETRIES, alt_address=None):
+                      timeout=10, alt_address=None):
         callback_id = str(uuid.uuid4())
         wait_worker = BlockingWaitWorker(self.wait_queue_id)
         new_packet = {"source": self.my_id,
