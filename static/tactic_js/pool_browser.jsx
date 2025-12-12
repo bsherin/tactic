@@ -476,7 +476,8 @@ function PoolBrowser(props) {
             show_address_selector: true,
             initial_address: initial_directory,
             handleClose: dialogFuncs.hideModal,
-            handleCancel: null
+            handleCancel: null,
+            use_s3: window.use_s3,
         });
     }
 
@@ -500,7 +501,8 @@ function PoolBrowser(props) {
                 initial_address: dst,
                 handleClose: dialogFuncs.hideModal,
                 handleCancel: null,
-                initialFiles: files
+                initialFiles: files,
+                use_s3: window.use_s3,
             });
         } else {
             let src = e.dataTransfer.getData("fullpath");
@@ -612,7 +614,7 @@ function PoolBrowser(props) {
                           onClick={async () => {
                               await _showPoolImport(props.node)
                           }}
-                          text="Import To Pool"/>
+                          text="Show Import Dialog"/>
                 <MenuItem icon="download"
                           onClick={async () => {
                               await _downloadFile(props.node)
@@ -831,7 +833,7 @@ function PoolMenubar(props) {
                 {name_text: "Delete Resource", icon_name: "trash", click_handler: props.delete_func},
             ],
             Transfer: [
-                {name_text: "Import To Pool", icon_name: "cloud-upload", click_handler: props.showPoolImport},
+                {name_text: "Show Import Dialog", icon_name: "cloud-upload", click_handler: props.showPoolImport},
                 {name_text: "Download File", icon_name: "download", click_handler: props.download_file}
             ]
         };

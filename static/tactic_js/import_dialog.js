@@ -18,8 +18,9 @@ var _pool_tree = require("./pool_tree");
 var _settings = require("./settings");
 var _communication_react = require("./communication_react");
 var _tactic_socket = require("./tactic_socket");
+var _uploadManager = require("./uploadManager");
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
-function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t2 in e) "default" !== _t2 && {}.hasOwnProperty.call(e, _t2) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t2)) && (i.get || i.set) ? o(f, _t2, i) : f[_t2] = e[_t2]); return f; })(e, t); }
+function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t3 in e) "default" !== _t3 && {}.hasOwnProperty.call(e, _t3) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t3)) && (i.get || i.set) ? o(f, _t3, i) : f[_t3] = e[_t3]); return f; })(e, t); }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _toConsumableArray(r) { return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread(); }
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
@@ -49,7 +50,8 @@ function FileImportDialog(props) {
     popupoptions: null,
     after_upload: null,
     show_address_selector: false,
-    initialFiles: []
+    initialFiles: [],
+    use_s3: false
   }, props);
   var name_counter = (0, _react.useRef)(1);
   var default_name = (0, _react.useRef)("new" + props.res_type);
@@ -106,6 +108,15 @@ function FileImportDialog(props) {
     set_csv_options_open = _useState18[1];
   var settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
+  var _useState19 = (0, _react.useState)([]),
+    _useState20 = _slicedToArray(_useState19, 2),
+    activeUploads = _useState20[0],
+    setActiveUploads = _useState20[1];
+  (0, _react.useEffect)(function () {
+    if (!props.use_s3) return;
+    var unsub = _uploadManager.uploadManager.subscribe(setActiveUploads);
+    return unsub;
+  }, []);
   (0, _utilities_react.useConstructor)(/*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee() {
     var data, _t;
     return _regenerator().w(function (_context) {
@@ -169,6 +180,84 @@ function FileImportDialog(props) {
     _updatePickerSize();
   });
   (0, _tactic_socket.useSocketListener)(props.tsocket, "upload_response", _handleResponse);
+  function _startS3Uploads() {
+    return _startS3Uploads2.apply(this, arguments);
+  }
+  function _startS3Uploads2() {
+    _startS3Uploads2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2() {
+      var files, _iterator4, _step4, file, resp, _resp$upload_info, url, fields, key, bucket, content_type, _t2;
+      return _regenerator().w(function (_context2) {
+        while (1) switch (_context2.n) {
+          case 0:
+            files = myDropzone.current.getQueuedFiles();
+            if (!(!files || files.length === 0)) {
+              _context2.n = 1;
+              break;
+            }
+            return _context2.a(2);
+          case 1:
+            _iterator4 = _createForOfIteratorHelper(files);
+            _context2.p = 2;
+            _iterator4.s();
+          case 3:
+            if ((_step4 = _iterator4.n()).done) {
+              _context2.n = 7;
+              break;
+            }
+            file = _step4.value;
+            myDropzone.current.removeFile(file);
+            _context2.n = 4;
+            return (0, _communication_react.postPromise)("host", "get_s3_upload_info_task", {
+              filename: file.name,
+              content_type: file.type || "application/octet-stream",
+              dest_path: current_value_ref.current
+            });
+          case 4:
+            resp = _context2.v;
+            if (resp.success) {
+              _context2.n = 5;
+              break;
+            }
+            errorDrawerFuncs.addErrorDrawerEntry({
+              title: "Failed to get presign",
+              content: resp.message
+            });
+            return _context2.a(3, 6);
+          case 5:
+            _resp$upload_info = resp.upload_info, url = _resp$upload_info.url, fields = _resp$upload_info.fields, key = _resp$upload_info.key, bucket = _resp$upload_info.bucket, content_type = _resp$upload_info.content_type; // Hand off to manager (persists across unmount)
+            _context2.n = 6;
+            return _uploadManager.uploadManager.startPresignedPostUpload({
+              file: file,
+              url: url,
+              fields: fields,
+              meta: {
+                bucket: bucket,
+                key: key,
+                content_type: content_type,
+                dest_path: current_value_ref.current
+              }
+            });
+          case 6:
+            _context2.n = 3;
+            break;
+          case 7:
+            _context2.n = 9;
+            break;
+          case 8:
+            _context2.p = 8;
+            _t2 = _context2.v;
+            _iterator4.e(_t2);
+          case 9:
+            _context2.p = 9;
+            _iterator4.f();
+            return _context2.f(9);
+          case 10:
+            return _context2.a(2);
+        }
+      }, _callee2, null, [[2, 8, 9, 10]]);
+    }));
+    return _startS3Uploads2.apply(this, arguments);
+  }
   function _handleResponse(entry) {
     if (entry.resource_name && entry["success"] in ["success", "partial"]) {
       existing_names.current.push(entry.resource_name);
@@ -202,29 +291,63 @@ function FileImportDialog(props) {
     props.handleClose();
   }
   function _do_submit() {
-    var msg;
-    if (myDropzone.current.getQueuedFiles().length == 0) {
-      return;
-    }
-    if (current_value == "") {
-      msg = "An empty name is not allowed here.";
-      set_warning_text(msg);
-    } else if (_name_exists(current_value)) {
-      msg = "That name already exists";
-      set_warning_text(msg);
-    } else {
-      var csv_options;
-      if (props.show_csv_options && csv_options_open) {
-        csv_options = {
-          delimiter: delimiter,
-          quoting: quoting,
-          skipinitialspace: skipinitialspace
-        };
-      } else {
-        csv_options = null;
-      }
-      props.process_handler(myDropzone.current, _setCurrentUrl, current_value, checkbox_states, csv_options);
-    }
+    return _do_submit2.apply(this, arguments);
+  }
+  function _do_submit2() {
+    _do_submit2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3() {
+      var msg, csv_options;
+      return _regenerator().w(function (_context3) {
+        while (1) switch (_context3.n) {
+          case 0:
+            if (!(myDropzone.current.getQueuedFiles().length == 0)) {
+              _context3.n = 1;
+              break;
+            }
+            return _context3.a(2);
+          case 1:
+            if (!(current_value == "")) {
+              _context3.n = 2;
+              break;
+            }
+            msg = "An empty name is not allowed here.";
+            set_warning_text(msg);
+            _context3.n = 6;
+            break;
+          case 2:
+            if (!_name_exists(current_value)) {
+              _context3.n = 3;
+              break;
+            }
+            msg = "That name already exists";
+            set_warning_text(msg);
+            _context3.n = 6;
+            break;
+          case 3:
+            csv_options = null;
+            if (props.show_csv_options && csv_options_open) {
+              csv_options = {
+                delimiter: delimiter,
+                quoting: quoting,
+                skipinitialspace: skipinitialspace
+              };
+            }
+            if (!props.use_s3) {
+              _context3.n = 5;
+              break;
+            }
+            _context3.n = 4;
+            return _startS3Uploads();
+          case 4:
+            _context3.n = 6;
+            break;
+          case 5:
+            props.process_handler(myDropzone.current, _setCurrentUrl, current_value, checkbox_states, csv_options);
+          case 6:
+            return _context3.a(2);
+        }
+      }, _callee3);
+    }));
+    return _do_submit2.apply(this, arguments);
   }
   function _do_clear() {
     myDropzone.current.removeAllFiles();
@@ -257,7 +380,7 @@ function FileImportDialog(props) {
   // I think, perhaps when messages are shown in the dialog.
 
   function _uploadComplete(f) {
-    if (!window.use_s3) {
+    if (!props.use_s3) {
       if (myDropzone.current.getQueuedFiles().length > 0) {
         myDropzone.current.options.url = current_url.current;
         myDropzone.current.processQueue();
@@ -270,11 +393,11 @@ function FileImportDialog(props) {
     return _onSending2.apply(this, arguments);
   }
   function _onSending2() {
-    _onSending2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2(file, xhr, formData) {
-      return _regenerator().w(function (_context2) {
-        while (1) switch (_context2.n) {
+    _onSending2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee4(file, xhr, formData) {
+      return _regenerator().w(function (_context4) {
+        while (1) switch (_context4.n) {
           case 0:
-            if (!window.use_s3) {
+            if (!props.use_s3) {
               file.previewElement.scrollIntoView(false);
               formData.append("extra_value", current_value_ref.current);
               if (props.chunking) {
@@ -282,9 +405,9 @@ function FileImportDialog(props) {
               }
             }
           case 1:
-            return _context2.a(2);
+            return _context4.a(2);
         }
-      }, _callee2);
+      }, _callee4);
     }));
     return _onSending2.apply(this, arguments);
   }
@@ -523,7 +646,50 @@ function FileImportDialog(props) {
     onClick: _do_submit
   }, "Upload"), /*#__PURE__*/_react["default"].createElement(_core.Button, {
     onClick: _do_clear
-  }, "Clear Files")))), /*#__PURE__*/_react["default"].createElement(_core.Divider, null), /*#__PURE__*/_react["default"].createElement("div", {
+  }, "Clear Files"))), props.use_s3 && activeUploads.length > 0 && /*#__PURE__*/_react["default"].createElement("div", {
+    style: {
+      marginTop: 10
+    }
+  }, /*#__PURE__*/_react["default"].createElement(_core.Divider, null), activeUploads.map(function (u) {
+    return /*#__PURE__*/_react["default"].createElement("div", {
+      key: u.id,
+      style: {
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+        marginBottom: 10
+      }
+    }, /*#__PURE__*/_react["default"].createElement("div", {
+      style: {
+        flex: 1
+      }
+    }, /*#__PURE__*/_react["default"].createElement("div", null, u.fileName), /*#__PURE__*/_react["default"].createElement(_core.ProgressBar, {
+      value: (u.pct || 0) / 100,
+      stripes: false
+    }), /*#__PURE__*/_react["default"].createElement("div", {
+      className: _core.Classes.TEXT_SMALL
+    }, u.status, u.error ? " \u2014 ".concat(u.error) : "")), u.status === "uploading" && /*#__PURE__*/_react["default"].createElement(_core.Button, {
+      intent: "danger",
+      onClick: function onClick() {
+        return _uploadManager.uploadManager.abort(u.id);
+      }
+    }, "Cancel"), u.status === "done" && /*#__PURE__*/_react["default"].createElement(_core.Button, {
+      intent: "success",
+      onClick: function onClick() {
+        return _uploadManager.uploadManager.clear(u.id);
+      }
+    }, "Clear"), u.status === "aborted" && /*#__PURE__*/_react["default"].createElement(_core.Button, {
+      intent: "primary",
+      onClick: function onClick() {
+        return _uploadManager.uploadManager.clear(u.id);
+      }
+    }, "Clear"), u.status === "error" && /*#__PURE__*/_react["default"].createElement(_core.Button, {
+      intent: "warning",
+      onClick: function onClick() {
+        return _uploadManager.uploadManager.clear(u.id);
+      }
+    }, "Clear"));
+  }))), /*#__PURE__*/_react["default"].createElement(_core.Divider, null), /*#__PURE__*/_react["default"].createElement("div", {
     className: _core.Classes.DIALOG_FOOTER,
     style: {
       marginTop: 10

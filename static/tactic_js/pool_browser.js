@@ -1006,7 +1006,8 @@ function PoolBrowser(props) {
       show_address_selector: true,
       initial_address: initial_directory,
       handleClose: dialogFuncs.hideModal,
-      handleCancel: null
+      handleCancel: null,
+      use_s3: window.use_s3
     });
   }
   function handleDrop(_x9, _x0) {
@@ -1039,7 +1040,8 @@ function PoolBrowser(props) {
               initial_address: dst,
               handleClose: dialogFuncs.hideModal,
               handleCancel: null,
-              initialFiles: files
+              initialFiles: files,
+              use_s3: window.use_s3
             });
             _context29.n = 2;
             break;
@@ -1256,7 +1258,7 @@ function PoolBrowser(props) {
           }
         }, _callee11);
       })),
-      text: "Import To Pool"
+      text: "Show Import Dialog"
     }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
       icon: "download",
       onClick: /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee12() {
@@ -1508,7 +1510,7 @@ function PoolMenubar(props) {
         click_handler: props.delete_func
       }],
       Transfer: [{
-        name_text: "Import To Pool",
+        name_text: "Show Import Dialog",
         icon_name: "cloud-upload",
         click_handler: props.showPoolImport
       }, {
