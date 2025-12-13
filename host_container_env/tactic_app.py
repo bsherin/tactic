@@ -77,6 +77,7 @@ try:
     login_manager.init_app(app)
     print("starting socketio. connecting by name")
     socketio = SocketIO(app,
+                        async_mode="gevent",
                         message_queue=MESSAGE_QUEUE,
                         channel="socketio",
                         logger=False,

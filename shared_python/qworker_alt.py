@@ -1,4 +1,3 @@
-import threading
 
 import pika
 import uuid

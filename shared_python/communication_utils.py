@@ -1,17 +1,10 @@
-import requests
-import sys
-import time
-import os
 import json
 import types
 from bson import Binary
 import base64
 import pickle
-import copy
 import cloudpickle
 import zlib
-import uuid
-import pika
 from exception_mixin import generic_exception_handler
 
 socketio = None
@@ -24,6 +17,7 @@ try:
     print("in communication utils with message queue:", MESSAGE_QUEUE)
 
     socketio = SocketIO(
+        async_mode="gevent",
         message_queue=MESSAGE_QUEUE,
         channel="socketio",
         logger=False,
