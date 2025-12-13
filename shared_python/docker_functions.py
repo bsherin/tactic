@@ -22,7 +22,7 @@ from aws_detection import am_fargate
 
 db_name = get_ssm_parameter("DB_NAME", "tacticdb")
 
-if am_fargate() and os.getenv("MONGO_URI_FARGATE"):
+if am_fargate():
     mongo_uri = get_ssm_parameter("MONGO_URI_FARGATE")
 else:
     mongo_uri = get_ssm_parameter("MONGO_URI", "tactic-mongo")
