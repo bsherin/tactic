@@ -164,7 +164,7 @@
     },
     {
       "name": "MONGO_URI_FARGATE",
-      "value": "mongodb://172.31.34.165:27017/tacticdb?directConnection=truetactic-mongo",
+      "value": "mongodb://172.31.34.165:27017/tacticdb?directConnection=true",
       "type": "String"
     },
     {
