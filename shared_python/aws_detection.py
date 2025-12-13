@@ -5,4 +5,7 @@ def running_on_aws():
         return True
     return os.getenv("RUNNING_ON_AWS", "true").lower() == "true"
 
+def am_fargate():
+    return os.getenv("ECS_CONTAINER_METADATA_URI_V4") or os.getenv("ECS_CONTAINER_METADATA_URI")
+
 on_aws = running_on_aws()
