@@ -101,7 +101,6 @@ class LoadedTileManager(RedisManager):
         tile_types = self.get_available_tile_types(username)
         if not tile_types or len(tile_types) == 0:
             return []
-        print("tile_types are {}".format(tile_types))
         modules = [self.get_module_from_type(username, tile_type) for tile_type in tile_types]
         print("modules are {}".format(modules))
         return modules
@@ -123,7 +122,7 @@ class LoadedTileManager(RedisManager):
         self.delete(f"failed_loaded_default_modules.{tile_module_name}", narrower=username)
 
         hdict = {
-            "category": category,
+            "category": str(category),
             "is_default": str(is_default),
             "module_name": tile_module_name,
             "module_code": module_code,

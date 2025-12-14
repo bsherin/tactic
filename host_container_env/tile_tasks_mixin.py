@@ -153,7 +153,7 @@ class TileTasksMixin:
     @task_worthy
     def get_tile_names_task(self, data):
         the_user = self.get_user_from_data(data)
-        return {"tile_names": the_user.tile_names}
+        return {"tile_names": the_user.tile_names()}
 
     @task_worthy
     def create_duplicate_tile_task(self, data):
@@ -275,6 +275,8 @@ class TileTasksMixin:
                 is_default = data["is_default"]
             else:
                 is_default = False
+            if category is None:
+                category = "basic"
             loaded_tile_manager.add_user_tile_module(the_user.username,
                                                         category,
                                                         res_dict["tile_name"],
