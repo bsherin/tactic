@@ -413,6 +413,7 @@ function ReactCodemirror6(props) {
     }, []);
 
     const handleAutocompleteDelta = useCallback((data) =>{
+        if (!editorView.current.hasFocus) return;
         if (data.cmUniqueId !== cmUniqueId.current) {
             return
         }
@@ -671,6 +672,9 @@ function ReactCodemirror6(props) {
     }
 
     function handleBlur() {
+        if (editorView.current) {
+            setGhostText(editorView.current, "");
+        }
         if (!readOnlyRef.current && props.handleBlur) {
             props.handleBlur(editorView.current.state.doc.toString());
         }

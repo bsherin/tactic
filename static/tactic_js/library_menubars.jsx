@@ -246,7 +246,7 @@ function AllMenubar(props) {
                 },
                 {
                     name_text: "Reset", icon_name: "reset",
-                    click_handler: props.unload_all_tiles, res_type: "tile"
+                    click_handler: props.unload_all_tiles
                 },
             ],
             Compare: [

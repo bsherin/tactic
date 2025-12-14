@@ -65,13 +65,18 @@ class HostUtilityWorker:
         self.worker = worker
         self.connection, self.channel = get_pika_connection_with_retries()
         self.utility_interval = int(get_ssm_parameter("HOST_UTILITY_INTERVAL_SECS", 60))
+        self.initial_utility_interval = 5
         self.last_publish = time.time()
         self.last_global_ids = []
 
     def utility_loop(self):
         while True:
             self.do_utilities()
-            time.sleep(self.utility_interval)
+            if self.worker.tile_registry.reconciled_tiles:
+                interval = self.utility_interval
+            else:
+                interval = self.initial_utility_interval
+            time.sleep(interval)
 
     def do_utilities(self):
         if self.worker.channel is None:
@@ -333,7 +338,7 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
             self.submit_response(task_packet, result_data)
             return
 
-        if data["tile_type"] in loaded_tile_manager.get_loaded_tile_types(username):
+        if data["tile_type"] in loaded_tile_manager.get_available_tile_types(username):
             self.submit_response(task_packet, {"success": True})
             return
         else:
@@ -437,7 +442,7 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
 
     def get_tile_types(self, user_id):
         the_user = load_user(user_id)
-        tile_types = loaded_tile_manager.get_user_available_tile_types(the_user.username)
+        tile_types = loaded_tile_manager.get_categorized_available_tile_types(the_user.username)
         icon_dict = {}
         for cat_types in tile_types.values():
             for ttype in cat_types:

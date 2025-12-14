@@ -307,4 +307,6 @@ class TileContainerRegistry(ServiceRegistry):
             self.delete(tile_id)
             self.worker.channel.queue_delete(tile_id)
             self.worker.channel.queue_delete(f"kill_{tile_id}")
-        self.reconciled_tiles = True
+        if not self.reconciled_tiles:
+            print("*** reconciled tiles, found {} running tiles ***")
+            self.reconciled_tiles = True

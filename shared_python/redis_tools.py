@@ -226,7 +226,7 @@ class RedisManager(object):
 
     def get_keys_with_base(self, base, narrower=None, tail_only=False):
         full_redis_key = self.expand_key(base, narrower)
-        self.scan_keys(f"{full_redis_key}.*", tail_only=tail_only)
+        return self.scan_keys(f"{full_redis_key}.*", tail_only=tail_only)
 
     @staticmethod
     def get_tail(kstring):

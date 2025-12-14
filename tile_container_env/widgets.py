@@ -79,7 +79,11 @@ class Widget(object):
 
         return
 
+    def preprocess_widget_data(self, widget_data):
+        return widget_data
+
     def set(self, widget_data):
+        widget_data = self.preprocess_widget_data(widget_data)
         for attr in self.extra_fields:
             if attr in widget_data:
                 if attr == "style":
@@ -313,6 +317,11 @@ class TableWidget(Widget):
             "style": self.style,
             "availableRows": min(len(self._value), MAX_TABLE_SIZE),
         }
+
+    def preprocess_widget_data(self, widget_data):
+        if "value" in widget_data:
+            widget_data["value"] = self.convert_data_to_dlist(widget_data["value"], max_rows=MAX_TABLE_SIZE)
+        return widget_data
 
     @staticmethod
     def convert_df_to_dictlist(df, max_rows=None):

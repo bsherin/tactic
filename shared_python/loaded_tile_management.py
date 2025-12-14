@@ -44,7 +44,7 @@ class LoadedTileManager(RedisManager):
         return error_list
 
     def add_failed_load(self, module_name, username):
-        self.set("failed_loaded_default_modules", module_name, narrower=username)
+        self.set(f"failed_loaded_default_modules.{module_name}", "1", narrower=username)
 
     def remove_user(self, username):
         all_keys = self.scan_keys_with_prefix("*", narrower=username)
@@ -55,58 +55,55 @@ class LoadedTileManager(RedisManager):
     def tile_type_string(username):
         return "tm\.{}\.user_tiles\.(.*)?\.(.*)".format(username)
 
-    def get_user_available_tile_types(self, username, nested=False):
-        tile_types = {}
-        all_keys = self.scan_keys_with_prefix("user_tiles.*", narrower=username)
+    def get_categorized_available_tile_types(self, username, nested=False):
+        tile_types = self.get_available_tile_types(username)
+        categorized_types = {}
         try:
-            if len(all_keys) == 0:
+            if len(tile_types) == 0:
                 print("user tiles don't seem to be loaded. so load them")
                 self.load_user_default_tiles(username)
                 if nested:
                     return {}
-                return self.get_user_available_tile_types(username, nested=True)
-            for k in all_keys:
-                tile_type = self.get_tail(k)
+                return self.get_categorized_available_tile_types(username, nested=True)
+            for tile_type in tile_types:
                 tile_data = self.get_hash_dict(f"user_tiles.{tile_type}", narrower=username)
                 cat = tile_data.get("category", "nocat")
-                if cat not in tile_types:
-                    tile_types[cat] = []
-                tile_types[cat].append(tile_type)
+                if cat not in categorized_types:
+                    categorized_types[cat] = []
+                categorized_types[cat].append(tile_type)
 
         except AttributeError:
             if nested:  # avoid infinite recursion
                 return {}
             print("user tiles don't seem to be loaded. so load them")
             self.load_user_default_tiles(username)
-            return self.get_user_available_tile_types(username, nested=True)
-        return tile_types
+            return self.get_categorized_available_tile_types(username, nested=True)
+        return categorized_types
 
     def get_failed_loads_list(self, username):
-        keys = self.get_keys_with_base("failed_loaded_default_modules", tail_only=True)
-        if not keys:
+        module_names = self.get_keys_with_base("failed_loaded_default_modules", narrower=username, tail_only=True)
+        if not module_names:
             return []
         else:
-            return sorted(keys)
+            return sorted(module_names)
 
     def unload_user_tiles(self, username):
         self.delete_keys_with_prefix("*", narrower=username)
         self.load_user_default_tiles(username)
 
-    def get_loaded_tile_types(self, username):
-        if self.exists("user_tiles", narrower=username):
-            return self.get_keys_with_base("user_tiles", narrower=username, tail_only=True)
-        else:
-            return []
-
     def get_module_from_type(self, username, tile_type):
         return self.get_hash_entry(f"user_tiles.{tile_type}", "module_name", narrower=username)
 
+    def get_available_tile_types(self, username):
+        return self.get_keys_with_base("user_tiles", narrower=username, tail_only=True)
+
     def get_loaded_user_modules(self, username):
-        keys = self.get_keys_with_base("user_tiles.*", narrower=username)
-        if not keys or len(keys) == 0:
+        tile_types = self.get_available_tile_types(username)
+        if not tile_types or len(tile_types) == 0:
             return []
-        tile_types = self.get_user_available_tile_types(username)
+        print("tile_types are {}".format(tile_types))
         modules = [self.get_module_from_type(username, tile_type) for tile_type in tile_types]
+        print("modules are {}".format(modules))
         return modules
 
     def unload_one_tile(self, username, tile_name):
@@ -114,7 +111,7 @@ class LoadedTileManager(RedisManager):
         return
 
     def unload_one_module(self, username, tile_module_name):
-        tile_types = self.get_user_available_tile_types(username)
+        tile_types = self.get_available_tile_types(username)
         for tile_type in tile_types:
             module_name = self.get_module_from_type(username, tile_type)
             if module_name == tile_module_name:

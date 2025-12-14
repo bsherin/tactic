@@ -209,6 +209,23 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
     def get_tile_info(self, sid):
         return self.get_session(sid).tile_info
 
+    @staticmethod
+    def remove_dead_tiles(pdictOriginal):
+        pdict = copy.copy(pdictOriginal)
+        if "tile_list" in pdict["interface_state"]:
+            interface_tile_ids = [entry["tile_id"] for entry in pdict["interface_state"]["tile_list"]]
+        else:
+            interface_tile_ids = []
+        if "tile_instances" not in pdict:
+            return pdict
+        else:
+            tile_instance_ids = list(pdict["tile_instances"].keys())
+            ## get get the ids that are in tile_instances but not in interface_state
+            dead_tile_ids = [tid for tid in tile_instance_ids if tid not in interface_tile_ids]
+            for dead_tile_id in dead_tile_ids:
+                del pdict["tile_instances"][dead_tile_id]
+            return pdict
+
     def recreate_from_save(self, sid, project_name, username, unique_id=None):
         print("entering recreate_from_save")
         if unique_id is None:
@@ -226,6 +243,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
             project_dict = self.read_project_dict_from_doc(doc)
             self.delete_temp_data(unique_id)
 
+        project_dict = self.remove_dead_tiles(project_dict)
         error_messages = []
         if "doc_type" not in project_dict:  # legacy this is for backward compatibility
             project_dict["doc_type"] = "table"
