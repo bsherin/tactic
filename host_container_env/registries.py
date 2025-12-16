@@ -321,12 +321,13 @@ class TileContainerRegistry(ServiceRegistry):
                     if cont_info and cont_info["status"] is not "idle" and cont_info.get("task_arn"):
                         exp = self.explain_stopped_task(cont_info.get("task_arn"))
                         cont = exp["container"]
-                        content = f"Tile {tile_id} is no longer running.\n"
+                        content = f"<pre>Tile {tile_id} is no longer running.\n"
                         if cont_info.get("parent"):
                             content += f"Parent: {cont_info.get('parent')}.\n"
                         content += f"Task info: {exp['lastStatus']}. Reason: {exp['stoppedReason']}.\n"
                         if cont:
-                            content += f"Container info: {cont.get('lastStatus')}. Reason: {cont.get('reason')}.\n"
+                            content += f"Container info: {cont.get('lastStatus')}. Reason: {cont.get('reason')}."
+                        content += "</pre>"
                         if exp["found"]:
                             self.worker.add_error_drawer_entry(
                                 title=f"Tile {tile_id} is no longer running",
