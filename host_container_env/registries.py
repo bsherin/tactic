@@ -256,7 +256,7 @@ class TileContainerRegistry(ServiceRegistry):
             ecs.update_task_protection(
                 cluster=ECS_CLUSTER,
                 tasks=[task_arn],
-                protectionEnabled=self.is_busy(tile_idf)
+                protectionEnabled=self.is_busy(tile_id)
             )
 
     def claim_tile(self, username, owner, parent):
