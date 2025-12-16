@@ -149,8 +149,8 @@ class TileContainerRegistry(ServiceRegistry):
 
     def register_tile_heartbeat(self, tile_id):
         if not self.exists(tile_id):
-            self.set_container_info(tile_id, "status", "idle")
-            declare_durable_queue(self.worker.channel, tile_id)
+            print(f"got a heartbeat from an undiscovered tile {tile_id}. will leave it to be discovered properly")
+            return
         self.set_container_info(tile_id, "last_heartbeat", str(time.time()))
 
     def sweep_tiles(self):
