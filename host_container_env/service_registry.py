@@ -79,7 +79,7 @@ class ServiceRegistry(RedisManager):
             "stopCode": t.get("stopCode"),
             "container": None,
         }
-        containers = task.get("containers", [])
+        containers = t.get("containers", [])
         if len(containers) > 0:
             c = containers[0]
             out["container"] = {
