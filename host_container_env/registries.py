@@ -318,15 +318,19 @@ class TileContainerRegistry(ServiceRegistry):
                 print("found a tile that is no longer running")
                 if on_aws:
                     cont_info = self.get_container_dict(tile_id)
-                    if cont_info and cont_info["status"] is not "idle" and cont_info.get("task_arn"):
+                    if cont_info and cont_info["status"] == "busy" and cont_info.get("task_arn"):
                         exp = self.explain_stopped_task(cont_info.get("task_arn"))
                         cont = exp["container"]
                         content = f"<pre>Tile {tile_id} is no longer running.\n"
                         if cont_info.get("parent"):
                             content += f"Parent: {cont_info.get('parent')}.\n"
-                        content += f"Task info: {exp['lastStatus']}. Reason: {exp['stoppedReason']}.\n"
+                        content += f"Task info:\n"
+                        content += f"Status: {exp['lastStatus']}\n"
+                        content += f"Reason: {exp['stoppedReason']}\n"
                         if cont:
-                            content += f"Container info: {cont.get('lastStatus')}. Reason: {cont.get('reason')}."
+                            content += f"Container Info info:\n"
+                            content += f"Status: {cont.get('lastStatus')}\n"
+                            content += f"Reason: {cont.get('reason')}\n"
                         content += "</pre>"
                         if exp["found"]:
                             self.worker.add_error_drawer_entry(
