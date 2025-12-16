@@ -106,7 +106,7 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         my_id = "host" + str(myport)
         QWorker.__init__(self, service_name="host", special_id=my_id)
         self.repository_user = User.get_user_by_username("repository")
-        self.tile_registry = TileContainerRegistry(self)
+        self.tile_registry = TileContainerRegistry(self, delete_all=True)
         self.main_registry = MainContainerRegistry(self)
         self.module_viewer_registry = ModuleViewerRegistry(self)
         self.client_session_registry = ClientSessionRegistry(self)
@@ -247,6 +247,7 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
     @task_worthy
     def register_tile_heartbeat(self, data):
         tile_id = data["tile_id"]
+        print("*** registering heartbeat for tile", tile_id)
         self.tile_registry.register_tile_heartbeat(tile_id)
 
     @task_worthy

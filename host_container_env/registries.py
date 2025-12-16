@@ -94,8 +94,10 @@ class TileContainerRegistry(ServiceRegistry):
     prefix = TILE_SERVICE
     extra_valid_ids = ["tile_test_container"]
 
-    def __init__(self, worker):
+    def __init__(self, worker, delete_all=False):
         ServiceRegistry.__init__(self, worker)
+        if delete_all:
+            self.delete_all()
         self.reconciled_tiles = False
         self.pull_desired_idle()
         self.registry_heartbeat()
@@ -299,7 +301,7 @@ class TileContainerRegistry(ServiceRegistry):
             for t in tasks:
                 tile_id = self.task_to_id(t)
                 if not self.exists(tile_id):
-                    print("discovered a new tile:", tile_id)
+                    print("discovered a new ecs tile:", tile_id)
                     self.mark_status(tile_id, "idle", task_arn=t["taskArn"], created=t["createdAt"], register_heartbeat=True)
         else:
             running_ids = self.list_docker_tile_containers()

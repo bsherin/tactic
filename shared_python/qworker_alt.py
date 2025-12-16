@@ -57,9 +57,6 @@ def task_worthy_manual_submit(m):
     return m
 
 
-heartbeat_time = 60
-
-
 def current_timestamp():
     return datetime.datetime.timestamp(datetime.datetime.utcnow())
 

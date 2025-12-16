@@ -28,6 +28,15 @@ class ServiceRegistry(RedisManager):
     def expand_key(self, cont_id, narrower=None):
         return f"service.{self.service_name}.{cont_id}"
 
+    def delete_all(self):
+        # non-blocking deletion per key, works across slots
+        pattern = f"service.{self.service_name}.*"
+        for k in self.cli.scan_iter(match=pattern, count=5000):
+            try:
+                self.cli.unlink(k)  # fall back to delete if older Redis
+            except Exception:
+                self.cli.delete(k)
+
     def task_to_id(self, task):
         return f'{self.id_prefix}{task["taskArn"].split("/")[-1]}'
 
@@ -74,6 +83,7 @@ class ServiceRegistry(RedisManager):
         self.set_hash_dict(cont_id, container_info)
 
     def set_container_info(self, cont_id, hash_key, value):
+        print(f"Setting container info: {cont_id} [{hash_key}] = {value}")
         self.set_hash_entry(cont_id, hash_key, value)
 
     def set_container_info_from_dict(self, cont_id, info_dict):

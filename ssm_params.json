@@ -88,7 +88,7 @@
     },
     {
       "name": "HEARTBEAT_INTERVAL_SECS",
-      "value": "60",
+      "value": "20",
       "type": "String"
     },
     {
