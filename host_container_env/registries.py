@@ -270,6 +270,11 @@ class TileContainerRegistry(ServiceRegistry):
                 })
                 self.mark_status(tile_id, "busy")
                 if on_aws:
+                    task_arn = self.get_arn(tile_id)
+                    if not self.is_task_running(task_arn): # Check if the task is actually running
+                        print(f"Task {task_arn} for tile {tile_id} is not actually running, skipping.")
+                        self.delete(tile_id)
+                        continue
                     return tile_id, self.get_arn(tile_id)
                 else:
                     return tile_id, ""
@@ -283,30 +288,38 @@ class TileContainerRegistry(ServiceRegistry):
         return get_tile_container_ids()
 
     def reconcile_tiles(self):
+        print("***reconcile_tiles called***")
         if self.worker.channel is None:
             print("in reconcile_tiles, channel isn't ready yet")
             return
         if on_aws:
             tasks = self.list_running_tile_tasks()
             running_ids = [self.task_to_id(t) for t in tasks]
+            print("got running_ids", running_ids)
             for t in tasks:
                 tile_id = self.task_to_id(t)
                 if not self.exists(tile_id):
+                    print("discovered a new tile:", tile_id)
                     self.mark_status(tile_id, "idle", task_arn=t["taskArn"], created=t["createdAt"], register_heartbeat=True)
         else:
             running_ids = self.list_docker_tile_containers()
+            print("got running_ids", running_ids)
             for tile_id in running_ids:
                 if not self.exists(tile_id):
+                    print("discovered a new tile:", tile_id)
                     self.mark_status(tile_id, "idle", register_heartbeat=True)
         ids_to_delete = []
         tile_ids = self.container_ids()
+        print("all tile_ids from redis are", tile_ids)
         for tile_id in tile_ids:
             if tile_id not in running_ids:
                 ids_to_delete.append(tile_id)
+        print("ids_to_delete is", ids_to_delete)
         for tile_id in ids_to_delete:
+            print("deleting tile:", tile_id)
             self.delete(tile_id)
             self.worker.channel.queue_delete(tile_id)
             self.worker.channel.queue_delete(f"kill_{tile_id}")
         if not self.reconciled_tiles:
-            print("*** reconciled tiles, found {} running tiles ***")
+            print(f"*** did initial tile reconcile ***")
             self.reconciled_tiles = True

@@ -174,6 +174,7 @@ class HeartbeatGenerator:
 
     def post_heartbeat(self):
         self._ensure_channel()
+        print("** posting heartbeat for tile " + self.tile_id)
         try:
             new_packet = {"source": self.tile_id,
                           "status": "presend",

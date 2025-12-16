@@ -31,6 +31,21 @@ class ServiceRegistry(RedisManager):
     def task_to_id(self, task):
         return f'{self.id_prefix}{task["taskArn"].split("/")[-1]}'
 
+    @staticmethod
+    def is_task_running(task_arn) -> bool:
+        resp = ecs.describe_tasks(
+            cluster=ECS_CLUSTER,
+            tasks=[task_arn],
+        )
+
+        tasks = resp.get("tasks", [])
+        if not tasks:
+            # Task ARN not found (expired / aged out)
+            return False
+
+        task = tasks[0]
+        return task["lastStatus"] == "RUNNING"
+
     def list_running_service_tasks(self):
         arns = []
         try:
