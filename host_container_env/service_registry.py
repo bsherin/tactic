@@ -57,6 +57,39 @@ class ServiceRegistry(RedisManager):
         task = tasks[0]
         return task["lastStatus"] == "RUNNING"
 
+    @staticmethod
+    def explain_stopped_task(task_arn):
+        resp = ecs.describe_tasks(
+            cluster=ECS_CLUSTER,
+            tasks=[task_arn],
+        )
+
+        tasks = resp.get("tasks", [])
+        if not tasks:
+            return {"found": False}
+
+        t = resp["tasks"][0]
+
+        out = {
+            "found": True,
+            "taskArn": t.get("taskArn"),
+            "lastStatus": t.get("lastStatus"),
+            "desiredStatus": t.get("desiredStatus"),
+            "stoppedReason": t.get("stoppedReason"),
+            "stopCode": t.get("stopCode"),
+            "container": None,
+        }
+        containers = task.get("containers", [])
+        if len(containers) > 0:
+            c = containers[0]
+            out["container"] = {
+                "name": c.get("name"),
+                "lastStatus": c.get("lastStatus"),
+                "exitCode": c.get("exitCode"),
+                "reason": c.get("reason")
+            }
+        return out
+
     def list_running_service_tasks(self):
         arns = []
         try:

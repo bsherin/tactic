@@ -315,6 +315,21 @@ class TileContainerRegistry(ServiceRegistry):
         print("all tile_ids from redis are", tile_ids)
         for tile_id in tile_ids:
             if tile_id not in running_ids:
+                print("found a tile that is no longer running")
+                if on_aws:
+                    cont_info = self.get_container_dict(tile_id)
+                    exp = self.explain_stopped_task(cont_info.get("task_arn"))
+                    cont = exp["container"]
+                    content = f"Tile {tile_id} is no longer running.\n"
+                    content += f"Task info: {exp['lastStatus']}. Reason: {exp['stoppedReason']}.\n"
+                    if cont:
+                        content += f"Container info: {cont.get('lastStatus')}. Reason: {cont.get('reason')}.\n"
+                    if exp["found"]:
+                        self.worker.add_error_drawer_entry(
+                            title=f"Tile {tile_id} is no longer running",
+                            content="content",
+                            user_id=cont_info.get("owner")
+                        )
                 ids_to_delete.append(tile_id)
         print("ids_to_delete is", ids_to_delete)
         for tile_id in ids_to_delete:
