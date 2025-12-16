@@ -42,6 +42,8 @@ class ServiceRegistry(RedisManager):
 
     @staticmethod
     def is_task_running(task_arn) -> bool:
+        if task_arn is None:
+            return False
         resp = ecs.describe_tasks(
             cluster=ECS_CLUSTER,
             tasks=[task_arn],
