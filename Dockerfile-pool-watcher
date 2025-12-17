@@ -6,4 +6,5 @@ RUN pip install -r requirements.txt
 ADD ./pool_container_env /code/
 ADD ./shared_python/rabbit_manage.py ./shared_python/aws_helpers.py ./shared_python/aws_detection.py /code/
 LABEL maintainer="Bruce L Sherin"
+ENV PYTHONUNBUFFERED=1
 CMD ["python", "-u", "pool_watcher.py"]

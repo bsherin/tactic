@@ -8,4 +8,5 @@ ADD ./shared_mongo_python /code
 ADD  ./module_viewer_container_env ./shared_python/exception_mixin.py ./shared_python/tactic_copilot_mixin.py ./shared_python/qworker.py \
 ./shared_python/session_store_s3.py ./shared_python/module_viewer_session.py ./shared_python/aws_detection.py  \
 ./shared_python/communication_utils.py ./shared_python/rabbit_manage.py ./shared_python/redis_tools.py ./shared_python/aws_helpers.py /code/
+ENV PYTHONUNBUFFERED=1
 CMD ["python", "-u", "module_viewer_main.py"]

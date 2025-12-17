@@ -1,14 +1,13 @@
 ARG BASE_IMAGE
 FROM ${BASE_IMAGE}
 WORKDIR /code
-ADD ./main_container_env/requirements.txt /code/requirements.txt
-RUN pip install -r requirements.txt
+ADD ./main_container_env/requirements.txt /code/main_container_env/requirements.txt
+RUN pip install -r /code/main_container_env/requirements.txt
 LABEL maintainer="Bruce L Sherin"
-ADD ./main_container_env /code
-ADD ./shared_mongo_python /code
-ADD  ./shared_python/exception_mixin.py ./shared_python/tactic_copilot_mixin.py \
-./shared_python/redis_tools.py ./shared_python/qworker.py ./shared_python/session_store_s3.py ./shared_python/communication_utils.py \
-./shared_python/loaded_tile_management.py ./shared_python/main_session.py ./shared_python/aws_detection.py \
-./shared_python/rabbit_manage.py ./shared_python/aws_helpers.py /code/
+ADD ./main_container_env /code/main_container_env
+ADD ./shared_python /code/shared_python
+ADD ./shared_mongo_python /code/shared_mongo_python
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONPATH=/code:/code/main_container_env:/code/shared_python:/code/shared_mongo_python
 # RUN python -m pip install --no-cache-dir "pydevd-pycharm==253.28086.55"
-CMD ["python", "-u", "main_main.py"]
+CMD ["python", "-u", "-m", "main_container_env.main_main"]

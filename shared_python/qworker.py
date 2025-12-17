@@ -47,7 +47,7 @@ blank_packet = {"source": None,
 if "USE_WAIT_TASKS" in os.environ:
     use_wait_tasks = os.environ.get("USE_WAIT_TASKS") == "True"
 else:
-    use_wait_tasks = False
+    use_wait_tasks = True
 
 
 task_worthy_methods = {}
@@ -108,6 +108,7 @@ class QWorker(ExceptionMixin):
             self.wait_queue_id = "wait_" + self.my_id
 
     def start_background_thread(self):
+        import os, threading
         while True:
             try:
                 self.connection, self.channel = get_pika_connection_with_retries(MAX_PIKA_RETRIES)

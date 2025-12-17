@@ -26,19 +26,15 @@ class DockerTileBackend(TileBackend):
                owner: Optional[str],
                parent: Optional[str],
                tile_id: Optional[str],
-               meta: Dict) -> Tuple[str, str]:
-        tid, _ = self.tile_registry.claim_tile(username, owner, parent)
+               meta:Dict,
+               project_name: Optional[str] = None,
+               tile_name: Optional[str] = None):
+        tid, _ = self.tile_registry.claim_tile(username, owner, parent, project_name=project_name, tile_name=tile_name)
         if tid:
             return tid, "", creds
         env = {
             "RUNNING_ON_AWS": False
         }
-
-        # volumes = {
-        #     self.resources_dir: {"bind": "/root/resources", "mode": "ro"},
-        # }
-        # if self.user_pool_dir:
-        #     volumes[self.user_pool_dir] = {"bind": "/mydisk", "mode": "rw"}
 
         other     = meta.get("other_name", "none")
         unique_id = tile_id or f"tile_{str(uuid.uuid4())}"
@@ -55,22 +51,22 @@ class DockerTileBackend(TileBackend):
             special_unique_id=unique_id,
 
         )
-        self.tile_registry.mark_status(tile_container_id, "busy", None, username=username, owner=owner, parent=parent, register_heartbeat=True)
-        return tile_container_id, "", creds
 
-    def mark_busy(self, tile_id: str):
-        self.tile_registry.mark_status(tile_id, "busy")
-        return
+        args = {
+            "username": username,
+            "owner": owner,
+            "parent": parent,
+            "tile_name": tile_name,
+            "project_name": project_name
+        }
+        self.tile_registry.mark_status(tile_container_id, "busy", **args)
+        return tile_container_id, "", creds
 
     def restart(self, tile_id: str):
         tdata = self.tile_registry.get_container_dict(tile_id)
         self.worker.post_task(tile_id, "restart", {})
         # self.worker.post_task(f"kill_{tile_id}", "restart", {})
         return tdata
-
-    def mark_idle(self, tile_id: str):
-        self.tile_registry.mark_status(tile_id, "idle")
-        return
 
     def terminate(self, tile_id: str):
         try:

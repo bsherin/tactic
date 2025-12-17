@@ -102,7 +102,6 @@ class LoadedTileManager(RedisManager):
         if not tile_types or len(tile_types) == 0:
             return []
         modules = [self.get_module_from_type(username, tile_type) for tile_type in tile_types]
-        print("modules are {}".format(modules))
         return modules
 
     def unload_one_tile(self, username, tile_name):

@@ -118,7 +118,6 @@ class ServiceRegistry(RedisManager):
         self.set_hash_dict(cont_id, container_info)
 
     def set_container_info(self, cont_id, hash_key, value):
-        print(f"Setting container info: {cont_id} [{hash_key}] = {value}")
         self.set_hash_entry(cont_id, hash_key, value)
 
     def set_container_info_from_dict(self, cont_id, info_dict):

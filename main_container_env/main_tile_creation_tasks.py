@@ -19,6 +19,8 @@ class TileCreationTasksMixin:
         self.mworker.post_task("host5000", "provide_tile", {
             "username": sess.username,
             "owner": sess.user_id,
+            "project_name": sess.project_name,
+            "tile_name": other_name,
             "parent": sid,
             "meta": mdata
         }, callback_func=callback)

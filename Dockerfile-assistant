@@ -6,4 +6,5 @@ RUN pip install -r requirements.txt
 LABEL maintainer="Bruce L Sherin"
 ADD  ./assistant_container_env ./shared_python/exception_mixin.py ./shared_python/qworker.py ./shared_python/aws_helpers.py ./shared_python/communication_utils.py ./shared_python/rabbit_manage.py /code/
 ADD ./shared_python/session_store_s3.py ./shared_python/assistant_session.py ./shared_python/redis_tools.py ./shared_python/aws_detection.py /code/
+ENV PYTHONUNBUFFERED=1
 CMD ["python", "-u", "assistant.py"]

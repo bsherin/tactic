@@ -271,6 +271,7 @@ class LoadSaveTasksMixin:
         sdict["user_id"] = user_id
         sdict["ppi"] = data["ppi"]
         sdict["global_id"] = data["global_id"]
+        sdict["project_name"] = project_name
         doc_type = sdict["doc_type"]
         self.ss.initialize_session(local_id, sdict)
         sess = self.get_session(local_id)
@@ -879,6 +880,7 @@ class LoadSaveTasksMixin:
     @task_worthy
     def update_reload_dict(self, data_dict):
         sid = data_dict["sid"]
+        print("in update_reload_dict for sid {}".format(sid))
         tile_info = self.get_session(sid).tile_info
         tile_info.set_reload_dict(data_dict["tile_id"], data_dict["reload_dict"])
         return {"success": True}

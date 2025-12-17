@@ -1,0 +1,11 @@
+services:
+  tactic_host1:
+    # If your Dockerfile still uses ENTRYPOINT, this clears it
+    entrypoint: []
+    container_name: tactic_host5000_pycharm
+    command: ["sleep", "infinity"]
+    environment:
+      - GEVENT_SUPPORT=True
+
+  tactic_main:
+    command: ["sleep", "infinity"]

@@ -14,6 +14,7 @@ services:
       - start_project
       - start_development
       - start_mongo_only
+      - debug_host
     networks:
       - tactic-net
     ports:
@@ -31,6 +32,7 @@ services:
     container_name: tactic-redis
     profiles:
       - start_development
+      - debug_host
     networks:
       - tactic-net
     ports:
@@ -51,6 +53,7 @@ services:
     restart: always
     profiles:
       - start_development
+      - debug_host
     hostname: megaplex
     container_name: megaplex
     networks:
@@ -113,14 +116,15 @@ services:
       owner: host
       parent: host
       other_name: none
-    env_file:
-      - ${ROOT_DIR}/env.list
     environment:
       - MY_ID=host5000
       - MYPORT=5000
       - USE_DEVELOPMENT_BUNDLES=${USE_DEVELOPMENT_BUNDLES}
       - RUNNING_ON_AWS=${RUNNING_ON_AWS}
       - USE_GEVENT=True
+      - DEBUG=${DEBUG}
+      - PYCHARM_DEBUG=1
+      - GEVENT_SUPPORT=True
     volumes:
       - type: bind
         source: "/var/run/docker.sock"
@@ -154,8 +158,6 @@ services:
       owner: host
       parent: host
       other_name: none
-    env_file:
-      - "${ROOT_DIR}/env.list"
     environment:
       - MY_ID=host5001
       - MYPORT=5001
@@ -180,11 +182,10 @@ services:
 
   tile_test_container:
     image: bsherin/tactic-tile:${IMG_SUFFIX}
-    depends_on:
-      - tactic_host1
     profiles:
       - start_project
       - start_development
+      - debug_host
     restart: always
     init: true
     container_name: tile_test_container
@@ -195,8 +196,6 @@ services:
       owner: host
       parent: host
       other_name: tile_test_container
-    env_file:
-      - "${ROOT_DIR}/env.list"
     environment:
       - MY_ID=tile_test_container
       - PPI=0
@@ -234,11 +233,10 @@ services:
       - build_non_base
       - start_project
       - start_development
+      - debug_host
     image: bsherin/tactic-log-streamer:${IMG_SUFFIX}
     container_name: tactic_log_streamer
     platform: ${PLATFORM}
-    env_file:
-      - "${ROOT_DIR}/env.list"
     labels:
       project: tactic
       my_id: tactic_log_streamer
@@ -272,6 +270,7 @@ services:
       - build_non_base
       - start_development
       - start_project
+      - debug_host
     labels:
       project: tactic
       my_id: assistant
@@ -280,8 +279,6 @@ services:
       other_name: assistant
     image: bsherin/tactic-assistant:${IMG_SUFFIX}
     platform: ${PLATFORM}
-    env_file:
-      - "${ROOT_DIR}/env.list"
     environment:
       - PYTHONUNBUFFERED=0
       - DEBUG=${DEBUG}
@@ -311,6 +308,7 @@ services:
       - build_project
       - build_server_project
       - build_non_base
+      - debug_host
     restart: always
     container_name: mongo_watcher
     init: true
@@ -359,6 +357,7 @@ services:
       - start_development
       - build_server_project
       - build_non_base
+      - debug_host
     build:
       context: .
       dockerfile: Dockerfile-pool-watcher-s3
@@ -398,8 +397,7 @@ services:
       - start_development
       - build_server_project
       - build_non_base
-    env_file:
-      - ${ROOT_DIR}/env.list
+      - debug_host
     environment:
       - USE_GEVENT=False
       - DEBUG=${DEBUG}
@@ -430,8 +428,7 @@ services:
       - build_server_project
       - build_non_base
       - start_development
-    env_file:
-      - "${ROOT_DIR}/env.list"
+      - debug_host
     environment:
       - PYTHONUNBUFFERED=0
       - OWNER=host

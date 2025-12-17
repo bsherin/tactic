@@ -41,7 +41,7 @@ class MainSessionStore(SessionStoreS3):
         "global_id": {"default": None},
         "doc_type": {"default": "table"},
         "is_legacy_save": {"default": False},
-        "project_name":  {"default": None},
+        "project_name":  {"default": ""},
         "left_fraction": {"default": INITIAL_LEFT_FRACTION},
         "is_shrunk": {"default": False},
         "collection_name": {"default": ""},

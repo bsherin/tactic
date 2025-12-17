@@ -91,7 +91,6 @@ class TileTasksMixin:
             "tile_collection_name": the_user.tile_collection_name(),
             "mdata": mdata
         }
-        print("returning result from initiate_creator_in_context: ", result)
         return result
 
     @task_worthy

@@ -50,8 +50,11 @@ class ECSTileBackend(TileBackend):
             "region": os.getenv("AWS_REGION", "us-east-2"),
         }
 
-    def launch(self, username: str, owner: Optional[str], parent: Optional[str], tile_id: Optional[str], meta: Dict) -> Tuple[str, str]:
-        tid, task_arn = self.tile_registry.claim_tile(username, owner, parent)
+    def launch(self, username: str, owner: Optional[str],
+               parent: Optional[str], tile_id: Optional[str], meta: Dict,
+               project_name: Optional[str] = None,
+               tile_name: Optional[str] = None):
+        tid, task_arn = self.tile_registry.claim_tile(username, owner, parent, project_name, tile_name)
         if tid:
             print("***Claimed warm tile: ***")
             creds = self.issue_user_s3_session(username)
@@ -74,24 +77,16 @@ class ECSTileBackend(TileBackend):
             other_name=meta.get("other_name", "none"),
         )
         tile_id = f"tile_{uid}"
-        self.tile_registry.mark_status(tile_id, "busy", owner=username, parent=parent, register_heartbeat=True)
+        args = {
+            "owner": username,
+            "parent": parent,
+            "project_name": project_name,
+            "tile_name": tile_name,
+            "register_heartbeat": True
+        }
+        self.tile_registry.mark_status(tile_id, "busy", **args)
         creds = self.issue_user_s3_session(username)
         return uid, task_arn, creds
-
-    def mark_busy(self, tile_id: str):
-        self.tile_registry.mark_status(tile_id, "busy")
-
-    def mark_idle(self, tile_id: str):
-        try:
-            ecs = _ecs()
-            task_arn = self._lookup_task_arn(tile_id)
-            if task_arn:
-                ecs.update_task_protection(
-                    cluster=self.cluster, tasks=[task_arn], protectionEnabled=False
-                )
-        except Exception:
-            pass
-        self.tile_registry.mark_status(tile_id, "idle")
 
     def restart(self, tile_id: str):
         tdata = self.tile_registry.get(tile_id)

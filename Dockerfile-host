@@ -9,4 +9,5 @@ ADD  ./host_container_env /code
 ADD ./shared_mongo_python /code
 ADD ./shared_python /code
 EXPOSE 5000
-ENTRYPOINT ["/usr/local/bin/gunicorn", "-k", "geventwebsocket.gunicorn.workers.GeventWebSocketWorker", "--log-level", "debug", "-b", "0.0.0.0:5000", "host_main:app"]
+ENV PYTHONUNBUFFERED=1
+CMD ["/usr/local/bin/gunicorn", "-k", "geventwebsocket.gunicorn.workers.GeventWebSocketWorker", "--log-level", "debug", "-b", "0.0.0.0:5000", "host_main:app"]

@@ -9,5 +9,6 @@ ADD  ./shared_python/exception_mixin.py ./shared_python/qworker_alt.py ./shared_
 ./shared_python/aws_helpers.py ./shared_python/aws_detection.py \
 ./shared_python/communication_utils.py ./shared_python/aws_helpers.py ./shared_python/docker_functions.py ./shared_python/rabbit_manage.py /code/
 LABEL maintainer="Bruce L Sherin"
+ENV PYTHONUNBUFFERED=1
 # RUN python -m pip install --no-cache-dir "pydevd-pycharm==253.28086.55"
 CMD ["python", "-u", "log_streamer_main.py"]

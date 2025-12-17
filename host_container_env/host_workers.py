@@ -247,7 +247,6 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
     @task_worthy
     def register_tile_heartbeat(self, data):
         tile_id = data["tile_id"]
-        print("*** registering heartbeat for tile", tile_id)
         self.tile_registry.register_tile_heartbeat(tile_id)
 
     @task_worthy

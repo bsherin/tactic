@@ -91,7 +91,6 @@ class TileWorker(QWorker):
         widgets.in_pseudo_tile = False
         self.get_megaplex_task_now = False
         self.use_svg = True
-        self.generate_heartbeats = True
 
         print(f"my_id = {self.my_id}")
 
@@ -265,10 +264,9 @@ class TileWorker(QWorker):
         return reload_attrs
 
     def send_updated_reload_dict(self):
-        self.post_task("main_service", "update_reload_dict",
-                       {"tile_id": self.my_id,
-                        "sid": self.tile_instance.sid,
-                        "reload_dict": self.get_reload_dict()})
+        print("sending updated reload dict to main service with sid " + str(self.tile_instance.sid))
+        self.post_to_main("update_reload_dict",
+                       {"tile_id": self.my_id, "reload_dict": self.get_reload_dict()})
         return
 
     @task_worthy

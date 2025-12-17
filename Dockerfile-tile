@@ -37,7 +37,8 @@ ENV HF_HOME=/var/cache/hf \
     TRANSFORMERS_CACHE=/var/cache/hf/transformers \
     NLTK_DATA=/root/nltk \
     MPLCONFIGDIR=/var/cache/matplotlib \
-    TORCH_HOME=/var/cache/torch
+    TORCH_HOME=/var/cache/torch \
+    PYTHONUNBUFFERED=1
 
 # --- New: copy entrypoint and use ENTRYPOINT + keep your original CMD ---
 COPY entrypoint.sh /app/entrypoint.sh

@@ -1,4 +1,3 @@
-import os
 import time
 
 from rabbit_manage import declare_durable_queue
@@ -93,6 +92,7 @@ class TileContainerRegistry(ServiceRegistry):
     service_name = TILE_SERVICE
     prefix = TILE_SERVICE
     extra_valid_ids = ["tile_test_container"]
+    base_fields = ["username", "owner", "parent", "created", "project_name", "tile_name"]
 
     def __init__(self, worker, delete_all=False):
         ServiceRegistry.__init__(self, worker)
@@ -148,7 +148,7 @@ class TileContainerRegistry(ServiceRegistry):
             print(f"Metrics publishing is disabled in non-ECS mode. {self.idle_tiles} idle tiles, {self.running_tiles} running tiles.")
 
     def register_tile_heartbeat(self, tile_id):
-        if not self.exists(tile_id):
+        if not self.exists(tile_id) and not tile_id == "tile_test_container":
             print(f"got a heartbeat from an undiscovered tile {tile_id}. will leave it to be discovered properly")
             return
         self.set_container_info(tile_id, "last_heartbeat", str(time.time()))
@@ -157,16 +157,7 @@ class TileContainerRegistry(ServiceRegistry):
 
         def got_main_ids(data):
             main_session_ids = data["sids"]
-            now = time.time()
             tile_ids = self.container_ids()
-            for tile_id in tile_ids:
-                last_heartbeat_str = self.get_container_info(tile_id, "last_heartbeat")
-                if last_heartbeat_str is None:
-                    self.set_container_info(tile_id, "last_heartbeat", str(time.time()))
-                    return
-                last_heartbeat = float(last_heartbeat_str)
-                if (now - last_heartbeat) > TILE_HEARTBEAT_TIMEOUT_SECS:
-                    self.worker.destroy_tile(tile_id, force_terminate=True)
             busy_ids = [tile_id for tile_id in tile_ids if self.is_busy(tile_id)]
             for tile_id in busy_ids:
                 parent = self.get_container_info(tile_id, "parent")
@@ -195,24 +186,19 @@ class TileContainerRegistry(ServiceRegistry):
                 return float(last_interaction_str)
         return None
 
-    def mark_status(self, tile_id, status, task_arn=None, username=None, owner=None, parent=None, created=None, register_heartbeat=False):
+    def mark_status(self, tile_id, status, **kwargs):
         if not self.exists(tile_id):
             self.set_container_info(tile_id, "status", "idle")
             declare_durable_queue(self.worker.channel, tile_id)
         self.set_container_info(tile_id, "status", status)
-        if username is not None:
-            self.set_container_info(tile_id, "username", username)
-        if owner is not None:
-            self.set_container_info(tile_id, "owner", owner)
-        if parent is not None:
-            self.set_container_info(tile_id, "parent", parent)
-        if created is not None:
-            self.set_container_info(tile_id, "created", str(created))
+        for field in self.base_fields:
+            if field in kwargs and kwargs[field] is not None:
+                self.set_container_info(tile_id, field, kwargs[field])
         if on_aws:
-            if task_arn is not None:
-                self.set_container_info(tile_id, "task_arn", task_arn)
+            if "task_arn" in kwargs and kwargs["task_arn"] is not None:
+                self.set_container_info(tile_id, "task_arn", kwargs["task_arn"])
             self.set_task_protection(tile_id)
-        if register_heartbeat:
+        if "register_heartbeat" in kwargs and kwargs["register_heartbeat"]:
             self.set_container_info(tile_id, "last_heartbeat", str(time.time()))
 
     @property
@@ -236,7 +222,9 @@ class TileContainerRegistry(ServiceRegistry):
             "status": "idle",
             "username": None,
             "owner": None,
-            "parent": None
+            "parent": None,
+            "project_name": None,
+            "tile_name": None,
         })
         if on_aws:
             self.set_task_protection(tile_id)
@@ -252,33 +240,43 @@ class TileContainerRegistry(ServiceRegistry):
     def deregister(self, tile_id):
         self.delete(tile_id)
 
-    def set_task_protection(self, tile_id):
+    def set_task_protection(self, tile_id, force_busy=False):
         task_arn = self.get_arn(tile_id)
+        enabled = force_busy or self.is_busy(tile_id)
         if task_arn:
-            ecs.update_task_protection(
+            return ecs.update_task_protection(
                 cluster=ECS_CLUSTER,
                 tasks=[task_arn],
-                protectionEnabled=self.is_busy(tile_id)
+                protectionEnabled=enabled
             )
+        return None
 
-    def claim_tile(self, username, owner, parent):
+    def claim_tile(self, username, owner, parent, project_name=None, tile_name=None):
         tile_ids = self.container_ids()
+        args = {
+            "username": username,
+            "owner": owner,
+            "parent": parent,
+            "project_name": project_name,
+            "tile_name": tile_name,
+        }
         for tile_id in tile_ids:
             if self.is_idle(tile_id):
-                self.set_container_info_from_dict(tile_id, {
-                    "username": username,
-                    "owner": owner,
-                    "parent": parent
-                })
-                self.mark_status(tile_id, "busy")
                 if on_aws:
                     task_arn = self.get_arn(tile_id)
                     if not self.is_task_running(task_arn): # Check if the task is actually running
                         print(f"Task {task_arn} for tile {tile_id} is not actually running, skipping.")
                         self.delete(tile_id)
                         continue
+                    resp = self.set_task_protection(tile_id, force_busy=True)
+                    if resp is None or ("failures" in resp and len(resp["failures"]) > 0):
+                        print(f"Failed to set task protection for tile {tile_id}, skipping.")
+                        continue
+
+                    self.mark_status(tile_id, "busy", **args)
                     return tile_id, self.get_arn(tile_id)
                 else:
+                    self.mark_status(tile_id, "busy", **args)
                     return tile_id, ""
         return None, None
 
@@ -288,6 +286,35 @@ class TileContainerRegistry(ServiceRegistry):
     @staticmethod
     def list_docker_tile_containers():
         return get_tile_container_ids()
+
+    def notify_user_tile_lost(self, tile_id, exp=None, reason=None):
+        cont_info = self.get_container_dict(tile_id)
+        content = f"<pre>Tile is no longer running.\n"
+        if cont_info.get("project_name"):
+            content += f"Project: {cont_info.get('project_name')}.\n"
+        elif cont_info.get("parent"):
+            content += f"Parent: {cont_info.get('parent')}.\n"
+        if cont_info.get("tile_name"):
+            content += f"Tile name: {cont_info.get('tile_name')}.\n"
+        else:
+            content += f"Tile ID: {tile_id}.\n"
+        if exp is not None and exp.get("found"):
+            content += f"Task info:\n"
+            content += f"Status: {exp['lastStatus']}\n"
+            content += f"Reason: {exp['stoppedReason']}\n"
+            cont = exp["container"]
+            if cont:
+                content += f"Container info:\n"
+                content += f"Status: {cont.get('lastStatus')}\n"
+                content += f"Reason: {cont.get('reason')}\n"
+        elif reason is not None:
+            content += f"Reason: {reason}\n"
+        content += "</pre>"
+        self.worker.add_error_drawer_entry(
+            title=f"Tile is no longer running",
+            content=content,
+            user_id=cont_info.get("owner")
+        )
 
     def reconcile_tiles(self):
         print("***reconcile_tiles called***")
@@ -302,43 +329,47 @@ class TileContainerRegistry(ServiceRegistry):
                 tile_id = self.task_to_id(t)
                 if not self.exists(tile_id):
                     print("discovered a new ecs tile:", tile_id)
-                    self.mark_status(tile_id, "idle", task_arn=t["taskArn"], created=t["createdAt"], register_heartbeat=True)
+                    self.mark_status(tile_id, "idle", **{
+                        "task_arn": t["taskArn"],
+                        "created": t["createdAt"]
+                    })
         else:
             running_ids = self.list_docker_tile_containers()
             print("got running_ids", running_ids)
             for tile_id in running_ids:
                 if not self.exists(tile_id):
                     print("discovered a new tile:", tile_id)
-                    self.mark_status(tile_id, "idle", register_heartbeat=True)
+                    self.mark_status(tile_id, "idle")
         ids_to_delete = []
         tile_ids = self.container_ids()
+        if "tile_test_container" in tile_ids:
+            tile_ids.remove("tile_test_container")
         print("all tile_ids from redis are", tile_ids)
         for tile_id in tile_ids:
+            cont_info = self.get_container_dict(tile_id)
             if tile_id not in running_ids:
                 print("found a tile that is no longer running")
-                if on_aws:
-                    cont_info = self.get_container_dict(tile_id)
-                    if cont_info and cont_info["status"] == "busy" and cont_info.get("task_arn"):
+                if cont_info and cont_info["status"] == "busy":
+                    if on_aws and cont_info.get("task_arn"):
                         exp = self.explain_stopped_task(cont_info.get("task_arn"))
-                        cont = exp["container"]
-                        content = f"<pre>Tile {tile_id} is no longer running.\n"
-                        if cont_info.get("parent"):
-                            content += f"Parent: {cont_info.get('parent')}.\n"
-                        content += f"Task info:\n"
-                        content += f"Status: {exp['lastStatus']}\n"
-                        content += f"Reason: {exp['stoppedReason']}\n"
-                        if cont:
-                            content += f"Container Info info:\n"
-                            content += f"Status: {cont.get('lastStatus')}\n"
-                            content += f"Reason: {cont.get('reason')}\n"
-                        content += "</pre>"
-                        if exp["found"]:
-                            self.worker.add_error_drawer_entry(
-                                title=f"Tile {tile_id} is no longer running",
-                                content=content,
-                                user_id=cont_info.get("owner")
-                            )
+                        self.notify_user_tile_lost(tile_id, exp=exp)
+                    else:
+                        self.notify_user_tile_lost(tile_id)
                 ids_to_delete.append(tile_id)
+                continue
+            else:
+                last_heartbeat_str = self.get_container_info(tile_id, "last_heartbeat")
+                if last_heartbeat_str is None:
+                    self.set_container_info(tile_id, "last_heartbeat", str(time.time()))
+                    continue
+                last_heartbeat = float(last_heartbeat_str)
+                now = time.time()
+                if (now - last_heartbeat) > TILE_HEARTBEAT_TIMEOUT_SECS:
+                    print("found a tile that has timed out")
+                    ids_to_delete.append(tile_id)
+                    self.notify_user_tile_lost(tile_id, reason="Tile heartbeat timeout.")
+                    self.worker.destroy_tile(tile_id, notify=False, force_terminate=True)
+
         print("ids_to_delete is", ids_to_delete)
         for tile_id in ids_to_delete:
             print("deleting tile:", tile_id)

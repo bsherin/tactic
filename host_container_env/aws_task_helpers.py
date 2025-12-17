@@ -66,7 +66,7 @@ def run_tile_on_ecs(
     owner,
     parent,
     other_name,
-    extra_env
+    extra_env=None
 ):
     ecs = _ecs_client()
 

@@ -29,6 +29,8 @@ class TileContainerManagementMixin:
             username=data["username"],
             owner=data["owner"],
             parent=data.get("parent", "host"),
+            project_name=data.get("project_name", None),
+            tile_name=data.get("tile_name", None),
             tile_id=None,
             meta=data.get("meta", {})
         )
