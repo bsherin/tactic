@@ -331,7 +331,7 @@ class TileContainerRegistry(ServiceRegistry):
                     print("discovered a new ecs tile:", tile_id)
                     self.mark_status(tile_id, "idle", **{
                         "task_arn": t["taskArn"],
-                        "created": t["createdAt"]
+                        "created": str(t["createdAt"])
                     })
         else:
             running_ids = self.list_docker_tile_containers()
