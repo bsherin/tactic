@@ -20,6 +20,7 @@ import {SearchableConsole} from "./searchable_console";
 import {DialogContext} from "./modal_react";
 import {ErrorDrawerContext} from "./error_drawer";
 import {widgetDict} from "./widgets";
+import {MemoryIndicator} from "./memory_utilities";
 
 export {TileComponent}
 
@@ -62,6 +63,8 @@ function TileComponent(props) {
     props = {
         log_since: null,
         max_console_lines: 100,
+        memory_usage: 0,
+        memory_limit: null,
         ...props
     };
 
@@ -535,6 +538,7 @@ function TileComponent(props) {
                                                                 handleClick={_stopMe}
                                                                 icon="stop"/>}
                             {props.show_spinner && <Spinner size={17}/>}
+                            <MemoryIndicator usage={props.memory_usage} limit={props.memory_limit}/>
                             <MenuComponent
                                 option_dict={tile_menu_options}
                                 icon_dict={menu_icons}

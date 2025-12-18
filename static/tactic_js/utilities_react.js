@@ -22,7 +22,6 @@ exports.renderSpinnerMessage = renderSpinnerMessage;
 exports.scrollMeIntoView = scrollMeIntoView;
 exports.throttle = throttle;
 exports.useCallbackStack = useCallbackStack;
-exports.useConnection = useConnection;
 exports.useConstructor = void 0;
 exports.useDebounce = useDebounce;
 exports.useDeepCompareEffect = useDeepCompareEffect;
@@ -222,31 +221,11 @@ var useConstructor = exports.useConstructor = function useConstructor() {
   returnVal.current = callback();
   return returnVal;
 };
-function useConnection(tsocket, initSocket) {
-  if (!tsocket) return null;
-  var _useState7 = (0, _react.useState)(null),
-    _useState8 = _slicedToArray(_useState7, 2),
-    connection_status = _useState8[0],
-    set_connection_status = _useState8[1];
-  function socketNotifier(connected) {
-    set_connection_status(connected ? "up" : "down");
-  }
-  (0, _react.useEffect)(function () {
-    initSocket(tsocket);
-    tsocket.notifier = socketNotifier;
-    socketNotifier(tsocket.socket.connected);
-    return function () {
-      tsocket.disconnect();
-      tsocket.notifier = null;
-    };
-  }, []);
-  return connection_status;
-}
 function useStateAndRef(initial) {
-  var _useState9 = (0, _react.useState)(initial),
-    _useState0 = _slicedToArray(_useState9, 2),
-    value = _useState0[0],
-    setValue = _useState0[1];
+  var _useState7 = (0, _react.useState)(initial),
+    _useState8 = _slicedToArray(_useState7, 2),
+    value = _useState8[0],
+    setValue = _useState8[1];
   var valueRef = (0, _react.useRef)(value);
   valueRef.current = value;
   return [value, setValue, valueRef];
@@ -256,14 +235,14 @@ function useStateAndRefAndCounter(initial) {
     setValue(newValue);
     setCounter(counter + 1);
   }
-  var _useState1 = (0, _react.useState)(initial),
+  var _useState9 = (0, _react.useState)(initial),
+    _useState0 = _slicedToArray(_useState9, 2),
+    value = _useState0[0],
+    setValue = _useState0[1];
+  var _useState1 = (0, _react.useState)(0),
     _useState10 = _slicedToArray(_useState1, 2),
-    value = _useState10[0],
-    setValue = _useState10[1];
-  var _useState11 = (0, _react.useState)(0),
-    _useState12 = _slicedToArray(_useState11, 2),
-    counter = _useState12[0],
-    setCounter = _useState12[1];
+    counter = _useState10[0],
+    setCounter = _useState10[1];
   var valueRef = (0, _react.useRef)(value);
   valueRef.current = value;
   return [value, setMe, valueRef, counter];

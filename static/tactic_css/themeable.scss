@@ -131,6 +131,9 @@ $light-text-panel-output-font-color: #616161;
 $light-text-panel-output-code-bg: blueprint_variables.$light-gray2;
 $dark-text-panel-output-code-bg: blueprint_variables.$dark-gray2;
 
+$dark-console-memory-color: blueprint_variables.$gray3;
+$light-console-memory-color: blueprint_variables.$gray1;
+
 // ==============================================
 // SECTION: Tiles
 // ==============================================
@@ -145,6 +148,9 @@ $light-tile-heading-color: blueprint_variables.$gray1;
 
 $dark-tile-body-background: blueprint_variables.$dark-gray4;
 $light-tile-body-background: #ffffff;
+
+$dark-tile-memory-color: blueprint_variables.$gray3;
+$light-tile-memory-color: blueprint_variables.$gray1;
 
 // ==============================================
 // SECTION: Import dialog
@@ -383,6 +389,9 @@ $light-chat-card-bg: blueprint_variables.$light-gray5;
         color: $light-tile-heading-color;
         background-color: $light-tile-heading-background;
         border-bottom: $light-tile-heading-border-bottom;
+        .memory-indicator {
+            color: $light-tile-memory-color;
+        }
     }
 
     .tile-panel {
@@ -429,6 +438,9 @@ $light-chat-card-bg: blueprint_variables.$light-gray5;
 
     .console-heading, .exports-heading, .exports-footing, .table-footing {
         background-color: $light-console-heading !important;
+        .memory-indicator {
+            color: $light-console-memory-color;
+        }
     }
 
     .selected-export {
@@ -604,6 +616,10 @@ $light-chat-card-bg: blueprint_variables.$light-gray5;
         border-bottom: $light-tile-heading-border-bottom;
         margin-right: 2px;
         margin-left: 2px;
+
+        .memory-indicator {
+            color: $dark-tile-memory-color;
+        }
     }
 
     .tile-panel {
@@ -641,6 +657,9 @@ $light-chat-card-bg: blueprint_variables.$light-gray5;
 
     .console-heading, .exports-heading, .exports-footing, .table-footing {
         background-color: $dark-console-heading !important;
+        .memory-indicator {
+            color: $dark-console-memory-color;
+        }
     }
 
     caption {

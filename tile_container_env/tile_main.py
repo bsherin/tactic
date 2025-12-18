@@ -17,7 +17,7 @@ from threading import Lock
 import threading
 import copy
 from qworker_alt import QWorker, task_worthy, debug_log, add_qw_pika_connection, close_connection
-from qworker_alt import simple_uid, HeartbeatGenerator
+from qworker_alt import simple_uid
 import tile_env
 from aws_helpers import resolve_task_identity, get_ssm_parameter
 from tile_env import class_info
@@ -34,7 +34,10 @@ from rabbit_manage import sleep_until_rabbit_alive
 import sys
 import time
 import widgets
+import pika
 from aws_detection import on_aws
+
+from qworker_alt import MAX_PIKA_RETRIES, add_qw_pika_connection
 
 sys.stdout = sys.stderr
 print("Waiting for rabbit")
@@ -78,6 +81,87 @@ class KillWorker(QWorker):
                 kill_thread = threading.Thread(target=self.start_background_thread, name=simple_uid())
                 kill_thread.start()
                 debug_log('Background kill_thread started')
+
+from pathlib import Path
+
+class HeartbeatGenerator:
+    def __init__(self, worker):
+        from aws_helpers import get_ssm_parameter
+        self.worker = worker
+        self.tile_id = self.worker.my_id
+        self.task_data = { "tile_id": self.tile_id }
+        self.heartbeat_interval = int(get_ssm_parameter("HEARTBEAT_INTERVAL_SECS", 60))
+
+    def heartbeat_loop(self):
+        self.connection, self.channel = add_qw_pika_connection()
+        while True:
+            self.post_heartbeat()
+            time.sleep(self.heartbeat_interval)
+
+    def _ensure_channel(self):
+        if self.connection is None or self.channel is None:
+            self.connection, self.channel = add_qw_pika_connection(MAX_PIKA_RETRIES)
+            return
+
+        if self.connection.is_closed or self.channel.is_closed:
+            try:
+                self.connection.close()
+            except Exception:
+                pass
+            self.connection, self.channel = add_qw_pika_connection(MAX_PIKA_RETRIES)
+
+    @staticmethod
+    def _read_int(path):
+        try:
+            return int(Path(path).read_text().strip())
+        except Exception:
+            return None
+
+    def get_container_memory_bytes(self):
+        used = self._read_int("/sys/fs/cgroup/memory.current")
+        limit_raw = Path("/sys/fs/cgroup/memory.max").read_text().strip() if Path(
+            "/sys/fs/cgroup/memory.max").exists() else None
+        if used is not None and limit_raw is not None:
+            limit = None if limit_raw == "max" else int(limit_raw)
+        else:
+            used = self._read_int("/sys/fs/cgroup/memory/memory.usage_in_bytes")
+            limit = self._read_int("/sys/fs/cgroup/memory/memory.limit_in_bytes")
+        used = used // (1024 * 1024) if used is not None else None
+        limit = limit // (1024 * 1024) if limit is not None else None
+        return used, limit
+
+    def post_heartbeat(self):
+        self._ensure_channel()
+        self.task_data["memory_usage_mb"], self.task_data["memory_limit_mb"] = self.get_container_memory_bytes()
+        try:
+            new_packet = {"source": self.tile_id,
+                          "status": "presend",
+                          "callback_type": "no_callback",
+                          "dest": "host",
+                          "task_type": "register_tile_heartbeat",
+                          "task_data": self.task_data,
+                          "callback_id": None,
+                          "response_data": None,
+                          "reply_to": None,
+                          "expiration": None}
+            self.channel.basic_publish(exchange='',
+                                      routing_key="host",
+                                      properties=pika.BasicProperties(
+                                          reply_to=None,
+                                          correlation_id=None,
+                                          delivery_mode=2
+                                  ),
+                                  body=json.dumps(new_packet))
+            result = {"success": True}
+
+        except Exception as ex:
+            error_string = self.worker.get_traceback_message(ex)
+            debug_log(error_string)
+            result = {"success": False, "message": error_string}
+        return result
+
+    def start_heartbeat(self):
+        threading.Thread(target=self.heartbeat_loop, name=simple_uid()).start()
 
 # noinspection PyProtectedMember,PyUnusedLocal
 class TileWorker(QWorker):

@@ -246,8 +246,35 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
 
     @task_worthy
     def register_tile_heartbeat(self, data):
+        print("register_tile_heartbeat called with data: {}".format(data))
         tile_id = data["tile_id"]
-        self.tile_registry.register_tile_heartbeat(tile_id)
+        self.tile_registry.register_tile_heartbeat(tile_id, data)
+        cont_dict = self.tile_registry.get_container_dict(tile_id)
+        if "parent" not in cont_dict:
+            return
+        local_id = cont_dict["parent"]
+        print("Tile container dict: {}".format(cont_dict))
+        if cont_dict.get("status", "") == "busy":
+            msg = {
+                "memory_usage": data.get("memory_usage_mb", 0),
+                "memory_limit": data.get("memory_limit_mb", 0),
+                "local_id": local_id
+            }
+            if cont_dict.get("tile_name", "") == "pseudo_tile":
+                cmsg = {
+                    "console_message": "updateMemoryUsage",
+                    "message": msg,
+                    "local_id": local_id
+                }
+                self.emit_console_message(cmsg)
+            else:
+                tmsg = {
+                    "tile_message": "updateMemoryUsage",
+                    "message": msg,
+                    "tile_id": tile_id,
+                    "local_id": local_id
+                }
+                self.emit_tile_message(tmsg)
 
     @task_worthy
     def register_client_interaction(self, data):

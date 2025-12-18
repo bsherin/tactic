@@ -147,11 +147,16 @@ class TileContainerRegistry(ServiceRegistry):
         else:
             print(f"Metrics publishing is disabled in non-ECS mode. {self.idle_tiles} idle tiles, {self.running_tiles} running tiles.")
 
-    def register_tile_heartbeat(self, tile_id):
+    def register_tile_heartbeat(self, tile_id, data=None):
         if not self.exists(tile_id) and not tile_id == "tile_test_container":
             print(f"got a heartbeat from an undiscovered tile {tile_id}. will leave it to be discovered properly")
             return
         self.set_container_info(tile_id, "last_heartbeat", str(time.time()))
+        if data is not None:
+            if "memory_usage_mb" in data:
+                self.set_container_info(tile_id, "memory_usage_mb", str(data["memory_usage_mb"]))
+            if "memory_limit_mb" in data:
+                self.set_container_info(tile_id, "memory_limit_mb", str(data["memory_limit_mb"]))
 
     def sweep_tiles(self):
 
@@ -193,7 +198,7 @@ class TileContainerRegistry(ServiceRegistry):
         self.set_container_info(tile_id, "status", status)
         for field in self.base_fields:
             if field in kwargs and kwargs[field] is not None:
-                self.set_container_info(tile_id, field, kwargs[field])
+                self.set_container_info(tile_id, field, str(kwargs[field]))
         if on_aws:
             if "task_arn" in kwargs and kwargs["task_arn"] is not None:
                 self.set_container_info(tile_id, "task_arn", kwargs["task_arn"])

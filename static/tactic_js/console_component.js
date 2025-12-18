@@ -30,6 +30,7 @@ var _settings = require("./settings");
 var _modal_react = require("./modal_react");
 var _error_drawer = require("./error_drawer");
 var _assistant = require("./assistant");
+var _memory_utilities = require("./memory_utilities");
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t10 in e) "default" !== _t10 && {}.hasOwnProperty.call(e, _t10) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t10)) && (i.get || i.set) ? o(f, _t10, i) : f[_t10] = e[_t10]); return f; })(e, t); }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
@@ -142,18 +143,26 @@ function ConsoleComponent(props) {
     _useState8 = _slicedToArray(_useState7, 2),
     search_helper_text = _useState8[0],
     set_search_helper_text = _useState8[1];
-  var _useState9 = (0, _react.useState)(false),
+  var _useState9 = (0, _react.useState)(0),
     _useState0 = _slicedToArray(_useState9, 2),
-    show_main_log = _useState0[0],
-    set_show_main_log = _useState0[1];
-  var _useState1 = (0, _react.useState)(false),
+    memory_usage = _useState0[0],
+    set_memory_usage = _useState0[1];
+  var _useState1 = (0, _react.useState)(null),
     _useState10 = _slicedToArray(_useState1, 2),
-    show_pseudo_log = _useState10[0],
-    set_show_pseudo_log = _useState10[1];
-  var _useState11 = (0, _react.useState)(null),
+    memory_limit = _useState10[0],
+    set_memory_limit = _useState10[1];
+  var _useState11 = (0, _react.useState)(false),
     _useState12 = _slicedToArray(_useState11, 2),
-    pseudo_tile_id = _useState12[0],
-    set_pseudo_tile_id = _useState12[1];
+    show_main_log = _useState12[0],
+    set_show_main_log = _useState12[1];
+  var _useState13 = (0, _react.useState)(false),
+    _useState14 = _slicedToArray(_useState13, 2),
+    show_pseudo_log = _useState14[0],
+    set_show_pseudo_log = _useState14[1];
+  var _useState15 = (0, _react.useState)(null),
+    _useState16 = _slicedToArray(_useState15, 2),
+    pseudo_tile_id = _useState16[0],
+    set_pseudo_tile_id = _useState16[1];
   var settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   var pushCallback = (0, _utilities_react.useCallbackStack)();
@@ -296,6 +305,9 @@ function ConsoleComponent(props) {
         },
         consoleWidgetUpdate: function consoleWidgetUpdate(data) {
           return updateWidgetData(data);
+        },
+        updateMemoryUsage: function updateMemoryUsage(data) {
+          return _updateMemoryUsage(data);
         }
       };
       handlerDict[data["console_message"]](data);
@@ -308,6 +320,10 @@ function ConsoleComponent(props) {
       widgetId: data["widgetId"],
       widgetData: data["widgetData"]
     });
+  }
+  function _updateMemoryUsage(data) {
+    set_memory_usage(data.message["memory_usage"]);
+    set_memory_limit(data.message["memory_limit"]);
   }
   function _requestPseudoTileId() {
     if (pseudo_tile_id == null) {
@@ -1963,7 +1979,10 @@ function ConsoleComponent(props) {
   }))), /*#__PURE__*/_react["default"].createElement("div", {
     id: "console-header-right",
     className: "d-flex flex-row"
-  }, /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
+  }, /*#__PURE__*/_react["default"].createElement(_memory_utilities.MemoryIndicator, {
+    usage: memory_usage,
+    limit: memory_limit
+  }), /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
     extra_glyph_text: _glif_text(show_glif_text, "exports"),
     tooltip: "Show export browser",
     size: "small",

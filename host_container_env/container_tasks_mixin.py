@@ -175,7 +175,7 @@ class ContainerTasksMixin:
                        "Name": "",
                        "Image": "bsherin/tactic-tile:x86",
                        "Owner": info.get("username", ""),
-                       "Status": info["status"],
+                       "Status": info.get("status"),
                        "Uptime": up_time}
             tile_chunks.append(new_row)
         return tile_chunks

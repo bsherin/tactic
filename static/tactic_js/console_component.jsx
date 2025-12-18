@@ -58,6 +58,7 @@ import {useCallbackStack, useStateAndRef, useConstructor} from "./utilities_reac
 import {ErrorDrawerContext} from "./error_drawer";
 import {AssistantContext} from "./assistant";
 import {TextWidget} from "./widgets";
+import {MemoryIndicator} from "./memory_utilities";
 
 export {ConsoleComponent}
 
@@ -99,6 +100,9 @@ function ConsoleComponent(props) {
     const [, set_search_string, search_string_ref] = useStateAndRef(null);
     const [filter_console_items, set_filter_console_items] = useState(false);
     const [search_helper_text, set_search_helper_text] = useState(null);
+
+    const [memory_usage, set_memory_usage] = useState(0);
+    const [memory_limit, set_memory_limit] = useState(null);
 
     const [show_main_log, set_show_main_log] = useState(false);
     const [show_pseudo_log, set_show_pseudo_log] = useState(false);
@@ -216,6 +220,7 @@ function ConsoleComponent(props) {
                 consoleCodeOverwrite: (data) => _setConsoleItemOutput(data),
                 consoleCodeWidget: (data) => _appendWidgetToConsoleItem(data),
                 consoleWidgetUpdate: (data) => updateWidgetData(data),
+                updateMemoryUsage: (data) => updateMemoryUsage(data)
 
             };
             handlerDict[data["console_message"]](data)
@@ -229,6 +234,11 @@ function ConsoleComponent(props) {
             widgetId: data["widgetId"],
             widgetData: data["widgetData"]
         });
+    }
+
+    function updateMemoryUsage(data) {
+        set_memory_usage(data.message["memory_usage"]);
+        set_memory_limit(data.message["memory_limit"]);
     }
 
     function _requestPseudoTileId() {
@@ -1352,6 +1362,7 @@ function ConsoleComponent(props) {
                      style={header_style}
                      className="console-heading d-flex flex-row justify-content-between">
                     <div className="console-header-left d-flex flex-row">
+
                         {props.mState.console_is_shrunk && props.shrinkable &&
                             <GlyphButton handleClick={_expandConsole}
                                          style={SHRINK_EXPAND_GLYPH_BUTTON_STYLE}
@@ -1378,6 +1389,7 @@ function ConsoleComponent(props) {
 
                     <div id="console-header-right"
                          className="d-flex flex-row">
+                        <MemoryIndicator usage={memory_usage} limit={memory_limit}/>
                         <GlyphButton extra_glyph_text={_glif_text(show_glif_text, "exports")}
                                      tooltip="Show export browser"
                                      size="small"
@@ -1451,6 +1463,7 @@ function ConsoleComponent(props) {
     );
 }
 ConsoleComponent = memo(ConsoleComponent);
+
 
 function Shandle(props) {
     return (

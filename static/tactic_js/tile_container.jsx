@@ -28,8 +28,9 @@ function TileContainer(props) {
                 stopSpinner: (tile_id,) => _setTileValue(tile_id, "show_spinner", false),
                 displayTileContent: _displayTileContent,
                 displayTileContentWithJavascript: _displayTileContentWithJavascript,
-                tileWidgetUpdate: updateWidgetData
-            };
+                tileWidgetUpdate: updateWidgetData,
+                updateMemoryUsage: _updateMemoryUsage
+            }
             if (data["tile_message"] in handlerDict) {
                 handlerDict[data["tile_message"]](tile_id, data)
             }
@@ -38,6 +39,11 @@ function TileContainer(props) {
 
     useSocketListener(props.tsocket, 'tile-source-change', _handleTileSourceChange);
     useSocketListener(props.tsocket, 'tile-message', _handleTileMessage);
+
+    function _updateMemoryUsage(tile_id, data) {
+        _setTileValue(tile_id, "memory_usage", data.message["memory_usage"])
+        _setTileValue(tile_id, "memory_limit", data.message["memory_limit"])
+    }
 
     function _resortTiles(oldIndex, newIndex) {
 

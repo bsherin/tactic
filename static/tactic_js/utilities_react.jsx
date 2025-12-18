@@ -14,7 +14,7 @@ import {useImmerReducer} from 'use-immer';
 export {propsAreEqual, arrayMove, arraysMatch, get_ppi, isInt, hasAnyKey, copyToClipboard, getFileExtension};
 export {remove_duplicates, guid, scrollMeIntoView, renderSpinnerMessage};
 export {
-    useConstructor, useCallbackStack, useStateAndRef, useReducerAndRef, useConnection, useRegisterActivity,
+    useConstructor, useCallbackStack, useStateAndRef, useReducerAndRef, useRegisterActivity,
     useStateAndRefAndCounter, useDidMount, useImmerReducerAndRef, useDeepCompareEffect, useWidget,
     withRegisterActivity
 };

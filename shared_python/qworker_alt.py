@@ -143,65 +143,6 @@ def close_connection():
     del pika_connections[my_thread()]
     return
 
-class HeartbeatGenerator:
-    def __init__(self, worker):
-        from aws_helpers import get_ssm_parameter
-        self.worker = worker
-        self.tile_id = self.worker.my_id
-        self.task_data = { "tile_id": self.tile_id}
-        self.heartbeat_interval = int(get_ssm_parameter("HEARTBEAT_INTERVAL_SECS", 60))
-
-    def heartbeat_loop(self):
-        self.connection, self.channel = add_qw_pika_connection()
-        while True:
-            self.post_heartbeat()
-            time.sleep(self.heartbeat_interval)
-
-    def _ensure_channel(self):
-        if self.connection is None or self.channel is None:
-            self.connection, self.channel = add_qw_pika_connection(MAX_PIKA_RETRIES)
-            return
-
-        if self.connection.is_closed or self.channel.is_closed:
-            try:
-                self.connection.close()
-            except Exception:
-                pass
-            self.connection, self.channel = add_qw_pika_connection(MAX_PIKA_RETRIES)
-
-    def post_heartbeat(self):
-        self._ensure_channel()
-        print("** posting heartbeat for tile " + self.tile_id)
-        try:
-            new_packet = {"source": self.tile_id,
-                          "status": "presend",
-                          "callback_type": "no_callback",
-                          "dest": "host",
-                          "task_type": "register_tile_heartbeat",
-                          "task_data": self.task_data,
-                          "callback_id": None,
-                          "response_data": None,
-                          "reply_to": None,
-                          "expiration": None}
-            self.channel.basic_publish(exchange='',
-                                      routing_key="host",
-                                      properties=pika.BasicProperties(
-                                          reply_to=None,
-                                          correlation_id=None,
-                                          delivery_mode=2
-                                  ),
-                                  body=json.dumps(new_packet))
-            result = {"success": True}
-
-        except Exception:
-            error_string = "Error posting heartbeat data"
-            debug_log(error_string)
-            result = {"success": False, "message": error_string}
-        return result
-
-    def start_heartbeat(self):
-        threading.Thread(target=self.heartbeat_loop, name=simple_uid()).start()
-
 # noinspection PyTypeChecker,PyUnusedLocal,PyMissingConstructor
 class QWorker(ExceptionMixin):
     def __init__(self, service_name=None, special_id=None):
