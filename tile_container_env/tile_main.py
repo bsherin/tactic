@@ -131,6 +131,7 @@ class HeartbeatGenerator:
     @staticmethod
     def get_used_limit_bytes_fargate(timeout=1.0):
         import requests
+        base = os.getenv("ECS_CONTAINER_METADATA_URI_V4")
         j = requests.get(f"{base}/stats", timeout=timeout).json()
 
         # With one container per task, this is usually a single-container dict,
