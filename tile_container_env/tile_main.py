@@ -174,7 +174,7 @@ class TileWorker(QWorker):
         widgets.Tile = None
         widgets.in_pseudo_tile = False
         self.get_megaplex_task_now = False
-        self.use_svg = TrueMem
+        self.use_svg = True
 
         print(f"my_id = {self.my_id}")
 
