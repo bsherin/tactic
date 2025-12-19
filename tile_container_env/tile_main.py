@@ -122,7 +122,7 @@ class HeartbeatGenerator:
         limit_raw = Path("/sys/fs/cgroup/memory.max").read_text().strip() if Path(
             "/sys/fs/cgroup/memory.max").exists() else None
         if used is not None and limit_raw is not None:
-            limit = None if limit_raw == "max" else int(limit_raw)
+            limit = None if limit_raw == "max" else int(limit_raw) // (1024 * 1024)
         else:
             used = self._read_int("/sys/fs/cgroup/memory/memory.usage_in_bytes")
             limit = self._read_int("/sys/fs/cgroup/memory/memory.limit_in_bytes")
@@ -174,7 +174,7 @@ class TileWorker(QWorker):
         widgets.Tile = None
         widgets.in_pseudo_tile = False
         self.get_megaplex_task_now = False
-        self.use_svg = True
+        self.use_svg = TrueMem
 
         print(f"my_id = {self.my_id}")
 

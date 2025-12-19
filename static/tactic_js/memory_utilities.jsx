@@ -21,7 +21,7 @@ function MemoryIndicator(props) {
             ind_string = `– MB`
         }
         else {
-            ind_string = `${props.usage.toFixed(1)} MB`
+            ind_string = `${props.usage.toFixed(0)} MB`
         }
     }
     return (
