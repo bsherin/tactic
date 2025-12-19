@@ -35,7 +35,7 @@ import sys
 import time
 import widgets
 import pika
-from aws_detection import on_aws
+from aws_detection import on_aws, am_fargate
 
 from qworker_alt import MAX_PIKA_RETRIES, add_qw_pika_connection
 
@@ -122,17 +122,55 @@ class HeartbeatGenerator:
         limit_raw = Path("/sys/fs/cgroup/memory.max").read_text().strip() if Path(
             "/sys/fs/cgroup/memory.max").exists() else None
         if used is not None and limit_raw is not None:
-            limit = None if limit_raw == "max" else int(limit_raw) // (1024 * 1024)
+            limit = None if limit_raw == "max" else int(limit_raw)
         else:
             used = self._read_int("/sys/fs/cgroup/memory/memory.usage_in_bytes")
             limit = self._read_int("/sys/fs/cgroup/memory/memory.limit_in_bytes")
-        used = used // (1024 * 1024) if used is not None else None
-        limit = limit // (1024 * 1024) if limit is not None else None
+        return used, limit
+
+    @staticmethod
+    def get_used_limit_bytes_fargate(timeout=1.0):
+        import requests
+        j = requests.get(f"{base}/stats", timeout=timeout).json()
+
+        # With one container per task, this is usually a single-container dict,
+        # but sometimes it can be keyed by container id/name. Handle both.
+        if isinstance(j, dict) and "memory_stats" in j:
+            ms = j["memory_stats"]
+        else:
+            # pick the first entry that has memory_stats
+            ms = None
+            for v in (j.values() if isinstance(j, dict) else []):
+                if isinstance(v, dict) and "memory_stats" in v:
+                    ms = v["memory_stats"]
+                    break
+            if ms is None:
+                return None, None
+
+        used = ms.get("usage")
+        stats = ms.get("stats") or {}
+        limit = stats.get("hierarchical_memory_limit") or ms.get("limit")
+
+        # treat absurd "unlimited" sentinels as unknown
+        if isinstance(limit, int) and limit > 10 ** 15:
+            limit = None
+
         return used, limit
 
     def post_heartbeat(self):
         self._ensure_channel()
-        self.task_data["memory_usage_mb"], self.task_data["memory_limit_mb"] = self.get_container_memory_bytes()
+        if am_fargate():
+            usage_bytes, limit_bytes = self.get_used_limit_bytes_fargate()
+        else:
+            usage_bytes, limit_bytes = self.get_container_memory_bytes()
+        if usage_bytes is not None:
+            self.task_data["memory_usage_mb"] = usage_bytes // (1024 * 1024)
+        else:
+            self.task_data["memory_usage_mb"] = None
+        if limit_bytes is not None:
+            self.task_data["memory_limit_mb"] = limit_bytes // (1024 * 1024)
+        else:
+            self.task_data["memory_limit_mb"] = None
         try:
             new_packet = {"source": self.tile_id,
                           "status": "presend",
