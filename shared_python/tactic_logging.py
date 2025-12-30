@@ -31,13 +31,13 @@ def setup_logging(service_name: str):
     os.environ["SERVICE_NAME"] = service_name
 
     level = os.getenv("LOG_LEVEL", "DEBUG").upper()
-    # logging.basicConfig(format="%(message)s", stream=sys.stdout, level=level)
+    logging.basicConfig(format="%(message)s", stream=sys.stdout, level=level)
 
-    logging.basicConfig(
-        level=logging.DEBUG,
-        stream=sys.stdout,
-        format="%(asctime)s %(levelname)s %(name)s: %(message)s",
-    )
+    # logging.basicConfig(
+    #     level=logging.DEBUG,
+    #     stream=sys.stdout,
+    #     format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+    # )
 
     structlog.configure(
         processors=[
