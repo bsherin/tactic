@@ -2,6 +2,7 @@ import time
 
 from redis_tools import RedisManager, redis_client
 from aws_task_helpers import get_ssm_parameter
+from tactic_logging import log
 
 CLIENT_SESSION_TIMEOUT_SECS = float(get_ssm_parameter("CLIENT_SESSION_TIMEOUT_SECS", "3600"))
 

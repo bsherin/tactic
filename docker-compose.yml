@@ -2,6 +2,8 @@ services:
     loki:
       image: grafana/loki:2.9.6
       command: -config.file=/etc/loki/loki.yml
+      labels:
+        project: tactic_aux
       ports:
         - "127.0.0.1:3100:3100"
       volumes:
@@ -18,6 +20,8 @@ services:
       image: grafana/grafana:10.4.3
       ports:
         - "127.0.0.1:3000:3000"
+      labels:
+        project: tactic_aux
       profiles:
         - start_project
         - start_development
@@ -30,6 +34,8 @@ services:
     promtail:
       image: grafana/promtail:2.9.6
       command: -config.file=/etc/promtail/config.yml
+      labels:
+        project: tactic_aux
       profiles:
         - start_project
         - start_development
@@ -170,7 +176,6 @@ services:
         - USE_GEVENT=True
         - DEBUG=${DEBUG}
         - PYCHARM_DEBUG=1
-        - GEVENT_SUPPORT=True
       volumes:
         - type: bind
           source: "/var/run/docker.sock"

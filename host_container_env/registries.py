@@ -378,7 +378,7 @@ class TileContainerRegistry(ServiceRegistry):
                     self.notify_user_tile_lost(tile_id, reason="Tile heartbeat timeout.")
                     self.worker.destroy_tile(tile_id, notify=False, force_terminate=True)
 
-        log.debug("found ids_to_delete", ids_to_delete)
+        log.debug("found ids_to_delete", ids_to_delete=ids_to_delete)
         for tile_id in ids_to_delete:
             log.info("deleting tile", tile_id)
             self.delete(tile_id)

@@ -11,6 +11,7 @@ monkey.patch_all()
 from tactic_logging import setup_logging, log
 setup_logging("host")
 log.info("starting", extra_flag=True)
+
 try:
     # Silence benign queue-empty/timeouts in gevent hub
     try:

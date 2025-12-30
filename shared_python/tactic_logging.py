@@ -8,6 +8,10 @@ task_stage_var = ContextVar("task_stage", default=None)
 service_var    = ContextVar("service", default=None)
 task_type_var   = ContextVar("task_type", default=None)
 
+for noisy in ("pymongo", "pika", "gevent", "engineio", "socketio", "geventwebsocket",
+              "urllib3", "botocore"):
+    logging.getLogger(noisy).setLevel(logging.WARNING)
+
 def _add_contextvars(_, __, event_dict):
     event_dict["service_name"] = service_var.get() or os.getenv("SERVICE_NAME")
     task_id = task_id_var.get()
@@ -27,7 +31,13 @@ def setup_logging(service_name: str):
     os.environ["SERVICE_NAME"] = service_name
 
     level = os.getenv("LOG_LEVEL", "DEBUG").upper()
-    logging.basicConfig(format="%(message)s", stream=sys.stdout, level=level)
+    # logging.basicConfig(format="%(message)s", stream=sys.stdout, level=level)
+
+    logging.basicConfig(
+        level=logging.DEBUG,
+        stream=sys.stdout,
+        format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+    )
 
     structlog.configure(
         processors=[
