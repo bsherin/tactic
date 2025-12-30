@@ -1,10 +1,6 @@
 from qworker import task_worthy
-import re
-import os
-import datetime
 
 class ListTasksMixin:
-
 
     @task_worthy
     def get_list_content_with_metadata_task(self, data):
@@ -21,18 +17,13 @@ class ListTasksMixin:
 
     @task_worthy
     def update_list_task(self, data):  # This is called from the list viewer
-        try:
-            the_user = self.get_user_from_data(data)
-            list_name = data["list_name"]
-            new_list_as_string = data["new_list_as_string"]
-            new_list = new_list_as_string.split("\n")
-            the_user.update_list(list_name, new_list)
+        the_user = self.get_user_from_data(data)
+        list_name = data["list_name"]
+        new_list_as_string = data["new_list_as_string"]
+        new_list = new_list_as_string.split("\n")
+        the_user.update_list(list_name, new_list)
 
-            return {"success": True, "message": "List Successfully Saved", "alert_type": "alert-success"}
-        except Exception as ex:
-            msg = self.get_traceback_message(ex, "Unable to Update List.")
-            print(msg)
-            return {"success": False, "message": msg}
+        return {"success": True, "message": "List Successfully Saved", "alert_type": "alert-success"}
 
     @task_worthy
     def get_list_names_task(self, data):

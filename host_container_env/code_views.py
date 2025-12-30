@@ -1,18 +1,13 @@
 
-import sys
-import datetime
-import copy
-import re
+from tactic_app import app
 
-from tactic_app import app  # global_stuff
-
-from flask import render_template, jsonify, url_for, request
+from flask import render_template, url_for
 from flask_login import login_required, current_user
 
 from js_source_management import js_source_dict, _develop, css_source
+from utils import utcnow
 
-import datetime
-tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
+tstring = utcnow().strftime("%Y-%H-%M-%S")
 
 @app.route('/view_code/<code_name>')
 @login_required

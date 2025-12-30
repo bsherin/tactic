@@ -1,18 +1,15 @@
-import os
 import requests
 from requests.auth import HTTPBasicAuth
 from aws_helpers import get_ssm_parameter, load_secret_json
 from aws_detection import on_aws
+from tactic_logging import log
 
 if on_aws:
-    print("using amazon mq")
-    import boto3
-
     RABBIT_HOST = get_ssm_parameter("RABBIT_HOST")
     SECRET_ARN = get_ssm_parameter("MQ_SECRET_ARN")
     REGION = get_ssm_parameter("MY_AWS_REGION")
 
-    print("using amazon mq with host:", RABBIT_HOST)
+    log.info("on aws, using mq with host:", RABBIT_HOST)
 
     creds = load_secret_json(SECRET_ARN)
 
@@ -20,7 +17,7 @@ if on_aws:
     RABBIT_PASS = creds["password"]
     API_STR = f"http://{RABBIT_HOST}:15672/api"
 else:
-    print("not using amazon mq")
+    log.info("not on aws, using rabbit defaults")
     RABBIT_HOST = "megaplex"
     RABBIT_USER = "guest"
     RABBIT_PASS = "guest"
@@ -37,7 +34,7 @@ def delete_queue(qname: str):
         f"{API_STR}/queues/%2F/{qname}",
         auth=HTTPBasicAuth(RABBIT_USER, RABBIT_PASS)
     )
-    print(f"deleting queue {qname} got status {r.status_code}")
+    log.debug(f"deleting queue", queue=qname, status=r.status_code)
 
 def delete_wait_queues():
     queues = list_queues()
@@ -48,12 +45,10 @@ def delete_wait_queues():
     ]
 
     if not to_delete:
-        print("No matching queues found.")
+        log.debug("no matching queues found to delete")
         return
 
-    print("Will delete these queues:")
-    for name in to_delete:
-        print("  ", name)
+    log.debug("will delete these queues", queues=to_delete)
 
     for qname in to_delete:
         delete_queue(qname)

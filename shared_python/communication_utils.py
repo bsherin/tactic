@@ -5,6 +5,7 @@ import base64
 import pickle
 import cloudpickle
 import zlib
+from tactic_logging import log
 from exception_mixin import generic_exception_handler
 
 socketio = None
@@ -14,7 +15,7 @@ try:
     import flask_socketio
     from flask_socketio import SocketIO
     from redis_tools import MESSAGE_QUEUE
-    print("in communication utils with message queue:", MESSAGE_QUEUE)
+    log.info("communication utils with flask_socketio", queue=MESSAGE_QUEUE)
 
     socketio = SocketIO(
         async_mode="gevent",
@@ -27,7 +28,7 @@ try:
     def emit_direct(event_name, data, namespace, room):
         socketio.emit(event_name, data, namespace=namespace, room=room)
 except ModuleNotFoundError as err:
-    print("no flask_socketio")
+    log.info("no flask_socketio")
 
 megaplex = None
 

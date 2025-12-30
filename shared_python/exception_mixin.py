@@ -21,6 +21,12 @@ class MessagePostException(Exception):
 class TileModuleNotFoundError(Exception):
     pass
 
+class TileMetadataNotFoundError(Exception):
+    pass
+
+class NotAuthorizedError(Exception):
+    pass
+
 class ExceptionMixin(object):
 
     def __init__(self):

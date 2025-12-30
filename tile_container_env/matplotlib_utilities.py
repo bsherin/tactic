@@ -11,10 +11,6 @@ with (warnings.catch_warnings()):
     register_cmap = matplotlib.colormaps.register
     from matplotlib.cm import datad, ScalarMappable
 
-import uuid
-import io
-import os
-
 color_palette_names = [m for m in datad if not m.endswith("_r")]
 
 color_map_specs = [["Yellows", {'red': [(0.0, 0.0, 1.0), (1.0,  1.0, 1.0)],

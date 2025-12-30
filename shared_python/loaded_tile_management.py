@@ -1,6 +1,6 @@
 
-print ("in gtm")
 from redis_tools import RedisManager, redis_client
+from tactic_logging import log
 
 class LoadedTileManager(RedisManager):
     """
@@ -60,7 +60,7 @@ class LoadedTileManager(RedisManager):
         categorized_types = {}
         try:
             if len(tile_types) == 0:
-                print("user tiles don't seem to be loaded. so load them")
+                log.info("user tiles don't seem to be loaded. so load them")
                 self.load_user_default_tiles(username)
                 if nested:
                     return {}
@@ -75,7 +75,7 @@ class LoadedTileManager(RedisManager):
         except AttributeError:
             if nested:  # avoid infinite recursion
                 return {}
-            print("user tiles don't seem to be loaded. so load them")
+            log.info("user tiles don't seem to be loaded. so load them")
             self.load_user_default_tiles(username)
             return self.get_categorized_available_tile_types(username, nested=True)
         return categorized_types

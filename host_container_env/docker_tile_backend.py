@@ -1,10 +1,9 @@
-# backends/docker_backend.py
-import os, uuid
-from typing import Dict, Tuple, Optional
+import uuid
+from typing import Dict, Optional
 
-# Reuse your existing helpers
-import docker_functions  # your module
+import docker_functions
 from abstract_tile_backend import TileBackend
+from tactic_logging import log
 
 creds = {
         "AccessKeyId": "ak",
@@ -17,7 +16,6 @@ class DockerTileBackend(TileBackend):
     IMAGE = "bsherin/tactic-tile"
 
     def __init__(self, tile_registry, worker):
-        # self.resources_dir = os.getenv("TRUE_HOST_RESOURCES_DIR", "/srv/tactic/resources")
         self.user_pool_dir = None
         self.tile_registry = tile_registry
         self.worker = worker
@@ -36,6 +34,7 @@ class DockerTileBackend(TileBackend):
             "RUNNING_ON_AWS": False
         }
 
+        log.info(f"No warm tile found, launching new tile")
         other     = meta.get("other_name", "none")
         unique_id = tile_id or f"tile_{str(uuid.uuid4())}"
 

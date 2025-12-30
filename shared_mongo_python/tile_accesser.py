@@ -2,8 +2,7 @@ import re
 import datetime
 import copy
 from bson import ObjectId
-
-from communication_utils import generic_exception_handler
+from utils import utcnow
 
 default_tile_icons = {
     "standard": "application",
@@ -76,7 +75,8 @@ class TileAccess(object):
         mdata = self.get_tile_metadata(tile_module_name)
         return self.get_tile_icon_from_mdata(mdata)
 
-    def get_tile_icon_from_mdata(self, mdata):
+    @staticmethod
+    def get_tile_icon_from_mdata(mdata):
         tag_match_dict = {
             "cluster": "group-objects",
             "classify": "label",
@@ -286,17 +286,12 @@ class TileAccess(object):
         return
 
     def create_recent_checkpoint(self, module_name, username=None):
-        try:
-            doc = self.get_tile_doc(module_name, username)
-            recent_history = doc.get("recent_history", [])
-            recent_history.append({"updated": doc["metadata"]["updated"],
-                                   "tile_module": doc["tile_module"]})
-            self.db[self.get_tile_collection_name(username)].update_one({"tile_module_name": module_name},
-                                                          {'$set': {"recent_history": recent_history}})
-            return
-        except Exception as ex:
-            msg = generic_exception_handler.get_traceback_message(ex, "Error checkpointing module to recent")
-            raise Exception(msg)
+        doc = self.get_tile_doc(module_name, username)
+        recent_history = doc.get("recent_history", [])
+        recent_history.append({"updated": doc["metadata"]["updated"],
+                               "tile_module": doc["tile_module"]})
+        self.db[self.get_tile_collection_name(username)].update_one({"tile_module_name": module_name},
+                                                      {'$set': {"recent_history": recent_history}})
 
     def rename_tile(self, old_name, new_name):
         if not self.tile_module_name_exists(old_name):
@@ -367,7 +362,7 @@ class TileAccess(object):
             return
 
         recent_history = []
-        yesterday = datetime.datetime.utcnow() - datetime.timedelta(days=1)
+        yesterday = utcnow() - datetime.timedelta(days=1)
         yesterday_date = yesterday.date()
         # We want to keep every element of the recent history from yesterday or today
         # Plus we want to keep the last entry from each date that appears.

@@ -1,25 +1,15 @@
 
-import datetime
-import sys
-import copy
-import re
-import os
-import uuid
-import pymongo
 from flask import render_template, request, jsonify, url_for
 from flask_login import login_required, current_user
 from tactic_app import app
-from docker_functions import create_container
-
+from utils import utcnow
 from js_source_management import js_source_dict, _develop, css_source
 
-import datetime
-tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
+tstring = utcnow().strftime("%Y-%H-%M-%S")
 
 @app.route('/view_module/<module_name>', methods=['get'])
 @login_required
 def view_module(module_name):
-    # self.clear_old_recent_history(module_name)
     javascript_source = url_for('static', filename=js_source_dict["module_viewer_react"])
     return render_template("library/resource_viewer_react.html",
                            resource_name=module_name,

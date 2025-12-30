@@ -46,7 +46,7 @@ class ClientSessionRegistry(RedisManager):
                 self.register_client_interaction(global_id)
                 continue
             if (now - last_interaction) > CLIENT_SESSION_TIMEOUT_SECS:
-                print(f"ending client session {global_id}")
+                log.info("ending client session due to timeout", global_id=global_id)
                 self.worker.end_client_session(global_id)
 
     def registry_heartbeat(self):

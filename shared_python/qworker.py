@@ -1,5 +1,4 @@
 
-from __future__ import print_function
 import os
 
 use_gevent = os.environ.get("USE_GEVENT", "False").lower() == "true"
@@ -21,6 +20,7 @@ import copy
 from exception_mixin import ExceptionMixin, MessagePostException
 from threading import Lock
 from rabbit_manage import get_pika_connection_with_retries, declare_queue
+from tactic_logging import bind_request, new_task_id, log
 
 MAX_PIKA_RETRIES = None
 
@@ -35,13 +35,6 @@ error_handler_dict = {}
 
 response_statuses = ["submitted_response", "submitted_response_with_error", "unclaimed", "unanswered"]
 error_response_statuses = ["submitted_response_with_error", "unclaimed", "unanswered"]
-
-blank_packet = {"source": None,
-                "dest": None,
-                "task_type": None,
-                "task_data": None,
-                "response_data": None,
-                "callback_id": None}
 
 
 if "USE_WAIT_TASKS" in os.environ:
@@ -67,19 +60,11 @@ heartbeat_time = 30
 
 
 def current_timestamp():
-    return datetime.datetime.timestamp(datetime.datetime.utcnow())
+    return datetime.datetime.now()
 
 
 base_stdout = sys.stdout
 
-
-def debug_log(msg):
-    timestring = datetime.datetime.utcnow().strftime("%b %d, %Y, %H:%M:%S")
-    save_stdout = sys.stdout
-    sys.stdout = base_stdout
-    print(timestring + ": " + str(msg))
-    sys.stdout = save_stdout
-    return
 
 def sleep_func(t):
     if use_gevent:
@@ -108,36 +93,35 @@ class QWorker(ExceptionMixin):
             self.wait_queue_id = "wait_" + self.my_id
 
     def start_background_thread(self):
-        import os, threading
-        while True:
-            try:
-                self.connection, self.channel = get_pika_connection_with_retries(MAX_PIKA_RETRIES)
-                if self.connection is None or self.channel is None:
-                    debug_log("Couldn't connect to pika in background thread. giving up")
+        with bind_request(new_task_id(), "main_consume_loop", "main_consume_loop"):
+            while True:
+                try:
+                    self.connection, self.channel = get_pika_connection_with_retries(MAX_PIKA_RETRIES)
+                    if self.connection is None or self.channel is None:
+                        log.warning("Couldn't create pika connection in background thread for QWorker")
+                        sleep_func(5)
+                        continue
+                    declare_queue(self.channel, self.my_id)
+                    self.consume_without_ack(self.my_id, on_message_callback=self.handle_delivery)
+                    if self.service_name is not None:
+                        declare_queue(self.channel, self.service_name)
+                        self.consume_without_ack(self.service_name, self.handle_delivery)
+                    log.info(' [*] Waiting for messages:')
+                    self.ready()
+                    self.channel.start_consuming()
+                except (pika.exceptions.AMQPError, OSError):
+                    log.warning(f"Lost connection to RabbitMQ. Will attempt to reconnect.")
+                    try:
+                        if self.connection and not self.connection.is_closed:
+                            self.connection.close()
+                    except Exception:
+                        pass
                     sleep_func(5)
                     continue
-                declare_queue(self.channel, self.my_id)
-                self.consume_without_ack(self.my_id, on_message_callback=self.handle_delivery)
-                if self.service_name is not None:
-                    declare_queue(self.channel, self.service_name)
-                    self.consume_without_ack(self.service_name, self.handle_delivery)
-                debug_log(' [*] Waiting for messages:')
-                self.ready()
-                self.channel.start_consuming()
-            except (pika.exceptions.AMQPError, OSError) as ex:
-                debug_log(f"Lost connection to RabbitMQ ({ex!r}). Will attempt to reconnect.")
-                try:
-                    if self.connection and not self.connection.is_closed:
-                        self.connection.close()
                 except Exception:
-                    pass
-                sleep_func(5)
-                continue
-            except Exception as ex:
-                debug_log("Unexpected error in background thread for QWorker")
-                debug_log(self.handle_exception(ex, "Here's the error"))
-                sleep_func(5)
-                continue
+                    log.exception("Unexpected error in background thread for QWorker")
+                    sleep_func(5)
+                    continue
 
     def consume_without_ack(self, qname, on_message_callback):
         self.channel.basic_consume(
@@ -150,9 +134,8 @@ class QWorker(ExceptionMixin):
         global thread, thread_lock
         try:
             self.connection.close()
-        except Exception as ex:
-            debug_log("Error closing connection in interrupt_and_restart")
-            debug_log(self.handle_exception(ex, "Here's the error"))
+        except Exception:
+            log.exception("Error closing connection in interrupt_and_restart")
             pass
         thread.kill()
         thread = None
@@ -168,7 +151,7 @@ class QWorker(ExceptionMixin):
                 else:
                     thread = threading.Thread(target=self.start_background_thread)
                     thread.start()
-                debug_log('Background thread started')
+                log.info('Background thread started')
 
     def ready(self):
         return
@@ -177,6 +160,7 @@ class QWorker(ExceptionMixin):
         return
 
     def handle_delivery(self, channel, method, props, body):
+        task_packet = {}
         try:
             channel.basic_ack(delivery_tag=method.delivery_tag)
             task_packet = json.loads(body)
@@ -185,10 +169,10 @@ class QWorker(ExceptionMixin):
             else:
                 self.handle_event(task_packet)
             sleep_func(PAUSE_TIME)
-        except Exception as ex:
-            special_string = "Got error in handle delivery"
-            debug_log(special_string)
-            debug_log(self.handle_exception(ex, special_string))
+        except Exception:
+            log.exception("Got uncaught error in handle delivery",
+                          my_id=self.my_id,
+                          task_type=task_packet.get("task_type", "unknown"))
         return
 
     def post_packet(self, dest_id, task_packet, reply_to=None, callback_id=None):
@@ -212,90 +196,97 @@ class QWorker(ExceptionMixin):
         if self.connection.is_closed or self.channel.is_closed:
             try:
                 self.connection.close()
-            except Exception as ex:
-                debug_log(f"Error closing connection in _ensure_channel {ex!r}")
+            except Exception:
+                log.exception("Error closing connection in _ensure_channel")
                 pass
             self.connection, self.channel = get_pika_connection_with_retries(MAX_PIKA_RETRIES)
 
     def post_task(self, dest_id, task_type, task_data=None, callback_func=None,
-                  callback_data=None, expiration=None, error_handler=None, special_reply_to=None):
-        if dest_id is None:
-            print("Error: post_task called with no destination ID for task type {}".format(task_type))
-        try:
-            if callback_func is not None:
-                callback_id = str(uuid.uuid4())
-                if special_reply_to is None:
-                    reply_to = self.my_id
+                  callback_data=None, expiration=None, special_reply_to=None):
+        new_id = new_task_id()
+        with bind_request(new_id, "presend", task_type):
+            try:
+                log.info("post_task", task_type=task_type, dest_id=dest_id, my_id=self.my_id)
+                if callback_func is not None:
+                    callback_id = str(uuid.uuid4())
+                    if special_reply_to is None:
+                        reply_to = self.my_id
+                    else:
+                        reply_to = special_reply_to
+                    callback_dict[callback_id] = callback_func
+                    if callback_data is not None:
+                        cdata = copy.copy(callback_data)
+                        callback_data_dict[callback_id] = cdata
+                        callback_type = "callback_with_context"
+                    else:
+                        callback_type = "callback_no_context"
                 else:
-                    reply_to = special_reply_to
-                callback_dict[callback_id] = callback_func
-                if error_handler is not None:
-                    error_handler_dict[callback_id] = error_handler
-                if callback_data is not None:
-                    cdata = copy.copy(callback_data)
-                    callback_data_dict[callback_id] = cdata
-                    callback_type = "callback_with_context"
-                else:
-                    callback_type = "callback_no_context"
-            else:
-                callback_id = None
-                reply_to = None
-                callback_type = "no_callback"
+                    callback_id = None
+                    reply_to = None
+                    callback_type = "no_callback"
 
-            new_packet = {"source": self.my_id,
-                          "status": "presend",
-                          "callback_type": callback_type,
-                          "dest": dest_id,
-                          "task_type": task_type,
-                          "task_data": task_data,
-                          "callback_id": callback_id,
-                          "response_data": None,
-                          "reply_to": reply_to,
-                          "expiration": expiration}
-            # self.channel.queue_declare(queue=dest_id, durable=False, exclusive=False)
-            declare_queue(self.channel, dest_id)
-            self.post_packet(dest_id, new_packet, reply_to, callback_id)
-            sleep_func(PAUSE_TIME)
-            result = {"success": True}
+                new_packet = {"source": self.my_id,
+                              "task_id": new_id,
+                              "status": "presend",
+                              "callback_type": callback_type,
+                              "dest": dest_id,
+                              "task_type": task_type,
+                              "task_data": task_data,
+                              "callback_id": callback_id,
+                              "response_data": None,
+                              "reply_to": reply_to,
+                              "expiration": expiration}
 
-        except Exception as ex:
-            special_string = "Error handling post_task for task type {} for my_id {}".format(task_type, self.my_id)
-            error_string = self.handle_exception(ex, special_string)
-            print(error_string)
-            debug_log(error_string)
-            result = {"success": False, "message": error_string}
+                declare_queue(self.channel, dest_id)
+                log.info("Posting task", task_type=task_type, dest_id=dest_id, source_id=self.my_id)
+                self.post_packet(dest_id, new_packet, reply_to, callback_id)
+                sleep_func(PAUSE_TIME)
+                result = {"success": True}
+
+            except Exception:
+                log.exception("Error handling post_task", task_type=task_type, my_id=self.my_id)
+                special_string = "Error handling post_task for task type {} for my_id {}".format(task_type, self.my_id)
+                result = {"success": False, "message": special_string, "alert_type": "alert-warning"}
         return result
 
     # noinspection PyUnusedLocal
     def post_and_wait(self, dest_id, task_type, task_data=None, sleep_time=.1,
                       timeout=10, alt_address=None):
-        callback_id = str(uuid.uuid4())
-        wait_worker = BlockingWaitWorker(self.wait_queue_id)
-        new_packet = {"source": self.my_id,
-                      "callback_type": "wait",
-                      "callback_id": callback_id,
-                      "status": "presend",
-                      "dest": dest_id,
-                      "task_type": task_type,
-                      "task_data": task_data,
-                      "response_data": None,
-                      "reply_to": wait_worker.my_id,
-                      "expiration": None}
 
-        # noinspection PyNoneFunctionAssignment@
+        task_id = new_task_id()
+        with bind_request(task_id, "presend", task_type):
+            try:
+                log.info("post_and_wait", task_type=task_type, dest_id=dest_id, my_id=self.my_id)
+                callback_id = str(uuid.uuid4())
+                wait_worker = BlockingWaitWorker(self.wait_queue_id)
+                new_packet = {"source": self.my_id,
+                              "task_id": task_id,
+                              "callback_type": "wait",
+                              "callback_id": callback_id,
+                              "status": "presend",
+                              "dest": dest_id,
+                              "task_type": task_type,
+                              "task_data": task_data,
+                              "response_data": None,
+                              "reply_to": wait_worker.my_id,
+                              "expiration": None}
 
-        resp = wait_worker.post_blocking_wait(dest_id, new_packet)
-        sleep_func(PAUSE_TIME)
-        self.channel.queue_delete(self.wait_queue_id)
-        if resp == "__ERROR__":
-            error_string = "Got post_blocking_wait error with msg_type {}, destination {}, and source {}".format(task_type,
-                                                                                                                 dest_id,
-                                                                                                                 self.my_id)
-            debug_log(error_string)
+                # noinspection PyNoneFunctionAssignment@
 
-            raise MessagePostException(error_string)
-        else:
-            return resp
+                resp = wait_worker.post_blocking_wait(dest_id, new_packet)
+                sleep_func(PAUSE_TIME)
+                self.channel.queue_delete(self.wait_queue_id)
+                if resp == "__ERROR__":
+                    raise MessagePostException("Blocking wait post failed")
+                else:
+                    return resp
+            except Exception:
+                log.exception("post and wait error")
+                special_string = "Got post_blocking_wait error with msg_type {}, destination {}, and source {}".format(
+                    task_type,
+                    dest_id,
+                    self.my_id)
+                return {"success": False, "message": special_string, "alert_type": "alert-warning"}
 
     def emit_to_client(self, message, data):
         data["local_id"] = self.my_id
@@ -303,109 +294,107 @@ class QWorker(ExceptionMixin):
         self.ask_host("emit_to_client", data)
 
     def submit_response(self, task_packet, response_data=None):
-        if response_data is not None:
-            task_packet["response_data"] = response_data
-        task_packet["status"] = "submitted_response"
-        if "client_post" in task_packet:
-            if self.use_emit_direct:
-                if "room" in task_packet:
-                    room = task_packet["room"]
+        task_id = task_packet.get("task_id") or new_task_id()
+        task_type = task_packet.get("task_type", "unknown")
+        with bind_request(task_id, "submitting_response", task_type):  # shouldn't be necessary but just in case
+            log.debug("entering submit_response",
+                      my_id=self.my_id)
+            if response_data is not None:
+                task_packet["response_data"] = response_data
+            task_packet["status"] = "submitted_response"
+            if "client_post" in task_packet:
+                if self.use_emit_direct:
+                    if "room" in task_packet:
+                        room = task_packet["room"]
+                    else:
+                        room = task_packet["global_id"]
+                        task_packet["room"] = room
+                    if "namespace" in task_packet:
+                        namespace = task_packet["namespace"]
+                    else:
+                        namespace = "/main"
+                    emit_direct("handle-callback", task_packet, namespace=namespace, room=room)
                 else:
-                    room = task_packet["global_id"]
-                    task_packet["room"] = room
-                if "namespace" in task_packet:
-                    namespace = task_packet["namespace"]
-                else:
-                    namespace = "/main"
-                emit_direct("handle-callback", task_packet, namespace=namespace, room=room)
+                    self.emit_to_client("handle-callback", task_packet)
             else:
-                self.emit_to_client("handle-callback", task_packet)
-        else:
-            reply_to = task_packet["reply_to"]
-            self.post_packet(reply_to, task_packet, callback_id=task_packet["callback_id"])
-        return
+                reply_to = task_packet["reply_to"]
+                self.post_packet(reply_to, task_packet, callback_id=task_packet["callback_id"])
+            return
 
     def handle_response(self, task_packet):
-        try:
-            cbid = task_packet["callback_id"]
-            if cbid in error_handler_dict:
-                error_handler = error_handler_dict[cbid]
-                del error_handler_dict[cbid]
-            else:
-                error_handler = None
-            func = callback_dict[task_packet["callback_id"]]
-            del callback_dict[task_packet["callback_id"]]
-            callback_type = task_packet["callback_type"]
-            if task_packet["status"] in error_response_statuses and error_handler is not None:
+        task_id = task_packet.get("task_id") or new_task_id()
+        task_type = task_packet.get("task_type", "unknown")
+        with bind_request(task_id, "handling_response", task_type):
+            try:
+                log.info("handle_response",
+                          my_id=self.my_id)
+                cbid = task_packet["callback_id"]
+                if cbid in error_handler_dict:
+                    error_handler = error_handler_dict[cbid]
+                    del error_handler_dict[cbid]
+                else:
+                    error_handler = None
+                func = callback_dict[task_packet["callback_id"]]
+                del callback_dict[task_packet["callback_id"]]
+                callback_type = task_packet["callback_type"]
                 if callback_type == "callback_with_context":
                     cdata = callback_data_dict[task_packet["callback_id"]]
                     del callback_data_dict[task_packet["callback_id"]]
-                    if error_handler is not None:
-                        error_handler(task_packet, cdata)
+                    func(task_packet["response_data"], cdata)
                 else:
-                    if error_handler is not None:
-                        error_handler(task_packet)
-            elif callback_type == "callback_with_context":
-                cdata = callback_data_dict[task_packet["callback_id"]]
-                del callback_data_dict[task_packet["callback_id"]]
-                func(task_packet["response_data"], cdata)
-            else:
-                func(task_packet["response_data"])
-        except Exception as ex:
-            special_string = "Error handling callback for task type {} for my_id {}".format(task_packet["task_type"],
-                                                                                            self.my_id)
-            self.handle_exception(ex, special_string)
-        return
+                    func(task_packet["response_data"])
+            except Exception:
+                log.exception("Error in handle_response")
+            return
 
-    # noinspection PyUnboundLocalVariable
     def handle_event(self, task_packet):
-        task_type = task_packet["task_type"]
-        if type(task_type) is dict:
-            print(f"got task type {task_type} and task_id {task_packet}")
-        if task_type in task_worthy_methods:
+        task_id = task_packet.get("task_id") or new_task_id()
+        task_type = task_packet.get("task_type", "unknown")
+        with bind_request(task_id, "handling_event", task_type):
             try:
-                response_data = getattr(self.handler_instances[task_worthy_methods[task_type]], task_type)(task_packet["task_data"])
-            except Exception as ex:
-                special_string = "Error handling task of type {} for my_id {}".format(task_type,
-                                                                                      self.my_id)
-                error_msg = self.handle_exception(ex, special_string)
-                print(error_msg)
-                if task_packet["callback_id"] is not None:
-                    response_data = {"success": False, "message": error_msg}
-                    task_packet["response_data"] = response_data
-                    self.submit_response(task_packet)
+                task_type = task_packet["task_type"]
+                log.debug("entering handle_event", task_type=task_type, my_id=self.my_id)
+                if task_type in task_worthy_methods:
+                    response_data = None
+                    try:
+                        handler = self.handler_instances[task_worthy_methods[task_type]]
+                        response_data = getattr(handler, task_type)(task_packet.get("task_data"))
+                    except Exception:
+                        log.exception("Error handling task", task_type=task_type, my_id=self.my_id)
 
-            if task_packet["callback_id"] is not None:
-                try:
-                    task_packet["response_data"] = response_data
-                    self.submit_response(task_packet)
-                except Exception as ex:
-                    special_string = "Error submitting response for task type {} for my_id {}".format(task_type,
-                                                                                                      self.my_id)
-                    error_msg = self.handle_exception(ex, special_string)
-                    print(error_msg)
-                    response_data = {"success": False, "message": error_msg}
-                    task_packet["response_data"] = response_data
-                    self.submit_response(task_packet)
+                        special_string = f"Error handling task {task_type} for my_id {self.my_id}"
+                        response_data = {"success": False, "message": special_string}
 
-        elif task_type in task_worthy_manual_submit_methods:
-            try:
-                getattr(self.handler_instances[task_worthy_manual_submit_methods[task_type]], task_type)(task_packet["task_data"], task_packet)
-            except Exception as ex:
-                special_string = "Error handling task of type {} for my_id {}".format(task_type,
-                                                                                      self.my_id)
-                error_msg = self.handle_exception(ex, special_string)
-                print(error_msg)
-                response_data = {"success": False, "message": error_msg}
-                task_packet["response_data"] = response_data
-                self.submit_response(task_packet)
-        else:
-            debug_log("Ignoring task type {} for my_id {}".format(task_type, self.my_id))
-        return
+                    if task_packet.get("callback_id") is not None:
+                        try:
+                            task_packet["response_data"] = response_data
+                            self.submit_response(task_packet)
+                        except Exception:
+                            log.exception("error submitting response", task_type=task_type, my_id=self.my_id)
+                            special_string = f"Error submitting response for task {task_type} for my_id {self.my_id}"
+                            task_packet["response_data"] = {"success": False, "message": special_string}
+                            self.submit_response(task_packet)
+                    return
+
+                if task_type in task_worthy_manual_submit_methods:
+                    try:
+                        handler = self.handler_instances[task_worthy_manual_submit_methods[task_type]]
+                        handler.__getattribute__(task_type)(task_packet.get("task_data"), task_packet)
+                    except Exception:
+                        log.exception("error in manual submit method", task_type=task_type, my_id=self.my_id)
+                        special_string = f"Error handling task {task_type} for my_id {self.my_id}"
+                        task_packet["response_data"] = {"success": False, "message": special_string}
+                        self.submit_response(task_packet)
+                    return
+
+                log.warning("Ignoring task type", task_type=task_type, my_id=self.my_id)
+            except Exception:
+                log.exception("Got uncaught error in handle_event",
+                              my_id=self.my_id,
+                              task_type=task_packet.get("task_type", "unknown"))
 
     def handle_exception(self, ex, special_string=None):
         res = self.get_traceback_message(ex, special_string)
-        print(res)
         return res
 
 
@@ -421,7 +410,7 @@ class BlockingWaitWorker(ExceptionMixin):
         try:
             self.connection, self.channel = get_pika_connection_with_retries(MAX_PIKA_RETRIES)
             if self.connection is None:
-                debug_log("Couldn't create pika connection for blocking worker")
+                log.exception("Couldn't create pika connection for blocking worker")
                 return
             self.channel.queue_declare(queue=self.queue_name, durable=False, exclusive=False)
             self.callback_queue = self.queue_name
@@ -429,44 +418,47 @@ class BlockingWaitWorker(ExceptionMixin):
                 queue=self.callback_queue,
                 on_message_callback=self.on_response,
                 auto_ack=True)
-        except Exception as ex:
-            debug_log("Couldn't connect to pika in Blocking worker")
-            print(self.handle_exception(ex, "Here's the error"))
+        except Exception:
+            log.exception("Couldn't connect to pika in Blocking worker")
 
     def reset_me(self):
         self.connection.close()
         self.initialize_me()
 
     def post_blocking_wait(self, dest_id, task_packet, retries=0):
-        max_retries = 3
-        try:
-            if self.channel is None or self.channel.is_closed:
+        task_id = task_packet.get("task_id") or new_task_id()
+        task_type = task_packet.get("task_type", "unknown")
+        with bind_request(task_id, "presend", task_type):
+            max_retries = 3
+            try:
+                if self.channel is None or self.channel.is_closed:
+                    self.initialize_me()
+                    sleep_func(1)
+                self.response = None
+                self.current_callback_id = task_packet["callback_id"]
+                self.corr_id = str(uuid.uuid4())
+                declare_queue(self.channel, dest_id)
+                self.channel.basic_publish(
+                    exchange='',
+                    routing_key=dest_id,
+                    properties=pika.BasicProperties(
+                        reply_to=self.callback_queue,
+                        correlation_id=self.corr_id,
+                        delivery_mode=2
+                    ),
+                    body=json.dumps(task_packet))
+                while self.response is None:
+                    self.connection.process_data_events(time_limit=1)
+                self.current_callback_id = None
+                return self.response
+            except Exception as ex:
+                log.exception("Got an exception in post_blocking wait")
+                if retries > max_retries:
+                    log.error("max_retries_blocking_wait")
+                    return "__ERROR__"
                 self.initialize_me()
                 sleep_func(1)
-            self.response = None
-            self.current_callback_id = task_packet["callback_id"]
-            self.corr_id = str(uuid.uuid4())
-            declare_queue(self.channel, dest_id)
-            self.channel.basic_publish(
-                exchange='',
-                routing_key=dest_id,
-                properties=pika.BasicProperties(
-                    reply_to=self.callback_queue,
-                    correlation_id=self.corr_id,
-                    delivery_mode=2
-                ),
-                body=json.dumps(task_packet))
-            while self.response is None:
-                self.connection.process_data_events(time_limit=1)
-            self.current_callback_id = None
-            return self.response
-        except Exception as ex:
-            debug_log(self.handle_exception(ex, "Got an exception in post_blocking wait"))
-            if retries > max_retries:
-                return "__ERROR__"
-            self.initialize_me()
-            sleep_func(1)
-            return self.post_blocking_wait(dest_id, task_packet, retries + 1)
+                return self.post_blocking_wait(dest_id, task_packet, retries + 1)
 
     def handle_exception(self, ex, special_string=None):
         return self.extract_short_error_message(ex, special_string)

@@ -2,7 +2,6 @@ import copy
 import re
 import csv
 import os
-import sys
 import xmltodict
 import chardet
 import openpyxl
@@ -18,7 +17,7 @@ def read_xml_file_to_dict(the_file):
         return None, e
 
     # Assume we are getting a dict of the form:
-    # {"collection_name": {"some_tag": [list of dicts]}
+    # {"collection_name": {"some_tag": [list of dicts]}}
     # We will treat each of the dicts in the list as tags.
 
     collection_name = parsed_xml.keys()[0]
@@ -26,7 +25,7 @@ def read_xml_file_to_dict(the_file):
     list_of_dicts = parsed_xml[collection_name][some_tag]
 
     # Next we want to find any fields that have lists and convert them to dicts
-    # I expect that any xml tag that contains a list will have an attribute _key
+    # I expect that any XML tag that contains a list will have an attribute _key
     # For example, <CODEDCLIP _key="CLIP">
     # that tells it which of its fields to use as a key
     # unfortunately xmltodict puts this within the dicts a level down

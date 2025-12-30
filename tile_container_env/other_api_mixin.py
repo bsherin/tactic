@@ -1,7 +1,7 @@
 from communication_utils import debinarize_python_object
 import io
-# noinspection PyPackageRequirements
 import pandas as _pd
+from tactic_logging import log
 
 try:
     import nltk
@@ -10,7 +10,7 @@ try:
     nltk_available = True
 except:
     nltk_available = False
-    print("*** nltk not available ***")
+    log.error("*** nltk not available ***")
 
 from document_object import TacticDocument, TacticRow, DetachedTacticRow
 
@@ -113,8 +113,8 @@ class OtherAPIMIxin:
         self._restore_stdout()
         return result["settings"]
 
-    # noinspection PyPackageRequirements
-    def create_bokeh_html(self, the_plot):
+    @staticmethod
+    def create_bokeh_html(the_plot):
         from bokeh.embed import file_html
         from bokeh.resources import Resources
         return file_html(the_plot, Resources("inline"))
@@ -151,7 +151,8 @@ class OtherAPIMIxin:
 
     # <editor-fold desc="Odd utility methods">
 
-    def dict_to_list(self, the_dict):
+    @staticmethod
+    def dict_to_list(the_dict):
         result = []
         for it in the_dict.values():
             result += it
@@ -167,9 +168,8 @@ class OtherAPIMIxin:
                         "the_id": temp_id,
                         "local_id": self.sid}
                 self._tworker.emit_to_client("window-open", data)
-            except Exception as ex:
-                error_string = self._handle_exception(ex, "Error emitting to client", print_to_console=False)
-                print(error_string)
+            except Exception:
+                log.exception("Error emitting to client")
             return
 
         if file_name is None:
@@ -192,6 +192,7 @@ class OtherAPIMIxin:
                         "local_id": self.sid}
                 self._tworker.emit_to_client("window-open", data)
             except Exception as ex:
+                log.exception("Error emitting to client")
                 self._handle_exception(ex, "Error emitting to client")
             return
 
@@ -204,7 +205,8 @@ class OtherAPIMIxin:
         self._restore_stdout()
         return
 
-    def convert_df_to_datalist(self, df, max_rows=None, include_row_labels=False):
+    @staticmethod
+    def convert_df_to_datalist(df, max_rows=None, include_row_labels=False):
         if max_rows is not None:
             new_df = df.head(max_rows)
         else:

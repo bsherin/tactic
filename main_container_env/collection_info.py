@@ -279,7 +279,6 @@ class TableCollectionInfo(CollectionInfo):
         sorted_int_keys = sorted([int(key) for key in data_rows.keys()])
         for r in sorted_int_keys:
             result.append(data_rows[str(r)])
-        print("leaving sorted_data_rows")
         return result
 
     def all_sorted_data_rows(self, doc_name):

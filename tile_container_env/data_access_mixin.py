@@ -14,7 +14,6 @@ class DataAccessMixin:
     def get_collection_info(self):
         self._save_stdout()
         result = self._tworker.post_and_wait_to_main("get_collection_info_task", {})
-        print("in get_collection_info with result {}".format(result))
         self._restore_stdout()
         return result
 

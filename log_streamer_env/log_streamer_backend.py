@@ -1,11 +1,9 @@
 import threading
 import docker
-import os
-import pika
 
-from rabbit_manage import get_pika_connection_with_retries, declare_queue
+from tactic_logging import log
 
-from docker_functions import get_log, container_id, get_container
+from docker_functions import get_log, get_container
 
 from qworker_alt import add_qw_pika_connection, close_connection, simple_uid
 
@@ -50,7 +48,6 @@ class LogTailer:
 
     def _run(self):
         if self.cont is not None:
-            channel = add_qw_pika_connection()
             for line in self.cont.logs(stream=True, tail=0):
                 # Shouldn't do anything here that will cause something to be entered in the log of a
                 # container being streamed. That will give an infinite loop.
@@ -58,7 +55,7 @@ class LogTailer:
                     return
                 self.send_fn(line.decode())
         else:
-            print("cont was None")
+            log.error("self.cont was None")
         self.send_fn("stream exited")
         close_connection()
-        print("exiting")
+        log.debug("exiting")

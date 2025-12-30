@@ -1,7 +1,6 @@
 import uuid
-import re
-from flask import url_for
 from qworker import task_worthy
+from tactic_logging import log
 
 class ProjectTasksMixin:
 
@@ -73,7 +72,6 @@ class ProjectTasksMixin:
     def SaveAssistantThread(self, data):
         def got_past_messages(resp_data):
             try:
-                print("got past messages")
                 console_items = []
                 for msg in resp_data["messages"]:
                     unique_id = str(uuid.uuid4())
@@ -94,14 +92,9 @@ class ProjectTasksMixin:
                     "console_width_fraction": .5
                 }
                 self.create_assistant_save(new_name, interface_state)
-                return {"success": True}
-            except Exception as ex2:
-                print(self.handle_exception(ex2, "Error saving thread to notebook"))
-                return {"success": False}
+            except Exception:
+                log.exception("Error saving assistant thread")
+            return
 
-        try:
-            new_name = data["new_name"]
-            self.post_task("assistant", "get_past_messages", {"local_id": data["local_id"]}, got_past_messages)
-        except Exception as ex:
-            print(self.handle_exception(ex, "Error posting get_past_message"))
-            return {"success": False}
+        new_name = data["new_name"]
+        self.post_task("assistant", "get_past_messages", {"local_id": data["local_id"]}, got_past_messages)

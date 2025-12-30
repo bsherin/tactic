@@ -1,19 +1,16 @@
 
-import sys
-import re
 import os
 import io
 from collections import OrderedDict
-from flask import jsonify, request, url_for, render_template, send_file
+from flask import request, render_template, send_file
 from flask_login import login_required, current_user
 from tactic_app import app
-from docker_functions import create_container
 from file_handling import read_freeform_file
 
 from js_source_management import js_source_dict, _develop, css_source
 
-import datetime
-tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
+from utils import utcnow
+tstring = utcnow().strftime("%Y-%H-%M-%S")
 
 
 @app.route('/download_jupyter/<project_name>/<new_name>', methods=['get', 'post'])
@@ -23,7 +20,6 @@ def download_jupyter(project_name, new_name):
     save_dict = user_obj.get_project_doc(project_name)
     mdata = save_dict["metadata"]
 
-    print("in download_jupyter with mdata " + str(mdata))
     if not mdata["type"] == "jupyter":
         return NotImplementedError
 
@@ -31,7 +27,6 @@ def download_jupyter(project_name, new_name):
     mem = io.BytesIO()
     mem.write(project_dict["jupyter_text"].encode())
     mem.seek(0)
-    print("mem is ready supposedly")
     return send_file(mem,
                      download_name=new_name,
                      as_attachment=True)
@@ -43,7 +38,6 @@ def import_jupyter(library_id):
     user_obj = current_user
     file_list = []
     for the_file in request.files.values():
-        print("got a file")
         file_list.append(the_file)
     if len(file_list) == 0:
         result = {"success": "false", "title": "Error creating notebooks", "content": "No files received"}
@@ -63,7 +57,6 @@ def import_as_jupyter_full(file_list):
     for the_file in file_list:
         filename, file_extension = os.path.splitext(the_file.filename)
         jupyter_name = user_obj.make_name_unique(filename, user_obj.project_names())
-        print("got file " + filename)
         filename = filename.encode("ascii", "ignore").decode()
         (success, result_txt, encoding, decoding_problems) = read_freeform_file(the_file)
         if not success:  # then result_dict contains an error object

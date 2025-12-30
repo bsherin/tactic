@@ -1,12 +1,11 @@
 
 import os
 import re
-import mimetypes
-from flask import jsonify
 from tactic_app import socketio
 from pool_backend import PoolBackend
 from s3thread import boto_s3
 from aws_helpers import get_ssm_parameter
+from tactic_logging import log
 
 from users import User
 
@@ -16,6 +15,7 @@ TREE_DEPTH = 1
 class PoolBackendECS(PoolBackend):
 
     def get_tree(self, user_obj, show_hidden=False, base_path=None):
+        dtree = None
         try:
             user_pool_dir = f"s3://{BUCKET}/users/{user_obj.username}"
             if base_path is not None:
@@ -23,7 +23,7 @@ class PoolBackendECS(PoolBackend):
             else:
                 base_path = user_pool_dir
             if not boto_s3.lexists(user_pool_dir):
-                print("user pool dir does not exist")
+                log.error("user pool dir does not exist")
                 return {"dtree": None}
             self.pool_visited = []
             dtree = [self.get_node(base_path,
@@ -31,8 +31,8 @@ class PoolBackendECS(PoolBackend):
                                    user_obj,
                                    TREE_DEPTH,
                                    show_hidden)]
-        except Exception as ex:
-            print(self.handle_exception(ex, "Error getting pooltree"))
+        except Exception:
+            log.exception("Error getting pooltree")
         return {"dtree": dtree}
 
     def get_node(self, root, user_pool_dir, user_obj, tree_depth=1, show_hidden=False):
@@ -155,7 +155,8 @@ class PoolBackendECS(PoolBackend):
         except Exception as ex:
             raise IOError(f"Error downloading resource {src}: {str(ex)}")
 
-    def get_s3_upload_info(self, dest_path, filename, content_type, the_user):
+    @staticmethod
+    def get_s3_upload_info(dest_path, filename, content_type, _the_user):
         # path the user chose in your UI (what you previously called extra_value)
         # e.g. "/users/<userId>/some/folder"
         full_dest_path = os.path.join(dest_path, filename)

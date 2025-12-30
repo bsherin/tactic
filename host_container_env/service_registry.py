@@ -1,10 +1,9 @@
-import os
 import re
 import time
 from rabbit_admin import list_queues, delete_queue
 from redis_tools import RedisManager, redis_client
-from aws_helpers import get_ssm_parameter
 from aws_detection import on_aws
+from tactic_logging import log
 
 if on_aws:
     import boto3
@@ -136,7 +135,7 @@ class ServiceRegistry(RedisManager):
     def get_container_dict(self, cont_id):
         return self.get_hash_dict(cont_id)
 
-    def get(self, tile_id):
+    def get(self, tile_id, _narrower=None):
         return self.get_container_dict(tile_id)
 
     def get_arn(self, tile_id):
@@ -148,7 +147,7 @@ class ServiceRegistry(RedisManager):
         return citems
 
     def register_interaction(self, cont_id):
-        self.set_container_info(cont_it, "last_interaction", str(time.time()))
+        self.set_container_info(cont_id, "last_interaction", str(time.time()))
 
     def register_container_heartbeat(self, cont_id):
         self.set_container_info(cont_id, "last_heartbeat", str(time.time()))
@@ -158,12 +157,12 @@ class ServiceRegistry(RedisManager):
             self.removed_obsolete_queues = True
             return
         if self.worker.channel is None:
-            print("in remove_obsolete_queues, channel isn't ready yet")
+            log.warning("in remove_obsolete_queues, channel isn't ready yet")
             return
 
         tasks = self.list_running_service_tasks()
         if not tasks:
-            print("no running service tasks found")
+            log.debug("no running service tasks found")
             return
         running_ids = [self.task_to_id(t) for t in tasks]
         if self.extra_valid_ids:
@@ -173,7 +172,7 @@ class ServiceRegistry(RedisManager):
             qname = q["name"]
             if qname.startswith(self.id_prefix):
                 if qname not in running_ids:
-                    print("removing queue %s" % qname)
+                    log.info("removing queue", queue=qname)
                     delete_queue(qname)
             if qname.startswith(f"kill_{self.id_prefix}"):
                 partial_qname = re.sub("kill_", "", qname)

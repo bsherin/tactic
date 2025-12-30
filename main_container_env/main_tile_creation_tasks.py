@@ -1,16 +1,12 @@
 
-import copy
 import datetime
-import copy
 from main_tasks_mixin import task_worthy, task_worthy_manual_submit
 from mongo_accesser import bytes_to_string
-from qworker import debug_log
-import base64
+from tactic_logging import log
 
 class TileCreationTasksMixin:
 
     def create_tile_container(self, sid, other_name=None, is_pseudo=False, callback=None):
-        print("in create_tile_container")
         sess = self.get_session(sid)
         mdata = {"ppi": sess.ppi, is_pseudo: is_pseudo}
         if other_name:
@@ -27,7 +23,7 @@ class TileCreationTasksMixin:
 
     @task_worthy_manual_submit
     def create_n_tile_containers(self, data, task_packet):
-        print("in create_n_tile_containers")
+        log.info("Creating {} tile containers".format(data["number_to_create"]))
         sid = data["sid"]
         new_ids = []
         new_creds = []
@@ -39,16 +35,17 @@ class TileCreationTasksMixin:
 
         def got_container(cresult):
             if not cresult["success"]:
-                print("got an error in got_container")
+                log.exception(cresult["message"])
                 self.mworker.submit_response(task_packet, {"success": False, "message": cresult["message"]})
             else:
+                log.info("Created tile container with ID {}".format(cresult["the_id"]))
                 new_ids.append(cresult["the_id"])
                 new_creds.append(cresult["creds"])
                 if len(new_ids) == number_to_create:
+                    log.info("All {} tile containers created".format(number_to_create))
                     self.mworker.submit_response(task_packet, {"success": True, "new_ids": new_ids, "new_creds": new_creds})
-        print(f"creating {number_to_create} tile containers")
         for n in range(number_to_create):
-            print("creating tile container {}".format(n))
+            log.info("Creating tile container {}".format(n))
             self.create_tile_container(sid, other_name=tile_names[n], callback=got_container)
         return
 
@@ -90,7 +87,7 @@ class TileCreationTasksMixin:
             def instantiated_result(instantiate_result):
                 self.tstart = datetime.datetime.now()
                 if not instantiate_result["success"]:
-                    debug_log("got an exception " + instantiate_result["message"])
+                    log.error(instantiate_result["message"])
                     self.mworker.submit_response(local_task_packet, instantiate_result)
                 exports = instantiate_result["exports"]
                 self.update_pipe_dict(sid, exports, tile_container_id, tile_name)
@@ -163,8 +160,6 @@ class TileCreationTasksMixin:
                     sess.pseudo_creation_in_progress = False
                     if callback is not None:
                         callback()
-                    print("leaving instantiate_done")
-
 
                 self.mworker.emit_export_viewer_message(sid, "update_exports_popup", {})
             self.mworker.post_task(pseudo_tile_id, "instantiate_as_pseudo_tile", data_dict, instantiate_done)
@@ -174,32 +169,14 @@ class TileCreationTasksMixin:
 
     @task_worthy_manual_submit
     def recreate_one_tile(self, data, task_packet):
-        print("in recreate_one_tile in main")
         sid = data["sid"]
         creds = data["creds"]
         tile_id = data["tile_id"]
         tile_save_dict = data["tile_save_dict"]
 
         sess = self.get_session(sid)
-        def handle_response_error(task_packet_passed):
-            tphrc = copy.copy(task_packet_passed)
-            if "response_data" in tphrc and tphrc["response_data"] is not None:
-                response_data = tphrc["response_data"]
-            else:
-                response_data = {}
-            if "message" in response_data:
-                message = response_data["message"]
-            elif "message" in response_data:
-                message = response_data["message"]
-            else:
-                message = "Got a response error with status {} for event_type {}".format(tphrc["status"],
-                                                                                         tphrc["task_type"])
-            self.mworker.send_error_entry(sid, "Project recreation tphrc", message)
-            self.mworker.submit_response(task_packet, {"old_tile_id": old_tile_id})
-            return
 
         tile_code = self.get_loaded_tile_code(sid, tile_save_dict["tile_type"])
-        print("got tile_code")
         tile_name = tile_save_dict["tile_name"]
 
         tile_save_dict["new_base_figure_url"] = sess.base_figure_url
@@ -211,7 +188,6 @@ class TileCreationTasksMixin:
             "ppi": sess.ppi,
         }
 
-        print('got additional_instance_params')
         tile_save_dict.update(additional_instance_params)
 
         lsdata = {"tile_code": tile_code, "tile_save_dict": tile_save_dict, "creds": creds}
@@ -220,8 +196,8 @@ class TileCreationTasksMixin:
             if not recreate_response["success"]:
                 tile_info = sess.tile_info
                 tile_info.set_save_dict(tile_id, recreate_response["tile_save_dict"])
-                self.mworker.ask_host("delete_container", {"container_id": tile_id, "notify": False})
-                self.mworker.submit_response(task_packet, {"tile_id": tile_id})
+                self.mworker.ask_host(sid, "delete_container", {"container_id": tile_id, "notify": False})
+                self.mworker.submit_response(task_packet, {"tile_id": tile_id, "success": False})
                 return
 
             exports = recreate_response["exports"]
@@ -233,7 +209,7 @@ class TileCreationTasksMixin:
             return
 
         self.mworker.post_task(tile_id, "load_source_and_recreate", lsdata, recreate_done,
-                               expiration=60, error_handler=handle_response_error)
+                               expiration=60)
 
 
     @task_worthy_manual_submit
@@ -316,61 +292,47 @@ class TileCreationTasksMixin:
         sid = ddict["sid"]
         sess = self.get_session(sid)
         tile_info = sess.tile_info
-        try:
-            if self.am_notebook_type(sid):
-                return
-            for tid in tile_info.tile_ids:
-                self.mworker.post_task(tid, "RebuildCollectionObject", ddict)
-            if sess.pseudo_tile_id is not None:
-                self.mworker.post_task(sess.pseudo_tile_id, "RebuildCollectionObject", ddict)
-        except Exception as ex:
-            error_string = self.handle_exception(sid, ex, "Error updating collection objects")
-            print(error_string)
+        if self.am_notebook_type(sid):
             return
+        for tid in tile_info.tile_ids:
+            self.mworker.post_task(tid, "RebuildCollectionObject", ddict)
+        if sess.pseudo_tile_id is not None:
+            self.mworker.post_task(sess.pseudo_tile_id, "RebuildCollectionObject", ddict)
 
     @task_worthy
     def rebuild_tile_forms_task(self, ddict):
         sid = ddict["sid"]
         sess = self.get_session(sid)
-        try:
-            if sess.am_notebook_type:
-                return
-            if "tile_id" not in ddict:
-                tile_id = None
-            else:
-                tile_id = ddict["tile_id"]
-
-            tile_info = sess.tile_info
-            if tile_id is None:
-                other_tile_names = tile_info.tile_ids
-            else:
-                other_tile_names = self.get_other_tile_names(tile_id, tile_info)
-            debug_log("getting the form info")
-            username = sess.username
-
-            form_info = {"current_header_list": self.current_header_list(sid),
-                         "pipe_dict": sess.pipe_dict,
-                         "doc_names": sess.doc_names,
-                         "list_names": self.list_tags_dict(username),
-                         "function_names": self.function_tags_dict(username),
-                         "class_names": self.class_tags_dict(username),
-                         "collection_names": self.collection_tags_dict(username),
-                         "other_tile_names": other_tile_names}
-        except Exception as ex:
-            error_string = self.handle_exception(sid, ex, "Error assembling form info")
-            print(error_string)
+        if sess.am_notebook_type:
             return
-        try:
-            for tid in tile_info.tile_ids:
-                if tile_id is None or not tid == tile_id:
-                    form_info["other_tile_names"] = self.get_other_tile_names(tid, tile_info)
-                    the_id = tid
-                    self.mworker.post_task(the_id, "RebuildTileForms", form_info)
-            if sess.pseudo_tile_id is not None:
-                self.mworker.post_task(sess.pseudo_tile_id, "RebuildTileForms", {})
-        except Exception as ex:
-            error_string = self.handle_exception(sid, ex, "Error rebuilding the forms")
-            print(error_string)
+        if "tile_id" not in ddict:
+            tile_id = None
+        else:
+            tile_id = ddict["tile_id"]
+
+        tile_info = sess.tile_info
+        if tile_id is None:
+            other_tile_names = tile_info.tile_ids
+        else:
+            other_tile_names = self.get_other_tile_names(tile_id, tile_info)
+        username = sess.username
+
+        form_info = {"current_header_list": self.current_header_list(sid),
+                     "pipe_dict": sess.pipe_dict,
+                     "doc_names": sess.doc_names,
+                     "list_names": self.list_tags_dict(username),
+                     "function_names": self.function_tags_dict(username),
+                     "class_names": self.class_tags_dict(username),
+                     "collection_names": self.collection_tags_dict(username),
+                     "other_tile_names": other_tile_names}
+
+        for tid in tile_info.tile_ids:
+            if tile_id is None or not tid == tile_id:
+                form_info["other_tile_names"] = self.get_other_tile_names(tid, tile_info)
+                the_id = tid
+                self.mworker.post_task(the_id, "RebuildTileForms", form_info)
+        if sess.pseudo_tile_id is not None:
+            self.mworker.post_task(sess.pseudo_tile_id, "RebuildTileForms", {})
         return
 
     @task_worthy

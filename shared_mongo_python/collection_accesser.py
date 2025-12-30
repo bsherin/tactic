@@ -1,10 +1,9 @@
 import re
 import zlib
-import datetime
-import copy
 import os
 from bson import ObjectId
 from collections import OrderedDict
+from tactic_logging import log
 
 from communication_utils import make_jsonizable_and_compress, debinarize_python_object
 
@@ -149,7 +148,8 @@ class CollectionAccess(object):
 
 
     def create_complete_collection(self, new_name, doc_dict, doc_type, document_metadata=None,
-                                   header_list_dict=None, collection_metadata={}, temp_data=None, username=None):
+                                   header_list_dict=None, collection_metadata=None, temp_data=None, username=None):
+        collection_metadata = collection_metadata if collection_metadata else {}
         username = username if username else self.username
         if temp_data is None and new_name in self.collection_names(username):
             raise NameExistsError("Collection name {} already exists".format(new_name))
@@ -190,8 +190,7 @@ class CollectionAccess(object):
             del mdata["_id"]  # without this can get an error submitting the result
         return {"success": True, "message": "Collection created"}
 
-    def create_empty_collection(self, collection_name, doc_type, csv_options=None, username=None):
-        username = username if username else self.username
+    def create_empty_collection(self, collection_name, doc_type, csv_options=None):
         collection_mdata = {}
         if csv_options is not None:
             collection_mdata["csv_options"] = csv_options
@@ -201,6 +200,7 @@ class CollectionAccess(object):
             result["message"] = "Collection {} created".format(collection_name)
             result["success"] = True
         except Exception as ex:
+            log.exception("Error creating empty collection")
             msg = self.get_traceback_message(ex, "Error creating collection")
             result = {"success": False, "message": msg}
         return result

@@ -1,5 +1,6 @@
 
 from exception_mixin import generic_exception_handler
+from tactic_logging import log
 
 class UserAccess(object):
 
@@ -30,6 +31,7 @@ class UserAccess(object):
             db.user_collection.insert_one(user_doc)
             return {"success": True, "message": "User created successfully."}
         except Exception as ex:
+            log.exception("Error creating user")
             return generic_exception_handler.get_traceback_exception_dict(ex)
 
     def get_user_doc(self, username):
@@ -50,6 +52,7 @@ class UserAccess(object):
             self.db.user_collection.delete_one({"_id": ObjectId(target_user.get_true_id())})
             return {"success": True, "message": "User successfully removed."}
         except Exception as ex:
+            log.exception("Error deleting user")
             return generic_exception_handler.get_traceback_exception_dict(ex)
 
     def create_new_alt_id(self, username):

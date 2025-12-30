@@ -1,6 +1,5 @@
 import uuid
 import io
-import os
 import copy
 import sys
 import nltk
@@ -122,7 +121,7 @@ class Widget(object):
                 else:
                     getattr(sys.modules["tile_env"], self.on_click)(value)
 
-    def get(self, data):
+    def get(self, _data):
         self.widget_data_dict()
         return
 

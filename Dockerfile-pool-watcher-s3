@@ -1,10 +1,13 @@
 ARG BASE_IMAGE
 FROM ${BASE_IMAGE}
 WORKDIR /code
-ADD ./pool_container_s3_env/requirements.txt /code/requirements.txt
-RUN pip install -r requirements.txt
-ADD ./pool_container_s3_env /code/
-ADD ./shared_python/rabbit_manage.py ./shared_python/aws_helpers.py ./shared_python/aws_detection.py /code/
+ADD ./pool_container_s3_env/requirements.txt /code/pool_container_s3_env/requirements.txt
+RUN pip install -r /code/pool_container_s3_env/requirements.txt
+RUN pip install structlog python-json-logger
+ADD ./pool_container_s3_env /code/pool_container_s3_env
+ADD ./shared_python /code/shared_python
+ENV PYTHONPATH=/code:/code/pool_container_s3_env:/code/shared_python:/code/shared_mongo_python
+
 LABEL maintainer="Bruce L Sherin"
 ENV PYTHONUNBUFFERED=1
-CMD ["python", "-u", "pool_watcher_s3.py"]
+CMD ["python", "-u", "-m", "pool_container_s3_env.pool_watcher_s3"]

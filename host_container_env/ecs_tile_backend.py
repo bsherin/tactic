@@ -1,12 +1,13 @@
 
-import os, uuid, time
-from typing import Dict, Tuple, Optional
+import os, time
+from typing import Dict, Optional
 import boto3
 from botocore.config import Config
 
 from abstract_tile_backend import TileBackend
 from aws_task_helpers import run_tile_on_ecs, ECSTileError  # your helper we already built
 from aws_helpers import get_ssm_parameter
+from tactic_logging import log
 
 def _ecs():
     region = get_ssm_parameter("ECS_REGION")
@@ -56,11 +57,11 @@ class ECSTileBackend(TileBackend):
                tile_name: Optional[str] = None):
         tid, task_arn = self.tile_registry.claim_tile(username, owner, parent, project_name, tile_name)
         if tid:
-            print("***Claimed warm tile: ***")
+            log.info("warm_tile_claimed")
             creds = self.issue_user_s3_session(username)
             return tid, task_arn, creds
 
-        print("***Warm tile pool empty, launching ad-hoc ECS tile...***")
+        log.warning("***Warm tile pool empty, launching ad-hoc ECS tile...***")
         if not self.subnets or not self.sgs:
             raise ECSTileError("No idle tiles and ECS_SUBNETS/ECS_SECURITY_GROUPS not set for ad-hoc launch.")
 
@@ -98,7 +99,6 @@ class ECSTileBackend(TileBackend):
         try:
             ecs = _ecs()
             task_arn = self._lookup_task_arn(tile_id)
-            print("in terminate with task_arn:", task_arn)
             if task_arn:
                 ecs.update_task_protection(cluster=self.cluster, tasks=[task_arn], protectionEnabled=False)
             ecs.stop_task(cluster=self.cluster, task=task_arn, reason="tile terminated")

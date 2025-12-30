@@ -1,4 +1,3 @@
-import sys
 import time
 import pika
 import json
@@ -7,6 +6,7 @@ import threading
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from rabbit_manage import get_pika_connection_with_retries
+from tactic_logging import log, bind_request, new_task_id
 
 class Watcher:
 
@@ -24,7 +24,7 @@ class Watcher:
                 time.sleep(5)
         except:
             self.observer.stop()
-            print("Observer stopped")
+            log.exception("Observer stopped")
         self.observer.join()
 
 DEBOUNCE_TIME = 5
@@ -50,33 +50,38 @@ class Handler(FileSystemEventHandler):
         self.post_task("host", msg_type, task_data, callback_func)
         return
 
-    def post_task(self, dest_id, task_type, task_data=None, callback_func=None,
-                  callback_data=None, expiration=None, error_handler=None, special_reply_to=None):
-        try:
-            callback_id = None
-            reply_to = None
-            callback_type = "no_callback"
-            new_packet = {"source": self.my_id,
-                          "status": "presend",
-                          "callback_type": callback_type,
-                          "dest": dest_id,
-                          "task_type": task_type,
-                          "task_data": task_data,
-                          "callback_id": callback_id,
-                          "response_data": None,
-                          "reply_to": reply_to,
-                          "expiration": expiration}
-            self.post_packet(dest_id, new_packet, reply_to, callback_id)
-            result = {"success": True}
+    def post_task(self, dest_id, task_type, task_data=None, _callback_func=None,
+                  _callback_data=None, expiration=None, _special_reply_to=None):
+        new_id = new_task_id()
+        with bind_request(new_id, "presend", task_type):
+            try:
+                log.info("post_task")
+                callback_id = None
+                reply_to = None
+                callback_type = "no_callback"
+                new_packet = {"source": self.my_id,
+                              "task_id": new_id,
+                              "status": "presend",
+                              "callback_type": callback_type,
+                              "dest": dest_id,
+                              "task_type": task_type,
+                              "task_data": task_data,
+                              "callback_id": callback_id,
+                              "response_data": None,
+                              "reply_to": reply_to,
+                              "expiration": expiration}
+                self.post_packet(dest_id, new_packet, reply_to, callback_id)
+                result = {"success": True}
 
-        except Exception as ex:
-            special_string = "Error handling task for task type {} for my_id {}".format(task_type, self.my_id)
-            error_string = self.get_traceback_message(ex, special_string)
-            debug_log(error_string)
-            result = {"success": False, "message": error_string}
-        return result
+            except Exception as ex:
+                log.exception("Error handling post_task", task_type=task_type, my_id=self.my_id)
+                special_string = "Error handling task for task type {} for my_id {}".format(task_type, self.my_id)
+                error_string = self.get_traceback_message(ex, special_string)
+                result = {"success": False, "message": error_string}
+            return result
 
-    def get_traceback_message(self, e, special_string=None):
+    @staticmethod
+    def get_traceback_message(e, special_string=None):
         if special_string is None:
             template = "<pre>An exception of type {0} occured. Arguments:\n{1!r}\n"
         else:
@@ -101,6 +106,8 @@ class Handler(FileSystemEventHandler):
                 if connection is not None:
                     self.channel = channel
                     self.post_packet(dest_id, task_packet, reply_to, callback_id, attempt=1)
+            else:
+                log.exception("Error in post_packet, giving up", dest_id=dest_id)
         return
 
     def on_modified(self, event):
@@ -112,7 +119,7 @@ class Handler(FileSystemEventHandler):
                 self._timers[src_path].cancel()
 
         def process_event():
-            print(f"Modified file: {src_path}")
+            log.debug("Modified file", path=src_path)
             self.post_pool_event("modify", src_path, event.is_directory)
 
         timer = threading.Timer(DEBOUNCE_TIME, process_event)
@@ -125,16 +132,17 @@ class Handler(FileSystemEventHandler):
 
     def on_created(self, event):
         src_path = self.append_slash(event.src_path, event.is_directory)
-        print(f"Created file: {src_path}")
+        log.debug("Created file", path=src_path)
         self.post_pool_event("create", src_path, event.is_directory)
 
     def on_deleted(self, event):
         src_path = self.append_slash(event.src_path, event.is_directory)
-        print(f"Deleted file: {src_path}")
+        log.debug("Deleted file", path=src_path)
         self.post_pool_event("delete", src_path, event.is_directory)
         return
 
-    def append_slash(self, path, is_directory):
+    @staticmethod
+    def append_slash(path, is_directory):
         if is_directory and not path[-1] == "/":
             path = path + "/"
         return path
@@ -142,7 +150,7 @@ class Handler(FileSystemEventHandler):
     def on_moved(self, event):
         src_path = self.append_slash(event.src_path, event.is_directory)
         dest_path = self.append_slash(event.dest_path, event.is_directory)
-        print(f"Moved file: {src_path} to {dest_path}")
+        log.debug(f"Moved file", srce_path=src_path, dest_path=dest_path)
         self.post_pool_event("move", src_path, event.is_directory, dest_path)
         return
 

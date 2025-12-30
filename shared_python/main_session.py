@@ -1,5 +1,3 @@
-from unittest import case
-
 from session_store_s3 import SessionStoreS3, SessionAccessor
 
 from collection_info import FreeformCollectionInfo, TableCollectionInfo

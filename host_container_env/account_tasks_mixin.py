@@ -1,8 +1,4 @@
-import copy
-
 from qworker import task_worthy
-
-from users import get_full_user_data_fields
 
 class AccountTasksMixin:
 

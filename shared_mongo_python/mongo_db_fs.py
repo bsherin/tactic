@@ -1,10 +1,8 @@
-print("entering mongo_db_fs.py")
-import os
 from pymongo import MongoClient
 import gridfs
-import exception_mixin
 from aws_helpers import get_ssm_parameter
 from aws_detection import am_fargate
+from tactic_logging import log
 
 db_name = get_ssm_parameter("DB_NAME", "tacticdb")
 
@@ -13,7 +11,7 @@ if am_fargate():
 else:
     mongo_uri = get_ssm_parameter("MONGO_URI", "tactic-mongo")
 
-print("*** mongo_uri is " + mongo_uri + " ***")
+log.info("got mongo_uri", mongo_uri=mongo_uri)
 
 repository_type = "not set"
 database_type = "not set"
@@ -28,19 +26,20 @@ def get_dump_dbs(dump_db_name):
 def get_dbs(get_repo=True):
     global repository_type
     global database_type
-    print("getting mongo client with mongo_uri " + mongo_uri)
+    log.debug("getting mongo client", mongo_uri=mongo_uri)
     client = MongoClient(mongo_uri, serverSelectionTimeoutMS=30000)
-    print("got the client")
+    log.debug("got mongo client")
     # force connection on a request as the
     # connect=True parameter of MongoClient seems
     # to be useless here
     client.server_info()
-    print("did server info")
+    log.debug("got mongo server info")
     # noinspection PyUnresolvedReferences
     db = client[db_name]
-    print("got db")
+    log.debug("got db")
     fs = gridfs.GridFS(db)
-    print("got fs")
+    log.debug("got fs")
+    log.info("Connected to MongoDB", mongo_uri=mongo_uri, database=db_name)
     database_type = "Local"
     if get_repo:
         repository_db = db

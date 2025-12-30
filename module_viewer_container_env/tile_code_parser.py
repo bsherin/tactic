@@ -40,24 +40,6 @@ class TileParser(object):
         self.options = self.get_options_dict()
         self.extra_methods = self.get_extra_methods()
 
-    # def reparse(self, new_module_code):
-    #     self.module_code = new_module_code
-    #     self.module_lines = self.module_code.splitlines()
-    #     self.globals_code = self.get_globals()
-    #     self.cnode = self.get_class_node()
-    #     self.class_name = self.cnode.name
-    #     self.base_classes = self.get_base_classes()
-    #     self.is_mpl = "MplFigure" in self.base_classes
-    #     self.is_d3 = "D3Tile" in self.base_classes
-    #     self.methods = self.get_methods()
-    #     self.assignments = self.get_assignments()
-    #     self.defaults = self.extract_defaults()
-    #     self.additional_save_attrs = self.extract_save_attrs()
-    #     self.exports = self.get_exports()
-    #     self.type = self.extract_type()
-    #     self.extra_methods = self.get_extra_methods()
-    #     return
-
     def get_globals(self):
         pattern = re.compile(r'(.*?)@user_tile', re.DOTALL)
         result = pattern.match(self.module_code)
@@ -110,7 +92,8 @@ class TileParser(object):
                     return node
         return None
 
-    def get_decorators(self, cnode):
+    @staticmethod
+    def get_decorators(cnode):
         dlist = []
         for d in cnode.decorator_list:
             dlist.append(d.id)
@@ -195,10 +178,8 @@ class TileParser(object):
                 adict[target.id]["last_line"] = cnode.body[i + 1].lineno - 2
             else:
                 adict[target.id]["last_line"] = None
-            if isinstance(val, ast.Num):
-                adict[target.id]["value"] = val.n
-            elif isinstance(val, ast.Str):
-                adict[target.id]["value"] = val.s
+            if isinstance(val, ast.Constant):
+                adict[target.id]["value"] = val.value
             elif isinstance(val, ast.Name):
                 adict[target.id]["value"] = val.id
                 if adict[target.id]["value"] == "None":
@@ -243,7 +224,7 @@ class TileParser(object):
         export_info = []
         if len(val.elts) == 0:
             return export_info
-        if isinstance(val.elts[0], ast.Str):  # legacy handling for all form of exports
+        if isinstance(val.elts[0], ast.Constant):  # legacy handling for all form of exports
             for d in val.elts:
                 export_info.append({"name": d.s, "tags": ""})
         else:

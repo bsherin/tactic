@@ -1,18 +1,14 @@
 
-import datetime
 import re
-import os
 import uuid
 import copy
 import json
 from flask import render_template
 from qworker import task_worthy_methods, task_worthy_manual_submit_methods
-from loaded_tile_management import loaded_tile_manager
 from communication_utils import make_python_object_jsonizable, debinarize_python_object
-from communication_utils import make_jsonizable_and_compress
-from mongo_accesser import bytes_to_string, NameExistsError
-from qworker import debug_log
+from mongo_accesser import NameExistsError
 from aws_helpers import get_ssm_parameter
+from tactic_logging import log
 
 COLLECTION_CHUNK_SIZE = int(get_ssm_parameter("COLLECTION_CHUNK_SIZE", "50"))
 
@@ -64,7 +60,8 @@ class LoadSaveTasksMixin:
 
     @task_worthy
     def get_open_sessions_task(self, data):
-        return {"success": True, "sids": self.ss.get_unique_sids()}
+        result = {"success": True, "sids": self.ss.get_unique_sids()}
+        return result
 
     @task_worthy
     def updated_global_ids(self, data):
@@ -241,7 +238,6 @@ class LoadSaveTasksMixin:
         }
 
         def got_tile_types(ttdata):
-            print("in got_tile_types in initialize_session")
             data_dict["tile_types"] = ttdata["tile_types"]
             data_dict["icon_dict"] = ttdata["icon_dict"]
             if doc_type == "table":
@@ -260,7 +256,6 @@ class LoadSaveTasksMixin:
 
     @task_worthy_manual_submit
     def initialize_session_from_save(self, data, task_packet):
-        print("entering initialize_session_from_save")
         user_id = data["user_id"]
         username = data["username"]
         project_name = data["project_name"]
@@ -314,7 +309,6 @@ class LoadSaveTasksMixin:
         data_dict["kind"] = "main-viewer"
 
         def got_tile_types(ttdata):
-            print("in got_tile_types in initialize_session")
             data_dict["tile_types"] = ttdata["tile_types"]
             data_dict["icon_dict"] = ttdata["icon_dict"]
             if doc_type == "table":
@@ -325,18 +319,17 @@ class LoadSaveTasksMixin:
                      "set_visible_doc": False}))
             elif doc_type == "freeform":
                 data_dict.update(
-                    self.grab_freeform_data({"doc_name": sess.visible_doc_name, "set_visible_doc": True}))
+                    self.grab_freeform_data({"sid": local_id, "doc_name": sess.visible_doc_name, "set_visible_doc": True}))
             def got_new_ids(nd_data):
                 for tile_entry in interface_state["tile_list"]:
                     prior_id = tile_entry["tile_id"]
                     tile_info = sess.tile_info
                     current_id = tile_info.current_from_old(prior_id)
                     if current_id is None:
-                        print("Error: prior_id {} not found in tile_info".format(prior_id))
+                        log.error("prior_id not found in tile_info", prior_id=prior_id)
                     else:
                         tile_entry["tile_id"] = current_id
                 data_dict["interface_state"] = interface_state
-                print("submitting response")
                 self.mworker.submit_response(task_packet, data_dict)
                 return
 
@@ -347,18 +340,20 @@ class LoadSaveTasksMixin:
 
     @task_worthy_manual_submit
     def get_new_tile_ids(self, data, task_packet):
+        log.info("entering get_new_tile_ids", sid=data["sid"])
         sid = data["sid"]
         sess = self.get_session(sid)
         tile_info = sess.tile_info
         def got_new_ids(new_id_data):
+            log.info("got new ids", new_id_data=new_id_data)
             new_ids = new_id_data["new_ids"]
             new_creds = new_id_data["new_creds"]
             if len(new_ids) > 0:
                 for n, old_id in enumerate(tile_info.tile_ids):
-                    print("old_id", old_id)
                     tile_info.update_id(old_id, new_ids[n])
                     tile_info.set_creds(new_ids[n], new_creds[n])
-                self.mworker.submit_response(task_packet)
+            self.mworker.submit_response(task_packet)
+
         sess = self.get_session(data["sid"])
         tile_info = sess.tile_info
         tile_names = tile_info.tile_names
@@ -405,7 +400,7 @@ class LoadSaveTasksMixin:
                                                           "tile_id": trcdata["tile_id"]})
                         tiles_to_recreate.remove(trcdata["tile_id"])
                     else:
-                        print("tile failed to load properly")
+                        log.warning("tile failed to load properly", tile_id=trcdata["tile_id"])
                         tiles_to_recreate.remove(trcdata["tile_id"])
                 if not tiles_to_recreate:
                     self.mworker.post_task("main_service", "rebuild_tile_forms_task",
@@ -439,9 +434,9 @@ class LoadSaveTasksMixin:
             del tile_save_dict["tile_id"]
             module_name = tile_save_dict["module_name"]
             if "tile_type" in tile_save_dict:
-                print("got tile_type " + str(tile_save_dict["tile_type"]))
+                log.debug("got tile_type when tracking receipts", tile_type=tile_save_dict["tile_type"], tile_id=tile_id)
             else:
-                print("no tile_type")
+                log.error("missing tile_type when tracking receipts", tile_id=tile_id)
             if module_name is not None:
                 result["used_modules"].append(module_name)
             del tile_save_dict["module_name"]
@@ -449,7 +444,7 @@ class LoadSaveTasksMixin:
             if tile_id in tile_ids_to_compile:
                 tile_ids_to_compile.remove(tile_id)
             if not tile_ids_to_compile:
-                print("compiled all tile_ids")
+                log.info("compiled all tile_ids")
                 if pseudo_tile_id is None:
                     result["pseudo_tile_instance"] = None
                 else:
@@ -551,7 +546,6 @@ class LoadSaveTasksMixin:
         sess = self.get_session(sid)
 
         def got_save_dict(project_dict):
-            print("in got_save_dict in main")
             save_dict, project_dict, mdata = (
                 self.prepare_project_data(sid, sess.project_name, project_dict, sess.doc_type,
                                           sess.collection_name, interface_state, None, sess.purgetiles, True))
@@ -573,7 +567,7 @@ class LoadSaveTasksMixin:
             self.mworker.post_task("main_service", "compile_save_dict", data_dict, got_save_dict)
 
         except Exception as ex:
-            debug_log("got an error in save_new_project")
+            log.exception("error in save_new_project")
             error_string = self.handle_exception(sid, ex, "<pre>Error saving new project</pre>", print_to_console=False)
             _return_data = {"success": False, "message": error_string}
             self.mworker.submit_reponse(task_packet, _return_data)
@@ -606,7 +600,7 @@ class LoadSaveTasksMixin:
             self.mworker.post_task("main_service", "compile_save_dict", data_dict, got_save_dict)
 
         except Exception as ex:
-            debug_log("got an error in save_new_project")
+            log.exception("error in save_new_project")
             error_string = self.handle_exception(sid, ex, "<pre>Error saving new project</pre>", print_to_console=False)
             _return_data = {"success": False, "message": error_string}
             self.mworker.submit_response(task_packet, _return_data)
@@ -638,6 +632,7 @@ class LoadSaveTasksMixin:
                 self.mworker.submit_response(task_packet, return_data)
                 return
             except Exception as lex:
+                log.exceptin("error in update_project")
                 lerror_string = self.handle_exception(sid, lex, "Error saving project", print_to_console=False)
                 _lreturn_data = {"success": False, "message": lerror_string}
                 self.mworker.submit_response(task_packet, _lreturn_data)
@@ -651,6 +646,7 @@ class LoadSaveTasksMixin:
             self.mworker.post_task("main_service", "compile_save_dict", data_dict, got_save_dict)
 
         except Exception as ex:
+            log.exception("error in update_project")
             error_string = self.handle_exception(sid, ex, "Error saving project", print_to_console=False)
             _return_data = {"success": False, "message": error_string}
             self.mworker.submit_response(task_packet, _return_data)
@@ -712,7 +708,6 @@ class LoadSaveTasksMixin:
                                           extra_styles=style_text,
                                           use_dark_theme=data_dict["use_dark_theme"],
                                           project_name=data_dict["project_name"])
-            print("rendered the report")
             if data_dict["save_as_collection"]:
                 new_collection_name = data_dict["collection_name"]
                 self.create_complete_collection(new_collection_name, {"report": report_html},
@@ -727,7 +722,7 @@ class LoadSaveTasksMixin:
                                 "message": "Presentation Successfully Created"}
 
         except Exception as ex:
-            debug_log("got an error in export_as_presentation")
+            log.exception("error in export_as_presentation")
             error_string = self.handle_exception(sid, ex, "<pre>Error exporting presentation </pre>",
                                                  print_to_console=False)
             _return_data = {"success": False, "message": error_string}
@@ -800,7 +795,6 @@ class LoadSaveTasksMixin:
                                           collapsible=data_dict["collapsible"],
                                           include_summaries=data_dict["include_summaries"],
                                           project_name=data_dict["project_name"])
-            print("rendered the report")
             if data_dict["save_as_collection"]:
                 new_collection_name = data_dict["collection_name"]
                 self.create_complete_collection(new_collection_name, {"report": report_html},
@@ -809,14 +803,13 @@ class LoadSaveTasksMixin:
                                 "success": True,
                                 "message": "Report Successfully Exported"}
             else:
-                print("not saving to a collection")
                 unique_id = self.store_temp_data({"the_html": report_html})
                 _return_data = {"success": True,
                                 "temp_id": unique_id,
                                 "message": "Report Successfully Created"}
 
         except Exception as ex:
-            debug_log("got an error in export_as_report")
+            log.exception("error in export_as_report")
             error_string = self.handle_exception(sid, ex, "<pre>Error exporting report </pre>",
                                                  print_to_console=False)
             _return_data = {"success": False, "message": error_string}
@@ -852,7 +845,7 @@ class LoadSaveTasksMixin:
                             "message": "Notebook Successfully Exported"}
 
         except Exception as ex:
-            debug_log("got an error in export_to_jupyter_notebook")
+            log.excpetion("error in export_to_jupyter_notebook")
             error_string = self.handle_exception(sid, ex, "<pre>Error exporting to jupyter notebook</pre>",
                                                  print_to_console=False)
             _return_data = {"success": False, "message": error_string}
@@ -870,6 +863,7 @@ class LoadSaveTasksMixin:
                 unique_id = self.store_temp_data_with_compress(console_dict)
                 self.mworker.emit_to_main_client(sid, "notebook-open", {"message": "notebook-open", "temp_data_id": unique_id})
             except Exception as ex:
+                log.exception("error in console_to_notebook")
                 error_string = self.get_traceback_message(ex)
                 self.mworker.send_error_entry(sid, "Error converting console to notebook", error_string)
             return
@@ -880,7 +874,6 @@ class LoadSaveTasksMixin:
     @task_worthy
     def update_reload_dict(self, data_dict):
         sid = data_dict["sid"]
-        print("in update_reload_dict for sid {}".format(sid))
         tile_info = self.get_session(sid).tile_info
         tile_info.set_reload_dict(data_dict["tile_id"], data_dict["reload_dict"])
         return {"success": True}
@@ -1263,6 +1256,7 @@ class APISupportTasksMixin:
                                                      username=sess.username)
             return {"success": True, "user_id": sess.user_id}
         except Exception as ex:
+            log.exception("error in export_data")
             error_string = self.handle_exception(sid, ex, print_to_console=True)
             return {"success": False, "title": "Error exporting", "content": error_string, "user_id": sess.user_id}
 
@@ -1282,6 +1276,7 @@ class APISupportTasksMixin:
                                                      username=sess.username)
             return result
         except Exception as ex:
+            log.exception("error in create_collection_task")
             error_string = self.handle_exception(sid, ex, print_to_console=True)
             return {"success": False, "message": error_string}
 
@@ -1319,7 +1314,7 @@ class APISupportTasksMixin:
         for doc_name in collection_info.doc_names:
             collection_info.set_param(doc_name, "current_data_rows", collection_info.get_data_rows(doc_name))
         if "selected_row" in data and data["selected_row"] is not None:
-            self.mworker.ask_host("go_to_row_in_document", {"doc_name": sess.visible_doc_name,
+            self.mworker.ask_host(sid, "go_to_row_in_document", {"doc_name": sess.visible_doc_name,
                                                             "row_id": data["selected_row"]})
         else:
             self.refill_table(sid)
@@ -1439,7 +1434,6 @@ class ExportsTasksMixin:
         sess = self.get_session(sid)
         converted_pipe_dict = {}
         pipe_dict = sess.pipe_dict
-        print("got pipe")
         for tile_id, tile_entry in pipe_dict.items():
             if tile_id == sess.pseudo_tile_id:
                 tile_name = "__log__"
@@ -1576,20 +1570,6 @@ class ConsoleTasksMixin:
                                              is_error=data["is_error"],
                                              summary=data["summary"])
 
-    # @task_worthy
-    # def got_console_result(self, data):
-    #     self.mworker.emit_console_message("stopConsoleSpinner", {"console_id": data["console_id"],
-    #                                                              "execution_count": data["execution_count"],
-    #                                                              "force_open": True})
-    #     return {"success": True}
-
-    # @task_worthy
-    # def got_console_print(self, data):
-    #     self.mworker.emit_console_message("consoleCodePrint", {"result_text": data["result_string"],
-    #                                                            "console_id": data["console_id"],
-    #                                                            "force_open": True})
-    #     return {"success": True}
-
     @task_worthy
     def updated_globals(self, data):
         sid = data["sid"]
@@ -1620,7 +1600,6 @@ class ConsoleTasksMixin:
         sid = data["local_id"]
         sess = self.get_session(sid)
         def do_exec():
-            print("in do_exec")
             the_code = data["the_code"]
             data["pipe_dict"] = sess.pipe_dict
             data["am_notebook"] = self.am_notebook_type(sid)
@@ -1656,13 +1635,11 @@ class ConsoleTasksMixin:
         self.emit_status_message(sid, "Resetting notebook ...")
         def container_restarted(crdata):
             if not crdata["success"]:
-                debug_log("got an exception " + crdata["message"])
                 self.emit_status_message(sid, "Error resetting notebook", 7)
                 raise Exception(crdata["message"])
 
             def instantiate_done(instantiate_result):
                 if not instantiate_result["success"]:
-                    debug_log("got an exception " + instantiate_result["message"])
                     self.emit_status_message(sid, "Error resetting notebook", 7)
                     raise Exception(instantiate_result["message"])
                 else:
@@ -1721,6 +1698,7 @@ class DataSupportTasksMixin:
             self.UnfilterTable({"sid": sid})
             return {"success": True}
         except Exception as ex:
+            log.exception("error in delete_row")
             error_string = self.handle_exception(sid, ex, print_to_console=True)
             return {"success": False, "message": error_string}
 
@@ -1734,7 +1712,6 @@ class DataSupportTasksMixin:
             index = data["index"]
             row_dict = data["row_dict"]
 
-            dinfo = self.doc_dict[doc_name]
             header_list = collection_info.get_table_spec_param(doc_name, "header_list")
             fixed_row_dict = {}
             for cname in header_list:
@@ -1758,6 +1735,7 @@ class DataSupportTasksMixin:
             self.UnfilterTable({"sid": sid})
             return {"success": True}
         except Exception as ex:
+            log.exception("error in insert_row")
             error_string = self.handle_exception(sid, ex, print_to_console=True)
             return {"success": False, "message": error_string}
 
@@ -1779,6 +1757,7 @@ class DataSupportTasksMixin:
                                                               "visible_doc": new_doc_name})
             return {"success": True}
         except Exception as ex:
+            log.exception("error in duplicate_document")
             error_string = self.handle_exception(sid, ex, print_to_console=True)
             return {"success": False, "message": error_string}
 
@@ -1821,6 +1800,7 @@ class DataSupportTasksMixin:
                                                               "visible_doc": new_doc_name})
             return {"success": True}
         except Exception as ex:
+            log.exception("error in new_blank_document")
             error_string = self.handle_exception(sid, ex, print_to_console=True)
             return {"success": False, "message": error_string}
 
@@ -1861,6 +1841,7 @@ class DataSupportTasksMixin:
                                                               "visible_doc": new_doc_name})
             return {"success": True}
         except Exception as ex:
+            log.exception("error in add_document")
             error_string = self.handle_exception(sid, ex, print_to_console=True)
             return {"success": False, "message": error_string}
 
@@ -1884,6 +1865,7 @@ class DataSupportTasksMixin:
                                                               "visible_doc": new_doc_name})
             return {"success": True}
         except Exception as ex:
+            log.exception("error in add_freeform_document")
             error_string = self.handle_exception(sid, ex, print_to_console=True)
             return {"success": False, "message": error_string}
 
@@ -1905,6 +1887,7 @@ class DataSupportTasksMixin:
                                                               "visible_doc": self.visible_doc_name})
             return {"success": True}
         except Exception as ex:
+            log.exception("error in remove_document")
             error_string = self.handle_exception(sid, ex, print_to_console=True)
             return {"success": False, "message": error_string}
 
@@ -1928,6 +1911,7 @@ class DataSupportTasksMixin:
                                                                    "visible_doc": new_doc_name})
             return {"success": True, "message": "Successfully renamed document to " + str(newname)}
         except Exception as ex:
+            log.exception("error in rename_document")
             error_string = self.handle_exception(sid, ex, print_to_console=True)
             return {"success": False, "message": error_string}
 
@@ -1940,7 +1924,6 @@ class DataSupportTasksMixin:
         data_row_dict = {}
         for n, row in enumerate(data_to_send):
             data_row_dict[chunk_start + n] = row
-        print("leaving grab_chunk")
         return {"doc_name": doc_name,
                 "total_rows": len(collection_info.get_current_data_rows(doc_name)),
                 "data_row_dict": data_row_dict,
@@ -2036,9 +2019,8 @@ class DataSupportTasksMixin:
                     hidden_columns_list.append(column_name)
                     update_dict["hidden_columns_list"] = hidden_columns_list
                     collection_info.set_table_spec_param(doc_name, update_dict)
-            except Exception as ex:
-                error_string = self.get_traceback_message(ex)
-                print(error_string)
+            except Exception:
+                log.exception("error in HideColumnInAllDocs")
         return None
 
     @task_worthy
@@ -2076,35 +2058,27 @@ class DataSupportTasksMixin:
         return None
 
     def delete_column_one_doc(self, sid, doc_name, column_name):
-        sid = data["sid"]
         sess = self.get_session(sid)
         collection_info = sess.collection
         try:
-            print("in DeleteColumnOneDoc new with " + doc.table_spec.doc_name)
             header_list = collection_info.get_header_list(doc_name)
             if column_name in header_list:
                 update_dict = {}
-                print("got the column")
                 column_widths = collection_info.get_column_widths(doc_name)
                 if type(column_widths) is list:
-                    print("going to delete from column_widths")
                     col_index = collection_info.visible_columns(doc_name).index(column_name)
-                    print("got the index")
                     del column_widths[col_index]
                     update_dict["column_widths"] = column_widths
                 header_list.remove(column_name)
                 update_dict["header_list"] = header_list
                 collection_info.set_table_spec_from_dict(doc_name, update_dict)
-            print("deleting from data rows")
             data_rows = collection_info.get_data_rows(doc_name)
             for r in data_rows.values():
                 if column_name in r:
                     del r[column_name]
             collection_info.set_param(doc_name, "data_rows", data_rows)
-        except Exception as ex:
-            error_string = self.get_traceback_message(ex)
-            print(error_string)
-        print("leaving DeleteColumnOneDoc")
+        except Exception:
+            log.exception("error in delete_column_one_doc")
         return
 
     @task_worthy
@@ -2114,10 +2088,8 @@ class DataSupportTasksMixin:
         collection_info = sess.collection
         column_name = data["column_name"]
         if not data["all_docs"]:
-            print("just deleting in one")
             self.delete_column_one_doc(sid, data["doc_name"], column_name)
         else:
-            print("deleting in all docs")
             for doc_name in collection_info.doc_names:
                 self.delete_column_one_doc(sid, doc_name, column_name)
         self.mworker.post_task("main_servivce", "rebuild_tile_forms_task", {"tile_id": None, "sid": sid})

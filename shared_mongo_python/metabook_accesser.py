@@ -1,7 +1,6 @@
 import re
-import datetime
-import copy
 from bson import ObjectId
+from tactic_logging import log
 
 class MetabookAccess(object):
 
@@ -32,7 +31,7 @@ class MetabookAccess(object):
         return doc if doc else None
 
     def get_metabook_unpacked(self, meta_id):
-        doc = self.get_metabook_doc_by_id(meta_id)
+        metabook = self.get_metabook_doc_by_id(meta_id)
         if not metabook:
             return None
         unpacked_nodes = []
@@ -105,18 +104,15 @@ class MetabookAccess(object):
         return {"success": True}
 
     def append_node(self, node_id, meta_id, update_search_text=True):
-        print("doing the append")
         node = self.get_node_doc(node_id)
         if not node:
-            print("node not found")
+            log.error("node not found")
             return {"success": False, "message": "Node not found."}
         metabook = self.get_metabook_doc_by_id(meta_id)
         if not metabook:
-            print("metabook not found")
+            log.error("metabook not found")
             return {"success": False, "message": "Meta node not found."}
-        print("got the metabook")
         self.add_metabook_to_uses(node_id, meta_id)
-        print("updating the metabook")
         self.db[self.metabook_collection_name].update_one(
             {"_id": ObjectId(meta_id)},
             {"$push": {"nodes": node_id}}
@@ -136,13 +132,11 @@ class MetabookAccess(object):
             for node_id in metabook["nodes"]:
                 try:
                     self.remove_node_uses(node_id, metabook._id, True)
-                except Exception as ex:
-                    print(f"Error removing node {node_id} from metabook {metabook_name}: {ex}")
+                except Exception:
+                    log.exception("Error removing node from metabook", metabook_name=metabook_name)
         else:
-            print("no nodes found")
-        print("about to do the delete")
+            log.info("no nodes found")
         self.db[self.metabook_collection_name].delete_one({"metabook_name": metabook_name})
-        print("done with the delete")
         return
 
 

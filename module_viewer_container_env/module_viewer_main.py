@@ -1,26 +1,30 @@
+from tactic_logging import log, setup_logging
 
-from tactic_copilot_mixin import CopilotMixin
-# noinspection PyUnresolvedReferences
-from qworker import QWorker, task_worthy, task_worthy_manual_submit
-from flask import render_template, Flask
-import uuid
+setup_logging("module_viewer")
+log.info("starting", extra_flag=True)
 
-from tile_code_parser import TileParser, remove_indents, insert_indents
-import exception_mixin
-from exception_mixin import ExceptionMixin
-from mongo_accesser import MongoAccess
-from tile_accesser import TileAccess
-from mongo_db_fs import get_dbs
-from module_viewer_session import ModuleViewerSessionStore, ModuleViewerSessionAccessor
-from aws_helpers import resolve_task_identity, get_ssm_parameter
+try:
+    from tactic_copilot_mixin import CopilotMixin
+    from qworker import QWorker, task_worthy
+    from flask import render_template, Flask
 
-import sys
+    from tile_code_parser import TileParser, remove_indents, insert_indents
+    from mongo_accesser import MongoAccess
+    from tile_accesser import TileAccess
+    from mongo_db_fs import get_dbs
+    from module_viewer_session import ModuleViewerSessionStore, ModuleViewerSessionAccessor
+    from aws_helpers import resolve_task_identity, get_ssm_parameter
 
-sys.stdout = sys.stderr
-import time
+    import sys
 
-# noinspection PyUnusedLocal
-class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin, MongoAccess, TileAccess):
+    sys.stdout = sys.stderr
+    import time
+except Exception:
+    log.exception("*** fatal error during imports in module_viewer ***")
+    log.critical("*** exiting mongo_watcher due to fatal error ***")
+    raise
+
+class ModuleViewerWorker(QWorker, CopilotMixin, MongoAccess, TileAccess):
     def __init__(self):
         id_prefix = get_ssm_parameter("MODULE_VIEWER_PREFIX", "module_viewer_")
         self.my_arn, self.my_id = resolve_task_identity(id_prefix)
@@ -38,8 +42,8 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin, MongoAccess, Til
             self.handler_methods = []
             try:
                 self.handler_methods = handler_result["handler_methods"]
-            except Exception as nex:
-                print(self.extract_short_error_message(nex, "error getting handler methods"))
+            except Exception:
+                log.exception("error getting handler methods")
         self.ask_host("get_handler_methods", {}, got_methods)
         return
 
@@ -170,109 +174,100 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin, MongoAccess, Til
 
     @task_worthy
     def update_module(self, data_dict):
-        try:
-            module_name = data_dict["module_name"]
-            module_code = self.build_code(data_dict)
-            tp = TileParser(module_code, self.handler_methods)
-            standard_methods_line_numbers = {}
-            render_content_line_numbers = {
-                "firstLineNumber": tp.get_starting_line("render_content"),
-                "lastLineNumber": tp.get_last_line("render_content")
-            }
-            draw_plot_line_numbers = {
-                "firstLineNumber": tp.get_starting_line("draw_plot"),
-                "lastLineNumber": tp.get_last_line("draw_plot")
-            }
+        module_name = data_dict["module_name"]
+        module_code = self.build_code(data_dict)
+        tp = TileParser(module_code, self.handler_methods)
+        standard_methods_line_numbers = {}
+        render_content_line_numbers = {
+            "firstLineNumber": tp.get_starting_line("render_content"),
+            "lastLineNumber": tp.get_last_line("render_content")
+        }
+        draw_plot_line_numbers = {
+            "firstLineNumber": tp.get_starting_line("draw_plot"),
+            "lastLineNumber": tp.get_last_line("draw_plot")
+        }
+        standard_methods_line_numbers["render_content"] = render_content_line_numbers
+        if draw_plot_line_numbers["firstLineNumber"] is not None:
+            standard_methods_line_numbers["draw_plot"] = draw_plot_line_numbers
+        user_methods_list = tp.get_user_methods_list()
+        user_methods_line_numbers = {func["name"]: {
+            "firstLineNumber": func["body_start"],
+            "lastLineNumber": func["last_line"]} for func in user_methods_list}
+        used_handler_methods_list = tp.get_used_handler_methods_list()
+        used_handler_methods_line_numbers = {func["name"]: {
+            "firstLineNumber": func["body_start"],
+            "lastLineNumber": func["last_line"]} for func in used_handler_methods_list}
+        username = self.get_username(data_dict["local_id"])
+        self.update_tile(module_name, module_code, "creator", metadata=data_dict["mdata"], username=username)
+        self.create_recent_checkpoint(module_name, username=self.get_username(data_dict["local_id"]))
+        return {"success": True, "message": "Module Successfully Saved",
+                "alert_type": "alert-success", "render_content_line_numbers": render_content_line_numbers,
+                "standard_methods_line_numbers": standard_methods_line_numbers,
+                "used_handler_methods_line_numbers": used_handler_methods_line_numbers,
+                "user_methods_line_numbers": user_methods_line_numbers}
 
-            standard_methods_line_numbers["render_content"] = render_content_line_numbers
-            if draw_plot_line_numbers["firstLineNumber"] is not None:
-                standard_methods_line_numbers["draw_plot"] = draw_plot_line_numbers
-            user_methods_list = tp.get_user_methods_list()
-            user_methods_line_numbers = {func["name"]: {
-                "firstLineNumber": func["body_start"],
-                "lastLineNumber": func["last_line"]} for func in user_methods_list}
-            used_handler_methods_list = tp.get_used_handler_methods_list()
-            used_handler_methods_line_numbers = {func["name"]: {
-                "firstLineNumber": func["body_start"],
-                "lastLineNumber": func["last_line"]} for func in used_handler_methods_list}
-            username = self.get_username(data_dict["local_id"])
-            self.update_tile(module_name, module_code, "creator", metadata=data_dict["mdata"], username=username)
-            self.create_recent_checkpoint(module_name, username=self.get_username(data_dict["local_id"]))
-            return {"success": True, "message": "Module Successfully Saved",
-                    "alert_type": "alert-success", "render_content_line_numbers": render_content_line_numbers,
-                    "standard_methods_line_numbers": standard_methods_line_numbers,
-                    "used_handler_methods_line_numbers": used_handler_methods_line_numbers,
-                    "user_methods_line_numbers": user_methods_line_numbers}
-        except Exception as ex:
-            return self.get_traceback_exception_dict(ex, "Error saving module")
+    @staticmethod
+    def assemble_parse_information(tp):
+        for option in tp.options:
+            if option["name"] in tp.defaults:
+                option["default"] = tp.defaults[option["name"]]
+        func_dict = tp.methods
+        if "render_content" in func_dict:
+            render_content_code = func_dict["render_content"]["method_body"]
+            render_content_code = remove_indents(render_content_code, 2)
+        else:
+            render_content_code = ""
+        render_content_info = {"name": "render_content",
+                              "codeText": render_content_code,
+                              "argString": "",
+                              "mode": "python",
+                               "identifier": "render_content",
+                              "firstLineNumber": func_dict["render_content"]["body_start"],
+                              "lastLineNumber": func_dict["render_content"]["last_line"]
+                              }
 
-    def assemble_parse_information(self, tp):
-        try:
-            for option in tp.options:
-                if option["name"] in tp.defaults:
-                    option["default"] = tp.defaults[option["name"]]
-            func_dict = tp.methods
-            if "render_content" in func_dict:
-                render_content_code = func_dict["render_content"]["method_body"]
-                render_content_code = remove_indents(render_content_code, 2)
+        javascript_functions_list = []
+        if "jscript" in tp.defaults:
+            jscript = tp.defaults["jscript"]
+            if type(jscript) == str:
+                javascript_functions_list.append(
+                    {"name": "__raw_code__",
+                     "codeText": jscript,
+                     "argString": "",
+                     "mode": "javascript",
+                     "firstLineNumber": 1,
+                     "lastLineNumber": len(jscript.splitlines())
+                     }
+                )
             else:
-                render_content_code = ""
-            render_content_info = {"name": "render_content",
-                                  "codeText": render_content_code,
-                                  "argString": "",
-                                  "mode": "python",
-                                   "identifier": "render_content",
-                                  "firstLineNumber": func_dict["render_content"]["body_start"],
-                                  "lastLineNumber": func_dict["render_content"]["last_line"]
-                                  }
-
-            javascript_functions_list = []
-            if "jscript" in tp.defaults:
-                print("got jscript")
-                jscript = tp.defaults["jscript"]
-                if type(jscript) == str:
+                for func_info in jscript:
                     javascript_functions_list.append(
-                        {"name": "__raw_code__",
-                         "codeText": jscript,
+                        {"name": func_info["name"],
+                         "codeText": func_info["code"],
                          "argString": "",
                          "mode": "javascript",
                          "firstLineNumber": 1,
-                         "lastLineNumber": len(jscript.splitlines())
+                         "lastLineNumber": len(func_info["code"].splitlines())
                          }
                     )
-                else:
-                    print("about to loop for jscript")
-                    for func_info in jscript:
-                        javascript_functions_list.append(
-                            {"name": func_info["name"],
-                             "codeText": func_info["code"],
-                             "argString": "",
-                             "mode": "javascript",
-                             "firstLineNumber": 1,
-                             "lastLineNumber": len(func_info["code"].splitlines())
-                             }
-                        )
-            globals_code = tp.globals_code
-            globals_info = {"name": "globals",
-                            "codeText": globals_code,
-                            "argString": "",
-                            "mode": "python",
-                            "identifier": "globals",
-                            "firstLineNumber": 1,
-                            "lastLineNumber": len(globals_code.splitlines())
-                            }
-            user_methods_list = tp.get_user_methods_list()
-            user_methods_list = [{"name": func["name"],
-                                  "codeText": remove_indents(func["method_body"], 2),
-                                  "argString": func["arg_string"],
-                                  "mode": "python",
-                                  "firstLineNumber": func["body_start"],
-                                  "lastLineNumber": func["last_line"]
-                                  } for func in user_methods_list]
+        globals_code = tp.globals_code
+        globals_info = {"name": "globals",
+                        "codeText": globals_code,
+                        "argString": "",
+                        "mode": "python",
+                        "identifier": "globals",
+                        "firstLineNumber": 1,
+                        "lastLineNumber": len(globals_code.splitlines())
+                        }
+        user_methods_list = tp.get_user_methods_list()
+        user_methods_list = [{"name": func["name"],
+                              "codeText": remove_indents(func["method_body"], 2),
+                              "argString": func["arg_string"],
+                              "mode": "python",
+                              "firstLineNumber": func["body_start"],
+                              "lastLineNumber": func["last_line"]
+                              } for func in user_methods_list]
 
-        except Exception as ex:
-            print(self.extract_short_error_message(ex, "*** Error assembling user methods list  ***"))
-            user_methods_list = []
         used_handler_methods_list = tp.get_used_handler_methods_list()
         used_handler_methods_list = [{"name": func["name"],
                                       "codeText": remove_indents(func["method_body"], 2),
@@ -292,25 +287,11 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin, MongoAccess, Til
                        "category": tp.category}
         return parsed_data
 
-    # @task_worthy
-    # def get_options(self, data_dict):
-    #     try:
-    #         the_class = class_info["tile_class"]
-    #         tile_instance = the_class(0, 0)
-    #         opt_dict = tile_instance.options
-    #         export_list = tile_instance.exports
-    #         if len(export_list) > 0:
-    #             if not isinstance(export_list[0], dict):  # legacy old exports specified as list of strings
-    #                 export_list = [{"name": exp, "tags": ""} for exp in export_list]
-    #     except Exception as ex:
-    #         return self.get_traceback_exception_dict(ex, "Error extracting options from source")
-    #     return {"success": True, "opt_dict": opt_dict, "export_list": export_list}
-
     @task_worthy
-    def stop_me(self, data):
-        print("killing me")
+    def stop_me(self, _data):
+        log.warning("killing me")
         self.kill()
-        print("I'm killed")
+        log.warning("I'm killed")
         return {"success": True}
 
     def ready(self):
@@ -319,13 +300,16 @@ class ModuleViewerWorker(QWorker, ExceptionMixin, CopilotMixin, MongoAccess, Til
 
 
 if __name__ == "__main__":
-    app = Flask(__name__)
-    exception_mixin.app = app
-    print("entering main")
-    mworker = ModuleViewerWorker()
-    print("mworker is created, about to start my_id is " + str(mworker.my_id))
-
-    mworker.start()
-    print("mworker started, my_id is " + str(mworker.my_id))
+    try:
+        app = Flask(__name__)
+        log.info("entering module_viewer_main")
+        mworker = ModuleViewerWorker()
+        log.info("mworker is created, about to start", my_id=mworker.my_id)
+        mworker.start()
+        log.info("mworker started", my_id=mworker.my_id)
+    except Exception:
+        log.exception("*** fatal error starting module_viewe ***")
+        log.critical("*** exiting due to fatal error ***")
+        raise
     while True:
         time.sleep(1000)

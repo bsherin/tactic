@@ -1,6 +1,6 @@
-import datetime
+from utils import utcnow
 
-from communication_utils import make_jsonizable_and_compress, generic_exception_handler
+from communication_utils import make_jsonizable_and_compress
 
 class AcrossAccountsAccess:
     def copy_between_accounts(self, source_user, dest_user, res_type, new_res_name, res_name):
@@ -31,8 +31,8 @@ class AcrossAccountsAccess:
                 continue
             new_res_dict[key] = val
         if "metadata" not in new_res_dict:
-            mdata = {"datetime": datetime.datetime.utcnow(),
-                     "updated": datetime.datetime.utcnow(),
+            mdata = {"datetime": utcnow(),
+                     "updated": utcnow(),
                      "tags": "",
                      "notes": ""}
             new_res_dict["metadata"] = mdata

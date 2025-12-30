@@ -1,6 +1,5 @@
 
-import copy, os
-from communication_utils import debinarize_python_object
+import copy
 from mongo_accesser import PROTECTED_METADATA_KEYS
 
 
@@ -151,12 +150,10 @@ class docInfo(DocInfoAbstract):
 
     @property
     def sorted_data_rows(self):
-        print("entering sorted_data_rows")
         result = []
         sorted_int_keys = sorted([int(key) for key in self.current_data_rows.keys()])
         for r in sorted_int_keys:
             result.append(self.data_rows[str(r)])
-        print("leaving sorted_data_rows")
         return result
 
     @property

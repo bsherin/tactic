@@ -1,4 +1,3 @@
-import uuid
 from communication_utils import debinarize_python_object
 
 class CollectionNotFound(Exception):
@@ -99,7 +98,8 @@ class LibraryAccessMixin:
         self.create_collection(name, doc_dict, doc_type, doc_metadata)
         return
 
-    def assemble_collection_data(self, name, doc_dict, doc_type="table", doc_metadata=None,
+    @staticmethod
+    def assemble_collection_data(name, doc_dict, doc_type="table", doc_metadata=None,
                                  header_list_dict=None, collection_metadata=None):
         if header_list_dict is None:
             header_list_dict = {}

@@ -4,6 +4,7 @@ import os
 import boto3
 from botocore.config import Config
 from aws_detection import on_aws
+from tactic_logging import log
 
 AWS_REGION = "us-east-2"  # Default region, can be overridden by environment variable
 ECS_CLUSTER = "tactic-cluster"
@@ -27,8 +28,8 @@ def get_ssm_parameter(name, default=None):
         return response['Parameter']['Value']
     except ssm.exceptions.ParameterNotFound:
         return default
-    except Exception as e:
-        print(f"Error fetching parameter {name}: {e}")
+    except Exception:
+        log.exception("Error fetching ssm parameter", name=name)
         return default
 
 def resolve_task_identity(id_prefix):
@@ -43,12 +44,12 @@ def resolve_task_identity(id_prefix):
             try:
                 data = requests.get(f"{uri}/task", timeout=2).json()
                 arn = data.get("TaskARN")
-            except Exception as e:
-                print(f"got an error when resolving ECS task ARN {e}")
+            except Exception:
+                log.exception("error resolving ECS task ARN")
                 arn = None
 
     if arn:
-        print("successfully resolved ECS task ARN")
+        log.debug("successfully resolved ECS task ARN")
         return arn, f'{id_prefix}{arn.split("/")[-1]}'
     # Local/dev fallback
     fallback_id = os.getenv("MY_ID") or f"{id_prefix}{os.getpid()}"

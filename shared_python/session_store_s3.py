@@ -1,12 +1,12 @@
 import json, time
 from typing import Any, Optional
-import os
 import re
 import datetime
 import msgpack
 from redis_tools import get_no_decode_redis_client
 from aws_helpers import get_s3_client, get_ssm_parameter
-from aws_detection import on_aws
+
+from tactic_logging import log
 
 SMALL_LIMIT = 256_000  # bytes
 
@@ -57,8 +57,9 @@ class SessionStoreS3:
         self.s3_prefix = s3_prefix.rstrip("/") + "/"
 
     # ----- util -----
-    def _k(self, sid: str, suffix: str) -> str:
-        # hash-tag everything on {sid} to keep ops in the same slot
+    @staticmethod
+    def _k(sid: str, suffix: str) -> str:
+        # hashtag everything on {sid} to keep ops in the same slot
         return f"sess.{{{sid}}}.{suffix}"
 
     def _s3keyHash(self, sid, base_name, name) -> str:
@@ -170,7 +171,7 @@ class SessionStoreS3:
         while True:
             cursor, keys = self.r.scan(cursor=cursor, match=pattern, count=batch)
             if keys:
-                self.r.delete(*keys)  # same hash tag, safe
+                self.r.delete(*keys)  # same hashtag, safe
             if cursor == 0:
                 break
         prefix = f"{self.s3_prefix}{sid}/"
@@ -245,7 +246,7 @@ class SessionStoreS3:
     def put_small(self, sid: str, name: str, obj: Any, ttl: int = 86_400):
         data = self._pack(obj)
         if len(data) > SMALL_LIMIT:
-            print(f"*** got size too big for {name} with size {len(data)}")
+            log.error("got size redid value too large for small storage", size=len(data), sid=sid, name=name)
             raise ValueError(f"value too large ({len(data)} bytes) for put_small; use put_large_*")
         self.r.set(self._k(sid, f"v:{name}"), data)
         self.r.expire(self._k(sid, f"v:{name}"), ttl)

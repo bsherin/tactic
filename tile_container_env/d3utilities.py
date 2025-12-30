@@ -5,10 +5,11 @@ with warnings.catch_warnings():
     # get_cmap = matplotlib.cm.ColormapRegistry.get_cmap
     # noinspection PyUnresolvedReferences
 from tile_base import TileBase
+from tactic_logging import log
 import uuid
 
 class D3Tile(TileBase):
-    def __init__(self, main_id_ignored=None, tile_id_ignored=None, tile_name=None):
+    def __init__(self, _main_id_ignored=None, _tile_id_ignored=None, _tile_name=None):
         TileBase.__init__(self)
         self.save_attrs += ["current_arg_dict", "jscript", "unique_div_id"]
         self.jscript = None
@@ -32,11 +33,9 @@ class D3Tile(TileBase):
             self.post_event("RefreshTileFromSave")
 
     def _refresh_from_save(self):
-        print("in refresh_from_save in d3Tile")
         self._do_the_refresh(arg_dict=self._current_arg_dict)
 
     def _do_the_refresh(self, arg_dict=None):
-        print ("entering do the refresh in a D3Tile")
         try:
             if arg_dict is None:
                 if not self.configured:
@@ -52,6 +51,7 @@ class D3Tile(TileBase):
 
             super()._do_the_refresh([jw.render()])
         except Exception as ex:
-            print(self._handle_exception(ex))
+            log.exception("Error in do_the_refresh")
+            self._handle_exception(ex)
         return
 

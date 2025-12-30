@@ -1,5 +1,4 @@
 import re
-import logging
 import json
 import pika
 import uuid
@@ -8,9 +7,8 @@ from qworker import task_worthy
 from openai import OpenAI
 from openai import APIError, RateLimitError, APITimeoutError
 from rabbit_manage import get_pika_connection_with_retries, declare_queue
-
-
-log = logging.getLogger(__name__)
+from tactic_logging import log
+from contextvars import copy_context
 
 
 class StreamWorker:
@@ -80,8 +78,8 @@ class StreamWorker:
                         },
                     )
 
-        except RateLimitError as e:
-            log.warning("OpenAI rate limit for autocomplete (stream worker): %s", e)
+        except RateLimitError:
+            log.exception("OpenAI rate limit for autocomplete", room=self.local_id)
             self.emit_to_client(
                 "AutocompleteError",
                 {
@@ -91,8 +89,8 @@ class StreamWorker:
                     "room": self.local_id,
                 },
             )
-        except APITimeoutError as e:
-            log.warning("OpenAI autocomplete timeout (stream worker): %s", e)
+        except APITimeoutError:
+            log.exception("OpenAI autocomplete timeout")
             self.emit_to_client(
                 "AutocompleteError",
                 {
@@ -102,8 +100,8 @@ class StreamWorker:
                     "room": self.local_id,
                 },
             )
-        except APIError as e:
-            log.exception("OpenAI API error during autocomplete (stream worker): %s", e)
+        except APIError:
+            log.exception("OpenAI API error during autocomplete")
             self.emit_to_client(
                 "AutocompleteError",
                 {
@@ -113,8 +111,8 @@ class StreamWorker:
                     "room": self.local_id,
                 },
             )
-        except Exception as e:
-            log.exception("Unexpected error during autocomplete (stream worker): %s", e)
+        except Exception:
+            log.exception("Unexpected error during autocomplete")
             self.emit_to_client(
                 "AutocompleteError",
                 {
@@ -132,11 +130,11 @@ class StreamWorker:
                 pass
 
     def start(self):
-        thread = threading.Thread(target=self.event_loop, daemon=True)
+        ctx = copy_context()
+        thread = threading.Thread(target=lambda: ctx.run(self.event_loop), daemon=True)
         thread.start()
 
     def emit_to_client(self, message, data):
-        print(f"Emitting to client from AI streamworker: {message} with data: {data}")
         data["message"] = message
         self.post_packet("host", "emit_to_client", data)
 
@@ -168,7 +166,7 @@ class StreamWorker:
 
 class CopilotMixin:
     @staticmethod
-    def _get_api_spec(api_dict, max_entries=50, max_doc_chars=80):
+    def _get_api_spec(api_dict, max_entries=50):
         try:
             lines = []
             api_dict_by_category = api_dict.get("api_dict_by_category", {})
@@ -186,10 +184,9 @@ class CopilotMixin:
                         break
                 if len(lines) >= max_entries:
                     break
-            print(lines[:25])
             return "\n".join(lines)
-        except Exception as e:
-            log.warning("Could not build API spec for session: %s", e)
+        except Exception:
+            log.warning("Could not build API spec for session")
             return ""
 
     @staticmethod
@@ -223,28 +220,27 @@ class CopilotMixin:
     @staticmethod
     def _get_openai_client_for_session(sess):
         if not getattr(sess, "openai_api_key", None):
-            print("openai_api_key not set")
             return None
         return OpenAI(api_key=sess.openai_api_key)
 
     @task_worthy
     def update_ai_complete(self, data_dict):
         if self.api_spec is None:
-            print("No API spec available, fetching...")
+            log.debug("No API spec available, fetching...")
             api_dict = self.post_and_wait("host", "get_api_dict_task", {})
             self.api_spec = self._get_api_spec(api_dict)
-            print("API spec fetched successfully.")
+            log.debug("API spec fetched successfully.")
         cm_unique_id = data_dict.get("cmUniqueId")
         local_id = data_dict.get("local_id")
 
         sess = self.get_session(local_id)
         if sess is None:
-            print("no session found")
+            log.error("no session found")
             return {"success": False, "message": "Session not found"}
 
         client = self._get_openai_client_for_session(sess)
         if client is None:
-            print("no openai client found")
+            log.error("no openai client found")
             return {"success": False, "message": "OpenAI API key not set"}
 
         code_str = data_dict["code_str"]
@@ -289,8 +285,8 @@ class CopilotMixin:
             )
             stream_worker.start()
             return {"success": True}
-        except Exception as e:
-            log.exception("Unexpected error starting stream worker: %s", e)
+        except Exception:
+            log.exception("Unexpected error starting stream worker")
             return {
                 "success": False,
                 "message": "Unexpected error while starting autocomplete stream.",

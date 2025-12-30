@@ -1,6 +1,4 @@
-from __future__ import annotations
-import os
-from flask import jsonify, send_file
+from flask import send_file
 import boto3
 from botocore.config import Config
 from botocore.exceptions import ClientError
@@ -134,7 +132,7 @@ class BotoS3:
                         continue
                     files.append(obj["Key"].split("/")[-1])
 
-            yield (f"s3://{bucket}/{prefix}".rstrip("/"), dirs, files)
+            yield f"s3://{bucket}/{prefix}".rstrip("/"), dirs, files
 
     # handy reads if you need them on host
     def read_bytes(self, path: str) -> bytes:
@@ -258,7 +256,7 @@ class BotoS3:
             return True
 
         # Case B: only a directory marker exists (and nothing else)
-        # (we asked for MaxKeys=2; if we only got 1 and it's exactly the marker, treat as empty)
+        # (we asked for MaxKeys=2; if we only got 1, and it's exactly the marker, treat as empty)
         if keycount == 1 and contents and contents[0]["Key"] in (pfx, pfx.rstrip("/")) and not first.get("IsTruncated"):
             try:
                 self.s3.delete_object(Bucket=b, Key=contents[0]["Key"])

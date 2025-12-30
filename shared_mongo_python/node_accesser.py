@@ -1,6 +1,3 @@
-import re
-import datetime
-import copy
 from communication_utils import debinarize_python_object
 import zlib
 from bson import ObjectId
@@ -48,19 +45,16 @@ class NodeAccess(object):
         self.db[self.node_collection_name].delete_one({"_id": ObjectId(node_id)})
         return
 
-    def create_node(self, type, data, use, title="", searchable_text=""):
+    def create_node(self, ntype, data, use, title="", searchable_text=""):
         cdata = make_jsonizable_and_compress(data)
         file_id = self.fs.put(cdata)
-        print("got the file_id")
-        save_dict = {"type": type,
+        save_dict = {"type": ntype,
                      "uses": [use],
                      "title": title,
                      "searchable_text": searchable_text,
                      "size": len(cdata),
                      "file_id": file_id}
-        print("got the save_dict")
         _id = self.db[self.node_collection_name].insert_one(save_dict).inserted_id
-        print("created the nodet")
         return str(_id)
 
 

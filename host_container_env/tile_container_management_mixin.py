@@ -1,8 +1,7 @@
 
 from qworker import task_worthy
-import os
-from docker_functions import delete_list_of_queues
 from aws_helpers import get_ssm_parameter
+from tactic_logging import log
 
 recycle_tiles = get_ssm_parameter("RECYCLE_TILES", "true").lower() == "true"
 
@@ -19,7 +18,7 @@ class TileContainerManagementMixin:
 
     @task_worthy
     def destroy_child_tiles_task(self, data):
-        print("got destroy_child_tiles task", data)
+        log.debug("Destroying child tiles", local_id=data["local_id"])
         self.tile_registry.release_child_tiles(data["local_id"])
         return {"success": True, "message": f"Destroyed child tiles of {data['local_id']}"}
 

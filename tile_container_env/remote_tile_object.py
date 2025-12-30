@@ -23,7 +23,8 @@ class RemoteTiles:
     def keys(self):
         return self.names
 
-    def _get_other_tile_data(self):
+    @staticmethod
+    def _get_other_tile_data():
         return _tworker.post_and_wait_to_main("OtherTileData", {"tile_id": _tworker.tile_instance._tworker.my_id})
 
     def __getitem__(self, x):
@@ -119,7 +120,8 @@ class RemotePipes:
     def keys(self):
         return self.names
 
-    def _get_other_tile_data(self):
+    @staticmethod
+    def _get_other_tile_data():
         return _tworker.post_and_wait_to_main("OtherTileData", {"tile_id": _tworker.my_id})
 
     def __getitem__(self, pipe_key):

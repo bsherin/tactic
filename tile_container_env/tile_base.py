@@ -1,14 +1,11 @@
 import sys
 import re
 import subprocess
-# noinspection PyPackageRequirements
 from bson.binary import Binary
-# noinspection PyUnresolvedReferences
-# from matplotlib_utilities import MplFigure, color_palette_names, ColorMapper
-# from types import NoneType
 import os
 import traceback
 import pickle
+from tactic_logging import log
 from communication_utils import is_jsonizable, make_python_object_jsonizable, debinarize_python_object
 import Levenshtein
 from tile_o_plex import app
@@ -20,9 +17,7 @@ from object_api_mixin import ObjectAPIMixin
 from other_api_mixin import OtherAPIMIxin
 from refreshing_mixin import RefreshingMixin
 from exception_mixin import ExceptionMixin, generic_exception_handler
-from document_object import ROWS_TO_PRINT, DetachedTacticCollection
 import document_object
-from qworker_alt import debug_log
 import copy
 from qworker_alt import task_worthy_methods, task_worthy_manual_submit_methods
 
@@ -107,7 +102,7 @@ def clear_and_exec_user_code(the_code):
 
 # noinspection PyMiss
 # ingConstructor
-# noinspection PyUnusedLocal,PyMissingConstructor
+# noinspection PyUnusedLocal,PyMissingConstructor,PyMethodMayBeStatic
 class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMixin,
                OtherAPIMIxin, RefreshingMixin, ExceptionMixin):
     category = "basic"
@@ -184,9 +179,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
 
     @_task_worthy
     def RefreshTile(self, data):
-        print("got RefreshTile")
         self._do_the_refresh()
-        print("exiting RefreshTile")
         return None
 
     @_task_worthy
@@ -237,22 +230,19 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
 
     @_task_worthy
     def TileButtonClick(self, data):
-        try:
-            self.handle_button_click(data["button_value"], data["doc_name"], data["active_row_id"])
-        except Exception as ex:
-            self._handle_exception(ex)
-        return None
+        self.handle_button_click(data["button_value"], data["doc_name"], data["active_row_id"])
+        return
 
     @_task_worthy
     def TileMessage(self, data):
-        print("Entering TileMessage")
         try:
+            # noinspection PyNoneFunctionAssignment
             response = self.handle_tile_message(data["event_name"], data["event_data"])
         except Exception as ex:
-            print(self._handle_exception(ex, "got an error in TileMessage"))
+            log.exception("Error in TileMessage")
+            self._handle_exception(ex, "got an error in TileMessage")
             response = None
         result = {"response": response}
-        print("TileMessage returning result " + str(result))
         return result
 
     @_task_worthy
@@ -260,6 +250,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
         try:
             self.handle_form_submit(data["form_data"], data["doc_name"], data["active_row_id"])
         except Exception as ex:
+            log.exception("Error in TileFormSubmit")
             self._handle_exception(ex)
         return None
 
@@ -269,6 +260,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
             self.handle_select_change(data["select_value"], data["doc_name"],
                                       data["active_row_id"], data["select_name"])
         except Exception as ex:
+            log.exception("Error in SelectChange")
             self._handle_exception(ex)
         return None
 
@@ -408,116 +400,109 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
         self._saved_form_data = data
         self._pipe_dict = data["pipe_dict"]
         moptions = self.modify_options()
-        try:
-            form_data = []
-            for option in moptions:
-                form_item = {}
-                att_name = option["name"]
-                if "display_text" in option:
-                    form_item["display_text"] = option["display_text"]
-                form_item["name"] = att_name
-                form_item["type"] = option["type"]
-                if "display_text" in option:
-                    form_item["display_text"] = option["display_text"]
-                else:
-                    form_item["display_text"] = None
-                if option["type"] == "divider":
-                    form_data.append(form_item)
-                    continue
-                if "tags" in option:
-                    option_tags = option["tags"].split()
-                else:
-                    option_tags = []
-                if not hasattr(self, att_name):
-                    setattr(self, att_name, None)
-                self.save_attrs.append(att_name)
-                starting_value = getattr(self, att_name)
-                form_item["starting_value"] = starting_value
-                if "visible" in option and not option["visible"]:
-                    form_item["visible"] = False
-                else:
-                    form_item["visible"] = True
-
-                match option["type"]:
-                    case "column_select":
-                        form_item["option_list"] = data["current_header_list"]
-                    case "column_select":
-                        form_item["option_list"] = data["current_header_list"]
-                    case "tokenizer_select":  # for backward compatibility
-                        form_item["option_list"] = self._get_sorted_match_list(["tokenizer"], data["function_names"])
-                    case "weight_function_select":  # for backward compatibility
-                        form_item["option_list"] = self._get_sorted_match_list(["weight_function"],
-                                                                               data["function_names"])
-                    case "cluster_metric":  # for backward comptibility
-                        form_item["option_list"] = self._get_sorted_match_list(["cluster_metric"],
-                                                                               data["function_names"])
-                    case "pipe_select":
-                        form_item["starting_value"] = self._find_best_pipe_match(starting_value, att_name, option_tags)
-                        form_item["pipe_dict"] = {}
-                        for tile_id, tile_entry in self._pipe_dict.items():
-                            if tile_id == self._tworker.my_id:
-                                continue
-                            first_full_name = list(tile_entry)[0]
-                            first_short_name = list(tile_entry.values())[0]["export_name"]
-                            tile_name = re.sub("_" + first_short_name, "", first_full_name)
-                            form_item["pipe_dict"][tile_name] = []
-
-                            for full_export_name, edict in tile_entry.items():
-                                if self._check_for_tag_match(option_tags, edict["export_tags"].split()):
-                                    form_item["pipe_dict"][tile_name].append([full_export_name, edict["export_name"]])
-
-                    case "tile_select":
-                        form_item["option_list"] = data["other_tile_names"]
-                    case "document_select":
-                        form_item["option_list"] = data["doc_names"]
-                    case "list_select":
-                        form_item["option_list"] = self._get_sorted_match_list(option_tags, data["list_names"])
-                    case "collection_select":
-                        form_item["option_list"] = self._get_sorted_match_list(option_tags, data["collection_names"])
-                    case "function_select":
-                        form_item["option_list"] = self._get_sorted_match_list(option_tags, data["function_names"])
-                    case "class_select":
-                        form_item["option_list"] = self._get_sorted_match_list(option_tags, data["class_names"])
-                    case "palette_select":
-                        from matplotlib_utilities import color_palette_names
-                        form_item["option_list"] = color_palette_names
-                    case "custom_list":
-                        form_item["option_list"] = option["special_list"]
-                    case "pool_select":
-                        if "pool_select_type" in option:
-                            form_item["pool_select_type"] = option["pool_select_type"]
-                        else:
-                            form_item["pool_select_type"] = "both"
-                    case "int":
-                        if starting_value is None:
-                            starting_value = 0
-                        form_item["starting_value"] = str(starting_value)
-                    case "float":
-                        if starting_value is None:
-                            starting_value = 0
-                        form_item["starting_value"] = str(starting_value)
-                if form_item["starting_value"] is None:
-                    if option["type"] in self._selector_types and len(form_item["option_list"]) > 0:
-                        form_item["starting_value"] = form_item["option_list"][0]
-                    else:
-                        form_item["starting_value"] = ""
-
+        form_data = []
+        for option in moptions:
+            form_item = {}
+            att_name = option["name"]
+            if "display_text" in option:
+                form_item["display_text"] = option["display_text"]
+            form_item["name"] = att_name
+            form_item["type"] = option["type"]
+            if "display_text" in option:
+                form_item["display_text"] = option["display_text"]
+            else:
+                form_item["display_text"] = None
+            if option["type"] == "divider":
                 form_data.append(form_item)
+                continue
+            if "tags" in option:
+                option_tags = option["tags"].split()
+            else:
+                option_tags = []
+            if not hasattr(self, att_name):
+                setattr(self, att_name, None)
+            self.save_attrs.append(att_name)
+            starting_value = getattr(self, att_name)
+            form_item["starting_value"] = starting_value
+            if "visible" in option and not option["visible"]:
+                form_item["visible"] = False
+            else:
+                form_item["visible"] = True
 
-            fixed_attrs = []
-            for attr in self.save_attrs:  # legacy to deal with tiles that have self.save_attrs += exports
-                if isinstance(attr, dict):
-                    fixed_attrs.append(attr["name"])
+            match option["type"]:
+                case "column_select":
+                    form_item["option_list"] = data["current_header_list"]
+                case "column_select":
+                    form_item["option_list"] = data["current_header_list"]
+                case "tokenizer_select":  # for backward compatibility
+                    form_item["option_list"] = self._get_sorted_match_list(["tokenizer"], data["function_names"])
+                case "weight_function_select":  # for backward compatibility
+                    form_item["option_list"] = self._get_sorted_match_list(["weight_function"],
+                                                                           data["function_names"])
+                case "cluster_metric":  # for backward comptibility
+                    form_item["option_list"] = self._get_sorted_match_list(["cluster_metric"],
+                                                                           data["function_names"])
+                case "pipe_select":
+                    form_item["starting_value"] = self._find_best_pipe_match(starting_value, att_name, option_tags)
+                    form_item["pipe_dict"] = {}
+                    for tile_id, tile_entry in self._pipe_dict.items():
+                        if tile_id == self._tworker.my_id:
+                            continue
+                        first_full_name = list(tile_entry)[0]
+                        first_short_name = list(tile_entry.values())[0]["export_name"]
+                        tile_name = re.sub("_" + first_short_name, "", first_full_name)
+                        form_item["pipe_dict"][tile_name] = []
+
+                        for full_export_name, edict in tile_entry.items():
+                            if self._check_for_tag_match(option_tags, edict["export_tags"].split()):
+                                form_item["pipe_dict"][tile_name].append([full_export_name, edict["export_name"]])
+
+                case "tile_select":
+                    form_item["option_list"] = data["other_tile_names"]
+                case "document_select":
+                    form_item["option_list"] = data["doc_names"]
+                case "list_select":
+                    form_item["option_list"] = self._get_sorted_match_list(option_tags, data["list_names"])
+                case "collection_select":
+                    form_item["option_list"] = self._get_sorted_match_list(option_tags, data["collection_names"])
+                case "function_select":
+                    form_item["option_list"] = self._get_sorted_match_list(option_tags, data["function_names"])
+                case "class_select":
+                    form_item["option_list"] = self._get_sorted_match_list(option_tags, data["class_names"])
+                case "palette_select":
+                    from matplotlib_utilities import color_palette_names
+                    form_item["option_list"] = color_palette_names
+                case "custom_list":
+                    form_item["option_list"] = option["special_list"]
+                case "pool_select":
+                    if "pool_select_type" in option:
+                        form_item["pool_select_type"] = option["pool_select_type"]
+                    else:
+                        form_item["pool_select_type"] = "both"
+                case "int":
+                    if starting_value is None:
+                        starting_value = 0
+                    form_item["starting_value"] = str(starting_value)
+                case "float":
+                    if starting_value is None:
+                        starting_value = 0
+                    form_item["starting_value"] = str(starting_value)
+            if form_item["starting_value"] is None:
+                if option["type"] in self._selector_types and len(form_item["option_list"]) > 0:
+                    form_item["starting_value"] = form_item["option_list"][0]
                 else:
-                    fixed_attrs.append(attr)
-            self.save_attrs = list(set(fixed_attrs))
-            return {"form_data": form_data}
-        except Exception as ex:
-            special_string = ("error creating form for  " + self.__class__.__name__ + " tile: " + self._tworker.my_id)
-            error_string = self.get_traceback_message(ex, special_string)
-            debug_log(error_string)
-            # self.display_message(error_string, True)
-            return error_string
+                    form_item["starting_value"] = ""
+
+            form_data.append(form_item)
+
+        fixed_attrs = []
+        for attr in self.save_attrs:  # legacy to deal with tiles that have self.save_attrs += exports
+            if isinstance(attr, dict):
+                fixed_attrs.append(attr["name"])
+            else:
+                fixed_attrs.append(attr)
+        self.save_attrs = list(set(fixed_attrs))
+        return {"success": True, "form_data": form_data}
 
     @_task_worthy
     def _set_current_html(self, data):
@@ -531,13 +516,13 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
         is_lite = "lite_save" in data and data["lite_save"]
         export_names = [exp["name"] for exp in self.exports]
         for attr in self.save_attrs:
-            print(f"saving attribute {attr}")
+            log.debug("saving attribute ", attr=attr)
             if not hasattr(self, attr):
                 result[attr] = None
                 continue
             if is_lite and attr in export_names:
                 continue
-            print(f"getting value for attribute {attr}")
+            log.debug(f"getting value for attribute", attr=attr)
             attr_val = getattr(self, attr)
             if hasattr(attr_val, "compile_save_dict"):
                 result[attr] = attr_val.compile_save_dict()
@@ -553,29 +538,26 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
                         result[attr] = attr_val
                         continue
                 try:
-                    debug_log("Found non jsonizable attribute " + attr)
+                    log.debug("Found non jsonizable attribute " + attr)
                     result["binary_attrs"].append(attr)
                     bser_attr_val = make_python_object_jsonizable(attr_val)
                     result[attr] = bser_attr_val
                     if is_jsonizable(bser_attr_val):
-                        print("new bser_attr_val is jsonizable")
+                        log.debug("new bser_attr_val is jsonizable")
                     else:
-                        print("new bser_attr_val is not jsonizable")
+                        log.debug("new bser_attr_val is not jsonizable")
 
-                except TypeError as ex:
-                    print(self.extract_short_error_message(ex))
+                except TypeError:
+                    log.exception("Error serializing attribute " + attr)
                     continue
         data = {"tile_type": self.tile_type, "user_id": self.user_id}
         result["tile_id"] = self._tworker.my_id
 
         def got_module_name(mdata):
-            print("got module_name")
             result["module_name"] = mdata["module_name"]
-            print("submitting response")
             self._tworker.submit_response(task_packet, result)
 
         # tmi_string = "{}.tile_module_index".format(self.username)
-        print("posting to tworker to get module name")
         self._tworker.ask_host("get_module_from_type_task", {
             "tile_type": self.tile_type,
             "username": self.username
@@ -621,14 +603,11 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
             widget.set(data["widgetData"])
             return {"success": True}
         else:
-            print("didn't find the widget")
-            print(f"looking for {widget_id} in {self._widgets.keys()}")
-            print("current widgets are " + str(self._widgets))
+            log.warning("Widget not found")
             return {"success": False, "error": "Widget not found"}
 
     @_task_worthy
     def widget_action(self, data):
-        print("got widget_action")
         widget_id = data["widgetId"]
         if widget_id in self._widgets:
             widget = self._widgets[widget_id]
@@ -636,9 +615,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
             widget.action(val)
             return {"success": True}
         else:
-            print("didn't find the widget")
-            print(f"looking for {widget_id} in {self._widgets.keys()}")
-            print("current widgets are " + str(self._widgets))
+            log.warning("Widget not found")
             return {"success": False, "error": "Widget not found"}
 
     def post_event(self, event_name, task_data=None):
@@ -680,23 +657,6 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
                 choice_list.append(choice)
         choice_list.sort()
         return choice_list
-
-    # def _create_select_list_html(self, choice_list, starting_value=None, att_name=None):
-    #     if not choice_list:
-    #         return ""
-    #     if starting_value is None:
-    #         new_start_value = process.extractOne(att_name, choice_list, scorer=Levenshtein.ratio)[0]
-    #     elif starting_value not in choice_list:
-    #         new_start_value = process.extractOne(starting_value, choice_list, scorer=Levenshtein.ratio)[0]
-    #     else:
-    #         new_start_value = starting_value
-    #     new_html = ""
-    #     for choice in choice_list:
-    #         if choice == new_start_value:
-    #             new_html += self._select_option_selected_template.format(choice)
-    #         else:
-    #             new_html += self._select_option_template.format(choice)
-    #     return new_html
 
     def _find_best_pipe_match(self, starting_value, att_name, option_tags):
         best_match_item = None
@@ -758,7 +718,6 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
         return False
 
     def get_export_type_info(self):
-        print("in get_export_type_info")
         exports_with_type_info = []
         for exp in self.exports:
             new_exp = copy.deepcopy(exp)
@@ -767,7 +726,6 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
             else:
                 new_exp["type"] = "unknown"
             exports_with_type_info.append(new_exp)
-        print("leaving get_export_type_info")
         return exports_with_type_info
 
     def convert_content_to_widget_list(self, content):
@@ -807,7 +765,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
                 message = {"html": new_html, "exports_changed": False}
             self._tworker.emit_tile_message("displayTileContent", message)
         except Exception as ex:
-            print("got an exception in _do_the_refresh")
+            log.exception("Exception in _do_the_refresh")
             self._handle_exception(ex)
         return
 
@@ -815,7 +773,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
         if "binary_attrs" not in save_dict:
             save_dict["binary_attrs"] = []
         for (attr, attr_val) in save_dict.items():
-            print("processing attribute {}".format(attr))
+            log.debug("processing attribute in recreate_from_save", attr=attr)
             if type(attr_val) == dict and hasattr(attr_val, "recreate_from_save"):
                 cls = getattr(sys.modules[__name__], attr_val["my_class_for_recreate"])
                 setattr(self, attr, cls.recreate_from_save(attr_val))
@@ -831,7 +789,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
                     decoded_val = pickle.loads(str(attr_val.decode()))
                     setattr(self, attr, decoded_val)
                 elif attr in save_dict["binary_attrs"]:
-                    print("prcessing binary attribute {}".format(attr))
+                    log.debug("processing binary attribute in recreate_from_save", attr=attr)
                     try:
                         decoded_val = debinarize_python_object(attr_val)
                     except Exception as ex:  # legacy if above fails try the old method
@@ -886,7 +844,6 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
 
     def _handle_exception(self, ex, special_string=None, print_to_console=True):
         error_string = self.get_traceback_message(ex, special_string)
-        debug_log(error_string)
         summary = "Exception of type {}".format(type(ex).__name__)
         tb = ex.__traceback__
         line_number = traceback.extract_tb(tb)[-1].lineno
@@ -1007,8 +964,9 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
         self.distribute_event("SearchTable", {"text_to_find": clicked_word})
         return
 
+    # noinspection PyMethodMayBeStatic
     def render_content(self):
-        debug_log("render_content not implemented")
+        log.warning("render_content not implemented")
         return " "
 
     # </editor-fold>

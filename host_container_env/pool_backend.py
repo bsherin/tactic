@@ -1,16 +1,18 @@
 import os
 import re
-import datetime
 import shutil
 from tactic_app import socketio
 from flask import jsonify, send_file
 from exception_mixin import ExceptionMixin
+from utils import utc_fromtimestamp
+from tactic_logging import log
 
 from users import User
 
 class PoolBackend(ExceptionMixin):
 
     def get_tree(self, user_obj, show_hidden=False, base_path=None):
+        dtree = None
         try:
             user_pool_dir = f"/pool/{user_obj.username}"
             if not os.path.exists(user_pool_dir):
@@ -22,8 +24,8 @@ class PoolBackend(ExceptionMixin):
                 "basename": "mydisk",
                 "label": "mydisk"
             })
-        except Exception as ex:
-            print(self.handle_exception(ex, "Error getting pooltree"))
+        except Exception:
+            log.exception("Error getting pooltree")
         return {"dtree": dtree}
 
     def get_node(self, root, user_pool_dir, user_obj, show_hidden=False):
@@ -43,7 +45,8 @@ class PoolBackend(ExceptionMixin):
         new_base_node["explored"] = True
         return new_base_node
 
-    def folder_dict(self, path, basename, user_obj, child_nodes=[]):
+    def folder_dict(self, path, basename, user_obj, child_nodes=None):
+        child_nodes = child_nodes if child_nodes is not None else []
         base_dict = {
             "id": path,
             "icon": "folder-close",
@@ -101,11 +104,11 @@ class PoolBackend(ExceptionMixin):
             size_str = f"{round(raw_size / 10 ** 3, 1)} KB"
         else:
             size_str = f"{raw_size} bytes"
-        updated, updated_for_sort = user_obj.get_timestrings(datetime.datetime.utcfromtimestamp(fstat.st_mtime))
+        updated, updated_for_sort = user_obj.get_timestrings(utc_fromtimestamp(fstat.st_mtime))
         stats = {
-            "created": user_obj.get_timestrings(datetime.datetime.utcfromtimestamp(fstat.st_ctime))[0],
+            "created": user_obj.get_timestrings(utc_fromtimestamp(fstat.st_ctime))[0],
             "updated": updated,
-            "accessed": user_obj.get_timestrings(datetime.datetime.utcfromtimestamp(fstat.st_atime))[0],
+            "accessed": user_obj.get_timestrings(utc_fromtimestamp(fstat.st_atime))[0],
             "size": size_str,
             "updated_for_sort": updated_for_sort,
             "size_for_sort": raw_size
@@ -128,8 +131,8 @@ class PoolBackend(ExceptionMixin):
     def read_text(self, file_path, hw, user_obj):
         def can_read_as_text(fpath):
             try:
-                with open(fpath, 'r', encoding='utf-8') as f:
-                    f.read(1024)  # Attempt to read the first 1024 bytes
+                with open(fpath, 'r', encoding='utf-8') as the_file:
+                    the_file.read(1024)  # Attempt to read the first 1024 bytes
                 return True
             except (UnicodeDecodeError, IOError):
                 return False
@@ -146,8 +149,8 @@ class PoolBackend(ExceptionMixin):
             "success": True,
             "the_content": the_text,
             "mdata": mdata,
-            "created": user_obj.get_timestrings(datetime.datetime.utcfromtimestamp(fstat.st_ctime))[0],
-            "updated": user_obj.get_timestrings(datetime.datetime.utcfromtimestamp(fstat.st_mtime))[0],
+            "created": user_obj.get_timestrings(utc_fromtimestamp(fstat.st_ctime))[0],
+            "updated": user_obj.get_timestrings(utc_fromtimestamp(fstat.st_mtime))[0],
             "size": fstat.st_size
         }
         return data
@@ -209,8 +212,8 @@ class PoolBackend(ExceptionMixin):
                         os.remove(chunk_part)
                 os.rmdir(upload_dir)
             except Exception as ex:
+                log.exception("Error saving final file")
                 emsg = self.get_traceback_message(ex, "error in saving final file")
-                print(emsg)
                 result = {
                     "success": False,
                     "title": "Error saving final file",

@@ -1,20 +1,25 @@
 
-import os
+from tactic_logging import setup_logging, log
+setup_logging("log_streamer")
+log.info("starting", extra_flag=True)
 
-from flask import Flask
-import time
-import uuid
-from qworker_alt import QWorker, task_worthy
-from exception_mixin import ExceptionMixin
-from docker_functions import get_container
-from aws_helpers import get_ssm_parameter
-import exception_mixin
-from aws_detection import on_aws
+try:
+    from flask import Flask
+    import time
+    from qworker_alt import QWorker, task_worthy
+    from exception_mixin import ExceptionMixin
+    from docker_functions import get_container
+    import exception_mixin
+    from aws_detection import on_aws
 
-from log_streamer_backend import LogTailer, get_container_log
+    from log_streamer_backend import LogTailer, get_container_log
 
-if on_aws:
-    from log_streamer_backend_ecs import ECSLogTailer, get_container_log_ecs
+    if on_aws:
+        from log_streamer_backend_ecs import ECSLogTailer, get_container_log_ecs
+except Exception:
+    log.exception("*** fatal error during imports in log_streamer ***")
+    log.critical("*** exiting log_streamer due to fatal error ***")
+    raise
 
 class LogStreamer(QWorker, ExceptionMixin):
     def __init__(self):
@@ -75,9 +80,7 @@ class LogStreamer(QWorker, ExceptionMixin):
             self.tailers[stream_id] = new_tailer
             new_tailer.start()
         except Exception as e:
-            import traceback
-            print("ERROR in start_log_stream:", e)
-            print(traceback.format_exc())
+            log.exception("error starting log stream")
             return {"success": False, "message": f"error starting log stream: {e}"}
         return {"success": True, "stream_info": stream_info, "local_id": local_id}
 
@@ -90,12 +93,17 @@ class LogStreamer(QWorker, ExceptionMixin):
 
 
 if __name__ == "__main__":
-    app = Flask(__name__)
-    exception_mixin.app = app
-    print("entering main")
-    mworker = LogStreamer()
-    print("LogSTreamer is created, about to start my_id is " + str(mworker.my_id))
-    mworker.start()
-    print("mworker started, my_id is " + str(mworker.my_id))
+    try:
+        app = Flask(__name__)
+        exception_mixin.app = app
+        log.info("entering log streamer main")
+        mworker = LogStreamer()
+        log.info("LogSTreamer is created", my_id=mworker.my_id)
+        mworker.start()
+        log.info("mworker started", my_id=mworker.my_id)
+    except Exception:
+        log.exception("*** fatal error starting log_streamer ***")
+        log.critical("*** exiting due to fatal error ***")
+        raise
     while True:
         time.sleep(1000)

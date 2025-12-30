@@ -1,27 +1,16 @@
-import requests, markdown
-import re, os
+import requests
+import re
 from docutils.core import publish_string
-import traceback
-
-def get_traceback_message(e, special_string=None):
-    if special_string is None:
-        template = "An exception of type {0} occured. Arguments:\n{1!r}\n"
-    else:
-        template = special_string + "\n" + "An exception of type {0} occurred. Arguments:\n{1!r}\n"
-    error_string = template.format(type(e).__name__, e.args)
-    error_string += traceback.format_exc()
-    return error_string
+from tactic_logging import log
 
 def get_api_from_rst():
-    # f = open("./docs_for_integrated_docs/Tile-Commands.rst")
-    # txt = f.read()
     url = 'https://raw.githubusercontent.com/bsherin/tacticdocs/main/docs/Tile-Commands.rst'
     response = requests.get(url)
     if response.status_code == 200:
         txt = response.content.decode('utf-8')
     else:
-        print(f"*** Failed to retrieve Tile-Commands.rst. Status code: {response.status_code} ***")
-        return
+        log.error("Failed to retrieve Tile-Commands.rst", status_code=response.status_code)
+        return []
     categories = re.findall(r".. category_start([\s\S]*?).. category_end", txt)
     newres = []
     for cat in categories:
@@ -42,8 +31,8 @@ def get_handlers_from_rst():
     if response.status_code == 200:
         txt = response.content.decode('utf-8')
     else:
-        print(f"*** Failed to retrieve Handler_Methodss.rst. Status code: {response.status_code} ***")
-        return
+        log.error(f"Failed to retrieve Handler_Methodss.rst", status_code=response.status_code)
+        return {}
 
     # modify the next line so that it matches for the case where there is just (self) as well as self, args
     hm_list = re.findall(r"py:method:: ([\s\S]*?)\(self(?:, (.*?))?\)", txt)
@@ -54,15 +43,13 @@ def get_handlers_from_rst():
     return hm_dict
 
 def get_object_api_from_rst():
-    # f = open("./docs_for_integrated_docs/Object-Oriented-API.rst")
-    # txt = f.read()
     url = 'https://raw.githubusercontent.com/bsherin/tacticdocs/main/docs/Object-Oriented-API.rst'
     response = requests.get(url)
     if response.status_code == 200:
         txt = response.content.decode('utf-8')
     else:
-        print(f"*** Failed to retrieve Object-Oriented-API.rst. Status code: {response.status_code} ***")
-        return
+        log.error("Failed to retrieve Object-Oriented-API.rst", status_code=response.status_code)
+        return [], {}
 
     categories = re.findall(r".. category_start([\s\S]*?).. category_end", txt)
     newres = {}
@@ -145,8 +132,7 @@ try:
     ordered_object_categories, object_api_dict_by_category = get_object_api_from_rst()
     handler_methods = get_handlers_from_rst()
 except Exception as ex:
-    print("unable to get api")
-    print(get_traceback_message(ex))
+    log.exception("problem getting integrated_docs")
     api_array = []
     api_dict_by_category = {}
     api_dict_by_name = {}

@@ -4,10 +4,12 @@ WORKDIR /code
 ARG debug=False
 ADD ./host_container_env/requirements.txt /code/requirements.txt
 RUN pip install -r requirements.txt
+RUN pip install structlog python-json-logger
 LABEL maintainer="Bruce L Sherin"
-ADD  ./host_container_env /code
-ADD ./shared_mongo_python /code
-ADD ./shared_python /code
+ADD ./host_container_env /code/host_container_env
+ADD ./shared_mongo_python /code/shared_mongo_python
+ADD ./shared_python /code/shared_python
 EXPOSE 5000
 ENV PYTHONUNBUFFERED=1
+ENV PYTHONPATH=/code:/code/host_container_env:/code/shared_python:/code/shared_mongo_python
 CMD ["/usr/local/bin/gunicorn", "-k", "geventwebsocket.gunicorn.workers.GeventWebSocketWorker", "--log-level", "debug", "-b", "0.0.0.0:5000", "host_main:app"]

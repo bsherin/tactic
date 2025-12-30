@@ -1,19 +1,17 @@
 
-import re, datetime, sys, os
-from collections import OrderedDict
-import tempfile
+import re, os
 import zipfile
 from flask_login import login_required, current_user
-from flask import jsonify, render_template, url_for, request, send_file
+from flask import render_template, url_for, request, send_file
 from tactic_app import app
-from communication_utils import make_python_object_jsonizable, debinarize_python_object, make_jsonizable_and_compress
-from mongo_accesser import MongoAccessException, NonexistentNameError
+from mongo_accesser import NonexistentNameError
 import tempfile
-# noinspection PyPackageRequirements
 import openpyxl
 from openpyxl.styles import Alignment, Font
 from openpyxl.utils import get_column_letter
 import io
+from tactic_logging import log
+from utils import utcnow
 
 from js_source_management import js_source_dict, _develop, css_source
 
@@ -22,8 +20,7 @@ ILLEGAL_CHARACTERS_RE = re.compile(r'[\000-\010]|[\013-\014]|[\016-\037]')
 AUTOSPLIT = False
 AUTOSPLIT_SIZE = 10000
 
-import datetime
-tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
+tstring = utcnow().strftime("%Y-%H-%M-%S")
 
 @app.route('/new_notebook', methods=['get'])
 @login_required
@@ -99,7 +96,7 @@ def append_documents_to_collection(collection_name, doc_type, library_id):
     file_list = []
     for the_file in request.files.values():
         file_list.append(the_file)
-    print("** received {} files.".format(len(file_list)))
+    log.debug("received files for appending to collection", collection_name=collection_name, num_files=len(file_list))
     if len(file_list) == 0:
         return {"success": "false", "title": "Error creating collection", "content": "No files received"}
     if doc_type == "table":
@@ -125,14 +122,15 @@ def download_temp_collection(download_name, temp_id):
 
 @app.route('/download_collection/<collection_name>/<new_name>', methods=['post', 'get'])
 def download_collection(collection_name, new_name, max_col_width=50, temp_id=None):
-    from tactic_app import db
     user_obj = current_user
     try:
         coll_dict, doc_mdata_dict, header_list_dict, coll_mdata = user_obj.get_all_collection_info(collection_name,
                                                                                                    return_lists=False,
                                                                                                    temp_id=temp_id)
     except NonexistentNameError:
+        log.exception("Collection name not found: " + collection_name)
         return "Collection name not found"
+
     if temp_id is not None:
         user_obj.delete_temp_data(temp_id)
 
@@ -230,7 +228,6 @@ def adjust_ws_col_widths(ws, max_col_width):
     return
 
 def remove_duplicate_collections(user_obj=None):
-    print("entering remove duplicate collections")
     if user_obj is None:
         user_obj = current_user
 
@@ -238,7 +235,7 @@ def remove_duplicate_collections(user_obj=None):
     already_deleted = []
     for cname in cnames:
         if cnames.count(cname) > 1 and cname not in already_deleted:
-            print("removing duplicate collection " + cname)
+            log.info("removing duplicate collection", collection_name=cname)
             user_obj.remove_collection(cname)
             already_deleted.append(cname)
 

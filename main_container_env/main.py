@@ -1,19 +1,9 @@
-# from gevent import monkey; monkey.patch_all()
-print("entering main.py")
 import sys
 import re
 import uuid
-# noinspection PyUnresolvedReferences
-import requests
-import pickle
 import copy
-import pymongo
-import gridfs
 import datetime
-import os
 import json
-from communication_utils import debinarize_python_object, emit_direct
-from communication_utils import make_jsonizable_and_compress
 from loaded_tile_management import loaded_tile_manager
 from mongo_accesser import MongoAccess
 from main_tasks_mixin import StateTasksMixin, LoadSaveTasksMixin, APISupportTasksMixin
@@ -31,16 +21,11 @@ from node_accesser import NodeAccess
 from temp_data_accesser import TempDataAccess
 from across_accounts_accesser import AcrossAccountsAccess
 from aws_helpers import get_ssm_parameter
+from tactic_logging import log
 
 from main_session import MainSessionStore, MainSessionAccessor
-from collection_info import CollectionInfo, FreeformCollectionInfo
 
-from qworker import debug_log
-from tile_info import TileInfo
-
-# getting environment variables
 INITIAL_LEFT_FRACTION = .69
-
 
 db_name = get_ssm_parameter("DB_NAME", "tacticdb")
 
@@ -63,14 +48,13 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
 
     # noinspection PyUnresolvedReferences
     def __init__(self, mworker):
-        print("entering mainwindow_init")
         self.mworker = mworker
         try:
             db, fs, repository_db, repository_fs = get_dbs()
             self.db = db
             self.fs = fs
-        except Exception as ex:
-            debug_log(self.extract_short_error_message(ex, "error getting pymongo client"))
+        except Exception:
+            log.exception("error getting pymongo client")
             sys.exit()
 
         self.ss = MainSessionStore()
@@ -98,9 +82,6 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
 
     def emit_stop_status_spinner(self, sid):
         self.mworker.emit_to_user(sid, 'stop-spinner', {})
-
-    def dmsg(self, tname, msg):
-        print("rot: {} {}".format(tname, msg))
 
     @staticmethod
     def convert_legacy_console(project_dict):
@@ -135,7 +116,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
                     new_entry["execution_count"] = 0
                 entries.append(new_entry)
             except Exception as ex:
-                print("error converting one console cell")
+                log.exception("error converting one console cell")
         return entries
 
     @staticmethod
@@ -200,7 +181,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
                                "console_items": self.convert_legacy_console(project_dict)}
             return interface_state
         except Exception as ex:
-            debug_log(self.extract_short_error_message(ex, "got an error converting a legacy save"))
+            log.exception("got an error converting a legacy save")
             return False
 
     def get_collection_info(self, sid):
@@ -212,6 +193,8 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
     @staticmethod
     def remove_dead_tiles(pdictOriginal):
         pdict = copy.copy(pdictOriginal)
+        if "interface_state" not in pdict:
+            return pdict
         if "tile_list" in pdict["interface_state"]:
             interface_tile_ids = [entry["tile_id"] for entry in pdict["interface_state"]["tile_list"]]
         else:
@@ -220,21 +203,24 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
             return pdict
         else:
             tile_instance_ids = list(pdict["tile_instances"].keys())
-            ## get get the ids that are in tile_instances but not in interface_state
+            ## get the ids that are in tile_instances but not in interface_state
             dead_tile_ids = [tid for tid in tile_instance_ids if tid not in interface_tile_ids]
             for dead_tile_id in dead_tile_ids:
                 del pdict["tile_instances"][dead_tile_id]
             return pdict
 
+    @staticmethod
+    def is_legacy_save(mdata):
+        return "save_style" not in mdata or mdata["save_style"] != "b64save_react"
+
     def recreate_from_save(self, sid, project_name, username, unique_id=None):
-        print("entering recreate_from_save")
         if unique_id is None:
             try:
                 project_dict = self.read_project_dict(project_name, username)
                 mdata = self.get_project_metadata(project_name, username)
             except Exception as ex:
+                log.exception("error reading project dict")
                 error_string = self.handle_exception(sid, ex, "<pre>Error loading project dict</pre>", print_to_console=True)
-                print(error_string)
                 return_data = {"success": False, "message": error_string}
                 return error_string, {}, "", False
         else:
@@ -281,8 +267,8 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
                         sdict[attr] = attr_val
                 except TypeError:
                     sdict[attr] = attr_val
-                except Exception as ex:
-                    print(self.extract_short_error_message(ex, "error with attr " + str(attr)))
+                except Exception:
+                    log.exception("error recreating one attribute in recreate_from_save", attr=attr)
             if "doc_dict" in project_dict:
                 sdict["doc_dict"] = project_dict["doc_dict"]
         if sdict["doc_type"] == "notebook":
@@ -298,7 +284,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
         else:
             globals_dict = None
 
-        sdict["is_legacy_save"] = "is_legacy_save" in project_dict and project_dict["is_legacy_save"]
+        sdict["is_legacy_save"] = self.is_legacy_save(project_dict["metadata"])
 
         if project_dict["doc_type"] != "notebook":
             sdict["tile_instances"] = project_dict["tile_instances"]
@@ -315,9 +301,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
                     interface_state["console_items"] = self.check_for_output_text(self.add_missing_section_ends(sdict["interface_state"]["console_items"]))
                 except Exception as ex:
                     interface_state["console_items"] = []
-                    error_string = self.handle_exception(sid, ex, "Error adding missing sections")
-                    print(error_string)
-            print("leaving recreate_from_save")
+                    log.exception("error adding missing sections to console items")
             return sdict, interface_state, globals_dict
         else:
             interface_state = {}
@@ -330,9 +314,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
                 interface_state["console_items"] =  self.check_for_output_text(self.add_missing_section_ends(sdict["interface_state"]["console_items"]))
             except Exception as ex:
                 interface_state["console_items"] = []
-                error_string = self.handle_exception(sid, ex, "Error adding missing sections")
-                print(error_string)
-            print("leaving recreate from_save")
+                log.exception("Error adding missing sections to console items")
             return sdict, interface_state, globals_dict
 
 
@@ -364,7 +346,6 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
                 }
                 collection_info.add_doc(fname, dinfo)
         sess.visible_doc_name = list(coll_dict.keys())[0]
-        print("leaving _build_doc_dict")
         return result
 
     def _set_row_column_data(self, sid, doc_name, the_id, column_header, new_content):
@@ -422,13 +403,12 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
             sess.pipe_dict = pipe_dict
             self.mworker.post_task("main_service", "rebuild_tile_forms_task", {"sid": sid, "tile_id": None})
 
-        self.mworker.ask_host("delete_container", {"container_id": tile_id, "notify": False})
+        self.mworker.ask_host(sid, "delete_container", {"container_id": tile_id, "notify": False})
         self.mworker.emit_export_viewer_message(sid, "update_exports_popup", {})
         return
 
     def handle_exception(self, sid, ex, special_string=None, print_to_console=True):
         error_string = self.get_traceback_message(ex, special_string)
-        debug_log(error_string)
         if print_to_console:
             title = "An exception of type {}".format(type(ex).__name__)
             self.mworker.send_error_entry(sid, title, error_string)
@@ -538,7 +518,6 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
             other_tile_names = tile_info.tile_ids
         else:
             other_tile_names = self.get_other_tile_names(tile_id, tile_info)
-        print("got other_tile_names = " + str(other_tile_names))
         form_info = {"current_header_list": self.current_header_list(sid),
                      "pipe_dict": sess.pipe_dict,
                      "doc_names": collection_info.doc_names,
@@ -615,7 +594,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
                     "new_content": new_content, "old_content": old_content}
 
             # If cellchange is True then we use a CellChange event to handle any updates.
-            # Otherwise just change things right here.
+            # Otherwise, just change things right here.
             if cellchange:
                 self.mworker.distribute_event(sid, "CellChange", data)
             else:

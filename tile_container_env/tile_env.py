@@ -1,6 +1,5 @@
-import sys
+
 import importlib
-import warnings
 from exception_mixin import generic_exception_handler
 
 from tile_base import TileBase

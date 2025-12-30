@@ -26,30 +26,23 @@ class CodeTasksMixin:
 
     @task_worthy_manual_submit
     def update_code_task(self, data, task_packet):  # This is called from the code viewer
-        try:
-            local_task_packet = task_packet
-            the_user = self.get_user_from_data(data)
-            code_name = data["code_name"]
-            the_code = data["new_code"]
+        local_task_packet = task_packet
+        the_user = self.get_user_from_data(data)
+        code_name = data["code_name"]
+        the_code = data["new_code"]
 
-            def get_result(load_result):
-                if not load_result["success"]:
-                    self.submit_response(task_packet, load_result)
-                    return
-                the_user.update_code(code_name, the_code, load_result["classes"], load_result["functions"])
-                result = {"success": True, "message": "Code Successfully Saved", "alert_type": "alert-success"}
-                self.submit_response(local_task_packet, result)
+        def get_result(load_result):
+            if not load_result["success"]:
+                self.submit_response(task_packet, load_result)
                 return
-
-            self.post_task("tile_test_container", "clear_and_load_code",
-                           {"the_code": the_code}, get_result)
-
+            the_user.update_code(code_name, the_code, load_result["classes"], load_result["functions"])
+            result = {"success": True, "message": "Code Successfully Saved", "alert_type": "alert-success"}
+            self.submit_response(local_task_packet, result)
             return
-        except Exception as ex:
-            msg = self.get_traceback_message(ex, "Unable to Update code.")
-            print(msg)
-            self.submit_response(local_task_packet, {"success": False, "message": msg})
-            return
+
+        self.post_task("tile_test_container", "clear_and_load_code",
+                       {"the_code": the_code}, get_result)
+        return
 
     @task_worthy
     def get_code_names_task(self, data):

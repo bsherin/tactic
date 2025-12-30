@@ -1,17 +1,15 @@
 
-import sys, datetime, copy
-import re
 from collections import OrderedDict
 import os
 from flask_login import login_required, current_user
-from flask import jsonify, render_template, url_for, request
+from flask import render_template, url_for, request
 
 from tactic_app import app
 from file_handling import load_a_list
 from file_handling import read_freeform_file
+from utils import utcnow
 
-import datetime
-tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
+tstring = utcnow().strftime("%Y-%H-%M-%S")
 
 from js_source_management import js_source_dict, _develop, css_source
 

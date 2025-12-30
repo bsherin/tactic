@@ -1,49 +1,59 @@
-import datetime
-import re
-import os
 import copy
-from flask import render_template, request, jsonify, redirect, url_for
+from flask import render_template, request, jsonify, redirect, url_for, g
 from flask_login import login_user, login_required, logout_user, fresh_login_required
 from flask_login import current_user
-import gridfs
 from tactic_app import login_manager
 
 from users import User, get_full_user_data_fields
-from mongo_accesser import res_types, name_keys
+from mongo_accesser import res_types
 from flask_wtf import Form
-# noinspection PyProtectedMember
 from flask_wtf.csrf import CSRFError
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import Length, Regexp, EqualTo
-from tactic_app import app, socketio, csrf, db, fs
+from tactic_app import app, socketio
 from wtforms.validators import ValidationError
 from tactic_app import ANYONE_CAN_REGISTER
 import tactic_app
 from loaded_tile_management import loaded_tile_manager
-from mongo_db_fs import db_name
+from utils import utcnow
 
 from js_source_management import js_source_dict, _develop, css_source
+from tactic_logging import bind_request, new_task_id, log
 
 admin_user = User.get_user_by_username("admin")
 
-# @app.before_request
-# def mark_sess_modified():
-#   session.modified = True
+@app.before_request
+def _before():
+    task_id = request.headers.get("X-Request-Id") or new_task_id()
+    g.task_id = task_id
 
-tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
+    g._bind_request_cm = bind_request(task_id, "handling_endpoint", request.endpoint)
+    g._bind_request_cm.__enter__()
+
+@app.after_request
+def _after(resp):
+    resp.headers["X-Request-Id"] = g.task_id
+    log.info("after request", method=request.method,
+             task_type=request.endpoint,
+             endpoint=request.path, status=resp.status_code)
+
+    cm = getattr(g, "_bind_request_cm", None)
+    if cm is not None:
+        cm.__exit__(None, None, None)
+
+    return resp
+
+tstring = utcnow().strftime("%Y-%H-%M-%S")
 
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    print("entering login view")
+    log.debug("entering login view")
     next_view = request.args.get('next')
     if next_view is None:
-        print("no next view")
         if current_user.is_authenticated:
             return redirect(url_for("successful_login"))
-        print("not authenticated")
         next_view = "successful_login"
-    print("next view is ", next_view)
     javascript_source = url_for('static', filename=js_source_dict["auth_react"])
     return render_template('auth/login_react.html', develop=str(_develop),
                            javascript_source=javascript_source,
@@ -63,7 +73,6 @@ def successful_login():
 
 @app.route('/relogin', methods=['GET', 'POST'])
 def relogin():
-    print("entering relogin view")
     next_view = request.args.get('next')
     if next_view is None:
         next_view = "successful_login"
@@ -139,7 +148,6 @@ def logout(global_id):
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    print(f"Anyone can register is {ANYONE_CAN_REGISTER}")
     if ANYONE_CAN_REGISTER or (current_user.username == "admin"):
         return render_template('auth/register_react.html',
                                css_source=css_source("register_react"),
@@ -167,7 +175,6 @@ def attempt_register():
     data = request.json
     result_dict = User.create_new({"username": data["username"], "password": data["password"]})
     if result_dict["success"]:
-        # Copy over all of the starter resources for the new user
         repository_user = User.get_user_by_username("repository")
         new_user = User.get_user_by_username(data["username"])
         for res_type in res_types:
@@ -185,7 +192,6 @@ def attempt_duplicate():
     data = request.json
     result_dict = User.create_new({"username": data["username"], "password": data["password"]})
     if result_dict["success"]:
-        # Copy over all of the starter resources for the new user
         repository_user = User.get_user_by_username("repository")
         new_user = User.get_user_by_username(data["username"])
         for res_type in res_types:

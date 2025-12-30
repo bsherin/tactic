@@ -5,43 +5,47 @@
 # This avoids circular imports since the view functions make use
 # of things such as app, socketio, and db that are created in __init__.py
 
-import os
 from gevent import monkey, hub
 monkey.patch_all()
 
-# Silence benign queue-empty/timeouts in gevent hub
+from tactic_logging import setup_logging, log
+setup_logging("host")
+log.info("starting", extra_flag=True)
 try:
-    from queue import Empty as QueueEmpty
-except Exception:  # Py2 fallback if you still need it
-    from Queue import Empty as QueueEmpty
-hub.Hub.NOT_ERROR = hub.Hub.NOT_ERROR + (QueueEmpty,)
+    # Silence benign queue-empty/timeouts in gevent hub
+    try:
+        from queue import Empty as QueueEmpty
+    except Exception:  # Py2 fallback if you still need it
+        from Queue import Empty as QueueEmpty
+    hub.Hub.NOT_ERROR = hub.Hub.NOT_ERROR + (QueueEmpty,)
 
-print("entering host main with suppressed logging")
-print("monkey patching done")
-import time
-from rabbit_manage import sleep_until_rabbit_alive
-print("Waiting for rabbit")
-success = sleep_until_rabbit_alive()
-print("Done waiting")
+    from tactic_logging import setup_logging, log
+    setup_logging("host")
+    log.info("starting", extra_flag=True)
 
-from tactic_app import app, socketio
-print("back in host_main")
-import users
-print("imported user")
-import auth_views, main_views, library_views, admin_views, pool_views
-import list_views, code_views, tile_views, project_views, collection_views
-import module_viewer_views
-print("imported views")
-import host_workers
-print("imported host_workers")
+    log.info("entering host main with suppressed logging")
+    log.info("monkey patching done")
+    from rabbit_manage import sleep_until_rabbit_alive
+    log.info("Waiting for rabbit")
+    success = sleep_until_rabbit_alive()
+    log.info("Done waiting")
 
-print("trying redis stuff")
-import redis_tools
+    from tactic_app import app, socketio
+    log.info("back in host_main")
+    import users
+    log.info("imported user")
+    import auth_views, main_views, library_views, admin_views, pool_views
+    import list_views, code_views, tile_views, project_views, collection_views
+    import module_viewer_views
+    log.info("imported views")
+    import host_workers
+    log.info("imported host_workers")
 
-import tactic_app
-
-# print("about to do socketio.run")
-# socketio.run(app, host="0.0.0.0", port=5000)
-# print("did it")
+    log.info("trying redis stuff")
+    import redis_tools
+except Exception:
+    log.exception("*** fatal error starting host ***")
+    log.critical("*** exiting host due to fatal error ***")
+    raise
 
 

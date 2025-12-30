@@ -1,19 +1,14 @@
 
-import sys, copy, re, datetime, os
-
-from flask import render_template, request, jsonify, send_file, url_for
+from flask import render_template, url_for
 from flask_login import login_required, current_user
 from flask_socketio import join_room
-import markdown
 
 from tactic_app import app
-from mongo_accesser import name_keys, res_types
-from communication_utils import make_jsonizable_and_compress
-from exception_mixin import generic_exception_handler
 from docker_functions import ContainerCreateError
 from mongo_db_fs import repository_type, database_type
 from aws_helpers import get_ssm_parameter
 from aws_detection import on_aws
+from utils import utcnow
 
 from users import User
 
@@ -22,7 +17,7 @@ from js_source_management import js_source_dict, _develop, css_source
 
 admin_user = User.get_user_by_username("admin")
 
-tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
+tstring = utcnow().strftime("%Y-%H-%M-%S")
 
 use_s3 = get_ssm_parameter("USE_S3","true").lower() == "true"
 
@@ -31,7 +26,6 @@ from tactic_app import CLIENT_ACTIVITY_INTERVAL_SECS
 @app.route('/library')
 @login_required
 def library():
-    print("*** in library ***")
     if current_user.get_id() == admin_user.get_id():
         return render_template("library/library_home_react.html",
                                is_remote="no",

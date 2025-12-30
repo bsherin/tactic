@@ -1,463 +1,512 @@
 services:
+    loki:
+      image: grafana/loki:2.9.6
+      command: -config.file=/etc/loki/loki.yml
+      ports:
+        - "3100:3100"
+      volumes:
+        - ./observability/loki.yml:/etc/loki/loki.yml:ro
+        - loki-data:/loki
+      profiles:
+        - start_project
+        - start_development
+        - debug_host
+      networks:
+        - tactic-net
 
-  tactic-mongo:
-    image: mongo:5.0
-    hostname: tactic-mongo
-    container_name: tactic-mongo
-    command: >
-      --bind_ip 0.0.0.0
-      --replSet rs0
-    labels:
-      project: tactic_aux
-    restart: always
-    profiles:
-      - start_project
-      - start_development
-      - start_mongo_only
-      - debug_host
-    networks:
-      - tactic-net
-    ports:
-      - "27017:27017"
-    volumes:
-      - ${MONGO_DIR}:/data/db
-      - ./dump:/dump
+    grafana:
+      image: grafana/grafana:10.4.3
+      ports:
+        - "3000:3000"
+      profiles:
+        - start_project
+        - start_development
+        - debug_host
+      environment:
+        - GF_SECURITY_ADMIN_PASSWORD=admin
+      networks:
+        - tactic-net
 
-  tactic-redis:
-    image: redis:alpine
-    restart: always
-    labels:
-      project: tactic_aux
-    hostname: tactic-redis
-    container_name: tactic-redis
-    profiles:
-      - start_development
-      - debug_host
-    networks:
-      - tactic-net
-    ports:
-      - "6379:6379"
-    environment:
-      - MY_ID=tactic-redis
-      - OWNER=host
-    command: ["redis-server", "--appendonly", "yes", "--appendfilename", "appendonly.aof", "--dir", "/data"]
-    volumes:
-      - tactic-redis-data:/data
+    promtail:
+      image: grafana/promtail:latest
+      command: -config.file=/etc/promtail/config.yml
+      profiles:
+        - start_project
+        - start_development
+        - debug_host
+      volumes:
+        - /var/lib/docker/containers:/var/lib/docker/containers:ro
+        - /var/run/docker.sock:/var/run/docker.sock:ro
+        - ./observability/promtail.yml:/etc/promtail/config.yml:ro
+      networks:
+        - tactic-net
 
-  megaplex:
-    image: rabbitmq:3.12-management
-    labels:
-      project: tactic_aux
-    depends_on:
-      - tactic-redis
-    restart: always
-    profiles:
-      - start_development
-      - debug_host
-    hostname: megaplex
-    container_name: megaplex
-    networks:
-      - tactic-net
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    environment:
-      - MY_ID=megaplex
-      - OWNER=host
+    tactic-mongo:
+      image: mongo:5.0
+      hostname: tactic-mongo
+      container_name: tactic-mongo
+      command: >
+        --bind_ip 0.0.0.0
+        --replSet rs0
+      labels:
+        project: tactic_aux
+      restart: always
+      profiles:
+        - start_project
+        - start_development
+        - start_mongo_only
+        - debug_host
+      networks:
+        - tactic-net
+      ports:
+        - "27017:27017"
+      volumes:
+        - ${MONGO_DIR}:/data/db
+        - ./dump:/dump
 
-  tactic_base:
-    build:
-      context: .
-      dockerfile: Dockerfile-base
-    profiles:
-      - build_project
-      - build_server_project
-    image: bsherin/tactic-base:${IMG_SUFFIX}
-    platform: ${PLATFORM}
+    tactic-redis:
+      image: redis:alpine
+      restart: always
+      labels:
+        project: tactic_aux
+      hostname: tactic-redis
+      container_name: tactic-redis
+      profiles:
+        - start_development
+        - debug_host
+      networks:
+        - tactic-net
+      ports:
+        - "6379:6379"
+      environment:
+        - MY_ID=tactic-redis
+        - OWNER=host
+      command: [ "redis-server", "--appendonly", "yes", "--appendfilename", "appendonly.aof", "--dir", "/data" ]
+      volumes:
+        - tactic-redis-data:/data
 
-  tactic_wheels:
-    build:
-      context: .
-      dockerfile: Dockerfile-wheels
-      args:
-        BASE_IMAGE: ${BASE_IMAGE}
-    profiles:
-      - build_project
-      - build_server_project
-    image: bsherin/tactic-wheels:${IMG_SUFFIX}
-    platform: ${PLATFORM}
-    environment:
-      - PYTHONUNBUFFERED=0
+    megaplex:
+      image: rabbitmq:3.12-management
+      labels:
+        project: tactic_aux
+      depends_on:
+        - tactic-redis
+      restart: always
+      profiles:
+        - start_development
+        - debug_host
+      hostname: megaplex
+      container_name: megaplex
+      networks:
+        - tactic-net
+      ports:
+        - "5672:5672"
+        - "15672:15672"
+      environment:
+        - MY_ID=megaplex
+        - OWNER=host
 
-  tactic_host1:
-    build:
-      context: .
-      dockerfile: Dockerfile-host
-      args:
-        BASE_IMAGE: ${BASE_IMAGE}
-    profiles:
-      - start_project
-      - start_development
-      - build_project
-      - build_server_project
-      - build_non_base
-      - start_host
-    image: bsherin/tactic-host:${IMG_SUFFIX}
-    restart: on-failure
-    ports:
-      - "5000:5000"
-    hostname: none
-    container_name: tactic_host5000
-    platform: ${PLATFORM}
-    init: true
-    labels:
-      project: tactic
-      my_id: host5000
-      owner: host
-      parent: host
-      other_name: none
-    environment:
-      - MY_ID=host5000
-      - MYPORT=5000
-      - USE_DEVELOPMENT_BUNDLES=${USE_DEVELOPMENT_BUNDLES}
-      - RUNNING_ON_AWS=${RUNNING_ON_AWS}
-      - USE_GEVENT=True
-      - DEBUG=${DEBUG}
-      - PYCHARM_DEBUG=1
-      - GEVENT_SUPPORT=True
-    volumes:
-      - type: bind
-        source: "/var/run/docker.sock"
-        target: "/var/run/docker.sock"
-      - type: bind
-        source: "${ROOT_DIR}/persist"
-        target: "/code/persist"
-      - type: bind
-        source: "${POOL_DIR}"
-        target: "/pool"
-      - type: bind
-        source: "${ROOT_DIR}/static"
-        target: "/code/static"
-    networks:
-      - tactic-net
+    tactic_base:
+      build:
+        context: .
+        dockerfile: Dockerfile-base
+      profiles:
+        - build_project
+        - build_server_project
+      image: bsherin/tactic-base:${IMG_SUFFIX}
+      platform: ${PLATFORM}
 
-  tactic_host2:
-    image: bsherin/tactic-host:${IMG_SUFFIX}
-    profiles:
-      - unused
-    restart: on-failure
-    ports:
-      - "5001:5000"
-    hostname: none
-    container_name: tactic_host5001
-    platform: ${PLATFORM}
-    init: true
-    labels:
-      project: tactic
-      my_id: host5001
-      owner: host
-      parent: host
-      other_name: none
-    environment:
-      - MY_ID=host5001
-      - MYPORT=5001
-      - USE_DEVELOPMENT_BUNDLES=${USE_DEVELOPMENT_BUNDLES}
-      - USE_GEVENT=True
-      - RUNNING_ON_AWS=${RUNNING_ON_AWS}
-    volumes:
-      - type: bind
-        source: "/var/run/docker.sock"
-        target: "/var/run/docker.sock"
-      - type: bind
-        source: "${ROOT_DIR}/persist"
-        target: "/code/persist"
-      - type: bind
-        source: "${POOL_DIR}"
-        target: "/pool"
-      - type: bind
-        source: "${ROOT_DIR}/static"
-        target: "/code/static"
-    networks:
-      - tactic-net
+    tactic_wheels:
+      build:
+        context: .
+        dockerfile: Dockerfile-wheels
+        args:
+          BASE_IMAGE: ${BASE_IMAGE}
+      profiles:
+        - build_project
+        - build_server_project
+      image: bsherin/tactic-wheels:${IMG_SUFFIX}
+      platform: ${PLATFORM}
+      environment:
+        - PYTHONUNBUFFERED=0
 
-  tile_test_container:
-    image: bsherin/tactic-tile:${IMG_SUFFIX}
-    profiles:
-      - start_project
-      - start_development
-      - debug_host
-    restart: always
-    init: true
-    container_name: tile_test_container
-    platform: ${PLATFORM}
-    labels:
-      project: tactic
-      my_id: tile_test_container
-      owner: host
-      parent: host
-      other_name: tile_test_container
-    environment:
-      - MY_ID=tile_test_container
-      - PPI=0
-      - RUNNING_ON_AWS=${RUNNING_ON_AWS}
-      - OWNER=host
-      - PARENT=host
-      - NLTK_DATA=nltk_cache
-      - HF_HOME=hf_cache
-      - TRANSFORMERS_CACHE=hf_cache
-      - TORCH_HOME=torch_cache
-      - MPLCONFIGDIR=mpl_cache
-      - USE_GEVENT=False
-    volumes:
-      - type: bind
-        source: ${ROOT_DIR}/persist
-        target: "/code/persist"
-      - type: bind
-        source: ${ROOT_DIR}/resources
-        target: "/root/resources"
-      - type: bind
-        source: ${ROOT_DIR}/resources/huggingface
-        target: "/root/.cache/huggingface"
-    networks:
-      - tactic-net
+    tactic_host1:
+      build:
+        context: .
+        dockerfile: Dockerfile-host
+        args:
+          BASE_IMAGE: ${BASE_IMAGE}
+#      logging:
+#        driver: loki
+#        options:
+#          loki-url: "http://host.docker.internal:3100/loki/api/v1/push"
+#          loki-external-labels: "service=tactic-host,env=local"
+      profiles:
+        - start_project
+        - start_development
+        - build_project
+        - build_server_project
+        - build_non_base
+        - start_host
+      image: bsherin/tactic-host:${IMG_SUFFIX}
+      restart: on-failure
+      ports:
+        - "5000:5000"
+      hostname: none
+      container_name: tactic_host5000
+      platform: ${PLATFORM}
+      init: true
+      labels:
+        project: tactic
+        my_id: host5000
+        owner: host
+        parent: host
+        other_name: none
+      environment:
+        - MY_ID=host5000
+        - MYPORT=5000
+        - USE_DEVELOPMENT_BUNDLES=${USE_DEVELOPMENT_BUNDLES}
+        - RUNNING_ON_AWS=${RUNNING_ON_AWS}
+        - USE_GEVENT=True
+        - DEBUG=${DEBUG}
+        - PYCHARM_DEBUG=1
+        - GEVENT_SUPPORT=True
+      volumes:
+        - type: bind
+          source: "/var/run/docker.sock"
+          target: "/var/run/docker.sock"
+        - type: bind
+          source: "${ROOT_DIR}/persist"
+          target: "/code/persist"
+        - type: bind
+          source: "${POOL_DIR}"
+          target: "/pool"
+        - type: bind
+          source: "${ROOT_DIR}/static"
+          target: "/code/host_container_env/static"
+      networks:
+        - tactic-net
 
-  tactic_log_streamer:
-    build:
-      context: .
-      dockerfile: Dockerfile-log-streamer
-      args:
-        BASE_IMAGE: ${BASE_IMAGE}
-    profiles:
-      - build_project
-      - build_server_project
-      - build_non_base
-      - start_project
-      - start_development
-      - debug_host
-    image: bsherin/tactic-log-streamer:${IMG_SUFFIX}
-    container_name: tactic_log_streamer
-    platform: ${PLATFORM}
-    labels:
-      project: tactic
-      my_id: tactic_log_streamer
-      owner: host
-      parent: host
-      other_name: tactic_log_streamer
-    environment:
-      - PYTHONUNBUFFERED=0
-      - MY_ID=log_streamer
-      - RUNNING_ON_AWS=${RUNNING_ON_AWS}
-      - OWNER=host
-      - PARENT=host
-      - DEVELOP=${DEVELOP}
-      - USE_GEVENT=False
-    volumes:
-      - type: bind
-        source: "/var/run/docker.sock"
-        target: "/var/run/docker.sock"
-    networks:
-      - tactic-net
+    tactic_host2:
+      image: bsherin/tactic-host:${IMG_SUFFIX}
+      profiles:
+        - unused
+      restart: on-failure
+      ports:
+        - "5001:5000"
+      hostname: none
+      container_name: tactic_host5001
+      platform: ${PLATFORM}
+      init: true
+      labels:
+        project: tactic
+        my_id: host5001
+        owner: host
+        parent: host
+        other_name: none
+      environment:
+        - MY_ID=host5001
+        - MYPORT=5001
+        - USE_DEVELOPMENT_BUNDLES=${USE_DEVELOPMENT_BUNDLES}
+        - USE_GEVENT=True
+        - RUNNING_ON_AWS=${RUNNING_ON_AWS}
+      volumes:
+        - type: bind
+          source: "/var/run/docker.sock"
+          target: "/var/run/docker.sock"
+        - type: bind
+          source: "${ROOT_DIR}/persist"
+          target: "/code/persist"
+        - type: bind
+          source: "${POOL_DIR}"
+          target: "/pool"
+        - type: bind
+          source: "${ROOT_DIR}/static"
+          target: "/code/static"
+      networks:
+        - tactic-net
 
-  tactic_assistant:
-    build:
-      context: .
-      dockerfile: Dockerfile-assistant
-      args:
-        BASE_IMAGE: ${BASE_IMAGE}
-    profiles:
-      - build_project
-      - build_server_project
-      - build_non_base
-      - start_development
-      - start_project
-      - debug_host
-    labels:
-      project: tactic
-      my_id: assistant
-      owner: host
-      parent: host
-      other_name: assistant
-    image: bsherin/tactic-assistant:${IMG_SUFFIX}
-    platform: ${PLATFORM}
-    environment:
-      - PYTHONUNBUFFERED=0
-      - DEBUG=${DEBUG}
-      - RUNNING_ON_AWS=${RUNNING_ON_AWS}
-      - MY_ID=assistant
-      - OWNER=host
-      - PARENT=host
-      - DEVELOP=${DEVELOP}
-      - USE_GEVENT=False
-    volumes:
-      - type: bind
-        source: "/var/run/docker.sock"
-        target: "/var/run/docker.sock"
-    networks:
-      - tactic-net
+    tile_test_container:
+      image: bsherin/tactic-tile:${IMG_SUFFIX}
+      profiles:
+        - start_project
+        - start_development
+        - debug_host
+      restart: always
+      init: true
+      container_name: tile_test_container
+      platform: ${PLATFORM}
+      labels:
+        project: tactic
+        my_id: tile_test_container
+        owner: host
+        parent: host
+        other_name: tile_test_container
+      environment:
+        - MY_ID=tile_test_container
+        - PPI=0
+        - RUNNING_ON_AWS=${RUNNING_ON_AWS}
+        - OWNER=host
+        - PARENT=host
+        - NLTK_DATA=nltk_cache
+        - HF_HOME=hf_cache
+        - TRANSFORMERS_CACHE=hf_cache
+        - TORCH_HOME=torch_cache
+        - MPLCONFIGDIR=mpl_cache
+        - USE_GEVENT=False
+      volumes:
+        - type: bind
+          source: ${ROOT_DIR}/persist
+          target: "/code/persist"
+        - type: bind
+          source: ${ROOT_DIR}/resources
+          target: "/root/resources"
+        - type: bind
+          source: ${ROOT_DIR}/resources/huggingface
+          target: "/root/.cache/huggingface"
+      networks:
+        - tactic-net
 
-  tactic_mongo_watcher:
-    image: bsherin/tactic-mongo-watcher:${IMG_SUFFIX}
-    build:
-      context: .
-      dockerfile: Dockerfile-mongo-watcher
-      args:
-        BASE_IMAGE: ${BASE_IMAGE}
-    profiles:
-      - start_project
-      - start_development
-      - build_project
-      - build_server_project
-      - build_non_base
-      - debug_host
-    restart: always
-    container_name: mongo_watcher
-    init: true
-    platform: ${PLATFORM}
-    labels:
-      project: tactic
-      my_id: mongo_watcher
-      owner: host
-      parent: host
-      other_name: mongo_watcher
-    environment:
-      - RUNNING_ON_AWS=${RUNNING_ON_AWS}
-    networks:
-     - tactic-net
+    tactic_log_streamer:
+      build:
+        context: .
+        dockerfile: Dockerfile-log-streamer
+        args:
+          BASE_IMAGE: ${BASE_IMAGE}
+      profiles:
+        - build_project
+        - build_server_project
+        - build_non_base
+        - start_project
+        - start_development
+        - debug_host
+      image: bsherin/tactic-log-streamer:${IMG_SUFFIX}
+      container_name: tactic_log_streamer
+      platform: ${PLATFORM}
+      labels:
+        project: tactic
+        my_id: tactic_log_streamer
+        owner: host
+        parent: host
+        other_name: tactic_log_streamer
+      environment:
+        - PYTHONUNBUFFERED=0
+        - MY_ID=log_streamer
+        - RUNNING_ON_AWS=${RUNNING_ON_AWS}
+        - OWNER=host
+        - PARENT=host
+        - DEVELOP=${DEVELOP}
+        - USE_GEVENT=False
+      volumes:
+        - type: bind
+          source: "/var/run/docker.sock"
+          target: "/var/run/docker.sock"
+      networks:
+        - tactic-net
 
-  tactic_pool_watcher:
-    image: bsherin/tactic-pool-watcher:${IMG_SUFFIX}
-    profiles:
-      - build_project
-      - build_non_base
-    build:
-      context: .
-      dockerfile: Dockerfile-pool-watcher
-      args:
-        BASE_IMAGE: ${BASE_IMAGE}
-    restart: always
-    container_name: pool_watcher
-    init: true
-    platform: ${PLATFORM}
-    labels:
-      project: tactic
-      my_id: pool_watcher
-      owner: host
-      parent: host
-      other_name: pool_watcher
-    volumes:
-      - type: bind
-        source: "${POOL_DIR}"
-        target: "/pool"
-    networks:
-      - tactic-net
+    tactic_assistant:
+      build:
+        context: .
+        dockerfile: Dockerfile-assistant
+        args:
+          BASE_IMAGE: ${BASE_IMAGE}
+      profiles:
+        - build_project
+        - build_server_project
+        - build_non_base
+        - start_development
+        - start_project
+        - debug_host
+      labels:
+        project: tactic
+        my_id: assistant
+        owner: host
+        parent: host
+        other_name: assistant
+      image: bsherin/tactic-assistant:${IMG_SUFFIX}
+      platform: ${PLATFORM}
+      environment:
+        - PYTHONUNBUFFERED=0
+        - DEBUG=${DEBUG}
+        - RUNNING_ON_AWS=${RUNNING_ON_AWS}
+        - MY_ID=assistant
+        - OWNER=host
+        - PARENT=host
+        - DEVELOP=${DEVELOP}
+        - USE_GEVENT=False
+      volumes:
+        - type: bind
+          source: "/var/run/docker.sock"
+          target: "/var/run/docker.sock"
+      networks:
+        - tactic-net
 
-  tactic_pool_watcher_s3:
-    image: bsherin/tactic-pool-watcher-s3:${IMG_SUFFIX}
-    profiles:
-      - start_development
-      - build_server_project
-      - build_non_base
-      - debug_host
-    build:
-      context: .
-      dockerfile: Dockerfile-pool-watcher-s3
-      args:
-        BASE_IMAGE: ${BASE_IMAGE}
-    restart: always
-    container_name: pool_watcher_s3
-    init: true
-    platform: ${PLATFORM}
-    labels:
-      project: tactic
-      my_id: pool_watcher_s3
-      owner: host
-      parent: host
-      other_name: pool_watcher_s3
-    environment:
-      - RUNNING_ON_AWS=${RUNNING_ON_AWS}
-    networks:
-      - tactic-net
+    tactic_mongo_watcher:
+      image: bsherin/tactic-mongo-watcher:${IMG_SUFFIX}
+      build:
+        context: .
+        dockerfile: Dockerfile-mongo-watcher
+        args:
+          BASE_IMAGE: ${BASE_IMAGE}
+      profiles:
+        - start_project
+        - start_development
+        - build_project
+        - build_server_project
+        - build_non_base
+        - debug_host
+      restart: always
+      container_name: mongo_watcher
+      init: true
+      platform: ${PLATFORM}
+      labels:
+        project: tactic
+        my_id: mongo_watcher
+        owner: host
+        parent: host
+        other_name: mongo_watcher
+      environment:
+        - RUNNING_ON_AWS=${RUNNING_ON_AWS}
+      networks:
+        - tactic-net
 
-  tactic_main:
-    build:
-      context: .
-      dockerfile: Dockerfile-main
-      args:
-        BASE_IMAGE: ${BASE_IMAGE}
-    image: bsherin/tactic-main:${IMG_SUFFIX}
-    platform: ${PLATFORM}
-    labels:
-      project: tactic
-      my_id: main_service
-      owner: host
-      parent: host
-      other_name: main_service
-    profiles:
-      - build_project
-      - start_development
-      - build_server_project
-      - build_non_base
-      - debug_host
-    environment:
-      - USE_GEVENT=False
-      - DEBUG=${DEBUG}
-      - RUNNING_ON_AWS=${RUNNING_ON_AWS}
-    volumes:
-      - type: bind
-        source: "/var/run/docker.sock"
-        target: "/var/run/docker.sock"
-    networks:
-      - tactic-net
+    tactic_pool_watcher:
+      image: bsherin/tactic-pool-watcher:${IMG_SUFFIX}
+      profiles:
+        - build_project
+        - build_non_base
+      build:
+        context: .
+        dockerfile: Dockerfile-pool-watcher
+        args:
+          BASE_IMAGE: ${BASE_IMAGE}
+      restart: always
+      container_name: pool_watcher
+      init: true
+      platform: ${PLATFORM}
+      labels:
+        project: tactic
+        my_id: pool_watcher
+        owner: host
+        parent: host
+        other_name: pool_watcher
+      volumes:
+        - type: bind
+          source: "${POOL_DIR}"
+          target: "/pool"
+      networks:
+        - tactic-net
 
-  tactic_module_viewer:
-    build:
-      context: .
-      dockerfile: Dockerfile-module-viewer
-      args:
-        BASE_IMAGE: ${BASE_IMAGE}
-    platform: ${PLATFORM}
-    labels:
-      project: tactic
-      my_id: module_viewer
-      owner: host
-      parent: host
-      other_name: module_viewer
-    image: bsherin/tactic-module-viewer:${IMG_SUFFIX}
-    profiles:
-      - build_project
-      - build_server_project
-      - build_non_base
-      - start_development
-      - debug_host
-    environment:
-      - PYTHONUNBUFFERED=0
-      - OWNER=host
-      - PARENT=host
-      - USE_GEVENT=False
-      - RUNNING_ON_AWS=${RUNNING_ON_AWS}
-    networks:
-      - tactic-net
-  tactic_tile:
-    build:
-      context: .
-      dockerfile: Dockerfile-tile
-      args:
-        BASE_IMAGE: ${BASE_IMAGE}
-        WHEELS_IMAGE: ${WHEELS_IMAGE}
-    depends_on:
-      - tactic_wheels
-    image: bsherin/tactic-tile:${IMG_SUFFIX}
-    platform: ${PLATFORM}
-    profiles:
-      - build_project
-      - build_non_base
-    environment:
-      - HF_HOME=/var/cache/hf
-      - NLTK_DATA=/root/nltk
-      - MPLCONFIGDIR=/var/cache/matplotlib
-      - TORCH_HOME=/var/cache/torch
-      - PYTHONUNBUFFERED=0
-      - RUNNING_ON_AWS=${RUNNING_ON_AWS}
+    tactic_pool_watcher_s3:
+      image: bsherin/tactic-pool-watcher-s3:${IMG_SUFFIX}
+      profiles:
+        - start_development
+        - build_server_project
+        - build_non_base
+        - debug_host
+      build:
+        context: .
+        dockerfile: Dockerfile-pool-watcher-s3
+        args:
+          BASE_IMAGE: ${BASE_IMAGE}
+      restart: always
+      container_name: pool_watcher_s3
+      init: true
+      platform: ${PLATFORM}
+      labels:
+        project: tactic
+        my_id: pool_watcher_s3
+        owner: host
+        parent: host
+        other_name: pool_watcher_s3
+      environment:
+        - RUNNING_ON_AWS=${RUNNING_ON_AWS}
+      networks:
+        - tactic-net
+
+    tactic_main:
+      build:
+        context: .
+        dockerfile: Dockerfile-main
+        args:
+          BASE_IMAGE: ${BASE_IMAGE}
+      image: bsherin/tactic-main:${IMG_SUFFIX}
+      platform: ${PLATFORM}
+      labels:
+        project: tactic
+        my_id: main_service
+        owner: host
+        parent: host
+        other_name: main_service
+      profiles:
+        - build_project
+        - start_development
+        - build_server_project
+        - build_non_base
+        - debug_host
+      environment:
+        - USE_GEVENT=False
+        - DEBUG=${DEBUG}
+        - RUNNING_ON_AWS=${RUNNING_ON_AWS}
+      volumes:
+        - type: bind
+          source: "/var/run/docker.sock"
+          target: "/var/run/docker.sock"
+      networks:
+        - tactic-net
+
+    tactic_module_viewer:
+      build:
+        context: .
+        dockerfile: Dockerfile-module-viewer
+        args:
+          BASE_IMAGE: ${BASE_IMAGE}
+      platform: ${PLATFORM}
+      labels:
+        project: tactic
+        my_id: module_viewer
+        owner: host
+        parent: host
+        other_name: module_viewer
+      image: bsherin/tactic-module-viewer:${IMG_SUFFIX}
+      profiles:
+        - build_project
+        - build_server_project
+        - build_non_base
+        - start_development
+        - debug_host
+      environment:
+        - PYTHONUNBUFFERED=0
+        - OWNER=host
+        - PARENT=host
+        - USE_GEVENT=False
+        - RUNNING_ON_AWS=${RUNNING_ON_AWS}
+      networks:
+        - tactic-net
+    tactic_tile:
+      build:
+        context: .
+        dockerfile: Dockerfile-tile
+        args:
+          BASE_IMAGE: ${BASE_IMAGE}
+          WHEELS_IMAGE: ${WHEELS_IMAGE}
+      depends_on:
+        - tactic_wheels
+      image: bsherin/tactic-tile:${IMG_SUFFIX}
+      labels:
+        project: tactic
+        other_name: tile_service
+      platform: ${PLATFORM}
+      profiles:
+        - build_project
+        - build_non_base
+      environment:
+        - HF_HOME=/var/cache/hf
+        - NLTK_DATA=/root/nltk
+        - MPLCONFIGDIR=/var/cache/matplotlib
+        - TORCH_HOME=/var/cache/torch
+        - PYTHONUNBUFFERED=0
+        - RUNNING_ON_AWS=${RUNNING_ON_AWS}
 networks:
   tactic-net:
     driver: bridge
@@ -477,3 +526,4 @@ volumes:
   mongo-volume:
     external: true
   tactic-redis-data:
+  loki-data:

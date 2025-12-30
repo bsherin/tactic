@@ -1,11 +1,13 @@
 ARG BASE_IMAGE
 FROM ${BASE_IMAGE}
 WORKDIR /code
-ADD ./mongo_watcher_env/requirements.txt /code/requirements.txt
-RUN pip install -r requirements.txt
-ADD ./mongo_watcher_env /code
-ADD  ./shared_python/exception_mixin.py /code/
+ADD ./mongo_watcher_env/requirements.txt /code/mongo_watcher_env/requirements.txt
+RUN pip install -r /code/mongo_watcher_env/requirements.txt
+RUN pip install structlog python-json-logger
+ADD ./mongo_watcher_env /code/mongo_watcher_env
+ADD ./shared_python /code/shared_python
+ADD ./shared_mongo_python /code/shared_mongo_python
 LABEL maintainer="Bruce L Sherin"
-ADD ./shared_mongo_python/mongo_db_fs.py ./shared_python/rabbit_manage.py ./shared_python/aws_helpers.py ./shared_python/aws_detection.py /code/
 ENV PYTHONUNBUFFERED=1
-CMD ["python", "-u", "mongo_watcher.py"]
+ENV PYTHONPATH=/code:/code/mongo_watcher_env:/code/shared_python:/code/shared_mongo_python
+CMD ["python", "-u", "-m", "mongo_watcher_env.mongo_watcher"]

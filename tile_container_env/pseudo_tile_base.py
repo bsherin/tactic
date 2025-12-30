@@ -2,22 +2,17 @@ import sys, copy
 from io import StringIO
 import ast
 from bson.binary import Binary
-import os
 import importlib
 import re
 import types
 import pickle
-import pika
-from pickle import UnpicklingError
+from tactic_logging import log
 from tile_base import TileBase, _task_worthy, _task_worthy_manual_submit, _jsonizable_types
 from communication_utils import is_jsonizable, make_python_object_jsonizable, debinarize_python_object
 from document_object import DetachedTacticCollection
-from threading import Lock
 import threading
-from qworker_alt import stop_thread, debug_log
+from qworker_alt import stop_thread
 from qworker_alt import add_qw_pika_connection, simple_uid, close_connection
-import time
-import json
 from widgets import is_html_table_class
 
 ethread = None
@@ -177,21 +172,19 @@ class PseudoTileClass(TileBase):
                                 result[attr] = attr_val
                                 continue
                         try:
-                            debug_log("Found non jsonizable attribute " + attr)
+                            log.debug("Found non jsonizable attribute", attr=attr)
                             result["binary_attrs"].append(attr)
                             bser_attr_val = make_python_object_jsonizable(attr_val)
                             result[attr] = bser_attr_val
                             if is_jsonizable(bser_attr_val):
-                                print("new bser_attr_val is jsonizable")
+                                log.debug("new bser_attr_val is jsonizable", attr=attr)
                             else:
-                                print("new bser_attr_val is not jsonizable")
+                                log.debug("new bser_attr_val is not jsonizable", attr=attr)
                         except TypeError:
-                            print("got a TypeError")
+                            log.exception("Got a TypeError processing attr", attr=attr)
                             continue
                 except Exception as ex:
-                    error_string = self._handle_exception(ex, "Error compiling attr {}".format(attr),
-                                                          print_to_console=False)
-                    print(error_string)
+                    log.exception("Error compiling attr", attr=attr)
 
         result["tile_id"] = self._tworker.my_id  # I had to move this down here because it was being overwritten
         result["img_dict"] = make_python_object_jsonizable(self.img_dict)
@@ -207,13 +200,14 @@ class PseudoTileClass(TileBase):
         if "imports" in save_dict:
             for imp in save_dict["imports"]:
                 try:
-                    globals()[imp] = __import__(imp, globals(), locals(), [], -1)
-                except:
-                    print("problem importing " + str(imp))
+                    globals()[imp] = importlib.import_module(imp)
+                except Exception:
+                    log.warning("problem importing", imp=str(imp))
         if "img_dict" in save_dict:
             try:
                 self.img_dict = debinarize_python_object(save_dict["img_dict"])
             except Exception as ex:  # legacy if above fails
+                log.exception("debinarize failed for img_dict")
                 self.img_dict = {}
                 self._handle_exception(ex, "debinarizing failed for img_dict",
                                        print_to_console=True)
@@ -221,6 +215,7 @@ class PseudoTileClass(TileBase):
             try:
                 self._widgets = debinarize_python_object(save_dict["widgets"])
             except Exception as ex:
+                log.exception("debinarize failed for widgets")
                 self._wdigets = {}
                 self._handle_exception(ex, "debinarizing failed for widgets",
                                        print_to_console=True)
@@ -250,6 +245,7 @@ class PseudoTileClass(TileBase):
                         try:
                             decoded_val = debinarize_python_object(attr_val)
                         except Exception as ex:  # legacy if above fails
+                            log.exception("debinarize failed for attr", attr=ttr)
                             self._handle_exception(ex, "debinarizing failed for attr {}".format(attr),
                                                    print_to_console=True)
                             decoded_val = None
@@ -257,7 +253,7 @@ class PseudoTileClass(TileBase):
                     else:
                         globals()[attr] = attr_val
             except:
-                print("failed to recreate attribute " + attr)
+                log.exception("failed to recreate attribute", attr=attr)
         self._last_globals = self.get_user_globals()
         # self._main_id = os.environ["PARENT"]  # this is for backward compatibility with some old project saves
         return None
@@ -292,9 +288,7 @@ class PseudoTileClass(TileBase):
                 else:
                     user_globals.append([attr, type(attr_val).__name__])
             except Exception as ex:
-                error_string = self._handle_exception(ex, "Error getting attr {}".format(attr),
-                                                      print_to_console=False)
-                print(error_string)
+                log.exception("Error getting attr", attr=attr)
         return user_globals
 
     @_task_worthy
@@ -329,6 +323,7 @@ class PseudoTileClass(TileBase):
             result = self._get_type_info(pipe_value)
             result["success"] = True
         except Exception as Ex:
+            log.exception("Error in _get_export_info_thread")
             result = {"success": False,
                       "info_string": self._handle_exception(Ex, "", print_to_console=False)}
         data.update(result)
@@ -379,7 +374,7 @@ class PseudoTileClass(TileBase):
                     the_html += str(eval_result)
                     data.update({"success": True, "is_widget": False, "the_html": the_html})
             except Exception as ex:
-                print("error in _evaluate_export in tile_base")
+                log.excaption("Error in _eval_thread")
                 the_html = self.get_traceback_message(ex)
                 data.update({"success": False, "the_html": the_html, "is_widget": False})
 
@@ -504,10 +499,9 @@ class PseudoTileClass(TileBase):
             data["execution_count"] = self.execution_counter
             data["message"] = "success"
         except Exception as ex:
-            print(ex)
             data["execution_count"] = "*"
             data["message"] = self._handle_exception(ex, None, print_to_console=False)
-            print(data["message"])
+            log.exception("Error in exec thread")
         self._restore_base_stdout()
         self.emit_console_message("stopConsoleSpinner", data)
         current_globals = self.get_user_globals()
@@ -588,10 +582,10 @@ class PseudoTileClass(TileBase):
         global exec_queue
         global executing_console_id
         if ethread and ethread.is_alive():
-            print("exec_thread is alive, adding to queue")
+            log.debug("exec_thread is alive, adding to queue")
             exec_queue.append([self.exec_thread, copy.deepcopy(data)])
         else:
-            print("exec_thread is not alive, starting new thread")
+            log.debug("exec_thread is not alive, starting new thread")
             executing_console_id = data["console_id"]
             ethread = threading.Thread(target=self.exec_thread, args=[data], name=simple_uid())
             ethread.start()

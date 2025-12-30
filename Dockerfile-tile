@@ -24,11 +24,10 @@ RUN set -eu; \
       echo "No artifacts found in /wheelhouse"; \
     fi
 
+RUN pip install structlog python-json-logger
 ADD ./tactic_dark.mplstyle /usr/local/lib/python3.11/site-packages/matplotlib/mpl-data/stylelib/
-
-COPY ./tile_container_env ./shared_python/volume_manager.py ./shared_python/exception_mixin.py \
-     ./shared_python/qworker_alt.py ./shared_python/rabbit_manage.py ./shared_python/aws_detection.py \
-     ./shared_python/communication_utils.py ./shared_python/aws_helpers.py /code/
+ADD ./tile_container_env /code/tile_container_env
+ADD ./shared_python /code/shared_python
 
 RUN mkdir -p /root/nltk_data
 
@@ -44,5 +43,6 @@ ENV HF_HOME=/var/cache/hf \
 COPY entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
 ENTRYPOINT ["/app/entrypoint.sh"]
+ENV PYTHONPATH=/code:/code/tile_container_env:/code/shared_python:/code/shared_mongo_python
 
-CMD ["python", "-u", "tile_main.py"]
+CMD ["python", "-u", "-m", "tile_container_env.tile_main"]

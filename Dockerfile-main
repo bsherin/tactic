@@ -3,6 +3,7 @@ FROM ${BASE_IMAGE}
 WORKDIR /code
 ADD ./main_container_env/requirements.txt /code/main_container_env/requirements.txt
 RUN pip install -r /code/main_container_env/requirements.txt
+RUN pip install structlog python-json-logger
 LABEL maintainer="Bruce L Sherin"
 ADD ./main_container_env /code/main_container_env
 ADD ./shared_python /code/shared_python

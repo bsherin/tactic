@@ -1,23 +1,17 @@
 
-import re
-import sys
-import datetime
-import copy
-from flask import render_template, request, jsonify, url_for
+from flask import render_template, jsonify, url_for
 from flask_login import login_required, current_user
 from tactic_app import app
-from exception_mixin import generic_exception_handler
-import datetime
 from js_source_management import _develop, js_source_dict, css_source
+from utils import utcnow
 
-tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
+tstring = utcnow().strftime("%Y-%H-%M-%S")
 indent_unit = "    "
 
 
 @app.route('/show_history_viewer/<module_name>', methods=['get', 'post'])
 @login_required
 def show_history_viewer(module_name):
-    user_obj = current_user
     javascript_source = url_for('static', filename=js_source_dict["history_viewer_react"])
     return render_template("library/resource_viewer_react.html",
                            resource_name=module_name,
@@ -46,7 +40,6 @@ def get_api_dict():
 @app.route('/show_tile_differ/both_names/<module_name>/<second_module_name>')
 @login_required
 def show_tile_differ(module_name, second_module_name):
-    user_obj = current_user
     javascript_source = url_for('static', filename=js_source_dict["tile_differ_react"])
     return render_template("library/resource_viewer_react.html",
                            resource_name=module_name,

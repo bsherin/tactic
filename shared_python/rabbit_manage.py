@@ -2,7 +2,7 @@
 import pika
 import time
 import os
-import traceback
+from tactic_logging import log
 
 from aws_helpers import get_ssm_parameter, load_secret_json
 from aws_detection import on_aws
@@ -10,27 +10,23 @@ from aws_detection import on_aws
 
 service_names = ["host", "main_service", "log_streamer", "module_viewer"]
 
-print("entering rabbit_manage updated")
-
 use_gevent = os.environ.get("USE_GEVENT", "False").lower() == "true"
 
 if on_aws:
-    print("on aws")
+    log.info("on aws is true")
 
     RABBIT_HOST = get_ssm_parameter("RABBIT_HOST")
     SECRET_ARN = get_ssm_parameter("MQ_SECRET_ARN")
     REGION = get_ssm_parameter("MY_AWS_REGION")
-
-    print("using amazon mq with host:", RABBIT_HOST)
 
     creds = load_secret_json(SECRET_ARN)
 
     RABBIT_USER = creds["username"]
     RABBIT_PASS = creds["password"]
     RABBIT_PORT = 5672
-    print("using amazon mq with user:", RABBIT_USER)
+    log.info("using mq with host", rabbit_host=RABBIT_HOST)
 else:
-    print("not using amazon mq")
+    log.info("on_aws is false, using local rabbitmq")
     RABBIT_HOST = "megaplex"
     RABBIT_PORT = 5672
     RABBIT_USER = ""
@@ -44,7 +40,6 @@ SOCKETIO_OPTIONS = {
         # Transport (TCP) options for py-amqp
         "transport_options": {
             "socket_timeout": 30,  # read/write timeout
-            # Optional retry policy used by ensure_* helpers internally
             "retry_policy": {
                 "interval_start": 0,
                 "interval_step": 2,
@@ -62,8 +57,8 @@ def get_pika_connection():
     if on_aws:
         credentials = pika.PlainCredentials(RABBIT_USER, RABBIT_PASS)
         params = pika.ConnectionParameters(
-            host=RABBIT_HOST,  # was "megaplex"
-            port=RABBIT_PORT,  # TLS AMQP for Amazon MQ
+            host=RABBIT_HOST,
+            port=RABBIT_PORT,
             virtual_host="/",
             credentials=credentials,
             ssl_options=None,
@@ -106,27 +101,6 @@ def declare_regular_queue(channel, qname):
         exclusive=False
     )
 
-# def get_pika_connection_with_retries(retries=0, max_retries=MAX_PIKA_RETRIES):
-#     if use_gevent:
-#         import gevent
-#     try:
-#         connection, channel = get_pika_connection()
-#     except Exception as exc:
-#         print("Failed attempt to connect to pika")
-#         if retries > max_retries:
-#             print("giving up. No more processing of tasks by this qworker")
-#             print(get_traceback_message(exc, "Here's the error"))
-#             return None, None
-#         else:
-#             print("trying to connect to pika, sleeping ...")
-#             if not use_gevent:
-#                 time.sleep(3)
-#             else:
-#                 gevent.sleep(3)
-#             new_retries = retries + 1
-#             return get_pika_connection_with_retries(new_retries, max_retries)
-#     return connection, channel
-
 def get_pika_connection_with_retries(max_retries=None):
     if use_gevent:
         import gevent
@@ -136,44 +110,34 @@ def get_pika_connection_with_retries(max_retries=None):
         try:
             connection, channel = get_pika_connection()
             return connection, channel
-        except Exception as exc:
+        except Exception:
             attempt += 1
-            print("Failed attempt to connect to pika")
+            log.warning("Failed attempt to connect to pika")
 
             if max_retries is not None and attempt > max_retries:
-                print("giving up. No more processing of tasks by this qworker")
-                print(get_traceback_message(exc, "Here's the error"))
+                log.exception("giving up on connecting to pika")
                 return None, None
 
-            print("trying to connect to pika, sleeping ...")
+            log.info("trying to connect to pika, sleeping ...")
             if not use_gevent:
                 time.sleep(3)
             else:
                 gevent.sleep(3)
 
 
-def sleep_until_rabbit_alive(max_tries=20):
+def sleep_until_rabbit_alive(max_tries=100):
     if on_aws:
         return True
     from rabbitmq_admin import AdminAPI
     api = AdminAPI(url="http://megaplex:15672", auth=('guest', 'guest'))
-    print('got admin api')
-    ignore = ["aliveness-test", ""]
+    log.info('got admin api')
     for n in range(max_tries):
         if rabbit_alive(api):
             return True
         time.sleep(2)
-    print("** rabbit was never alive **")
+    log.error("** rabbit was never alive **")
     return False
 
-def get_traceback_message(e, special_string=None):
-    if special_string is None:
-        template = "An exception of type {0} occured. Arguments:\n{1!r}\n"
-    else:
-        template = special_string + "\n" + "An exception of type {0} occurred. Arguments:\n{1!r}\n"
-    error_string = template.format(type(e).__name__, e.args)
-    error_string += traceback.format_exc()
-    return error_string
 
 def rabbit_alive(api):
     try:

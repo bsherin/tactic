@@ -1,8 +1,5 @@
 
-from collections import OrderedDict
 from typing import Optional
-import copy
-
 
 class TileInfo:
     def __init__(self, ss, sid):

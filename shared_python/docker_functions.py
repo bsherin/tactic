@@ -6,15 +6,13 @@ import subprocess
 import re
 import pika
 import json
-import traceback
 from rabbit_manage import get_pika_connection_with_retries, declare_queue
 from aws_detection import on_aws
+from tactic_logging import log
 
 forwarder_address = None
 forwarder_id = None
 sys.stdout = sys.stderr
-
-print(os.environ)
 
 from aws_helpers import get_ssm_parameter
 
@@ -49,7 +47,7 @@ tactic_image_names = ["bsherin/tactic-tile", "bsherin/tactic-main",
 
 USE_ARM64 = get_ssm_parameter("USE_ARM64", default="False").lower() == "true"
 
-print("got use_arm64 is " + str(USE_ARM64))
+log.info("got use_arm64", use_army64=USE_ARM64)
 
 cli = docker.DockerClient(base_url='unix://var/run/docker.sock')
 
@@ -151,10 +149,9 @@ def create_container(image_name, container_name=None, network_mode="bridge", hos
         while not container.status == "running":
             retries += 1
             if retries > wait_retries:
-                print("container failed to start")
+                log.error("container failed to start", image_name=image_name, container_id=cont_id)
                 container.remove(force=True)
                 raise ContainerCreateError("Error creating container with image name " + str(image_name))
-            print("sleeping while waiting for container {} to run".format(str(cont_id)))
             time.sleep(0.1)
 
     return unique_id, cont_id
@@ -244,16 +241,15 @@ def get_container(tactic_id):
     if not summaries:
         return None
 
-    # If you guarantee uniqueness of my_id, just grab the first match
     cid = summaries[0].get("Id")
     if not cid:
         return None
 
-    # 2) Convert to a high-level Container with a guarded inspect
+    # Convert to a high-level container
     try:
         return cli.containers.get(cid)   # this does a single inspect
     except NotFound:
-        # It disappeared between list and get; that's fine—treat as not found
+        # It disappeared between list and get; treat as not found
         return None
 
 
@@ -291,24 +287,21 @@ def wait_until_stopped(tactic_id, wait_retries=30):
         container = get_container(tactic_id)
         retries += 1
         if retries > wait_retries:
-            print("container failed to stop")
+            log.error("container failed to stop", tactic_id=tactic_id)
             return
         time.sleep(0.1)
     return
 
 
 def wait_until_running(tactic_id, wait_retries=30):
-    print("in wait_until_running")
     container = get_container(tactic_id)
     retries = 0
     while not container.status == "running":
         retries += 1
         if retries > wait_retries:
-            print("container failed to start")
+            log.error("container failed to start", tactic_id=tactic_id)
             return
-        print("sleeping while waiting for container to run")
         time.sleep(0.1)
-    print("in wait_until_running")
     return
 
 
@@ -329,15 +322,6 @@ def get_log(tactic_id, since=None):
         return cont.logs(since=since)
     else:
         return cont.logs()
-
-def get_traceback_message(e, special_string=None):
-    if special_string is None:
-        template = "An exception of type {0} occured. Arguments:\n{1!r}\n"
-    else:
-        template = special_string + "\n" + "An exception of type {0} occurred. Arguments:\n{1!r}\n"
-    error_string = template.format(type(e).__name__, e.args)
-    error_string += traceback.format_exc()
-    return error_string
 
 import time
 import docker
@@ -369,7 +353,7 @@ def safe_remove(c, stop_timeout=10, retries=5, backoff=0.5):
                 try: c.kill()
                 except APIError:
                     pass
-            # wait until it is fully exited
+            # wait until it has exited
             try: c.wait()
             except APIError: pass
     except APIError:
@@ -410,14 +394,13 @@ def safe_remove(c, stop_timeout=10, retries=5, backoff=0.5):
 
 def destroy_container(tactic_id, notify=True):
     try:
-        print(f"destroying container ${tactic_id}")
+        log.info("destroying container", tactic_id=tactic_id)
         cont = get_container(tactic_id)
         message = None
         if cont is None:
-            print(f"container ${tactic_id} not found, but still need to deregister")
+            log.info("container not found, but still need to deregister", tactic_id=tactic_id)
             return 1
         else:
-            print(f"container ${tactic_id} found")
             cont_type = get_container_type(cont)
 
             if notify:
@@ -429,21 +412,20 @@ def destroy_container(tactic_id, notify=True):
                     message = "Container for tile {} has been destroyed".format(tile_name)
             err = safe_remove(cont)
             if err is not None:
-                print(f"Error removing container {tactic_id}: {err}")
+                log.error(f"Error removing container", tactic_id=tactic_id, err=err)
             ## cont.remove(force=True)
             cont_list = [tactic_id, tactic_id + "_wait"]
             if cont_type == "tile":
                 cont_list.append("kill_" + tactic_id)
             delete_list_of_queues(cont_list)
             if notify and message is not None and err is None:
-                print("about to send kill message")
                 data = {"content": message,
                         "title": "Killed Container",
                         "user_id": container_owner(cont)}
                 post_task_noqworker("host", "host", "add_error_drawer_entry_task", data)
             return 1
-    except Exception as ex:
-        print(get_traceback_message(ex, "got an exception in destroy_container"))
+    except Exception:
+        log.exception("exception in destroy_container")
         return -1
 
 
@@ -472,18 +454,18 @@ def destroy_child_containers(parent_id):
 def delete_list_of_queues(qlist,):
     connection, channel = get_pika_connection_with_retries()
     if connection is None:
-        print("couldn't connect to pika in delete_list_of_queues")
+        log.error("couldn't connect to pika in delete_list_of_queues")
         return
     for q in qlist:
         try:
             channel.queue_delete(queue=q)
         except:
-            print("problem deleting a queue")
+            log.exception("problem deleting a queue")
     connection.close()
 
-# noinspection PyArgumentEqualDefault
 def post_task_noqworker(source_id, dest_id, task_type, task_data=None):
     new_packet = {"source": source_id,
+                  "task_id": str(uuid.uuid4()),
                   "callback_type": "no_callback",
                   "status": "presend",
                   "dest": dest_id,
@@ -497,7 +479,7 @@ def post_task_noqworker(source_id, dest_id, task_type, task_data=None):
     try:
         connection, channel = get_pika_connection_with_retries()
         if connection is None:
-            print("could not connect to pika in post_task_noqworker")
+            log.error("could not connect to pika in post_task_noqworker")
             return
         declare_queue(channel, dest_id)
         # noinspection PyTypeChecker
@@ -511,6 +493,5 @@ def post_task_noqworker(source_id, dest_id, task_type, task_data=None):
                               body=json.dumps(new_packet))
         connection.close()
     except:
-        print("got an exception in post_task_noqworker trying to publish")
-
+        log.excpetion("got an exception in post_task_noqworker trying to publish")
     return

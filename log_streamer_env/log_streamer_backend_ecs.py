@@ -1,15 +1,12 @@
 import time
 import threading
-import os
 import re
 import boto3
 from botocore.exceptions import ClientError
 
 
 from aws_helpers import get_ssm_parameter
-from rabbit_manage import get_pika_connection_with_retries, declare_queue
-
-from qworker_alt import add_qw_pika_connection, close_connection, simple_uid
+from qworker_alt import close_connection, simple_uid
 
 
 region = get_ssm_parameter("MY_AWS_REGION")
@@ -77,10 +74,8 @@ def resolve_log_stream_for_task(task_arn, container_name=None):
     stream = f"{prefix}/{cd['name']}/{task_id}"
     return group, stream
 
-def get_container_log_ecs(cont_id, since=None):
-    print(f"in get_container_log_ecs with cont_id={cont_id}")
+def get_container_log_ecs(cont_id):
     arn = arn_from_id(cont_id)
-    print(f"got arn {arn}")
     group, log_stream = resolve_log_stream_for_task(arn)
     events = []
     next_token = None
@@ -99,7 +94,6 @@ def get_container_log_ecs(cont_id, since=None):
             break
         next_token = nt
 
-    # Print or return the combined log text
     text = "\n".join(e["message"].rstrip("\n") for e in events)
     return text
 
@@ -132,7 +126,6 @@ class ECSLogTailer:
 
 
     def send_fn(self, msg):
-        print("entering send_fn")
         if not msg.endswith("\n"):
             msg += "\n"
         base_data = {"console_message": "updateLog", "local_id": self.local_id,
@@ -147,7 +140,6 @@ class ECSLogTailer:
         next_token = None
         last_seen_ts = 0
         self.group, self.stream = resolve_log_stream_for_task(self.task_arn)
-        channel = add_qw_pika_connection()
 
         # Initial announcement (optional)
         self.send_fn(f"[log-tail] Following {self.group} :: {self.stream}")
@@ -213,7 +205,6 @@ class ECSLogTailer:
                         # Inactivity watchdog
                         quiet_for = time.time() * 1000 - last_seen_ts
                         if quiet_for >= inactivity_timeout_sec * 1000:
-                            print("closing because of inactivity timeout")
                             self.send_fn(f"No new logs for {inactivity_timeout_sec}s; ending stream.")
                             break
 

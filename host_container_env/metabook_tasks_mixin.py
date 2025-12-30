@@ -40,17 +40,12 @@ class MetabookTasksMixin:
 
     @task_worthy
     def update_metabook_task(self, data):  # This is called from the metabook viewer
-        try:
-            the_user = self.get_user_from_data(data)
-            metabook_name = data["metabook_name"]
-            new_metabook = data["new_metabook"]
-            the_user.update_metabook(metabook_name, new_metabook)
+        the_user = self.get_user_from_data(data)
+        metabook_name = data["metabook_name"]
+        new_metabook = data["new_metabook"]
+        the_user.update_metabook(metabook_name, new_metabook)
 
-            return {"success": True, "message": "metabook Successfully Saved", "alert_type": "alert-success"}
-        except Exception as ex:
-            msg = self.get_traceback_message(ex, "Unable to Update metabook.")
-            print(msg)
-            return {"success": False, "message": msg}
+        return {"success": True, "message": "metabook Successfully Saved", "alert_type": "alert-success"}
 
     @task_worthy
     def get_metabook_names_task(self, data):
@@ -120,22 +115,21 @@ class MetabookTasksMixin:
     @task_worthy
     def create_node_task(self, data):
         the_user = self.get_user_from_data(data)
-        type = data.get("type")
+        dtype = data.get("type")
         use = data.get("use")
         title = data.get("title", "")
         searchable_text = data.get("searchable_text", "")
         data_content = data.get("data", {})
 
-        _id = the_user.create_node(type, data_content, use, title, searchable_text)
+        _id = the_user.create_node(dtype, data_content, use, title, searchable_text)
         return {"success": True, "_id": str(_id)}
 
     @task_worthy
     def create_empty_node_in_metabook_task(self, data):
-        type = data.get("type")
+        dtype = data.get("type")
         meta_id = data.get("meta_id")
         index = data.get("index", None)
-        print(f"Creating empty node of type {type} in metabook {meta_id} at index {index}")
-        new_id = the_user.create_node(type, {}, meta_id)
+        new_id = the_user.create_node(dtype, {}, meta_id)
         if index is not None:
             result = the_user.insert_node_at_index(new_id, meta_id, index, False)
         else:

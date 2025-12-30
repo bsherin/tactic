@@ -1,5 +1,4 @@
 import re
-import os
 from datetime import datetime
 from aws_task_helpers import get_ssm_parameter
 
@@ -8,8 +7,10 @@ LIBRARY_CHUNK_SIZE = int(get_ssm_parameter("LIBRARY_CHUNK_SIZE", "25"))
 from qworker import task_worthy
 
 from docker_functions import cli, restart_container, destroy_container, container_id, container_owner
-from docker_functions import container_other_name, container_memory_usage
+from docker_functions import container_other_name
 from aws_detection import on_aws
+
+from exception_mixin import NotAuthorizedError
 
 from users import load_user
 
@@ -31,30 +32,26 @@ class ContainerTasksMixin:
         for iname in tactic_user_image_names:
             tactic_image_ids[iname] = cli.images.get(iname).id
         if not admin_user.username == "admin":
-            return {"success": False, "message": "not authorized", "alert_type": "alert-warning"}
-        try:
-            self.emit_status_message("removing user containers", admin_id)
-            all_containers = cli.containers.list(all=True)
-            for cont in all_containers:
-                if cont.attrs["Image"] == tactic_image_ids["bsherin/tactic-main"]:
-                    self.emit_status_message("removing main container " + cont.attrs["Name"], admin_id)
+            raise NotAuthorizedError()
+        self.emit_status_message("removing user containers", admin_id)
+        all_containers = cli.containers.list(all=True)
+        for cont in all_containers:
+            if cont.attrs["Image"] == tactic_image_ids["bsherin/tactic-main"]:
+                self.emit_status_message("removing main container " + cont.attrs["Name"], admin_id)
+                cont.remove(force=True)
+                continue
+            if cont.attrs["Image"] == tactic_image_ids["bsherin/tactic-tile"]:
+                the_id = container_id(cont)
+                if not the_id == "tile_test_container":
+                    self.emit_status_message("removing tile container " + cont.attrs["Name"], admin_id)
                     cont.remove(force=True)
-                    continue
-                if cont.attrs["Image"] == tactic_image_ids["bsherin/tactic-tile"]:
-                    the_id = container_id(cont)
-                    if not the_id == "tile_test_container":
-                        self.emit_status_message("removing tile container " + cont.attrs["Name"], admin_id)
-                        cont.remove(force=True)
-                    continue
-                if cont.attrs["Image"] == tactic_image_ids["bsherin/tactic-module-viewer"]:
-                    the_id = container_id(cont)
-                    if not the_id == "tile_test_container":
-                        self.emit_status_message("removing module viewer container " + cont.attrs["Name"], admin_id)
-                        cont.remove(force=True)
-                    continue
-        except Exception as ex:
-            msg =  self.get_traceback_message(ex, "Error clearing user containers")
-            return {"success": False, "message": msg, "alert_type": "alert-warning"}
+                continue
+            if cont.attrs["Image"] == tactic_image_ids["bsherin/tactic-module-viewer"]:
+                the_id = container_id(cont)
+                if not the_id == "tile_test_container":
+                    self.emit_status_message("removing module viewer container " + cont.attrs["Name"], admin_id)
+                    cont.remove(force=True)
+                continue
 
         self.emit_clear_status(admin_id)
         self.refresh_selector_list(admin_id)
@@ -65,13 +62,9 @@ class ContainerTasksMixin:
         admin_user = self.get_user_from_data(data)
         admin_id = data["user_id"]
         if not admin_user.username == "admin":
-            return {"success": False, "message": "not authorized", "alert_type": "alert-warning"}
-        try:
-            self.emit_status_message("Restarting the host container", admin_id)
-            restart_container("host")
-        except Exception as ex:
-            msg = self.get_traceback_message(ex, "Error resetting server")
-            return {"success": False, "message": msg, "alert_type": "alert-warning"}
+            raise NotAuthorizedError()
+        self.emit_status_message("Restarting the host container", admin_id)
+        restart_container("host")
 
         self.emit_clear_status(admin_id)
         self.refresh_selector_list(admin_id)
@@ -82,7 +75,7 @@ class ContainerTasksMixin:
         admin_user = self.get_user_from_data(data)
         target_value = data["target_value"]
         if not admin_user.username == "admin":
-            return {"success": False, "message": "not authorized", "alert_type": "alert-warning"}
+            raise NotAuthorizedError()
         self.tile_registry.set_desired_idle(target_value)
         return {"success": True, "message": "new idle value set", "alert_type": "alert-success"}
 
@@ -90,7 +83,7 @@ class ContainerTasksMixin:
     def get_desired_idle_tiles(self, data):
         admin_user = self.get_user_from_data(data)
         if not admin_user.username == "admin":
-            return {"success": False, "message": "not authorized", "alert_type": "alert-warning"}
+            raise NotAuthorizedError()
         val = self.tile_registry.desired_idle
         return {"success": True, "target_value": val}
 
@@ -100,15 +93,11 @@ class ContainerTasksMixin:
         cont_id = data["cont_id"]
         admin_id = data["user_id"]
         if not admin_user.username == "admin":
-            return {"success": False, "message": "not authorized", "alert_type": "alert-warning"}
-        try:
-            if self.tile_registry.exists(cont_id):
-                self.destroy_tile(cont_id, notify=False)
-            else:
-                destroy_container(cont_id)
-        except Exception as ex:
-            msg = self.get_traceback_message(ex, "Error killing container")
-            return {"success": False, "message": msg, "alert_type": "alert-warning"}
+            raise NotAuthorizedError()
+        if self.tile_registry.exists(cont_id):
+            self.destroy_tile(cont_id, notify=False)
+        else:
+            destroy_container(cont_id)
         self.refresh_selector_list(admin_id)
         return {"success": True, "message": "Container Destroeyd", "alert_type": "alert-success"}
 

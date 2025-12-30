@@ -2,13 +2,13 @@ import time
 
 from rabbit_manage import declare_durable_queue
 from rabbit_admin import list_queues
-from redis_tools import RedisManager, redis_client
 from service_registry import ServiceRegistry
 from aws_helpers import get_ssm_parameter
 from docker_functions import get_tile_container_ids
 import boto3
-import datetime
 from aws_detection import on_aws
+from tactic_logging import log
+from utils import utcnow
 
 # I'm leaving some of the desired idle logic in for test, non-aws for the purposes of testing it.
 
@@ -31,7 +31,7 @@ if on_aws:
 
 
     ECS_CLUSTER = get_ssm_parameter("ECS_CLUSTER", "tactic-cluster")
-    print("Using ECS tile pool with service:", TILE_SERVICE, "in cluster:", ECS_CLUSTER, "and region:", AWS_REGION)
+    log.info("Using ECS tile pool", service=TILE_SERVICE, cluster=ECS_CLUSTER, region=AWS_REGION)
     ecs = boto3.client("ecs", region_name=AWS_REGION)
     CW = boto3.client("cloudwatch", region_name=AWS_REGION)
     NS = "Tactic"
@@ -49,7 +49,6 @@ else:
 def publish_queue_metrics():
     queue_count = len(list_queues())
     r.set("metric:queue_count", queue_count)
-    print(f"got queue count {queue_count}")
     env = "prod"
 
     CW.put_metric_data(
@@ -60,7 +59,7 @@ def publish_queue_metrics():
                 "Dimensions": [
                     {"Name": "Environment", "Value": env},
                 ],
-                "Timestamp": datetime.datetime.utcnow(),
+                "Timestamp": utcnow(),
                 "Value": float(queue_count),
                 "Unit": "Count",
             }
@@ -126,11 +125,14 @@ class TileContainerRegistry(ServiceRegistry):
 
     def publish_metrics(self):
         if on_aws:
-            print("desired_idle:", self.desired_idle)
-            print("idle_tiles:", self.idle_tiles, "running_tiles:", self.running_tiles, )
             idle_deficit = max(0, self.desired_idle - self.idle_tiles)
             excess_idle = max(0, self.idle_tiles - self.desired_idle)
-            print("idle_deficit:", idle_deficit, "excess_idle:", excess_idle)
+            log.info("current metrics",
+                     desired_idle=self.desired_idle,
+                     idle_tiles=self.idle_tiles,
+                     running_tiles=self.running_tiles,
+                     idle_deficit=idle_deficit,
+                     excess_idle=excess_idle)
             CW.put_metric_data(
                 Namespace=NS,
                 MetricData=[
@@ -145,11 +147,13 @@ class TileContainerRegistry(ServiceRegistry):
                 ]
             )
         else:
-            print(f"Metrics publishing is disabled in non-ECS mode. {self.idle_tiles} idle tiles, {self.running_tiles} running tiles.")
+            log.info("current_metrics",
+                     idle_tiles=self.idle_tiles,
+                     running_tiles=self.running_tiles)
 
     def register_tile_heartbeat(self, tile_id, data=None):
         if not self.exists(tile_id) and not tile_id == "tile_test_container":
-            print(f"got a heartbeat from an undiscovered tile {tile_id}. will leave it to be discovered properly")
+            log.info("heartbeat from undiscovered tile", tile_id=tile_id)
             return
         self.set_container_info(tile_id, "last_heartbeat", str(time.time()))
         if data is not None:
@@ -179,7 +183,7 @@ class TileContainerRegistry(ServiceRegistry):
 
     def release_child_tiles(self, parent_id):
         tile_ids = self.get_children(parent_id)
-        print(f"releasing child tiles {str(tile_ids)}")
+        log.debug("releasing child tiles", tile_ids=tile_ids)
         for tile_id in tile_ids:
             self.worker.destroy_tile(tile_id)
 
@@ -270,14 +274,13 @@ class TileContainerRegistry(ServiceRegistry):
                 if on_aws:
                     task_arn = self.get_arn(tile_id)
                     if not self.is_task_running(task_arn): # Check if the task is actually running
-                        print(f"Task {task_arn} for tile {tile_id} is not actually running, skipping.")
+                        log.warning("Task not running for idle tile, deleting tile", tile_id=tile_id, task_arn=task_arn)
                         self.delete(tile_id)
                         continue
                     resp = self.set_task_protection(tile_id, force_busy=True)
                     if resp is None or ("failures" in resp and len(resp["failures"]) > 0):
-                        print(f"Failed to set task protection for tile {tile_id}, skipping.")
+                        log.warning("Failed to set task protection for tile", tile_id=tile_id, response=resp)
                         continue
-
                     self.mark_status(tile_id, "busy", **args)
                     return tile_id, self.get_arn(tile_id)
                 else:
@@ -322,38 +325,38 @@ class TileContainerRegistry(ServiceRegistry):
         )
 
     def reconcile_tiles(self):
-        print("***reconcile_tiles called***")
+        log.info("reconciling tiles")
         if self.worker.channel is None:
-            print("in reconcile_tiles, channel isn't ready yet")
+            log.debug("in reconcile_tiles, channel isn't ready yet")
             return
         if on_aws:
             tasks = self.list_running_tile_tasks()
             running_ids = [self.task_to_id(t) for t in tasks]
-            print("got running_ids", running_ids)
+            log.debug("ecs running_ids", running_ids=running_ids)
             for t in tasks:
                 tile_id = self.task_to_id(t)
                 if not self.exists(tile_id):
-                    print("discovered a new ecs tile:", tile_id)
+                    log.info("new ecs tile discoered", tile_id=tile_id)
                     self.mark_status(tile_id, "idle", **{
                         "task_arn": t["taskArn"],
                         "created": str(t["createdAt"])
                     })
         else:
             running_ids = self.list_docker_tile_containers()
-            print("got running_ids", running_ids)
+            log.debug("docker running_ids", running_ids=running_ids)
             for tile_id in running_ids:
                 if not self.exists(tile_id):
-                    print("discovered a new tile:", tile_id)
+                    log.info("new docker tile discovered", tile_id=tile_id)
                     self.mark_status(tile_id, "idle")
         ids_to_delete = []
         tile_ids = self.container_ids()
         if "tile_test_container" in tile_ids:
             tile_ids.remove("tile_test_container")
-        print("all tile_ids from redis are", tile_ids)
+        log.debug("all tile_ids from redis", tile_ids=tile_ids)
         for tile_id in tile_ids:
             cont_info = self.get_container_dict(tile_id)
             if tile_id not in running_ids:
-                print("found a tile that is no longer running")
+                log.info("found a tile that is no longer running")
                 if cont_info and cont_info["status"] == "busy":
                     if on_aws and cont_info.get("task_arn"):
                         exp = self.explain_stopped_task(cont_info.get("task_arn"))
@@ -370,17 +373,17 @@ class TileContainerRegistry(ServiceRegistry):
                 last_heartbeat = float(last_heartbeat_str)
                 now = time.time()
                 if (now - last_heartbeat) > TILE_HEARTBEAT_TIMEOUT_SECS:
-                    print("found a tile that has timed out")
+                    log.info("found a tile that has timed out")
                     ids_to_delete.append(tile_id)
                     self.notify_user_tile_lost(tile_id, reason="Tile heartbeat timeout.")
                     self.worker.destroy_tile(tile_id, notify=False, force_terminate=True)
 
-        print("ids_to_delete is", ids_to_delete)
+        log.debug("found ids_to_delete", ids_to_delete)
         for tile_id in ids_to_delete:
-            print("deleting tile:", tile_id)
+            log.info("deleting tile", tile_id)
             self.delete(tile_id)
             self.worker.channel.queue_delete(tile_id)
             self.worker.channel.queue_delete(f"kill_{tile_id}")
         if not self.reconciled_tiles:
-            print(f"*** did initial tile reconcile ***")
+            log.info("*** did initial tile reconcile ***")
             self.reconciled_tiles = True

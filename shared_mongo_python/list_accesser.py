@@ -1,5 +1,4 @@
 import re
-import datetime
 import copy
 from bson.objectid import ObjectId
 
@@ -113,7 +112,7 @@ class ListAccess(object):
         return tags
 
     def get_all_list_tags(self, show_hidden=True):
-        res_list = self.list_names_with_metadata
+        res_list = self.list_names_with_metadata()
         result = []
         for res_item in res_list:
             mdata = res_item[1]

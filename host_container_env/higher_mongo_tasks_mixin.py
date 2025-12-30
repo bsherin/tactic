@@ -1,5 +1,3 @@
-import os
-
 from qworker import task_worthy
 
 from mongo_accesser import res_types
@@ -45,30 +43,24 @@ class HigherMongoTasksMixin:
 
     @task_worthy
     def delete_resource_list_task(self, data):
-        print("in delete_resource_list")
-        try:
-            the_user = self.get_user_from_data(data)
-            res_list = data["resource_list"]
-            for row in res_list:
-                match row["res_type"]:
-                    case "collection":
-                        the_user.remove_collection(row["name"])
-                    case "project":
-                        the_user.remove_project(row["name"])
-                    case "tile":
-                        the_user.remove_tile(row["name"])
-                    case "list":
-                        the_user.remove_list(row["name"])
-                    case "code":
-                        the_user.remove_code(row["name"])
-                    case "metabook":
-                        the_user.remove_metabook(row["name"])
-            return {"success": True, "message": "Resource(s) successfully deleted",
-                            "alert_type": "alert-success"}
-
-        except Exception as ex:
-            msg = self.get_traceback_message(ex, "Error deleting resources")
-            return {"success": False, "message": msg, "alert_type": "alert-warning"}
+        the_user = self.get_user_from_data(data)
+        res_list = data["resource_list"]
+        for row in res_list:
+            match row["res_type"]:
+                case "collection":
+                    the_user.remove_collection(row["name"])
+                case "project":
+                    the_user.remove_project(row["name"])
+                case "tile":
+                    the_user.remove_tile(row["name"])
+                case "list":
+                    the_user.remove_list(row["name"])
+                case "code":
+                    the_user.remove_code(row["name"])
+                case "metabook":
+                    the_user.remove_metabook(row["name"])
+        return {"success": True, "message": "Resource(s) successfully deleted",
+                        "alert_type": "alert-success"}
 
     @task_worthy
     def grab_all_list_chunk_task(self, data):

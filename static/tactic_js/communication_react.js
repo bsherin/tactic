@@ -6,8 +6,6 @@ export {handleCallback, postAjax, postAjaxPromise, postWithCallback, postPromise
 
 let callbacks = {};
 
-let megaplex_port = "8085";
-
 function handleCallback(task_packet, room) {
     if (task_packet["room"] == room) {
         let task_id = task_packet.callback_id;
@@ -154,12 +152,14 @@ function postWithCallback(dest_id, task_type, task_data, callback_func, error_ca
     }
     const task_packet =  {
         "source": "client",
+        "task_id": guid(),
         "dest": dest_id,
         "task_type": task_type,
         "task_data": task_data,
         "response_data": null,
         "global_id": window.global_id,
-        "expiration": null
+        "expiration": null,
+        "request_id": guid()
     };
 
     task_packet.room = room == null ? window.global_id : room;

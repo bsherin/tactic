@@ -1,21 +1,30 @@
-import os
+from tactic_logging import log, setup_logging
 
-import threading
-import time
-import json
-from flask import Flask
-import exception_mixin
-from exception_mixin import ExceptionMixin
-from openai import OpenAI, AssistantEventHandler
-import openai
-from aws_helpers import get_ssm_parameter, resolve_task_identity
-from assistant_session import AssistantSessionAccessor, AssistantSessionStore
-from rabbit_manage import get_pika_connection_with_retries, declare_queue
-import pika
-print("Running OpenAI SDK version:", openai.__version__)
-print(openai.__file__)
+setup_logging("tactic_assistant")
+log.info("starting", extra_flag=True)
 
-from qworker import task_worthy, task_worthy_manual_submit, QWorker
+try:
+    import threading
+    import time
+    import json
+    from flask import Flask
+    import exception_mixin
+    from exception_mixin import ExceptionMixin
+    from openai import OpenAI, AssistantEventHandler
+    import openai
+    from aws_helpers import get_ssm_parameter, resolve_task_identity
+    from assistant_session import AssistantSessionAccessor, AssistantSessionStore
+    from rabbit_manage import get_pika_connection_with_retries, declare_queue
+    import pika
+
+    log.info("Running OpenAI SDK", version=openai.__version__, file=openai.__file__)
+
+    from qworker import task_worthy, task_worthy_manual_submit, QWorker
+
+except Exception:
+    log.exception("*** fatal error during imports in assistant ***")
+    log.critical("*** exiting assistant due to fatal error ***")
+    raise
 
 CLIENT_CACHE = {}
 
@@ -112,8 +121,8 @@ class Assistant(QWorker, ExceptionMixin, AssistantEventHandler):
             self.post_task("host", "get_openai_api_key", {"user_id": user_id}, got_key)
 
         except Exception as ex:
+            log.exception("Error starting session")
             res = self.get_traceback_exception_dict(ex, "Error starting session")
-            print(res["message"])
             return {"success": False, "message": res["message"], "status": "failed"}
 
     def ask_host(self, msg_type, task_data=None, callback_func=None):
@@ -146,7 +155,8 @@ class Assistant(QWorker, ExceptionMixin, AssistantEventHandler):
         sess.assistant_id = assistant_id
         return assistant_id
 
-    def initialize_assistant(self, chat_client):
+    @staticmethod
+    def initialize_assistant(chat_client):
         try:
             # print("Initializing assistant")
             # vector_store = chat_client.vector_stores.create(name="Tactic Docs")
@@ -170,7 +180,6 @@ class Assistant(QWorker, ExceptionMixin, AssistantEventHandler):
             instructions += "You can also assume that the user has access to the other objects Library, Tiles, Settings, Collection, and Pipes. "
             instructions += "Please format any equations in LaTeX format. The equations should be surrounded by double dollar signs."
             instructions += "Please also format inline equations in LaTex format. The equations should be surrounded by single dollar signs."
-            print("Created assistant instructions")
             chat_assistant = chat_client.beta.assistants.create(
                 name="Tactic Assistant",
                 instructions=instructions,
@@ -182,14 +191,12 @@ class Assistant(QWorker, ExceptionMixin, AssistantEventHandler):
                 #     },
                 # }
             )
-            print("Created assistant")
+            log.info("Created assistant")
             return chat_assistant.id
 
-        except Exception as ex:
-            res = self.get_traceback_exception_dict(ex, "Error initializing assistant")
-            print(res["message"])
+        except Exception:
+            log.exception("Error initializing assistant")
             return False
-        return True
 
     def get_thread_id(self, sid):
         sess = self.get_session(sid)
@@ -197,7 +204,7 @@ class Assistant(QWorker, ExceptionMixin, AssistantEventHandler):
             return sess.thread_id
         chat_client = self.get_client(sid)
         if chat_client is None:
-            print("No chat client available, cannot create thread")
+            log.error("No chat client available, cannot create thread")
             return None
         chat_thread = chat_client.beta.threads.create()
         sess.thread_id = chat_thread.id
@@ -214,9 +221,8 @@ class Assistant(QWorker, ExceptionMixin, AssistantEventHandler):
             try:
                 chat_client.beta.threads.delete(sess.thread_id)
                 sess.thread_id = None
-            except Exception as ex:
-                error_string = self.get_traceback_message(ex, "error deleting thread")
-                print(error_string)
+            except Exception:
+                log.exception("Error deleting thread")
         return {"success": True}
 
     @task_worthy
@@ -228,7 +234,7 @@ class Assistant(QWorker, ExceptionMixin, AssistantEventHandler):
         try:
             chat_client = self.get_client(sid)
             if chat_client is None:
-                print("no chat client")
+                log.error("get client returned None")
                 return {"success": True, "messages": []}
             messages = chat_client.beta.threads.messages.list(thread_id=sess.thread_id)
             mdict = messages.dict()
@@ -242,8 +248,8 @@ class Assistant(QWorker, ExceptionMixin, AssistantEventHandler):
                 result.append({"kind": kind, "text": txt})
             return {"success": True, "messages": result}
         except Exception as ex:
+            log.exception("Error getting past messages")
             res = self.get_traceback_exception_dict(ex, "Error getting past messages")
-            print(res["message"])
             return {"success": False, "message": res["message"], "messages": []}
 
     def handle_chat_request(self, sid, chat_client, assistant_id, thread_id):
@@ -263,15 +269,11 @@ class Assistant(QWorker, ExceptionMixin, AssistantEventHandler):
 
     @task_worthy
     def post_prompt_stream(self, data_dict, attempts=0):
-        print("got post prompt stream with data_dict: " + str(data_dict))
         sid = data_dict.get("local_id", None)
         sess = self.get_session(sid)
-        print("got session")
         try:
             chat_client = self.get_client(sid)
-            print("got chat client")
             assistant_id = self.get_assistant_id(sid)
-            print("got assistant id: " + str(assistant_id))
             thread_id = self.get_thread_id(sid)
             prompt = data_dict["prompt"]
             chat_client.beta.threads.messages.create(
@@ -284,20 +286,18 @@ class Assistant(QWorker, ExceptionMixin, AssistantEventHandler):
             return self.handle_chat_request(sid, chat_client, assistant_id, thread_id)
 
         except Exception as ex:
-            error_string = self.get_traceback_message(ex, "error posting prompt stream")
-            print(error_string)
-            res = self.get_traceback_exception_dict(ex, "Error posting to open ai")
             if attempts == 0:
                 self.clean_up_chat(sid)
                 attempts += 1
+                log.warning("Retrying post prompt stream after error", attempt=attempts)
                 return self.post_prompt_stream(data_dict, attempts)
+            log.exception("Error posting prompt stream")
             self.clean_up_chat(sid)
             self.emit_to_client("chat_status", {"status": "idle", "room": sid})
             return res
 
     @task_worthy
     def cancel_run_task(self, data):
-        print("got cancel run task")
         sid = data.get("local_id", None)
         if sid is not None:
             sess = self.get_session(sid)
@@ -329,27 +329,29 @@ class Assistant(QWorker, ExceptionMixin, AssistantEventHandler):
                 try:
                     if sess.thread_id is not None:
                         self.chat_client.beta.threads.delete(sess.thread_id)
-                except Exception as ex:
-                    error_string = self.extract_short_error_message(ex, "error deleting thread")
-                    print(error_string)
+                except Exception:
+                    log.exception("Error deleting thread")
                 try:
                     if self.chat_assistant is not None:
                         self.chat_client.beta.assistants.delete(sess.assistant_id)
-                except Exception as ex:
-                    error_string = self.extract_short_error_message(ex, "error deleting assistant")
-                    print(error_string)
-        except ExceptionMixin as ex:
-            error_string = self.get_traceback_message(ex, "error cleaning up chat")
-            print(error_string)
+                except Exception:
+                    log.exception("Error deleting assistant")
+        except Exception:
+            log.exception("Error cleaning up chat")
         return
 
 if __name__ == "__main__":
-    app = Flask(__name__)
-    exception_mixin.app = app
-    print("entering main")
-    mworker = Assistant()
-    print("assistant is created, about to start my_id is " + str(mworker.my_id))
-    mworker.start()
-    print("mworker started, my_id is " + str(mworker.my_id))
+    try:
+        app = Flask(__name__)
+        exception_mixin.app = app
+        log.info("entering main")
+        mworker = Assistant()
+        log.info("assistant created", my_id=mworker.my_id)
+        mworker.start()
+        log.info("mworker started", my_id=mworker.my_id)
+    except Exception:
+        log.exception("*** fatal error starting assistant ***")
+        log.critical("*** exiting due to fatal error ***")
+        raise
     while True:
         time.sleep(1000)

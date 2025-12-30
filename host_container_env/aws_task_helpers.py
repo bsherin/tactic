@@ -1,5 +1,5 @@
 
-import os, time, uuid, json
+import os, time, uuid
 import boto3
 from botocore.config import Config
 from aws_helpers import get_ssm_parameter
@@ -138,6 +138,6 @@ def run_tile_on_ecs(
         raise ECSTileError(f"Tile task stopped early: {reason}")
 
     # Prefer private IP for intra-VPC; use public if you actually need it
-    ip = priv_ip or pub_ip or ""
+    # ip = priv_ip or pub_ip or ""
 
     return unique_id, task_arn

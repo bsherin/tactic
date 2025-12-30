@@ -1,20 +1,14 @@
-from qworker import QWorker, task_worthy, task_worthy_manual_submit, current_timestamp, debug_log
-from flask import render_template, url_for
+from qworker import QWorker, task_worthy, task_worthy_manual_submit
+from flask import render_template
 from flask_login import current_user
 
 from users import load_user, user_data_fields, User
 import gevent
 from bson import ObjectId
-from communication_utils import make_python_object_jsonizable
-from communication_utils import make_jsonizable_and_compress
-import docker_functions
-from docker_functions import destroy_container, destroy_child_containers, destroy_user_containers
-from docker_functions import get_log, restart_container, container_exists
-from docker_functions import get_matching_user_containers, get_container, get_user_assistant
+from docker_functions import destroy_container, destroy_user_containers
+from docker_functions import get_matching_user_containers
 from tactic_app import app, socketio
-from redis_tools import redis_client
-import datetime
-from mongo_accesser import bytes_to_string, MongoAccessException
+from mongo_accesser import MongoAccessException
 import tactic_app
 import uuid
 import sys
@@ -41,10 +35,12 @@ from docker_tile_backend import DockerTileBackend
 from registries import TileContainerRegistry, MainContainerRegistry, ModuleViewerRegistry, publish_queue_metrics
 from client_session import ClientSessionRegistry
 from tile_container_management_mixin import TileContainerManagementMixin
-from redis_tools import RedisManager, redis_client
+from redis_tools import redis_client
 from loaded_tile_management import loaded_tile_manager
 from aws_helpers import get_ssm_parameter
 from aws_detection import on_aws
+from tactic_logging import log, bind_request, new_task_id
+from utils import utcnow
 
 loaded_tile_manager.delete_all()
 
@@ -53,10 +49,7 @@ use_s3 = get_ssm_parameter("USE_S3", "true").lower() == "true"
 utility_interval = int(get_ssm_parameter("HOST_UTILITY_INTERVAL_SECS", 60))
 publishing_interval = int(get_ssm_parameter("METRIC_PUBLISH_INTERVAL_SECS", 180))
 
-if use_s3:
-    from pool_backend_ecs import PoolBackendECS
-else:
-    from pool_backend import PoolBackend
+from pool_backend_ecs import PoolBackendECS
 
 myport = os.environ.get("MYPORT")
 
@@ -79,21 +72,22 @@ class HostUtilityWorker:
             time.sleep(interval)
 
     def do_utilities(self):
-        if self.worker.channel is None:
-            print("pika channel not ready yet in do_utilities")
-            return
-        self.worker.client_session_registry.registry_heartbeat()
-        self.worker.main_registry.registry_heartbeat()
-        self.worker.module_viewer_registry.registry_heartbeat()
+        with bind_request(new_task_id(), "ad_hoc", "do_utilities"):
+            if self.worker.channel is None:
+                log.warning("pika channel not ready yet in do_utilities")
+                return
+            self.worker.client_session_registry.registry_heartbeat()
+            self.worker.main_registry.registry_heartbeat()
+            self.worker.module_viewer_registry.registry_heartbeat()
 
-        self.worker.publish_metrics()
-        current_gobal_ids = self.worker.client_session_registry.get_open_sessions()
-        if not current_gobal_ids == self.last_global_ids:
-            self.last_global_ids = current_gobal_ids
-            self.worker.post_task("main_service", "updated_global_ids", {"global_ids": self.last_global_ids})
-            self.worker.post_task("module_viewer", "updated_global_ids", {"global_ids": self.last_global_ids})
-            self.worker.post_task("assistant", "updated_global_ids", {"global_ids": self.last_global_ids})
-        self.worker.tile_registry.registry_heartbeat()
+            self.worker.publish_metrics()
+            current_gobal_ids = self.worker.client_session_registry.get_open_sessions()
+            if not current_gobal_ids == self.last_global_ids:
+                self.last_global_ids = current_gobal_ids
+                self.worker.post_task("main_service", "updated_global_ids", {"global_ids": self.last_global_ids})
+                self.worker.post_task("module_viewer", "updated_global_ids", {"global_ids": self.last_global_ids})
+                self.worker.post_task("assistant", "updated_global_ids", {"global_ids": self.last_global_ids})
+            self.worker.tile_registry.registry_heartbeat()
 
     def start(self):
         socketio.start_background_task(target=self.utility_loop)
@@ -114,11 +108,10 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
 
         if on_aws:
             self.tile_backend = ECSTileBackend(self.tile_registry, self)
-            self.pool_backend = PoolBackendECS()
         else:
             self.tile_backend = DockerTileBackend(self.tile_registry, self)
-            self.pool_backend = PoolBackendECS()
 
+        self.pool_backend = PoolBackendECS()
 
         if self.my_id == "host5000":
             self.clear_session_storage()
@@ -177,7 +170,8 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         data = {"title": title, "content": content}
         socketio.emit("add-error-drawer-entry", data, namespace='/main', room=user_id)
 
-    def refresh_selector_list(self, user_id):
+    @staticmethod
+    def refresh_selector_list(user_id):
         socketio.emit("refresh-selector", {},
                       namespace='/main', room=user_id)
 
@@ -239,21 +233,18 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         return {"success": True, "module_name": module_name}
 
     @task_worthy
-    def get_handler_methods(self, data):
+    def get_handler_methods(self, _data):
         from tactic_app import handler_methods
-        print(str(handler_methods))
         return {"success": True, "handler_methods": handler_methods}
 
     @task_worthy
     def register_tile_heartbeat(self, data):
-        print("register_tile_heartbeat called with data: {}".format(data))
         tile_id = data["tile_id"]
         self.tile_registry.register_tile_heartbeat(tile_id, data)
         cont_dict = self.tile_registry.get_container_dict(tile_id)
         if "parent" not in cont_dict:
             return
         local_id = cont_dict["parent"]
-        print("Tile container dict: {}".format(cont_dict))
         if cont_dict.get("status", "") == "busy":
             msg = {
                 "memory_usage": data.get("memory_usage_mb", 0),
@@ -382,59 +373,58 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
             result[old_tile_id] = loaded_tile_manager.get_tile_code(tile_type, user_obj.username)
         return result
 
-    def update_selector_row(self, res_dict, the_user):
+    @staticmethod
+    def update_selector_row(res_dict, the_user):
         socketio.emit("update-selector-row", res_dict,
                       namespace='/main', room=the_user.get_id())
 
-    def update_repository_selector_row(self, res_dict):
+    @staticmethod
+    def update_repository_selector_row(res_dict):
         socketio.emit("update-repository-selector-row", res_dict,
                       namespace='/main', room="repository-events")
 
     @task_worthy
     def mongo_event(self, data):
-        try:
-            event_type = data["event_type"]
-            username = data["username"]
-            res_type = data["res_type"]
-            if res_type == "user":
-                return {"success": True}
-            _id = ObjectId(data["id"])
+        event_type = data["event_type"]
+        username = data["username"]
+        res_type = data["res_type"]
+        if res_type == "user":
+            return {"success": True}
+        _id = ObjectId(data["id"])
 
-            user_obj = User.get_user_by_username(username)
-            if event_type == "delete":
-                doc_name = ""
+        user_obj = User.get_user_by_username(username)
+        if event_type == "delete":
+            doc_name = ""
+            mdata = {}
+            file_id = None
+        else:
+            doc = user_obj.get_resource_doc_from_id(res_type, _id)
+            nfield = getattr(user_obj, f"{res_type}_name_field")
+            doc_name = doc[nfield]
+            if "metadata" in doc:
+                mdata = doc["metadata"]
+            else:
                 mdata = {}
-                file_id = None
-            else:
-                doc = user_obj.get_resource_doc_from_id(res_type, _id)
-                nfield = getattr(user_obj, f"{res_type}_name_field")
-                doc_name = doc[nfield]
-                if "metadata" in doc:
-                    mdata = doc["metadata"]
-                else:
-                    mdata = {}
-                file_id = doc.get("file_id", None)
-            rdict = user_obj.build_res_dict(doc_name, mdata, file_id, res_type=data["res_type"], doc_id=str(_id))
-            rdict["event_type"] = event_type
-            self.update_selector_row(rdict, user_obj)
-            if "mdata_uid" in mdata:
-                mdata_uid = mdata["mdata_uid"]
-            else:
-                mdata_uid = ""
-            socketio.emit("resource-updated", {
-                "user_id": user_obj.get_id(),
-                "res_type": res_type,
-                "res_name": doc_name,
-                "mdata_uid": mdata_uid
-            }, namespace='/main', room=user_obj.get_id())
-            if username == "repository":
-                self.update_repository_selector_row(rdict)
-            user_id =  user_obj.get_id()
-            if event_type == "update" and res_type == "tile":
-                socketio.emit('tile-source-change', {'user_id': user_id, 'tile_type': doc_name},
-                              namespace='/main', room=user_id)
-        except Exception as ex:
-            print(self.handle_exception(ex, "Error in mongo_event"))
+            file_id = doc.get("file_id", None)
+        rdict = user_obj.build_res_dict(doc_name, mdata, file_id, res_type=data["res_type"], doc_id=str(_id))
+        rdict["event_type"] = event_type
+        self.update_selector_row(rdict, user_obj)
+        if "mdata_uid" in mdata:
+            mdata_uid = mdata["mdata_uid"]
+        else:
+            mdata_uid = ""
+        socketio.emit("resource-updated", {
+            "user_id": user_obj.get_id(),
+            "res_type": res_type,
+            "res_name": doc_name,
+            "mdata_uid": mdata_uid
+        }, namespace='/main', room=user_obj.get_id())
+        if username == "repository":
+            self.update_repository_selector_row(rdict)
+        user_id =  user_obj.get_id()
+        if event_type == "update" and res_type == "tile":
+            socketio.emit('tile-source-change', {'user_id': user_id, 'tile_type': doc_name},
+                          namespace='/main', room=user_id)
         return {"success": True}
 
     @task_worthy
@@ -467,7 +457,8 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
                 destroy_container(container_id)
         return {"success": True}
 
-    def get_tile_types(self, user_id):
+    @staticmethod
+    def get_tile_types(user_id):
         the_user = load_user(user_id)
         tile_types = loaded_tile_manager.get_categorized_available_tile_types(the_user.username)
         icon_dict = {}
@@ -518,7 +509,7 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         return {"success": True}
 
     @task_worthy
-    def get_api_dict_task(self, data):
+    def get_api_dict_task(self, _data):
         from integrated_docs import api_dict_by_category, api_dict_by_name, ordered_api_categories
         from integrated_docs import object_api_dict_by_category, ordered_object_categories
         return {"success": True, "api_dict_by_name": api_dict_by_name,
@@ -531,7 +522,7 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
     def print_to_console(self, data):
         user_id = data["user_id"]
         user_obj = load_user(user_id)
-        user_tstring = user_obj.get_timestrings(datetime.datetime.utcnow())[0]
+        user_tstring = user_obj.get_timestrings(utcnow())[0]
         console_text = data["message"]
         unique_id = str(uuid.uuid4())
         if data["is_error"]:
@@ -562,7 +553,7 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         return {"success": True}
 
     @task_worthy
-    def get_open_client_sessions_task(self, data):
+    def get_open_client_sessions_task(self, _data):
         open_client_sessions = self.client_session_registry.get_open_client_sessions()
         return {"success": True, "open_sessions": open_client_sessions}
 
@@ -614,7 +605,7 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
     def print_link_area_to_console(self, data):
         user_id = data["user_id"]
         user_obj = load_user(user_id)
-        user_tstring = user_obj.get_timestrings(datetime.datetime.utcnow())[0]
+        user_tstring = user_obj.get_timestrings(utcnow())[0]
         unique_id = str(uuid.uuid4())
         summary_text = "text item " + user_tstring
         data["message"] = {"unique_id": unique_id,
@@ -701,6 +692,7 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
             super(HostWorker, self).handle_event(task_packet)
         else:
             if not self.channel:
+                log.warning("Host channel not ready; dropping client post", dest_id=dest_id)
                 return
             self.post_packet(dest_id, task_packet, reply_to="host", callback_id=task_packet["callback_id"])
         return
@@ -715,28 +707,31 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         else:
             super(HostWorker, self).handle_response(task_packet)
 
-    def handle_client_response(self, task_packet):
-        print("Handling client response for task type {}".format(task_packet["task_type"]))
-        try:
-            if "room" in task_packet:
-                room = task_packet["room"]
-            else:
-                room = task_packet["global_id"]
-                task_packet["room"] = room
-            if "namespace" in task_packet:
-                namespace = task_packet["namespace"]
-            else:
-                namespace = "/main"
-            socketio.emit("handle-callback", task_packet, namespace=namespace, room=room)
-        except Exception as ex:
-            special_string = "Error handling callback for task type {} for my_id {}".format(task_packet["task_type"],
-                                                                                            self.my_id)
-            self.handle_exception(ex, special_string)
-        return
+    @staticmethod
+    def handle_client_response(task_packet):
+        from tactic_app import socketio
+        task_id = task_packet.get("task_id") or new_task_id()
+        with bind_request(task_id, "handling_client_response", task_packet.get("task_type", "unknown")):
+            try:
+                log.info("handle_client_response")
+                if "room" in task_packet:
+                    room = task_packet["room"]
+                else:
+                    room = task_packet["global_id"]
+                    task_packet["room"] = room
+                if "namespace" in task_packet:
+                    namespace = task_packet["namespace"]
+                else:
+                    namespace = "/main"
+                socketio.emit("handle-callback", task_packet, namespace=namespace, room=room)
+            except Exception:
+                special_string = "Error handling callback for task type"
+                log.exception(special_string)
+            return
 
-print("creating host worker")
+log.info("creating host worker")
 tactic_app.host_worker = HostWorker()
 tactic_app.utility_worker = HostUtilityWorker(tactic_app.host_worker)
-print("starting host worker")
+log.info("starting host worker")
 tactic_app.host_worker.start()
 tactic_app.utility_worker.start()

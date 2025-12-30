@@ -1,15 +1,15 @@
 
 import redis
 import json
-import os
 import re
 from redis.exceptions import ConnectionError, TimeoutError
 import threading
 import time
 from aws_helpers import get_ssm_parameter
 from aws_detection import on_aws
+from tactic_logging import log
 
-print("getting redis client")
+log.info("getting redis client")
 
 if on_aws:
     REDIS_HOST = get_ssm_parameter("REDIS_HOST")
@@ -17,7 +17,6 @@ if on_aws:
 
     MESSAGE_QUEUE = message_queue=f"redis://{REDIS_HOST}:{REDIS_PORT}"
     USE_SSL = False
-    print("got message queue:", MESSAGE_QUEUE)
 else:
     REDIS_HOST = "tactic-redis"
     REDIS_PORT = 6379
@@ -60,7 +59,6 @@ class ResilientRedisClient:
         self._client = self._create_client()
 
     def _create_client(self) -> redis.Redis:
-        # You can tune these timeouts if you like
         return redis.Redis(
             host=self._host,
             port=self._port,
@@ -90,7 +88,6 @@ class ResilientRedisClient:
         underlying_attr = getattr(self._client, name)
 
         if not callable(underlying_attr):
-            # e.g. .connection_pool – just return it directly
             return underlying_attr
 
         def wrapped(*args, **kwargs):
@@ -110,8 +107,7 @@ class ResilientRedisClient:
 
         return wrapped
 
-
-# This line replaces your old redis.Redis(...) global
+log.info("creating redis client", host=REDIS_HOST, port=REDIS_PORT)
 redis_client = ResilientRedisClient(
     host=REDIS_HOST,
     port=REDIS_PORT,

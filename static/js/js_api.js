@@ -1,3 +1,14 @@
+function guid() {
+    function s4() {
+        return Math.floor((1 + Math.random()) * 0x10000)
+            .toString(16)
+            .substring(1);
+    }
+
+    return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+        s4() + '-' + s4() + s4() + s4();
+}
+
 function postNoCallback(dest_id, task_type, task_data, special_main_id=null){
     const task_packet =  {
         "source": "client",
@@ -6,7 +17,8 @@ function postNoCallback(dest_id, task_type, task_data, special_main_id=null){
         "task_data": task_data,
         "response_data": null,
         "main_id": special_main_id ? special_main_id : window.main_id,
-        "expiration": null
+        "expiration": null,
+        "request_id": guid(),
     };
 
     task_packet.callback_id = null;

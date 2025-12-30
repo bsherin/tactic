@@ -1,7 +1,6 @@
-# These classes provide a more natural interface for getting and setting data in a project collection
+
 
 import copy
-# noinspection PyPackageRequirements
 import pandas as _pd
 
 from aws_helpers import get_ssm_parameter
@@ -535,7 +534,8 @@ class TacticDocument:
     def _r_in_chunk(self, r):
         return (r >= self._current_chunk_start) and (r < self._current_chunk_start + COLLECTION_CHUNK_SIZE)
 
-    def _get_chunk_start(self, r):
+    @staticmethod
+    def _get_chunk_start(r):
         return int(r / COLLECTION_CHUNK_SIZE) * COLLECTION_CHUNK_SIZE
 
     def _relative_r(self, r):
@@ -869,7 +869,6 @@ class TacticCollection:
             return
         else:
             self._collection_info = _tworker.tile_instance.get_collection_info()
-            print('got doc type {}'.format(self._doc_type))
             self._doc_names = list(self._collection_info.keys())
             self._number_docs = len(self._doc_names)
             self._grab_all_docs = grab_all_docs
@@ -899,7 +898,8 @@ class TacticCollection:
     def document_names(self):
         return self._doc_names
 
-    def matching_documents(self, filter_function):
+    @staticmethod
+    def matching_documents(filter_function):
         return _tworker.tile_instance.get_matching_documents(filter_function)
 
     @property

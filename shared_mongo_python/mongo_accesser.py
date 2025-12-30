@@ -1,11 +1,7 @@
 import re
 import datetime
 from datetime import datetime, timezone
-import zlib
-from bson import ObjectId
-from communication_utils import debinarize_python_object, make_jsonizable_and_compress
-
-import traceback
+from tactic_logging import log
 
 name_keys = {"tile": "tile_module_name", "list": "list_name", "collection": "collection_name",
              "project": "project_name", "code": "code_name", "metabook": "metabook_name"}
@@ -51,8 +47,6 @@ class MongoAccess(object):
         if re.search("(^|/| )hidden($|/| )", tag_string):
             return True
         return False
-
-    import re
 
     def grab_filtered_resources(self, res_type, col_name, name_field, content_field, additional_mdata_fields,
                                 search_text, search_spec, columns, is_repo=False):
@@ -151,11 +145,10 @@ class MongoAccess(object):
                 rdict["hidden"] = self.has_hidden(tags_str) if isinstance(tags_str, str) else False
                 filtered_res.append(rdict)
 
-            except Exception as ex:
+            except Exception:
                 # be careful not to KeyError while composing the error message
                 safe_name = doc.get(name_field) if _ok_field(name_field) else None
-                msg = self.get_traceback_message(ex, f"Got problem with doc {safe_name!r}")
-                print(msg)
+                log.exception("Problem processing document", name=safe_name)
 
         return filtered_res, all_tags
 
@@ -292,6 +285,7 @@ class MongoAccess(object):
             return_data["size"] = size_text
         else:
             size = 0
+        sf_value = None
         if sort_field is not None:
             match sort_field:
                 case "created":

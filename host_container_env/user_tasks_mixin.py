@@ -1,11 +1,14 @@
 import re
-import os
 
 from qworker import task_worthy
 from users import User
 from aws_helpers import get_ssm_parameter
+from exception_mixin import NotAuthorizedError
 
 LIBRARY_CHUNK_SIZE = int(get_ssm_parameter("LIBRARY_CHUNK_SIZE", "25"))
+
+class DatabaseCreationError(Exception):
+    pass
 
 class UserTasksMixin:
 
@@ -21,7 +24,7 @@ class UserTasksMixin:
         admin_user = self.get_user_from_data(data)
         true_id = data["true_id"]
         if not (admin_user.username == "admin"):
-            return {"success": False, "message": "not authorized", "alert_type": "alert-warning"}
+            raise NotAuthorizedError()
         if true_id == admin_user.get_true_id():
             return {"success": False, "message": "Don't delete the admin user!", "alert_type": "alert-warning"}
         username = self.get_username_true_id(true_id)
@@ -35,7 +38,7 @@ class UserTasksMixin:
         true_id = data["true_id"]
         admin_user = self.get_user_from_data(data)
         if not (admin_user.username == "admin"):
-            return {"success": False, "message": "not authorized", "alert_type": "alert-warning"}
+            raise NotAuthorizedError()
         result = self.bump_user_alt_id(true_id, admin_user)
         return result
 
@@ -62,7 +65,7 @@ class UserTasksMixin:
     def bump_all_alt_ids(self, data):
         admin_user = self.get_user_from_data(data)
         if not (admin_user.username == "admin"):
-            return {"success": False, "message": "not authorized", "alert_type": "alert-warning"}
+            raise NotAuthorizedError()
         docs = db["user_collection"].find({})
         failed_bumps = []
         for doc in docs:
@@ -116,7 +119,8 @@ class UserTasksMixin:
             selected_user.copy_between_accounts(self.repository_user, selected_user, "tile", tname, tname)
         return {"success": True, "message": "added {} tiles".format(len(missing_tiles))}
 
-    def build_user_res_dict(self, user):
+    @staticmethod
+    def build_user_res_dict(user):
         larray = ["_id", "username", "full_name", "last_login", "email", "alt_id", "status"]
         urow = {}
         for field in larray:
@@ -186,53 +190,43 @@ class UserTasksMixin:
                     repository_user.copy_between_accounts(repository_user, seed_user, res_type, rname, rname)
             admin_result = User.create_new({"username": "admin", "password": "abcd"}, seed_db)
             if not admin_result["success"]:
-                print("failed to create admin user in seed db")
-                return jsonify({"success": False, "message": "Failed to create admin user."})
+                raise DatabaseCreationError("failed to create admin user in seed db")
 
             return {"success": True, "message": "Created seed database."}
         else:
-            print("failed to create seed user in seed db")
-            return {"success": False, "message": "Failed to create seed user."}
+            raise DatabaseCreationError("failed to create seed user in seed db")
 
     @task_worthy
     def create_user_database(self, data):
         target_user_id = data["userid"]
         admin_user = self.get_user_from_data(data)
-        print("in create_user_database")
         from mongo_db_fs import get_dump_dbs
         username = self.get_username_true_id(target_user_id)
         if username is None:
             return {"success": False, "message": "user not found."}
         if admin_user.username == "admin":
-            print("got the admin user")
             dump_db, dump_fs = get_dump_dbs(f"{username}_db")
-            print("got dump db and fs")
             result_dict = User.create_new({"username": username, "password": "abcd"}, dump_db)
-            print("creating user in dump db", str(result_dict))
             if result_dict["success"]:
-                print("created user in dump db")
                 dump_user = User(result_dict)
                 dump_user.db = dump_db
                 dump_user.fs = dump_fs
                 source_user = User.get_user_by_username(username)
-                print("got source user")
                 for res_type in res_types:
-                    print("in create_user_database, res_type", res_type)
                     resources = source_user.get_all_resource_names(res_type)
-                    print(f"found {len(resources)} resources of type {res_type} for user {username}")
+                    log.debug("found resources for user", username=username, res_type=res_type)
                     for n, rname in enumerate(resources):
                         self.copy_between_accounts(source_user, dump_user, res_type,
                                                    rname, rname)
                         if n % 50 == 0:
-                            print(f"copied {n} resources of type {res_type} for user {username}")
-                print("copied resources to dump db")
+                            log.debug("copied user resources", username=username, res_type=res_type, n=n)
+                log.debug("finished copying resources to dump db")
                 dump_db.drop_collection("user_collection")
                 return {"success": True, "message": "created user database successfully."}
             else:
-                print("failed to create seed user in seed db")
-                return {"success": False, "message": "Failed to create seed user."}
+                raise DatabaseCreationError("failed to create user in dump db")
         else:
-            return {"success": False, "message": "Not authorized."}
+            raise NotAuthorizedError()
 
 
     # def upgrade_all_users(self):

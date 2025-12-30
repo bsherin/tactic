@@ -1,11 +1,11 @@
 from flask import render_template
 from flask_login import login_required, current_user
 from tactic_app import app
-from mongo_db_fs import repository_type, database_type
+from mongo_db_fs import database_type
 from users import User
+from utils import utcnow
 
-import datetime
-tstring = datetime.datetime.utcnow().strftime("%Y-%H-%M-%S")
+tstring = utcnow().strftime("%Y-%H-%M-%S")
 
 admin_user = User.get_user_by_username("admin")
 

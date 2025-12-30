@@ -3,18 +3,13 @@
 
 import re
 import os
-import sys
 import copy
 import datetime
-import uuid
 from collections import OrderedDict
-from flask import jsonify, request, url_for
 from flask_login import UserMixin
 
 from tactic_app import login_manager, app, db, fs, repository_db, repository_fs, socketio
-from communication_utils import make_jsonizable_and_compress
 from bson.objectid import ObjectId
-from exception_mixin import generic_exception_handler
 from werkzeug.security import generate_password_hash, check_password_hash
 from mongo_accesser import MongoAccess
 from list_accesser import ListAccess
@@ -25,13 +20,13 @@ from collection_accesser import CollectionAccess
 from metabook_accesser import MetabookAccess
 from node_accesser import NodeAccess
 from temp_data_accesser import TempDataAccess
-from exception_mixin import ExceptionMixin
 from user_fields import user_data_fields
 from user_accesser import UserAccess
 from across_accounts_accesser import AcrossAccountsAccess
 from aws_helpers import get_ssm_parameter
 from aws_detection import on_aws
-
+from tactic_logging import log
+from utils import utcnow
 
 USE_ALT_IDS = True
 if USE_ALT_IDS:
@@ -171,17 +166,19 @@ class User(UserMixin, MongoAccess, ListAccess, CodeAccess, TileAccess, TempDataA
         return
 
     def set_last_login(self):
-        current_time = datetime.datetime.utcnow()
+        current_time = utcnow()
         self.update_user_doc(self.username, {"last_login": current_time})
         return
 
-    def dt_to_datestring(self, dt):
+    @staticmethod
+    def dt_to_datestring(dt):
         current_year = datetime.datetime.now().year
         if dt.year == current_year:
             return dt.strftime("%b %d, %H:%M")
         return dt.strftime("%b %d, %Y, %H:%M")
 
-    def dt_to_sortstring(self, dt):
+    @staticmethod
+    def dt_to_sortstring(dt):
         return dt.strftime("%Y%m%d%H%M%S")
 
     def simple_process_metadata(self, mdata):
@@ -285,6 +282,7 @@ class User(UserMixin, MongoAccess, ListAccess, CodeAccess, TileAccess, TempDataA
             socketio.emit("user-settings-updated", data, namespace='/main', room=self.get_id())
             return {"success": True, "message": "Information successfully updated."}
         except:
+            log.exception("Problem updating user account info")
             return {"success": False, "message": "Problem updating info."}
 
     def update_settings(self, data_dict):
@@ -297,15 +295,11 @@ class User(UserMixin, MongoAccess, ListAccess, CodeAccess, TileAccess, TempDataA
             socketio.emit("user-settings-updated", data, namespace='/main', room=self.get_id())
             return {"success": True, "message": "Information successfully updated."}
         except:
+            log.exception("Problem updating user settings")
             return {"success": False, "message": "Problem updating info."}
 
     @staticmethod
     def create_new(user_dict, seed_db=None):
-        if seed_db is None:
-            the_db = db
-        else:
-            the_db = seed_db
-
         username = user_dict["username"]
         if len(username) < 4:
             return {"success": False, "message": "Usernames must be at least 4 characters.", "username": username}

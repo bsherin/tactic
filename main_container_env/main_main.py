@@ -1,34 +1,26 @@
+from tactic_logging import log, setup_logging
 
-import os
-#
-# if os.environ.get("DEBUG", "False").lower() == "true":
-#     print("got debug mode")
-#     import pydevd_pycharm
-#     pydevd_pycharm.settrace('host.docker.internal', port=21000)
+setup_logging("main_service")
+log.info("starting", extra_flag=True)
 
-print("entering main_main")
+try:
+    import flask
+    from flask import Flask
+    import exception_mixin
+    from exception_mixin import ExceptionMixin
+    from tactic_copilot_mixin import CopilotMixin
+    from aws_helpers import resolve_task_identity, get_ssm_parameter
 
-import flask
-from flask import Flask
-import exception_mixin
-from exception_mixin import ExceptionMixin
-from tactic_copilot_mixin import CopilotMixin
-from aws_helpers import resolve_task_identity, get_ssm_parameter
+    import copy
+    from main import mainWindow
 
-import copy
-from communication_utils import emit_direct
+    from qworker import QWorker
+    import time
+except Exception:
+    log.exception("*** fatal error during imports in main ***")
+    log.critical("*** exiting main due to fatal error ***")
+    raise
 
-from main import mainWindow
-print("back in main_main")
-
-from qworker import QWorker, task_worthy, callback_dict, callback_data_dict, error_handler_dict
-import qworker
-
-import time
-
-queue_check_time = 60  # How often, in seconds, to inspect the queues
-
-print("about to define mainworker class")
 class MainWorker(QWorker, ExceptionMixin, CopilotMixin):
     def __init__(self, ):
         id_prefix = get_ssm_parameter("MAIN_ID_PREFIX", "main_service_")
@@ -142,13 +134,18 @@ class MainWorker(QWorker, ExceptionMixin, CopilotMixin):
 
 
 if __name__ == "__main__":
-    print("in __main__")
-    app = Flask(__name__)
-    exception_mixin.app = app
-    print("entering main")
-    mworker = MainWorker()
-    print("mworker is created, about to start my_id is " + str(mworker.my_id))
-    mworker.start()
-    print("mworker started, my_id is " + str(mworker.my_id))
+    try:
+        log.info("in __main__")
+        app = Flask(__name__)
+        exception_mixin.app = app
+        log.info("creating mainworker")
+        mworker = MainWorker()
+        log.info("mworker is created, about to start", my_id=mworker.my_id)
+        mworker.start()
+        log.info("mworker started", my_id=mworker.my_id)
+    except Exception:
+        log.exception("*** fatal error starting main ***")
+        log.critical("*** exiting due to fatal error ***")
+        raise
     while True:
         time.sleep(1000)
