@@ -14,6 +14,12 @@ scrape_configs:
       - host: unix:///var/run/docker.sock
         refresh_interval: 5s
     relabel_configs:
+      - source_labels: [ __meta_docker_container_label_project ]
+        regex: tactic
+        action: keep
+      - source_labels: [ __meta_docker_container_name ]
+        regex: .*(mongo).*   # adjust if needed
+        action: drop
       - source_labels: [__meta_docker_container_id]
         target_label: __path__
         replacement: /var/lib/docker/containers/$1/$1-json.log
@@ -25,8 +31,6 @@ scrape_configs:
         target_label: project
       - source_labels: [__meta_docker_container_label_my_id]
         target_label: my_id
-      - source_labels: [__meta_docker_container_log_stream]
-        target_label: stream
 
     pipeline_stages:
       - docker: {}
