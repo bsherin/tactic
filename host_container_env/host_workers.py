@@ -73,21 +73,25 @@ class HostUtilityWorker:
 
     def do_utilities(self):
         with bind_request(new_task_id(), "ad_hoc", "do_utilities"):
-            if self.worker.channel is None:
-                log.warning("pika channel not ready yet in do_utilities")
-                return
-            self.worker.client_session_registry.registry_heartbeat()
-            self.worker.main_registry.registry_heartbeat()
-            self.worker.module_viewer_registry.registry_heartbeat()
+            try:
+                log.info("do_utilities")
+                if self.worker.channel is None:
+                    log.warning("pika channel not ready yet in do_utilities")
+                    return
+                self.worker.client_session_registry.registry_heartbeat()
+                self.worker.main_registry.registry_heartbeat()
+                self.worker.module_viewer_registry.registry_heartbeat()
 
-            self.worker.publish_metrics()
-            current_gobal_ids = self.worker.client_session_registry.get_open_sessions()
-            if not current_gobal_ids == self.last_global_ids:
-                self.last_global_ids = current_gobal_ids
-                self.worker.post_task("main_service", "updated_global_ids", {"global_ids": self.last_global_ids})
-                self.worker.post_task("module_viewer", "updated_global_ids", {"global_ids": self.last_global_ids})
-                self.worker.post_task("assistant", "updated_global_ids", {"global_ids": self.last_global_ids})
-            self.worker.tile_registry.registry_heartbeat()
+                self.worker.publish_metrics()
+                current_gobal_ids = self.worker.client_session_registry.get_open_sessions()
+                if not current_gobal_ids == self.last_global_ids:
+                    self.last_global_ids = current_gobal_ids
+                    self.worker.post_task("main_service", "updated_global_ids", {"global_ids": self.last_global_ids})
+                    self.worker.post_task("module_viewer", "updated_global_ids", {"global_ids": self.last_global_ids})
+                    self.worker.post_task("assistant", "updated_global_ids", {"global_ids": self.last_global_ids})
+                self.worker.tile_registry.registry_heartbeat()
+            except Exception:
+                log.exception("error in host utility loop")
 
     def start(self):
         socketio.start_background_task(target=self.utility_loop)

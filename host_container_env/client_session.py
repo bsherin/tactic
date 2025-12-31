@@ -39,6 +39,7 @@ class ClientSessionRegistry(RedisManager):
         socketio.emit("endSession", {}, namespace='/main', room=global_id)
 
     def sweep_sessions(self):
+        log.info("sweep_client_sessions")
         now = time.time()
         global_ids = self.get_open_sessions()
         for global_id in global_ids:

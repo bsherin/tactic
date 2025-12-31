@@ -20,8 +20,8 @@ services:
       image: grafana/grafana:10.4.3
       ports:
         - "127.0.0.1:3000:3000"
-      labels:
-        project: tactic_aux
+#      labels:
+#        project: tactic_aux
       profiles:
         - start_project
         - start_development
@@ -34,8 +34,8 @@ services:
     promtail:
       image: grafana/promtail:2.9.6
       command: -config.file=/etc/promtail/config.yml
-      labels:
-        project: tactic_aux
+#      labels:
+#        project: tactic_aux
       profiles:
         - start_project
         - start_development
@@ -54,8 +54,8 @@ services:
       command: >
         --bind_ip 0.0.0.0
         --replSet rs0
-      labels:
-        project: tactic_aux
+#      labels:
+#        project: tactic_aux
       restart: always
       profiles:
         - start_project

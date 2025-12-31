@@ -57,11 +57,11 @@ class ECSTileBackend(TileBackend):
                tile_name: Optional[str] = None):
         tid, task_arn = self.tile_registry.claim_tile(username, owner, parent, project_name, tile_name)
         if tid:
-            log.info("warm_tile_claimed")
+            log.info("warm_tile_claimed", category="tile_management", tile_id=tid, task_arn=task_arn)
             creds = self.issue_user_s3_session(username)
             return tid, task_arn, creds
 
-        log.warning("***Warm tile pool empty, launching ad-hoc ECS tile...***")
+        log.warning("***Warm tile pool empty, launching ad-hoc ECS tile...***", category="tile_management")
         if not self.subnets or not self.sgs:
             raise ECSTileError("No idle tiles and ECS_SUBNETS/ECS_SECURITY_GROUPS not set for ad-hoc launch.")
 

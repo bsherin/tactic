@@ -163,6 +163,7 @@ class TileContainerRegistry(ServiceRegistry):
                 self.set_container_info(tile_id, "memory_limit_mb", str(data["memory_limit_mb"]))
 
     def sweep_tiles(self):
+        log.info("sweep_tiles", category="tile_management")
 
         def got_main_ids(data):
             main_session_ids = data["sids"]
@@ -171,6 +172,10 @@ class TileContainerRegistry(ServiceRegistry):
             for tile_id in busy_ids:
                 parent = self.get_container_info(tile_id, "parent")
                 if parent not in main_session_ids:
+                    log.info("releasing tile with no active main session",
+                             category="tile_management",
+                             tile_id=tile_id,
+                             parent=parent)
                     self.worker.destroy_tile(tile_id)
 
         # First need to be sure that reconcile has run
@@ -274,12 +279,16 @@ class TileContainerRegistry(ServiceRegistry):
                 if on_aws:
                     task_arn = self.get_arn(tile_id)
                     if not self.is_task_running(task_arn): # Check if the task is actually running
-                        log.warning("Task not running for idle tile, deleting tile", tile_id=tile_id, task_arn=task_arn)
+                        log.warning("Task not running for idle tile, deleting tile",
+                                    category="tile_management",
+                                    tile_id=tile_id, task_arn=task_arn)
                         self.delete(tile_id)
                         continue
                     resp = self.set_task_protection(tile_id, force_busy=True)
                     if resp is None or ("failures" in resp and len(resp["failures"]) > 0):
-                        log.warning("Failed to set task protection for tile", tile_id=tile_id, response=resp)
+                        log.warning("Failed to set task protection for tile",
+                                    category="tile_management",
+                                    tile_id=tile_id, response=resp)
                         continue
                     self.mark_status(tile_id, "busy", **args)
                     return tile_id, self.get_arn(tile_id)
@@ -325,9 +334,9 @@ class TileContainerRegistry(ServiceRegistry):
         )
 
     def reconcile_tiles(self):
-        log.info("reconciling tiles")
+        log.info("reconcile_tiles", category="tile_management")
         if self.worker.channel is None:
-            log.debug("in reconcile_tiles, channel isn't ready yet")
+            log.warning("in reconcile_tiles, channel isn't ready yet")
             return
         if on_aws:
             tasks = self.list_running_tile_tasks()
@@ -336,27 +345,27 @@ class TileContainerRegistry(ServiceRegistry):
             for t in tasks:
                 tile_id = self.task_to_id(t)
                 if not self.exists(tile_id):
-                    log.info("new ecs tile discoered", tile_id=tile_id)
+                    log.info("new ecs tile discovered", tile_id=tile_id, category="tile_management")
                     self.mark_status(tile_id, "idle", **{
                         "task_arn": t["taskArn"],
                         "created": str(t["createdAt"])
                     })
         else:
             running_ids = self.list_docker_tile_containers()
-            log.debug("docker running_ids", running_ids=running_ids)
+            log.debug("docker running_ids", running_ids=running_ids, category="tile_management")
             for tile_id in running_ids:
                 if not self.exists(tile_id):
-                    log.info("new docker tile discovered", tile_id=tile_id)
+                    log.info("new docker tile discovered", tile_id=tile_id, category="tile_management")
                     self.mark_status(tile_id, "idle")
         ids_to_delete = []
         tile_ids = self.container_ids()
         if "tile_test_container" in tile_ids:
             tile_ids.remove("tile_test_container")
-        log.debug("all tile_ids from redis", tile_ids=tile_ids)
+        log.debug("all tile_ids from redis", tile_ids=tile_ids, category="tile_management")
         for tile_id in tile_ids:
             cont_info = self.get_container_dict(tile_id)
             if tile_id not in running_ids:
-                log.info("found a tile that is no longer running")
+                log.info("found a tile that is no longer running", tile_id=tile_id, category="tile_management")
                 if cont_info and cont_info["status"] == "busy":
                     if on_aws and cont_info.get("task_arn"):
                         exp = self.explain_stopped_task(cont_info.get("task_arn"))
@@ -373,17 +382,18 @@ class TileContainerRegistry(ServiceRegistry):
                 last_heartbeat = float(last_heartbeat_str)
                 now = time.time()
                 if (now - last_heartbeat) > TILE_HEARTBEAT_TIMEOUT_SECS:
-                    log.info("found a tile that has timed out")
+                    log.info("found a tile that has timed out", tile_id=tile_id,
+                             now=now, category="tile_management")
                     ids_to_delete.append(tile_id)
                     self.notify_user_tile_lost(tile_id, reason="Tile heartbeat timeout.")
                     self.worker.destroy_tile(tile_id, notify=False, force_terminate=True)
 
-        log.debug("found ids_to_delete", ids_to_delete=ids_to_delete)
+        log.debug("found ids_to_delete", ids_to_delete=ids_to_delete, category="tile_management")
         for tile_id in ids_to_delete:
-            log.info("deleting tile", tile_id)
+            log.info("deleting tile", tile_id, category="tile_management")
             self.delete(tile_id)
             self.worker.channel.queue_delete(tile_id)
             self.worker.channel.queue_delete(f"kill_{tile_id}")
         if not self.reconciled_tiles:
-            log.info("*** did initial tile reconcile ***")
+            log.info("*** did initial tile reconcile ***", category="tile_management")
             self.reconciled_tiles = True
