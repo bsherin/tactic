@@ -1,0 +1,65 @@
+logging {
+  level  = "info"
+  format = "logfmt"
+}
+
+discovery.docker "local" {
+  host = "unix:///var/run/docker.sock"
+}
+
+discovery.relabel "tactic_only" {
+  targets = discovery.docker.local.targets
+
+  rule {
+    source_labels = ["__meta_docker_container_label_project"]
+    regex         = "tactic"
+    action        = "keep"
+  }
+
+  rule {
+    source_labels = ["__meta_docker_container_name"]
+    regex         = ".*(mongo).*"
+    action        = "drop"
+  }
+
+  rule {
+    source_labels = ["__meta_docker_container_label_project"]
+    target_label  = "project"
+    action        = "replace"
+  }
+
+  rule {
+    source_labels = ["__meta_docker_container_name"]
+    target_label  = "container"
+    action        = "replace"
+  }
+
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
+    target_label  = "service"
+    action        = "replace"
+  }
+
+  rule {
+    source_labels = ["__meta_docker_container_label_my_id"]
+    target_label  = "my_id"
+    action        = "replace"
+  }
+}
+
+loki.process "docker" {
+  stage.docker {}
+  forward_to = [loki.write.local.receiver]
+}
+
+loki.source.docker "containers" {
+  host       = "unix:///var/run/docker.sock"
+  targets    = discovery.relabel.tactic_only.output
+  forward_to = [loki.process.docker.receiver]
+}
+
+loki.write "local" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+}

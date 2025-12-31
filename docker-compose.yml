@@ -1,6 +1,6 @@
 services:
     loki:
-      image: grafana/loki:2.9.6
+      image: grafana/loki:2.9.8
       command: -config.file=/etc/loki/loki.yml
       labels:
         project: tactic_aux
@@ -20,30 +20,37 @@ services:
       image: grafana/grafana:10.4.3
       ports:
         - "127.0.0.1:3000:3000"
-#      labels:
-#        project: tactic_aux
+      labels:
+        project: tactic_aux
       profiles:
         - start_project
         - start_development
         - debug_host
       environment:
         - GF_SECURITY_ADMIN_PASSWORD=admin
+      volumes:
+        - grafana-data:/var/lib/grafana
       networks:
         - tactic-net
 
-    promtail:
-      image: grafana/promtail:2.9.6
-      command: -config.file=/etc/promtail/config.yml
-#      labels:
-#        project: tactic_aux
+    alloy:
+      image: grafana/alloy:v1.12.1
+      command: >
+        run --server.http.listen-addr=0.0.0.0:12345
+            --storage.path=/var/lib/alloy/data
+            /etc/alloy/config.alloy
+      labels:
+        project: tactic_aux
       profiles:
         - start_project
         - start_development
         - debug_host
+      ports:
+        - "12345:12345"   # optional: Alloy debug UI
       volumes:
-        - /var/lib/docker/containers:/var/lib/docker/containers:ro
+        - ./observability/config.alloy:/etc/alloy/config.alloy:ro
         - /var/run/docker.sock:/var/run/docker.sock:ro
-        - ./observability/promtail.yml:/etc/promtail/config.yml:ro
+        - alloy-data:/var/lib/alloy/data
       networks:
         - tactic-net
 
@@ -518,6 +525,8 @@ networks:
     external: true
 
 volumes:
+  alloy-data:
+  grafana-data:
   hf_cache:
     external: true
   nltk_cache:
