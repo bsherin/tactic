@@ -390,7 +390,7 @@ class TileContainerRegistry(ServiceRegistry):
 
         log.debug("found ids_to_delete", ids_to_delete=ids_to_delete, category="tile_management")
         for tile_id in ids_to_delete:
-            log.info("deleting tile", tile_id, category="tile_management")
+            log.info("deleting tile", tile_id=tile_id, category="tile_management")
             self.delete(tile_id)
             self.worker.channel.queue_delete(tile_id)
             self.worker.channel.queue_delete(f"kill_{tile_id}")
