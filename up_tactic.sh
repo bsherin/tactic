@@ -2,6 +2,7 @@
 env_file="server.env"
 up_only="False"
 profile="start_project"
+restart_aux="False"
 
 # process arguments
 while :; do
@@ -12,6 +13,9 @@ while :; do
       ;;
     --up-only)
       up_only="True"
+      ;;
+    --restart_aux)
+      restart_aux="True"
       ;;
     --develop)
       profile="start_development"
@@ -35,11 +39,13 @@ if [ $up_only == "False" ] ; then
   if [ $num != "0" ] ; then
     docker ps --filter label="project=tactic" -aq | xargs docker stop | xargs docker rm
   fi
-  echo "*** removing aux containers ***"
-  num=$(docker ps --filter label="project=tactic_aux" -aq | wc -l)
-  if [ $num != "0" ] ; then
-    docker ps --filter label="project=tactic_aux" -aq | xargs docker stop | xargs docker rm
+  if [ $restart_aux == "True" ] ; then
+    echo "*** removing aux containers ***"
+    num=$(docker ps --filter label="project=tactic_aux" -aq | wc -l)
+    if [ $num != "0" ] ; then
+      docker ps --filter label="project=tactic_aux" -aq | xargs docker stop | xargs docker rm
+    fi
   fi
-fi
 
+fi
 docker compose --env-file $env_file --profile $profile up --detach
