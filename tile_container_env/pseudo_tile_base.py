@@ -374,7 +374,7 @@ class PseudoTileClass(TileBase):
                     the_html += str(eval_result)
                     data.update({"success": True, "is_widget": False, "the_html": the_html})
             except Exception as ex:
-                log.excaption("Error in _eval_thread")
+                log.exception("Error in _eval_thread")
                 the_html = self.get_traceback_message(ex)
                 data.update({"success": False, "the_html": the_html, "is_widget": False})
 
@@ -498,11 +498,13 @@ class PseudoTileClass(TileBase):
             self.execution_counter += 1
             data["execution_count"] = self.execution_counter
             data["message"] = "success"
+            self._restore_base_stdout()
         except Exception as ex:
             data["execution_count"] = "*"
             data["message"] = self._handle_exception(ex, None, print_to_console=False)
+            print(data["message"])  # necessary so the user sees the error in the notebook
             log.exception("Error in exec thread")
-        self._restore_base_stdout()
+            self._restore_base_stdout()
         self.emit_console_message("stopConsoleSpinner", data)
         current_globals = self.get_user_globals()
         self.check_globals()

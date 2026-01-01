@@ -512,11 +512,7 @@ function ExportsViewer(props) {
   }, /*#__PURE__*/_react["default"].createElement("span", {
     className: "selected-export bottom-heading-element mr-2"
   }, selected_export_short_name), key_list && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.SelectList, {
-    option_list: key_list.map(function (key) {
-      return {
-        key: key
-      };
-    }),
+    option_list: key_list,
     onChange: _handleKeyListChange,
     the_value: key_list_value,
     variant: "minimal",

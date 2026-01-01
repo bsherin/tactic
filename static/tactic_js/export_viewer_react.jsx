@@ -381,7 +381,7 @@ function ExportsViewer(props) {
                      {(Object.keys(pipe_dict).length > 0) && (
                          <form onSubmit={_eval} className="d-flex flex-row">
                                <span className="selected-export bottom-heading-element mr-2">{selected_export_short_name}</span>
-                               {key_list && <SelectList option_list={key_list.map((key) => {return {key}})}
+                               {key_list && <SelectList option_list={key_list}
                                                          onChange={_handleKeyListChange}
                                                          the_value={key_list_value}
                                                          variant="minimal"
