@@ -44,3 +44,46 @@ services:
         awslogs-group: /tactic/ec2
         awslogs-create-group: "true"
         awslogs-stream: tactic_mongo_watcher
+
+  tactic_pool_watcher_s3:
+    image: bsherin/tactic-pool-watcher-s3:${IMG_SUFFIX}
+    build:
+      context: .
+      dockerfile: Dockerfile-pool-watcher-s3
+      args:
+        BASE_IMAGE: ${BASE_IMAGE}
+    restart: always
+    container_name: pool_watcher_s3
+    init: true
+    platform: ${PLATFORM}
+    profiles: ["build"]
+    networks:
+      - tactic-net
+
+  tactic_main:
+    build:
+      context: .
+      dockerfile: Dockerfile-main
+      args:
+        BASE_IMAGE: ${BASE_IMAGE}
+    image: bsherin/tactic-main:${IMG_SUFFIX}
+    platform: ${PLATFORM}
+    profiles: ["build"]
+    volumes:
+      - type: bind
+        source: "/var/run/docker.sock"
+        target: "/var/run/docker.sock"
+    networks:
+      - tactic-net
+
+  tactic_module_viewer:
+    build:
+      context: .
+      dockerfile: Dockerfile-module-viewer
+      args:
+        BASE_IMAGE: ${BASE_IMAGE}
+    platform: ${PLATFORM}
+    profiles: ["build"]
+    image: bsherin/tactic-module-viewer:${IMG_SUFFIX}
+    networks:
+        - tactic-net

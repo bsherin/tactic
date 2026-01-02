@@ -3,18 +3,24 @@ export DOCKER_BUILDKIT=0
 
 SERVICES=(
   "tactic_host1"
-  "tactic_main"
-  "tactic_module_viewer"
-  "tactic_tile"
-  "tactic_pool_watcher_s3"
   "tactic_mongo_watcher"
   "tactic_log_streamer"
   "tactic_assistant"
 )
 
+BUILD_ONLY_SERVICES=(
+  "tactic_tile"
+  "tactic_main"
+  "tactic_module_viewer"
+  "tactic_pool_watcher_s3"
+)
+
 if [ "$1" == "non_base" ] ; then
   for SERVICE in "${SERVICES[@]}"; do
     docker compose -f docker-compose.yml -f docker-compose.ec2.yml --env-file server.env build "$SERVICE"
+  done
+  for SERVICE in "${BUILD_ONLY_SERVICES[@]}"; do
+    docker compose -f docker-compose.yml -f docker-compose.ec2.yml --env-file server.env --profile build build "$SERVICE"
   done
 
 elif [ "$1" == "base" ] ; then
@@ -24,5 +30,15 @@ elif [ "$1" == "wheels" ] ; then
 elif [ "$1" == "host" ] ; then
   docker compose -f docker-compose.yml -f docker-compose.ec2.yml --env-file server.env build "tactic_host1"
 else
-	docker compose -f docker-compose.yml -f docker-compose.ec2.yml --env-file server.env build "tactic_$1"
+  service="tactic_$1"
+  for s in "${BUILD_ONLY_SERVICES[@]}"; do
+    if [[ "$s" == "$service" ]]; then
+      docker compose -f docker-compose.yml -f docker-compose.ec2.yml --env-file server.env --profile build build "$service"
+      found=true
+      break
+    fi
+  done
+  if [ "$found" != true ] ; then
+    docker compose -f docker-compose.yml -f docker-compose.ec2.yml --env-file server.env build "tactic_$1"
+  fi
 fi

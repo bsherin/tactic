@@ -23,7 +23,6 @@ SERVICES=(
   "tactic_host1"
   "tactic_main"
   "tactic_module_viewer"
-  "tactic_tile"
   "tactic_pool_watcher_s3"
   "tactic_mongo_watcher"
   "tactic_log_streamer"
@@ -34,6 +33,7 @@ if [ "$1" == "non_base" ] ; then
   for SERVICE in "${SERVICES[@]}"; do
     ROOT_DIR="$ROOT_DIR" docker compose -f docker-compose.yml -f docker-compose.local.yml --env-file develop.env build "$SERVICE"
   done
+  ROOT_DIR="$ROOT_DIR" docker compose -f docker-compose.yml -f docker-compose.local.yml --env-file develop.env build "tactic_tile"
 
 elif [ "$1" == "base" ] ; then
   ROOT_DIR="$ROOT_DIR" docker compose -f docker-compose.yml -f docker-compose.local.yml --env-file develop.env --profile build build "tactic_base"

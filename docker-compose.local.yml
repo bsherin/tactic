@@ -86,6 +86,7 @@ services:
       - RUNNING_ON_AWS=${RUNNING_ON_AWS}
     networks:
       - tactic-net
+
   tactic_main:
     build:
       context: .
