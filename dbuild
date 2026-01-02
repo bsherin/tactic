@@ -14,13 +14,13 @@ SERVICES=(
 
 if [ "$1" == "non_base" ] ; then
   for SERVICE in "${SERVICES[@]}"; do
-    docker compose -f docker-compose.yml -f docker-compose.ec2.yml -env-file server.env build "$SERVICE"
+    docker compose -f docker-compose.yml -f docker-compose.ec2.yml --env-file server.env build "$SERVICE"
   done
 
 elif [ "$1" == "base" ] ; then
   docker compose -f docker-compose.yml -f docker-compose.ec2.yml --env-file server.env --profile build build "tactic_base"
 elif [ "$1" == "wheels" ] ; then
-  docker compose -f docker-compose.yml -f docker-compose.ec2.yml -env-file server.env --profile build build "tactic_wheels"
+  docker compose -f docker-compose.yml -f docker-compose.ec2.yml --env-file server.env --profile build build "tactic_wheels"
 elif [ "$1" == "host" ] ; then
   docker compose -f docker-compose.yml -f docker-compose.ec2.yml --env-file server.env build "tactic_host1"
 else

@@ -36,13 +36,13 @@ if [ "$1" == "non_base" ] ; then
   done
 
 elif [ "$1" == "base" ] ; then
-  ROOT_DIR="$ROOT_DIR" docker compose -f docker-compose.yml -f docker-compose.local.yml -env-file develop.env --profile build build "tactic_base"
+  ROOT_DIR="$ROOT_DIR" docker compose -f docker-compose.yml -f docker-compose.local.yml --env-file develop.env --profile build build "tactic_base"
 
 elif [ "$1" == "wheels" ] ; then
-  ROOT_DIR="$ROOT_DIR" docker compose -f docker-compose.yml -f docker-compose.local.yml -env-file develop.env --profile build build "tactic_wheels"
+  ROOT_DIR="$ROOT_DIR" docker compose -f docker-compose.yml -f docker-compose.local.yml --env-file develop.env --profile build build "tactic_wheels"
 
 elif [ "$1" == "host" ] ; then
   ROOT_DIR="$ROOT_DIR" docker compose -f docker-compose.yml -f docker-compose.local.yml --env-file develop.env build "tactic_host1"
 else
-  ROOT_DIR="$ROOT_DIR" docker compose -f docker-compose.yml -f docker-compose.local.yml -env-file develop.env build "tactic_$1"
+  ROOT_DIR="$ROOT_DIR" docker compose -f docker-compose.yml -f docker-compose.local.yml --env-file develop.env build "tactic_$1"
 fi
