@@ -187,12 +187,12 @@ class QWorker(ExceptionMixin):
         global thread_lock
         my_connection().close()
         stop_thread(thread)
-        log.info("stopped thread")
+        log.debug("stopped thread")
         thread = None
         if thread_lock.locked():
             thread_lock.release()
         self.start()
-        log.info("restarted thread")
+        log.debug("restarted thread")
         return
 
     def start(self):
@@ -201,7 +201,7 @@ class QWorker(ExceptionMixin):
             if thread is None:
                 thread = threading.Thread(target=self.start_background_thread, name=simple_uid())
                 thread.start()
-                log.info('Background thread started')
+                log.debug('Background thread started')
 
     def ready(self):
         return

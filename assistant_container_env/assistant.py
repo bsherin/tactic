@@ -1,7 +1,7 @@
 from tactic_logging import log, setup_logging
 
 setup_logging("tactic_assistant")
-log.info("starting", extra_flag=True)
+log.debug("starting", extra_flag=True)
 
 try:
     import threading
@@ -17,7 +17,7 @@ try:
     from rabbit_manage import get_pika_connection_with_retries, declare_queue
     import pika
 
-    log.info("Running OpenAI SDK", version=openai.__version__, file=openai.__file__)
+    log.debug("Running OpenAI SDK", version=openai.__version__, file=openai.__file__)
 
     from qworker import task_worthy, task_worthy_manual_submit, QWorker
 
@@ -191,7 +191,7 @@ class Assistant(QWorker, ExceptionMixin, AssistantEventHandler):
                 #     },
                 # }
             )
-            log.info("Created assistant")
+            log.debug("Created assistant")
             return chat_assistant.id
 
         except Exception:
@@ -344,7 +344,7 @@ if __name__ == "__main__":
     try:
         app = Flask(__name__)
         exception_mixin.app = app
-        log.info("entering main")
+        log.debug("entering main")
         mworker = Assistant()
         log.info("assistant created", my_id=mworker.my_id)
         mworker.start()

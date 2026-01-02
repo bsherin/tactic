@@ -74,7 +74,7 @@ class HostUtilityWorker:
     def do_utilities(self):
         with bind_request(new_task_id(), "ad_hoc", "do_utilities"):
             try:
-                log.info("do_utilities")
+                log.debug("do_utilities")
                 if self.worker.channel is None:
                     log.warning("pika channel not ready yet in do_utilities")
                     return
@@ -717,7 +717,7 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         task_id = task_packet.get("task_id") or new_task_id()
         with bind_request(task_id, "handling_client_response", task_packet.get("task_type", "unknown")):
             try:
-                log.info("handle_client_response")
+                log.debug("handle_client_response")
                 if "room" in task_packet:
                     room = task_packet["room"]
                 else:
@@ -733,9 +733,9 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
                 log.exception(special_string)
             return
 
-log.info("creating host worker")
+log.debug("creating host worker")
 tactic_app.host_worker = HostWorker()
 tactic_app.utility_worker = HostUtilityWorker(tactic_app.host_worker)
-log.info("starting host worker")
+log.debug("starting host worker")
 tactic_app.host_worker.start()
 tactic_app.utility_worker.start()

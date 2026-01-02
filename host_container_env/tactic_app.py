@@ -51,7 +51,7 @@ try:
 
     ANYONE_CAN_REGISTER = get_ssm_parameter("ANYONE_CAN_REGISTER", "False").lower() == "true"
 
-    log.info("creating, cleaning temp_data")
+    log.debug("creating, cleaning temp_data")
     collection_names = db.list_collection_names()
     if "temp_data" in collection_names:
         for rec in db["temp_data"].find():
@@ -63,7 +63,7 @@ try:
     login_manager.session_protection = 'basic'
     login_manager.login_view = 'login'
 
-    log.info("creating app and configurint")
+    log.debug("creating app and configurint")
     app = Flask(__name__)
     app.config.from_object('config')
 
@@ -72,9 +72,9 @@ try:
     if ("TESTING" in os.environ) and (os.environ.get("TESTING") == "True"):
         app.config["WTF_CSRF_ENABLED"] = False
 
-    log.info("starting login_manager")
+    log.debug("starting login_manager")
     login_manager.init_app(app)
-    log.info("starting socketio")
+    log.debug("starting socketio")
     socketio = SocketIO(app,
                         async_mode="gevent",
                         message_queue=MESSAGE_QUEUE,
@@ -87,9 +87,9 @@ try:
     # See: https://github.com/miguelgrinberg/Flask-SocketIO/issues/1047
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)
     communication_utils.socketio = socketio
-    log.info("starting csrf.init_app")
+    log.debug("starting csrf.init_app")
     csrf.init_app(app)
-    log.info("started it all")
+    log.debug("started it all")
 
 
 except pymongo.errors.PyMongoError:

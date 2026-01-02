@@ -47,7 +47,7 @@ tactic_image_names = ["bsherin/tactic-tile", "bsherin/tactic-main",
 
 USE_ARM64 = get_ssm_parameter("USE_ARM64", default="False").lower() == "true"
 
-log.info("got use_arm64", use_army64=USE_ARM64)
+log.debug("got use_arm64", use_army64=USE_ARM64)
 
 cli = docker.DockerClient(base_url='unix://var/run/docker.sock')
 
@@ -394,11 +394,11 @@ def safe_remove(c, stop_timeout=10, retries=5, backoff=0.5):
 
 def destroy_container(tactic_id, notify=True):
     try:
-        log.info("destroying container", tactic_id=tactic_id)
+        log.debug("destroying container", tactic_id=tactic_id)
         cont = get_container(tactic_id)
         message = None
         if cont is None:
-            log.info("container not found, but still need to deregister", tactic_id=tactic_id)
+            log.debug("container not found, but still need to deregister", tactic_id=tactic_id)
             return 1
         else:
             cont_type = get_container_type(cont)

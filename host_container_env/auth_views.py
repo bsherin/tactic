@@ -33,7 +33,7 @@ def _before():
 @app.after_request
 def _after(resp):
     resp.headers["X-Request-Id"] = g.task_id
-    log.info("after request", method=request.method,
+    log.debug("after request", method=request.method,
              task_type=request.endpoint,
              endpoint=request.path, status=resp.status_code)
 

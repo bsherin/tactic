@@ -235,7 +235,7 @@ def remove_duplicate_collections(user_obj=None):
     already_deleted = []
     for cname in cnames:
         if cnames.count(cname) > 1 and cname not in already_deleted:
-            log.info("removing duplicate collection", collection_name=cname)
+            log.debug("removing duplicate collection", collection_name=cname)
             user_obj.remove_collection(cname)
             already_deleted.append(cname)
 

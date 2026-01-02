@@ -1,0 +1,46 @@
+
+services:
+  tactic_host1:
+    logging:
+      driver: awslogs
+      options:
+        awslogs-region: us-east-2
+        awslogs-group: /tactic/ec2
+        awslogs-stream-prefix: tactic
+        awslogs-create-group: "true"
+
+  tactic_assistant:
+    logging:
+      driver: awslogs
+      options:
+        awslogs-region: us-east-2
+        awslogs-group: /tactic/ec2
+        awslogs-stream-prefix: tactic
+        awslogs-create-group: "true"
+
+  tile_test_container:
+    logging:
+      driver: awslogs
+      options:
+        awslogs-region: us-east-2
+        awslogs-group: /tactic/ec2
+        awslogs-stream-prefix: tactic
+        awslogs-create-group: "true"
+
+  tactic_log_streamer:
+    logging:
+      driver: awslogs
+      options:
+        awslogs-region: us-east-2
+        awslogs-group: /tactic/ec2
+        awslogs-stream-prefix: tactic
+        awslogs-create-group: "true"
+
+  tactic_mongo_watcher:
+    logging:
+      driver: awslogs
+      options:
+        awslogs-region: us-east-2
+        awslogs-group: /tactic/ec2
+        awslogs-stream-prefix: tactic
+        awslogs-create-group: "true"

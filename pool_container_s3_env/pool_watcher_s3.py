@@ -1,7 +1,7 @@
 from tactic_logging import log, setup_logging, bind_request, new_task_id
 
 setup_logging("pool_watcher_s3")
-log.info("starting", extra_flag=True)
+log.debug("starting", extra_flag=True)
 
 try:
     import json, collections
@@ -33,7 +33,7 @@ class Handler:
         self.my_id = "pool_watcher"
         log.info("my_id", my_id=self.my_id)
         self.connection, self.channel = get_pika_connection_with_retries(0)
-        log.info("connected to RabbitMQ")
+        log.debug("connected to RabbitMQ")
         if on_aws:
             self.sqs = boto3.client("sqs", region_name=AWS_REGION)
         else:
@@ -44,7 +44,7 @@ class Handler:
                 aws_secret_access_key="test",
                 region_name=AWS_REGION,
             )
-        log.info("connected to SQS", region_name=self.sqs.meta.region_name)
+        log.debug("connected to SQS", region_name=self.sqs.meta.region_name)
 
     def post_pool_event(self, event_type, key, is_dir, dest_key=None):
         self.ask_host("pool_event", {
@@ -134,12 +134,12 @@ class Handler:
 
                 for m in msgs:
                     try:
-                        log.info("Processing SQS message:", message_id=m["MessageId"])
+                        log.debug("Processing SQS message:", message_id=m["MessageId"])
                         body = json.loads(m["Body"])
                         recs = body.get("Records", [])
                         for r in recs:
                             ev = r["eventName"]                 # e.g. "ObjectCreated:Put", "ObjectRemoved:Delete"
-                            log.info("Got eventName", event_name=ev)
+                            log.debug("Got eventName", event_name=ev)
                             b  = r["s3"]["bucket"]["name"]
                             k  = unquote_plus(r["s3"]["object"]["key"])
                             etag = r["s3"]["object"].get("eTag")

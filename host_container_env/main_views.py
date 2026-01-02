@@ -21,7 +21,7 @@ def socket_event(fn):
         task_type = fn.__name__
 
         with bind_request(task_id, task_stage, task_type):
-            log.info(
+            log.debug(
                 "socket_event",
             )
             return fn(*args, **kwargs)
@@ -44,21 +44,21 @@ def authenticated_only(f):
 @authenticated_only
 @socket_event
 def connected_msg():
-    log.info("client connected", username=current_user.username)
+    log.debug("client connected", username=current_user.username)
 
 
 @socketio.on('disconnect', namespace='/main')
 @authenticated_only
 @socket_event
 def disconnect_msg():
-    log.info("client disconnected", username=current_user.username)
+    log.debug("client disconnected", username=current_user.username)
 
 
 @socketio.on('disconnect', namespace='/test')
 @authenticated_only
 @socket_event
 def test_disconnect():
-    log.info('client disconnected')
+    log.debug('client disconnected')
 
 
 # noinspection PyUnusedLocal
@@ -67,7 +67,7 @@ def test_disconnect():
 @socket_event
 def on_join_repository(data):
     join_room("repository-events")
-    log.info("user joined", room="repository-events")
+    log.debug("user joined", room="repository-events")
     return
 
 @socketio.on('join', namespace='/main')
@@ -77,12 +77,12 @@ def on_join(data):
     room = data["room"]
     join_room(room)
     socketio.emit("room-joined", data, namespace='/main', room=room)
-    log.info("user joined", room=room)
+    log.debug("user joined", room=room)
     if "user_id" in data:
         room = data["user_id"]
         join_room(room)
         socketio.emit("room-joined", data, namespace='/main', room=room)
-        log.info("user joined", room=room)
+        log.debug("user joined", room=room)
     return True
 
 
@@ -113,7 +113,7 @@ def remove_mainwindow():
 def post_from_client():
     task_packet = request.json
     with bind_request(g.task_id, "preforward", task_packet["task_type"]):
-        log.info("post_from_client", task_type=task_packet["task_type"], username=current_user.username)
+        log.debug("post_from_client", task_type=task_packet["task_type"], username=current_user.username)
         tactic_app.host_worker.forward_client_post(task_packet)
     return jsonify({"success": True})
 

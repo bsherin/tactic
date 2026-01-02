@@ -30,7 +30,7 @@ def setup_logging(service_name: str):
     task_id_var.set("startup")
     os.environ["SERVICE_NAME"] = service_name
 
-    level = os.getenv("LOG_LEVEL", "DEBUG").upper()
+    level = os.getenv("LOG_LEVEL", "INFO").upper()
     logging.basicConfig(format="%(message)s", stream=sys.stdout, level=level)
 
     # logging.basicConfig(

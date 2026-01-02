@@ -9,7 +9,7 @@ if on_aws:
     SECRET_ARN = get_ssm_parameter("MQ_SECRET_ARN")
     REGION = get_ssm_parameter("MY_AWS_REGION")
 
-    log.info("on aws, using mq with host", host=RABBIT_HOST)
+    log.debug("on aws, using mq with host", host=RABBIT_HOST)
 
     creds = load_secret_json(SECRET_ARN)
 
@@ -17,7 +17,7 @@ if on_aws:
     RABBIT_PASS = creds["password"]
     API_STR = f"http://{RABBIT_HOST}:15672/api"
 else:
-    log.info("not on aws, using rabbit defaults")
+    log.debug("not on aws, using rabbit defaults")
     RABBIT_HOST = "megaplex"
     RABBIT_USER = "guest"
     RABBIT_PASS = "guest"

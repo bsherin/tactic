@@ -45,9 +45,9 @@ try:
     from qworker_alt import MAX_PIKA_RETRIES, add_qw_pika_connection
 
     sys.stdout = sys.stderr
-    log.info("Waiting for rabbit")
+    log.debug("Waiting for rabbit")
     success = sleep_until_rabbit_alive()
-    log.info("Done waiting for rabbit with success", success=success)
+    log.debug("Done waiting for rabbit with success", success=success)
 
     kill_thread = None
     kill_thread_lock = Lock()
@@ -83,13 +83,13 @@ class KillWorker(QWorker):
             return
 
     def start(self):
-        log.info("starting kill_thread")
+        log.debug("starting kill_thread")
         global kill_thread
         with kill_thread_lock:
             if kill_thread is None:
                 kill_thread = threading.Thread(target=self.start_background_thread, name=simple_uid())
                 kill_thread.start()
-                log.info('Background kill_thread started')
+                log.debug('Background kill_thread started')
 
 class HeartbeatGenerator:
     def __init__(self, worker):
@@ -520,13 +520,13 @@ if __name__ == "__main__":
         settings_object._tworker = tile_base._tworker
         remote_tile_object._tworker = tile_base._tworker
 
-        log.info("tworker is created, about to start", my_id=tile_base._tworker.my_id)
+        log.debug("tworker is created, about to start", my_id=tile_base._tworker.my_id)
         tile_base._tworker.start()
         kill_worker = KillWorker()
         kill_worker.start()
         heartbeat_generator = HeartbeatGenerator(tile_base._tworker)
         heartbeat_generator.start_heartbeat()
-        log.info("tworker started", my_id=tile_base._tworker.my_id)
+        log.debug("tworker started", my_id=tile_base._tworker.my_id)
     except Exception:
         log.exception("*** fatal error starting tile ***")
         log.critical("*** exiting due to fatal error ***")

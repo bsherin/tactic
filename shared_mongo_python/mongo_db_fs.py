@@ -11,7 +11,7 @@ if am_fargate():
 else:
     mongo_uri = get_ssm_parameter("MONGO_URI", "tactic-mongo")
 
-log.info("got mongo_uri", mongo_uri=mongo_uri)
+log.debug("got mongo_uri", mongo_uri=mongo_uri)
 
 repository_type = "not set"
 database_type = "not set"
@@ -39,7 +39,7 @@ def get_dbs(get_repo=True):
     log.debug("got db")
     fs = gridfs.GridFS(db)
     log.debug("got fs")
-    log.info("Connected to MongoDB", mongo_uri=mongo_uri, database=db_name)
+    log.debug("Connected to MongoDB", mongo_uri=mongo_uri, database=db_name)
     database_type = "Local"
     if get_repo:
         repository_db = db

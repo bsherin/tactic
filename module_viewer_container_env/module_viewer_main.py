@@ -1,7 +1,7 @@
 from tactic_logging import log, setup_logging
 
 setup_logging("module_viewer")
-log.info("starting", extra_flag=True)
+log.debug("starting", extra_flag=True)
 
 try:
     from tactic_copilot_mixin import CopilotMixin
@@ -302,11 +302,11 @@ class ModuleViewerWorker(QWorker, CopilotMixin, MongoAccess, TileAccess):
 if __name__ == "__main__":
     try:
         app = Flask(__name__)
-        log.info("entering module_viewer_main")
+        log.debug("entering module_viewer_main")
         mworker = ModuleViewerWorker()
-        log.info("mworker is created, about to start", my_id=mworker.my_id)
+        log.debug("mworker is created, about to start", my_id=mworker.my_id)
         mworker.start()
-        log.info("mworker started", my_id=mworker.my_id)
+        log.debug("mworker started", my_id=mworker.my_id)
     except Exception:
         log.exception("*** fatal error starting module_viewe ***")
         log.critical("*** exiting due to fatal error ***")

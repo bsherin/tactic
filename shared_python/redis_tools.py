@@ -9,7 +9,7 @@ from aws_helpers import get_ssm_parameter
 from aws_detection import on_aws
 from tactic_logging import log
 
-log.info("getting redis client")
+log.debug("getting redis client")
 
 if on_aws:
     REDIS_HOST = get_ssm_parameter("REDIS_HOST")
@@ -107,7 +107,7 @@ class ResilientRedisClient:
 
         return wrapped
 
-log.info("creating redis client", host=REDIS_HOST, port=REDIS_PORT)
+log.debug("creating redis client", host=REDIS_HOST, port=REDIS_PORT)
 redis_client = ResilientRedisClient(
     host=REDIS_HOST,
     port=REDIS_PORT,

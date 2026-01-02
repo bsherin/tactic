@@ -172,7 +172,7 @@ class ServiceRegistry(RedisManager):
             qname = q["name"]
             if qname.startswith(self.id_prefix):
                 if qname not in running_ids:
-                    log.info("removing queue", queue=qname)
+                    log.debug("removing queue", queue=qname)
                     delete_queue(qname)
             if qname.startswith(f"kill_{self.id_prefix}"):
                 partial_qname = re.sub("kill_", "", qname)

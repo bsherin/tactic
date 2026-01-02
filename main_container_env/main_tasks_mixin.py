@@ -340,12 +340,12 @@ class LoadSaveTasksMixin:
 
     @task_worthy_manual_submit
     def get_new_tile_ids(self, data, task_packet):
-        log.info("entering get_new_tile_ids", sid=data["sid"])
+        log.debug("entering get_new_tile_ids", sid=data["sid"])
         sid = data["sid"]
         sess = self.get_session(sid)
         tile_info = sess.tile_info
         def got_new_ids(new_id_data):
-            log.info("got new ids", new_id_data=new_id_data)
+            log.debug("got new ids", new_id_data=new_id_data)
             new_ids = new_id_data["new_ids"]
             new_creds = new_id_data["new_creds"]
             if len(new_ids) > 0:
@@ -444,7 +444,7 @@ class LoadSaveTasksMixin:
             if tile_id in tile_ids_to_compile:
                 tile_ids_to_compile.remove(tile_id)
             if not tile_ids_to_compile:
-                log.info("compiled all tile_ids")
+                log.debug("compiled all tile_ids")
                 if pseudo_tile_id is None:
                     result["pseudo_tile_instance"] = None
                 else:

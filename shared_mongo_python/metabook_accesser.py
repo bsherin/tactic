@@ -135,7 +135,7 @@ class MetabookAccess(object):
                 except Exception:
                     log.exception("Error removing node from metabook", metabook_name=metabook_name)
         else:
-            log.info("no nodes found")
+            log.debug("no nodes found")
         self.db[self.metabook_collection_name].delete_one({"metabook_name": metabook_name})
         return
 

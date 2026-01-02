@@ -23,7 +23,7 @@ class TileCreationTasksMixin:
 
     @task_worthy_manual_submit
     def create_n_tile_containers(self, data, task_packet):
-        log.info("Creating {} tile containers".format(data["number_to_create"]))
+        log.debug("Creating {} tile containers".format(data["number_to_create"]))
         sid = data["sid"]
         new_ids = []
         new_creds = []
@@ -38,14 +38,14 @@ class TileCreationTasksMixin:
                 log.exception(cresult["message"])
                 self.mworker.submit_response(task_packet, {"success": False, "message": cresult["message"]})
             else:
-                log.info("Created tile container with ID {}".format(cresult["the_id"]))
+                log.debug("Created tile container with ID {}".format(cresult["the_id"]))
                 new_ids.append(cresult["the_id"])
                 new_creds.append(cresult["creds"])
                 if len(new_ids) == number_to_create:
-                    log.info("All {} tile containers created".format(number_to_create))
+                    log.debug("All {} tile containers created".format(number_to_create))
                     self.mworker.submit_response(task_packet, {"success": True, "new_ids": new_ids, "new_creds": new_creds})
         for n in range(number_to_create):
-            log.info("Creating tile container {}".format(n))
+            log.debug("Creating tile container {}".format(n))
             self.create_tile_container(sid, other_name=tile_names[n], callback=got_container)
         return
 

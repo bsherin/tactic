@@ -13,7 +13,7 @@ service_names = ["host", "main_service", "log_streamer", "module_viewer"]
 use_gevent = os.environ.get("USE_GEVENT", "False").lower() == "true"
 
 if on_aws:
-    log.info("on aws is true")
+    log.debug("on aws is true")
 
     RABBIT_HOST = get_ssm_parameter("RABBIT_HOST")
     SECRET_ARN = get_ssm_parameter("MQ_SECRET_ARN")
@@ -24,9 +24,9 @@ if on_aws:
     RABBIT_USER = creds["username"]
     RABBIT_PASS = creds["password"]
     RABBIT_PORT = 5672
-    log.info("using mq with host", rabbit_host=RABBIT_HOST)
+    log.debug("using mq with host", rabbit_host=RABBIT_HOST)
 else:
-    log.info("on_aws is false, using local rabbitmq")
+    log.debug("on_aws is false, using local rabbitmq")
     RABBIT_HOST = "megaplex"
     RABBIT_PORT = 5672
     RABBIT_USER = ""
@@ -118,7 +118,7 @@ def get_pika_connection_with_retries(max_retries=None):
                 log.exception("giving up on connecting to pika")
                 return None, None
 
-            log.info("trying to connect to pika, sleeping ...")
+            log.debug("trying to connect to pika, sleeping ...")
             if not use_gevent:
                 time.sleep(3)
             else:
@@ -130,7 +130,7 @@ def sleep_until_rabbit_alive(max_tries=100):
         return True
     from rabbitmq_admin import AdminAPI
     api = AdminAPI(url="http://megaplex:15672", auth=('guest', 'guest'))
-    log.info('got admin api')
+    log.debug('got admin api')
     for n in range(max_tries):
         if rabbit_alive(api):
             return True

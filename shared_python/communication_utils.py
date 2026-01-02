@@ -15,7 +15,7 @@ try:
     import flask_socketio
     from flask_socketio import SocketIO
     from redis_tools import MESSAGE_QUEUE
-    log.info("communication utils with flask_socketio", queue=MESSAGE_QUEUE)
+    log.debug("communication utils with flask_socketio", queue=MESSAGE_QUEUE)
 
     socketio = SocketIO(
         async_mode="gevent",
@@ -28,7 +28,7 @@ try:
     def emit_direct(event_name, data, namespace, room):
         socketio.emit(event_name, data, namespace=namespace, room=room)
 except ModuleNotFoundError as err:
-    log.info("no flask_socketio")
+    log.debug("no flask_socketio")
 
 megaplex = None
 

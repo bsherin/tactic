@@ -57,7 +57,7 @@ class ECSTileBackend(TileBackend):
                tile_name: Optional[str] = None):
         tid, task_arn = self.tile_registry.claim_tile(username, owner, parent, project_name, tile_name)
         if tid:
-            log.info("warm_tile_claimed", category="tile_management", tile_id=tid, task_arn=task_arn)
+            log.debug("warm_tile_claimed", category="tile_management", tile_id=tid, task_arn=task_arn)
             creds = self.issue_user_s3_session(username)
             return tid, task_arn, creds
 

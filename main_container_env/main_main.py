@@ -135,14 +135,14 @@ class MainWorker(QWorker, ExceptionMixin, CopilotMixin):
 
 if __name__ == "__main__":
     try:
-        log.info("in __main__")
+        log.debug("in __main__")
         app = Flask(__name__)
         exception_mixin.app = app
-        log.info("creating mainworker")
+        log.debug("creating mainworker")
         mworker = MainWorker()
-        log.info("mworker is created, about to start", my_id=mworker.my_id)
+        log.debug("mworker is created, about to start", my_id=mworker.my_id)
         mworker.start()
-        log.info("mworker started", my_id=mworker.my_id)
+        log.debug("mworker started", my_id=mworker.my_id)
     except Exception:
         log.exception("*** fatal error starting main ***")
         log.critical("*** exiting due to fatal error ***")

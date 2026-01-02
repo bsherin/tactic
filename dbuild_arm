@@ -19,21 +19,30 @@ export COMPOSE_DOCKER_CLI_BUILD=2
 # shellcheck disable=SC2164
 cd "$ROOT_DIR"
 
-# Run docker compose based on argument
-if [ "$1" == "all" ] ; then
-  ROOT_DIR="$ROOT_DIR" docker compose --env-file develop.env --profile build_project build
-elif [ "$1" == "non_base" ] ; then
-  ROOT_DIR="$ROOT_DIR" docker compose --env-file develop.env --profile build_project build "tactic_host1"
-  ROOT_DIR="$ROOT_DIR" docker compose --env-file develop.env --profile build_project build "tactic_main"
-  ROOT_DIR="$ROOT_DIR" docker compose --env-file develop.env --profile build_project build "tactic_module_viewer"
-  ROOT_DIR="$ROOT_DIR" docker compose --env-file develop.env --profile build_project build "tactic_tile"
-  ROOT_DIR="$ROOT_DIR" docker compose --env-file develop.env --profile build_project build "tactic_log_streamer"
-  ROOT_DIR="$ROOT_DIR" docker compose --env-file develop.env --profile build_project build "tactic_assistant"
-  ROOT_DIR="$ROOT_DIR" docker compose --env-file develop.env --profile build_project build "tactic_mongo_watcher"
-  ROOT_DIR="$ROOT_DIR" docker compose --env-file develop.env --profile build_project build "tactic_pool_watcher"
+SERVICES=(
+  "tactic_host1"
+  "tactic_main"
+  "tactic_module_viewer"
+  "tactic_tile"
+  "tactic_pool_watcher_s3"
+  "tactic_mongo_watcher"
+  "tactic_log_streamer"
+  "tactic_assistant"
+)
+
+if [ "$1" == "non_base" ] ; then
+  for SERVICE in "${SERVICES[@]}"; do
+    ROOT_DIR="$ROOT_DIR" docker compose -f docker-compose.yml -f docker-compose.local.yml --env-file develop.env build "$SERVICE"
+  done
+
+elif [ "$1" == "base" ] ; then
+  ROOT_DIR="$ROOT_DIR" docker compose -f docker-compose.yml -f docker-compose.local.yml -env-file develop.env --profile build build "tactic_base"
+
+elif [ "$1" == "wheels" ] ; then
+  ROOT_DIR="$ROOT_DIR" docker compose -f docker-compose.yml -f docker-compose.local.yml -env-file develop.env --profile build build "tactic_wheels"
 
 elif [ "$1" == "host" ] ; then
-  ROOT_DIR="$ROOT_DIR" docker compose --env-file develop.env --profile build_project build "tactic_host1"
+  ROOT_DIR="$ROOT_DIR" docker compose -f docker-compose.yml -f docker-compose.local.yml --env-file develop.env build "tactic_host1"
 else
-  ROOT_DIR="$ROOT_DIR" docker compose --env-file develop.env --profile build_project build "tactic_$1"
+  ROOT_DIR="$ROOT_DIR" docker compose -f docker-compose.yml -f docker-compose.local.yml -env-file develop.env build "tactic_$1"
 fi

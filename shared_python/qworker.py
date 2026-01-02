@@ -151,7 +151,7 @@ class QWorker(ExceptionMixin):
                 else:
                     thread = threading.Thread(target=self.start_background_thread)
                     thread.start()
-                log.info('Background thread started')
+                log.debug('Background thread started')
 
     def ready(self):
         return
@@ -206,7 +206,7 @@ class QWorker(ExceptionMixin):
         new_id = new_task_id()
         with bind_request(new_id, "presend", task_type):
             try:
-                log.info("post_task", task_type=task_type, dest_id=dest_id, my_id=self.my_id)
+                log.debug("post_task", task_type=task_type, dest_id=dest_id, my_id=self.my_id)
                 if callback_func is not None:
                     callback_id = str(uuid.uuid4())
                     if special_reply_to is None:
@@ -238,7 +238,7 @@ class QWorker(ExceptionMixin):
                               "expiration": expiration}
 
                 declare_queue(self.channel, dest_id)
-                log.info("Posting task", task_type=task_type, dest_id=dest_id, source_id=self.my_id)
+                log.debug("Posting task", task_type=task_type, dest_id=dest_id, source_id=self.my_id)
                 self.post_packet(dest_id, new_packet, reply_to, callback_id)
                 sleep_func(PAUSE_TIME)
                 result = {"success": True}
@@ -256,7 +256,7 @@ class QWorker(ExceptionMixin):
         task_id = new_task_id()
         with bind_request(task_id, "presend", task_type):
             try:
-                log.info("post_and_wait", task_type=task_type, dest_id=dest_id, my_id=self.my_id)
+                log.debug("post_and_wait", task_type=task_type, dest_id=dest_id, my_id=self.my_id)
                 callback_id = str(uuid.uuid4())
                 wait_worker = BlockingWaitWorker(self.wait_queue_id)
                 new_packet = {"source": self.my_id,
@@ -326,7 +326,7 @@ class QWorker(ExceptionMixin):
         task_type = task_packet.get("task_type", "unknown")
         with bind_request(task_id, "handling_response", task_type):
             try:
-                log.info("handle_response",
+                log.debug("handle_response",
                           my_id=self.my_id)
                 cbid = task_packet["callback_id"]
                 if cbid in error_handler_dict:

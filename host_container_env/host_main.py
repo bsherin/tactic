@@ -24,25 +24,25 @@ try:
     setup_logging("host")
     log.info("starting", extra_flag=True)
 
-    log.info("entering host main with suppressed logging")
-    log.info("monkey patching done")
+    log.debug("entering host main with suppressed logging")
+    log.debug("monkey patching done")
     from rabbit_manage import sleep_until_rabbit_alive
-    log.info("Waiting for rabbit")
+    log.debug("Waiting for rabbit")
     success = sleep_until_rabbit_alive()
-    log.info("Done waiting")
+    log.debug("Done waiting")
 
     from tactic_app import app, socketio
-    log.info("back in host_main")
+    log.debug("back in host_main")
     import users
-    log.info("imported user")
+    log.debug("imported user")
     import auth_views, main_views, library_views, admin_views, pool_views
     import list_views, code_views, tile_views, project_views, collection_views
     import module_viewer_views
-    log.info("imported views")
+    log.debug("imported views")
     import host_workers
-    log.info("imported host_workers")
+    log.debug("imported host_workers")
 
-    log.info("trying redis stuff")
+    log.debug("trying redis stuff")
     import redis_tools
 except Exception:
     log.exception("*** fatal error starting host ***")

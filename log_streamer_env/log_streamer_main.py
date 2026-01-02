@@ -1,7 +1,7 @@
 
 from tactic_logging import setup_logging, log
 setup_logging("log_streamer")
-log.info("starting", extra_flag=True)
+log.debug("starting", extra_flag=True)
 
 try:
     from flask import Flask
@@ -96,9 +96,9 @@ if __name__ == "__main__":
     try:
         app = Flask(__name__)
         exception_mixin.app = app
-        log.info("entering log streamer main")
+        log.debug("entering log streamer main")
         mworker = LogStreamer()
-        log.info("LogSTreamer is created", my_id=mworker.my_id)
+        log.debug("LogSTreamer is created", my_id=mworker.my_id)
         mworker.start()
         log.info("mworker started", my_id=mworker.my_id)
     except Exception:

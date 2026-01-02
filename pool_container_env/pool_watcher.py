@@ -55,7 +55,7 @@ class Handler(FileSystemEventHandler):
         new_id = new_task_id()
         with bind_request(new_id, "presend", task_type):
             try:
-                log.info("post_task")
+                log.debug("post_task")
                 callback_id = None
                 reply_to = None
                 callback_type = "no_callback"

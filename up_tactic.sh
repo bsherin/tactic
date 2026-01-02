@@ -1,5 +1,6 @@
 #!/bin/bash
 env_file="server.env"
+extra_docker_compose="docker-compose.ec2.yml"
 up_only="False"
 profile="start_project"
 restart_aux="False"
@@ -22,6 +23,9 @@ while :; do
       ;;
     --debug_host)
       profile="debug_host"
+      ;;
+    --local)
+      extra_docker_compose="docker-compose.local.yml"
       ;;
     --debug)
       env_file="develop_debug.env"
@@ -48,4 +52,4 @@ if [ $up_only == "False" ] ; then
   fi
 
 fi
-docker compose --env-file $env_file --profile $profile up --detach
+docker compose --env-file $env_file -f docker-compose.yml -f $extra_docker_compose --profile $profile up --detach

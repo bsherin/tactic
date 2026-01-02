@@ -127,7 +127,7 @@ class TileContainerRegistry(ServiceRegistry):
         if on_aws:
             idle_deficit = max(0, self.desired_idle - self.idle_tiles)
             excess_idle = max(0, self.idle_tiles - self.desired_idle)
-            log.info("current metrics",
+            log.debug("current metrics",
                      desired_idle=self.desired_idle,
                      idle_tiles=self.idle_tiles,
                      running_tiles=self.running_tiles,
@@ -147,7 +147,7 @@ class TileContainerRegistry(ServiceRegistry):
                 ]
             )
         else:
-            log.info("current_metrics",
+            log.debug("current_metrics",
                      idle_tiles=self.idle_tiles,
                      running_tiles=self.running_tiles)
 
@@ -163,7 +163,7 @@ class TileContainerRegistry(ServiceRegistry):
                 self.set_container_info(tile_id, "memory_limit_mb", str(data["memory_limit_mb"]))
 
     def sweep_tiles(self):
-        log.info("sweep_tiles", category="tile_management")
+        log.debug("sweep_tiles", category="tile_management")
 
         def got_main_ids(data):
             main_session_ids = data["sids"]
@@ -334,7 +334,7 @@ class TileContainerRegistry(ServiceRegistry):
         )
 
     def reconcile_tiles(self):
-        log.info("reconcile_tiles", category="tile_management")
+        log.debug("reconcile_tiles", category="tile_management")
         if self.worker.channel is None:
             log.warning("in reconcile_tiles, channel isn't ready yet")
             return
