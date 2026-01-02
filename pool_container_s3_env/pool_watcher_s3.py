@@ -1,4 +1,4 @@
-from tactic_logging import log, setup_logging, bind_request
+from tactic_logging import log, setup_logging, bind_request, new_task_id
 
 setup_logging("pool_watcher_s3")
 log.info("starting", extra_flag=True)
@@ -31,7 +31,7 @@ except Exception:
 class Handler:
     def __init__(self):
         self.my_id = "pool_watcher"
-        log.info("my_id", self.my_id)
+        log.info("my_id", my_id=self.my_id)
         self.connection, self.channel = get_pika_connection_with_retries(0)
         log.info("connected to RabbitMQ")
         if on_aws:
@@ -121,7 +121,7 @@ class Handler:
     def main(self):
         while True:
             task_id = new_task_id()
-            with bind_quest(task_id, "ad_hoc", "sqs_poll"):
+            with bind_request(task_id, "ad_hoc", "sqs_poll"):
                 resp = self.sqs.receive_message(
                     QueueUrl=SQS_QUEUE_URL,
                     MaxNumberOfMessages=10,
