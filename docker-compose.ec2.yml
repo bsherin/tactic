@@ -6,8 +6,8 @@ services:
       options:
         awslogs-region: us-east-2
         awslogs-group: /tactic/ec2
-        awslogs-stream-prefix: tactic
         awslogs-create-group: "true"
+        awslogs-stream: tactic_host1
 
   tactic_assistant:
     logging:
@@ -15,8 +15,8 @@ services:
       options:
         awslogs-region: us-east-2
         awslogs-group: /tactic/ec2
-        awslogs-stream-prefix: tactic
         awslogs-create-group: "true"
+        awslogs-stream: tactic_assistant
 
   tile_test_container:
     logging:
@@ -24,8 +24,8 @@ services:
       options:
         awslogs-region: us-east-2
         awslogs-group: /tactic/ec2
-        awslogs-stream-prefix: tactic
         awslogs-create-group: "true"
+        awslogs-stream: tactic_tile_test_container
 
   tactic_log_streamer:
     logging:
@@ -33,8 +33,8 @@ services:
       options:
         awslogs-region: us-east-2
         awslogs-group: /tactic/ec2
-        awslogs-stream-prefix: tactic
         awslogs-create-group: "true"
+        awslogs-stream: tactic_log_streamer
 
   tactic_mongo_watcher:
     logging:
@@ -42,5 +42,5 @@ services:
       options:
         awslogs-region: us-east-2
         awslogs-group: /tactic/ec2
-        awslogs-stream-prefix: tactic
         awslogs-create-group: "true"
+        awslogs-stream: tactic_mongo_watcher
