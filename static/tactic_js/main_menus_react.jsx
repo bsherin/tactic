@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import markdownIt from 'markdown-it'
 import 'markdown-it-latex/dist/index.css'
 import markdownItLatex from 'markdown-it-latex'
+import { renderToString } from 'react-dom/server';
 
 const mdi = markdownIt({html: true});
 mdi.use(markdownItLatex);
@@ -14,6 +15,8 @@ import {MenuComponent, ToolMenu} from "./menu_utilities";
 import {DialogContext} from "./modal_react";
 import {StatusContext} from "./toaster"
 import {ErrorDrawerContext} from "./error_drawer";
+import {widgetDict} from "./widgets";
+import {ErrorBoundary} from "./error_boundary";
 
 export {ProjectMenu, DocumentMenu, ColumnMenu, RowMenu, ViewMenu, MenuComponent}
 
@@ -126,10 +129,10 @@ function ProjectMenu(props) {
             let data = await postPromise("host", "get_collection_names_task", {"user_id": user_id}, props.local_id);
             let [use_dark_theme, save_as_collection, collection_name] = await dialogFuncs.showModalPromise(
                 "PresentationDialog", {
-                default_value: "NewPresentation",
-                existing_names: data.collection_names,
-                handleClose: dialogFuncs.hideModal
-            });
+                    default_value: "NewPresentation",
+                    existing_names: data.collection_names,
+                    handleClose: dialogFuncs.hideModal
+                });
             var cell_list = [];
             for (let entry of props.console_items) {
                 let new_entry = {};
@@ -143,6 +146,16 @@ function ProjectMenu(props) {
                     case "code":
                         new_entry.console_text = entry.console_text;
                         new_entry.output_text = entry.output_text;
+                        const container = document.getElementById(entry.unique_id);
+                        const target = container.querySelector(".log-code-output");
+
+                        new_entry.output_text = target ? exportStyledSubtree(target) : "";
+                        new_entry.summary_text = entry.summary_text;
+                        break;
+                    case "fixed":
+                        const fcontainer = document.getElementById(entry.unique_id);
+                        const ftarget = fcontainer.querySelector(".log-panel-body");
+                        new_entry.output_text = ftarget ? exportStyledSubtree(ftarget) : "";
                         new_entry.summary_text = entry.summary_text;
                         break;
                     case "divider":
@@ -186,6 +199,30 @@ function ProjectMenu(props) {
         }
     }
 
+    function exportStyledSubtree(rootEl) {
+        const clone = rootEl.cloneNode(true);
+
+        function copyComputedStyle(src, dest) {
+            const cs = window.getComputedStyle(src);
+
+            // Copy every computed property as inline style
+            dest.style.cssText = Array.from(cs)
+                .map((prop) => `${prop}:${cs.getPropertyValue(prop)};`)
+                .join("");
+
+            // If you rely on pseudo-elements, you may need a separate strategy (see notes).
+            const srcKids = Array.from(src.children);
+            const destKids = Array.from(dest.children);
+            for (let i = 0; i < srcKids.length; i++) {
+                copyComputedStyle(srcKids[i], destKids[i]);
+            }
+        }
+
+        copyComputedStyle(rootEl, clone);
+
+        return clone.outerHTML;
+    }
+
     async function _exportAsReport() {
         try {
             let data = await postPromise("host", "get_collection_names_task", {"user_id": user_id}, props.local_id);
@@ -195,7 +232,7 @@ function ProjectMenu(props) {
                     existing_names: data.collection_names,
                     handleClose: dialogFuncs.hideModal
                 });
-            var cell_list = [];
+            let cell_list = [];
             for (let entry of props.console_items) {
                 let new_entry = {};
                 new_entry.type = entry.type;
@@ -207,7 +244,16 @@ function ProjectMenu(props) {
                         break;
                     case "code":
                         new_entry.console_text = entry.console_text;
-                        new_entry.output_text = entry.output_text;
+                        const container = document.getElementById(entry.unique_id);
+                        const target = container.querySelector(".log-code-output");
+
+                        new_entry.output_text = target ? exportStyledSubtree(target) : "";
+                        new_entry.summary_text = entry.summary_text;
+                        break;
+                    case "fixed":
+                        const fcontainer = document.getElementById(entry.unique_id);
+                        const ftarget = fcontainer.querySelector(".log-panel-body");
+                        new_entry.output_text = ftarget ? exportStyledSubtree(ftarget) : "";
                         new_entry.summary_text = entry.summary_text;
                         break;
                     case "divider":

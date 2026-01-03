@@ -19,11 +19,14 @@ var _propTypes = _interopRequireDefault(require("prop-types"));
 var _markdownIt = _interopRequireDefault(require("markdown-it"));
 require("markdown-it-latex/dist/index.css");
 var _markdownItLatex = _interopRequireDefault(require("markdown-it-latex"));
+var _server = require("react-dom/server");
 var _communication_react = require("./communication_react");
 var _menu_utilities = require("./menu_utilities");
 var _modal_react = require("./modal_react");
 var _toaster = require("./toaster");
 var _error_drawer = require("./error_drawer");
+var _widgets = require("./widgets");
+var _error_boundary = require("./error_boundary");
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t14 in e) "default" !== _t14 && {}.hasOwnProperty.call(e, _t14) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t14)) && (i.get || i.set) ? o(f, _t14, i) : f[_t14] = e[_t14]); return f; })(e, t); }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
@@ -201,7 +204,7 @@ function ProjectMenu(props) {
   }
   function _exportAsPresentation2() {
     _exportAsPresentation2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5() {
-      var data, _yield$dialogFuncs$sh3, _yield$dialogFuncs$sh4, use_dark_theme, save_as_collection, collection_name, cell_list, _iterator, _step, entry, new_entry, result_dict, data_object, title, _t3, _t4, _t5;
+      var data, _yield$dialogFuncs$sh3, _yield$dialogFuncs$sh4, use_dark_theme, save_as_collection, collection_name, cell_list, _iterator, _step, entry, new_entry, container, target, fcontainer, ftarget, result_dict, data_object, title, _t3, _t4, _t5;
       return _regenerator().w(function (_context5) {
         while (1) switch (_context5.n) {
           case 0:
@@ -230,54 +233,63 @@ function ProjectMenu(props) {
             _iterator.s();
           case 4:
             if ((_step = _iterator.n()).done) {
-              _context5.n = 12;
+              _context5.n = 13;
               break;
             }
             entry = _step.value;
             new_entry = {};
             new_entry.type = entry.type;
             _t3 = entry.type;
-            _context5.n = _t3 === "text" ? 5 : _t3 === "code" ? 6 : _t3 === "divider" ? 7 : _t3 === "figure" ? 8 : 9;
+            _context5.n = _t3 === "text" ? 5 : _t3 === "code" ? 6 : _t3 === "fixed" ? 7 : _t3 === "divider" ? 8 : _t3 === "figure" ? 9 : 10;
             break;
           case 5:
             new_entry.console_text = mdi.render(entry.console_text);
             new_entry.raw_text = entry.console_text;
             new_entry.summary_text = entry.summary_text;
-            return _context5.a(3, 10);
+            return _context5.a(3, 11);
           case 6:
             new_entry.console_text = entry.console_text;
             new_entry.output_text = entry.output_text;
+            container = document.getElementById(entry.unique_id);
+            target = container.querySelector(".log-code-output");
+            new_entry.output_text = target ? exportStyledSubtree(target) : "";
             new_entry.summary_text = entry.summary_text;
-            return _context5.a(3, 10);
+            return _context5.a(3, 11);
           case 7:
+            fcontainer = document.getElementById(entry.unique_id);
+            ftarget = fcontainer.querySelector(".log-panel-body");
+            new_entry.output_text = ftarget ? exportStyledSubtree(ftarget) : "";
+            new_entry.summary_text = entry.summary_text;
+            return _context5.a(3, 11);
+          case 8:
             new_entry.header_text = entry.header_text;
             new_entry.summary_text = "";
-            return _context5.a(3, 10);
-          case 8:
+            return _context5.a(3, 11);
+          case 9:
             new_entry.image_data_str = entry.image_data_str;
             new_entry.summary_text = entry.summary_text;
-            return _context5.a(3, 10);
-          case 9:
+            return _context5.a(3, 11);
+          case 10:
             new_entry.console_text = entry.console_text;
             new_entry.summary_text = entry.summary_text;
-            return _context5.a(3, 10);
-          case 10:
-            cell_list.push(new_entry);
+            return _context5.a(3, 11);
           case 11:
+            cell_list.push(new_entry);
+          case 12:
             _context5.n = 4;
             break;
-          case 12:
-            _context5.n = 14;
-            break;
           case 13:
-            _context5.p = 13;
-            _t4 = _context5.v;
-            _iterator.e(_t4);
+            _context5.n = 15;
+            break;
           case 14:
             _context5.p = 14;
-            _iterator.f();
-            return _context5.f(14);
+            _t4 = _context5.v;
+            _iterator.e(_t4);
           case 15:
+            _context5.p = 15;
+            _iterator.f();
+            return _context5.f(15);
+          case 16:
             result_dict = {
               "project_name": props.project_name,
               "collection_name": collection_name,
@@ -287,9 +299,9 @@ function ProjectMenu(props) {
               "local_id": props.local_id,
               "cell_list": cell_list
             };
-            _context5.n = 16;
+            _context5.n = 17;
             return (0, _communication_react.postPromiseMain)(props.local_id, "export_as_presentation", result_dict, props.local_id);
-          case 16:
+          case 17:
             data_object = _context5.v;
             statusFuncs.clearStatusMessage();
             if (save_as_collection) {
@@ -297,28 +309,48 @@ function ProjectMenu(props) {
             } else {
               window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data_object["temp_id"]));
             }
-            _context5.n = 18;
+            _context5.n = 19;
             break;
-          case 17:
-            _context5.p = 17;
+          case 18:
+            _context5.p = 18;
             _t5 = _context5.v;
             if (_t5 != "canceled") {
               title = "title" in _t5 ? _t5.title : "Error exporting presentation";
               errorDrawerFuncs.addFromError(title, _t5);
             }
-          case 18:
+          case 19:
             return _context5.a(2);
         }
-      }, _callee5, null, [[3, 13, 14, 15], [0, 17]]);
+      }, _callee5, null, [[3, 14, 15, 16], [0, 18]]);
     }));
     return _exportAsPresentation2.apply(this, arguments);
+  }
+  function exportStyledSubtree(rootEl) {
+    var clone = rootEl.cloneNode(true);
+    function copyComputedStyle(src, dest) {
+      var cs = window.getComputedStyle(src);
+
+      // Copy every computed property as inline style
+      dest.style.cssText = Array.from(cs).map(function (prop) {
+        return "".concat(prop, ":").concat(cs.getPropertyValue(prop), ";");
+      }).join("");
+
+      // If you rely on pseudo-elements, you may need a separate strategy (see notes).
+      var srcKids = Array.from(src.children);
+      var destKids = Array.from(dest.children);
+      for (var i = 0; i < srcKids.length; i++) {
+        copyComputedStyle(srcKids[i], destKids[i]);
+      }
+    }
+    copyComputedStyle(rootEl, clone);
+    return clone.outerHTML;
   }
   function _exportAsReport() {
     return _exportAsReport2.apply(this, arguments);
   }
   function _exportAsReport2() {
     _exportAsReport2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6() {
-      var data, _yield$dialogFuncs$sh5, _yield$dialogFuncs$sh6, collapsible, include_summaries, use_dark_theme, save_as_collection, collection_name, cell_list, _iterator2, _step2, entry, new_entry, result_dict, data_object, title, _t6, _t7, _t8;
+      var data, _yield$dialogFuncs$sh5, _yield$dialogFuncs$sh6, collapsible, include_summaries, use_dark_theme, save_as_collection, collection_name, cell_list, _iterator2, _step2, entry, new_entry, container, target, fcontainer, ftarget, result_dict, data_object, title, _t6, _t7, _t8;
       return _regenerator().w(function (_context6) {
         while (1) switch (_context6.n) {
           case 0:
@@ -349,53 +381,61 @@ function ProjectMenu(props) {
             _iterator2.s();
           case 4:
             if ((_step2 = _iterator2.n()).done) {
-              _context6.n = 12;
+              _context6.n = 13;
               break;
             }
             entry = _step2.value;
             new_entry = {};
             new_entry.type = entry.type;
             _t6 = entry.type;
-            _context6.n = _t6 === "text" ? 5 : _t6 === "code" ? 6 : _t6 === "divider" ? 7 : _t6 === "figure" ? 8 : 9;
+            _context6.n = _t6 === "text" ? 5 : _t6 === "code" ? 6 : _t6 === "fixed" ? 7 : _t6 === "divider" ? 8 : _t6 === "figure" ? 9 : 10;
             break;
           case 5:
             new_entry.console_text = mdi.render(entry.console_text);
             new_entry.raw_text = entry.console_text;
             new_entry.summary_text = entry.summary_text;
-            return _context6.a(3, 10);
+            return _context6.a(3, 11);
           case 6:
             new_entry.console_text = entry.console_text;
-            new_entry.output_text = entry.output_text;
+            container = document.getElementById(entry.unique_id);
+            target = container.querySelector(".log-code-output");
+            new_entry.output_text = target ? exportStyledSubtree(target) : "";
             new_entry.summary_text = entry.summary_text;
-            return _context6.a(3, 10);
+            return _context6.a(3, 11);
           case 7:
-            new_entry.header_text = entry.header_text;
-            return _context6.a(3, 10);
+            fcontainer = document.getElementById(entry.unique_id);
+            ftarget = fcontainer.querySelector(".log-panel-body");
+            new_entry.output_text = ftarget ? exportStyledSubtree(ftarget) : "";
+            new_entry.summary_text = entry.summary_text;
+            return _context6.a(3, 11);
           case 8:
+            new_entry.header_text = entry.header_text;
+            return _context6.a(3, 11);
+          case 9:
             new_entry.image_data_str = entry.image_data_str;
             new_entry.summary_text = entry.summary_text;
-            return _context6.a(3, 10);
-          case 9:
+            return _context6.a(3, 11);
+          case 10:
             new_entry.console_text = entry.console_text;
             new_entry.summary_text = entry.summary_text;
-            return _context6.a(3, 10);
-          case 10:
-            cell_list.push(new_entry);
+            return _context6.a(3, 11);
           case 11:
+            cell_list.push(new_entry);
+          case 12:
             _context6.n = 4;
             break;
-          case 12:
-            _context6.n = 14;
-            break;
           case 13:
-            _context6.p = 13;
-            _t7 = _context6.v;
-            _iterator2.e(_t7);
+            _context6.n = 15;
+            break;
           case 14:
             _context6.p = 14;
-            _iterator2.f();
-            return _context6.f(14);
+            _t7 = _context6.v;
+            _iterator2.e(_t7);
           case 15:
+            _context6.p = 15;
+            _iterator2.f();
+            return _context6.f(15);
+          case 16:
             result_dict = {
               "project_name": props.project_name,
               "collection_name": collection_name,
@@ -406,9 +446,9 @@ function ProjectMenu(props) {
               "local_id": props.local_id,
               "cell_list": cell_list
             };
-            _context6.n = 16;
+            _context6.n = 17;
             return (0, _communication_react.postPromiseMain)(props.local_id, "export_as_report", result_dict, props.local_id);
-          case 16:
+          case 17:
             data_object = _context6.v;
             statusFuncs.clearStatusMessage();
             if (save_as_collection) {
@@ -418,20 +458,20 @@ function ProjectMenu(props) {
             } else {
               window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data_object["temp_id"]));
             }
-            _context6.n = 18;
+            _context6.n = 19;
             break;
-          case 17:
-            _context6.p = 17;
+          case 18:
+            _context6.p = 18;
             _t8 = _context6.v;
             if (_t8 != "canceled") {
               title = "title" in _t8 ? _t8.title : "Error exporting report";
               errorDrawerFuncs.addFromError(title, _t8);
             }
             statusFuncs.clearStatusMessage();
-          case 18:
+          case 19:
             return _context6.a(2);
         }
-      }, _callee6, null, [[3, 13, 14, 15], [0, 17]]);
+      }, _callee6, null, [[3, 14, 15, 16], [0, 18]]);
     }));
     return _exportAsReport2.apply(this, arguments);
   }

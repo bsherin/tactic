@@ -683,6 +683,7 @@ class LoadSaveTasksMixin:
                     ccell["extra_style"] = ""
                 if not in_section:
                     if not ccell["type"] == "divider":
+                        new_cell_list.append(ccell)
                         continue
                     if not ccell["header_text"].lower() == "styles":
                         ccell["_id"] = re.sub(" ", "_", ccell["header_text"])
@@ -702,7 +703,6 @@ class LoadSaveTasksMixin:
                             ccell["image"] = ccell["image_data_str"]
                         new_cell_list.append(ccell)
                         continue
-
             report_html = render_template("presentation_template.html",
                                           cell_list=new_cell_list,
                                           extra_styles=style_text,
