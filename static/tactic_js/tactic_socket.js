@@ -81,13 +81,20 @@ class TacticSocket {
         // this.socket = io.connect(`${protocol}//${document.domain}:${location.port}/${this.name_space}`);
 
         const ns = this.name_space.startsWith("/") ? this.name_space : `/${this.name_space}`;
-        const socketBase = `${window.location.protocol}//${window.location.hostname}:5000`; // backend port
+        const isLocal =
+          window.location.hostname === "localhost" ||
+          window.location.hostname === "127.0.0.1";
 
-        this.socket = io(socketBase + ns, {
+        const socketOrigin = isLocal
+          ? `${window.location.protocol}//${window.location.hostname}:5000`
+          : window.location.origin;
+
+        this.socket = io(socketOrigin + ns, {
           path: "/socket.io",
           transports: ["websocket"],
           upgrade: false,
         });
+
         this.counter = 0;
         // The lines below are useful for debugging.
         // this.socket.onAny((event, ...args) => {
