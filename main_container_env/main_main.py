@@ -109,11 +109,12 @@ class MainWorker(QWorker, ExceptionMixin, CopilotMixin):
         return {"success": True}
 
     def print_to_console(self, sid, message, force_open=False, is_error=False, summary=None):
+        sess = self.mwindow.get_session(sid)
 
         self.ask_host(sid, "print_to_console", {"message": message,
                        "force_open": force_open,
                        "is_error": is_error,
-                       "user_id": self.mwindow.user_id,
+                       "user_id": sess.user_id,
                        "summary": summary})
         return {"success": True}
 

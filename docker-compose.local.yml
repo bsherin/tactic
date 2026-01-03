@@ -1,4 +1,13 @@
 services:
+  tactic_host1:
+    environment:
+      - MY_ID=host5000
+      - MYPORT=5000
+      - USE_DEVELOPMENT_BUNDLES=${USE_DEVELOPMENT_BUNDLES}
+      - RUNNING_ON_AWS=${RUNNING_ON_AWS}
+      - USE_GEVENT=True
+      - LOG_LEVEL=DEBUG
+      - PYCHARM_DEBUG=1
   loki:
     image: grafana/loki:2.9.8
     command: -config.file=/etc/loki/loki.yml
@@ -104,6 +113,7 @@ services:
     environment:
       - USE_GEVENT=False
       - DEBUG=${DEBUG}
+      - LOG_LEVEL=DEBUG
       - RUNNING_ON_AWS=${RUNNING_ON_AWS}
     volumes:
       - type: bind
