@@ -78,7 +78,16 @@ class TacticSocket {
 
     connectme() {
         const protocol = window.location.protocol;
-        this.socket = io.connect(`${protocol}//${document.domain}:${location.port}/${this.name_space}`);
+        // this.socket = io.connect(`${protocol}//${document.domain}:${location.port}/${this.name_space}`);
+
+        const ns = this.name_space.startsWith("/") ? this.name_space : `/${this.name_space}`;
+        const socketBase = `${window.location.protocol}//${window.location.hostname}:5000`; // backend port
+
+        this.socket = io(socketBase + ns, {
+          path: "/socket.io",
+          transports: ["websocket"],
+          upgrade: false,
+        });
         this.counter = 0;
         // The lines below are useful for debugging.
         // this.socket.onAny((event, ...args) => {
