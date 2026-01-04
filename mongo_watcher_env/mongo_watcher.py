@@ -151,6 +151,7 @@ class Handler:
             if attempt < 10:
                 log.exception("Error in post_packet, retrying", dest_id=dest_id, attempt=attempt)
                 connection, channel = get_pika_connection()
+                channel.basic_qos(prefetch_count=10)
                 if connection is not None:
                     self.channel = connection.channel()
                     self.post_packet(dest_id, task_packet, reply_to, callback_id, attempt + 1)

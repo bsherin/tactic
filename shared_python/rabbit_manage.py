@@ -90,15 +90,23 @@ def declare_durable_queue(channel, qname):
         queue=qname,
         durable=True,
         auto_delete=False,
-        exclusive=False
+        exclusive=False,
+        arguments={
+            "x-max-length": 10000,
+            "x-overflow": "reject-publish",
+        }
     )
 
 def declare_regular_queue(channel, qname):
     channel.queue_declare(
         queue=qname,
         durable=False,
-        auto_delete=False,
-        exclusive=False
+        auto_delete=True,
+        exclusive=False,
+        arguments={
+            "x-max-length": 10000,
+            "x-overflow": "reject-publish",
+        }
     )
 
 def get_pika_connection_with_retries(max_retries=None):
@@ -109,6 +117,7 @@ def get_pika_connection_with_retries(max_retries=None):
     while True:
         try:
             connection, channel = get_pika_connection()
+            channel.basic_qos(prefetch_count=10)
             return connection, channel
         except Exception:
             attempt += 1
