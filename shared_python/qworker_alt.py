@@ -484,7 +484,7 @@ class BlockingWaitWorker(ExceptionMixin):
             if self.connection is None:
                 log.exception("Couldn't create pika connection for blocking worker")
                 return
-            self.channel.queue_declare(queue=self.queue_name, durable=False, exclusive=False)
+            declare_queue(self.channel, self.queue_name)
             self.callback_queue = self.queue_name
             self.channel.basic_consume(
                 queue=self.callback_queue,
