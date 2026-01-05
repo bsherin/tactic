@@ -321,14 +321,15 @@ class LoadSaveTasksMixin:
                 data_dict.update(
                     self.grab_freeform_data({"sid": local_id, "doc_name": sess.visible_doc_name, "set_visible_doc": True}))
             def got_new_ids(nd_data):
-                for tile_entry in interface_state["tile_list"]:
-                    prior_id = tile_entry["tile_id"]
-                    tile_info = sess.tile_info
-                    current_id = tile_info.current_from_old(prior_id)
-                    if current_id is None:
-                        log.error("prior_id not found in tile_info", prior_id=prior_id)
-                    else:
-                        tile_entry["tile_id"] = current_id
+                if "tile_list" in interface_state:
+                    for tile_entry in interface_state["tile_list"]:
+                        prior_id = tile_entry["tile_id"]
+                        tile_info = sess.tile_info
+                        current_id = tile_info.current_from_old(prior_id)
+                        if current_id is None:
+                            log.error("prior_id not found in tile_info", prior_id=prior_id)
+                        else:
+                            tile_entry["tile_id"] = current_id
                 data_dict["interface_state"] = interface_state
                 self.mworker.submit_response(task_packet, data_dict)
                 return
