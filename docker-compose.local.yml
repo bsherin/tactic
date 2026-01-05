@@ -38,6 +38,20 @@ services:
     networks:
       - tactic-net
 
+  grafana:
+    image: grafana/grafana:10.4.3
+    ports:
+      - "127.0.0.1:3000:3000"
+    labels:
+      project: tactic_aux
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana-data:/var/lib/grafana
+    networks:
+      - tactic-net
+
+
   tactic-redis:
     image: redis:alpine
     restart: always
@@ -144,3 +158,8 @@ services:
       - RUNNING_ON_AWS=${RUNNING_ON_AWS}
     networks:
       - tactic-net
+
+volumes:
+  alloy-data:
+  grafana-data:
+  loki-data:

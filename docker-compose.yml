@@ -1,19 +1,6 @@
 
 services:
 
-    grafana:
-      image: grafana/grafana:10.4.3
-      ports:
-        - "127.0.0.1:3000:3000"
-      labels:
-        project: tactic_aux
-      environment:
-        - GF_SECURITY_ADMIN_PASSWORD=admin
-      volumes:
-        - grafana-data:/var/lib/grafana
-      networks:
-        - tactic-net
-
     tactic-mongo:
       image: mongo:5.0
       hostname: tactic-mongo
@@ -240,8 +227,6 @@ networks:
     external: true
 
 volumes:
-  alloy-data:
-  grafana-data:
   hf_cache:
     external: true
   nltk_cache:
@@ -255,4 +240,3 @@ volumes:
   mongo-volume:
     external: true
   tactic-redis-data:
-  loki-data:

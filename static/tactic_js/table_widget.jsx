@@ -9,6 +9,7 @@ import {
 import {FormGroup} from "@blueprintjs/core";
 import {SelectList} from "./blueprint_react_widgets";
 import {useWidget} from "./widgets"
+import {ErrorBoundary} from "./error_boundary";
 
 export {TableWidget}
 
@@ -106,7 +107,7 @@ function TableWidget(props) {
     };
 
     const [columnWidths, setColumnWidths] = useState(null);
-    const [expandRows, setExpandRows] = useState(props.widgetData.expandRows);
+    // const [expandRows, setExpandRows] = useState(props.widgetData.expandRows);
     // const [maxRows, setMaxRows] = useState(props.widgetData.maxRows);
     const [dataDictList, setDataDictList] = useState(props.widgetData.value);
     const [footerChoices, setFooterChoices] = useState([]);
@@ -283,43 +284,50 @@ function TableWidget(props) {
                        name={column_name}/>
     });
     const outer_style = {...base_outer_style, ...props.widgetData.style};
+    let rowHeights = fixedRowHeights;
+    if (rowHeights && rowHeights.length != dataDictList.length) {
+        rowHeights = Array(dataDictList.length).fill(DEFAULT_ROW_HEIGHT);
+        resetRowHeights();
+    }
     return (
-        <div style={outer_style} key={props.widgetId}>
-            <Table ref={table_ref}
-                   numRows={dataDictList.length}
-                   columns={columns}
-                   rowHeights={fixedRowHeights}
-                   className={`table-${props.widgetId} ${props.className}`}
-                   cellRendererDependencies={[dataDictList]}
-                   enableColumnReordering={false}
-                   enableColumnResizing={true}
-                   defaultRowHeight={27}
-                   columnWidths={props.columnWidths ? props.columnWidths : columnWidths}
-                   onCompleteRender={_onCompleteRender}
-                   enableRowHeader={false}>
-                {columns}
-            </Table>
-            <div className="table-footing d-flex flex-row" style={{justifyContent: "flex-end"}}>
-                 <span style={{display: "flex", flexDirection: "row"}}>
-                     <FormGroup label="expand rows" inline={true} style={{marginRight: 15}}>
-                         <SelectList option_list={[
-                             {label: "false", value: false},
-                             {label: "true", value: true}]}
-                                     onChange={handleExpandChange}
-                                     value={expandRows}
-                                     variant="minimal"
-                                     fontSize={11}/>
+        <ErrorBoundary key={props.widgetId}>
+            <div style={outer_style} key={props.widgetId}>
+                <Table ref={table_ref}
+                       numRows={dataDictList.length}
+                       columns={columns}
+                       rowHeights={rowHeights}
+                       className={`table-${props.widgetId} ${props.className}`}
+                       cellRendererDependencies={[dataDictList]}
+                       enableColumnReordering={false}
+                       enableColumnResizing={true}
+                       defaultRowHeight={27}
+                       columnWidths={props.columnWidths ? props.columnWidths : columnWidths}
+                       onCompleteRender={_onCompleteRender}
+                       enableRowHeader={false}>
+                    {columns}
+                </Table>
+                <div className="table-footing d-flex flex-row" style={{justifyContent: "flex-end"}}>
+                     <span style={{display: "flex", flexDirection: "row"}}>
+                         <FormGroup label="expand rows" inline={true} style={{marginRight: 15}}>
+                             <SelectList option_list={[
+                                 {label: "false", value: false},
+                                 {label: "true", value: true}]}
+                                         onChange={handleExpandChange}
+                                         value={props.widgetData.expandRows}
+                                         variant="minimal"
+                                         fontSize={11}/>
 
-                     </FormGroup>
-                     <FormGroup label="max rows" inline={true}>
-                         <SelectList option_list={footerChoices}
-                                     onChange={handleMaxRowsChange}
-                                     value={props.widgetData.maxRows}
-                                     variant="minimal"
-                                     fontSize={11}/>
-                     </FormGroup>
-                 </span>
+                         </FormGroup>
+                         <FormGroup label="max rows" inline={true}>
+                             <SelectList option_list={footerChoices}
+                                         onChange={handleMaxRowsChange}
+                                         value={props.widgetData.maxRows}
+                                         variant="minimal"
+                                         fontSize={11}/>
+                         </FormGroup>
+                     </span>
+                </div>
             </div>
-        </div>
+        </ErrorBoundary>
     )
 }
