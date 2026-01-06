@@ -241,13 +241,11 @@ class QWorker(ExceptionMixin):
                 log.debug("Posting task", task_type=task_type, dest_id=dest_id, source_id=self.my_id)
                 self.post_packet(dest_id, new_packet, reply_to, callback_id)
                 sleep_func(PAUSE_TIME)
-                result = {"success": True}
 
             except Exception:
-                log.exception("Error handling post_task", task_type=task_type, my_id=self.my_id)
+                log.exception("Error in post_task", task_type=task_type, my_id=self.my_id)
                 special_string = "Error handling post_task for task type {} for my_id {}".format(task_type, self.my_id)
-                result = {"success": False, "message": special_string, "alert_type": "alert-warning"}
-        return result
+            return
 
     # noinspection PyUnusedLocal
     def post_and_wait(self, dest_id, task_type, task_data=None, sleep_time=.1,
@@ -351,47 +349,42 @@ class QWorker(ExceptionMixin):
         task_id = task_packet.get("task_id") or new_task_id()
         task_type = task_packet.get("task_type", "unknown")
         with bind_request(task_id, "handling_event", task_type):
-            try:
-                task_type = task_packet["task_type"]
-                log.debug("entering handle_event", task_type=task_type, my_id=self.my_id)
-                if task_type in task_worthy_methods:
-                    response_data = None
+            task_type = task_packet["task_type"]
+            log.debug("entering handle_event", task_type=task_type, my_id=self.my_id)
+            if task_type in task_worthy_methods:
+                response_data = None
+                try:
+                    handler = self.handler_instances[task_worthy_methods[task_type]]
+                    response_data = getattr(handler, task_type)(task_packet.get("task_data"))
+                except Exception:
+                    log.exception("Error handling task", task_type=task_type, my_id=self.my_id)
+
+                    special_string = f"Error handling task {task_type} for my_id {self.my_id}"
+                    response_data = {"success": False, "message": special_string}
+
+                if task_packet.get("callback_id") is not None:
                     try:
-                        handler = self.handler_instances[task_worthy_methods[task_type]]
-                        response_data = getattr(handler, task_type)(task_packet.get("task_data"))
+                        task_packet["response_data"] = response_data
+                        self.submit_response(task_packet)
                     except Exception:
-                        log.exception("Error handling task", task_type=task_type, my_id=self.my_id)
-
-                        special_string = f"Error handling task {task_type} for my_id {self.my_id}"
-                        response_data = {"success": False, "message": special_string}
-
-                    if task_packet.get("callback_id") is not None:
-                        try:
-                            task_packet["response_data"] = response_data
-                            self.submit_response(task_packet)
-                        except Exception:
-                            log.exception("error submitting response", task_type=task_type, my_id=self.my_id)
-                            special_string = f"Error submitting response for task {task_type} for my_id {self.my_id}"
-                            task_packet["response_data"] = {"success": False, "message": special_string}
-                            self.submit_response(task_packet)
-                    return
-
-                if task_type in task_worthy_manual_submit_methods:
-                    try:
-                        handler = self.handler_instances[task_worthy_manual_submit_methods[task_type]]
-                        handler.__getattribute__(task_type)(task_packet.get("task_data"), task_packet)
-                    except Exception:
-                        log.exception("error in manual submit method", task_type=task_type, my_id=self.my_id)
-                        special_string = f"Error handling task {task_type} for my_id {self.my_id}"
+                        log.exception("error submitting response", task_type=task_type, my_id=self.my_id)
+                        special_string = f"Error submitting response for task {task_type} for my_id {self.my_id}"
                         task_packet["response_data"] = {"success": False, "message": special_string}
                         self.submit_response(task_packet)
-                    return
+                return
 
-                log.warning("Ignoring task type", task_type=task_type, my_id=self.my_id)
-            except Exception:
-                log.exception("Got uncaught error in handle_event",
-                              my_id=self.my_id,
-                              task_type=task_packet.get("task_type", "unknown"))
+            if task_type in task_worthy_manual_submit_methods:
+                try:
+                    handler = self.handler_instances[task_worthy_manual_submit_methods[task_type]]
+                    handler.__getattribute__(task_type)(task_packet.get("task_data"), task_packet)
+                except Exception:
+                    log.exception("error in manual submit method", task_type=task_type, my_id=self.my_id)
+                    special_string = f"Error handling task {task_type} for my_id {self.my_id}"
+                    task_packet["response_data"] = {"success": False, "message": special_string}
+                    self.submit_response(task_packet)
+                return
+
+            log.warning("Ignoring task type", task_type=task_type, my_id=self.my_id)
 
     def handle_exception(self, ex, special_string=None):
         res = self.get_traceback_message(ex, special_string)

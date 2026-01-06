@@ -1212,7 +1212,7 @@ class APISupportTasksMixin:
         sid = data["sid"]
         sess = self.get_session(sid)
         if not doc_name == sess.visible_doc_name:
-            self.mworker.distribute_event("DocChange", data)
+            self.mworker.distribute_event(sid, "DocChange", data)
         sess.visible_doc_name = doc_name
         return {"success": True}
 

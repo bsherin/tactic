@@ -597,26 +597,28 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
 
     @_task_worthy
     def widget_set(self, data):
-        widget_id = data["widgetId"]
-        if widget_id in self._widgets:
+        try:
+            widget_id = data["widgetId"]
             widget = self._widgets[widget_id]
             widget.set(data["widgetData"])
             return {"success": True}
-        else:
-            log.warning("Widget not found")
-            return {"success": False, "error": "Widget not found"}
+        except Exception as ex:
+            log.exception("Error in widget_set")
+            self._handle_exception(ex, "error in widget_set")
+            return {"success": False, "error": str(ex)}
 
     @_task_worthy
     def widget_action(self, data):
-        widget_id = data["widgetId"]
-        if widget_id in self._widgets:
+        try:
+            widget_id = data["widgetId"]
             widget = self._widgets[widget_id]
             val = data["value"] if "value" in data else None
             widget.action(val)
             return {"success": True}
-        else:
-            log.warning("Widget not found")
-            return {"success": False, "error": "Widget not found"}
+        except Exception as ex:
+            log.exception("Error in widget_action")
+            self._handle_exception(ex, "error in widget_action")
+            return {"success": False, "error": str(ex)}
 
     def post_event(self, event_name, task_data=None):
         self._tworker.post_task(self._tworker.my_id, event_name, task_data)

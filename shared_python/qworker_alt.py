@@ -262,8 +262,6 @@ class QWorker(ExceptionMixin):
                     else:
                         reply_to = special_reply_to
                     callback_dict[callback_id] = callback_func
-                    if error_handler is not None:
-                        error_handler_dict[callback_id] = error_handler
                     if callback_data is not None:
                         cdata = copy.copy(callback_data)
                         callback_data_dict[callback_id] = cdata

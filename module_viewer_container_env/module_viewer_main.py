@@ -174,37 +174,41 @@ class ModuleViewerWorker(QWorker, CopilotMixin, MongoAccess, TileAccess):
 
     @task_worthy
     def update_module(self, data_dict):
-        module_name = data_dict["module_name"]
-        module_code = self.build_code(data_dict)
-        tp = TileParser(module_code, self.handler_methods)
-        standard_methods_line_numbers = {}
-        render_content_line_numbers = {
-            "firstLineNumber": tp.get_starting_line("render_content"),
-            "lastLineNumber": tp.get_last_line("render_content")
-        }
-        draw_plot_line_numbers = {
-            "firstLineNumber": tp.get_starting_line("draw_plot"),
-            "lastLineNumber": tp.get_last_line("draw_plot")
-        }
-        standard_methods_line_numbers["render_content"] = render_content_line_numbers
-        if draw_plot_line_numbers["firstLineNumber"] is not None:
-            standard_methods_line_numbers["draw_plot"] = draw_plot_line_numbers
-        user_methods_list = tp.get_user_methods_list()
-        user_methods_line_numbers = {func["name"]: {
-            "firstLineNumber": func["body_start"],
-            "lastLineNumber": func["last_line"]} for func in user_methods_list}
-        used_handler_methods_list = tp.get_used_handler_methods_list()
-        used_handler_methods_line_numbers = {func["name"]: {
-            "firstLineNumber": func["body_start"],
-            "lastLineNumber": func["last_line"]} for func in used_handler_methods_list}
-        username = self.get_username(data_dict["local_id"])
-        self.update_tile(module_name, module_code, "creator", metadata=data_dict["mdata"], username=username)
-        self.create_recent_checkpoint(module_name, username=self.get_username(data_dict["local_id"]))
-        return {"success": True, "message": "Module Successfully Saved",
-                "alert_type": "alert-success", "render_content_line_numbers": render_content_line_numbers,
-                "standard_methods_line_numbers": standard_methods_line_numbers,
-                "used_handler_methods_line_numbers": used_handler_methods_line_numbers,
-                "user_methods_line_numbers": user_methods_line_numbers}
+        try:
+            module_name = data_dict["module_name"]
+            module_code = self.build_code(data_dict)
+            tp = TileParser(module_code, self.handler_methods)
+            standard_methods_line_numbers = {}
+            render_content_line_numbers = {
+                "firstLineNumber": tp.get_starting_line("render_content"),
+                "lastLineNumber": tp.get_last_line("render_content")
+            }
+            draw_plot_line_numbers = {
+                "firstLineNumber": tp.get_starting_line("draw_plot"),
+                "lastLineNumber": tp.get_last_line("draw_plot")
+            }
+            standard_methods_line_numbers["render_content"] = render_content_line_numbers
+            if draw_plot_line_numbers["firstLineNumber"] is not None:
+                standard_methods_line_numbers["draw_plot"] = draw_plot_line_numbers
+            user_methods_list = tp.get_user_methods_list()
+            user_methods_line_numbers = {func["name"]: {
+                "firstLineNumber": func["body_start"],
+                "lastLineNumber": func["last_line"]} for func in user_methods_list}
+            used_handler_methods_list = tp.get_used_handler_methods_list()
+            used_handler_methods_line_numbers = {func["name"]: {
+                "firstLineNumber": func["body_start"],
+                "lastLineNumber": func["last_line"]} for func in used_handler_methods_list}
+            username = self.get_username(data_dict["local_id"])
+            self.update_tile(module_name, module_code, "creator", metadata=data_dict["mdata"], username=username)
+            self.create_recent_checkpoint(module_name, username=self.get_username(data_dict["local_id"]))
+            return {"success": True, "message": "Module Successfully Saved",
+                    "alert_type": "alert-success", "render_content_line_numbers": render_content_line_numbers,
+                    "standard_methods_line_numbers": standard_methods_line_numbers,
+                    "used_handler_methods_line_numbers": used_handler_methods_line_numbers,
+                    "user_methods_line_numbers": user_methods_line_numbers}
+        except Exception as ex:
+            log.exception("error updating module")
+            return self.get_traceback_exception_dict(ex, "Error updating module: ")
 
     @staticmethod
     def assemble_parse_information(tp):
