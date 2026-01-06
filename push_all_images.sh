@@ -46,13 +46,13 @@ for entry in "${IMAGES[@]}"; do
   docker push \
     "${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${REPO}:${TAG}"
 
-  echo "ECR digest:"
-  aws ecr describe-images \
-    --region "$AWS_REGION" \
-    --repository-name "${REPO}" \
-    --image-ids "imageTag=${TAG}" \
-    --query 'imageDetails[0].imageDigest' \
-    --output text
+#  echo "ECR digest:"
+#  aws ecr describe-images \
+#    --region "$AWS_REGION" \
+#    --repository-name "${REPO}" \
+#    --image-ids "imageTag=${TAG}" \
+#    --query 'imageDetails[0].imageDigest' \
+#    --output text
 
   if $RESTART; then
     echo "Forcing new deployment of ${SERVICE}..."
@@ -61,6 +61,10 @@ for entry in "${IMAGES[@]}"; do
       --cluster "$CLUSTER" \
       --service "$SERVICE" \
       --force-new-deployment
+  fi
+
+  if [[ "$SERVICE" == "tactic-tile-pool" ]]; then
+    stop_ad_hoc_family_tasks "tactic-tile"
   fi
 
   echo
