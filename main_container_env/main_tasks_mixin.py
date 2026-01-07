@@ -945,7 +945,10 @@ class APISupportTasksMixin:
             tile_id = data_dict["tile_id"]
         else:
             tile_id = None
-        sid = data_dict["local_id"]
+        if "local_id" in data_dict:
+            sid = data_dict["local_id"]
+        else:
+            sid = data_dict["sid"]
         success = self.mworker.distribute_event(sid, event_name, data_dict, tile_id)
         return {"success": success}
 

@@ -114,6 +114,9 @@ def my_wait_worker():
     return None
 
 def my_connection():
+    if my_thread() not in pika_connections:
+        log.warning("my_connection called but no connection for thread", thread=my_thread())
+        return None
     return pika_connections[my_thread()]
 
 def close_connection():
@@ -207,6 +210,7 @@ class QWorker(ExceptionMixin):
         return
 
     def handle_delivery(self, channel, method, props, body):
+        # Need to ack immediately because some events restart the tile and prevent acking
         channel.basic_ack(delivery_tag=method.delivery_tag)
         try:
             task_packet = json.loads(body)
@@ -444,7 +448,7 @@ class QWorker(ExceptionMixin):
                     except Exception as ex:
                         log.exception("Error submitting response", task_type=task_type, my_id=self.my_id)
                         special_string = f"Error submitting response for task {task_type} for my_id {self.my_id}"
-                        task_packet["response_data"] = self.get_traceback_expection_dict(ex, special_string)
+                        task_packet["response_data"] = self.get_traceback_exception_dict(ex, special_string)
                         try:
                             self.submit_response(task_packet)
                         except Exception:
@@ -457,7 +461,7 @@ class QWorker(ExceptionMixin):
                     log.exception("error handling event", task_type=task_type, my_id=self.my_id)
                     special_string = "Error handling task of type {} for my_id {}".format(task_type,
                                                                                           self.my_id)
-                    response_data = self.get_treceback_expection_dict(ex, special_string)
+                    response_data = self.get_traceback_exception_dict(ex, special_string)
                     task_packet["response_data"] = response_data
                     self.submit_response(task_packet)
             else:

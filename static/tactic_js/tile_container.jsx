@@ -90,7 +90,7 @@ function TileContainer(props) {
             local_id: props.local_id,
             tile_id: tile_id
         };
-        postWithCallbackMain("RemoveTile", data_dict, null, null, props.local_id);
+        postWithCallbackMain(props.local_id, "RemoveTile", data_dict, null, null, props.local_id);
     }, []);
 
     const _setTileValue = useCallback((tile_id, field, value, callback = null) => {
