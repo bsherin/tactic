@@ -136,8 +136,10 @@ class MainWorker(QWorker, ExceptionMixin, CopilotMixin):
 
 if __name__ == "__main__":
     try:
-        log.debug("in __main__")
         app = Flask(__name__)
+        from service_controls import set_to_redis_log_level
+        set_to_redis_log_level()
+        log.debug("in __main__")
         exception_mixin.app = app
         log.debug("creating mainworker")
         mworker = MainWorker()

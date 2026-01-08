@@ -120,11 +120,12 @@ for entry in "${IMAGES[@]}"; do
       --cluster "$CLUSTER" \
       --service "$SERVICE" \
       --force-new-deployment
+      if [[ "$SERVICE" == "tactic-tile-pool" ]]; then
+        stop_ad_hoc_family_tasks "tactic-tile"
+      fi
   fi
 
-  if [[ "$SERVICE" == "tactic-tile-pool" ]]; then
-    stop_ad_hoc_family_tasks "tactic-tile"
-  fi
+
 
   echo
 done

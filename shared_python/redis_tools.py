@@ -7,9 +7,6 @@ import threading
 import time
 from aws_helpers import get_ssm_parameter
 from aws_detection import on_aws
-from tactic_logging import log
-
-log.debug("getting redis client")
 
 if on_aws:
     REDIS_HOST = get_ssm_parameter("REDIS_HOST")
@@ -32,6 +29,7 @@ def get_no_decode_redis_client():
         decode_responses=False,
         ssl=USE_SSL,
     )
+
 
 class ResilientRedisClient:
     """
@@ -107,7 +105,6 @@ class ResilientRedisClient:
 
         return wrapped
 
-log.debug("creating redis client", host=REDIS_HOST, port=REDIS_PORT)
 redis_client = ResilientRedisClient(
     host=REDIS_HOST,
     port=REDIS_PORT,

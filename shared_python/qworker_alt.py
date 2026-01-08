@@ -18,6 +18,8 @@ import ctypes
 import inspect
 from tactic_logging import bind_request, new_task_id, log
 
+from service_controls import CONTROL_EXCHANGE, process_control_message
+
 thread = None
 thread_lock = Lock()
 
@@ -159,6 +161,11 @@ class QWorker(ExceptionMixin):
                     if self.service_name is not None:
                         declare_queue(channel, self.service_name)
                         self.consume_without_ack(channel, self.service_name, self.handle_delivery)
+                    q = channel.queue_declare(queue="", exclusive=True, auto_delete=True)
+                    control_queue_name = q.method.queue
+                    channel.exchange_declare(exchange=CONTROL_EXCHANGE, exchange_type="fanout", durable=True)
+                    channel.queue_bind(queue=control_queue_name, exchange=CONTROL_EXCHANGE)
+                    self.consume_without_ack(channel, control_queue_name, on_message_callback=self.handle_control_message)
                     log.info(' [*] Waiting for messages:', my_id=self.my_id)
                     self.ready()
                     channel.start_consuming()
@@ -207,6 +214,16 @@ class QWorker(ExceptionMixin):
                 log.debug('Background thread started')
 
     def ready(self):
+        return
+
+    def handle_control_message(self, channel, method, props, body):
+        try:
+            channel.basic_ack(delivery_tag=method.delivery_tag)
+            message = json.loads(body)
+            process_control_message(message)
+        except Exception:
+            log.exception("Got uncaught error in handle control message",
+                          my_id=self.my_id)
         return
 
     def handle_delivery(self, channel, method, props, body):

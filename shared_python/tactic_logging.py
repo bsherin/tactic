@@ -30,17 +30,12 @@ def setup_logging(service_name: str):
     task_id_var.set("startup")
     os.environ["SERVICE_NAME"] = service_name
 
-    level = os.getenv("LOG_LEVEL", "DEBUG").upper()
+    level = os.getenv("LOG_LEVEL", "INFO").upper()
     logging.basicConfig(format="%(message)s", stream=sys.stdout, level=level)
-
-    # logging.basicConfig(
-    #     level=logging.DEBUG,
-    #     stream=sys.stdout,
-    #     format="%(asctime)s %(levelname)s %(name)s: %(message)s",
-    # )
 
     structlog.configure(
         processors=[
+            structlog.stdlib.filter_by_level,
             structlog.processors.TimeStamper(fmt="iso", utc=True),
             structlog.processors.add_log_level,
             _add_contextvars,
@@ -48,10 +43,12 @@ def setup_logging(service_name: str):
             structlog.processors.format_exc_info,
             structlog.processors.JSONRenderer(),
         ],
-        wrapper_class=structlog.make_filtering_bound_logger(getattr(logging, level, logging.INFO)),
+        #wrapper_class=structlog.make_filtering_bound_logger(getattr(logging, level, logging.INFO)),
+        wrapper_class=structlog.stdlib.BoundLogger,
         logger_factory=structlog.stdlib.LoggerFactory(),
         cache_logger_on_first_use=True,
     )
+    log.info("logging_setup_complete", service_name=service_name, log_level=level)
 
 def new_task_id() -> str:
     return str(uuid.uuid4())

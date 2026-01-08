@@ -92,7 +92,8 @@ class TileInfo:
         else:
             raise KeyError(f"Tile ID {old_id} not found.")
 
-    def current_from_old(self, old_id):
+    def current_from_prior(self, prior_id):
+        old_id = self.ss.make_old(prior_id)
         tile_ids = self.tile_ids
         for tile_id in tile_ids:
             if self.get_param(tile_id, "old_id") == old_id:

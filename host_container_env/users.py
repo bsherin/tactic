@@ -24,7 +24,6 @@ from user_fields import user_data_fields
 from user_accesser import UserAccess
 from across_accounts_accesser import AcrossAccountsAccess
 from aws_helpers import get_ssm_parameter
-from aws_detection import on_aws
 from tactic_logging import log
 from utils import utcnow
 
@@ -34,8 +33,9 @@ if USE_ALT_IDS:
 else:
     ID_FIELD = "_id"
 
+use_s3 = get_ssm_parameter("USE_S3", "true").lower() == "true"
 
-if on_aws:
+if use_s3:
 
     BUCKET = get_ssm_parameter("BUCKET")
     from s3thread import boto_s3
@@ -111,13 +111,13 @@ class User(UserMixin, MongoAccess, ListAccess, CodeAccess, TileAccess, TempDataA
 
     @property
     def pool_dir(self):
-        if on_aws:
+        if use_s3:
             return f"s3://{BUCKET}/users/{self.username}"
         return f"/pool/{self.username}"
 
     @property
     def has_pool(self):
-        if on_aws:
+        if use_s3:
             return boto_s3.lexists(self.pool_dir)
         return os.path.exists(self.pool_dir)
 

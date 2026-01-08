@@ -95,6 +95,8 @@ class LogStreamer(QWorker, ExceptionMixin):
 if __name__ == "__main__":
     try:
         app = Flask(__name__)
+        from service_controls import set_to_redis_log_level
+        set_to_redis_log_level()
         exception_mixin.app = app
         log.debug("entering log streamer main")
         mworker = LogStreamer()

@@ -306,6 +306,8 @@ class ModuleViewerWorker(QWorker, CopilotMixin, MongoAccess, TileAccess):
 if __name__ == "__main__":
     try:
         app = Flask(__name__)
+        from service_controls import set_to_redis_log_level
+        set_to_redis_log_level()
         log.debug("entering module_viewer_main")
         mworker = ModuleViewerWorker()
         log.debug("mworker is created, about to start", my_id=mworker.my_id)

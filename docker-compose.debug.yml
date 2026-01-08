@@ -8,4 +8,28 @@ services:
       - GEVENT_SUPPORT=True
 
   tactic_main:
+    build:
+      context: .
+      dockerfile: Dockerfile-main
+      args:
+        BASE_IMAGE: ${BASE_IMAGE}
+    image: bsherin/tactic-main:${IMG_SUFFIX}
+    platform: ${PLATFORM}
     command: ["sleep", "infinity"]
+    labels:
+      project: tactic
+      my_id: main_service
+      owner: host
+      parent: host
+      other_name: main_service
+    environment:
+      - USE_GEVENT=False
+      - DEBUG=${DEBUG}
+      - LOG_LEVEL=DEBUG
+      - RUNNING_ON_AWS=${RUNNING_ON_AWS}
+    volumes:
+      - type: bind
+        source: "/var/run/docker.sock"
+        target: "/var/run/docker.sock"
+    networks:
+      - tactic-net

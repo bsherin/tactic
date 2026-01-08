@@ -22,6 +22,8 @@ from threading import Lock
 from rabbit_manage import get_pika_connection_with_retries, declare_queue
 from tactic_logging import bind_request, new_task_id, log
 
+from service_controls import CONTROL_EXCHANGE, process_control_message
+
 MAX_PIKA_RETRIES = None
 
 PAUSE_TIME = .01
@@ -106,6 +108,11 @@ class QWorker(ExceptionMixin):
                     if self.service_name is not None:
                         declare_queue(self.channel, self.service_name)
                         self.consume_without_ack(self.service_name, self.handle_delivery)
+                    q = self.channel.queue_declare(queue="", exclusive=True, auto_delete=True)
+                    control_queue_name = q.method.queue
+                    self.channel.exchange_declare(exchange=CONTROL_EXCHANGE, exchange_type="fanout", durable=True)
+                    self.channel.queue_bind(queue=control_queue_name, exchange=CONTROL_EXCHANGE)
+                    self.consume_without_ack(control_queue_name, on_message_callback=self.handle_control_message)
                     log.info(' [*] Waiting for messages:')
                     self.ready()
                     self.channel.start_consuming()
@@ -157,6 +164,16 @@ class QWorker(ExceptionMixin):
         return
 
     def do_heartbeat(self):
+        return
+
+    def handle_control_message(self, channel, method, props, body):
+        try:
+            channel.basic_ack(delivery_tag=method.delivery_tag)
+            message = json.loads(body)
+            process_control_message(message)
+        except Exception:
+            log.exception("Got uncaught error in handle control message",
+                          my_id=self.my_id)
         return
 
     def handle_delivery(self, channel, method, props, body):

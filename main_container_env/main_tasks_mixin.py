@@ -325,9 +325,9 @@ class LoadSaveTasksMixin:
                     for tile_entry in interface_state["tile_list"]:
                         prior_id = tile_entry["tile_id"]
                         tile_info = sess.tile_info
-                        current_id = tile_info.current_from_old(prior_id)
+                        current_id = tile_info.current_from_prior(prior_id)
                         if current_id is None:
-                            log.error("prior_id not found in tile_info", prior_id=prior_id)
+                            log.error("prior_id not found in tile_info", prior_id=prior_id, sid=local_id)
                         else:
                             tile_entry["tile_id"] = current_id
                 data_dict["interface_state"] = interface_state
@@ -434,6 +434,7 @@ class LoadSaveTasksMixin:
             tile_id = tile_save_dict["tile_id"]
             del tile_save_dict["tile_id"]
             module_name = tile_save_dict["module_name"]
+            log.debug("tile_save_dict has keys", tile_id=tile_id, keys=list(tile_save_dict.keys()))
             if "tile_type" in tile_save_dict:
                 log.debug("got tile_type when tracking receipts", tile_type=tile_save_dict["tile_type"], tile_id=tile_id)
             else:

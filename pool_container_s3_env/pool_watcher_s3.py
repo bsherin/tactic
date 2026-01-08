@@ -168,5 +168,7 @@ class Handler:
                         pass
 
 if __name__ == "__main__":
+    from service_controls import set_to_redis_log_level
+    set_to_redis_log_level()
     handler = Handler()
     handler.main()

@@ -344,6 +344,8 @@ if __name__ == "__main__":
     try:
         app = Flask(__name__)
         exception_mixin.app = app
+        from service_controls import set_to_redis_log_level
+        set_to_redis_log_level()
         log.debug("entering main")
         mworker = Assistant()
         log.info("assistant created", my_id=mworker.my_id)

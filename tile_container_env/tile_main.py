@@ -526,6 +526,8 @@ if __name__ == "__main__":
         kill_worker.start()
         heartbeat_generator = HeartbeatGenerator(tile_base._tworker)
         heartbeat_generator.start_heartbeat()
+        from service_controls import set_to_redis_log_level
+        set_to_redis_log_level()
         log.debug("tworker started", my_id=tile_base._tworker.my_id)
     except Exception:
         log.exception("*** fatal error starting tile ***")

@@ -95,6 +95,12 @@ class MainSessionStore(SessionStoreS3):
         rdict["user_id"] = self.get_val(sid, "user_id")
         return rdict
 
+    # this make_old machinery is used to deal with the fact that, since tiles are reused,
+    # the same ids will reappear
+    @staticmethod
+    def make_old(tile_id):
+        return f"old_{tile_id}"
+
     def initialize_session(self, sid, sdict=None):
         SessionStoreS3.initialize_session(self, sid, None)
         for key in self.recreate_values:
@@ -104,9 +110,9 @@ class MainSessionStore(SessionStoreS3):
             self.put_small(sid, "global_id", sdict["global_id"])
         if "tile_instances" in sdict:
             tile_info = TileInfo(self, sid)
-            for old_tile_id, tile_save_dict in sdict["tile_instances"].items():
-                tile_info.add_tile(old_tile_id, tile_save_dict["tile_name"], tile_save_dict["tile_type"])
-                tile_info.set_save_dict(old_tile_id, tile_save_dict)
+            for tile_id, tile_save_dict in sdict["tile_instances"].items():
+                tile_info.add_tile(self.make_old(tile_id), tile_save_dict["tile_name"], tile_save_dict["tile_type"])
+                tile_info.set_save_dict(self.make_old(tile_id), tile_save_dict)
         if "doc_dict" in sdict:
             if sdict["doc_type"] == "freeform":
                 collection_info = FreeformCollectionInfo(self, sid)

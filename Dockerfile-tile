@@ -24,7 +24,7 @@ RUN set -eu; \
       echo "No artifacts found in /wheelhouse"; \
     fi
 
-RUN pip install structlog python-json-logger
+RUN pip install structlog python-json-logger redis
 ADD ./tactic_dark.mplstyle /usr/local/lib/python3.11/site-packages/matplotlib/mpl-data/stylelib/
 ADD ./tile_container_env /code/tile_container_env
 ADD ./shared_python /code/shared_python

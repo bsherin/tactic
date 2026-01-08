@@ -5,7 +5,7 @@ from tactic_logging import log
 
 from docker_functions import get_log, get_container
 
-from qworker_alt import add_qw_pika_connection, close_connection, simple_uid
+from qworker_alt import close_connection, simple_uid
 
 cli = docker.DockerClient(base_url='unix://var/run/docker.sock')
 
