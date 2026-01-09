@@ -643,7 +643,7 @@ class LoadSaveTasksMixin:
             interface_state = data_dict["interface_state"]
             console_items = interface_state["console_items"]
             self.emit_status_message(sid, "Getting loaded modules")
-            self.loaded_modules = self.get_loaded_user_modules(sid)
+            sess.loaded_modules = self.get_loaded_user_modules(sid)
             self.emit_status_message(sid, "compiling save dictionary")
             self.mworker.post_task("main_service", "compile_save_dict", data_dict, got_save_dict)
 
