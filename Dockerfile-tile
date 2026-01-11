@@ -3,35 +3,36 @@ ARG WHEELS_IMAGE
 
 FROM ${WHEELS_IMAGE} AS wheels
 
-FROM ${BASE_IMAGE} AS app
+FROM ${BASE_IMAGE} AS install
 WORKDIR /code
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-      libgomp1 \
-    && rm -rf /var/lib/apt/lists/*
-
-COPY --from=wheels /wheelhouse /wheelhouse
-
-RUN ls -lah /wheelhouse
+RUN apt-get update && apt-get install -y --no-install-recommends libgomp1 \
+  && rm -rf /var/lib/apt/lists/*
 
 COPY --from=wheels /wheelhouse /wheelhouse
 
 RUN set -eu; \
-    files="$(find /wheelhouse -maxdepth 1 -type f \( -name '*.whl' -o -name '*.tar.gz' \))"; \
-    if [ -n "$files" ]; then \
-      echo "$files" | xargs -r pip install --no-cache-dir --no-index --find-links=/wheelhouse; \
-    else \
-      echo "No artifacts found in /wheelhouse"; \
-    fi
+    find /wheelhouse -maxdepth 1 -type f \( -name '*.whl' -o -name '*.tar.gz' \) -print0 \
+      | xargs -0 -r python -m pip install --no-cache-dir --no-index --find-links=/wheelhouse; \
+    python -m pip install --no-cache-dir structlog python-json-logger redis
 
-RUN pip install structlog python-json-logger redis
+# ---- final runtime image ----
+FROM ${BASE_IMAGE} AS app
+WORKDIR /code
+
+RUN apt-get update && apt-get install -y --no-install-recommends libgomp1 \
+  && rm -rf /var/lib/apt/lists/*
+
+# Copy only installed python packages from install stage (no wheelhouse)
+COPY --from=install /usr/local/lib/python3.11/site-packages/ /usr/local/lib/python3.11/site-packages/
+COPY --from=install /usr/local/bin/ /usr/local/bin/
+
 ADD ./tactic_dark.mplstyle /usr/local/lib/python3.11/site-packages/matplotlib/mpl-data/stylelib/
 ADD ./tile_container_env /code/tile_container_env
 ADD ./shared_python /code/shared_python
 
 RUN mkdir -p /root/nltk_data
 
-# Keep defaults; ECS task will override these to EFS paths
 ENV HF_HOME=/var/cache/hf \
     TRANSFORMERS_CACHE=/var/cache/hf/transformers \
     NLTK_DATA=/root/nltk \
@@ -39,10 +40,9 @@ ENV HF_HOME=/var/cache/hf \
     TORCH_HOME=/var/cache/torch \
     PYTHONUNBUFFERED=1
 
-# --- New: copy entrypoint and use ENTRYPOINT + keep your original CMD ---
 COPY entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
 ENTRYPOINT ["/app/entrypoint.sh"]
-ENV PYTHONPATH=/code:/code/tile_container_env:/code/shared_python:/code/shared_mongo_python
 
+ENV PYTHONPATH=/code:/code/tile_container_env:/code/shared_python:/code/shared_mongo_python
 CMD ["python", "-u", "-m", "tile_container_env.tile_main"]

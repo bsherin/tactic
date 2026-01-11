@@ -9,7 +9,6 @@ numpy == 1.26.4
 pandas
 plotly == 6.0.1
 pyldavis >= 3.4.1
-redis
 scipy == 1.13.1
 tweepy
 yellowbrick
@@ -22,16 +21,13 @@ gensim
 torch == 2.3.*
 ## torchtext == 0.18.*
 transformers
-tensorflow == 2.20
 eli5
 bokeh
 levenshtein
 pyvis
 openai >= 1.23.4
-bertopic
 zstandard
 pymongo
-kaleido == 0.2.1
 paramiko
 tf-keras
 Werkzeug == 2.2.2
