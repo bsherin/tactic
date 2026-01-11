@@ -24,8 +24,10 @@ import {
     topLevelExtraCompletions, dotAccessCompletions
 } from "./autocomplete";
 
-import {ghostTextField, ghostTextPlugin,
-    acceptGhostText, setGhostText, computeGhostSuffix} from "./ghost_text";
+import {
+    ghostTextField, ghostTextPlugin,
+    acceptGhostText, setGhostText, computeGhostSuffix
+} from "./ghost_text";
 import {useDebounce, guid} from "./utilities_react";
 
 import {
@@ -165,7 +167,7 @@ const tabAcceptKeymap = [
                 return acceptCompletion(view);
             }
             return indentWithTab.run(view);
-            },
+        },
         preventDefault: true
     },
     {
@@ -281,6 +283,13 @@ function ReactCodemirror6(props) {
     const changeCounterRef = useRef(0);
     const activeStreamChangeCounterRef = useRef(null);
 
+    const activeStreamCursorPosRef = useRef(null);
+    const cursorCounterRef = useRef(0);
+    const activeStreamCursorCounterRef = useRef(null);
+
+    // Pause flag (Escape/blur). When true, don't request or render suggestions.
+    const aiPausedRef = useRef(false);
+
     const [, setAIText, aiTextRef] = useStateAndRef(null);
     const [, doAIUpdate] = useDebounce(getAIUpdate, 2000);
 
@@ -296,6 +305,28 @@ function ReactCodemirror6(props) {
         lineNumberCompartment.current = new Compartment();
 
         const updateListener = EditorView.updateListener.of((update) => {
+            // If the cursor/selection moves, any in-flight suggestion is now stale.
+            if (update.selectionSet && !update.docChanged) {
+                const hasSelection = update.state.selection.ranges.some(r => !r.empty);
+
+                // Cursor move unpauses after Escape (but selection still suppresses)
+                if (!hasSelection) {
+                    aiPausedRef.current = false;
+                }
+
+                // Cancel any active stream so we don't show ghost text for an old location.
+                activeStreamChangeCounterRef.current = null;
+                activeStreamCursorPosRef.current = null;
+                activeStreamCursorCounterRef.current = null;
+
+                setAIText(null);
+                if (editorView.current) {
+                    try {
+                        setGhostText(editorView.current, "");
+                    } catch (e) {
+                    }
+                }
+            }
             if (update.docChanged) {
                 // Detect whether this change came from an external update
                 const isExternal = update.transactions.some(tr => tr.annotation(ExternalUpdate));
@@ -317,17 +348,29 @@ function ReactCodemirror6(props) {
                 handleChange(newDoc, isExternal);
                 changeCounterRef.current = changeCounterRef.current + 1;
 
-                if (window.has_openapi_key &&
+                aiPausedRef.current = false;
+
+                const hasSelection = update.state.selection.ranges.some(r => !r.empty);
+
+                if (
+                    window.has_openapi_key &&
                     props.parentService &&
                     (settingsContext.settingsRef.current["use_ai_code_suggestions"] == "yes") &&
-                    props.local_id) {
+                    props.local_id &&
+                    !aiPausedRef.current &&
+                    !hasSelection
+                ) {
                     setAIText(null);
-                    if (editorView.current) {
-                        setGhostText(editorView.current, "");
-                    }
+                    if (editorView.current) setGhostText(editorView.current, "");
                     doAIUpdate(newDoc);
                 } else {
                     setAIText(null);
+                    if (editorView.current) {
+                        try {
+                            setGhostText(editorView.current, "");
+                        } catch (e) {
+                        }
+                    }
                 }
 
                 //  Only treat as "user change" if it wasn't an ExternalUpdate
@@ -344,10 +387,38 @@ function ReactCodemirror6(props) {
                 }
             }
         });
+
+        const escapeGhostKeymap = [
+            {
+                key: "Escape",
+                run: (view) => {
+                    aiPausedRef.current = true;
+
+                    // Cancel any in-flight stream
+                    activeStreamChangeCounterRef.current = null;
+                    activeStreamCursorPosRef.current = null;
+                    activeStreamCursorCounterRef.current = null;
+
+                    setAIText(null);
+                    try {
+                        closeCompletion(view);
+                    } catch (e) {
+                    }
+                    try {
+                        setGhostText(view, "");
+                    } catch (e) {
+                    }
+
+                    return true;
+                },
+                preventDefault: true
+            }
+        ];
         let extensions = [
             updateListener,
             completionCompartment.current.of(autocompletion({...autocompletionArgRef.current})),
             keymap.of([
+                ...escapeGhostKeymap,
                 ...customCompletionKeymap,
                 ...props.extraKeys,
                 ...closeBracketsKeymap,
@@ -412,13 +483,26 @@ function ReactCodemirror6(props) {
         }
     }, []);
 
-    const handleAutocompleteDelta = useCallback((data) =>{
+    const handleAutocompleteDelta = useCallback((data) => {
         if (!editorView.current.hasFocus) return;
         if (data.cmUniqueId !== cmUniqueId.current) {
             return
         }
         if (data.room !== props.local_id) return;
         if (data.change_counter !== activeStreamChangeCounterRef.current) return;
+        if (aiPausedRef.current) return;
+
+        const view = editorView.current;
+        const hasSelection = view.state.selection.ranges.some(r => !r.empty);
+        if (hasSelection) return;
+
+        if (activeStreamCursorPosRef.current != null) {
+            const curPos = view.state.selection.main.head;
+            if (curPos !== activeStreamCursorPosRef.current) return;
+          }
+        if (activeStreamCursorCounterRef.current != null && data.cursor_counter != null) {
+            if (data.cursor_counter !== activeStreamCursorCounterRef.current) return;
+          }
 
         let current_text;
         if (aiTextRef.current == null) {
@@ -624,10 +708,19 @@ function ReactCodemirror6(props) {
 
     function getAIUpdate(new_code) {
         const change_counter = changeCounterRef.current;
+
+        const cursorPos = editorView.current.state.selection.main.head;
+        const hasSelection = editorView.current.state.selection.ranges.some(r => !r.empty);
+        if (hasSelection) return; // never request while selecting
+
+        cursorCounterRef.current += 1;
+        const cursor_counter = cursorCounterRef.current;
+
         activeStreamChangeCounterRef.current = change_counter;
+        activeStreamCursorPosRef.current = cursorPos;
+        activeStreamCursorCounterRef.current = cursor_counter;
 
         let code_str = new_code;
-        const cursorPos = editorView.current.state.selection.main.head;
 
         // the AI and ghost text should already be cleared. but just in case.
         setAIText(null);
@@ -640,6 +733,7 @@ function ReactCodemirror6(props) {
                 "change_counter": change_counter,
                 "mode": props.mode,
                 "cursor_position": cursorPos,
+                "cursor_counter": cursor_counter,
                 "local_id": props.local_id,
                 "cmUniqueId": cmUniqueId.current
             })
@@ -672,6 +766,11 @@ function ReactCodemirror6(props) {
     }
 
     function handleBlur() {
+        aiPausedRef.current = true;
+        activeStreamChangeCounterRef.current = null;
+        activeStreamCursorPosRef.current = null;
+        activeStreamCursorCounterRef.current = null;
+        setAIText(null);
         if (editorView.current) {
             setGhostText(editorView.current, "");
         }

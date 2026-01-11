@@ -233,7 +233,7 @@ def start_services() -> None:
         )
 
         print(f"[START] {svc}: desiredCount={caps['desired']}")
-        ecs.update_service(cluster=CLUSTER, service=svc, desiredCount=caps["desired"])
+        ecs.update_service(cluster=CLUSTER, service=svc, desiredCount=caps["desired"], forceNewDeployment=True)
 
 
 def lambda_handler(event, _context):
