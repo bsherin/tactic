@@ -20,6 +20,9 @@ from exception_mixin import ExceptionMixin, generic_exception_handler
 import document_object
 import copy
 from qworker_alt import task_worthy_methods, task_worthy_manual_submit_methods
+from aws_helpers import get_ssm_parameter
+
+allow_heavy_saves = get_ssm_parameter("ALLOW_HEAVY_SAVES","false").lower() == "true"
 
 from widgets import kind_dict
 
@@ -513,7 +516,10 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
     def compile_save_dict(self, data, task_packet):
         result = {"my_class_for_recreate": "TileBase",
                   "binary_attrs": []}
-        is_lite = "lite_save" in data and data["lite_save"]
+        if not allow_heavy_saves:
+            is_lite =  True
+        else:
+            is_lite =  "lite_save" in data and data["lite_save"]
         export_names = [exp["name"] for exp in self.exports]
         for attr in self.save_attrs:
             log.debug("saving attribute ", attr=attr)

@@ -20,6 +20,7 @@ admin_user = User.get_user_by_username("admin")
 tstring = utcnow().strftime("%Y-%H-%M-%S")
 
 use_s3 = get_ssm_parameter("USE_S3","true").lower() == "true"
+allow_heavy_saves = get_ssm_parameter("ALLOW_HEAVY_SAVES","false").lower() == "true"
 
 from tactic_app import CLIENT_ACTIVITY_INTERVAL_SECS
 
@@ -63,6 +64,7 @@ def context():
                            page_title="context",
                            css_source=css_source("context_react"),
                            client_activity_interval_secs=CLIENT_ACTIVITY_INTERVAL_SECS,
+                           allow_heavy_saves=allow_heavy_saves,
                            base_figure_url=url_for("figure_source", tile_id="tile_id", figure_name="X")[:-1],
                            module_source=js_source_dict["context_react"])
 

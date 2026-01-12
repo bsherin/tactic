@@ -186,6 +186,11 @@
       "name": "ANYONE_CAN_REGISTER",
       "value": "False",
       "type": "String"
+    },
+    {
+      "name": "ALLOW_HEAVY_SAVES",
+      "value": "False",
+      "type": "String"
     }
   ]
 }

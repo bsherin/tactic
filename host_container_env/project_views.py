@@ -4,10 +4,14 @@ import io
 from collections import OrderedDict
 from flask import request, render_template, send_file
 from flask_login import login_required, current_user
+from aws_helpers import get_ssm_parameter
+
 from tactic_app import app
 from file_handling import read_freeform_file
 
 from js_source_management import js_source_dict, _develop, css_source
+allow_heavy_saves = get_ssm_parameter("ALLOW_HEAVY_SAVES","false").lower() == "true"
+
 
 from utils import utcnow
 tstring = utcnow().strftime("%Y-%H-%M-%S")
@@ -101,6 +105,7 @@ def main_project(project_name):
                  "has_openapi_key": current_user.has_openapi_key,
                  "collection_name": "",
                  "theme": current_user.get_theme(),
+                 "allow_heavy_saves": allow_heavy_saves,
                  "version_string": tstring}
 
     save_dict = current_user.get_project_doc(project_name)

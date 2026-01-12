@@ -30,13 +30,13 @@ var _error_boundary = require("./error_boundary");
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t14 in e) "default" !== _t14 && {}.hasOwnProperty.call(e, _t14) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t14)) && (i.get || i.set) ? o(f, _t14, i) : f[_t14] = e[_t14]); return f; })(e, t); }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
-function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
 function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
-function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
 function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
 function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
+function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
+function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
+function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
 function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, "_invoke", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError("Generator is already running"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = "next"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i["return"]) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine2(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, "Generator"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, "toString", function () { return "[object Generator]"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }
 function _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, "", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { if (r) i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n;else { var o = function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); }; o("next", 0), o("throw", 1), o("return", 2); } }, _regeneratorDefine2(e, r, n, t); }
 function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
@@ -81,7 +81,7 @@ function ProjectMenu(props) {
   }
   function _saveProjectAs2() {
     _saveProjectAs2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3() {
-      var data, checkboxes, _yield$dialogFuncs$sh, _yield$dialogFuncs$sh2, new_name, checkbox_states, result_dict, data_object, title, _t;
+      var data, checkboxes, _yield$dialogFuncs$sh, _yield$dialogFuncs$sh2, new_name, checkbox_states, lite_save, result_dict, data_object, title, _t;
       return _regenerator().w(function (_context3) {
         while (1) switch (_context3.n) {
           case 0:
@@ -92,10 +92,13 @@ function ProjectMenu(props) {
             }, props.local_id);
           case 1:
             data = _context3.v;
-            checkboxes = [{
-              checkname: "lite_save",
-              checktext: "create lite save"
-            }];
+            checkboxes = null;
+            if (window.allow_heavy_saves) {
+              checkboxes = [{
+                checkname: "lite_save",
+                checktext: "create lite save"
+              }];
+            }
             _context3.p = 2;
             _context3.n = 3;
             return dialogFuncs.showModalPromise("ModalDialog", {
@@ -111,12 +114,17 @@ function ProjectMenu(props) {
             _yield$dialogFuncs$sh2 = _slicedToArray(_yield$dialogFuncs$sh, 2);
             new_name = _yield$dialogFuncs$sh2[0];
             checkbox_states = _yield$dialogFuncs$sh2[1];
+            if (window.allow_heavy_saves) {
+              lite_save = checkbox_states["lite_save"];
+            } else {
+              lite_save = true;
+            }
             result_dict = {
               "project_name": new_name,
               "local_id": props.local_id,
               "doc_type": "table",
               "purgetiles": true,
-              "lite_save": checkbox_states["lite_save"]
+              "lite_save": lite_save
             };
             result_dict.interface_state = save_state;
             if (!props.is_notebook) {
@@ -204,7 +212,7 @@ function ProjectMenu(props) {
   }
   function _exportAsPresentation2() {
     _exportAsPresentation2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5() {
-      var data, _yield$dialogFuncs$sh3, _yield$dialogFuncs$sh4, use_dark_theme, save_as_collection, collection_name, cell_list, _iterator, _step, entry, new_entry, container, target, fcontainer, ftarget, result_dict, data_object, title, _t3, _t4, _t5;
+      var data, _yield$dialogFuncs$sh3, _yield$dialogFuncs$sh4, use_dark_theme, save_as_collection, collection_name, cell_list, _iterator2, _step2, entry, new_entry, container, target, fcontainer, ftarget, result_dict, data_object, title, _t3, _t4, _t5;
       return _regenerator().w(function (_context5) {
         while (1) switch (_context5.n) {
           case 0:
@@ -228,15 +236,15 @@ function ProjectMenu(props) {
             save_as_collection = _yield$dialogFuncs$sh4[1];
             collection_name = _yield$dialogFuncs$sh4[2];
             cell_list = [];
-            _iterator = _createForOfIteratorHelper(props.console_items);
+            _iterator2 = _createForOfIteratorHelper(props.console_items);
             _context5.p = 3;
-            _iterator.s();
+            _iterator2.s();
           case 4:
-            if ((_step = _iterator.n()).done) {
+            if ((_step2 = _iterator2.n()).done) {
               _context5.n = 13;
               break;
             }
-            entry = _step.value;
+            entry = _step2.value;
             new_entry = {};
             new_entry.type = entry.type;
             _t3 = entry.type;
@@ -284,10 +292,10 @@ function ProjectMenu(props) {
           case 14:
             _context5.p = 14;
             _t4 = _context5.v;
-            _iterator.e(_t4);
+            _iterator2.e(_t4);
           case 15:
             _context5.p = 15;
-            _iterator.f();
+            _iterator2.f();
             return _context5.f(15);
           case 16:
             result_dict = {
@@ -350,7 +358,7 @@ function ProjectMenu(props) {
   }
   function _exportAsReport2() {
     _exportAsReport2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6() {
-      var data, _yield$dialogFuncs$sh5, _yield$dialogFuncs$sh6, collapsible, include_summaries, use_dark_theme, save_as_collection, collection_name, cell_list, _iterator2, _step2, entry, new_entry, container, target, fcontainer, ftarget, result_dict, data_object, title, _t6, _t7, _t8;
+      var data, _yield$dialogFuncs$sh5, _yield$dialogFuncs$sh6, collapsible, include_summaries, use_dark_theme, save_as_collection, collection_name, cell_list, _iterator3, _step3, entry, new_entry, container, target, fcontainer, ftarget, result_dict, data_object, title, _t6, _t7, _t8;
       return _regenerator().w(function (_context6) {
         while (1) switch (_context6.n) {
           case 0:
@@ -376,15 +384,15 @@ function ProjectMenu(props) {
             save_as_collection = _yield$dialogFuncs$sh6[3];
             collection_name = _yield$dialogFuncs$sh6[4];
             cell_list = [];
-            _iterator2 = _createForOfIteratorHelper(props.console_items);
+            _iterator3 = _createForOfIteratorHelper(props.console_items);
             _context6.p = 3;
-            _iterator2.s();
+            _iterator3.s();
           case 4:
-            if ((_step2 = _iterator2.n()).done) {
+            if ((_step3 = _iterator3.n()).done) {
               _context6.n = 13;
               break;
             }
-            entry = _step2.value;
+            entry = _step3.value;
             new_entry = {};
             new_entry.type = entry.type;
             _t6 = entry.type;
@@ -430,10 +438,10 @@ function ProjectMenu(props) {
           case 14:
             _context6.p = 14;
             _t7 = _context6.v;
-            _iterator2.e(_t7);
+            _iterator3.e(_t7);
           case 15:
             _context6.p = 15;
-            _iterator2.f();
+            _iterator3.f();
             return _context6.f(15);
           case 16:
             result_dict = {
@@ -480,7 +488,7 @@ function ProjectMenu(props) {
   }
   function _exportAsJupyter2() {
     _exportAsJupyter2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee7() {
-      var data, new_name, cell_list, _iterator3, _step3, entry, new_cell, result_dict, data_object, title, _t9, _t0;
+      var data, new_name, cell_list, _iterator4, _step4, entry, new_cell, result_dict, data_object, title, _t9, _t0;
       return _regenerator().w(function (_context7) {
         while (1) switch (_context7.n) {
           case 0:
@@ -504,15 +512,15 @@ function ProjectMenu(props) {
           case 3:
             new_name = _context7.v;
             cell_list = [];
-            _iterator3 = _createForOfIteratorHelper(props.console_items);
+            _iterator4 = _createForOfIteratorHelper(props.console_items);
             _context7.p = 4;
-            _iterator3.s();
+            _iterator4.s();
           case 5:
-            if ((_step3 = _iterator3.n()).done) {
+            if ((_step4 = _iterator4.n()).done) {
               _context7.n = 8;
               break;
             }
-            entry = _step3.value;
+            entry = _step4.value;
             if (!(entry.type == "section-end")) {
               _context7.n = 6;
               break;
@@ -540,10 +548,10 @@ function ProjectMenu(props) {
           case 9:
             _context7.p = 9;
             _t9 = _context7.v;
-            _iterator3.e(_t9);
+            _iterator4.e(_t9);
           case 10:
             _context7.p = 10;
-            _iterator3.f();
+            _iterator4.f();
             return _context7.f(10);
           case 11:
             result_dict = {
@@ -680,7 +688,7 @@ function ProjectMenu(props) {
             while (1) switch (_context.n) {
               case 0:
                 _context.n = 1;
-                return _saveProject(false);
+                return _saveProject(!window.allow_heavy_saves);
               case 1:
                 return _context.a(2);
             }
@@ -691,27 +699,31 @@ function ProjectMenu(props) {
         }
         return click_handler;
       }()
-    }, {
-      name_text: "Save Lite",
-      icon_name: "saved",
-      click_handler: function () {
-        var _click_handler2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2() {
-          return _regenerator().w(function (_context2) {
-            while (1) switch (_context2.n) {
-              case 0:
-                _context2.n = 1;
-                return _saveProject(true);
-              case 1:
-                return _context2.a(2);
-            }
-          }, _callee2);
-        }));
-        function click_handler() {
-          return _click_handler2.apply(this, arguments);
-        }
-        return click_handler;
-      }()
-    }, {
+    }];
+    if (window.allow_heavy_saves) {
+      items.push({
+        name_text: "Save Lite",
+        icon_name: "saved",
+        click_handler: function () {
+          var _click_handler2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2() {
+            return _regenerator().w(function (_context2) {
+              while (1) switch (_context2.n) {
+                case 0:
+                  _context2.n = 1;
+                  return _saveProject(true);
+                case 1:
+                  return _context2.a(2);
+              }
+            }, _callee2);
+          }));
+          function click_handler() {
+            return _click_handler2.apply(this, arguments);
+          }
+          return click_handler;
+        }()
+      });
+    }
+    items = items.concat([{
       name_text: "divider1",
       icon_name: null,
       click_handler: "divider"
@@ -747,13 +759,21 @@ function ProjectMenu(props) {
       name_text: "Remove Collection",
       icon_name: "cross-circle",
       click_handler: props.removeCollection
-    }];
+    }]);
     var reduced_items = [];
-    for (var _i = 0, _items = items; _i < _items.length; _i++) {
-      var item = _items[_i];
-      if (!props.hidden_items.includes(item.name_text)) {
-        reduced_items.push(item);
+    var _iterator = _createForOfIteratorHelper(items),
+      _step;
+    try {
+      for (_iterator.s(); !(_step = _iterator.n()).done;) {
+        var item = _step.value;
+        if (!props.hidden_items.includes(item.name_text)) {
+          reduced_items.push(item);
+        }
       }
+    } catch (err) {
+      _iterator.e(err);
+    } finally {
+      _iterator.f();
     }
     return reduced_items;
   }

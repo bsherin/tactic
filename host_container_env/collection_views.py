@@ -12,6 +12,9 @@ from openpyxl.utils import get_column_letter
 import io
 from tactic_logging import log
 from utils import utcnow
+from aws_helpers import get_ssm_parameter
+
+allow_heavy_saves = get_ssm_parameter("ALLOW_HEAVY_SAVES","false").lower() == "true"
 
 from js_source_management import js_source_dict, _develop, css_source
 
@@ -36,7 +39,9 @@ def new_notebook():
                            has_openapi_key=current_user.has_openapi_key,
                            is_jupyter="False",
                            version_string=tstring,
+                           allow_heavy_saves=allow_heavy_saves,
                            css_source=css_source("notebook_app"),
+
                            module_source=js_source_dict["notebook_app"])
 
 
@@ -55,6 +60,7 @@ def new_notebook_with_data(temp_data_id):
                            is_jupyter="False",
                            version_string=tstring,
                            css_source=css_source("notebook_app"),
+                           allow_heavy_saves=allow_heavy_saves,
                            module_source=js_source_dict["notebook_app"])
 
 @app.route('/main_collection/<collection_name>', methods=['get'])
@@ -71,6 +77,7 @@ def main_collection(collection_name):
                            has_openapi_key=current_user.has_openapi_key,
                            version_string=tstring,
                            css_source=css_source("main_app"),
+                           allow_heavy_saves=allow_heavy_saves,
                            module_source=js_source_dict["main_app"])
 
 @app.route('/new_project', methods=['get'])
@@ -87,6 +94,7 @@ def new_project():
                            develop=str(_develop),
                            version_string=tstring,
                            css_source=css_source("main_app"),
+                           allow_heavy_saves=allow_heavy_saves,
                            module_source=js_source_dict["main_app"])
 
 

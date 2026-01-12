@@ -12,6 +12,8 @@ from tactic_logging import log
 
 COLLECTION_CHUNK_SIZE = int(get_ssm_parameter("COLLECTION_CHUNK_SIZE", "50"))
 
+allow_heavy_saves = get_ssm_parameter("ALLOW_HEAVY_SAVES","false").lower() == "true"
+
 def task_worthy(m):
     task_worthy_methods[m.__name__] = "mainwindow"
     return m
@@ -428,7 +430,10 @@ class LoadSaveTasksMixin:
     @task_worthy_manual_submit
     def compile_save_dict(self, data, task_packet):
         sess = self.get_session(data["sid"])
-        is_lite = "lite_save" in data and data["lite_save"]
+        if not allow_heavy_saves:
+            is_lite = True
+        else:
+            is_lite = "lite_save" in data and data["lite_save"]
 
         def track_tile_compile_receipts(tile_save_dict):
             tile_id = tile_save_dict["tile_id"]

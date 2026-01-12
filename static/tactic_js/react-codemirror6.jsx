@@ -784,7 +784,6 @@ function ReactCodemirror6(props) {
             props.handleFocus();
         }
     }
-
     function _searchMatcher(term, global = false, ignore_case = true) {
         let regex;
         let flags = "";

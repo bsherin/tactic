@@ -55,7 +55,10 @@ function ProjectMenu(props) {
     async function _saveProjectAs() {
         statusFuncs.startSpinner();
         let data = await postPromise("host", "get_project_names_task", {"user_id": window.user_id}, props.local_id);
-        let checkboxes = [{checkname: "lite_save", checktext: "create lite save"}];
+        let checkboxes = null;
+        if (window.allow_heavy_saves){
+            checkboxes = [{checkname: "lite_save", checktext: "create lite save"}];
+        }
 
         try {
             let [new_name, checkbox_states] = await dialogFuncs.showModalPromise("ModalDialog", {
@@ -66,12 +69,19 @@ function ProjectMenu(props) {
                 checkboxes: checkboxes,
                 handleClose: dialogFuncs.hideModal,
             });
+            let lite_save;
+            if (window.allow_heavy_saves){
+                lite_save = checkbox_states["lite_save"];
+            }
+            else {
+                lite_save = true;
+            }
             const result_dict = {
                 "project_name": new_name,
                 "local_id": props.local_id,
                 "doc_type": "table",
                 "purgetiles": true,
-                "lite_save": checkbox_states["lite_save"]
+                "lite_save": lite_save
             };
 
             result_dict.interface_state = save_state;
@@ -402,16 +412,19 @@ function ProjectMenu(props) {
         }
         let items = [
             {name_text: "Save As...", icon_name: "floppy-disk", click_handler: _saveProjectAs},
-            {
-                name_text: "Save", icon_name: "saved", click_handler: async () => {
-                    await _saveProject(false)
+            {name_text: "Save", icon_name: "saved", click_handler: async () => {
+                    await _saveProject(!window.allow_heavy_saves)
                 }
-            },
-            {
+            }
+        ]
+        if (window.allow_heavy_saves) {
+            items.push({
                 name_text: "Save Lite", icon_name: "saved", click_handler: async () => {
                     await _saveProject(true)
                 }
-            },
+            })
+        }
+        items = items.concat([
             {name_text: "divider1", icon_name: null, click_handler: "divider"},
             {name_text: "Export as Jupyter Notebook", icon_name: "export", click_handler: _exportAsJupyter,},
             {name_text: "Create Report From Notebook", icon_name: "document", click_handler: _exportAsReport,},
@@ -425,7 +438,7 @@ function ProjectMenu(props) {
             {name_text: "divider2", icon_name: null, click_handler: "divider"},
             {name_text: cc_name, icon_name: cc_icon, click_handler: props.changeCollection},
             {name_text: "Remove Collection", icon_name: "cross-circle", click_handler: props.removeCollection},
-        ];
+        ]);
         let reduced_items = [];
         for (let item of items) {
             if (!props.hidden_items.includes(item.name_text)) {

@@ -14,6 +14,8 @@ import threading
 from qworker_alt import stop_thread
 from qworker_alt import add_qw_pika_connection, simple_uid, close_connection
 from widgets import is_html_table_class
+from aws_helpers import get_ssm_parameter
+allow_heavy_saves = get_ssm_parameter("ALLOW_HEAVY_SAVES","false").lower() == "true"
 
 ethread = None
 executing_console_id = None
@@ -148,7 +150,10 @@ class PseudoTileClass(TileBase):
     @_task_worthy_manual_submit
     def compile_save_dict(self, data, task_packet):
         result = {"binary_attrs": [], "imports": []}
-        is_lite = "lite_save" in data and data["lite_save"]
+        if not allow_heavy_saves:
+            is_lite =  True
+        else:
+            is_lite =  "lite_save" in data and data["lite_save"]
         if not is_lite:
             attrs = globals().keys()
             for attr in attrs:
