@@ -300,12 +300,12 @@ class LoadSaveTasksMixin:
             "is_freeform": (doc_type == 'freeform'),
             "is_jupyter": (doc_type == 'jupyter'),
             "is_project": True,
+            "interface_state": interface_state
         }
         if is_notebook:
             data_dict["kind"] = "notebook-viewer"
             data_dict["tile_types"] = []
             data_dict["icon_dict"] = {}
-            data_dict["interface_state"] = interface_state
             self.mworker.submit_response(task_packet, data_dict)
 
         data_dict["kind"] = "main-viewer"
@@ -322,49 +322,12 @@ class LoadSaveTasksMixin:
             elif doc_type == "freeform":
                 data_dict.update(
                     self.grab_freeform_data({"sid": local_id, "doc_name": sess.visible_doc_name, "set_visible_doc": True}))
-            def got_new_ids(nd_data):
-                if "tile_list" in interface_state:
-                    for tile_entry in interface_state["tile_list"]:
-                        prior_id = tile_entry["tile_id"]
-                        tile_info = sess.tile_info
-                        current_id = tile_info.current_from_prior(prior_id)
-                        if current_id is None:
-                            log.error("prior_id not found in tile_info", prior_id=prior_id, sid=local_id)
-                        else:
-                            tile_entry["tile_id"] = current_id
-                data_dict["interface_state"] = interface_state
-                self.mworker.submit_response(task_packet, data_dict)
-                return
-
-            self.mworker.post_task("main_service", "get_new_tile_ids", {"sid": local_id}, got_new_ids)
+            self.emit_clear_status(local_id)
+            self.emit_stop_status_spinner(local_id)
+            self.mworker.submit_response(task_packet, data_dict)
 
         self.mworker.post_task("host", "get_tile_types_task", {"user_id": user_id}, got_tile_types)
         return
-
-    @task_worthy_manual_submit
-    def get_new_tile_ids(self, data, task_packet):
-        log.debug("entering get_new_tile_ids", sid=data["sid"])
-        sid = data["sid"]
-        sess = self.get_session(sid)
-        tile_info = sess.tile_info
-        def got_new_ids(new_id_data):
-            log.debug("got new ids", new_id_data=new_id_data)
-            new_ids = new_id_data["new_ids"]
-            new_creds = new_id_data["new_creds"]
-            if len(new_ids) > 0:
-                for n, old_id in enumerate(tile_info.tile_ids):
-                    tile_info.update_id(old_id, new_ids[n])
-                    tile_info.set_creds(new_ids[n], new_creds[n])
-            self.mworker.submit_response(task_packet)
-
-        sess = self.get_session(data["sid"])
-        tile_info = sess.tile_info
-        tile_names = tile_info.tile_names
-        if len(tile_names) == 0:
-            got_new_ids({"success": True, "new_ids": [], "new_creds": []})
-        self.mworker.post_task("main_service", "create_n_tile_containers",
-                               {"sid": data["sid"], "number_to_create": len(tile_names), "tile_names": tile_names},
-                               callback_func=got_new_ids)
 
     @task_worthy_manual_submit
     def load_modules(self, data, task_packet):
@@ -389,6 +352,38 @@ class LoadSaveTasksMixin:
         return
 
     @task_worthy_manual_submit
+    def initialize_tile_from_save(self, data, task_packet):
+        sid = data["sid"]
+        sess = self.get_session(sid)
+        old_tile_id = sess.ss.make_old(data["tile_id"])
+        tile_info = sess.tile_info
+        tile_name = tile_info.get_param(old_tile_id, "tile_name")
+        tile_type = tile_info.get_param(old_tile_id, "tile_type")
+
+        def got_container(create_container_dict):
+            new_tile_id = create_container_dict["the_id"]
+            self.mworker.emit_to_main_client(sid, "tile-status-message", {"message": "tile-status-message",
+                                                                          "tile_id": new_tile_id,
+                                                                          "status": "loading"})
+            tile_info.update_id(old_tile_id, new_tile_id)
+            tile_info.set_creds(new_tile_id, create_container_dict["creds"])
+
+            tdict = tile_info.get_tile_params(new_tile_id)
+            data_for_tile = {"tile_id": new_tile_id, "creds": tdict["creds"],
+                             "tile_save_dict": tdict["tile_save_dict"], "sid": sid}
+
+            def tile_recreated(trcdata):
+                self.mworker.post_task("main_service", "rebuild_tile_forms_task", {"sid": sid})
+                self.mworker.submit_response(task_packet, {"success": trcdata["success"], "tile_id": new_tile_id})
+                return
+
+            self.mworker.post_task("main_service", "recreate_one_tile", data_for_tile,
+                                   tile_recreated)
+
+        self.create_tile_container(sid, other_name=tile_name, callback=got_container)
+
+
+    @task_worthy_manual_submit
     def recreate_tiles(self, data, task_packet):
         sid = data["local_id"]
         sess = self.get_session(sid)
@@ -397,9 +392,10 @@ class LoadSaveTasksMixin:
             def track_recreated_tiles(trcdata):
                 if trcdata["tile_id"] in tiles_to_recreate:
                     if trcdata["success"]:
-                        self.mworker.emit_to_main_client(sid, "tile-finished-loading",
-                                                         {"message": "tile-finished-loading",
+                        self.mworker.emit_to_main_client(sid, "tile-status-message",
+                                                         {"message": "tile-status-messag",
                                                           "success": True,
+                                                          "status": "loaded",
                                                           "tile_id": trcdata["tile_id"]})
                         tiles_to_recreate.remove(trcdata["tile_id"])
                     else:

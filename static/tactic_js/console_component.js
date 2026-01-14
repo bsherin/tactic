@@ -152,9 +152,8 @@ function ConsoleComponent(props) {
     memory_limit = _useState10[0],
     set_memory_limit = _useState10[1];
   var _useState11 = (0, _react.useState)(false),
-    _useState12 = _slicedToArray(_useState11, 2),
-    show_main_log = _useState12[0],
-    set_show_main_log = _useState12[1];
+    _useState12 = _slicedToArray(_useState11, 1),
+    show_main_log = _useState12[0];
   var _useState13 = (0, _react.useState)(false),
     _useState14 = _slicedToArray(_useState13, 2),
     show_pseudo_log = _useState14[0],
@@ -322,6 +321,7 @@ function ConsoleComponent(props) {
     });
   }
   function _updateMemoryUsage(data) {
+    props.setMainStateValue("pseudoTileStatus", "loaded");
     set_memory_usage(data.message["memory_usage"]);
     set_memory_limit(data.message["memory_limit"]);
   }
@@ -1979,10 +1979,16 @@ function ConsoleComponent(props) {
   }))), /*#__PURE__*/_react["default"].createElement("div", {
     id: "console-header-right",
     className: "d-flex flex-row"
-  }, /*#__PURE__*/_react["default"].createElement(_memory_utilities.MemoryIndicator, {
+  }, props.mState.pseudoTileStatus == "loaded" && /*#__PURE__*/_react["default"].createElement(_memory_utilities.MemoryIndicator, {
     usage: memory_usage,
     limit: memory_limit
-  }), /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
+  }), props.mState.pseudoTileStatus != "loaded" && /*#__PURE__*/_react["default"].createElement("span", {
+    className: "memory-indicator d-flex flex-row align-items-center",
+    style: {
+      marginRight: 10,
+      marginLeft: 5
+    }
+  }, props.mState.pseudoTileStatus), /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
     extra_glyph_text: _glif_text(show_glif_text, "exports"),
     tooltip: "Show export browser",
     size: "small",

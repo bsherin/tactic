@@ -496,9 +496,9 @@ function TileComponent(props) {
             flexDirection: "column",
             position: "relative"
         };
-        if (!props.finished_loading) {
-            main_style.opacity = .5
-        }
+        // if (!props.finished_loading) {
+        //     main_style.opacity = .5
+        // }
     return (
         <Card ref={my_ref} elevation={2} style={main_style} className="tile-panel" id={props.tile_id}>
             <ErrorBoundary>
@@ -538,7 +538,18 @@ function TileComponent(props) {
                                                                 handleClick={_stopMe}
                                                                 icon="stop"/>}
                             {props.show_spinner && <Spinner size={17}/>}
-                            <MemoryIndicator usage={props.memory_usage} limit={props.memory_limit}/>
+                            {props.loading_status == "loaded" &&
+                                <MemoryIndicator usage={props.memory_usage} limit={props.memory_limit}/>
+                            }
+                            {props.loading_status != "loaded" &&
+                                <span className="memory-indicator d-flex flex-row align-items-center" style={{
+                                        marginRight: 10,
+                                        marginLeft: 5,
+                                    }}>
+                                        {props.loading_status}
+                                    </span>
+                            }
+
                             <MenuComponent
                                 option_dict={tile_menu_options}
                                 icon_dict={menu_icons}

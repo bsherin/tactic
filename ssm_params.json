@@ -93,7 +93,7 @@
     },
     {
       "name": "HOST_UTILITY_INTERVAL_SECS",
-      "value": "30",
+      "value": "15",
       "type": "String"
     },
     {

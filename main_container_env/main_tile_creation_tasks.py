@@ -21,33 +21,6 @@ class TileCreationTasksMixin:
             "meta": mdata
         }, callback_func=callback)
 
-    @task_worthy_manual_submit
-    def create_n_tile_containers(self, data, task_packet):
-        log.debug("Creating {} tile containers".format(data["number_to_create"]))
-        sid = data["sid"]
-        new_ids = []
-        new_creds = []
-        number_to_create = data["number_to_create"]
-        if "tile_names" in data:
-            tile_names = data["tile_names"]
-        else:
-            tile_names = ["tile_{}".format(n) for n in range(number_to_create)]
-
-        def got_container(cresult):
-            if not cresult["success"]:
-                log.exception(cresult["message"])
-                self.mworker.submit_response(task_packet, {"success": False, "message": cresult["message"]})
-            else:
-                log.debug("Created tile container with ID {}".format(cresult["the_id"]))
-                new_ids.append(cresult["the_id"])
-                new_creds.append(cresult["creds"])
-                if len(new_ids) == number_to_create:
-                    log.debug("All {} tile containers created".format(number_to_create))
-                    self.mworker.submit_response(task_packet, {"success": True, "new_ids": new_ids, "new_creds": new_creds})
-        for n in range(number_to_create):
-            log.debug("Creating tile container {}".format(n))
-            self.create_tile_container(sid, other_name=tile_names[n], callback=got_container)
-        return
 
     @task_worthy_manual_submit
     def create_tile(self, data_dict, task_packet):
@@ -105,6 +78,13 @@ class TileCreationTasksMixin:
 
         return
 
+    @task_worthy
+    def get_pseudo_tile_status(self, data):
+        sid = data["sid"]
+        sess = self.get_session(sid)
+        status = sess.pseudo_tile_status
+        return {"success": True, "status": status}
+
     def create_pseudo_tile(self, sid, globals_dict=None, callback=None):
         sess = self.get_session(sid)
 
@@ -121,6 +101,8 @@ class TileCreationTasksMixin:
             if not data["success"]:
                 sess.pseudo_creation_in_progress = False
                 raise Exception("Error creating empty tile container")
+            sess.pseudo_tile_status = "loading"
+            self.mworker.emit_to_main_client(sid, "pseudo-tile-status", {"status": "loading"})
             pseudo_tile_id = data["the_id"]
             sess.pseudo_tile_id = pseudo_tile_id
             sess.pseudo_tile_creds = data["creds"]
@@ -138,7 +120,11 @@ class TileCreationTasksMixin:
             }
 
             def instantiate_done(instantiate_result):
+                sess.pseudo_tile_status = "loaded"
+                self.mworker.emit_to_main_client(sid, "pseudo-tile-status", {"status": "loaded"})
                 _pipe_dict = sess.pipe_dict
+                if (_pipe_dict is None) or (not isinstance(_pipe_dict, dict)):
+                    _pipe_dict = {}
                 if not instantiate_result["success"]:
                     sess.pseudo_creation_in_progress = False
                     raise Exception(instantiate_result["message"])
@@ -162,8 +148,11 @@ class TileCreationTasksMixin:
                         callback()
 
                 self.mworker.emit_export_viewer_message(sid, "update_exports_popup", {})
+
             self.mworker.post_task(pseudo_tile_id, "instantiate_as_pseudo_tile", data_dict, instantiate_done)
 
+        sess.pseudo_tile_status = "waiting"
+        self.mworker.emit_to_main_client(sid, "pseudo-tile-status", {"status": "waiting"})
         self.create_tile_container(sid, other_name="pseudo_tile", is_pseudo=True, callback=got_container)
         return {"success": True}
 
@@ -221,9 +210,10 @@ class TileCreationTasksMixin:
             if rcdata["success"]:
                 form_info["pipe_dict"] = self._pipe_dict
                 self.rebuild_tile_forms_task({"sid": sid})
-                self.mworker.emit_to_main_client(sid, "tile-finished-loading", {"message": "tile-finished-loading",
-                                                                           "success": True,
-                                                                           "tile_id": tile_id})
+                self.mworker.emit_to_main_client(sid, "tile-status-message", {"message": "tile-status-message",
+                                                                              "success": True,
+                                                                              "status": "loaded",
+                                                                              "tile_id": tile_id})
                 final_result = {"success": True, "form_data": None,
                                 "options_changed": True}
                 self.mworker.submit_response(local_task_packet, final_result)

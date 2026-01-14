@@ -1,11 +1,10 @@
 
 import os, time
-from typing import Dict, Optional
+from typing import Optional
 import boto3
 from botocore.config import Config
 
 from abstract_tile_backend import TileBackend
-from aws_task_helpers import run_tile_on_ecs, ECSTileError  # your helper we already built
 from aws_helpers import get_ssm_parameter
 from tactic_logging import log
 
@@ -51,43 +50,14 @@ class ECSTileBackend(TileBackend):
             "region": os.getenv("AWS_REGION", "us-east-2"),
         }
 
-    def launch(self, username: str, owner: Optional[str],
-               parent: Optional[str], tile_id: Optional[str], meta: Dict,
-               project_name: Optional[str] = None,
-               tile_name: Optional[str] = None):
-        tid, task_arn = self.tile_registry.claim_tile(username, owner, parent, project_name, tile_name)
+    def request_tile(self, task_packet):
+        tid, task_arn = self.tile_registry.claim_tile(task_packet)
         if tid:
             log.debug("warm_tile_claimed", category="tile_management", tile_id=tid, task_arn=task_arn)
             creds = self.issue_user_s3_session(username)
-            return tid, task_arn, creds
-
-        log.warning("***Warm tile pool empty, launching ad-hoc ECS tile...***", category="tile_management")
-        if not self.subnets or not self.sgs:
-            raise ECSTileError("No idle tiles and ECS_SUBNETS/ECS_SECURITY_GROUPS not set for ad-hoc launch.")
-
-        for k in ("BROKER_URL", "REDIS_URL"):
-            v = os.getenv(k)
-            if v:
-                env[k] = v
-
-        uid, task_arn = run_tile_on_ecs(
-            username=username,
-            tile_id=tile_id,
-            owner=owner,
-            parent=parent,
-            other_name=meta.get("other_name", "none"),
-        )
-        tile_id = f"tile_{uid}"
-        args = {
-            "owner": username,
-            "parent": parent,
-            "project_name": project_name,
-            "tile_name": tile_name,
-            "register_heartbeat": True
-        }
-        self.tile_registry.mark_status(tile_id, "busy", **args)
-        creds = self.issue_user_s3_session(username)
-        return uid, task_arn, creds
+            self.submit_response(task_packet, {"success": True, "the_id": tid, "task_arn": task_arn, "creds": creds})
+        else:
+            self.tile_registry.add_to_queue(task_packet)
 
     def restart(self, tile_id: str):
         tdata = self.tile_registry.get(tile_id)

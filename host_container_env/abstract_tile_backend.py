@@ -4,8 +4,7 @@ from typing import Dict, Optional
 class TileBackend(ABC):
 
     @abstractmethod
-    def launch(self, username: str, owner: Optional[str], parent: Optional[str], tile_id: Optional[str], meta: Dict,
-               project_name: Optional[str] = None, tile_name: Optional[str] = None):
+    def request_tile(self, task_packete):
         return
     @abstractmethod
     def restart(self, tile_id: str):

@@ -23,7 +23,7 @@ import {BlueprintTable, compute_added_column_width} from "./blueprint_table";
 import {HorizontalPanes, VerticalPanes} from "./resizing_allotment";
 import {ProjectMenu, DocumentMenu, ColumnMenu, RowMenu, ViewMenu, MenuComponent} from "./main_menus_react";
 import {TileContainer} from "./tile_container";
-import {tilesReducer, fixTileFrontContent} from "./tile_container_support"
+import {tilesReducer} from "./tile_container_support"
 import {ExportsViewer} from "./export_viewer_react";
 import {ConsoleComponent} from "./console_component";
 import {consoleItemsReducer} from "./console_support";
@@ -104,6 +104,7 @@ function MainApp(props) {
         show_exports_pane: iStateOrDefault("show_exports_pane"),
         show_console_pane: iStateOrDefault("show_console_pane"),
         show_metadata: false,
+        pseudoTileStatus: "not initialized",
 
         table_spec: props.initial_table_spec,
         doc_type: props.doc_type,
@@ -173,8 +174,26 @@ function MainApp(props) {
         }
 
         window.addEventListener("unload", sendRemove);
-        postPromiseMain(props.local_id, "recreate_tiles", {})
-            .then(()=>{console.log("finished tile recreation")})
+        getPseudoTileStatus();
+        postPromiseMain(props.local_id, "load_modules", {})
+            .then(() => {
+                for (let tile_entry of tile_list_ref.current) {
+                    postPromiseMain(props.local_id, "initialize_tile_from_save",
+                        {sid: props.local_id, tile_id: tile_entry.tile_id})
+                        .then((tile_data) => {
+                            let new_tile_id = tile_data.tile_id;
+                            tileDispatch({
+                                type: "change_item_state",
+                                tile_id: tile_entry.tile_id,
+                                new_state: {
+                                    loading_status: "loaded",
+                                    tile_id: new_tile_id,
+                                }
+                            });
+                        })
+                }
+            });
+
         return (() => {
             if (props.controlled) {
                 postWithCallbackMain(props.local_id, "end_main_session_task", {sid: props.local_id})
@@ -196,6 +215,26 @@ function MainApp(props) {
         return mState.table_spec.column_names.filter((name) => {
             return !(mState.table_spec.hidden_columns_list.includes(name) || (name == "__id__"));
         })
+    }
+
+
+    function updatePseudoTileStatus(data) {
+        if (mState.pseudoTileStatus == "loaded") {
+            return
+        }
+        setPseudoTileStatus(data.status);
+    }
+
+    function setPseudoTileStatus(status) {
+        _setMainStateValue("pseudoTileStatus", status);
+    }
+
+    function getPseudoTileStatus() {
+        postPromise("main_service", "get_pseudo_tile_status", {"sid": props.local_id}, props.local_id)
+            .then((data) => {
+                updatePseudoTileStatus(data);
+            }
+        )
     }
 
     function _cProp(pname) {
@@ -261,14 +300,36 @@ function MainApp(props) {
         });
     }
 
-    function _handleTileFinishedLoading(data) {
-        _setTileValue(data.tile_id, "finished_loading", true)
+    function getTileEntry(tile_id) {
+        for (let tile_entry of tile_list_ref.current) {
+            if (tile_entry.tile_id == tile_id) {
+                return tile_entry
+            }
+        }
+        return null
+    }
+
+    function getTileStatus(tile_id) {
+        let tile_entry = getTileEntry(tile_id);
+        if (tile_entry) {
+            return tile_entry.loading_status
+        }
+        return null
+    }
+
+    function _handleTileStatusMessage(data) {
+        let tile_status = getTileStatus(data.tile_id);
+        if (tile_status == "loaded") {
+            return
+        }
+        _setTileValue(data.tile_id, "loading_status", data.status)
     }
 
     function initSocket(theSocket) {
         theSocket.attachListener("window-open", data => {
             window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`)
         });
+        theSocket.attachListener("pseudo-tile-status", updatePseudoTileStatus);
         if (!window.in_context) {
             theSocket.attachListener('close-user-windows', function (data) {
                 if (!(data["originator"] == window.global_id)) {
@@ -292,7 +353,7 @@ function MainApp(props) {
         }
         theSocket.attachListener('table-message', _handleTableMessage);
         theSocket.attachListener("update-menus", _update_menus_listener);
-        theSocket.attachListener("tile-finished-loading", _handleTileFinishedLoading);
+        theSocket.attachListener("tile-status-message", _handleTileStatusMessage);
         theSocket.attachListener('change-doc', _change_doc_listener);
         if (!props.controlled) {
             theSocket.attachListener("endSession", function () {
@@ -321,10 +382,8 @@ function MainApp(props) {
             javascript_arg_dict: null,
             show_log: false,
             log_content: "",
-            // log_since: null,
-            // max_console_lines: 100,
             shrunk: false,
-            finished_loading: true,
+            loading_status: "loaded",
             front_content: ""
         }
     }
@@ -459,7 +518,7 @@ function MainApp(props) {
     async function _tile_command(menu_id) {
         let existing_tile_names = [];
         for (let tile_entry of tile_list) {
-            existing_tile_names.push(tile_entry.tile_name)
+            existing_tile_names.push(tile_entry["tile_name"])
         }
         try {
             let tile_name = await dialogFuncs.showModalPromise("ModalDialog", {
@@ -1301,7 +1360,7 @@ function main_main() {
             })
                 .then((data) => {
                     data.tsocket = tsocket;
-                    data.local_id = local_id,
+                    data.local_id = local_id;
                     data.read_only = window.read_only;
                     data.is_repository = window.is_repository;
                     main_props(data, null, gotProps)
@@ -1309,19 +1368,6 @@ function main_main() {
         }
     })
 
-    // let tsocket = new TacticSocket("main", 5000, "project", local_id, async () => {
-    //     tsocket.attachListener('handle-callback', (task_packet) => {
-    //         handleCallback(task_packet, local_id)
-    //     });
-    //     postPromise("host", target, post_data, local_id)
-    //         .then((data) => {
-    //             data.tsocket = tsocket;
-    //             data.local_id = local_id,
-    //             data.read_only = window.read_only;
-    //             data.is_repository = window.is_repository;
-    //             main_props(data, null, gotProps)
-    //         });
-    // })
 }
 
 if (!window.in_context) {

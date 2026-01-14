@@ -57,7 +57,7 @@ class HostUtilityWorker:
     def __init__(self, worker):
         self.worker = worker
         self.connection, self.channel = get_pika_connection_with_retries()
-        self.utility_interval = int(get_ssm_parameter("HOST_UTILITY_INTERVAL_SECS", 60))
+        self.utility_interval = int(get_ssm_parameter("HOST_UTILITY_INTERVAL_SECS", 15))
         self.initial_utility_interval = 5
         self.last_publish = time.time()
         self.last_global_ids = []

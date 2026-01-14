@@ -66,6 +66,7 @@ function NotebookApp(props) {
         resource_name: props.resource_name,
         is_project: props.is_project,
         show_metadata: false,
+        pseudoTileStatus: "not initialized",
 
     });
     const settingsContext = useContext(SettingsContext);
@@ -105,7 +106,7 @@ function NotebookApp(props) {
         if (!props.controlled) {
             document.title = mState.resource_name;
         }
-
+        getPseudoTileStatus();
         return (() => {
             if (props.controlled) {
                 postWithCallbackMain(props.local_id, "end_main_session_task", {sid: props.local_id})
@@ -152,7 +153,7 @@ function NotebookApp(props) {
         theSocket.attachListener("window-open", data => {
             window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`)
         });
-
+        theSocket.attachListener("pseudo-tile-status", updatePseudoTileStatus);
         if (!window.in_context) {
             theSocket.attachListener("doFlashUser", function (data) {
                 doFlash(data)
@@ -166,8 +167,28 @@ function NotebookApp(props) {
             theSocket.attachListener("endSession", function () {
                 dialogFuncs.showModal("EndSessionDialog", {})
             })
+
         }
 
+    }
+
+    function updatePseudoTileStatus(data) {
+        if (mState.pseudoTileStatus == "loaded") {
+            return
+        }
+        setPseudoTileStatus(data.status);
+    }
+
+    function setPseudoTileStatus(status) {
+        _setMainStateValue("pseudoTileStatus", status);
+    }
+
+    function getPseudoTileStatus() {
+        postPromise("main_service", "get_pseudo_tile_status", {"sid": props.local_id}, props.local_id)
+            .then((data) => {
+                updatePseudoTileStatus(data);
+            }
+        )
     }
 
     const _handleConsoleFractionChange = useCallback((left_width, right_width, new_fraction)=>{

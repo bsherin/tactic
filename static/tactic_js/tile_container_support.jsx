@@ -81,6 +81,7 @@ function tilesReducer(tile_list, action) {
                 }
             });
             break;
+
         case "change_item_state":
             new_items = tile_list.map(t => {
                 if (t.tile_id === action.tile_id) {

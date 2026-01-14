@@ -80,7 +80,8 @@ function NotebookApp(props) {
       console_is_shrunk: false,
       resource_name: props.resource_name,
       is_project: props.is_project,
-      show_metadata: false
+      show_metadata: false,
+      pseudoTileStatus: "not initialized"
     }),
     _useReducer2 = _slicedToArray(_useReducer, 2),
     mState = _useReducer2[0],
@@ -123,6 +124,7 @@ function NotebookApp(props) {
     if (!props.controlled) {
       document.title = mState.resource_name;
     }
+    getPseudoTileStatus();
     return function () {
       if (props.controlled) {
         (0, _communication_react.postWithCallbackMain)(props.local_id, "end_main_session_task", {
@@ -165,6 +167,7 @@ function NotebookApp(props) {
     theSocket.attachListener("window-open", function (data) {
       window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data["the_id"]));
     });
+    theSocket.attachListener("pseudo-tile-status", updatePseudoTileStatus);
     if (!window.in_context) {
       theSocket.attachListener("doFlashUser", function (data) {
         (0, _toaster.doFlash)(data);
@@ -178,6 +181,22 @@ function NotebookApp(props) {
         dialogFuncs.showModal("EndSessionDialog", {});
       });
     }
+  }
+  function updatePseudoTileStatus(data) {
+    if (mState.pseudoTileStatus == "loaded") {
+      return;
+    }
+    setPseudoTileStatus(data.status);
+  }
+  function setPseudoTileStatus(status) {
+    _setMainStateValue("pseudoTileStatus", status);
+  }
+  function getPseudoTileStatus() {
+    (0, _communication_react.postPromise)("main_service", "get_pseudo_tile_status", {
+      "sid": props.local_id
+    }, props.local_id).then(function (data) {
+      updatePseudoTileStatus(data);
+    });
   }
   var _handleConsoleFractionChange = (0, _react.useCallback)(function (left_width, right_width, new_fraction) {
     _setMainStateValue("console_width_fraction", new_fraction);

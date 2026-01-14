@@ -667,9 +667,9 @@ function TileComponent(props) {
     flexDirection: "column",
     position: "relative"
   };
-  if (!props.finished_loading) {
-    main_style.opacity = .5;
-  }
+  // if (!props.finished_loading) {
+  //     main_style.opacity = .5
+  // }
   return /*#__PURE__*/_react["default"].createElement(_core.Card, {
     ref: my_ref,
     elevation: 2,
@@ -728,10 +728,16 @@ function TileComponent(props) {
     icon: "stop"
   }), props.show_spinner && /*#__PURE__*/_react["default"].createElement(_core.Spinner, {
     size: 17
-  }), /*#__PURE__*/_react["default"].createElement(_memory_utilities.MemoryIndicator, {
+  }), props.loading_status == "loaded" && /*#__PURE__*/_react["default"].createElement(_memory_utilities.MemoryIndicator, {
     usage: props.memory_usage,
     limit: props.memory_limit
-  }), /*#__PURE__*/_react["default"].createElement(_menu_utilities.MenuComponent, {
+  }), props.loading_status != "loaded" && /*#__PURE__*/_react["default"].createElement("span", {
+    className: "memory-indicator d-flex flex-row align-items-center",
+    style: {
+      marginRight: 10,
+      marginLeft: 5
+    }
+  }, props.loading_status), /*#__PURE__*/_react["default"].createElement(_menu_utilities.MenuComponent, {
     option_dict: tile_menu_options,
     icon_dict: menu_icons,
     createOmniItems: false,

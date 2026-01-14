@@ -104,7 +104,7 @@ function ConsoleComponent(props) {
     const [memory_usage, set_memory_usage] = useState(0);
     const [memory_limit, set_memory_limit] = useState(null);
 
-    const [show_main_log, set_show_main_log] = useState(false);
+    const [show_main_log, ] = useState(false);
     const [show_pseudo_log, set_show_pseudo_log] = useState(false);
 
     const [pseudo_tile_id, set_pseudo_tile_id] = useState(null);
@@ -128,6 +128,7 @@ function ConsoleComponent(props) {
                 }
             });
         }
+
     }, []);
 
     useEffect(()=>{
@@ -221,7 +222,6 @@ function ConsoleComponent(props) {
                 consoleCodeWidget: (data) => _appendWidgetToConsoleItem(data),
                 consoleWidgetUpdate: (data) => updateWidgetData(data),
                 updateMemoryUsage: (data) => updateMemoryUsage(data)
-
             };
             handlerDict[data["console_message"]](data)
         }
@@ -237,6 +237,7 @@ function ConsoleComponent(props) {
     }
 
     function updateMemoryUsage(data) {
+        props.setMainStateValue("pseudoTileStatus", "loaded");
         set_memory_usage(data.message["memory_usage"]);
         set_memory_limit(data.message["memory_limit"]);
     }
@@ -1389,7 +1390,17 @@ function ConsoleComponent(props) {
 
                     <div id="console-header-right"
                          className="d-flex flex-row">
-                        <MemoryIndicator usage={memory_usage} limit={memory_limit}/>
+                        {props.mState.pseudoTileStatus == "loaded" &&
+                            <MemoryIndicator usage={memory_usage} limit={memory_limit}/>
+                        }
+                        {props.mState.pseudoTileStatus != "loaded" &&
+                            <span className="memory-indicator d-flex flex-row align-items-center" style={{
+                                marginRight: 10,
+                                marginLeft: 5,
+                            }}>
+                                {props.mState.pseudoTileStatus}
+                            </span>
+                        }
                         <GlyphButton extra_glyph_text={_glif_text(show_glif_text, "exports")}
                                      tooltip="Show export browser"
                                      size="small"

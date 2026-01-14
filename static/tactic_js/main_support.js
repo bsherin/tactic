@@ -40,7 +40,7 @@ function main_props(data, registerDirtyMethod, finalCallback) {
     try {
       for (_iterator.s(); !(_step = _iterator.n()).done;) {
         var entry = _step.value;
-        entry.finished_loading = false;
+        entry.loading_status = "waiting";
       }
     } catch (err) {
       _iterator.e(err);

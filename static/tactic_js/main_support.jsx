@@ -27,7 +27,7 @@ function main_props(data, registerDirtyMethod, finalCallback) {
             interface_state["show_console_pane"] = true
         }
         for (let entry of interface_state.tile_list) {
-            entry.finished_loading = false
+            entry.loading_status = "waiting"
         }
     }
     if (data.doc_type == "none") {

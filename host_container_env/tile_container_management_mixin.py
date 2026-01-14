@@ -1,5 +1,5 @@
 
-from qworker import task_worthy
+from qworker import task_worthy, task_worthy_manual_submit
 from aws_helpers import get_ssm_parameter
 from tactic_logging import log
 
@@ -22,21 +22,15 @@ class TileContainerManagementMixin:
         self.tile_registry.release_child_tiles(data["local_id"])
         return {"success": True, "message": f"Destroyed child tiles of {data['local_id']}"}
 
-    @task_worthy
-    def provide_tile(self, data):
-        the_id, task_arn, creds = self.tile_backend.launch(
-            username=data["username"],
-            owner=data["owner"],
-            parent=data.get("parent", "host"),
-            project_name=data.get("project_name", None),
-            tile_name=data.get("tile_name", None),
-            tile_id=None,
-            meta=data.get("meta", {})
-        )
-        if the_id:
-            return {"success": True, "the_id": the_id, "task_arn": task_arn, "creds": creds}
-
-        return {"success": False, "message": "Couldn't create tile"}
+    @task_worthy_manual_submit
+    def provide_tile(self, data, task_packet):
+        task_packet["username"] = data["username"]
+        task_packet["owner"]    = data["owner"]
+        task_packet["parent"]   = data.get("parent", "host")
+        task_packet["project_name"] = data.get("project_name", None)
+        task_packet["tile_name"]    = data.get("tile_name", None)
+        task_packet["meta"]         = data.get("meta", {})
+        self.tile_backend.request_tile(task_packet)
 
     def destroy_tile(self, tile_id, notify=False, force_terminate=False):
         if recycle_tiles and not force_terminate:

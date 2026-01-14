@@ -1,10 +1,11 @@
 import time
+import uuid
 
 from rabbit_manage import declare_durable_queue
 from rabbit_admin import list_queues
 from service_registry import ServiceRegistry
 from aws_helpers import get_ssm_parameter
-from docker_functions import get_tile_container_ids
+
 import boto3
 from aws_detection import on_aws
 from tactic_logging import log
@@ -12,7 +13,7 @@ from utils import utcnow
 
 # I'm leaving some of the desired idle logic in for test, non-aws for the purposes of testing it.
 
-DESIRED_IDLE_DEFAULT = 3
+DESIRED_IDLE_DEFAULT = 6
 from redis_tools import redis_client as r
 
 AWS_REGION = get_ssm_parameter("MY_AWS_REGION", "us-east-2")
@@ -28,8 +29,6 @@ TILE_HEARTBEAT_TIMEOUT_SECS = float(get_ssm_parameter("TILE_HEARTBEAT_TIMEOUT_SE
 
 if on_aws:
     DESIRED_IDLE_DEFAULT = int(get_ssm_parameter("desired_idle", DESIRED_IDLE_DEFAULT))
-
-
     ECS_CLUSTER = get_ssm_parameter("ECS_CLUSTER", "tactic-cluster")
     log.info("Using ECS tile pool", service=TILE_SERVICE, cluster=ECS_CLUSTER, region=AWS_REGION)
     ecs = boto3.client("ecs", region_name=AWS_REGION)
@@ -37,6 +36,7 @@ if on_aws:
     NS = "Tactic"
     SVC = TILE_SERVICE
 else:
+    from docker_functions import get_tile_container_ids, create_container
     MODULE_VIEWER_PREFIX = ""
     CW = boto3.client(
         "cloudwatch",
@@ -92,6 +92,8 @@ class TileContainerRegistry(ServiceRegistry):
     prefix = TILE_SERVICE
     extra_valid_ids = ["tile_test_container"]
     base_fields = ["username", "owner", "parent", "created", "project_name", "tile_name"]
+    wait_queue_key = "tile_queue_ids"
+    packets_key = "tile_queue_packets"
 
     def __init__(self, worker, delete_all=False):
         ServiceRegistry.__init__(self, worker)
@@ -101,6 +103,31 @@ class TileContainerRegistry(ServiceRegistry):
         self.pull_desired_idle()
         self.registry_heartbeat()
         self.remove_obsolete_queues()
+
+    def add_to_queue(self, task_packet):
+        task_id = task_packet["task_id"]  # or generate a UUID
+        score = time.time()
+        pipe = self.cli.pipeline()
+        pipe.set(f"{self.packets_key}:{task_id}", json.dumps(task_packet))
+        pipe.zadd(f"{self.wait_queue_key}:z", {task_id, score})
+        pipe.execute()
+        return task_id
+
+    def pop_oldest(self):
+        result = self.cli.zpopmin(f"{self.wait_queue_key}:z", count=1)
+        if not result:
+            return None
+
+        task_id, _score = result[0]
+        raw = self.get(f"{self.packets_key}:{task_id}")
+        self.delete(f"{self.packets_key}:{obj_id}")
+
+        return json.loads(raw) if raw else None
+
+    @property
+    def queue_count(self):
+        count = self.cli.zcard(f"{self.wait_queue_key}:z")
+        return count
 
     def pull_desired_idle(self):
         v = r.get("config:desired_idle")
@@ -116,17 +143,40 @@ class TileContainerRegistry(ServiceRegistry):
 
     def registry_heartbeat(self):
         self.reconcile_tiles()
+        while self.idle_tiles > 0 and self.queue_count > 0:
+            log.debug(f"Got idle tiles {self.idle_tiles} and queued tasks {self.queue_count}", category="tile_management")
+            task_packet = self.pop_oldest()
+            tid, creds = self.claim_tile(task_packet)
+            self.worker.submit_response(task_packet, {"success": True, "the_id": tid, "task_arn": "", "creds": creds})
+
         if not self.removed_obsolete_queues:
             self.remove_obsolete_queues()
+        self.pull_desired_idle()
+        idle_deficit = max(0, self.desired_idle + self.queue_count - self.idle_tiles)
         if on_aws:
-            self.pull_desired_idle()
             self.publish_metrics()
+        else:
+            if idle_deficit > 0 and self.worker.channel is not None:
+                log.debug(f"additional idle tiles needed, current idle {self.idle_tiles}, queued {self.queue_count}",
+                          category="tile_management")
+                env = {
+                    "RUNNING_ON_AWS": False
+                }
+                for _ in range(idle_deficit):
+                    unique_id = f"tile_{str(uuid.uuid4())}"
+                    tile_container_id, docker_id = create_container(
+                        "bsherin/tactic-tile",
+                        network_mode="bridge",
+                        env_vars=env,
+                        publish_all_ports=True,
+                        special_unique_id=unique_id
+                    )
+                    self.mark_status(tile_container_id, "idle")
         self.sweep_tiles()
 
     def publish_metrics(self):
         if on_aws:
-            idle_deficit = max(0, self.desired_idle - self.idle_tiles)
-            excess_idle = max(0, self.idle_tiles - self.desired_idle)
+            excess_idle = max(0, self.idle_tiles - (self.desired_idle + self.queue_count))
             log.debug("current metrics",
                      desired_idle=self.desired_idle,
                      idle_tiles=self.idle_tiles,
@@ -265,15 +315,8 @@ class TileContainerRegistry(ServiceRegistry):
             )
         return None
 
-    def claim_tile(self, username, owner, parent, project_name=None, tile_name=None):
+    def claim_tile(self, task_packet):
         tile_ids = self.container_ids()
-        args = {
-            "username": username,
-            "owner": owner,
-            "parent": parent,
-            "project_name": project_name,
-            "tile_name": tile_name,
-        }
         for tile_id in tile_ids:
             if self.is_idle(tile_id):
                 if on_aws:
@@ -290,10 +333,12 @@ class TileContainerRegistry(ServiceRegistry):
                                     category="tile_management",
                                     tile_id=tile_id, response=resp)
                         continue
-                    self.mark_status(tile_id, "busy", **args)
+                    del task_packet["status"]
+                    self.mark_status(tile_id, "busy", **task_packet)
                     return tile_id, self.get_arn(tile_id)
                 else:
-                    self.mark_status(tile_id, "busy", **args)
+                    del task_packet["status"]
+                    self.mark_status(tile_id, "busy", **task_packet)
                     return tile_id, ""
         return None, None
 

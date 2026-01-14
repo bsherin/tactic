@@ -51,6 +51,7 @@ class MainSessionStore(SessionStoreS3):
         "ppid":  {"default": None},
         "selected_text": {"default": ""},
         "pseudo_tile_id":  {"default": None},
+        "pseudo_tile_status": {"default": "not initialized"},
         "pseudo_tile_creds":  {"default": None},
         "openai_api_key": {"default": "unset"},
         "purgetiles": {"default": True},
