@@ -302,7 +302,7 @@ class TileWorker(QWorker):
         self.set_environ_from_creds(data["creds"])
         if not result["success"]:
             log.warning("source didn't load successfully", message=result["message"])
-            return {"success": False, "tile_save_dict": data["tile_save_dict"]}
+            return {"success": False, "tile_save_dict": data["tile_save_dict"], "message": result["message"]}
         return self.recreate_from_save(data["tile_save_dict"])
 
     @task_worthy

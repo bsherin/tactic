@@ -191,6 +191,17 @@ function MainApp(props) {
                                 }
                             });
                         })
+                        .catch((tile_data) => {
+                            let new_tile_id = tile_data.tile_id;
+                            tileDispatch({
+                                type: "change_item_state",
+                                tile_id: tile_entry.tile_id,
+                                new_state: {
+                                    loading_status: "loaded",
+                                    tile_id: new_tile_id,
+                                }
+                            });
+                        })
                 }
             });
 

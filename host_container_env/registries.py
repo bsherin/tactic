@@ -10,6 +10,7 @@ import boto3
 from aws_detection import on_aws
 from tactic_logging import log
 from utils import utcnow
+import json
 
 # I'm leaving some of the desired idle logic in for test, non-aws for the purposes of testing it.
 
@@ -99,17 +100,27 @@ class TileContainerRegistry(ServiceRegistry):
         ServiceRegistry.__init__(self, worker)
         if delete_all:
             self.delete_all()
+            self.delete_request_queue()
         self.reconciled_tiles = False
         self.pull_desired_idle()
         self.registry_heartbeat()
         self.remove_obsolete_queues()
 
+    def delete_request_queue(self):
+        pattern = f"{self.packets_key}.*"
+        for k in self.cli.scan_iter(match=pattern, count=5000):
+            try:
+                self.cli.unlink(k)  # fall back to delete if older Redis
+            except Exception:
+                self.cli.delete(k)
+        self.cli.delete(f"{self.wait_queue_key}:z")
+
     def add_to_queue(self, task_packet):
         task_id = task_packet["task_id"]  # or generate a UUID
         score = time.time()
         pipe = self.cli.pipeline()
-        pipe.set(f"{self.packets_key}:{task_id}", json.dumps(task_packet))
-        pipe.zadd(f"{self.wait_queue_key}:z", {task_id, score})
+        pipe.set(f"{self.packets_key}.{task_id}", json.dumps(task_packet))
+        pipe.zadd(f"{self.wait_queue_key}:z", {task_id: score})
         pipe.execute()
         return task_id
 
@@ -119,8 +130,8 @@ class TileContainerRegistry(ServiceRegistry):
             return None
 
         task_id, _score = result[0]
-        raw = self.get(f"{self.packets_key}:{task_id}")
-        self.delete(f"{self.packets_key}:{obj_id}")
+        raw = self.cli.get(f"{self.packets_key}.{task_id}")
+        self.cli.delete(f"{self.packets_key}.{task_id}")
 
         return json.loads(raw) if raw else None
 
@@ -130,7 +141,7 @@ class TileContainerRegistry(ServiceRegistry):
         return count
 
     def pull_desired_idle(self):
-        v = r.get("config:desired_idle")
+        v = self.cli.get("config:desired_idle")
         if v:
             self.desired_idle = int(v)
         else:
@@ -144,7 +155,6 @@ class TileContainerRegistry(ServiceRegistry):
     def registry_heartbeat(self):
         self.reconcile_tiles()
         while self.idle_tiles > 0 and self.queue_count > 0:
-            log.debug(f"Got idle tiles {self.idle_tiles} and queued tasks {self.queue_count}", category="tile_management")
             task_packet = self.pop_oldest()
             tid, creds = self.claim_tile(task_packet)
             self.worker.submit_response(task_packet, {"success": True, "the_id": tid, "task_arn": "", "creds": creds})
@@ -319,6 +329,14 @@ class TileContainerRegistry(ServiceRegistry):
         tile_ids = self.container_ids()
         for tile_id in tile_ids:
             if self.is_idle(tile_id):
+                task_data = task_packet["task_data"]
+                status_args = {
+                    "username": task_data["username"],
+                    "owner": task_data["owner"],
+                    "parent": task_data.get("parent", "host"),
+                    "project_name": task_data.get("project_name", None),
+                    "tile_name": task_data.get("tile_name", None),
+                }
                 if on_aws:
                     task_arn = self.get_arn(tile_id)
                     if not self.is_task_running(task_arn): # Check if the task is actually running
@@ -333,12 +351,11 @@ class TileContainerRegistry(ServiceRegistry):
                                     category="tile_management",
                                     tile_id=tile_id, response=resp)
                         continue
-                    del task_packet["status"]
-                    self.mark_status(tile_id, "busy", **task_packet)
+
+                    self.mark_status(tile_id, "busy", **status_args)
                     return tile_id, self.get_arn(tile_id)
                 else:
-                    del task_packet["status"]
-                    self.mark_status(tile_id, "busy", **task_packet)
+                    self.mark_status(tile_id, "busy", **status_args)
                     return tile_id, ""
         return None, None
 

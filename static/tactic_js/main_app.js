@@ -221,6 +221,16 @@ function MainApp(props) {
                 tile_id: new_tile_id
               }
             });
+          })["catch"](function (tile_data) {
+            var new_tile_id = tile_data.tile_id;
+            tileDispatch({
+              type: "change_item_state",
+              tile_id: tile_entry.tile_id,
+              new_state: {
+                loading_status: "loaded",
+                tile_id: new_tile_id
+              }
+            });
           });
         };
         for (_iterator.s(); !(_step = _iterator.n()).done;) {

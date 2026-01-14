@@ -1,5 +1,6 @@
 import uuid
 from typing import Dict
+from tactic_logging import log
 
 import docker_functions
 from abstract_tile_backend import TileBackend
@@ -24,6 +25,7 @@ class DockerTileBackend(TileBackend):
         if tid:
             self.worker.submit_response(task_packet, {"success": True, "the_id": tid, "task_arn": "", "creds": creds})
         else:
+            log.debug("No idle tiles available; queuing request", category="tile_management")
             self.tile_registry.add_to_queue(task_packet)
 
     def add_container(self):

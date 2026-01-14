@@ -185,7 +185,9 @@ class TileCreationTasksMixin:
             if not recreate_response["success"]:
                 tile_info = sess.tile_info
                 tile_info.set_save_dict(tile_id, recreate_response["tile_save_dict"])
-                self.mworker.ask_host(sid, "delete_container", {"container_id": tile_id, "notify": False})
+                # self.mworker.ask_host(sid, "delete_container", {"container_id": tile_id, "notify": False})
+                self.mworker.send_error_entry(sid, f"Error loading source for tile {tile_name}",
+                                              recreate_response.get("message"))
                 self.mworker.submit_response(task_packet, {"tile_id": tile_id, "success": False})
                 return
 
