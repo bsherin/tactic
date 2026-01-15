@@ -53,6 +53,7 @@ class ECSTileBackend(TileBackend):
     def request_tile(self, task_packet):
         tid, task_arn = self.tile_registry.claim_tile(task_packet)
         if tid:
+            username = task_packet["task_data"].get("username", "unknown")
             log.debug("warm_tile_claimed", category="tile_management", tile_id=tid, task_arn=task_arn)
             creds = self.issue_user_s3_session(username)
             self.submit_response(task_packet, {"success": True, "the_id": tid, "task_arn": task_arn, "creds": creds})
