@@ -20,6 +20,8 @@ class TileContainerManagementMixin:
     def destroy_child_tiles_task(self, data):
         log.debug("Destroying child tiles", local_id=data["local_id"])
         self.tile_registry.release_child_tiles(data["local_id"])
+        purged = self.tile_registry.purge_parent_from_queue(data["local_id"])
+        log.debug(f"Purged {purged} requests from queue", local_id=data["local_id"])
         return {"success": True, "message": f"Destroyed child tiles of {data['local_id']}"}
 
     @task_worthy_manual_submit

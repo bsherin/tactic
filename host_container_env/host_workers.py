@@ -41,6 +41,7 @@ from aws_helpers import get_ssm_parameter
 from aws_detection import on_aws
 from tactic_logging import log, bind_request, new_task_id
 from utils import utcnow
+from main_session import MainSessionStore
 
 loaded_tile_manager.delete_all()
 
@@ -108,6 +109,7 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         self.main_registry = MainContainerRegistry(self)
         self.module_viewer_registry = ModuleViewerRegistry(self)
         self.client_session_registry = ClientSessionRegistry(self)
+        self.main_ss = MainSessionStore()
         self.last_publish = -99
 
         if on_aws:

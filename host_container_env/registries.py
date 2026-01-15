@@ -93,8 +93,9 @@ class TileContainerRegistry(ServiceRegistry):
     prefix = TILE_SERVICE
     extra_valid_ids = ["tile_test_container"]
     base_fields = ["username", "owner", "parent", "created", "project_name", "tile_name"]
-    wait_queue_key = "tile_queue_ids"
+    wait_queue_key = "tile_queue_ids:z"
     packets_key = "tile_queue_packets"
+    tasks_by_parent_key = "tile_queued_tasks_by_parent"
 
     def __init__(self, worker, delete_all=False):
         ServiceRegistry.__init__(self, worker)
@@ -113,31 +114,64 @@ class TileContainerRegistry(ServiceRegistry):
                 self.cli.unlink(k)  # fall back to delete if older Redis
             except Exception:
                 self.cli.delete(k)
-        self.cli.delete(f"{self.wait_queue_key}:z")
+
+        self.cli.delete(self.wait_queue_key)
+        pattern = f"{self.tasks_by_parent_key}.*"
+        for k in self.cli.scan_iter(match=pattern, count=5000):
+            try:
+                self.cli.unlink(k)  # fall back to delete if older Redis
+            except Exception:
+                self.cli.delete(k)
 
     def add_to_queue(self, task_packet):
-        task_id = task_packet["task_id"]  # or generate a UUID
+        task_id = task_packet["task_id"]
+        parent_id = task_packet["task_data"]["parent"]
         score = time.time()
         pipe = self.cli.pipeline()
         pipe.set(f"{self.packets_key}.{task_id}", json.dumps(task_packet))
-        pipe.zadd(f"{self.wait_queue_key}:z", {task_id: score})
+        pipe.zadd(self.wait_queue_key, {task_id: score})
+        pipe.sadd(f"{self.tasks_by_parent_key}.{parent_id}", task_id)
         pipe.execute()
         return task_id
 
+    def purge_parent_from_queue(self, parent_id, batch_size = 500):
+        idx_key = f"{self.tasks_by_parent_key}.{parent_id}"
+        removed = 0
+
+        while True:
+            ids = list(self.cli.smembers(idx_key))
+            if not ids:
+                self.cli.delete(idx_key)
+                break
+
+            chunk = ids[:batch_size]
+            pipe = self.cli.pipeline()
+            pipe.zrem(self.wait_queue_key, *chunk)
+            for task_id in chunk:
+                pipe.delete(f"{self.packets_key}.{task_id}")
+                pipe.srem(idx_key, task_id)
+            results = pipe.execute()
+
+            removed += int(results[0] or 0)
+        return removed
+
     def pop_oldest(self):
-        result = self.cli.zpopmin(f"{self.wait_queue_key}:z", count=1)
+        result = self.cli.zpopmin(self.wait_queue_key, count=1)
         if not result:
             return None
 
         task_id, _score = result[0]
         raw = self.cli.get(f"{self.packets_key}.{task_id}")
         self.cli.delete(f"{self.packets_key}.{task_id}")
-
-        return json.loads(raw) if raw else None
+        task_packet = json.loads(raw) if raw else None
+        parent_id = task_packet["task_data"].get("parent") if task_packet else None
+        if parent_id:
+            self.cli.srem(f"{self.tasks_by_parent_key}.{parent_id}", task_id)
+        return task_packet
 
     @property
     def queue_count(self):
-        count = self.cli.zcard(f"{self.wait_queue_key}:z")
+        count = self.cli.zcard(self.wait_queue_key)
         return count
 
     def pull_desired_idle(self):
@@ -156,6 +190,7 @@ class TileContainerRegistry(ServiceRegistry):
         self.reconcile_tiles()
         while self.idle_tiles > 0 and self.queue_count > 0:
             task_packet = self.pop_oldest()
+            parent_id = task_packet["task_data"].get("parent")
             tid, creds = self.claim_tile(task_packet)
             self.worker.submit_response(task_packet, {"success": True, "the_id": tid, "task_arn": "", "creds": creds})
 
@@ -226,30 +261,27 @@ class TileContainerRegistry(ServiceRegistry):
     def sweep_tiles(self):
         log.debug("sweep_tiles", category="tile_management")
 
-        def got_main_ids(data):
-            main_session_ids = data["sids"]
-            tile_ids = self.container_ids()
-            busy_ids = [tile_id for tile_id in tile_ids if self.is_busy(tile_id)]
-            for tile_id in busy_ids:
-                parent = self.get_container_info(tile_id, "parent")
-                if parent not in main_session_ids:
-                    log.info("releasing tile with no active main session",
-                             category="tile_management",
-                             tile_id=tile_id,
-                             parent=parent)
-                    self.worker.destroy_tile(tile_id)
-
-        # First need to be sure that reconcile has run
         if not self.reconciled_tiles:
             return
-        self.worker.post_task("main_service", "get_open_sessions_task", {}, callback_func=got_main_ids)
+
+        main_session_ids = self.worker.main_ss.get_unique_sids()
+        tile_ids = self.container_ids()
+        busy_ids = [tile_id for tile_id in tile_ids if self.is_busy(tile_id)]
+        for tile_id in busy_ids:
+            parent = self.get_container_info(tile_id, "parent")
+            if parent not in main_session_ids:
+                log.info("releasing tile with no active main session",
+                         category="tile_management",
+                         tile_id=tile_id,
+                         parent=parent)
+                self.worker.destroy_tile(tile_id)
+
         return
-
-
 
     def release_child_tiles(self, parent_id):
         tile_ids = self.get_children(parent_id)
         log.debug("releasing child tiles", tile_ids=tile_ids)
+
         for tile_id in tile_ids:
             self.worker.destroy_tile(tile_id)
 
