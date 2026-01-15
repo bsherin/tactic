@@ -186,6 +186,7 @@ class TileContainerRegistry(ServiceRegistry):
 
     def publish_metrics(self):
         if on_aws:
+            idle_deficit = max(0, (self.desired_idle + self.queue_count) - self.idle_tiles)
             excess_idle = max(0, self.idle_tiles - (self.desired_idle + self.queue_count))
             log.debug("current metrics",
                      desired_idle=self.desired_idle,
