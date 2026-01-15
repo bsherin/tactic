@@ -56,8 +56,10 @@ class ECSTileBackend(TileBackend):
             username = task_packet["task_data"].get("username", "unknown")
             log.debug("warm_tile_claimed", category="tile_management", tile_id=tid, task_arn=task_arn)
             creds = self.issue_user_s3_session(username)
-            self.submit_response(task_packet, {"success": True, "the_id": tid, "task_arn": task_arn, "creds": creds})
+            self.worker.submit_response(task_packet, {"success": True, "the_id": tid,
+                                                      "task_arn": task_arn, "creds": creds})
         else:
+            log.debug("No idle tiles available; queueing request", category="tile_management")
             self.tile_registry.add_to_queue(task_packet)
 
     def restart(self, tile_id: str):
