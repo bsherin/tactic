@@ -542,7 +542,7 @@ function TileComponent(props) {
                                 <MemoryIndicator usage={props.memory_usage} limit={props.memory_limit}/>
                             }
                             {props.loading_status != "loaded" &&
-                                <span className="memory-indicator d-flex flex-row align-items-center" style={{
+                                <span className="tile-status-indicator d-flex flex-row align-items-center" style={{
                                         marginRight: 10,
                                         marginLeft: 5,
                                     }}>

@@ -6,7 +6,7 @@ from tactic_logging import log
 
 class TileCreationTasksMixin:
 
-    def create_tile_container(self, sid, other_name=None, is_pseudo=False, callback=None):
+    def create_tile_container(self, sid, temp_id=None, other_name=None, is_pseudo=False, callback=None):
         sess = self.get_session(sid)
         mdata = {"ppi": sess.ppi, is_pseudo: is_pseudo}
         if other_name:
@@ -18,13 +18,14 @@ class TileCreationTasksMixin:
             "project_name": sess.project_name,
             "tile_name": other_name,
             "parent": sid,
-            "meta": mdata
+            "meta": mdata,
+            "temp_id": temp_id
         }, callback_func=callback)
-
 
     @task_worthy_manual_submit
     def create_tile(self, data_dict, task_packet):
         sid = data_dict["sid"]
+        temp_id = data_dict["temp_id"]
         sess = self.get_session(sid)
         tile_info = sess.tile_info
 
@@ -38,6 +39,12 @@ class TileCreationTasksMixin:
             self.tstart = datetime.datetime.now()
 
             tile_container_id = create_container_dict["the_id"]
+
+            self.mworker.ask_host(sid, "emit_tile_message", {
+                "tile_message": "updateTileStatus",
+                "status": "loading",
+                "tile_id": temp_id
+            })
             tile_info.add_tile(tile_container_id, tile_name, data_dict["tile_type"])
             tile_info.set_creds(tile_container_id, create_container_dict["creds"])
 
@@ -74,7 +81,7 @@ class TileCreationTasksMixin:
 
             self.mworker.post_task(tile_container_id, "load_source_and_instantiate", data_dict, instantiated_result)
 
-        self.create_tile_container(sid, other_name=tile_name, callback=got_container)
+        self.create_tile_container(sid, temp_id, other_name=tile_name, callback=got_container)
 
         return
 
@@ -153,7 +160,7 @@ class TileCreationTasksMixin:
 
         sess.pseudo_tile_status = "waiting"
         self.mworker.emit_to_main_client(sid, "pseudo-tile-status", {"status": "waiting"})
-        self.create_tile_container(sid, other_name="pseudo_tile", is_pseudo=True, callback=got_container)
+        self.create_tile_container(sid, "pseudo_tile", other_name="pseudo_tile", is_pseudo=True, callback=got_container)
         return {"success": True}
 
     @task_worthy_manual_submit
@@ -212,12 +219,17 @@ class TileCreationTasksMixin:
             if rcdata["success"]:
                 form_info["pipe_dict"] = self._pipe_dict
                 self.rebuild_tile_forms_task({"sid": sid})
-                self.mworker.emit_to_main_client(sid, "tile-status-message", {"message": "tile-status-message",
-                                                                              "success": True,
-                                                                              "status": "loaded",
-                                                                              "tile_id": tile_id})
-                final_result = {"success": True, "form_data": None,
-                                "options_changed": True}
+                self.mworker.ask_host(sid, "emit_tile_message", {
+                    "tile_message": "updateTileStatus",
+                    "status": "loaded",
+                    "tile_id": tile_id
+                })
+                # self.mworker.emit_to_main_client(sid, "tile-status-message", {"message": "tile-status-message",
+                #                                                               "success": True,
+                #                                                               "status": "loaded",
+                #                                                               "tile_id": tile_id})
+                # final_result = {"success": True, "form_data": None,
+                #                 "options_changed": True}
                 self.mworker.submit_response(local_task_packet, final_result)
             else:
                 raise Exception("Tried to recreate from tile_save_dict but wasn't able to.")

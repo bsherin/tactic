@@ -20,13 +20,17 @@ class DockerTileBackend(TileBackend):
         self.tile_registry = tile_registry
         self.worker = worker
 
-    def request_tile(self, task_packet: Dict):
-        tid, _ = self.tile_registry.claim_tile(task_packet)
-        if tid:
-            self.worker.submit_response(task_packet, {"success": True, "the_id": tid, "task_arn": "", "creds": creds})
-        else:
-            log.debug("No idle tiles available; queueing request", category="tile_management")
-            self.tile_registry.add_to_queue(task_packet)
+    def request_tile(self, temp_id, parent, task_packet):
+        if self.tile_registry.queue_count == 0:
+            tid, _ = self.tile_registry.find_idle_tile(temp_id, parent)
+            if tid:
+                self.tile_registry.claim_idle_tile(tid, task_packet)
+                self.worker.update_tile_status(temp_id, parent, "claimed")
+                self.worker.submit_response(task_packet, {"success": True, "the_id": tid, "task_arn": "", "creds": creds})
+                return
+        log.debug("No idle tiles available; queueing request", category="tile_management")
+        self.tile_registry.add_to_queue(task_packet)
+        self.worker.update_tile_status(temp_id, parent, "queued")
 
     def add_container(self):
         env = {

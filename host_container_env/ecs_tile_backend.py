@@ -50,17 +50,21 @@ class ECSTileBackend(TileBackend):
             "region": os.getenv("AWS_REGION", "us-east-2"),
         }
 
-    def request_tile(self, task_packet):
-        tid, task_arn = self.tile_registry.claim_tile(task_packet)
-        if tid:
-            username = task_packet["task_data"].get("username", "unknown")
-            log.debug("warm_tile_claimed", category="tile_management", tile_id=tid, task_arn=task_arn)
-            creds = self.issue_user_s3_session(username)
-            self.worker.submit_response(task_packet, {"success": True, "the_id": tid,
-                                                      "task_arn": task_arn, "creds": creds})
-        else:
-            log.debug("No idle tiles available; queueing request", category="tile_management")
-            self.tile_registry.add_to_queue(task_packet)
+    def request_tile(self, temp_id, parent, task_packet):
+        if self.tile_registry.queue_count == 0:
+            tid, task_arn = self.tile_registry.find_idle_tile(task_packet)
+            if tid:
+                self.tile_registry.claim_idle_tile(tid, task_packet)
+                self.worker.update_tile_status(temp_id, parent, "claimed")
+                username = task_packet["task_data"].get("username", "unknown")
+                log.debug("warm_tile_claimed", category="tile_management", tile_id=tid, task_arn=task_arn)
+                creds = self.issue_user_s3_session(username)
+                self.worker.submit_response(task_packet, {"success": True, "the_id": tid,
+                                                          "task_arn": task_arn, "creds": creds})
+                return
+        log.debug("No idle tiles available; queueing request", category="tile_management")
+        self.tile_registry.add_to_queue(task_packet)
+        self.worker.update_tile_status(temp_id, parent, "queued")
 
     def restart(self, tile_id: str):
         tdata = self.tile_registry.get(tile_id)

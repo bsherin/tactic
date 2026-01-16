@@ -492,22 +492,6 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         return {"success": True}
 
     @task_worthy
-    def emit_to_client(self, data):
-        from tactic_app import socketio
-        if "room" in data:
-            room = data["room"]
-        else:
-            room = data["local_id"]
-            data["room"] = room
-        if "namespace" in data:
-            namespace = data["namespace"]
-        else:
-            namespace = "/main"
-        socketio.emit(data["message"], data, namespace=namespace, room=room)
-
-        return {"success": True}
-
-    @task_worthy
     def emit_export_viewer_message(self, data):
         from tactic_app import socketio
 
@@ -669,9 +653,42 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
 
     @task_worthy
     def emit_tile_message(self, data):
+        log.debug(f"emit_tile_messsage {data.get('tile_message')} to {data['local_id']}")
         from tactic_app import socketio
         socketio.emit("tile-message", data, namespace='/main', room=data["local_id"])
         return {"success": True}
+
+
+    @task_worthy
+    def emit_to_client(self, data):
+        from tactic_app import socketio
+        if "room" in data:
+            room = data["room"]
+        else:
+            room = data["local_id"]
+            data["room"] = room
+        if "namespace" in data:
+            namespace = data["namespace"]
+        else:
+            namespace = "/main"
+        socketio.emit(data["message"], data, namespace=namespace, room=room)
+
+        return {"success": True}
+
+    def update_tile_status(self, tile_id, parent, status):
+        if tile_id == "pseudo_tile":
+            self.emit_to_client({
+                "message": "pseudo-tile-status",
+                "status": status,
+                "local_id": parent
+            })
+        else:
+            self.emit_tile_message({
+                "tile_message": "updateTileStatus",
+                "status": status,
+                "tile_id": re.sub("old_", "", tile_id),
+                "local_id": parent
+            })
 
     @task_worthy
     def render_tile(self, data):

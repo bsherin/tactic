@@ -363,45 +363,6 @@ function MainApp(props) {
     }));
     return _change_doc_listener2.apply(this, arguments);
   }
-  function _setTileValue(tile_id, field, value) {
-    tileDispatch({
-      type: "change_item_value",
-      tile_id: tile_id,
-      field: field,
-      new_value: value
-    });
-  }
-  function getTileEntry(tile_id) {
-    var _iterator2 = _createForOfIteratorHelper(tile_list_ref.current),
-      _step2;
-    try {
-      for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-        var tile_entry = _step2.value;
-        if (tile_entry.tile_id == tile_id) {
-          return tile_entry;
-        }
-      }
-    } catch (err) {
-      _iterator2.e(err);
-    } finally {
-      _iterator2.f();
-    }
-    return null;
-  }
-  function getTileStatus(tile_id) {
-    var tile_entry = getTileEntry(tile_id);
-    if (tile_entry) {
-      return tile_entry.loading_status;
-    }
-    return null;
-  }
-  function _handleTileStatusMessage(data) {
-    var tile_status = getTileStatus(data.tile_id);
-    if (tile_status == "loaded") {
-      return;
-    }
-    _setTileValue(data.tile_id, "loading_status", data.status);
-  }
   function initSocket(theSocket) {
     theSocket.attachListener("window-open", function (data) {
       window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data["the_id"]));
@@ -442,7 +403,7 @@ function MainApp(props) {
     }
     theSocket.attachListener('table-message', _handleTableMessage);
     theSocket.attachListener("update-menus", _update_menus_listener);
-    theSocket.attachListener("tile-status-message", _handleTileStatusMessage);
+    // theSocket.attachListener("tile-status-message", _handleTileStatusMessage);
     theSocket.attachListener('change-doc', _change_doc_listener);
     if (!props.controlled) {
       theSocket.attachListener("endSession", function () {
@@ -471,7 +432,7 @@ function MainApp(props) {
       show_log: false,
       log_content: "",
       shrunk: false,
-      loading_status: "loaded",
+      loading_status: "waiting",
       front_content: ""
     };
   }
@@ -650,21 +611,21 @@ function MainApp(props) {
   }
   function _tile_command2() {
     _tile_command2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee9(menu_id) {
-      var existing_tile_names, _iterator5, _step5, tile_entry, tile_name, data_dict, create_data, new_tile_entry, _t3;
+      var existing_tile_names, _iterator4, _step4, tile_entry, tile_name, temp_id, data_dict, new_tile_entry, create_data, _t3;
       return _regenerator().w(function (_context9) {
         while (1) switch (_context9.n) {
           case 0:
             existing_tile_names = [];
-            _iterator5 = _createForOfIteratorHelper(tile_list);
+            _iterator4 = _createForOfIteratorHelper(tile_list);
             try {
-              for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
-                tile_entry = _step5.value;
+              for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
+                tile_entry = _step4.value;
                 existing_tile_names.push(tile_entry["tile_name"]);
               }
             } catch (err) {
-              _iterator5.e(err);
+              _iterator4.e(err);
             } finally {
-              _iterator5.f();
+              _iterator4.f();
             }
             _context9.p = 1;
             _context9.n = 2;
@@ -678,27 +639,34 @@ function MainApp(props) {
             });
           case 2:
             tile_name = _context9.v;
-            statusFuncs.startSpinner();
-            statusFuncs.statusMessage("Creating Tile " + tile_name);
+            temp_id = (0, _utilities_react.guid)();
             data_dict = {
               tile_name: tile_name,
               tile_type: menu_id,
               user_id: window.user_id,
-              parent: props.local_id
+              parent: props.local_id,
+              temp_id: temp_id
             };
-            _context9.n = 3;
-            return (0, _communication_react.postPromiseMain)(props.local_id, "create_tile", data_dict, props.local_id);
-          case 3:
-            create_data = _context9.v;
-            new_tile_entry = _createTileEntry(tile_name, menu_id, create_data.tile_id, create_data.form_data);
+            new_tile_entry = _createTileEntry(tile_name, menu_id, temp_id, []);
             tileDispatch({
               type: "add_at_index",
               insert_index: tile_list.length,
               new_item: new_tile_entry
             });
+            _context9.n = 3;
+            return (0, _communication_react.postPromiseMain)(props.local_id, "create_tile", data_dict, props.local_id);
+          case 3:
+            create_data = _context9.v;
+            tileDispatch({
+              type: "change_item_state",
+              tile_id: temp_id,
+              new_state: {
+                loading_status: "loaded",
+                tile_id: create_data.tile_id,
+                form_data: create_data.form_data
+              }
+            });
             if (updateExportsList.current) updateExportsList.current();
-            statusFuncs.clearStatusMessage();
-            statusFuncs.stopSpinner();
             _context9.n = 5;
             break;
           case 4:
@@ -720,32 +688,32 @@ function MainApp(props) {
     var menu_items = [];
     var sorted_categories = _toConsumableArray(Object.keys(mState.tile_types));
     sorted_categories.sort();
-    var _iterator3 = _createForOfIteratorHelper(sorted_categories),
-      _step3;
+    var _iterator2 = _createForOfIteratorHelper(sorted_categories),
+      _step2;
     try {
-      for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-        var category = _step3.value;
+      for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+        var category = _step2.value;
         var option_dict = {};
         var icon_dict = {};
         var sorted_types = _toConsumableArray(mState.tile_types[category]);
         sorted_types.sort();
-        var _iterator4 = _createForOfIteratorHelper(sorted_types),
-          _step4;
+        var _iterator3 = _createForOfIteratorHelper(sorted_types),
+          _step3;
         try {
           var _loop2 = function _loop2() {
-            var ttype = _step4.value;
+            var ttype = _step3.value;
             option_dict[ttype] = function () {
               return _tile_command(ttype);
             };
             icon_dict[ttype] = mState.tile_icon_dict[ttype];
           };
-          for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
+          for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
             _loop2();
           }
         } catch (err) {
-          _iterator4.e(err);
+          _iterator3.e(err);
         } finally {
-          _iterator4.f();
+          _iterator3.f();
         }
         menu_items.push(/*#__PURE__*/_react["default"].createElement(_main_menus_react.MenuComponent, {
           menu_name: category,
@@ -757,9 +725,9 @@ function MainApp(props) {
         }));
       }
     } catch (err) {
-      _iterator3.e(err);
+      _iterator2.e(err);
     } finally {
-      _iterator3.f();
+      _iterator2.f();
     }
     return menu_items;
   }

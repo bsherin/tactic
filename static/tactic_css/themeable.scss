@@ -389,7 +389,7 @@ $light-chat-card-bg: blueprint_variables.$light-gray5;
         color: $light-tile-heading-color;
         background-color: $light-tile-heading-background;
         border-bottom: $light-tile-heading-border-bottom;
-        .memory-indicator {
+        .memory-indicator, .tile-status-indicator {
             color: $light-tile-memory-color;
         }
     }
@@ -438,7 +438,7 @@ $light-chat-card-bg: blueprint_variables.$light-gray5;
 
     .console-heading, .exports-heading, .exports-footing, .table-footing {
         background-color: $light-console-heading !important;
-        .memory-indicator {
+        .memory-indicator, .tile-status-indicator {
             color: $light-console-memory-color;
         }
     }
@@ -617,7 +617,7 @@ $light-chat-card-bg: blueprint_variables.$light-gray5;
         margin-right: 2px;
         margin-left: 2px;
 
-        .memory-indicator {
+        .memory-indicator, .tile-status-indicator {
             color: $dark-tile-memory-color;
         }
     }
@@ -657,7 +657,7 @@ $light-chat-card-bg: blueprint_variables.$light-gray5;
 
     .console-heading, .exports-heading, .exports-footing, .table-footing {
         background-color: $dark-console-heading !important;
-        .memory-indicator {
+        .memory-indicator, .tile-status-indicator {
             color: $dark-console-memory-color;
         }
     }

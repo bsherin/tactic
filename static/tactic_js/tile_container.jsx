@@ -29,7 +29,8 @@ function TileContainer(props) {
                 displayTileContent: _displayTileContent,
                 displayTileContentWithJavascript: _displayTileContentWithJavascript,
                 tileWidgetUpdate: updateWidgetData,
-                updateMemoryUsage: _updateMemoryUsage
+                updateMemoryUsage: _updateMemoryUsage,
+                updateTileStatus: _handleTileStatusMessage
             }
             if (data["tile_message"] in handlerDict) {
                 handlerDict[data["tile_message"]](tile_id, data)
@@ -43,6 +44,31 @@ function TileContainer(props) {
     function _updateMemoryUsage(tile_id, data) {
         _setTileValue(tile_id, "memory_usage", data.message["memory_usage"])
         _setTileValue(tile_id, "memory_limit", data.message["memory_limit"])
+    }
+
+    function _handleTileStatusMessage(tile_id, data) {
+        let tile_status = getTileStatus(tile_id);
+        if (tile_status == "loaded") {
+            return
+        }
+        _setTileValue(tile_id, "loading_status", data.status)
+    }
+
+    function getTileEntry(tile_id) {
+        for (let tile_entry of props.tile_list.current) {
+            if (tile_entry.tile_id == tile_id) {
+                return tile_entry
+            }
+        }
+        return null
+    }
+
+    function getTileStatus(tile_id) {
+        let tile_entry = getTileEntry(tile_id);
+        if (tile_entry) {
+            return tile_entry.loading_status
+        }
+        return null
     }
 
     function _resortTiles(oldIndex, newIndex) {

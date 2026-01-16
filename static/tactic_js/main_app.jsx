@@ -302,40 +302,6 @@ function MainApp(props) {
         }
     }
 
-    function _setTileValue(tile_id, field, value) {
-        tileDispatch({
-            type: "change_item_value",
-            tile_id: tile_id,
-            field: field,
-            new_value: value
-        });
-    }
-
-    function getTileEntry(tile_id) {
-        for (let tile_entry of tile_list_ref.current) {
-            if (tile_entry.tile_id == tile_id) {
-                return tile_entry
-            }
-        }
-        return null
-    }
-
-    function getTileStatus(tile_id) {
-        let tile_entry = getTileEntry(tile_id);
-        if (tile_entry) {
-            return tile_entry.loading_status
-        }
-        return null
-    }
-
-    function _handleTileStatusMessage(data) {
-        let tile_status = getTileStatus(data.tile_id);
-        if (tile_status == "loaded") {
-            return
-        }
-        _setTileValue(data.tile_id, "loading_status", data.status)
-    }
-
     function initSocket(theSocket) {
         theSocket.attachListener("window-open", data => {
             window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`)
@@ -364,7 +330,7 @@ function MainApp(props) {
         }
         theSocket.attachListener('table-message', _handleTableMessage);
         theSocket.attachListener("update-menus", _update_menus_listener);
-        theSocket.attachListener("tile-status-message", _handleTileStatusMessage);
+        // theSocket.attachListener("tile-status-message", _handleTileStatusMessage);
         theSocket.attachListener('change-doc', _change_doc_listener);
         if (!props.controlled) {
             theSocket.attachListener("endSession", function () {
@@ -394,7 +360,7 @@ function MainApp(props) {
             show_log: false,
             log_content: "",
             shrunk: false,
-            loading_status: "loaded",
+            loading_status: "waiting",
             front_content: ""
         }
     }
@@ -540,27 +506,35 @@ function MainApp(props) {
                 checkboxes: [],
                 handleClose: dialogFuncs.hideModal
             });
-            statusFuncs.startSpinner();
-            statusFuncs.statusMessage("Creating Tile " + tile_name);
+            const temp_id = guid()
             const data_dict = {
                 tile_name: tile_name,
                 tile_type: menu_id,
                 user_id: window.user_id,
-                parent: props.local_id
+                parent: props.local_id,
+                temp_id: temp_id
             };
-            let create_data = await postPromiseMain(props.local_id, "create_tile", data_dict, props.local_id);
+
             let new_tile_entry = _createTileEntry(tile_name,
                 menu_id,
-                create_data.tile_id,
-                create_data.form_data);
+                temp_id,
+                []);
             tileDispatch({
                 type: "add_at_index",
                 insert_index: tile_list.length,
                 new_item: new_tile_entry
             });
+            let create_data = await postPromiseMain(props.local_id, "create_tile", data_dict, props.local_id);
+            tileDispatch({
+                type: "change_item_state",
+                tile_id: temp_id,
+                new_state: {
+                    loading_status: "loaded",
+                    tile_id: create_data.tile_id,
+                    form_data: create_data.form_data
+                }
+            });
             if (updateExportsList.current) updateExportsList.current();
-            statusFuncs.clearStatusMessage();
-            statusFuncs.stopSpinner()
 
         } catch (e) {
             if (e != "canceled") {

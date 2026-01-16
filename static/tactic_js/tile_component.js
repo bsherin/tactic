@@ -732,7 +732,7 @@ function TileComponent(props) {
     usage: props.memory_usage,
     limit: props.memory_limit
   }), props.loading_status != "loaded" && /*#__PURE__*/_react["default"].createElement("span", {
-    className: "memory-indicator d-flex flex-row align-items-center",
+    className: "tile-status-indicator d-flex flex-row align-items-center",
     style: {
       marginRight: 10,
       marginLeft: 5

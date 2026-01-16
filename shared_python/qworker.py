@@ -75,6 +75,11 @@ def sleep_func(t):
         time.sleep(t)
     return
 
+def do_yield():
+    if use_gevent:
+        gevent.sleep(0)
+    return
+
 # noinspection PyTypeChecker,PyUnusedLocal,PyMissingConstructor
 class QWorker(ExceptionMixin):
     def __init__(self, service_name=None, special_id=None):
@@ -185,7 +190,7 @@ class QWorker(ExceptionMixin):
                 self.handle_response(task_packet)
             else:
                 self.handle_event(task_packet)
-            sleep_func(PAUSE_TIME)
+            do_yield()
         except Exception:
             log.exception("Got uncaught error in handle delivery",
                           my_id=self.my_id,
@@ -257,7 +262,7 @@ class QWorker(ExceptionMixin):
                 declare_queue(self.channel, dest_id)
                 log.debug("Posting task", task_type=task_type, dest_id=dest_id, source_id=self.my_id)
                 self.post_packet(dest_id, new_packet, reply_to, callback_id)
-                sleep_func(PAUSE_TIME)
+                do_yield()
 
             except Exception:
                 log.exception("Error in post_task", task_type=task_type, my_id=self.my_id)
@@ -289,7 +294,7 @@ class QWorker(ExceptionMixin):
                 # noinspection PyNoneFunctionAssignment@
 
                 resp = wait_worker.post_blocking_wait(dest_id, new_packet)
-                sleep_func(PAUSE_TIME)
+                do_yield()
                 self.channel.queue_delete(self.wait_queue_id)
                 if resp == "__ERROR__":
                     raise MessagePostException("Blocking wait post failed")

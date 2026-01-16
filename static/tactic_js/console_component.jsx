@@ -1394,7 +1394,7 @@ function ConsoleComponent(props) {
                             <MemoryIndicator usage={memory_usage} limit={memory_limit}/>
                         }
                         {props.mState.pseudoTileStatus != "loaded" &&
-                            <span className="memory-indicator d-flex flex-row align-items-center" style={{
+                            <span className="tile-status-indicator d-flex flex-row align-items-center" style={{
                                 marginRight: 10,
                                 marginLeft: 5,
                             }}>

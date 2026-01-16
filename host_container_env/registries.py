@@ -189,10 +189,23 @@ class TileContainerRegistry(ServiceRegistry):
     def registry_heartbeat(self):
         self.reconcile_tiles()
         while self.idle_tiles > 0 and self.queue_count > 0:
+            tid, task_arn = self.find_idle_tile()
+            if not tid:
+                log.warning("Could't find idle tile after thinking there was one")
+                break
             task_packet = self.pop_oldest()
-            parent_id = task_packet["task_data"].get("parent")
-            tid, creds = self.claim_tile(task_packet)
-            self.worker.submit_response(task_packet, {"success": True, "the_id": tid, "task_arn": "", "creds": creds})
+            self.claim_idle_tile(tid, task_packet)
+            username = task_packet["task_data"].get("username")
+            if on_aws:
+                creds = self.worker.tile_backend.issue_user_s3_session(username)
+            else:
+                creds = {
+                    "AccessKeyId": "ak",
+                    "SecretAccessKey": "sak",
+                    "SessionToken": "token",
+                    "region": "us-east-2",
+                }
+            self.worker.submit_response(task_packet, {"success": True, "the_id": tid, "task_arn": task_arn, "creds": creds})
 
         if not self.removed_obsolete_queues:
             self.remove_obsolete_queues()
@@ -357,6 +370,45 @@ class TileContainerRegistry(ServiceRegistry):
                 protectionEnabled=enabled
             )
         return None
+
+    def find_idle_tile(self, temp_id=None, parent=None):
+        if temp_id and parent:
+            self.worker.update_tile_status(temp_id, parent, "requested")
+        tile_ids = self.container_ids()
+        for tile_id in tile_ids:
+            if self.is_idle(tile_id):
+                if on_aws:
+                    task_arn = self.get_arn(tile_id)
+                    if not self.is_task_running(task_arn):  # Check if the task is actually running
+                        log.warning("Task not running for idle tile, deleting tile",
+                                    category="tile_management",
+                                    tile_id=tile_id, task_arn=task_arn)
+                        self.delete(tile_id)
+                        continue
+                    resp = self.set_task_protection(tile_id, force_busy=True)
+                    if resp is None or ("failures" in resp and len(resp["failures"]) > 0):
+                        log.warning("Failed to set task protection for tile",
+                                    category="tile_management",
+                                    tile_id=tile_id, response=resp)
+                        continue
+
+                    return tile_id, self.get_arn(tile_id)
+                else:
+                    return tile_id, ""
+        return None, None
+
+    def claim_idle_tile(self, tile_id, task_packet):
+        task_data = task_packet["task_data"]
+        status_args = {
+            "username": task_data["username"],
+            "owner": task_data["owner"],
+            "parent": task_data.get("parent", "host"),
+            "project_name": task_data.get("project_name", None),
+            "tile_name": task_data.get("tile_name", None),
+        }
+
+        self.mark_status(tile_id, "busy", **status_args)
+        return
 
     def claim_tile(self, task_packet):
         tile_ids = self.container_ids()

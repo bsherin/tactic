@@ -26,13 +26,16 @@ class TileContainerManagementMixin:
 
     @task_worthy_manual_submit
     def provide_tile(self, data, task_packet):
+        parent = data["parent"]
+        temp_id = data["temp_id"]
         task_packet["username"] = data["username"]
         task_packet["owner"]    = data["owner"]
-        task_packet["parent"]   = data.get("parent", "host")
+        task_packet["parent"]   = parent
         task_packet["project_name"] = data.get("project_name", None)
         task_packet["tile_name"]    = data.get("tile_name", None)
         task_packet["meta"]         = data.get("meta", {})
-        self.tile_backend.request_tile(task_packet)
+        task_packet["temp_id"]      = temp_id
+        self.tile_backend.request_tile(temp_id, parent, task_packet)
 
     def destroy_tile(self, tile_id, notify=False, force_terminate=False):
         if recycle_tiles and not force_terminate:

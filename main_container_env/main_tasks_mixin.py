@@ -362,9 +362,14 @@ class LoadSaveTasksMixin:
 
         def got_container(create_container_dict):
             new_tile_id = create_container_dict["the_id"]
-            self.mworker.emit_to_main_client(sid, "tile-status-message", {"message": "tile-status-message",
-                                                                          "tile_id": new_tile_id,
-                                                                          "status": "loading"})
+            self.mworker.ask_host(sid, "emit_tile_message", {
+                "tile_message": "updateTileStatus",
+                "status": "loading",
+                "tile_id": re.sub("old_", "", old_tile_id)
+            })
+            # self.mworker.emit_to_main_client(sid, "tile-status-message", {"message": "tile-status-message",
+            #                                                               "tile_id": new_tile_id,
+            #                                                               "status": "loading"})
             tile_info.update_id(old_tile_id, new_tile_id)
             tile_info.set_creds(new_tile_id, create_container_dict["creds"])
 
@@ -380,48 +385,7 @@ class LoadSaveTasksMixin:
             self.mworker.post_task("main_service", "recreate_one_tile", data_for_tile,
                                    tile_recreated)
 
-        self.create_tile_container(sid, other_name=tile_name, callback=got_container)
-
-
-    @task_worthy_manual_submit
-    def recreate_tiles(self, data, task_packet):
-        sid = data["local_id"]
-        sess = self.get_session(sid)
-        def modules_loaded(mldata):
-            tile_info = sess.tile_info
-            def track_recreated_tiles(trcdata):
-                if trcdata["tile_id"] in tiles_to_recreate:
-                    if trcdata["success"]:
-                        self.mworker.emit_to_main_client(sid, "tile-status-message",
-                                                         {"message": "tile-status-messag",
-                                                          "success": True,
-                                                          "status": "loaded",
-                                                          "tile_id": trcdata["tile_id"]})
-                        tiles_to_recreate.remove(trcdata["tile_id"])
-                    else:
-                        log.warning("tile failed to load properly", tile_id=trcdata["tile_id"])
-                        tiles_to_recreate.remove(trcdata["tile_id"])
-                if not tiles_to_recreate:
-                    self.mworker.post_task("main_service", "rebuild_tile_forms_task",
-                                           {"sid": sid})
-                    self.emit_clear_status(sid)
-                    self.emit_stop_status_spinner(sid)
-            self.emit_status_message(sid, "Recreating tiles")
-            if len(tile_info.tile_ids) == 0:
-                self.mworker.post_task("main_service", "rebuild_tile_forms_task", {"sid": sid})
-                self.emit_clear_status(sid)
-                self.emit_stop_status_spinner(sid)
-                return
-
-            tiles_to_recreate = tile_info.tile_ids
-            for tile_id in tiles_to_recreate:
-                tdict = tile_info.get_tile_params(tile_id)
-                data_for_tile = {"tile_id": tile_id, "creds": tdict["creds"],
-                                 "tile_save_dict": tdict["tile_save_dict"], "sid": sid}
-                self.mworker.post_task("main_service", "recreate_one_tile", data_for_tile,
-                                       track_recreated_tiles)
-
-        self.mworker.post_task("main_service", "load_modules", {"sid": sid}, modules_loaded)
+        self.create_tile_container(sid, old_tile_id, other_name=tile_name, callback=got_container)
 
     @task_worthy_manual_submit
     def compile_save_dict(self, data, task_packet):

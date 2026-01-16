@@ -1983,7 +1983,7 @@ function ConsoleComponent(props) {
     usage: memory_usage,
     limit: memory_limit
   }), props.mState.pseudoTileStatus != "loaded" && /*#__PURE__*/_react["default"].createElement("span", {
-    className: "memory-indicator d-flex flex-row align-items-center",
+    className: "tile-status-indicator d-flex flex-row align-items-center",
     style: {
       marginRight: 10,
       marginLeft: 5
