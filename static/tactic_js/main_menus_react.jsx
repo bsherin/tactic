@@ -61,7 +61,7 @@ function ProjectMenu(props) {
         }
 
         try {
-            let [new_name, checkbox_states] = await dialogFuncs.showModalPromise("ModalDialog", {
+            let dialogRes = await dialogFuncs.showModalPromise("ModalDialog", {
                 title: "Save Project As",
                 field_title: "New Project Name",
                 default_value: "NewProject",
@@ -70,10 +70,14 @@ function ProjectMenu(props) {
                 handleClose: dialogFuncs.hideModal,
             });
             let lite_save;
+            let new_name;
+            let checkbox_states;
             if (window.allow_heavy_saves){
+                [new_name, checkbox_states] = dialogRes;
                 lite_save = checkbox_states["lite_save"];
             }
             else {
+                new_name = dialogRes;
                 lite_save = true;
             }
             const result_dict = {

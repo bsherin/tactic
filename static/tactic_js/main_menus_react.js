@@ -81,7 +81,7 @@ function ProjectMenu(props) {
   }
   function _saveProjectAs2() {
     _saveProjectAs2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3() {
-      var data, checkboxes, _yield$dialogFuncs$sh, _yield$dialogFuncs$sh2, new_name, checkbox_states, lite_save, result_dict, data_object, title, _t;
+      var data, checkboxes, dialogRes, lite_save, new_name, checkbox_states, _dialogRes, result_dict, data_object, title, _t;
       return _regenerator().w(function (_context3) {
         while (1) switch (_context3.n) {
           case 0:
@@ -110,13 +110,14 @@ function ProjectMenu(props) {
               handleClose: dialogFuncs.hideModal
             });
           case 3:
-            _yield$dialogFuncs$sh = _context3.v;
-            _yield$dialogFuncs$sh2 = _slicedToArray(_yield$dialogFuncs$sh, 2);
-            new_name = _yield$dialogFuncs$sh2[0];
-            checkbox_states = _yield$dialogFuncs$sh2[1];
+            dialogRes = _context3.v;
             if (window.allow_heavy_saves) {
+              _dialogRes = _slicedToArray(dialogRes, 2);
+              new_name = _dialogRes[0];
+              checkbox_states = _dialogRes[1];
               lite_save = checkbox_states["lite_save"];
             } else {
+              new_name = dialogRes;
               lite_save = true;
             }
             result_dict = {
@@ -212,7 +213,7 @@ function ProjectMenu(props) {
   }
   function _exportAsPresentation2() {
     _exportAsPresentation2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5() {
-      var data, _yield$dialogFuncs$sh3, _yield$dialogFuncs$sh4, use_dark_theme, save_as_collection, collection_name, cell_list, _iterator2, _step2, entry, new_entry, container, target, fcontainer, ftarget, result_dict, data_object, title, _t3, _t4, _t5;
+      var data, _yield$dialogFuncs$sh, _yield$dialogFuncs$sh2, use_dark_theme, save_as_collection, collection_name, cell_list, _iterator2, _step2, entry, new_entry, container, target, fcontainer, ftarget, result_dict, data_object, title, _t3, _t4, _t5;
       return _regenerator().w(function (_context5) {
         while (1) switch (_context5.n) {
           case 0:
@@ -230,11 +231,11 @@ function ProjectMenu(props) {
               handleClose: dialogFuncs.hideModal
             });
           case 2:
-            _yield$dialogFuncs$sh3 = _context5.v;
-            _yield$dialogFuncs$sh4 = _slicedToArray(_yield$dialogFuncs$sh3, 3);
-            use_dark_theme = _yield$dialogFuncs$sh4[0];
-            save_as_collection = _yield$dialogFuncs$sh4[1];
-            collection_name = _yield$dialogFuncs$sh4[2];
+            _yield$dialogFuncs$sh = _context5.v;
+            _yield$dialogFuncs$sh2 = _slicedToArray(_yield$dialogFuncs$sh, 3);
+            use_dark_theme = _yield$dialogFuncs$sh2[0];
+            save_as_collection = _yield$dialogFuncs$sh2[1];
+            collection_name = _yield$dialogFuncs$sh2[2];
             cell_list = [];
             _iterator2 = _createForOfIteratorHelper(props.console_items);
             _context5.p = 3;
@@ -358,7 +359,7 @@ function ProjectMenu(props) {
   }
   function _exportAsReport2() {
     _exportAsReport2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6() {
-      var data, _yield$dialogFuncs$sh5, _yield$dialogFuncs$sh6, collapsible, include_summaries, use_dark_theme, save_as_collection, collection_name, cell_list, _iterator3, _step3, entry, new_entry, container, target, fcontainer, ftarget, result_dict, data_object, title, _t6, _t7, _t8;
+      var data, _yield$dialogFuncs$sh3, _yield$dialogFuncs$sh4, collapsible, include_summaries, use_dark_theme, save_as_collection, collection_name, cell_list, _iterator3, _step3, entry, new_entry, container, target, fcontainer, ftarget, result_dict, data_object, title, _t6, _t7, _t8;
       return _regenerator().w(function (_context6) {
         while (1) switch (_context6.n) {
           case 0:
@@ -376,13 +377,13 @@ function ProjectMenu(props) {
               handleClose: dialogFuncs.hideModal
             });
           case 2:
-            _yield$dialogFuncs$sh5 = _context6.v;
-            _yield$dialogFuncs$sh6 = _slicedToArray(_yield$dialogFuncs$sh5, 5);
-            collapsible = _yield$dialogFuncs$sh6[0];
-            include_summaries = _yield$dialogFuncs$sh6[1];
-            use_dark_theme = _yield$dialogFuncs$sh6[2];
-            save_as_collection = _yield$dialogFuncs$sh6[3];
-            collection_name = _yield$dialogFuncs$sh6[4];
+            _yield$dialogFuncs$sh3 = _context6.v;
+            _yield$dialogFuncs$sh4 = _slicedToArray(_yield$dialogFuncs$sh3, 5);
+            collapsible = _yield$dialogFuncs$sh4[0];
+            include_summaries = _yield$dialogFuncs$sh4[1];
+            use_dark_theme = _yield$dialogFuncs$sh4[2];
+            save_as_collection = _yield$dialogFuncs$sh4[3];
+            collection_name = _yield$dialogFuncs$sh4[4];
             cell_list = [];
             _iterator3 = _createForOfIteratorHelper(props.console_items);
             _context6.p = 3;
