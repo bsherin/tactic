@@ -1167,7 +1167,7 @@ class APISupportTasksMixin:
     def CellChange(self, data):
         sid = data["sid"]
         self._set_row_column_data(sid, data["doc_name"], data["id"], data["column_header"], data["new_content"])
-        self._change_list.append(data["id"])
+        # self._change_list.append(data["id"])
         return None
 
     @task_worthy
@@ -2006,7 +2006,7 @@ class DataSupportTasksMixin:
     def CreateColumn(self, data):
         sid = data["sid"]
         sess = self.get_session(sid)
-        collection_info = sess.collection
+        collection_info = sess.collection_info
         column_name = data["column_name"]
         if not data["all_docs"]:
             doc_names = [data["doc_name"]]

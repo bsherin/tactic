@@ -584,14 +584,13 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
     def _set_cell_content(self, sid, doc_name, the_id, column_header, new_content, cellchange=True):
         sess = self.get_session(sid)
         collection_info = sess.collection_info
-        doc = self.doc_dict[doc_name]
         the_row = collection_info.get_data_rows(doc_name)[str(the_id)]
         if column_header not in the_row:
             the_row[column_header] = None
         old_content = the_row[column_header]
         if new_content != old_content:
             data = {"doc_name": doc_name, "id": the_id, "column_header": column_header,
-                    "new_content": new_content, "old_content": old_content}
+                    "new_content": new_content, "old_content": old_content, "sid": sid}
 
             # If cellchange is True then we use a CellChange event to handle any updates.
             # Otherwise, just change things right here.

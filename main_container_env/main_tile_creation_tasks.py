@@ -217,19 +217,13 @@ class TileCreationTasksMixin:
         tile_info = sess.tile_info
         def recreated_tile(rcdata):
             if rcdata["success"]:
-                form_info["pipe_dict"] = self._pipe_dict
+                form_info["pipe_dict"] = sess.pipe_dict
                 self.rebuild_tile_forms_task({"sid": sid})
                 self.mworker.ask_host(sid, "emit_tile_message", {
                     "tile_message": "updateTileStatus",
                     "status": "loaded",
                     "tile_id": tile_id
                 })
-                # self.mworker.emit_to_main_client(sid, "tile-status-message", {"message": "tile-status-message",
-                #                                                               "success": True,
-                #                                                               "status": "loaded",
-                #                                                               "tile_id": tile_id})
-                # final_result = {"success": True, "form_data": None,
-                #                 "options_changed": True}
                 self.mworker.submit_response(local_task_packet, final_result)
             else:
                 raise Exception("Tried to recreate from tile_save_dict but wasn't able to.")
@@ -353,12 +347,13 @@ class TileCreationTasksMixin:
         tile_info = sess.tile_info
         other_tile_data = {}
         pipe_dict = sess.pipe_dict
-        for n, tid in tile_info.tile_ids:
+        for tid in tile_info.tile_ids:
             if not tid == data["tile_id"]:
                 new_entry = {"tile_id": tid}
+                tile_name = tile_info.get_param(tid, "tile_name")
                 if tid in pipe_dict:
-                    new_entry["pipes"] = list(self._pipe_dict[tid].values())
+                    new_entry["pipes"] = list(sess.pipe_dict[tid].values())
                 else:
                     new_entry["pipes"] = None
-                other_tile_data[n] = new_entry
+                other_tile_data[tile_name] = new_entry
         return other_tile_data
