@@ -9,7 +9,7 @@ import {
     Checkbox, Dialog, FormGroup, Classes, Button, InputGroup, ButtonGroup,
     Intent, Collapse, Divider, Alignment
 } from "@blueprintjs/core";
-import {BpSelect} from "./combined_metadata";
+import {BpSelect} from "./selector_advanced";
 import {useConstructor, useStateAndRef} from "./utilities_react";
 import {renderToStaticMarkup} from "react-dom/server";
 import {ErrorDrawerContext, ErrorItem, withErrorDrawer} from "./error_drawer";

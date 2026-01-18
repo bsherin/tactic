@@ -124,7 +124,7 @@ function MainApp(props) {
   var settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
-  var _useReducer = (0, _react.useReducer)(_main_support.mainReducer, {
+  var _useReducerAndRef5 = (0, _utilities_react.useReducerAndRef)(_main_support.mainReducer, {
       update_index: 0,
       table_is_shrunk: props.doc_type == "none" || iStateOrDefault("table_is_shrunk"),
       console_width_fraction: iStateOrDefault("console_width_fraction"),
@@ -159,9 +159,10 @@ function MainApp(props) {
       resource_name: props.resource_name,
       is_project: props.is_project
     }),
-    _useReducer2 = _slicedToArray(_useReducer, 2),
-    mState = _useReducer2[0],
-    mDispatch = _useReducer2[1];
+    _useReducerAndRef6 = _slicedToArray(_useReducerAndRef5, 3),
+    mState = _useReducerAndRef6[0],
+    mDispatch = _useReducerAndRef6[1],
+    mStateRef = _useReducerAndRef6[2];
   var connection_status = (0, _tactic_socket.useConnection)(props.tsocket, initSocket);
   var pushCallback = (0, _utilities_react.useCallbackStack)();
   (0, _utilities_react.useConstructor)(function () {
@@ -1110,7 +1111,7 @@ function MainApp(props) {
             _context14.p = 0;
             _context14.n = 1;
             return (0, _communication_react.postPromiseMain)(props.local_id, "grab_chunk_by_row_index", {
-              doc_name: mState.table_spec.current_doc_name,
+              doc_name: mStateRef.current.table_spec.current_doc_name,
               row_index: row_index
             }, props.local_id);
           case 1:
@@ -1423,6 +1424,7 @@ function MainApp(props) {
       show_filter_button: !isFreeform(),
       handleSpreadsheetModeChange: _handleSpreadsheetModeChange,
       handleSoftWrapChange: _handleSoftWrapChange,
+      errorDrawerFuncs: errorDrawerFuncs,
       is_freeform: isFreeform()
     });
     if (isFreeform()) {

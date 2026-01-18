@@ -1978,7 +1978,7 @@ class DataSupportTasksMixin:
                 header_list = collection_info.get_header_list(doc_name)
                 hidden_columns_list = collection_info.get_hidden_columns_list(doc_name)
                 table_spec = collection_info.get_table_spec_params(doc_name)
-                visible_columns = collection_info.get_visible_columns(doc_name)
+                visible_columns = collection_info.visible_columns(doc_name)
                 if column_name in header_list and column_name not in hidden_columns_list:
                     update_dict = {}
                     if "column_widths" in table_spec and type(table_spec["column_widget"]) == list:

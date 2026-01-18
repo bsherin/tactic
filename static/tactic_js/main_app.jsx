@@ -93,7 +93,7 @@ function MainApp(props) {
     const dialogFuncs = useContext(DialogContext);
     const statusFuncs = useContext(StatusContext);
 
-    const [mState, mDispatch] = useReducer(mainReducer, {
+    const [mState, mDispatch, mStateRef] = useReducerAndRef(mainReducer, {
         update_index: 0,
         table_is_shrunk: props.doc_type == "none" || iStateOrDefault("table_is_shrunk"),
         console_width_fraction: iStateOrDefault("console_width_fraction"),
@@ -813,7 +813,7 @@ function MainApp(props) {
     async function _grabNewChunkWithRow(row_index) {
         try {
             let data = await postPromiseMain(props.local_id, "grab_chunk_by_row_index",
-                {doc_name: mState.table_spec.current_doc_name, row_index: row_index}, props.local_id);
+                {doc_name: mStateRef.current.table_spec.current_doc_name, row_index: row_index}, props.local_id);
             mDispatch({
                 type: "update_data_row_dict",
                 new_data_row_dict: data.data_row_dict
@@ -1061,6 +1061,7 @@ function MainApp(props) {
                                  show_filter_button={!isFreeform()}
                                  handleSpreadsheetModeChange={_handleSpreadsheetModeChange}
                                  handleSoftWrapChange={_handleSoftWrapChange}
+                                 errorDrawerFuncs={errorDrawerFuncs}
                                  is_freeform={isFreeform()}
             />
         );

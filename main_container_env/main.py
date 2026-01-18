@@ -554,7 +554,7 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
                 for (key, val) in data_rows.items():
                     if filter_function(val):
                         current_data_rows[key] = val
-                collection_info.set_param(document_name, "current_data_rows", current_data_rows)
+                collection_info.set_param(doc_name, "current_data_rows", current_data_rows)
             self.refill_table(sid)
         return
 

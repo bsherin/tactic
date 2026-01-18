@@ -135,7 +135,7 @@ function MainTableCardHeader(props) {
           case 5:
             _context.p = 5;
             _t = _context.v;
-            errorDrawerFuncs.addFromError("Error filtering table", _t);
+            props.errorDrawerFuncs.addFromError("Error filtering table", _t);
           case 6:
             return _context.a(2);
         }
@@ -174,7 +174,7 @@ function MainTableCardHeader(props) {
           case 4:
             _context2.p = 4;
             _t2 = _context2.v;
-            errorDrawerFuncs.addFromError("Error unfiltering table", _t2);
+            props.errorDrawerFuncs.addFromError("Error unfiltering table", _t2);
           case 5:
             return _context2.a(2);
         }

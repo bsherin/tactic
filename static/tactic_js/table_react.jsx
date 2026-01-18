@@ -111,7 +111,7 @@ function MainTableCardHeader(props) {
                 })
             }
         } catch (e) {
-            errorDrawerFuncs.addFromError("Error filtering table", e);
+            props.errorDrawerFuncs.addFromError("Error filtering table", e);
         }
     }
 
@@ -127,7 +127,7 @@ function MainTableCardHeader(props) {
                 })
             }
         } catch (e) {
-            errorDrawerFuncs.addFromError("Error unfiltering table", e);
+            props.errorDrawerFuncs.addFromError("Error unfiltering table", e);
         }
     }
 

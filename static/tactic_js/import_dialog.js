@@ -10,7 +10,7 @@ require("../css/dzcss/dropzone.css");
 require("../css/dzcss/filepicker.css");
 require("../css/dzcss/basic.css");
 var _core = require("@blueprintjs/core");
-var _combined_metadata = require("./combined_metadata");
+var _selector_advanced = require("./selector_advanced");
 var _utilities_react = require("./utilities_react");
 var _server = require("react-dom/server");
 var _error_drawer = require("./error_drawer");
@@ -613,7 +613,7 @@ function FileImportDialog(props) {
   })), /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
     label: "quoting",
     inline: true
-  }, /*#__PURE__*/_react["default"].createElement(_combined_metadata.BpSelect, {
+  }, /*#__PURE__*/_react["default"].createElement(_selector_advanced.BpSelect, {
     onChange: set_quoting,
     value: quoting,
     filterable: false,
