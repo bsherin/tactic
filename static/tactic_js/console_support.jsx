@@ -9,7 +9,7 @@ function fixOutputRowRecursively(wdict) {
     } else if ("widgets" in wdict.widgetData) {
         let new_wdict = {...wdict};
         new_wdict.widgetData.widgets = wdict.widgetData.widgets.map((w) => {
-            fixOutputRowRecursively(w)
+            return fixOutputRowRecursively(w)
         });
     }
     return new_wdict;
@@ -97,24 +97,16 @@ function consoleItemsReducer(console_items, action) {
                 }
             });
             break;
-        case "replace_item":
-            new_items = console_items.map(t => {
-                    if (t.unique === action.unique_id) {
-                        let new_t = {...action.new_item};
-                        new_t = fixItem(new_t);
-                        return new_t
-                    } else {
-                        return t;
-                    }
-                }
-            );
-            break;
         case "clear_all_selected":
             new_items = console_items.map(t => {
-                let new_t = {...t};
-                new_t.am_selected = false;
-                new_t.search_string = null;
-                return new_t
+                if (t.am_selected ) {
+                    let new_t = {...t};
+                    new_t.am_selected = false;
+                    new_t.search_string = null;
+                    return new_t
+                } else {
+                    return t;
+                }
             });
             break;
         case "change_item_value":
@@ -195,7 +187,9 @@ function consoleItemsReducer(console_items, action) {
             new_items = console_items.map(t => {
                 if (t.unique_id === action.unique_id) {
                     let new_t = {...t};
-                    new_t["output_dict"][action.row] = {...new_t["output_dict"][action.row], ...action.new_value};
+                    const out = { ...new_t.output_dict };
+                    out[action.row] = { ...out[action.row], ...action.new_value };
+                    new_t.output_dict = out;
                     new_t = fixCodeOutputs(new_t);
                     // new_t = updateOutputText(new_t);
                     return new_t;

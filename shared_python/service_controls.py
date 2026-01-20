@@ -23,3 +23,14 @@ def set_to_redis_log_level() -> str:
     if level:
         apply_log_level(level)
     return
+
+def get_true_current_log_level() -> str:
+    level = logging.getLogger().level
+    return logging.getLevelName(level)
+
+def get_redis_log_level() -> str:
+    level = r.get("control:log_level")
+    if level:
+        return level.upper()
+    else:
+        return "NOT SET"

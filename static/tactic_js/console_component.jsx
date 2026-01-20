@@ -1351,7 +1351,7 @@ function ConsoleComponent(props) {
 
     const extraProps = useMemo(() => {
         return {local_id: props.local_id, tsocket: props.tsocket}
-    });
+    }, [props.local_id, props.tsocket]);
 
     return (
         <Card className={console_class}

@@ -32,20 +32,21 @@ class LogStreamer(QWorker, ExceptionMixin):
         cont_id = data["cont_id"]
         local_id = data["local_id"]
         is_ecs = get_container(cont_id) is None
+        max_lines = data["max_lines"] if "max_lines" in data else None
         if "since" in data and data["since"] is not None:
             dt = datetime.datetime.fromtimestamp(data["since"] / 1000)
         else:
             dt = None
         if is_ecs:
             if on_aws:
-                log_text = get_container_log_ecs(cont_id)
+                log_text = get_container_log_ecs(cont_id, max_lines)
             else:
                 log_text = "container not found getting log"
         else:
             log_text = get_container_log(cont_id, dt)
-        if "max_lines" in data and data["max_lines"] is not None:
-            ltlist = log_text.split("\n")[-1 * data["max_lines"]:]
-            log_text = "\n".join(ltlist)
+            if max_lines is not None:
+                ltlist = log_text.split("\n")[-1 * data["max_lines"]:]
+                log_text = "\n".join(ltlist)
         return {"success": True, "log_text": log_text, "local_id": local_id}
 
     def emit_to_client(self, message, data):

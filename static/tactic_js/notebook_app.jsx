@@ -57,7 +57,7 @@ function NotebookApp(props) {
     const [, set_console_selected_items, console_selected_items_ref] = useStateAndRef([]);
 
     const [console_items, dispatch, console_items_ref] = useReducerAndRef(consoleItemsReducer, []);
-    const [mState, mDispatch] = useReducer(notebookReducer, {
+    const [mState, mDispatch, mStateRef] = useReducerAndRef(notebookReducer, {
         show_exports_pane: props.is_project && props.interface_state ? props.interface_state["show_exports_pane"] : true,
         console_width_fraction: props.is_project && props.interface_state && "console_width_fraction" in props.interface_state
             ? props.interface_state["console_width_fraction"] : .5,
@@ -216,17 +216,17 @@ function NotebookApp(props) {
         }
     }
 
-    function showMetadata() {
+    const showMetadata = useCallback(()=>{
         _setMainStateValue("show_metadata", true);
-    }
+    }, []);
 
-    function hideMetadata() {
+    const hideMetadata = useCallback(()=>{
         _setMainStateValue("show_metadata", false);
-    }
+    }, []);
 
-    function toggleMetadata() {
-        _setMainStateValue("show_metadata", !mState.show_metadata)
-    }
+    const toggleMetadata = useCallback(()=>{
+        _setMainStateValue("show_metadata", !mStateRef.current.show_metadata)
+    }, []);
 
     let my_props = {...props};
     if (!props.controlled) {

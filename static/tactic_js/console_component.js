@@ -1940,7 +1940,7 @@ function ConsoleComponent(props) {
       local_id: props.local_id,
       tsocket: props.tsocket
     };
-  });
+  }, [props.local_id, props.tsocket]);
   return /*#__PURE__*/_react["default"].createElement(_core.Card, {
     className: console_class,
     elevation: props.mState.console_is_shrunk ? 0 : 2,

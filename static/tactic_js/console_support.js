@@ -31,7 +31,7 @@ function fixOutputRowRecursively(wdict) {
   } else if ("widgets" in wdict.widgetData) {
     var _new_wdict = _objectSpread({}, wdict);
     _new_wdict.widgetData.widgets = wdict.widgetData.widgets.map(function (w) {
-      fixOutputRowRecursively(w);
+      return fixOutputRowRecursively(w);
     });
   }
   return new_wdict;
@@ -136,23 +136,16 @@ function consoleItemsReducer(console_items, action) {
         }
       });
       break;
-    case "replace_item":
+    case "clear_all_selected":
       new_items = console_items.map(function (t) {
-        if (t.unique === action.unique_id) {
-          var new_t = _objectSpread({}, action.new_item);
-          new_t = fixItem(new_t);
+        if (t.am_selected) {
+          var new_t = _objectSpread({}, t);
+          new_t.am_selected = false;
+          new_t.search_string = null;
           return new_t;
         } else {
           return t;
         }
-      });
-      break;
-    case "clear_all_selected":
-      new_items = console_items.map(function (t) {
-        var new_t = _objectSpread({}, t);
-        new_t.am_selected = false;
-        new_t.search_string = null;
-        return new_t;
       });
       break;
     case "change_item_value":
@@ -232,7 +225,9 @@ function consoleItemsReducer(console_items, action) {
       new_items = console_items.map(function (t) {
         if (t.unique_id === action.unique_id) {
           var new_t = _objectSpread({}, t);
-          new_t["output_dict"][action.row] = _objectSpread(_objectSpread({}, new_t["output_dict"][action.row]), action.new_value);
+          var out = _objectSpread({}, new_t.output_dict);
+          out[action.row] = _objectSpread(_objectSpread({}, out[action.row]), action.new_value);
+          new_t.output_dict = out;
           new_t = fixCodeOutputs(new_t);
           // new_t = updateOutputText(new_t);
           return new_t;

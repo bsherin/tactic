@@ -1,6 +1,7 @@
 from qworker import QWorker, task_worthy, task_worthy_manual_submit
 from flask import render_template
 from flask_login import current_user
+import json
 
 from users import load_user, user_data_fields, User
 import gevent
@@ -42,6 +43,7 @@ from aws_detection import on_aws
 from tactic_logging import log, bind_request, new_task_id
 from utils import utcnow
 from main_session import MainSessionStore
+from service_controls import get_true_current_log_level, get_redis_log_level, apply_log_level, CONTROL_EXCHANGE
 
 loaded_tile_manager.delete_all()
 
@@ -146,6 +148,26 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         publish_queue_metrics()
         val = self.pull_queue_count()
         return {"success": True, "target_value": val}
+
+    @task_worthy
+    def get_current_log_level(self, data):
+        admin_user = self.get_user_from_data(data)
+        if not admin_user.username == "admin":
+            return {"success": False, "message": "not authorized", "alert_type": "alert-warning"}
+        true_level = get_true_current_log_level()
+        redis_level = get_redis_log_level()
+        return {"success": True, "true_level": true_level, "redis_level": redis_level}
+
+    @task_worthy
+    def set_log_level_task(self, data):
+        new_level = data["target_level"]
+        log.info("setting log level to", level=new_level)
+        apply_log_level(new_level)
+        redis_client.set("control:log_level", new_level.upper())
+        self.channel.exchange_declare(exchange=CONTROL_EXCHANGE, exchange_type="fanout", durable=True)
+        body = json.dumps({"type": "set_log_level", "level": new_level}).encode("utf-8")
+        self.channel.basic_publish(exchange=CONTROL_EXCHANGE, routing_key="", body=body)
+        return {"success": True, "level": new_level}
 
     @staticmethod
     def user_to_true(user_path, user_obj):

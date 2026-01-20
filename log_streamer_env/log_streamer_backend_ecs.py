@@ -74,25 +74,58 @@ def resolve_log_stream_for_task(task_arn, container_name=None):
     stream = f"{prefix}/{cd['name']}/{task_id}"
     return group, stream
 
-def get_container_log_ecs(cont_id):
+# def get_container_log_ecs(cont_id):
+#     arn = arn_from_id(cont_id)
+#     group, log_stream = resolve_log_stream_for_task(arn)
+#     events = []
+#     next_token = None
+#     while True:
+#         kwargs = {
+#             "logGroupName": group,
+#             "logStreamName": log_stream,
+#             "startFromHead": True,
+#         }
+#         if next_token:
+#             kwargs["nextToken"] = next_token
+#         resp = logs.get_log_events(**kwargs)
+#         events.extend(resp.get("events", []))
+#         nt = resp.get("nextForwardToken")
+#         if nt == next_token:  # reached end
+#             break
+#         next_token = nt
+#
+#     text = "\n".join(e["message"].rstrip("\n") for e in events)
+#     return text
+
+def get_container_log_ecs(cont_id, max_lines=100):
     arn = arn_from_id(cont_id)
     group, log_stream = resolve_log_stream_for_task(arn)
+
     events = []
     next_token = None
-    while True:
+
+    while len(events) < max_lines:
+        # Ask CloudWatch for the newest events first.
         kwargs = {
             "logGroupName": group,
             "logStreamName": log_stream,
-            "startFromHead": True,
+            "startFromHead": False,          # start at end
+            "limit": min(10000, max_lines - len(events)),  # CloudWatch max is 10k
         }
         if next_token:
             kwargs["nextToken"] = next_token
+
         resp = logs.get_log_events(**kwargs)
-        events.extend(resp.get("events", []))
-        nt = resp.get("nextForwardToken")
-        if nt == next_token:  # reached end
+        batch = resp.get("events", [])
+        events.extend(batch)
+
+        nt = resp.get("nextBackwardToken")  # paging backwards
+        if nt == next_token:  # reached beginning (or no progress)
             break
         next_token = nt
+
+    # We collected newest-first; keep only max_lines and restore chronological order.
+    events = list(reversed(events[:max_lines]))
 
     text = "\n".join(e["message"].rstrip("\n") for e in events)
     return text

@@ -67,6 +67,7 @@ function NamesToDict(acc, item) {
   acc[item] = "";
   return acc;
 }
+var LOG_LEVELS = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"];
 var initial_pane_states = {};
 for (var _i = 0, _res_types = res_types; _i < _res_types.length; _i++) {
   var res_type = _res_types[_i];
@@ -241,7 +242,76 @@ function AWSControls(props) {
     _useState6 = _slicedToArray(_useState5, 2),
     numberOfQueues = _useState6[0],
     setNumberOfQueues = _useState6[1];
+  var _useState7 = (0, _react.useState)(""),
+    _useState8 = _slicedToArray(_useState7, 2),
+    trueLogLevel = _useState8[0],
+    setTrueLogLevel = _useState8[1];
+  var _useState9 = (0, _react.useState)(""),
+    _useState0 = _slicedToArray(_useState9, 2),
+    redisLogLevel = _useState0[0],
+    setRedisLogLevel = _useState0[1];
   var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
+  function grabDesiredIdle() {
+    return _grabDesiredIdle.apply(this, arguments);
+  }
+  function _grabDesiredIdle() {
+    _grabDesiredIdle = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2() {
+      return _regenerator().w(function (_context2) {
+        while (1) switch (_context2.n) {
+          case 0:
+            return _context2.a(2, (0, _communication_react.postPromise)("host", "get_desired_idle_tiles", {}));
+        }
+      }, _callee2);
+    }));
+    return _grabDesiredIdle.apply(this, arguments);
+  }
+  function grabQueueCounnt() {
+    return _grabQueueCounnt.apply(this, arguments);
+  }
+  function _grabQueueCounnt() {
+    _grabQueueCounnt = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3() {
+      return _regenerator().w(function (_context3) {
+        while (1) switch (_context3.n) {
+          case 0:
+            return _context3.a(2, (0, _communication_react.postPromise)("host", "get_queue_count", {}));
+        }
+      }, _callee3);
+    }));
+    return _grabQueueCounnt.apply(this, arguments);
+  }
+  function updateQueueCount() {
+    grabQueueCounnt().then(function (data) {
+      if (data.success) {
+        setNumberOfQueues(data.target_value);
+      } else {
+        errorDrawerFuncs.addFromError("Error getting queue count", data);
+      }
+    });
+  }
+  function getLogLevelInfo() {
+    return _getLogLevelInfo.apply(this, arguments);
+  }
+  function _getLogLevelInfo() {
+    _getLogLevelInfo = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee4() {
+      return _regenerator().w(function (_context4) {
+        while (1) switch (_context4.n) {
+          case 0:
+            return _context4.a(2, (0, _communication_react.postPromise)("host", "get_current_log_level", {}));
+        }
+      }, _callee4);
+    }));
+    return _getLogLevelInfo.apply(this, arguments);
+  }
+  function updateLogLevels() {
+    getLogLevelInfo().then(function (data) {
+      if (data.success) {
+        setTrueLogLevel(data["true_level"]);
+        setRedisLogLevel(data["redis_level"]);
+      } else {
+        errorDrawerFuncs.addFromError("Error getting log level info", data);
+      }
+    });
+  }
   (0, _react.useEffect)(function () {
     grabDesiredIdle().then(function (data) {
       if (data.success) {
@@ -250,98 +320,34 @@ function AWSControls(props) {
         errorDrawerFuncs.addFromError("Error getting desired idle tiles", data);
       }
     });
-    updateQueueCount().then(function (data) {
-      if (data.success) {
-        setNumberOfQueues(data.target_value);
-      } else {
-        errorDrawerFuncs.addFromError("Error getting desired idle tiles", data);
-      }
-    });
+    updateQueueCount();
+    updateLogLevels();
   }, []);
-  function updateQueueCount() {
-    return _updateQueueCount.apply(this, arguments);
-  }
-  function _updateQueueCount() {
-    _updateQueueCount = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2() {
-      var data;
-      return _regenerator().w(function (_context2) {
-        while (1) switch (_context2.n) {
-          case 0:
-            _context2.n = 1;
-            return grabQueueCounnt();
-          case 1:
-            data = _context2.v;
-            if (data.success) {
-              setNumberOfQueues(data.target_value);
-            } else {
-              errorDrawerFuncs.addFromError("Error getting desired idle tiles", data);
-            }
-          case 2:
-            return _context2.a(2);
-        }
-      }, _callee2);
-    }));
-    return _updateQueueCount.apply(this, arguments);
-  }
   function postDesiredIdle(_x) {
     return _postDesiredIdle.apply(this, arguments);
   }
   function _postDesiredIdle() {
-    _postDesiredIdle = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3(newVal) {
+    _postDesiredIdle = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5(newVal) {
       var data;
-      return _regenerator().w(function (_context3) {
-        while (1) switch (_context3.n) {
-          case 0:
-            _context3.n = 1;
-            return (0, _communication_react.postPromise)("host", "set_desired_idle_tiles", {
-              target_value: newVal
-            });
-          case 1:
-            data = _context3.v;
-            if (!data.success) {
-              errorDrawerFuncs.addFromError("Error setting desired idle tiles", data);
-            }
-            return _context3.a(2, data.success);
-        }
-      }, _callee3);
-    }));
-    return _postDesiredIdle.apply(this, arguments);
-  }
-  function grabDesiredIdle(_x2) {
-    return _grabDesiredIdle.apply(this, arguments);
-  }
-  function _grabDesiredIdle() {
-    _grabDesiredIdle = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee4(newVal) {
-      return _regenerator().w(function (_context4) {
-        while (1) switch (_context4.n) {
-          case 0:
-            _context4.n = 1;
-            return (0, _communication_react.postPromise)("host", "get_desired_idle_tiles", {});
-          case 1:
-            return _context4.a(2, _context4.v);
-        }
-      }, _callee4);
-    }));
-    return _grabDesiredIdle.apply(this, arguments);
-  }
-  function grabQueueCounnt() {
-    return _grabQueueCounnt.apply(this, arguments);
-  }
-  function _grabQueueCounnt() {
-    _grabQueueCounnt = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5() {
       return _regenerator().w(function (_context5) {
         while (1) switch (_context5.n) {
           case 0:
             _context5.n = 1;
-            return (0, _communication_react.postPromise)("host", "get_queue_count", {});
+            return (0, _communication_react.postPromise)("host", "set_desired_idle_tiles", {
+              target_value: newVal
+            });
           case 1:
-            return _context5.a(2, _context5.v);
+            data = _context5.v;
+            if (!data.success) {
+              errorDrawerFuncs.addFromError("Error setting desired idle tiles", data);
+            }
+            return _context5.a(2, data.success);
         }
       }, _callee5);
     }));
-    return _grabQueueCounnt.apply(this, arguments);
+    return _postDesiredIdle.apply(this, arguments);
   }
-  function onChange(_x3) {
+  function onChange(_x2) {
     return _onChange.apply(this, arguments);
   }
   function _onChange() {
@@ -372,6 +378,20 @@ function AWSControls(props) {
     }));
     return _onChange.apply(this, arguments);
   }
+  function onLogLevelSelected(newLevel) {
+    if (newLevel === redisLogLevel) {
+      return;
+    }
+    (0, _communication_react.postPromise)("host", "set_log_level_task", {
+      target_level: newLevel
+    }).then(function (data) {
+      if (!data.success) {
+        errorDrawerFuncs.addFromError("Error setting log level", data);
+      } else {
+        updateLogLevels();
+      }
+    });
+  }
   return /*#__PURE__*/_react["default"].createElement("div", {
     className: "aws-controls",
     style: {
@@ -396,11 +416,41 @@ function AWSControls(props) {
     className: "metadata-form_group",
     inline: true
   }, /*#__PURE__*/_react["default"].createElement("span", {
+    style: {
+      lineHeight: "30px"
+    },
     className: "bp6-ui-text metadata-field"
   }, String(numberOfQueues)), /*#__PURE__*/_react["default"].createElement(_core.Button, {
+    style: {
+      marginLeft: 10
+    },
     onClick: updateQueueCount,
     icon: "refresh"
-  }))));
+  })), /*#__PURE__*/_react["default"].createElement("div", {
+    style: {
+      display: "inline-flex"
+    }
+  }, /*#__PURE__*/_react["default"].createElement("h5", {
+    style: {
+      marginBottom: 8
+    }
+  }, "LogLevel"), /*#__PURE__*/_react["default"].createElement(_core.Button, {
+    style: {
+      marginLeft: 10
+    },
+    onClick: updateLogLevels,
+    icon: "refresh"
+  })), /*#__PURE__*/_react["default"].createElement(_core.HTMLSelect, {
+    options: LOG_LEVELS,
+    onChange: function onChange(e) {
+      onLogLevelSelected(e.currentTarget.value);
+    },
+    value: redisLogLevel
+  }), /*#__PURE__*/_react["default"].createElement("div", {
+    className: "bp6-ui-text metadata-field"
+  }, "True: ", String(trueLogLevel)), /*#__PURE__*/_react["default"].createElement("div", {
+    className: "bp6-ui-text metadata-field"
+  }, "Redis: ", String(redisLogLevel))));
 }
 function ContainerMenubar(props) {
   var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);

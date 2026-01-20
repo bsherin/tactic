@@ -73,7 +73,7 @@ function NotebookApp(props) {
     console_items = _useReducerAndRef2[0],
     dispatch = _useReducerAndRef2[1],
     console_items_ref = _useReducerAndRef2[2];
-  var _useReducer = (0, _react.useReducer)(_notebook_support.notebookReducer, {
+  var _useReducerAndRef3 = (0, _utilities_react.useReducerAndRef)(_notebook_support.notebookReducer, {
       show_exports_pane: props.is_project && props.interface_state ? props.interface_state["show_exports_pane"] : true,
       console_width_fraction: props.is_project && props.interface_state && "console_width_fraction" in props.interface_state ? props.interface_state["console_width_fraction"] : .5,
       console_is_zoomed: true,
@@ -83,9 +83,10 @@ function NotebookApp(props) {
       show_metadata: false,
       pseudoTileStatus: "not initialized"
     }),
-    _useReducer2 = _slicedToArray(_useReducer, 2),
-    mState = _useReducer2[0],
-    mDispatch = _useReducer2[1];
+    _useReducerAndRef4 = _slicedToArray(_useReducerAndRef3, 3),
+    mState = _useReducerAndRef4[0],
+    mDispatch = _useReducerAndRef4[1],
+    mStateRef = _useReducerAndRef4[2];
   var settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
   var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
@@ -225,15 +226,15 @@ function NotebookApp(props) {
       pushCallback(callback);
     }
   }
-  function showMetadata() {
+  var showMetadata = (0, _react.useCallback)(function () {
     _setMainStateValue("show_metadata", true);
-  }
-  function hideMetadata() {
+  }, []);
+  var hideMetadata = (0, _react.useCallback)(function () {
     _setMainStateValue("show_metadata", false);
-  }
-  function toggleMetadata() {
-    _setMainStateValue("show_metadata", !mState.show_metadata);
-  }
+  }, []);
+  var toggleMetadata = (0, _react.useCallback)(function () {
+    _setMainStateValue("show_metadata", !mStateRef.current.show_metadata);
+  }, []);
   var my_props = _objectSpread({}, props);
   if (!props.controlled) {
     my_props.resource_name = mState.resource_name;

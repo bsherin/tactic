@@ -8,7 +8,7 @@ import {useState, useEffect, useRef, memo, useContext} from "react";
 import { createRoot } from 'react-dom/client';
 import PropTypes from 'prop-types';
 
-import {Tabs, Tab, Tooltip, Icon, Position, Slider, Label, FormGroup, Button} from "@blueprintjs/core";
+import {Tabs, Tab, Tooltip, Icon, Position, Slider, Label, FormGroup, Button, HTMLSelect} from "@blueprintjs/core";
 import {Regions} from "@blueprintjs/table";
 
 import {TacticSocket, useListeners} from "./tactic_socket"
@@ -47,9 +47,9 @@ function _administer_home_main () {
     })
 }
 
-var res_types = ["container", "user"];
+const res_types = ["container", "user"];
 
-var col_names = {
+const col_names = {
     container: ["Id", "Other_name", "Name", "Image", "Owner", "Status", "Uptime"],
     user: ["_id", "username", "full_name", "last_login", "email", "alt_id", "status"]
 };
@@ -59,7 +59,9 @@ function NamesToDict (acc, item) {
     return acc;
 }
 
-var initial_pane_states = {};
+const LOG_LEVELS = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"];
+
+let initial_pane_states = {};
 for (let res_type of res_types) {
     initial_pane_states[res_type] = {
         left_width_fraction: .65,
@@ -221,8 +223,45 @@ AdministerHomeApp = memo(AdministerHomeApp);
 function AWSControls(props) {
 
     const [desiredIdle, setDesiredIdle] = useState(0);
-    const [numberOfQueues, setNumberOfQueues] = useState(0)
+    const [numberOfQueues, setNumberOfQueues] = useState(0);
+    const [trueLogLevel, setTrueLogLevel] = useState("");
+    const [redisLogLevel, setRedisLogLevel] = useState("");
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
+
+    async function grabDesiredIdle() {
+        return postPromise("host", "get_desired_idle_tiles", {});
+    }
+
+    async function grabQueueCounnt() {
+        return postPromise("host", "get_queue_count", {})
+    }
+
+    function updateQueueCount() {
+        grabQueueCounnt()
+            .then((data) => {
+                if (data.success) {
+                    setNumberOfQueues(data.target_value);
+                } else {
+                    errorDrawerFuncs.addFromError("Error getting queue count", data);
+                }
+            })
+    }
+
+    async function getLogLevelInfo() {
+        return postPromise("host", "get_current_log_level", {})
+    }
+
+    function updateLogLevels() {
+        getLogLevelInfo()
+            .then((data) => {
+                if (data.success) {
+                    setTrueLogLevel(data["true_level"]);
+                    setRedisLogLevel(data["redis_level"]);
+                } else {
+                    errorDrawerFuncs.addFromError("Error getting log level info", data);
+                }
+            })
+    }
 
     useEffect(() => {
         grabDesiredIdle().then((data) => {
@@ -232,23 +271,10 @@ function AWSControls(props) {
                 errorDrawerFuncs.addFromError("Error getting desired idle tiles", data);
             }
         })
-        updateQueueCount().then((data) => {
-            if (data.success) {
-                setNumberOfQueues(data.target_value);
-            } else {
-                errorDrawerFuncs.addFromError("Error getting desired idle tiles", data);
-            }
-        })
+        updateQueueCount()
+        updateLogLevels()
     }, []);
 
-    async function updateQueueCount() {
-        let data = await grabQueueCounnt()
-        if (data.success) {
-            setNumberOfQueues(data.target_value);
-        } else {
-            errorDrawerFuncs.addFromError("Error getting desired idle tiles", data);
-        }
-    }
 
     async function postDesiredIdle(newVal) {
         let data = await postPromise("host", "set_desired_idle_tiles", {target_value: newVal});
@@ -258,13 +284,6 @@ function AWSControls(props) {
         return data.success
     }
 
-    async function grabDesiredIdle(newVal) {
-        return await postPromise("host", "get_desired_idle_tiles", {});
-    }
-
-    async function grabQueueCounnt() {
-        return await postPromise("host", "get_queue_count", {})
-    }
 
     async function onChange(newVal) {
         let oldVal = desiredIdle;
@@ -277,6 +296,21 @@ function AWSControls(props) {
             setDesiredIdle(oldVal);
         }
     }
+
+    function onLogLevelSelected(newLevel) {
+        if (newLevel === redisLogLevel) {
+            return;
+        }
+        postPromise("host", "set_log_level_task", {target_level: newLevel})
+            .then((data) => {
+                if (!data.success) {
+                    errorDrawerFuncs.addFromError("Error setting log level", data);
+                } else {
+                    updateLogLevels()
+                }
+            })
+    }
+
 
     return (
         <div className="aws-controls" style={{display: "flex", flexDirection: "column", width: 300, margin: 25}}>
@@ -294,9 +328,16 @@ function AWSControls(props) {
                     />
                 </Label>
                 <FormGroup label="Number of Queues" className="metadata-form_group" inline={true}>
-                    <span className="bp6-ui-text metadata-field">{String(numberOfQueues)}</span>
-                    <Button onClick={updateQueueCount} icon="refresh"/>
+                    <span style={{lineHeight: "30px"}} className="bp6-ui-text metadata-field">{String(numberOfQueues)}</span>
+                    <Button style={{marginLeft: 10}} onClick={updateQueueCount} icon="refresh"/>
                 </FormGroup>
+                <div style={{display: "inline-flex"}}><h5 style={{marginBottom: 8}}>LogLevel</h5>
+                    <Button style={{marginLeft: 10}} onClick={updateLogLevels} icon="refresh"/></div>
+                <HTMLSelect options={LOG_LEVELS}
+                        onChange={(e)=>{onLogLevelSelected(e.currentTarget.value)}}
+                        value={redisLogLevel}/>
+                <div className="bp6-ui-text metadata-field">True: {String(trueLogLevel)}</div>
+                <div className="bp6-ui-text metadata-field">Redis: {String(redisLogLevel)}</div>
             </div>
         </div>
     )

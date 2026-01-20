@@ -926,7 +926,7 @@ function MainApp(props) {
     }
 
     function toggleMetadata() {
-        _setMainStateValue("show_metadata", !mState.show_metadata)
+        _setMainStateValue("show_metadata", !mStateRef.current.show_metadata)
     }
 
     function _setProjectName(new_project_name, callback = null) {

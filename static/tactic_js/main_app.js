@@ -1285,7 +1285,7 @@ function MainApp(props) {
     _setMainStateValue("show_metadata", false);
   }
   function toggleMetadata() {
-    _setMainStateValue("show_metadata", !mState.show_metadata);
+    _setMainStateValue("show_metadata", !mStateRef.current.show_metadata);
   }
   function _setProjectName(new_project_name) {
     var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
