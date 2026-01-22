@@ -10,6 +10,7 @@ import {
     Switch,
     Button,
     ButtonGroup,
+    Divider,
     Popover,
     Checkbox,
     MenuDivider,
@@ -22,7 +23,7 @@ import {useDebounce} from "./utilities_react";
 export {SearchForm}
 export {BpSelectorTable}
 export {compute_initial_column_widths};
-export {ResourceFilter};
+export {FilterBar};
 export {ColumnSelector};
 export {base_columns, all_columns}
 
@@ -200,43 +201,22 @@ function ColumnSelector({
                 </Menu>
             }
         >
-            <Button icon="list-columns"/>
+            <Button variant="minimal" className="columns-button" icon="list-columns"/>
         </Popover>
     );
 }
 
-function ResourceFilter({
-                            kinds,
-                            icon_dict,
-                            selectedKinds,
-                            onKindChange,
-                            update_search_state,
-                            search_inside = false,
-                            search_metadata = false,
-                            show_hidden = false,
-                            showSummary = false
-                        }) {
-    const allSelected = selectedKinds.size === kinds.length;
-    const noneSelected = selectedKinds.size === 0;
-
-
-
-    const toggleKind = (k) => {
-        const next = new Set(selectedKinds);
-        if (next.has(k)) next.delete(k);
-        else next.add(k);
-        onKindChange([...next]);
-    };
-
-    ///const selectAll = () => onKindChange(kinds);
-    const selectNone = () => onKindChange([]);
-
-    const summary = useMemo(() => {
-        if (!showSummary) return "";
-        if (allSelected) return "All kinds";
-        if (noneSelected) return "None";
-        return Array.from(selectedKinds).join(", ");
-    }, [allSelected, noneSelected, selectedKinds]);
+function FilterBar({
+                       kinds,
+                       icon_dict,
+                       selectedKinds,
+                       onKindChange,
+                       update_search_state,
+                       search_inside = false,
+                       search_metadata = false,
+                       show_hidden = false,
+                       width = 600,
+                   }) {
 
     function _handleSearchMetadataChange(event) {
         update_search_state({"search_metadata": event.target.checked});
@@ -250,6 +230,91 @@ function ResourceFilter({
     function _handleShowHiddenChange(event) {
         update_search_state({"show_hidden": event.target.checked});
     }
+
+    function clearAllFilters() {
+        onKindChange([]);
+        update_search_state({
+            "search_metadata": false,
+            "search_inside": false,
+            "show_hidden": false
+        })
+    }
+
+    return (
+        <div style={{width: width}}>
+        <div style={{
+            display: "flex",
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginTop: 10,
+            marginBottom: 10,
+            width: width
+        }}>
+            <div style={{
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "center",
+                width: width
+            }}
+                 className="filter-bar">
+                <ResourceFilter
+                    kinds={kinds}
+                    icon_dict={icon_dict}
+                    selectedKinds={selectedKinds}
+                    onKindChange={onKindChange}
+                    update_search_state={update_search_state}
+                />
+                <Divider/>
+                <Switch
+                    checked={search_metadata}
+                    label="Metadata"
+                    alignIndicator={Alignment.END}
+                    className="menu-control"
+                    onChange={_handleSearchMetadataChange}
+                />
+                <Divider/>
+                <Switch
+                    checked={search_inside}
+                    label="inside"
+                    alignIndicator={Alignment.END}
+                    className="menu-control"
+                    onChange={_handleSearchInsideChange}
+                />
+                <Divider/>
+                <Switch
+                    checked={show_hidden}
+                    label="show hidden"
+                    alignIndicator={Alignment.END}
+                    className="menu-control"
+                    onChange={_handleShowHiddenChange}
+                />
+            </div>
+            <Button icon="circle" text="Clear" variant="minimal" onClick={clearAllFilters}/>
+        </div>
+        </div>
+    );
+
+}
+
+function ResourceFilter({
+                            kinds,
+                            icon_dict,
+                            selectedKinds,
+                            onKindChange,
+                        }) {
+    const noneSelected = selectedKinds.size === 0;
+
+
+    const toggleKind = (k) => {
+        const next = new Set(selectedKinds);
+        if (next.has(k)) next.delete(k);
+        else next.add(k);
+        onKindChange([...next]);
+    };
+
+    const selectNone = () => onKindChange([]);
+
 
     return (
         <Popover
@@ -283,46 +348,10 @@ function ResourceFilter({
                             }
                         />
                     ))}
-                    <MenuDivider/>
-                    <MenuItem
-                        key="metadata"
-                        shouldDismissPopover={false}
-                        text={
-                                <Switch
-                                    checked={search_metadata}
-                                    label="Metadata"
-                                    className="menu-control"
-                                    onChange={_handleSearchMetadataChange}
-                                />
-                            }/>
-                    <MenuItem
-                        key="inside"
-                        shouldDismissPopover={false}
-                        text={
-                                <Switch
-                                    checked={search_inside}
-                                    label="inside"
-                                    className="menu-control"
-                                    onChange={_handleSearchInsideChange}
-                                />
-                            }/>
-                    <MenuDivider/>
-                    <MenuItem
-                        key="hidden"
-                        shouldDismissPopover={false}
-                        text={
-                                <Switch
-                                    checked={show_hidden}
-                                    label="show hidden"
-                                    className="menu-control"
-                                    alignIndicator={Alignment.END}
-                                    onChange={_handleShowHiddenChange}
-                                />
-                            }/>
                 </Menu>
             }
         >
-            <Button icon="filter" text={`${summary}`}/>
+            <Button text="Resources" className="resource-filter-button" variant="minimal" icon="caret-down"/>
         </Popover>
     );
 }

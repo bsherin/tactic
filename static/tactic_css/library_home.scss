@@ -49,6 +49,19 @@ $library-tree-margin-top: 65px;
         line-height: $library-table-line-height;
     }
 
+    .columns-button {
+        height: 100%;
+    }
+
+    .filter-bar {
+        .bp6-switch {
+            margin-left: 15px;
+        }
+        .bp6-divider {
+            height:25px
+        }
+    }
+
 
     .bp6-table-quadrant-scroll-container {
         overflow: hidden;

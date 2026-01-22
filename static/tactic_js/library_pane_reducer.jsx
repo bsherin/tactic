@@ -79,6 +79,9 @@ function paneReducer(draft, action) {
             };
             draft.select_state = {...draft.select_state, ...select_state_update};
             break;
+        case "TOGGLE_FILTER_BAR":
+            draft.show_filter_bar = !draft.show_filter_bar;
+            break;
         case "UPDATE_SELECT_STATE":
             draft.select_state = {...draft.select_state, ...action.select_state};
             break;

@@ -6,7 +6,7 @@ import {Fragment, useRef, useEffect, memo, useContext, useMemo, useCallback} fro
 import {Menu, MenuItem, MenuDivider, useHotkeys} from "@blueprintjs/core";
 import {Regions} from "@blueprintjs/table";
 
-import {CombinedMetadata, icon_dict} from "./combined_metadata";
+import {CombinedMetadata} from "./combined_metadata";
 import {HorizontalPanes} from "./resizing_allotment";
 import {postPromise} from "./communication_react"
 
@@ -18,7 +18,7 @@ import {StatusContext} from "./toaster"
 import {ErrorDrawerContext} from "./error_drawer";
 import {LibraryTablePane} from "./library_table_pane";
 import {paneReducer, get_index, get_index_from_id} from "./library_pane_reducer";
-import {ResourceFilter, ColumnSelector, all_columns} from "./library_widgets";
+import {ColumnSelector, all_columns} from "./library_widgets";
 import {useSocketListener} from "./tactic_socket";
 
 export {LibraryPane, view_views, res_types}
@@ -77,6 +77,7 @@ const initial_state = {
     data_dict: {},
     num_rows: 0,
     tag_list: [],
+    show_filter_bar: false,
     contextMenuItems: [],
     select_state: {
         selected_resource: {
@@ -712,7 +713,6 @@ function LibraryPane(props) {
                 existing_names: res_names,
                 checkboxes: []
             });
-            const the_data = {"new_name": new_name};
             await postPromise("host", "rename_resource_task", {old_name: res_name, res_type, new_name});
         } catch (e) {
             if (e != "canceled") {
@@ -888,7 +888,7 @@ function LibraryPane(props) {
                     handleClose: dialogFuncs.hideModal,
                 });
                 statusFuncs.startSpinner();
-                const target = `combine_collections/${res_name}/${other_name}`;
+                // const target = `combine_collections/${res_name}/${other_name}`;
                 await postPromise("host", "combine_collections_task",
                     {base_collection_name: res_name, collection_to_add: other_name});
                 statusFuncs.stopSpinner();
@@ -1163,6 +1163,10 @@ function LibraryPane(props) {
         pDispatch({type: "SET_CONTEXT_MENU_ITEMS", context_menu_items: context_menu_items})
     }
 
+    function toggleFilterBar() {
+        pDispatch({type: "TOGGLE_FILTER_BAR"})
+    }
+
     function _menu_funcs() {
         return {
             view_func: _view_func,
@@ -1210,30 +1214,22 @@ function LibraryPane(props) {
 
     let MenubarClass = props.MenubarClass;
 
-    let resource_filter = (<ResourceFilter kinds={res_types}
-                                           icon_dict={icon_dict}
-                                           selectedKinds={pStateRef.current.search_state.filterType}
-                                           search_string={pStateRef.current.search_state.search_string}
-                                           search_inside={pStateRef.current.search_state.search_inside}
-                                            show_hidden={pStateRef.current.search_state.show_hidden}
-                                            search_metadata={pStateRef.current.search_state.search_metadata}
-                                           update_search_state={_update_search_state}
-                                           onKindChange={async (rtypes) => {
-                                                await _setFilterType(rtypes)
-                                            }}/>);
-
     let column_selector = props.updateColumns ?
         (<ColumnSelector icon_dict={[]}
                          selectedColumns={props.columns}
                          onColumnChange={props.updateColumns}/>) : null;
 
+
     let left_pane = (
         <LibraryTablePane
             {...props}
             pStateRef={pStateRef}
-            resource_filter={resource_filter}
+            res_types={res_types}
+            setFilterType={_setFilterType}
+            toggleFilterBar={toggleFilterBar}
             column_selector={column_selector}
             update_search_state={_update_search_state}
+            show_filter_bar={pStateRef.current.show_filter_bar}
             updateTagState={_update_search_state}
             sortColumn={_set_sort_state}
             onSelection={_onTableSelection}

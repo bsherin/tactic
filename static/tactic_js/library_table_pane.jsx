@@ -1,8 +1,15 @@
 import React from "react";
 import {Fragment, useState, useEffect} from "react";
 
+import _ from "lodash";
+
+import {Button} from "@blueprintjs/core";
+import {icon_dict} from "./combined_metadata";
+
 import {TagButtonList} from "./tag_buttons_react";
-import {BpSelectorTable, SearchForm} from "./library_widgets";
+import {BpSelectorTable, SearchForm, FilterBar} from "./library_widgets";
+import {res_types} from "./library_pane";
+
 export {LibraryTablePane}
 
 function sumArray(arr) {
@@ -35,12 +42,33 @@ function LibraryTablePane(props) {
             newWidths.push(defaultColumnWidths[col]);
         }
         setColumnWidths(newWidths);
-    },[props.columns]);
+    }, [props.columns]);
 
     useEffect(() => {
         let total = sumArray(columnWidths);
         setTotalWidth(total);
-    },[columnWidths]);
+    }, [columnWidths]);
+
+    function filterIsActive() {
+        return props.pStateRef.current.search_state.show_hidden ||
+            props.pStateRef.current.search_state.search_metadata ||
+            props.pStateRef.current.search_state.search_inside ||
+            !(_.isEqual(res_types, props.pStateRef.current.search_state.filterType) ||
+                _.isEqual([], props.pStateRef.current.search_state.filterType))
+    }
+
+    function filteredByResources() {
+        return !(_.isEqual(res_types, props.pStateRef.current.search_state.filterType) ||
+                _.isEqual([], props.pStateRef.current.search_state.filterType))
+    }
+
+    let pane_class = "all-pane";
+    if (filterIsActive()) {
+        pane_class += " filter-bar-active"
+    }
+    if (filteredByResources()) {
+        pane_class += " filtered-by-resources"
+    }
 
     return (
         <Fragment>
@@ -63,7 +91,7 @@ function LibraryTablePane(props) {
                                    doTagRename={props.doTagRename}
                     />
                 </div>
-                <div className="all-pane"
+                <div className={pane_class}
                      style={{
                          flex: "5 5 0",
                          minWidth: 0,
@@ -71,8 +99,10 @@ function LibraryTablePane(props) {
                          display: "flex",
                          flexDirection: "column"
                      }}>
-                    <div style={{display: "flex", flexDirection: "row",
-                        justifyContent: "space-between", width: totalWidth}}>
+                    <div style={{
+                        display: "flex", flexDirection: "row",
+                        justifyContent: "space-between", width: totalWidth
+                    }}>
 
                         <SearchForm allow_search_inside={false}
                                     allow_search_metadata={false}
@@ -84,26 +114,40 @@ function LibraryTablePane(props) {
                                     search_metadata={props.pStateRef.current.search_state.search_metadata}
                         />
                         <div style={{display: "flex", flexDirection: "row"}}>
-                            {props.resource_filter}
+                            <Button icon="filter" variant="minimal" onClick={props.toggleFilterBar}/>
                             {props.column_selector && props.column_selector}
                         </div>
                     </div>
+                    {props.show_filter_bar &&
+                        <FilterBar kinds={res_types}
+                                   icon_dict={icon_dict}
+                                   selectedKinds={props.pStateRef.current.search_state.filterType}
+                                   search_string={props.pStateRef.current.search_state.search_string}
+                                   search_inside={props.pStateRef.current.search_state.search_inside}
+                                   show_hidden={props.pStateRef.current.search_state.show_hidden}
+                                   search_metadata={props.pStateRef.current.search_state.search_metadata}
+                                   update_search_state={props.update_search_state}
+                                   width={totalWidth}
+                                   onKindChange={async (rtypes) => {
+                                       await props.setFilterType(rtypes)
+                                   }}/>
+                    }
                     {props.columns.length > 0 && props.columns.length === columnWidths.length &&
-                    <BpSelectorTable data_dict={props.pStateRef.current.data_dict}
-                                     rowChanged={props.pStateRef.current.rowChanged}
-                                     columns={props.columns}
-                                     columnWidths={columnWidths}
-                                     onColumnWidthChanged={onColumnWidthChange}
-                                     num_rows={props.pStateRef.current.num_rows}
-                                     open_resources_ref={props.open_resources_ref}
-                                     sortColumn={props.sortColumn}
-                                     selectedRegions={props.pStateRef.current.select_state.selectedRegions}
-                                     onSelection={props.onSelection}
-                                     keyHandler={props.keyHandler}
-                                     initiateDataGrab={props.initiateDataGrab}
-                                     renderBodyContextMenu={props.renderBodyContextMenu}
-                                     handleRowDoubleClick={props.handleRowDoubleClick}
-                    />
+                        <BpSelectorTable data_dict={props.pStateRef.current.data_dict}
+                                         rowChanged={props.pStateRef.current.rowChanged}
+                                         columns={props.columns}
+                                         columnWidths={columnWidths}
+                                         onColumnWidthChanged={onColumnWidthChange}
+                                         num_rows={props.pStateRef.current.num_rows}
+                                         open_resources_ref={props.open_resources_ref}
+                                         sortColumn={props.sortColumn}
+                                         selectedRegions={props.pStateRef.current.select_state.selectedRegions}
+                                         onSelection={props.onSelection}
+                                         keyHandler={props.keyHandler}
+                                         initiateDataGrab={props.initiateDataGrab}
+                                         renderBodyContextMenu={props.renderBodyContextMenu}
+                                         handleRowDoubleClick={props.handleRowDoubleClick}
+                        />
                     }
                 </div>
             </div>

@@ -97,6 +97,7 @@ var initial_state = {
   data_dict: {},
   num_rows: 0,
   tag_list: [],
+  show_filter_bar: false,
   contextMenuItems: [],
   select_state: {
     selected_resource: {
@@ -248,40 +249,40 @@ function LibraryPane(props) {
     return _unsearch2.apply(this, arguments);
   }
   function _unsearch2() {
-    _unsearch2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee9() {
-      return _regenerator().w(function (_context9) {
-        while (1) switch (_context9.n) {
+    _unsearch2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee8() {
+      return _regenerator().w(function (_context8) {
+        while (1) switch (_context8.n) {
           case 0:
             if (!(pStateRef.current.search_state.search_string != "")) {
-              _context9.n = 1;
+              _context8.n = 1;
               break;
             }
             _update_search_state({
               search_string: ""
             });
-            _context9.n = 3;
+            _context8.n = 3;
             break;
           case 1:
             if (!(pStateRef.current.search_state.active_tag != "all")) {
-              _context9.n = 2;
+              _context8.n = 2;
               break;
             }
             _update_search_state({
               active_tag: "all"
             });
-            _context9.n = 3;
+            _context8.n = 3;
             break;
           case 2:
             if (_.isEqual(pStateRef.current.search_state.filterType, res_types)) {
-              _context9.n = 3;
+              _context8.n = 3;
               break;
             }
-            _context9.n = 3;
+            _context8.n = 3;
             return _setFilterType(res_types);
           case 3:
-            return _context9.a(2);
+            return _context8.a(2);
         }
-      }, _callee9);
+      }, _callee8);
     }));
     return _unsearch2.apply(this, arguments);
   }
@@ -407,27 +408,27 @@ function LibraryPane(props) {
     return _setFilterType2.apply(this, arguments);
   }
   function _setFilterType2() {
-    _setFilterType2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee1(rtypes) {
+    _setFilterType2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee0(rtypes) {
       var sres;
-      return _regenerator().w(function (_context1) {
-        while (1) switch (_context1.n) {
+      return _regenerator().w(function (_context0) {
+        while (1) switch (_context0.n) {
           case 0:
             if (!_.isEqual(rtypes, pStateRef.current.search_state.filterType)) {
-              _context1.n = 1;
+              _context0.n = 1;
               break;
             }
-            return _context1.a(2);
+            return _context0.a(2);
           case 1:
             if (pStateRef.current.search_state.multi_select) {
-              _context1.n = 2;
+              _context0.n = 2;
               break;
             }
             sres = pStateRef.current.select_state.selected_resource;
             if (!(sres.name != "" && sres.notes != get_data_dict_entry(sres.name, sres.res_type).notes)) {
-              _context1.n = 2;
+              _context0.n = 2;
               break;
             }
-            _context1.n = 2;
+            _context0.n = 2;
             return _saveFromSelectedResource();
           case 2:
             pDispatch({
@@ -437,21 +438,21 @@ function LibraryPane(props) {
               }
             });
             clearSelected();
-            pushCallback(/*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee0() {
-              return _regenerator().w(function (_context0) {
-                while (1) switch (_context0.n) {
+            pushCallback(/*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee9() {
+              return _regenerator().w(function (_context9) {
+                while (1) switch (_context9.n) {
                   case 0:
-                    _context0.n = 1;
+                    _context9.n = 1;
                     return _grabNewChunkWithRow(0, true, null, true);
                   case 1:
-                    return _context0.a(2);
+                    return _context9.a(2);
                 }
-              }, _callee0);
+              }, _callee9);
             })));
           case 3:
-            return _context1.a(2);
+            return _context0.a(2);
         }
-      }, _callee1);
+      }, _callee0);
     }));
     return _setFilterType2.apply(this, arguments);
   }
@@ -494,16 +495,16 @@ function LibraryPane(props) {
     return _onTableSelection2.apply(this, arguments);
   }
   function _onTableSelection2() {
-    _onTableSelection2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee10(regions) {
+    _onTableSelection2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee1(regions) {
       var selected_rows, selected_row_indices, _iterator3, _step3, region, _region$rows, first_row, last_row, i, sortedIndices, revised_regions;
-      return _regenerator().w(function (_context10) {
-        while (1) switch (_context10.n) {
+      return _regenerator().w(function (_context1) {
+        while (1) switch (_context1.n) {
           case 0:
             if (!(regions.length === 0)) {
-              _context10.n = 1;
+              _context1.n = 1;
               break;
             }
-            return _context10.a(2);
+            return _context1.a(2);
           case 1:
             selected_rows = [];
             selected_row_indices = new Set();
@@ -530,7 +531,7 @@ function LibraryPane(props) {
               return a - b;
             });
             revised_regions = compactRowsToRegions(sortedIndices);
-            _context10.n = 2;
+            _context1.n = 2;
             return _handleRowSelection(selected_rows);
           case 2:
             pDispatch({
@@ -540,9 +541,9 @@ function LibraryPane(props) {
               }
             });
           case 3:
-            return _context10.a(2);
+            return _context1.a(2);
         }
-      }, _callee10);
+      }, _callee1);
     }));
     return _onTableSelection2.apply(this, arguments);
   }
@@ -550,7 +551,7 @@ function LibraryPane(props) {
     return _grabNewChunkWithRow2.apply(this, arguments);
   }
   function _grabNewChunkWithRow2() {
-    _grabNewChunkWithRow2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee11(row_index) {
+    _grabNewChunkWithRow2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee10(row_index) {
       var flush,
         spec_update,
         select,
@@ -559,16 +560,16 @@ function LibraryPane(props) {
         search_spec,
         args,
         data,
-        _args11 = arguments,
+        _args10 = arguments,
         _t;
-      return _regenerator().w(function (_context11) {
-        while (1) switch (_context11.n) {
+      return _regenerator().w(function (_context10) {
+        while (1) switch (_context10.n) {
           case 0:
-            flush = _args11.length > 1 && _args11[1] !== undefined ? _args11[1] : false;
-            spec_update = _args11.length > 2 && _args11[2] !== undefined ? _args11[2] : null;
-            select = _args11.length > 3 && _args11[3] !== undefined ? _args11[3] : false;
-            select_by_name = _args11.length > 4 && _args11[4] !== undefined ? _args11[4] : null;
-            callback = _args11.length > 5 && _args11[5] !== undefined ? _args11[5] : null;
+            flush = _args10.length > 1 && _args10[1] !== undefined ? _args10[1] : false;
+            spec_update = _args10.length > 2 && _args10[2] !== undefined ? _args10[2] : null;
+            select = _args10.length > 3 && _args10[3] !== undefined ? _args10[3] : false;
+            select_by_name = _args10.length > 4 && _args10[4] !== undefined ? _args10[4] : null;
+            callback = _args10.length > 5 && _args10[5] !== undefined ? _args10[5] : null;
             search_spec = _objectSpread({}, pStateRef.current.search_state);
             if (search_spec.active_tag == "all") {
               search_spec.active_tag = null;
@@ -587,11 +588,11 @@ function LibraryPane(props) {
               columns: props.columns
             };
             /** @type {{ chunk_dict: object, all_tags: array, num_rows: int }} */
-            _context11.p = 1;
-            _context11.n = 2;
+            _context10.p = 1;
+            _context10.n = 2;
             return (0, _communication_react.postPromise)("host", "grab_all_list_chunk_task", args);
           case 2:
-            data = _context11.v;
+            data = _context10.v;
             if (flush) {
               pDispatch({
                 type: "INIT_DATA_DICT",
@@ -614,16 +615,16 @@ function LibraryPane(props) {
                 _selectRow(row_index);
               });
             }
-            _context11.n = 4;
+            _context10.n = 4;
             break;
           case 3:
-            _context11.p = 3;
-            _t = _context11.v;
+            _context10.p = 3;
+            _t = _context10.v;
             errorDrawerFuncs.addFromError("Error grabbing resource chunk", _t);
           case 4:
-            return _context11.a(2);
+            return _context10.a(2);
         }
-      }, _callee11, null, [[1, 3]]);
+      }, _callee10, null, [[1, 3]]);
     }));
     return _grabNewChunkWithRow2.apply(this, arguments);
   }
@@ -637,16 +638,16 @@ function LibraryPane(props) {
     return _handleRowUpdate2.apply(this, arguments);
   }
   function _handleRowUpdate2() {
-    _handleRowUpdate2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee13(res_dict) {
+    _handleRowUpdate2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee12(res_dict) {
       var res_name, ind, _id, event_type, the_row, selected_ind, new_selected_ind, _t2;
-      return _regenerator().w(function (_context13) {
-        while (1) switch (_context13.n) {
+      return _regenerator().w(function (_context12) {
+        while (1) switch (_context12.n) {
           case 0:
             res_name = res_dict.name;
             event_type = res_dict.event_type;
             delete res_dict.event_type;
             _t2 = event_type;
-            _context13.n = _t2 === "update" ? 1 : _t2 === "insert" ? 3 : _t2 === "delete" ? 5 : 6;
+            _context12.n = _t2 === "update" ? 1 : _t2 === "insert" ? 3 : _t2 === "delete" ? 5 : 6;
             break;
           case 1:
             if ("_id" in res_dict) {
@@ -659,10 +660,10 @@ function LibraryPane(props) {
               }
             }
             if (ind) {
-              _context13.n = 2;
+              _context12.n = 2;
               break;
             }
-            return _context13.a(2);
+            return _context12.a(2);
           case 2:
             pDispatch({
               type: "UPDATE_ROW",
@@ -678,12 +679,12 @@ function LibraryPane(props) {
                 }
               });
             }
-            return _context13.a(3, 7);
+            return _context12.a(3, 7);
           case 3:
-            _context13.n = 4;
+            _context12.n = 4;
             return _grabNewChunkWithRow(0, true, null, false, res_name);
           case 4:
-            return _context13.a(3, 7);
+            return _context12.a(3, 7);
           case 5:
             if ("_id" in res_dict) {
               ind = parseInt((0, _library_pane_reducer.get_index_from_id)(res_dict._id, pStateRef.current.data_dict));
@@ -702,11 +703,11 @@ function LibraryPane(props) {
               type: "DELETE_ROW",
               index: ind
             });
-            pushCallback(/*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee12() {
-              return _regenerator().w(function (_context12) {
-                while (1) switch (_context12.n) {
+            pushCallback(/*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee11() {
+              return _regenerator().w(function (_context11) {
+                while (1) switch (_context11.n) {
                   case 0:
-                    _context12.n = 1;
+                    _context11.n = 1;
                     return _grabNewChunkWithRow(ind, false, null, false, null, function () {
                       if (new_selected_ind) {
                         _selectRow(new_selected_ind);
@@ -715,17 +716,17 @@ function LibraryPane(props) {
                       }
                     });
                   case 1:
-                    return _context12.a(2);
+                    return _context11.a(2);
                 }
-              }, _callee12);
+              }, _callee11);
             })));
-            return _context13.a(3, 7);
+            return _context12.a(3, 7);
           case 6:
-            return _context13.a(2);
+            return _context12.a(2);
           case 7:
-            return _context13.a(2);
+            return _context12.a(2);
         }
-      }, _callee13);
+      }, _callee12);
     }));
     return _handleRowUpdate2.apply(this, arguments);
   }
@@ -742,10 +743,10 @@ function LibraryPane(props) {
     return _saveFromSelectedResource2.apply(this, arguments);
   }
   function _saveFromSelectedResource2() {
-    _saveFromSelectedResource2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee14() {
+    _saveFromSelectedResource2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee13() {
       var result_dict, _t3;
-      return _regenerator().w(function (_context14) {
-        while (1) switch (_context14.n) {
+      return _regenerator().w(function (_context13) {
+        while (1) switch (_context13.n) {
           case 0:
             // This will only be called when there is a single row selected
             result_dict = {
@@ -759,20 +760,20 @@ function LibraryPane(props) {
             if (pStateRef.current.select_state.selected_rows[0].res_type == "tile" && "icon" in pStateRef.current.select_state.selected_resource) {
               result_dict["metadata"]["icon"] = pStateRef.current.select_state.selected_resource["icon"];
             }
-            _context14.p = 1;
-            _context14.n = 2;
+            _context13.p = 1;
+            _context13.n = 2;
             return (0, _communication_react.postPromise)("host", "save_metadata_task", result_dict);
           case 2:
-            _context14.n = 4;
+            _context13.n = 4;
             break;
           case 3:
-            _context14.p = 3;
-            _t3 = _context14.v;
+            _context13.p = 3;
+            _t3 = _context13.v;
             errorDrawerFuncs.addFromError("Error updating resource ".concat(result_dict.res_name), _t3);
           case 4:
-            return _context14.a(2);
+            return _context13.a(2);
         }
-      }, _callee14, null, [[1, 3]]);
+      }, _callee13, null, [[1, 3]]);
     }));
     return _saveFromSelectedResource2.apply(this, arguments);
   }
@@ -834,21 +835,21 @@ function LibraryPane(props) {
     return _handleRowSelection2.apply(this, arguments);
   }
   function _handleRowSelection2() {
-    _handleRowSelection2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee15(selected_rows) {
+    _handleRowSelection2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee14(selected_rows) {
       var sres, common_tags, other_rows, _iterator4, _step4, row_dict, new_common_tags, new_tag_list, _iterator5, _step5, tag, multi_select_list, new_selected_resource, _row_dict;
-      return _regenerator().w(function (_context15) {
-        while (1) switch (_context15.n) {
+      return _regenerator().w(function (_context14) {
+        while (1) switch (_context14.n) {
           case 0:
             if (pStateRef.current.select_state.multi_select) {
-              _context15.n = 1;
+              _context14.n = 1;
               break;
             }
             sres = pStateRef.current.select_state.selected_resource;
             if (!(sres.name != "" && get_data_dict_entry(sres.name, sres.res_type) && sres.notes != get_data_dict_entry(sres.name, sres.res_type).notes)) {
-              _context15.n = 1;
+              _context14.n = 1;
               break;
             }
-            _context15.n = 1;
+            _context14.n = 1;
             return _saveFromSelectedResource();
           case 1:
             if (selected_rows.length > 1) {
@@ -911,9 +912,9 @@ function LibraryPane(props) {
               });
             }
           case 2:
-            return _context15.a(2);
+            return _context14.a(2);
         }
-      }, _callee15);
+      }, _callee14);
     }));
     return _handleRowSelection2.apply(this, arguments);
   }
@@ -964,20 +965,20 @@ function LibraryPane(props) {
     return _selectRow2.apply(this, arguments);
   }
   function _selectRow2() {
-    _selectRow2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee16(new_index) {
-      return _regenerator().w(function (_context16) {
-        while (1) switch (_context16.n) {
+    _selectRow2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee15(new_index) {
+      return _regenerator().w(function (_context15) {
+        while (1) switch (_context15.n) {
           case 0:
             if (Object.keys(pStateRef.current.data_dict).includes(String(new_index))) {
-              _context16.n = 2;
+              _context15.n = 2;
               break;
             }
-            _context16.n = 1;
+            _context15.n = 1;
             return _grabNewChunkWithRow(new_index, false, null, false, null, function () {
               _selectRow(new_index);
             });
           case 1:
-            _context16.n = 3;
+            _context15.n = 3;
             break;
           case 2:
             pDispatch({
@@ -991,9 +992,9 @@ function LibraryPane(props) {
               }
             });
           case 3:
-            return _context16.a(2);
+            return _context15.a(2);
         }
-      }, _callee16);
+      }, _callee15);
     }));
     return _selectRow2.apply(this, arguments);
   }
@@ -1009,23 +1010,23 @@ function LibraryPane(props) {
     return _view_resource2.apply(this, arguments);
   }
   function _view_resource2() {
-    _view_resource2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee17(selected_resource) {
+    _view_resource2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee16(selected_resource) {
       var the_view,
         force_new_tab,
         resource_name,
-        _args17 = arguments;
-      return _regenerator().w(function (_context17) {
-        while (1) switch (_context17.n) {
+        _args16 = arguments;
+      return _regenerator().w(function (_context16) {
+        while (1) switch (_context16.n) {
           case 0:
-            the_view = _args17.length > 1 && _args17[1] !== undefined ? _args17[1] : null;
-            force_new_tab = _args17.length > 2 && _args17[2] !== undefined ? _args17[2] : false;
+            the_view = _args16.length > 1 && _args16[1] !== undefined ? _args16[1] : null;
+            force_new_tab = _args16.length > 2 && _args16[2] !== undefined ? _args16[2] : false;
             resource_name = selected_resource.name;
             statusFuncs.setStatus({
               show_spinner: true,
               status_message: "Opening ..."
             });
             if (!(window.in_context && !force_new_tab)) {
-              _context17.n = 1;
+              _context16.n = 1;
               break;
             }
             try {
@@ -1034,7 +1035,7 @@ function LibraryPane(props) {
               statusFuncs.clearStatus();
               errorDrawerFuncs.addFromError("Error viewing resource ".concat(resource_name), e);
             }
-            _context17.n = 3;
+            _context16.n = 3;
             break;
           case 1:
             if (the_view == null) {
@@ -1042,16 +1043,16 @@ function LibraryPane(props) {
             }
             statusFuncs.clearStatus();
             if (!(the_view == null)) {
-              _context17.n = 2;
+              _context16.n = 2;
               break;
             }
-            return _context17.a(2);
+            return _context16.a(2);
           case 2:
             window.open($SCRIPT_ROOT + the_view + resource_name);
           case 3:
-            return _context17.a(2);
+            return _context16.a(2);
         }
-      }, _callee17);
+      }, _callee16);
     }));
     return _view_resource2.apply(this, arguments);
   }
@@ -1059,7 +1060,7 @@ function LibraryPane(props) {
     return _duplicate_func2.apply(this, arguments);
   }
   function _duplicate_func2() {
-    _duplicate_func2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee18() {
+    _duplicate_func2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee17() {
       var row,
         the_row,
         res_name,
@@ -1067,23 +1068,23 @@ function LibraryPane(props) {
         data,
         new_name,
         result_dict,
-        _args18 = arguments,
+        _args17 = arguments,
         _t4;
-      return _regenerator().w(function (_context18) {
-        while (1) switch (_context18.n) {
+      return _regenerator().w(function (_context17) {
+        while (1) switch (_context17.n) {
           case 0:
-            row = _args18.length > 0 && _args18[0] !== undefined ? _args18[0] : null;
+            row = _args17.length > 0 && _args17[0] !== undefined ? _args17[0] : null;
             the_row = row ? row : pStateRef.current.select_state.selected_resource;
             res_name = the_row.name;
             res_type = the_row.res_type;
-            _context18.p = 1;
-            _context18.n = 2;
+            _context17.p = 1;
+            _context17.n = 2;
             return (0, _communication_react.postPromise)("host", "get_resource_names_task", {
               res_type: res_type
             });
           case 2:
-            data = _context18.v;
-            _context18.n = 3;
+            data = _context17.v;
+            _context17.n = 3;
             return dialogFuncs.showModalPromise("ModalDialog", {
               title: "Duplicate ".concat(res_type),
               field_title: "New Name",
@@ -1093,28 +1094,28 @@ function LibraryPane(props) {
               handleClose: dialogFuncs.hideModal
             });
           case 3:
-            new_name = _context18.v;
+            new_name = _context17.v;
             result_dict = {
               "new_res_name": new_name,
               "res_to_copy": res_name,
               "is_repository": false,
               "res_type": res_type
             };
-            _context18.n = 4;
+            _context17.n = 4;
             return (0, _communication_react.postPromise)("host", "create_duplicate_resource_task", result_dict);
           case 4:
-            _context18.n = 6;
+            _context17.n = 6;
             break;
           case 5:
-            _context18.p = 5;
-            _t4 = _context18.v;
+            _context17.p = 5;
+            _t4 = _context17.v;
             if (_t4 != "canceled") {
               errorDrawerFuncs.addFromError("Error duplicating resource ".concat(res_name), _t4);
             }
           case 6:
-            return _context18.a(2);
+            return _context17.a(2);
         }
-      }, _callee18, null, [[1, 5]]);
+      }, _callee17, null, [[1, 5]]);
     }));
     return _duplicate_func2.apply(this, arguments);
   }
@@ -1122,10 +1123,10 @@ function LibraryPane(props) {
     return _delete_func2.apply(this, arguments);
   }
   function _delete_func2() {
-    _delete_func2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee19(resource) {
+    _delete_func2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee18(resource) {
       var res_list, confirm_text, _res_name, first_index, _iterator6, _step6, row, ind, _t5;
-      return _regenerator().w(function (_context19) {
-        while (1) switch (_context19.n) {
+      return _regenerator().w(function (_context18) {
+        while (1) switch (_context18.n) {
           case 0:
             res_list = resource ? [resource] : pStateRef.current.select_state.selected_rows;
             if (res_list.length == 1) {
@@ -1149,8 +1150,8 @@ function LibraryPane(props) {
             } finally {
               _iterator6.f();
             }
-            _context19.p = 1;
-            _context19.n = 2;
+            _context18.p = 1;
+            _context18.n = 2;
             return dialogFuncs.showModalPromise("ConfirmDialog", {
               title: "Delete resources",
               text_body: confirm_text,
@@ -1159,23 +1160,23 @@ function LibraryPane(props) {
               handleClose: dialogFuncs.hideModal
             });
           case 2:
-            _context19.n = 3;
+            _context18.n = 3;
             return (0, _communication_react.postPromise)("host", "delete_resource_list_task", {
               "resource_list": res_list
             });
           case 3:
-            _context19.n = 5;
+            _context18.n = 5;
             break;
           case 4:
-            _context19.p = 4;
-            _t5 = _context19.v;
+            _context18.p = 4;
+            _t5 = _context18.v;
             if (_t5 != "canceled") {
               errorDrawerFuncs.addFromError("Error duplicating resource ".concat(res_name), _t5);
             }
           case 5:
-            return _context19.a(2);
+            return _context18.a(2);
         }
-      }, _callee19, null, [[1, 4]]);
+      }, _callee18, null, [[1, 4]]);
     }));
     return _delete_func2.apply(this, arguments);
   }
@@ -1183,7 +1184,7 @@ function LibraryPane(props) {
     return _rename_func2.apply(this, arguments);
   }
   function _rename_func2() {
-    _rename_func2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee20() {
+    _rename_func2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee19() {
       var row,
         res_type,
         res_name,
@@ -1191,13 +1192,12 @@ function LibraryPane(props) {
         res_names,
         index,
         new_name,
-        the_data,
-        _args20 = arguments,
+        _args19 = arguments,
         _t6;
-      return _regenerator().w(function (_context20) {
-        while (1) switch (_context20.n) {
+      return _regenerator().w(function (_context19) {
+        while (1) switch (_context19.n) {
           case 0:
-            row = _args20.length > 0 && _args20[0] !== undefined ? _args20[0] : null;
+            row = _args19.length > 0 && _args19[0] !== undefined ? _args19[0] : null;
             if (!row) {
               res_type = pStateRef.current.select_state.selected_resource.res_type;
               res_name = pStateRef.current.select_state.selected_resource.name;
@@ -1205,19 +1205,19 @@ function LibraryPane(props) {
               res_type = row.res_type;
               res_name = row.name;
             }
-            _context20.p = 1;
-            _context20.n = 2;
+            _context19.p = 1;
+            _context19.n = 2;
             return (0, _communication_react.postPromise)("host", "get_resource_names_task", {
               res_type: res_type
             });
           case 2:
-            data = _context20.v;
+            data = _context19.v;
             res_names = data["res_names"];
             index = res_names.indexOf(res_name);
             if (index >= 0) {
               res_names.splice(index, 1);
             }
-            _context20.n = 3;
+            _context19.n = 3;
             return dialogFuncs.showModalPromise("ModalDialog", {
               title: "Rename ".concat(res_type),
               field_title: "New Name",
@@ -1227,29 +1227,26 @@ function LibraryPane(props) {
               checkboxes: []
             });
           case 3:
-            new_name = _context20.v;
-            the_data = {
-              "new_name": new_name
-            };
-            _context20.n = 4;
+            new_name = _context19.v;
+            _context19.n = 4;
             return (0, _communication_react.postPromise)("host", "rename_resource_task", {
               old_name: res_name,
               res_type: res_type,
               new_name: new_name
             });
           case 4:
-            _context20.n = 6;
+            _context19.n = 6;
             break;
           case 5:
-            _context20.p = 5;
-            _t6 = _context20.v;
+            _context19.p = 5;
+            _t6 = _context19.v;
             if (_t6 != "canceled") {
               errorDrawerFuncs.addFromError("Error renaming resource ".concat(res_name), _t6);
             }
           case 6:
-            return _context20.a(2);
+            return _context19.a(2);
         }
-      }, _callee20, null, [[1, 5]]);
+      }, _callee19, null, [[1, 5]]);
     }));
     return _rename_func2.apply(this, arguments);
   }
@@ -1257,13 +1254,88 @@ function LibraryPane(props) {
     return _repository_copy_func2.apply(this, arguments);
   }
   function _repository_copy_func2() {
-    _repository_copy_func2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee21() {
+    _repository_copy_func2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee20() {
       var res_type, res_name, data, new_name, result_dict, _result_dict, _t7, _t8;
+      return _regenerator().w(function (_context20) {
+        while (1) switch (_context20.n) {
+          case 0:
+            if (pStateRef.current.select_state.multi_select) {
+              _context20.n = 6;
+              break;
+            }
+            res_type = pStateRef.current.select_state.selected_resource.res_type;
+            res_name = pStateRef.current.select_state.selected_resource.name;
+            _context20.p = 1;
+            _context20.n = 2;
+            return (0, _communication_react.postPromise)("host", "get_resource_names_task", {
+              res_type: res_type
+            });
+          case 2:
+            data = _context20.v;
+            _context20.n = 3;
+            return dialogFuncs.showModalPromise("ModalDialog", {
+              title: "Import ".concat(res_type),
+              field_title: "New Name",
+              default_value: res_name,
+              existing_names: data.res_names,
+              checkboxes: [],
+              handleClose: dialogFuncs.hideModal
+            });
+          case 3:
+            new_name = _context20.v;
+            result_dict = {
+              "res_type": res_type,
+              "res_name": res_name,
+              "new_res_name": new_name
+            };
+            _context20.n = 4;
+            return (0, _communication_react.postPromise)("host", "copy_from_repository_task", result_dict);
+          case 4:
+            statusFuncs.statusMessage("Imported Resource ".concat(res_name));
+            return _context20.a(2, res_name);
+          case 5:
+            _context20.p = 5;
+            _t7 = _context20.v;
+            if (_t7 != "canceled") {
+              errorDrawerFuncs.addFromError("Error getting resources names", _t7);
+            }
+            _context20.n = 11;
+            break;
+          case 6:
+            _result_dict = {
+              "selected_rows": pStateRef.current.select_state.selected_rows
+            };
+            _context20.p = 7;
+            _context20.n = 8;
+            return (0, _communication_react.postPromise)("host", "copy_from_repository_task", _result_dict);
+          case 8:
+            statusFuncs.statusMessage("Imported Resources");
+            _context20.n = 10;
+            break;
+          case 9:
+            _context20.p = 9;
+            _t8 = _context20.v;
+            errorDrawerFuncs.addFromError("Error importing resources", _t8);
+          case 10:
+            return _context20.a(2, "");
+          case 11:
+            return _context20.a(2);
+        }
+      }, _callee20, null, [[7, 9], [1, 5]]);
+    }));
+    return _repository_copy_func2.apply(this, arguments);
+  }
+  function _send_repository_func() {
+    return _send_repository_func2.apply(this, arguments);
+  }
+  function _send_repository_func2() {
+    _send_repository_func2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee21() {
+      var res_type, res_name, data, new_name, result_dict, _result_dict2, _t9, _t0;
       return _regenerator().w(function (_context21) {
         while (1) switch (_context21.n) {
           case 0:
             if (pStateRef.current.select_state.multi_select) {
-              _context21.n = 6;
+              _context21.n = 7;
               break;
             }
             res_type = pStateRef.current.select_state.selected_resource.res_type;
@@ -1271,14 +1343,15 @@ function LibraryPane(props) {
             _context21.p = 1;
             _context21.n = 2;
             return (0, _communication_react.postPromise)("host", "get_resource_names_task", {
-              res_type: res_type
+              res_type: res_type,
+              is_repository: true
             });
           case 2:
             data = _context21.v;
             _context21.n = 3;
             return dialogFuncs.showModalPromise("ModalDialog", {
-              title: "Import ".concat(res_type),
-              field_title: "New Name",
+              title: "Share ".concat(res_type),
+              field_title: "New ".concat(res_type, " Name"),
               default_value: res_name,
               existing_names: data.res_names,
               checkboxes: [],
@@ -1292,117 +1365,41 @@ function LibraryPane(props) {
               "new_res_name": new_name
             };
             _context21.n = 4;
-            return (0, _communication_react.postPromise)("host", "copy_from_repository_task", result_dict);
-          case 4:
-            statusFuncs.statusMessage("Imported Resource ".concat(res_name));
-            return _context21.a(2, res_name);
-          case 5:
-            _context21.p = 5;
-            _t7 = _context21.v;
-            if (_t7 != "canceled") {
-              errorDrawerFuncs.addFromError("Error getting resources names", _t7);
-            }
-            _context21.n = 11;
-            break;
-          case 6:
-            _result_dict = {
-              "selected_rows": pStateRef.current.select_state.selected_rows
-            };
-            _context21.p = 7;
-            _context21.n = 8;
-            return (0, _communication_react.postPromise)("host", "copy_from_repository_task", _result_dict);
-          case 8:
-            statusFuncs.statusMessage("Imported Resources");
-            _context21.n = 10;
-            break;
-          case 9:
-            _context21.p = 9;
-            _t8 = _context21.v;
-            errorDrawerFuncs.addFromError("Error importing resources", _t8);
-          case 10:
-            return _context21.a(2, "");
-          case 11:
-            return _context21.a(2);
-        }
-      }, _callee21, null, [[7, 9], [1, 5]]);
-    }));
-    return _repository_copy_func2.apply(this, arguments);
-  }
-  function _send_repository_func() {
-    return _send_repository_func2.apply(this, arguments);
-  }
-  function _send_repository_func2() {
-    _send_repository_func2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee22() {
-      var res_type, res_name, data, new_name, result_dict, _result_dict2, _t9, _t0;
-      return _regenerator().w(function (_context22) {
-        while (1) switch (_context22.n) {
-          case 0:
-            if (pStateRef.current.select_state.multi_select) {
-              _context22.n = 7;
-              break;
-            }
-            res_type = pStateRef.current.select_state.selected_resource.res_type;
-            res_name = pStateRef.current.select_state.selected_resource.name;
-            _context22.p = 1;
-            _context22.n = 2;
-            return (0, _communication_react.postPromise)("host", "get_resource_names_task", {
-              res_type: res_type,
-              is_repository: true
-            });
-          case 2:
-            data = _context22.v;
-            _context22.n = 3;
-            return dialogFuncs.showModalPromise("ModalDialog", {
-              title: "Share ".concat(res_type),
-              field_title: "New ".concat(res_type, " Name"),
-              default_value: res_name,
-              existing_names: data.res_names,
-              checkboxes: [],
-              handleClose: dialogFuncs.hideModal
-            });
-          case 3:
-            new_name = _context22.v;
-            result_dict = {
-              "res_type": res_type,
-              "res_name": res_name,
-              "new_res_name": new_name
-            };
-            _context22.n = 4;
             return (0, _communication_react.postPromise)("host", 'send_to_repository_task', result_dict);
           case 4:
             statusFuncs.statusMessage("Shared resource ".concat(res_name));
-            _context22.n = 6;
+            _context21.n = 6;
             break;
           case 5:
-            _context22.p = 5;
-            _t9 = _context22.v;
+            _context21.p = 5;
+            _t9 = _context21.v;
             if (_t9 != "canceled") {
               errorDrawerFuncs.addFromError("Error sharing resource ".concat(res_name), _t9);
             }
           case 6:
-            _context22.n = 12;
+            _context21.n = 12;
             break;
           case 7:
             _result_dict2 = {
               "selected_rows": pStateRef.current.select_state.selected_rows
             };
-            _context22.p = 8;
-            _context22.n = 9;
+            _context21.p = 8;
+            _context21.n = 9;
             return (0, _communication_react.postPromise)("host", 'send_to_repository_task', _result_dict2);
           case 9:
             statusFuncs.statusMessage("Shared resources");
-            _context22.n = 11;
+            _context21.n = 11;
             break;
           case 10:
-            _context22.p = 10;
-            _t0 = _context22.v;
+            _context21.p = 10;
+            _t0 = _context21.v;
             errorDrawerFuncs.addFromError("Error sharing resources", _t0);
           case 11:
-            return _context22.a(2, "");
+            return _context21.a(2, "");
           case 12:
-            return _context22.a(2);
+            return _context21.a(2);
         }
-      }, _callee22, null, [[8, 10], [1, 5]]);
+      }, _callee21, null, [[8, 10], [1, 5]]);
     }));
     return _send_repository_func2.apply(this, arguments);
   }
@@ -1410,19 +1407,19 @@ function LibraryPane(props) {
     return _refresh_func2.apply(this, arguments);
   }
   function _refresh_func2() {
-    _refresh_func2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee23() {
+    _refresh_func2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee22() {
       var callback,
-        _args23 = arguments;
-      return _regenerator().w(function (_context23) {
-        while (1) switch (_context23.n) {
+        _args22 = arguments;
+      return _regenerator().w(function (_context22) {
+        while (1) switch (_context22.n) {
           case 0:
-            callback = _args23.length > 0 && _args23[0] !== undefined ? _args23[0] : null;
-            _context23.n = 1;
+            callback = _args22.length > 0 && _args22[0] !== undefined ? _args22[0] : null;
+            _context22.n = 1;
             return _grabNewChunkWithRow(0, true, null, true, callback);
           case 1:
-            return _context23.a(2);
+            return _context22.a(2);
         }
-      }, _callee23);
+      }, _callee22);
     }));
     return _refresh_func2.apply(this, arguments);
   }
@@ -1430,9 +1427,9 @@ function LibraryPane(props) {
     return _new_notebook2.apply(this, arguments);
   }
   function _new_notebook2() {
-    _new_notebook2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee24() {
-      return _regenerator().w(function (_context24) {
-        while (1) switch (_context24.n) {
+    _new_notebook2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee23() {
+      return _regenerator().w(function (_context23) {
+        while (1) switch (_context23.n) {
           case 0:
             if (window.in_context) {
               try {
@@ -1444,9 +1441,9 @@ function LibraryPane(props) {
               window.open("".concat($SCRIPT_ROOT, "/new_notebook"));
             }
           case 1:
-            return _context24.a(2);
+            return _context23.a(2);
         }
-      }, _callee24);
+      }, _callee23);
     }));
     return _new_notebook2.apply(this, arguments);
   }
@@ -1454,9 +1451,9 @@ function LibraryPane(props) {
     return _new_project2.apply(this, arguments);
   }
   function _new_project2() {
-    _new_project2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee25() {
-      return _regenerator().w(function (_context25) {
-        while (1) switch (_context25.n) {
+    _new_project2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee24() {
+      return _regenerator().w(function (_context24) {
+        while (1) switch (_context24.n) {
           case 0:
             if (window.in_context) {
               try {
@@ -1468,9 +1465,9 @@ function LibraryPane(props) {
               window.open("".concat($SCRIPT_ROOT, "/new_project"));
             }
           case 1:
-            return _context25.a(2);
+            return _context24.a(2);
         }
-      }, _callee25);
+      }, _callee24);
     }));
     return _new_project2.apply(this, arguments);
   }
@@ -1478,14 +1475,14 @@ function LibraryPane(props) {
     return _downloadJupyter2.apply(this, arguments);
   }
   function _downloadJupyter2() {
-    _downloadJupyter2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee26() {
+    _downloadJupyter2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee25() {
       var res_name, new_name, _t1;
-      return _regenerator().w(function (_context26) {
-        while (1) switch (_context26.n) {
+      return _regenerator().w(function (_context25) {
+        while (1) switch (_context25.n) {
           case 0:
             res_name = pStateRef.current.select_state.selected_resource.name;
-            _context26.p = 1;
-            _context26.n = 2;
+            _context25.p = 1;
+            _context25.n = 2;
             return dialogFuncs.showModalPromise("ModalDialog", {
               title: "Download Notebook as Jupyter Notebook",
               field_title: "New File Name",
@@ -1495,18 +1492,18 @@ function LibraryPane(props) {
               handleClose: dialogFuncs.hideModal
             });
           case 2:
-            new_name = _context26.v;
+            new_name = _context25.v;
             window.open("".concat($SCRIPT_ROOT, "/download_jupyter/") + res_name + "/" + new_name);
-            _context26.n = 4;
+            _context25.n = 4;
             break;
           case 3:
-            _context26.p = 3;
-            _t1 = _context26.v;
+            _context25.p = 3;
+            _t1 = _context25.v;
             errorDrawerFuncs.addFromError("Error downloading jupyter notebook", _t1);
           case 4:
-            return _context26.a(2);
+            return _context25.a(2);
         }
-      }, _callee26, null, [[1, 3]]);
+      }, _callee25, null, [[1, 3]]);
     }));
     return _downloadJupyter2.apply(this, arguments);
   }
@@ -1539,24 +1536,24 @@ function LibraryPane(props) {
     return _combineCollections2.apply(this, arguments);
   }
   function _combineCollections2() {
-    _combineCollections2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee27() {
-      var res_name, data, other_name, target, _data, new_name, _t10, _t11;
-      return _regenerator().w(function (_context27) {
-        while (1) switch (_context27.n) {
+    _combineCollections2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee26() {
+      var res_name, data, other_name, _data, new_name, _t10, _t11;
+      return _regenerator().w(function (_context26) {
+        while (1) switch (_context26.n) {
           case 0:
             res_name = pStateRef.current.select_state.selected_resource.name;
             if (pStateRef.current.select_state.multi_select) {
-              _context27.n = 7;
+              _context26.n = 7;
               break;
             }
-            _context27.p = 1;
-            _context27.n = 2;
+            _context26.p = 1;
+            _context26.n = 2;
             return (0, _communication_react.postPromise)("host", "get_resource_names_tasks", {
               res_type: "collection"
             });
           case 2:
-            data = _context27.v;
-            _context27.n = 3;
+            data = _context26.v;
+            _context26.n = 3;
             return dialogFuncs.showModalPromise("SelectDialog", {
               title: "Select a new collection to combine with " + res_name,
               select_label: "Collection to Combine",
@@ -1566,10 +1563,10 @@ function LibraryPane(props) {
               handleClose: dialogFuncs.hideModal
             });
           case 3:
-            other_name = _context27.v;
+            other_name = _context26.v;
             statusFuncs.startSpinner();
-            target = "combine_collections/".concat(res_name, "/").concat(other_name);
-            _context27.n = 4;
+            // const target = `combine_collections/${res_name}/${other_name}`;
+            _context26.n = 4;
             return (0, _communication_react.postPromise)("host", "combine_collections_task", {
               base_collection_name: res_name,
               collection_to_add: other_name
@@ -1577,27 +1574,27 @@ function LibraryPane(props) {
           case 4:
             statusFuncs.stopSpinner();
             statusFuncs.statusMessage("Combined Collections");
-            _context27.n = 6;
+            _context26.n = 6;
             break;
           case 5:
-            _context27.p = 5;
-            _t10 = _context27.v;
+            _context26.p = 5;
+            _t10 = _context26.v;
             if (_t10 != "canceled") {
               errorDrawerFuncs.addFromError("Error combining collections", _t10);
             }
             statusFuncs.stopSpinner();
           case 6:
-            _context27.n = 12;
+            _context26.n = 12;
             break;
           case 7:
-            _context27.p = 7;
-            _context27.n = 8;
+            _context26.p = 7;
+            _context26.n = 8;
             return (0, _communication_react.postPromise)("host", "get_resource_names_tasks", {
               res_type: "collection"
             });
           case 8:
-            _data = _context27.v;
-            _context27.n = 9;
+            _data = _context26.v;
+            _context26.n = 9;
             return dialogFuncs.showModalPromise("ModalDialog", {
               title: "Combine Collections",
               field_title: "Name for combined collection",
@@ -1607,26 +1604,26 @@ function LibraryPane(props) {
               handleClose: dialogFuncs.hideModal
             });
           case 9:
-            new_name = _context27.v;
-            _context27.n = 10;
+            new_name = _context26.v;
+            _context26.n = 10;
             return (0, _communication_react.postPromise)("host", "combine_to_new_collection", {
               "original_collections": pStateRef.current.select_state.list_of_selected,
               "new_name": new_name
             });
           case 10:
-            _context27.n = 12;
+            _context26.n = 12;
             break;
           case 11:
-            _context27.p = 11;
-            _t11 = _context27.v;
+            _context26.p = 11;
+            _t11 = _context26.v;
             if (_t11 != "canceled") {
               errorDrawerFuncs.addFromError("Error combining collections", _t11);
             }
             statusFuncs.stopSpinner();
           case 12:
-            return _context27.a(2);
+            return _context26.a(2);
         }
-      }, _callee27, null, [[7, 11], [1, 5]]);
+      }, _callee26, null, [[7, 11], [1, 5]]);
     }));
     return _combineCollections2.apply(this, arguments);
   }
@@ -1634,19 +1631,19 @@ function LibraryPane(props) {
     return _downloadCollection2.apply(this, arguments);
   }
   function _downloadCollection2() {
-    _downloadCollection2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee28() {
+    _downloadCollection2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee27() {
       var resource_name,
         res_name,
         new_name,
-        _args28 = arguments,
+        _args27 = arguments,
         _t12;
-      return _regenerator().w(function (_context28) {
-        while (1) switch (_context28.n) {
+      return _regenerator().w(function (_context27) {
+        while (1) switch (_context27.n) {
           case 0:
-            resource_name = _args28.length > 0 && _args28[0] !== undefined ? _args28[0] : null;
+            resource_name = _args27.length > 0 && _args27[0] !== undefined ? _args27[0] : null;
             res_name = resource_name ? resource_name : pStateRef.current.select_state.selected_resource.name;
-            _context28.p = 1;
-            _context28.n = 2;
+            _context27.p = 1;
+            _context27.n = 2;
             return dialogFuncs.showModalPromise("ModalDialog", {
               title: "Download Collection",
               field_title: "New File Name",
@@ -1656,20 +1653,20 @@ function LibraryPane(props) {
               handleClose: dialogFuncs.hideModal
             });
           case 2:
-            new_name = _context28.v;
+            new_name = _context27.v;
             window.open("".concat($SCRIPT_ROOT, "/download_collection/") + res_name + "/" + new_name);
-            _context28.n = 4;
+            _context27.n = 4;
             break;
           case 3:
-            _context28.p = 3;
-            _t12 = _context28.v;
+            _context27.p = 3;
+            _t12 = _context27.v;
             if (_t12 != "canceled") {
               errorDrawerFuncs.addFromError("Error combing collections", _t12);
             }
           case 4:
-            return _context28.a(2);
+            return _context27.a(2);
         }
-      }, _callee28, null, [[1, 3]]);
+      }, _callee27, null, [[1, 3]]);
     }));
     return _downloadCollection2.apply(this, arguments);
   }
@@ -1699,20 +1696,20 @@ function LibraryPane(props) {
     return _import_collection2.apply(this, arguments);
   }
   function _import_collection2() {
-    _import_collection2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee29(myDropZone, setCurrentUrl, new_name, check_results) {
+    _import_collection2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee28(myDropZone, setCurrentUrl, new_name, check_results) {
       var csv_options,
         doc_type,
         data,
         new_url,
-        _args29 = arguments,
+        _args28 = arguments,
         _t13;
-      return _regenerator().w(function (_context29) {
-        while (1) switch (_context29.n) {
+      return _regenerator().w(function (_context28) {
+        while (1) switch (_context28.n) {
           case 0:
-            csv_options = _args29.length > 4 && _args29[4] !== undefined ? _args29[4] : null;
+            csv_options = _args28.length > 4 && _args28[4] !== undefined ? _args28[4] : null;
             doc_type = check_results["import_as_freeform"] ? "freeform" : "table";
-            _context29.p = 1;
-            _context29.n = 2;
+            _context28.p = 1;
+            _context28.n = 2;
             return (0, _communication_react.postPromise)("host", "create_empty_collection_task", {
               "collection_name": new_name,
               "doc_type": doc_type,
@@ -1720,31 +1717,31 @@ function LibraryPane(props) {
               "csv_options": csv_options
             });
           case 2:
-            data = _context29.v;
+            data = _context28.v;
             if (data.success) {
-              _context29.n = 3;
+              _context28.n = 3;
               break;
             }
             errorDrawerFuncs.addErrorDrawerEntry({
               title: "Error creating collection",
               content: data.message
             });
-            return _context29.a(2);
+            return _context28.a(2);
           case 3:
             new_url = "append_documents_to_collection/".concat(new_name, "/").concat(doc_type, "/").concat(props.library_id);
             myDropZone.options.url = new_url;
             setCurrentUrl(new_url);
             myDropZone.processQueue();
-            _context29.n = 5;
+            _context28.n = 5;
             break;
           case 4:
-            _context29.p = 4;
-            _t13 = _context29.v;
+            _context28.p = 4;
+            _t13 = _context28.v;
             errorDrawerFuncs.addFromError("Error importing document", _t13);
           case 5:
-            return _context29.a(2);
+            return _context28.a(2);
         }
-      }, _callee29, null, [[1, 4]]);
+      }, _callee28, null, [[1, 4]]);
     }));
     return _import_collection2.apply(this, arguments);
   }
@@ -1769,34 +1766,34 @@ function LibraryPane(props) {
     return _load_tile2.apply(this, arguments);
   }
   function _load_tile2() {
-    _load_tile2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee30() {
+    _load_tile2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee29() {
       var resource,
         res_name,
-        _args30 = arguments,
+        _args29 = arguments,
         _t14;
-      return _regenerator().w(function (_context30) {
-        while (1) switch (_context30.n) {
+      return _regenerator().w(function (_context29) {
+        while (1) switch (_context29.n) {
           case 0:
-            resource = _args30.length > 0 && _args30[0] !== undefined ? _args30[0] : null;
+            resource = _args29.length > 0 && _args29[0] !== undefined ? _args29[0] : null;
             res_name = resource ? resource.name : pStateRef.current.select_state.selected_resource.name;
-            _context30.p = 1;
-            _context30.n = 2;
+            _context29.p = 1;
+            _context29.n = 2;
             return (0, _communication_react.postPromise)("host", "load_tile_module_task", {
               "tile_module_name": res_name,
               "user_id": window.user_id
             });
           case 2:
             statusFuncs.statusMessage("Loaded tile ".concat(res_name));
-            _context30.n = 4;
+            _context29.n = 4;
             break;
           case 3:
-            _context30.p = 3;
-            _t14 = _context30.v;
+            _context29.p = 3;
+            _t14 = _context29.v;
             errorDrawerFuncs.addFromError("Error loading tile", _t14);
           case 4:
-            return _context30.a(2);
+            return _context29.a(2);
         }
-      }, _callee30, null, [[1, 3]]);
+      }, _callee29, null, [[1, 3]]);
     }));
     return _load_tile2.apply(this, arguments);
   }
@@ -1804,33 +1801,33 @@ function LibraryPane(props) {
     return _unload_module2.apply(this, arguments);
   }
   function _unload_module2() {
-    _unload_module2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee31() {
+    _unload_module2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee30() {
       var resource,
         res_name,
-        _args31 = arguments,
+        _args30 = arguments,
         _t15;
-      return _regenerator().w(function (_context31) {
-        while (1) switch (_context31.n) {
+      return _regenerator().w(function (_context30) {
+        while (1) switch (_context30.n) {
           case 0:
-            resource = _args31.length > 0 && _args31[0] !== undefined ? _args31[0] : null;
+            resource = _args30.length > 0 && _args30[0] !== undefined ? _args30[0] : null;
             res_name = resource ? resource.name : pStateRef.current.select_state.selected_resource.name;
-            _context31.p = 1;
-            _context31.n = 2;
+            _context30.p = 1;
+            _context30.n = 2;
             return (0, _communication_react.postPromise)("host", "unload_one_module_task", {
               "tile_module_name": res_name
             });
           case 2:
             statusFuncs.statusMessage("Tile unloaded");
-            _context31.n = 4;
+            _context30.n = 4;
             break;
           case 3:
-            _context31.p = 3;
-            _t15 = _context31.v;
+            _context30.p = 3;
+            _t15 = _context30.v;
             errorDrawerFuncs.addFromError("Error unloading tile", _t15);
           case 4:
-            return _context31.a(2);
+            return _context30.a(2);
         }
-      }, _callee31, null, [[1, 3]]);
+      }, _callee30, null, [[1, 3]]);
     }));
     return _unload_module2.apply(this, arguments);
   }
@@ -1838,26 +1835,26 @@ function LibraryPane(props) {
     return _unload_all_tiles2.apply(this, arguments);
   }
   function _unload_all_tiles2() {
-    _unload_all_tiles2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee32() {
+    _unload_all_tiles2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee31() {
       var _t16;
-      return _regenerator().w(function (_context32) {
-        while (1) switch (_context32.n) {
+      return _regenerator().w(function (_context31) {
+        while (1) switch (_context31.n) {
           case 0:
-            _context32.p = 0;
-            _context32.n = 1;
+            _context31.p = 0;
+            _context31.n = 1;
             return (0, _communication_react.postPromise)("host", "unload_all_tiles_task", {});
           case 1:
             statusFuncs.statusMessage("Unloaded all tiles");
-            _context32.n = 3;
+            _context31.n = 3;
             break;
           case 2:
-            _context32.p = 2;
-            _t16 = _context32.v;
+            _context31.p = 2;
+            _t16 = _context31.v;
             errorDrawerFuncs.addFromError("Error unloading tiles", _t16);
           case 3:
-            return _context32.a(2);
+            return _context31.a(2);
         }
-      }, _callee32, null, [[0, 2]]);
+      }, _callee31, null, [[0, 2]]);
     }));
     return _unload_all_tiles2.apply(this, arguments);
   }
@@ -1865,17 +1862,17 @@ function LibraryPane(props) {
     return _new_in_creator2.apply(this, arguments);
   }
   function _new_in_creator2() {
-    _new_in_creator2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee33(template_name) {
+    _new_in_creator2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee32(template_name) {
       var data, new_name, result_dict, _t17;
-      return _regenerator().w(function (_context33) {
-        while (1) switch (_context33.n) {
+      return _regenerator().w(function (_context32) {
+        while (1) switch (_context32.n) {
           case 0:
-            _context33.p = 0;
-            _context33.n = 1;
+            _context32.p = 0;
+            _context32.n = 1;
             return (0, _communication_react.postPromise)("host", "get_tile_names_task", {});
           case 1:
-            data = _context33.v;
-            _context33.n = 2;
+            data = _context32.v;
+            _context32.n = 2;
             return dialogFuncs.showModalPromise("ModalDialog", {
               title: "New Tile",
               field_title: "New Tile Name",
@@ -1885,33 +1882,33 @@ function LibraryPane(props) {
               handleClose: dialogFuncs.hideModal
             });
           case 2:
-            new_name = _context33.v;
+            new_name = _context32.v;
             result_dict = {
               "template_name": template_name,
               "new_tile_name": new_name,
               "last_saved": "creator"
             };
-            _context33.n = 3;
+            _context32.n = 3;
             return (0, _communication_react.postPromise)("host", "create_tile_from_repository_template", result_dict);
           case 3:
-            _context33.n = 4;
+            _context32.n = 4;
             return _view_resource({
               name: String(new_name),
               res_type: "tile"
             });
           case 4:
-            _context33.n = 6;
+            _context32.n = 6;
             break;
           case 5:
-            _context33.p = 5;
-            _t17 = _context33.v;
+            _context32.p = 5;
+            _t17 = _context32.v;
             if (_t17 != "canceled") {
               errorDrawerFuncs.addFromError("Error creating tile module", _t17);
             }
           case 6:
-            return _context33.a(2);
+            return _context32.a(2);
         }
-      }, _callee33, null, [[0, 5]]);
+      }, _callee32, null, [[0, 5]]);
     }));
     return _new_in_creator2.apply(this, arguments);
   }
@@ -1919,17 +1916,17 @@ function LibraryPane(props) {
     return _new_metabook2.apply(this, arguments);
   }
   function _new_metabook2() {
-    _new_metabook2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee34() {
+    _new_metabook2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee33() {
       var data, new_name, result_dict, new_metabook_data, _t18;
-      return _regenerator().w(function (_context34) {
-        while (1) switch (_context34.n) {
+      return _regenerator().w(function (_context33) {
+        while (1) switch (_context33.n) {
           case 0:
-            _context34.p = 0;
-            _context34.n = 1;
+            _context33.p = 0;
+            _context33.n = 1;
             return (0, _communication_react.postPromise)("host", "get_metabook_names_task", {});
           case 1:
-            data = _context34.v;
-            _context34.n = 2;
+            data = _context33.v;
+            _context33.n = 2;
             return dialogFuncs.showModalPromise("ModalDialog", {
               title: "New Metabook Resource",
               field_title: "New Metabook Name",
@@ -1939,27 +1936,27 @@ function LibraryPane(props) {
               handleClose: dialogFuncs.hideModal
             });
           case 2:
-            new_name = _context34.v;
+            new_name = _context33.v;
             result_dict = {
               "metabook_name": new_name
             };
-            _context34.n = 3;
+            _context33.n = 3;
             return (0, _communication_react.postPromise)("host", "create_empty_metabook", result_dict);
           case 3:
-            new_metabook_data = _context34.v;
+            new_metabook_data = _context33.v;
             props.setCurrentMetabook(new_metabook_data._id);
-            _context34.n = 5;
+            _context33.n = 5;
             break;
           case 4:
-            _context34.p = 4;
-            _t18 = _context34.v;
+            _context33.p = 4;
+            _t18 = _context33.v;
             if (_t18 != "canceled") {
               errorDrawerFuncs.addFromError("Error creating metabook resource", _t18);
             }
           case 5:
-            return _context34.a(2);
+            return _context33.a(2);
         }
-      }, _callee34, null, [[0, 4]]);
+      }, _callee33, null, [[0, 4]]);
     }));
     return _new_metabook2.apply(this, arguments);
   }
@@ -1967,17 +1964,17 @@ function LibraryPane(props) {
     return _new_list2.apply(this, arguments);
   }
   function _new_list2() {
-    _new_list2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee35(template_name) {
+    _new_list2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee34(template_name) {
       var data, new_name, result_dict, _t19;
-      return _regenerator().w(function (_context35) {
-        while (1) switch (_context35.n) {
+      return _regenerator().w(function (_context34) {
+        while (1) switch (_context34.n) {
           case 0:
-            _context35.p = 0;
-            _context35.n = 1;
+            _context34.p = 0;
+            _context34.n = 1;
             return (0, _communication_react.postPromise)("host", "get_list_names_task", {});
           case 1:
-            data = _context35.v;
-            _context35.n = 2;
+            data = _context34.v;
+            _context34.n = 2;
             return dialogFuncs.showModalPromise("ModalDialog", {
               title: "New List Resource",
               field_title: "New List Name",
@@ -1987,32 +1984,32 @@ function LibraryPane(props) {
               handleClose: dialogFuncs.hideModal
             });
           case 2:
-            new_name = _context35.v;
+            new_name = _context34.v;
             result_dict = {
               "template_name": template_name,
               "new_list_name": new_name
             };
-            _context35.n = 3;
+            _context34.n = 3;
             return (0, _communication_react.postPromise)("host", "create_list_from_repository_template", result_dict);
           case 3:
-            _context35.n = 4;
+            _context34.n = 4;
             return _view_resource({
               name: String(new_name),
               res_type: "list"
             }, "/view_list/");
           case 4:
-            _context35.n = 6;
+            _context34.n = 6;
             break;
           case 5:
-            _context35.p = 5;
-            _t19 = _context35.v;
+            _context34.p = 5;
+            _t19 = _context34.v;
             if (_t19 != "canceled") {
               errorDrawerFuncs.addFromError("Error creating list resource", _t19);
             }
           case 6:
-            return _context35.a(2);
+            return _context34.a(2);
         }
-      }, _callee35, null, [[0, 5]]);
+      }, _callee34, null, [[0, 5]]);
     }));
     return _new_list2.apply(this, arguments);
   }
@@ -2045,17 +2042,17 @@ function LibraryPane(props) {
     return _new_code2.apply(this, arguments);
   }
   function _new_code2() {
-    _new_code2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee36(template_name) {
+    _new_code2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee35(template_name) {
       var data, new_name, result_dict, _t20;
-      return _regenerator().w(function (_context36) {
-        while (1) switch (_context36.n) {
+      return _regenerator().w(function (_context35) {
+        while (1) switch (_context35.n) {
           case 0:
-            _context36.p = 0;
-            _context36.n = 1;
+            _context35.p = 0;
+            _context35.n = 1;
             return (0, _communication_react.postPromise)("host", "get_code_names_task", {});
           case 1:
-            data = _context36.v;
-            _context36.n = 2;
+            data = _context35.v;
+            _context35.n = 2;
             return dialogFuncs.showModalPromise("ModalDialog", {
               title: "New code Resource",
               field_title: "New Code Resource Name",
@@ -2065,32 +2062,32 @@ function LibraryPane(props) {
               handleClose: dialogFuncs.hideModal
             });
           case 2:
-            new_name = _context36.v;
+            new_name = _context35.v;
             result_dict = {
               "template_name": template_name,
               "new_code_name": new_name
             };
-            _context36.n = 3;
+            _context35.n = 3;
             return (0, _communication_react.postPromise)("host", "create_code_from_repository_template", result_dict);
           case 3:
-            _context36.n = 4;
+            _context35.n = 4;
             return _view_resource({
               name: String(new_name),
               res_type: "code"
             }, "/view_code/");
           case 4:
-            _context36.n = 6;
+            _context35.n = 6;
             break;
           case 5:
-            _context36.p = 5;
-            _t20 = _context36.v;
+            _context35.p = 5;
+            _t20 = _context35.v;
             if (_t20 != "canceled") {
               errorDrawerFuncs.addFromError("Error creating code resource", _t20);
             }
           case 6:
-            return _context36.a(2);
+            return _context35.a(2);
         }
-      }, _callee36, null, [[0, 5]]);
+      }, _callee35, null, [[0, 5]]);
     }));
     return _new_code2.apply(this, arguments);
   }
@@ -2098,6 +2095,11 @@ function LibraryPane(props) {
     pDispatch({
       type: "SET_CONTEXT_MENU_ITEMS",
       context_menu_items: context_menu_items
+    });
+  }
+  function toggleFilterBar() {
+    pDispatch({
+      type: "TOGGLE_FILTER_BAR"
     });
   }
   function _menu_funcs() {
@@ -2143,32 +2145,6 @@ function LibraryPane(props) {
     readOnly: props.is_repository
   });
   var MenubarClass = props.MenubarClass;
-  var resource_filter = /*#__PURE__*/_react["default"].createElement(_library_widgets.ResourceFilter, {
-    kinds: res_types,
-    icon_dict: _combined_metadata.icon_dict,
-    selectedKinds: pStateRef.current.search_state.filterType,
-    search_string: pStateRef.current.search_state.search_string,
-    search_inside: pStateRef.current.search_state.search_inside,
-    show_hidden: pStateRef.current.search_state.show_hidden,
-    search_metadata: pStateRef.current.search_state.search_metadata,
-    update_search_state: _update_search_state,
-    onKindChange: (/*#__PURE__*/function () {
-      var _ref5 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee8(rtypes) {
-        return _regenerator().w(function (_context8) {
-          while (1) switch (_context8.n) {
-            case 0:
-              _context8.n = 1;
-              return _setFilterType(rtypes);
-            case 1:
-              return _context8.a(2);
-          }
-        }, _callee8);
-      }));
-      return function (_x15) {
-        return _ref5.apply(this, arguments);
-      };
-    }())
-  });
   var column_selector = props.updateColumns ? /*#__PURE__*/_react["default"].createElement(_library_widgets.ColumnSelector, {
     icon_dict: [],
     selectedColumns: props.columns,
@@ -2176,9 +2152,12 @@ function LibraryPane(props) {
   }) : null;
   var left_pane = /*#__PURE__*/_react["default"].createElement(_library_table_pane.LibraryTablePane, _extends({}, props, {
     pStateRef: pStateRef,
-    resource_filter: resource_filter,
+    res_types: res_types,
+    setFilterType: _setFilterType,
+    toggleFilterBar: toggleFilterBar,
     column_selector: column_selector,
     update_search_state: _update_search_state,
+    show_filter_bar: pStateRef.current.show_filter_bar,
     updateTagState: _update_search_state,
     sortColumn: _set_sort_state,
     onSelection: _onTableSelection,

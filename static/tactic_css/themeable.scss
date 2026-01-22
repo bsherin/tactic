@@ -211,6 +211,18 @@ $light-chat-card-bg: blueprint_variables.$light-gray5;
         .bp6-icon-code {
             color: $light-code-icon-color !important;
         }
+
+        &.filter-bar-active {
+            .bp6-icon-filter{
+                color: $light-cube-icon-color ! important
+            }
+        }
+
+        &.filtered-by-resources {
+            .resource-filter-button {
+                color: $light-cube-icon-color ! important
+            }
+        }
     }
 }
 
@@ -247,6 +259,18 @@ $light-chat-card-bg: blueprint_variables.$light-gray5;
 
         .bp6-icon-code {
             color: $dark-code-icon-color !important;
+        }
+
+        &.filter-bar-active {
+            .bp6-icon-filter{
+                color: $dark-cube-icon-color ! important
+            }
+        }
+
+        &.filtered-by-resources {
+            .resource-filter-button {
+                color: $dark-cube-icon-color ! important
+            }
         }
 
     }
