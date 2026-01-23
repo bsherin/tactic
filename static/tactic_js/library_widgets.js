@@ -216,6 +216,7 @@ function ColumnSelector(_ref) {
     icon: "list-columns"
   }));
 }
+var SMALL_FILTERBAR_WIDTH = 750;
 function FilterBar(_ref2) {
   var kinds = _ref2.kinds,
     icon_dict = _ref2.icon_dict,
@@ -229,7 +230,7 @@ function FilterBar(_ref2) {
     _ref2$show_hidden = _ref2.show_hidden,
     show_hidden = _ref2$show_hidden === void 0 ? false : _ref2$show_hidden,
     _ref2$width = _ref2.width,
-    width = _ref2$width === void 0 ? 600 : _ref2$width;
+    width = _ref2$width === void 0 ? 750 : _ref2$width;
   function _handleSearchMetadataChange(event) {
     update_search_state({
       "search_metadata": event.target.checked
@@ -252,6 +253,18 @@ function FilterBar(_ref2) {
       "search_inside": false,
       "show_hidden": false
     });
+  }
+  var hidden_text;
+  var metadata_text;
+  var inside_text;
+  if (width <= SMALL_FILTERBAR_WIDTH) {
+    hidden_text = "Hidden";
+    metadata_text = "Meta";
+    inside_text = "Inside";
+  } else {
+    hidden_text = "Show Hidden";
+    metadata_text = "Search Metadata";
+    inside_text = "Search Inside";
   }
   return /*#__PURE__*/_react["default"].createElement("div", {
     style: {
@@ -282,23 +295,23 @@ function FilterBar(_ref2) {
     onKindChange: onKindChange,
     update_search_state: update_search_state
   }), /*#__PURE__*/_react["default"].createElement(_core.Divider, null), /*#__PURE__*/_react["default"].createElement(_core.Switch, {
+    checked: show_hidden,
+    label: hidden_text,
+    alignIndicator: _core.Alignment.END,
+    className: "menu-control",
+    onChange: _handleShowHiddenChange
+  }), /*#__PURE__*/_react["default"].createElement(_core.Divider, null), /*#__PURE__*/_react["default"].createElement(_core.Switch, {
     checked: search_metadata,
-    label: "Metadata",
+    label: metadata_text,
     alignIndicator: _core.Alignment.END,
     className: "menu-control",
     onChange: _handleSearchMetadataChange
   }), /*#__PURE__*/_react["default"].createElement(_core.Divider, null), /*#__PURE__*/_react["default"].createElement(_core.Switch, {
     checked: search_inside,
-    label: "inside",
+    label: inside_text,
     alignIndicator: _core.Alignment.END,
     className: "menu-control",
     onChange: _handleSearchInsideChange
-  }), /*#__PURE__*/_react["default"].createElement(_core.Divider, null), /*#__PURE__*/_react["default"].createElement(_core.Switch, {
-    checked: show_hidden,
-    label: "show hidden",
-    alignIndicator: _core.Alignment.END,
-    className: "menu-control",
-    onChange: _handleShowHiddenChange
   })), /*#__PURE__*/_react["default"].createElement(_core.Button, {
     icon: "circle",
     text: "Clear",

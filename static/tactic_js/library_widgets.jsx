@@ -206,6 +206,7 @@ function ColumnSelector({
     );
 }
 
+const SMALL_FILTERBAR_WIDTH = 750;
 function FilterBar({
                        kinds,
                        icon_dict,
@@ -215,7 +216,7 @@ function FilterBar({
                        search_inside = false,
                        search_metadata = false,
                        show_hidden = false,
-                       width = 600,
+                       width = 750,
                    }) {
 
     function _handleSearchMetadataChange(event) {
@@ -239,6 +240,21 @@ function FilterBar({
             "show_hidden": false
         })
     }
+
+    let hidden_text;
+    let metadata_text;
+    let inside_text;
+
+    if (width <= SMALL_FILTERBAR_WIDTH) {
+        hidden_text = "Hidden";
+        metadata_text = "Meta";
+        inside_text = "Inside";
+    } else {
+        hidden_text = "Show Hidden";
+        metadata_text = "Search Metadata";
+        inside_text = "Search Inside";
+    }
+
 
     return (
         <div style={{width: width}}>
@@ -267,8 +283,16 @@ function FilterBar({
                 />
                 <Divider/>
                 <Switch
+                    checked={show_hidden}
+                    label={hidden_text}
+                    alignIndicator={Alignment.END}
+                    className="menu-control"
+                    onChange={_handleShowHiddenChange}
+                />
+                <Divider/>
+                <Switch
                     checked={search_metadata}
-                    label="Metadata"
+                    label={metadata_text}
                     alignIndicator={Alignment.END}
                     className="menu-control"
                     onChange={_handleSearchMetadataChange}
@@ -276,18 +300,10 @@ function FilterBar({
                 <Divider/>
                 <Switch
                     checked={search_inside}
-                    label="inside"
+                    label={inside_text}
                     alignIndicator={Alignment.END}
                     className="menu-control"
                     onChange={_handleSearchInsideChange}
-                />
-                <Divider/>
-                <Switch
-                    checked={show_hidden}
-                    label="show hidden"
-                    alignIndicator={Alignment.END}
-                    className="menu-control"
-                    onChange={_handleShowHiddenChange}
                 />
             </div>
             <Button icon="circle" text="Clear" variant="minimal" onClick={clearAllFilters}/>
