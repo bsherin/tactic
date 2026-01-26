@@ -14,7 +14,11 @@ class PoolTasksMixin:
             base_path = data["base_path"]
         else:
             base_path = None
-        return self.pool_backend.get_tree(user_obj, show_hidden, base_path)
+        if "target_path" in data:
+            target_path = data["target_path"]
+            return self.pool_backend.get_subtree(user_obj, target_path, show_hidden, base_path)
+        else:
+            return self.pool_backend.get_tree(user_obj, show_hidden, base_path)
 
     @task_worthy
     def compress_pool_resource(self, data):

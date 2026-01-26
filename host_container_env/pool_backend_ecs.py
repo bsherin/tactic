@@ -35,6 +35,24 @@ class PoolBackendECS(PoolBackend):
             log.exception("Error getting pooltree")
         return {"dtree": dtree}
 
+    def get_subtree(self, user_obj, target_path, show_hidden=False, base_path=None):
+        log.debug("getting subtree", target_path=target_path)
+        user_pool_dir = f"s3://{BUCKET}/users/{user_obj.username}"
+        if base_path is not None:
+            base_path = base_path
+        else:
+            base_path = user_pool_dir
+        if not boto_s3.lexists(user_pool_dir):
+            log.error("user pool dir does not exist")
+            return {"dtree": None}
+        self.pool_visited = []
+        dtree = [self.get_node_on_path(base_path,
+                               user_pool_dir,
+                               user_obj,
+                               target_path,
+                               show_hidden)]
+        return {"success": True, "dtree": dtree}
+
     def get_node(self, root, user_pool_dir, user_obj, tree_depth=1, show_hidden=False):
         ammended_root = root
         new_base_node = self.folder_dict(ammended_root, os.path.basename(root), user_obj)
@@ -50,6 +68,34 @@ class PoolBackendECS(PoolBackend):
                                                     user_pool_dir,
                                                     user_obj,
                                                     tree_depth - 1,
+                                                    show_hidden))
+                else:
+                    ammended_path = fpath
+                    basename = os.path.basename(entry)
+                    child_list.append(self.file_dict(ammended_path, basename, user_obj))
+            new_base_node["explored"] = True
+        else:
+            new_base_node["explored"] = False
+        new_base_node["childNodes"] = child_list
+        return new_base_node
+
+    def get_node_on_path(self, root, user_pool_dir, user_obj, target_path, show_hidden=False):
+        log.debug("getting node on path", root=root, target_path=target_path)
+        ammended_root = root
+        new_base_node = self.folder_dict(ammended_root, os.path.basename(root), user_obj)
+        new_base_node["expanded"] = True
+        child_list = []
+        for entry in boto_s3.ls(root):
+            fpath = entry
+            entry_basename = os.path.basename(entry)
+            if not show_hidden and entry_basename.startswith("."):
+                continue
+            if target_path.startswith(fpath):
+                if boto_s3.isdir(fpath):
+                    child_list.append(self.get_node_on_path(fpath,
+                                                    user_pool_dir,
+                                                    user_obj,
+                                                    target_path,
                                                     show_hidden))
                 else:
                     ammended_path = fpath

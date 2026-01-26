@@ -1,6 +1,8 @@
 from tactic_logging import log, setup_logging, bind_request, new_task_id
 
 setup_logging("pool_watcher_s3")
+from urllib.parse import urlparse
+
 log.debug("starting", extra_flag=True)
 
 try:
@@ -15,7 +17,8 @@ try:
     from aws_detection import on_aws
 
     S3_BUCKET = get_ssm_parameter("BUCKET")
-    SQS_QUEUE_URL = get_ssm_parameter("SQS_QUEUE_URL")
+    # SQS_QUEUE_URL = get_ssm_parameter("SQS_QUEUE_URL")
+    queue_name = "tactic-storage-events"
     AWS_REGION = get_ssm_parameter("MY_AWS_REGION", "us-east-2")
 
     RECENT = collections.deque(maxlen=5000)
@@ -28,6 +31,11 @@ except Exception:
     log.critical("*** exiting pool_watcher_s3 due to fatal error ***")
     raise
 
+def normalize_sqs_queue_url(queue_url: str, endpoint_url: str) -> str:
+    q = urlparse(queue_url)
+    b = urlparse(endpoint_url)
+    return f"{b.scheme}://{b.netloc}{q.path}"
+
 class Handler:
     def __init__(self):
         self.my_id = "pool_watcher"
@@ -36,6 +44,7 @@ class Handler:
         log.debug("connected to RabbitMQ")
         if on_aws:
             self.sqs = boto3.client("sqs", region_name=AWS_REGION)
+            self.queue_url = self.sqs.get_queue_url(QueueName=queue_name)["QueueUrl"]
         else:
             self.sqs = boto3.client(
                 "sqs",
@@ -44,6 +53,8 @@ class Handler:
                 aws_secret_access_key="test",
                 region_name=AWS_REGION,
             )
+            self.queue_url = self.sqs.get_queue_url(QueueName=queue_name)["QueueUrl"]
+            self.queue_url = normalize_sqs_queue_url(self.queue_url, "http://host.docker.internal:4566")
         log.debug("connected to SQS", region_name=self.sqs.meta.region_name)
 
     def post_pool_event(self, event_type, key, is_dir, dest_key=None):
@@ -123,7 +134,7 @@ class Handler:
             task_id = new_task_id()
             with bind_request(task_id, "ad_hoc", "sqs_poll"):
                 resp = self.sqs.receive_message(
-                    QueueUrl=SQS_QUEUE_URL,
+                    QueueUrl=self.queue_url,
                     MaxNumberOfMessages=10,
                     WaitTimeSeconds=20,
                     MessageAttributeNames=['All']
@@ -161,7 +172,7 @@ class Handler:
                             # a recent copy+delete with same ETag and infer (src->dest).
 
                         # success: delete from queue
-                        self.sqs.delete_message(QueueUrl=SQS_QUEUE_URL, ReceiptHandle=m["ReceiptHandle"])
+                        self.sqs.delete_message(QueueUrl=self.queue_url, ReceiptHandle=m["ReceiptHandle"])
 
                     except Exception:
                         log.exception("Error processing SQS message")

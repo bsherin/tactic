@@ -22,7 +22,7 @@ var _library_widgets = require("./library_widgets");
 var _error_drawer = require("./error_drawer");
 var _tactic_socket = require("./tactic_socket");
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
-function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t2 in e) "default" !== _t2 && {}.hasOwnProperty.call(e, _t2) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t2)) && (i.get || i.set) ? o(f, _t2, i) : f[_t2] = e[_t2]); return f; })(e, t); }
+function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t3 in e) "default" !== _t3 && {}.hasOwnProperty.call(e, _t3) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t3)) && (i.get || i.set) ? o(f, _t3, i) : f[_t3] = e[_t3]); return f; })(e, t); }
 function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
 function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, "_invoke", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError("Generator is already running"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = "next"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i["return"]) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine2(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, "Generator"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, "toString", function () { return "[object Generator]"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }
 function _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, "", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { if (r) i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n;else { var o = function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); }; o("next", 0), o("throw", 1), o("return", 2); } }, _regeneratorDefine2(e, r, n, t); }
@@ -413,6 +413,18 @@ function PoolTree(props) {
     }
   }, []);
   (0, _react.useEffect)(function () {
+    if (props.value && nodes_ref.current.length > 0) {
+      expandToNode(props.value).then(function () {
+        pushCallback(function () {
+          dispatch({
+            type: "SET_IS_SELECTED_FROM_FULLPATH",
+            fullpath: props.value
+          });
+        });
+      });
+    }
+  }, [props.value, nodes_ref.current.length]);
+  (0, _react.useEffect)(function () {
     getTree().then(function () {
       if (!props.value && pool_context.workingPath) {
         exposeNode(pool_context.workingPath, false);
@@ -597,9 +609,13 @@ function PoolTree(props) {
       for (_iterator8.s(); !(_step8 = _iterator8.n()).done;) {
         var node = _step8.value;
         if (node.fullpath == fullpath) {
-          return current_path + [node.id];
+          if (node.isDirectory) {
+            return current_path + [node.id];
+          } else {
+            return current_path;
+          }
         } else {
-          if ("childNodes" in node) {
+          if ("childNodes" in node && fullpath.startsWith(node.fullpath)) {
             var the_path = searchDown(node.childNodes, fullpath, current_path + [node.id]);
             if (the_path) {
               return the_path;
@@ -621,14 +637,144 @@ function PoolTree(props) {
       isExpanded: false
     });
   }
-  function handleNodeExpand(_x) {
+  function expandToNode(_x) {
+    return _expandToNode.apply(this, arguments);
+  }
+  function _expandToNode() {
+    _expandToNode = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2(fullpath) {
+      var result;
+      return _regenerator().w(function (_context2) {
+        while (1) switch (_context2.n) {
+          case 0:
+            _context2.n = 1;
+            return addMissingNodes(fullpath);
+          case 1:
+            result = _context2.v;
+            if (result) {
+              _context2.n = 2;
+              break;
+            }
+            return _context2.a(2);
+          case 2:
+            pushCallback(function () {
+              var the_path = findNodePath(fullpath);
+              if (the_path) {
+                dispatch({
+                  type: "MULTI_SET_IS_EXPANDED",
+                  node_list: the_path,
+                  isExpanded: true
+                });
+              }
+            });
+          case 3:
+            return _context2.a(2);
+        }
+      }, _callee2);
+    }));
+    return _expandToNode.apply(this, arguments);
+  }
+  function addMissingNodes(_x2) {
+    return _addMissingNodes.apply(this, arguments);
+  }
+  function _addMissingNodes() {
+    _addMissingNodes = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3(fullpath) {
+      var current_node, found_child, _iterator9, _step9, child, data, _t2;
+      return _regenerator().w(function (_context3) {
+        while (1) switch (_context3.n) {
+          case 0:
+            current_node = nodes_ref.current[0];
+          case 1:
+            if (!true) {
+              _context3.n = 14;
+              break;
+            }
+            found_child = false;
+            _iterator9 = _createForOfIteratorHelper(current_node.childNodes);
+            _context3.p = 2;
+            _iterator9.s();
+          case 3:
+            if ((_step9 = _iterator9.n()).done) {
+              _context3.n = 5;
+              break;
+            }
+            child = _step9.value;
+            if (!fullpath.startsWith(child.fullpath)) {
+              _context3.n = 4;
+              break;
+            }
+            current_node = child;
+            found_child = true;
+            return _context3.a(3, 5);
+          case 4:
+            _context3.n = 3;
+            break;
+          case 5:
+            _context3.n = 7;
+            break;
+          case 6:
+            _context3.p = 6;
+            _t2 = _context3.v;
+            _iterator9.e(_t2);
+          case 7:
+            _context3.p = 7;
+            _iterator9.f();
+            return _context3.f(7);
+          case 8:
+            if (found_child) {
+              _context3.n = 9;
+              break;
+            }
+            return _context3.a(2, true);
+          case 9:
+            if (!(current_node.fullpath == fullpath)) {
+              _context3.n = 10;
+              break;
+            }
+            return _context3.a(2, true);
+          case 10:
+            if (current_node.explored) {
+              _context3.n = 13;
+              break;
+            }
+            _context3.n = 11;
+            return (0, _communication_react.postPromise)("host", "GetPoolTree", {
+              user_id: props.user_id,
+              show_hidden: props.showHidden,
+              target_path: fullpath,
+              base_path: current_node.fullpath
+            });
+          case 11:
+            data = _context3.v;
+            if (data["dtree"]) {
+              _context3.n = 12;
+              break;
+            }
+            return _context3.a(2, false);
+          case 12:
+            dispatch({
+              type: "SET_CHILD_NODES",
+              node_id: current_node.id,
+              childNodes: data["dtree"][0].childNodes
+            });
+            return _context3.a(2, true);
+          case 13:
+            _context3.n = 1;
+            break;
+          case 14:
+            return _context3.a(2);
+        }
+      }, _callee3, null, [[2, 6, 7, 8]]);
+    }));
+    return _addMissingNodes.apply(this, arguments);
+  }
+  function handleNodeExpand(_x3) {
     return _handleNodeExpand.apply(this, arguments);
   }
   function _handleNodeExpand() {
-    _handleNodeExpand = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2(node) {
+    _handleNodeExpand = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee4(node) {
       var data;
-      return _regenerator().w(function (_context2) {
-        while (1) switch (_context2.n) {
+      return _regenerator().w(function (_context4) {
+        while (1) switch (_context4.n) {
           case 0:
             dispatch({
               type: "SET_IS_EXPANDED",
@@ -636,7 +782,7 @@ function PoolTree(props) {
               isExpanded: true
             });
             if (node.explored) {
-              _context2.n = 3;
+              _context4.n = 3;
               break;
             }
             if (statusFuncs) {
@@ -645,23 +791,23 @@ function PoolTree(props) {
                 status_message: "Opening folder"
               });
             }
-            _context2.n = 1;
+            _context4.n = 1;
             return (0, _communication_react.postPromise)("host", "GetPoolTree", {
               user_id: props.user_id,
               show_hidden: props.showHidden,
               base_path: node.fullpath
             });
           case 1:
-            data = _context2.v;
+            data = _context4.v;
             if (statusFuncs) {
               statusFuncs.clearStatus();
             }
             if (data["dtree"]) {
-              _context2.n = 2;
+              _context4.n = 2;
               break;
             }
             (0, _toaster.doFlash)("No pool storage available for this account.");
-            return _context2.a(2);
+            return _context4.a(2);
           case 2:
             dispatch({
               type: "SET_CHILD_NODES",
@@ -671,9 +817,9 @@ function PoolTree(props) {
           case 3:
             pool_context.setWorkingPath(node.fullpath);
           case 4:
-            return _context2.a(2);
+            return _context4.a(2);
         }
-      }, _callee2);
+      }, _callee4);
     }));
     return _handleNodeExpand.apply(this, arguments);
   }
@@ -915,11 +1061,11 @@ function CustomTree(props) {
     } else {
       var newChildren = [];
       var disabled = true;
-      var _iterator9 = _createForOfIteratorHelper(node.childNodes),
-        _step9;
+      var _iterator0 = _createForOfIteratorHelper(node.childNodes),
+        _step0;
       try {
-        for (_iterator9.s(); !(_step9 = _iterator9.n()).done;) {
-          var child = _step9.value;
+        for (_iterator0.s(); !(_step0 = _iterator0.n()).done;) {
+          var child = _step0.value;
           var newChild = _lodash["default"].cloneDeep(child);
           newChild.isDisabled = checkIfDisabled(child);
           if (!newChild.isDisabled) {
@@ -928,9 +1074,9 @@ function CustomTree(props) {
           newChildren.push(newChild);
         }
       } catch (err) {
-        _iterator9.e(err);
+        _iterator0.e(err);
       } finally {
-        _iterator9.f();
+        _iterator0.f();
       }
       node.childNodes = newChildren;
       node.isDisabled = disabled && !node.basename.includes(props.searchString);
@@ -939,17 +1085,17 @@ function CustomTree(props) {
   }
   function markNodesDisabled(nlist) {
     var newList = _lodash["default"].cloneDeep(nlist);
-    var _iterator0 = _createForOfIteratorHelper(newList),
-      _step0;
+    var _iterator1 = _createForOfIteratorHelper(newList),
+      _step1;
     try {
-      for (_iterator0.s(); !(_step0 = _iterator0.n()).done;) {
-        var node = _step0.value;
+      for (_iterator1.s(); !(_step1 = _iterator1.n()).done;) {
+        var node = _step1.value;
         checkIfDisabled(node);
       }
     } catch (err) {
-      _iterator0.e(err);
+      _iterator1.e(err);
     } finally {
-      _iterator0.f();
+      _iterator1.f();
     }
     return newList;
   }
@@ -1008,11 +1154,11 @@ function CustomTree(props) {
   }
   function getNodeFromPath(fullpath, nodes) {
     if (nodes == null || nodes.length == 0) return null;
-    var _iterator1 = _createForOfIteratorHelper(nodes),
-      _step1;
+    var _iterator10 = _createForOfIteratorHelper(nodes),
+      _step10;
     try {
-      for (_iterator1.s(); !(_step1 = _iterator1.n()).done;) {
-        var node = _step1.value;
+      for (_iterator10.s(); !(_step10 = _iterator10.n()).done;) {
+        var node = _step10.value;
         if (node.fullpath == fullpath) {
           return node;
         }
@@ -1024,9 +1170,9 @@ function CustomTree(props) {
         }
       }
     } catch (err) {
-      _iterator1.e(err);
+      _iterator10.e(err);
     } finally {
-      _iterator1.f();
+      _iterator10.f();
     }
     return null;
   }

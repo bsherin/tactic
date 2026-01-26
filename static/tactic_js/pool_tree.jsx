@@ -9,6 +9,7 @@ import {postPromise} from "./communication_react";
 import {SettingsContext} from "./settings";
 import {SearchForm} from "./library_widgets";
 import {ErrorDrawerContext} from "./error_drawer";
+
 export {PoolTree, PoolAddressSelector, getBasename, splitFilePath, getFileParentPath, withPool, PoolContext}
 import {useSocketListener} from "./tactic_socket";
 
@@ -121,7 +122,7 @@ function treeNodesReducer(nodes, action) {
                 }
             });
             if (!modified_file) {
-                const [path, ] = splitFilePath(action.fileDict.fullpath);
+                const [path,] = splitFilePath(action.fileDict.fullpath);
                 forEachNode(newStateMF, (node) => {
                     if (node.isDirectory) {
                         if (node.fullpath == path) {
@@ -144,7 +145,7 @@ function treeNodesReducer(nodes, action) {
                 }
             });
             if (!modified_dir) {
-                const [path, ] = splitFilePath(action.folderDict.fullpath);
+                const [path,] = splitFilePath(action.folderDict.fullpath);
                 forEachNode(newStateMD, (node) => {
                     if (node.isDirectory) {
                         if (node.fullpath == path) {
@@ -170,7 +171,7 @@ function treeNodesReducer(nodes, action) {
             return newState9;
         case "ADD_FILE":
             const newState10 = _.cloneDeep(nodes);
-            const [path, ] = splitFilePath(action.fileDict.fullpath);
+            const [path,] = splitFilePath(action.fileDict.fullpath);
             forEachNode(newState10, (node) => {
                 if (node.isDirectory) {
                     if (node.fullpath == path) {
@@ -181,7 +182,7 @@ function treeNodesReducer(nodes, action) {
             return newState10;
         case "ADD_DIRECTORY":
             const newState11 = _.cloneDeep(nodes);
-            const [fpath, ] = splitFilePath(action.folderDict.fullpath);
+            const [fpath,] = splitFilePath(action.folderDict.fullpath);
             forEachNode(newState11, (node) => {
                 if (node.isDirectory) {
                     if (node.fullpath == fpath) {
@@ -305,6 +306,19 @@ function PoolTree(props) {
             props.registerTreeRefreshFunc(getTree)
         }
     }, []);
+
+    useEffect(() => {
+        if (props.value && nodes_ref.current.length > 0) {
+            expandToNode(props.value).then(() => {
+                pushCallback(() => {
+                    dispatch({
+                        type: "SET_IS_SELECTED_FROM_FULLPATH",
+                        fullpath: props.value
+                    })
+                });
+            });
+        }
+    }, [props.value, nodes_ref.current.length]);
 
     useEffect(() => {
         getTree().then(() => {
@@ -468,9 +482,13 @@ function PoolTree(props) {
     function searchDown(childNodes, fullpath, current_path) {
         for (let node of childNodes) {
             if (node.fullpath == fullpath) {
-                return current_path + [node.id]
+                if (node.isDirectory) {
+                    return current_path + [node.id]
+                } else {
+                    return current_path
+                }
             } else {
-                if ("childNodes" in node) {
+                if ("childNodes" in node && fullpath.startsWith(node.fullpath)) {
                     let the_path = searchDown(node.childNodes, fullpath, current_path + [node.id]);
                     if (the_path) {
                         return the_path
@@ -487,6 +505,59 @@ function PoolTree(props) {
             node_id: node.id,
             isExpanded: false
         })
+    }
+
+    async function expandToNode(fullpath) {
+        let result = await addMissingNodes(fullpath);
+        if (!result) {
+            return
+        }
+        pushCallback(() => {
+            let the_path = findNodePath(fullpath);
+            if (the_path) {
+                dispatch({
+                    type: "MULTI_SET_IS_EXPANDED",
+                    node_list: the_path,
+                    isExpanded: true
+                });
+            }
+        });
+    }
+
+    async function addMissingNodes(fullpath) {
+        let current_node = nodes_ref.current[0];
+        while (true) {
+            let found_child = false;
+            for (let child of current_node.childNodes) {
+                if (fullpath.startsWith(child.fullpath)) {
+                    current_node = child;
+                    found_child = true;
+                    break;
+                }
+            }
+            if (!found_child) {
+                return true
+            }
+            if (current_node.fullpath == fullpath) {
+                return true
+            }
+            if (!current_node.explored) {
+                let data = await postPromise("host", "GetPoolTree",
+                {user_id: props.user_id, show_hidden: props.showHidden,
+                        target_path: fullpath,
+                        base_path: current_node.fullpath}
+                );
+                if (!data["dtree"]) {
+                    return false
+                }
+                dispatch({
+                    type: "SET_CHILD_NODES",
+                    node_id: current_node.id,
+                    childNodes: data["dtree"][0].childNodes
+                })
+                return true
+            }
+        }
     }
 
     async function handleNodeExpand(node) {
@@ -544,8 +615,8 @@ function PoolTree(props) {
     return (
         <Fragment>
             <ContextMenuPopover onClose={() => {
-                                    setShowContextMenu(false)
-                                }}  // Without this doesn't close
+                setShowContextMenu(false)
+            }}  // Without this doesn't close
                                 content={props.renderContextMenu != null ?
                                     props.renderContextMenu({node: contextMenuNode}) : null}
                                 isOpen={showContextMenu}
@@ -599,6 +670,7 @@ PoolTree = memo(PoolTree);
 function getBasename(str) {
     return str.substring(str.lastIndexOf('/') + 1);
 }
+
 
 function getFileParentPath(path) {
     let plist = path.split("/");
@@ -769,7 +841,9 @@ function CustomTree(props) {
 
     function nodeDoubleClickFunc(node) {
         if (!node.isDirectory) return null;
-        return () => { props.setRoot({fullpath: node.fullpath}) }
+        return () => {
+            props.setRoot({fullpath: node.fullpath})
+        }
     }
 
     function renderNodes(treeNodes, currentPath) {
