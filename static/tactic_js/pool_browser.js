@@ -989,7 +989,7 @@ function PoolBrowser(props) {
     if (sNode && sNode.isDirectory) {
       initial_directory = sNode.fullpath;
     } else {
-      initial_directory = "/mydisk";
+      initial_directory = currentRootPathRef.current;
     }
     dialogFuncs.showModal("FileImportDialog", {
       res_type: "pool",
@@ -1004,6 +1004,7 @@ function PoolBrowser(props) {
       show_csv_options: false,
       after_upload: null,
       show_address_selector: true,
+      allowFolderSelection: true,
       initial_address: initial_directory,
       handleClose: dialogFuncs.hideModal,
       handleCancel: null,
@@ -1037,6 +1038,7 @@ function PoolBrowser(props) {
               show_csv_options: false,
               after_upload: null,
               show_address_selector: true,
+              allowFolderSelection: true,
               initial_address: dst,
               handleClose: dialogFuncs.hideModal,
               handleCancel: null,

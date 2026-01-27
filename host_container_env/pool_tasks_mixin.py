@@ -65,8 +65,7 @@ class PoolTasksMixin:
     def delete_pool_resource_task(self, data):
         the_user = self.get_user_from_data(data)
         full_path = data["full_path"]
-        self.pool_backend.delete_resource(full_path, self, the_user)
-        return {"success": True}
+        return self.pool_backend.delete_resource(full_path, self, the_user)
 
     @task_worthy
     def save_text_file_task(self, data):

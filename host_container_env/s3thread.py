@@ -70,7 +70,6 @@ class BotoS3:
         return resp.get("KeyCount", 0) > 0
 
     def isdir(self, path: str) -> bool:
-        """Return True if the path corresponds to a prefix (directory-like)."""
         bucket, key = _split_s3_url(path)
         if not key.endswith("/"):
             key = key + "/"
@@ -189,14 +188,10 @@ class BotoS3:
         bucket, key = _split_s3_url(dest_path)
         conditions = [
             {"bucket": bucket},
-            ["starts-with", "$key", key],
+            {"key": key},
             ["content-length-range", 1, MAX_S3_UPLOAD_MB * 1024 * 1024],
         ]
         fields = {"key": key}
-        if content_type:
-            # accept whatever the browser sends (must also append this field in the form)
-            conditions.append(["starts-with", "$Content-Type", ""])
-            fields["Content-Type"] = content_type
 
         resp = self.s3.generate_presigned_post(
             Bucket=bucket,
@@ -253,7 +248,7 @@ class BotoS3:
                     self.s3.delete_object(Bucket=b, Key=marker)
                 except Exception:
                     pass
-            return True
+            return {"success": True}
 
         # Case B: only a directory marker exists (and nothing else)
         # (we asked for MaxKeys=2; if we only got 1, and it's exactly the marker, treat as empty)
@@ -262,11 +257,11 @@ class BotoS3:
                 self.s3.delete_object(Bucket=b, Key=contents[0]["Key"])
             except Exception:
                 pass
-            return True
+            return {"success": True}
 
         # Case C: there is real content under the prefix
         if not recursive:
-            raise OSError(f"Directory not empty: {url}")
+            return {"success": False, "message": "Directory not empty"}
 
         # Recursive delete everything under prefix (and marker, if any)
         self._delete_prefix(b, pfx)
@@ -275,7 +270,7 @@ class BotoS3:
             self.s3.delete_object(Bucket=b, Key=pfx.rstrip("/"))
         except Exception:
             pass
-        return True
+        return {"success": True}
 
     def rm(self, url: str, recursive: bool = False):
         b, k = _split_s3_url(url)
@@ -284,7 +279,7 @@ class BotoS3:
             self._delete_prefix(b, self._as_prefix(k))
         else:
             self.s3.delete_object(Bucket=b, Key=k)
-        return True
+        return {"success": True}
 
     def _delete_prefix(self, bucket: str, prefix: str, batch_size: int = 1000):
         paginator = self.s3.get_paginator("list_objects_v2")

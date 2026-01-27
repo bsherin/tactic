@@ -33,6 +33,60 @@ function withPool(WrappedComponent) {
     return memo(newFunc)
 }
 
+function searchToLimit(parentNode, fullpath) {
+    let limit_node = parentNode
+    for (let node of parentNode.childNodes) {
+        if (node.fullpath == fullpath) {
+            return node
+        }
+        if (!node.isDirectory) {
+            continue
+        }
+        if (fullpath.startsWith(node.fullpath)) {
+            limit_node = searchToLimit(node, fullpath);
+            if (limit_node) {
+                return limit_node
+            }
+            else {
+                return node
+            }
+        }
+    }
+    return parentNode;
+}
+
+function addDirectoriesToPath(path, nodes) {
+    let node = searchToLimit(nodes[0], path);
+    if (node.fullpath == path) {
+        return nodes
+    }
+    let dir_str = path.replace(new RegExp('^' + node.fullpath), "")
+    if (dir_str.startsWith("/")) {
+        dir_str = dir_str.slice(1);
+
+    }
+    let dir_list = dir_str.split("/");
+    dir_list.pop(); // pop filename
+    let accumulated_path = `${node.fullpath}`;
+    let exploreNode = node;
+    for (let dirname of dir_list) {
+        accumulated_path = `${accumulated_path}/${dirname}`;
+        node.childNodes.push({
+            id: accumulated_path,
+            icon: "folder-close",
+            fullpath: accumulated_path,
+            basename: dirname,
+            label: dirname,
+            isDirectory: true,
+            isExpanded: false,
+            isSelected: false,
+            explored: false,
+            childNodes: []
+        })
+        exploreNode = node.childNodes[node.childNodes.length - 1];
+    }
+}
+
 function treeNodesReducer(nodes, action) {
     switch (action.type) {
         case "REPLACE_ALL":
@@ -122,6 +176,7 @@ function treeNodesReducer(nodes, action) {
                 }
             });
             if (!modified_file) {
+                addDirectoriesToPath(action.fileDict.fullpath, newStateMF);
                 const [path,] = splitFilePath(action.fileDict.fullpath);
                 forEachNode(newStateMF, (node) => {
                     if (node.isDirectory) {
@@ -152,7 +207,7 @@ function treeNodesReducer(nodes, action) {
                             node.childNodes.push(action.folderDict)
                         }
                     }
-                });
+                })
             }
             return newStateMD;
         case "REMOVE_NODE":

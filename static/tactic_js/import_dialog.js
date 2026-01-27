@@ -50,6 +50,7 @@ function FileImportDialog(props) {
     popupoptions: null,
     after_upload: null,
     show_address_selector: false,
+    allowFolderSelection: false,
     initialFiles: [],
     use_s3: false
   }, props);
@@ -112,6 +113,7 @@ function FileImportDialog(props) {
     _useState20 = _slicedToArray(_useState19, 2),
     activeUploads = _useState20[0],
     setActiveUploads = _useState20[1];
+  var folderInputRef = (0, _react.useRef)(null);
   (0, _react.useEffect)(function () {
     if (!props.use_s3) return;
     var unsub = _uploadManager.uploadManager.subscribe(setActiveUploads);
@@ -185,7 +187,7 @@ function FileImportDialog(props) {
   }
   function _startS3Uploads2() {
     _startS3Uploads2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2() {
-      var files, _iterator4, _step4, file, resp, _resp$upload_info, url, fields, key, bucket, content_type, _t2;
+      var files, _iterator4, _step4, file, relpath, resp, _resp$upload_info, url, fields, key, bucket, content_type, _t2;
       return _regenerator().w(function (_context2) {
         while (1) switch (_context2.n) {
           case 0:
@@ -206,9 +208,10 @@ function FileImportDialog(props) {
             }
             file = _step4.value;
             myDropzone.current.removeFile(file);
+            relpath = file.webkitRelativePath && file.webkitRelativePath.length > 0 ? file.webkitRelativePath : file.name;
             _context2.n = 4;
             return (0, _communication_react.postPromise)("host", "get_s3_upload_info_task", {
-              filename: file.name,
+              filename: relpath,
               content_type: file.type || "application/octet-stream",
               dest_path: current_value_ref.current
             });
@@ -582,6 +585,29 @@ function FileImportDialog(props) {
     config: componentConfig,
     eventHandlers: eventHandlers,
     djsConfig: djsConfig
+  })), props.allowFolderSelection && /*#__PURE__*/_react["default"].createElement("div", null, /*#__PURE__*/_react["default"].createElement(_core.Button, {
+    onClick: function onClick() {
+      var _folderInputRef$curre;
+      return (_folderInputRef$curre = folderInputRef.current) === null || _folderInputRef$curre === void 0 ? void 0 : _folderInputRef$curre.click();
+    }
+  }, "Choose Folder"), /*#__PURE__*/_react["default"].createElement("input", {
+    ref: folderInputRef,
+    type: "file",
+    webkitdirectory: "true",
+    directory: "true",
+    multiple: true,
+    style: {
+      display: "none"
+    },
+    onChange: function onChange(e) {
+      var files = Array.from(e.target.files || []);
+      files.forEach(function (f) {
+        if (!f.name.startsWith('.')) {
+          myDropzone.current.addFile(f);
+        }
+      });
+      e.target.value = ""; // allow picking same folder again
+    }
   })), /*#__PURE__*/_react["default"].createElement("div", {
     style: body_style
   }, props.combine && /*#__PURE__*/_react["default"].createElement("div", null, /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {

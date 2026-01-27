@@ -11,6 +11,11 @@ from users import User
 
 class PoolBackend(ExceptionMixin):
 
+    def __init__(self, worker):
+        super().__init__()
+        self.worker = worker
+        return
+
     def get_tree(self, user_obj, show_hidden=False, base_path=None):
         dtree = None
         try:

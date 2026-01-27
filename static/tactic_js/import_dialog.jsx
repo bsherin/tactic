@@ -32,6 +32,7 @@ function FileImportDialog(props) {
         popupoptions: null,
         after_upload: null,
         show_address_selector: false,
+        allowFolderSelection: false,
         initialFiles: [],
         use_s3: false,
         ...props
@@ -64,6 +65,8 @@ function FileImportDialog(props) {
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
 
     const [activeUploads, setActiveUploads] = useState([]);
+
+    const folderInputRef = useRef(null);
 
     useEffect(() => {
         if (!props.use_s3) return;
@@ -118,8 +121,13 @@ function FileImportDialog(props) {
         for (const file of files) {
             myDropzone.current.removeFile(file);
 
+            const relpath =
+              (file.webkitRelativePath && file.webkitRelativePath.length > 0)
+                ? file.webkitRelativePath
+                : file.name;
+
             let resp = await postPromise("host", "get_s3_upload_info_task", {
-                filename: file.name,
+                filename: relpath,
                 content_type: file.type || "application/octet-stream",
                 dest_path: current_value_ref.current,
             });
@@ -395,6 +403,28 @@ function FileImportDialog(props) {
                                        eventHandlers={eventHandlers}
                                        djsConfig={djsConfig}/>
                 </FormGroup>
+                {props.allowFolderSelection &&
+                    <div>
+                        <Button onClick={() => folderInputRef.current?.click()}>Choose Folder</Button>
+                        <input
+                              ref={folderInputRef}
+                              type="file"
+                              webkitdirectory="true"
+                              directory="true"
+                              multiple
+                              style={{ display: "none" }}
+                              onChange={(e) => {
+                                const files = Array.from(e.target.files || []);
+                                files.forEach(f => {
+                                    if (!f.name.startsWith('.')) {
+                                        myDropzone.current.addFile(f)
+                                    }
+                                })
+                                e.target.value = ""; // allow picking same folder again
+                              }}
+                        />
+                    </div>
+                }
 
                 <div style={body_style}>
                     {props.combine &&
@@ -456,7 +486,6 @@ function FileImportDialog(props) {
                         </div>
                     }
                     <div style={{display: "flex", flexDirection: "column", justifyContent: "space-evenly"}}>
-
                         <Button intent={Intent.PRIMARY} onClick={_do_submit}>Upload</Button>
                         <Button onClick={_do_clear}>Clear Files</Button>
                     </div>

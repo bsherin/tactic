@@ -119,7 +119,7 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         else:
             self.tile_backend = DockerTileBackend(self.tile_registry, self)
 
-        self.pool_backend = PoolBackendECS()
+        self.pool_backend = PoolBackendECS(self)
 
         if self.my_id == "host5000":
             self.clear_session_storage()

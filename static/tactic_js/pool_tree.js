@@ -54,6 +54,74 @@ function withPool(WrappedComponent) {
   }
   return /*#__PURE__*/(0, _react.memo)(newFunc);
 }
+function searchToLimit(parentNode, fullpath) {
+  var limit_node = parentNode;
+  var _iterator = _createForOfIteratorHelper(parentNode.childNodes),
+    _step;
+  try {
+    for (_iterator.s(); !(_step = _iterator.n()).done;) {
+      var node = _step.value;
+      if (node.fullpath == fullpath) {
+        return node;
+      }
+      if (!node.isDirectory) {
+        continue;
+      }
+      if (fullpath.startsWith(node.fullpath)) {
+        limit_node = searchToLimit(node, fullpath);
+        if (limit_node) {
+          return limit_node;
+        } else {
+          return node;
+        }
+      }
+    }
+  } catch (err) {
+    _iterator.e(err);
+  } finally {
+    _iterator.f();
+  }
+  return parentNode;
+}
+function addDirectoriesToPath(path, nodes) {
+  var node = searchToLimit(nodes[0], path);
+  if (node.fullpath == path) {
+    return nodes;
+  }
+  var dir_str = path.replace(new RegExp('^' + node.fullpath), "");
+  if (dir_str.startsWith("/")) {
+    dir_str = dir_str.slice(1);
+  }
+  var dir_list = dir_str.split("/");
+  dir_list.pop(); // pop filename
+  var accumulated_path = "".concat(node.fullpath);
+  var exploreNode = node;
+  var _iterator2 = _createForOfIteratorHelper(dir_list),
+    _step2;
+  try {
+    for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+      var dirname = _step2.value;
+      accumulated_path = "".concat(accumulated_path, "/").concat(dirname);
+      node.childNodes.push({
+        id: accumulated_path,
+        icon: "folder-close",
+        fullpath: accumulated_path,
+        basename: dirname,
+        label: dirname,
+        isDirectory: true,
+        isExpanded: false,
+        isSelected: false,
+        explored: false,
+        childNodes: []
+      });
+      exploreNode = node.childNodes[node.childNodes.length - 1];
+    }
+  } catch (err) {
+    _iterator2.e(err);
+  } finally {
+    _iterator2.f();
+  }
+}
 function treeNodesReducer(nodes, action) {
   switch (action.type) {
     case "REPLACE_ALL":
@@ -140,6 +208,7 @@ function treeNodesReducer(nodes, action) {
         }
       });
       if (!modified_file) {
+        addDirectoriesToPath(action.fileDict.fullpath, newStateMF);
         var _splitFilePath = splitFilePath(action.fileDict.fullpath),
           _splitFilePath2 = _slicedToArray(_splitFilePath, 1),
           _path = _splitFilePath2[0];
@@ -182,19 +251,19 @@ function treeNodesReducer(nodes, action) {
       forEachNode(newState9, function (node) {
         if (node.isDirectory) {
           var new_children = [];
-          var _iterator = _createForOfIteratorHelper(node.childNodes),
-            _step;
+          var _iterator3 = _createForOfIteratorHelper(node.childNodes),
+            _step3;
           try {
-            for (_iterator.s(); !(_step = _iterator.n()).done;) {
-              var cnode = _step.value;
+            for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+              var cnode = _step3.value;
               if (cnode.fullpath != action.fullpath) {
                 new_children.push(cnode);
               }
             }
           } catch (err) {
-            _iterator.e(err);
+            _iterator3.e(err);
           } finally {
-            _iterator.f();
+            _iterator3.f();
           }
           node.childNodes = new_children;
         }
@@ -232,11 +301,11 @@ function treeNodesReducer(nodes, action) {
       forEachNode(newState12, function (node) {
         if (node.isDirectory) {
           var new_children = [];
-          var _iterator2 = _createForOfIteratorHelper(node.childNodes),
-            _step2;
+          var _iterator4 = _createForOfIteratorHelper(node.childNodes),
+            _step4;
           try {
-            for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-              var cnode = _step2.value;
+            for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
+              var cnode = _step4.value;
               if (cnode.fullpath != action.src) {
                 new_children.push(cnode);
               } else {
@@ -245,9 +314,9 @@ function treeNodesReducer(nodes, action) {
               }
             }
           } catch (err) {
-            _iterator2.e(err);
+            _iterator4.e(err);
           } finally {
-            _iterator2.f();
+            _iterator4.f();
           }
           node.childNodes = new_children;
         }
@@ -266,11 +335,11 @@ function treeNodesReducer(nodes, action) {
       forEachNode(newStateMDir, function (node) {
         if (node.isDirectory && node.fullpath != action.src) {
           var new_children = [];
-          var _iterator3 = _createForOfIteratorHelper(node.childNodes),
-            _step3;
+          var _iterator5 = _createForOfIteratorHelper(node.childNodes),
+            _step5;
           try {
-            for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-              var cnode = _step3.value;
+            for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
+              var cnode = _step5.value;
               if (cnode.fullpath != action.src) {
                 new_children.push(cnode);
               } else {
@@ -279,24 +348,24 @@ function treeNodesReducer(nodes, action) {
                 action.folderDict.childNodes = cnode.childNodes;
                 action.folderDict.isExpanded = cnode.isExpanded;
                 var newpath = "".concat(action.dst, "/").concat(action.folderDict.basename);
-                var _iterator4 = _createForOfIteratorHelper(action.folderDict.childNodes),
-                  _step4;
+                var _iterator6 = _createForOfIteratorHelper(action.folderDict.childNodes),
+                  _step6;
                 try {
-                  for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
-                    var ccnode = _step4.value;
+                  for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
+                    var ccnode = _step6.value;
                     ccnode.fullpath = "".concat(newpath, "/").concat(ccnode.basename);
                   }
                 } catch (err) {
-                  _iterator4.e(err);
+                  _iterator6.e(err);
                 } finally {
-                  _iterator4.f();
+                  _iterator6.f();
                 }
               }
             }
           } catch (err) {
-            _iterator3.e(err);
+            _iterator5.e(err);
           } finally {
-            _iterator3.f();
+            _iterator5.f();
           }
           node.childNodes = new_children;
         }
@@ -322,40 +391,40 @@ function forEachNode(nodes, callback) {
   if (nodes === undefined) {
     return;
   }
-  var _iterator5 = _createForOfIteratorHelper(nodes),
-    _step5;
+  var _iterator7 = _createForOfIteratorHelper(nodes),
+    _step7;
   try {
-    for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
-      var node = _step5.value;
+    for (_iterator7.s(); !(_step7 = _iterator7.n()).done;) {
+      var node = _step7.value;
       callback(node);
       forEachNode(node.childNodes, callback);
     }
   } catch (err) {
-    _iterator5.e(err);
+    _iterator7.e(err);
   } finally {
-    _iterator5.f();
+    _iterator7.f();
   }
 }
 function nodeFromPath(fullpath, root) {
-  var _iterator6 = _createForOfIteratorHelper(root.childNodes),
-    _step6;
+  var _iterator8 = _createForOfIteratorHelper(root.childNodes),
+    _step8;
   try {
-    for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
-      var node = _step6.value;
+    for (_iterator8.s(); !(_step8 = _iterator8.n()).done;) {
+      var node = _step8.value;
       if (node.fullpath == fullpath) {
         return node;
       }
     }
   } catch (err) {
-    _iterator6.e(err);
+    _iterator8.e(err);
   } finally {
-    _iterator6.f();
+    _iterator8.f();
   }
-  var _iterator7 = _createForOfIteratorHelper(root.childNodes),
-    _step7;
+  var _iterator9 = _createForOfIteratorHelper(root.childNodes),
+    _step9;
   try {
-    for (_iterator7.s(); !(_step7 = _iterator7.n()).done;) {
-      var _node = _step7.value;
+    for (_iterator9.s(); !(_step9 = _iterator9.n()).done;) {
+      var _node = _step9.value;
       if (_node.isDirectory) {
         var result = nodeFromPath(fullpath, _node);
         if (result) {
@@ -364,9 +433,9 @@ function nodeFromPath(fullpath, root) {
       }
     }
   } catch (err) {
-    _iterator7.e(err);
+    _iterator9.e(err);
   } finally {
-    _iterator7.f();
+    _iterator9.f();
   }
   return null;
 }
@@ -603,11 +672,11 @@ function PoolTree(props) {
     return searchDown(nodes_ref.current, fullpath, current_path);
   }
   function searchDown(childNodes, fullpath, current_path) {
-    var _iterator8 = _createForOfIteratorHelper(childNodes),
-      _step8;
+    var _iterator0 = _createForOfIteratorHelper(childNodes),
+      _step0;
     try {
-      for (_iterator8.s(); !(_step8 = _iterator8.n()).done;) {
-        var node = _step8.value;
+      for (_iterator0.s(); !(_step0 = _iterator0.n()).done;) {
+        var node = _step0.value;
         if (node.fullpath == fullpath) {
           if (node.isDirectory) {
             return current_path + [node.id];
@@ -624,9 +693,9 @@ function PoolTree(props) {
         }
       }
     } catch (err) {
-      _iterator8.e(err);
+      _iterator0.e(err);
     } finally {
-      _iterator8.f();
+      _iterator0.f();
     }
     return null;
   }
@@ -678,7 +747,7 @@ function PoolTree(props) {
   }
   function _addMissingNodes() {
     _addMissingNodes = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3(fullpath) {
-      var current_node, found_child, _iterator9, _step9, child, data, _t2;
+      var current_node, found_child, _iterator1, _step1, child, data, _t2;
       return _regenerator().w(function (_context3) {
         while (1) switch (_context3.n) {
           case 0:
@@ -689,15 +758,15 @@ function PoolTree(props) {
               break;
             }
             found_child = false;
-            _iterator9 = _createForOfIteratorHelper(current_node.childNodes);
+            _iterator1 = _createForOfIteratorHelper(current_node.childNodes);
             _context3.p = 2;
-            _iterator9.s();
+            _iterator1.s();
           case 3:
-            if ((_step9 = _iterator9.n()).done) {
+            if ((_step1 = _iterator1.n()).done) {
               _context3.n = 5;
               break;
             }
-            child = _step9.value;
+            child = _step1.value;
             if (!fullpath.startsWith(child.fullpath)) {
               _context3.n = 4;
               break;
@@ -714,10 +783,10 @@ function PoolTree(props) {
           case 6:
             _context3.p = 6;
             _t2 = _context3.v;
-            _iterator9.e(_t2);
+            _iterator1.e(_t2);
           case 7:
             _context3.p = 7;
-            _iterator9.f();
+            _iterator1.f();
             return _context3.f(7);
           case 8:
             if (found_child) {
@@ -1061,11 +1130,11 @@ function CustomTree(props) {
     } else {
       var newChildren = [];
       var disabled = true;
-      var _iterator0 = _createForOfIteratorHelper(node.childNodes),
-        _step0;
+      var _iterator10 = _createForOfIteratorHelper(node.childNodes),
+        _step10;
       try {
-        for (_iterator0.s(); !(_step0 = _iterator0.n()).done;) {
-          var child = _step0.value;
+        for (_iterator10.s(); !(_step10 = _iterator10.n()).done;) {
+          var child = _step10.value;
           var newChild = _lodash["default"].cloneDeep(child);
           newChild.isDisabled = checkIfDisabled(child);
           if (!newChild.isDisabled) {
@@ -1074,9 +1143,9 @@ function CustomTree(props) {
           newChildren.push(newChild);
         }
       } catch (err) {
-        _iterator0.e(err);
+        _iterator10.e(err);
       } finally {
-        _iterator0.f();
+        _iterator10.f();
       }
       node.childNodes = newChildren;
       node.isDisabled = disabled && !node.basename.includes(props.searchString);
@@ -1085,17 +1154,17 @@ function CustomTree(props) {
   }
   function markNodesDisabled(nlist) {
     var newList = _lodash["default"].cloneDeep(nlist);
-    var _iterator1 = _createForOfIteratorHelper(newList),
-      _step1;
+    var _iterator11 = _createForOfIteratorHelper(newList),
+      _step11;
     try {
-      for (_iterator1.s(); !(_step1 = _iterator1.n()).done;) {
-        var node = _step1.value;
+      for (_iterator11.s(); !(_step11 = _iterator11.n()).done;) {
+        var node = _step11.value;
         checkIfDisabled(node);
       }
     } catch (err) {
-      _iterator1.e(err);
+      _iterator11.e(err);
     } finally {
-      _iterator1.f();
+      _iterator11.f();
     }
     return newList;
   }
@@ -1154,11 +1223,11 @@ function CustomTree(props) {
   }
   function getNodeFromPath(fullpath, nodes) {
     if (nodes == null || nodes.length == 0) return null;
-    var _iterator10 = _createForOfIteratorHelper(nodes),
-      _step10;
+    var _iterator12 = _createForOfIteratorHelper(nodes),
+      _step12;
     try {
-      for (_iterator10.s(); !(_step10 = _iterator10.n()).done;) {
-        var node = _step10.value;
+      for (_iterator12.s(); !(_step12 = _iterator12.n()).done;) {
+        var node = _step12.value;
         if (node.fullpath == fullpath) {
           return node;
         }
@@ -1170,9 +1239,9 @@ function CustomTree(props) {
         }
       }
     } catch (err) {
-      _iterator10.e(err);
+      _iterator12.e(err);
     } finally {
-      _iterator10.f();
+      _iterator12.f();
     }
     return null;
   }

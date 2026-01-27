@@ -3,9 +3,11 @@ import os
 import re
 from tactic_app import socketio
 from pool_backend import PoolBackend
-from s3thread import boto_s3
+from s3thread import boto_s3, _split_s3_url
 from aws_helpers import get_ssm_parameter
 from tactic_logging import log
+
+import posixpath
 
 from users import User
 
@@ -186,12 +188,20 @@ class PoolBackendECS(PoolBackend):
 
     def delete_resource(self, src, hw, user_obj):
         if not boto_s3.lexists(src):
-            raise FileNotFoundError(f"Resource {src} does not exist.")
+            return {"success": True}
         if boto_s3.isdir(src):
-            boto_s3.rmdir(src)
+            return boto_s3.rmdir(src)
         else:
-            boto_s3.rm(src)
-        return
+            result = boto_s3.rm(src)
+            path, _ = os.path.split(src)
+            if not boto_s3.lexists(path + "/"):
+                self.worker.pool_event({
+                    "event_type": "delete",
+                    "path": path,
+                    "dest_path": None,
+                    "is_directory": True
+                })
+            return result
 
     def download_resource(self, src, hw, user_obj):
         if not boto_s3.lexists(src):
@@ -202,10 +212,26 @@ class PoolBackendECS(PoolBackend):
             raise IOError(f"Error downloading resource {src}: {str(ex)}")
 
     @staticmethod
-    def get_s3_upload_info(dest_path, filename, content_type, _the_user):
-        # path the user chose in your UI (what you previously called extra_value)
-        # e.g. "/users/<userId>/some/folder"
-        full_dest_path = os.path.join(dest_path, filename)
+    def _sanitize_relpath(p: str) -> str:
+        # normalize separators
+        p = (p or "").replace("\\", "/").lstrip("/")
+        # remove empty / "." segments
+        parts = [seg for seg in p.split("/") if seg not in ("", ".")]
+        # forbid traversal
+        if any(seg == ".." for seg in parts):
+            raise ValueError("Invalid filename/path")
+        return "/".join(parts)
+
+    def get_s3_upload_info(self, dest_path, filename, content_type, _the_user):
+        rel = self._sanitize_relpath(filename)
+
+        # Ensure we don't lose the s3://bucket part if dest_path is a full s3 URL
+        if dest_path.startswith("s3://"):
+            b, k = _split_s3_url(dest_path)
+            key = posixpath.join(k, rel) if k else rel
+            full_dest_path = f"s3://{b}/{key}"
+        else:
+            full_dest_path = posixpath.join(dest_path.rstrip("/"), rel)
 
         return boto_s3.upload_info(full_dest_path, content_type)
 
@@ -215,7 +241,8 @@ class PoolBackendECS(PoolBackend):
         new_path = path
         event_data = {"event_type": event_type}
         if is_directory:
-            new_path = new_path[:-1]
+            if new_path.endswith("/"):
+                new_path = new_path[:-1]
             event_data["path"] = new_path
             if event_type == "delete":
                 folder_dict = {"fullpath": new_path}
