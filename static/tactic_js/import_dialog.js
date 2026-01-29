@@ -187,7 +187,7 @@ function FileImportDialog(props) {
   }
   function _startS3Uploads2() {
     _startS3Uploads2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2() {
-      var files, _iterator4, _step4, file, relpath, resp, _resp$upload_info, url, fields, key, bucket, content_type, _t2;
+      var files, _iterator5, _step5, file, relpath, resp, _resp$upload_info, url, fields, key, bucket, content_type, _t2;
       return _regenerator().w(function (_context2) {
         while (1) switch (_context2.n) {
           case 0:
@@ -198,15 +198,15 @@ function FileImportDialog(props) {
             }
             return _context2.a(2);
           case 1:
-            _iterator4 = _createForOfIteratorHelper(files);
+            _iterator5 = _createForOfIteratorHelper(files);
             _context2.p = 2;
-            _iterator4.s();
+            _iterator5.s();
           case 3:
-            if ((_step4 = _iterator4.n()).done) {
+            if ((_step5 = _iterator5.n()).done) {
               _context2.n = 7;
               break;
             }
-            file = _step4.value;
+            file = _step5.value;
             myDropzone.current.removeFile(file);
             relpath = file.webkitRelativePath && file.webkitRelativePath.length > 0 ? file.webkitRelativePath : file.name;
             _context2.n = 4;
@@ -249,10 +249,10 @@ function FileImportDialog(props) {
           case 8:
             _context2.p = 8;
             _t2 = _context2.v;
-            _iterator4.e(_t2);
+            _iterator5.e(_t2);
           case 9:
             _context2.p = 9;
-            _iterator4.f();
+            _iterator5.f();
             return _context2.f(9);
           case 10:
             return _context2.a(2);
@@ -441,6 +441,22 @@ function FileImportDialog(props) {
   function _toggleCSVOptions() {
     set_csv_options_open(!csv_options_open);
   }
+  function _clearInactiveUploads() {
+    var _iterator3 = _createForOfIteratorHelper(activeUploads),
+      _step3;
+    try {
+      for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+        var u = _step3.value;
+        if (u.status !== "uploading") {
+          _uploadManager.uploadManager.clear(u.id);
+        }
+      }
+    } catch (err) {
+      _iterator3.e(err);
+    } finally {
+      _iterator3.f();
+    }
+  }
   var half_width = .5 * current_picker_width - 10;
   var name_style = {
     display: "inline-block",
@@ -516,11 +532,11 @@ function FileImportDialog(props) {
   };
   var checkbox_items = [];
   if (props.checkboxes != null && props.checkboxes.length != 0) {
-    var _iterator3 = _createForOfIteratorHelper(props.checkboxes),
-      _step3;
+    var _iterator4 = _createForOfIteratorHelper(props.checkboxes),
+      _step4;
     try {
-      for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-        var checkbox = _step3.value;
+      for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
+        var checkbox = _step4.value;
         var new_item = /*#__PURE__*/_react["default"].createElement(_core.Checkbox, {
           checked: checkbox_states[checkbox.checkname],
           label: checkbox.checktext,
@@ -533,9 +549,9 @@ function FileImportDialog(props) {
         checkbox_items.push(new_item);
       }
     } catch (err) {
-      _iterator3.e(err);
+      _iterator4.e(err);
     } finally {
-      _iterator3.f();
+      _iterator4.f();
     }
   }
   var log_items;
@@ -664,15 +680,12 @@ function FileImportDialog(props) {
   }))), /*#__PURE__*/_react["default"].createElement("div", {
     style: {
       display: "flex",
-      flexDirection: "column",
-      justifyContent: "space-evenly"
+      flexDirection: "column"
     }
   }, /*#__PURE__*/_react["default"].createElement(_core.Button, {
     intent: _core.Intent.PRIMARY,
     onClick: _do_submit
-  }, "Upload"), /*#__PURE__*/_react["default"].createElement(_core.Button, {
-    onClick: _do_clear
-  }, "Clear Files"))), props.use_s3 && activeUploads.length > 0 && /*#__PURE__*/_react["default"].createElement("div", {
+  }, "Upload"))), props.use_s3 && activeUploads.length > 0 && /*#__PURE__*/_react["default"].createElement("div", {
     style: {
       marginTop: 10
     }
@@ -720,11 +733,22 @@ function FileImportDialog(props) {
     style: {
       marginTop: 10
     }
+  }, /*#__PURE__*/_react["default"].createElement("div", {
+    style: {
+      display: "flex",
+      flexGrow: 1,
+      flexDirection: "row",
+      justifyContent: "space-between"
+    }
   }, /*#__PURE__*/_react["default"].createElement(_core.ButtonGroup, null, /*#__PURE__*/_react["default"].createElement(_core.Button, {
     onClick: _toggleLog
   }, log_open ? "Hide" : "Show", " log"), /*#__PURE__*/_react["default"].createElement(_core.Button, {
     onClick: _clearLog
-  }, "Clear log")), /*#__PURE__*/_react["default"].createElement(_core.Collapse, {
+  }, "Clear log")), /*#__PURE__*/_react["default"].createElement(_core.ButtonGroup, null, /*#__PURE__*/_react["default"].createElement(_core.Button, {
+    onClick: _do_clear
+  }, "Clear Drop Area"), props.use_s3 && /*#__PURE__*/_react["default"].createElement(_core.Button, {
+    onClick: _clearInactiveUploads
+  }, "Clear Progress Area"))), /*#__PURE__*/_react["default"].createElement(_core.Collapse, {
     isOpen: log_open
   }, /*#__PURE__*/_react["default"].createElement("div", {
     className: "bp6-dialog-body"

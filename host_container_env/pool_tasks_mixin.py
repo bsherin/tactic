@@ -21,6 +21,12 @@ class PoolTasksMixin:
             return self.pool_backend.get_tree(user_obj, show_hidden, base_path)
 
     @task_worthy
+    def is_directory_empty(self, data):
+        path = data["path"]
+        is_empty = self.pool_backend.is_prefix_empty(path)
+        return {"success": True, "is_empty": is_empty}
+
+    @task_worthy
     def compress_pool_resource(self, data):
         full_path = data["full_path"]
         user_id = data["user_id"]

@@ -521,7 +521,7 @@ function PoolTree(props) {
               _context.n = 2;
               break;
             }
-            (0, _toaster.doFlash)("No pool storage available for this account.");
+            (0, _toaster.doFlash)("Error getting pool Tree");
             return _context.a(2);
           case 2:
             data["dtree"][0].isExpanded = true;
@@ -594,6 +594,9 @@ function PoolTree(props) {
           type: "REMOVE_NODE",
           fullpath: folderDict.fullpath
         });
+        pushCallback(function () {
+          deleteIfEmpty(getFileParentPath(folderDict.fullpath));
+        });
         break;
       case "move":
         dispatch({
@@ -630,6 +633,9 @@ function PoolTree(props) {
           type: "REMOVE_NODE",
           fullpath: fileDict.fullpath
         });
+        pushCallback(function () {
+          deleteIfEmpty(getFileParentPath(fileDict.fullpath));
+        });
         break;
       case "move":
         dispatch({
@@ -649,6 +655,24 @@ function PoolTree(props) {
       type: "SET_IS_EXPANDED",
       node_id: nodes_ref.current[0].id,
       isExpanded: true
+    });
+  }
+  function deleteIfEmpty(path) {
+    (0, _communication_react.postPromise)("host", "is_directory_empty", {
+      "path": path
+    }).then(function (data) {
+      if (data["is_empty"]) {
+        dispatch({
+          type: "REMOVE_NODE",
+          fullpath: path
+        });
+        var parent_path = getFileParentPath(path);
+        if (parent_path != "" && parent_path != path) {
+          pushCallback(function () {
+            deleteIfEmpty(parent_path);
+          });
+        }
+      }
     });
   }
   function exposeNode(fullpath) {
@@ -875,7 +899,7 @@ function PoolTree(props) {
               _context4.n = 2;
               break;
             }
-            (0, _toaster.doFlash)("No pool storage available for this account.");
+            (0, _toaster.doFlash)("Error getting file tree.");
             return _context4.a(2);
           case 2:
             dispatch({

@@ -389,7 +389,7 @@ function PoolTree(props) {
                 {user_id: props.user_id, show_hidden: props.showHidden}
             );
             if (!data["dtree"]) {
-                doFlash("No pool storage available for this account.");
+                doFlash("Error getting pool Tree");
                 return
             }
             data["dtree"][0].isExpanded = true;
@@ -453,6 +453,9 @@ function PoolTree(props) {
                     type: "REMOVE_NODE",
                     fullpath: folderDict.fullpath
                 });
+                pushCallback(()=>{
+                    deleteIfEmpty(getFileParentPath(folderDict.fullpath))
+                })
                 break;
             case "move":
                 dispatch({
@@ -490,6 +493,9 @@ function PoolTree(props) {
                     type: "REMOVE_NODE",
                     fullpath: fileDict.fullpath
                 });
+                pushCallback(()=>{
+                    deleteIfEmpty(getFileParentPath(fileDict.fullpath))
+                })
                 break;
             case "move":
                 dispatch({
@@ -510,6 +516,23 @@ function PoolTree(props) {
             type: "SET_IS_EXPANDED",
             node_id: nodes_ref.current[0].id,
             isExpanded: true
+        })
+    }
+
+    function deleteIfEmpty(path) {
+        postPromise("host", "is_directory_empty", {"path": path}).then((data) => {
+            if (data["is_empty"]) {
+                dispatch({
+                    type: "REMOVE_NODE",
+                    fullpath: path
+                });
+                let parent_path = getFileParentPath(path);
+                if (parent_path != "" && parent_path != path) {
+                    pushCallback(() => {
+                        deleteIfEmpty(parent_path)
+                    });
+                }
+            }
         })
     }
 
@@ -632,7 +655,7 @@ function PoolTree(props) {
                 statusFuncs.clearStatus();
             }
             if (!data["dtree"]) {
-                doFlash("No pool storage available for this account.");
+                doFlash("Error getting file tree.");
                 return
             }
             dispatch({

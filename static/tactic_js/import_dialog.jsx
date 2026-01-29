@@ -295,6 +295,14 @@ function FileImportDialog(props) {
         set_csv_options_open(!csv_options_open)
     }
 
+    function _clearInactiveUploads() {
+        for (let u of activeUploads) {
+            if (u.status !== "uploading") {
+                uploadManager.clear(u.id);
+            }
+        }
+    }
+
     let half_width = .5 * current_picker_width - 10;
     let name_style = {display: "inline-block", maxWidth: half_width};
     let progress_style = {
@@ -485,9 +493,8 @@ function FileImportDialog(props) {
                             </FormGroup>
                         </div>
                     }
-                    <div style={{display: "flex", flexDirection: "column", justifyContent: "space-evenly"}}>
+                    <div style={{display: "flex", flexDirection: "column"}}>
                         <Button intent={Intent.PRIMARY} onClick={_do_submit}>Upload</Button>
-                        <Button onClick={_do_clear}>Clear Files</Button>
                     </div>
                 </div>
 
@@ -532,14 +539,22 @@ function FileImportDialog(props) {
 
             <Divider/>
             <div className={Classes.DIALOG_FOOTER} style={{marginTop: 10}}>
-                <ButtonGroup>
-                    <Button onClick={_toggleLog}>
-                        {log_open ? "Hide" : "Show"} log
-                    </Button>
-                    <Button onClick={_clearLog}>
-                        Clear log
-                    </Button>
-                </ButtonGroup>
+                <div style={{display: "flex", flexGrow: 1, flexDirection: "row", justifyContent: "space-between"}}>
+                    <ButtonGroup>
+                        <Button onClick={_toggleLog}>
+                            {log_open ? "Hide" : "Show"} log
+                        </Button>
+                        <Button onClick={_clearLog}>
+                            Clear log
+                        </Button>
+                    </ButtonGroup>
+                    <ButtonGroup>
+                        <Button onClick={_do_clear}>Clear Drop Area</Button>
+                        {props.use_s3 &&
+                            <Button onClick={_clearInactiveUploads}>Clear Progress Area</Button>
+                        }
+                    </ButtonGroup>
+                </div>
                 <Collapse isOpen={log_open}>
                     <div className="bp6-dialog-body">
                         {log_items}

@@ -69,12 +69,30 @@ class BotoS3:
         resp = self.s3.list_objects_v2(Bucket=bucket, Prefix=prefix, MaxKeys=1)
         return resp.get("KeyCount", 0) > 0
 
+    def is_prefix_empty(self, url: str) -> bool:
+        bucket, key = _split_s3_url(url)
+        prefix = self._as_prefix(key or "")
+
+        resp = self.s3.list_objects_v2(
+            Bucket=bucket,
+            Prefix=prefix,
+            MaxKeys=2,
+        )
+
+        contents = resp.get("Contents", [])
+        if not contents:
+            # Truly empty
+            return True
+
+        # At least one real object exists
+        return False
+
+
     def isdir(self, path: str) -> bool:
         bucket, key = _split_s3_url(path)
-        if not key.endswith("/"):
-            key = key + "/"
-        resp = self.s3.list_objects_v2(Bucket=bucket, Prefix=key, MaxKeys=1)
-        return "Contents" in resp or "CommonPrefixes" in resp
+        prefix = self._as_prefix(key or "")
+        resp = self.s3.list_objects_v2(Bucket=bucket, Prefix=prefix, MaxKeys=1)
+        return resp.get("KeyCount", 0) > 0
 
     def ls(self, path: str, detail: bool = False) -> List:
         bucket, key = _split_s3_url(path)
@@ -308,23 +326,39 @@ class BotoS3:
                     return False
                 raise
 
-        def _prefix_has_any(bucket: str, prefix: str) -> bool:
-            resp = self.s3.list_objects_v2(Bucket=bucket, Prefix=prefix, MaxKeys=1)
-            return resp.get("KeyCount", 0) > 0
+        def _prefix_has_any_real(bucket: str, prefix: str) -> bool:
+            """
+            True iff there is any object under prefix other than a single marker object at `prefix`.
+            """
+            resp = self.s3.list_objects_v2(Bucket=bucket, Prefix=prefix, MaxKeys=2)
+            contents = resp.get("Contents", [])
+            if not contents:
+                return False
+            if len(contents) == 1 and contents[0]["Key"] == prefix:
+                # marker-only
+                return False
+            return True
 
         # Decide whether src is an object or a prefix
         src_is_object = _object_exists(sb, sk)
         src_prefix = self._as_prefix(sk or "")
-        src_is_prefix = (not src_is_object) and _prefix_has_any(sb, src_prefix)
+        src_is_prefix = (not src_is_object) and _prefix_has_any_real(sb, src_prefix)
 
         # --- PREFIX MOVE (directory-like), even if src_url didn't end with "/"
         if (not sk) or sk.endswith("/") or src_is_prefix:
             sp = src_prefix
             dp = self._as_prefix(dk or "")
 
+            # Destination existence checks (do BEFORE creating any marker at dp)
             if not overwrite:
-                if _prefix_has_any(db, dp) or _object_exists(db, dk):
+                if _prefix_has_any_real(db, dp) or _object_exists(db, dk):
                     raise FileExistsError(f"Destination exists: {dst_url}")
+
+            # Create destination marker (UI convenience; safe even if non-empty later)
+            try:
+                self.s3.put_object(Bucket=db, Key=dp, Body=b"")
+            except Exception:
+                pass
 
             token = None
             keys_to_delete = []
@@ -337,7 +371,7 @@ class BotoS3:
                 objects = page.get("Contents", [])
 
                 if not objects and token is None:
-                    # nothing to move; may still remove placeholder
+                    # Nothing to move. Clean up marker(s) best-effort.
                     for marker in (sp, sp.rstrip("/")):
                         try:
                             self.s3.delete_object(Bucket=sb, Key=marker)
@@ -347,6 +381,15 @@ class BotoS3:
 
                 for obj in objects:
                     src_key = obj["Key"]
+
+                    # Skip directory-marker objects; we manage markers separately.
+                    if src_key in (sp, sp.rstrip("/")):
+                        keys_to_delete.append({"Key": src_key})
+                        continue
+                    if src_key.endswith("/") and obj.get("Size", 1) == 0:
+                        keys_to_delete.append({"Key": src_key})
+                        continue
+
                     rel = src_key[len(sp):]
                     dst_key = dp + rel
 
@@ -358,7 +401,7 @@ class BotoS3:
                             if e.response.get("Error", {}).get("Code") not in ("404", "NotFound", "NoSuchKey"):
                                 raise
 
-                    # Use copy_object so we don't invoke extra behavior; src_key definitely exists.
+                    # Copy (note: copy_object works up to 5GB; if you have larger, use S3Transfer.copy)
                     self.s3.copy_object(
                         Bucket=db,
                         Key=dst_key,
@@ -377,11 +420,19 @@ class BotoS3:
                     Bucket=sb,
                     Delete={"Objects": keys_to_delete[i:i + 1000], "Quiet": True},
                 )
+
+            # Best-effort: also remove a marker without trailing slash
+            for marker in (sp, sp.rstrip("/")):
+                try:
+                    self.s3.delete_object(Bucket=sb, Key=marker)
+                except Exception:
+                    pass
+
             return True
 
         # --- SINGLE OBJECT MOVE
         if not overwrite:
-            if _object_exists(db, dk) or _prefix_has_any(db, self._as_prefix(dk)):
+            if _object_exists(db, dk) or _prefix_has_any_real(db, self._as_prefix(dk)):
                 raise FileExistsError(f"Destination exists: {dst_url}")
 
         self.s3.copy_object(

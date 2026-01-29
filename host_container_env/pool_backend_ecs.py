@@ -37,6 +37,10 @@ class PoolBackendECS(PoolBackend):
             log.exception("Error getting pooltree")
         return {"dtree": dtree}
 
+    @staticmethod
+    def is_prefix_empty(prefix):
+        return boto_s3.is_prefix_empty(prefix)
+
     def get_subtree(self, user_obj, target_path, show_hidden=False, base_path=None):
         log.debug("getting subtree", target_path=target_path)
         user_pool_dir = f"s3://{BUCKET}/users/{user_obj.username}"
