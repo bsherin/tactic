@@ -1,4 +1,4 @@
-/opt/homebrew/bin/aws sso login
+# /opt/homebrew/bin/aws sso login
 aws ecs describe-services \
   --cluster tactic-cluster \
   --services $(aws ecs list-services --cluster tactic-cluster --query 'serviceArns[]' --output text) \

@@ -482,6 +482,12 @@ function PoolTree(props) {
     }
   }, []);
   (0, _react.useEffect)(function () {
+    if (props.currentRootPath && nodes_ref.current.length > 0) {
+      var node = nodeFromPath(props.currentRootPath, nodes_ref.current[0]);
+      handleNodeExpand(node).then(function () {});
+    }
+  }, [props.currentRootPath]);
+  (0, _react.useEffect)(function () {
     if (props.value && nodes_ref.current.length > 0) {
       expandToNode(props.value).then(function () {
         pushCallback(function () {

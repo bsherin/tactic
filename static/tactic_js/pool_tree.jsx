@@ -363,6 +363,14 @@ function PoolTree(props) {
     }, []);
 
     useEffect(() => {
+        if (props.currentRootPath && nodes_ref.current.length > 0) {
+            let node = nodeFromPath(props.currentRootPath, nodes_ref.current[0]);
+            handleNodeExpand(node).then(() => {
+            });
+        }
+    },[props.currentRootPath])
+
+    useEffect(() => {
         if (props.value && nodes_ref.current.length > 0) {
             expandToNode(props.value).then(() => {
                 pushCallback(() => {
