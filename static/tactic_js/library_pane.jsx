@@ -596,10 +596,15 @@ function LibraryPane(props) {
 
     }
 
-    function _open_raw(selected_resource) {
+    async function _open_raw(selected_resource) {
         statusFuncs.clearStatus();
         if (selected_resource.type == "freeform") {
-            window.open($SCRIPT_ROOT + "/open_raw/" + selected_resource.name)
+            let data = await postPromise("host", "open_raw", {collection_name: selected_resource.name});
+            const html = data["the_html"];
+            const blob = new Blob([html], { type: "text/html" });
+            const url = URL.createObjectURL(blob)
+            window.open(url, "_blank");
+            // window.open($SCRIPT_ROOT + "/open_raw/" + selected_resource.name)
         } else {
             statusFuncs.statusMessage("Only Freeform documents can be raw opened", 5);
         }

@@ -152,4 +152,4 @@ class CollectionTasksMixin:
         doc_type = "freeform" if coll_mdata["type"] == "freeform" else "table"
         if doc_type == "table":
             return "Only Freeform docs can be opened raw"
-        return list(coll_dict.values())[0]
+        return {"success": True, "the_html": list(coll_dict.values())[0]}
