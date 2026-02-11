@@ -43,6 +43,7 @@ function FileImportDialog(props) {
     const picker_ref = useRef(null);
     const existing_names = useRef([]);
     const current_url = useRef("dummy");
+    const progressAreaRef = useRef(null);
 
     const myDropzone = useRef(null);
 
@@ -70,10 +71,8 @@ function FileImportDialog(props) {
 
     useEffect(() => {
         if (!props.use_s3) return;
-        const unsub = uploadManager.subscribe(setActiveUploads);
-        return unsub;
+        return uploadManager.subscribe(setActiveUploads);
     }, []);
-
 
     useConstructor(async () => {
         try {
@@ -112,6 +111,12 @@ function FileImportDialog(props) {
         _updatePickerSize();
     });
 
+    useEffect(() => {
+        if (progressAreaRef.current) {
+            progressAreaRef.current.scrollTop = progressAreaRef.current.scrollHeight;
+        }
+    }, [activeUploads]);
+
     useSocketListener(props.tsocket, "upload_response", _handleResponse);
 
     async function _startS3Uploads() {
@@ -122,9 +127,9 @@ function FileImportDialog(props) {
             myDropzone.current.removeFile(file);
 
             const relpath =
-              (file.webkitRelativePath && file.webkitRelativePath.length > 0)
-                ? file.webkitRelativePath
-                : file.name;
+                (file.webkitRelativePath && file.webkitRelativePath.length > 0)
+                    ? file.webkitRelativePath
+                    : file.name;
 
             let resp = await postPromise("host", "get_s3_upload_info_task", {
                 filename: relpath,
@@ -174,7 +179,6 @@ function FileImportDialog(props) {
     }
 
     function _checkbox_change_handler(event) {
-        let val = event.target.checked;
         let new_checkbox_states = Object.assign({}, checkbox_states);
         new_checkbox_states[event.target.id] = event.target.checked;
         set_checkbox_states(new_checkbox_states)
@@ -212,7 +216,7 @@ function FileImportDialog(props) {
                     checkbox_states,
                     csv_options
                 );
-  }
+            }
         }
     }
 
@@ -239,7 +243,7 @@ function FileImportDialog(props) {
     // gets the dummy url in some cases. It's related to the component re-rendering
     // I think, perhaps when messages are shown in the dialog.
 
-    function _uploadComplete(f) {
+    function _uploadComplete() {
         if (!props.use_s3) {
             if (myDropzone.current.getQueuedFiles().length > 0) {
                 myDropzone.current.options.url = current_url.current;
@@ -375,7 +379,6 @@ function FileImportDialog(props) {
     if (log_open) {
         if (log_contents.length > 0) {
             log_items = log_contents.map((entry, index) => {
-                let content_dict = {__html: entry.content};
                 let has_link = false;
                 return (
                     <ErrorItem key={index} title={entry.title} content={entry.content} has_link={has_link}/>
@@ -415,13 +418,13 @@ function FileImportDialog(props) {
                     <div>
                         <Button onClick={() => folderInputRef.current?.click()}>Choose Folder</Button>
                         <input
-                              ref={folderInputRef}
-                              type="file"
-                              webkitdirectory="true"
-                              directory="true"
-                              multiple
-                              style={{ display: "none" }}
-                              onChange={(e) => {
+                            ref={folderInputRef}
+                            type="file"
+                            webkitdirectory="true"
+                            directory="true"
+                            multiple
+                            style={{display: "none"}}
+                            onChange={(e) => {
                                 const files = Array.from(e.target.files || []);
                                 files.forEach(f => {
                                     if (!f.name.startsWith('.')) {
@@ -429,7 +432,7 @@ function FileImportDialog(props) {
                                     }
                                 })
                                 e.target.value = ""; // allow picking same folder again
-                              }}
+                            }}
                         />
                     </div>
                 }
@@ -499,43 +502,43 @@ function FileImportDialog(props) {
                 </div>
 
                 {props.use_s3 && activeUploads.length > 0 && (
-                      <div style={{ marginTop: 10 }}>
-                        <Divider />
+                    <div ref={progressAreaRef} style={{marginTop: 10, maxHeight: 200, overflowY: "scroll"}}>
+                        <Divider/>
                         {activeUploads.map(u => (
-                          <div key={u.id} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
-                            <div style={{ flex: 1 }}>
-                              <div>{u.fileName}</div>
-                              <ProgressBar value={(u.pct || 0) / 100} stripes={false}/>
-                              <div className={Classes.TEXT_SMALL}>
-                                {u.status}{u.error ? ` — ${u.error}` : ""}
-                              </div>
-                            </div>
+                            <div key={u.id} style={{display: "flex", alignItems: "center", gap: 10, marginBottom: 10}}>
+                                <div style={{flex: 1}}>
+                                    <div>{u.fileName}</div>
+                                    <ProgressBar value={(u.pct || 0) / 100} stripes={false}/>
+                                    <div className={Classes.TEXT_SMALL}>
+                                        {u.status}{u.error ? ` — ${u.error}` : ""}
+                                    </div>
+                                </div>
 
-                            {u.status === "uploading" && (
-                              <Button intent="danger" onClick={() => uploadManager.abort(u.id)}>
-                                Cancel
-                              </Button>
-                            )}
-                              {u.status === "done" && (
-                              <Button intent="success" onClick={() => uploadManager.clear(u.id)}>
-                                Clear
-                              </Button>
-                            )}
-                              {u.status === "aborted" && (
-                              <Button intent="primary" onClick={() => uploadManager.clear(u.id)}>
-                                Clear
-                              </Button>
-                            )}
-                              {u.status === "error" && (
-                              <Button intent="warning" onClick={() => uploadManager.clear(u.id)}>
-                                Clear
-                              </Button>
-                            )}
-                          </div>
+                                {u.status === "uploading" && (
+                                    <Button intent="danger" onClick={() => uploadManager.abort(u.id)}>
+                                        Cancel
+                                    </Button>
+                                )}
+                                {u.status === "done" && (
+                                    <Button intent="success" onClick={() => uploadManager.clear(u.id)}>
+                                        Clear
+                                    </Button>
+                                )}
+                                {u.status === "aborted" && (
+                                    <Button intent="primary" onClick={() => uploadManager.clear(u.id)}>
+                                        Clear
+                                    </Button>
+                                )}
+                                {u.status === "error" && (
+                                    <Button intent="warning" onClick={() => uploadManager.clear(u.id)}>
+                                        Clear
+                                    </Button>
+                                )}
+                            </div>
                         ))}
-                      </div>
-                    )}
-                </div>
+                    </div>
+                )}
+            </div>
 
             <Divider/>
             <div className={Classes.DIALOG_FOOTER} style={{marginTop: 10}}>

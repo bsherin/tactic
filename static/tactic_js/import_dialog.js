@@ -59,6 +59,7 @@ function FileImportDialog(props) {
   var picker_ref = (0, _react.useRef)(null);
   var existing_names = (0, _react.useRef)([]);
   var current_url = (0, _react.useRef)("dummy");
+  var progressAreaRef = (0, _react.useRef)(null);
   var myDropzone = (0, _react.useRef)(null);
   var _useState = (0, _react.useState)(false),
     _useState2 = _slicedToArray(_useState, 2),
@@ -116,8 +117,7 @@ function FileImportDialog(props) {
   var folderInputRef = (0, _react.useRef)(null);
   (0, _react.useEffect)(function () {
     if (!props.use_s3) return;
-    var unsub = _uploadManager.uploadManager.subscribe(setActiveUploads);
-    return unsub;
+    return _uploadManager.uploadManager.subscribe(setActiveUploads);
   }, []);
   (0, _utilities_react.useConstructor)(/*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee() {
     var data, _t;
@@ -181,6 +181,11 @@ function FileImportDialog(props) {
   (0, _react.useEffect)(function () {
     _updatePickerSize();
   });
+  (0, _react.useEffect)(function () {
+    if (progressAreaRef.current) {
+      progressAreaRef.current.scrollTop = progressAreaRef.current.scrollHeight;
+    }
+  }, [activeUploads]);
   (0, _tactic_socket.useSocketListener)(props.tsocket, "upload_response", _handleResponse);
   function _startS3Uploads() {
     return _startS3Uploads2.apply(this, arguments);
@@ -284,7 +289,6 @@ function FileImportDialog(props) {
     }
   }
   function _checkbox_change_handler(event) {
-    var val = event.target.checked;
     var new_checkbox_states = Object.assign({}, checkbox_states);
     new_checkbox_states[event.target.id] = event.target.checked;
     set_checkbox_states(new_checkbox_states);
@@ -382,7 +386,7 @@ function FileImportDialog(props) {
   // gets the dummy url in some cases. It's related to the component re-rendering
   // I think, perhaps when messages are shown in the dialog.
 
-  function _uploadComplete(f) {
+  function _uploadComplete() {
     if (!props.use_s3) {
       if (myDropzone.current.getQueuedFiles().length > 0) {
         myDropzone.current.options.url = current_url.current;
@@ -558,9 +562,6 @@ function FileImportDialog(props) {
   if (log_open) {
     if (log_contents.length > 0) {
       log_items = log_contents.map(function (entry, index) {
-        var content_dict = {
-          __html: entry.content
-        };
         var has_link = false;
         return /*#__PURE__*/_react["default"].createElement(_error_drawer.ErrorItem, {
           key: index,
@@ -686,8 +687,11 @@ function FileImportDialog(props) {
     intent: _core.Intent.PRIMARY,
     onClick: _do_submit
   }, "Upload"))), props.use_s3 && activeUploads.length > 0 && /*#__PURE__*/_react["default"].createElement("div", {
+    ref: progressAreaRef,
     style: {
-      marginTop: 10
+      marginTop: 10,
+      maxHeight: 200,
+      overflowY: "scroll"
     }
   }, /*#__PURE__*/_react["default"].createElement(_core.Divider, null), activeUploads.map(function (u) {
     return /*#__PURE__*/_react["default"].createElement("div", {

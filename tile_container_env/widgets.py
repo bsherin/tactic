@@ -186,6 +186,16 @@ class SliderWidget(Widget):
         if "on_change" not in wdata:
             self.on_change = None
 
+class ProgressBarWidget(Widget):
+    widget_kind = "progressBar"
+    extra_fields = ["stripes", "intent", "style"]
+    defaults = {"stripes": False, "intent": None, "style": None}
+
+    def initialize(self, wdata):
+        super().initialize(wdata)
+        if "on_change" not in wdata:
+            self.on_change = None
+
 class SwitchWidget(Widget):
     widget_kind = "switch"
     extra_fields = ["label", "style"]
@@ -366,6 +376,7 @@ class TableWidget(Widget):
 kind_dict = {
     "table": TableWidget,
     "slider": SliderWidget,
+    "progressBar": ProgressBarWidget,
     "text": TextWidget,
     "html": RawHtmlWidget,
     "iframe": IframeWidget,

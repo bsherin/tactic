@@ -1,6 +1,6 @@
 import React, {useContext, useEffect, useRef, useMemo} from "react";
 
-import {Slider, Text, Button, Switch, HTMLSelect, FormGroup, InputGroup} from "@blueprintjs/core";
+import {Slider, Text, Button, Switch, HTMLSelect, FormGroup, InputGroup, ProgressBar} from "@blueprintjs/core";
 
 import {postPromise, postWithCallback} from "./communication_react";
 import {ErrorDrawerContext} from "./error_drawer";
@@ -12,6 +12,7 @@ const widgetDict = {
     rawHtml: RawHtmlWidget,
     table: TableWidget,
     slider: SliderWidget,
+    progressBar: ProgressBarWidget,
     text: TextWidget,
     javascript: JavascriptWidget,
     box: BoxWidget,
@@ -191,6 +192,32 @@ function ButtonWidget(props) {
         <div>
             <Button {...props.widgetData}
                     onClick={onClick}/>
+        </div>
+    )
+}
+
+const progressBarDefault = {
+    intent: null,
+    stripes: false
+};
+
+function ProgressBarWidget(props) {
+    props = {
+        widgetId: null,
+        local_id: null,
+        console_id: null,
+        tile_id: null,
+        dispatch: null,
+        row: 0,
+        widgetData: progressBarDefault,
+        ...props
+    };
+
+    const {style, ...rest} = props.widgetData;
+
+    return (
+        <div style={props.widgetData?.style} key={props.widgetId}>
+            <ProgressBar {...rest} key={props.widgetId}/>
         </div>
     )
 }
@@ -385,8 +412,8 @@ function JavascriptWidget(props) {
         resizing: false,
         ...props
     };
-    const javascript_error_ref = useRef(false);
-    const [widgetGet, widgetSet, widgetAction] = useWidget(props.widgetId, props.local_id, props.console_id, props.tile_id);
+    // const javascript_error_ref = useRef(false);
+    const [, widgetSet, ] = useWidget(props.widgetId, props.local_id, props.console_id, props.tile_id);
 
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
 
