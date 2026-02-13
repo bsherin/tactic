@@ -59,7 +59,12 @@ function tilesReducer(tile_list, action) {
     let new_items;
     switch (action.type) {
         case "initialize":
-            new_items = action.new_items.map(t => fixTileFrontContent(t));
+            new_items = action.new_items.map(t => {
+                let new_t = {...t};
+                new_t = fixTileFrontContent(new_t);
+                new_t.tile_id = "temp_" + new_t.tile_id;
+                return new_t;
+            });
             break;
         case "delete_item":
             new_items = tile_list.filter(t => t.tile_id !== action.tile_id);

@@ -9,7 +9,7 @@ if (!window.in_context) {
 }
 
 import React from "react";
-import {Fragment, useEffect, useRef, memo, useContext, useReducer, useCallback} from "react";
+import {Fragment, useEffect, useRef, memo, useContext, useCallback} from "react";
 import {createRoot} from 'react-dom/client';
 import {NavbarDivider} from "@blueprintjs/core";
 import {Regions} from "@blueprintjs/table"
@@ -506,7 +506,7 @@ function MainApp(props) {
                 checkboxes: [],
                 handleClose: dialogFuncs.hideModal
             });
-            const temp_id = guid()
+            const temp_id = "temp_" + guid()
             const data_dict = {
                 tile_name: tile_name,
                 tile_type: menu_id,

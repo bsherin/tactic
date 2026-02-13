@@ -355,22 +355,19 @@ class LoadSaveTasksMixin:
     def initialize_tile_from_save(self, data, task_packet):
         sid = data["sid"]
         sess = self.get_session(sid)
-        old_tile_id = sess.ss.make_old(data["tile_id"])
+        temp_tile_id = data["tile_id"]
         tile_info = sess.tile_info
-        tile_name = tile_info.get_param(old_tile_id, "tile_name")
-        tile_type = tile_info.get_param(old_tile_id, "tile_type")
+        tile_name = tile_info.get_param(temp_tile_id, "tile_name")
+        tile_type = tile_info.get_param(temp_tile_id, "tile_type")
 
         def got_container(create_container_dict):
             new_tile_id = create_container_dict["the_id"]
             self.mworker.ask_host(sid, "emit_tile_message", {
                 "tile_message": "updateTileStatus",
                 "status": "loading",
-                "tile_id": re.sub("old_", "", old_tile_id)
+                "tile_id": temp_tile_id
             })
-            # self.mworker.emit_to_main_client(sid, "tile-status-message", {"message": "tile-status-message",
-            #                                                               "tile_id": new_tile_id,
-            #                                                               "status": "loading"})
-            tile_info.update_id(old_tile_id, new_tile_id)
+            tile_info.update_id(temp_tile_id, new_tile_id)
             tile_info.set_creds(new_tile_id, create_container_dict["creds"])
 
             tdict = tile_info.get_tile_params(new_tile_id)
@@ -385,7 +382,7 @@ class LoadSaveTasksMixin:
             self.mworker.post_task("main_service", "recreate_one_tile", data_for_tile,
                                    tile_recreated)
 
-        self.create_tile_container(sid, old_tile_id, other_name=tile_name, callback=got_container)
+        self.create_tile_container(sid, temp_tile_id, other_name=tile_name, callback=got_container)
 
     @task_worthy_manual_submit
     def compile_save_dict(self, data, task_packet):

@@ -138,7 +138,7 @@ class TileCreationTasksMixin:
                 else:
                     if len(instantiate_result["current_globals"]) == 0:
                         if pseudo_tile_id in _pipe_dict:
-                            del _pipe_dict[self.pseudo_tile_id]
+                            del _pipe_dict[pseudo_tile_id]
                     else:
                         _pipe_dict[pseudo_tile_id] = {}
                         tile_name = "__log__"

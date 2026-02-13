@@ -640,7 +640,7 @@ function MainApp(props) {
             });
           case 2:
             tile_name = _context9.v;
-            temp_id = (0, _utilities_react.guid)();
+            temp_id = "temp_" + (0, _utilities_react.guid)();
             data_dict = {
               tile_name: tile_name,
               tile_type: menu_id,

@@ -410,40 +410,6 @@ class TileContainerRegistry(ServiceRegistry):
         self.mark_status(tile_id, "busy", **status_args)
         return
 
-    def claim_tile(self, task_packet):
-        tile_ids = self.container_ids()
-        for tile_id in tile_ids:
-            if self.is_idle(tile_id):
-                task_data = task_packet["task_data"]
-                status_args = {
-                    "username": task_data["username"],
-                    "owner": task_data["owner"],
-                    "parent": task_data.get("parent", "host"),
-                    "project_name": task_data.get("project_name", None),
-                    "tile_name": task_data.get("tile_name", None),
-                }
-                if on_aws:
-                    task_arn = self.get_arn(tile_id)
-                    if not self.is_task_running(task_arn): # Check if the task is actually running
-                        log.warning("Task not running for idle tile, deleting tile",
-                                    category="tile_management",
-                                    tile_id=tile_id, task_arn=task_arn)
-                        self.delete(tile_id)
-                        continue
-                    resp = self.set_task_protection(tile_id, force_busy=True)
-                    if resp is None or ("failures" in resp and len(resp["failures"]) > 0):
-                        log.warning("Failed to set task protection for tile",
-                                    category="tile_management",
-                                    tile_id=tile_id, response=resp)
-                        continue
-
-                    self.mark_status(tile_id, "busy", **status_args)
-                    return tile_id, self.get_arn(tile_id)
-                else:
-                    self.mark_status(tile_id, "busy", **status_args)
-                    return tile_id, ""
-        return None, None
-
     def list_running_tile_tasks(self):
         return self.list_running_service_tasks()
 
