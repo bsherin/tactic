@@ -122,10 +122,28 @@ function treeNodesReducer(nodes, action) {
             forEachNode(newStateSCN, (node) => {
                 if (node.id == action.node_id) {
                     node.childNodes = action.childNodes;
-                    node.explored = true
+                    if ("explored" in action) {
+                        node.explored = action.explored
+                    }
+                    else {
+                        node.explored = true
+                    }
                 }
             });
             return newStateSCN;
+
+        case "MULTI_EXPAND_AND_SET_CHILDREN":
+            const newStateMESC = _.cloneDeep(nodes);
+            forEachNode(newStateMESC, (node) => {
+                if (node.id in action.node_dict) {
+                    node.isExpanded = true;
+                    if (action.node_dict[node.id]) {
+                        node.childNodes = action.node_dict[node.id];
+                    }
+                    node.explored = true
+                }
+            });
+            return newStateMESC;
 
         case "SET_EXPLORED":
             const newStateE = _.cloneDeep(nodes);
@@ -324,6 +342,9 @@ function forEachNode(nodes, callback) {
 }
 
 function nodeFromPath(fullpath, root) {
+    if (root.fullpath == fullpath) {
+        return root
+    }
     for (const node of root.childNodes) {
         if (node.fullpath == fullpath) {
             return node
@@ -332,6 +353,23 @@ function nodeFromPath(fullpath, root) {
     for (const node of root.childNodes) {
         if (node.isDirectory) {
             let result = nodeFromPath(fullpath, node);
+            if (result) {
+                return result
+            }
+        }
+    }
+    return null
+}
+
+function nodeFromID(node_id, childNodes) {
+    for (const node of childNodes) {
+        if (node.id == node_id) {
+            return node
+        }
+    }
+    for (const node of childNodes) {
+        if (node.isDirectory) {
+            let result = nodeFromPath(node_id, node);
             if (result) {
                 return result
             }
@@ -372,14 +410,7 @@ function PoolTree(props) {
 
     useEffect(() => {
         if (props.value && nodes_ref.current.length > 0) {
-            expandToNode(props.value).then(() => {
-                pushCallback(() => {
-                    dispatch({
-                        type: "SET_IS_SELECTED_FROM_FULLPATH",
-                        fullpath: props.value
-                    })
-                });
-            });
+            expandToNode(props.value).then(() => {});
         }
     }, [props.value, nodes_ref.current.length]);
 
@@ -569,13 +600,13 @@ function PoolTree(props) {
         for (let node of childNodes) {
             if (node.fullpath == fullpath) {
                 if (node.isDirectory) {
-                    return current_path + [node.id]
+                    return current_path.concat([node.id])
                 } else {
                     return current_path
                 }
             } else {
                 if ("childNodes" in node && fullpath.startsWith(node.fullpath)) {
-                    let the_path = searchDown(node.childNodes, fullpath, current_path + [node.id]);
+                    let the_path = searchDown(node.childNodes, fullpath, current_path.concat([node.id]));
                     if (the_path) {
                         return the_path
                     }
@@ -598,15 +629,29 @@ function PoolTree(props) {
         if (!result) {
             return
         }
-        pushCallback(() => {
+
+        pushCallback(async () => {
             let the_path = findNodePath(fullpath);
-            if (the_path) {
-                dispatch({
-                    type: "MULTI_SET_IS_EXPANDED",
-                    node_list: the_path,
-                    isExpanded: true
-                });
+            if (the_path == null) {
+                return
             }
+            let childrenToAdd = {};
+            for (let node_id of the_path) {
+                let node = nodeFromID(node_id, [nodes_ref.current[0]]);
+                childrenToAdd[node_id] = await handleNodeExpand(node, null, null, true)
+            }
+
+            dispatch({
+                type: "MULTI_EXPAND_AND_SET_CHILDREN",
+                node_dict: childrenToAdd,
+            });
+            pushCallback(() => {
+                dispatch({
+                    type: "SET_IS_SELECTED_FROM_FULLPATH",
+                    fullpath: fullpath
+                })
+            });
+
         });
     }
 
@@ -639,6 +684,7 @@ function PoolTree(props) {
                 dispatch({
                     type: "SET_CHILD_NODES",
                     node_id: current_node.id,
+                    explored: false,
                     childNodes: data["dtree"][0].childNodes
                 })
                 return true
@@ -646,12 +692,14 @@ function PoolTree(props) {
         }
     }
 
-    async function handleNodeExpand(node) {
-        dispatch({
+    async function handleNodeExpand(node, nodePath, e, returnUpdaters=false) {
+        const expandUpdater = {
             type: "SET_IS_EXPANDED",
             node_id: node.id,
             isExpanded: true
-        });
+        }
+        let updaters = [expandUpdater];
+        let children_to_add = null;
         if (!node.explored) {
             if (statusFuncs) {
                 statusFuncs.setStatus({show_spinner: true, status_message: "Opening folder"});
@@ -666,13 +714,21 @@ function PoolTree(props) {
                 doFlash("Error getting file tree.");
                 return
             }
-            dispatch({
+            const childUpdater = {
                 type: "SET_CHILD_NODES",
                 node_id: node.id,
                 childNodes: data["dtree"][0].childNodes
-            })
+            }
+            children_to_add = data["dtree"][0].childNodes;
+            updaters.push(childUpdater);
+        }
+        if (!returnUpdaters) {
+            for (let updater of updaters) {
+                dispatch(updater)
+            }
         }
         pool_context.setWorkingPath(node.fullpath);
+        return children_to_add
     }
 
     function handleNodeClick(node) {
