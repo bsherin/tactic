@@ -27,6 +27,7 @@ const widgetDict = {
 
 function useWidget(widgetId, local_id, console_id, tile_id) {
 
+
     function widgetGet(data) {
         let ndata = {widgetId, ...data, local_id: local_id};
         if (tile_id) {
@@ -333,6 +334,7 @@ function SwitchWidget(props) {
 const textDataDefault = {
     value: "",
     ellipsize: true,
+    style: {}
 };
 
 function TextWidget(props) {

@@ -44,7 +44,7 @@ class AcrossAccountsAccess:
         elif "file_id" in new_res_dict:
             doc_text = source_user.fs.get(new_res_dict["file_id"]).read()
             new_res_dict["file_id"] = dest_user.fs.put(doc_text)
-        new_collection_name = dest_user.resource_collection_name(res_type)
+        new_collection_name = dest_user.resource_collection_name(res_type)()
         dest_user.db[new_collection_name].insert_one(new_res_dict)
         metadata = new_res_dict["metadata"]
         overall_res = [metadata, {"success": True, "message": "Resource Successfully Copied", "alert_type": "alert-success"}]
