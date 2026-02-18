@@ -11,7 +11,7 @@ class TacticSettings:
         return _tworker.tile_instance
 
     def __getitem__(self, name):
-        settings = self._tinst.get_settings_objects_settings()
+        settings = self._tinst.get_settings_object_settings()
         return settings[name]
 
     @property

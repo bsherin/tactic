@@ -114,17 +114,23 @@ const ghostTextPlugin = ViewPlugin.fromClass(class {
 });
 
 function acceptGhostText(view) {
-    const ghost = view.state.field(ghostTextField, false);
-    if (!ghost || !ghost.text) return false;
+  const ghost = view.state.field(ghostTextField, false);
+  if (!ghost || !ghost.text) return false;
 
-    const pos = ghost.pos != null ? ghost.pos : view.state.selection.main.head;
+  const from = ghost.pos != null ? ghost.pos : view.state.selection.main.head;
 
-    view.dispatch({
-        changes: { from: pos, insert: ghost.text },
-        effects: setGhostTextEffect.of({ text: "", pos: null })
-    });
-    setGhostText(view, "");
-    return true;
+  const insertedLen = ghost.text.length;
+  const newHead = from + insertedLen;
+
+  view.dispatch({
+    changes: { from, to: from, insert: ghost.text },
+    selection: { anchor: newHead, head: newHead },
+    scrollIntoView: true,
+    effects: setGhostTextEffect.of({ text: "", pos: null }),
+    userEvent: "input.complete", // optional but often nice
+  });
+
+  return true;
 }
 function computeGhostSuffix(fullSuggestion, view) {
     if (!view || !fullSuggestion) return fullSuggestion;

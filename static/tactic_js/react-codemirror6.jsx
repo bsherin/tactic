@@ -484,12 +484,16 @@ function ReactCodemirror6(props) {
     }, []);
 
     const handleAutocompleteDelta = useCallback((data) => {
+        console.log("Received autocomplete delta", data.text);
         if (!editorView.current.hasFocus) return;
         if (data.cmUniqueId !== cmUniqueId.current) {
             return
         }
         if (data.room !== props.local_id) return;
-        if (data.change_counter !== activeStreamChangeCounterRef.current) return;
+        if (data.change_counter !== activeStreamChangeCounterRef.current) {
+            console.log("change_counter not equal to activeStreamChangeCounterRef, ignoring");
+            return;
+        }
         if (aiPausedRef.current) return;
 
         const view = editorView.current;
@@ -498,23 +502,25 @@ function ReactCodemirror6(props) {
 
         if (activeStreamCursorPosRef.current != null) {
             const curPos = view.state.selection.main.head;
-            if (curPos !== activeStreamCursorPosRef.current) return;
+            if (curPos !== activeStreamCursorPosRef.current) {
+                console.log("cursor position not equal to activeStreamCursorPosRef, ignoring");
+                return
+            }
           }
         if (activeStreamCursorCounterRef.current != null && data.cursor_counter != null) {
-            if (data.cursor_counter !== activeStreamCursorCounterRef.current) return;
+            if (data.cursor_counter !== activeStreamCursorCounterRef.current) {
+                console.log("cursor counter not equal to activeStreamCursorCounterRef, ignoring");
+                return
+            }
           }
 
-        let current_text;
-        if (aiTextRef.current == null) {
-            current_text = data["text"];
-        } else {
-            current_text = aiTextRef.current + data["text"];
-        }
-
-        setAIText(current_text);
+        console.log("Current AI text is", aiTextRef.current);
+        const nextText = (aiTextRef.current ?? "") + data.text;
+        aiTextRef.current = nextText;   // <-- add this line
+        setAIText(nextText);
         if (editorView.current) {
             closeCompletion(editorView.current);
-            const trimmed = computeGhostSuffix(current_text, editorView.current);
+            const trimmed = computeGhostSuffix(nextText, editorView.current);
             setGhostText(editorView.current, trimmed);
         }
     })
