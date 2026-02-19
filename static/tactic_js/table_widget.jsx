@@ -19,6 +19,9 @@ function compute_initial_column_widths(table_selector, header_list, data_list, m
 
     // set up a canvas so that we can use it to compute the width of text
     const element = document.querySelector(`${table_selector} .bp6-table-truncated-text`);
+    if (!element) {
+        return null
+    }
     const body_font = window.getComputedStyle(element).getPropertyValue("font");
     //let header_font = $($(".bp6-table-column-name-text")[0]).css("font");
     const header_element = document.querySelector(".bp6-table-column-name-text");
@@ -137,6 +140,9 @@ function TableWidget(props) {
 
     useEffect(() => {
         setDataDictList(props.widgetData.value);
+        if (!props.columnWidths) {
+            computeColumnWidths();
+        }
     }, [props.widgetData.value]);
 
     useEffect(() => {
@@ -206,6 +212,9 @@ function TableWidget(props) {
         if (Object.keys(dataDictList).length == 0) return;
         let cnames = Object.keys(dataDictList[0] || {});
         let bcwidths = compute_initial_column_widths(`.table-${props.widgetId}`, cnames, dataDictList);
+        if (!bcwidths) {
+            setColumnWidths(null);
+        }
         let cwidths = [];
         if (props.maxColumnWidth) {
             for (let c of bcwidths) {
@@ -289,6 +298,10 @@ function TableWidget(props) {
         rowHeights = Array(dataDictList.length).fill(DEFAULT_ROW_HEIGHT);
         resetRowHeights();
     }
+    let cwidths = props.columnWidths ? props.columnWidths : columnWidths;
+    if (cwidths && cwidths.length != column_names.length) {
+        cwidths = null;
+    }
     return (
         <ErrorBoundary key={props.widgetId}>
             <div style={outer_style} key={props.widgetId}>
@@ -301,7 +314,7 @@ function TableWidget(props) {
                        enableColumnReordering={false}
                        enableColumnResizing={true}
                        defaultRowHeight={27}
-                       columnWidths={props.columnWidths ? props.columnWidths : columnWidths}
+                       columnWidths={cwidths}
                        onCompleteRender={_onCompleteRender}
                        enableRowHeader={false}>
                     {columns}

@@ -27,7 +27,7 @@ BASELINE_CAPACITY = {
     "tactic-main-service":       {"min": 1, "max": 2,  "desired": 1},
     "tactic-module-viewer":      {"min": 1, "max": 2,  "desired": 1},
     "tactic-pool-watcher-s3":    {"min": 1, "max": 2,  "desired": 1},
-    "tactic-tile-pool":          {"min": 0, "max": 10, "desired": 6},
+    "tactic-tile-pool":          {"min": 0, "max": 20, "desired": 10},
     "tactic-rabbitmq":           {"min": 1, "max": 1,  "desired": 1},
     "tactic-redis":              {"min": 1, "max": 1,  "desired": 1},
 }
