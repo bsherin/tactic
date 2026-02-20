@@ -491,7 +491,7 @@ ExportModuleForm = memo(ExportModuleForm);
 
 const option_types = ['text', 'int', 'float', 'boolean', 'textarea', 'codearea', 'column_select', 'document_select',
     'list_select', 'collection_select', 'palette_select', 'pipe_select', 'custom_list', 'function_select',
-    'class_select', 'tile_select', 'divider', 'pool_select'];
+    'class_select', 'tile_select', 'divider', 'pool_select', 'multi_select'];
 const taggable_types = ["class_select", "function_select", "pipe_select", "list_select", "collection_select"];
 
 const option_icons = {
@@ -508,6 +508,7 @@ const option_icons = {
     palette_select: "color-fill",
     pipe_select: "flow-branch",
     custom_list: "list-detail-view",
+    multi_select: "multi-select",
     function_select: "function",
     class_select: "curly-braces",
     tile_select: "application",
@@ -580,7 +581,7 @@ function OptionModuleForm(props) {
     function handleTypeChange(event) {
         let new_type = event.currentTarget.value;
         let updater = {"type": new_type};
-        if (new_type != "custom_list") {
+        if (!["custom_list", "multi_select"].includes(new_type)) {
             updater["special_list"] = []
         }
         if (!taggable_types.includes(new_type)) {
@@ -617,7 +618,7 @@ function OptionModuleForm(props) {
                                                   helperText={props.optionItem.default_warning_text}
                                 />
                             }
-                            {props.optionItem.type == "custom_list" &&
+                            {["custom_list", "multi_select"].includes(props.optionItem.type) &&
                                 <LabeledTextArea label="Special List"
                                                  onChange={handleSpecialListChange}
                                                  the_value={arrayToTextRows(props.optionItem.hasOwnProperty("special_list") ?

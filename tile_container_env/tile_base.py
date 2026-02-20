@@ -477,6 +477,8 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
                     form_item["option_list"] = color_palette_names
                 case "custom_list":
                     form_item["option_list"] = option["special_list"]
+                case "multi_select":
+                    form_item["option_list"] = option["special_list"]
                 case "pool_select":
                     if "pool_select_type" in option:
                         form_item["pool_select_type"] = option["pool_select_type"]

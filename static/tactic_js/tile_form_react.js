@@ -12,8 +12,13 @@ var _reactCodemirror = require("./react-codemirror6");
 var _selector_advanced = require("./selector_advanced");
 var _utilities_react = require("./utilities_react");
 var _pool_tree = require("./pool_tree");
+var _select = require("@blueprintjs/select");
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t in e) "default" !== _t && {}.hasOwnProperty.call(e, _t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t)) && (i.get || i.set) ? o(f, _t, i) : f[_t] = e[_t]); return f; })(e, t); }
+function _toConsumableArray(r) { return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread(); }
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _iterableToArray(r) { if ("undefined" != typeof Symbol && null != r[Symbol.iterator] || null != r["@@iterator"]) return Array.from(r); }
+function _arrayWithoutHoles(r) { if (Array.isArray(r)) return _arrayLikeToArray(r); }
 function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
@@ -102,6 +107,16 @@ function TileForm(props) {
           updateValue: _updateValue
         }));
       } else switch (option["type"]) {
+        case "multi_select":
+          option_items.push(/*#__PURE__*/_react["default"].createElement(MultiSelectOption, {
+            att_name: att_name,
+            display_text: display_text,
+            key: att_name,
+            choice_list: option["option_list"],
+            value: option["starting_value"],
+            updateValue: _updateValue
+          }));
+          break;
         case "pipe_select":
           option_items.push(/*#__PURE__*/_react["default"].createElement(PipeOption, {
             att_name: att_name,
@@ -433,6 +448,78 @@ function SelectOption(props) {
   }));
 }
 SelectOption = /*#__PURE__*/(0, _react.memo)(SelectOption);
+function MultiSelectOption(props) {
+  function _updateMe(val) {
+    var uniqueList = _toConsumableArray(new Set(val));
+    props.updateValue(props.att_name, uniqueList);
+  }
+  function filterItem(query, item) {
+    if (!query || query.trim() === "") {
+      return true;
+    }
+    var re = new RegExp("^".concat(query));
+    return re.test(item);
+  }
+  function renderTag(item) {
+    return item;
+  }
+  function _handleDelete(tag) {
+    var _props$value;
+    var current = (_props$value = props.value) !== null && _props$value !== void 0 ? _props$value : [];
+    _updateMe(current.filter(function (x) {
+      return x !== tag;
+    }));
+  }
+  function _handleAddition(tag) {
+    var _props$value2;
+    var current = (_props$value2 = props.value) !== null && _props$value2 !== void 0 ? _props$value2 : [];
+    if (current.includes(tag)) {
+      _updateMe(current.filter(function (x) {
+        return x !== tag;
+      }));
+      return;
+    }
+    _updateMe([].concat(_toConsumableArray(current), [tag]));
+  }
+  function renderItemWithIcon(item, _ref) {
+    var modifiers = _ref.modifiers,
+      handleClick = _ref.handleClick;
+    if (props.value.includes(item)) {
+      return (0, _selector_advanced.renderSuggestion)({
+        text: item,
+        icon: "tick"
+      }, {
+        modifiers: modifiers,
+        handleClick: handleClick
+      });
+    }
+    return (0, _selector_advanced.renderSuggestion)({
+      text: item,
+      icon: "blank"
+    }, {
+      modifiers: modifiers,
+      handleClick: handleClick
+    });
+  }
+  var label = props.display_text == null ? props.att_name : props.display_text;
+  return /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
+    label: label
+  }, /*#__PURE__*/_react["default"].createElement(_select.MultiSelect, {
+    activeItem: null,
+    resetOnSelect: true,
+    clear: true,
+    itemRenderer: renderItemWithIcon,
+    selectedItems: props.value ? props.value : [],
+    items: props.choice_list ? props.choice_list : [],
+    itemPredicate: filterItem,
+    tagRenderer: renderTag,
+    tagInputProps: {
+      onRemove: _handleDelete
+    },
+    onItemSelect: _handleAddition
+  }));
+}
+MultiSelectOption = /*#__PURE__*/(0, _react.memo)(MultiSelectOption);
 function PoolOption(props) {
   function _updateMe(newval) {
     props.updateValue(props.att_name, newval);

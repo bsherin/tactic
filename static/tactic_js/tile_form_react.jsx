@@ -1,15 +1,18 @@
 import React from "react";
 import {Fragment, useState, useEffect, useRef, memo} from "react";
 
-import {FormGroup, InputGroup, Button, Divider, Switch,
-    TextArea, Collapse, Card, Elevation} from "@blueprintjs/core";
+import {
+    FormGroup, InputGroup, Button, Divider, Switch,
+    TextArea, Collapse, Card, Elevation
+} from "@blueprintjs/core";
 import _ from 'lodash';
 
 import {ReactCodemirror6} from "./react-codemirror6";
-import {BpSelect, BpSelectAdvanced} from "./selector_advanced"
+import {BpSelect, BpSelectAdvanced, renderSuggestion} from "./selector_advanced"
 import {isInt} from "./utilities_react";
 
 import {PoolAddressSelector} from "./pool_tree";
+import {MultiSelect} from "@blueprintjs/select";
 
 export {TileForm}
 
@@ -29,7 +32,7 @@ let selector_type_icons = {
     function_select: "function",
     class_select: "code",
     palette_select: "tint",
-    custom_list: "property"
+    custom_list: "property",
 };
 
 function TileForm(props) {
@@ -90,6 +93,14 @@ function TileForm(props) {
                                             buttonIcon={selector_type_icons[option["type"]]}
                                             updateValue={_updateValue}/>)
         } else switch (option["type"]) {
+            case "multi_select":
+                option_items.push(<MultiSelectOption att_name={att_name}
+                                                     display_text={display_text}
+                                                     key={att_name}
+                                                     choice_list={option["option_list"]}
+                                                     value={option["starting_value"]}
+                                                     updateValue={_updateValue}/>)
+                break;
             case "pipe_select":
                 option_items.push(<PipeOption att_name={att_name}
                                               display_text={display_text}
@@ -152,11 +163,11 @@ function TileForm(props) {
             case "pool_select":
                 option_items.push(<PoolOption att_name={att_name}
                                               tile_id={props.tile_id}
-                                               display_text={display_text}
-                                               key={att_name}
-                                               value={option["starting_value"]}
-                                               select_type={option.pool_select_type}
-                                               updateValue={_updateValue}
+                                              display_text={display_text}
+                                              key={att_name}
+                                              value={option["starting_value"]}
+                                              select_type={option.pool_select_type}
+                                              updateValue={_updateValue}
                 />);
                 break;
             case "divider":
@@ -263,7 +274,7 @@ function TextOption(props) {
     let val_to_show = current_timer.current ? temp_text : props.value;
     return (
         <FormGroup label={label}>
-            <InputGroup asyncControl={false} type="text"  leftIcon={props.leftIcon}
+            <InputGroup asyncControl={false} type="text" leftIcon={props.leftIcon}
                         onChange={_updateMe} value={String(val_to_show)}/>
         </FormGroup>
     )
@@ -365,12 +376,12 @@ function CodeAreaOption(props) {
     return (
         <FormGroup label={label}>
             <ReactCodemirror6 handleChange={_updateMe}
-                             no_width={true}
-                             no_height={true}
-                             code_content={props.value}
-                             saveMe={null}
-                             tsocket={null}
-                             code_container_height={100}
+                              no_width={true}
+                              no_height={true}
+                              code_content={props.value}
+                              saveMe={null}
+                              tsocket={null}
+                              code_container_height={100}
             />
         </FormGroup>
     )
@@ -427,6 +438,69 @@ function SelectOption(props) {
 }
 
 SelectOption = memo(SelectOption);
+
+function MultiSelectOption(props) {
+
+    function _updateMe(val) {
+        const uniqueList = [...new Set(val)];
+        props.updateValue(props.att_name, uniqueList)
+    }
+
+    function filterItem(query, item) {
+        if (!query || query.trim() === "") {
+            return true;
+        }
+        let re = new RegExp(`^${query}`);
+        return re.test(item)
+    }
+
+    function renderTag(item) {
+        return item
+    }
+
+
+    function _handleDelete(tag) {
+      const current = props.value ?? [];
+      _updateMe(current.filter(x => x !== tag));
+    }
+
+    function _handleAddition(tag) {
+        const current = props.value ?? [];
+
+        if (current.includes(tag)) {
+            _updateMe(current.filter(x => x !== tag));
+            return;
+        }
+
+        _updateMe([...current, tag]);
+    }
+
+    function renderItemWithIcon(item, {modifiers, handleClick}) {
+        if (props.value.includes(item)) {
+            return renderSuggestion({text: item, icon: "tick"}, {modifiers, handleClick})
+        }
+        return renderSuggestion({text: item, icon: "blank"}, {modifiers, handleClick})
+    }
+
+    let label = props.display_text == null ? props.att_name : props.display_text;
+    return (
+        <FormGroup label={label}>
+            <MultiSelect
+                activeItem={null}
+                resetOnSelect={true}
+                clear={true}
+                itemRenderer={renderItemWithIcon}
+                selectedItems={props.value ? props.value : []}
+                items={props.choice_list ? props.choice_list : []}
+                itemPredicate={filterItem}
+                tagRenderer={renderTag}
+                tagInputProps={{onRemove: _handleDelete}}
+                onItemSelect={_handleAddition}/>
+        </FormGroup>
+    )
+}
+
+MultiSelectOption = memo(MultiSelectOption);
 
 function PoolOption(props) {
 

@@ -1,3 +1,4 @@
+import re
 from tactic_logging import log, setup_logging
 
 setup_logging("module_viewer")
@@ -104,6 +105,9 @@ class ModuleViewerWorker(QWorker, CopilotMixin, MongoAccess, TileAccess):
 
     @staticmethod
     def build_code(data_dict):
+        def split_list(s):
+            return re.split(r'[, \n]+', s)
+
         export_list = data_dict["exports"]
         additional_save_attrs = [sattr["name"] for sattr in data_dict["additional_save_attrs"]]
         couple_save_attrs_and_exports = data_dict["mdata"]["couple_save_attrs_and_exports"]
@@ -146,6 +150,8 @@ class ModuleViewerWorker(QWorker, CopilotMixin, MongoAccess, TileAccess):
         for opt_dict in options:
             if "default" not in opt_dict:
                 opt_dict["default"] = "None"
+            elif opt_dict["type"] == "multi_select":
+                opt_dict["default"] = split_list(opt_dict["default"])
             elif isinstance(opt_dict["default"], str):
                 opt_dict["default"] = '"' + opt_dict["default"] + '"'
             opt_dict["default"] = str(opt_dict["default"])
