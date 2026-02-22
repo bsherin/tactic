@@ -220,7 +220,10 @@ class ModuleViewerWorker(QWorker, CopilotMixin, MongoAccess, TileAccess):
     def assemble_parse_information(tp):
         for option in tp.options:
             if option["name"] in tp.defaults:
-                option["default"] = tp.defaults[option["name"]]
+                the_default = tp.defaults[option["name"]]
+                if type(the_default) == list:
+                    the_default = " ".join(the_default)
+                option["default"] = the_default
         func_dict = tp.methods
         if "render_content" in func_dict:
             render_content_code = func_dict["render_content"]["method_body"]
