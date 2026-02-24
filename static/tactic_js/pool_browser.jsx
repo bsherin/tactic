@@ -292,7 +292,7 @@ function PoolBrowser(props) {
             let [data, , xhr] = await getBlobPromise("download_pool_file", the_data);
             if (xhr.status === 200) {
                 // Create a download link and trigger the download
-                let blob = new Blob([data], {type: 'application/octet-stream'});
+                let blob = data
                 let url = window.URL.createObjectURL(blob);
                 let a = document.createElement('a');
                 a.href = url;

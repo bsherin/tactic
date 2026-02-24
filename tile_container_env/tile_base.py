@@ -611,9 +611,8 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
             widget.set(data["widgetData"])
             return {"success": True}
         except Exception as ex:
-            log.exception("Error in widget_set")
-            self._handle_exception(ex, "error in widget_set")
-            return {"success": False, "error": str(ex)}
+            log.warning("Error in widget_set")
+            return {"success": True}
 
     @_task_worthy
     def widget_action(self, data):

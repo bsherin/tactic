@@ -650,9 +650,7 @@ function PoolBrowser(props) {
             xhr = _yield$getBlobPromise2[2];
             if (xhr.status === 200) {
               // Create a download link and trigger the download
-              blob = new Blob([data], {
-                type: 'application/octet-stream'
-              });
+              blob = data;
               url = window.URL.createObjectURL(blob);
               a = document.createElement('a');
               a.href = url;
