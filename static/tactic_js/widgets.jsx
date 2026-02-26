@@ -1,10 +1,11 @@
-import React, {useContext, useEffect, useRef, useMemo} from "react";
+import React, {useContext, useEffect, useRef, useMemo, useState} from "react";
 
 import {Slider, Text, Button, Switch, HTMLSelect, FormGroup, InputGroup, ProgressBar} from "@blueprintjs/core";
 
 import {postPromise, postWithCallback} from "./communication_react";
 import {ErrorDrawerContext} from "./error_drawer";
 import {TableWidget} from "./table_widget";
+import {useDebounce} from "./utilities_react";
 
 export {useWidget, widgetDict}
 
@@ -378,14 +379,16 @@ function InputWidget(props) {
         ...props
     };
 
+    const [localValue, setLocalValue] = useState(props.widgetData.value);
     const [, widgetSet] = useWidget(props.widgetId, props.local_id, props.console_id, props.tile_id);
-    const {style, label, inline, ...rest} = props.widgetData;
+    const [, doUpdate] = useDebounce(widgetSet);
+    const {style, label, inline, value, ...rest} = props.widgetData;
 
-    function onChange(e) {
-        const newWidgetData = {...props.widgetData, value: e.target.value};
-        widgetSet(newWidgetData);
+    function onChange(val) {
+        setLocalValue(val);
+        const newWidgetData = {...props.widgetData, value: val};
+        doUpdate(newWidgetData);
     }
-
 
     return (
         <FormGroup key={props.widgetId}
@@ -394,7 +397,8 @@ function InputWidget(props) {
                    label={props.widgetData.label}>
             <InputGroup type="text"
                         {...rest}
-                        onChange={onChange}
+                        value={localValue}
+                        onValueChange={onChange}
             />
         </FormGroup>
     )
